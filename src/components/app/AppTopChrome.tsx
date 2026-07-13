@@ -66,6 +66,8 @@ type AppTopChromeProps = {
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
   referencePaneVisible: boolean;
+  /** Reference session exists even when the column is hidden. */
+  referenceLoaded?: boolean;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
   unsavedFileStateLabel?: string;
@@ -110,6 +112,7 @@ export function AppTopChrome({
   sidePaneCopy,
   sidePaneMode,
   referencePaneVisible,
+  referenceLoaded = false,
   selectedImage,
   tabs,
   unsavedFileStateLabel,
@@ -177,6 +180,7 @@ export function AppTopChrome({
         outlinePaneActive={!referencePaneVisible && sidePaneMode === "outline"}
         previewPaneActive={!referencePaneVisible && sidePaneMode === "preview"}
         referencePaneActive={referencePaneVisible}
+        referenceLoaded={referenceLoaded}
         recoveryReviewChangesLabel={recoveryCopy.reviewChanges}
         sidePaneCopy={sidePaneCopy}
       />

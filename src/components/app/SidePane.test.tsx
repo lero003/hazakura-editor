@@ -159,7 +159,9 @@ describe("SidePane", () => {
 
     expect(screen.getByLabelText("Read as a book (e-book)")).toBeTruthy();
     expect(
-      screen.getByText("Preview pane is disabled in Preferences."),
+      screen.getByText(
+        "Preview is off in Preferences. Your source stays intact.",
+      ),
     ).toBeTruthy();
   });
 

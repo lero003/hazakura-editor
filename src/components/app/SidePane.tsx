@@ -232,7 +232,13 @@ export function SidePane({
       ) : (
         <PreviewUnavailablePane
           ariaLabel={copy.previewUnavailable}
-          reason={activeTab ? copy.previewDisabled : copy.openTextFileToPreview}
+          reason={
+            activeTab
+              ? copy.previewDisabled
+              : sidePaneMode === "ebook"
+                ? copy.openTextFileToEbook
+                : copy.openTextFileToPreview
+          }
         />
       )}
     </div>

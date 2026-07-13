@@ -1,4 +1,5 @@
-import { type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { resolvePaneToggleTitles } from "../../features/workspace/paneToggleTitles";
 import {
   BookIcon,
   DiffIcon,
@@ -16,14 +17,20 @@ export interface RightPaneToggleCopy {
   appleAssistWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
+  diffTabTitleHide: string;
   ebookTab: string;
   ebookTabTitle: string;
+  ebookTabTitleHide: string;
   outlineTab: string;
   outlineTabTitle: string;
+  outlineTabTitleHide: string;
   previewTab: string;
   previewTabTitle: string;
+  previewTabTitleHide: string;
   referenceTab: string;
   referenceTabTitle: string;
+  referenceTabTitleHide: string;
+  referenceTabTitleRetained: string;
   reviewMenu: string;
   reviewMenuTitle: string;
   sidePaneMode: string;
@@ -80,6 +87,7 @@ export function RightPaneToggleControls({
   outlineAvailable,
   previewActive,
   referenceActive,
+  referenceLoaded = false,
   reviewChangesAvailable,
   reviewChangesLabel,
   onToggleReference,
@@ -98,10 +106,35 @@ export function RightPaneToggleControls({
   outlineAvailable: boolean;
   previewActive: boolean;
   referenceActive: boolean;
+  /** Loaded reference session exists even when the column is hidden. */
+  referenceLoaded?: boolean;
   reviewChangesAvailable: boolean;
   reviewChangesLabel: string;
   onToggleReference: () => void;
 }) {
+  const titles = useMemo(
+    () =>
+      resolvePaneToggleTitles(copy, {
+        previewActive,
+        referenceActive,
+        referenceLoaded,
+        ebookActive: ebookAvailable && ebookActive,
+        outlineActive: outlineAvailable && outlineActive,
+        diffActive,
+      }),
+    [
+      copy,
+      diffActive,
+      ebookActive,
+      ebookAvailable,
+      outlineActive,
+      outlineAvailable,
+      previewActive,
+      referenceActive,
+      referenceLoaded,
+    ],
+  );
+
   return (
     <div className="pane-control-cluster" aria-label={copy.sidePaneMode}>
       {reviewChangesAvailable ? (
@@ -119,14 +152,14 @@ export function RightPaneToggleControls({
           caption={copy.previewTab}
           icon={<PreviewIcon />}
           onClick={onTogglePreview}
-          title={copy.previewTabTitle}
+          title={titles.preview}
         />
         <PaneToggle
           active={referenceActive}
           caption={copy.referenceTab}
           icon={<ReferenceIcon />}
           onClick={onToggleReference}
-          title={copy.referenceTabTitle}
+          title={titles.reference}
         />
         <PaneToggle
           active={ebookAvailable && ebookActive}
@@ -134,7 +167,7 @@ export function RightPaneToggleControls({
           disabled={!ebookAvailable}
           icon={<BookIcon />}
           onClick={onToggleEbook}
-          title={copy.ebookTabTitle}
+          title={titles.ebook}
         />
         <PaneToggle
           active={outlineAvailable && outlineActive}
@@ -142,7 +175,7 @@ export function RightPaneToggleControls({
           disabled={!outlineAvailable}
           icon={<OutlineIcon />}
           onClick={onToggleOutline}
-          title={copy.outlineTabTitle}
+          title={titles.outline}
         />
         <PaneToggle
           active={diffActive}
@@ -150,7 +183,7 @@ export function RightPaneToggleControls({
           disabled={!diffAvailable}
           icon={<DiffIcon />}
           onClick={onToggleDiff}
-          title={copy.diffTabTitle}
+          title={titles.diff}
         />
       </div>
     </div>

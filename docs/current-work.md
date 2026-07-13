@@ -34,8 +34,8 @@ Source: `docs/v1.8-plus-product-review-roadmap.md`.
 | Priority | Slice | Acceptance |
 |---|---|---|
 | **Done / source** | **W1 — Returning Start Panel** | Start Panel を first-use / returning に分ける。前回 workspace 再開（path → bookmark → picker）と pathless 復旧候補を Start Panel 上に表示（en/ja/kana）。空エディタ時は上部 Recovery banner と二重表示しない。 |
-| **Next** | **W2 — Pane state copy** | Preview / e-book / Reference / Diff の hidden / retained / closed を目的語で説明する。 |
-| Pending | **W3 — Context continuity audit** | L Mode 往復・tab 切替・Save As 後の作業文脈を監査し、既知ギャップをテスト固定。 |
+| **Done / source** | **W2 — Pane state copy** | Preview / e-book / Outline / Diff / Reference の show/hide/retained をトグル title と status で説明。参照は非表示でも保持、L Mode 中は一時的に隠す。空状態コピーを目的語へ更新。 |
+| **Next** | **W3 — Context continuity audit** | L Mode 往復・tab 切替・Save As 後の作業文脈を監査し、既知ギャップをテスト固定。 |
 | Pending | **W4 — Palette discoverability** | Command Palette の日本語 / かな discoverability を目的語へ揃える。 |
 
 ## Product Boundary

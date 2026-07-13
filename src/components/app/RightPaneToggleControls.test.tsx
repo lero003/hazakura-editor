@@ -15,14 +15,20 @@ const copy: RightPaneToggleCopy = {
   appleAssistWindowTitle: "Open Hazakura Local Assist Window",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
+  diffTabTitleHide: "Hide Diff",
   ebookTab: "e-book",
   ebookTabTitle: "Open e-book",
+  ebookTabTitleHide: "Hide e-book",
   outlineTab: "Outline",
   outlineTabTitle: "Open Outline",
+  outlineTabTitleHide: "Hide Outline",
   previewTab: "Preview",
   previewTabTitle: "Open Preview",
+  previewTabTitleHide: "Hide Preview",
   referenceTab: "Reference",
   referenceTabTitle: "Open Reference",
+  referenceTabTitleHide: "Hide Reference",
+  referenceTabTitleRetained: "Show retained Reference",
   reviewMenu: "Review",
   reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
@@ -157,5 +163,40 @@ describe("RightPaneToggleControls", () => {
     expect(
       screen.getByRole("button", { name: "Reference" }).getAttribute("aria-pressed"),
     ).toBe("true");
+  });
+
+  it("uses retained and hide titles for Reference state", () => {
+    const { unmount } = render(
+      <RightPaneToggleControls
+        copy={copy}
+        diffActive={false}
+        diffAvailable
+        ebookActive={false}
+        ebookAvailable
+        onReviewChanges={vi.fn()}
+        onToggleDiff={vi.fn()}
+        onToggleEbook={vi.fn()}
+        onToggleOutline={vi.fn()}
+        onTogglePreview={vi.fn()}
+        outlineActive={false}
+        outlineAvailable
+        previewActive={false}
+        referenceActive={false}
+        referenceLoaded
+        reviewChangesAvailable={false}
+        reviewChangesLabel="Review changes"
+        onToggleReference={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Reference" }).getAttribute("title"),
+    ).toBe("Show retained Reference");
+    unmount();
+
+    renderControls({ referenceActive: true, referenceLoaded: true });
+    expect(
+      screen.getByRole("button", { name: "Reference" }).getAttribute("title"),
+    ).toBe("Hide Reference");
   });
 });

@@ -859,13 +859,21 @@ export function useAppShellController() {
       void openReferenceFile();
       return;
     }
-    setReferencePaneVisible((current) => !current);
+    setReferencePaneVisible((current) => {
+      const next = !current;
+      if (!next) {
+        setStatus(sidePaneCopy.referenceRetainedStatus);
+      }
+      return next;
+    });
     setSidePaneOpen(false);
   }, [
     openReferenceFile,
     referenceCompare,
     setReferencePaneVisible,
     setSidePaneOpen,
+    setStatus,
+    sidePaneCopy.referenceRetainedStatus,
   ]);
 
   useImportPageFollow({
@@ -1227,6 +1235,9 @@ export function useAppShellController() {
         rightPaneMode: rightPaneModeRef.current,
       };
       setSidePaneOpen(false);
+      if (referenceCompare) {
+        setStatus(sidePaneCopy.lModeReferenceRetainedStatus);
+      }
     } else if (wasEnabled && !isEnabled) {
       const snapshot = lModeSurfaceSnapshotRef.current;
       lModeSurfaceSnapshotRef.current = null;
@@ -1237,7 +1248,14 @@ export function useAppShellController() {
     }
 
     wasLModeEnabledRef.current = isEnabled;
-  }, [editorSettings.lModeEnabled, setRightPaneMode, setSidePaneOpen]);
+  }, [
+    editorSettings.lModeEnabled,
+    referenceCompare,
+    setRightPaneMode,
+    setSidePaneOpen,
+    setStatus,
+    sidePaneCopy.lModeReferenceRetainedStatus,
+  ]);
 
   // section: document safety actions
   const {
@@ -1912,6 +1930,7 @@ export function useAppShellController() {
     referenceCompare,
     referenceCopy,
     referenceFollowPaused: referenceCompare?.followMode === "paused",
+    referenceLoaded: referenceCompare !== null,
     referenceNarrowFocus,
     referencePaneVisible,
     setReferenceColumnPercent,

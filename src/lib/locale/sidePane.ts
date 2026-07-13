@@ -8,23 +8,34 @@ export type SidePaneCopy = {
   appleAssistWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
+  /** Active Diff: hide the compare pane without discarding source. */
+  diffTabTitleHide: string;
   ebookReading: string;
   ebookTab: string;
   ebookTabTitle: string;
+  ebookTabTitleHide: string;
   fileComparison: string;
   imagePreview: string;
   markdownPreview: string;
   outlineEmpty: string;
   outlineTab: string;
   outlineTabTitle: string;
+  outlineTabTitleHide: string;
   outlineTruncated: string;
   documentOutline: string;
   openTextFileToPreview: string;
+  openTextFileToEbook: string;
   previewDisabled: string;
   previewTab: string;
   previewTabTitle: string;
+  previewTabTitleHide: string;
   referenceTab: string;
   referenceTabTitle: string;
+  referenceTabTitleHide: string;
+  /** Reference session is loaded but the column is hidden. */
+  referenceTabTitleRetained: string;
+  referenceRetainedStatus: string;
+  lModeReferenceRetainedStatus: string;
   previewUnavailable: string;
   reviewMenu: string;
   reviewMenuTitle: string;
@@ -42,24 +53,37 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       appleAssistWindowTitle: "Hazakura Local Assist まどを ひらく / かくす",
       diffTab: "ちがひ",
       diffTabTitle: "へんかを みくらべて たしかめる",
+      diffTabTitleHide: "さぶんを かくす（げんぽんは のこる）",
       ebookReading: "ほんのやうに よむ (えーぼっく)",
       ebookTab: "ゑーほん",
       ebookTabTitle: "ほんのやうに ふみを よみかへす",
+      ebookTabTitleHide: "えーぼっくを かくす（ふみは のこる）",
       fileComparison: "ふみくらべ",
       imagePreview: "ゑのしたみ",
       markdownPreview: "Markdown したみ",
       outlineEmpty: "このふみに Markdown のみだしはありません。",
       outlineTab: "みだし",
       outlineTabTitle: "みだしから もくてきの ばしょへ うつる",
+      outlineTabTitleHide: "みだしを かくす",
       outlineTruncated: "みだしがおほいため、はじめの200件までしめします。",
       documentOutline: "ふみのみだし",
       openTextFileToPreview:
-        "Markdown したみをしめすには、てきすとのふみをひらいてください。",
-      previewDisabled: "したみのまどは、おこのみで つかわないせっていです。",
+        "よむには、てきすとのふみを ひらいてください。",
+      openTextFileToEbook:
+        "ほんのように よむには、てきすとのふみを ひらいてください。",
+      previewDisabled:
+        "したみは おこのみで つかわないせっていです。ふみそのものは のこります。",
       previewTab: "したみ",
       previewTabTitle: "かいた Markdown の みためを たしかめる",
+      previewTabTitleHide: "したみを かくす（げんぽんは のこる）",
       referenceTab: "さんしょう",
       referenceTabTitle: "げんぽんを よこに みながら なおす",
+      referenceTabTitleHide: "さんしょうを かくす（よみこみは のこる）",
+      referenceTabTitleRetained: "よみこんだ さんしょうを ふたたび ひらく",
+      referenceRetainedStatus:
+        "さんしょうは のこっています。さんしょうボタンで ふたたび ひらけます。",
+      lModeReferenceRetainedStatus:
+        "L Mode ちゅうは さんしょうを かくします。おわると もどります。",
       previewUnavailable: "したみをしめせません",
       reviewMenu: "かくにん",
       reviewMenuTitle: "へんこうをかくにん",
@@ -77,24 +101,37 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         appleAssistWindowTitle: "Hazakura Local Assist ウィンドウを表示 / 非表示",
         diffTab: "差分",
         diffTabTitle: "変更を見比べて確認",
+        diffTabTitleHide: "差分を隠す（原稿は残る）",
         ebookReading: "本のように読む（電子書籍）",
         ebookTab: "電子書籍",
         ebookTabTitle: "本のように読み返す",
+        ebookTabTitleHide: "電子書籍表示を隠す（原稿は残る）",
         fileComparison: "ファイル比較",
         imagePreview: "画像プレビュー",
         markdownPreview: "Markdown プレビュー",
         outlineEmpty: "このファイルに Markdown 見出しはありません。",
         outlineTab: "アウトライン",
         outlineTabTitle: "見出しから目的の場所へ移動",
+        outlineTabTitleHide: "アウトラインを隠す",
         outlineTruncated: "見出しが多いため、最初の200件まで表示しています。",
         documentOutline: "文書アウトライン",
         openTextFileToPreview:
-          "Markdown プレビューを表示するにはテキストファイルを開いてください。",
-        previewDisabled: "プレビューは設定で無効です。",
+          "読む・見た目を確かめるには、テキストファイルを開いてください。",
+        openTextFileToEbook:
+          "本のように読むには、テキストファイルを開いてください。",
+        previewDisabled:
+          "プレビューは設定でオフです。原稿そのものは残ります。",
         previewTab: "プレビュー",
         previewTabTitle: "書いた Markdown の見た目を確認",
+        previewTabTitleHide: "プレビューを隠す（原稿は残る）",
         referenceTab: "参照",
         referenceTabTitle: "原本を横に見ながら直す",
+        referenceTabTitleHide: "参照を隠す（読み込みは残る）",
+        referenceTabTitleRetained: "読み込み済みの参照を再表示",
+        referenceRetainedStatus:
+          "参照は保持されています。参照ボタンでもう一度表示できます。",
+        lModeReferenceRetainedStatus:
+          "L Mode 中は参照を一時的に隠します。終了すると戻ります。",
         previewUnavailable: "プレビューを表示できません",
         reviewMenu: "確認",
         reviewMenuTitle: "変更を確認",
@@ -110,24 +147,37 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         appleAssistWindowTitle: "Show or hide Hazakura Local Assist window",
         diffTab: "Diff",
         diffTabTitle: "Compare changes before deciding",
+        diffTabTitleHide: "Hide Diff — source stays in the editor",
         ebookReading: "Read as a book (e-book)",
         ebookTab: "e-book",
         ebookTabTitle: "Read the document like a book",
+        ebookTabTitleHide: "Hide e-book reading — source stays",
         fileComparison: "File comparison",
         imagePreview: "Image Preview",
         markdownPreview: "Markdown preview",
         outlineEmpty: "This file has no Markdown headings.",
         outlineTab: "Outline",
         outlineTabTitle: "Jump to a section from its headings",
+        outlineTabTitleHide: "Hide outline",
         outlineTruncated:
           "Showing the first 200 headings because this file has more.",
         documentOutline: "Document outline",
-        openTextFileToPreview: "Open a text file to show Markdown preview.",
-        previewDisabled: "Preview pane is disabled in Preferences.",
+        openTextFileToPreview:
+          "Open a text file to read and check how it looks.",
+        openTextFileToEbook: "Open a text file to read it like a book.",
+        previewDisabled:
+          "Preview is off in Preferences. Your source stays intact.",
         previewTab: "Preview",
         previewTabTitle: "Check how the Markdown looks",
+        previewTabTitleHide: "Hide preview — source stays in the editor",
         referenceTab: "Reference",
         referenceTabTitle: "Edit while checking the source beside it",
+        referenceTabTitleHide: "Hide reference — the loaded file stays",
+        referenceTabTitleRetained: "Show the loaded reference again",
+        referenceRetainedStatus:
+          "Reference is still loaded. Toggle Reference to show it again.",
+        lModeReferenceRetainedStatus:
+          "L Mode hides Reference for now; it returns when you leave.",
         previewUnavailable: "Preview unavailable",
         reviewMenu: "Review",
         reviewMenuTitle: "Review changes",

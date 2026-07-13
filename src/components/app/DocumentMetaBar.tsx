@@ -29,6 +29,8 @@ type DocumentMetaBarProps = {
   outlinePaneActive: boolean;
   previewPaneActive: boolean;
   referencePaneActive: boolean;
+  /** Reference session loaded even when the column is hidden. */
+  referenceLoaded?: boolean;
   recoveryReviewChangesLabel: string;
   sidePaneCopy: RightPaneToggleCopy;
 };
@@ -55,6 +57,7 @@ export function DocumentMetaBar({
   outlinePaneActive,
   previewPaneActive,
   referencePaneActive,
+  referenceLoaded = false,
   recoveryReviewChangesLabel,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
@@ -111,6 +114,7 @@ export function DocumentMetaBar({
               outlineAvailable={activeTab !== null}
               previewActive={previewPaneActive}
               referenceActive={referencePaneActive}
+              referenceLoaded={referenceLoaded}
               reviewChangesAvailable={activeDirty && activeTab !== null}
               reviewChangesLabel={recoveryReviewChangesLabel}
             />
