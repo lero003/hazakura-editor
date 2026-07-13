@@ -48,5 +48,7 @@ describe("referenceCompare helpers", () => {
     expect(referenceRoleLabel("ja", ref)).toContain("参照");
     expect(referenceRoleLabel("ja", ref)).toContain("読み取り専用");
     expect(referenceRoleLabel("en", ref)).toContain("read-only");
+    expect(referenceRoleLabel("kana", ref)).toContain("さんしょう");
+    expect(referenceRoleLabel("kana", ref)).toContain("よみとりせんよう");
   });
 });

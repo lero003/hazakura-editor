@@ -55,10 +55,13 @@ export function referenceDisplayName(reference: ReferenceDocument): string {
 }
 
 export function referenceRoleLabel(
-  language: "ja" | "en",
+  language: "ja" | "en" | "kana",
   reference: ReferenceDocument,
 ): string {
   const name = referenceDisplayName(reference);
+  if (language === "kana") {
+    return `さんしょう: ${name}（よみとりせんよう）`;
+  }
   if (language === "ja") {
     return `参照: ${name}（読み取り専用）`;
   }

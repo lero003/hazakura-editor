@@ -57,6 +57,29 @@ describe("ReferenceTextPane", () => {
     expect(screen.queryByTestId("reference-text-surface")).toBeNull();
   });
 
+  it("uses the kana role label for a read-only reference", () => {
+    render(
+      <ReferenceTextPane
+        copy={referenceCompareCopy("kana")}
+        menuLanguage="kana"
+        onClose={vi.fn()}
+        reference={{
+          kind: "text",
+          path: "/ws/style.md",
+          name: "style.md",
+          contents: "line one",
+          encoding: "utf-8",
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("region", {
+        name: "さんしょう: style.md（よみとりせんよう）",
+      }),
+    ).toBeTruthy();
+  });
+
   it("offers diff action when both sides are text-capable", () => {
     const onShowDiff = vi.fn();
     render(

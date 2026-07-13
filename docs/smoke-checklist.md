@@ -728,6 +728,8 @@ recovered state separately where relevant.
   rather than an English-only accessible name. Dirty tab descriptions use the
   same localized unsaved-state copy. The Editor full-path copy button uses a
   kana accessible name when the menu language is kana.
+  Reference Text/Image panes use the kana read-only role label instead of an
+  English fallback when the menu language is kana.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 99 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.

@@ -10,6 +10,7 @@ import {
 import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import { ReferencePdfPane } from "./ReferencePdfPane";
 
 type ReferenceTextPaneProps = {
@@ -55,7 +56,12 @@ export function ReferenceTextPane({
   reviewPageIndices = [],
   showDiffEnabled = false,
 }: ReferenceTextPaneProps) {
-  const language = isJapaneseMenuLanguage(menuLanguage) ? "ja" : "en";
+  const language = isKanaStyle(menuLanguage)
+    ? "kana"
+    : isJapaneseMenuLanguage(menuLanguage)
+      ? "ja"
+      : "en";
+  const errorLanguage = language === "en" ? "en" : "ja";
   const ariaLabel = referenceRoleLabel(language, reference);
   const name = referenceDisplayName(reference);
   const textLines = useMemo(
@@ -163,7 +169,7 @@ export function ReferenceTextPane({
         {isPdfReference(reference) ? (
           <ReferencePdfPane
             copy={copy}
-            errorLanguage={language}
+            errorLanguage={errorLanguage}
             followPaused={followPaused}
             onPageIndexChange={onPdfPageIndexChange ?? (() => undefined)}
             onResumeFollow={onResumeFollow}
