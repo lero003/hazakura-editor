@@ -51,6 +51,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -127,6 +128,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: editorPane },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus,
         themePreference: "light",
         workspaceRootPath: "/workspace",
@@ -163,7 +165,7 @@ describe("useCommandPaletteController", () => {
     vi.useRealTimers();
   });
 
-  it("exposes the L Mode toggle command in the View category", () => {
+  it("exposes the L Mode toggle command in the purpose-led View category", () => {
     // filteredCommands is empty while the palette is closed, so
     // the test must open the palette first to read the command
     // list. The label is the localized `lModeCopy.paletteCommand`
@@ -208,6 +210,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("ja"),
+        menuLanguage: "ja",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -222,7 +225,7 @@ describe("useCommandPaletteController", () => {
       (command) => command.id === "view.toggleLMode",
     );
     expect(lModeCommand).toBeDefined();
-    expect(lModeCommand?.category).toBe("View");
+    expect(lModeCommand?.category).toBe("読む");
     expect(lModeCommand?.label).toBe("えるモード切替");
     expect(lModeCommand?.shortcut).toBe("⇧⌘L");
 
@@ -272,6 +275,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -335,6 +339,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -402,6 +407,7 @@ describe("useCommandPaletteController", () => {
           >[0]["editorPaneRef"]["current"],
         },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -473,6 +479,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -534,6 +541,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "apple-local",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -620,6 +628,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -705,6 +714,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         themePreference: "light",
         workspaceRootPath: null,
@@ -821,6 +831,7 @@ describe("useCommandPaletteController", () => {
         assistSurfaceActive: "none",
         editorPaneRef,
         lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
         setStatus: vi.fn(),
         slashCommands,
         themePreference: "light",

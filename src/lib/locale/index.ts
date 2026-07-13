@@ -6,6 +6,7 @@
 export * from "./agentWorkbench";
 export * from "./appleAssist";
 export * from "./autoBackup";
+export * from "./commandPalette";
 export * from "./editorChrome";
 export * from "./lMode";
 export * from "./preferences";

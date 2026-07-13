@@ -1492,6 +1492,7 @@ export function useAppShellController() {
     activeTab,
     activeTabId,
     appleLocalAssistAllowed,
+    menuLanguage,
     assistSurfaceActive,
     editorPaneRef,
     lModeCopy,

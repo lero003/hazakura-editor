@@ -29,12 +29,17 @@ import type {
   EditorPaneHandle,
   MarkdownFormat,
 } from "../../components/editor/EditorPane";
-import type { LModeCopy } from "../../lib/locale";
+import {
+  commandPaletteEntry,
+  getCommandPaletteCopy,
+  type LModeCopy,
+} from "../../lib/locale";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import type {
   AssistSurfacePreference,
   EditorSettings,
   EditorTab,
+  MenuLanguage,
   PreferencesDialogMode,
   ThemePreference,
 } from "../../types";
@@ -87,6 +92,7 @@ type UseCommandPaletteControllerOptions = {
   assistSurfaceActive: AssistSurfacePreference;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   lModeCopy: LModeCopy;
+  menuLanguage: MenuLanguage;
   setStatus: Dispatch<SetStateAction<string>>;
   slashCommands?: readonly SlashCommand[];
   themePreference: ThemePreference;
@@ -280,6 +286,7 @@ export function useCommandPaletteController({
   assistSurfaceActive,
   editorPaneRef,
   lModeCopy,
+  menuLanguage,
   setStatus,
   slashCommands = [],
   themePreference,
@@ -288,6 +295,10 @@ export function useCommandPaletteController({
   const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
   const appleLocalAssistActive =
     appleLocalAssistAllowed && assistSurfaceActive === "apple-local";
+  const paletteCopy = useMemo(
+    () => getCommandPaletteCopy(menuLanguage),
+    [menuLanguage],
+  );
   const handleOpenSearchMatch = useCallback(
     (row: GlobalSearchRow) => {
       void actions.openWorkspaceFile(row.file.path).then(() => {
@@ -307,29 +318,35 @@ export function useCommandPaletteController({
   const commandCommands = useMemo<Command[]>(
     () => [
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.new",
-        keywords: ["create", "new", "tab"],
-        label: "New File",
+        ...commandPaletteEntry(paletteCopy, "file.new", [
+          "create",
+          "new",
+          "tab",
+        ]),
         run: () => {
           void actions.createNewFile();
         },
         shortcut: "⌘N",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.open",
-        keywords: ["open", "file", "load"],
-        label: "Open File…",
+        ...commandPaletteEntry(paletteCopy, "file.open", [
+          "open",
+          "file",
+          "load",
+        ]),
         run: () => {
           void actions.openFile();
         },
         shortcut: "⌘O",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.importPdfImageDraft",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "file.importPdfImageDraft", [
           "import",
           "pdf",
           "image",
@@ -338,80 +355,78 @@ export function useCommandPaletteController({
           "markdown",
           "draft",
           "scan",
-          "取り込み",
-          "とりこみ",
-          "下書き",
-          "したがき",
-          "プレビュー",
-        ],
-        label: "PDF / 画像から下書きを作る…",
+        ]),
         run: () => {
           void actions.importSourceAsMarkdownDraft();
         },
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.openReference",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "file.openReference", [
           "reference",
           "compare",
           "side-by-side",
           "readonly",
-          "参照",
-          "さんしょう",
-          "見比べ",
-          "みくらべ",
-        ],
-        label: "参照ファイルを横に開く…",
+        ]),
         run: () => {
           void actions.openReferenceFile();
         },
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.openWorkspace",
-        keywords: ["workspace", "folder", "directory", "open"],
-        label: "Open Workspace…",
+        ...commandPaletteEntry(paletteCopy, "file.openWorkspace", [
+          "workspace",
+          "folder",
+          "directory",
+          "open",
+        ]),
         run: () => {
           void actions.openWorkspace();
         },
         shortcut: "⇧⌘O",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.quickOpen",
-        keywords: ["quick", "open", "file", "search"],
-        label: "Quick Open File",
+        ...commandPaletteEntry(paletteCopy, "file.quickOpen", [
+          "quick",
+          "open",
+          "file",
+          "search",
+        ]),
         run: () => {
           actions.toggleQuickOpen();
         },
         shortcut: "⌘P",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.save",
-        keywords: ["save", "write"],
-        label: "Save",
+        ...commandPaletteEntry(paletteCopy, "file.save", ["save", "write"]),
         run: () => {
           void actions.saveActiveTab();
         },
         shortcut: "⌘S",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.saveAs",
-        keywords: ["save", "as", "duplicate"],
-        label: "Save As…",
+        ...commandPaletteEntry(paletteCopy, "file.saveAs", [
+          "save",
+          "as",
+          "duplicate",
+        ]),
         run: () => {
           void actions.saveActiveTabAs();
         },
         shortcut: "⇧⌘S",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.closeTab",
-        keywords: ["close", "tab"],
-        label: "Close Tab",
+        ...commandPaletteEntry(paletteCopy, "file.closeTab", ["close", "tab"]),
         run: () => {
           if (activeTabId) {
             actions.requestCloseTab(activeTabId);
@@ -420,66 +435,89 @@ export function useCommandPaletteController({
         shortcut: "⌘W",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.closeWindow",
-        keywords: ["close", "window", "quit"],
-        label: "Close Window",
+        ...commandPaletteEntry(paletteCopy, "file.closeWindow", [
+          "close",
+          "window",
+          "quit",
+        ]),
         run: () => {
           void actions.requestWindowClose();
         },
         shortcut: "⇧⌘W",
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.exportHtml",
-        keywords: ["export", "html"],
-        label: "Export HTML…",
+        ...commandPaletteEntry(paletteCopy, "file.exportHtml", [
+          "export",
+          "html",
+        ]),
         run: () => {
           void actions.exportHtml();
         },
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.exportEpubBeta",
-        keywords: ["export", "epub", "book"],
-        label: "Export EPUB…",
+        ...commandPaletteEntry(paletteCopy, "file.exportEpubBeta", [
+          "export",
+          "epub",
+          "book",
+        ]),
         run: () => {
           void actions.exportEpubBeta();
         },
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.exportPdf",
-        keywords: ["export", "pdf"],
-        label: "Export PDF…",
+        ...commandPaletteEntry(paletteCopy, "file.exportPdf", [
+          "export",
+          "pdf",
+        ]),
         run: () => {
           void actions.exportPdf();
         },
       },
       {
-        category: "File",
+        category: paletteCopy.categories.file,
         id: "file.restoreBackup",
-        keywords: ["restore", "backup", "auto", "snapshot", "recover"],
-        label: "Restore from Auto-Backup…",
+        ...commandPaletteEntry(paletteCopy, "file.restoreBackup", [
+          "restore",
+          "backup",
+          "auto",
+          "snapshot",
+          "recover",
+        ]),
         run: () => {
           actions.requestRestoreFromBackup();
         },
       },
       {
-        category: "Edit",
+        category: paletteCopy.categories.edit,
         id: "edit.find",
-        keywords: ["find", "search", "match"],
-        label: "Find…",
+        ...commandPaletteEntry(paletteCopy, "edit.find", [
+          "find",
+          "search",
+          "match",
+        ]),
         run: () => {
           actions.setFindVisible(true);
         },
         shortcut: "⌘F",
       },
       {
-        category: "Edit",
+        category: paletteCopy.categories.edit,
         id: "edit.findInFiles",
-        keywords: ["find", "search", "files", "workspace", "grep"],
-        label: "Find in Files…",
+        ...commandPaletteEntry(paletteCopy, "edit.findInFiles", [
+          "find",
+          "search",
+          "files",
+          "workspace",
+          "grep",
+        ]),
         run: () => {
           openGlobalSearch();
         },
@@ -487,20 +525,26 @@ export function useCommandPaletteController({
       },
       ...markdownPaletteCommands,
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.preview",
-        keywords: ["preview", "view", "render"],
-        label: "Toggle Preview Pane",
+        ...commandPaletteEntry(paletteCopy, "view.preview", [
+          "preview",
+          "view",
+          "render",
+        ]),
         run: () => {
           actions.setPreviewVisible((current) => !current);
         },
         shortcut: "⌥⌘P",
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.wrap",
-        keywords: ["wrap", "word", "line"],
-        label: "Toggle Word Wrap",
+        ...commandPaletteEntry(paletteCopy, "view.wrap", [
+          "wrap",
+          "word",
+          "line",
+        ]),
         run: () => {
           actions.setEditorSettings((current) => ({
             ...current,
@@ -510,10 +554,13 @@ export function useCommandPaletteController({
         shortcut: "⌥⌘W",
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.invisibles",
-        keywords: ["invisible", "whitespace", "characters"],
-        label: "Toggle Invisible Characters",
+        ...commandPaletteEntry(paletteCopy, "view.invisibles", [
+          "invisible",
+          "whitespace",
+          "characters",
+        ]),
         run: () => {
           actions.setEditorSettings((current) => ({
             ...current,
@@ -523,45 +570,53 @@ export function useCommandPaletteController({
         shortcut: "⌥⌘I",
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.outline",
-        keywords: ["outline", "headings", "navigation"],
-        label: "Toggle Outline Pane",
+        ...commandPaletteEntry(paletteCopy, "view.outline", [
+          "outline",
+          "headings",
+          "navigation",
+        ]),
         run: () => {
           actions.toggleOutlinePane();
         },
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.diff",
-        keywords: ["diff", "compare"],
-        label: "Toggle Diff Pane",
+        ...commandPaletteEntry(paletteCopy, "view.diff", ["diff", "compare"]),
         run: () => {
           actions.toggleDiffPane();
         },
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.nextTab",
-        keywords: ["tab", "next", "focus"],
-        label: "Focus Next Tab",
+        ...commandPaletteEntry(paletteCopy, "view.nextTab", [
+          "tab",
+          "next",
+          "focus",
+        ]),
         run: () => {
           actions.focusAdjacentTab("next");
         },
         shortcut: "⌥⌘→",
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.prevTab",
-        keywords: ["tab", "previous", "focus"],
-        label: "Focus Previous Tab",
+        ...commandPaletteEntry(paletteCopy, "view.prevTab", [
+          "tab",
+          "previous",
+          "focus",
+        ]),
         run: () => {
           actions.focusAdjacentTab("previous");
         },
         shortcut: "⌥⌘←",
       },
       {
-        category: "View",
+        category: paletteCopy.categories.view,
         id: "view.toggleLMode",
         keywords: ["l", "mode", "focus", "zen", "える", "エル", "reading"],
         label: lModeCopy.paletteCommand,
@@ -571,10 +626,13 @@ export function useCommandPaletteController({
         shortcut: "⇧⌘L",
       },
       {
-        category: "Review",
+        category: paletteCopy.categories.review,
         id: "review.tabAgainstDisk",
-        keywords: ["review", "diff", "disk"],
-        label: "Review Tab Against Disk",
+        ...commandPaletteEntry(paletteCopy, "review.tabAgainstDisk", [
+          "review",
+          "diff",
+          "disk",
+        ]),
         run: () => {
           if (activeTab) {
             actions.requestReviewTabAgainstDisk(activeTab);
@@ -584,17 +642,16 @@ export function useCommandPaletteController({
       ...(externalCliAllowed
         ? [
             {
-              category: "Agent",
+              category: paletteCopy.categories.agent,
               id: "agent.open",
-              keywords: [
+              ...commandPaletteEntry(paletteCopy, "agent.open", [
                 "agent",
                 "claude",
                 "codex",
                 "opencode",
                 "pi",
                 "workbench",
-              ],
-              label: "Open Agent Window",
+              ]),
               run: () => {
                 void actions.openAgentWindow(themePreference);
               },
@@ -604,9 +661,9 @@ export function useCommandPaletteController({
       ...(appleLocalAssistActive
         ? [
             {
-              category: "Writing Companion",
+              category: paletteCopy.categories.writingCompanion,
               id: "apple-assist.openWindow",
-              keywords: [
+              ...commandPaletteEntry(paletteCopy, "apple-assist.openWindow", [
                 "apple",
                 "local",
                 "assist",
@@ -615,8 +672,7 @@ export function useCommandPaletteController({
                 "foundation",
                 "models",
                 "hazakura",
-              ],
-              label: "Open Hazakura Local Assist Window",
+              ]),
               run: () => {
                 void actions.openAppleAssistWindow(themePreference);
               },
@@ -626,10 +682,13 @@ export function useCommandPaletteController({
       ...(externalCliAllowed
         ? [
             {
-              category: "Agent",
+              category: paletteCopy.categories.agent,
               id: "agent.sendSelection",
-              keywords: ["agent", "send", "selection"],
-              label: "Send Selection to Agent",
+              ...commandPaletteEntry(paletteCopy, "agent.sendSelection", [
+                "agent",
+                "send",
+                "selection",
+              ]),
               run: () => {
                 const text = editorPaneRef.current?.getSelectionText() ?? "";
                 actions.handleSendSelectionToAgent(text);
@@ -640,14 +699,21 @@ export function useCommandPaletteController({
       ...(externalCliAllowed || appleLocalAssistAllowed
         ? [
             {
-              category: externalCliAllowed ? "Agent" : "Settings",
-              id: externalCliAllowed ? "agent.preferences" : "assist.preferences",
-              keywords: externalCliAllowed
-                ? ["agent", "preferences", "settings", "workbench"]
-                : ["assist", "apple", "local", "preferences", "settings"],
-              label: externalCliAllowed
-                ? "Agent Workbench Preferences…"
-                : "Assist Settings…",
+              category: externalCliAllowed
+                ? paletteCopy.categories.agent
+                : paletteCopy.categories.settings,
+              id: externalCliAllowed
+                ? "agent.preferences"
+                : "assist.preferences",
+              ...commandPaletteEntry(
+                paletteCopy,
+                externalCliAllowed
+                  ? "agent.preferences"
+                  : "assist.preferences",
+                externalCliAllowed
+                  ? ["agent", "preferences", "settings", "workbench"]
+                  : ["assist", "apple", "local", "preferences", "settings"],
+              ),
               run: () => {
                 actions.setPreferencesDialogMode("agent");
               },
@@ -655,19 +721,21 @@ export function useCommandPaletteController({
           ]
         : []),
       {
-        category: "Settings",
+        category: paletteCopy.categories.settings,
         id: "settings.open",
-        keywords: ["settings", "preferences"],
-        label: "Settings…",
+        ...commandPaletteEntry(paletteCopy, "settings.open", [
+          "settings",
+          "preferences",
+        ]),
         run: () => {
           actions.setPreferencesDialogMode("settings");
         },
         shortcut: "⌘,",
       },
       {
-        category: "Help",
+        category: paletteCopy.categories.help,
         id: "help.localDataDisclosure",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "help.localDataDisclosure", [
           "privacy",
           "local",
           "data",
@@ -678,16 +746,15 @@ export function useCommandPaletteController({
           "backup",
           "sync",
           "network",
-        ],
-        label: "Local Data Disclosure…",
+        ]),
         run: () => {
           actions.setPreferencesDialogMode("privacy");
         },
       },
       {
-        category: "Help",
+        category: paletteCopy.categories.help,
         id: "help.supportDiagnostics",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "help.supportDiagnostics", [
           "support",
           "diagnostics",
           "diagnostic",
@@ -696,16 +763,15 @@ export function useCommandPaletteController({
           "redacted",
           "share",
           "copy",
-        ],
-        label: "Support Diagnostics…",
+        ]),
         run: () => {
           actions.setPreferencesDialogMode("diagnostics");
         },
       },
       {
-        category: "Help",
+        category: paletteCopy.categories.help,
         id: "help.privacyPolicy",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "help.privacyPolicy", [
           "privacy",
           "policy",
           "app",
@@ -713,16 +779,15 @@ export function useCommandPaletteController({
           "metadata",
           "local",
           "data",
-        ],
-        label: "Privacy Policy…",
+        ]),
         run: () => {
           actions.setPreferencesDialogMode("privacy-policy");
         },
       },
       {
-        category: "Help",
+        category: paletteCopy.categories.help,
         id: "help.openSourceAcknowledgements",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "help.openSourceAcknowledgements", [
           "open",
           "source",
           "license",
@@ -730,24 +795,22 @@ export function useCommandPaletteController({
           "acknowledgements",
           "dependencies",
           "third-party",
-        ],
-        label: "Open Source Acknowledgements…",
+        ]),
         run: () => {
           actions.setPreferencesDialogMode("open-source-acknowledgements");
         },
       },
       {
-        category: "Help",
+        category: paletteCopy.categories.help,
         id: "help.about",
-        keywords: [
+        ...commandPaletteEntry(paletteCopy, "help.about", [
           "about",
           "version",
           "support",
           "hazakura",
           "editor",
           "lane",
-        ],
-        label: "About Hazakura Editor…",
+        ]),
         run: () => {
           actions.setPreferencesDialogMode("about");
         },
@@ -764,6 +827,7 @@ export function useCommandPaletteController({
       externalCliAllowed,
       lModeCopy,
       markdownPaletteCommands,
+      paletteCopy,
       themePreference,
     ],
   );
