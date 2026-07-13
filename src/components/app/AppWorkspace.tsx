@@ -27,6 +27,7 @@ import {
 } from "../../features/editor/documentViewState";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import type {
+  AppleAssistCopy,
   LModeCopy,
   SafeEditorCopy,
   SidePaneCopy,
@@ -78,6 +79,7 @@ type AppWorkspaceProps = {
   agentSession: AgentWorkbenchSession | null;
   agentStopPending: boolean;
   agentWorkbenchProvider: AgentWorkbenchProvider;
+  appleAssistCopy: AppleAssistCopy;
   appleAssistGenerationLock?: AppleAssistGenerationLock | null;
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
@@ -197,6 +199,7 @@ export function AppWorkspace({
   agentSession,
   agentStopPending,
   agentWorkbenchProvider,
+  appleAssistCopy,
   appleAssistGenerationLock = null,
   clearCompareSource,
   clearCompareTarget,
@@ -592,6 +595,7 @@ export function AppWorkspace({
             activeDocumentLineCount={activeDocumentLineCount}
             activeSearchMatchIndex={activeMatchIndex}
             activeTab={activeTab}
+            appleAssistCopy={appleAssistCopy}
             copy={safeEditorCopy}
             documentKey={documentKey}
             editorSessionKey={activeTab?.sessionId ?? documentKey}

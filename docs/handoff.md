@@ -123,7 +123,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    per-folder truncation notices now use that same localized copy. Text and
    image tab close controls also use active English / Japanese / kana copy,
    with AppTopChrome and Safe Editor locale coverage. Dirty tab descriptions
-   now use the localized unsaved-state copy as well.
+   now use the localized unsaved-state copy as well. The Local Assist
+   generation-lock status also follows the active English / Japanese / kana
+   copy while retaining its polite live-region and read-only boundary.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

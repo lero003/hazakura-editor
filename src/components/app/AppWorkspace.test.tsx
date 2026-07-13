@@ -3,6 +3,7 @@ import { createRef, type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppWorkspace } from "./AppWorkspace";
 import {
+  getAppleAssistCopy,
   getLModeCopy,
   getSafeEditorCopy,
   getSidePaneCopy,
@@ -256,6 +257,7 @@ function makeWorkspaceProps(
     agentSession: null,
     agentStopPending: false,
     agentWorkbenchProvider: "codex",
+    appleAssistCopy: getAppleAssistCopy("en"),
     clearCompareSource: vi.fn(),
     clearCompareTarget: vi.fn(),
     closeCompareView: vi.fn(),

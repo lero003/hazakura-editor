@@ -578,7 +578,9 @@ recovered state separately where relevant.
     review text). Run a Local Assist action (`読みやすく` or `要約`).
     Confirm the result opens in Diff review, can be discarded without
     saving, and the editor returns to the original state. Confirm the
-    assist-lock prevents edits while a generation is in flight.
+    assist-lock prevents edits while a generation is in flight, and that its
+    live status announcement follows the active English / Japanese / kana
+    menu language.
 12. **Diff / Discard**: after generating a Local Assist result, open
     the diff view, confirm the before/after is correct, then discard.
     Confirm the buffer is unchanged and the tab is not dirty.

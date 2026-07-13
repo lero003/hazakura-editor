@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditorMainPane } from "./EditorMainPane";
 import { writeTextToClipboard } from "../../lib/clipboard";
 import {
+  getAppleAssistCopy,
   getLModeCopy,
   getSafeEditorCopy,
   getSlashMenuCopy,
@@ -98,6 +99,7 @@ function renderEditorMainPane(
       activeDocumentLineCount={1}
       activeSearchMatchIndex={-1}
       activeTab={activeTab}
+      appleAssistCopy={getAppleAssistCopy("en")}
       copy={getSafeEditorCopy("en")}
       documentKey={activeTab.path}
       editorSessionKey={activeTab.id}
@@ -219,6 +221,7 @@ describe("EditorMainPane", () => {
 
   it("shows a centered Local Assist read-only status while generation locks the editor", () => {
     renderEditorMainPane({
+      appleAssistCopy: getAppleAssistCopy("ja"),
       generationLock: {
         requestId: "request-1",
         tabId: activeTab.id,
@@ -232,6 +235,22 @@ describe("EditorMainPane", () => {
     expect(status.textContent).toContain("Hazakura Local Assist が生成中です");
     expect(status.textContent).toContain(
       "本文は表示できますが、編集は一時停止しています。",
+    );
+  });
+
+  it("uses localized Local Assist generation status copy", () => {
+    renderEditorMainPane({
+      appleAssistCopy: getAppleAssistCopy("en"),
+      generationLock: {
+        requestId: "request-1",
+        tabId: activeTab.id,
+        tabPath: activeTab.path,
+        request: "Please proofread.",
+      },
+    });
+
+    expect(screen.getByRole("status").textContent).toContain(
+      "Hazakura Local Assist is generatingThe document remains visible, but editing is paused.",
     );
   });
 

@@ -8,7 +8,12 @@ import { ScrollPositionHud } from "./ScrollPositionHud";
 import { CopyIcon } from "../app/Icons";
 import { StartPanel } from "../workspace/StartPanel";
 import { writeTextToClipboard } from "../../lib/clipboard";
-import type { LModeCopy, SafeEditorCopy, SlashMenuCopy } from "../../lib/locale";
+import type {
+  AppleAssistCopy,
+  LModeCopy,
+  SafeEditorCopy,
+  SlashMenuCopy,
+} from "../../lib/locale";
 import type {
   BaseTheme,
   AppleAssistGenerationLock,
@@ -30,6 +35,7 @@ type EditorMainPaneProps = {
   activeDocumentLineCount: number;
   activeSearchMatchIndex: number;
   activeTab: EditorTab | null;
+  appleAssistCopy: AppleAssistCopy;
   copy: SafeEditorCopy;
   documentKey: string;
   editorSessionKey: string;
@@ -69,6 +75,7 @@ export function EditorMainPane({
   activeDocumentLineCount,
   activeSearchMatchIndex,
   activeTab,
+  appleAssistCopy,
   copy,
   documentKey,
   editorSessionKey,
@@ -146,8 +153,8 @@ export function EditorMainPane({
               className="editor-apple-assist-lock"
               role="status"
             >
-              <strong>Hazakura Local Assist が生成中です</strong>
-              <span>本文は表示できますが、編集は一時停止しています。</span>
+              <strong>{appleAssistCopy.generationInProgressTitle}</strong>
+              <span>{appleAssistCopy.generationInProgressMessage}</span>
             </div>
           ) : null}
           {scrollHudVisible && scrollHudContext.current ? (

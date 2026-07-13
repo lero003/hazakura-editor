@@ -428,6 +428,7 @@ export function useAppShellController() {
   const {
     agentWorkbenchCopy,
     agentWorkbenchRestartRequired,
+    appleAssistCopy,
     autoBackupRestoreCopy,
     editorChromeCopy,
     fileOpsCopy,
@@ -1719,6 +1720,7 @@ export function useAppShellController() {
     agentWorkbenchPreference,
     agentWorkbenchProvider,
     agentWorkbenchRestartRequired,
+    appleAssistCopy,
     appleAssistAvailability,
     appleAssistGenerationLock: activeAppleAssistGenerationLock,
     appleLocalAssistAllowed,

@@ -6,6 +6,12 @@ describe("getAppleAssistCopy", () => {
     const copy = getAppleAssistCopy("en");
     expect(copy.featureName).toBe("Hazakura Local Assist (on-device)");
     expect(copy.commandCategory).toBe("Hazakura Local Assist");
+    expect(copy.generationInProgressTitle).toBe(
+      "Hazakura Local Assist is generating",
+    );
+    expect(copy.generationInProgressMessage).toBe(
+      "The document remains visible, but editing is paused.",
+    );
     expect(copy.summarizeLabel).toBe("Summarize selection");
     expect(copy.rephraseLabel).toBe("Rephrase selection");
   });
@@ -14,6 +20,12 @@ describe("getAppleAssistCopy", () => {
     const copy = getAppleAssistCopy("ja");
     expect(copy.featureName).toBe("Hazakura Local Assist (この Mac のみ)");
     expect(copy.commandCategory).toBe("Hazakura Local Assist");
+    expect(copy.generationInProgressTitle).toBe(
+      "Hazakura Local Assist が生成中です",
+    );
+    expect(copy.generationInProgressMessage).toBe(
+      "本文は表示できますが、編集は一時停止しています。",
+    );
     expect(copy.summarizeLabel).toBe("選択範囲を要約");
     expect(copy.rephraseLabel).toBe("選択範囲を言い換え");
   });
@@ -22,6 +34,9 @@ describe("getAppleAssistCopy", () => {
     const copy = getAppleAssistCopy("kana");
     expect(copy.featureName).toBe("はざくら ろーかる あしす と (この Mac のみ)");
     expect(copy.commandCategory).toBe("はざくら ろーかる あしす と");
+    expect(copy.generationInProgressTitle).toBe(
+      "はざくら ろーかる あしす とが せいせいちゅうです",
+    );
     expect(copy.summarizeLabel).toBe("せんたくはんいを ようやく");
     expect(copy.rephraseLabel).toBe("せんたくはんいを かきかえ");
   });
@@ -36,6 +51,8 @@ describe("getAppleAssistCopy", () => {
         "availabilityUnsupported",
         "commandCategory",
         "featureName",
+        "generationInProgressMessage",
+        "generationInProgressTitle",
         "rephraseHint",
         "rephraseLabel",
         "summarizeHint",

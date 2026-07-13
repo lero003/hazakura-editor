@@ -76,6 +76,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   use active English / Japanese / kana copy, with AppTopChrome and Safe Editor
   locale regressions. Dirty tab descriptions now use the same localized
   unsaved-state copy instead of an English-only hidden label.
+  The Local Assist generation-lock status now follows the active English /
+  Japanese / kana copy as well, while retaining its polite live-region and
+  read-only editing boundary.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.
