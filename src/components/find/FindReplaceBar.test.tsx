@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { FindReplaceBar } from "./FindReplaceBar";
 import { getEditorChromeCopy } from "../../lib/locale";
-import type { SearchOptions } from "../../types";
+import type { MenuLanguage, SearchOptions } from "../../types";
 
 afterEach(() => {
   cleanup();
@@ -25,13 +25,16 @@ const noopKeyDown = (_event: ReactKeyboardEvent<HTMLInputElement>) => {};
 // jsdom の fireEvent.click(checkbox) が checked を確実には反転させない既知の
 // 罠に巻き込まれやすいパターン。SettingsPreferencesPane のトグルテストと同じく、
 // 本物の useState を通した最終状態検証で実装の内部形式によらず検証する。
-function renderFindBar(initial: SearchOptions) {
+function renderFindBar(
+  initial: SearchOptions,
+  menuLanguage: MenuLanguage = "en",
+) {
   function TestComponent() {
     const [options, setOptions] = useState<SearchOptions>(initial);
     return (
       <FindReplaceBar
         activeMatchIndex={0}
-        copy={getEditorChromeCopy("en")}
+        copy={getEditorChromeCopy(menuLanguage)}
         findInputRef={{ current: null }}
         findMatchCount={0}
         findQuery=""
@@ -128,5 +131,12 @@ describe("FindReplaceBar search option toggles", () => {
     // wholeWord が ON になり、caseSensitive は ON のまま残る。
     expect(caseSensitiveToggle.checked).toBe(true);
     expect(wholeWordToggle.checked).toBe(true);
+  });
+
+  it("uses the corrected kana label for the previous-match button", () => {
+    renderFindBar(defaultSearchOptions, "kana");
+
+    expect(screen.getByRole("button", { name: "まえへ" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "まへへ" })).toBeNull();
   });
 });

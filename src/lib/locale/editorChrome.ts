@@ -51,7 +51,7 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       next: "つぎへ",
       noMatches: "あたりなし",
       noSearch: "さがしなし",
-      previous: "まへへ",
+      previous: "まえへ",
       regex: "正規表現",
       replace: "おきかへ",
       replacePlaceholder: "おきかへるもじ",

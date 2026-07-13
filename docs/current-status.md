@@ -89,6 +89,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   details remain unchanged.
   The PDF 150% zoom control also keeps a kana accessible name instead of
   falling back to Japanese kanji.
+  Editor内検索のkana「前へ」操作も誤記を修正し、検索バーの表示名と
+  VoiceOver名を`まえへ`に揃えた。
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.
