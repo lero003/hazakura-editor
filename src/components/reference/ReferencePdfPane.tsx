@@ -36,27 +36,22 @@ type ReferencePdfPaneProps = {
   errorLanguage?: "ja" | "en" | "kana";
 };
 
-type ZoomMode = "fit-width" | "fit-page" | "100" | "150";
+type ZoomMode = "fit-width" | "150";
 
 type PageCacheEntry = {
   imageUrl: string;
   zoom: ZoomMode;
-  /** Pixel width of the raster (used for true 150% CSS display). */
-  width: number;
-  height: number;
   referenceId: string;
 };
 
 const PAGE_CACHE_MAX = 3;
+const PDF_PAN_STEP_PX = 80;
 
 /** Shared render budget so 100% / 150% differ only by CSS scale. */
 function maxPixelsForZoom(mode: ZoomMode): number {
   switch (mode) {
-    case "fit-page":
-      return 1_600_000;
     case "fit-width":
       return 2_500_000;
-    case "100":
     case "150":
       return 3_000_000;
     default:
@@ -85,9 +80,6 @@ export function ReferencePdfPane({
   const statusId = useId();
   const [zoom, setZoom] = useState<ZoomMode>("fit-width");
   const [pageUrl, setPageUrl] = useState<string | null>(null);
-  const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(
-    null,
-  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
@@ -104,7 +96,6 @@ export function ReferencePdfPane({
     clearPageCache(cacheRef.current);
     generationRef.current += 1;
     setPageUrl(null);
-    setPageSize(null);
     setError(null);
   }, [reference.referenceId]);
 
@@ -125,7 +116,6 @@ export function ReferencePdfPane({
       cached.referenceId === reference.referenceId
     ) {
       setPageUrl(cached.imageUrl);
-      setPageSize({ width: cached.width, height: cached.height });
       setError(null);
       setLoading(false);
       void prefetchAdjacent({
@@ -159,12 +149,9 @@ export function ReferencePdfPane({
         rememberPage(cacheRef.current, safePage, {
           imageUrl,
           zoom,
-          width: image.width,
-          height: image.height,
           referenceId: reference.referenceId,
         });
         setPageUrl(imageUrl);
-        setPageSize({ width: image.width, height: image.height });
         setLoading(false);
         void prefetchAdjacent({
           referenceId: reference.referenceId,
@@ -179,7 +166,6 @@ export function ReferencePdfPane({
       } catch (err) {
         if (cancelled || generationRef.current !== generation) return;
         setPageUrl(null);
-        setPageSize(null);
         setError(localizePdfReferenceError(err, errorLanguage));
         setLoading(false);
       }
@@ -224,19 +210,31 @@ export function ReferencePdfPane({
     }
   };
 
+  const onStageKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (zoom !== "150") return;
+
+    const stage = event.currentTarget;
+    const pageStep = Math.max(PDF_PAN_STEP_PX, stage.clientHeight * 0.8);
+    let left = 0;
+    let top = 0;
+    if (event.key === "ArrowLeft") left = -PDF_PAN_STEP_PX;
+    else if (event.key === "ArrowRight") left = PDF_PAN_STEP_PX;
+    else if (event.key === "ArrowUp") top = -PDF_PAN_STEP_PX;
+    else if (event.key === "ArrowDown") top = PDF_PAN_STEP_PX;
+    else if (event.key === "PageUp") top = -pageStep;
+    else if (event.key === "PageDown") top = pageStep;
+    else return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    stage.scrollLeft += left;
+    stage.scrollTop += top;
+  };
+
   const pageStatus = `${copy.pageLabel} ${safePage + 1} / ${pageCount}`;
   const reviewStatus = hasReview
     ? `${copy.reviewLabel} ${reviewPageIndices.indexOf(safePage) >= 0 ? reviewPageIndices.indexOf(safePage) + 1 : "–"} / ${reviewPageIndices.length}`
     : null;
-
-  const imageStyle =
-    zoom === "150" && pageSize
-      ? {
-          width: `${Math.round(pageSize.width * 1.5)}px`,
-          height: "auto" as const,
-          maxWidth: "none" as const,
-        }
-      : undefined;
 
   return (
     <div
@@ -328,14 +326,6 @@ export function ReferencePdfPane({
         </button>
         <button
           type="button"
-          className={`reference-pane-action${zoom === "fit-page" ? " is-active" : ""}`}
-          onClick={() => setZoom("fit-page")}
-          aria-pressed={zoom === "fit-page"}
-        >
-          {copy.fitPage}
-        </button>
-        <button
-          type="button"
           className={`reference-pane-action${zoom === "150" ? " is-active" : ""}`}
           onClick={() => setZoom("150")}
           aria-label={copy.zoomIn}
@@ -350,8 +340,16 @@ export function ReferencePdfPane({
         </p>
       ) : null}
       <div
+        aria-label={
+          zoom === "150"
+            ? `${reference.name} — ${pageStatus} — 150%`
+            : undefined
+        }
         className={`reference-pdf-stage reference-pdf-stage--${zoom}`}
         data-testid="reference-pdf-stage"
+        onKeyDown={onStageKeyDown}
+        role={zoom === "150" ? "region" : undefined}
+        tabIndex={zoom === "150" ? 0 : undefined}
       >
         {loading ? (
           <div className="reference-placeholder" role="status">
@@ -376,7 +374,6 @@ export function ReferencePdfPane({
             alt={`${reference.name} — ${pageStatus}`}
             className="reference-pdf-image"
             draggable={false}
-            style={imageStyle}
           />
         ) : null}
       </div>
@@ -432,8 +429,6 @@ async function prefetchAdjacent(options: {
       rememberPage(cache, neighbor, {
         imageUrl,
         zoom,
-        width: image.width,
-        height: image.height,
         referenceId,
       });
     } catch {

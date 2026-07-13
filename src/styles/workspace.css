@@ -795,23 +795,17 @@
   width: 100%;
 }
 
-.reference-pdf-stage--fit-page .reference-pdf-image {
-  height: auto;
-  max-height: 100%;
-  max-width: 100%;
-  width: auto;
+.reference-pdf-stage--150 {
+  justify-content: flex-start;
+  overscroll-behavior: contain;
 }
 
-.reference-pdf-stage--100 .reference-pdf-image {
-  height: auto;
-  max-width: none;
-  width: auto;
-}
-
-/* 150% display scale is applied via inline width (natural width * 1.5). */
+/* 150% means 1.5 times the fitted pane width, independent of raster size. */
 .reference-pdf-stage--150 .reference-pdf-image {
+  flex: 0 0 150%;
   height: auto;
   max-width: none;
+  width: 150%;
 }
 
 .reference-pdf-image {

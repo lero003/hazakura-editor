@@ -136,6 +136,42 @@ describe("ReferencePdfPane", () => {
     expect(screen.getByRole("button", { name: "かくだい" })).toBeTruthy();
   });
 
+  it("keeps one fit mode and lets the 150% page pan without changing pages", async () => {
+    const onPageIndexChange = vi.fn();
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={onPageIndexChange}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 2,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("img", { name: /a\.pdf — ページ 1 \/ 2/ })).toBeTruthy();
+    });
+    expect(screen.queryByRole("button", { name: "ページに合わせる" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "拡大" }));
+    const stage = screen.getByRole("region", {
+      name: "a.pdf — ページ 1 / 2 — 150%",
+    });
+    expect(stage.classList.contains("reference-pdf-stage--150")).toBe(true);
+    expect(stage.getAttribute("tabindex")).toBe("0");
+
+    fireEvent.keyDown(stage, { key: "ArrowRight" });
+    fireEvent.keyDown(stage, { key: "ArrowDown" });
+    expect(stage.scrollLeft).toBe(80);
+    expect(stage.scrollTop).toBe(80);
+    expect(onPageIndexChange).not.toHaveBeenCalled();
+  });
+
   it("gives the rendered PDF page an accessible file-and-page name", async () => {
     render(
       <ReferencePdfPane
@@ -406,8 +442,8 @@ describe("ReferencePdfPane", () => {
     expect(onPageIndexChange).toHaveBeenCalledWith(2, "user");
   });
 
-  it("applies 150% display scale from raster width, not only pixel budget", async () => {
-    const { getByRole } = render(
+  it("keeps 150% display independent of raster dimensions", async () => {
+    const { getByRole, getByTestId } = render(
       <ReferencePdfPane
         copy={referenceCompareCopy("ja")}
         pageIndex={0}
@@ -431,7 +467,12 @@ describe("ReferencePdfPane", () => {
     fireEvent.click(getByRole("button", { name: "拡大" }));
     await waitFor(() => {
       const img = getByRole("img") as HTMLImageElement;
-      expect(img.style.width).toBe("300px");
+      expect(img.style.width).toBe("");
+      expect(
+        getByTestId("reference-pdf-stage").classList.contains(
+          "reference-pdf-stage--150",
+        ),
+      ).toBe(true);
     });
   });
 });

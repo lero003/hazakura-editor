@@ -325,7 +325,6 @@ function makeWorkspaceProps(
       closeReference: "Close reference",
       emptyEditorHint: "Open Markdown to edit",
       externalChangeNotice: "The reference file has changed on disk.",
-      fitPage: "Fit page",
       fitWidth: "Fit width",
       followActive: "Following",
       importWorkflowHint:

@@ -626,8 +626,11 @@ recovered state separately where relevant.
 21. **Reference PDF raster**: import a multi-page PDF and confirm the **right**
     reference shows the actual page image rather than only the filename/page
     alt text, while the draft remains editable in the center. Exercise
-    next/previous page, fit width, fit page, and 150%; keep the existing CSP
-    unchanged (`data:` allowed, `blob:` not required). While a page is
+    next/previous page, fit width, and 150%; keep the existing CSP unchanged
+    (`data:` allowed, `blob:` not required). At 150%, confirm the page is 1.5
+    times the fitted pane width and every edge can be reached with native
+    scrolling. Focus the zoomed page and confirm Arrow keys plus Page Up / Page
+    Down pan the page without changing the PDF page. While a page is
     rendering, confirm the live status announces localized loading copy rather
     than an ellipsis-only placeholder. With the menu language set to kana,
     confirm the 150% control announces `かくだい`; then force a stale PDF

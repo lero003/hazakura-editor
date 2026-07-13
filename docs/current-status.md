@@ -16,6 +16,12 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
   minimum macOS version, and checksum provenance passed local verification on
   2026-07-13. App Store Connect upload, Apple processing, internal-group
   assignment, and signed TestFlight interaction remain unverified.
+- **Post-build v1.8 PDF-reference zoom adjustment is in the current source but
+  not in build `86`.** The duplicate-looking fit-page control was removed;
+  PDF reference display now offers fit width plus a raster-independent 150%
+  view. The zoomed page is a native two-axis scroll region and supports Arrow
+  key / Page Up / Page Down panning without changing pages. A new signed
+  candidate build is required before Transporter upload.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
   `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import

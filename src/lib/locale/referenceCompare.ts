@@ -6,7 +6,6 @@ export type ReferenceCompareCopy = {
   closeReference: string;
   emptyEditorHint: string;
   externalChangeNotice: string;
-  fitPage: string;
   fitWidth: string;
   followActive: string;
   /** Short how-to after Import Assist pairs source + draft. */
@@ -45,7 +44,6 @@ export function referenceCompareCopy(
       closeReference: "さんしょうを とぢる",
       emptyEditorHint: "へんしゅうする Markdown を ひらくか つくってください",
       externalChangeNotice: "さんしょうファイルが へんこうされました",
-      fitPage: "ページにあわせる",
       fitWidth: "はばにあわせる",
       followActive: "ついじゅう ちゅう",
       importWorkflowHint:
@@ -82,7 +80,6 @@ export function referenceCompareCopy(
       closeReference: "参照を閉じる",
       emptyEditorHint: "編集する Markdown を開くか作成してください",
       externalChangeNotice: "参照ファイルが変更されました",
-      fitPage: "ページに合わせる",
       fitWidth: "幅に合わせる",
       followActive: "追従中",
       importWorkflowHint:
@@ -119,7 +116,6 @@ export function referenceCompareCopy(
     emptyEditorHint:
       "Open or create a Markdown file to edit beside the reference.",
     externalChangeNotice: "The reference file has changed on disk.",
-    fitPage: "Fit page",
     fitWidth: "Fit width",
     followActive: "Following",
     importWorkflowHint:
