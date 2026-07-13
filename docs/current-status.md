@@ -87,6 +87,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   falling back to English.
   PDF stale-handle errors now keep kana copy as well, while unknown diagnostic
   details remain unchanged.
+  The PDF 150% zoom control also keeps a kana accessible name instead of
+  falling back to Japanese kanji.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

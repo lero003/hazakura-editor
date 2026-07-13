@@ -73,8 +73,8 @@ export function referenceCompareCopy(
       textBudgetExceeded:
         "この テキストは おおきすぎるため さんしょうひょうじ できません",
       unsupportedType: "この しゅるいは さんしょうできません",
-      zoomIn: "拡大",
-      zoomOut: "縮小",
+      zoomIn: "かくだい",
+      zoomOut: "しゅくしょう",
     };
   }
   if (isJapaneseMenuLanguage(menuLanguage)) {

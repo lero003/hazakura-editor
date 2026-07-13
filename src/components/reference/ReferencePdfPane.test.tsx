@@ -114,6 +114,28 @@ describe("ReferencePdfPane", () => {
     expect(screen.getByRole("status").textContent).toBe("ページを読み込み中");
   });
 
+  it("uses kana copy for the 150% zoom accessible name", async () => {
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("kana")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 1,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(renderPdfReferencePage).toHaveBeenCalled();
+    });
+    expect(screen.getByRole("button", { name: "かくだい" })).toBeTruthy();
+  });
+
   it("gives the rendered PDF page an accessible file-and-page name", async () => {
     render(
       <ReferencePdfPane

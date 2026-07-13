@@ -623,8 +623,9 @@ recovered state separately where relevant.
     unchanged (`data:` allowed, `blob:` not required). While a page is
     rendering, confirm the live status announces localized loading copy rather
     than an ellipsis-only placeholder. With the menu language set to kana,
-    force a stale PDF handle and confirm the error uses kana copy while an
-    unknown diagnostic detail remains visible.
+    confirm the 150% control announces `かくだい`; then force a stale PDF
+    handle and confirm the error uses kana copy while an unknown diagnostic
+    detail remains visible.
 22. **Pathless recovery cleanup failure**: with a disposable localStorage
     failure fixture, exercise Save As, Restore, Discard, dirty-tab close, and
     Discard All. Confirm the requested edit/close action still completes, the

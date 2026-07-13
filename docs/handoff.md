@@ -133,6 +133,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    falling back to English.
    PDF stale-handle errors now keep kana copy as well, while unknown diagnostic
    details remain unchanged.
+   The PDF 150% zoom control also keeps a kana accessible name instead of
+   falling back to Japanese kanji.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
