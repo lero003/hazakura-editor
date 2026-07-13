@@ -33,7 +33,7 @@ type ReferencePdfPaneProps = {
   reviewPageIndices?: number[];
   reference: PdfRef;
   /** Prefer ja localization for render errors. */
-  errorLanguage?: "ja" | "en";
+  errorLanguage?: "ja" | "en" | "kana";
 };
 
 type ZoomMode = "fit-width" | "fit-page" | "100" | "150";

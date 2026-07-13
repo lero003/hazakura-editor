@@ -131,6 +131,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    copy instead of an ellipsis-only live status.
    Reference Text/Image panes also keep a kana read-only role label instead of
    falling back to English.
+   PDF stale-handle errors now keep kana copy as well, while unknown diagnostic
+   details remain unchanged.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

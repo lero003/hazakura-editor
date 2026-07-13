@@ -328,6 +328,34 @@ describe("ReferencePdfPane", () => {
     });
   });
 
+  it("keeps stale PDF errors in kana when the menu language is kana", async () => {
+    vi.mocked(renderPdfReferencePage).mockRejectedValueOnce(
+      new Error("Unknown or stale PDF reference id."),
+    );
+
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("kana")}
+        errorLanguage="kana"
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 1,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert").textContent).toContain(
+        "さんしょうPDFの ひらきが つかえません",
+      );
+    });
+  });
+
   it("navigates pages with keyboard arrows", async () => {
     const onPageIndexChange = vi.fn();
     const { getByTestId } = render(

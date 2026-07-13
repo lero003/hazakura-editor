@@ -69,7 +69,7 @@ export function pdfPageImageToDataUrl(image: PdfReferencePageImage): string {
 /** Localize common Rust PDF-reference errors for Japanese UI. */
 export function localizePdfReferenceError(
   error: unknown,
-  language: "ja" | "en",
+  language: "ja" | "en" | "kana",
 ): string {
   const raw = String(error);
   const lower = raw.toLowerCase();
@@ -78,11 +78,14 @@ export function localizePdfReferenceError(
     lower.includes("no active pdf reference") ||
     lower.includes("pdf reference id is empty");
   if (stale) {
+    if (language === "kana") {
+      return "さんしょうPDFの ひらきが つかえません。さんしょうを ひらきなおしてください。";
+    }
     return language === "ja"
       ? "参照PDFのハンドルが無効です。参照を開き直してください。"
       : "This PDF reference is no longer valid. Re-open the reference.";
   }
-  if (language === "ja" && raw.startsWith("Error: ")) {
+  if (language !== "en" && raw.startsWith("Error: ")) {
     return raw.slice("Error: ".length);
   }
   return raw;

@@ -61,7 +61,7 @@ export function ReferenceTextPane({
     : isJapaneseMenuLanguage(menuLanguage)
       ? "ja"
       : "en";
-  const errorLanguage = language === "en" ? "en" : "ja";
+  const errorLanguage = language;
   const ariaLabel = referenceRoleLabel(language, reference);
   const name = referenceDisplayName(reference);
   const textLines = useMemo(
