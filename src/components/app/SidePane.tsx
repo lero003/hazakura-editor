@@ -23,6 +23,7 @@ import { OutlinePane } from "../editor/OutlinePane";
 import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
+import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
 
 // PreviewPane pulls in marked + DOMPurify, which together add
 // ~150 kB gzipped to the main bundle. The preview is off by
@@ -46,6 +47,7 @@ type SidePaneProps = {
   copy: SidePaneCopy;
   currentHeadingLine: number | null;
   documentStructureItems: MarkdownStructureItem[];
+  documentStructureAdvisories: MarkdownStructureAdvisory[];
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
@@ -77,6 +79,7 @@ export function SidePane({
   copy,
   currentHeadingLine,
   documentStructureItems,
+  documentStructureAdvisories,
   getCompareCaseByKey,
   menuLanguage,
   onClearCompareSource,
@@ -195,6 +198,7 @@ export function SidePane({
         <OutlinePane
           copy={copy}
           currentHeadingLine={currentHeadingLine}
+          advisories={documentStructureAdvisories}
           items={documentStructureItems}
           onSelect={onSelectHeading}
           truncated={outlineTruncated}

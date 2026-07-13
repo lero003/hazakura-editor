@@ -50,6 +50,7 @@ export function useActiveDocumentSurface({
     currentMarkdownHeading,
     documentHeadings,
     documentOutline,
+    documentStructureAdvisories,
     documentStructureItems,
     documentStructureTruncated,
   } = useDocumentOutline({
@@ -100,6 +101,7 @@ export function useActiveDocumentSurface({
     currentMarkdownHeading,
     documentHeadings,
     documentOutline,
+    documentStructureAdvisories,
     documentStructureItems,
     documentStructureTruncated,
     scrollHudContext,

@@ -10,6 +10,7 @@ import {
   markdownStructureItems,
   parseMarkdownStructure,
 } from "../../features/editor/markdownStructure";
+import { analyzeMarkdownStructure } from "../../features/editor/markdownStructureAdvisories";
 
 type UseDocumentOutlineOptions = {
   activeContents: string;
@@ -40,6 +41,13 @@ export function useDocumentOutline({
   );
   const documentStructureTruncated =
     allStructureItems.length > MARKDOWN_OUTLINE_MAX_HEADINGS;
+  const documentStructureAdvisories = useMemo(
+    () =>
+      documentStructure
+        ? analyzeMarkdownStructure(activeContents, documentStructure)
+        : [],
+    [activeContents, documentStructure],
+  );
   const documentHeadings = documentOutline?.headings ?? [];
   const currentMarkdownHeading = useMemo(
     () => findCurrentMarkdownHeading(documentHeadings, selectionLine),
@@ -50,6 +58,7 @@ export function useDocumentOutline({
     currentMarkdownHeading,
     documentHeadings,
     documentOutline,
+    documentStructureAdvisories,
     documentStructureItems,
     documentStructureTruncated,
   };

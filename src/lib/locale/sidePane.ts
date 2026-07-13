@@ -18,6 +18,11 @@ export type SidePaneCopy = {
   imagePreview: string;
   markdownPreview: string;
   outlineEmpty: string;
+  outlineEmptyHeading: string;
+  outlineAdvisorySummary: (count: number) => string;
+  outlineSkippedLevel: (previousLevel: number, level: number) => string;
+  outlineDuplicateLabel: (firstLine: number) => string;
+  outlineLongSection: (lineCount: number) => string;
   outlinePageBreak: string;
   outlineTrailingPageBreak: string;
   outlineTab: string;
@@ -64,6 +69,14 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       imagePreview: "ゑのしたみ",
       markdownPreview: "Markdown したみ",
       outlineEmpty: "このふみに Markdown のみだしはありません。",
+      outlineEmptyHeading: "なまへのない みだし",
+      outlineAdvisorySummary: (count) => `こうぞうの ていあん ${count}けん`,
+      outlineSkippedLevel: (previousLevel, level) =>
+        `みだしの だんが ${previousLevel} から ${level} へ とんでいます`,
+      outlineDuplicateLabel: (firstLine) =>
+        `${firstLine}ぎょうめと おなじ みだしです`,
+      outlineLongSection: (lineCount) =>
+        `この せくしょんは とても ながいです（${lineCount}ぎょう）`,
       outlinePageBreak: "ぺーじの きれめ",
       outlineTrailingPageBreak: "さいごの ぺーじきれめ（ひょうじでは のぞく）",
       outlineTab: "みだし",
@@ -114,6 +127,14 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         imagePreview: "画像プレビュー",
         markdownPreview: "Markdown プレビュー",
         outlineEmpty: "このファイルに Markdown 見出しはありません。",
+        outlineEmptyHeading: "名前のない見出し",
+        outlineAdvisorySummary: (count) => `構造の提案 ${count}件`,
+        outlineSkippedLevel: (previousLevel, level) =>
+          `見出しレベルが ${previousLevel} から ${level} へ飛んでいます`,
+        outlineDuplicateLabel: (firstLine) =>
+          `${firstLine}行目と同じナビゲーション名です`,
+        outlineLongSection: (lineCount) =>
+          `このセクションは非常に長いです（${lineCount}行）`,
         outlinePageBreak: "ページ区切り",
         outlineTrailingPageBreak: "末尾のページ区切り（表示では除外）",
         outlineTab: "アウトライン",
@@ -162,6 +183,15 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         imagePreview: "Image Preview",
         markdownPreview: "Markdown preview",
         outlineEmpty: "This file has no Markdown headings.",
+        outlineEmptyHeading: "Untitled heading",
+        outlineAdvisorySummary: (count) =>
+          `${count} structure suggestion${count === 1 ? "" : "s"}`,
+        outlineSkippedLevel: (previousLevel, level) =>
+          `Heading level jumps from ${previousLevel} to ${level}`,
+        outlineDuplicateLabel: (firstLine) =>
+          `Same navigation label as line ${firstLine}`,
+        outlineLongSection: (lineCount) =>
+          `This section is very long (${lineCount} lines)`,
         outlinePageBreak: "Page break",
         outlineTrailingPageBreak: "Trailing page break (not rendered)",
         outlineTab: "Outline",

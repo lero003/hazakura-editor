@@ -69,6 +69,7 @@ import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import type { ReferenceNarrowFocus } from "../../features/referenceCompare/types";
 import { reviewPageIndices as collectReviewPageIndices } from "../../features/referenceCompare/importPageMarkers";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
+import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -104,6 +105,7 @@ type AppWorkspaceProps = {
   currentHeadingLine: number | null;
   documentHeadings: MarkdownHeading[];
   documentStructureItems: MarkdownStructureItem[];
+  documentStructureAdvisories: MarkdownStructureAdvisory[];
   documentKey: string;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   editorPreviewGridRef: RefObject<HTMLDivElement | null>;
@@ -230,6 +232,7 @@ export function AppWorkspace({
   currentHeadingLine,
   documentHeadings,
   documentStructureItems,
+  documentStructureAdvisories,
   documentKey,
   editorPaneRef,
   editorPreviewGridRef,
@@ -735,6 +738,7 @@ export function AppWorkspace({
             getCompareCaseByKey={getCompareCaseByKey}
             currentHeadingLine={currentHeadingLine}
             documentStructureItems={documentStructureItems}
+            documentStructureAdvisories={documentStructureAdvisories}
             menuLanguage={menuLanguage}
             onClearCompareSource={clearCompareSource}
             onClearCompareTarget={clearCompareTarget}

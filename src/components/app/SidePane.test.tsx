@@ -52,6 +52,7 @@ function sidePaneProps(
     compareView: null,
     copy: getSidePaneCopy("en"),
     currentHeadingLine: null,
+    documentStructureAdvisories: [],
     documentStructureItems: [],
     getCompareCaseByKey: () => undefined,
     menuLanguage: "en",

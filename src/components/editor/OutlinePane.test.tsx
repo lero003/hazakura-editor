@@ -20,6 +20,7 @@ describe("OutlinePane", () => {
       <OutlinePane
         copy={getSidePaneCopy("ja")}
         currentHeadingLine={1}
+        advisories={[]}
         items={items}
         onSelect={onSelect}
         truncated={false}
@@ -49,6 +50,7 @@ describe("OutlinePane", () => {
       <OutlinePane
         copy={getSidePaneCopy("en")}
         currentHeadingLine={null}
+        advisories={[]}
         items={items}
         onSelect={vi.fn()}
         truncated={false}
@@ -60,5 +62,35 @@ describe("OutlinePane", () => {
         name: "3: Trailing page break (not rendered)",
       }),
     ).toBeTruthy();
+  });
+
+  it("shows non-blocking structure suggestions beside their heading", () => {
+    const items = markdownStructureItems(
+      parseMarkdownStructure("# Chapter\n### Scene\n"),
+    );
+
+    render(
+      <OutlinePane
+        advisories={[
+          {
+            kind: "skipped-level",
+            level: 3,
+            line: 2,
+            previousLevel: 1,
+          },
+        ]}
+        copy={getSidePaneCopy("ja")}
+        currentHeadingLine={null}
+        items={items}
+        onSelect={vi.fn()}
+        truncated={false}
+      />,
+    );
+
+    expect(screen.getByText("構造の提案 1件")).toBeTruthy();
+    expect(
+      screen.getByText("見出しレベルが 1 から 3 へ飛んでいます"),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "2: Scene" })).toBeTruthy();
   });
 });

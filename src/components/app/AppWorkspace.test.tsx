@@ -274,6 +274,7 @@ function makeWorkspaceProps(
     createNewFile: vi.fn(),
     currentHeadingLine: null,
     documentHeadings: [],
+    documentStructureAdvisories: [],
     documentStructureItems: [],
     documentKey: "empty",
     editorPaneRef: createRef<EditorPaneHandle | null>(),
