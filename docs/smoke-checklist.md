@@ -708,7 +708,8 @@ recovered state separately where relevant.
   Reference toggles now also expose `aria-pressed` inside a localized named
   toolbar and have a focused regression. This improves the source
   announcement/selection path but does not claim spoken VoiceOver or signed
-  TestFlight.
+  TestFlight. Locale coverage also pins the same toolbar key set and the
+  English / Japanese / kana labels.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 96 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.

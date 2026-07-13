@@ -112,7 +112,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    region and an AppWorkspace regression test. Its narrow-pane Draft /
    Reference toggles now expose `aria-pressed` inside a localized named toolbar,
    with a focused regression that pins the selected target; packaged spoken
-   VoiceOver remains a separate proof boundary.
+   VoiceOver remains a separate proof boundary. Locale tests also pin the
+   toolbar key parity and the English / Japanese / kana names.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 96
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
