@@ -98,7 +98,7 @@ gate-flip 承認 (順序 14 相当) → `tauri.conf.json` の `bundle.externalBi
 
 - `docs/archive/planning/apple-local-assist-rust-supervisor-plan.md` — supervisor 実装本体 (slice 8-18)
 - `docs/archive/planning/apple-local-assist-live-helper-plan.md` — live mode 設計 / Swift 側
-- `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" / 全体方針
+- `docs/archive/planning/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" / 全体方針
 - `docs/archive/reviews/apple-local-assist-v0.12-design-review.md` — gate-default-hidden 契約
 - `scripts/build-apple-assist-helper-fixture.sh` — fixture build script (DEST 命名が production filename と一致)
 - `src-tauri/src/commands/apple_assist_supervisor.rs` — supervisor 本体

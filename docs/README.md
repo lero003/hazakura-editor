@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
+Last reviewed: 2026-07-14 (v1.8 published; v1.9 Writing Loop Clarity active)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,23 +16,12 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active queue (v1.8 Daily Trust Completion; v1.7 closed / published).
-- `quality-inventory-v1.6.md`: historical quality inventory for the closed v1.6 lane.
+- `current-work.md`: active queue (v1.9 Writing Loop Clarity; v1.8 closed / published).
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
-- `import-assist-boundary-review.md`: v1.6 Import Assist Phase 1 boundary sign-off (shipped).
-- `v1.7-reference-compare-design.md`: accepted active-lane design — read-only
-  reference + editable Markdown paired-tab (PDF↔MD / MD↔MD), slices R0–R4.
-- `v1.7-scope-brief.md`: scope-based brief for separate v1.7 implementation
-  requests; defines the complete product boundary and completion criteria.
-- `v1.7-trust-scale-plan.md`: review-derived v1.7 continuity, recovery,
-  bounded-scale, accessibility, and discovery hardening plan; Book Scope Alpha
-  remains v2.
-- `v1.8-plus-product-review-roadmap.md`: accepted post-v1.7 product review and
-  sequencing for v1.8 Daily Trust, v1.9 UX clarity, v1.10 single-document
-  structure, a later distribution-confidence gate, and the v2 entry criteria.
-- `releases/1.6.0-app-store-release-notes.md`: v1.6 App Store copy and published position.
-- `edohigan-theme-plan.md`: post-v1.5 江戸彼岸 theme notes (not part of v1.5 release).
+- `v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, distribution-confidence, and v2 sequencing.
+- `l-mode-plan.md`: active source-preserving L Mode writing-surface direction.
+- `ebook-mode-epub-export-plan.md`: active single-document e-book and EPUB planning detail.
 
 ## Current Operational Docs
 
@@ -41,23 +30,15 @@ or quality-polish slice.
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
+- `release-pre-check.md`: last-mile release hygiene.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
 
-## Current Planning Backlogs
+## Current Planning Docs
 
-- `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
-- `ebook-mode-epub-export-plan.md`: v0.21+ e-bookモード / EPUB export planning memo.
-- `ai-markdown-ingest-plan.md`: explicit AI Markdown proposal ingest and Diff / Review planning memo.
-- `native-macos-appearance-plan.md`: v0.25 native-feeling Safe Editor chrome planning memo.
-- `post-v0.25-product-refinement-plan.md`: post-App-Store refinement lens for raising product grade without adding heavy surfaces.
-- `v1.1-v1.2-followup.md`: user-observed post-v1 continuity, review, image, export, and polish queue.
-- `v1.3-followup.md`: current Daily Trust source evidence, boundaries, and
-  remaining built-app/PDF smoke.
-- `speculative-local-ai-future-plan.md`: v3.x-or-later local AI re-evaluation after book / review maturity.
-- `apple-local-assist-distribution-plan.md`: Hazakura Local Assist / App Store distribution planning memo.
-- `apple-local-assist-writing-companion-plan.md`: Hazakura Local Assist Writing Companion / external Assist Window UX direction.
-- `edohigan-theme-plan.md`: v1.6 江戸彼岸ジョークテーマの実装メモと残課題 (花びらシェーダー調整中)。
+The active planning surface is intentionally small: `v1.8-plus-product-review-roadmap.md`,
+`l-mode-plan.md`, and `ebook-mode-epub-export-plan.md`. Completed lane plans,
+retired proposals, and speculative future notes live under `archive/`.
 
 ## Local-Only Internal Notes
 
@@ -77,5 +58,8 @@ git-ignored and should not be referenced from public-facing docs.
 - `archive/operations/app-store-build-history-through-v0.34.md`: per-version App Store package-candidate notes and SHA-256 records for v0.18-v0.34 moved out of `app-store-build.md`.
 - `archive/operations/smoke-checklist-version-notes-through-v0.18.md`: version-specific smoke observations for v0.11-v0.19 moved out of `smoke-checklist.md`.
 - `archive/operations/pre-release-fix-plan-2026-06-13.md`: completed review-derived pre-release code-quality fix queue.
+- `archive/operations/quality-inventory-v1.6.md`: closed v1.6 cross-cutting quality inventory.
+- `archive/operations/v1.1-v1.2-followup.md`, `archive/operations/v1.3-followup.md`, and `archive/operations/v1.7-trust-scale-plan.md`: completed lane follow-ups and evidence.
 - `archive/planning/`: older planning memos, including commercial-quality baseline, authoring-feature readiness, and product-copy drafts.
 - `archive/planning/v0.27-refinement-slice-plan.md`: completed v0.27 execution memo.
+- `archive/reviews/import-assist-boundary-review-v1.6.md`: shipped v1.6 Import Assist boundary review.

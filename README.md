@@ -132,19 +132,14 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [v1.7 Scope Brief](docs/v1.7-scope-brief.md): separate-request brief for the full v1.7 boundary and completion criteria
-- [Current Work](docs/current-work.md): active queue (v1.8 Daily Trust Completion)
-- [v1.7 Reference Compare Design](docs/v1.7-reference-compare-design.md): editable Markdown center + read-only PDF/image/text reference on the right (preview-like, not Diff)
+- [Current Work](docs/current-work.md): active v1.9 Writing Loop Clarity queue
+- [Roadmap](docs/roadmap.md): current phase boundaries and future direction
+- [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, and v2 sequencing
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
 - [v1.7 App Store Release Notes](docs/releases/1.7.0-app-store-release-notes.md): published Reference Compare + trust hardening release
 - [v1.8 App Store Release Notes](docs/releases/1.8.0-app-store-release-notes.md): published Daily Trust Completion release
-- [Hazakura Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Hazakura Local Assist UX direction
-- [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
-- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): explicit AI proposal intake / Diff Review planning memo
-- [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.25 native-feeling Safe Editor chrome planning memo
-- [Post-v0.25 Product Refinement Plan](docs/post-v0.25-product-refinement-plan.md): App Store release後の完成度向上レンズ
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界

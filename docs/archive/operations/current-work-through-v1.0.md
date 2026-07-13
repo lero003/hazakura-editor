@@ -594,7 +594,7 @@ Goal: reduce the sense of a web app inside a macOS window while keeping
 the Markdown-first Safe Editor boundary intact.
 
 Phase 1 (chrome alignment) is implemented and verified at code/CSS level.
-Use `docs/native-macos-appearance-plan.md` as the planning memo.
+Use `docs/archive/planning/native-macos-appearance-plan.md` as the planning memo.
 
 Phase 1 implementation as of 2026-06-19:
 
@@ -949,7 +949,7 @@ v0.27 release-candidate closeout note as of 2026-06-20:
 ## Historical v0.28 Safety, Quality, And AI Review Foundation
 
 Use `docs/roadmap.md`, `docs/security-boundary.md`, and
-`docs/ai-markdown-ingest-plan.md` as the planning boundary. v0.28 may
+`docs/archive/planning/ai-markdown-ingest-plan.md` as the planning boundary. v0.28 may
 ship several small slices, but each slice should have a focused proof and
 must not depend on Book Workspace Alpha.
 
@@ -1015,7 +1015,7 @@ adding broader provider plugins, generic chat, hidden
 workspace rewrites, auto-save, auto-commit, or broader Agent Workbench
 integration. Explicit file/paste ingest expansion, multi-file proposal
 review, richer provenance, and Agent Workbench external-edit intake remain
-deferred v0.29+ work under `docs/ai-markdown-ingest-plan.md`. Focused verification:
+deferred v0.29+ work under `docs/archive/planning/ai-markdown-ingest-plan.md`. Focused verification:
 `npm run test -- src/hooks/review/useAppleAssistCandidate.test.ts src/features/editor/aiEditTransactions.test.ts src/components/app/AppleAssistReviewBar.test.tsx src/features/editor/aiEditTarget.test.ts`;
 `npm run build:vite`;
 `git diff --check`.
@@ -1420,4 +1420,3 @@ App Store Connect evidence.
   bundle for `com.apple.security.app-sandbox` and the Developer / GitHub
   lane helper for `com.apple.security.inherit`, matching the inherited
   sandbox helper model instead of reporting a misleading helper sandbox miss.
-

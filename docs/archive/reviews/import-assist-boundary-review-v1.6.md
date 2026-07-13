@@ -11,8 +11,8 @@ Last reviewed: 2026-07-10
 |------|------|
 | **v1.5 released** | Stabilization / reading polish (`1.5.0`) — Spellcheck settings, Reading Focus TOC density, dead-code sweep, dependency hygiene, traffic-light polish, editor CM remount for L Mode toggle. **Closed and released before 江戸彼岸 (edohigan) landed.** |
 | **Post-v1.5 on main** | 江戸彼岸 theme, CodeMirror `@codemirror/view` **6.43.2** pin + display quality (syntax-tree recompute, resize remeasure, no fold gutter). These are **not** part of the v1.5 release tag/story. |
-| **v1.6 shipped** | **Import Assist Phase 1** (this review) — published as `1.6.0`; App Review passed without issues (2026-07-10). Design: `docs/superpowers/specs/2026-07-02-import-assist-design.md`. |
-| **Active now** | **v1.7 Reference Compare** — `docs/v1.7-reference-compare-design.md`. |
+| **v1.6 shipped** | **Import Assist Phase 1** (this review) — published as `1.6.0`; App Review passed without issues (2026-07-10). Design: `docs/archive/superpowers/specs/2026-07-02-import-assist-design.md`. |
+| **Active then** | **v1.7 Reference Compare** — `docs/archive/planning/v1.7-reference-compare-design.md`. |
 
 Do not re-open v1.5 or v1.6 feature work unless a release hotfix is required.
 
@@ -115,5 +115,5 @@ Frontend must never pass arbitrary executable paths—only content paths chosen 
 ## Sign-off
 
 - Boundary review: **approved for Phase 1 foundation + spike** (2026-07-09).
-- Design source: `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
+- Design source: `docs/archive/superpowers/specs/2026-07-02-import-assist-design.md`.
 - Product boundary: `docs/security-boundary.md`, `AGENTS.md`.

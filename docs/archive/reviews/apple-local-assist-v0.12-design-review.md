@@ -5,11 +5,11 @@ Scope: v0.12 Hazakura Local Assist スライス 1〜6 (型・境界 / probe / Re
 Authority: Medium
 Last reviewed: 2026-06-05 (post-slice-6 implementation, post-P1/P2 boundary fixes, post-slice-7 official info confirmation)
 
-Current-state note (2026-06-06): this is now a historical review record. The live helper gate has since been flipped on `main` via `bundle.externalBin`, Swift `LanguageModelSession`, and Rust supervisor command routing. Use `docs/current-status.md` and `docs/apple-local-assist-writing-companion-plan.md` for current implementation state; the old helper-path design memo now lives at `docs/archive/planning/apple-local-assist-helper-path-design.md`.
+Current-state note (2026-06-06): this is now a historical review record. The live helper gate has since been flipped on `main` via `bundle.externalBin`, Swift `LanguageModelSession`, and Rust supervisor command routing. Use `docs/current-status.md` and `docs/assist-surface-strategy.md` for current implementation state; the old helper-path design memo now lives at `docs/archive/planning/apple-local-assist-helper-path-design.md`.
 
 ## 目的
 
-`docs/apple-local-assist-distribution-plan.md` の方針が現在のコード構造に対して実装可能か、Agent Workbench / Review Desk の既存構造との整合を確認した上で、v0.12 のスライス 1〜6 が安全に着地した最小変更点と、その間に残った不確実性をまとめる。本メモは v0.12.0 リリースまでの間 "Snapshot + Review record" として参照される。新しいスライスを始める前に読み返して、設計判断の根拠を残す用途を想定。
+`docs/archive/planning/apple-local-assist-distribution-plan.md` の方針が現在のコード構造に対して実装可能か、Agent Workbench / Review Desk の既存構造との整合を確認した上で、v0.12 のスライス 1〜6 が安全に着地した最小変更点と、その間に残った不確実性をまとめる。本メモは v0.12.0 リリースまでの間 "Snapshot + Review record" として参照される。新しいスライスを始める前に読み返して、設計判断の根拠を残す用途を想定。
 
 ## 読んだファイル
 
@@ -37,7 +37,7 @@ Agent Workbench のパターン (active / preference 分離、availability probe
 
 ## 重要な差分: 以前の plan ファイルとの食い違い
 
-セッション中に書いた `~/.claude/plans/v0-11-v0-12-mac-ai-swift-crispy-mango.md` (素案) は最新ドキュメントと一部食い違う。実装フェーズでは `docs/apple-local-assist-distribution-plan.md` と本メモを優先する。
+セッション中に書いた `~/.claude/plans/v0-11-v0-12-mac-ai-swift-crispy-mango.md` (素案) は最新ドキュメントと一部食い違う。実装フェーズでは `docs/archive/planning/apple-local-assist-distribution-plan.md` と本メモを優先する。
 
 | 項目 | 素案 (plan ファイル) | 最新 (distribution plan + 本メモ) |
 |---|---|---|
@@ -139,7 +139,7 @@ export type AppleAssistAvailability =
 | 3 (handoff) | `src/hooks/review/useAppleAssistCandidate.ts` (新、stub 候補 → `runCandidateCompare`)、`src/lib/locale/reviewDesk.ts` (`candidateSourceAppleAssist` 追加) | `src/hooks/review/useReviewDeskState.ts` (触らない) | + stale candidate 既存 test が壊れていないこと |
 | 4 (UI) | `src/hooks/commandPalette/useCommandPaletteController.ts` (新コマンド 2 種、availability で gate) | preferences pane には入れない | + `npm run build:vite` |
 | 5 (Swift spike) | `src-helpers/apple-assist/` (新、SwiftPM パッケージ + Swift ソース)、`scripts/build-apple-assist-helper-fixture.sh` (新)、`package.json` (build script 追加)、`.gitignore` (`.build/` / `binaries/`) | `tauri.conf.json`、`Cargo.toml` | + `bash scripts/build-apple-assist-helper-fixture.sh` で fixture smoke 通過 |
-| 6 (docs) | `docs/apple-local-assist-distribution-plan.md`、`docs/assist-surface-strategy.md`、`docs/roadmap.md`、`docs/current-status.md`、`docs/development-automation.md`、`docs/smoke-checklist.md` | コード | `git diff --check` |
+| 6 (docs) | `docs/archive/planning/apple-local-assist-distribution-plan.md`、`docs/assist-surface-strategy.md`、`docs/roadmap.md`、`docs/current-status.md`、`docs/development-automation.md`、`docs/smoke-checklist.md` | コード | `git diff --check` |
 
 ## 実装済みスライス (2026-06-05 時点)
 
@@ -173,7 +173,7 @@ export type AppleAssistAvailability =
 
 ## 残った不確実性 (v0.12.0 リリース前)
 
-スライス 1〜6 で解消済みの項目 + 残った項目を分けて記録する。Slice 7 (2026-06-05) で `docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションに Apple 公式情報を整理したため、本セクションの未解消項目も一部状態更新した。
+スライス 1〜6 で解消済みの項目 + 残った項目を分けて記録する。Slice 7 (2026-06-05) で `docs/archive/planning/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションに Apple 公式情報を整理したため、本セクションの未解消項目も一部状態更新した。
 
 ### 解消済み (着地時 2026-06-05)
 
@@ -181,7 +181,7 @@ export type AppleAssistAvailability =
 - **probe のキャッシュ戦略** — `useAppleAssistAvailability` をマウント時 1 回呼ぶ形に固定 (`useAgentProviderAvailability` と同じパターン)
 - **Locale** — `src/lib/locale/appleAssist.ts` 3 言語、`candidateSourceAppleAssist` も `src/lib/locale/reviewDesk.ts` に 3 言語追加済み
 - **手動 candidate との競合** — `useAppleAssistCandidate` が `runCandidateCompare` 経由で投入するので、既存の `setCandidateInputText` stale ガードがそのまま機能する
-- **Apple 公式の acceptable use / App Store 制約の確認** — `docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションにまとめる。設計上 danger zone と判明したのは "courseware" (item 19) と "tone-shifting" (item 3) と "framework safety circumvention" (item 16) の 3 点。いずれも本スライスの 5 operations (`summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`、全操作が "transform the user's own text") には触らない
+- **Apple 公式の acceptable use / App Store 制約の確認** — `docs/archive/planning/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションにまとめる。設計上 danger zone と判明したのは "courseware" (item 19) と "tone-shifting" (item 3) と "framework safety circumvention" (item 16) の 3 点。いずれも本スライスの 5 operations (`summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`、全操作が "transform the user's own text") には触らない
 
 ### 未解消 (v0.12.0 リリース前に対応すべきもの)
 

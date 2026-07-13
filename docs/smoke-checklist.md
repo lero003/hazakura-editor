@@ -43,7 +43,7 @@ full automated gates before treating any manual result as release evidence.
 5. `npm run build`.
 6. `git diff --check`.
 7. Focused Save As, Local Assist review, e-book TOC, PDF preset/dialog/request,
-   and modal keyboard tests listed in `docs/v1.3-followup.md`.
+   and modal keyboard tests listed in `docs/archive/operations/v1.3-followup.md`.
 
 ### Built-app interaction smoke
 

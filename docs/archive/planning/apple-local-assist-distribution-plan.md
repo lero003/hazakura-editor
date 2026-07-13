@@ -386,7 +386,7 @@ Target:
 - prepare App Review notes before App Store/TestFlight packaging
 - keep Hazakura Local Assist quality polish secondary until the distribution lane shape is proven
 
-Reference: [v0.13 Distribution Probe](archive/planning/v0.13-distribution-probe.md).
+Reference: [v0.13 Distribution Probe](v0.13-distribution-probe.md).
 
 ### v0.14: L Mode Stability / Assist Harness Polish
 
@@ -443,10 +443,10 @@ Before App Store submission, prepare concise review notes that explain:
 
 ## References
 
-- [Assist Surface Strategy](assist-surface-strategy.md)
+- [Assist Surface Strategy](../../assist-surface-strategy.md)
 - [Hazakura Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md)
-- [Security Boundary](security-boundary.md)
-- [Agent Workbench Boundary](agent-workbench-boundary.md)
+- [Security Boundary](../../security-boundary.md)
+- [Agent Workbench Boundary](../../agent-workbench-boundary.md)
 - [Foundation Models](https://developer.apple.com/documentation/FoundationModels/)
 - [Generating content and performing tasks with Foundation Models](https://developer.apple.com/documentation/FoundationModels/generating-content-and-performing-tasks-with-foundation-models)
 - [Acceptable use requirements for the Foundation Models framework](https://developer.apple.com/apple-intelligence/acceptable-use-requirements-for-the-foundation-models-framework/)

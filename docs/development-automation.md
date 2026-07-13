@@ -81,7 +81,7 @@ Prefer work in this order:
 ## Start Every Run
 
 1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-work.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, and this document.
-   If the run touches Hazakura Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
+   If the run touches Hazakura Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/app-store-build.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
    Historical v0.17 App Store-quality request packets live under `docs/archive/operations/app-store-v0.17/`; read them only for background.
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.

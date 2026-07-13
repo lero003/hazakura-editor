@@ -33,8 +33,8 @@ Current release state:
 - **v1.7 is closed / published.** Reference Compare keeps one
   read-only PDF/image/text reference beside one editable Markdown document,
   including automatic source pairing after Import Assist. Design:
-  `docs/v1.7-reference-compare-design.md`. Scope brief:
-  `docs/v1.7-scope-brief.md`. **R0–R4 source landed.** Trust slices (L Mode
+  `docs/archive/planning/v1.7-reference-compare-design.md`. Scope brief:
+  `docs/archive/planning/v1.7-scope-brief.md`. **R0–R4 source landed.** Trust slices (L Mode
   continuity, pathless recovery, wrap-safe long-reference rendering, root recovery)
   shipped with v1.8. Extended recovery, long-reference, and accessibility
   checks remain v1.8 follow-up evidence rather than reasons to reopen the
@@ -179,8 +179,8 @@ Near-term phase order:
    no-auto-save. Its Book Project generation connects to v2 Book Scope.
    **v1.6 is closed and published as `1.6.0`** after App Review passed without
    issues (2026-07-10). Boundary review:
-   `docs/import-assist-boundary-review.md`. Design:
-   `docs/superpowers/specs/2026-07-02-import-assist-design.md`. Release notes:
+   `docs/archive/reviews/import-assist-boundary-review-v1.6.md`. Design:
+   `docs/archive/superpowers/specs/2026-07-02-import-assist-design.md`. Release notes:
    `docs/releases/1.6.0-app-store-release-notes.md`.
 15. v1.7 is the **active** Reference Compare lane. It generalizes the
    post-import review need into one safe model: editable Markdown stays
@@ -191,7 +191,7 @@ Near-term phase order:
    (PDF↔MD and MD↔MD visual reference). It is not a generic split editor,
    does not create two editable buffers, does not open PDFs as dirty tabs,
    and does not revive standalone Review Desk. Design:
-   `docs/v1.7-reference-compare-design.md`.
+   `docs/archive/planning/v1.7-reference-compare-design.md`.
 16. v1.8+ is the deliberate bridge from the mature single-document editor to
    v2. Two-digit minor versions such as `v1.10` are valid; version numbering
    must not force a premature major boundary. The accepted sequence is:
@@ -663,7 +663,7 @@ page breaks in Apple Books, Local Assist success/failure/apply/discard,
 and the App Store safety boundary. No No-Go condition was reported.
 
 Unchecked boxes were not automatic blockers. Commented observations are
-preserved in `docs/v1.1-v1.2-followup.md` and now feed the active v1.2
+preserved in `docs/archive/operations/v1.1-v1.2-followup.md` and now feed the active v1.2
 queue one reproducible item at a time. v1.0 release artifacts and
 published tags remain immutable.
 
@@ -700,7 +700,7 @@ If the answer is not clearly yes, keep the idea out of the active lane.
 Goal: deepen the single-document writing / review / export model after
 the first daily-use surface is proven.
 
-### v1.7 Trust And Daily Use Hardening
+### v1.7 Trust And Daily Use Hardening (closed)
 
 The active v1.7 lane is now **Reference Compare plus trust / daily-use
 hardening**, not another broad feature arc. R0–R4 are source-landed, so the
@@ -708,11 +708,12 @@ next work should prove that the user can keep one editable Markdown source,
 refer to one read-only source, move between reading and writing, and recover
 from failure without losing context or data.
 
-Use [`docs/v1.7-scope-brief.md`](v1.7-scope-brief.md) when making a separate
-v1.7 implementation request. It is the scope-level source for the product
-boundary and completion criteria. Use
-[`docs/v1.7-trust-scale-plan.md`](v1.7-trust-scale-plan.md) only for the
-operational breakdown and verification order.
+The v1.7 lane is closed and published. Its scope and execution documents are
+preserved as historical references at
+`docs/archive/planning/v1.7-scope-brief.md` and
+`docs/archive/operations/v1.7-trust-scale-plan.md`; do not use them as an
+active queue. Start new work from `docs/current-work.md` and
+`docs/v1.8-plus-product-review-roadmap.md`.
 
 The scope-level themes are:
 
@@ -794,7 +795,7 @@ These are not v1.0 blockers and not scheduled releases. They are items
 worth picking up whenever a quiet moment or a related change makes one
 cheap to close. Each is a candidate, not a commitment. Keep them small
 and inside the Safe Editor boundary. The v1.7 items promoted into
-`docs/v1.7-trust-scale-plan.md` are no longer merely optional candidates;
+`docs/archive/operations/v1.7-trust-scale-plan.md` are no longer merely optional candidates;
 the remaining bullets below retain this observation-driven status.
 
 - **Theme customization.** Today the app ships five themes
@@ -911,7 +912,7 @@ automatic multi-file rewriting, or Git / LSP / terminal behavior.
 Goal: decide whether OS-provided local AI belongs in the product after
 the book / review primitives are strong.
 
-Use `docs/speculative-local-ai-future-plan.md`. v3.x is not "AI expansion
+Use `docs/archive/planning/speculative-local-ai-future-plan.md` only as historical context. v3.x is not "AI expansion
 by default"; it is the earliest reasonable point to re-evaluate whether
 stronger local AI, OS-provided models, whitelisted `.aimodel` support, or
 much later local image generation belongs in the product after book
@@ -958,8 +959,9 @@ Keep future product work source-preserving and narrow:
 - e-book Mode / EPUB export: make it the next book-oriented authoring
   arc. Use `docs/ebook-mode-epub-export-plan.md`.
 - AI proposal ingest: keep AI output explicit, file-based or
-  transaction-based, and Diff / Review centered. Use
-  `docs/ai-markdown-ingest-plan.md`.
+  transaction-based, and Diff / Review centered. The retired standalone
+  ingest proposal is preserved at
+  `docs/archive/planning/ai-markdown-ingest-plan.md`.
 - Book Scope / Book Workspace: target v2.0 only after v1.10 proves the
   single-document structure model and v1.11+ records the larger packaged test
   matrix. Treat a small, explicit, user-selected set of Markdown files as one
@@ -968,21 +970,21 @@ Keep future product work source-preserving and narrow:
   document model.
 - Hazakura Local Assist: keep it as an explicit, on-device, availability-
   gated writing companion with unsaved, diff-reviewable edits. Use
-  `docs/assist-surface-strategy.md` and
-  `docs/apple-local-assist-writing-companion-plan.md`.
+  `docs/assist-surface-strategy.md`; the former detailed plans are archived.
 - Native macOS appearance: explore a more native-feeling macOS 26+
   interface, with macOS 27 treated as a future verification target. Use
-  `docs/native-macos-appearance-plan.md`.
+  `docs/archive/planning/native-macos-appearance-plan.md` as historical context.
 - Post-v0.25 product refinement: keep the product feeling like one
   quiet, safe Markdown editing space while tightening book structure,
   mode transitions, chrome density, and reliability. Use
-  `docs/post-v0.25-product-refinement-plan.md`.
+  `docs/archive/planning/post-v0.25-product-refinement-plan.md` as historical context.
 - Speculative local AI future: preserve, but do not yet commit to,
   v3.x-or-later re-evaluation for OS-provided local models, whitelisted
   external `.aimodel` support, and much later local image generation.
   Keep arbitrary local model runtimes out unless a fresh product and
-  security boundary decision explicitly reopens that risk. Use
-  `docs/speculative-local-ai-future-plan.md`.
+  security boundary decision explicitly reopens that risk. The detailed
+  speculative memo is archived at
+  `docs/archive/planning/speculative-local-ai-future-plan.md`.
 - Agent Workbench: keep it optional, allowlisted, one-session, no-restore,
   and outside the App Store lane. Use `docs/agent-workbench-boundary.md`.
 

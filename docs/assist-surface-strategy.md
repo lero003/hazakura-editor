@@ -39,7 +39,10 @@ optional, explicitly opened helper surface
 
 This is an architectural direction, not approval to add a provider plugin system.
 
-For the post-v0.11 distribution plan, use [Hazakura Local Assist And Distribution Plan](apple-local-assist-distribution-plan.md) as the detailed planning memo. For the user-facing Hazakura Local Assist experience, use [Hazakura Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md).
+The former detailed Local Assist distribution and Writing Companion memos are
+preserved under `docs/archive/planning/`. Use this strategy together with
+`docs/app-store-build.md` for current decisions; archived memos are historical
+context only.
 
 ## Provider Shape
 

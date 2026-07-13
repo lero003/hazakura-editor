@@ -15,10 +15,10 @@ Last reviewed: 2026-07-10 (`pdf-extract` / `lopdf` security update)
 関連:
 
 - Active queue: `docs/current-work.md`
-- Import boundary: `docs/import-assist-boundary-review.md`
-- PDF history: `docs/v1.3-followup.md`
-- Older user observations: `docs/v1.1-v1.2-followup.md`
-- Theme notes: `docs/edohigan-theme-plan.md`
+- Import boundary: `docs/archive/reviews/import-assist-boundary-review-v1.6.md`
+- PDF history: `docs/archive/operations/v1.3-followup.md`
+- Older user observations: `docs/archive/operations/v1.1-v1.2-followup.md`
+- Theme notes: `docs/archive/planning/edohigan-theme-plan-v1.6.md`
 
 ## Snapshot (2026-07-09)
 
@@ -393,7 +393,7 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 
 1. **v1.6 lane closed / published** (App Review passed 2026-07-10). Do not
    reopen without a reproduced hotfix need. Active product work is **v1.7
-   Reference Compare** (`docs/v1.7-reference-compare-design.md`).
+   Reference Compare** (`docs/archive/planning/v1.7-reference-compare-design.md`).
 2. Optional: re-run the Q-IMG-1 parent/child workspace matrix in a packaged App Store build;
    do not add multi-root scope until that proof identifies a concrete gap.
 3. TF re-verify Q-IMP-2 (standalone image OCR) if still open on device.
@@ -429,5 +429,5 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Q-IMG-1 parked: workspace/sandbox/preview/PDF image path matrix; no more ad-hoc thrash. |
 | 2026-07-10 | PDF body-image regression fixed: inline max-height now uses the shortened body column; only a split leading cover receives the larger cover bound. |
 | 2026-07-10 | Q-IMG-1 A+D shipped: parent workspace owns images; Preview/HTML/PDF share document-relative containment and workspace-only data-URL loading. Parent/child/drag-drop/missing fixtures are source-covered; packaged App Store smoke remains. |
-| 2026-07-10 | **v1.6 App Review passed without issues.** Lane closed / published as `1.6.0`. Active product lane moves to v1.7 Reference Compare (`docs/v1.7-reference-compare-design.md`). |
+| 2026-07-10 | **v1.6 App Review passed without issues.** Lane closed / published as `1.6.0`. Active product lane moved to v1.7 Reference Compare (`docs/archive/planning/v1.7-reference-compare-design.md`). |
 | 2026-07-10 | Q-IMG-1 review hardening: export integration pins child-workspace block → no loader; loader comment forbids `openImageFile` fallback; surface-specific missing-image copy documented. |

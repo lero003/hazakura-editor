@@ -3,7 +3,7 @@
 Status: Archive
 Scope: Retired planning, operational prompts, and historical evidence
 Authority: Low
-Last reviewed: 2026-07-03
+Last reviewed: 2026-07-14
 
 This directory preserves old material without letting it guide current implementation by accident.
 
@@ -21,11 +21,16 @@ Use current docs in `docs/` for decisions. Read archived files only when you nee
 - `releases/`: old release review briefs or release proposals that are not current release bodies.
 - `roadmaps/`: superseded roadmap sequences.
 - `reviews/`: historical review gates and design decisions.
+- `reviews/import-assist-boundary-review-v1.6.md`: shipped v1.6 Import Assist boundary review.
+- `operations/quality-inventory-v1.6.md`: closed v1.6 cross-cutting quality inventory.
+- `operations/v1.1-v1.2-followup.md`, `operations/v1.3-followup.md`, and `operations/v1.7-trust-scale-plan.md`: completed lane follow-ups and evidence.
 - `status/`: long-form historical current-status logs.
 - `superpowers/`: completed `plans/` and `specs/` from `docs/superpowers/`
   for versions that are already published on the App Store and no longer
   referenced from current docs. Move a `superpowers/` plan or spec here
   when its target version ships and current docs no longer cite it;
   keep the active (still-cited) specs under `docs/superpowers/`.
+- `superpowers/specs/2026-07-02-import-assist-design.md`: shipped v1.6
+  Import Assist proposal specification.
 
 Do not move archived content back into current docs unless the current roadmap or implementation has made it active again.

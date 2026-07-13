@@ -15,7 +15,7 @@ Start here when choosing the next small `Hazakura Editor` slice.
 |------|--------|--------|
 | **v1.5** | **Closed / released as `1.5.0`** | Stabilization + reading polish. **Released before 江戸彼岸 (edohigan) was merged.** Do not reopen unless hotfix. |
 | **Post-v1.5 main (not v1.5)** | Merged after v1.5 release | 江戸彼岸 theme; CodeMirror `@codemirror/view` **6.43.2** pin + editor display quality (syntax-tree recompute, resize remeasure, fold gutter removed). |
-| **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/import-assist-boundary-review.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
+| **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/archive/reviews/import-assist-boundary-review-v1.6.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
 | **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues as v1.8 follow-up; do not reopen without a reproduced hotfix. |
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
 | **v1.9** | **Active — Writing Loop Clarity** | Organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる` without adding chrome or a new document model. |
@@ -42,7 +42,7 @@ authoritative for store counters.
 
 v1.6 shipped as `1.6.0` and **passed App Review without issues** (2026-07-10).
 Do not reopen unless a hotfix is required. Historical queue detail remains in
-git history and `docs/quality-inventory-v1.6.md`.
+git history and `docs/archive/operations/quality-inventory-v1.6.md`.
 
 | Status | Slice |
 |---|---|
@@ -68,12 +68,12 @@ v1.7 deepens Import Assist into a general reference workflow. Product story:
 | **Done / source** | **R4 — Confidence navigation + reliability** | Page-level OCR confidence markers (advisory only, not char ranges); 要確認 prev/next; empty pages flagged; adjacent-page cache (no full preload); PDF handle cleanup on shell unmount. |
 
 Full interaction, security boundary, and non-goals:
-`docs/v1.7-reference-compare-design.md`.
+`docs/archive/planning/v1.7-reference-compare-design.md`.
 
 The scope-based brief for a separate v1.7 implementation request is
-**`docs/v1.7-scope-brief.md`**. It defines the whole v1.7 product boundary and
+**`docs/archive/planning/v1.7-scope-brief.md`**. It defines the whole v1.7 product boundary and
 completion criteria without making individual slices the user-facing scope.
-The review-derived **`docs/v1.7-trust-scale-plan.md`** remains the operational
+The review-derived **`docs/archive/operations/v1.7-trust-scale-plan.md`** remains the historical
 breakdown for execution; it keeps Book Scope Alpha in v2 and does not widen
 Safe Editor into an IDE, terminal, Git client, or generic AI surface.
 
@@ -134,7 +134,7 @@ document model. Full rationale: `docs/v1.8-plus-product-review-roadmap.md`.
 ### Quality inventory (v1.6 historical)
 
 Cross-cutting quality notes for the closed v1.6 line live in
-**`docs/quality-inventory-v1.6.md`**. Prefer one verifiable v1.7 slice at a
+**`docs/archive/operations/quality-inventory-v1.6.md`**. Prefer one verifiable v1.9 slice at a
 time; keep normal `npm test` / `cargo test` gates.
 
 ### CodeMirror pin (durable)

@@ -163,7 +163,7 @@ Before changing files, read:
 - `docs/roadmap.md`
 - `docs/security-boundary.md`
 - `docs/assist-surface-strategy.md`
-- `docs/apple-local-assist-writing-companion-plan.md`
+- `docs/archive/planning/apple-local-assist-writing-companion-plan.md`
 - `docs/v0.17-apple-local-assist-operation-feedback-request.md`
 
 Goal:

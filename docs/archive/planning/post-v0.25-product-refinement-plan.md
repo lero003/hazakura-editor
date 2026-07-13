@@ -152,7 +152,7 @@ Use this vocabulary:
 - structure = chapter / outline proposal;
 - apply = explicit Diff / Review action.
 
-This aligns with `docs/ai-markdown-ingest-plan.md`: AI output is
+This aligns with `docs/archive/planning/ai-markdown-ingest-plan.md`: AI output is
 imported, read, compared, and explicitly accepted or rejected. It is not
 auto-applied, auto-saved, auto-committed, or used to orchestrate a
 general agent workflow.

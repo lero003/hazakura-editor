@@ -170,7 +170,7 @@ OCR 結果は必ずレビュー前提にする。**v1.7 Reference Compare の正
 右:   元PDFページ / 画像（読み取り専用の参照プレビュー）
 ```
 
-詳細・境界は `docs/v1.7-reference-compare-design.md` を正とする。
+詳細・境界は `docs/archive/planning/v1.7-reference-compare-design.md` を正とする。
 
 できる操作: ページ単位で確認、要確認箇所へジャンプ、原画像と Markdown の
 見比べ、ページ番号・ヘッダー・フッターの一括除去、ページの再 OCR、

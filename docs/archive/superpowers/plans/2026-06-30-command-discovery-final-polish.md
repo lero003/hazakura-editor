@@ -37,7 +37,7 @@
 
 **Files:**
 - Modify: `docs/current-work.md`
-- Modify: `docs/v1.1-v1.2-followup.md`
+- Modify: `docs/archive/operations/v1.1-v1.2-followup.md`
 - Modify: `docs/smoke-checklist.md`
 - Modify: `docs/handoff.md`
 

@@ -37,8 +37,8 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   Assist Phase 1 (PDF / image → unsaved Markdown draft, on-device PDFKit +
   Vision), 江戸彼岸 theme, CodeMirror `@codemirror/view` **6.43.2** pin, PDF /
   image path trust polish, and the `pdf-extract` security update. Boundary:
-  `docs/import-assist-boundary-review.md`. Quality notes (historical for this
-  lane): `docs/quality-inventory-v1.6.md`.
+  `docs/archive/reviews/import-assist-boundary-review-v1.6.md`. Quality notes
+  (historical for this lane): `docs/archive/operations/quality-inventory-v1.6.md`.
 - **v1.7 (`1.7.0`) is closed and published.** App Review passed and the Mac
   App Store release was published (user-reported 2026-07-12). Reference Compare
   keeps one editable Markdown buffer beside one read-only reference. Release
@@ -56,8 +56,8 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   Editable Markdown stays center/primary; one read-only PDF / image / Markdown /
   text reference opens on the **right as a preview-like pane** (not Diff, not a
   second edit tab), including automatic source pairing after Import Assist.
-  Design: `docs/v1.7-reference-compare-design.md`. Scope brief:
-  `docs/v1.7-scope-brief.md`. **R0–R4** are in source. **T-1 / T-2 / S-2 root
+  Design: `docs/archive/planning/v1.7-reference-compare-design.md`. Scope brief:
+  `docs/archive/planning/v1.7-scope-brief.md`. **R0–R4** are in source. **T-1 / T-2 / S-2 root
   recovery / S-3 wrap-safe long-reference rendering+rename a11y / S-4 Start Panel** source landed
   2026-07-11. Recovery cleanup failures are now surfaced across Save / Save As /
   restore / discard / close, and text references have a separate 1.5M-character /
@@ -239,7 +239,7 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   shows bounded H3+ context plus current measured page progress; and direct
   PDF export offers request-scoped A4 `狭い` / `標準` / `広い` margin
   presets. Extended RC interaction breadth remains in
-  `docs/v1.3-followup.md`.
+  `docs/archive/operations/v1.3-followup.md`.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
@@ -256,7 +256,7 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   Assist success / failure / apply / discard, and the App Store safety
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
-  in `docs/v1.1-v1.2-followup.md`.
+  in `docs/archive/operations/v1.1-v1.2-followup.md`.
 - No remaining source-level release blocker is known for the closed v1.6,
   v1.7, or v1.8 lines. Do not reopen them without a reproduced gap. The
   active implementation lane is **v1.9 Writing Loop Clarity**.
@@ -513,7 +513,7 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   The CSS-only glass follow-up was dropped (scrap-and-build); v0.25 now
   moves into native vibrancy via `window-vibrancy` with the macOS
   deployment target raised to macOS 26. See
-  `docs/native-macos-appearance-plan.md`.
+  `docs/archive/planning/native-macos-appearance-plan.md`.
 
 ## Current Product Boundary
 
@@ -672,19 +672,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.8 Daily Trust Completion queue
-  hardening queue.
-- `docs/v1.7-scope-brief.md`: scope-based brief for separate v1.7 requests;
-  defines the full boundary and completion criteria without treating slices as
-  the product scope.
-- `docs/v1.7-trust-scale-plan.md`: review-derived v1.7 continuity, recovery,
-  bounded-scale, accessibility, and discovery plan; Book Scope Alpha remains
-  v2.
-- `docs/v1.3-followup.md`: v1.3 boundary, source evidence, and remaining
-  built-app/PDF smoke.
-- `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
-  execution phases for large-document rendering, One Editing Space,
-  flow-preserving editing, and status bar cleanup.
+- `docs/current-work.md`: current v1.9 Writing Loop Clarity queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -693,10 +681,7 @@ baseline, and smoke evidence are archived under
 - `docs/ebook-mode-epub-export-plan.md`: e-book Mode / EPUB export
   planning and source-preserving reader/export boundaries.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
-- `docs/post-v0.25-product-refinement-plan.md`: post-App-Store
-  refinement lens.
-- `docs/apple-local-assist-distribution-plan.md`: Hazakura Local Assist and lane planning.
-- `docs/apple-local-assist-writing-companion-plan.md`: Hazakura Local Assist companion UX direction.
+- `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, distribution-confidence, and v2 sequencing.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
@@ -716,7 +701,8 @@ baseline, and smoke evidence are archived under
    See `docs/v1.8-plus-product-review-roadmap.md`.
 4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces. Historical notes remain in
-   `docs/v1.1-v1.2-followup.md` and `docs/v1.3-followup.md`.
+   `docs/archive/operations/v1.1-v1.2-followup.md` and
+   `docs/archive/operations/v1.3-followup.md`.
 5. Complete Google Drive Recovery smoke only with a dedicated user-approved
    fixture. The local-folder path-backed and disposable local packaged pathless
    forced-termination paths have passed; signed TestFlight pathless recovery
@@ -725,9 +711,8 @@ baseline, and smoke evidence are archived under
    `docs/internal/app-store-candidates/latest.json`. App Store Connect,
    TestFlight, and App Review logs remain outside this repository unless
    public-safe evidence is recorded.
-7. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
-   `docs/apple-local-assist-distribution-plan.md`, and
-   `docs/apple-local-assist-writing-companion-plan.md`; keep direct
+7. For Hazakura Local Assist, use `docs/assist-surface-strategy.md` and
+   `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
 8. Do not tag or publish without explicit approval. In-tree version is
    `1.8.0`; the published Mac App Store version is also `1.8.0`.

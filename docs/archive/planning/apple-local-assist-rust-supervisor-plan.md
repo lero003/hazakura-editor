@@ -247,7 +247,7 @@ production で supervisor 経路が呼ばれるようになるのは、`probe_ap
 
 - `docs/apple-local-assist-live-helper-plan.md` — live mode 設計の Swift 側 / 共通事項
 - `docs/archive/planning/apple-local-assist-helper-path-design.md` — bundled helper path 設計 (slice 16) / production 経路の差替先
-- `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" / 全体方針
+- `docs/archive/planning/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" / 全体方針
 - `docs/apple-local-assist-v0.12-design-review.md` — 設計選択 / gate 契約
 - `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 stub)
 - `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor 本体 (slice 8-18、resolver skeleton は slice 17)

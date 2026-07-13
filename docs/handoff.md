@@ -44,11 +44,11 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   `参照` is an explicit right-pane toggle. Switching to Preview / e-book /
   Outline / Diff hides but retains the loaded reference; only its in-pane close
   action ends the session.
-  Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
+  Source: `docs/archive/planning/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
-  historical for v1.6: `docs/import-assist-boundary-review.md`.
+  historical for v1.6: `docs/archive/reviews/import-assist-boundary-review-v1.6.md`.
 - Quality packs A/B + PDF tail/theme/timeout shipped with v1.6. See
-  **`docs/quality-inventory-v1.6.md`** (historical).
+  **`docs/archive/operations/quality-inventory-v1.6.md`** (historical).
 - PDF export caps **in-body** embedded images to the shortened column
   height; the larger leading-cover bound applies only after the cover is split
   onto its own A4 page.
@@ -64,7 +64,7 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
   Manuscript baseline. No public-release hotfix blocker has been
   reported. All commented observations are routed to
-  `docs/v1.1-v1.2-followup.md`.
+  `docs/archive/operations/v1.1-v1.2-followup.md`.
 - Earlier v1 lanes (1.0–1.5, Local Assist preview, position continuity,
   Daily Trust) remain historical product history. Detailed verification
   notes live in release notes and `docs/archive/`.
@@ -89,9 +89,11 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **Active v1.8 Daily Trust:** Keep the extended Reference Compare, recovery,
-   long-reference, and accessibility matrix as follow-up evidence rather than
-   reopening the published v1.7 lane.
+1. **Active v1.9 Writing Loop Clarity:** Start from `docs/current-work.md` and
+   organize Preview / Reference / e-book / Outline / Diff / L Mode around
+   `書く・読む・確かめる` without adding chrome or a second editable model.
+   Keep the remaining v1.8 packaged, TestFlight, and VoiceOver breadth as
+   follow-up evidence rather than reopening the published lane.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
@@ -192,7 +194,7 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    tests and Developer CRT / Edohigan / Shinkai switching kept the editor and
    Preview content intact after each boot animation.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
-   notes: `docs/quality-inventory-v1.6.md`.
+   notes: `docs/archive/operations/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. `1.8.0` passed App Review and is
    published on the Mac App Store (build `89`). The active lane is v1.9 Writing
    Loop Clarity; extended TestFlight and spoken VoiceOver breadth remain
@@ -220,11 +222,11 @@ Read it only for historical context.
 ## Source Docs
 
 - Current work: `docs/current-work.md`
-- v1.7 scope brief: `docs/v1.7-scope-brief.md`
-- v1.7 hardening plan: `docs/v1.7-trust-scale-plan.md`
+- v1.7 scope brief: `docs/archive/planning/v1.7-scope-brief.md`
+- v1.7 hardening plan: `docs/archive/operations/v1.7-trust-scale-plan.md`
 - v1.8+ product review / v2 bridge: `docs/v1.8-plus-product-review-roadmap.md`
-- Quality inventory (v1.6): `docs/quality-inventory-v1.6.md`
-- v1.7 Reference Compare design: `docs/v1.7-reference-compare-design.md`
+- Quality inventory (v1.6): `docs/archive/operations/quality-inventory-v1.6.md`
+- v1.7 Reference Compare design: `docs/archive/planning/v1.7-reference-compare-design.md`
 - Current implementation state: `docs/current-status.md`
 - Phase boundaries: `docs/roadmap.md`
 - Product boundary: `docs/product-brief.md`
