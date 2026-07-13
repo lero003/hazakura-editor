@@ -9,6 +9,7 @@ export interface SlashMenuCopy {
   categoryShortcut: string;
   empty: string;
   markdownBadge: string;
+  menuLabel: string;
   reviewBadge: string;
   shortcutBadge: string;
 }
@@ -120,7 +121,7 @@ export function SlashMenu({
 
   return (
     <div
-      aria-label="Slash command menu"
+      aria-label={copy.menuLabel}
       className={`slash-menu${reduceMotion ? " reduced-motion" : ""}`}
       role="listbox"
       style={{ bottom, left, position: "fixed", right, top }}

@@ -9,6 +9,7 @@ export type SlashMenuCopy = {
   categoryShortcut: string;
   empty: string;
   markdownBadge: string;
+  menuLabel: string;
   reviewBadge: string;
   shortcutBadge: string;
 };
@@ -23,6 +24,7 @@ export function getSlashMenuCopy(lang: MenuLanguage): SlashMenuCopy {
       categoryShortcut: "ちかみち",
       empty: "あふすらっしゅこまんどはありません",
       markdownBadge: "Md",
+      menuLabel: "すらっしゅこまんど",
       reviewBadge: "みる",
       shortcutBadge: "Key",
     };
@@ -37,6 +39,7 @@ export function getSlashMenuCopy(lang: MenuLanguage): SlashMenuCopy {
         categoryShortcut: "ショートカット",
         empty: "一致するスラッシュコマンドがありません",
         markdownBadge: "Md",
+        menuLabel: "スラッシュコマンド",
         reviewBadge: "確認",
         shortcutBadge: "Key",
       }
@@ -48,6 +51,7 @@ export function getSlashMenuCopy(lang: MenuLanguage): SlashMenuCopy {
         categoryShortcut: "Shortcuts",
         empty: "No matching slash command",
         markdownBadge: "Md",
+        menuLabel: "Slash command menu",
         reviewBadge: "Rv",
         shortcutBadge: "Key",
       };

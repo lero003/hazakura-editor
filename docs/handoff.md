@@ -113,7 +113,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Reference toggles now expose `aria-pressed` inside a localized named toolbar,
    with a focused regression that pins the selected target; packaged spoken
    VoiceOver remains a separate proof boundary. Locale tests also pin the
-   toolbar key parity and the English / Japanese / kana names.
+   toolbar key parity and the English / Japanese / kana names. The contextual
+   Slash command listbox now uses the same localized-name contract, with a
+   focused component and locale regression.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 96
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

@@ -64,7 +64,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   Reference toggle buttons now expose `aria-pressed` and a localized toolbar
   name, with a focused regression that pins the selected target for assistive
   technology; locale coverage pins the same toolbar key set and the English /
-  Japanese / kana labels.
+  Japanese / kana labels. The contextual Slash command listbox now also exposes
+  a localized accessible name, with copy-key parity coverage.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 96
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

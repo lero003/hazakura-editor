@@ -16,6 +16,7 @@ const copy = {
   categoryShortcut: "Shortcut",
   empty: "No commands",
   markdownBadge: "MD",
+  menuLabel: "Slash command menu",
   reviewBadge: "Review",
   shortcutBadge: "Key",
 };
