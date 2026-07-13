@@ -1793,6 +1793,7 @@ export function useAppShellController() {
     pdfExportRequest,
     lModeCopy,
     lModeEnabled: activeLModeEnabled,
+    closeFileLabel: safeEditorCopy.closeFile,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
     openFileTabsLabel: safeEditorCopy.openFileTabs,
     openFilesLabel: safeEditorCopy.openFiles,

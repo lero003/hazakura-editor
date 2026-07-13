@@ -14,6 +14,15 @@ describe("getSafeEditorCopy tab accessibility labels", () => {
     expect(getSafeEditorCopy("kana").openFileTabs).toBe(
       "ひらいている ふみのならび",
     );
+    expect(getSafeEditorCopy("en").closeFile("draft.md")).toBe(
+      "Close draft.md",
+    );
+    expect(getSafeEditorCopy("ja").closeFile("draft.md")).toBe(
+      "draft.mdを閉じる",
+    );
+    expect(getSafeEditorCopy("kana").closeFile("draft.md")).toBe(
+      "draft.mdをとじる",
+    );
   });
 
   it("keeps the copy key set aligned across languages", () => {

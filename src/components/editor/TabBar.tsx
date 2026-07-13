@@ -17,6 +17,7 @@ import {
 type TabBarProps = {
   activeTabId: string | null;
   children: ReactNode;
+  closeFileLabel?: (name: string) => string;
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
@@ -79,6 +80,7 @@ function getFileIcon(fileName: string) {
 export function TabBar({
   activeTabId,
   children,
+  closeFileLabel = (name) => `Close ${name}`,
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
@@ -265,7 +267,7 @@ export function TabBar({
                     ) : null}
                   </button>
                   <button
-                    aria-label={`Close ${tab.name}`}
+                    aria-label={closeFileLabel(tab.name)}
                     className="tab-close"
                     data-close-affordance="x"
                     onClick={() => onCloseTab(tab.id)}
@@ -323,7 +325,7 @@ export function TabBar({
                   <span className="tab-name">{selectedImage.name}</span>
                 </button>
                 <button
-                  aria-label={`Close ${selectedImage.name}`}
+                  aria-label={closeFileLabel(selectedImage.name)}
                   className="tab-close"
                   data-close-affordance="x"
                   onClick={onCloseSelectedImagePreview}

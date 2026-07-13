@@ -27,6 +27,7 @@ type AppTopChromeProps = {
   activeTabId: string | null;
   agentWorkbenchAvailable: boolean;
   assistSurfaceActive: AssistSurfacePreference;
+  closeFileLabel?: (name: string) => string;
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
@@ -75,6 +76,7 @@ export function AppTopChrome({
   activeTabId,
   agentWorkbenchAvailable,
   assistSurfaceActive,
+  closeFileLabel,
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
@@ -115,6 +117,7 @@ export function AppTopChrome({
   return (
     <TabBar
       activeTabId={activeTabId}
+      closeFileLabel={closeFileLabel}
       draggingTabId={draggingTabId}
       dragOverTabId={dragOverTabId}
       emptyTabsLabel={emptyTabsLabel}

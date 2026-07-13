@@ -3,6 +3,7 @@ import { isKanaStyle } from "./_helpers";
 
 export type SafeEditorCopy = {
   collapseWorkspaceSidebar: string;
+  closeFile: (name: string) => string;
   editor: string;
   emptyTabs: string;
   newFile: string;
@@ -29,6 +30,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
   if (isKanaStyle(lang)) {
   return {
       collapseWorkspaceSidebar: "ところをたたむ",
+      closeFile: (name) => `${name}をとじる`,
       editor: "へんしゅう",
       emptyTabs: "ふみなし",
       newFile: "あたらしきふみ",
@@ -54,6 +56,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
   return isJapaneseMenuLanguage(lang)
     ? {
         collapseWorkspaceSidebar: "ワークスペースサイドバーを折りたたむ",
+        closeFile: (name) => `${name}を閉じる`,
         editor: "編集",
         emptyTabs: "ファイル未選択",
         newFile: "新規ファイル",
@@ -77,6 +80,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       }
     : {
         collapseWorkspaceSidebar: "Collapse workspace sidebar",
+        closeFile: (name) => `Close ${name}`,
         editor: "Editor",
         emptyTabs: "No open files",
         newFile: "New File",

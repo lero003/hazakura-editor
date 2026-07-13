@@ -120,8 +120,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    primary Editor pane label follows the same contract and has focused coverage.
    Workspace file rows also localize the open / unsaved state spoken by the
    tree buttons, with WorkspaceTree and file-ops locale tests. Loading and
-   per-folder truncation notices now use that same localized copy.
-   `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 97
+   per-folder truncation notices now use that same localized copy. Text and
+   image tab close controls also use active English / Japanese / kana copy,
+   with AppTopChrome and Safe Editor locale coverage.
+   `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 98
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
    Local Poppler rendering of PDF pages 1–3 found no clipping and white four-

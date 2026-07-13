@@ -102,6 +102,50 @@ describe("AppTopChrome", () => {
     ).toBeTruthy();
   });
 
+  it("uses the active locale for text and image tab close controls", () => {
+    const tab: EditorTab = {
+      contents: "draft",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/draft.md",
+      sessionId: "session:draft",
+      large_file_warning: false,
+      lastSavedContents: "draft",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "draft.md",
+      path: "/workspace/draft.md",
+      saveStatus: "idle",
+      size: 10,
+    };
+
+    renderTopChrome({
+      closeFileLabel: (name) => `${name}を閉じる`,
+      selectedImage: {
+        name: "photo.png",
+        path: "/workspace/assets/photo.png",
+        size: 128,
+        url: "data:image/png;base64,photo",
+      },
+      tabs: [tab],
+    });
+
+    expect(
+      screen.getByRole("button", { name: "draft.mdを閉じる" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "photo.pngを閉じる" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Close draft.md" }),
+    ).toBeNull();
+  });
+
   it("marks top chrome gaps as Tauri drag regions without making tabs draggable", () => {
     const tab: EditorTab = {
       contents: "draft",

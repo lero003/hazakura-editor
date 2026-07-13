@@ -713,9 +713,11 @@ recovered state separately where relevant.
   open-file tab row/list and primary Editor pane have corresponding localized
   accessible-name regressions. Workspace file rows also expose localized open /
   unsaved state labels in the source tree contract; loading and per-folder
-  truncation notices are localized through the same file-ops copy.
+  truncation notices are localized through the same file-ops copy. Text and
+  image tab close controls use the active English / Japanese / kana locale
+  rather than an English-only accessible name.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
-  passed (**10 files / 97 tests**) for pane controls, Command Palette, settings,
+  passed (**10 files / 98 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.
 - Local PDF visual follow-up on 2026-07-13 rendered pages 1–3 of the existing
   nine-page export with Poppler. No clipping was visible and all four sampled

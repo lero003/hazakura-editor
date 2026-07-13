@@ -72,8 +72,10 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   Workspace file rows now localize the open / unsaved state announced to
   assistive technology, with WorkspaceTree and file-ops locale coverage.
   WorkspaceTree loading and per-folder truncation notices now use the same
-  localized file-operations copy.
-  The App Store surface smoke also passed on 2026-07-13 (**10 files / 97
+  localized file-operations copy. Text and image tab close controls now also
+  use active English / Japanese / kana copy, with AppTopChrome and Safe Editor
+  locale regressions.
+  The App Store surface smoke also passed on 2026-07-13 (**10 files / 98
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.
   The installed public `1.7.0` build `85` also passed `⌘⇧P` Command Palette,
