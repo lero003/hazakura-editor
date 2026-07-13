@@ -328,6 +328,7 @@ function makeWorkspaceProps(
       followActive: "Following",
       importWorkflowHint:
         "Center is the editable draft; right is the source reference. Fix it, then save.",
+      narrowFocusLabel: "Reference focus",
       nextPage: "Next page",
       nextReview: "Next to review",
       openAsReference: "Open as reference",
@@ -1213,6 +1214,7 @@ describe("AppWorkspace reference compare layout", () => {
     } as const;
     const { rerender } = renderWorkspace(sharedProps);
 
+    expect(screen.getByRole("toolbar", { name: "Reference focus" })).toBeTruthy();
     expect(
       screen
         .getByRole("button", { name: "Draft (editable)" })

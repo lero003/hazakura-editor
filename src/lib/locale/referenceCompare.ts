@@ -11,6 +11,7 @@ export type ReferenceCompareCopy = {
   followActive: string;
   /** Short how-to after Import Assist pairs source + draft. */
   importWorkflowHint: string;
+  narrowFocusLabel: string;
   nextPage: string;
   nextReview: string;
   openAsReference: string;
@@ -48,6 +49,7 @@ export function referenceCompareCopy(
       followActive: "ついじゅう ちゅう",
       importWorkflowHint:
         "まんなかが したがき（へんしゅう）、みぎが げんぽん（さんしょう）です。なおしてから ほぞんしてください。",
+      narrowFocusLabel: "さんしょうひょうじの たいしょう",
       nextPage: "つぎの ページ",
       nextReview: "つぎの ようかくにん",
       openAsReference: "さんしょうとして よこに ひらく",
@@ -83,6 +85,7 @@ export function referenceCompareCopy(
       followActive: "追従中",
       importWorkflowHint:
         "中央が下書き（編集）、右が原本（参照）です。内容を直してから保存してください。",
+      narrowFocusLabel: "参照表示の対象",
       nextPage: "次のページ",
       nextReview: "次の要確認",
       openAsReference: "参照として横に開く",
@@ -118,6 +121,7 @@ export function referenceCompareCopy(
     followActive: "Following",
     importWorkflowHint:
       "Center is the editable draft; right is the source reference. Fix it, then save.",
+    narrowFocusLabel: "Reference focus",
     nextPage: "Next page",
     nextReview: "Next to review",
     openAsReference: "Open beside editor as reference",

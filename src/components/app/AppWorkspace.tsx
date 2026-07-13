@@ -561,7 +561,11 @@ export function AppWorkspace({
           </p>
         ) : null}
         {visibleReferenceCompare ? (
-          <div className="reference-narrow-switch" role="toolbar">
+          <div
+            aria-label={referenceCopy.narrowFocusLabel}
+            className="reference-narrow-switch"
+            role="toolbar"
+          >
             <button
               type="button"
               aria-pressed={referenceNarrowFocus === "editor"}
