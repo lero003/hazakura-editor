@@ -18,9 +18,9 @@ import {
   splitMarkdownIntoChapters,
 } from "../../features/editor/ebookChapters";
 import {
+  documentViewStateKey,
   patchDocumentViewState,
   pruneDocumentViewStates,
-  rekeyDocumentViewState,
   type DocumentViewStateRegistry,
   type EditorViewStatePatch,
   type PreviewViewState,
@@ -315,10 +315,6 @@ export function AppWorkspace({
   // Preview. Individual panes report patches without owning a parallel map.
   const [documentViewStates, setDocumentViewStates] =
     useState<DocumentViewStateRegistry>({});
-  const previousDocumentIdentityRef = useRef<{
-    documentKey: string;
-    tabSessionId: string;
-  } | null>(null);
   const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
@@ -349,20 +345,11 @@ export function AppWorkspace({
     }
     return collectReviewPageIndices(activeContents);
   }, [activeContents, activeTab?.sessionId, referenceCompare]);
-  const previousDocumentIdentity = previousDocumentIdentityRef.current;
-  const saveAsPreviousKey =
-    activeTab &&
-    activeDocumentKey &&
-    previousDocumentIdentity?.tabSessionId === activeTab.sessionId &&
-    previousDocumentIdentity.documentKey !== activeDocumentKey
-      ? previousDocumentIdentity.documentKey
-      : null;
+  // View-state keys use sessionId so Save As path rewrites and tab switches
+  // keep editor / e-book / Preview continuity without a rekey race.
   const activeDocumentViewState =
     activeDocumentKey != null
-      ? documentViewStates[activeDocumentKey] ??
-        (saveAsPreviousKey
-          ? documentViewStates[saveAsPreviousKey] ?? null
-          : null)
+      ? documentViewStates[activeDocumentKey] ?? null
       : null;
   const activeEbookLocation = activeDocumentViewState?.ebook ?? null;
   const editorAnchorLine =
@@ -377,26 +364,6 @@ export function AppWorkspace({
     enteringEbookPane && editorAnchoredEbookLocation
       ? editorAnchoredEbookLocation
       : activeEbookLocation ?? editorAnchoredEbookLocation;
-  useEffect(() => {
-    if (activeTab && activeDocumentKey) {
-      if (saveAsPreviousKey) {
-        setDocumentViewStates((current) =>
-          rekeyDocumentViewState(
-            current,
-            saveAsPreviousKey,
-            activeDocumentKey,
-          ),
-        );
-      }
-      previousDocumentIdentityRef.current = {
-        documentKey: activeDocumentKey,
-        tabSessionId: activeTab.sessionId,
-      };
-      return;
-    }
-
-    previousDocumentIdentityRef.current = null;
-  }, [activeDocumentKey, activeTab, saveAsPreviousKey]);
   useEffect(() => {
     previousSidePaneModeRef.current = sidePaneMode;
   }, [sidePaneMode]);
@@ -813,10 +780,6 @@ export function AppWorkspace({
       ) : null}
     </section>
   );
-}
-
-function documentViewStateKey(tab: EditorTab): string {
-  return tab.path || tab.id;
 }
 
 function getEbookLocationForEditorLine(

@@ -108,6 +108,16 @@ export function rekeyDocumentViewState(
   };
 }
 
+/**
+ * Stable view-state key for a tab. Prefer sessionId so Save As path rewrites
+ * and tab switches keep continuity without a rekey race (v1.9 W3).
+ */
+export function documentViewStateKey(tab: {
+  sessionId: string;
+}): string {
+  return tab.sessionId;
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }

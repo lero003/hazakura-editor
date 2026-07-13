@@ -719,7 +719,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     );
   });
 
-  it("keeps pathless e-book reader locations isolated by tab id", () => {
+  it("keeps pathless e-book reader locations isolated by sessionId across Save As", () => {
     const firstUntitledTab = {
       ...bookTab,
       id: "untitled:1",
@@ -776,13 +776,9 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     const savedFirstTab = {
       ...firstUntitledTab,
-      // A real Save As rewrites `id` to follow the new path
-      // (id === path is the invariant), while `sessionId` stays
-      // stable so the editor session (CodeMirror history) and
-      // the per-document view state carry over. The previous
-      // identity is matched by `sessionId`, so the e-book
-      // reader location keyed under "untitled:1" must migrate
-      // to the new "/workspace/untitled.md" key.
+      // Save As rewrites id/path (id === path), while sessionId stays stable.
+      // View state is keyed by sessionId, so e-book location carries over
+      // without a path-based rekey race.
       id: "/workspace/untitled.md",
       name: "untitled.md",
       path: "/workspace/untitled.md",

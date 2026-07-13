@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   clampEditorViewState,
+  documentViewStateKey,
   patchDocumentViewState,
   pruneDocumentViewStates,
   rekeyDocumentViewState,
@@ -64,5 +65,22 @@ describe("document view state", () => {
         preview: { scrollRatio: 0.25 },
       },
     });
+  });
+
+  it("keys continuity by sessionId so Save As path changes do not require rekey", () => {
+    expect(
+      documentViewStateKey({
+        sessionId: "session:untitled-1",
+      }),
+    ).toBe("session:untitled-1");
+    expect(
+      documentViewStateKey({
+        sessionId: "session:untitled-1",
+      }),
+    ).toBe(
+      documentViewStateKey({
+        sessionId: "session:untitled-1",
+      }),
+    );
   });
 });
