@@ -574,34 +574,34 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `1.8.0` is published",
-        "Current package/app version is `1.8.0`",
+        "Current package/app version is `1.10.0`",
         "The published App Store version is `1.8.0`",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `1.8.0`",
-        "Current source / Developer version: `1.8.0`",
+        "Current source / Developer version: `1.10.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`1.8.0`",
+        "Current package/app version: **`1.10.0`",
         "Published Mac App Store version: **`1.8.0`",
         "v1.10 Single-document Structure Foundation S1–S4 is source complete",
       ],
       "docs/current-work.md": [
-        "Scope: v1.10 source complete; representative packaged structure smoke passed",
-        "Source-complete Queue — v1.10 Single-document Structure Foundation",
+        "Scope: v1.10 TestFlight candidate prepared; representative packaged structure smoke passed",
+        "TestFlight Candidate Queue — v1.10 Single-document Structure Foundation",
       ],
       "docs/development-automation.md": [
         "Phase: **v1.10 extended packaged structure verification**",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree is **`1.8.0`",
+        "Package/app version in tree is **`1.10.0`",
         "Published Mac App Store version is **`1.8.0`",
-        "v1.10 S1–S4 is source complete",
+        "v1.10 S1–S4 is a TestFlight candidate",
       ],
       "docs/roadmap.md": [
-        "Package/app version in tree: **`1.8.0`",
+        "Package/app version in tree: **`1.10.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "v1.10 Single-document Structure Foundation is source complete",
+        "v1.10 Single-document Structure Foundation is a TestFlight candidate",
       ],
     };
 

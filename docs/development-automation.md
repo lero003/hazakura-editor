@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-14 (v1.10 representative packaged smoke passed)
+Last reviewed: 2026-07-14 (v1.10 version preparation complete for TestFlight)
 
 ## Purpose
 

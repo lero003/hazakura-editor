@@ -228,7 +228,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.8.0` across npm, Tauri, and Cargo metadata. It is the published Mac App Store version; extended TestFlight breadth and spoken VoiceOver remain v1.8 follow-up evidence.
+- Current package/app version is `1.10.0` across npm, Tauri, and Cargo metadata (TestFlight submission candidate). The published Mac App Store version is `1.8.0`; extended TestFlight breadth and spoken VoiceOver remain v1.8 follow-up evidence.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.8.0`; extended recovery, long-reference, and accessibility smoke continues as v1.8 follow-up rather than reopening the published lane.
 - The latest prepared GitHub source / local-app tag is [v1.8.0](https://github.com/lero003/hazakura-editor/tree/v1.8.0).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

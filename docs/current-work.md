@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.10 source complete; representative packaged structure smoke passed
+Scope: v1.10 TestFlight candidate prepared; representative packaged structure smoke passed
 Authority: High
-Last reviewed: 2026-07-14 (v1.10 representative packaged smoke passed)
+Last reviewed: 2026-07-14 (v1.10 version preparation complete for TestFlight)
 
 ## Purpose
 
@@ -18,15 +18,16 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/archive/reviews/import-assist-boundary-review-v1.6.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
 | **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues as v1.8 follow-up; do not reopen without a reproduced hotfix. |
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
-| **v1.9** | **Source complete / release not prepared** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. Review fixes include live locale refresh and kana copy. Version remains `1.8.0`. |
-| **v1.10** | **Source complete / representative packaged smoke passed** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. A fresh local bundle passed the temporary-fixture Outline/advice/edit/Undo path; extended manual breadth remains. Version remains `1.8.0`. |
+| **v1.9** | **Source complete / ships in `1.10.0`** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. Review fixes include live locale refresh and kana copy. v1.9 stayed source-complete without its own release and now ships inside the `1.10.0` TestFlight candidate. |
+| **v1.10** | **TestFlight candidate prepared** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. A fresh local bundle passed the temporary-fixture Outline/advice/edit/Undo path; extended manual breadth remains. In-tree version is `1.10.0`; published Mac App Store version is still `1.8.0`. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
-Package/app version in tree is **`1.8.0`**; published Mac App Store version is
-also **`1.8.0`**. See `current-status.md` for lane truth; treat Connect as
-authoritative for store counters.
+Package/app version in tree is **`1.10.0`** (TestFlight submission
+candidate); the published Mac App Store version is **`1.8.0`**. See
+`current-status.md` for lane truth; treat Connect as authoritative for store
+counters.
 
-## Source-complete Queue — v1.10 Single-document Structure Foundation
+## TestFlight Candidate Queue — v1.10 Single-document Structure Foundation
 
 Goal: 一つの Markdown source の構造を、sourceを書き換えず同じ規則で読み取り、
 必要な場合だけ明示的に整えられる基盤へ進める。Source:
@@ -44,7 +45,7 @@ Goal: 一つの Markdown source の構造を、sourceを書き換えず同じ規
 
 W1 Returning Start Panel、W2 pane state copy、W3 `sessionId` view continuity、
 W4 Command Palette ja/kana discoverability は source 実装と再レビューを完了した。
-Package/app versionはまだ `1.8.0` であり、v1.9 release preparationは未実施。
+v1.9は独立リリースせず、`1.10.0` TestFlight candidate に同梱した。
 
 ## Product Boundary
 

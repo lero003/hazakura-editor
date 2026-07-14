@@ -15,7 +15,8 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.8.0`** (published). Local
+- Package/app version in tree: **`1.10.0`** (TestFlight submission
+  candidate; the published Mac App Store version remains `1.8.0`). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.8.0`.** App Review passed and the
   release was published (user-reported 2026-07-14). Release notes:
@@ -45,14 +46,15 @@ Current release state:
   rendering, L Mode Reference continuity, keyboard / VoiceOver semantics, kana
   UI copy, export preflight, theme cost, and failure-state messaging. No new
   product surface. Do not reopen without a reproduced hotfix.
-- **v1.9 Writing Loop Clarity is source complete; release preparation is not
-  started.** W1–W4 organize Preview / Reference / e-book / Outline / Diff /
+- **v1.9 Writing Loop Clarity is source complete and ships in `1.10.0`.**
+  W1–W4 organize Preview / Reference / e-book / Outline / Diff /
   L Mode around `書く・読む・確かめる` without adding chrome or a new model.
-- **v1.10 Single-document Structure Foundation is source complete with
-  representative packaged proof.** One source-offset model now drives Outline,
+- **v1.10 Single-document Structure Foundation is a TestFlight candidate.**
+  One source-offset model now drives Outline,
   e-book, and EPUB; Outline adds read-only structure/advice plus one explicit,
   Undo-able heading-level transaction. The temporary-fixture Outline/advice/edit/
-  Undo path passed; extended manual breadth and version/release preparation remain.
+  Undo path passed; `1.10.0` version preparation is complete. Extended manual
+  breadth and the published release remain.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,
   and additional `v1.xx` releases as useful. Clarify the writing loop,
   add single-document structure, then run a larger packaged distribution test
@@ -204,10 +206,12 @@ Near-term phase order:
      deterministic full tests, pathless recovery proof, packaged Reference
      Compare, long-reference and a11y gates shipped. Extended TestFlight and
      spoken VoiceOver breadth remain follow-up evidence.
-   - **v1.9 Writing Loop Clarity (source complete):** organize Preview / Reference /
+   - **v1.9 Writing Loop Clarity (source complete; ships in `1.10.0`):**
+     organize Preview / Reference /
      e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
      adding chrome.
-   - **v1.10 Single-document Structure Foundation (source complete):** interpret headings,
+   - **v1.10 Single-document Structure Foundation (TestFlight candidate
+     prepared):** interpret headings,
      frontmatter, page-break markers, and navigation candidates through one
      shared structure model; show structure and allow only bounded, explicit,
      undoable single-buffer structure edits. No multi-file Book Scope.

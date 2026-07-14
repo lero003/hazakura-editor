@@ -8,8 +8,10 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`1.8.0`** across npm, Tauri, Cargo,
-  and lockfile metadata. Local package provenance (build counter, pkg path,
+- Current package/app version: **`1.10.0`** across npm, Tauri, Cargo,
+  and lockfile metadata. The published Mac App Store version remains
+  `1.8.0`; `1.10.0` is the TestFlight submission candidate.
+  Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
   and the release was published (user-reported 2026-07-14). App/package
@@ -34,8 +36,8 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 - **v1.9 Writing Loop Clarity W1–W4 are source complete and reviewed.** The
   review fixed stale Command Palette labels when locale changes while the
   palette is open, aligned the returning Start Panel kana CTA, and repaired
-  release/lane document checks. No v1.9 version bump or release preparation
-  has run.
+  release/lane document checks. v1.9 stayed source-complete without its own
+  release preparation and now ships inside the `1.10.0` TestFlight candidate.
 - **v1.10 Single-document Structure Foundation S1–S4 is source complete and
   has representative packaged interaction proof.** `parseMarkdownStructure` provides
   one source-offset interpretation of closed leading frontmatter, ATX headings,
@@ -711,11 +713,12 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **v1.10 S1–S4 is source complete with representative packaged proof.** Finish
-   the remaining source-jump, IME, Save As, recovery, e-book/EPUB, and signed
-   TestFlight items in `docs/smoke-checklist.md` when release breadth is needed.
-   Keep package/app version at `1.8.0` until an explicit release-preparation
-   decision; do not infer TestFlight or signed evidence from source checks.
+2. **v1.10 S1–S4 is source complete with representative packaged proof.**
+   `1.10.0` version preparation is complete and the release is ready for
+   TestFlight submission; the published Mac App Store version remains `1.8.0`.
+   Finish the remaining source-jump, IME, Save As, recovery, e-book/EPUB, and
+   signed TestFlight items in `docs/smoke-checklist.md` when release breadth is
+   needed. Do not infer TestFlight or signed evidence from source checks.
 3. Keep v1.9 source complete but unreleased until an explicit version/release
    preparation decision. Continue v1.10 inside one Markdown buffer, then run
    the v1.11+ distribution-confidence gate before multi-file Book Scope.
@@ -735,4 +738,5 @@ baseline, and smoke evidence are archived under
    `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
 8. Do not tag or publish without explicit approval. In-tree version is
-   `1.8.0`; the published Mac App Store version is also `1.8.0`.
+   `1.10.0` (TestFlight submission candidate); the published Mac App Store
+   version is `1.8.0`.

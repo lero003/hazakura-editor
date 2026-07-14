@@ -7,8 +7,9 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 ## Current State
 
-- Package/app version in tree is **`1.8.0`** and is the published Mac App
-  Store version. App Review passed and publication was user-reported on
+- Package/app version in tree is **`1.10.0`** (TestFlight submission
+  candidate); the published Mac App
+  Store version is **`1.8.0`**. App Review passed and publication was user-reported on
   2026-07-14 (build `89`). Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - Selected and published candidate is **`1.8.0` build `89`** from source commit
@@ -28,8 +29,9 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 - v1.9 Writing Loop Clarity W1–W4 are source complete and reviewed. The review
   fixed Command Palette labels staying stale when locale changed while open,
   aligned the kana returning CTA, and repaired living-doc release/lane checks.
-  Package/app version remains `1.8.0`; no v1.9 release preparation has run.
-- **v1.10 S1–S4 is source complete with representative packaged smoke.** The shared
+  v1.9 stayed source-complete without its own release preparation and now ships
+  inside the `1.10.0` TestFlight candidate.
+- **v1.10 S1–S4 is a TestFlight candidate with representative packaged smoke.** The shared
   source-offset model drives Outline, e-book chapters/page-breaks, and EPUB
   navigation. Outline now shows hierarchy/page-breaks, four non-blocking advice
   kinds, and explicit H1–H6 one-level controls. The edit revalidates the live
@@ -109,7 +111,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    representative Outline/advice/edit/Undo path have passed. Use the generated
    overview/long-section documents to finish source-jump, IME, Save As,
    recovery, e-book/EPUB, and signed TestFlight breadth only when that evidence
-   is needed. Keep source version `1.8.0`; no release prep, section move, or
+   is needed. In-tree version is `1.10.0` (TestFlight candidate); published
+   version stays `1.8.0` until App Review. No section move or
    Book Scope work is implied.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
