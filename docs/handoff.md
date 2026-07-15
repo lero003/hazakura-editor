@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
+Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
 
 ## Current State
 
-- Package/app version in tree is **`1.12.0`** (active v1.12 OKF scaffold lane;
-  v1.11 remains a held local signed TestFlight candidate). The published Mac App
+- Package/app version in tree is **`1.12.0`** with a verified local signed
+  TestFlight candidate for the v1.12 OKF scaffold lane. The published Mac App
   Store version is **`1.8.0`**. App Review passed and publication was user-reported on
   2026-07-14 (build `89`). Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
@@ -44,7 +44,7 @@ Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
   three overview advice kinds, 803-line advice, dirty transition, and single-step
   Undo restoration. Source-jump breadth, IME, Save As, recovery, e-book/EPUB,
   and signed TestFlight remain open manual evidence and move into v1.11 S4.
-- **v1.12 OKF Starter Scaffold is the active implementation lane.** Explicit
+- **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
   create of minimal / book-like Markdown trees from Command Palette, folder
   context menu, workspace **新規 (+)**, and OS **File → 知識フォルダのひな形**.
   Bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable).
@@ -53,7 +53,10 @@ Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
   failures, and keyboard-complete sidebar New menu semantics. A representative
   developer-app smoke created both templates through all four entry points,
   preserved existing roots with `-2` names, expanded the local date, opened
-  `index.md`, and returned a required-clean explicit OKF review. Contract:
+  `index.md`, and returned a required-clean explicit OKF review. The signed
+  universal app/pkg then passed signature, entitlement, notice, metadata, and
+  checksum verification. Candidate specifics remain in ignored
+  `docs/internal/app-store-candidates/latest.json`. Contract:
   `docs/v1.12-okf-scaffold-design.md`.
 - **Shared OKF pin:** review and scaffolds use one Draft pin (`ee67a5c` /
   v0.1). When upstream OKF moves, update pure model, fixtures, scaffold assets,
@@ -128,10 +131,9 @@ Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.12 local candidate + TestFlight follow-up:** source/build/sandbox gates
-   and the representative four-entry scaffold smoke pass. Commit the source,
-   then create and verify the signed local candidate. No full OKF scan on
-   workspace open. Upload remains
+1. **v1.12 TestFlight follow-up:** source/build/sandbox gates, representative
+   four-entry scaffold smoke, and the signed local candidate pass. No full OKF
+   scan on workspace open. Upload remains
    a separate explicit action. After installation, repeat the core OKF flow
    and the inherited IME/Save As/recovery/e-book/EPUB/a11y breadth.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
@@ -236,8 +238,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/archive/operations/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. `1.8.0` passed App Review and is
-   published on the Mac App Store (build `89`). The active lane is **v1.12 OKF
-   Starter Scaffold**; v1.11 remains a held local TestFlight candidate.
+   published on the Mac App Store (build `89`). **v1.12 OKF Starter Scaffold**
+   is locally candidate-ready; v1.11 is held inside that candidate.
 6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
    disposable separate-bundle Developer app also restored a force-terminated
    pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.
@@ -325,6 +327,12 @@ Read it only for historical context.
   Palette, root context, sidebar New, and OS File menu; verified `-2` collision
   naming, actual `2026-07-15` log dates, `index.md` opening, menu Escape, and a
   required-clean explicit OKF review.
+- 2026-07-15 v1.12 local candidate: source commit was fixed before packaging;
+  the universal App Store app and installer package passed deep signature,
+  app/helper entitlement, bundled notice, version/build, installer signature,
+  metadata, and SHA-256 verification. Exact candidate values live only in
+  ignored `docs/internal/app-store-candidates/latest.json`. No upload or
+  TestFlight installation was performed.
 - 2026-07-15 v1.11 S0–S3 source hardening: focused OKF/S3 frontend passed
   (**8 files / 82 tests**), full frontend passed (**178 files / 1511 tests**),
   focused Rust OKF passed (**17 tests**), and full Rust passed (**355 passed /

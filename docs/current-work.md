@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.12 OKF Starter Scaffold; v1.11 candidate held
+Scope: v1.12 local TestFlight candidate; v1.11 held inside it
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
+Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
 
 ## Purpose
 
@@ -21,11 +21,12 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.9** | **Source complete / rolled into current candidate** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. The work is rolled into the in-tree `1.11.0` candidate rather than published alone. |
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
 | **v1.11** | **Local TestFlight candidate ready / held** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review. Local signed candidate ready; TestFlight install remains separate. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
-| **v1.12** | **Source + manual smoke complete / candidate next** | OKF starter scaffold (minimal + book-like). Explicit bounded multi-file write; no Book Scope / export. Contract: `docs/v1.12-okf-scaffold-design.md`. |
+| **v1.12** | **Local TestFlight candidate ready** | OKF starter scaffold (minimal + book-like). Source, representative four-entry smoke, and signed local package gates passed; upload/install are separate. Contract: `docs/v1.12-okf-scaffold-design.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
 
 Package/app version in tree is **`1.12.0`**; the published Mac App Store
-version is **`1.8.0`**. v1.11 remains a held local TestFlight candidate. See
+version is **`1.8.0`**. v1.12 is the current local signed TestFlight candidate;
+v1.11 is held inside it. See
 `current-status.md` for lane truth; treat Connect as authoritative for store
 counters.
 
@@ -42,7 +43,8 @@ Source: `docs/v1.12-okf-scaffold-design.md`.
 | **Done / hardened** | **T2 — Safe Editor wiring** | 全4入口。`index.md` open / tree refreshの部分失敗をstatusへ残す。サイドバー新規menuは展開状態と矢印/Home/End/Escape操作を持つ。 |
 | **Done / docs** | **Pin evolution contract** | `docs/okf-spec-pin.md` — pin 更新時に review / fixtures / scaffold assets をセット更新する前提。 |
 | **Done / representative smoke** | **T3 — Entry-point breadth / release polish** | 全4入口、両template、`-2`衝突名、実日付、`index.md` open、required-clean点検、Escape復帰を確認。部分失敗表示は自動testで固定。release notes草案は公開判断時。 |
-| **Next / release boundary** | **Local signed candidate** | sourceをcommit後、`release:candidate -- --with-app-store-pkg --no-prune-pkgs`で署名付きpkgを作成・検証する。uploadは別操作。 |
+| **Done / local candidate** | **Signed App Store package** | source commitからuniversal app/pkgを作成し、app/helper entitlement、notice、installer署名、metadata、checksumを確認。詳細はignored `docs/internal/app-store-candidates/latest.json`。 |
+| **Next / user proof** | **TestFlight install / manual smoke** | upload後、実機で起動、4入口のひな形作成→点検、既存daily-trust breadthを確認する。uploadはこの作業では行わない。 |
 
 ### Closed / Held — v1.11 OKF Draft Compatibility Preview
 

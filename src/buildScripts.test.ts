@@ -640,10 +640,10 @@ describe("macOS build scripts", () => {
         "Current package/app version: **`1.12.0`",
         "Published Mac App Store version: **`1.8.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
-        "v1.12 OKF Starter Scaffold is the active implementation lane",
+        "v1.12 OKF Starter Scaffold is locally candidate-ready",
       ],
       "docs/current-work.md": [
-        "Scope: v1.12 OKF Starter Scaffold; v1.11 candidate held",
+        "Scope: v1.12 local TestFlight candidate; v1.11 held inside it",
         "Active Queue — v1.12 OKF Starter Scaffold",
       ],
       "docs/development-automation.md": [
@@ -652,7 +652,7 @@ describe("macOS build scripts", () => {
       "docs/handoff.md": [
         "Package/app version in tree is **`1.12.0`",
         "Published Mac App Store version is **`1.8.0`",
-        "v1.12 OKF Starter Scaffold is the active implementation lane",
+        "v1.12 OKF Starter Scaffold is locally candidate-ready",
       ],
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.12.0`",

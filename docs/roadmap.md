@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.12 OKF scaffold lane + shared OKF pin)
+Last reviewed: 2026-07-15 (v1.12 local TestFlight candidate ready)
 
 ## Current Position
 
@@ -15,7 +15,7 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.12.0`** (v1.12 OKF scaffold lane; v1.11 local candidate held;
+- Package/app version in tree: **`1.12.0`** (v1.12 local signed candidate ready;
   the published Mac App Store version remains `1.8.0`). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.8.0`.** App Review passed and the
@@ -60,9 +60,10 @@ Current release state:
   explicit, bounded, read-only review of an OKF v0.1 Draft root, then runs the
   larger packaged distribution-confidence matrix. Full Book Scope remains v2.
   Shared pin / upgrade process: `docs/okf-spec-pin.md`.
-- **v1.12 OKF Starter Scaffold is the active implementation lane.** Explicit
+- **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
   multi-file starters (minimal + book-like) from palette, sidebar, context menu,
-  and OS File menu. Templates and integrity checks share the pin in
+  and OS File menu. Source, representative four-entry smoke, and signed local
+  package gates passed; upload/install remain separate. Templates and integrity checks share the pin in
   `docs/okf-spec-pin.md`. Contract: `docs/v1.12-okf-scaffold-design.md`.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`, `v1.11`,
   `v1.12`, and additional `v1.xx` releases as useful. Clarify the writing loop,

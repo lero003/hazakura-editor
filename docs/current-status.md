@@ -3,16 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
+Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.12.0`** across npm, Tauri, Cargo,
   and lockfile metadata. The published Mac App Store version remains
-  `1.8.0`. v1.11 remains a held local signed TestFlight candidate; v1.12 adds
-  OKF starter scaffolds on top of that base. Upload, TestFlight installation,
-  App Review, and public release remain separate.
+  `1.8.0`. v1.12 has a verified local signed TestFlight candidate containing
+  the OKF starter scaffolds. Upload, TestFlight installation, App Review, and
+  public release remain separate.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
@@ -56,7 +56,7 @@ Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
   IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof
   and move into the v1.11 distribution-confidence matrix rather than reopening
   v1.10.
-- **v1.12 OKF Starter Scaffold is the active implementation lane.** Explicit
+- **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
   Command Palette / folder-context actions create a new uniquely named folder
   with fixed minimal or book-like Markdown templates (OKF v0.1 Draft pin
   `ee67a5c`), open `index.md`, and invite a separate explicit review. No Book
@@ -71,8 +71,11 @@ Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
   build, and sandbox/helper entitlement checks pass. A representative hands-on
   pass created both templates through all four entry points, preserved existing
   roots with `-2` collision names, expanded the actual local date, opened
-  `index.md`, and returned a required-clean explicit OKF review. A signed local
-  candidate is the next release boundary.
+  `index.md`, and returned a required-clean explicit OKF review. The signed
+  universal App Store package then passed app/helper signature, entitlement,
+  notice, installer-signature, metadata, and checksum verification. Candidate
+  specifics remain in `docs/internal/app-store-candidates/latest.json`;
+  TestFlight upload/install and hands-on device testing remain user-side proof.
 - **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only
@@ -327,9 +330,9 @@ Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
 - No remaining source-level release blocker is known for the closed v1.6,
   v1.7, or v1.8 lines. Do not reopen them without a reproduced gap. The
   v1.9 Writing Loop Clarity and v1.10 Single-document Structure Foundation are
-  implementation complete. The active implementation lane is **v1.12 OKF Starter
-  Scaffold**; v1.11 OKF Draft Compatibility Preview remains a held local
-  TestFlight candidate. Shared OKF pin: `docs/okf-spec-pin.md`.
+  implementation complete. **v1.12 OKF Starter Scaffold** is locally
+  candidate-ready; v1.11 OKF Draft Compatibility Preview is held inside that
+  candidate. Shared OKF pin: `docs/okf-spec-pin.md`.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -753,7 +756,8 @@ baseline, and smoke evidence are archived under
 - `docs/assist-surface-strategy.md`: assist-surface direction.
 - `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, v1.11 OKF / distribution-confidence, and v2 sequencing.
 - `docs/v1.10-single-document-structure-design.md`: completed v1.10 structure contract.
-- `docs/v1.11-okf-draft-preview-design.md`: active v1.11 implementation and verification contract.
+- `docs/v1.11-okf-draft-preview-design.md`: completed v1.11 implementation and verification contract.
+- `docs/v1.12-okf-scaffold-design.md`: current local-candidate implementation and verification contract.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
@@ -761,12 +765,14 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Upload the local `1.11.0` candidate only with explicit approval.** Re-run
-   the OKF review → edit → recheck flow on the resulting
-   TestFlight install; keep unknown fields/types and broken links tolerant.
-3. Keep v1.10 implementation closed. Fold its remaining source-jump, IME,
-   Save As, recovery, e-book/EPUB, and signed TestFlight breadth into v1.11 S4.
-   Do not infer signed evidence from source or local-app checks.
+2. **Upload the local `1.12.0` candidate only with explicit approval.** On the
+   resulting TestFlight install, repeat both scaffold templates through the
+   four entry points and the explicit OKF review; keep unknown fields/types and
+   broken links tolerant.
+3. Keep v1.9–v1.11 implementation closed inside the v1.12 candidate. Confirm
+   their remaining IME, Save As, recovery, e-book/EPUB, a11y, and long/failure
+   breadth on the signed TestFlight install. Do not infer signed interaction
+   evidence from source or local-app checks.
 4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces. Historical notes remain in
    `docs/archive/operations/v1.1-v1.2-followup.md` and
@@ -783,4 +789,4 @@ baseline, and smoke evidence are archived under
    `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
 8. Do not tag, upload, submit, or publish without explicit approval. In-tree
-   version is `1.11.0`; the published Mac App Store version is `1.8.0`.
+   version is `1.12.0`; the published Mac App Store version is `1.8.0`.
