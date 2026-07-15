@@ -17,7 +17,7 @@ fn agent_window_background_color_returns_palette_color_for_known_theme() {
     let edohigan = agent_window_background_color("edohigan");
     assert_eq!(edohigan, tauri::window::Color(0x2a, 0x20, 0x30, 0xff));
     let yakou = agent_window_background_color("yakou");
-    assert_eq!(yakou, tauri::window::Color(0x10, 0x10, 0x1a, 0xff));
+    assert_eq!(yakou, tauri::window::Color(0x12, 0x10, 0x2a, 0xff));
     let shokou = agent_window_background_color("shokou");
     assert_eq!(shokou, tauri::window::Color(0xee, 0xf5, 0xfb, 0xff));
     let crt = agent_window_background_color("crt");

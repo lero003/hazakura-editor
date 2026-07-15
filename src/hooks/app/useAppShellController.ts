@@ -1466,6 +1466,7 @@ export function useAppShellController() {
     rerunOkfReview,
     requestCancelOkfReview,
   } = useOkfReview({
+    editorPaneRef,
     menuLanguage,
     openWorkspaceFile,
     setStatus,

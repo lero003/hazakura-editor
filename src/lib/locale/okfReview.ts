@@ -26,10 +26,12 @@ export type OkfReviewCopy = {
   rerun: string;
   close: string;
   openConcept: string;
+  openForEdit: string;
   filesHeading: string;
-  findingsHeading: string;
-  priorityHeading: string;
-  optionalHeading: string;
+  requiredHeading: string;
+  conversionHeading: string;
+  improvementHeading: string;
+  infoHeading: string;
   emptyFiles: string;
   emptyFindings: string;
   findingsTruncated: string;
@@ -50,7 +52,9 @@ export type OkfReviewCopy = {
   severityFailure: string;
   severityAdvice: string;
   severityInfo: string;
+  severityConversion: string;
   openDirty: string;
+  statusOpenedForEdit: string;
   contextMenuReview: string;
   statusStarted: string;
   statusDone: string;
@@ -58,12 +62,17 @@ export type OkfReviewCopy = {
   statusNoWorkspace: string;
   statusEmpty: string;
   statusPlainMarkdown: string;
+  statusPlainMarkdownPreparation: string;
+  statusPlainMarkdownFailures: string;
   statusOkfClean: string;
   statusOkfFailures: string;
   statusOkfAdviceOnly: string;
   detailsHeading: string;
-  morePriority: string;
-  moreOptional: string;
+  resultsHeading: string;
+  moreRequired: string;
+  moreConversion: string;
+  moreImprovement: string;
+  moreInfo: string;
 };
 
 export function formatOkfFindingMessage(
@@ -101,19 +110,33 @@ export function formatOkfSurfaceStatus(
     case "empty":
       return copy.statusEmpty;
     case "plain-markdown":
-      return copy.statusPlainMarkdown;
-    case "okf-like":
-      if (presentation.failureCount > 0) {
+      if (presentation.requiredCount > 0) {
         return formatCountMessage(
-          copy.statusOkfFailures,
-          presentation.failureCount,
+          copy.statusPlainMarkdownFailures,
+          presentation.requiredCount,
           language,
         );
       }
-      if (presentation.optionalCount > 0) {
+      if (presentation.conversionCount > 0) {
+        return formatCountMessage(
+          copy.statusPlainMarkdownPreparation,
+          presentation.conversionCount,
+          language,
+        );
+      }
+      return copy.statusPlainMarkdown;
+    case "okf-like":
+      if (presentation.requiredCount > 0) {
+        return formatCountMessage(
+          copy.statusOkfFailures,
+          presentation.requiredCount,
+          language,
+        );
+      }
+      if (presentation.improvementCount > 0) {
         return formatCountMessage(
           copy.statusOkfAdviceOnly,
-          presentation.optionalCount,
+          presentation.improvementCount,
           language,
         );
       }
@@ -235,13 +258,15 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       scanning: "てんけん ちゅう…",
       cancelling: "ちゅうし しています…",
       cancel: "ちゅうし",
-      rerun: "もういちど",
+      rerun: "へんこうしたら もういちど てんけん",
       close: "とぢる",
       openConcept: "ひらく",
+      openForEdit: "ひらいて なおす",
       filesHeading: "ファイル",
-      findingsHeading: "すべての けんしゅつ",
-      priorityHeading: "いま なおすと きくこと",
-      optionalHeading: "にんいの かいぜんあん",
+      requiredHeading: "なおした ほうが よいこと",
+      conversionHeading: "OKF として ととのえる じゅんび",
+      improvementHeading: "にんいの かいぜんあん",
+      infoHeading: "さんこうじょうほう",
       emptyFiles: "Markdown ファイルは ありません。",
       emptyFindings: "けんしゅつは ありません。",
       findingsTruncated:
@@ -269,15 +294,22 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       severityFailure: "なおした ほうが よい",
       severityAdvice: "にんい",
       severityInfo: "さんこう",
+      severityConversion: "じゅんび",
       openDirty: "ひらく（みほぞん）",
       contextMenuReview: "ちしきフォルダ（OKF）を てんけん",
       statusStarted: "ちしきフォルダ（OKF）を てんけん しています…",
       statusDone: "ちしきフォルダ（OKF）の てんけんが おわりました。",
       statusFailed: "ちしきフォルダ（OKF）の てんけんに しっぱい しました。",
+      statusOpenedForEdit:
+        "ファイルを ひらきました。なおしたら もういちど「ちしきフォルダ（OKF）を てんけん」で かくにんして ください。",
       statusNoWorkspace: "ところを ひらいてから てんけんして ください。",
       statusEmpty: "この フォルダに Markdown ファイルは ありません。",
       statusPlainMarkdown:
-        "この フォルダは ふつうの げんこうフォルダとして もんだいありません。OKF として あつかう ときだけ、かくノートの せんとうに type つき YAML が ひつようです。Hazakura は いまのまま かけます。",
+        "この フォルダは ふつうの げんこうフォルダです。Hazakura では いまのまま かけます。",
+      statusPlainMarkdownPreparation:
+        "この フォルダは ふつうの げんこうフォルダです。いまのまま かけます。OKF として ととのえる ばあいは、じゅんびが {count} けん あります。",
+      statusPlainMarkdownFailures:
+        "この フォルダは ふつうの げんこうフォルダです。OKF の じゅんびとは べつに、かくにんした ほうが よい点が {count} けん あります。",
       statusOkfClean:
         "ちしきフォルダとして よめます。ごかん上の もんだいは みつかりませんでした。",
       statusOkfFailures:
@@ -285,8 +317,11 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       statusOkfAdviceOnly:
         "ちしきフォルダとして よめます。にんいの かいぜんあんが {count} けん あります。",
       detailsHeading: "しょうさい（しよう・けんすう）",
-      morePriority: "ほかに なおした ほうが よい点が {count} けん あります。",
-      moreOptional: "ほかに にんいの けんが {count} けん あります。",
+      resultsHeading: "ファイルと さんこうじょうほう",
+      moreRequired: "ほかに なおした ほうが よい点が {count} けん あります。",
+      moreConversion: "ほかに OKF の じゅんびが {count} けん あります。",
+      moreImprovement: "ほかに かいぜんあんが {count} けん あります。",
+      moreInfo: "ほかに さんこうが {count} けん あります。",
     };
   }
 
@@ -302,13 +337,15 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       scanning: "点検中…",
       cancelling: "中止しています…",
       cancel: "中止",
-      rerun: "再実行",
+      rerun: "変更後に再点検",
       close: "閉じる",
       openConcept: "開く",
+      openForEdit: "開いて修正",
       filesHeading: "ファイル",
-      findingsHeading: "すべての検出",
-      priorityHeading: "いま直すと効くこと",
-      optionalHeading: "任意の改善案",
+      requiredHeading: "直した方がよいこと",
+      conversionHeading: "OKF として整える準備",
+      improvementHeading: "任意の改善案",
+      infoHeading: "参考情報",
       emptyFiles: "Markdown ファイルはありません。",
       emptyFindings: "検出はありません。",
       findingsTruncated:
@@ -336,15 +373,22 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       severityFailure: "直した方がよい",
       severityAdvice: "任意",
       severityInfo: "参考",
+      severityConversion: "準備",
       openDirty: "開く（未保存）",
       contextMenuReview: "知識フォルダ（OKF）を点検",
       statusStarted: "知識フォルダ（OKF）を点検しています…",
       statusDone: "知識フォルダ（OKF）の点検が終わりました。",
       statusFailed: "知識フォルダ（OKF）の点検に失敗しました。",
+      statusOpenedForEdit:
+        "ファイルを開きました。修正したら、もう一度「知識フォルダ（OKF）を点検」で確認してください。",
       statusNoWorkspace: "ワークスペースを開いてから点検してください。",
       statusEmpty: "このフォルダに Markdown ファイルはありません。",
       statusPlainMarkdown:
-        "このフォルダは通常の原稿フォルダとして問題ありません。OKF として扱う場合のみ、各ノートの先頭に type 付き YAML が必要です。Hazakura は今のまま書けます。",
+        "このフォルダは通常の原稿フォルダです。Hazakura では今のまま書けます。",
+      statusPlainMarkdownPreparation:
+        "このフォルダは通常の原稿フォルダです。今のまま書けます。OKF として整える場合は、準備項目が {count} 件あります。",
+      statusPlainMarkdownFailures:
+        "このフォルダは通常の原稿フォルダです。OKF の準備とは別に、確認した方がよい点が {count} 件あります。",
       statusOkfClean:
         "知識フォルダとして読めます。互換上の問題は見つかりませんでした。",
       statusOkfFailures:
@@ -352,8 +396,11 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       statusOkfAdviceOnly:
         "知識フォルダとして読めます。任意の改善案が {count} 件あります。",
       detailsHeading: "詳細（仕様・件数）",
-      morePriority: "ほかに直した方がよい点が {count} 件あります。",
-      moreOptional: "ほかに任意の項目が {count} 件あります。",
+      resultsHeading: "ファイルと参考情報",
+      moreRequired: "ほかに直した方がよい点が {count} 件あります。",
+      moreConversion: "ほかに OKF の準備項目が {count} 件あります。",
+      moreImprovement: "ほかに改善案が {count} 件あります。",
+      moreInfo: "ほかに参考情報が {count} 件あります。",
     };
   }
 
@@ -368,13 +415,15 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     scanning: "Reviewing…",
     cancelling: "Cancelling…",
     cancel: "Cancel",
-    rerun: "Rerun",
+    rerun: "Review changes",
     close: "Close",
     openConcept: "Open",
+    openForEdit: "Open to edit",
     filesHeading: "Files",
-    findingsHeading: "All findings",
-    priorityHeading: "Worth fixing first",
-    optionalHeading: "Optional improvements",
+    requiredHeading: "Needs attention",
+    conversionHeading: "Prepare as OKF",
+    improvementHeading: "Optional improvements",
+    infoHeading: "Reference information",
     emptyFiles: "No Markdown files.",
     emptyFindings: "No findings.",
     findingsTruncated:
@@ -402,15 +451,22 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     severityFailure: "Worth fixing",
     severityAdvice: "Optional",
     severityInfo: "Info",
+    severityConversion: "Prep",
     openDirty: "Open (dirty)",
     contextMenuReview: "Review knowledge folder (OKF)",
     statusStarted: "Reviewing knowledge folder (OKF)…",
     statusDone: "Knowledge-folder (OKF) review finished.",
     statusFailed: "Knowledge-folder (OKF) review failed.",
+    statusOpenedForEdit:
+      "Opened the file. After editing, run “Review knowledge folder (OKF)” again to recheck.",
     statusNoWorkspace: "Open a workspace before reviewing a knowledge folder.",
     statusEmpty: "This folder has no Markdown files.",
     statusPlainMarkdown:
-      "This looks like an ordinary manuscript folder, which is fine. Only when treating it as OKF do notes need leading YAML with a type. You can keep writing in Hazakura as usual.",
+      "This is an ordinary manuscript folder. You can keep writing in Hazakura as usual.",
+    statusPlainMarkdownPreparation:
+      "This is an ordinary manuscript folder and remains writable as-is. Preparing it as OKF would require {count} item(s).",
+    statusPlainMarkdownFailures:
+      "This is an ordinary manuscript folder. Separate from OKF preparation, {count} item(s) are worth checking.",
     statusOkfClean:
       "Readable as a knowledge folder. No compatibility issues were found.",
     statusOkfFailures:
@@ -418,7 +474,10 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     statusOkfAdviceOnly:
       "Readable as a knowledge folder. {count} optional improvement(s) available.",
     detailsHeading: "Details (spec and counts)",
-    morePriority: "{count} more item(s) worth fixing.",
-    moreOptional: "{count} more optional item(s).",
+    resultsHeading: "Files and reference information",
+    moreRequired: "{count} more item(s) need attention.",
+    moreConversion: "{count} more OKF preparation item(s).",
+    moreImprovement: "{count} more optional improvement(s).",
+    moreInfo: "{count} more informational item(s).",
   };
 }

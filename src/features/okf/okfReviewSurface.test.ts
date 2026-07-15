@@ -129,7 +129,7 @@ describe("classifyOkfFolderKind", () => {
 });
 
 describe("presentOkfReviewSurface", () => {
-  it("splits priority failures from optional findings", () => {
+  it("splits required, improvement, and informational findings", () => {
     const result = baseResult({
       summary: {
         ...baseResult().summary,
@@ -183,8 +183,80 @@ describe("presentOkfReviewSurface", () => {
 
     const presentation = presentOkfReviewSurface(result);
     expect(presentation.folderKind).toBe("okf-like");
-    expect(presentation.priorityFindings).toHaveLength(2);
-    expect(presentation.optionalFindings).toHaveLength(1);
+    expect(presentation.requiredFindings).toHaveLength(2);
+    expect(presentation.improvementFindings).toHaveLength(0);
+    expect(presentation.infoFindings).toHaveLength(1);
+    expect(presentation.improvementCount).toBe(0);
+    expect(presentation.infoCount).toBe(1);
     expect(presentation.hasNoIssues).toBe(false);
+  });
+
+  it("frames missing OKF metadata as preparation for ordinary manuscripts", () => {
+    const result = baseResult({
+      summary: {
+        ...baseResult().summary,
+        conceptCount: 1,
+        failureCount: 1,
+      },
+      files: [
+        {
+          relativePath: "draft.md",
+          kind: "concept",
+          conceptId: "draft",
+          type: null,
+          title: null,
+          okfVersion: null,
+          byteLength: 10,
+        },
+      ],
+      findings: [
+        {
+          code: "missing-frontmatter",
+          severity: "failure",
+          relativePath: "draft.md",
+          message: "missing",
+        },
+      ],
+    });
+
+    const presentation = presentOkfReviewSurface(result);
+    expect(presentation.folderKind).toBe("plain-markdown");
+    expect(presentation.requiredCount).toBe(0);
+    expect(presentation.conversionCount).toBe(1);
+    expect(presentation.conversionFindings[0]?.code).toBe("missing-frontmatter");
+    expect(presentation.hasNoIssues).toBe(false);
+  });
+
+  it("keeps malformed YAML actionable in ordinary manuscripts", () => {
+    const result = baseResult({
+      summary: {
+        ...baseResult().summary,
+        conceptCount: 1,
+        failureCount: 1,
+      },
+      files: [
+        {
+          relativePath: "draft.md",
+          kind: "concept",
+          conceptId: "draft",
+          type: null,
+          title: null,
+          okfVersion: null,
+          byteLength: 10,
+        },
+      ],
+      findings: [
+        {
+          code: "unparseable-frontmatter",
+          severity: "failure",
+          relativePath: "draft.md",
+          message: "invalid YAML",
+        },
+      ],
+    });
+
+    const presentation = presentOkfReviewSurface(result);
+    expect(presentation.requiredCount).toBe(1);
+    expect(presentation.conversionCount).toBe(0);
   });
 });

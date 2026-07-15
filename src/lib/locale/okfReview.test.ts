@@ -26,8 +26,11 @@ describe("getOkfReviewCopy", () => {
     expect(getOkfReviewCopy("ja").title).toContain("OKF");
     expect(getOkfReviewCopy("ja").contextMenuReview).toContain("知識フォルダ");
     expect(getOkfReviewCopy("ja").purposeIntro).toContain("自動では直しません");
+    expect(getOkfReviewCopy("ja").statusOpenedForEdit).toContain("もう一度");
+    expect(getOkfReviewCopy("ja").severityConversion).toBe("準備");
     expect(getOkfReviewCopy("kana").cancelling).toContain("ちゅうし");
     expect(getOkfReviewCopy("en").title).toContain("knowledge folder");
+    expect(getOkfReviewCopy("en").statusOpenedForEdit).toContain("recheck");
   });
 });
 
@@ -55,15 +58,20 @@ describe("formatOkfSurfaceStatus", () => {
       ja,
       {
         folderKind: "plain-markdown",
-        priorityFindings: [],
-        optionalFindings: [],
-        failureCount: 3,
-        optionalCount: 0,
+        requiredFindings: [],
+        conversionFindings: [],
+        improvementFindings: [],
+        infoFindings: [],
+        requiredCount: 0,
+        conversionCount: 3,
+        improvementCount: 0,
+        infoCount: 0,
         hasNoIssues: false,
       },
       "ja",
     );
     expect(status).toContain("通常の原稿フォルダ");
+    expect(status).toContain("準備項目が 3 件");
     expect(status).not.toContain("{count}");
   });
 
@@ -73,10 +81,14 @@ describe("formatOkfSurfaceStatus", () => {
       en,
       {
         folderKind: "okf-like",
-        priorityFindings: [],
-        optionalFindings: [],
-        failureCount: 2,
-        optionalCount: 1,
+        requiredFindings: [],
+        conversionFindings: [],
+        improvementFindings: [],
+        infoFindings: [],
+        requiredCount: 2,
+        conversionCount: 0,
+        improvementCount: 1,
+        infoCount: 0,
         hasNoIssues: false,
       },
       "en",

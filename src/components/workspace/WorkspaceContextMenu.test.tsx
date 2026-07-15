@@ -149,7 +149,7 @@ describe("WorkspaceContextMenu Import Assist", () => {
     });
 
     fireEvent.click(
-      screen.getByRole("menuitem", { name: "OKF Draft 互換を点検" }),
+      screen.getByRole("menuitem", { name: "知識フォルダ（OKF）を点検" }),
     );
     expect(props.onOpenOkfReview).toHaveBeenCalledTimes(1);
   });

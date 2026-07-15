@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
+Last reviewed: 2026-07-15 (v1.11 OKF review action loop hardened; packaged smoke next)
 
 ## Current State
 
@@ -60,11 +60,15 @@ Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
 - **v1.11 OKF Draft Compatibility Preview S0–S3 source is landed; S4 is next.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only
-  panel) are in tree. Writer-facing UX Step 1 is also in tree: command/title
+  panel) are in tree. The writer-facing action loop is also in tree: command/title
   `知識フォルダ（OKF）を点検`, purpose intro, ordinary-manuscript vs
-  knowledge-folder status framing, priority findings, and details disclosure
-  for spec/counts. Full analysis still runs only on explicit invoke—not on
-  workspace open. Discovery revalidates opened-file identity, analysis and
+  knowledge-folder status framing, separate required / OKF preparation /
+  improvement / reference groups, and disclosure for files, reference facts,
+  spec, and raw counts. `開いて修正` opens the existing editor tab, best-effort
+  jumps to a finding line when an offset is available, and moves the modal out
+  of the editing path with a recheck status hint; `変更後に再点検` (or
+  re-invoking the review) performs the next explicit disk scan. Full analysis
+  still runs only on explicit invoke—not on workspace open. Discovery revalidates opened-file identity, analysis and
   rendered findings have explicit caps, findings follow the active locale, and
   a workspace change closes/cancels the owning review. Packaged smoke and the
   distribution-confidence matrix remain. Full frontend/Rust tests and a local
@@ -737,7 +741,7 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Run packaged OKF S3 smoke, then v1.11 S4 from
+2. **Run packaged OKF S3 smoke for the review → edit → recheck loop, then v1.11 S4 from
    `docs/v1.11-okf-draft-preview-design.md`.** Source review UI is landed.
    Keep unknown fields/types and broken links tolerant.
 3. Keep v1.10 implementation closed. Fold its remaining source-jump, IME,

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v1.11 OKF Draft Compatibility Preview; S0–S3 source landed; S4 next
 Authority: High
-Last reviewed: 2026-07-15 (OKF UX Step 1: writer-facing copy + result hierarchy)
+Last reviewed: 2026-07-15 (OKF review action loop + result classification)
 
 ## Purpose
 
@@ -43,7 +43,7 @@ Goal: ユーザーが明示的に選んだ workspace / subfolder を、OKF v0.1 
 | **Done / source** | **S0 — Contract + fixtures** | Commit `ee67a5c`、matrix、link/budgets、日本語multi-fileを `src/features/okf/fixtures.ts` と `npm run smoke:fixtures:v1.11-okf` に固定。 |
 | **Done / source** | **S1 — Pure OKF model** | TypeScript pure model + 直接依存 `yaml@^2.9.0`（lockfile で解決）。nested/cycle-safe 変換、不正quoteは failure。reserved shape / inline links（0–3 space fence・fragment-only）/ thin result。FS/UI未接続。 |
 | **Done / source** | **S2 — Explicit bounded discovery** | Async `scan_okf_bundle` が **arm後**に `spawn_blocking`、`File::take(limit+1)` の bounded read、同時scan拒否、timeout付きhandshakeによる mid-run cancel、実読込 total 加算、symlink root/open時identity拒否、5 budgets境界テスト。TS bridge: `src/lib/tauri/okf.ts` + `fromDiscovery.ts`。 |
-| **Done / source hardened** | **S3 — OKF review surface** | Command Palette / フォルダコンテキスト `知識フォルダ（OKF）を点検`。読み取り専用 panel（導入文 / 通常原稿 vs 知識フォルダの状態文 / 優先 findings / 詳細 disclosure / files / findings / dirty note / cancel / rerun）。既存 tab open。findings は解析・表示上限、三言語copy、path別accessible nameを持ち、workspace切替時はscanを閉じてcancelする。Markdown HTML/image 非描画。**open 時の自動フル解析はしない**（UX progressive disclosure: design doc）。packaged smoke は S4 と併せて。 |
+| **Done / source hardened** | **S3 — OKF review surface** | Command Palette / フォルダコンテキスト `知識フォルダ（OKF）を点検`。読み取り専用 panel は通常原稿の OKF 前提不足を「OKF として整える準備」へ分け、実対応 / 改善案 / 参考情報を混同しない。`開いて修正` は既存 tab を開いて modal を退避し、`変更後に再点検` で明示的に disk snapshot を更新する。ファイル/参考情報と spec/counts は disclosure、scroll は dialog 一つに集約。findings は解析・表示上限、三言語copy、path別accessible nameを持ち、workspace切替時は保持結果を破棄してscanをcancelする。Markdown HTML/image 非描画。**open 時の自動フル解析はしない**（UX progressive disclosure: design doc）。packaged smoke は S4 と併せて。 |
 | **Next polish (optional before/with S4)** | **OKF UX Step 2–3** | パネル内ガイド/最小見本、File メニュー、root `index.md` 存在時の非侵襲チップ（クリックまで scan しない）。 |
 | **Pending** | **S4 — Distribution confidence / ship ready** | OKF packaged/signed matrixと、v1.10から引き継ぐIME、Save As、recovery、e-book/EPUB、a11y、sandbox、helper、long/failure matrixを記録。ship-ready通過後のみ別release sliceで`1.11.0`を準備する。 |
 

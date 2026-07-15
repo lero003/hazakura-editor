@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import {
   analyzeDiscoveryResult,
   type OkfReviewResult,
@@ -12,7 +19,23 @@ import {
 import { normalizeAbsolutePath } from "../../lib/utils";
 import type { EditorTab, MenuLanguage } from "../../types";
 
+/** Convert a UTF-16 code-unit offset into a 1-based line number. */
+export function offsetToOneBasedLine(text: string, offset: number): number {
+  if (!Number.isFinite(offset) || offset <= 0) {
+    return 1;
+  }
+  const clamped = Math.min(Math.max(0, Math.trunc(offset)), text.length);
+  let line = 1;
+  for (let i = 0; i < clamped; i++) {
+    if (text.charCodeAt(i) === 10 /* \n */) {
+      line += 1;
+    }
+  }
+  return line;
+}
+
 export type UseOkfReviewOptions = {
+  editorPaneRef?: RefObject<EditorPaneHandle | null>;
   menuLanguage: MenuLanguage;
   openWorkspaceFile: (path: string) => Promise<void>;
   setStatus: (status: string) => void;
@@ -30,7 +53,7 @@ export type UseOkfReviewResult = {
   okfReviewResult: OkfReviewResult | null;
   okfReviewVisible: boolean;
   okfScanning: boolean;
-  openOkfConcept: (relativePath: string) => void;
+  openOkfConcept: (relativePath: string, sourceOffset?: number) => void;
   openOkfReview: (bundleRoot?: string | null) => void;
   rerunOkfReview: () => void;
   requestCancelOkfReview: () => void;
@@ -38,6 +61,7 @@ export type UseOkfReviewResult = {
 };
 
 export function useOkfReview({
+  editorPaneRef,
   menuLanguage,
   openWorkspaceFile,
   setStatus,
@@ -59,9 +83,19 @@ export function useOkfReview({
   const requestSeqRef = useRef(0);
   const resultRef = useRef<OkfReviewResult | null>(null);
   const scanWorkspaceRootRef = useRef<string | null>(null);
+  const jumpTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   resultRef.current = okfReviewResult;
 
   const copy = getOkfReviewCopy(menuLanguage);
+
+  useEffect(() => {
+    return () => {
+      if (jumpTimeoutRef.current != null) {
+        clearTimeout(jumpTimeoutRef.current);
+        jumpTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const runScan = useCallback(
     async (workspaceRoot: string, bundleRoot: string) => {
@@ -151,7 +185,7 @@ export function useOkfReview({
   }, []);
 
   useEffect(() => {
-    if (!okfReviewVisible || !scanWorkspaceRootRef.current) {
+    if (!scanWorkspaceRootRef.current) {
       return;
     }
     const currentWorkspace = workspaceRootPath
@@ -160,7 +194,7 @@ export function useOkfReview({
     if (currentWorkspace !== scanWorkspaceRootRef.current) {
       closeOkfReview();
     }
-  }, [closeOkfReview, okfReviewVisible, workspaceRootPath]);
+  }, [closeOkfReview, workspaceRootPath]);
 
   const requestCancelOkfReview = useCallback(() => {
     setOkfCancelRequested(true);
@@ -207,14 +241,52 @@ export function useOkfReview({
   );
 
   const openOkfConcept = useCallback(
-    (relativePath: string) => {
+    (relativePath: string, sourceOffset?: number) => {
       const absolute = resolveOkfAbsolutePath(relativePath);
       if (!absolute) {
         return;
       }
-      void openWorkspaceFile(absolute);
+      void openWorkspaceFile(absolute)
+        .then(() => {
+          // Keep the result in memory, but move the modal out of the editing
+          // path. Invoking the review again performs a fresh disk scan.
+          setOkfReviewVisible(false);
+          setStatus(copy.statusOpenedForEdit);
+
+          if (
+            sourceOffset == null ||
+            !Number.isFinite(sourceOffset) ||
+            !editorPaneRef
+          ) {
+            return;
+          }
+
+          if (jumpTimeoutRef.current != null) {
+            clearTimeout(jumpTimeoutRef.current);
+          }
+          // Match Global Search: wait a tick so the newly focused tab's
+          // CodeMirror view is mounted before jumping.
+          jumpTimeoutRef.current = setTimeout(() => {
+            jumpTimeoutRef.current = null;
+            const doc = editorPaneRef.current?.getActiveDocument();
+            if (!doc) {
+              return;
+            }
+            const line = offsetToOneBasedLine(doc.text, sourceOffset);
+            editorPaneRef.current?.goToLine(line);
+          }, 50);
+        })
+        .catch(() => {
+          // Leave the modal up if the file could not be opened.
+        });
     },
-    [openWorkspaceFile, resolveOkfAbsolutePath],
+    [
+      copy.statusOpenedForEdit,
+      editorPaneRef,
+      openWorkspaceFile,
+      resolveOkfAbsolutePath,
+      setStatus,
+    ],
   );
 
   return {

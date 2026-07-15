@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { createRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useOkfReview } from "./useOkfReview";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
+import { offsetToOneBasedLine, useOkfReview } from "./useOkfReview";
 
 const scanOkfBundle = vi.fn();
 const cancelOkfBundleScan = vi.fn();
@@ -247,6 +249,77 @@ describe("useOkfReview", () => {
 
     expect(scanOkfBundle).toHaveBeenCalledTimes(1);
     expect(result.current.okfBundleRoot).toBe("/ws");
+  });
+
+  it("opens a finding for editing and moves the modal out of the way", async () => {
+    vi.useFakeTimers();
+    const openWorkspaceFile = vi.fn(async () => {});
+    const goToLine = vi.fn();
+    const getActiveDocument = vi.fn(() => ({
+      text: "line1\nline2\nline3",
+      from: 0,
+      to: 0,
+    }));
+    const editorPaneRef = createRef<EditorPaneHandle | null>();
+    editorPaneRef.current = {
+      focus: vi.fn(),
+      goToLine,
+      changeHeadingLevel: vi.fn(() => false),
+      applyMarkdownFormat: vi.fn(),
+      insertTable: vi.fn(),
+      insertText: vi.fn(),
+      setScrollRatio: vi.fn(() => false),
+      replaceCurrent: vi.fn(() => false),
+      replaceAll: vi.fn(),
+      getSelectionText: vi.fn(() => ""),
+      getActiveDocument,
+    } as unknown as EditorPaneHandle;
+    const setStatus = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ workspaceRootPath }) =>
+        useOkfReview({
+          editorPaneRef,
+          menuLanguage: "ja",
+          openWorkspaceFile,
+          setStatus,
+          tabs: [],
+          workspaceRootPath,
+        }),
+      { initialProps: { workspaceRootPath: "/ws" } },
+    );
+
+    await act(async () => {
+      result.current.openOkfReview();
+    });
+
+    await act(async () => {
+      result.current.openOkfConcept("a.md", 12);
+    });
+
+    expect(openWorkspaceFile).toHaveBeenCalledWith("/ws/a.md");
+    expect(result.current.okfReviewVisible).toBe(false);
+    expect(result.current.okfReviewResult).not.toBeNull();
+    expect(setStatus).toHaveBeenCalledWith(
+      expect.stringContaining("もう一度"),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+    expect(goToLine).toHaveBeenCalledWith(3);
+    vi.useRealTimers();
+
+    rerender({ workspaceRootPath: "/other" });
+    await waitFor(() => {
+      expect(result.current.okfReviewResult).toBeNull();
+    });
+  });
+
+  it("maps source offsets to 1-based lines", () => {
+    expect(offsetToOneBasedLine("a\nb\nc", 0)).toBe(1);
+    expect(offsetToOneBasedLine("a\nb\nc", 2)).toBe(2);
+    expect(offsetToOneBasedLine("a\nb\nc", 4)).toBe(3);
+    expect(offsetToOneBasedLine("a\nb\nc", 99)).toBe(3);
   });
 
   it("closes the review and cancels an in-flight scan when the workspace changes", async () => {

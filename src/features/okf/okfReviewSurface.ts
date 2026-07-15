@@ -9,17 +9,28 @@ export type OkfSurfaceFolderKind = "empty" | "plain-markdown" | "okf-like";
 
 export type OkfSurfacePresentation = {
   folderKind: OkfSurfaceFolderKind;
-  /** Failures users should act on first (stable order from the model). */
-  priorityFindings: OkfReviewFinding[];
-  /** Advice / info that is safe to ignore for ordinary writing. */
-  optionalFindings: OkfReviewFinding[];
-  failureCount: number;
-  optionalCount: number;
+  /** Actual integrity / compatibility failures users should act on. */
+  requiredFindings: OkfReviewFinding[];
+  /** OKF opt-in prerequisites for an otherwise ordinary Markdown folder. */
+  conversionFindings: OkfReviewFinding[];
+  /** Model advice, kept distinct from informational relationships. */
+  improvementFindings: OkfReviewFinding[];
+  /** Reference-only facts such as external links. */
+  infoFindings: OkfReviewFinding[];
+  requiredCount: number;
+  conversionCount: number;
+  improvementCount: number;
+  infoCount: number;
   hasNoIssues: boolean;
 };
 
-const DEFAULT_PRIORITY_LIMIT = 5;
-const DEFAULT_OPTIONAL_LIMIT = 5;
+const DEFAULT_GROUP_LIMIT = 5;
+
+const PLAIN_MARKDOWN_OKF_PREREQUISITES = new Set([
+  "missing-frontmatter",
+  "missing-type",
+  "invalid-type",
+]);
 
 /**
  * Heuristic folder framing for human status copy.
@@ -48,31 +59,40 @@ export function classifyOkfFolderKind(
 export function presentOkfReviewSurface(
   result: OkfReviewResult,
   options?: {
-    priorityLimit?: number;
-    optionalLimit?: number;
+    groupLimit?: number;
   },
 ): OkfSurfacePresentation {
-  const priorityLimit = options?.priorityLimit ?? DEFAULT_PRIORITY_LIMIT;
-  const optionalLimit = options?.optionalLimit ?? DEFAULT_OPTIONAL_LIMIT;
+  const groupLimit = options?.groupLimit ?? DEFAULT_GROUP_LIMIT;
+  const folderKind = classifyOkfFolderKind(result);
+  const isConversionFinding = (finding: OkfReviewFinding) =>
+    folderKind === "plain-markdown" &&
+    finding.severity === "failure" &&
+    PLAIN_MARKDOWN_OKF_PREREQUISITES.has(finding.code);
 
-  const priorityFindings = result.findings
-    .filter((finding) => finding.severity === "failure")
-    .slice(0, priorityLimit);
-  const optionalFindings = result.findings
-    .filter((finding) => finding.severity !== "failure")
-    .slice(0, optionalLimit);
-
-  const failureCount = result.summary.failureCount;
-  const optionalCount = result.findings.filter(
-    (finding) => finding.severity !== "failure",
-  ).length;
+  const required = result.findings.filter(
+    (finding) => finding.severity === "failure" && !isConversionFinding(finding),
+  );
+  const conversion = result.findings.filter(isConversionFinding);
+  const improvement = result.findings.filter(
+    (finding) => finding.severity === "advice",
+  );
+  const info = result.findings.filter((finding) => finding.severity === "info");
 
   return {
-    folderKind: classifyOkfFolderKind(result),
-    priorityFindings,
-    optionalFindings,
-    failureCount,
-    optionalCount,
-    hasNoIssues: failureCount === 0 && optionalCount === 0,
+    folderKind,
+    requiredFindings: required.slice(0, groupLimit),
+    conversionFindings: conversion.slice(0, groupLimit),
+    improvementFindings: improvement.slice(0, groupLimit),
+    infoFindings: info.slice(0, groupLimit),
+    requiredCount: required.length,
+    conversionCount: conversion.length,
+    improvementCount: improvement.length,
+    infoCount: info.length,
+    // Conversion prep is not a hard failure for ordinary folders, but it is
+    // still work for the user if they intend OKF. Treat it as an issue here.
+    hasNoIssues:
+      required.length === 0 &&
+      conversion.length === 0 &&
+      improvement.length === 0,
   };
 }

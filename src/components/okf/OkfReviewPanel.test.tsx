@@ -18,7 +18,7 @@ const result: OkfReviewResult = {
     logCount: 0,
     unreadableCount: 0,
     failureCount: 1,
-    adviceCount: 0,
+    adviceCount: 1,
     hasRootIndex: false,
     declaredOkfVersion: null,
   },
@@ -40,6 +40,13 @@ const result: OkfReviewResult = {
       relativePath: "concepts/a.md",
       message: "Broken internal link",
       relatedPath: "missing.md",
+      sourceOffset: 12,
+    },
+    {
+      code: "missing-optional-metadata",
+      severity: "advice",
+      relativePath: "concepts/a.md",
+      message: "Optional metadata",
     },
   ],
   findingsTruncated: false,
@@ -109,7 +116,7 @@ function renderPanel(
     ...overrides,
   };
   render(<OkfReviewPanel {...props} />);
-  return { onCancelScan, onOpenConcept };
+  return { onCancelScan, onOpenConcept, props };
 }
 
 describe("OkfReviewPanel", () => {
@@ -121,25 +128,39 @@ describe("OkfReviewPanel", () => {
     expect(screen.getAllByText(/リンク先のファイルがない/).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/Broken internal link/)).toBeNull();
     expect(screen.getByText(/未保存のタブ/)).not.toBeNull();
-    expect(screen.getByText(/いま直すと効くこと/)).not.toBeNull();
+    expect(screen.getByText(/直した方がよいこと/)).not.toBeNull();
+    expect(screen.getByText(/任意の改善案/)).not.toBeNull();
 
     const openButtons = screen.getAllByRole("button", {
-      name: /concepts\/a\.md/,
+      name: /開いて修正: concepts\/a\.md/,
     });
-    // Priority row + files list + all-findings row.
-    expect(openButtons.length).toBeGreaterThanOrEqual(2);
+    expect(openButtons).toHaveLength(2);
     fireEvent.click(openButtons[0]);
-    expect(onOpenConcept).toHaveBeenCalledWith("concepts/a.md");
+    expect(onOpenConcept).toHaveBeenCalledWith("concepts/a.md", 12);
   });
 
   it("frames ordinary manuscript folders as normal writing", () => {
     renderPanel({ result: plainManuscript });
-    expect(screen.getByText(/通常の原稿フォルダとして問題ありません/)).not.toBeNull();
+    expect(screen.getByText(/通常の原稿フォルダです/)).not.toBeNull();
+    expect(screen.getByText(/準備項目が 1 件/)).not.toBeNull();
+    expect(screen.getByText(/OKF として整える準備/)).not.toBeNull();
+    expect(screen.queryByText(/直した方がよいこと/)).toBeNull();
+    // Conversion prep must not re-use the hard-failure severity badge.
+    expect(screen.getByText("準備")).not.toBeNull();
+    expect(
+      screen.queryByText((content, element) => {
+        return (
+          element?.classList.contains("okf-review-kind") === true &&
+          content === "直した方がよい"
+        );
+      }),
+    ).toBeNull();
   });
 
   it("keeps raw counts under a details disclosure", () => {
     renderPanel();
     expect(screen.getByText("詳細（仕様・件数）")).not.toBeNull();
+    expect(screen.getByText("ファイルと参考情報")).not.toBeNull();
     expect(
       screen.getByText((content, element) => {
         return (

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
+Last reviewed: 2026-07-15 (v1.11 OKF review action loop hardened; packaged smoke next)
 
 ## Current State
 
@@ -49,9 +49,14 @@ Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
   `scan_okf_bundle` with `spawn_blocking` cancel, real-byte total budgets, and
   symlink-root/opened-file identity rejection, plus the Command Palette /
   folder-context read-only review surface. Analysis/rendered findings are
-  bounded, descriptions are localized, repeated open actions identify their
-  path, and workspace replacement closes/cancels the review. Packaged S3 smoke
-  and S4 are next. The contract remains an
+  bounded and localized. The UI now separates actual failures, ordinary-folder
+  OKF preparation, advice, and reference-only facts; it keeps files/reference
+  detail behind disclosure and avoids nested result scrolling. `開いて修正`
+  opens the existing tab (with best-effort line jump when a finding offset is
+  present), hides the modal without losing the in-memory result, and status-
+  hints re-invocation; reopening/rerunning performs a fresh explicit disk scan,
+  and workspace replacement discards the retained result and cancels the review.
+  Packaged S3 smoke and S4 are next. The contract remains an
   explicit, bounded, cancellable, read-only review of one user-selected
   workspace root or subfolder against official OKF v0.1 Draft. It may show
   conformance / advice and open concepts through existing Markdown tabs. It must

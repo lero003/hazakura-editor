@@ -122,7 +122,7 @@ type AppOverlaysProps = {
   onCloseOkfReview: () => void;
   onCancelOkfReviewScan: () => void;
   onRerunOkfReview: () => void;
-  onOpenOkfConcept: (relativePath: string) => void;
+  onOpenOkfConcept: (relativePath: string, sourceOffset?: number) => void;
   onOpenOkfReview: (bundleRoot?: string | null) => void;
   compareAnchor: CompareAnchor | null;
   compareWorkspaceFiles: (file: CompareAnchor) => void | Promise<void>;
