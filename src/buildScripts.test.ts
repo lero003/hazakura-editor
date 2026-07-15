@@ -666,6 +666,8 @@ describe("macOS build scripts", () => {
         "S3 — OKF Review Surface (Feature Complete)",
         "S4 — Distribution Confidence And Release Decision (Ship Ready)",
         "Book Scope stays a separate product contract",
+        "## UX Progressive Disclosure",
+        "知識フォルダ（OKF）を点検",
       ],
     };
 

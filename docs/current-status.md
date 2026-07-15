@@ -60,7 +60,11 @@ Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
 - **v1.11 OKF Draft Compatibility Preview S0–S3 source is landed; S4 is next.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only
-  panel) are in tree. Discovery revalidates opened-file identity, analysis and
+  panel) are in tree. Writer-facing UX Step 1 is also in tree: command/title
+  `知識フォルダ（OKF）を点検`, purpose intro, ordinary-manuscript vs
+  knowledge-folder status framing, priority findings, and details disclosure
+  for spec/counts. Full analysis still runs only on explicit invoke—not on
+  workspace open. Discovery revalidates opened-file identity, analysis and
   rendered findings have explicit caps, findings follow the active locale, and
   a workspace change closes/cancels the owning review. Packaged smoke and the
   distribution-confidence matrix remain. Full frontend/Rust tests and a local

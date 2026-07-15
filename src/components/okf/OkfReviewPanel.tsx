@@ -5,9 +5,12 @@ import type {
   OkfReviewFinding,
   OkfReviewResult,
 } from "../../features/okf";
+import { presentOkfReviewSurface } from "../../features/okf";
 import { isImeComposing } from "../../lib/keyboard";
 import {
   formatOkfFindingMessage,
+  formatOkfMoreCount,
+  formatOkfSurfaceStatus,
   formatOkfTruncationMessage,
   getOkfReviewCopy,
   type OkfReviewCopy,
@@ -94,6 +97,11 @@ export function OkfReviewPanel({
     return paths;
   }, [result?.files]);
 
+  const presentation = useMemo(
+    () => (result ? presentOkfReviewSurface(result) : null),
+    [result],
+  );
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (isImeComposing(event.nativeEvent)) {
       return;
@@ -125,6 +133,18 @@ export function OkfReviewPanel({
   };
 
   const summary = result?.summary;
+  const surfaceStatus =
+    presentation != null
+      ? formatOkfSurfaceStatus(copy, presentation, menuLanguage)
+      : null;
+  const remainingPriority =
+    presentation != null
+      ? Math.max(0, presentation.failureCount - presentation.priorityFindings.length)
+      : 0;
+  const remainingOptional =
+    presentation != null
+      ? Math.max(0, presentation.optionalCount - presentation.optionalFindings.length)
+      : 0;
 
   return (
     <div className="okf-review-overlay" onPointerDown={onClose}>
@@ -143,17 +163,13 @@ export function OkfReviewPanel({
             <h2 className="okf-review-title" id={titleId}>
               {copy.title}
             </h2>
-            {summary ? (
-              <p className="okf-review-spec">
-                {summary.specLabel} · {summary.specCommit}
-              </p>
-            ) : null}
           </div>
           <button className="okf-review-close" onClick={onClose} type="button">
             {copy.close}
           </button>
         </header>
 
+        <p className="okf-review-intro">{copy.purposeIntro}</p>
         <p className="okf-review-note">{copy.diskSnapshotNote}</p>
 
         {bundleRoot ? (
@@ -204,27 +220,105 @@ export function OkfReviewPanel({
           <p className="okf-review-banner">{copy.findingsTruncated}</p>
         ) : null}
 
+        {surfaceStatus ? (
+          <p
+            className={`okf-review-surface-status okf-review-surface-${presentation?.folderKind ?? "empty"}${
+              presentation && presentation.failureCount > 0
+                ? " okf-review-surface-has-failures"
+                : ""
+            }`}
+            aria-live="polite"
+          >
+            {surfaceStatus}
+          </p>
+        ) : null}
+
+        {presentation && presentation.priorityFindings.length > 0 ? (
+          <section
+            aria-label={copy.priorityHeading}
+            className="okf-review-priority"
+          >
+            <h3 className="okf-review-section-title">{copy.priorityHeading}</h3>
+            <ul className="okf-review-list okf-review-list-compact">
+              {presentation.priorityFindings.map((finding, index) => (
+                <FindingRow
+                  copy={copy}
+                  finding={finding}
+                  key={`priority-${finding.code}-${finding.relativePath}-${index}`}
+                  onOpenConcept={onOpenConcept}
+                  openable={openablePaths.has(finding.relativePath)}
+                  scanning={scanning}
+                  showCode={false}
+                />
+              ))}
+            </ul>
+            {remainingPriority > 0 ? (
+              <p className="okf-review-more">
+                {formatOkfMoreCount(copy.morePriority, remainingPriority)}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
+        {presentation &&
+        presentation.folderKind === "okf-like" &&
+        presentation.optionalFindings.length > 0 &&
+        presentation.failureCount === 0 ? (
+          <section
+            aria-label={copy.optionalHeading}
+            className="okf-review-optional"
+          >
+            <h3 className="okf-review-section-title">{copy.optionalHeading}</h3>
+            <ul className="okf-review-list okf-review-list-compact">
+              {presentation.optionalFindings.map((finding, index) => (
+                <FindingRow
+                  copy={copy}
+                  finding={finding}
+                  key={`optional-${finding.code}-${finding.relativePath}-${index}`}
+                  onOpenConcept={onOpenConcept}
+                  openable={openablePaths.has(finding.relativePath)}
+                  scanning={scanning}
+                  showCode={false}
+                />
+              ))}
+            </ul>
+            {remainingOptional > 0 ? (
+              <p className="okf-review-more">
+                {formatOkfMoreCount(copy.moreOptional, remainingOptional)}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
         {summary ? (
-          <div className="okf-review-summary" aria-live="polite">
-            <span>
-              {copy.concepts}: {summary.conceptCount}
-            </span>
-            <span>
-              {copy.indexes}: {summary.indexCount}
-            </span>
-            <span>
-              {copy.logs}: {summary.logCount}
-            </span>
-            <span>
-              {copy.unreadable}: {summary.unreadableCount}
-            </span>
-            <span>
-              {copy.failures}: {summary.failureCount}
-            </span>
-            <span>
-              {copy.advice}: {summary.adviceCount}
-            </span>
-          </div>
+          <details className="okf-review-details">
+            <summary className="okf-review-details-summary">
+              {copy.detailsHeading}
+            </summary>
+            <p className="okf-review-spec">
+              {summary.specLabel} · {summary.specCommit}
+            </p>
+            <div className="okf-review-summary" aria-live="polite">
+              <span>
+                {copy.concepts}: {summary.conceptCount}
+              </span>
+              <span>
+                {copy.indexes}: {summary.indexCount}
+              </span>
+              <span>
+                {copy.logs}: {summary.logCount}
+              </span>
+              <span>
+                {copy.unreadable}: {summary.unreadableCount}
+              </span>
+              <span>
+                {copy.failures}: {summary.failureCount}
+              </span>
+              <span>
+                {copy.advice}: {summary.adviceCount}
+              </span>
+            </div>
+          </details>
         ) : null}
 
         <div className="okf-review-actions">
@@ -320,6 +414,7 @@ export function OkfReviewPanel({
                       onOpenConcept={onOpenConcept}
                       openable={openablePaths.has(finding.relativePath)}
                       scanning={scanning}
+                      showCode={false}
                     />
                   ))}
                 </ul>
@@ -338,12 +433,14 @@ function FindingRow({
   onOpenConcept,
   openable,
   scanning,
+  showCode,
 }: {
   copy: OkfReviewCopy;
   finding: OkfReviewFinding;
   onOpenConcept: (relativePath: string) => void;
   openable: boolean;
   scanning: boolean;
+  showCode: boolean;
 }) {
   return (
     <li className={`okf-review-list-item okf-review-finding-${finding.severity}`}>
@@ -352,7 +449,8 @@ function FindingRow({
           {severityLabel(finding.severity, copy)}
         </span>
         <span className="okf-review-path">
-          {finding.relativePath} · {finding.code}
+          {finding.relativePath}
+          {showCode ? ` · ${finding.code}` : ""}
         </span>
         <span className="okf-review-message">
           {formatOkfFindingMessage(copy, finding)}

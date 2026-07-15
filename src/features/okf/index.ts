@@ -50,6 +50,14 @@ export {
 } from "./okfPaths";
 export { adviseIndexShape, adviseLogShape } from "./okfReserved";
 export {
+  classifyOkfFolderKind,
+  presentOkfReviewSurface,
+} from "./okfReviewSurface";
+export type {
+  OkfSurfaceFolderKind,
+  OkfSurfacePresentation,
+} from "./okfReviewSurface";
+export {
   OKF_FIXTURE_SPEC_COMMIT,
   buildOkfFixtureBundle,
   fixtureToMarkdownInputs,

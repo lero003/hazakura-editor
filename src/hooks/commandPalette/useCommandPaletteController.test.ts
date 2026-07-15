@@ -90,7 +90,7 @@ describe("useCommandPaletteController", () => {
     const okfCommand = result.current.filteredCommands.find(
       (command) => command.id === "review.okfDraftCompatibility",
     );
-    expect(okfCommand?.label).toBe("Review OKF Draft compatibility");
+    expect(okfCommand?.label).toBe("Review knowledge folder (OKF)");
     act(() => {
       okfCommand?.run();
     });

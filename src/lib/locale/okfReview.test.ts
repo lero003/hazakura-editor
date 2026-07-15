@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatOkfFindingMessage,
+  formatOkfSurfaceStatus,
   formatOkfTruncationMessage,
   getOkfReviewCopy,
 } from "./okfReview";
@@ -20,10 +21,13 @@ describe("getOkfReviewCopy", () => {
     }
   });
 
-  it("localizes the command-facing title", () => {
-    expect(getOkfReviewCopy("ja").title).toContain("OKF Draft");
-    expect(getOkfReviewCopy("ja").contextMenuReview).toContain("互換");
+  it("localizes the command-facing title for writers", () => {
+    expect(getOkfReviewCopy("ja").title).toContain("知識フォルダ");
+    expect(getOkfReviewCopy("ja").title).toContain("OKF");
+    expect(getOkfReviewCopy("ja").contextMenuReview).toContain("知識フォルダ");
+    expect(getOkfReviewCopy("ja").purposeIntro).toContain("自動では直しません");
     expect(getOkfReviewCopy("kana").cancelling).toContain("ちゅうし");
+    expect(getOkfReviewCopy("en").title).toContain("knowledge folder");
   });
 });
 
@@ -41,6 +45,44 @@ describe("formatOkfFindingMessage", () => {
     expect(message).toContain("リンク先");
     expect(message).toContain("missing.md");
     expect(message).not.toContain("Broken internal link");
+  });
+});
+
+describe("formatOkfSurfaceStatus", () => {
+  it("frames ordinary manuscript folders without sounding broken", () => {
+    const ja = getOkfReviewCopy("ja");
+    const status = formatOkfSurfaceStatus(
+      ja,
+      {
+        folderKind: "plain-markdown",
+        priorityFindings: [],
+        optionalFindings: [],
+        failureCount: 3,
+        optionalCount: 0,
+        hasNoIssues: false,
+      },
+      "ja",
+    );
+    expect(status).toContain("通常の原稿フォルダ");
+    expect(status).not.toContain("{count}");
+  });
+
+  it("counts failures for okf-like folders", () => {
+    const en = getOkfReviewCopy("en");
+    const status = formatOkfSurfaceStatus(
+      en,
+      {
+        folderKind: "okf-like",
+        priorityFindings: [],
+        optionalFindings: [],
+        failureCount: 2,
+        optionalCount: 1,
+        hasNoIssues: false,
+      },
+      "en",
+    );
+    expect(status).toContain("2");
+    expect(status).toContain("worth fixing");
   });
 });
 

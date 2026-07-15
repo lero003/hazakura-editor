@@ -2,6 +2,8 @@ import type { MenuLanguage } from "../../types";
 import type {
   OkfFindingCode,
   OkfReviewFinding,
+  OkfSurfaceFolderKind,
+  OkfSurfacePresentation,
 } from "../../features/okf";
 import { isKanaStyle } from "./_helpers";
 
@@ -14,6 +16,7 @@ export type OkfTruncationCopyKey =
 
 export type OkfReviewCopy = {
   title: string;
+  purposeIntro: string;
   diskSnapshotNote: string;
   dirtyTabNote: string;
   noWorkspace: string;
@@ -25,6 +28,8 @@ export type OkfReviewCopy = {
   openConcept: string;
   filesHeading: string;
   findingsHeading: string;
+  priorityHeading: string;
+  optionalHeading: string;
   emptyFiles: string;
   emptyFindings: string;
   findingsTruncated: string;
@@ -51,6 +56,14 @@ export type OkfReviewCopy = {
   statusDone: string;
   statusFailed: string;
   statusNoWorkspace: string;
+  statusEmpty: string;
+  statusPlainMarkdown: string;
+  statusOkfClean: string;
+  statusOkfFailures: string;
+  statusOkfAdviceOnly: string;
+  detailsHeading: string;
+  morePriority: string;
+  moreOptional: string;
 };
 
 export function formatOkfFindingMessage(
@@ -79,10 +92,142 @@ export function formatOkfTruncationMessage(
   return `${copy.truncated}（${localized}）。`;
 }
 
+export function formatOkfSurfaceStatus(
+  copy: OkfReviewCopy,
+  presentation: OkfSurfacePresentation,
+  language: MenuLanguage = "en",
+): string {
+  switch (presentation.folderKind as OkfSurfaceFolderKind) {
+    case "empty":
+      return copy.statusEmpty;
+    case "plain-markdown":
+      return copy.statusPlainMarkdown;
+    case "okf-like":
+      if (presentation.failureCount > 0) {
+        return formatCountMessage(
+          copy.statusOkfFailures,
+          presentation.failureCount,
+          language,
+        );
+      }
+      if (presentation.optionalCount > 0) {
+        return formatCountMessage(
+          copy.statusOkfAdviceOnly,
+          presentation.optionalCount,
+          language,
+        );
+      }
+      return copy.statusOkfClean;
+  }
+}
+
+function formatCountMessage(
+  template: string,
+  count: number,
+  language: MenuLanguage,
+): string {
+  if (template.includes("{count}")) {
+    return template.replaceAll("{count}", String(count));
+  }
+  // Fallback for accidental missing placeholder.
+  if (language === "en") {
+    return `${template} (${count})`;
+  }
+  return `${template}（${count}）`;
+}
+
+export function formatOkfMoreCount(
+  template: string,
+  remaining: number,
+): string {
+  return template.replaceAll("{count}", String(remaining));
+}
+
+function sharedFindingMessages(
+  lang: "ja" | "kana" | "en",
+): Record<OkfFindingCode, string> {
+  if (lang === "kana") {
+    return {
+      "missing-frontmatter":
+        "このノートは concept として よめません。せんとうに YAML（type など）が ひつようです",
+      "unparseable-frontmatter":
+        "せんとうの YAML を よみとれません。かきかたを なおして ください",
+      "missing-type":
+        "このノートは concept として よめません。type を かいて ください",
+      "invalid-type": "type は からでない もじれつに してください",
+      "unknown-type": "作者どくじの type です（ごかん しっぱいでは ありません）",
+      "missing-optional-metadata": "あると べんりな メタデータが ありません（にんい）",
+      "root-index-version":
+        "root の index.md に okf_version: \"0.1\" が あると わかりやすいです（にんい）",
+      "nested-index-frontmatter": "したの index.md に frontmatter が あります（さんこう）",
+      "index-shape": "index.md の 見出しや リストを かくにんして ください（にんい）",
+      "log-shape": "log.md の ひづけ みだしと ならびを かくにんして ください（にんい）",
+      "broken-link": "リンクさきの ファイルが ないか、まだ かかれていません",
+      "out-of-scope-link": "リンクさきは てんけんした フォルダの そとです",
+      "external-link": "そとの リンクです（とりにいきません）",
+      "unsupported-link": "このかたちの リンクは たいおうしていません",
+      "unreadable-file": "Markdown ファイルを よみとれません",
+      "reserved-type-field":
+        "index / log の type は Concept はんていに つかいません（さんこう）",
+    };
+  }
+  if (lang === "ja") {
+    return {
+      "missing-frontmatter":
+        "このノートは concept として読めません。先頭に YAML（type など）が必要です",
+      "unparseable-frontmatter":
+        "先頭の YAML を読み取れません。書き方を直してください",
+      "missing-type":
+        "このノートは concept として読めません。type を書いてください",
+      "invalid-type": "type は空でない文字列にしてください",
+      "unknown-type": "作者独自の type です（互換失敗ではありません）",
+      "missing-optional-metadata": "あると便利なメタデータがありません（任意）",
+      "root-index-version":
+        "root の index.md に okf_version: \"0.1\" があると分かりやすいです（任意）",
+      "nested-index-frontmatter": "下位の index.md に frontmatter があります（参考）",
+      "index-shape": "index.md の見出しやリストを確認してください（任意）",
+      "log-shape": "log.md の日付見出しと並びを確認してください（任意）",
+      "broken-link": "リンク先のファイルがないか、まだ作成されていません",
+      "out-of-scope-link": "リンク先は点検したフォルダの外です",
+      "external-link": "外部リンクです（取得しません）",
+      "unsupported-link": "この形式のリンクには対応していません",
+      "unreadable-file": "Markdown ファイルを読み取れません",
+      "reserved-type-field":
+        "index / log の type は Concept 判定に使いません（参考）",
+    };
+  }
+  return {
+    "missing-frontmatter":
+      "This note cannot be read as a concept. Add leading YAML with a type",
+    "unparseable-frontmatter":
+      "Leading YAML could not be read. Fix the frontmatter syntax",
+    "missing-type":
+      "This note cannot be read as a concept. Add a type field",
+    "invalid-type": "Type must be a non-empty string",
+    "unknown-type": "Producer-defined type (not a compatibility failure)",
+    "missing-optional-metadata": "Recommended metadata is missing (optional)",
+    "root-index-version":
+      'Root index.md is clearer with okf_version: "0.1" (optional)',
+    "nested-index-frontmatter":
+      "A nested index.md contains frontmatter (informational)",
+    "index-shape": "Review the index.md headings and lists (optional)",
+    "log-shape": "Review the log.md date headings and order (optional)",
+    "broken-link": "Link target is missing or not written yet",
+    "out-of-scope-link": "Link target is outside the reviewed folder",
+    "external-link": "External link (not fetched)",
+    "unsupported-link": "Unsupported link destination",
+    "unreadable-file": "Markdown file could not be read",
+    "reserved-type-field":
+      "type in index/log is not used for concept classification (informational)",
+  };
+}
+
 export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
   if (isKanaStyle(lang)) {
     return {
-      title: "OKF Draft ごかんを てんけん",
+      title: "ちしきフォルダ（OKF）を てんけん",
+      purposeIntro:
+        "ほんの ならびかえでは ありません。えらんだ フォルダの Markdown が OKF v0.1 Draft として よめるかを かくにんします。じどうでは なおしません。",
       diskSnapshotNote:
         "けっかは ディスク上の ファイルを みます。ひらいている みほぞんの タブと ちがう ことがあります。",
       dirtyTabNote: "この ファイルは みほぞんの タブで ひらいています。",
@@ -94,29 +239,14 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       close: "とぢる",
       openConcept: "ひらく",
       filesHeading: "ファイル",
-      findingsHeading: "けんしゅつ",
+      findingsHeading: "すべての けんしゅつ",
+      priorityHeading: "いま なおすと きくこと",
+      optionalHeading: "にんいの かいぜんあん",
       emptyFiles: "Markdown ファイルは ありません。",
       emptyFindings: "けんしゅつは ありません。",
       findingsTruncated:
         "けんしゅつは ひょうじの かぎりまでです。のこりは しょうりゃくしました。",
-      findingMessages: {
-        "missing-frontmatter": "せんとうの YAML frontmatter が ありません",
-        "unparseable-frontmatter": "YAML frontmatter を よみとれません",
-        "missing-type": "ひつような type が ありません",
-        "invalid-type": "type は からでない もじれつに してください",
-        "unknown-type": "つくりて どくじの type として あつかいます",
-        "missing-optional-metadata": "すすめる メタデータが ありません",
-        "root-index-version": "root index.md の OKF version を かくにんして ください",
-        "nested-index-frontmatter": "したの index.md に frontmatter が あります",
-        "index-shape": "index.md の こうせいを かくにんして ください",
-        "log-shape": "log.md の ひづけと ならびを かくにんして ください",
-        "broken-link": "リンクさきが ないか、まだ かかれていません",
-        "out-of-scope-link": "リンクさきは えらんだ バンドルの そとです",
-        "external-link": "そとの リンクです",
-        "unsupported-link": "たいおうしていない リンクです",
-        "unreadable-file": "Markdown ファイルを よみとれません",
-        "reserved-type-field": "index / log の type は Concept はんていに つかいません",
-      },
+      findingMessages: sharedFindingMessages("kana"),
       truncated: "よみとり が うちきられました",
       truncationReasons: {
         "walk-entries": "エントリ かずの かぎり",
@@ -126,31 +256,45 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
         depth: "フォルダ ふかさの かぎり",
       },
       cancelled: "てんけんは ちゅうし されました。",
-      failures: "しっぱい",
-      advice: "じょげん",
-      concepts: "コンセプト",
+      failures: "なおした ほうが よい",
+      advice: "にんい",
+      concepts: "ノート",
       indexes: "index",
       logs: "log",
       unreadable: "よめない",
-      kindConcept: "コンセプト",
+      kindConcept: "ノート",
       kindIndex: "index",
       kindLog: "log",
       kindUnreadable: "よめない",
-      severityFailure: "しっぱい",
-      severityAdvice: "じょげん",
-      severityInfo: "じょうほう",
+      severityFailure: "なおした ほうが よい",
+      severityAdvice: "にんい",
+      severityInfo: "さんこう",
       openDirty: "ひらく（みほぞん）",
-      contextMenuReview: "OKF Draft ごかんを てんけん",
-      statusStarted: "OKF Draft ごかんを てんけん しています…",
-      statusDone: "OKF Draft ごかん てんけんが おわりました。",
-      statusFailed: "OKF Draft ごかん てんけんに しっぱい しました。",
-      statusNoWorkspace: "ところを ひらいてから OKF を てんけんして ください。",
+      contextMenuReview: "ちしきフォルダ（OKF）を てんけん",
+      statusStarted: "ちしきフォルダ（OKF）を てんけん しています…",
+      statusDone: "ちしきフォルダ（OKF）の てんけんが おわりました。",
+      statusFailed: "ちしきフォルダ（OKF）の てんけんに しっぱい しました。",
+      statusNoWorkspace: "ところを ひらいてから てんけんして ください。",
+      statusEmpty: "この フォルダに Markdown ファイルは ありません。",
+      statusPlainMarkdown:
+        "この フォルダは ふつうの げんこうフォルダとして もんだいありません。OKF として あつかう ときだけ、かくノートの せんとうに type つき YAML が ひつようです。Hazakura は いまのまま かけます。",
+      statusOkfClean:
+        "ちしきフォルダとして よめます。ごかん上の もんだいは みつかりませんでした。",
+      statusOkfFailures:
+        "ちしきフォルダとして よむには、なおした ほうが よい点が {count} けん あります。",
+      statusOkfAdviceOnly:
+        "ちしきフォルダとして よめます。にんいの かいぜんあんが {count} けん あります。",
+      detailsHeading: "しょうさい（しよう・けんすう）",
+      morePriority: "ほかに なおした ほうが よい点が {count} けん あります。",
+      moreOptional: "ほかに にんいの けんが {count} けん あります。",
     };
   }
 
   if (lang === "ja") {
     return {
-      title: "OKF Draft 互換を点検",
+      title: "知識フォルダ（OKF）を点検",
+      purposeIntro:
+        "本の並べ替えではありません。選んだフォルダの Markdown が OKF v0.1 Draft として読めるかを確認します。自動では直しません。",
       diskSnapshotNote:
         "結果はディスク上のファイルを反映します。開いている未保存タブと異なる場合があります。",
       dirtyTabNote: "このファイルは未保存のタブとして開いています。",
@@ -162,29 +306,14 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       close: "閉じる",
       openConcept: "開く",
       filesHeading: "ファイル",
-      findingsHeading: "検出",
+      findingsHeading: "すべての検出",
+      priorityHeading: "いま直すと効くこと",
+      optionalHeading: "任意の改善案",
       emptyFiles: "Markdown ファイルはありません。",
       emptyFindings: "検出はありません。",
       findingsTruncated:
         "検出結果は表示上限に達したため、残りを省略しました。",
-      findingMessages: {
-        "missing-frontmatter": "先頭の YAML frontmatter がありません",
-        "unparseable-frontmatter": "YAML frontmatter を解析できません",
-        "missing-type": "必須の type がありません",
-        "invalid-type": "type は空でない文字列にしてください",
-        "unknown-type": "producer 独自の type として扱います",
-        "missing-optional-metadata": "推奨メタデータがありません",
-        "root-index-version": "root index.md の OKF version を確認してください",
-        "nested-index-frontmatter": "下位の index.md に frontmatter があります",
-        "index-shape": "index.md の構成を確認してください",
-        "log-shape": "log.md の日付見出しと並びを確認してください",
-        "broken-link": "リンク先がないか、まだ作成されていません",
-        "out-of-scope-link": "リンク先は選択した bundle root の外です",
-        "external-link": "外部リンクです",
-        "unsupported-link": "対応していないリンクです",
-        "unreadable-file": "Markdown ファイルを読み取れません",
-        "reserved-type-field": "index / log の type は Concept 判定に使いません",
-      },
+      findingMessages: sharedFindingMessages("ja"),
       truncated: "読み取りが上限により打ち切られました",
       truncationReasons: {
         "walk-entries": "エントリ数の上限",
@@ -194,34 +323,48 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
         depth: "フォルダ深さの上限",
       },
       cancelled: "点検は中止されました。",
-      failures: "失敗",
-      advice: "助言",
-      concepts: "Concept",
+      failures: "直した方がよい",
+      advice: "任意",
+      concepts: "ノート",
       indexes: "index",
       logs: "log",
       unreadable: "読めない",
-      kindConcept: "Concept",
+      kindConcept: "ノート",
       kindIndex: "index",
       kindLog: "log",
       kindUnreadable: "読めない",
-      severityFailure: "失敗",
-      severityAdvice: "助言",
-      severityInfo: "情報",
+      severityFailure: "直した方がよい",
+      severityAdvice: "任意",
+      severityInfo: "参考",
       openDirty: "開く（未保存）",
-      contextMenuReview: "OKF Draft 互換を点検",
-      statusStarted: "OKF Draft 互換を点検しています…",
-      statusDone: "OKF Draft 互換の点検が終わりました。",
-      statusFailed: "OKF Draft 互換の点検に失敗しました。",
-      statusNoWorkspace: "ワークスペースを開いてから OKF を点検してください。",
+      contextMenuReview: "知識フォルダ（OKF）を点検",
+      statusStarted: "知識フォルダ（OKF）を点検しています…",
+      statusDone: "知識フォルダ（OKF）の点検が終わりました。",
+      statusFailed: "知識フォルダ（OKF）の点検に失敗しました。",
+      statusNoWorkspace: "ワークスペースを開いてから点検してください。",
+      statusEmpty: "このフォルダに Markdown ファイルはありません。",
+      statusPlainMarkdown:
+        "このフォルダは通常の原稿フォルダとして問題ありません。OKF として扱う場合のみ、各ノートの先頭に type 付き YAML が必要です。Hazakura は今のまま書けます。",
+      statusOkfClean:
+        "知識フォルダとして読めます。互換上の問題は見つかりませんでした。",
+      statusOkfFailures:
+        "知識フォルダとして読むには、直した方がよい点が {count} 件あります。",
+      statusOkfAdviceOnly:
+        "知識フォルダとして読めます。任意の改善案が {count} 件あります。",
+      detailsHeading: "詳細（仕様・件数）",
+      morePriority: "ほかに直した方がよい点が {count} 件あります。",
+      moreOptional: "ほかに任意の項目が {count} 件あります。",
     };
   }
 
   return {
-    title: "Review OKF Draft compatibility",
+    title: "Review knowledge folder (OKF)",
+    purposeIntro:
+      "This is not chapter reordering. It only checks whether Markdown in the selected folder can be read as OKF v0.1 Draft. Nothing is changed automatically.",
     diskSnapshotNote:
       "Results reflect files on disk. An open dirty tab may differ from the scan.",
     dirtyTabNote: "This file is open in a dirty tab.",
-    noWorkspace: "Open a workspace before running an OKF review.",
+    noWorkspace: "Open a workspace before running a knowledge-folder review.",
     scanning: "Reviewing…",
     cancelling: "Cancelling…",
     cancel: "Cancel",
@@ -229,29 +372,14 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     close: "Close",
     openConcept: "Open",
     filesHeading: "Files",
-    findingsHeading: "Findings",
+    findingsHeading: "All findings",
+    priorityHeading: "Worth fixing first",
+    optionalHeading: "Optional improvements",
     emptyFiles: "No Markdown files.",
     emptyFindings: "No findings.",
     findingsTruncated:
       "The findings display limit was reached; remaining findings were omitted.",
-    findingMessages: {
-      "missing-frontmatter": "Leading YAML frontmatter is missing",
-      "unparseable-frontmatter": "YAML frontmatter could not be parsed",
-      "missing-type": "Required type is missing",
-      "invalid-type": "Type must be a non-empty string",
-      "unknown-type": "Treated as a producer-defined type",
-      "missing-optional-metadata": "Recommended metadata is missing",
-      "root-index-version": "Review the OKF version in the root index.md",
-      "nested-index-frontmatter": "A nested index.md contains frontmatter",
-      "index-shape": "Review the index.md structure",
-      "log-shape": "Review the log.md date headings and order",
-      "broken-link": "Link target is missing or not written yet",
-      "out-of-scope-link": "Link target is outside the selected bundle root",
-      "external-link": "External link",
-      "unsupported-link": "Unsupported link destination",
-      "unreadable-file": "Markdown file could not be read",
-      "reserved-type-field": "The type in index/log is not used for concept classification",
-    },
+    findingMessages: sharedFindingMessages("en"),
     truncated: "Read was truncated by a scan budget",
     truncationReasons: {
       "walk-entries": "entry count limit",
@@ -261,24 +389,36 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       depth: "directory depth limit",
     },
     cancelled: "Review was cancelled.",
-    failures: "Failures",
-    advice: "Advice",
-    concepts: "Concepts",
+    failures: "Worth fixing",
+    advice: "Optional",
+    concepts: "Notes",
     indexes: "Indexes",
     logs: "Logs",
     unreadable: "Unreadable",
-    kindConcept: "Concept",
+    kindConcept: "Note",
     kindIndex: "Index",
     kindLog: "Log",
     kindUnreadable: "Unreadable",
-    severityFailure: "Failure",
-    severityAdvice: "Advice",
+    severityFailure: "Worth fixing",
+    severityAdvice: "Optional",
     severityInfo: "Info",
     openDirty: "Open (dirty)",
-    contextMenuReview: "Review OKF Draft compatibility",
-    statusStarted: "Reviewing OKF Draft compatibility…",
-    statusDone: "OKF Draft compatibility review finished.",
-    statusFailed: "OKF Draft compatibility review failed.",
-    statusNoWorkspace: "Open a workspace before reviewing OKF.",
+    contextMenuReview: "Review knowledge folder (OKF)",
+    statusStarted: "Reviewing knowledge folder (OKF)…",
+    statusDone: "Knowledge-folder (OKF) review finished.",
+    statusFailed: "Knowledge-folder (OKF) review failed.",
+    statusNoWorkspace: "Open a workspace before reviewing a knowledge folder.",
+    statusEmpty: "This folder has no Markdown files.",
+    statusPlainMarkdown:
+      "This looks like an ordinary manuscript folder, which is fine. Only when treating it as OKF do notes need leading YAML with a type. You can keep writing in Hazakura as usual.",
+    statusOkfClean:
+      "Readable as a knowledge folder. No compatibility issues were found.",
+    statusOkfFailures:
+      "To read this as a knowledge folder, {count} item(s) are worth fixing.",
+    statusOkfAdviceOnly:
+      "Readable as a knowledge folder. {count} optional improvement(s) available.",
+    detailsHeading: "Details (spec and counts)",
+    morePriority: "{count} more item(s) worth fixing.",
+    moreOptional: "{count} more optional item(s).",
   };
 }

@@ -170,8 +170,16 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           keywords: ["さぶん", "がいぶ"],
         },
         "review.okfDraftCompatibility": {
-          label: "OKF Draft ごかんを てんけん",
-          keywords: ["OKF", "ごかん", "バンドル", "frontmatter", "てんけん"],
+          label: "ちしきフォルダ（OKF）を てんけん",
+          keywords: [
+            "OKF",
+            "ごかん",
+            "ちしき",
+            "バンドル",
+            "frontmatter",
+            "てんけん",
+            "Draft",
+          ],
         },
         "agent.open": {
           label: "Agent まどを ひらく",
@@ -331,8 +339,16 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           keywords: ["差分", "外部変更"],
         },
         "review.okfDraftCompatibility": {
-          label: "OKF Draft 互換を点検",
-          keywords: ["OKF", "互換", "バンドル", "frontmatter", "点検"],
+          label: "知識フォルダ（OKF）を点検",
+          keywords: [
+            "OKF",
+            "互換",
+            "知識",
+            "バンドル",
+            "frontmatter",
+            "点検",
+            "Draft",
+          ],
         },
         "agent.open": {
           label: "Agent ウィンドウを開く",
@@ -440,8 +456,15 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         keywords: ["verify"],
       },
       "review.okfDraftCompatibility": {
-        label: "Review OKF Draft compatibility",
-        keywords: ["OKF", "bundle", "frontmatter", "compatibility"],
+        label: "Review knowledge folder (OKF)",
+        keywords: [
+          "OKF",
+          "bundle",
+          "frontmatter",
+          "compatibility",
+          "knowledge",
+          "Draft",
+        ],
       },
       "agent.open": { label: "Open Agent Window" },
       "agent.sendSelection": { label: "Send Selection to Agent" },

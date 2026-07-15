@@ -1,7 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { OkfReviewResult } from "../../features/okf";
 import { OkfReviewPanel } from "./OkfReviewPanel";
+
+afterEach(() => {
+  cleanup();
+});
 
 const result: OkfReviewResult = {
   summary: {
@@ -47,6 +51,42 @@ const result: OkfReviewResult = {
   source: "disk",
 };
 
+const plainManuscript: OkfReviewResult = {
+  summary: {
+    ...result.summary,
+    conceptCount: 1,
+    failureCount: 1,
+    hasRootIndex: false,
+    declaredOkfVersion: null,
+  },
+  files: [
+    {
+      relativePath: "draft.md",
+      kind: "concept",
+      conceptId: "draft",
+      type: null,
+      title: null,
+      okfVersion: null,
+      byteLength: 20,
+    },
+  ],
+  findings: [
+    {
+      code: "missing-frontmatter",
+      severity: "failure",
+      relativePath: "draft.md",
+      message: "missing",
+    },
+  ],
+  findingsTruncated: false,
+  scannedEntries: 1,
+  scannedMarkdownFiles: 1,
+  totalBytesRead: 20,
+  truncated: false,
+  cancelled: false,
+  source: "disk",
+};
+
 function renderPanel(
   overrides: Partial<Parameters<typeof OkfReviewPanel>[0]> = {},
 ) {
@@ -76,16 +116,39 @@ describe("OkfReviewPanel", () => {
   it("localizes findings and gives file-specific names to open actions", () => {
     const { onOpenConcept } = renderPanel();
 
-    expect(screen.getByText(/リンク先がない/)).not.toBeNull();
+    expect(screen.getByRole("heading", { name: /知識フォルダ（OKF）を点検/ })).not.toBeNull();
+    expect(screen.getByText(/本の並べ替えではありません/)).not.toBeNull();
+    expect(screen.getAllByText(/リンク先のファイルがない/).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/Broken internal link/)).toBeNull();
     expect(screen.getByText(/未保存のタブ/)).not.toBeNull();
+    expect(screen.getByText(/いま直すと効くこと/)).not.toBeNull();
 
     const openButtons = screen.getAllByRole("button", {
       name: /concepts\/a\.md/,
     });
-    expect(openButtons).toHaveLength(2);
+    // Priority row + files list + all-findings row.
+    expect(openButtons.length).toBeGreaterThanOrEqual(2);
     fireEvent.click(openButtons[0]);
     expect(onOpenConcept).toHaveBeenCalledWith("concepts/a.md");
+  });
+
+  it("frames ordinary manuscript folders as normal writing", () => {
+    renderPanel({ result: plainManuscript });
+    expect(screen.getByText(/通常の原稿フォルダとして問題ありません/)).not.toBeNull();
+  });
+
+  it("keeps raw counts under a details disclosure", () => {
+    renderPanel();
+    expect(screen.getByText("詳細（仕様・件数）")).not.toBeNull();
+    expect(
+      screen.getByText((content, element) => {
+        return (
+          element?.classList.contains("okf-review-spec") === true &&
+          content.includes("ee67a5c")
+        );
+      }),
+    ).not.toBeNull();
+    expect(screen.getAllByText("ノート").length).toBeGreaterThanOrEqual(1);
   });
 
   it("supports cancellation and announces bounded findings", () => {

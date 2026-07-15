@@ -124,10 +124,12 @@ Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.11 S3 packaged smoke then S4:** source has Command Palette
-   `OKF Draft 互換を点検`, folder/root context menu, read-only panel
-   (summary/files/findings/dirty note/cancel/rerun), and existing-tab open.
-   Run a representative packaged OKF flow, then the distribution-confidence
+1. **v1.11 S3 packaged smoke then S4:** source has Command Palette /
+   context menu `知識フォルダ（OKF）を点検`, writer-facing status hierarchy
+   (ordinary manuscript vs knowledge-folder framing, priority findings,
+   details disclosure), and existing-tab open. No full OKF scan on workspace
+   open. Optional polish: in-panel guide/example, File menu, sidebar chip on
+   root `index.md` only. Run packaged OKF flow, then distribution-confidence
    matrix. In-tree version stays `1.10.0`; do not prepare release artifacts
    without explicit approval.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
