@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
+Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -230,7 +230,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.11.0` across npm, Tauri, and Cargo metadata (TestFlight candidate preparation). The published Mac App Store version remains `1.8.0`; upload, TestFlight installation, App Review, and public release are separate decisions and evidence.
+- Current package/app version is `1.11.0` across npm, Tauri, and Cargo metadata (local signed TestFlight candidate ready). The published Mac App Store version remains `1.8.0`; upload, TestFlight installation, App Review, and public release are separate decisions and evidence.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.8.0`; extended recovery, long-reference, and accessibility smoke continues as v1.8 follow-up rather than reopening the published lane.
 - The latest prepared GitHub source / local-app tag is [v1.8.0](https://github.com/lero003/hazakura-editor/tree/v1.8.0).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

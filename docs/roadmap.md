@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
+Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
 
 ## Current Position
 
@@ -15,7 +15,7 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.11.0`** (TestFlight candidate preparation;
+- Package/app version in tree: **`1.11.0`** (local signed TestFlight candidate ready;
   the published Mac App Store version remains `1.8.0`). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.8.0`.** App Review passed and the
@@ -56,7 +56,7 @@ Current release state:
   Undo-able heading-level transaction. The temporary-fixture Outline/advice/edit/
   Undo path passed; its changes are rolled into `1.11.0`. Extended manual
   breadth moves into v1.11 rather than reopening v1.10.
-- **v1.11 OKF Draft Compatibility Preview is in local TestFlight candidate preparation.** It adds one
+- **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.** It adds one
   explicit, bounded, read-only review of an OKF v0.1 Draft root, then runs the
   larger packaged distribution-confidence matrix. Full Book Scope remains v2.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,
@@ -211,8 +211,8 @@ Near-term phase order:
      deterministic full tests, pathless recovery proof, packaged Reference
      Compare, long-reference and a11y gates shipped. Extended TestFlight and
      spoken VoiceOver breadth remain follow-up evidence.
-   - **v1.9 Writing Loop Clarity (source complete; present in the held
-     `1.10.0` candidate):**
+   - **v1.9 Writing Loop Clarity (source complete; rolled into the
+     `1.11.0` candidate):**
      organize Preview / Reference /
      e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
      adding chrome.

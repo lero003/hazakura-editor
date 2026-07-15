@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
+Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
 
 ## Current State
 
-- Package/app version in tree is **`1.11.0`** (TestFlight candidate
-  preparation); the published Mac App
+- Package/app version in tree is **`1.11.0`** (local signed TestFlight
+  candidate ready); the published Mac App
   Store version is **`1.8.0`**. App Review passed and publication was user-reported on
   2026-07-14 (build `89`). Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
@@ -56,16 +56,18 @@ Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
   present), hides the modal without losing the in-memory result, and status-
   hints re-invocation; reopening/rerunning performs a fresh explicit disk scan,
   and workspace replacement discards the retained result and cancels the review.
-  Local candidate verification is active; signed TestFlight interaction is
-  still separate evidence. The contract remains an
+  A packaged local smoke passed Command Palette and folder-context entry,
+  `開いて修正`, a saved disposable correction, and a fresh result. Source/Rust/
+  App Store surface, sandbox/helper entitlements, universal signing, pkg
+  signature, metadata, and checksum also passed. TestFlight installation and
+  interaction remain separate evidence. The contract remains an
   explicit, bounded, cancellable, read-only review of one user-selected
   workspace root or subfolder against official OKF v0.1 Draft. It may show
   conformance / advice and open concepts through existing Markdown tabs. It must
   not add startup/background scan, persistent index, auto-repair, chapter order,
   multi-file edit, whole-book export, or Book Scope. Contract:
   `docs/v1.11-okf-draft-preview-design.md`. Spec snapshot: commit `ee67a5c`.
-  The S3 feature-complete threshold still includes packaged smoke; S4 is the
-  separate ship-ready gate.
+  S3 packaged smoke and the local S4 candidate gate are complete.
 - `v1.8.0` is the immutable published source tag. The published signed pkg is
   **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
   checks passed before upload. Do not move the tag or mutate published assets.
@@ -130,14 +132,14 @@ Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.11 local candidate gate:** source has Command Palette /
+1. **v1.11 TestFlight follow-up:** source has Command Palette /
    context menu `知識フォルダ（OKF）を点検`, writer-facing status hierarchy
    (ordinary manuscript vs knowledge-folder framing, priority findings,
    details disclosure), and existing-tab open. No full OKF scan on workspace
    open. Optional polish: in-panel guide/example, File menu, sidebar chip on
-   root `index.md` only. Finish packaged OKF and distribution-confidence
-   checks, then generate the local `1.11.0` TestFlight pkg. Upload remains a
-   separate explicit action.
+   root `index.md` only. The local signed `1.11.0` pkg is ready; upload remains
+   a separate explicit action. After installation, repeat the core OKF flow
+   and the inherited IME/Save As/recovery/e-book/EPUB/a11y breadth.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering

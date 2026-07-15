@@ -639,10 +639,10 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`1.11.0`",
         "Published Mac App Store version: **`1.8.0`",
-        "v1.11 OKF Draft Compatibility Preview S0–S3 source is landed; local candidate verification is in progress",
+        "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
       ],
       "docs/current-work.md": [
-        "Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate preparation",
+        "Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate ready",
         "Active Queue — v1.11 OKF Draft Compatibility Preview",
       ],
       "docs/development-automation.md": [
@@ -656,10 +656,10 @@ describe("macOS build scripts", () => {
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.11.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "v1.11 OKF Draft Compatibility Preview is in local TestFlight candidate preparation",
+        "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [
-        "Status: Accepted design; S0–S3 source landed; local candidate gate active",
+        "Status: Implemented; local candidate gate passed; TestFlight interaction pending",
         "Version 0.1 — Draft",
         "commit: [`ee67a5c`]",
         "`MAX_OKF_MARKDOWN_FILES`",

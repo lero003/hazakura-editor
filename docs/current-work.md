@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate preparation
+Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate ready
 Authority: High
-Last reviewed: 2026-07-15 (OKF review action loop + result classification)
+Last reviewed: 2026-07-15 (local candidate gate passed)
 
 ## Purpose
 
@@ -20,11 +20,11 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
 | **v1.9** | **Source complete / rolled into current candidate** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. The work is rolled into the in-tree `1.11.0` candidate rather than published alone. |
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
-| **v1.11** | **Local TestFlight candidate preparation** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review plus the larger distribution-confidence gate. Fixtures, `yaml` model, async discovery, and the OKF review → edit → recheck surface are in tree. Local candidate verification is active; signed TestFlight interaction remains after upload. No Book Scope, chapter ordering, auto-repair, or background scan. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
+| **v1.11** | **Local TestFlight candidate ready** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review plus the larger distribution-confidence gate. Source gates, packaged review → edit → save → recheck, App Store surface, sandbox/helper entitlements, universal signing, pkg signature, metadata, and checksum passed locally. Signed TestFlight interaction remains after upload. No Book Scope, chapter ordering, auto-repair, or background scan. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
 
-Package/app version in tree is **`1.11.0`** (TestFlight candidate
-preparation); the published Mac App Store version is **`1.8.0`**. Upload,
+Package/app version in tree is **`1.11.0`** (local signed TestFlight candidate
+ready); the published Mac App Store version is **`1.8.0`**. Upload,
 TestFlight installation, App Review, and public release remain separate. See
 `current-status.md` for lane truth; treat Connect as authoritative for store
 counters.
@@ -43,7 +43,7 @@ Goal: ユーザーが明示的に選んだ workspace / subfolder を、OKF v0.1 
 | **Done / source** | **S2 — Explicit bounded discovery** | Async `scan_okf_bundle` が **arm後**に `spawn_blocking`、`File::take(limit+1)` の bounded read、同時scan拒否、timeout付きhandshakeによる mid-run cancel、実読込 total 加算、symlink root/open時identity拒否、5 budgets境界テスト。TS bridge: `src/lib/tauri/okf.ts` + `fromDiscovery.ts`。 |
 | **Done / source hardened** | **S3 — OKF review surface** | Command Palette / フォルダコンテキスト `知識フォルダ（OKF）を点検`。読み取り専用 panel は通常原稿の OKF 前提不足を「OKF として整える準備」へ分け、実対応 / 改善案 / 参考情報を混同しない。`開いて修正` は既存 tab を開いて modal を退避し、`変更後に再点検` で明示的に disk snapshot を更新する。ファイル/参考情報と spec/counts は disclosure、scroll は dialog 一つに集約。findings は解析・表示上限、三言語copy、path別accessible nameを持ち、workspace切替時は保持結果を破棄してscanをcancelする。Markdown HTML/image 非描画。**open 時の自動フル解析はしない**（UX progressive disclosure: design doc）。packaged smoke は S4 と併せて。 |
 | **Next polish (optional before/with S4)** | **OKF UX Step 2–3** | パネル内ガイド/最小見本、File メニュー、root `index.md` 存在時の非侵襲チップ（クリックまで scan しない）。 |
-| **In progress** | **S4 — Distribution confidence / candidate ready** | ローカルOKF packaged smoke、source/Rust/App Store surface、sandbox/helper/signatureを確認し、`1.11.0` pkg を生成する。TestFlight install 後のIME、Save As、recovery、e-book/EPUB、a11y、long/failure breadthは実機証拠として分けて記録する。 |
+| **Done / local candidate** | **S4 — Distribution confidence / candidate ready** | ローカルOKF packaged smoke、source/Rust/App Store surface、sandbox/helper/signature、metadata/checksumを確認し、`1.11.0` pkg を生成した。TestFlight install 後のIME、Save As、recovery、e-book/EPUB、a11y、long/failure breadthは実機証拠として分けて記録する。 |
 
 ### Closed Implementation Queue — v1.10 Single-document Structure Foundation
 

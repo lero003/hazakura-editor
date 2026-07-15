@@ -3,14 +3,14 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
+Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.11.0`** across npm, Tauri, Cargo,
   and lockfile metadata. The published Mac App Store version remains
-  `1.8.0`; v1.11 is being prepared as a local TestFlight candidate. Upload,
+  `1.8.0`; v1.11 is locally ready as a signed TestFlight candidate. Upload,
   TestFlight installation, App Review, and public release remain separate.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
@@ -38,8 +38,7 @@ Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
   review fixed stale Command Palette labels when locale changes while the
   palette is open, aligned the returning Start Panel kana CTA, and repaired
   release/lane document checks. v1.9 stayed source-complete without its own
-  public release and is present inside the `1.10.0` candidate that will roll
-  forward with v1.11.
+  public release and is present inside the `1.11.0` candidate.
 - **v1.10 Single-document Structure Foundation S1–S4 is source complete and
   has representative packaged interaction proof.** `parseMarkdownStructure` provides
   one source-offset interpretation of closed leading frontmatter, ATX headings,
@@ -56,7 +55,7 @@ Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
   IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof
   and move into the v1.11 distribution-confidence matrix rather than reopening
   v1.10.
-- **v1.11 OKF Draft Compatibility Preview S0–S3 source is landed; local candidate verification is in progress.**
+- **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only
   panel) are in tree. The writer-facing action loop is also in tree: command/title
@@ -69,10 +68,13 @@ Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
   re-invoking the review) performs the next explicit disk scan. Full analysis
   still runs only on explicit invoke—not on workspace open. Discovery revalidates opened-file identity, analysis and
   rendered findings have explicit caps, findings follow the active locale, and
-  a workspace change closes/cancels the owning review. Packaged smoke and the
-  distribution-confidence matrix remain. Full frontend/Rust tests and a local
-  App Store preview bundle build passed on 2026-07-15; this is build evidence,
-  not packaged interaction or signed distribution proof. The contract remains
+  a workspace change closes/cancels the owning review. On 2026-07-15, the
+  packaged Command Palette and folder-context flows passed review → open/edit →
+  save → recheck; the fresh scan reduced required findings after the saved
+  fixture correction. Full frontend/Rust/App Store surface gates, local sandbox
+  entitlements, universal submit-app signing, helper inheritance, pkg signing,
+  metadata, and checksum verification also passed. This is local candidate
+  evidence, not TestFlight installation or interaction proof. The contract remains
   an explicit, bounded, cancellable, read-only
   review of one user-selected workspace root or subfolder against OKF v0.1
   Draft. It does not add startup scan, persistent indexing, automatic repair,
@@ -740,8 +742,8 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Finish the local `1.11.0` candidate gate, then upload only with explicit
-   approval.** Re-run the OKF review → edit → recheck flow on the resulting
+2. **Upload the local `1.11.0` candidate only with explicit approval.** Re-run
+   the OKF review → edit → recheck flow on the resulting
    TestFlight install; keep unknown fields/types and broken links tolerant.
 3. Keep v1.10 implementation closed. Fold its remaining source-jump, IME,
    Save As, recovery, e-book/EPUB, and signed TestFlight breadth into v1.11 S4.

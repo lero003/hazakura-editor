@@ -109,6 +109,15 @@ npm run smoke:fixtures:v1.11-okf
 This local built-app flow is not signed TestFlight evidence. Repeat the core
 review → edit → save → recheck path after TestFlight installation.
 
+Current representative result (2026-07-15): the fresh `1.11.0` local bundle
+passed Command Palette and folder-context entry, result hierarchy, existing-tab
+`開いて修正`, saved disposable-fixture correction, and explicit recheck. The
+fresh disk result reduced required findings from two to one. Automated cancel,
+budget, symlink, UTF-8, and concurrent-scan coverage also passed. The signed
+submit app and pkg passed local signature, sandbox/helper entitlement,
+version/build metadata, and checksum verification. TestFlight installation,
+spoken VoiceOver, and the inherited wider S4 interaction matrix remain separate.
+
 ## v1.3 Daily Trust Test Intake
 
 v1.3 is currently a source lane over the `1.2.0` package baseline. Run the
