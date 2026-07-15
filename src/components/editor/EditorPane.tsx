@@ -111,7 +111,10 @@ export type EditorPaneHandle = {
     direction: HeadingLevelChangeDirection,
   ) => boolean;
   applyMarkdownFormat: (format: MarkdownFormat) => void;
-  insertTable: (columns: number) => void;
+  insertTable: (
+    columns: number,
+    headerLabels?: readonly string[],
+  ) => void;
   insertText: (text: string) => void;
   setScrollRatio: (ratio: number, tolerancePx?: number) => boolean;
   replaceCurrent: (replacement: string) => boolean;
@@ -367,10 +370,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         view.focus();
         return true;
       },
-      insertTable(columns) {
+      insertTable(columns, headerLabels) {
         const view = viewRef.current;
         if (!view || readOnly) return;
-        insertTableAtCursor(view, columns);
+        insertTableAtCursor(view, columns, headerLabels);
         view.focus();
       },
       insertText(text) {
@@ -1296,10 +1299,22 @@ export function isScrollerPointerOnScrollbar(
   return isVerticalScrollbar || isHorizontalScrollbar;
 }
 
-function insertTableAtCursor(view: EditorView, columns: number) {
-  const header = "|" + Array.from({ length: columns }, (_, i) => ` Col ${i + 1} `).join("|") + "|";
-  const separator = "|" + Array.from({ length: columns }, () => " --- ").join("|") + "|";
-  const row = "|" + Array.from({ length: columns }, () => "   ").join("|") + "|";
+function insertTableAtCursor(
+  view: EditorView,
+  columns: number,
+  headerLabels?: readonly string[],
+) {
+  const header =
+    "|" +
+    Array.from({ length: columns }, (_, i) => {
+      const label = headerLabels?.[i]?.trim() || `Col ${i + 1}`;
+      return ` ${label} `;
+    }).join("|") +
+    "|";
+  const separator =
+    "|" + Array.from({ length: columns }, () => " --- ").join("|") + "|";
+  const row =
+    "|" + Array.from({ length: columns }, () => "   ").join("|") + "|";
   const table = `${header}\n${separator}\n${row}\n`;
 
   view.dispatch({

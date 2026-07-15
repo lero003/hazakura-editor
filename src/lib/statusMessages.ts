@@ -47,6 +47,8 @@ export function localizeStatusMessage(
     "Close failed": "閉じる操作に失敗しました",
     "Close needs confirmation": "閉じる前に確認が必要です",
     "Close stopped": "閉じる操作を停止しました",
+    "Closing; recovery cleanup unavailable":
+      "閉じています（復旧データの整理はできませんでした）",
     "Closing window...": "ウィンドウを閉じています...",
     "Compare closed": "比較結果を閉じました",
     "Compare failed": "比較に失敗しました",
@@ -57,7 +59,11 @@ export function localizeStatusMessage(
     "Creating folder...": "フォルダ作成中...",
     "Creating workspace...": "ワークスペースを作成中...",
     "Draft discarded": "下書きを破棄しました",
+    "Draft discarded; recovery cleanup unavailable":
+      "下書きを破棄しました（復旧データの整理はできませんでした）",
     "Draft restored": "下書きを復元しました",
+    "Draft restored; recovery cleanup unavailable":
+      "下書きを復元しました（復旧データの整理はできませんでした）",
     "Enter a valid line number": "有効な行番号を入力してください",
     "Error dismissed": "エラー表示を閉じました",
     "Export EPUB beta failed": "EPUB書き出しに失敗しました",
@@ -141,6 +147,9 @@ export function localizeStatusMessage(
     "Opening image preview...": "画像プレビューを開いています...",
     "Reading folder...": "フォルダを読み込み中...",
     "Ready": "準備完了",
+    "Reference closed": "参照を閉じました",
+    "Reference open cancelled": "参照を開く操作をキャンセルしました",
+    "Reference open failed": "参照を開けませんでした",
     "Reopen failed": "再読み込みに失敗しました",
     "Reopen skipped; document changed":
       "ドキュメント変更により再読み込みをスキップしました",
@@ -169,6 +178,10 @@ export function localizeStatusMessage(
     "Saved as": "別名保存しました",
     "Saved as; folder refresh failed":
       "別名保存しました。フォルダ更新には失敗しました",
+    "Saved as; draft recovery cleanup unavailable":
+      "別名保存しました（復旧データの整理はできませんでした）",
+    "Saved; draft recovery cleanup unavailable":
+      "保存しました（復旧データの整理はできませんでした）",
     "Saving as...": "別名保存中...",
     "Saving before close...": "閉じる前に保存中...",
     "Saving pasted image...": "貼り付け画像を保存中...",
@@ -180,6 +193,8 @@ export function localizeStatusMessage(
     "Stopping Agent session...": "Agent セッションを停止中...",
     "Strikethrough markup applied": "打ち消し線の Markdown を適用しました",
     "Tab closed": "タブを閉じました",
+    "Tab closed; recovery cleanup unavailable":
+      "タブを閉じました（復旧データの整理はできませんでした）",
     "Tab focused": "タブにフォーカスしました",
     "Trashed; folder refresh failed":
       "ゴミ箱へ移動しました。フォルダ更新には失敗しました",
@@ -294,9 +309,13 @@ export function localizeStatusMessage(
   }
 
   if (message.startsWith("Workspace restored: ")) {
-    return `ワークスペースを復元しました: ${message.slice(
-      "Workspace restored: ".length,
+    return `ワークスペースを復元しました: ${localizeWorkspaceRestoreDetail(
+      message.slice("Workspace restored: ".length),
     )}`;
+  }
+
+  if (message.startsWith("Reference opened: ")) {
+    return `参照を開きました: ${message.slice("Reference opened: ".length)}`;
   }
 
   if (message.startsWith("Exported HTML: ")) {
@@ -360,6 +379,23 @@ export function localizeStatusMessage(
   }
 
   return message;
+}
+
+/** Translate dynamic workspace-restore detail while keeping counts. */
+function localizeWorkspaceRestoreDetail(detail: string): string {
+  return detail
+    .replace(
+      /(\d+)\s+tabs?\s+reopened/gi,
+      "$1 個のタブを再開",
+    )
+    .replace(
+      /(\d+)\s+paths?\s+skipped/gi,
+      "$1 件のパスをスキップ",
+    )
+    .replace(
+      /\s*\(use Open or Open Folder to reauthorize\)/gi,
+      "（ファイルを開く／フォルダを開くで権限を付け直してください）",
+    );
 }
 
 /** Tail after `Imported … draft (` — e.g. `2 pages, unsaved)` or `1 page)`. */

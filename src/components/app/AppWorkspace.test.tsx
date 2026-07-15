@@ -326,6 +326,7 @@ function makeWorkspaceProps(
       conflictHeading: "Conflict",
       dismiss: "Dismiss",
       discardDraft: "Discard draft",
+      discardDraftConfirm: "Discard this draft?",
       draftActions: "Draft actions",
       draftAvailable: (name: string) => `Draft for ${name}`,
       errorActions: "Error actions",

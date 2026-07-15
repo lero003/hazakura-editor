@@ -60,10 +60,10 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       startResumeWorkspace: (folderLabel) =>
         `まへの ところ「${folderLabel}」をひらく`,
       startResumeWorkspaceHint:
-        "すなばの けんげんが きれていれば、ふぉるだを えらびなおします。",
+        "まえの ふぉるだを ひらきなおします。ひらけないときは もういちど えらびます。",
       startResumeSection: "つづきを かく",
       startRecoverySection: "たしかめる",
-      startRecoveryHeading: "みちのない みほぞんの したがき",
+      startRecoveryHeading: "ほぞんまえの メモを ふっきゅう",
       workspace: "ところ",
       workspaceFileTree: "ところのふみならび",
     };
@@ -95,10 +95,10 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startResumeWorkspace: (folderLabel) =>
           `前回のフォルダ「${folderLabel}」を開く`,
         startResumeWorkspaceHint:
-          "サンドボックスの権限が切れている場合は、フォルダを選び直します。",
+          "前回のフォルダを開き直します。開けないときは、もう一度選び直してください。",
         startResumeSection: "続きを書く",
         startRecoverySection: "確かめる",
-        startRecoveryHeading: "パスのない未保存下書き",
+        startRecoveryHeading: "保存前のメモを復旧",
         workspace: "ワークスペース",
         workspaceFileTree: "ワークスペースのファイルツリー",
       }
@@ -126,10 +126,10 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startResumeWorkspace: (folderLabel) =>
           `Open last folder “${folderLabel}”`,
         startResumeWorkspaceHint:
-          "If sandbox access expired, you will pick the folder again.",
+          "Reopens your last folder. If access expired, you will pick it again.",
         startResumeSection: "Continue writing",
         startRecoverySection: "Verify",
-        startRecoveryHeading: "Unsaved pathless drafts",
+        startRecoveryHeading: "Recover pre-save notes",
         workspace: "Workspace",
         workspaceFileTree: "Workspace file tree",
       };

@@ -92,9 +92,15 @@ export function useEditorCommands({
   );
 
   const insertTable = useCallback(() => {
-    editorPaneRef.current?.insertTable(3);
+    const headerLabels =
+      menuLanguage === "kana"
+        ? (["れつ1", "れつ2", "れつ3"] as const)
+        : isJapaneseMenuLanguage(menuLanguage)
+          ? (["列1", "列2", "列3"] as const)
+          : (["Col 1", "Col 2", "Col 3"] as const);
+    editorPaneRef.current?.insertTable(3, headerLabels);
     setStatus("Inserted 3-column table — edit cells manually");
-  }, [editorPaneRef, setStatus]);
+  }, [editorPaneRef, menuLanguage, setStatus]);
 
   const jumpToHeading = useCallback(
     (heading: Pick<MarkdownHeading, "line">) => {
@@ -259,7 +265,12 @@ export function useEditorCommands({
         category: "markdown",
         hint: "tbl",
         id: "table",
-        insertText: "| Col 1 | Col 2 | Col 3 |\n| --- | --- | --- |\n|     |     |     |\n",
+        insertText: (() => {
+          const h1 = loc("れつ1", "列1", "Col 1");
+          const h2 = loc("れつ2", "列2", "Col 2");
+          const h3 = loc("れつ3", "列3", "Col 3");
+          return `| ${h1} | ${h2} | ${h3} |\n| --- | --- | --- |\n|     |     |     |\n`;
+        })(),
         label: loc("てーぶる", "テーブル", "Table"),
         searchKeys: ["table", "tbl", "テーブル", "表"],
       },

@@ -129,7 +129,11 @@ export function StartPanel({
                       </button>
                       <button
                         type="button"
-                        onClick={() => onDiscardDraft(key)}
+                        onClick={() => {
+                          if (window.confirm(recoveryCopy.discardDraftConfirm)) {
+                            onDiscardDraft(key);
+                          }
+                        }}
                       >
                         {recoveryCopy.discardDraft}
                       </button>

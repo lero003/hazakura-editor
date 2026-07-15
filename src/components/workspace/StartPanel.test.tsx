@@ -123,8 +123,11 @@ describe("StartPanel returning visit", () => {
     fireEvent.click(screen.getByRole("button", { name: "Restore draft" }));
     expect(onRestoreDraft).toHaveBeenCalledWith(draft);
 
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     fireEvent.click(screen.getByRole("button", { name: "Discard draft" }));
+    expect(confirmSpy).toHaveBeenCalled();
     expect(onDiscardDraft).toHaveBeenCalledWith("pathless:uuid-recovery-1");
+    confirmSpy.mockRestore();
   });
 
   it("keeps Japanese resume and recovery section labels purpose-led", () => {
@@ -149,6 +152,6 @@ describe("StartPanel returning visit", () => {
     expect(
       screen.getByRole("button", { name: "前回のフォルダ「章立て」を開く" }),
     ).toBeTruthy();
-    expect(screen.getByText("パスのない未保存下書き")).toBeTruthy();
+    expect(screen.getByText("保存前のメモを復旧")).toBeTruthy();
   });
 });

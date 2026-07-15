@@ -167,7 +167,7 @@ describe("localizeStatusMessage: workspace restore reauth hint (v0.16)", () => {
         "ja",
       ),
     ).toBe(
-      "ワークスペースを復元しました: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
+      "ワークスペースを復元しました: 1 個のタブを再開, 1 件のパスをスキップ（ファイルを開く／フォルダを開くで権限を付け直してください）",
     );
   });
 
@@ -178,18 +178,30 @@ describe("localizeStatusMessage: workspace restore reauth hint (v0.16)", () => {
         "ja",
       ),
     ).toBe(
-      "ワークスペースを復元しました: 3 tabs reopened, 2 paths skipped (use Open or Open Folder to reauthorize)",
+      "ワークスペースを復元しました: 3 個のタブを再開, 2 件のパスをスキップ（ファイルを開く／フォルダを開くで権限を付け直してください）",
     );
   });
 
-  it("preserves the Open / Open Folder reauth hint in the localized form", () => {
+  it("localizes the Open / Open Folder reauth hint", () => {
     const localized = localizeStatusMessage(
       "Workspace restored: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
       "ja",
     );
-    expect(localized).toContain("Open");
-    expect(localized).toContain("Open Folder");
-    expect(localized).toContain("reauthorize");
+    expect(localized).toContain("ファイルを開く");
+    expect(localized).toContain("フォルダを開く");
+    expect(localized).toContain("権限を付け直してください");
+  });
+
+  it("localizes Reference open status messages", () => {
+    expect(localizeStatusMessage("Reference open failed", "ja")).toBe(
+      "参照を開けませんでした",
+    );
+    expect(
+      localizeStatusMessage("Reference opened: notes.pdf", "ja"),
+    ).toBe("参照を開きました: notes.pdf");
+    expect(localizeStatusMessage("Reference closed", "ja")).toBe(
+      "参照を閉じました",
+    );
   });
 
   it("returns the raw English key for the prefix form when menu language is English", () => {

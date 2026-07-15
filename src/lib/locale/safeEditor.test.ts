@@ -49,7 +49,10 @@ describe("getSafeEditorCopy tab accessibility labels", () => {
     expect(getSafeEditorCopy("kana").startResumeWorkspace("novel")).toBe(
       "まへの ところ「novel」をひらく",
     );
-    expect(getSafeEditorCopy("en").startRecoveryHeading).toMatch(/pathless/i);
+    expect(getSafeEditorCopy("en").startRecoveryHeading).toMatch(
+      /pre-save notes/i,
+    );
+    expect(getSafeEditorCopy("ja").startRecoveryHeading).toContain("保存前");
     expect(getSafeEditorCopy("ja").startRecoverySection).toBe("確かめる");
   });
 });

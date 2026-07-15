@@ -243,6 +243,11 @@ const MARKDOWN_PALETTE_COMMAND_SPECS: readonly MarkdownPaletteCommandSpec[] = [
 function buildMarkdownPaletteCommands(
   slashCommands: readonly SlashCommand[],
   editorPaneRef: RefObject<EditorPaneHandle | null>,
+  options: {
+    editCategory: string;
+    insertCategory: string;
+    tableDescription: string;
+  },
 ): Command[] {
   const commandsById = new Map(
     slashCommands
@@ -256,9 +261,20 @@ function buildMarkdownPaletteCommands(
       if (!sourceCommand) {
         return [];
       }
+      const category =
+        paletteCommand.category === "Insert"
+          ? options.insertCategory
+          : options.editCategory;
       return [
         {
           ...paletteCommand,
+          category,
+          // Prefer the localized slash-command label so palette matches `/` menu.
+          label: sourceCommand.label,
+          description:
+            paletteCommand.id === "edit.insertTable"
+              ? options.tableDescription
+              : paletteCommand.description,
           keywords: Array.from(
             new Set([
               ...(paletteCommand.keywords ?? []),
@@ -311,10 +327,25 @@ export function useCommandPaletteController({
     },
     [actions, editorPaneRef, setStatus],
   );
-  const markdownPaletteCommands = useMemo(
-    () => buildMarkdownPaletteCommands(slashCommands, editorPaneRef),
-    [editorPaneRef, slashCommands],
-  );
+  const markdownPaletteCommands = useMemo(() => {
+    const insertCategory =
+      menuLanguage === "kana"
+        ? "そうにゅう"
+        : menuLanguage === "ja"
+          ? "挿入"
+          : "Insert";
+    const tableDescription =
+      menuLanguage === "kana"
+        ? "3 れつの Markdown てーぶるを いれます。セルは へんしゅうがめんで かえてください。"
+        : menuLanguage === "ja"
+          ? "3 列の Markdown テーブルを挿入します。セルはエディタで編集してください。"
+          : "Insert a 3-column Markdown table. Edit cells in the editor.";
+    return buildMarkdownPaletteCommands(slashCommands, editorPaneRef, {
+      editCategory: paletteCopy.categories.edit,
+      insertCategory,
+      tableDescription,
+    });
+  }, [editorPaneRef, menuLanguage, paletteCopy.categories.edit, slashCommands]);
 
   const commandCommands = useMemo<Command[]>(
     () => [

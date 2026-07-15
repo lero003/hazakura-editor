@@ -60,7 +60,7 @@ export const DIFF_MAX_LINE_PRODUCT = 4_000_000;
 export const MARKDOWN_OUTLINE_MAX_HEADINGS = 200;
 
 export const EXTERNAL_CHANGE_CONFLICT_MESSAGE =
-  "The file changed on disk, possibly from another app or Agent provider. Saving is stopped until you choose how to continue.";
+  "This file may have been changed in another app. Saving stays paused until you choose how to continue.";
 
 export const AGENT_WORKBENCH_PROVIDERS: Array<{
   id: AgentWorkbenchProvider;

@@ -77,7 +77,11 @@ export function RecoveryMessages({
             </button>
             <button
               type="button"
-              onClick={() => onDiscardDraft(draftStorageKey(activeDraft))}
+              onClick={() => {
+                if (window.confirm(copy.discardDraftConfirm)) {
+                  onDiscardDraft(draftStorageKey(activeDraft));
+                }
+              }}
             >
               {copy.discardDraft}
             </button>
@@ -107,7 +111,11 @@ export function RecoveryMessages({
               </button>
               <button
                 type="button"
-                onClick={() => onDiscardDraft(draftStorageKey(draft))}
+                onClick={() => {
+                  if (window.confirm(copy.discardDraftConfirm)) {
+                    onDiscardDraft(draftStorageKey(draft));
+                  }
+                }}
               >
                 {copy.discardDraft}
               </button>

@@ -904,7 +904,8 @@ describe("useCommandPaletteController", () => {
     const heading = result.current.filteredCommands.find(
       (command) => command.id === "insert.heading1",
     );
-    expect(heading?.label).toBe("Insert Heading 1");
+    // Palette labels follow the localized slash menu (test uses kana).
+    expect(heading?.label).toBe("みだし 1");
     act(() => {
       heading?.run();
     });
@@ -917,7 +918,7 @@ describe("useCommandPaletteController", () => {
       table?.run();
     });
     expect(insertText).toHaveBeenCalledWith(
-      "| Col 1 | Col 2 | Col 3 |\n| --- | --- | --- |\n|     |     |     |\n",
+      "| れつ1 | れつ2 | れつ3 |\n| --- | --- | --- |\n|     |     |     |\n",
     );
     expect(insertTable).not.toHaveBeenCalled();
 
@@ -937,6 +938,6 @@ describe("useCommandPaletteController", () => {
     const localizedHeading = result.current.filteredCommands.find(
       (command) => command.id === "insert.heading1",
     );
-    expect(localizedHeading?.label).toBe("Insert Heading 1");
+    expect(localizedHeading?.label).toBe("みだし 1");
   });
 });
