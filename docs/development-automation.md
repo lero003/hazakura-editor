@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 external design review incorporated)
+Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened)
 
 ## Purpose
 
@@ -17,9 +17,10 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.11 OKF Draft Compatibility Preview**, beginning with S0 fixtures
-and S1 pure model after v1.10 implementation completion and the published
-`1.8.0` App Store release, unless a public-release hotfix blocker appears.
+Phase: **v1.11 OKF Draft Compatibility Preview**, S0–S3 source hardened; next
+is packaged S3 smoke and S4 distribution confidence after v1.10 implementation
+completion and the published `1.8.0` App Store release, unless a public-release
+hotfix blocker appears.
 Direction: `docs/v1.11-okf-draft-preview-design.md` and
 `docs/v1.8-plus-product-review-roadmap.md`.
 
@@ -32,11 +33,10 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. The first open v1.11 slice from `docs/current-work.md`. Start with public-safe
-   OKF v0.1 Draft fixtures. The pure TypeScript parser/validator follows only
-   after the direct YAML dependency gate is explicitly approved. Do not rely on
-   an optional/transitive parser, mutate the lockfile without approval, or
-   connect UI/filesystem discovery before the pure model is pinned.
+1. The first open v1.11 slice from `docs/current-work.md`. S0 fixtures, S1 pure
+   model (`yaml` direct dependency), S2 async cancellable discovery, and the S3
+   read-only review surface are source-hardened. Prefer packaged S3 smoke then
+   S4; do not reopen S0–S3 without a reproduced regression.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

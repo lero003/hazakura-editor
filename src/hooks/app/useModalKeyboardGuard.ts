@@ -16,6 +16,7 @@ type UseModalKeyboardGuardOptions = {
   pdfExportDialogRef: RefValue<HTMLElement>;
   pdfExportSettingsOpen: boolean;
   globalSearchVisible: boolean;
+  okfReviewVisible: boolean;
   modalOpen: boolean;
   // v0.18 accessibility follow-up: the move-to-trash dialog
   // joins the Esc and Tab priority chain at the same level as
@@ -31,6 +32,7 @@ type UseModalKeyboardGuardOptions = {
   onCancelTabClose: () => void;
   onCloseCommandPalette: () => void;
   onCloseGlobalSearch: () => void;
+  onCloseOkfReview: () => void;
   onClosePreferences: () => void;
   pendingAppClose: boolean;
   pendingAssistDiscardOpen: boolean;
@@ -50,6 +52,7 @@ export function useModalKeyboardGuard({
   pdfExportDialogRef,
   pdfExportSettingsOpen,
   globalSearchVisible,
+  okfReviewVisible,
   modalOpen,
   moveTrashDialogRef,
   onCancelAppClose,
@@ -60,6 +63,7 @@ export function useModalKeyboardGuard({
   onCancelTabClose,
   onCloseCommandPalette,
   onCloseGlobalSearch,
+  onCloseOkfReview,
   onClosePreferences,
   pendingAppClose,
   pendingAssistDiscardOpen,
@@ -96,6 +100,8 @@ export function useModalKeyboardGuard({
           onCloseCommandPalette();
         } else if (globalSearchVisible) {
           onCloseGlobalSearch();
+        } else if (okfReviewVisible) {
+          onCloseOkfReview();
         } else if (pendingCloseTabOpen) {
           onCancelTabClose();
         } else if (pendingAppClose) {
@@ -146,6 +152,7 @@ export function useModalKeyboardGuard({
     epubExportDialogRef,
     epubExportSettingsOpen,
     globalSearchVisible,
+    okfReviewVisible,
     modalOpen,
     moveTrashDialogRef,
     onCancelAppClose,
@@ -156,6 +163,7 @@ export function useModalKeyboardGuard({
     onCancelTabClose,
     onCloseCommandPalette,
     onCloseGlobalSearch,
+    onCloseOkfReview,
     onClosePreferences,
     pendingAppClose,
     pendingAssistDiscardOpen,

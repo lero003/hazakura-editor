@@ -5,6 +5,7 @@ import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import { isImportAssistSourceFile } from "../../lib/utils";
 import { isReferencePath } from "../../features/referenceCompare/referenceCompare";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
+import { getOkfReviewCopy } from "../../lib/locale/okfReview";
 
 export function WorkspaceContextMenu({
   activeTabPath,
@@ -24,6 +25,7 @@ export function WorkspaceContextMenu({
   onMoveToTrash,
   onOpen,
   onOpenAsReference,
+  onOpenOkfReview,
   onRename,
   onRevealInFinder,
   onSendFullPathToAgent,
@@ -48,6 +50,7 @@ export function WorkspaceContextMenu({
   onMoveToTrash: () => void;
   onOpen: () => void;
   onOpenAsReference: () => void;
+  onOpenOkfReview: () => void;
   onRename: () => void;
   onRevealInFinder: () => void;
   onSendFullPathToAgent: () => void;
@@ -71,6 +74,8 @@ export function WorkspaceContextMenu({
     kind === "file" && isImportAssistSourceFile(anchor.name);
   // v1.7 R2: Markdown/text, PDF, and common images as read-only reference.
   const canOpenAsReference = kind === "file" && isReferencePath(anchor.name);
+  const canReviewOkf = kind === "directory" || kind === "root";
+  const okfCopy = getOkfReviewCopy(menuLanguage);
   const itemCount =
     7 +
     (canSendToAgent ? 1 : 0) +
@@ -78,6 +83,7 @@ export function WorkspaceContextMenu({
     (canCreateHere ? 2 : 0) +
     (canImport ? 1 : 0) +
     (canOpenAsReference ? 1 : 0) +
+    (canReviewOkf ? 1 : 0) +
     (canRename ? 1 : 0) +
     (canTrash ? 1 : 0);
   const estimatedWidth = 240;
@@ -169,6 +175,15 @@ export function WorkspaceContextMenu({
       {canOpenAsReference ? (
         <button type="button" role="menuitem" onClick={onOpenAsReference}>
           {referenceCopy.openAsReference}
+        </button>
+      ) : null}
+      {canReviewOkf ? (
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => onOpenOkfReview()}
+        >
+          {okfCopy.contextMenuReview}
         </button>
       ) : null}
       <button type="button" role="menuitem" onClick={onCopyFullPath}>

@@ -33,6 +33,7 @@
     "smoke:macos-sandbox-preview": "bash scripts/smoke-macos-sandbox-preview.sh",
     "smoke:fixtures:v1.8-reference": "node scripts/generate-v1.8-reference-smoke.mjs",
     "smoke:fixtures:v1.10-structure": "node scripts/generate-v1.10-structure-smoke.mjs",
+    "smoke:fixtures:v1.11-okf": "node scripts/generate-v1.11-okf-smoke.mjs",
     "clean:generated": "node scripts/clean-generated-artifacts.mjs",
     "clean:generated:apply": "node scripts/clean-generated-artifacts.mjs --apply",
     "test": "vitest run",
@@ -51,7 +52,8 @@
     "dompurify": "^3.4.5",
     "marked": "^18.0.4",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.2",

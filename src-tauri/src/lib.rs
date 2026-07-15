@@ -12,6 +12,7 @@ pub(crate) mod commands {
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod import_assist;
+    pub(crate) mod okf;
     pub(crate) mod reference_compare;
     pub(crate) mod search;
     pub(crate) mod security_bookmarks;
@@ -99,6 +100,8 @@ use crate::commands::images::*;
 #[allow(unused_imports)]
 use crate::commands::import_assist::*;
 #[allow(unused_imports)]
+use crate::commands::okf::*;
+#[allow(unused_imports)]
 use crate::commands::reference_compare::*;
 #[allow(unused_imports)]
 use crate::commands::search::*;
@@ -128,6 +131,9 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .manage(AgentWorkbenchSessionStore::default())
         .manage(std::sync::Arc::new(AppleAssistHelperStore::default()))
+        .manage(std::sync::Arc::new(
+            commands::okf::OkfDiscoveryCancelStore::default(),
+        ))
         .manage(OpenedFileStore::default())
         .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
         .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default())
@@ -192,6 +198,8 @@ pub fn run() {
             open_image_file,
             open_workspace_image,
             search_workspace_files,
+            scan_okf_bundle,
+            cancel_okf_bundle_scan,
             start_agent_workbench_session,
             stop_agent_workbench_session,
             get_agent_workbench_session_state,

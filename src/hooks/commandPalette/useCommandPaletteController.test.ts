@@ -12,6 +12,7 @@ afterEach(() => {
 
 describe("useCommandPaletteController", () => {
   it("returns the command palette + global search surface", () => {
+    const openOkfReview = vi.fn();
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
@@ -29,6 +30,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview,
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -81,6 +83,18 @@ describe("useCommandPaletteController", () => {
     expect(result.current).toHaveProperty("runGlobalSearchMatch");
     expect(result.current).toHaveProperty("setGlobalSearchActiveIndex");
     expect(result.current).toHaveProperty("setGlobalSearchQuery");
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+    const okfCommand = result.current.filteredCommands.find(
+      (command) => command.id === "review.okfDraftCompatibility",
+    );
+    expect(okfCommand?.label).toBe("Review OKF Draft compatibility");
+    act(() => {
+      okfCommand?.run();
+    });
+    expect(openOkfReview).toHaveBeenCalledTimes(1);
   });
 
   it("opens the selected global search match and jumps to its line", async () => {
@@ -106,6 +120,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile,
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -188,6 +203,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -253,6 +269,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -317,6 +334,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -379,6 +397,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow,
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -457,6 +476,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow,
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -519,6 +539,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow,
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -606,6 +627,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -692,6 +714,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -809,6 +832,7 @@ describe("useCommandPaletteController", () => {
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),

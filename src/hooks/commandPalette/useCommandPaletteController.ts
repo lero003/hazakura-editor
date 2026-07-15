@@ -66,6 +66,7 @@ type UseCommandPaletteControllerActions = {
   openReferenceFile: () => Promise<void>;
   openWorkspace: () => Promise<void>;
   openWorkspaceFile: (path: string) => Promise<void>;
+  openOkfReview: (bundleRoot?: string | null) => void;
   requestCloseTab: (id: string) => void;
   requestRestoreFromBackup: () => void;
   requestReviewTabAgainstDisk: (tab: EditorTab) => void;
@@ -637,6 +638,20 @@ export function useCommandPaletteController({
           if (activeTab) {
             actions.requestReviewTabAgainstDisk(activeTab);
           }
+        },
+      },
+      {
+        category: paletteCopy.categories.review,
+        id: "review.okfDraftCompatibility",
+        ...commandPaletteEntry(paletteCopy, "review.okfDraftCompatibility", [
+          "okf",
+          "compatibility",
+          "bundle",
+          "frontmatter",
+          "review",
+        ]),
+        run: () => {
+          actions.openOkfReview();
         },
       },
       ...(externalCliAllowed

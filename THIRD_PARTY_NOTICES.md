@@ -113,6 +113,13 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 | `scheduler@0.27.0` | `MIT` |
 | `style-mod@4.1.3` | `MIT` |
 | `w3c-keyname@2.2.8` | `MIT` |
+| `yaml@2.9.0` | `ISC` |
+
+### yaml (ISC)
+
+`yaml@2.9.0` is a direct runtime dependency used by OKF frontmatter parsing.
+Preserve the ISC copyright and permission notice from `node_modules/yaml/LICENSE`
+(Copyright Eemeli Aro) with the distributed notice set.
 
 ## Rust / Tauri Dependency License Families
 

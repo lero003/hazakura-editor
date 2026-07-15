@@ -36,6 +36,8 @@ import { agentSessionStateLabel, providerLabel } from "../../features/agent/agen
 import { QuickOpen } from "../editor/QuickOpen";
 import { CommandPalette } from "../commandPalette/CommandPalette";
 import { GlobalSearch } from "../globalSearch/GlobalSearch";
+import { OkfReviewPanel } from "../okf/OkfReviewPanel";
+import type { OkfReviewResult } from "../../features/okf";
 import { TabContextMenu } from "../editor/TabContextMenu";
 import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
@@ -109,6 +111,19 @@ type AppOverlaysProps = {
   onRunGlobalSearchMatch: (row: GlobalSearchRow) => void;
   onSetGlobalSearchActiveIndex: (index: number) => void;
   onSetGlobalSearchQuery: (query: string) => void;
+  okfReviewVisible: boolean;
+  okfScanning: boolean;
+  okfCancelRequested: boolean;
+  okfReviewResult: OkfReviewResult | null;
+  okfReviewError: string | null;
+  okfReviewRerunError: string | null;
+  okfBundleRoot: string | null;
+  isOkfPathDirty: (relativePath: string) => boolean;
+  onCloseOkfReview: () => void;
+  onCancelOkfReviewScan: () => void;
+  onRerunOkfReview: () => void;
+  onOpenOkfConcept: (relativePath: string) => void;
+  onOpenOkfReview: (bundleRoot?: string | null) => void;
   compareAnchor: CompareAnchor | null;
   compareWorkspaceFiles: (file: CompareAnchor) => void | Promise<void>;
   copyWorkspaceFullPath: (file: CompareAnchor) => void | Promise<void>;
@@ -245,6 +260,19 @@ export function AppOverlays({
   onRunGlobalSearchMatch,
   onSetGlobalSearchActiveIndex,
   onSetGlobalSearchQuery,
+  okfReviewVisible,
+  okfScanning,
+  okfCancelRequested,
+  okfReviewResult,
+  okfReviewError,
+  okfReviewRerunError,
+  okfBundleRoot,
+  isOkfPathDirty,
+  onCloseOkfReview,
+  onCancelOkfReviewScan,
+  onRerunOkfReview,
+  onOpenOkfConcept,
+  onOpenOkfReview,
   compareAnchor,
   compareWorkspaceFiles,
   copyWorkspaceFullPath,
@@ -426,6 +454,24 @@ export function AppOverlays({
         />
       ) : null}
 
+      {okfReviewVisible ? (
+        <OkfReviewPanel
+          bundleRoot={okfBundleRoot}
+          cancelRequested={okfCancelRequested}
+          error={okfReviewError}
+          isPathDirty={isOkfPathDirty}
+          menuLanguage={menuLanguage}
+          onCancelScan={onCancelOkfReviewScan}
+          onClose={onCloseOkfReview}
+          onOpenConcept={onOpenOkfConcept}
+          onRerun={onRerunOkfReview}
+          result={okfReviewResult}
+          rerunError={okfReviewRerunError}
+          scanning={okfScanning}
+          workspaceOpen={workspaceRootPath !== null}
+        />
+      ) : null}
+
       {epubExportRequest ? (
         <EpubExportSettingsDialog
           cancelButtonRef={epubExportCancelButtonRef}
@@ -560,6 +606,16 @@ export function AppOverlays({
           onOpen={() => {
             closeWorkspaceContextMenu();
             void openWorkspaceFile(workspaceContextMenu.path);
+          }}
+          onOpenOkfReview={() => {
+            const path = workspaceContextMenu.path;
+            const kind = workspaceContextMenu.kind;
+            closeWorkspaceContextMenu();
+            if (kind === "directory" || kind === "root") {
+              onOpenOkfReview(path);
+            } else {
+              onOpenOkfReview();
+            }
           }}
           onOpenAsReference={() => {
             const path = workspaceContextMenu.path;

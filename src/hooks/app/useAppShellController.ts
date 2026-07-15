@@ -39,6 +39,7 @@ import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchControlle
 import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
+import { useOkfReview } from "../okf/useOkfReview";
 import { useCompareController } from "../diff/useCompareController";
 import { useReferenceCompareActions } from "../referenceCompare/useReferenceCompareActions";
 import { useImportPageFollow } from "../referenceCompare/useImportPageFollow";
@@ -1451,6 +1452,28 @@ export function useAppShellController() {
   );
 
   const {
+    closeOkfReview,
+    isOkfPathDirty,
+    okfBundleRoot,
+    okfCancelRequested,
+    okfReviewError,
+    okfReviewRerunError,
+    okfReviewResult,
+    okfReviewVisible,
+    okfScanning,
+    openOkfConcept,
+    openOkfReview,
+    rerunOkfReview,
+    requestCancelOkfReview,
+  } = useOkfReview({
+    menuLanguage,
+    openWorkspaceFile,
+    setStatus,
+    tabs,
+    workspaceRootPath,
+  });
+
+  const {
     closeCommandPalette,
     closeGlobalSearch,
     commandPaletteActiveIndex,
@@ -1488,6 +1511,7 @@ export function useAppShellController() {
         }
         void openAppleAssistWindow(theme);
       },
+      openOkfReview,
       openWorkspaceFile,
       requestCloseTab,
       requestRestoreFromBackup,
@@ -1674,6 +1698,7 @@ export function useAppShellController() {
       findInputRef,
       findVisible,
       globalSearchVisible,
+      okfReviewVisible,
       modalOpen: modalOpenWithBlockingDialogs,
       onApplyMarkdownFormat: applyActiveMarkdownFormat,
       onCancelAppClose: cancelPendingAppClose,
@@ -1684,6 +1709,7 @@ export function useAppShellController() {
       onCloseCommandPalette: closeCommandPalette,
       onCloseFindAndFocusEditor: closeFindAndFocusEditor,
       onCloseGlobalSearch: closeGlobalSearch,
+      onCloseOkfReview: closeOkfReview,
       onClosePreferences: closePreferencesFromKeyboard,
       onCloseSelectedImagePreview: closeSelectedImagePreview,
       onCreateNewFile: createNewFile,
@@ -1854,6 +1880,19 @@ export function useAppShellController() {
     globalSearchSummary,
     globalSearching,
     globalSearchVisible,
+    isOkfPathDirty,
+    okfBundleRoot,
+    okfCancelRequested,
+    okfReviewError,
+    okfReviewRerunError,
+    okfReviewResult,
+    okfReviewVisible,
+    okfScanning,
+    onCancelOkfReviewScan: requestCancelOkfReview,
+    onCloseOkfReview: closeOkfReview,
+    onOpenOkfConcept: openOkfConcept,
+    onOpenOkfReview: openOkfReview,
+    onRerunOkfReview: rerunOkfReview,
     handleEditorChange,
     handleFindKeyDown,
     handleGoToLineKeyDown,

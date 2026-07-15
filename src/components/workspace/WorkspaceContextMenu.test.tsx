@@ -47,6 +47,7 @@ function renderMenu(
     onImportAsMarkdownDraft,
     onMoveToTrash: vi.fn(),
     onOpen: vi.fn(),
+    onOpenOkfReview: vi.fn(),
     onOpenAsReference,
     onRename: vi.fn(),
     onRevealInFinder: vi.fn(),
@@ -132,5 +133,24 @@ describe("WorkspaceContextMenu Import Assist", () => {
         name: "下書きを作る…",
       }),
     ).toBeNull();
+  });
+
+  it("starts an OKF review from a directory", () => {
+    const { props } = renderMenu({
+      kind: "directory",
+      anchor: {
+        path: "/ws/docs",
+        name: "docs",
+        x: 40,
+        y: 40,
+        canCompare: false,
+        kind: "directory",
+      },
+    });
+
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: "OKF Draft 互換を点検" }),
+    );
+    expect(props.onOpenOkfReview).toHaveBeenCalledTimes(1);
   });
 });

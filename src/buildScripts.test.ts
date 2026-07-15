@@ -61,6 +61,10 @@ const structureSmokeSource = readFileSync(
   "scripts/generate-v1.10-structure-smoke.mjs",
   "utf8",
 );
+const okfSmokeSource = readFileSync(
+  "scripts/generate-v1.11-okf-smoke.mjs",
+  "utf8",
+);
 const releaseCandidateScript = readFileSync(
   "scripts/prepare-release-candidate.mjs",
   "utf8",
@@ -494,6 +498,57 @@ describe("macOS build scripts", () => {
     }
   });
 
+  it("generates deterministic v1.11 OKF Draft fixtures", () => {
+    expect(packageJson.scripts["smoke:fixtures:v1.11-okf"]).toBe(
+      "node scripts/generate-v1.11-okf-smoke.mjs",
+    );
+    expect(okfSmokeSource).toContain('OKF_FIXTURE_SPEC_COMMIT = "ee67a5c"');
+    const outputDirectory = join(
+      "src-tauri",
+      "target",
+      `v1.11-okf-smoke-test-${process.pid}`,
+    );
+
+    try {
+      const result = JSON.parse(
+        execFileSync(
+          process.execPath,
+          ["scripts/generate-v1.11-okf-smoke.mjs", outputDirectory],
+          { encoding: "utf8" },
+        ),
+      ) as {
+        specCommit: string;
+        bundles: string[];
+        files: Array<{ path: string }>;
+      };
+      const morning = readFileSync(
+        join(
+          outputDirectory,
+          "valid-root-versioned",
+          "chapters",
+          "01-morning.md",
+        ),
+        "utf8",
+      );
+      const essay = readFileSync(
+        join(outputDirectory, "japanese-essay", "essays", "body.md"),
+        "utf8",
+      );
+
+      expect(result.specCommit).toBe("ee67a5c");
+      expect(result.bundles).toEqual([
+        "valid-root-versioned",
+        "broken-and-invalid",
+        "japanese-essay",
+      ]);
+      expect(morning).toContain("type: Chapter");
+      expect(morning).toContain("春の朝");
+      expect(essay).toContain("桜の季節");
+    } finally {
+      rmSync(outputDirectory, { force: true, recursive: true });
+    }
+  });
+
   it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {
     expect(macosDistributionProbeScript).toContain(
       "src-tauri/target/release/bundle/macos/Hazakura Editor.app",
@@ -584,10 +639,10 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`1.10.0`",
         "Published Mac App Store version: **`1.8.0`",
-        "v1.11 OKF Draft Compatibility Preview design is accepted",
+        "v1.11 OKF Draft Compatibility Preview S0–S3 source is landed",
       ],
       "docs/current-work.md": [
-        "Scope: v1.11 OKF Draft Compatibility Preview design accepted; implementation not started",
+        "Scope: v1.11 OKF Draft Compatibility Preview; S0–S3 source landed; S4 next",
         "Active Queue — v1.11 OKF Draft Compatibility Preview",
       ],
       "docs/development-automation.md": [
@@ -604,7 +659,7 @@ describe("macOS build scripts", () => {
         "v1.11 OKF Draft Compatibility Preview is the active design",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [
-        "Status: Accepted design; implementation not started",
+        "Status: Accepted design; S0–S3 source landed; S4 distribution gate open",
         "Version 0.1 — Draft",
         "commit: [`ee67a5c`]",
         "`MAX_OKF_MARKDOWN_FILES`",

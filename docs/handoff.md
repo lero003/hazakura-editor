@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 external design review incorporated)
+Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
 
 ## Current State
 
@@ -45,17 +45,20 @@ Last reviewed: 2026-07-15 (v1.11 external design review incorporated)
   Undo restoration. Source-jump breadth, IME, Save As, recovery, e-book/EPUB,
   and signed TestFlight remain open manual evidence and move into v1.11 S4.
 - **v1.11 OKF Draft Compatibility Preview is the active implementation lane.**
-  The accepted contract is an explicit, bounded, cancellable, read-only review
-  of one user-selected workspace root or subfolder against official OKF v0.1
-  Draft. It may show conformance / advice and open concepts through existing
-  Markdown tabs. It must not add startup/background scan, persistent index,
-  auto-repair, chapter order, multi-file edit, whole-book export, or Book
-  Scope. Contract: `docs/v1.11-okf-draft-preview-design.md`.
-  External design review adjustments are incorporated: commit `ee67a5c` is the
-  spec snapshot; reserved `index.md` / `log.md` shape issues are advice rather
-  than hard failure; standard inline links use bundle-root/relative containment;
-  Rust owns bounded disk discovery and TypeScript owns OKF meaning. The result
-  stays a flat summary/file/finding model. S3 means feature complete; S4 is the
+  S0–S3 are source-hardened: fixtures, direct `yaml` pure model, async
+  `scan_okf_bundle` with `spawn_blocking` cancel, real-byte total budgets, and
+  symlink-root/opened-file identity rejection, plus the Command Palette /
+  folder-context read-only review surface. Analysis/rendered findings are
+  bounded, descriptions are localized, repeated open actions identify their
+  path, and workspace replacement closes/cancels the review. Packaged S3 smoke
+  and S4 are next. The contract remains an
+  explicit, bounded, cancellable, read-only review of one user-selected
+  workspace root or subfolder against official OKF v0.1 Draft. It may show
+  conformance / advice and open concepts through existing Markdown tabs. It must
+  not add startup/background scan, persistent index, auto-repair, chapter order,
+  multi-file edit, whole-book export, or Book Scope. Contract:
+  `docs/v1.11-okf-draft-preview-design.md`. Spec snapshot: commit `ee67a5c`.
+  The S3 feature-complete threshold still includes packaged smoke; S4 is the
   separate ship-ready gate.
 - `v1.8.0` is the immutable published source tag. The published signed pkg is
   **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
@@ -121,14 +124,12 @@ Last reviewed: 2026-07-15 (v1.11 external design review incorporated)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.11 S0 then gated S1:** add the public-safe fixtures named in the design,
-   including Japanese multi-file content and root/nested/versionless index,
-   YAML/type edge cases, inline-link containment, and partial/budget results.
-   S1 is a pure TypeScript model; `findYamlFrontmatter` detects only the range.
-   The repo has no direct supported YAML runtime dependency, so obtain explicit
-   approval before adding one or changing the lockfile. Do not fake parseable
-   YAML with delimiter detection, and do not connect filesystem or UI in S1.
-   In-tree version stays `1.10.0`; do not prepare release artifacts.
+1. **v1.11 S3 packaged smoke then S4:** source has Command Palette
+   `OKF Draft 互換を点検`, folder/root context menu, read-only panel
+   (summary/files/findings/dirty note/cancel/rerun), and existing-tab open.
+   Run a representative packaged OKF flow, then the distribution-confidence
+   matrix. In-tree version stays `1.10.0`; do not prepare release artifacts
+   without explicit approval.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
@@ -308,6 +309,13 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- 2026-07-15 v1.11 S0–S3 source hardening: focused OKF/S3 frontend passed
+  (**8 files / 82 tests**), full frontend passed (**178 files / 1511 tests**),
+  focused Rust OKF passed (**17 tests**), and full Rust passed (**355 passed /
+  2 explicit host-integration ignored / 0 failed**). `npm run build:vite`,
+  deterministic v1.11 fixture generation, Rust format, `git diff --check`, and
+  a local App Store preview `npm run build` passed. The local app bundle build
+  is not a hands-on packaged S3 smoke, signed TestFlight proof, or release gate.
 - 2026-07-15 v1.11 OKF external design review incorporation and living-doc
   sync: the spec commit, reserved-file matrix, link rules, budgets, TS/Rust
   split, dirty-tab/disk rule, and S3/S4 completion boundary were pinned.

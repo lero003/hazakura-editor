@@ -1,0 +1,205 @@
+/* === okf-review.css === */
+/* Lightweight read-only OKF Draft compatibility review surface (v1.11 S3). */
+
+.okf-review-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 1rem 2rem;
+  background: color-mix(in srgb, var(--bg, #111) 55%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.okf-review-dialog {
+  width: min(920px, 100%);
+  max-height: min(80vh, 840px);
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: var(--panel, #1a1a1c);
+  color: var(--fg, #f2f2f2);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.okf-review-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.okf-review-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.okf-review-spec {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.72;
+}
+
+.okf-review-close,
+.okf-review-button,
+.okf-review-open {
+  appearance: none;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.16));
+  background: color-mix(in srgb, var(--panel, #222) 88%, white 4%);
+  color: inherit;
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.okf-review-close:hover,
+.okf-review-button:hover,
+.okf-review-open:hover {
+  background: color-mix(in srgb, var(--panel, #222) 70%, white 10%);
+}
+
+.okf-review-button:disabled,
+.okf-review-open:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.okf-review-close:focus-visible,
+.okf-review-button:focus-visible,
+.okf-review-open:focus-visible {
+  outline: 2px solid var(--accent, #7fb3ff);
+  outline-offset: 2px;
+}
+
+.okf-review-note,
+.okf-review-root,
+.okf-review-status,
+.okf-review-banner,
+.okf-review-empty {
+  margin: 0.35rem 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.okf-review-root {
+  opacity: 0.78;
+  word-break: break-all;
+}
+
+.okf-review-status-error {
+  color: color-mix(in srgb, #ff8e8e 85%, white 15%);
+}
+
+.okf-review-banner {
+  padding: 0.4rem 0.55rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, #c9a227 18%, transparent);
+}
+
+.okf-review-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.9rem;
+  margin: 0.55rem 0 0.35rem;
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+
+.okf-review-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.55rem 0 0.75rem;
+}
+
+.okf-review-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .okf-review-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.okf-review-section {
+  min-width: 0;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+  padding: 0.55rem 0.6rem 0.65rem;
+  background: color-mix(in srgb, var(--panel, #1a1a1c) 92%, black 8%);
+}
+
+.okf-review-section-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.okf-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 42vh;
+  overflow: auto;
+}
+
+.okf-review-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.45rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, white 3%, transparent);
+}
+
+.okf-review-item-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.okf-review-kind {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.okf-review-path,
+.okf-review-message {
+  font-size: 0.82rem;
+  word-break: break-word;
+}
+
+.okf-review-dirty {
+  font-size: 0.75rem;
+  opacity: 0.78;
+}
+
+.okf-review-finding-failure .okf-review-kind {
+  color: color-mix(in srgb, #ff8e8e 90%, white 10%);
+}
+
+.okf-review-finding-advice .okf-review-kind {
+  color: color-mix(in srgb, #e0c36a 90%, white 10%);
+}
+
+.okf-review-open {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  padding: 0.28rem 0.55rem;
+}

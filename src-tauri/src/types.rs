@@ -21,6 +21,13 @@ pub(crate) const MAX_WORKSPACE_SEARCH_FILES: usize = 500;
 pub(crate) const MAX_WORKSPACE_SEARCH_MATCHES_PER_FILE: usize = 10;
 pub(crate) const MAX_WORKSPACE_SEARCH_TOTAL_MATCHES: usize = 200;
 pub(crate) const MAX_WORKSPACE_SEARCH_LINE_BYTES: usize = 4096;
+// v1.11 OKF Draft discovery budgets. Owned by the OKF scan command;
+// do not inherit workspace-search caps implicitly.
+pub(crate) const MAX_OKF_WALK_ENTRIES: usize = 2_000;
+pub(crate) const MAX_OKF_MARKDOWN_FILES: usize = 200;
+pub(crate) const MAX_OKF_FILE_BYTES: u64 = 10 * 1024 * 1024;
+pub(crate) const MAX_OKF_TOTAL_BYTES: u64 = 32 * 1024 * 1024;
+pub(crate) const MAX_OKF_DEPTH: usize = 16;
 pub(crate) const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS: usize = 500;
 pub(crate) const AGENT_PROVIDER_CODEX: &str = "codex";
 pub(crate) const AGENT_PROVIDER_OPENCODE: &str = "opencode";
@@ -391,6 +398,33 @@ pub(crate) struct WorkspaceSearchResult {
     pub(crate) total_matches: usize,
     pub(crate) total_files_scanned: usize,
     pub(crate) truncated: bool,
+}
+
+/// One Markdown candidate from a disk-snapshot OKF discovery scan.
+/// YAML meaning is determined in TypeScript; Rust only reports bytes,
+/// paths, unreadability, and budget state.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct OkfDiscoveryFile {
+    pub(crate) path: String,
+    pub(crate) relative_path: String,
+    pub(crate) content: Option<String>,
+    pub(crate) byte_length: u64,
+    pub(crate) unreadable_reason: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct OkfDiscoveryResult {
+    pub(crate) bundle_root: String,
+    pub(crate) files: Vec<OkfDiscoveryFile>,
+    pub(crate) scanned_entries: usize,
+    pub(crate) scanned_markdown_files: usize,
+    pub(crate) total_bytes_read: u64,
+    pub(crate) truncated: bool,
+    pub(crate) truncation_reason: Option<String>,
+    pub(crate) cancelled: bool,
+    pub(crate) source: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

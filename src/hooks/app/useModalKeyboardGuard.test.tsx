@@ -49,6 +49,7 @@ function renderGuard(overrides: {
   preferencesOpen?: boolean;
   commandPaletteVisible?: boolean;
   globalSearchVisible?: boolean;
+  okfReviewVisible?: boolean;
   onCancelAppClose?: () => void;
   onCancelAssistDiscard?: () => void;
   onCancelEpubBetaExport?: () => void;
@@ -57,6 +58,7 @@ function renderGuard(overrides: {
   onCancelTabClose?: () => void;
   onCloseCommandPalette?: () => void;
   onCloseGlobalSearch?: () => void;
+  onCloseOkfReview?: () => void;
   onClosePreferences?: () => void;
 }) {
   const onCancelAppClose = overrides.onCancelAppClose ?? vi.fn();
@@ -67,6 +69,7 @@ function renderGuard(overrides: {
   const onCancelTabClose = overrides.onCancelTabClose ?? vi.fn();
   const onCloseCommandPalette = overrides.onCloseCommandPalette ?? vi.fn();
   const onCloseGlobalSearch = overrides.onCloseGlobalSearch ?? vi.fn();
+  const onCloseOkfReview = overrides.onCloseOkfReview ?? vi.fn();
   const onClosePreferences = overrides.onClosePreferences ?? vi.fn();
   const appCloseDialogRef = overrides.appCloseDialogRef ?? {
     current: null,
@@ -101,6 +104,7 @@ function renderGuard(overrides: {
       pdfExportDialogRef,
       pdfExportSettingsOpen: overrides.pdfExportSettingsOpen ?? false,
       globalSearchVisible: overrides.globalSearchVisible ?? false,
+      okfReviewVisible: overrides.okfReviewVisible ?? false,
       modalOpen: overrides.modalOpen ?? true,
       moveTrashDialogRef,
       onCancelAppClose,
@@ -111,6 +115,7 @@ function renderGuard(overrides: {
       onCancelTabClose,
       onCloseCommandPalette,
       onCloseGlobalSearch,
+      onCloseOkfReview,
       onClosePreferences,
       pendingAppClose: overrides.pendingAppClose ?? false,
       pendingAssistDiscardOpen: overrides.pendingAssistDiscardOpen ?? false,
@@ -139,6 +144,7 @@ function renderGuard(overrides: {
     onCancelTabClose,
     onCloseCommandPalette,
     onCloseGlobalSearch,
+    onCloseOkfReview,
     onClosePreferences,
     preferencesDialogRef,
   };
@@ -206,6 +212,24 @@ describe("useModalKeyboardGuard v0.7 modal Escape routing", () => {
     fireEvent.keyDown(window, { key: "Escape" });
     expect(utils.onCloseCommandPalette).toHaveBeenCalledTimes(1);
     expect(utils.onCancelPendingTrash).not.toHaveBeenCalled();
+  });
+
+  it("routes Escape to the OKF review after palette and search surfaces", () => {
+    const utils = renderGuard({ okfReviewVisible: true });
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(utils.onCloseOkfReview).toHaveBeenCalledTimes(1);
+    expect(utils.onCloseCommandPalette).not.toHaveBeenCalled();
+    expect(utils.onCloseGlobalSearch).not.toHaveBeenCalled();
+  });
+
+  it("prefers the command palette over the OKF review on Escape", () => {
+    const utils = renderGuard({
+      commandPaletteVisible: true,
+      okfReviewVisible: true,
+    });
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(utils.onCloseCommandPalette).toHaveBeenCalledTimes(1);
+    expect(utils.onCloseOkfReview).not.toHaveBeenCalled();
   });
 });
 

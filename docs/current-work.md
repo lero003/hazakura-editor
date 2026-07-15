@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.11 OKF Draft Compatibility Preview design accepted; implementation not started
+Scope: v1.11 OKF Draft Compatibility Preview; S0–S3 source landed; S4 next
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 external design review incorporated)
+Last reviewed: 2026-07-15 (S3 OKF review surface landed)
 
 ## Purpose
 
@@ -20,7 +20,7 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
 | **v1.9** | **Source complete / rolled into current candidate** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. The work is present in the in-tree `1.10.0` candidate and is intended to roll forward with v1.11 rather than publish alone. |
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
-| **v1.11** | **Design accepted / implementation not started** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review plus the larger packaged distribution-confidence gate. No Book Scope, chapter ordering, auto-repair, or background scan. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
+| **v1.11** | **S0–S3 source landed / S4 next** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review plus the larger packaged distribution-confidence gate. Fixtures, `yaml` model, async discovery, and the OKF review surface (Command Palette + context menu) are in tree. Packaged S3 smoke and S4 distribution confidence remain. No Book Scope, chapter ordering, auto-repair, or background scan. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
 
 Package/app version in tree remains **`1.10.0`** (prepared candidate); the
@@ -40,10 +40,10 @@ Goal: ユーザーが明示的に選んだ workspace / subfolder を、OKF v0.1 
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| **Ready** | **S0 — Contract + fixtures** | Commit `ee67a5c`、compatibility matrix、inline-link解決、thin result、5つのOKF budgetをfixture化。root/nested/versionless index、reserved `type`、log助言、invalid/unclosed YAML、non-string type、broken/external/root-relative/escape link、非UTF-8、日本語の複数ファイル作品を固定する。 |
-| **Pending / dependency gate** | **S1 — Pure OKF model** | TypeScriptの副作用なしmodelでconcept / reserved file / inline links / failure / adviceを解釈する。`findYamlFrontmatter`は範囲検出だけに使い、直接YAML parserの依存・lockfile変更は明示承認後に行う。filesystemとUIは接続しない。 |
-| **Pending** | **S2 — Explicit bounded discovery** | Rustで選択workspace root / subfolderのdisk snapshotを一回scan。symlink非追従、containment、cancel、walk `2,000`、Markdown `200`、1 file `10 MiB`、total `32 MiB`、depth `16`、deterministic partial resultを固定する。non-Markdownは無視し、background/startup scanなし。 |
-| **Pending** | **S3 — OKF review surface / feature complete** | Main Safe Editorだけに`OKF Draft 互換を点検`を追加。disk/dirty差、summary/file/findings/partial stateと既存tab openを表示し、Markdown/HTML/imageはrenderしない。source + representative packaged flow通過でfeature complete。 |
+| **Done / source** | **S0 — Contract + fixtures** | Commit `ee67a5c`、matrix、link/budgets、日本語multi-fileを `src/features/okf/fixtures.ts` と `npm run smoke:fixtures:v1.11-okf` に固定。 |
+| **Done / source** | **S1 — Pure OKF model** | TypeScript pure model + 直接依存 `yaml@^2.9.0`（lockfile で解決）。nested/cycle-safe 変換、不正quoteは failure。reserved shape / inline links（0–3 space fence・fragment-only）/ thin result。FS/UI未接続。 |
+| **Done / source** | **S2 — Explicit bounded discovery** | Async `scan_okf_bundle` が **arm後**に `spawn_blocking`、`File::take(limit+1)` の bounded read、同時scan拒否、timeout付きhandshakeによる mid-run cancel、実読込 total 加算、symlink root/open時identity拒否、5 budgets境界テスト。TS bridge: `src/lib/tauri/okf.ts` + `fromDiscovery.ts`。 |
+| **Done / source hardened** | **S3 — OKF review surface** | Command Palette `OKF Draft 互換を点検` + フォルダ/root コンテキストメニュー。読み取り専用 panel（summary / files / findings / dirty note / cancel / rerun）。既存 tab open。findings は解析・表示上限、三言語copy、path別accessible nameを持ち、workspace切替時はscanを閉じてcancelする。Markdown HTML/image 非描画。packaged smoke は S4 と併せて。 |
 | **Pending** | **S4 — Distribution confidence / ship ready** | OKF packaged/signed matrixと、v1.10から引き継ぐIME、Save As、recovery、e-book/EPUB、a11y、sandbox、helper、long/failure matrixを記録。ship-ready通過後のみ別release sliceで`1.11.0`を準備する。 |
 
 ### Closed Implementation Queue — v1.10 Single-document Structure Foundation

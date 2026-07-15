@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 OKF draft contract accepted)
+Last reviewed: 2026-07-15 (v1.11 S0–S3 source hardened; packaged smoke next)
 
 ## Current State
 
@@ -57,13 +57,19 @@ Last reviewed: 2026-07-15 (v1.11 OKF draft contract accepted)
   IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof
   and move into the v1.11 distribution-confidence matrix rather than reopening
   v1.10.
-- **v1.11 OKF Draft Compatibility Preview design is accepted; implementation
-  has not started.** The active contract is an explicit, bounded, cancellable,
-  read-only review of one user-selected workspace root or subfolder against
-  OKF (Open Knowledge Format) v0.1 Draft. It may show conformance / advice and
-  open concepts through existing Markdown tabs. It does not add startup scan,
-  persistent indexing, automatic repair, chapter ordering, multi-file edit,
-  whole-book export, or Book Scope. Contract:
+- **v1.11 OKF Draft Compatibility Preview S0–S3 source is landed; S4 is next.**
+  Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
+  the OKF review surface (Command Palette + folder context menu + read-only
+  panel) are in tree. Discovery revalidates opened-file identity, analysis and
+  rendered findings have explicit caps, findings follow the active locale, and
+  a workspace change closes/cancels the owning review. Packaged smoke and the
+  distribution-confidence matrix remain. Full frontend/Rust tests and a local
+  App Store preview bundle build passed on 2026-07-15; this is build evidence,
+  not packaged interaction or signed distribution proof. The contract remains
+  an explicit, bounded, cancellable, read-only
+  review of one user-selected workspace root or subfolder against OKF v0.1
+  Draft. It does not add startup scan, persistent indexing, automatic repair,
+  chapter ordering, multi-file edit, whole-book export, or Book Scope. Contract:
   `docs/v1.11-okf-draft-preview-design.md`.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
@@ -727,10 +733,9 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Start v1.11 with S0/S1 from
-   `docs/v1.11-okf-draft-preview-design.md`.** Pin public-safe OKF v0.1 Draft
-   fixtures, then build the pure parser / validator before filesystem or UI
-   integration. Keep unknown fields/types and broken links tolerant.
+2. **Run packaged OKF S3 smoke, then v1.11 S4 from
+   `docs/v1.11-okf-draft-preview-design.md`.** Source review UI is landed.
+   Keep unknown fields/types and broken links tolerant.
 3. Keep v1.10 implementation closed. Fold its remaining source-jump, IME,
    Save As, recovery, e-book/EPUB, and signed TestFlight breadth into v1.11 S4.
    Do not infer signed evidence from source or local-app checks.

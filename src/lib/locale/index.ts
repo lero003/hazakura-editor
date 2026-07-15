@@ -8,6 +8,7 @@ export * from "./appleAssist";
 export * from "./autoBackup";
 export * from "./commandPalette";
 export * from "./editorChrome";
+export * from "./okfReview";
 export * from "./lMode";
 export * from "./preferences";
 export * from "./recovery";

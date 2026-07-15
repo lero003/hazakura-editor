@@ -44,6 +44,7 @@ export type CommandPaletteCopy = {
     "view.nextTab": CommandPaletteEntryCopy;
     "view.prevTab": CommandPaletteEntryCopy;
     "review.tabAgainstDisk": CommandPaletteEntryCopy;
+    "review.okfDraftCompatibility": CommandPaletteEntryCopy;
     "agent.open": CommandPaletteEntryCopy;
     "agent.sendSelection": CommandPaletteEntryCopy;
     "agent.preferences": CommandPaletteEntryCopy;
@@ -167,6 +168,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         "review.tabAgainstDisk": {
           label: "ディスクと みくらべて たしかめる",
           keywords: ["さぶん", "がいぶ"],
+        },
+        "review.okfDraftCompatibility": {
+          label: "OKF Draft ごかんを てんけん",
+          keywords: ["OKF", "ごかん", "バンドル", "frontmatter", "てんけん"],
         },
         "agent.open": {
           label: "Agent まどを ひらく",
@@ -325,6 +330,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           label: "ディスクと見比べて確認",
           keywords: ["差分", "外部変更"],
         },
+        "review.okfDraftCompatibility": {
+          label: "OKF Draft 互換を点検",
+          keywords: ["OKF", "互換", "バンドル", "frontmatter", "点検"],
+        },
         "agent.open": {
           label: "Agent ウィンドウを開く",
           keywords: ["エージェント"],
@@ -429,6 +438,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       "review.tabAgainstDisk": {
         label: "Review tab against disk",
         keywords: ["verify"],
+      },
+      "review.okfDraftCompatibility": {
+        label: "Review OKF Draft compatibility",
+        keywords: ["OKF", "bundle", "frontmatter", "compatibility"],
       },
       "agent.open": { label: "Open Agent Window" },
       "agent.sendSelection": { label: "Send Selection to Agent" },

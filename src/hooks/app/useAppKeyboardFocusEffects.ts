@@ -50,6 +50,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   findInputRef: RefValue<HTMLInputElement>;
   findVisible: boolean;
   globalSearchVisible: boolean;
+  okfReviewVisible: boolean;
   modalOpen: boolean;
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCancelAppClose: () => void;
@@ -62,6 +63,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onCloseCommandPalette: () => void;
   onCloseFindAndFocusEditor: () => void;
   onCloseGlobalSearch: () => void;
+  onCloseOkfReview: () => void;
   onClosePreferences: () => void;
   onCloseSelectedImagePreview: () => void;
   onCreateNewFile: () => unknown;
@@ -119,6 +121,7 @@ export function useAppKeyboardFocusEffects({
   findInputRef,
   findVisible,
   globalSearchVisible,
+  okfReviewVisible,
   modalOpen,
   onApplyMarkdownFormat,
   onCancelAppClose,
@@ -131,6 +134,7 @@ export function useAppKeyboardFocusEffects({
   onCloseCommandPalette,
   onCloseFindAndFocusEditor,
   onCloseGlobalSearch,
+  onCloseOkfReview,
   onClosePreferences,
   onCloseSelectedImagePreview,
   onCreateNewFile,
@@ -170,7 +174,11 @@ export function useAppKeyboardFocusEffects({
   // flags are still threaded through so the guard can
   // prioritise palette > search > close-tab > app-close >
   // preferences when multiple are open.
-  const anyModalOpen = modalOpen || commandPaletteVisible || globalSearchVisible;
+  const anyModalOpen =
+    modalOpen ||
+    commandPaletteVisible ||
+    globalSearchVisible ||
+    okfReviewVisible;
 
   useWindowCloseConfirmation({
     allowWindowCloseRef,
@@ -191,6 +199,7 @@ export function useAppKeyboardFocusEffects({
     assistDiscardDialogRef,
     closeTabDialogRef,
     commandPaletteVisible,
+    okfReviewVisible,
     epubExportDialogRef,
     epubExportSettingsOpen,
     pdfExportDialogRef,
@@ -206,6 +215,7 @@ export function useAppKeyboardFocusEffects({
     onCancelTabClose,
     onCloseCommandPalette,
     onCloseGlobalSearch,
+    onCloseOkfReview,
     onClosePreferences,
     pendingAppClose,
     pendingAssistDiscardOpen,
