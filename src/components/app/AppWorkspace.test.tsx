@@ -430,6 +430,42 @@ function rerenderWorkspace(
 }
 
 describe("AppWorkspace workspace sidebar collapse", () => {
+  it("exposes and keyboard-navigates the workspace new menu", () => {
+    const createOkfScaffoldAt = vi.fn();
+    renderWorkspace({
+      createOkfScaffoldAt,
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory"),
+    });
+
+    const trigger = screen.getByRole("button", { name: "New" });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(trigger);
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    const items = screen.getAllByRole("menuitem");
+    expect(document.activeElement).toBe(items[0]);
+
+    fireEvent.keyDown(items[0], { key: "ArrowDown" });
+    expect(document.activeElement).toBe(items[1]);
+
+    fireEvent.keyDown(items[1], { key: "End" });
+    expect(document.activeElement).toBe(items[items.length - 1]);
+    fireEvent.click(items[items.length - 1]);
+
+    expect(createOkfScaffoldAt).toHaveBeenCalledWith(
+      "/workspace",
+      "book-like",
+    );
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(trigger);
+    fireEvent.keyDown(screen.getAllByRole("menuitem")[0], { key: "Escape" });
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it("passes open and dirty tab markers into the workspace tree", () => {
     const dirtyTab = makeTab({
       contents: "edited",

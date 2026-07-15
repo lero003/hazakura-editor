@@ -124,6 +124,10 @@ export function localizeStatusMessage(
     "OKF scaffold failed": "知識フォルダのひな形作成に失敗しました",
     "OKF scaffold created; folder refresh failed":
       "知識フォルダのひな形を作成しました。フォルダ更新には失敗しました",
+    "OKF scaffold created; index open failed":
+      "知識フォルダのひな形を作成しました。index.md を開けませんでした",
+    "OKF scaffold created; folder refresh and index open failed":
+      "知識フォルダのひな形を作成しました。フォルダ更新と index.md の表示には失敗しました",
     "New folder created; folder refresh failed":
       "新規フォルダを作成しました。フォルダ更新には失敗しました",
     "New folder failed": "新規フォルダの作成に失敗しました",

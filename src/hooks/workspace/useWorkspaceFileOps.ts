@@ -239,14 +239,16 @@ export function useWorkspaceFileOps({
           openRelativePath: template.openRelativePath,
         });
 
+        let refreshFailed = false;
         try {
           await reloadWorkspaceParent(parentPath);
           // Nested folders (notes/, chapters/) may need a second refresh
           // once the new root appears; parent reload is enough for the tree.
         } catch {
-          setStatus("OKF scaffold created; folder refresh failed");
+          refreshFailed = true;
         }
 
+        let openFailed = false;
         if (result.openPath) {
           try {
             const file = await openTextFile(result.openPath);
@@ -261,13 +263,23 @@ export function useWorkspaceFileOps({
             setCompareView(null);
             rememberRecentFile(file.path);
           } catch {
-            // Scaffold is on disk; opening is best-effort.
+            // Scaffold is on disk; opening is best-effort but the user still
+            // needs to know that the expected post-create navigation failed.
+            openFailed = true;
           }
         }
 
-        setStatus(
-          `OKF scaffold created: ${fileNameFromPath(result.rootPath)}. Review with knowledge folder (OKF) when ready.`,
-        );
+        if (refreshFailed && openFailed) {
+          setStatus("OKF scaffold created; folder refresh and index open failed");
+        } else if (refreshFailed) {
+          setStatus("OKF scaffold created; folder refresh failed");
+        } else if (openFailed) {
+          setStatus("OKF scaffold created; index open failed");
+        } else {
+          setStatus(
+            `OKF scaffold created: ${fileNameFromPath(result.rootPath)}. Review with knowledge folder (OKF) when ready.`,
+          );
+        }
       } catch (err) {
         setGlobalError(String(err));
         setStatus("OKF scaffold failed");

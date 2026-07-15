@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.12 scaffold entry points + OKF pin evolution doc)
+Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
 
 ## Current State
 
@@ -48,7 +48,12 @@ Last reviewed: 2026-07-15 (v1.12 scaffold entry points + OKF pin evolution doc)
   create of minimal / book-like Markdown trees from Command Palette, folder
   context menu, workspace **新規 (+)**, and OS **File → 知識フォルダのひな形**.
   Bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable).
-  Packaged-app creation has been user-verified. Contract:
+  Source hardening now uses the actual local creation date, strict path/text
+  validation, non-recursive owned-artifact cleanup, visible post-create partial
+  failures, and keyboard-complete sidebar New menu semantics. A representative
+  developer-app smoke created both templates through all four entry points,
+  preserved existing roots with `-2` names, expanded the local date, opened
+  `index.md`, and returned a required-clean explicit OKF review. Contract:
   `docs/v1.12-okf-scaffold-design.md`.
 - **Shared OKF pin:** review and scaffolds use one Draft pin (`ee67a5c` /
   v0.1). When upstream OKF moves, update pure model, fixtures, scaffold assets,
@@ -123,12 +128,10 @@ Last reviewed: 2026-07-15 (v1.12 scaffold entry points + OKF pin evolution doc)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.12 scaffold smoke breadth + v1.11 TestFlight follow-up:** source has Command Palette /
-   context menu `知識フォルダ（OKF）を点検`, writer-facing status hierarchy
-   (ordinary manuscript vs knowledge-folder framing, priority findings,
-   details disclosure), and existing-tab open. No full OKF scan on workspace
-   open. Optional polish: in-panel guide/example, File menu, sidebar chip on
-   root `index.md` only. The local signed `1.11.0` pkg is ready; upload remains
+1. **v1.12 local candidate + TestFlight follow-up:** source/build/sandbox gates
+   and the representative four-entry scaffold smoke pass. Commit the source,
+   then create and verify the signed local candidate. No full OKF scan on
+   workspace open. Upload remains
    a separate explicit action. After installation, repeat the core OKF flow
    and the inherited IME/Save As/recovery/e-book/EPUB/a11y breadth.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
@@ -310,6 +313,18 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- 2026-07-15 v1.12 scaffold quality hardening: focused frontend passed
+  (**4 files / 59 tests**), full frontend passed (**180 files / 1536 tests**),
+  focused scaffold Rust passed (**7 tests**), and full Rust passed (**362 passed /
+  2 explicit host-integration ignored / 0 failed**). `npm run typecheck`,
+  `npm run build:vite`, Rust format, `npm run build`, `git diff --check`, and
+  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed. The a11y scanner's
+  component-level landmark/comment matches were false positives; keyboard menu
+  behavior is covered by a focused interaction test. The representative
+  developer-app pass then created minimal/book-like trees through Command
+  Palette, root context, sidebar New, and OS File menu; verified `-2` collision
+  naming, actual `2026-07-15` log dates, `index.md` opening, menu Escape, and a
+  required-clean explicit OKF review.
 - 2026-07-15 v1.11 S0–S3 source hardening: focused OKF/S3 frontend passed
   (**8 files / 82 tests**), full frontend passed (**178 files / 1511 tests**),
   focused Rust OKF passed (**17 tests**), and full Rust passed (**355 passed /

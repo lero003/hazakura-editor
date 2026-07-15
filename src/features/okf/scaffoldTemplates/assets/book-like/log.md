@@ -1,4 +1,4 @@
 # Directory Update Log
 
-## 2026-07-15
+## {{CREATED_DATE}}
 * **Creation**: OKF互換の本のひな形を作成。

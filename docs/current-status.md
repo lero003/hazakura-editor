@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 entry points + shared OKF pin doc)
+Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
 
 ## Current State
 
@@ -62,6 +62,17 @@ Last reviewed: 2026-07-15 (v1.12 entry points + shared OKF pin doc)
   `ee67a5c`), open `index.md`, and invite a separate explicit review. No Book
   Scope, auto-repair, or multi-file export. Contract:
   `docs/v1.12-okf-scaffold-design.md`.
+  The source-hardened path materializes the actual local creation date, rejects
+  unclean relative paths / NUL content, creates nested directories without
+  following an existing tree, and cleans up only artifacts it created. Tree
+  refresh or `index.md` open failures remain visible instead of being replaced
+  by a success status. The sidebar New menu exposes expanded state and standard
+  arrow/Home/End/Escape keyboard movement. Full source, Rust, App Store preview
+  build, and sandbox/helper entitlement checks pass. A representative hands-on
+  pass created both templates through all four entry points, preserved existing
+  roots with `-2` collision names, expanded the actual local date, opened
+  `index.md`, and returned a required-clean explicit OKF review. A signed local
+  candidate is the next release boundary.
 - **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only

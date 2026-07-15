@@ -602,3 +602,82 @@ fn okf_scaffold_rejects_non_markdown() {
     .expect_err("non md");
     assert!(err.contains("Markdown") || err.contains(".md"));
 }
+
+#[test]
+fn okf_scaffold_rejects_unclean_paths_names_and_contents() {
+    let workspace = unique_test_dir("okf_scaffold_strict");
+    fs::create_dir_all(&workspace).expect("workspace");
+
+    for relative_path in ["/absolute.md", "notes//draft.md", "notes/./draft.md"] {
+        let err = create_okf_scaffold_with_label(
+            MAIN_WINDOW_LABEL,
+            &workspace.to_string_lossy(),
+            &workspace.to_string_lossy(),
+            "safe",
+            vec![OkfScaffoldFileInput {
+                relative_path: relative_path.into(),
+                contents: "# safe\n".into(),
+            }],
+            None,
+        )
+        .expect_err("unclean path");
+        assert!(err.contains("relative") || err.contains("segment"));
+    }
+
+    let name_err = create_okf_scaffold_with_label(
+        MAIN_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &workspace.to_string_lossy(),
+        " safe ",
+        vec![OkfScaffoldFileInput {
+            relative_path: "index.md".into(),
+            contents: "# safe\n".into(),
+        }],
+        None,
+    )
+    .expect_err("surrounding whitespace");
+    assert!(name_err.contains("whitespace"));
+
+    let content_err = create_okf_scaffold_with_label(
+        MAIN_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &workspace.to_string_lossy(),
+        "safe",
+        vec![OkfScaffoldFileInput {
+            relative_path: "index.md".into(),
+            contents: "# safe\0hidden\n".into(),
+        }],
+        None,
+    )
+    .expect_err("NUL content");
+    assert!(content_err.contains("NUL"));
+}
+
+#[test]
+fn okf_scaffold_cleanup_preserves_unexpected_raced_content() {
+    let workspace = unique_test_dir("okf_scaffold_cleanup");
+    let root = workspace.join("safe");
+    let notes = root.join("notes");
+    fs::create_dir_all(&notes).expect("notes");
+    let created = notes.join("created.md");
+    let unexpected = root.join("unexpected.md");
+    fs::write(&created, "created\n").expect("created file");
+    fs::write(&unexpected, "external\n").expect("unexpected file");
+    let planned = vec![(
+        created.clone(),
+        "notes/created.md".to_string(),
+        "created\n".to_string(),
+    )];
+
+    let complete = cleanup_scaffold_creation(&root, &planned, &[created.clone()]);
+
+    assert!(
+        !complete,
+        "unexpected content should make cleanup incomplete"
+    );
+    assert!(!created.exists());
+    assert!(
+        unexpected.exists(),
+        "cleanup must preserve unexpected content"
+    );
+}

@@ -40,6 +40,8 @@ export type OkfScaffoldTemplate = {
 
 export const OKF_SCAFFOLD_SPEC_COMMIT = OKF_SPEC_COMMIT;
 
+const CREATED_DATE_TOKEN = "{{CREATED_DATE}}";
+
 /** Ensure Markdown assets end with a single trailing newline when written. */
 function normalizeAsset(raw: string): string {
   const text = raw.replace(/\r\n/g, "\n");
@@ -53,6 +55,27 @@ function files(
     relativePath,
     contents: normalizeAsset(raw),
   }));
+}
+
+function localCalendarDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function materializeTemplate(
+  template: OkfScaffoldTemplate,
+  createdAt: Date,
+): OkfScaffoldTemplate {
+  const createdDate = localCalendarDate(createdAt);
+  return {
+    ...template,
+    files: template.files.map((file) => ({
+      ...file,
+      contents: file.contents.replaceAll(CREATED_DATE_TOKEN, createdDate),
+    })),
+  };
 }
 
 /**
@@ -92,8 +115,9 @@ export function listOkfScaffoldTemplateIds(): OkfScaffoldTemplateId[] {
 
 export function getOkfScaffoldTemplate(
   id: OkfScaffoldTemplateId,
+  createdAt: Date = new Date(),
 ): OkfScaffoldTemplate {
-  return TEMPLATES[id];
+  return materializeTemplate(TEMPLATES[id], createdAt);
 }
 
 export function isOkfScaffoldTemplateId(

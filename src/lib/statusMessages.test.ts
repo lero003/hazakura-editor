@@ -114,6 +114,25 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
   });
 });
 
+describe("localizeStatusMessage: v1.12 OKF scaffold follow-up", () => {
+  it("keeps partial post-create failures understandable in Japanese", () => {
+    expect(
+      localizeStatusMessage(
+        "OKF scaffold created; index open failed",
+        "ja",
+      ),
+    ).toBe(
+      "知識フォルダのひな形を作成しました。index.md を開けませんでした",
+    );
+    expect(
+      localizeStatusMessage(
+        "OKF scaffold created; folder refresh and index open failed",
+        "ja",
+      ),
+    ).toContain("フォルダ更新と index.md の表示には失敗しました");
+  });
+});
+
 describe("localizeStatusMessage: pasted image failures", () => {
   it("localizes the pasted image failure prefix while preserving the Rust reason", () => {
     expect(

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v1.12 OKF Starter Scaffold; v1.11 candidate held
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 entry points + shared OKF pin doc)
+Last reviewed: 2026-07-15 (v1.12 scaffold quality hardening + source gates)
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.9** | **Source complete / rolled into current candidate** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. The work is rolled into the in-tree `1.11.0` candidate rather than published alone. |
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
 | **v1.11** | **Local TestFlight candidate ready / held** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review. Local signed candidate ready; TestFlight install remains separate. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
-| **v1.12** | **Active implementation** | OKF starter scaffold (minimal + book-like). Explicit multi-file write of fixed templates; no Book Scope / export. Contract: `docs/v1.12-okf-scaffold-design.md`. |
+| **v1.12** | **Source + manual smoke complete / candidate next** | OKF starter scaffold (minimal + book-like). Explicit bounded multi-file write; no Book Scope / export. Contract: `docs/v1.12-okf-scaffold-design.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
 
 Package/app version in tree is **`1.12.0`**; the published Mac App Store
@@ -37,11 +37,12 @@ Source: `docs/v1.12-okf-scaffold-design.md`.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| **Done / source** | **T0 — Contract + templates** | 設計、2テンプレ、spec pin `ee67a5c`、上書き禁止。 |
-| **Done / source** | **T1 — Bounded multi-file create** | `create_okf_scaffold`、path 境界、create_new、件数/バイト上限、Rust テスト。 |
-| **Done / source** | **T2 — Safe Editor wiring** | Palette、フォルダ context menu、サイドバー **新規 (+)**、OS File サブメニュー。`index.md` を開き、status で点検を促す。 |
+| **Done / source** | **T0 — Contract + templates** | 設計、2テンプレ、作成日のローカル暦日展開、spec pin `ee67a5c`、上書き禁止。 |
+| **Done / hardened** | **T1 — Bounded multi-file create** | `create_okf_scaffold`、strict relative path / NUL / size bounds、create_new、nested directoryの一段作成、自分が作った内容だけの非再帰cleanup、Rust テスト。 |
+| **Done / hardened** | **T2 — Safe Editor wiring** | 全4入口。`index.md` open / tree refreshの部分失敗をstatusへ残す。サイドバー新規menuは展開状態と矢印/Home/End/Escape操作を持つ。 |
 | **Done / docs** | **Pin evolution contract** | `docs/okf-spec-pin.md` — pin 更新時に review / fixtures / scaffold assets をセット更新する前提。 |
-| **Next** | **T3 — Smoke / release polish** | 各 entry point の作成→点検、release notes 草案。実機でのひな形作成は確認済み。 |
+| **Done / representative smoke** | **T3 — Entry-point breadth / release polish** | 全4入口、両template、`-2`衝突名、実日付、`index.md` open、required-clean点検、Escape復帰を確認。部分失敗表示は自動testで固定。release notes草案は公開判断時。 |
+| **Next / release boundary** | **Local signed candidate** | sourceをcommit後、`release:candidate -- --with-app-store-pkg --no-prune-pkgs`で署名付きpkgを作成・検証する。uploadは別操作。 |
 
 ### Closed / Held — v1.11 OKF Draft Compatibility Preview
 

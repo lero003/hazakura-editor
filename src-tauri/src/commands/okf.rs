@@ -11,7 +11,7 @@ use crate::types::*;
 use crate::util::*;
 
 use std::fs::{self, File, Metadata, OpenOptions};
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -644,6 +644,11 @@ pub(crate) fn create_okf_scaffold_with_label(
             return Err(format!("Duplicate scaffold path: {relative}"));
         }
         let content_len = file.contents.len();
+        if file.contents.contains('\0') {
+            return Err(format!(
+                "Scaffold Markdown must not contain NUL bytes: {relative}"
+            ));
+        }
         if content_len > MAX_OKF_SCAFFOLD_FILE_BYTES {
             return Err(format!(
                 "Scaffold file exceeds the {} byte limit: {relative}",
@@ -680,37 +685,74 @@ pub(crate) fn create_okf_scaffold_with_label(
     fs::create_dir(&scaffold_root)
         .map_err(|err| format!("Cannot create scaffold folder: {err}"))?;
 
-    let mut created_files: Vec<String> = Vec::with_capacity(planned.len());
-    for (absolute, relative, contents) in &planned {
-        if let Some(parent) = absolute.parent() {
-            fs::create_dir_all(parent).map_err(|err| {
-                let _ = fs::remove_dir_all(&scaffold_root);
-                format!("Cannot create scaffold directories: {err}")
-            })?;
+    // The root is new and empty, so create every nested directory with
+    // `create_dir` instead of following a pre-existing path via
+    // `create_dir_all`. An unexpected entry is treated as a race/failure.
+    let mut planned_directories = std::collections::BTreeSet::new();
+    for (absolute, _, _) in &planned {
+        let mut parent = absolute.parent();
+        while let Some(directory) = parent {
+            if directory == scaffold_root {
+                break;
+            }
+            planned_directories.insert(directory.to_path_buf());
+            parent = directory.parent();
         }
+    }
+    let mut planned_directories: Vec<PathBuf> = planned_directories.into_iter().collect();
+    planned_directories.sort_by_key(|path| path.components().count());
+    for directory in &planned_directories {
+        if let Err(err) = fs::create_dir(directory) {
+            return Err(scaffold_creation_error(
+                &scaffold_root,
+                &planned,
+                &[],
+                format!("Cannot create scaffold directory: {err}"),
+            ));
+        }
+    }
+
+    let mut created_paths: Vec<PathBuf> = Vec::with_capacity(planned.len());
+    for (absolute, relative, contents) in &planned {
         match OpenOptions::new()
             .write(true)
             .create_new(true)
             .open(absolute)
         {
             Ok(mut handle) => {
+                created_paths.push(absolute.clone());
                 if let Err(err) = handle.write_all(contents.as_bytes()) {
-                    let _ = fs::remove_dir_all(&scaffold_root);
-                    return Err(format!("Cannot write scaffold file {relative}: {err}"));
+                    return Err(scaffold_creation_error(
+                        &scaffold_root,
+                        &planned,
+                        &created_paths,
+                        format!("Cannot write scaffold file {relative}: {err}"),
+                    ));
                 }
                 if let Err(err) = handle.sync_all() {
-                    let _ = fs::remove_dir_all(&scaffold_root);
-                    return Err(format!("Cannot sync scaffold file {relative}: {err}"));
+                    return Err(scaffold_creation_error(
+                        &scaffold_root,
+                        &planned,
+                        &created_paths,
+                        format!("Cannot sync scaffold file {relative}: {err}"),
+                    ));
                 }
-                created_files.push(absolute.to_string_lossy().to_string());
             }
             Err(err) => {
-                let _ = fs::remove_dir_all(&scaffold_root);
-                return Err(format!("Cannot create scaffold file {relative}: {err}"));
+                return Err(scaffold_creation_error(
+                    &scaffold_root,
+                    &planned,
+                    &created_paths,
+                    format!("Cannot create scaffold file {relative}: {err}"),
+                ));
             }
         }
     }
 
+    let mut created_files: Vec<String> = created_paths
+        .into_iter()
+        .map(|path| path.to_string_lossy().to_string())
+        .collect();
     created_files.sort();
     Ok(OkfScaffoldResult {
         root_path: scaffold_root.to_string_lossy().to_string(),
@@ -727,6 +769,9 @@ fn validate_scaffold_folder_name(folder_name: &str) -> Result<(), String> {
     if name.chars().count() > MAX_OKF_SCAFFOLD_FOLDER_NAME_CHARS {
         return Err("Scaffold folder name is too long.".to_string());
     }
+    if name != folder_name {
+        return Err("Scaffold folder name must not have surrounding whitespace.".to_string());
+    }
     if name == "." || name == ".." {
         return Err("Scaffold folder name is invalid.".to_string());
     }
@@ -737,9 +782,14 @@ fn validate_scaffold_folder_name(folder_name: &str) -> Result<(), String> {
 }
 
 fn normalize_scaffold_relative_path(raw: &str) -> Result<String, String> {
-    let trimmed = raw.trim().trim_start_matches('/');
+    let trimmed = raw.trim();
     if trimmed.is_empty() {
         return Err("Scaffold relative path is empty.".to_string());
+    }
+    if trimmed != raw || Path::new(trimmed).is_absolute() {
+        return Err(format!(
+            "Scaffold path must be a clean relative path: {raw}"
+        ));
     }
     if trimmed.contains('\\') || trimmed.contains('\0') {
         return Err(format!("Scaffold path is invalid: {raw}"));
@@ -747,7 +797,9 @@ fn normalize_scaffold_relative_path(raw: &str) -> Result<String, String> {
     let mut parts: Vec<&str> = Vec::new();
     for part in trimmed.split('/') {
         if part.is_empty() || part == "." {
-            continue;
+            return Err(format!(
+                "Scaffold path must not contain empty or '.' segments: {raw}"
+            ));
         }
         if part == ".." {
             return Err(format!("Scaffold path must not contain '..': {raw}"));
@@ -779,4 +831,66 @@ fn scaffold_relative_absolute(scaffold_root: &Path, relative: &str) -> Result<Pa
         return Err(format!("Scaffold path escapes the new folder: {relative}"));
     }
     Ok(absolute)
+}
+
+fn scaffold_creation_error(
+    scaffold_root: &Path,
+    planned: &[(PathBuf, String, String)],
+    created_paths: &[PathBuf],
+    message: String,
+) -> String {
+    if cleanup_scaffold_creation(scaffold_root, planned, created_paths) {
+        message
+    } else {
+        format!("{message} Partial scaffold cleanup could not complete.")
+    }
+}
+
+/// Remove only files created by this command, then prune empty planned
+/// directories. Never recursively deletes the new root: if another process
+/// races in and adds content, that unexpected content is preserved.
+pub(crate) fn cleanup_scaffold_creation(
+    scaffold_root: &Path,
+    planned: &[(PathBuf, String, String)],
+    created_paths: &[PathBuf],
+) -> bool {
+    let mut complete = true;
+    for path in created_paths.iter().rev() {
+        if let Err(err) = fs::remove_file(path) {
+            if err.kind() != ErrorKind::NotFound {
+                complete = false;
+            }
+        }
+    }
+
+    let mut directories = std::collections::BTreeSet::new();
+    for (path, _, _) in planned {
+        let mut parent = path.parent();
+        while let Some(directory) = parent {
+            if directory == scaffold_root {
+                break;
+            }
+            if !directory.starts_with(scaffold_root) {
+                complete = false;
+                break;
+            }
+            directories.insert(directory.to_path_buf());
+            parent = directory.parent();
+        }
+    }
+    let mut directories: Vec<PathBuf> = directories.into_iter().collect();
+    directories.sort_by_key(|path| std::cmp::Reverse(path.components().count()));
+    for directory in directories {
+        if let Err(err) = fs::remove_dir(&directory) {
+            if err.kind() != ErrorKind::NotFound {
+                complete = false;
+            }
+        }
+    }
+    if let Err(err) = fs::remove_dir(scaffold_root) {
+        if err.kind() != ErrorKind::NotFound {
+            complete = false;
+        }
+    }
+    complete
 }

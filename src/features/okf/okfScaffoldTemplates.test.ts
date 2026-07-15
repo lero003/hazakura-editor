@@ -19,6 +19,20 @@ describe("okfScaffoldTemplates", () => {
   });
 
   it.each(listOkfScaffoldTemplateIds())(
+    "materializes the local creation date in template %s",
+    (id) => {
+      const template = getOkfScaffoldTemplate(
+        id,
+        new Date(2031, 1, 3, 12, 0, 0),
+      );
+      const log = template.files.find((file) => file.relativePath === "log.md");
+
+      expect(log?.contents).toContain("## 2031-02-03");
+      expect(log?.contents).not.toContain("{{CREATED_DATE}}");
+    },
+  );
+
+  it.each(listOkfScaffoldTemplateIds())(
     "template %s analyzes without required failures",
     (id) => {
       const template = getOkfScaffoldTemplate(id);

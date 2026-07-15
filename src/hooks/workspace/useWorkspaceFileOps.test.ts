@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useWorkspaceFileOps } from "./useWorkspaceFileOps";
 import type {
@@ -15,7 +15,12 @@ const workspaceApi = vi.hoisted(() => ({
   listWorkspaceDirectory: vi.fn(),
   moveWorkspaceEntry: vi.fn(),
   moveWorkspaceEntryToTrash: vi.fn(),
+  openTextFile: vi.fn(),
   renameWorkspaceEntry: vi.fn(),
+}));
+
+const okfApi = vi.hoisted(() => ({
+  createOkfScaffold: vi.fn(),
 }));
 
 vi.mock("../../lib/tauri", () => ({
@@ -24,7 +29,12 @@ vi.mock("../../lib/tauri", () => ({
   listWorkspaceDirectory: workspaceApi.listWorkspaceDirectory,
   moveWorkspaceEntry: workspaceApi.moveWorkspaceEntry,
   moveWorkspaceEntryToTrash: workspaceApi.moveWorkspaceEntryToTrash,
+  openTextFile: workspaceApi.openTextFile,
   renameWorkspaceEntry: workspaceApi.renameWorkspaceEntry,
+}));
+
+vi.mock("../../lib/tauri/okf", () => ({
+  createOkfScaffold: okfApi.createOkfScaffold,
 }));
 
 function makeTab(path: string): EditorTab {
@@ -72,6 +82,10 @@ function makeOptions(overrides: Partial<Parameters<typeof useWorkspaceFileOps>[0
 }
 
 describe("useWorkspaceFileOps", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("trashing a folder clears descendant editor state", async () => {
     workspaceApi.moveWorkspaceEntryToTrash.mockResolvedValue(undefined);
     let tabs: EditorTab[] = [
@@ -217,6 +231,108 @@ describe("useWorkspaceFileOps", () => {
     await result.current.createFolder("/some/parent");
 
     expect(setStatus).toHaveBeenCalledWith("No workspace open");
+  });
+
+  it("creates an OKF scaffold, refreshes the tree, and opens its index", async () => {
+    const reloadWorkspaceParent = vi.fn(async () => undefined);
+    const rememberRecentFile = vi.fn();
+    const setActiveTabId = vi.fn();
+    const setStatus = vi.fn();
+    let tabs: EditorTab[] = [];
+    workspaceApi.listWorkspaceDirectory.mockResolvedValue({
+      children: [{ name: "知識フォルダ" }],
+    });
+    okfApi.createOkfScaffold.mockResolvedValue({
+      createdFiles: ["/workspace/知識フォルダ-2/index.md"],
+      openPath: "/workspace/知識フォルダ-2/index.md",
+      rootPath: "/workspace/知識フォルダ-2",
+    });
+    workspaceApi.openTextFile.mockResolvedValue({
+      contents: "# 知識フォルダ\n",
+      encoding: "utf-8",
+      fingerprint: "okf-index",
+      large_file_warning: false,
+      line_ending: "lf",
+      modified_ms: 1,
+      name: "index.md",
+      path: "/workspace/知識フォルダ-2/index.md",
+      size: 10,
+    });
+
+    const { result } = renderHook(() =>
+      useWorkspaceFileOps(
+        makeOptions({
+          reloadWorkspaceParent,
+          rememberRecentFile,
+          setActiveTabId,
+          setStatus,
+          setTabs: vi.fn((next) => {
+            tabs = typeof next === "function" ? next(tabs) : next;
+          }),
+          workspaceRootPath: "/workspace",
+        }),
+      ),
+    );
+
+    await act(async () => {
+      await result.current.createOkfScaffoldAt("/workspace", "minimal");
+    });
+
+    expect(okfApi.createOkfScaffold).toHaveBeenCalledWith(
+      expect.objectContaining({
+        folderName: "知識フォルダ-2",
+        openRelativePath: "index.md",
+        parentPath: "/workspace",
+        workspaceRoot: "/workspace",
+      }),
+    );
+    expect(reloadWorkspaceParent).toHaveBeenCalledWith("/workspace");
+    expect(workspaceApi.openTextFile).toHaveBeenCalledWith(
+      "/workspace/知識フォルダ-2/index.md",
+    );
+    expect(tabs.map((tab) => tab.path)).toEqual([
+      "/workspace/知識フォルダ-2/index.md",
+    ]);
+    expect(setActiveTabId).toHaveBeenCalledWith(
+      "/workspace/知識フォルダ-2/index.md",
+    );
+    expect(rememberRecentFile).toHaveBeenCalledWith(
+      "/workspace/知識フォルダ-2/index.md",
+    );
+    expect(setStatus).toHaveBeenLastCalledWith(
+      "OKF scaffold created: 知識フォルダ-2. Review with knowledge folder (OKF) when ready.",
+    );
+  });
+
+  it("keeps post-create refresh and index-open failures visible", async () => {
+    const setStatus = vi.fn();
+    workspaceApi.listWorkspaceDirectory.mockResolvedValue({ children: [] });
+    okfApi.createOkfScaffold.mockResolvedValue({
+      createdFiles: ["/workspace/知識フォルダ/index.md"],
+      openPath: "/workspace/知識フォルダ/index.md",
+      rootPath: "/workspace/知識フォルダ",
+    });
+    workspaceApi.openTextFile.mockRejectedValue(new Error("open failed"));
+
+    const { result } = renderHook(() =>
+      useWorkspaceFileOps(
+        makeOptions({
+          reloadWorkspaceParent: vi.fn(async () => {
+            throw new Error("refresh failed");
+          }),
+          setStatus,
+          workspaceRootPath: "/workspace",
+        }),
+      ),
+    );
+
+    await act(async () => {
+      await result.current.createOkfScaffoldAt("/workspace", "minimal");
+    });
+
+    expect(setStatus).toHaveBeenLastCalledWith(
+      "OKF scaffold created; folder refresh and index open failed",
+    );
   });
 
   it("renameWorkspacePath is a no-op for an empty name", async () => {

@@ -91,9 +91,24 @@ or signed TestFlight proof from this representative run.
 2. Create from each entry point at least once across a smoke pass:
    Command Palette, folder context menu, sidebar **新規 (+)**, and OS **File → 知識フォルダのひな形**.
 3. Confirm a new uniquely named folder appears, `index.md` opens, and no existing files were overwritten.
-4. Run `知識フォルダ（OKF）を点検` on the new folder root. Required findings should be empty (advice-only is OK).
-5. Template bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable Markdown assets).
-6. Spec pin authority: `docs/okf-spec-pin.md` (review + scaffolds share one pin; upgrade co-updates both).
+4. Confirm `log.md` uses the actual local creation date (`YYYY-MM-DD`), not the source-template date.
+5. With the sidebar New menu, confirm expanded state is announced and Arrow keys / Home / End / Escape move or restore focus correctly.
+6. Run `知識フォルダ（OKF）を点検` on the new folder root. Required findings should be empty (advice-only is OK).
+7. If tree refresh or `index.md` open is intentionally made unavailable, confirm creation remains on disk and the partial failure stays visible in status.
+8. Template bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable Markdown assets).
+9. Spec pin authority: `docs/okf-spec-pin.md` (review + scaffolds share one pin; upgrade co-updates both).
+
+Representative result (2026-07-15): template analysis, creation integration,
+partial-failure status, keyboard menu semantics, strict Rust path/text bounds,
+and non-recursive cleanup tests passed. Full frontend (**180 files / 1536
+tests**), Rust (**362 passed / 2 explicit host-integration ignored / 0 failed**),
+Vite, App Store preview build, and sandbox/helper entitlement verification
+passed. A developer-app hands-on pass then created minimal/book-like trees via
+Command Palette, root context menu, sidebar New, and OS File menu. Existing
+roots remained intact with `-2` collision names; all four `log.md` files used
+`2026-07-15`; `index.md` opened; Escape closed the New menu; explicit OKF review
+reported no required compatibility problem. Intentional post-create partial
+failure remains verified by automated integration coverage.
 
 ## v1.11 OKF Draft Compatibility Smoke
 

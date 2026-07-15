@@ -1,6 +1,8 @@
 import {
   type DragEvent as ReactDragEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
+  useId,
   useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
@@ -82,6 +84,8 @@ export function WorkspaceSidebar({
 }: WorkspaceSidebarProps) {
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const newMenuRef = useRef<HTMLDivElement | null>(null);
+  const newMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const newMenuId = useId();
 
   // Dismiss the popover on outside click / Esc. Mirrors the
   // useWorkspaceContextMenuDismissal pattern.
@@ -97,6 +101,7 @@ export function WorkspaceSidebar({
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setNewMenuOpen(false);
+        newMenuButtonRef.current?.focus();
       }
     };
     window.addEventListener("mousedown", closeOnOutside);
@@ -106,6 +111,44 @@ export function WorkspaceSidebar({
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [newMenuOpen]);
+
+  useEffect(() => {
+    if (!newMenuOpen) return;
+    newMenuRef.current
+      ?.querySelector<HTMLButtonElement>("[role='menuitem']")
+      ?.focus();
+  }, [newMenuOpen]);
+
+  const handleNewMenuKeyDown = (
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) => {
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>(
+        "[role='menuitem']",
+      ),
+    );
+    const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setNewMenuOpen(false);
+      newMenuButtonRef.current?.focus();
+      return;
+    }
+    if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      items[event.key === "Home" ? 0 : items.length - 1]?.focus();
+      return;
+    }
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    const offset = event.key === "ArrowDown" ? 1 : -1;
+    const nextIndex =
+      currentIndex < 0
+        ? 0
+        : (currentIndex + offset + items.length) % items.length;
+    items[nextIndex]?.focus();
+  };
 
   const handleNewFile = () => {
     setNewMenuOpen(false);
@@ -188,17 +231,25 @@ export function WorkspaceSidebar({
             {workspaceRootPath ? (
               <div className="workspace-new-menu" ref={newMenuRef}>
                 <button
+                  aria-controls={newMenuId}
+                  aria-expanded={newMenuOpen}
                   aria-haspopup="menu"
                   aria-label={fileOpsCopy.sidebarNewButton}
                   className="workspace-new-button"
                   onClick={() => setNewMenuOpen((open) => !open)}
+                  ref={newMenuButtonRef}
                   title={fileOpsCopy.sidebarNewButton}
                   type="button"
                 >
                   <PlusIcon />
                 </button>
                 {newMenuOpen ? (
-                  <div className="workspace-new-menu-popover" role="menu">
+                  <div
+                    className="workspace-new-menu-popover"
+                    id={newMenuId}
+                    onKeyDown={handleNewMenuKeyDown}
+                    role="menu"
+                  >
                     <button type="button" role="menuitem" onClick={handleNewFile}>
                       {fileOpsCopy.newFileRoot}
                     </button>
