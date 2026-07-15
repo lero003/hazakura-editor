@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
+Last reviewed: 2026-07-15 (v1.11 OKF draft direction accepted)
 
 ## Current Position
 
@@ -46,19 +46,24 @@ Current release state:
   rendering, L Mode Reference continuity, keyboard / VoiceOver semantics, kana
   UI copy, export preflight, theme cost, and failure-state messaging. No new
   product surface. Do not reopen without a reproduced hotfix.
-- **v1.9 Writing Loop Clarity is source complete and ships in `1.10.0`.**
+- **v1.9 Writing Loop Clarity is source complete and present in the `1.10.0`
+  candidate that will roll forward with v1.11.**
   W1–W4 organize Preview / Reference / e-book / Outline / Diff /
   L Mode around `書く・読む・確かめる` without adding chrome or a new model.
-- **v1.10 Single-document Structure Foundation is a TestFlight candidate.**
+- **v1.10 Single-document Structure Foundation implementation is complete.**
   One source-offset model now drives Outline,
   e-book, and EPUB; Outline adds read-only structure/advice plus one explicit,
   Undo-able heading-level transaction. The temporary-fixture Outline/advice/edit/
-  Undo path passed; `1.10.0` version preparation is complete. Extended manual
-  breadth and the published release remain.
+  Undo path passed; `1.10.0` remains an internal candidate. Extended manual
+  breadth moves into v1.11 rather than reopening v1.10.
+- **v1.11 OKF Draft Compatibility Preview is the active design.** It adds one
+  explicit, bounded, read-only review of an OKF v0.1 Draft root, then runs the
+  larger packaged distribution-confidence matrix. Full Book Scope remains v2.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,
   and additional `v1.xx` releases as useful. Clarify the writing loop,
-  add single-document structure, then run a larger packaged distribution test
-  before v2. Detail: `docs/v1.8-plus-product-review-roadmap.md`.
+  add single-document structure, prove bounded OKF compatibility, then run a
+  larger packaged distribution test before v2. Detail:
+  `docs/v1.8-plus-product-review-roadmap.md`.
 - **Next major structural boundary: v2** — explicit multi-file Book Scope,
   then vertical writing (縦書き). Design:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
@@ -206,26 +211,31 @@ Near-term phase order:
      deterministic full tests, pathless recovery proof, packaged Reference
      Compare, long-reference and a11y gates shipped. Extended TestFlight and
      spoken VoiceOver breadth remain follow-up evidence.
-   - **v1.9 Writing Loop Clarity (source complete; ships in `1.10.0`):**
+   - **v1.9 Writing Loop Clarity (source complete; present in the held
+     `1.10.0` candidate):**
      organize Preview / Reference /
      e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
      adding chrome.
-   - **v1.10 Single-document Structure Foundation (TestFlight candidate
-     prepared):** interpret headings,
+   - **v1.10 Single-document Structure Foundation (implementation complete;
+     candidate held):** interpret headings,
      frontmatter, page-break markers, and navigation candidates through one
      shared structure model; show structure and allow only bounded, explicit,
      undoable single-buffer structure edits. No multi-file Book Scope.
-   - **v1.11+ Distribution Confidence:** run a larger packaged / signed matrix
+   - **v1.11 OKF Draft Compatibility Preview + Distribution Confidence:**
+     explicitly inspect one selected OKF v0.1 Draft root with bounded,
+     read-only compatibility advice, then run a larger packaged / signed matrix
      across structure, long documents, recovery, Reference, Assist, export,
      accessibility, sandbox, and failure boundaries before v2 implementation.
    Detailed rationale, acceptance, and v2 entry gate:
    `docs/v1.8-plus-product-review-roadmap.md`.
-17. v2.0 is the OKF-reviewed multi-file structural foundation and vertical writing
+17. v2.0 is the multi-file Book Scope and vertical writing
    target. Two pillars, in order:
-   - **OKF as a structural foundation for Book Scope.** Treat a
+   - **OKF compatibility plus Hazakura Book semantics.** Treat a
      user-selected, explicit set of structurally related Markdown files
-     as one book, with OKF (Open Knowledge Format) as the structural
-     foundation. The v2 Book Scope design — including the Workspace As
+     as one book. Reuse the v1.11 OKF (Open Knowledge Format) compatibility
+     model where useful, but define chapter order, manifest behavior, and
+     whole-book reading/export as visible Hazakura conventions because base
+     OKF does not define a book format. The v2 Book Scope design — including the Workspace As
      Book direction, the Safe Editor boundary that carries into v2, the
      open UI questions, and UI candidates that are not yet decided —
      lives in `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
@@ -236,7 +246,7 @@ Near-term phase order:
    - **Vertical writing (縦書き).** Add vertical-text reading to e-book
      Mode and export layers after the horizontal e-book surface, Spread
      View, and EPUB export are stable (the pre-existing trigger), and
-     after the OKF-based structural foundation is in place. Markdown
+     after the Hazakura Book Scope structural foundation is in place. Markdown
      source stays canonical; vertical writing is a render / export layer,
      not a second saved model.
 
@@ -781,8 +791,8 @@ Possible directions:
   visual expression mode only, not as a privacy, encryption, security, or
   access-control feature.
 - Add vertical writing only after the horizontal e-book surface, Spread
-  View, and EPUB export are already stable, and after the OKF-based
-  structural foundation for v2 Book Scope is in place. Vertical writing is
+  View, and EPUB export are already stable, and after the Hazakura Book Scope
+  structural foundation is in place. Vertical writing is
   a v2 target, not a v1.x slice.
 - Improve Developer / GitHub distribution only when needed: Developer ID
   signing, notarization, updater, DMG stability, and clear App Store vs
@@ -793,9 +803,10 @@ Possible directions:
 - Reduce UI friction around L Mode, e-book Mode, Preview, Diff, and
   Recovery as layers over the same Markdown source.
 
-OKF remains a proposal-stage dependency. Re-check the latest OKF shape
-before treating it as an implementation contract. OKF as a structural
-foundation for v2 Book Scope is assessed in
+OKF v0.1 Draft compatibility now has a bounded v1.11 contract in
+`docs/v1.11-okf-draft-preview-design.md`. Re-check the latest OKF shape before
+v2 and keep base OKF conformance separate from Hazakura-defined Book Scope
+semantics. The v2 boundary is assessed in
 `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
 ### Observation-driven Maintenance Backlog
@@ -863,9 +874,10 @@ plugins, Git/LSP/terminal, external AI/API, or a second document model.
 ## v2.0 Book Scope / Book Workspace Alpha
 
 Book Scope Alpha remains explicitly deferred until the v1.10
-single-document-structure bridge and v1.11+ distribution-confidence gate are
-complete. It is not required to close the current Reference Compare or trust /
-daily-use lane. The entry criteria live in
+single-document-structure bridge and v1.11 OKF compatibility /
+distribution-confidence gate are complete. v1.11 may read one selected bundle,
+but does not add chapter order, whole-book reading/export, manifest authoring,
+or multi-file edits. The entry criteria live in
 `docs/v1.8-plus-product-review-roadmap.md`.
 
 Goal: introduce a user-selected Book Scope: a small, explicit set of
@@ -972,7 +984,8 @@ Keep future product work source-preserving and narrow:
   ingest proposal is preserved at
   `docs/archive/planning/ai-markdown-ingest-plan.md`.
 - Book Scope / Book Workspace: target v2.0 only after v1.10 proves the
-  single-document structure model and v1.11+ records the larger packaged test
+  single-document structure model and v1.11 records bounded OKF compatibility
+  plus the larger packaged test
   matrix. Treat a small, explicit, user-selected set of Markdown files as one
   book. Keep the scope reversible and avoid
   background project indexing, hidden chapter inference, or a hidden

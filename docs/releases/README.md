@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-15
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -64,6 +64,9 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `1.10.0-app-store-release-notes.md` is retained as held TestFlight candidate
+  copy; its v1.9 / v1.10 content is expected to roll forward after v1.11 rather
+  than publish as the next App Store release.
 - `0.34.0-app-store-submission-candidate.release.md`
 - `0.33.0-app-store-submission-candidate.release.md`
 - `0.32.0-app-store-submission-candidate.release.md`
@@ -78,6 +81,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
+- `1.10.0-app-store-release-notes.md` (held TestFlight candidate; not active publish copy)
 - `1.8.0-app-store-release-notes.md`
 - `1.7.0-app-store-release-notes.md`
 - `1.6.0-app-store-release-notes.md`

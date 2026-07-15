@@ -3,14 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
+Last reviewed: 2026-07-15 (v1.11 OKF draft contract accepted)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.10.0`** across npm, Tauri, Cargo,
   and lockfile metadata. The published Mac App Store version remains
-  `1.8.0`; `1.10.0` is the TestFlight submission candidate.
+  `1.8.0`; `1.10.0` remains a prepared candidate while v1.11 implementation
+  begins. The next public release is deferred until the OKF Draft Preview and
+  v1.11 distribution-confidence gate pass.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
@@ -37,7 +39,8 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   review fixed stale Command Palette labels when locale changes while the
   palette is open, aligned the returning Start Panel kana CTA, and repaired
   release/lane document checks. v1.9 stayed source-complete without its own
-  release preparation and now ships inside the `1.10.0` TestFlight candidate.
+  public release and is present inside the `1.10.0` candidate that will roll
+  forward with v1.11.
 - **v1.10 Single-document Structure Foundation S1–S4 is source complete and
   has representative packaged interaction proof.** `parseMarkdownStructure` provides
   one source-offset interpretation of closed leading frontmatter, ATX headings,
@@ -51,7 +54,17 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   and exposed the expected hierarchy/page-break rows, three overview advice
   kinds, and the 803-line section advice. A one-level H3→H2 edit set dirty and
   one `Cmd+Z` restored the original source and clean state. Source-jump breadth,
-  IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof.
+  IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof
+  and move into the v1.11 distribution-confidence matrix rather than reopening
+  v1.10.
+- **v1.11 OKF Draft Compatibility Preview design is accepted; implementation
+  has not started.** The active contract is an explicit, bounded, cancellable,
+  read-only review of one user-selected workspace root or subfolder against
+  OKF (Open Knowledge Format) v0.1 Draft. It may show conformance / advice and
+  open concepts through existing Markdown tabs. It does not add startup scan,
+  persistent indexing, automatic repair, chapter ordering, multi-file edit,
+  whole-book export, or Book Scope. Contract:
+  `docs/v1.11-okf-draft-preview-design.md`.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
   `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import
@@ -280,9 +293,9 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   in `docs/archive/operations/v1.1-v1.2-followup.md`.
 - No remaining source-level release blocker is known for the closed v1.6,
   v1.7, or v1.8 lines. Do not reopen them without a reproduced gap. The
-  v1.9 Writing Loop Clarity W1–W4 source plan is complete and reviewed; no
-  v1.9 version bump or release preparation has run. The active implementation
-  lane is **v1.10 Single-document Structure Foundation**.
+  v1.9 Writing Loop Clarity and v1.10 Single-document Structure Foundation are
+  implementation complete. The active implementation lane is **v1.11 OKF Draft
+  Compatibility Preview**, followed by its distribution-confidence gate.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -695,7 +708,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.10 single-document structure queue.
+- `docs/current-work.md`: current v1.11 OKF compatibility queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -704,8 +717,9 @@ baseline, and smoke evidence are archived under
 - `docs/ebook-mode-epub-export-plan.md`: e-book Mode / EPUB export
   planning and source-preserving reader/export boundaries.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
-- `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, distribution-confidence, and v2 sequencing.
-- `docs/v1.10-single-document-structure-design.md`: active structure contract and slice order.
+- `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, v1.11 OKF / distribution-confidence, and v2 sequencing.
+- `docs/v1.10-single-document-structure-design.md`: completed v1.10 structure contract.
+- `docs/v1.11-okf-draft-preview-design.md`: active v1.11 implementation and verification contract.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
@@ -713,15 +727,13 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **v1.10 S1–S4 is source complete with representative packaged proof.**
-   `1.10.0` version preparation is complete and the release is ready for
-   TestFlight submission; the published Mac App Store version remains `1.8.0`.
-   Finish the remaining source-jump, IME, Save As, recovery, e-book/EPUB, and
-   signed TestFlight items in `docs/smoke-checklist.md` when release breadth is
-   needed. Do not infer TestFlight or signed evidence from source checks.
-3. Keep v1.9 source complete but unreleased until an explicit version/release
-   preparation decision. Continue v1.10 inside one Markdown buffer, then run
-   the v1.11+ distribution-confidence gate before multi-file Book Scope.
+2. **Start v1.11 with S0/S1 from
+   `docs/v1.11-okf-draft-preview-design.md`.** Pin public-safe OKF v0.1 Draft
+   fixtures, then build the pure parser / validator before filesystem or UI
+   integration. Keep unknown fields/types and broken links tolerant.
+3. Keep v1.10 implementation closed. Fold its remaining source-jump, IME,
+   Save As, recovery, e-book/EPUB, and signed TestFlight breadth into v1.11 S4.
+   Do not infer signed evidence from source or local-app checks.
 4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces. Historical notes remain in
    `docs/archive/operations/v1.1-v1.2-followup.md` and
@@ -737,6 +749,6 @@ baseline, and smoke evidence are archived under
 7. For Hazakura Local Assist, use `docs/assist-surface-strategy.md` and
    `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
-8. Do not tag or publish without explicit approval. In-tree version is
-   `1.10.0` (TestFlight submission candidate); the published Mac App Store
-   version is `1.8.0`.
+8. Do not bump, tag, upload, submit, or publish without explicit approval.
+   In-tree version remains `1.10.0`; the published Mac App Store version is
+   `1.8.0`. Prepare `1.11.0` only after the OKF preview and distribution gate.

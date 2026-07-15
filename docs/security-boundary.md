@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-06-26
+Last reviewed: 2026-07-15 (v1.11 reviewed OKF boundary pinned)
 
 ## Core Rule
 
@@ -36,6 +36,34 @@ Safe Editor Mode のアプリ本体に以下の機能を入れない。
 - `.env` などのテキストファイルは開けてもよいが、特別扱いして外部送信しない
 - バイナリ判定されたファイルは編集対象にしない
 - 大容量ファイルは警告し、ログビューア化しない
+
+## OKF Compatibility Review
+
+OKF (Open Knowledge Format) compatibility review は、通常のworkspace openとは
+別の明示操作としてのみ許容する。
+
+- 対象はユーザーが選択済みのworkspace rootまたは明示的に選んだsubfolderに限定する
+- 一回のbounded・cancellable scanとし、起動時解析、background indexing、
+  file watcher、永続cache databaseを追加しない
+- Markdown text、frontmatter、reserved file、bundle-relative Markdown link
+  だけを解釈し、project fileの実行、Git状態、外部serviceを参照しない
+- symlinkやlink targetを含め、選択root外へ出るpathを読み込まない
+- directory walkはsymlink file / directoryを追跡せず、regular `.md` fileだけを
+  明示budget内で読む。non-Markdown fileは数え分けて内容を読まない
+- unknown field/type、broken link、missing `index.md`は安全に読める限り助言とし、
+  自動修正、自動保存、frontmatter生成を行わない
+- `resource:`、citation、Markdown linkのURLを自動fetchしない。外部linkはmetadata
+  として分類するだけで、review surfaceからOS handoffもしない
+- review surfaceはmetadata、file list、findingだけを表示し、bundle本文の
+  Markdown image、inline HTML、HTML previewをrenderしない
+- scanはdisk snapshotであり、dirty tabとの差を明示する。concept openは既存の
+  dirty tabを尊重し、disk内容で置き換えない
+- invocationはmain Safe Editor windowの明示操作に限定し、Agent Workbench、
+  Assist、startup/background処理から呼び出せない
+- derived compatibility resultはmemory上のpreviewとし、hidden manifest、
+  link graph、Book databaseとして保存しない
+
+詳細なslice contractは `v1.11-okf-draft-preview-design.md` を参照する。
 
 ## Markdown Preview
 

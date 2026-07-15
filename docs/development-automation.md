@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-14 (v1.10 version preparation complete for TestFlight)
+Last reviewed: 2026-07-15 (v1.11 external design review incorporated)
 
 ## Purpose
 
@@ -17,9 +17,10 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.10 extended packaged structure verification** after S1–S4 source completion,
-v1.9 W1–W4 source completion, and the published `1.8.0` App Store release,
-unless a public-release hotfix blocker appears. Direction:
+Phase: **v1.11 OKF Draft Compatibility Preview**, beginning with S0 fixtures
+and S1 pure model after v1.10 implementation completion and the published
+`1.8.0` App Store release, unless a public-release hotfix blocker appears.
+Direction: `docs/v1.11-okf-draft-preview-design.md` and
 `docs/v1.8-plus-product-review-roadmap.md`.
 
 For recurring automation, use the Active Queue in
@@ -31,8 +32,11 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. v1.10 structure regression gaps or remaining packaged-smoke breadth from
-   `docs/current-work.md`; do not invent an S5 when no concrete gap appears.
+1. The first open v1.11 slice from `docs/current-work.md`. Start with public-safe
+   OKF v0.1 Draft fixtures. The pure TypeScript parser/validator follows only
+   after the direct YAML dependency gate is explicitly approved. Do not rely on
+   an optional/transitive parser, mutate the lockfile without approval, or
+   connect UI/filesystem discovery before the pure model is pinned.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

@@ -584,24 +584,33 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`1.10.0`",
         "Published Mac App Store version: **`1.8.0`",
-        "v1.10 Single-document Structure Foundation S1–S4 is source complete",
+        "v1.11 OKF Draft Compatibility Preview design is accepted",
       ],
       "docs/current-work.md": [
-        "Scope: v1.10 TestFlight candidate prepared; representative packaged structure smoke passed",
-        "TestFlight Candidate Queue — v1.10 Single-document Structure Foundation",
+        "Scope: v1.11 OKF Draft Compatibility Preview design accepted; implementation not started",
+        "Active Queue — v1.11 OKF Draft Compatibility Preview",
       ],
       "docs/development-automation.md": [
-        "Phase: **v1.10 extended packaged structure verification**",
+        "Phase: **v1.11 OKF Draft Compatibility Preview**",
       ],
       "docs/handoff.md": [
         "Package/app version in tree is **`1.10.0`",
         "Published Mac App Store version is **`1.8.0`",
-        "v1.10 S1–S4 is a TestFlight candidate",
+        "v1.11 OKF Draft Compatibility Preview is the active implementation lane",
       ],
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.10.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "v1.10 Single-document Structure Foundation is a TestFlight candidate",
+        "v1.11 OKF Draft Compatibility Preview is the active design",
+      ],
+      "docs/v1.11-okf-draft-preview-design.md": [
+        "Status: Accepted design; implementation not started",
+        "Version 0.1 — Draft",
+        "commit: [`ee67a5c`]",
+        "`MAX_OKF_MARKDOWN_FILES`",
+        "S3 — OKF Review Surface (Feature Complete)",
+        "S4 — Distribution Confidence And Release Decision (Ship Ready)",
+        "Book Scope stays a separate product contract",
       ],
     };
 
