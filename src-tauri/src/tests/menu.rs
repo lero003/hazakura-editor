@@ -22,6 +22,25 @@ fn app_menu_event_allows_epub_beta_export_action() {
 }
 
 #[test]
+fn file_menu_exposes_okf_scaffold_starters() {
+    let source = include_str!("../menu.rs");
+
+    assert_eq!(MENU_OKF_SCAFFOLD_MINIMAL, "okf-scaffold-minimal");
+    assert_eq!(MENU_OKF_SCAFFOLD_BOOK_LIKE, "okf-scaffold-book-like");
+    assert!(source.contains("MENU_OKF_SCAFFOLD_MINIMAL"));
+    assert!(source.contains("MENU_OKF_SCAFFOLD_BOOK_LIKE"));
+    assert!(source.contains("Knowledge Folder Starters"));
+    assert!(source.contains("知識フォルダのひな形"));
+
+    let emit_match = source
+        .split("matches!(")
+        .find(|section| section.contains("MENU_NEW_FILE"))
+        .expect("find menu action allowlist");
+    assert!(emit_match.contains("MENU_OKF_SCAFFOLD_MINIMAL"));
+    assert!(emit_match.contains("MENU_OKF_SCAFFOLD_BOOK_LIKE"));
+}
+
+#[test]
 fn file_menu_exposes_reference_beside_editor_action() {
     let source = include_str!("../menu.rs");
 

@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
+Last reviewed: 2026-07-15 (v1.12 OKF scaffold + shared OKF pin)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -132,11 +132,13 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): active v1.11 OKF compatibility queue and release boundary
+- [Current Work](docs/current-work.md): active v1.12 OKF scaffold queue and release boundary
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
 - [v1.10 Single-document Structure Design](docs/v1.10-single-document-structure-design.md): completed shared structure, advisory, and bounded edit contract
-- [v1.11 OKF Draft Preview Design](docs/v1.11-okf-draft-preview-design.md): active OKF v0.1 Draft compatibility and distribution-confidence contract
+- [OKF Spec Pin](docs/okf-spec-pin.md): shared OKF pin and upgrade co-update checklist
+- [v1.11 OKF Draft Preview Design](docs/v1.11-okf-draft-preview-design.md): held OKF v0.1 Draft compatibility and distribution-confidence contract
+- [v1.12 OKF Scaffold Design](docs/v1.12-okf-scaffold-design.md): OKF starter scaffold (minimal + book-like)
 - [v1.11 App Store Release Notes](docs/releases/1.11.0-app-store-release-notes.md): TestFlight candidate copy and product boundary
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
 - [v1.7 App Store Release Notes](docs/releases/1.7.0-app-store-release-notes.md): published Reference Compare + trust hardening release
@@ -230,7 +232,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.11.0` across npm, Tauri, and Cargo metadata (local signed TestFlight candidate ready). The published Mac App Store version remains `1.8.0`; upload, TestFlight installation, App Review, and public release are separate decisions and evidence.
+- Current package/app version is `1.12.0` across npm, Tauri, and Cargo metadata. The published Mac App Store version remains `1.8.0`; v1.11 stays a held local TestFlight candidate while v1.12 implements OKF starter scaffolds. Upload, TestFlight installation, App Review, and public release are separate decisions and evidence.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.8.0`; extended recovery, long-reference, and accessibility smoke continues as v1.8 follow-up rather than reopening the published lane.
 - The latest prepared GitHub source / local-app tag is [v1.8.0](https://github.com/lero003/hazakura-editor/tree/v1.8.0).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

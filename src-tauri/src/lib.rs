@@ -200,6 +200,7 @@ pub fn run() {
             search_workspace_files,
             scan_okf_bundle,
             cancel_okf_bundle_scan,
+            create_okf_scaffold,
             start_agent_workbench_session,
             stop_agent_workbench_session,
             get_agent_workbench_session_state,

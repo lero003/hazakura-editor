@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 local candidate gate passed)
+Last reviewed: 2026-07-15 (v1.12 scaffold + shared OKF pin)
 
 ## Purpose
 
@@ -17,10 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.11 OKF Draft Compatibility Preview**, local signed TestFlight
+Phase: **v1.12 OKF Starter Scaffold**, after held v1.11 local signed TestFlight
 candidate ready after S0–S4 verification. Prefer a verified no-op unless a
 candidate blocker reproduces; upload remains a human-approved release action.
-Direction: `docs/v1.11-okf-draft-preview-design.md` and
+Direction: `docs/v1.12-okf-scaffold-design.md`, `docs/okf-spec-pin.md`,
+`docs/v1.11-okf-draft-preview-design.md`, and
 `docs/v1.8-plus-product-review-roadmap.md`.
 
 For recurring automation, use the Active Queue in

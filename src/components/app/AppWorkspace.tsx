@@ -100,6 +100,10 @@ type AppWorkspaceProps = {
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
   createFile: (parentPath: string) => Promise<void> | void;
+  createOkfScaffoldAt: (
+    parentPath: string,
+    templateId: "minimal" | "book-like",
+  ) => Promise<void> | void;
   createFolder: (parentPath: string) => Promise<void> | void;
   createNewFile: () => unknown;
   discardDraft: (draftPathOrKey: string) => void;
@@ -232,6 +236,7 @@ export function AppWorkspace({
   compareView,
   createFile,
   createFolder,
+  createOkfScaffoldAt,
   createNewFile,
   discardDraft,
   currentHeadingLine,
@@ -510,6 +515,16 @@ export function AppWorkspace({
           onCreateFolder={() => {
             if (workspaceRootPath) {
               void createFolder(workspaceRootPath);
+            }
+          }}
+          onCreateOkfScaffoldMinimal={() => {
+            if (workspaceRootPath) {
+              void createOkfScaffoldAt(workspaceRootPath, "minimal");
+            }
+          }}
+          onCreateOkfScaffoldBookLike={() => {
+            if (workspaceRootPath) {
+              void createOkfScaffoldAt(workspaceRootPath, "book-like");
             }
           }}
           onLoadDirectory={loadWorkspaceDirectory}

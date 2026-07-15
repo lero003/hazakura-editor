@@ -18,6 +18,8 @@ export type WorkspaceFileOpsCopy = {
   sidebarNewButton: string;
   newFileRoot: string;
   newFolderRoot: string;
+  newOkfScaffoldMinimalRoot: string;
+  newOkfScaffoldBookLikeRoot: string;
   newFileHere: string;
   newFolderHere: string;
   rename: string;
@@ -48,6 +50,9 @@ export function getWorkspaceFileOpsCopy(
       sidebarNewButton: "あたらしく",
       newFileRoot: "あたらしきふみ",
       newFolderRoot: "あたらしきふぉるだ",
+      newOkfScaffoldMinimalRoot: "ちしきフォルダの ひながた（さいしょう）",
+      newOkfScaffoldBookLikeRoot:
+        "ちしきフォルダの ひながた（ほんっぽい しょうだて）",
       newFileHere: "このふぉるだに あたらしきふみ",
       newFolderHere: "このふぉるだに あたらしきふぉるだ",
       rename: "なまえを かえる",
@@ -78,6 +83,8 @@ export function getWorkspaceFileOpsCopy(
         sidebarNewButton: "新規",
         newFileRoot: "新規ファイル",
         newFolderRoot: "新規フォルダ",
+        newOkfScaffoldMinimalRoot: "知識フォルダのひな形（最小）",
+        newOkfScaffoldBookLikeRoot: "知識フォルダのひな形（本っぽい章立て）",
         newFileHere: "このフォルダに新規ファイル",
         newFolderHere: "このフォルダに新規フォルダ",
         rename: "名前を変更",
@@ -106,6 +113,8 @@ export function getWorkspaceFileOpsCopy(
         sidebarNewButton: "New",
         newFileRoot: "New File",
         newFolderRoot: "New Folder",
+        newOkfScaffoldMinimalRoot: "Knowledge folder starter (minimal)",
+        newOkfScaffoldBookLikeRoot: "Knowledge folder starter (book-like)",
         newFileHere: "New File Here",
         newFolderHere: "New Folder Here",
         rename: "Rename",

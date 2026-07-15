@@ -28,6 +28,12 @@ pub(crate) const MAX_OKF_MARKDOWN_FILES: usize = 200;
 pub(crate) const MAX_OKF_FILE_BYTES: u64 = 10 * 1024 * 1024;
 pub(crate) const MAX_OKF_TOTAL_BYTES: u64 = 32 * 1024 * 1024;
 pub(crate) const MAX_OKF_DEPTH: usize = 16;
+// v1.12 OKF scaffold write budgets (small fixed templates only).
+pub(crate) const MAX_OKF_SCAFFOLD_FILES: usize = 16;
+pub(crate) const MAX_OKF_SCAFFOLD_FILE_BYTES: usize = 64 * 1024;
+pub(crate) const MAX_OKF_SCAFFOLD_TOTAL_BYTES: usize = 256 * 1024;
+pub(crate) const MAX_OKF_SCAFFOLD_RELATIVE_DEPTH: usize = 4;
+pub(crate) const MAX_OKF_SCAFFOLD_FOLDER_NAME_CHARS: usize = 80;
 pub(crate) const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS: usize = 500;
 pub(crate) const AGENT_PROVIDER_CODEX: &str = "codex";
 pub(crate) const AGENT_PROVIDER_OPENCODE: &str = "opencode";
@@ -116,6 +122,8 @@ pub(crate) const MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT: &str =
     "hazakura-note://main-apple-assist-target-changed";
 pub(crate) const MAIN_WORKSPACE_CHANGED_EVENT: &str = "hazakura-note://main-workspace-changed";
 pub(crate) const MENU_NEW_FILE: &str = "new-file";
+pub(crate) const MENU_OKF_SCAFFOLD_MINIMAL: &str = "okf-scaffold-minimal";
+pub(crate) const MENU_OKF_SCAFFOLD_BOOK_LIKE: &str = "okf-scaffold-book-like";
 pub(crate) const MENU_OPEN_FILE: &str = "open-file";
 pub(crate) const MENU_IMPORT_PDF_IMAGE: &str = "import-pdf-image";
 pub(crate) const MENU_OPEN_REFERENCE: &str = "open-reference";
@@ -425,6 +433,22 @@ pub(crate) struct OkfDiscoveryResult {
     pub(crate) truncation_reason: Option<String>,
     pub(crate) cancelled: bool,
     pub(crate) source: String,
+}
+
+/// One file to write inside a new OKF starter scaffold root.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct OkfScaffoldFileInput {
+    pub(crate) relative_path: String,
+    pub(crate) contents: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct OkfScaffoldResult {
+    pub(crate) root_path: String,
+    pub(crate) created_files: Vec<String>,
+    pub(crate) open_path: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

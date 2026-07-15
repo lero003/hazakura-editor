@@ -56,6 +56,8 @@ export type OkfReviewCopy = {
   openDirty: string;
   statusOpenedForEdit: string;
   contextMenuReview: string;
+  contextMenuScaffoldMinimal: string;
+  contextMenuScaffoldBookLike: string;
   statusStarted: string;
   statusDone: string;
   statusFailed: string;
@@ -297,6 +299,10 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       severityConversion: "じゅんび",
       openDirty: "ひらく（みほぞん）",
       contextMenuReview: "ちしきフォルダ（OKF）を てんけん",
+      contextMenuScaffoldMinimal:
+        "ちしきフォルダの ひながたを つくる（さいしょう）",
+      contextMenuScaffoldBookLike:
+        "ちしきフォルダの ひながたを つくる（ほんっぽい しょうだて）",
       statusStarted: "ちしきフォルダ（OKF）を てんけん しています…",
       statusDone: "ちしきフォルダ（OKF）の てんけんが おわりました。",
       statusFailed: "ちしきフォルダ（OKF）の てんけんに しっぱい しました。",
@@ -376,6 +382,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       severityConversion: "準備",
       openDirty: "開く（未保存）",
       contextMenuReview: "知識フォルダ（OKF）を点検",
+      contextMenuScaffoldMinimal: "知識フォルダのひな形を作成（最小）",
+      contextMenuScaffoldBookLike:
+        "知識フォルダのひな形を作成（本っぽい章立て）",
       statusStarted: "知識フォルダ（OKF）を点検しています…",
       statusDone: "知識フォルダ（OKF）の点検が終わりました。",
       statusFailed: "知識フォルダ（OKF）の点検に失敗しました。",
@@ -454,6 +463,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     severityConversion: "Prep",
     openDirty: "Open (dirty)",
     contextMenuReview: "Review knowledge folder (OKF)",
+    contextMenuScaffoldMinimal: "Create knowledge folder starter (minimal)",
+    contextMenuScaffoldBookLike:
+      "Create knowledge folder starter (book-like)",
     statusStarted: "Reviewing knowledge folder (OKF)…",
     statusDone: "Knowledge-folder (OKF) review finished.",
     statusFailed: "Knowledge-folder (OKF) review failed.",

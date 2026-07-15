@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
+Last reviewed: 2026-07-15 (v1.12 scaffold entry points + OKF pin evolution doc)
 
 ## Current State
 
-- Package/app version in tree is **`1.11.0`** (local signed TestFlight
-  candidate ready); the published Mac App
+- Package/app version in tree is **`1.12.0`** (active v1.12 OKF scaffold lane;
+  v1.11 remains a held local signed TestFlight candidate). The published Mac App
   Store version is **`1.8.0`**. App Review passed and publication was user-reported on
   2026-07-14 (build `89`). Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
@@ -44,30 +44,21 @@ Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
   three overview advice kinds, 803-line advice, dirty transition, and single-step
   Undo restoration. Source-jump breadth, IME, Save As, recovery, e-book/EPUB,
   and signed TestFlight remain open manual evidence and move into v1.11 S4.
-- **v1.11 OKF Draft Compatibility Preview is the active implementation lane.**
-  S0–S3 are source-hardened: fixtures, direct `yaml` pure model, async
-  `scan_okf_bundle` with `spawn_blocking` cancel, real-byte total budgets, and
-  symlink-root/opened-file identity rejection, plus the Command Palette /
-  folder-context read-only review surface. Analysis/rendered findings are
-  bounded and localized. The UI now separates actual failures, ordinary-folder
-  OKF preparation, advice, and reference-only facts; it keeps files/reference
-  detail behind disclosure and avoids nested result scrolling. `開いて修正`
-  opens the existing tab (with best-effort line jump when a finding offset is
-  present), hides the modal without losing the in-memory result, and status-
-  hints re-invocation; reopening/rerunning performs a fresh explicit disk scan,
-  and workspace replacement discards the retained result and cancels the review.
-  A packaged local smoke passed Command Palette and folder-context entry,
-  `開いて修正`, a saved disposable correction, and a fresh result. Source/Rust/
-  App Store surface, sandbox/helper entitlements, universal signing, pkg
-  signature, metadata, and checksum also passed. TestFlight installation and
-  interaction remain separate evidence. The contract remains an
-  explicit, bounded, cancellable, read-only review of one user-selected
-  workspace root or subfolder against official OKF v0.1 Draft. It may show
-  conformance / advice and open concepts through existing Markdown tabs. It must
-  not add startup/background scan, persistent index, auto-repair, chapter order,
-  multi-file edit, whole-book export, or Book Scope. Contract:
-  `docs/v1.11-okf-draft-preview-design.md`. Spec snapshot: commit `ee67a5c`.
-  S3 packaged smoke and the local S4 candidate gate are complete.
+- **v1.12 OKF Starter Scaffold is the active implementation lane.** Explicit
+  create of minimal / book-like Markdown trees from Command Palette, folder
+  context menu, workspace **新規 (+)**, and OS **File → 知識フォルダのひな形**.
+  Bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable).
+  Packaged-app creation has been user-verified. Contract:
+  `docs/v1.12-okf-scaffold-design.md`.
+- **Shared OKF pin:** review and scaffolds use one Draft pin (`ee67a5c` /
+  v0.1). When upstream OKF moves, update pure model, fixtures, scaffold assets,
+  and docs **together** — process in `docs/okf-spec-pin.md`.
+- **v1.11 OKF Draft Compatibility Preview is held as a local TestFlight
+  candidate.** S0–S4 source and local candidate gates passed: fixtures, `yaml`
+  pure model, async `scan_okf_bundle`, writer-facing review panel with
+  open/edit/recheck. Explicit, bounded, read-only; no startup scan, auto-repair,
+  Book Scope, or multi-file export. Contract:
+  `docs/v1.11-okf-draft-preview-design.md`.
 - `v1.8.0` is the immutable published source tag. The published signed pkg is
   **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
   checks passed before upload. Do not move the tag or mutate published assets.
@@ -132,7 +123,7 @@ Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.11 TestFlight follow-up:** source has Command Palette /
+1. **v1.12 scaffold smoke breadth + v1.11 TestFlight follow-up:** source has Command Palette /
    context menu `知識フォルダ（OKF）を点検`, writer-facing status hierarchy
    (ordinary manuscript vs knowledge-folder framing, priority findings,
    details disclosure), and existing-tab open. No full OKF scan on workspace
@@ -242,26 +233,24 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/archive/operations/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. `1.8.0` passed App Review and is
-   published on the Mac App Store (build `89`). The active lane is v1.11 OKF
-   Draft Compatibility Preview; remaining v1.10 TestFlight and spoken
-   VoiceOver breadth moves into v1.11 S4.
+   published on the Mac App Store (build `89`). The active lane is **v1.12 OKF
+   Starter Scaffold**; v1.11 remains a held local TestFlight candidate.
 6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
    disposable separate-bundle Developer app also restored a force-terminated
    pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.
    Google Drive remains `manual-blocked` until a dedicated fixture is available;
    do not scan or create content in the user's cloud folders implicitly.
-7. Do not expand the v1.11 OKF review into two editable panes, Review Desk
+7. Do not expand OKF review/scaffold into two editable panes, Review Desk
    revival, chapter ordering, multi-file apply, Book Scope, cloud OCR, or
-   Git-aware merge. **Book Scope Alpha remains v2.**
+   Git-aware merge. **Book Scope Alpha remains v2.** When upstream OKF changes,
+   co-update pin surfaces per `docs/okf-spec-pin.md`.
 8. **Accepted post-v1.7 direction:** two-digit minor versions such as `v1.10`
-   are valid. Sequence v1.8 Daily Trust → v1.9 Writing Loop Clarity → v1.10
-   single-document structure → v1.11 bounded OKF compatibility + larger
-   packaged distribution test, then decide v2 multi-file Book Scope. The
-   v1.10 bridge may interpret headings,
-   frontmatter, page-breaks, and navigation through one shared model and apply
-   only bounded explicit Undo-able edits to the active buffer. It must not add
-   a manifest/database, background scan, or second editable model. Source:
-   `docs/v1.8-plus-product-review-roadmap.md`.
+   are valid. Sequence v1.8 → v1.9 → v1.10 → v1.11 OKF review → v1.12 scaffolds,
+   then decide v2 multi-file Book Scope. The v1.10 bridge may interpret
+   headings, frontmatter, page-breaks, and navigation through one shared model
+   and apply only bounded explicit Undo-able edits to the active buffer. It must
+   not add a manifest/database, background scan, or second editable model.
+   Source: `docs/v1.8-plus-product-review-roadmap.md`.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
@@ -274,7 +263,9 @@ Read it only for historical context.
 - v1.7 hardening plan: `docs/archive/operations/v1.7-trust-scale-plan.md`
 - v1.8+ product review / v2 bridge: `docs/v1.8-plus-product-review-roadmap.md`
 - v1.10 structure contract: `docs/v1.10-single-document-structure-design.md`
+- OKF pin / upgrade process: `docs/okf-spec-pin.md`
 - v1.11 OKF compatibility contract: `docs/v1.11-okf-draft-preview-design.md`
+- v1.12 OKF scaffold contract: `docs/v1.12-okf-scaffold-design.md`
 - Quality inventory (v1.6): `docs/archive/operations/quality-inventory-v1.6.md`
 - v1.7 Reference Compare design: `docs/archive/planning/v1.7-reference-compare-design.md`
 - Current implementation state: `docs/current-status.md`

@@ -617,6 +617,7 @@ export function useAppShellController() {
     confirmPendingRename,
     createFile,
     createFolder,
+    createOkfScaffoldAt,
     createNewFile,
     importSourceAsMarkdownDraft,
     importSourcePathAsMarkdownDraft,
@@ -1422,9 +1423,21 @@ export function useAppShellController() {
   // Q-STR-4: shared open/save/export/import actions for menu + palette.
   // Surface-specific keys stay on each consumer (palette has more editor
   // commands; menu has quit / openWorkspacePath / theme-less window open).
+  const createOkfScaffold = useCallback(
+    (templateId: "minimal" | "book-like") => {
+      if (!workspaceRootPath) {
+        setStatus("No workspace open");
+        return;
+      }
+      void createOkfScaffoldAt(workspaceRootPath, templateId);
+    },
+    [createOkfScaffoldAt, setStatus, workspaceRootPath],
+  );
+
   const sharedShellDocumentActions = useMemo(
     () => ({
       createNewFile,
+      createOkfScaffold,
       exportEpubBeta,
       exportHtml,
       exportPdf,
@@ -1438,6 +1451,7 @@ export function useAppShellController() {
     }),
     [
       createNewFile,
+      createOkfScaffold,
       exportEpubBeta,
       exportHtml,
       exportPdf,
@@ -1825,6 +1839,7 @@ export function useAppShellController() {
     copyWorkspaceFullPath,
     createFile,
     createFolder,
+    createOkfScaffoldAt,
     createNewFile,
     currentHeadingLine: currentMarkdownHeading?.line ?? null,
     detail: activeStatusDetail,

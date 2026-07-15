@@ -67,6 +67,7 @@ type UseCommandPaletteControllerActions = {
   openWorkspace: () => Promise<void>;
   openWorkspaceFile: (path: string) => Promise<void>;
   openOkfReview: (bundleRoot?: string | null) => void;
+  createOkfScaffold: (templateId: "minimal" | "book-like") => void;
   requestCloseTab: (id: string) => void;
   requestRestoreFromBackup: () => void;
   requestReviewTabAgainstDisk: (tab: EditorTab) => void;
@@ -683,6 +684,34 @@ export function useCommandPaletteController({
         ]),
         run: () => {
           actions.openOkfReview();
+        },
+      },
+      {
+        category: paletteCopy.categories.file,
+        id: "file.okfScaffoldMinimal",
+        ...commandPaletteEntry(paletteCopy, "file.okfScaffoldMinimal", [
+          "okf",
+          "scaffold",
+          "template",
+          "starter",
+          "knowledge",
+        ]),
+        run: () => {
+          actions.createOkfScaffold("minimal");
+        },
+      },
+      {
+        category: paletteCopy.categories.file,
+        id: "file.okfScaffoldBookLike",
+        ...commandPaletteEntry(paletteCopy, "file.okfScaffoldBookLike", [
+          "okf",
+          "scaffold",
+          "template",
+          "book",
+          "chapter",
+        ]),
+        run: () => {
+          actions.createOkfScaffold("book-like");
         },
       },
       ...(externalCliAllowed

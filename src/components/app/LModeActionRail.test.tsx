@@ -19,6 +19,8 @@ function workspaceSidebarProps() {
     dirtyFilePaths: [],
     fileOpsCopy: getWorkspaceFileOpsCopy("en"),
     onCreateFile: vi.fn(),
+    onCreateOkfScaffoldMinimal: vi.fn(),
+    onCreateOkfScaffoldBookLike: vi.fn(),
     onCreateFolder: vi.fn(),
     onLoadDirectory: vi.fn(),
     onMoveEntry: vi.fn(),

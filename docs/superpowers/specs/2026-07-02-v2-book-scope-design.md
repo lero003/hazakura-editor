@@ -2,7 +2,7 @@
 
 Status: Proposal
 Scope: v2.0 Book Workspace Alpha と構造型 Markdown の方向・境界・未解決の UI 問い
-Last reviewed: 2026-07-15 (v1.11 OKF compatibility preview boundary accepted)
+Last reviewed: 2026-07-15 (v1.11 held; v1.12 scaffold; shared pin docs/okf-spec-pin.md)
 
 ## Goal
 
@@ -58,8 +58,10 @@ workspace-wide structure detection. この制約は v2 でも維持する。
 
 OKF (Open Knowledge Format) v0.1 Draft を、構造型 Markdown を読むための
 互換inputとして検討する。v1.11では、明示的に選択したbundleを読み取り、
-compatibility summaryと助言を示すところまでを実証する。Contract:
-`docs/v1.11-okf-draft-preview-design.md`.
+compatibility summaryと助言を示すところまでを実証する。v1.12では同じ pin の
+starter scaffold を明示操作で書ける。Contract:
+`docs/v1.11-okf-draft-preview-design.md`, `docs/v1.12-okf-scaffold-design.md`.
+Living pin / upgrade process: `docs/okf-spec-pin.md`.
 
 - OKF base specはMarkdown concept、frontmatter、`index.md` / `log.md`、
   標準Markdown linkの最小互換規約を定義する。
@@ -67,9 +69,11 @@ compatibility summaryと助言を示すところまでを実証する。Contract
   定義しない。それらはv2のHazakura固有product contractである。
 - v2はv1.11のcompatibility modelを入力として再利用してよいが、OKF準拠と
   Hazakura Book Scope準拠を別々に表示・検証する。
+- upstream OKF の version 変更は、点検・fixture・scaffold をセットで更新する
+  前提（`docs/okf-spec-pin.md`）。v2 着手時も pin を静かに main へ追従しない。
 
 2026-07-15に確認した公式仕様はv0.1 Draftであり、v2.0のBook contractそのもの
-ではない。実装時のsnapshotと一次情報は
+ではない。実装時のsnapshotと一次情報は `docs/okf-spec-pin.md` と
 `docs/v1.11-okf-draft-preview-design.md` に固定する。
 v1.11 compatibility previewで実装した範囲を再確認し、v2着手時に最新版との
 差分を確認する。OKFを採用しない、または一部互換に留める場合でも、明示的に

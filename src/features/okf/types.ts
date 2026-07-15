@@ -1,7 +1,13 @@
 /**
- * v1.11 OKF Draft Compatibility Preview — thin result model.
- * Contract: docs/v1.11-okf-draft-preview-design.md
- * Spec pin: OKF v0.1 Draft, commit ee67a5c
+ * OKF consumer constants shared by review (v1.11), fixtures, and scaffolds
+ * (v1.12). Do not follow upstream `main` silently.
+ *
+ * Pin authority: docs/okf-spec-pin.md
+ * Review contract: docs/v1.11-okf-draft-preview-design.md
+ * Scaffold contract: docs/v1.12-okf-scaffold-design.md
+ *
+ * When OKF_SPEC_COMMIT / VERSION change, update pure model, fixtures,
+ * scaffold assets, smoke scripts, and living docs together.
  */
 
 export const OKF_SPEC_VERSION = "0.1" as const;

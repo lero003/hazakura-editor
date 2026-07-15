@@ -13,6 +13,7 @@ afterEach(() => {
 describe("useCommandPaletteController", () => {
   it("returns the command palette + global search surface", () => {
     const openOkfReview = vi.fn();
+    const createOkfScaffold = vi.fn();
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
@@ -31,6 +32,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview,
+          createOkfScaffold,
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -121,6 +123,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile,
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -204,6 +207,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -270,6 +274,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -335,6 +340,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -398,6 +404,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -477,6 +484,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -540,6 +548,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -628,6 +637,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -715,6 +725,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),
@@ -833,6 +844,7 @@ describe("useCommandPaletteController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
           openWorkspaceFile: vi.fn(),
           requestCloseTab: vi.fn(),
           requestRestoreFromBackup: vi.fn(),

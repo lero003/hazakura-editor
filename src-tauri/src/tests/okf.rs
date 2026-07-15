@@ -493,3 +493,112 @@ fn okf_budget_constants_match_contract() {
     assert_eq!(MAX_OKF_TOTAL_BYTES, 32 * 1024 * 1024);
     assert_eq!(MAX_OKF_DEPTH, 16);
 }
+
+#[test]
+fn okf_scaffold_creates_files_inside_workspace() {
+    let workspace = unique_test_dir("okf_scaffold_ws");
+    let parent = workspace.join("drafts");
+    fs::create_dir_all(&parent).expect("parent");
+
+    let result = create_okf_scaffold_with_label(
+        MAIN_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &parent.to_string_lossy(),
+        "知識フォルダ",
+        vec![
+            OkfScaffoldFileInput {
+                relative_path: "index.md".into(),
+                contents: "---\nokf_version: \"0.1\"\n---\n\n# Root\n".into(),
+            },
+            OkfScaffoldFileInput {
+                relative_path: "notes/first-note.md".into(),
+                contents: "---\ntype: Note\n---\n\nBody\n".into(),
+            },
+        ],
+        Some("index.md"),
+    )
+    .expect("create scaffold");
+
+    let root = PathBuf::from(&result.root_path);
+    assert!(root.ends_with("知識フォルダ"));
+    assert!(root.join("index.md").is_file());
+    assert!(root.join("notes/first-note.md").is_file());
+    assert_eq!(result.created_files.len(), 2);
+    assert_eq!(
+        result.open_path.as_deref(),
+        Some(root.join("index.md").to_string_lossy().as_ref())
+    );
+}
+
+#[test]
+fn okf_scaffold_rejects_existing_folder() {
+    let workspace = unique_test_dir("okf_scaffold_exists");
+    let existing = workspace.join("知識フォルダ");
+    fs::create_dir_all(&existing).expect("existing");
+
+    let err = create_okf_scaffold_with_label(
+        MAIN_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &workspace.to_string_lossy(),
+        "知識フォルダ",
+        vec![OkfScaffoldFileInput {
+            relative_path: "index.md".into(),
+            contents: "# x\n".into(),
+        }],
+        None,
+    )
+    .expect_err("must refuse existing");
+    assert!(err.to_lowercase().contains("already exists") || err.contains("already"));
+}
+
+#[test]
+fn okf_scaffold_rejects_path_escape_and_agent_window() {
+    let workspace = unique_test_dir("okf_scaffold_escape");
+    fs::create_dir_all(&workspace).expect("workspace");
+    let err = create_okf_scaffold_with_label(
+        MAIN_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &workspace.to_string_lossy(),
+        "safe",
+        vec![OkfScaffoldFileInput {
+            relative_path: "../escape.md".into(),
+            contents: "nope\n".into(),
+        }],
+        None,
+    )
+    .expect_err("escape");
+    assert!(err.contains("..") || err.to_lowercase().contains("invalid"));
+
+    let agent_err = create_okf_scaffold_with_label(
+        AGENT_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &workspace.to_string_lossy(),
+        "safe",
+        vec![OkfScaffoldFileInput {
+            relative_path: "index.md".into(),
+            contents: "# x\n".into(),
+        }],
+        None,
+    )
+    .expect_err("agent window");
+    assert!(!agent_err.is_empty());
+}
+
+#[test]
+fn okf_scaffold_rejects_non_markdown() {
+    let workspace = unique_test_dir("okf_scaffold_md");
+    fs::create_dir_all(&workspace).expect("workspace");
+    let err = create_okf_scaffold_with_label(
+        MAIN_WINDOW_LABEL,
+        &workspace.to_string_lossy(),
+        &workspace.to_string_lossy(),
+        "safe",
+        vec![OkfScaffoldFileInput {
+            relative_path: "notes/readme.txt".into(),
+            contents: "x\n".into(),
+        }],
+        None,
+    )
+    .expect_err("non md");
+    assert!(err.contains("Markdown") || err.contains(".md"));
+}

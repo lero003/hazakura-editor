@@ -5,7 +5,9 @@ import { pathToFileURL } from "node:url";
 
 /**
  * Deterministic on-disk OKF fixtures for packaged / discovery smoke.
- * Spec pin: OKF v0.1 Draft commit ee67a5c.
+ * Spec pin: OKF v0.1 Draft commit ee67a5c (docs/okf-spec-pin.md).
+ * When the pin moves, update this script together with the pure model,
+ * scaffold assets, and living docs — do not drift alone.
  *
  * Usage:
  *   node scripts/generate-v1.11-okf-smoke.mjs [outputDirectory]

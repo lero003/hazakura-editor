@@ -10,9 +10,15 @@ import {
   listWorkspaceDirectory,
   moveWorkspaceEntry,
   moveWorkspaceEntryToTrash,
+  openTextFile,
   renameWorkspaceEntry,
 } from "../../lib/tauri";
 import type { TextFileDocument, WorkspaceTreeEntry } from "../../lib/tauri";
+import { createOkfScaffold } from "../../lib/tauri/okf";
+import {
+  getOkfScaffoldTemplate,
+  type OkfScaffoldTemplateId,
+} from "../../features/okf";
 import { createEditorTab } from "../../features/editor/editorTabs";
 import { fileNameFromPath, parentFolderName } from "../../lib/utils";
 import { isDirty } from "../../features/editor/editorTabs";
@@ -188,6 +194,83 @@ export function useWorkspaceFileOps({
       } catch (err) {
         setGlobalError(String(err));
         setStatus("New file failed");
+      }
+    },
+    [
+      clearImagePreview,
+      collectExistingNames,
+      reloadWorkspaceParent,
+      rememberRecentFile,
+      setActiveTabId,
+      setCompareView,
+      setGlobalError,
+      setStatus,
+      setTabs,
+      workspaceRootPath,
+    ],
+  );
+
+  const createOkfScaffoldAt = useCallback(
+    async (parentPath: string, templateId: OkfScaffoldTemplateId) => {
+      if (!workspaceRootPath) {
+        setStatus("No workspace open");
+        return;
+      }
+
+      const template = getOkfScaffoldTemplate(templateId);
+      setGlobalError(null);
+      setStatus("Creating OKF scaffold...");
+
+      try {
+        const existingNames = await collectExistingNames(parentPath);
+        const folderName = nextAvailableName(
+          template.defaultFolderName,
+          "",
+          existingNames,
+        );
+        const result = await createOkfScaffold({
+          workspaceRoot: workspaceRootPath,
+          parentPath,
+          folderName,
+          files: template.files.map((file) => ({
+            relativePath: file.relativePath,
+            contents: file.contents,
+          })),
+          openRelativePath: template.openRelativePath,
+        });
+
+        try {
+          await reloadWorkspaceParent(parentPath);
+          // Nested folders (notes/, chapters/) may need a second refresh
+          // once the new root appears; parent reload is enough for the tree.
+        } catch {
+          setStatus("OKF scaffold created; folder refresh failed");
+        }
+
+        if (result.openPath) {
+          try {
+            const file = await openTextFile(result.openPath);
+            const nextTab = createEditorTab(file);
+            setTabs((currentTabs) =>
+              currentTabs.some((tab) => tab.path === file.path)
+                ? currentTabs
+                : [...currentTabs, nextTab],
+            );
+            setActiveTabId(file.path);
+            clearImagePreview();
+            setCompareView(null);
+            rememberRecentFile(file.path);
+          } catch {
+            // Scaffold is on disk; opening is best-effort.
+          }
+        }
+
+        setStatus(
+          `OKF scaffold created: ${fileNameFromPath(result.rootPath)}. Review with knowledge folder (OKF) when ready.`,
+        );
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("OKF scaffold failed");
       }
     },
     [
@@ -548,6 +631,7 @@ export function useWorkspaceFileOps({
   return {
     createFile,
     createFolder,
+    createOkfScaffoldAt,
     focusIfAlreadyOpen,
     moveWorkspacePath,
     pendingRename,

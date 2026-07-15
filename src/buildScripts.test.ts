@@ -629,32 +629,33 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `1.8.0` is published",
-        "Current package/app version is `1.11.0`",
+        "Current package/app version is `1.12.0`",
         "The published App Store version is `1.8.0`",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `1.8.0`",
-        "Current source / Developer version: `1.11.0`",
+        "Current source / Developer version: `1.12.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`1.11.0`",
+        "Current package/app version: **`1.12.0`",
         "Published Mac App Store version: **`1.8.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
+        "v1.12 OKF Starter Scaffold is the active implementation lane",
       ],
       "docs/current-work.md": [
-        "Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate ready",
-        "Active Queue — v1.11 OKF Draft Compatibility Preview",
+        "Scope: v1.12 OKF Starter Scaffold; v1.11 candidate held",
+        "Active Queue — v1.12 OKF Starter Scaffold",
       ],
       "docs/development-automation.md": [
-        "Phase: **v1.11 OKF Draft Compatibility Preview**",
+        "Phase: **v1.12 OKF Starter Scaffold**",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree is **`1.11.0`",
+        "Package/app version in tree is **`1.12.0`",
         "Published Mac App Store version is **`1.8.0`",
-        "v1.11 OKF Draft Compatibility Preview is the active implementation lane",
+        "v1.12 OKF Starter Scaffold is the active implementation lane",
       ],
       "docs/roadmap.md": [
-        "Package/app version in tree: **`1.11.0`",
+        "Package/app version in tree: **`1.12.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
       ],
@@ -662,12 +663,25 @@ describe("macOS build scripts", () => {
         "Status: Implemented; local candidate gate passed; TestFlight interaction pending",
         "Version 0.1 — Draft",
         "commit: [`ee67a5c`]",
+        "docs/okf-spec-pin.md",
         "`MAX_OKF_MARKDOWN_FILES`",
         "S3 — OKF Review Surface (Feature Complete)",
         "S4 — Distribution Confidence And Release Decision (Ship Ready)",
         "Book Scope stays a separate product contract",
         "## UX Progressive Disclosure",
         "知識フォルダ（OKF）を点検",
+      ],
+      "docs/okf-spec-pin.md": [
+        "OKF Spec Pin And Evolution",
+        "ee67a5c",
+        "Co-update Surfaces",
+        "scaffoldTemplates/assets",
+      ],
+      "docs/v1.12-okf-scaffold-design.md": [
+        "v1.12 OKF Starter Scaffold",
+        "docs/okf-spec-pin.md",
+        "知識フォルダのひな形",
+        "scaffoldTemplates/assets",
       ],
     };
 

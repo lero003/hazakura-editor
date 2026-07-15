@@ -27,6 +27,7 @@ vi.mock("@tauri-apps/api/event", () => ({
 function setup() {
   const actions = {
     createNewFile: vi.fn(),
+    createOkfScaffold: vi.fn(),
     importSourceAsMarkdownDraft: vi.fn(),
     exportEpubBeta: vi.fn(),
     exportHtml: vi.fn(),
@@ -91,6 +92,16 @@ describe("useAppMenuActionListener", () => {
     void menuListeners[0]?.({ payload: "open-reference" } as never);
 
     expect(actions.openReferenceFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("routes OKF scaffold menu actions", () => {
+    const { actions } = setup();
+
+    void menuListeners[0]?.({ payload: "okf-scaffold-minimal" } as never);
+    void menuListeners[0]?.({ payload: "okf-scaffold-book-like" } as never);
+
+    expect(actions.createOkfScaffold).toHaveBeenNthCalledWith(1, "minimal");
+    expect(actions.createOkfScaffold).toHaveBeenNthCalledWith(2, "book-like");
   });
 
   it("routes the CRT theme menu action to setThemePreference", () => {

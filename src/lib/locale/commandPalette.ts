@@ -45,6 +45,8 @@ export type CommandPaletteCopy = {
     "view.prevTab": CommandPaletteEntryCopy;
     "review.tabAgainstDisk": CommandPaletteEntryCopy;
     "review.okfDraftCompatibility": CommandPaletteEntryCopy;
+    "file.okfScaffoldMinimal": CommandPaletteEntryCopy;
+    "file.okfScaffoldBookLike": CommandPaletteEntryCopy;
     "agent.open": CommandPaletteEntryCopy;
     "agent.sendSelection": CommandPaletteEntryCopy;
     "agent.preferences": CommandPaletteEntryCopy;
@@ -179,6 +181,28 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
             "frontmatter",
             "てんけん",
             "Draft",
+          ],
+        },
+        "file.okfScaffoldMinimal": {
+          label: "ちしきフォルダの ひながたを つくる（さいしょう）",
+          keywords: [
+            "OKF",
+            "ひながた",
+            "テンプレ",
+            "ちしき",
+            "scaffold",
+            "starter",
+          ],
+        },
+        "file.okfScaffoldBookLike": {
+          label: "ちしきフォルダの ひながたを つくる（ほんっぽい しょうだて）",
+          keywords: [
+            "OKF",
+            "ひながた",
+            "ほん",
+            "しょう",
+            "scaffold",
+            "book",
           ],
         },
         "agent.open": {
@@ -350,6 +374,21 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
             "Draft",
           ],
         },
+        "file.okfScaffoldMinimal": {
+          label: "知識フォルダのひな形を作成（最小）",
+          keywords: [
+            "OKF",
+            "ひな形",
+            "テンプレ",
+            "知識",
+            "scaffold",
+            "starter",
+          ],
+        },
+        "file.okfScaffoldBookLike": {
+          label: "知識フォルダのひな形を作成（本っぽい章立て）",
+          keywords: ["OKF", "ひな形", "本", "章", "scaffold", "book"],
+        },
         "agent.open": {
           label: "Agent ウィンドウを開く",
           keywords: ["エージェント"],
@@ -465,6 +504,20 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           "knowledge",
           "Draft",
         ],
+      },
+      "file.okfScaffoldMinimal": {
+        label: "Create knowledge folder starter (minimal)",
+        keywords: [
+          "OKF",
+          "scaffold",
+          "template",
+          "starter",
+          "knowledge",
+        ],
+      },
+      "file.okfScaffoldBookLike": {
+        label: "Create knowledge folder starter (book-like)",
+        keywords: ["OKF", "scaffold", "template", "book", "chapter"],
       },
       "agent.open": { label: "Open Agent Window" },
       "agent.sendSelection": { label: "Send Selection to Agent" },

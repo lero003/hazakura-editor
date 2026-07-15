@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 OKF candidate smoke preparation)
+Last reviewed: 2026-07-15 (v1.12 scaffold entry points + shared OKF pin)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -84,6 +84,16 @@ normal/trailing page-break display and item 3's three overview suggestions plus
 `Cmd+Z` restoration to the original clean source. Source-line jump breadth and
 items 5–8 were not exercised; do not infer IME, Save As, recovery, e-book/EPUB,
 or signed TestFlight proof from this representative run.
+
+## v1.12 OKF Starter Scaffold Smoke
+
+1. Open a workspace folder.
+2. Create from each entry point at least once across a smoke pass:
+   Command Palette, folder context menu, sidebar **新規 (+)**, and OS **File → 知識フォルダのひな形**.
+3. Confirm a new uniquely named folder appears, `index.md` opens, and no existing files were overwritten.
+4. Run `知識フォルダ（OKF）を点検` on the new folder root. Required findings should be empty (advice-only is OK).
+5. Template bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable Markdown assets).
+6. Spec pin authority: `docs/okf-spec-pin.md` (review + scaffolds share one pin; upgrade co-updates both).
 
 ## v1.11 OKF Draft Compatibility Smoke
 

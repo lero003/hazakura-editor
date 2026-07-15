@@ -26,6 +26,8 @@ export function WorkspaceContextMenu({
   onOpen,
   onOpenAsReference,
   onOpenOkfReview,
+  onCreateOkfScaffoldMinimal,
+  onCreateOkfScaffoldBookLike,
   onRename,
   onRevealInFinder,
   onSendFullPathToAgent,
@@ -51,6 +53,8 @@ export function WorkspaceContextMenu({
   onOpen: () => void;
   onOpenAsReference: () => void;
   onOpenOkfReview: () => void;
+  onCreateOkfScaffoldMinimal: () => void;
+  onCreateOkfScaffoldBookLike: () => void;
   onRename: () => void;
   onRevealInFinder: () => void;
   onSendFullPathToAgent: () => void;
@@ -83,7 +87,7 @@ export function WorkspaceContextMenu({
     (canCreateHere ? 2 : 0) +
     (canImport ? 1 : 0) +
     (canOpenAsReference ? 1 : 0) +
-    (canReviewOkf ? 1 : 0) +
+    (canReviewOkf ? 3 : 0) +
     (canRename ? 1 : 0) +
     (canTrash ? 1 : 0);
   const estimatedWidth = 240;
@@ -178,13 +182,29 @@ export function WorkspaceContextMenu({
         </button>
       ) : null}
       {canReviewOkf ? (
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => onOpenOkfReview()}
-        >
-          {okfCopy.contextMenuReview}
-        </button>
+        <>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => onOpenOkfReview()}
+          >
+            {okfCopy.contextMenuReview}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => onCreateOkfScaffoldMinimal()}
+          >
+            {okfCopy.contextMenuScaffoldMinimal}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => onCreateOkfScaffoldBookLike()}
+          >
+            {okfCopy.contextMenuScaffoldBookLike}
+          </button>
+        </>
       ) : null}
       <button type="button" role="menuitem" onClick={onCopyFullPath}>
         {labels.copyFullPath}

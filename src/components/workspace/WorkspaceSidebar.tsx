@@ -27,6 +27,8 @@ type WorkspaceSidebarProps = {
   fileOpsCopy: WorkspaceFileOpsCopy;
   onCreateFile: () => void;
   onCreateFolder: () => void;
+  onCreateOkfScaffoldMinimal: () => void;
+  onCreateOkfScaffoldBookLike: () => void;
   onCollapse?: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
@@ -59,6 +61,8 @@ export function WorkspaceSidebar({
   fileOpsCopy,
   onCreateFile,
   onCreateFolder,
+  onCreateOkfScaffoldMinimal,
+  onCreateOkfScaffoldBookLike,
   onCollapse,
   onLoadDirectory,
   onMoveEntry,
@@ -111,6 +115,16 @@ export function WorkspaceSidebar({
   const handleNewFolder = () => {
     setNewMenuOpen(false);
     onCreateFolder();
+  };
+
+  const handleOkfScaffoldMinimal = () => {
+    setNewMenuOpen(false);
+    onCreateOkfScaffoldMinimal();
+  };
+
+  const handleOkfScaffoldBookLike = () => {
+    setNewMenuOpen(false);
+    onCreateOkfScaffoldBookLike();
   };
 
   // The footer trash button uses the active tab's path as the
@@ -190,6 +204,20 @@ export function WorkspaceSidebar({
                     </button>
                     <button type="button" role="menuitem" onClick={handleNewFolder}>
                       {fileOpsCopy.newFolderRoot}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleOkfScaffoldMinimal}
+                    >
+                      {fileOpsCopy.newOkfScaffoldMinimalRoot}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleOkfScaffoldBookLike}
+                    >
+                      {fileOpsCopy.newOkfScaffoldBookLikeRoot}
                     </button>
                   </div>
                 ) : null}

@@ -120,6 +120,10 @@ export function localizeStatusMessage(
     "New file created; folder refresh failed":
       "新規ファイルを作成しました。フォルダ更新には失敗しました",
     "New file failed": "新規ファイル作成に失敗しました",
+    "Creating OKF scaffold...": "知識フォルダのひな形を作成中...",
+    "OKF scaffold failed": "知識フォルダのひな形作成に失敗しました",
+    "OKF scaffold created; folder refresh failed":
+      "知識フォルダのひな形を作成しました。フォルダ更新には失敗しました",
     "New folder created; folder refresh failed":
       "新規フォルダを作成しました。フォルダ更新には失敗しました",
     "New folder failed": "新規フォルダの作成に失敗しました",
@@ -302,6 +306,13 @@ export function localizeStatusMessage(
 
   if (message.startsWith("New file created: ")) {
     return `新規ファイルを作成しました: ${message.slice("New file created: ".length)}`;
+  }
+  if (message.startsWith("OKF scaffold created: ")) {
+    const rest = message.slice("OKF scaffold created: ".length);
+    return `知識フォルダのひな形を作成しました: ${rest.replace(
+      " Review with knowledge folder (OKF) when ready.",
+      " 必要なら「知識フォルダ（OKF）を点検」で確認できます。",
+    )}`;
   }
 
   if (message.startsWith("Opened ")) {

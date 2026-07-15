@@ -10,8 +10,8 @@ use crate::security::window_guard::*;
 use crate::types::*;
 use crate::util::*;
 
-use std::fs::{self, File, Metadata};
-use std::io::Read;
+use std::fs::{self, File, Metadata, OpenOptions};
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -565,4 +565,218 @@ fn unreadable_file(path: &Path, root: &Path, byte_length: u64, reason: &str) -> 
         byte_length,
         unreadable_reason: Some(reason.to_string()),
     }
+}
+
+/// v1.12: create a new folder under `parent_path` and write scaffold files.
+/// Templates live in TypeScript; this command enforces path and write bounds.
+#[tauri::command]
+pub(crate) fn create_okf_scaffold<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    workspace_root: String,
+    parent_path: String,
+    folder_name: String,
+    files: Vec<OkfScaffoldFileInput>,
+    open_relative_path: Option<String>,
+) -> Result<OkfScaffoldResult, String> {
+    create_okf_scaffold_with_label(
+        window.label(),
+        &workspace_root,
+        &parent_path,
+        &folder_name,
+        files,
+        open_relative_path.as_deref(),
+    )
+}
+
+pub(crate) fn create_okf_scaffold_with_label(
+    label: &str,
+    workspace_root: &str,
+    parent_path: &str,
+    folder_name: &str,
+    files: Vec<OkfScaffoldFileInput>,
+    open_relative_path: Option<&str>,
+) -> Result<OkfScaffoldResult, String> {
+    ensure_label_is_main(label)?;
+
+    if files.is_empty() {
+        return Err("Scaffold must include at least one file.".to_string());
+    }
+    if files.len() > MAX_OKF_SCAFFOLD_FILES {
+        return Err(format!(
+            "Scaffold may include at most {} files.",
+            MAX_OKF_SCAFFOLD_FILES
+        ));
+    }
+
+    validate_scaffold_folder_name(folder_name)?;
+
+    let root_buf = PathBuf::from(workspace_root);
+    let parent_buf = PathBuf::from(parent_path);
+    let parent_resolved = ensure_path_inside_workspace_root(&parent_buf, &root_buf)?;
+    if !parent_resolved.is_dir() {
+        return Err("Selected parent folder does not exist.".to_string());
+    }
+
+    let scaffold_root = parent_resolved.join(folder_name);
+    // scaffold_root does not exist yet; validate by parent + name only.
+    // Nested create paths also do not exist — do not call
+    // ensure_path_inside_workspace_root on them (it requires an existing parent).
+    if !scaffold_root.starts_with(&parent_resolved)
+        || scaffold_root
+            .strip_prefix(&parent_resolved)
+            .ok()
+            .and_then(|rest| rest.to_str())
+            != Some(folder_name)
+    {
+        return Err("Scaffold folder path is invalid.".to_string());
+    }
+    if scaffold_root.exists() {
+        return Err("A file or folder already exists at the scaffold path.".to_string());
+    }
+
+    let mut planned: Vec<(PathBuf, String, String)> = Vec::with_capacity(files.len());
+    let mut total_bytes = 0usize;
+    let mut seen = std::collections::BTreeSet::new();
+
+    for file in &files {
+        let relative = normalize_scaffold_relative_path(&file.relative_path)?;
+        if !seen.insert(relative.clone()) {
+            return Err(format!("Duplicate scaffold path: {relative}"));
+        }
+        let content_len = file.contents.len();
+        if content_len > MAX_OKF_SCAFFOLD_FILE_BYTES {
+            return Err(format!(
+                "Scaffold file exceeds the {} byte limit: {relative}",
+                MAX_OKF_SCAFFOLD_FILE_BYTES
+            ));
+        }
+        total_bytes = total_bytes.saturating_add(content_len);
+        if total_bytes > MAX_OKF_SCAFFOLD_TOTAL_BYTES {
+            return Err(format!(
+                "Scaffold total size exceeds the {} byte limit.",
+                MAX_OKF_SCAFFOLD_TOTAL_BYTES
+            ));
+        }
+        let absolute = scaffold_relative_absolute(&scaffold_root, &relative)?;
+        planned.push((absolute, relative, file.contents.clone()));
+    }
+
+    let open_path = match open_relative_path {
+        Some(raw) if !raw.trim().is_empty() => {
+            let relative = normalize_scaffold_relative_path(raw)?;
+            if !seen.contains(&relative) {
+                return Err(format!(
+                    "openRelativePath is not part of the scaffold: {relative}"
+                ));
+            }
+            Some(scaffold_root.join(relative).to_string_lossy().to_string())
+        }
+        _ => planned
+            .iter()
+            .find(|(_, relative, _)| relative == "index.md")
+            .map(|(path, _, _)| path.to_string_lossy().to_string()),
+    };
+
+    fs::create_dir(&scaffold_root)
+        .map_err(|err| format!("Cannot create scaffold folder: {err}"))?;
+
+    let mut created_files: Vec<String> = Vec::with_capacity(planned.len());
+    for (absolute, relative, contents) in &planned {
+        if let Some(parent) = absolute.parent() {
+            fs::create_dir_all(parent).map_err(|err| {
+                let _ = fs::remove_dir_all(&scaffold_root);
+                format!("Cannot create scaffold directories: {err}")
+            })?;
+        }
+        match OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(absolute)
+        {
+            Ok(mut handle) => {
+                if let Err(err) = handle.write_all(contents.as_bytes()) {
+                    let _ = fs::remove_dir_all(&scaffold_root);
+                    return Err(format!("Cannot write scaffold file {relative}: {err}"));
+                }
+                if let Err(err) = handle.sync_all() {
+                    let _ = fs::remove_dir_all(&scaffold_root);
+                    return Err(format!("Cannot sync scaffold file {relative}: {err}"));
+                }
+                created_files.push(absolute.to_string_lossy().to_string());
+            }
+            Err(err) => {
+                let _ = fs::remove_dir_all(&scaffold_root);
+                return Err(format!("Cannot create scaffold file {relative}: {err}"));
+            }
+        }
+    }
+
+    created_files.sort();
+    Ok(OkfScaffoldResult {
+        root_path: scaffold_root.to_string_lossy().to_string(),
+        created_files,
+        open_path,
+    })
+}
+
+fn validate_scaffold_folder_name(folder_name: &str) -> Result<(), String> {
+    let name = folder_name.trim();
+    if name.is_empty() {
+        return Err("Scaffold folder name is required.".to_string());
+    }
+    if name.chars().count() > MAX_OKF_SCAFFOLD_FOLDER_NAME_CHARS {
+        return Err("Scaffold folder name is too long.".to_string());
+    }
+    if name == "." || name == ".." {
+        return Err("Scaffold folder name is invalid.".to_string());
+    }
+    if name.contains('/') || name.contains('\\') || name.contains('\0') {
+        return Err("Scaffold folder name must not contain path separators.".to_string());
+    }
+    Ok(())
+}
+
+fn normalize_scaffold_relative_path(raw: &str) -> Result<String, String> {
+    let trimmed = raw.trim().trim_start_matches('/');
+    if trimmed.is_empty() {
+        return Err("Scaffold relative path is empty.".to_string());
+    }
+    if trimmed.contains('\\') || trimmed.contains('\0') {
+        return Err(format!("Scaffold path is invalid: {raw}"));
+    }
+    let mut parts: Vec<&str> = Vec::new();
+    for part in trimmed.split('/') {
+        if part.is_empty() || part == "." {
+            continue;
+        }
+        if part == ".." {
+            return Err(format!("Scaffold path must not contain '..': {raw}"));
+        }
+        parts.push(part);
+    }
+    if parts.is_empty() {
+        return Err(format!("Scaffold path is empty: {raw}"));
+    }
+    if parts.len() > MAX_OKF_SCAFFOLD_RELATIVE_DEPTH {
+        return Err(format!(
+            "Scaffold path is deeper than {} segments: {raw}",
+            MAX_OKF_SCAFFOLD_RELATIVE_DEPTH
+        ));
+    }
+    let file_name = parts.last().copied().unwrap_or("");
+    if !file_name.ends_with(".md") {
+        return Err(format!("Scaffold files must be Markdown (.md): {raw}"));
+    }
+    Ok(parts.join("/"))
+}
+
+fn scaffold_relative_absolute(scaffold_root: &Path, relative: &str) -> Result<PathBuf, String> {
+    let mut absolute = scaffold_root.to_path_buf();
+    for part in relative.split('/') {
+        absolute.push(part);
+    }
+    if !absolute.starts_with(scaffold_root) {
+        return Err(format!("Scaffold path escapes the new folder: {relative}"));
+    }
+    Ok(absolute)
 }

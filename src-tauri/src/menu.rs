@@ -72,6 +72,27 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 true,
                 Some("CmdOrCtrl+N"),
             )?,
+            &Submenu::with_items(
+                app,
+                label("Knowledge Folder Starters", "知識フォルダのひな形"),
+                true,
+                &[
+                    &MenuItem::with_id(
+                        app,
+                        MENU_OKF_SCAFFOLD_MINIMAL,
+                        label("Minimal…", "最小…"),
+                        true,
+                        None::<&str>,
+                    )?,
+                    &MenuItem::with_id(
+                        app,
+                        MENU_OKF_SCAFFOLD_BOOK_LIKE,
+                        label("Book-like Chapters…", "本っぽい章立て…"),
+                        true,
+                        None::<&str>,
+                    )?,
+                ],
+            )?,
             &MenuItem::with_id(
                 app,
                 MENU_OPEN_FILE,
@@ -646,6 +667,8 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
         || matches!(
             action,
             MENU_NEW_FILE
+                | MENU_OKF_SCAFFOLD_MINIMAL
+                | MENU_OKF_SCAFFOLD_BOOK_LIKE
                 | MENU_OPEN_FILE
                 | MENU_IMPORT_PDF_IMAGE
                 | MENU_OPEN_REFERENCE

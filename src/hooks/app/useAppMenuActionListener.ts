@@ -8,6 +8,8 @@ import {
   MENU_EXPORT_EPUB_BETA,
   MENU_LOCAL_DATA_DISCLOSURE,
   MENU_IMPORT_PDF_IMAGE,
+  MENU_OKF_SCAFFOLD_BOOK_LIKE,
+  MENU_OKF_SCAFFOLD_MINIMAL,
   MENU_OPEN_REFERENCE,
   MENU_OPEN_AGENT_WINDOW,
   MENU_OPEN_APPLE_ASSIST_WINDOW,
@@ -23,6 +25,7 @@ import {
 
 export type AppMenuActionHandlers = {
   createNewFile: () => void | Promise<unknown>;
+  createOkfScaffold: (templateId: "minimal" | "book-like") => void | Promise<unknown>;
   importSourceAsMarkdownDraft: () => void | Promise<unknown>;
   exportEpubBeta: () => void | Promise<unknown>;
   exportHtml: () => void | Promise<unknown>;
@@ -107,6 +110,14 @@ export function useAppMenuActionListener({
       switch (action) {
         case "new-file":
           void actions.createNewFile();
+          break;
+        case MENU_OKF_SCAFFOLD_MINIMAL:
+        case "okf-scaffold-minimal":
+          void actions.createOkfScaffold("minimal");
+          break;
+        case MENU_OKF_SCAFFOLD_BOOK_LIKE:
+        case "okf-scaffold-book-like":
+          void actions.createOkfScaffold("book-like");
           break;
         case "open-file":
           void actions.openFile();

@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate ready
+Scope: v1.12 OKF Starter Scaffold; v1.11 candidate held
 Authority: High
-Last reviewed: 2026-07-15 (local candidate gate passed)
+Last reviewed: 2026-07-15 (v1.12 entry points + shared OKF pin doc)
 
 ## Purpose
 
@@ -20,16 +20,30 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
 | **v1.9** | **Source complete / rolled into current candidate** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. The work is rolled into the in-tree `1.11.0` candidate rather than published alone. |
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
-| **v1.11** | **Local TestFlight candidate ready** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review plus the larger distribution-confidence gate. Source gates, packaged review → edit → save → recheck, App Store surface, sandbox/helper entitlements, universal signing, pkg signature, metadata, and checksum passed locally. Signed TestFlight interaction remains after upload. No Book Scope, chapter ordering, auto-repair, or background scan. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
+| **v1.11** | **Local TestFlight candidate ready / held** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review. Local signed candidate ready; TestFlight install remains separate. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
+| **v1.12** | **Active implementation** | OKF starter scaffold (minimal + book-like). Explicit multi-file write of fixed templates; no Book Scope / export. Contract: `docs/v1.12-okf-scaffold-design.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
 
-Package/app version in tree is **`1.11.0`** (local signed TestFlight candidate
-ready); the published Mac App Store version is **`1.8.0`**. Upload,
-TestFlight installation, App Review, and public release remain separate. See
+Package/app version in tree is **`1.12.0`**; the published Mac App Store
+version is **`1.8.0`**. v1.11 remains a held local TestFlight candidate. See
 `current-status.md` for lane truth; treat Connect as authoritative for store
 counters.
 
-## Active Queue — v1.11 OKF Draft Compatibility Preview
+## Active Queue — v1.12 OKF Starter Scaffold
+
+Goal: 明示操作で、OKF v0.1 Draft 互換の「よくある Markdown 群」を
+workspace 内にひな形として置く。A minimal / B book-like。
+Source: `docs/v1.12-okf-scaffold-design.md`.
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| **Done / source** | **T0 — Contract + templates** | 設計、2テンプレ、spec pin `ee67a5c`、上書き禁止。 |
+| **Done / source** | **T1 — Bounded multi-file create** | `create_okf_scaffold`、path 境界、create_new、件数/バイト上限、Rust テスト。 |
+| **Done / source** | **T2 — Safe Editor wiring** | Palette、フォルダ context menu、サイドバー **新規 (+)**、OS File サブメニュー。`index.md` を開き、status で点検を促す。 |
+| **Done / docs** | **Pin evolution contract** | `docs/okf-spec-pin.md` — pin 更新時に review / fixtures / scaffold assets をセット更新する前提。 |
+| **Next** | **T3 — Smoke / release polish** | 各 entry point の作成→点検、release notes 草案。実機でのひな形作成は確認済み。 |
+
+### Closed / Held — v1.11 OKF Draft Compatibility Preview
 
 Goal: ユーザーが明示的に選んだ workspace / subfolder を、OKF v0.1 Draft
 との互換性として一度だけ安全に確認し、既存 Markdown tab へ移動できる
@@ -67,6 +81,9 @@ v1.9は独立リリースせず、最終的に `1.11.0` TestFlight candidate へ
 - Workspace file operations stay bounded to the selected workspace.
 - OKF review is explicit, bounded, derived in memory, and read-only. It must
   not become startup analysis, a persistent index, or automatic repair.
+- OKF scaffolds write only on explicit user action; template bodies and the
+  integrity model share one pin (`docs/okf-spec-pin.md`) and must co-update when
+  upstream OKF changes.
 - Agent Workbench remains a separate, explicit Developer / GitHub lane.
 - Import Assist must stay on-device, edit-before-save, no auto-save
   (see boundary review).
@@ -151,30 +168,32 @@ covered. The broader shared structure model and structure overview were then
 completed in v1.10.
 
 Book Scope Alpha is **not** part of this queue. v1.11 may review one explicitly
-selected OKF root and open its Markdown concepts, but chapter order, whole-book
-reading/export, visible manifest authoring, and multi-file edits remain v2.
+selected OKF root and open its Markdown concepts; v1.12 may create starter
+folders only. Chapter order, whole-book reading/export, visible manifest
+authoring, and multi-file edits remain v2. OKF pin bumps:
+`docs/okf-spec-pin.md`.
 
 ### Active post-v1.8 direction
 
 After v1.8, do not jump directly to v2. Two-digit minor versions such as
-`v1.10` and `v1.11` are normal and accepted. v1.9 Writing Loop Clarity and
-v1.10 single-document structure are implemented. The active v1.11 lane adds a
-bounded OKF v0.1 Draft compatibility preview, then runs the larger packaged
-distribution-confidence gate before full multi-file Book Scope.
+`v1.10`–`v1.12` are normal and accepted. v1.9–v1.11 are implemented (v1.11 held
+as local candidate). The **active v1.12** lane adds explicit OKF starter
+scaffolds that share the v1.11 pin; upstream OKF changes update review +
+templates together (`docs/okf-spec-pin.md`).
 
 The v1.10 structure lane stays inside one Markdown source: shared heading /
 frontmatter / page-break / navigation interpretation, structure overview, and
 only bounded explicit Undo-able edits in the active buffer. v1.11 may derive a
-temporary read-only bundle view, but it does not add a
+temporary read-only bundle view; v1.12 may write fixed starters. Neither adds a
 Book manifest, hidden database, background workspace scan, or second editable
-document model. Full rationale: `docs/v1.8-plus-product-review-roadmap.md` and
-`docs/v1.11-okf-draft-preview-design.md`.
+document model. Full rationale: `docs/v1.8-plus-product-review-roadmap.md`,
+`docs/v1.11-okf-draft-preview-design.md`, `docs/v1.12-okf-scaffold-design.md`.
 
 ### Quality inventory (v1.6 historical)
 
 Cross-cutting quality notes for the closed v1.6 line live in
-**`docs/archive/operations/quality-inventory-v1.6.md`**. Prefer one verifiable v1.11 slice at a
-time; keep normal `npm test` / `cargo test` gates.
+**`docs/archive/operations/quality-inventory-v1.6.md`**. Prefer one verifiable
+slice at a time; keep normal `npm test` / `cargo test` gates.
 
 ### CodeMirror pin (durable)
 

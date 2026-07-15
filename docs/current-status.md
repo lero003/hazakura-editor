@@ -3,15 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
+Last reviewed: 2026-07-15 (v1.12 entry points + shared OKF pin doc)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`1.11.0`** across npm, Tauri, Cargo,
+- Current package/app version: **`1.12.0`** across npm, Tauri, Cargo,
   and lockfile metadata. The published Mac App Store version remains
-  `1.8.0`; v1.11 is locally ready as a signed TestFlight candidate. Upload,
-  TestFlight installation, App Review, and public release remain separate.
+  `1.8.0`. v1.11 remains a held local signed TestFlight candidate; v1.12 adds
+  OKF starter scaffolds on top of that base. Upload, TestFlight installation,
+  App Review, and public release remain separate.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
@@ -55,6 +56,12 @@ Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
   IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof
   and move into the v1.11 distribution-confidence matrix rather than reopening
   v1.10.
+- **v1.12 OKF Starter Scaffold is the active implementation lane.** Explicit
+  Command Palette / folder-context actions create a new uniquely named folder
+  with fixed minimal or book-like Markdown templates (OKF v0.1 Draft pin
+  `ee67a5c`), open `index.md`, and invite a separate explicit review. No Book
+  Scope, auto-repair, or multi-file export. Contract:
+  `docs/v1.12-okf-scaffold-design.md`.
 - **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only
@@ -309,8 +316,9 @@ Last reviewed: 2026-07-15 (v1.11 local TestFlight candidate ready)
 - No remaining source-level release blocker is known for the closed v1.6,
   v1.7, or v1.8 lines. Do not reopen them without a reproduced gap. The
   v1.9 Writing Loop Clarity and v1.10 Single-document Structure Foundation are
-  implementation complete. The active implementation lane is **v1.11 OKF Draft
-  Compatibility Preview**, followed by its distribution-confidence gate.
+  implementation complete. The active implementation lane is **v1.12 OKF Starter
+  Scaffold**; v1.11 OKF Draft Compatibility Preview remains a held local
+  TestFlight candidate. Shared OKF pin: `docs/okf-spec-pin.md`.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -723,7 +731,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.11 OKF compatibility queue.
+- `docs/current-work.md`: current v1.12 OKF scaffold queue (v1.11 held).
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.

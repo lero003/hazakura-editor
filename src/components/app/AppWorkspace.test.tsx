@@ -272,6 +272,7 @@ function makeWorkspaceProps(
     compareView: null,
     createFile: vi.fn(),
     createFolder: vi.fn(),
+    createOkfScaffoldAt: vi.fn(),
     createNewFile: vi.fn(),
     currentHeadingLine: null,
     documentHeadings: [],

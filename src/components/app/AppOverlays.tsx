@@ -132,6 +132,10 @@ type AppOverlaysProps = {
   cancelPendingTrash: () => void;
   confirmPendingTrash: () => void;
   createFile: (parentPath: string) => Promise<void> | void;
+  createOkfScaffoldAt: (
+    parentPath: string,
+    templateId: "minimal" | "book-like",
+  ) => Promise<void> | void;
   createFolder: (parentPath: string) => Promise<void> | void;
   dirtyTabCount: number;
   discardAllAndCloseWindow: () => void;
@@ -278,6 +282,7 @@ export function AppOverlays({
   copyWorkspaceFullPath,
   createFile,
   createFolder,
+  createOkfScaffoldAt,
   dirtyTabCount,
   discardAllAndCloseWindow,
   editorSettings,
@@ -616,6 +621,16 @@ export function AppOverlays({
             } else {
               onOpenOkfReview();
             }
+          }}
+          onCreateOkfScaffoldMinimal={() => {
+            const parent = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            void createOkfScaffoldAt(parent, "minimal");
+          }}
+          onCreateOkfScaffoldBookLike={() => {
+            const parent = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            void createOkfScaffoldAt(parent, "book-like");
           }}
           onOpenAsReference={() => {
             const path = workspaceContextMenu.path;

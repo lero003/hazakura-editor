@@ -173,6 +173,22 @@ export function AppShell(props: AppShellProps) {
                   void props.createFolder(props.workspaceRootPath);
                 }
               },
+              onCreateOkfScaffoldMinimal: () => {
+                if (props.workspaceRootPath) {
+                  void props.createOkfScaffoldAt(
+                    props.workspaceRootPath,
+                    "minimal",
+                  );
+                }
+              },
+              onCreateOkfScaffoldBookLike: () => {
+                if (props.workspaceRootPath) {
+                  void props.createOkfScaffoldAt(
+                    props.workspaceRootPath,
+                    "book-like",
+                  );
+                }
+              },
               onLoadDirectory: props.loadWorkspaceDirectory,
               onMoveEntry: props.onMoveEntry,
               onMoveToTrash: props.onMoveToTrash,

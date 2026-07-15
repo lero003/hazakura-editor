@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 OKF draft contract accepted)
+Last reviewed: 2026-07-15 (v1.12 OKF scaffold + shared OKF pin doc)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,12 +16,14 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active v1.11 OKF compatibility queue and release boundary.
+- `current-work.md`: active v1.12 OKF scaffold queue and release boundary.
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
-- `v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, v1.11 OKF / distribution-confidence, and v2 sequencing.
+- `okf-spec-pin.md`: shared OKF pin, co-update surfaces, and version-upgrade process.
+- `v1.8-plus-product-review-roadmap.md`: accepted v1.9–v1.12 sequencing and v2 bridge.
 - `v1.10-single-document-structure-design.md`: completed v1.10 implementation and verification contract.
-- `v1.11-okf-draft-preview-design.md`: active OKF v0.1 Draft compatibility and v1.11 verification contract.
+- `v1.11-okf-draft-preview-design.md`: held OKF v0.1 Draft compatibility and v1.11 verification contract.
+- `v1.12-okf-scaffold-design.md`: active OKF starter scaffold (minimal + book-like) contract.
 - `l-mode-plan.md`: active source-preserving L Mode writing-surface direction.
 - `ebook-mode-epub-export-plan.md`: active single-document e-book and EPUB planning detail.
 
@@ -39,8 +41,8 @@ or quality-polish slice.
 ## Current Planning Docs
 
 The active planning surface is intentionally small: `v1.8-plus-product-review-roadmap.md`,
-`v1.11-okf-draft-preview-design.md`, `l-mode-plan.md`, and
-`ebook-mode-epub-export-plan.md`. Completed lane plans,
+`okf-spec-pin.md`, `v1.12-okf-scaffold-design.md`, `v1.11-okf-draft-preview-design.md`,
+`l-mode-plan.md`, and `ebook-mode-epub-export-plan.md`. Completed lane plans,
 retired proposals, and speculative future notes live under `archive/`.
 
 ## Local-Only Internal Notes

@@ -11,6 +11,8 @@ afterEach(() => {
 const fileOpsCopy = {
   newFileHere: "New file here",
   newFolderHere: "New folder here",
+  newOkfScaffoldMinimalRoot: "Knowledge folder starter (minimal)",
+  newOkfScaffoldBookLikeRoot: "Knowledge folder starter (book-like)",
   rename: "Rename",
   moveToTrash: "Move to Trash",
   moveToTrashTitle: "Trash",
@@ -48,6 +50,8 @@ function renderMenu(
     onMoveToTrash: vi.fn(),
     onOpen: vi.fn(),
     onOpenOkfReview: vi.fn(),
+    onCreateOkfScaffoldMinimal: vi.fn(),
+    onCreateOkfScaffoldBookLike: vi.fn(),
     onOpenAsReference,
     onRename: vi.fn(),
     onRevealInFinder: vi.fn(),
