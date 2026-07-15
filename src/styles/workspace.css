@@ -78,18 +78,25 @@
 }
 
 :root[data-theme="yakou"] {
-  --native-shell-tint: rgba(20, 20, 30, 0.18);
-  --native-shell-border: color-mix(in srgb, var(--accent-secondary) 18%, transparent);
+  /* 0.2 だとタブラベルが背景グラデに沈む。演出は残しつつ chrome 可読を優先。 */
+  --native-shell-tint: rgba(21, 21, 31, 0.48);
+  --native-shell-border: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 :root[data-theme="shokou"] {
-  --native-shell-tint: rgba(237, 244, 252, 0.24);
-  --native-shell-border: color-mix(in srgb, var(--accent) 16%, transparent);
+  --native-shell-tint: rgba(236, 244, 252, 0.48);
+  --native-shell-border: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 :root[data-theme="crt"] {
-  --native-shell-tint: rgba(8, 18, 12, 0.22);
-  --native-shell-border: color-mix(in srgb, var(--border) 38%, transparent);
+  --native-shell-tint: rgba(8, 18, 12, 0.4);
+  --native-shell-border: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+:root[data-theme="shinkai"] {
+  /* 深海: 背景の水中シェーダーを chrome でも透かす (edohigan と同思想) */
+  --native-shell-tint: rgba(15, 53, 72, 0.54);
+  --native-shell-border: color-mix(in srgb, var(--accent-secondary) 20%, transparent);
 }
 
 :root[data-theme="dark"] .file-tree-pane {
@@ -127,6 +134,11 @@
   border-right-color: var(--native-shell-border);
 }
 
+:root[data-theme="shinkai"] .file-tree-pane {
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
+}
+
 :root[data-theme="light"] .tabs-row {
   background: var(--native-shell-tint);
   border-bottom-color: var(--native-shell-border);
@@ -148,6 +160,11 @@
 }
 
 :root[data-theme="crt"] .tabs-row {
+  background: var(--native-shell-tint);
+  border-bottom-color: var(--native-shell-border);
+}
+
+:root[data-theme="shinkai"] .tabs-row {
   background: var(--native-shell-tint);
   border-bottom-color: var(--native-shell-border);
 }
@@ -188,6 +205,11 @@
 }
 
 :root[data-theme="crt"] .workspace-sidebar-rail {
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
+}
+
+:root[data-theme="shinkai"] .workspace-sidebar-rail {
   background: var(--native-shell-tint);
   border-right-color: var(--native-shell-border);
 }
@@ -389,8 +411,14 @@
   color: var(--text);
 }
 
+/* 暗色ベーステーマ: 黒ホバーは沈むので白の薄膜に。
+   edohigan / shinkai は各専用 CSS で色調ホバーを持つ。 */
 :root[data-theme="dark"] .tree-directory-button:hover,
-:root[data-theme="dark"] .tree-file:hover {
+:root[data-theme="dark"] .tree-file:hover,
+:root[data-theme="yakou"] .tree-directory-button:hover,
+:root[data-theme="yakou"] .tree-file:hover,
+:root[data-theme="crt"] .tree-directory-button:hover,
+:root[data-theme="crt"] .tree-file:hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -490,6 +518,23 @@
     inset 3px 0 0 color-mix(in srgb, var(--accent) 74%, var(--accent-secondary)),
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
   color: color-mix(in srgb, var(--text) 88%, var(--accent));
+}
+
+:root[data-theme="yakou"] .tree-file.active {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 70%, var(--accent-secondary));
+  color: color-mix(in srgb, var(--text) 90%, var(--accent));
+}
+
+:root[data-theme="shinkai"] .tree-file.active {
+  background: color-mix(in srgb, var(--accent-secondary) 12%, var(--surface-strong));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent-secondary) 65%, var(--accent));
+  color: color-mix(in srgb, var(--text) 90%, var(--accent-secondary));
+}
+
+:root[data-theme="shokou"] .tree-file.active {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-strong));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 60%, var(--accent-secondary));
 }
 
 .tree-file.compare-source {
@@ -1059,6 +1104,22 @@
   );
 }
 
+:root[data-theme="yakou"] .editor-document-path-bar {
+  background: linear-gradient(
+    90deg,
+    var(--cm-bg) 0%,
+    color-mix(in srgb, var(--cm-bg) 88%, var(--accent-soft)) 100%
+  );
+}
+
+:root[data-theme="shinkai"] .editor-document-path-bar {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cm-bg) 92%, transparent) 0%,
+    color-mix(in srgb, var(--cm-bg) 86%, var(--accent-soft)) 100%
+  );
+}
+
 .editor-preview-grid:not(.preview-hidden) .editor-pane {
   border-right: 0;
 }
@@ -1328,9 +1389,16 @@
 
 :root[data-theme="yakou"] .start-actions button:first-child,
 :root[data-theme="yakou"] .start-actions-primary button,
-:root[data-theme="yakou"] .start-resume-button {
+:root[data-theme="yakou"] .start-resume-button,
+:root[data-theme="edohigan"] .start-actions button:first-child,
+:root[data-theme="edohigan"] .start-actions-primary button,
+:root[data-theme="edohigan"] .start-resume-button,
+:root[data-theme="shinkai"] .start-actions button:first-child,
+:root[data-theme="shinkai"] .start-actions-primary button,
+:root[data-theme="shinkai"] .start-resume-button {
   background: var(--accent-gradient);
   border: 0;
+  color: var(--accent-contrast, #ffffff);
   padding: 7px 13px;
 }
 
@@ -1340,7 +1408,7 @@
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
-  color: #ffffff;
+  color: var(--accent-contrast, #ffffff);
 }
 
 .image-preview-pane {
@@ -1749,37 +1817,8 @@
 }
 
 .diff-cell.removed .diff-cell-marker {
-  color: var(--danger);
-}
-
-:root[data-theme="dark"] .diff-cell.added,
-:root[data-theme="dark"] .diff-line-number.added,
-:root[data-theme="yakou"] .diff-cell.added,
-:root[data-theme="yakou"] .diff-line-number.added {
-  background: var(--diff-added-row-bg);
-}
-
-:root[data-theme="dark"] .diff-cell.removed,
-:root[data-theme="dark"] .diff-line-number.removed,
-:root[data-theme="yakou"] .diff-cell.removed,
-:root[data-theme="yakou"] .diff-line-number.removed {
-  background: var(--diff-removed-row-bg);
-}
-
-:root[data-theme="dark"] .diff-cell.blank,
-:root[data-theme="dark"] .diff-line-number.blank,
-:root[data-theme="yakou"] .diff-cell.blank,
-:root[data-theme="yakou"] .diff-line-number.blank {
-  background: var(--diff-blank-row-bg);
-}
-
-:root[data-theme="dark"] .diff-cell.added .diff-cell-marker,
-:root[data-theme="yakou"] .diff-cell.added .diff-cell-marker {
-  color: var(--diff-added-fg);
-}
-
-:root[data-theme="dark"] .diff-cell.removed .diff-cell-marker,
-:root[data-theme="yakou"] .diff-cell.removed .diff-cell-marker {
+  /* テーマ横断: tokens / themes 側の --diff-removed-fg をそのまま使う。
+     旧 dark/yakou 専用上書きはトークン側で既に解決済みのため不要。 */
   color: var(--diff-removed-fg);
 }
 
@@ -1801,6 +1840,22 @@
     145deg,
     rgba(42, 28, 40, 0.72) 0%,
     rgba(52, 34, 48, 0.78) 100%
+  );
+}
+
+:root[data-theme="shinkai"] .preview-pane-card {
+  background: linear-gradient(
+    145deg,
+    rgba(15, 53, 72, 0.62) 0%,
+    rgba(20, 64, 86, 0.7) 100%
+  );
+}
+
+:root[data-theme="yakou"] .preview-pane-card {
+  background: linear-gradient(
+    145deg,
+    rgba(20, 20, 30, 0.88) 0%,
+    rgba(26, 26, 40, 0.92) 100%
   );
 }
 

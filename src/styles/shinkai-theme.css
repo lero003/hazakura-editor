@@ -42,6 +42,8 @@
   --accent-gradient: linear-gradient(135deg, #f2d8a0 0%, #7dd3e0 100%);
   --accent-soft: #14384a;
   --accent-glass: rgba(125, 211, 224, 0.1);
+  /* 砂色〜シアンのグラデ上は濃い文字の方が読める */
+  --accent-contrast: #0a2430;
   --danger: #d27a7e;
   --conflict: #d0a055;
   --status-bg: #052030;
@@ -109,7 +111,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 20, 35, 0.28);
   --shadow-md: 0 4px 12px rgba(0, 20, 35, 0.36), 0 1px 3px rgba(0, 20, 35, 0.22);
   --shadow-lg: 0 12px 32px rgba(0, 20, 35, 0.48), 0 2px 8px rgba(0, 20, 35, 0.22);
-  --shadow-accent: 0 4px 20px rgba(125, 211, 224, 0.24);
+  --shadow-accent: 0 4px 20px rgba(125, 211, 224, 0.26), 0 1px 4px rgba(242, 216, 160, 0.08);
+  --accent-glow: 0 0 36px rgba(125, 211, 224, 0.1);
 }
 
 /* 2. .app-shell 背景 / Shinkai: deep water base */
@@ -184,25 +187,26 @@
    フリッカー (揺らぎアニメーション) はデジタル感の元になるため持たない。
    マウス連動は次段階 (MVP 外) で u_mouse を追加予定。 */
 
-/* CodeMirror 本文: 水中の光の拡散グローは常時。scroll-safe に .cm-content 単位。 */
+/* CodeMirror 本文: 水中の光の拡散グローは常時。scroll-safe に .cm-content 単位。
+   長文可読のためグローは控えめに。 */
 :root[data-theme="shinkai"] .cm-content {
-  text-shadow: 0 0 7px rgba(125, 211, 224, 0.22);
+  text-shadow: 0 0 6px rgba(125, 211, 224, 0.16);
 }
 
 /* プレビュー本文: 同様に常時の静かなグロー。 */
 :root[data-theme="shinkai"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
-  text-shadow: 0 0 7px rgba(125, 211, 224, 0.2);
+  text-shadow: 0 0 6px rgba(125, 211, 224, 0.14);
 }
 
 :root[data-theme="shinkai"] .markdown-preview :is(code, pre) {
-  text-shadow: 0 0 6px rgba(125, 211, 224, 0.16);
+  text-shadow: none;
 }
 
-/* UI テキスト (タブ・ツリー・ステータスバー・サイドバー): 薄くグロー。 */
+/* UI chrome はグローなし。ラベルが滲んで読めないのを避ける。 */
 :root[data-theme="shinkai"]
   :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
   :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
-  text-shadow: 0 0 5px rgba(125, 211, 224, 0.14);
+  text-shadow: none;
 }
 
 /* ファイルツリー行のホバー色を深海色調へ上書き。

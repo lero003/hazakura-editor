@@ -274,8 +274,28 @@
   );
 }
 
+:root[data-theme="edohigan"] .markdown-preview code {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  color: #f0b8c4;
+}
+
+:root[data-theme="edohigan"] .markdown-preview a {
+  color: #f0b0c0;
+}
+
+:root[data-theme="edohigan"] .markdown-table-frame th {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-strong));
+}
+
+:root[data-theme="edohigan"] .markdown-table-frame tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-muted));
+}
+
 :root[data-theme="dark"] .markdown-preview code,
-:root[data-theme="yakou"] .markdown-preview code {
+:root[data-theme="yakou"] .markdown-preview code,
+:root[data-theme="crt"] .markdown-preview code,
+:root[data-theme="shinkai"] .markdown-preview code {
   border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
@@ -285,8 +305,24 @@
 }
 
 :root[data-theme="yakou"] .markdown-preview code {
-  background: color-mix(in srgb, #40bfa0 18%, var(--surface-strong));
-  color: #b8f4df;
+  background: color-mix(in srgb, #a090ff 16%, var(--surface-strong));
+  color: #c8b8ff;
+}
+
+:root[data-theme="crt"] .markdown-preview code {
+  background: #0e2417;
+  color: #8de8a0;
+}
+
+:root[data-theme="shinkai"] .markdown-preview code {
+  background: color-mix(in srgb, #7dd3e0 16%, var(--surface-strong));
+  color: #9dd8ec;
+}
+
+:root[data-theme="shokou"] .markdown-preview code {
+  background: color-mix(in srgb, var(--accent-soft) 70%, #ffe8c8);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  color: #1b547f;
 }
 
 :root[data-theme="dark"] .markdown-preview blockquote {
@@ -295,8 +331,27 @@
 }
 
 :root[data-theme="yakou"] .markdown-preview blockquote {
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface-strong));
-  color: #d9d9f5;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-strong));
+  color: #dddcf6;
+}
+
+:root[data-theme="crt"] .markdown-preview blockquote {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-strong));
+  color: #b8e8c0;
+}
+
+:root[data-theme="shinkai"] .markdown-preview blockquote {
+  background: color-mix(in srgb, var(--accent-secondary) 14%, var(--surface-strong));
+  color: #d0eaf0;
+}
+
+:root[data-theme="shokou"] .markdown-preview blockquote {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-soft) 80%, #ffe8c8) 0%,
+    color-mix(in srgb, var(--surface-strong) 88%, #f5a85a) 100%
+  );
+  color: #1c3554;
 }
 
 :root[data-theme="dark"] .markdown-preview a {
@@ -304,17 +359,41 @@
 }
 
 :root[data-theme="yakou"] .markdown-preview a {
-  color: #b8f4df;
+  color: #b0a0ff;
+}
+
+:root[data-theme="crt"] .markdown-preview a {
+  color: #8de8a0;
+}
+
+:root[data-theme="shinkai"] .markdown-preview a {
+  color: #9dd8ec;
+}
+
+:root[data-theme="shokou"] .markdown-preview a {
+  color: #1b5a92;
 }
 
 :root[data-theme="dark"] .markdown-table-frame th,
-:root[data-theme="yakou"] .markdown-table-frame th {
+:root[data-theme="yakou"] .markdown-table-frame th,
+:root[data-theme="crt"] .markdown-table-frame th,
+:root[data-theme="shinkai"] .markdown-table-frame th {
   background: color-mix(in srgb, var(--accent) 20%, var(--surface-strong));
 }
 
+:root[data-theme="shokou"] .markdown-table-frame th {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+}
+
 :root[data-theme="dark"] .markdown-table-frame tbody tr:nth-child(even) td,
-:root[data-theme="yakou"] .markdown-table-frame tbody tr:nth-child(even) td {
+:root[data-theme="yakou"] .markdown-table-frame tbody tr:nth-child(even) td,
+:root[data-theme="crt"] .markdown-table-frame tbody tr:nth-child(even) td,
+:root[data-theme="shinkai"] .markdown-table-frame tbody tr:nth-child(even) td {
   background: color-mix(in srgb, var(--accent) 8%, var(--surface-muted));
+}
+
+:root[data-theme="shokou"] .markdown-table-frame tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--accent-secondary) 8%, var(--surface-muted));
 }
 
 .blocked-image {

@@ -6,35 +6,46 @@
   100% { background-position: 0% 50%; }
 }
 
-/* 夜光: 背景グラデーションアニメーション / Yakou: Animated BG */
+/* 夜光: 背景グラデーションアニメーション / Yakou: Animated BG
+   アクセント (#a090ff) と副色 teal に揃えた宇宙夜。青一色ではなく
+   紫〜藍〜青緑の層で読む。 */
 :root[data-theme="yakou"] .app-shell {
   background:
-    radial-gradient(circle at 0% 0%, rgba(62, 119, 190, 0.4), transparent 34%),
-    radial-gradient(circle at 18% 12%, rgba(42, 88, 148, 0.28), transparent 38%),
-    radial-gradient(circle at 92% 14%, rgba(88, 70, 126, 0.12), transparent 30%),
-    linear-gradient(145deg, #08111d 0%, #0c1220 38%, #111827 66%, #080b12 100%);
+    radial-gradient(circle at 8% 6%, rgba(120, 96, 220, 0.34), transparent 36%),
+    radial-gradient(circle at 22% 18%, rgba(52, 90, 180, 0.26), transparent 40%),
+    radial-gradient(circle at 88% 12%, rgba(72, 190, 170, 0.12), transparent 32%),
+    radial-gradient(circle at 70% 78%, rgba(88, 70, 160, 0.1), transparent 42%),
+    linear-gradient(145deg, #0a0a16 0%, #12102a 38%, #0e1424 66%, #08080e 100%);
   background-size: 200% 200%;
-  animation: bgDrift 20s ease-in-out infinite;
+  animation: bgDrift 22s ease-in-out infinite;
 }
 
 /* 江戸彼岸は edohigan-theme.css 側で背景シェーダーを描くため、
    ここでは .app-shell の静的背景は持たない（v1.6 で DOM 粒子から
    フルスクリーン WebGL ジョークテーマへスクラップ&ビルド）。 */
 
-/* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift */
+/* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift
+   空の青〜暖桃の帯を少し滑らかにし、朝焼けの層が読めるようにする。 */
 :root[data-theme="shokou"] .app-shell {
-  background: linear-gradient(135deg, #e7f3ff 0%, #f8fbff 36%, #ffe4bd 72%, #fbd2bd 100%);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 236, 210, 0.55), transparent 38%),
+    radial-gradient(circle at 88% 18%, rgba(180, 214, 240, 0.42), transparent 36%),
+    linear-gradient(135deg, #e4f1ff 0%, #f6faff 34%, #ffe6c4 70%, #f8cbb8 100%);
   background-size: 200% 200%;
-  animation: bgDrift 25s ease-in-out infinite;
+  animation: bgDrift 26s ease-in-out infinite;
 }
 
-/* スペシャルテーマ: ステータスバーの装飾 / Status Bar accent */
-:root[data-theme="yakou"] .status-bar {
-  border-top: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+/* スペシャルテーマ: ステータスバーの装飾 / Status Bar accent
+   light/dark は border なしのまま (軽量・静かな標準)。 */
+:root[data-theme="yakou"] .status-bar,
+:root[data-theme="edohigan"] .status-bar,
+:root[data-theme="shinkai"] .status-bar,
+:root[data-theme="crt"] .status-bar {
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 :root[data-theme="shokou"] .status-bar {
-  border-top: 1px solid color-mix(in srgb, var(--accent-secondary) 12%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--accent-secondary) 14%, transparent);
 }
 
 .ambient {
@@ -72,15 +83,17 @@
   background:
     radial-gradient(
       circle,
-      hsl(var(--ambient-hue, 210), 90%, 92%) 0%,
-      hsl(var(--ambient-hue, 210), 80%, 75%) 60%,
+      hsl(var(--ambient-hue, 255), 88%, 94%) 0%,
+      hsl(var(--ambient-hue, 255), 78%, 76%) 55%,
       transparent 100%
     );
   border-radius: 50%;
   bottom: -8px;
-  box-shadow: 0 0 9px 1px hsl(var(--ambient-hue, 210), 85%, 82%, 0.68);
+  box-shadow:
+    0 0 8px 1px hsl(var(--ambient-hue, 255), 82%, 80%, 0.62),
+    0 0 16px 2px hsl(var(--ambient-hue, 255), 70%, 70%, 0.22);
   height: var(--ambient-h, 2.5px);
-  opacity: 0.9;
+  opacity: 0.88;
   width: var(--ambient-w, 2.5px);
 }
 
@@ -90,18 +103,33 @@
   background:
     radial-gradient(
       circle,
-      hsl(var(--ambient-hue, 222), 24%, 28%) 0%,
-      hsl(var(--ambient-hue, 222), 18%, 14%) 58%,
+      hsl(var(--ambient-hue, 222), 22%, 30%) 0%,
+      hsl(var(--ambient-hue, 222), 16%, 16%) 58%,
       transparent 100%
     );
   border-radius: 50%;
   bottom: -8px;
   box-shadow:
-    0 0 4px 1px hsl(var(--ambient-hue, 222), 22%, 10%, 0.38),
-    0 0 13px 3px hsl(var(--ambient-hue, 222), 18%, 8%, 0.24);
+    0 0 4px 1px hsl(var(--ambient-hue, 222), 20%, 12%, 0.36),
+    0 0 12px 3px hsl(var(--ambient-hue, 222), 16%, 10%, 0.2);
   height: var(--ambient-h, 2.5px);
-  opacity: 0.5;
+  opacity: 0.48;
   width: var(--ambient-w, 2.5px);
+}
+
+/* 曙光の暖色粒子: 暗い影粒子ではなく、夜明けの薄い光の粉。 */
+.ambient-shokou .ambient-particle.ambient-ember {
+  background:
+    radial-gradient(
+      circle,
+      hsl(var(--ambient-hue, 28), 72%, 82%) 0%,
+      hsl(var(--ambient-hue, 28), 58%, 62%) 48%,
+      transparent 100%
+    );
+  box-shadow:
+    0 0 5px 1px hsl(var(--ambient-hue, 28), 70%, 62%, 0.4),
+    0 0 14px 3px hsl(var(--ambient-hue, 28), 55%, 55%, 0.18);
+  opacity: 0.42;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -20,7 +20,11 @@
   animation: slideDown 0.2s var(--ease-emphasized) forwards;
 }
 
-:root[data-theme="dark"] .find-panel {
+:root[data-theme="dark"] .find-panel,
+:root[data-theme="yakou"] .find-panel,
+:root[data-theme="edohigan"] .find-panel,
+:root[data-theme="crt"] .find-panel,
+:root[data-theme="shinkai"] .find-panel {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -65,8 +69,12 @@
   color: var(--text);
 }
 
-:root[data-theme="dark"] .find-close:hover {
-  background: var(--bg);
+:root[data-theme="dark"] .find-close:hover,
+:root[data-theme="yakou"] .find-close:hover,
+:root[data-theme="edohigan"] .find-close:hover,
+:root[data-theme="crt"] .find-close:hover,
+:root[data-theme="shinkai"] .find-close:hover {
+  background: var(--surface-muted);
   border-color: var(--border-strong);
 }
 

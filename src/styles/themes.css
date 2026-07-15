@@ -114,27 +114,29 @@ html, body, #root, .app-shell,
 
 /* 夜光 / Yakou – deep cosmic indigo with luminous purple-teal accent */
 :root[data-theme="yakou"] {
-  --bg: linear-gradient(135deg, #0c0c14 0%, #131228 50%, #0c0c14 100%);
+  --bg: linear-gradient(135deg, #0a0a14 0%, #14122c 48%, #0c0e18 100%);
   --bg-gradient: true;
-  --surface: #14141e;
-  --surface-rgb: 20, 20, 30;
-  --surface-strong: #1a1a28;
-  --surface-strong-rgb: 26, 26, 40;
-  --surface-muted: #111118;
-  --border: #26264a;
-  --border-strong: #383866;
-  --text: #e4e4f0;
-  --text-muted: #8e8eb0;
-  --accent: #9888ff;
-  --accent-secondary: #8a7df4;
-  --accent-gradient: linear-gradient(135deg, var(--accent-secondary) 0%, #4ccdb0 100%);
-  --accent-soft: #1e1a38;
-  --accent-glass: rgba(152, 136, 255, 0.1);
+  --surface: #15151f;
+  --surface-rgb: 21, 21, 31;
+  --surface-strong: #1c1c2c;
+  --surface-strong-rgb: 28, 28, 44;
+  --surface-muted: #11111a;
+  --border: #2a2a50;
+  --border-strong: #3c3c6c;
+  --text: #e8e8f4;
+  --text-muted: #9292b4;
+  --accent: #a090ff;
+  --accent-secondary: #5ad4bc;
+  --accent-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+  --accent-soft: #1e1a3a;
+  --accent-glass: rgba(160, 144, 255, 0.11);
+  /* グラデ CTA 上の文字は常に明色 */
+  --accent-contrast: #f4f2ff;
   --danger: #e26070;
   --conflict: #d4a842;
   --status-bg: #08080e;
-  --status-text: #e4e4f0;
-  --selection-bg: rgba(152, 136, 255, 0.18);
+  --status-text: #e8e8f4;
+  --selection-bg: rgba(160, 144, 255, 0.18);
 
   /* Diff カラー: 夜光の上書き / Diff colors (yakou override)
      default 値の #2d6c4a は --surface: #14141e 上でコントラストが
@@ -145,32 +147,32 @@ html, body, #root, .app-shell,
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror 夜光用配色 / CodeMirror Yakou Colors */
-  --cm-bg: #14141e;
-  --cm-fg: #e4e4f0;
-  --cm-caret: #9888ff;
-  --cm-gutter-bg: #111118;
-  --cm-gutter-border: #26264a;
-  --cm-gutter-fg: #8e8eb0;
-  --cm-active-line-bg: rgba(152, 136, 255, 0.08);
-  --cm-active-gutter-bg: rgba(152, 136, 255, 0.08);
+  --cm-bg: #15151f;
+  --cm-fg: #e8e8f4;
+  --cm-caret: #a090ff;
+  --cm-gutter-bg: #11111a;
+  --cm-gutter-border: #2a2a50;
+  --cm-gutter-fg: #9292b4;
+  --cm-active-line-bg: rgba(160, 144, 255, 0.08);
+  --cm-active-gutter-bg: rgba(160, 144, 255, 0.08);
   --cm-selection-bg: #5d4fc4;
   --cm-search-match-bg: rgba(212, 168, 66, 0.32);
   --cm-search-match-active-bg: rgba(212, 168, 66, 0.7);
   --cm-search-match-active-shadow: 0 0 0 1px #d4a842;
   --cm-invisible-space: radial-gradient(circle, #6e6e8a 1px, transparent 1px);
-  --cm-invisible-tab: rgba(152, 136, 255, 0.12);
+  --cm-invisible-tab: rgba(160, 144, 255, 0.12);
   --cm-trailing-space: rgba(226, 96, 112, 0.3);
-  --cm-mark-heading: #c4b5fd;
-  --cm-mark-strong: #f0f0fa;
-  --cm-mark-link: #93c5fd;
-  --cm-mark-monospace: #c4b5fd;
-  --cm-mark-quote: #a5b4fc;
+  --cm-mark-heading: #c8b8ff;
+  --cm-mark-strong: #f2f2fa;
+  --cm-mark-link: #8ed8ee;
+  --cm-mark-monospace: #b8a8ff;
+  --cm-mark-quote: #a8b0fc;
 
   /* xterm 用配色 / xterm Yakou Colors */
   --xterm-bg: #08080e;
-  --xterm-fg: #d4d4e8;
-  --xterm-cursor: #9888ff;
-  --xterm-selection-bg: rgba(152, 136, 255, 0.2);
+  --xterm-fg: #d8d8ec;
+  --xterm-cursor: #a090ff;
+  --xterm-selection-bg: rgba(160, 144, 255, 0.2);
   --xterm-black: #18182a;
   --xterm-red: #e87c88;
   --xterm-green: #7fc8a0;
@@ -178,7 +180,8 @@ html, body, #root, .app-shell,
   --xterm-blue: #9db3ff;
   --xterm-magenta: #c8a0e0;
   --xterm-cyan: #72c8c2;
-  --xterm-white: #40406a;
+  /* ANSI white は前景の明るい灰白。#40406a は暗すぎて「白」として読めない。 */
+  --xterm-white: #d0d0e4;
   --xterm-bright-black: #8e8eb0;
   --xterm-bright-red: #ffaab4;
   --xterm-bright-green: #a8e0bc;
@@ -186,76 +189,77 @@ html, body, #root, .app-shell,
   --xterm-bright-blue: #c4cfff;
   --xterm-bright-magenta: #e2bdfc;
   --xterm-bright-cyan: #94e6da;
-  --xterm-bright-white: #e4e4f0;
+  --xterm-bright-white: #f0f0fa;
 
-  --scrollbar-thumb: rgba(142, 142, 176, 0.15);
-  --scrollbar-thumb-hover: rgba(142, 142, 176, 0.3);
+  --scrollbar-thumb: rgba(146, 146, 180, 0.16);
+  --scrollbar-thumb-hover: rgba(146, 146, 180, 0.32);
 
   /* 夜光シャドウ + グロー / Yakou Shadows + Glow */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
-  --shadow-accent: 0 4px 24px rgba(138, 125, 244, 0.2), 0 1px 4px rgba(76, 205, 176, 0.1);
+  --shadow-accent: 0 4px 24px rgba(160, 144, 255, 0.22), 0 1px 4px rgba(90, 212, 188, 0.12);
 
   /* アンビエントグロー / Ambient Glow */
-  --accent-glow: 0 0 40px rgba(138, 125, 244, 0.06);
+  --accent-glow: 0 0 40px rgba(160, 144, 255, 0.07);
 }
 
 /* 曙光 / Shokou – bright dawn sky with soft blue and warm peach */
 :root[data-theme="shokou"] {
-  --bg: linear-gradient(135deg, #e8f3ff 0%, #f7fbff 38%, #ffe5bf 74%, #fbd2bd 100%);
-  --surface: #f7faff;
-  --surface-rgb: 247, 250, 255;
+  --bg: linear-gradient(135deg, #e4f1ff 0%, #f6faff 36%, #ffe6c4 72%, #f8cbb8 100%);
+  --surface: #f6f9fd;
+  --surface-rgb: 246, 249, 253;
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
-  --surface-muted: #e3edf6;
-  --border: #d2e0ec;
-  --border-strong: #aac3d6;
-  --text: #1f3a5c;
-  --text-muted: #5b7589;
-  --accent: #3a82b8;
-  --accent-secondary: #f5a85a;
-  --accent-gradient: linear-gradient(135deg, #3a82b8 0%, #74b7d7 42%, #f5a85a 78%, #db7d8a 100%);
-  --accent-soft: #dceaf6;
-  --accent-glass: rgba(58, 130, 184, 0.08);
+  --surface-muted: #e2ecf5;
+  --border: #cfdceb;
+  --border-strong: #a8c0d4;
+  --text: #1c3554;
+  --text-muted: #567084;
+  --accent: #3478ad;
+  --accent-secondary: #ef9a4a;
+  --accent-gradient: linear-gradient(135deg, #3478ad 0%, #6fb0d2 40%, #ef9a4a 76%, #d67886 100%);
+  --accent-soft: #dbe9f5;
+  --accent-glass: rgba(52, 120, 173, 0.09);
+  --accent-contrast: #ffffff;
   --danger: #c66b6e;
   --conflict: #a26f20;
-  --status-bg: #1a3552;
+  --status-bg: #17324e;
   --status-text: #f5fbff;
-  --selection-bg: rgba(58, 130, 184, 0.12);
-  --scrollbar-thumb: rgba(91, 117, 137, 0.2);
-  --scrollbar-thumb-hover: rgba(91, 117, 137, 0.35);
+  --selection-bg: rgba(52, 120, 173, 0.13);
+  --scrollbar-thumb: rgba(86, 112, 132, 0.22);
+  --scrollbar-thumb-hover: rgba(86, 112, 132, 0.38);
 
   /* CodeMirror 曙光用配色 / CodeMirror Shokou Colors
      v0.33: 前景色を濃紺へ引き上げ、active-line と mark 系にメリハリを
      付け、gutter の視認性も少し強めた。曙色の薄明背景でも本文がくっ
      きり読めるようにする。 */
-  --cm-bg: #f7faff;
-  --cm-fg: #14283f;
-  --cm-caret: #3a82b8;
-  --cm-gutter-bg: #e3edf6;
-  --cm-gutter-border: #d2e0ec;
-  --cm-gutter-fg: #46627a;
-  --cm-active-line-bg: rgba(58, 130, 184, 0.09);
-  --cm-active-gutter-bg: rgba(58, 130, 184, 0.09);
-  --cm-selection-bg: #aac3d6;
+  --cm-bg: #f6f9fd;
+  --cm-fg: #13263c;
+  --cm-caret: #3478ad;
+  --cm-gutter-bg: #e2ecf5;
+  --cm-gutter-border: #cfdceb;
+  --cm-gutter-fg: #426078;
+  --cm-active-line-bg: rgba(52, 120, 173, 0.09);
+  --cm-active-gutter-bg: rgba(52, 120, 173, 0.09);
+  --cm-selection-bg: #a8c0d4;
   --cm-search-match-bg: rgba(162, 111, 32, 0.22);
   --cm-search-match-active-bg: rgba(162, 111, 32, 0.55);
   --cm-search-match-active-shadow: 0 0 0 1px #a26f20;
-  --cm-invisible-space: radial-gradient(circle, #6c8aa0 1px, transparent 1px);
-  --cm-invisible-tab: rgba(58, 130, 184, 0.12);
+  --cm-invisible-space: radial-gradient(circle, #6a889e 1px, transparent 1px);
+  --cm-invisible-tab: rgba(52, 120, 173, 0.12);
   --cm-trailing-space: rgba(198, 107, 110, 0.22);
-  --cm-mark-heading: #18456c;
-  --cm-mark-strong: #14283f;
-  --cm-mark-link: #1b5a92;
-  --cm-mark-monospace: #1b5a92;
-  --cm-mark-quote: #46627a;
+  --cm-mark-heading: #163f64;
+  --cm-mark-strong: #13263c;
+  --cm-mark-link: #18548a;
+  --cm-mark-monospace: #18548a;
+  --cm-mark-quote: #426078;
 
   /* xterm 用配色 / xterm Shokou Colors */
-  --xterm-bg: #1a3552;
+  --xterm-bg: #17324e;
   --xterm-fg: #dce8f0;
-  --xterm-cursor: #3a82b8;
-  --xterm-selection-bg: rgba(58, 130, 184, 0.2);
+  --xterm-cursor: #3478ad;
+  --xterm-selection-bg: rgba(52, 120, 173, 0.2);
   --xterm-black: #1f3a5c;
   --xterm-red: #cc686e;
   --xterm-green: #5ea878;
@@ -273,11 +277,11 @@ html, body, #root, .app-shell,
   --xterm-bright-cyan: #9ad8dc;
   --xterm-bright-white: #f5fbff;
 
-  --shadow-sm: 0 1px 2px rgba(58, 130, 184, 0.06);
-  --shadow-md: 0 4px 12px rgba(58, 130, 184, 0.08), 0 1px 3px rgba(245, 168, 90, 0.06);
-  --shadow-lg: 0 12px 32px rgba(58, 130, 184, 0.12), 0 2px 8px rgba(245, 168, 90, 0.08);
-  --shadow-accent: 0 4px 20px rgba(58, 130, 184, 0.12);
-  --accent-glow: 0 0 32px rgba(245, 168, 90, 0.06);
+  --shadow-sm: 0 1px 2px rgba(52, 120, 173, 0.07);
+  --shadow-md: 0 4px 12px rgba(52, 120, 173, 0.09), 0 1px 3px rgba(239, 154, 74, 0.07);
+  --shadow-lg: 0 12px 32px rgba(52, 120, 173, 0.13), 0 2px 8px rgba(239, 154, 74, 0.09);
+  --shadow-accent: 0 4px 20px rgba(52, 120, 173, 0.14);
+  --accent-glow: 0 0 32px rgba(239, 154, 74, 0.07);
 }
 
 /* ライト / Light – neutral fallback. Only defines the xterm palette

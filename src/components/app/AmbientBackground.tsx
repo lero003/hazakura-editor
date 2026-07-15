@@ -59,18 +59,24 @@ function generateItems(
     const seed = (index * 137.5 + 42) % 360;
     switch (mode) {
       case "yakou":
-        return {
-          delay: -((seed * 1.7 + index * 2.3) % 24),
-          drift: ((seed * 0.9 + index * 2.7) % 14) - 7,
-          duration: (18 + (seed % 8) * 2) * durationScale,
-          hue: 200 + (seed % 30) - 6,
-          index,
-          left: ((seed * 1.618 + index * 7) % 100),
-          size: Math.max(1, (1.8 + (seed % 5) * 0.65) * sizeScale),
-        };
+        {
+          // 紫〜藍〜青緑。アクセント (#a090ff) と副色 teal の宇宙帯。
+          const hueBand = [248, 258, 268, 232, 196][index % 5];
+          const hueOffset = (seed % 14) - 7;
+          return {
+            delay: -((seed * 1.7 + index * 2.3) % 24),
+            drift: ((seed * 0.9 + index * 2.7) % 14) - 7,
+            duration: (18 + (seed % 8) * 2) * durationScale,
+            hue: hueBand + hueOffset,
+            index,
+            left: ((seed * 1.618 + index * 7) % 100),
+            size: Math.max(1, (1.8 + (seed % 5) * 0.65) * sizeScale),
+          };
+        }
       case "shokou":
         {
-          const hueBand = [216, 222, 228, 234, 240][index % 5];
+          // 夜明けの影粒子: 青灰帯にごく薄い暖色を混ぜる
+          const hueBand = [214, 220, 228, 236, 28][index % 5];
           const hueOffset = (seed % 12) - 6;
           const shokouSizeScale =
             intensity === "dramatic" ? sizeScale * 0.82 : sizeScale;
@@ -105,21 +111,27 @@ export function AmbientBackground({
   }
   return (
     <div className={modeClass(mode)} aria-hidden="true">
-      {items.map((item) => (
-        <span
-          className="ambient-particle"
-          key={item.index}
-          style={{
-            "--ambient-h": `${item.size}px`,
-            "--ambient-w": `${item.size * 0.7}px`,
-            "--ambient-hue": item.hue,
-            "--ambient-drift": `${item.drift}vw`,
-            "--ambient-delay": `${item.delay}s`,
-            "--ambient-duration": `${item.duration}s`,
-            left: `${item.left}%`,
-          } as React.CSSProperties}
-        />
-      ))}
+      {items.map((item) => {
+        // 曙光の暖色帯は暗い影粒子ではなく ember として描く
+        const isEmber = mode === "shokou" && item.hue < 60;
+        return (
+          <span
+            className={
+              isEmber ? "ambient-particle ambient-ember" : "ambient-particle"
+            }
+            key={item.index}
+            style={{
+              "--ambient-h": `${item.size}px`,
+              "--ambient-w": `${item.size * 0.7}px`,
+              "--ambient-hue": item.hue,
+              "--ambient-drift": `${item.drift}vw`,
+              "--ambient-delay": `${item.delay}s`,
+              "--ambient-duration": `${item.duration}s`,
+              left: `${item.left}%`,
+            } as React.CSSProperties}
+          />
+        );
+      })}
     </div>
   );
 }

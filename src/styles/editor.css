@@ -122,7 +122,11 @@
   opacity: 0.9;
 }
 
-:root[data-theme="dark"] .tab-close:hover {
+:root[data-theme="dark"] .tab-close:hover,
+:root[data-theme="yakou"] .tab-close:hover,
+:root[data-theme="edohigan"] .tab-close:hover,
+:root[data-theme="crt"] .tab-close:hover,
+:root[data-theme="shinkai"] .tab-close:hover {
   background: color-mix(in srgb, #ffffff 10%, transparent);
 }
 

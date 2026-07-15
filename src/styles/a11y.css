@@ -21,7 +21,9 @@
   :root[data-theme="dark"],
   :root[data-theme="edohigan"],
   :root[data-theme="yakou"],
-  :root[data-theme="shokou"] {
+  :root[data-theme="shokou"],
+  :root[data-theme="crt"],
+  :root[data-theme="shinkai"] {
     --border: color-mix(in srgb, var(--text) 38%, var(--surface));
     --border-strong: color-mix(in srgb, var(--text) 62%, var(--surface));
 

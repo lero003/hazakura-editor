@@ -57,7 +57,7 @@ describe("apple-assist-window.css", () => {
     expect(css).not.toContain(".apple-assist-window-title");
   });
 
-  it("uses flat helper backgrounds for Edohigan and Shokou instead of inheriting strong app-shell gradients", () => {
+  it("uses flat helper backgrounds for special themes instead of inheriting app-shell gradients", () => {
     const edohiganShell = ruleBody(
       css,
       ':root[data-theme="edohigan"] .apple-assist-window-shell',
@@ -66,11 +66,33 @@ describe("apple-assist-window.css", () => {
       css,
       ':root[data-theme="shokou"] .apple-assist-window-shell',
     );
+    const yakouShell = ruleBody(
+      css,
+      ':root[data-theme="yakou"] .apple-assist-window-shell',
+    );
+    const crtShell = ruleBody(
+      css,
+      ':root[data-theme="crt"] .apple-assist-window-shell',
+    );
+    const shinkaiShell = ruleBody(
+      css,
+      ':root[data-theme="shinkai"] .apple-assist-window-shell',
+    );
 
     expect(edohiganShell).toMatch(/background:\s*#322438/);
     expect(shokouShell).toMatch(/background:\s*#eef5fb/);
-    expect(edohiganShell).not.toMatch(/gradient/);
-    expect(shokouShell).not.toMatch(/gradient/);
+    expect(yakouShell).toMatch(/background:\s*#14141e/);
+    expect(crtShell).toMatch(/background:\s*#08120c/);
+    expect(shinkaiShell).toMatch(/background:\s*#0f3548/);
+    for (const shell of [
+      edohiganShell,
+      shokouShell,
+      yakouShell,
+      crtShell,
+      shinkaiShell,
+    ]) {
+      expect(shell).not.toMatch(/gradient/);
+    }
   });
 
   it("keeps the request textarea on a flat surface instead of inheriting theme gradients", () => {

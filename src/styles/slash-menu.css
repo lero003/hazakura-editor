@@ -108,7 +108,10 @@
 }
 
 :root[data-theme="yakou"] .slash-menu-badge-agent,
-:root[data-theme="shokou"] .slash-menu-badge-agent {
+:root[data-theme="shokou"] .slash-menu-badge-agent,
+:root[data-theme="edohigan"] .slash-menu-badge-agent,
+:root[data-theme="shinkai"] .slash-menu-badge-agent,
+:root[data-theme="crt"] .slash-menu-badge-agent {
   background: color-mix(in srgb, var(--accent) 24%, transparent);
 }
 

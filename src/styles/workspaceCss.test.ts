@@ -27,7 +27,15 @@ function ruleBody(selector: string): string {
 
 describe("workspace.css", () => {
   it("lets native vibrancy drive every theme shell surface", () => {
-    for (const theme of ["dark", "light", "edohigan", "yakou", "shokou", "crt"]) {
+    for (const theme of [
+      "dark",
+      "light",
+      "edohigan",
+      "yakou",
+      "shokou",
+      "crt",
+      "shinkai",
+    ]) {
       expect(
         ruleBody(`:root[data-theme="${theme}"] .file-tree-pane`),
       ).toMatch(/background:\s*var\(--native-shell-tint\)/);
@@ -40,13 +48,19 @@ describe("workspace.css", () => {
     }
 
     expect(workspaceCss).not.toMatch(
-      /:root\[data-theme="(?:dark|light|edohigan|yakou|shokou|crt)"\] \.(?:file-tree-pane|workspace-sidebar-rail|tabs-row)\s*{[^}]*backdrop-filter/s,
+      /:root\[data-theme="(?:dark|light|edohigan|yakou|shokou|crt|shinkai)"\] \.(?:file-tree-pane|workspace-sidebar-rail|tabs-row)\s*{[^}]*backdrop-filter/s,
     );
     expect(workspaceCss).toMatch(
       /:root\[data-theme="dark"\]\s*{[^}]*--native-shell-tint:\s*rgba\(14, 19, 17, 0\.12\)/s,
     );
     expect(workspaceCss).toMatch(
-      /:root\[data-theme="shokou"\]\s*{[^}]*--native-shell-tint:\s*rgba\(237, 244, 252, 0\.24\)/s,
+      /:root\[data-theme="shokou"\]\s*{[^}]*--native-shell-tint:\s*rgba\(236, 244, 252, 0\.48\)/s,
+    );
+    expect(workspaceCss).toMatch(
+      /:root\[data-theme="shinkai"\]\s*{[^}]*--native-shell-tint:\s*rgba\(15, 53, 72, 0\.54\)/s,
+    );
+    expect(workspaceCss).toMatch(
+      /:root\[data-theme="yakou"\]\s*{[^}]*--native-shell-tint:\s*rgba\(21, 21, 31, 0\.48\)/s,
     );
   });
 
@@ -93,18 +107,26 @@ describe("workspace.css", () => {
     expect(surface).toMatch(/overflow:\s*hidden/);
   });
 
-  it("keeps dark and Yakou diff rows high contrast", () => {
-    expect(workspaceCss).toMatch(
-      /:root\[data-theme="dark"\] \.diff-cell\.added,[^}]*:root\[data-theme="yakou"\] \.diff-line-number\.added\s*{[^}]*var\(--diff-added-row-bg\)/s,
+  it("routes diff markers and rows through shared theme tokens", () => {
+    // テーマ別セレクタではなくトークン参照で横断対応する。
+    // dark / yakou / crt / shinkai 等は themes.css 側で --diff-* を上書き。
+    expect(ruleBody(".diff-cell.added .diff-cell-marker")).toMatch(
+      /color:\s*var\(--diff-added-fg\)/,
     );
-    expect(workspaceCss).toMatch(
-      /:root\[data-theme="dark"\] \.diff-cell\.removed,[^}]*:root\[data-theme="yakou"\] \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-row-bg\)/s,
+    expect(ruleBody(".diff-cell.removed .diff-cell-marker")).toMatch(
+      /color:\s*var\(--diff-removed-fg\)/,
     );
-    expect(workspaceCss).toMatch(
-      /:root\[data-theme="dark"\] \.diff-cell\.added \.diff-cell-marker,[^}]*:root\[data-theme="yakou"\] \.diff-cell\.added \.diff-cell-marker\s*{[^}]*color:\s*var\(--diff-added-fg\)/s,
+    expect(ruleBody(".diff-cell.added,\n.diff-line-number.added")).toMatch(
+      /background:\s*var\(--diff-added-row-bg\)/,
     );
-    expect(workspaceCss).toMatch(
-      /:root\[data-theme="dark"\] \.diff-cell\.removed \.diff-cell-marker,[^}]*:root\[data-theme="yakou"\] \.diff-cell\.removed \.diff-cell-marker\s*{[^}]*color:\s*var\(--diff-removed-fg\)/s,
+    expect(ruleBody(".diff-cell.removed,\n.diff-line-number.removed")).toMatch(
+      /background:\s*var\(--diff-removed-row-bg\)/,
+    );
+    expect(themesCss).toMatch(
+      /:root\[data-theme="dark"\]\s*{[^}]*--diff-added-fg:\s*#91d7ad/s,
+    );
+    expect(themesCss).toMatch(
+      /:root\[data-theme="yakou"\]\s*{[^}]*--diff-added-fg:\s*#7fc8a0/s,
     );
   });
 

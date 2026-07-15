@@ -97,28 +97,28 @@
   background: var(--accent-gradient);
 }
 
+/* tabs-row の背景は workspace.css の --native-shell-tint に一本化。
+   ここでは境界と文字色だけをテーマ味付けする。 */
 :root[data-theme="yakou"] .tabs-row {
-  background: rgba(20, 20, 30, 0.88);
-  border-bottom-color: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--accent) 20%, transparent);
   color: var(--text);
 }
 
 :root[data-theme="shokou"] .tabs-row {
-  background: rgba(237, 244, 252, 0.72);
-  border-bottom-color: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--accent) 18%, transparent);
   color: var(--text);
 }
 
 :root[data-theme="yakou"] .empty-tabs,
 :root[data-theme="yakou"] .document-meta,
 :root[data-theme="yakou"] .tab-button {
-  color: #b8b8d4;
+  color: #bcbcd8;
 }
 
 :root[data-theme="shokou"] .empty-tabs,
 :root[data-theme="shokou"] .document-meta,
 :root[data-theme="shokou"] .tab-button {
-  color: #435f73;
+  color: #3f5b70;
 }
 
 :root[data-theme="yakou"] .tab-item.active .tab-button,
@@ -135,25 +135,49 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* アンビエントグロー（Yakou / 夜光 用） */
+/* ダイアログ外周のテーマ味付け (light/dark は既定シャドウのまま) */
 :root[data-theme="yakou"] .modal-backdrop {
-  background: rgba(8, 8, 14, 0.6);
+  background: rgba(8, 8, 14, 0.62);
+}
+
+:root[data-theme="edohigan"] .modal-backdrop {
+  background: rgba(18, 10, 20, 0.58);
+}
+
+:root[data-theme="shinkai"] .modal-backdrop {
+  background: rgba(2, 16, 28, 0.58);
+}
+
+:root[data-theme="crt"] .modal-backdrop {
+  background: rgba(0, 6, 2, 0.62);
 }
 
 :root[data-theme="yakou"] .close-dialog,
-:root[data-theme="yakou"] .preferences-dialog {
+:root[data-theme="yakou"] .preferences-dialog,
+:root[data-theme="edohigan"] .close-dialog,
+:root[data-theme="edohigan"] .preferences-dialog,
+:root[data-theme="shinkai"] .close-dialog,
+:root[data-theme="shinkai"] .preferences-dialog {
   border-color: color-mix(in srgb, var(--accent) 18%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 40px color-mix(in srgb, var(--accent-secondary) 6%, transparent);
+    0 0 36px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
 :root[data-theme="shokou"] .close-dialog,
 :root[data-theme="shokou"] .preferences-dialog {
-  border-color: color-mix(in srgb, var(--accent-secondary) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent-secondary) 16%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 32px color-mix(in srgb, var(--accent-secondary) 5%, transparent);
+    0 0 32px color-mix(in srgb, var(--accent-secondary) 6%, transparent);
+}
+
+:root[data-theme="crt"] .close-dialog,
+:root[data-theme="crt"] .preferences-dialog {
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 24px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 

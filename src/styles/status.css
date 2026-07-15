@@ -28,12 +28,19 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
-:root[data-theme="yakou"] .status-agent-dot {
+:root[data-theme="yakou"] .status-agent-dot,
+:root[data-theme="edohigan"] .status-agent-dot,
+:root[data-theme="shinkai"] .status-agent-dot {
   background: var(--accent-gradient);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-secondary) 40%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 42%, transparent);
 }
+
 :root[data-theme="shokou"] .status-agent-dot {
   box-shadow: 0 0 8px color-mix(in srgb, var(--accent-secondary) 40%, transparent);
+}
+
+:root[data-theme="crt"] .status-agent-dot {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 /* 未保存インジケータのピル表示 / Unsaved indicator pill

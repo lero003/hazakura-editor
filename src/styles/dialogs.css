@@ -76,16 +76,13 @@
   font-size: 17px;
 }
 
-:root[data-theme="yakou"] .preferences-header h2 {
+:root[data-theme="yakou"] .preferences-header h2,
+:root[data-theme="shokou"] .preferences-header h2,
+:root[data-theme="edohigan"] .preferences-header h2,
+:root[data-theme="shinkai"] .preferences-header h2 {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 800;
-}
-
-:root[data-theme="shokou"] .preferences-header h2 {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 800;
 }
@@ -522,9 +519,12 @@
   box-shadow: var(--shadow-sm);
 }
 
-:root[data-theme="yakou"] .dialog-actions button:first-child {
+:root[data-theme="yakou"] .dialog-actions button:first-child,
+:root[data-theme="edohigan"] .dialog-actions button:first-child,
+:root[data-theme="shinkai"] .dialog-actions button:first-child {
   background: var(--accent-gradient);
   border: 0;
+  color: var(--accent-contrast, #ffffff);
   padding: 7px 13px;
 }
 
@@ -532,7 +532,7 @@
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
-  color: #ffffff;
+  color: var(--accent-contrast, #ffffff);
 }
 
 @media (max-width: 1040px) {
@@ -835,7 +835,10 @@
 }
 
 :root[data-theme="dark"] .diagnostics-pane-actions button.diagnostics-pane-copy,
-:root[data-theme="yakou"] .diagnostics-pane-actions button.diagnostics-pane-copy {
+:root[data-theme="yakou"] .diagnostics-pane-actions button.diagnostics-pane-copy,
+:root[data-theme="edohigan"] .diagnostics-pane-actions button.diagnostics-pane-copy,
+:root[data-theme="crt"] .diagnostics-pane-actions button.diagnostics-pane-copy,
+:root[data-theme="shinkai"] .diagnostics-pane-actions button.diagnostics-pane-copy {
   color: var(--status-bg);
 }
 

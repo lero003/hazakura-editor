@@ -62,11 +62,10 @@
   background-color: var(--accent);
 }
 
-:root[data-theme="yakou"] .toggle-switch input:checked + .slider {
-  background: var(--accent-gradient);
-}
-
-:root[data-theme="shokou"] .toggle-switch input:checked + .slider {
+:root[data-theme="yakou"] .toggle-switch input:checked + .slider,
+:root[data-theme="shokou"] .toggle-switch input:checked + .slider,
+:root[data-theme="edohigan"] .toggle-switch input:checked + .slider,
+:root[data-theme="shinkai"] .toggle-switch input:checked + .slider {
   background: var(--accent-gradient);
 }
 
@@ -421,11 +420,20 @@
   background: color-mix(in srgb, var(--surface) 86%, var(--surface-muted) 14%);
 }
 
-:root[data-theme="dark"] .tab-item:not(.active):hover {
+/* 暗色テーマ共通: 黒ホバーは沈むので白の薄膜に。light/shokou は既定の黒薄膜を維持。 */
+:root[data-theme="dark"] .tab-item:not(.active):hover,
+:root[data-theme="yakou"] .tab-item:not(.active):hover,
+:root[data-theme="edohigan"] .tab-item:not(.active):hover,
+:root[data-theme="crt"] .tab-item:not(.active):hover,
+:root[data-theme="shinkai"] .tab-item:not(.active):hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
-:root[data-theme="dark"] .tab-item.active:hover {
+:root[data-theme="dark"] .tab-item.active:hover,
+:root[data-theme="yakou"] .tab-item.active:hover,
+:root[data-theme="edohigan"] .tab-item.active:hover,
+:root[data-theme="crt"] .tab-item.active:hover,
+:root[data-theme="shinkai"] .tab-item.active:hover {
   background: color-mix(in srgb, var(--surface) 90%, #ffffff 10%);
 }
 

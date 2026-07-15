@@ -30,6 +30,7 @@
   --accent-gradient: linear-gradient(135deg, #e8a0b0 0%, #c8b070 50%, #a080b8 100%);
   --accent-soft: #3a2838;
   --accent-glass: rgba(232, 160, 176, 0.12);
+  --accent-contrast: #2a1824;
   --danger: #e08088;
   --conflict: #d0a860;
   --status-bg: #1a121c;
@@ -88,7 +89,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
-  --shadow-accent: 0 4px 18px rgba(232, 160, 176, 0.2);
+  --shadow-accent: 0 4px 18px rgba(232, 160, 176, 0.22), 0 1px 3px rgba(200, 176, 112, 0.08);
+  --accent-glow: 0 0 36px rgba(232, 160, 176, 0.08);
 }
 :root[data-theme="edohigan"] .preference-preview-badge {
   letter-spacing: 0.08em;
@@ -115,18 +117,23 @@
   opacity: 0;
 }
 
-/* 前景: 薄いビネットのみ (screen 桃は廃止) */
+/* 前景: 薄い天頂の彼岸光 + 端のビネット (screen 桃は廃止) */
 .edohigan-overlay {
   background:
     radial-gradient(
-      ellipse 100% 50% at 50% 0%,
-      rgba(232, 160, 176, 0.06) 0%,
+      ellipse 110% 48% at 50% 0%,
+      rgba(232, 160, 176, 0.07) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 80% 40% at 70% 100%,
+      rgba(200, 176, 112, 0.04) 0%,
       transparent 55%
     ),
     radial-gradient(
       ellipse at center,
-      transparent 65%,
-      rgba(10, 6, 14, 0.35) 100%
+      transparent 64%,
+      rgba(10, 6, 14, 0.38) 100%
     );
   inset: 0;
   mix-blend-mode: normal;
@@ -135,13 +142,13 @@
   z-index: var(--z-crt-top);
 }
 
-/* 4. 文字 — 深海級の静かなグローのみ */
+/* 4. 文字 — 深海級の静かなグローのみ (読みやすさを保ちつつごく薄く) */
 :root[data-theme="edohigan"] .cm-content {
-  text-shadow: 0 0 8px rgba(232, 160, 176, 0.12);
+  text-shadow: 0 0 7px rgba(232, 160, 176, 0.1);
 }
 
 :root[data-theme="edohigan"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
-  text-shadow: 0 0 8px rgba(232, 160, 176, 0.1);
+  text-shadow: 0 0 7px rgba(232, 160, 176, 0.08);
 }
 
 :root[data-theme="edohigan"] .markdown-preview :is(code, pre) {

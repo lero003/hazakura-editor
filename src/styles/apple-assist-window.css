@@ -28,12 +28,26 @@
   overflow-y: auto;
 }
 
+/* 特殊テーマは main 窓のグラデ / シェーダーを inherit しない。
+   ツール窓はフラット面で機能面として読ませる。light/dark は --bg のまま。 */
 :root[data-theme="edohigan"] .apple-assist-window-shell {
   background: #322438;
 }
 
 :root[data-theme="shokou"] .apple-assist-window-shell {
   background: #eef5fb;
+}
+
+:root[data-theme="yakou"] .apple-assist-window-shell {
+  background: #14141e;
+}
+
+:root[data-theme="crt"] .apple-assist-window-shell {
+  background: #08120c;
+}
+
+:root[data-theme="shinkai"] .apple-assist-window-shell {
+  background: #0f3548;
 }
 
 .apple-assist-window-header {

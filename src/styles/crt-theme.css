@@ -94,16 +94,19 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.38), 0 1px 3px rgba(0, 0, 0, 0.24);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.52), 0 2px 8px rgba(0, 0, 0, 0.24);
-  --shadow-accent: 0 4px 20px rgba(95, 224, 106, 0.18);
+  --shadow-accent: 0 4px 20px rgba(95, 224, 106, 0.2);
+  --accent-glow: 0 0 28px rgba(95, 224, 106, 0.1);
 
   /* マウス連動の既定値 (中央)。JS 未起動時でも色収差が乗る。 */
   --crt-mx: 0.5;
   --crt-my: 0.5;
 }
 
-/* 2. .app-shell 背景 / CRT: near-black base */
+/* 2. .app-shell 背景 / CRT: near-black base with faint phosphor bloom */
 :root[data-theme="crt"] .app-shell {
-  background: #040a06;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 40%, rgba(30, 90, 48, 0.18), transparent 70%),
+    #040a06;
 }
 
 /* 3. 背景シェーダー canvas / 前景スキャンライン */
@@ -179,13 +182,12 @@
     calc((0.5 - var(--crt-mx)) * 1.2px) 0 rgba(40, 140, 255, 0.4);
 }
 
-/* UI テキスト (タブ・ツリー・ステータスバー・サイドバー): 薄く色収差。 */
+/* UI chrome は色収差なし。操作ラベルの可読を優先し、
+   色収差・明滅は本文 (CodeMirror / preview) に限定する。 */
 :root[data-theme="crt"]
   :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
   :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
-  text-shadow:
-    calc((var(--crt-mx) - 0.5) * 0.8px) 0 rgba(255, 40, 40, 0.35),
-    calc((0.5 - var(--crt-mx)) * 0.8px) 0 rgba(40, 140, 255, 0.3);
+  text-shadow: none;
 }
 
 /* 前景スキャンラインのドリフト。画面全体の注目領域 (フォーカス内) がある
