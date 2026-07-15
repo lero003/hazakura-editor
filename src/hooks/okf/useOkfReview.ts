@@ -171,6 +171,10 @@ export function useOkfReview({
 
   const closeOkfReview = useCallback(() => {
     requestSeqRef.current += 1;
+    if (jumpTimeoutRef.current != null) {
+      clearTimeout(jumpTimeoutRef.current);
+      jumpTimeoutRef.current = null;
+    }
     setOkfReviewVisible(false);
     setOkfReviewResult(null);
     setOkfReviewError(null);

@@ -307,9 +307,17 @@ describe("useOkfReview", () => {
       vi.advanceTimersByTime(50);
     });
     expect(goToLine).toHaveBeenCalledWith(3);
+
+    await act(async () => {
+      result.current.openOkfConcept("a.md", 0);
+    });
+    rerender({ workspaceRootPath: "/other" });
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+    expect(goToLine).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
 
-    rerender({ workspaceRootPath: "/other" });
     await waitFor(() => {
       expect(result.current.okfReviewResult).toBeNull();
     });

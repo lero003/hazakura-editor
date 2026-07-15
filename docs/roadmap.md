@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 OKF draft direction accepted)
+Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
 
 ## Current Position
 
@@ -15,8 +15,8 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.10.0`** (TestFlight submission
-  candidate; the published Mac App Store version remains `1.8.0`). Local
+- Package/app version in tree: **`1.11.0`** (TestFlight candidate preparation;
+  the published Mac App Store version remains `1.8.0`). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.8.0`.** App Review passed and the
   release was published (user-reported 2026-07-14). Release notes:
@@ -46,17 +46,17 @@ Current release state:
   rendering, L Mode Reference continuity, keyboard / VoiceOver semantics, kana
   UI copy, export preflight, theme cost, and failure-state messaging. No new
   product surface. Do not reopen without a reproduced hotfix.
-- **v1.9 Writing Loop Clarity is source complete and present in the `1.10.0`
-  candidate that will roll forward with v1.11.**
+- **v1.9 Writing Loop Clarity is source complete and rolled into the `1.11.0`
+  candidate.**
   W1–W4 organize Preview / Reference / e-book / Outline / Diff /
   L Mode around `書く・読む・確かめる` without adding chrome or a new model.
 - **v1.10 Single-document Structure Foundation implementation is complete.**
   One source-offset model now drives Outline,
   e-book, and EPUB; Outline adds read-only structure/advice plus one explicit,
   Undo-able heading-level transaction. The temporary-fixture Outline/advice/edit/
-  Undo path passed; `1.10.0` remains an internal candidate. Extended manual
+  Undo path passed; its changes are rolled into `1.11.0`. Extended manual
   breadth moves into v1.11 rather than reopening v1.10.
-- **v1.11 OKF Draft Compatibility Preview is the active design.** It adds one
+- **v1.11 OKF Draft Compatibility Preview is in local TestFlight candidate preparation.** It adds one
   explicit, bounded, read-only review of an OKF v0.1 Draft root, then runs the
   larger packaged distribution-confidence matrix. Full Book Scope remains v2.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,

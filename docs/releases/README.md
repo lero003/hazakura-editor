@@ -64,6 +64,8 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `1.11.0-app-store-release-notes.md` is the active TestFlight candidate copy;
+  upload, install, App Review, and public release are not yet claimed.
 - `1.10.0-app-store-release-notes.md` is retained as held TestFlight candidate
   copy; its v1.9 / v1.10 content is expected to roll forward after v1.11 rather
   than publish as the next App Store release.
@@ -81,6 +83,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
+- `1.11.0-app-store-release-notes.md` (active TestFlight candidate copy)
 - `1.10.0-app-store-release-notes.md` (held TestFlight candidate; not active publish copy)
 - `1.8.0-app-store-release-notes.md`
 - `1.7.0-app-store-release-notes.md`

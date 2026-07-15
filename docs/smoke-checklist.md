@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-14 (v1.10 structure smoke intake)
+Last reviewed: 2026-07-15 (v1.11 OKF candidate smoke preparation)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -84,6 +84,30 @@ normal/trailing page-break display and item 3's three overview suggestions plus
 `Cmd+Z` restoration to the original clean source. Source-line jump breadth and
 items 5–8 were not exercised; do not infer IME, Save As, recovery, e-book/EPUB,
 or signed TestFlight proof from this representative run.
+
+## v1.11 OKF Draft Compatibility Smoke
+
+Generate the deterministic local-only OKF bundle with:
+
+```bash
+npm run smoke:fixtures:v1.11-okf
+```
+
+1. Open the generated bundle in the freshly built desktop app.
+2. Run Command Palette `知識フォルダ（OKF）を点検`. Confirm the bounded disk
+   snapshot note and the required / OKF preparation / improvement / reference
+   hierarchy without rendered workspace HTML or images.
+3. Use `開いて修正` on a finding. Confirm the existing Safe Editor tab opens,
+   the panel leaves the editing path, and the editor moves to the finding line
+   when an offset is available.
+4. Make and save one disposable-fixture correction. Run
+   `変更後に再点検` or invoke the command again and confirm a fresh disk result.
+5. Run the same review from a folder context menu. Start a scan and confirm
+   Cancel is available; after failure/cancel, confirm Rerun preserves the last
+   completed result until replacement.
+
+This local built-app flow is not signed TestFlight evidence. Repeat the core
+review → edit → save → recheck path after TestFlight installation.
 
 ## v1.3 Daily Trust Test Intake
 

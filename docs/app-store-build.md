@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-07-15 (1.8.0 published; v1.11 design active)
+Last reviewed: 2026-07-15 (1.8.0 published; v1.11 candidate preparation)
 
 ## Purpose
 
@@ -44,12 +44,10 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `1.8.0` (App Review passed and publication was
   user-reported 2026-07-14; Daily Trust Completion on top of Reference
   Compare). See `docs/releases/1.8.0-app-store-release-notes.md`.
-- Current source / Developer version: `1.10.0` (prepared candidate; the
-  published Mac App Store version remains `1.8.0`). v1.10 implementation is
-  complete and the active product lane is v1.11 OKF Draft Compatibility
-  Preview. The next public release is deferred until that preview and the
-  v1.11 distribution-confidence gate pass. No version bump, upload, submit, or
-  publish is implied; see `docs/current-work.md`,
+- Current source / Developer version: `1.11.0` (TestFlight candidate
+  preparation; the published Mac App Store version remains `1.8.0`). The OKF
+  Draft Compatibility Preview is in tree. Upload, TestFlight installation,
+  submit, App Review, and public release remain separate actions; see `docs/current-work.md`,
   `docs/v1.11-okf-draft-preview-design.md`, and
   `docs/v1.8-plus-product-review-roadmap.md`.
 - Latest local App Store package candidate metadata (version, build

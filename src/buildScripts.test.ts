@@ -629,37 +629,37 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `1.8.0` is published",
-        "Current package/app version is `1.10.0`",
+        "Current package/app version is `1.11.0`",
         "The published App Store version is `1.8.0`",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `1.8.0`",
-        "Current source / Developer version: `1.10.0`",
+        "Current source / Developer version: `1.11.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`1.10.0`",
+        "Current package/app version: **`1.11.0`",
         "Published Mac App Store version: **`1.8.0`",
-        "v1.11 OKF Draft Compatibility Preview S0–S3 source is landed",
+        "v1.11 OKF Draft Compatibility Preview S0–S3 source is landed; local candidate verification is in progress",
       ],
       "docs/current-work.md": [
-        "Scope: v1.11 OKF Draft Compatibility Preview; S0–S3 source landed; S4 next",
+        "Scope: v1.11 OKF Draft Compatibility Preview; local TestFlight candidate preparation",
         "Active Queue — v1.11 OKF Draft Compatibility Preview",
       ],
       "docs/development-automation.md": [
         "Phase: **v1.11 OKF Draft Compatibility Preview**",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree is **`1.10.0`",
+        "Package/app version in tree is **`1.11.0`",
         "Published Mac App Store version is **`1.8.0`",
         "v1.11 OKF Draft Compatibility Preview is the active implementation lane",
       ],
       "docs/roadmap.md": [
-        "Package/app version in tree: **`1.10.0`",
+        "Package/app version in tree: **`1.11.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "v1.11 OKF Draft Compatibility Preview is the active design",
+        "v1.11 OKF Draft Compatibility Preview is in local TestFlight candidate preparation",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [
-        "Status: Accepted design; S0–S3 source landed; S4 distribution gate open",
+        "Status: Accepted design; S0–S3 source landed; local candidate gate active",
         "Version 0.1 — Draft",
         "commit: [`ee67a5c`]",
         "`MAX_OKF_MARKDOWN_FILES`",

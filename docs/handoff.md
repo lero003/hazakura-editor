@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.11 OKF review action loop hardened; packaged smoke next)
+Last reviewed: 2026-07-15 (v1.11 TestFlight candidate preparation)
 
 ## Current State
 
-- Package/app version in tree is **`1.10.0`** (TestFlight submission
-  candidate); the published Mac App
+- Package/app version in tree is **`1.11.0`** (TestFlight candidate
+  preparation); the published Mac App
   Store version is **`1.8.0`**. App Review passed and publication was user-reported on
   2026-07-14 (build `89`). Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
@@ -30,7 +30,7 @@ Last reviewed: 2026-07-15 (v1.11 OKF review action loop hardened; packaged smoke
   fixed Command Palette labels staying stale when locale changed while open,
   aligned the kana returning CTA, and repaired living-doc release/lane checks.
   v1.9 stayed source-complete without its own public release and is present
-  inside the held `1.10.0` candidate that will roll forward with v1.11.
+  inside the `1.11.0` candidate rather than shipping alone.
 - **v1.10 S1–S4 implementation is complete and held as a candidate with
   representative packaged smoke.** The shared
   source-offset model drives Outline, e-book chapters/page-breaks, and EPUB
@@ -56,7 +56,8 @@ Last reviewed: 2026-07-15 (v1.11 OKF review action loop hardened; packaged smoke
   present), hides the modal without losing the in-memory result, and status-
   hints re-invocation; reopening/rerunning performs a fresh explicit disk scan,
   and workspace replacement discards the retained result and cancels the review.
-  Packaged S3 smoke and S4 are next. The contract remains an
+  Local candidate verification is active; signed TestFlight interaction is
+  still separate evidence. The contract remains an
   explicit, bounded, cancellable, read-only review of one user-selected
   workspace root or subfolder against official OKF v0.1 Draft. It may show
   conformance / advice and open concepts through existing Markdown tabs. It must
@@ -129,14 +130,14 @@ Last reviewed: 2026-07-15 (v1.11 OKF review action loop hardened; packaged smoke
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.11 S3 packaged smoke then S4:** source has Command Palette /
+1. **v1.11 local candidate gate:** source has Command Palette /
    context menu `知識フォルダ（OKF）を点検`, writer-facing status hierarchy
    (ordinary manuscript vs knowledge-folder framing, priority findings,
    details disclosure), and existing-tab open. No full OKF scan on workspace
    open. Optional polish: in-panel guide/example, File menu, sidebar chip on
-   root `index.md` only. Run packaged OKF flow, then distribution-confidence
-   matrix. In-tree version stays `1.10.0`; do not prepare release artifacts
-   without explicit approval.
+   root `index.md` only. Finish packaged OKF and distribution-confidence
+   checks, then generate the local `1.11.0` TestFlight pkg. Upload remains a
+   separate explicit action.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
