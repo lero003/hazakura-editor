@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
+Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
 
 ## Current Position
 
@@ -15,13 +15,15 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.12.0`** (v1.12 App Review is in progress,
-  user-reported 2026-07-16;
-  the published Mac App Store version remains `1.8.0`). Local
-  package provenance lives in `docs/internal/app-store-candidates/latest.json`.
-- **Published Mac App Store version: `1.8.0`.** App Review passed and the
-  release was published (user-reported 2026-07-14). Release notes:
-  `docs/releases/1.8.0-app-store-release-notes.md`.
+- Package/app version in tree: **`1.13.0`** (v1.13+ try-and-error refinement
+  development line after published `1.12.0`). Local package provenance lives in
+  `docs/internal/app-store-candidates/latest.json`.
+- **Published Mac App Store version: `1.12.0`.** App Review passed and the
+  release was published (user-reported 2026-07-17). Release notes:
+  `docs/releases/1.12.0-app-store-release-notes.md`. GitHub source tag:
+  `v1.12.0`.
+- **v1.8 (`1.8.0`) is closed and published** (historical store baseline before
+  `1.12.0`). Release notes: `docs/releases/1.8.0-app-store-release-notes.md`.
 - **v1.7 (`1.7.0`) is closed and published.** App Review passed and the
   release was published (user-reported 2026-07-12). Release notes:
   `docs/releases/1.7.0-app-store-release-notes.md`.
@@ -61,13 +63,12 @@ Current release state:
   explicit, bounded, read-only review of an OKF v0.1 Draft root, then runs the
   larger packaged distribution-confidence matrix. Full Book Scope remains v2.
   Shared pin / upgrade process: `docs/okf-spec-pin.md`.
-- **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
+- **v1.12 OKF Starter Scaffold is closed and published as `1.12.0`.** Explicit
   multi-file starters (minimal + book-like) from palette, sidebar, context menu,
-  and OS File menu. Source, representative four-entry smoke, and signed local
-  package gates passed; App Review is now Apple-side (user-reported 2026-07-16).
-  Templates and integrity checks share the pin in
+  and OS File menu. App Review passed and the release was published
+  (user-reported 2026-07-17). Templates and integrity checks share the pin in
   `docs/okf-spec-pin.md`. Contract: `docs/v1.12-okf-scaffold-design.md`.
-- **Post-v1.12 is a try-and-error refinement era, not a fixed feature train.**
+- **Post-v1.12 is an active try-and-error refinement era, not a fixed feature train.**
   Theme pools (Signal & Silence, Continuity, Writing Loop, Trust edges,
   **Media boundaries**, Structure/OKF depth, Distribution confidence) supply
   hypotheses. Each run tries one reversible slice, keeps or drops it with

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 scaffold + shared OKF pin)
+Last reviewed: 2026-07-17 (v1.13+ try-and-error after published v1.12)
 
 ## Purpose
 
@@ -17,26 +17,26 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.12 OKF Starter Scaffold**, after held v1.11 local signed TestFlight
-candidate ready after S0–S4 verification. Prefer a verified no-op unless a
-candidate blocker reproduces; upload remains a human-approved release action.
-Direction: `docs/v1.12-okf-scaffold-design.md`, `docs/okf-spec-pin.md`,
-`docs/v1.11-okf-draft-preview-design.md`, and
-`docs/v1.8-plus-product-review-roadmap.md`.
+Phase: **v1.13+ try-and-error refinement**, after published Mac App Store
+`1.12.0` (OKF starter scaffold + rolled-forward v1.9–v1.11). Prefer one
+hypothesis per run with Keep / Iterate / Revert. Do not reopen published
+`1.12.0` without a reproduced hotfix and explicit decision. Direction:
+`docs/v1.13-plus-refinement-roadmap.md`,
+`docs/v1.13-interaction-clarity-plan.md`, and `docs/current-work.md`.
 
 For recurring automation, use the Active Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
 and should be reused only when a future pre-review lane explicitly
-reopens it. Each run should pick the first open slice whose required
-environment is available and close it as `implemented`,
-`manual-blocked`, or `verified no-op`.
+reopens it. Each run should pick one open hypothesis whose required
+environment is available and close it as `implemented` (Keep),
+`manual-blocked`, `verified no-op`, or `reverted`.
 
 Prefer work in this order:
 
-1. The first open v1.11 slice from `docs/current-work.md`. S0 fixtures, S1 pure
-   model (`yaml` direct dependency), S2 async cancellable discovery, and the S3
-   read-only review surface are source-hardened. Prefer candidate-gate
-   verification; do not reopen S0–S3 without a reproduced regression.
+1. The first suggested Theme A experiment from `docs/current-work.md`
+   (Command availability) unless hands-on friction clearly points elsewhere.
+   Revalidate live source before coding; some static UX notes are already
+   covered.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

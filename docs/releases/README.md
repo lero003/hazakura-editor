@@ -25,11 +25,12 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`1.8.0` is approved and published** on the Mac App Store (user-reported
-  2026-07-14): Daily Trust Completion — L Mode Reference continuity, bounded
-  long-reference rendering, deterministic Rust suite isolation, keyboard /
-  VoiceOver semantics, kana UI copy, export preflight, theme cost, and
-  failure-state messaging. See `1.8.0-app-store-release-notes.md`.
+- **`1.12.0` is approved and published** on the Mac App Store (user-reported
+  2026-07-17): OKF starter scaffold plus rolled-forward v1.9 writing loop,
+  v1.10 structure foundation, and v1.11 OKF review. See
+  `1.12.0-app-store-release-notes.md` and `1.12.0-source-tag.release.md`.
+- **`1.8.0` is approved and published** (historical; user-reported
+  2026-07-14): Daily Trust Completion. See `1.8.0-app-store-release-notes.md`.
 - **`1.7.0` is approved and published** on the Mac App Store (user-reported
   2026-07-12): Reference Compare plus trust / daily-use hardening. See
   `1.7.0-app-store-release-notes.md`.
@@ -64,9 +65,9 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
-- `1.12.0-app-store-release-notes.md` is the active v1.12 candidate / App Store
-  Connect copy; Mac App Store publication remains separate from the GitHub
-  source tag `v1.12.0`.
+- `1.12.0-app-store-release-notes.md` is the **published** v1.12 App Store
+  copy (user-reported 2026-07-17). Next refinement work uses package
+  `1.13.0+` and is not yet a store candidate.
 - `1.11.0-app-store-release-notes.md` is retained as the prior OKF review
   candidate copy rolled into `1.12.0`.
 - `1.10.0-app-store-release-notes.md` is retained as held TestFlight candidate
@@ -85,7 +86,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
-- `1.12.0-app-store-release-notes.md` (active v1.12 candidate / Connect copy)
+- `1.12.0-app-store-release-notes.md` (published Mac App Store `1.12.0`)
 - `1.12.0-source-tag.release.md` (GitHub source / local-app tag body)
 - `1.11.0-app-store-release-notes.md` (prior OKF review candidate; rolled into 1.12)
 - `1.10.0-app-store-release-notes.md` (held TestFlight candidate history)

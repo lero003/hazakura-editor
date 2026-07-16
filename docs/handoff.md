@@ -1,24 +1,21 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for v1.12 review and post-review try-and-error refinement
+Scope: Short handoff for published v1.12 and open v1.13+ refinement
 Authority: Medium
-Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
+Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
 
 ## Current State
 
-- Package/app version in tree is **`1.12.0`**. GitHub source tag **`v1.12.0`**
-  is published (source archive only; no binary assets). App Review is in
-  progress for the v1.12 OKF scaffold lane (user-reported 2026-07-16). The
-  published Mac App Store version is **`1.8.0`**. App Review passed and
-  publication was user-reported on 2026-07-14 (build `89`). Local package
-  provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- Selected and published candidate is **`1.8.0` build `89`** from source commit
-  `4f4abaf7`. App/package signatures, sandbox and both helpers' inherited
-  entitlements, version/build/minimum-OS metadata, package XML, and checksum
-  provenance passed on 2026-07-13 before upload. Apple processing completed and
-  the release was published; extended signed TestFlight interaction and spoken
-  VoiceOver remain follow-up evidence.
+- Package/app version in tree is **`1.13.0`** (v1.13+ development line).
+  GitHub source tag **`v1.12.0`** is published (source archive only; no binary
+  assets). The published Mac App Store version is **`1.12.0`** (App Review
+  passed and release published, user-reported 2026-07-17). Prior store
+  baseline **`1.8.0` build `89`** remains historical. Local package provenance
+  lives in ignored `docs/internal/app-store-candidates/latest.json`.
+- Selected and published store line is **`1.12.0`**. Do not move published
+  tags or reopen without a reproduced hotfix. Extended signed TestFlight
+  interaction and spoken VoiceOver remain ongoing quality evidence.
 - Build `89` contains the PDF-reference zoom simplification: fit-page was
   removed, 150% now means 1.5 times the fitted pane width, and the zoomed page
   supports native two-axis scrolling plus keyboard panning. Static package
@@ -45,7 +42,7 @@ Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
   three overview advice kinds, 803-line advice, dirty transition, and single-step
   Undo restoration. Source-jump breadth, IME, Save As, recovery, e-book/EPUB,
   and signed TestFlight remain open manual evidence and move into v1.11 S4.
-- **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
+- **v1.12 OKF Starter Scaffold is closed and published as `1.12.0`.** Explicit
   create of minimal / book-like Markdown trees from Command Palette, folder
   context menu, workspace **新規 (+)**, and OS **File → 知識フォルダのひな形**.
   Bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable).
@@ -68,11 +65,10 @@ Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
   open/edit/recheck. Explicit, bounded, read-only; no startup scan, auto-repair,
   Book Scope, or multi-file export. Contract:
   `docs/v1.11-okf-draft-preview-design.md`.
-- `v1.12.0` is the current immutable GitHub source tag (source archive only).
-  `v1.8.0` remains the prior published source tag. The published signed pkg is
-  **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
-  checks passed before upload. Do not move published tags or mutate published
-  assets.
+- `v1.12.0` is the current immutable GitHub source tag and published Mac App
+  Store version line (source archive on GitHub; store binary via App Store).
+  `v1.8.0` / build `89` remain prior published history. Do not move published
+  tags or mutate published assets.
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
@@ -103,7 +99,7 @@ Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
-- Published Mac App Store version is **`1.8.0`**. Raw App Store Connect logs
+- Published Mac App Store version is **`1.12.0`**. Raw App Store Connect logs
   stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
@@ -134,18 +130,18 @@ Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.12 App Review:** keep the submitted candidate stable and treat App
-   Store Connect as authoritative. Do not fold post-submission UX polish into
-   v1.12 without a reproduced hotfix blocker and explicit decision.
-2. **Post-v1.12 refinement (try-and-error):** follow
+1. **v1.13+ try-and-error refinement:** follow
    `docs/v1.13-plus-refinement-roadmap.md`. One hypothesis per run; Keep /
    Iterate / Revert with evidence. Theme A pool:
    `docs/v1.13-interaction-clarity-plan.md` (Command availability is a good
    first bias, not a mandatory order). Jump to Continuity / Writing Loop /
    Trust edges when hands-on friction is clearer. **Media boundaries**
    (outside-local / remote Preferences, export materialize, optional assets
-   rewrite): `docs/v1.xx-image-media-boundary-plan.md` — planning only; do not
-   implement into the in-review v1.12 candidate. Do not batch theme packages.
+   rewrite): `docs/v1.xx-image-media-boundary-plan.md` — still planning; default
+   remains no automatic remote or outside-workspace image load. Do not batch
+   theme packages. Do not reopen published `1.12.0` without a hotfix decision.
+2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
+   explicit user approval for a patch release.
 3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering

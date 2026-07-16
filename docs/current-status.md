@@ -3,36 +3,36 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
+Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`1.12.0`** across npm, Tauri, Cargo,
-  and lockfile metadata. The GitHub source / local-app tag is **`v1.12.0`**
-  (source archive and release notes only; no binary assets). See
-  `docs/releases/1.12.0-source-tag.release.md`. The published Mac App Store
-  version remains `1.8.0` until a later store publication supersedes it.
-  v1.12 has a verified local signed candidate containing the OKF starter
-  scaffolds, and App Review is in progress (user-reported 2026-07-16).
-  Apple-side outcome remains separate from the GitHub source tag.
-  Local package provenance (build counter, pkg path,
-  SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- **Post-review refinement is planning-only until v1.12 closes.** Direction is
-  try-and-error: `docs/v1.13-plus-refinement-roadmap.md`. Theme A candidates:
-  `docs/v1.13-interaction-clarity-plan.md`. Image / media loosening (settings,
-  consent, export materialize) is planned in
-  `docs/v1.xx-image-media-boundary-plan.md` and is not implemented yet; default
-  remains no automatic remote or outside-workspace image load. Do not mix
-  refinement source into the submitted v1.12 candidate without an explicit
-  hotfix decision.
-- **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
-  and the release was published (user-reported 2026-07-14). App/package
-  signatures, sandbox and helper entitlements, version/build,
-  minimum macOS version, and checksum provenance passed local verification on
-  2026-07-13 before upload. Extended TestFlight interaction breadth and
-  spoken VoiceOver remain v1.8 follow-up evidence rather than publication
-  blockers.
+- Current package/app version: **`1.13.0`** across npm, Tauri, Cargo,
+  and lockfile metadata (post-publish development line for v1.13+
+  refinement). The GitHub source / local-app tag for the closed scaffold
+  lane is **`v1.12.0`** (source archive and release notes only; no binary
+  assets). See `docs/releases/1.12.0-source-tag.release.md`.
+- **Published Mac App Store version: `1.12.0`.** App Review passed and the
+  release was published (user-reported 2026-07-17). It ships v1.9 Writing
+  Loop Clarity, v1.10 Single-document Structure Foundation, v1.11 OKF Draft
+  Compatibility Preview, and v1.12 OKF Starter Scaffold. Release notes:
+  `docs/releases/1.12.0-app-store-release-notes.md`. Local package provenance
+  (build counter, pkg path, SHA-256) for candidates lives in ignored
+  `docs/internal/app-store-candidates/latest.json`. Do not reopen `1.12.0`
+  without a reproduced hotfix; published tags remain immutable.
+- **v1.13+ try-and-error refinement is open.** Direction:
+  `docs/v1.13-plus-refinement-roadmap.md`. Theme A candidates:
+  `docs/v1.13-interaction-clarity-plan.md` (Command availability is a good
+  first bias). Image / media loosening (settings, consent, export materialize)
+  is planned in `docs/v1.xx-image-media-boundary-plan.md` and is not
+  implemented yet; default remains no automatic remote or outside-workspace
+  image load. One hypothesis per run; version numbers are shipping boxes for
+  Keep results.
+- **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
+  (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
+  breadth and spoken VoiceOver remain ongoing quality evidence rather than
+  reasons to reopen published tags.
 - **The v1.8 PDF-reference zoom adjustment is included in published
   build `89`.** The duplicate-looking fit-page control was removed;
   PDF reference display now offers fit width plus a raster-independent 150%
@@ -67,26 +67,20 @@ Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
   IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof
   and move into the v1.11 distribution-confidence matrix rather than reopening
   v1.10.
-- **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
+- **v1.12 OKF Starter Scaffold is closed and published as `1.12.0`.** Explicit
   Command Palette / folder-context actions create a new uniquely named folder
   with fixed minimal or book-like Markdown templates (OKF v0.1 Draft pin
   `ee67a5c`), open `index.md`, and invite a separate explicit review. No Book
   Scope, auto-repair, or multi-file export. Contract:
-  `docs/v1.12-okf-scaffold-design.md`.
+  `docs/v1.12-okf-scaffold-design.md`. Release notes:
+  `docs/releases/1.12.0-app-store-release-notes.md`. Source tag: `v1.12.0`.
   The source-hardened path materializes the actual local creation date, rejects
   unclean relative paths / NUL content, creates nested directories without
   following an existing tree, and cleans up only artifacts it created. Tree
   refresh or `index.md` open failures remain visible instead of being replaced
   by a success status. The sidebar New menu exposes expanded state and standard
-  arrow/Home/End/Escape keyboard movement. Full source, Rust, App Store preview
-  build, and sandbox/helper entitlement checks pass. A representative hands-on
-  pass created both templates through all four entry points, preserved existing
-  roots with `-2` collision names, expanded the actual local date, opened
-  `index.md`, and returned a required-clean explicit OKF review. The signed
-  universal App Store package then passed app/helper signature, entitlement,
-  notice, installer-signature, metadata, and checksum verification. Candidate
-  specifics remain in `docs/internal/app-store-candidates/latest.json`;
-  TestFlight upload/install and hands-on device testing remain user-side proof.
+  arrow/Home/End/Escape keyboard movement. Local candidate gates and App Review
+  passed; publication was user-reported 2026-07-17.
 - **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.**
   Fixtures, a `yaml`-backed pure model, async cancellable Rust discovery, and
   the OKF review surface (Command Palette + folder context menu + read-only
@@ -356,9 +350,9 @@ Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: **`1.8.0`** (App Review passed and release
-  published, user-reported 2026-07-14). It adds the v1.8 Daily Trust Completion
-  hardening on top of the v1.7 Reference Compare and earlier v1 surfaces.
+- Published Mac App Store version: **`1.12.0`** (App Review passed and release
+  published, user-reported 2026-07-17). Ships v1.9–v1.12 writing / structure /
+  OKF review / starter scaffold. Prior store baseline `1.8.0` remains historical.
 - Latest GitHub source / local-app tag: `v1.12.0` (source archive only; see
   `docs/releases/1.12.0-source-tag.release.md`).
 - Latest local App Store / TestFlight package candidate metadata
@@ -769,22 +763,23 @@ baseline, and smoke evidence are archived under
 - `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, v1.11 OKF / distribution-confidence, and v2 sequencing.
 - `docs/v1.10-single-document-structure-design.md`: completed v1.10 structure contract.
 - `docs/v1.11-okf-draft-preview-design.md`: completed v1.11 implementation and verification contract.
-- `docs/v1.12-okf-scaffold-design.md`: current local-candidate implementation and verification contract.
+- `docs/v1.12-okf-scaffold-design.md`: closed / published v1.12 implementation
+  and verification contract.
+- `docs/v1.13-plus-refinement-roadmap.md`: active post-v1.12 experiment direction.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
 
-1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
-   (user-reported 2026-07-14). Do not move its public tag or reopen it without
-   a reproduced hotfix need.
-2. **Upload the local `1.12.0` candidate only with explicit approval.** On the
-   resulting TestFlight install, repeat both scaffold templates through the
-   four entry points and the explicit OKF review; keep unknown fields/types and
-   broken links tolerant.
-3. Keep v1.9–v1.11 implementation closed inside the v1.12 candidate. Confirm
-   their remaining IME, Save As, recovery, e-book/EPUB, a11y, and long/failure
-   breadth on the signed TestFlight install. Do not infer signed interaction
-   evidence from source or local-app checks.
+1. Treat **v1.12 (`1.12.0`) as published and closed** after App Review passed
+   (user-reported 2026-07-17). Do not move its public tag or reopen it without
+   a reproduced hotfix need. Prior baselines (`1.8.0` and earlier) stay closed.
+2. **Start v1.13+ try-and-error refinement** from `docs/current-work.md`.
+   Recommended first bias: Theme A Command availability
+   (`docs/v1.13-interaction-clarity-plan.md`). One hypothesis per run; Keep /
+   Iterate / Revert with evidence. Do not batch theme packages.
+3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
+   Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and
+   VoiceOver breadth remain quality follow-up, not reasons to reopen `1.12.0`.
 4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces. Historical notes remain in
    `docs/archive/operations/v1.1-v1.2-followup.md` and
@@ -801,4 +796,4 @@ baseline, and smoke evidence are archived under
    `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
 8. Do not tag, upload, submit, or publish without explicit approval. In-tree
-   version is `1.12.0`; the published Mac App Store version is `1.8.0`.
+   version is `1.13.0`; the published Mac App Store version is `1.12.0`.
