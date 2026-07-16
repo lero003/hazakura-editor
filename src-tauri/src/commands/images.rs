@@ -108,7 +108,9 @@ pub(crate) fn fetch_remote_image_with_label(
     let agent = ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(8))
         .timeout_read(Duration::from_secs(12))
-        .redirects(3)
+        // Redirects are disabled so an https URL cannot make a native request
+        // through an intermediate http hop before the final URL is checked.
+        .redirects(0)
         .build();
 
     let response = agent
@@ -123,6 +125,10 @@ pub(crate) fn fetch_remote_image_with_label(
         )
         .call()
         .map_err(|err| format!("Remote image fetch failed: {err}"))?;
+
+    if let Some(message) = remote_image_redirect_error(response.status()) {
+        return Err(message);
+    }
 
     let final_url = response.get_url().to_string();
     if !final_url.to_ascii_lowercase().starts_with("https://") {
@@ -165,6 +171,12 @@ pub(crate) fn fetch_remote_image_with_label(
         data_url: format!("data:{mime_type};base64,{}", encode_base64(&bytes)),
         size: bytes.len() as u64,
     })
+}
+
+pub(crate) fn remote_image_redirect_error(status: u16) -> Option<String> {
+    (300..400)
+        .contains(&status)
+        .then(|| "Remote image redirects are not followed; use the final https URL.".to_string())
 }
 
 /// Ensure `path` resolves under at least one approved root (canonical).

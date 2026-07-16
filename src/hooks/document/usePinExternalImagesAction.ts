@@ -6,22 +6,27 @@
 import { useCallback, type RefObject } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { pinExternalImagesToAssets } from "../../features/editor/pinExternalImagesToAssets";
+import { listPinableImageReferences } from "../../features/editor/pinExternalImages";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import {
   assertTabEditable,
 } from "../../features/editor/appleAssistEditGuard";
 import {
+  confirmPinRemoteImages,
   fetchRemoteImage,
   importImageFromPath,
   savePastedImage,
 } from "../../lib/tauri";
 import type { AppleAssistGenerationLock, EditorTab } from "../../types";
+import type { MenuLanguage } from "../../types";
+import { getPinRemoteConfirmationCopy } from "../../lib/locale/commandPalette";
 
 type UsePinExternalImagesActionOptions = {
   activeTab: EditorTab | null;
   appleAssistGenerationLock?: AppleAssistGenerationLock | null;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   mediaAccess?: MediaImageAccessOptions | null;
+  menuLanguage?: MenuLanguage;
   setStatus: (message: string) => void;
   workspaceRootPath: string | null;
 };
@@ -39,6 +44,7 @@ export function usePinExternalImagesAction({
   appleAssistGenerationLock = null,
   editorPaneRef,
   mediaAccess = null,
+  menuLanguage = "en",
   setStatus,
   workspaceRootPath,
 }: UsePinExternalImagesActionOptions) {
@@ -65,6 +71,19 @@ export function usePinExternalImagesAction({
       editorPaneRef.current?.getActiveDocument()?.text ?? activeTab.contents;
     if (!source.trim()) {
       setStatus("No image references to pin");
+      return;
+    }
+
+    const requiresRemoteConfirmation =
+      !mediaAccess?.loadRemoteImages &&
+      listPinableImageReferences(source).some((reference) =>
+        /^https:\/\//i.test(reference.src),
+      );
+    if (
+      requiresRemoteConfirmation &&
+      !(await confirmPinRemoteImages(getPinRemoteConfirmationCopy(menuLanguage)))
+    ) {
+      setStatus("Image pin cancelled");
       return;
     }
 
@@ -130,6 +149,7 @@ export function usePinExternalImagesAction({
     appleAssistGenerationLock,
     editorPaneRef,
     mediaAccess,
+    menuLanguage,
     setStatus,
     workspaceRootPath,
   ]);

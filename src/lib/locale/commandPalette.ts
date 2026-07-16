@@ -588,6 +588,31 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
   };
 }
 
+export function getPinRemoteConfirmationCopy(lang: MenuLanguage): {
+  message: string;
+  title: string;
+} {
+  if (lang === "ja") {
+    return {
+      title: "リモート画像を取得",
+      message:
+        "この文書の https 画像を取得して workspace の assets/ に保存します。画像サーバーに通信してもよいですか？",
+    };
+  }
+  if (lang === "kana") {
+    return {
+      title: "リモート がぞうを とりこむ",
+      message:
+        "この ふみの https がぞうを とりこみ、workspace の assets/ に ほぞんします。がぞうサーバーに つうしんしても よいですか？",
+    };
+  }
+  return {
+    title: "Fetch remote images",
+    message:
+      "Fetch this document's https images and save them under workspace assets/? This will contact the image servers.",
+  };
+}
+
 export function commandPaletteEntry(
   copy: CommandPaletteCopy,
   id: keyof CommandPaletteCopy["commands"],

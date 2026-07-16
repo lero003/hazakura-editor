@@ -214,6 +214,13 @@ fn open_workspace_image_rejects_paths_outside_root() {
             .expect_err("http remote must be rejected");
     assert!(http_err.contains("https"), "{http_err}");
 
+    assert!(remote_image_redirect_error(299).is_none());
+    assert_eq!(
+        remote_image_redirect_error(302).as_deref(),
+        Some("Remote image redirects are not followed; use the final https URL.")
+    );
+    assert!(remote_image_redirect_error(400).is_none());
+
     let _ = fs::remove_dir_all(root);
     let _ = fs::remove_dir_all(outside);
 }

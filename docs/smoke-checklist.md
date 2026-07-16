@@ -487,17 +487,21 @@ outside-local Ask, export materialize On, no silent Markdown rewrite.
 
 ### M4 — Pin external images (Command Palette)
 
-1. With `book/` workspace, `chapter.md` still using `../assets/cover.png`, open
+1. Keep remote Preview **Off** and include one `https` image. Run pin, decline the
+   warning, and confirm no remote request, asset copy, or source change occurs.
+2. Run pin again and approve the warning; a missing remote may fail soft, while
+   the local outside-workspace image can still be pinned.
+3. With `book/` workspace, `chapter.md` still using `../assets/cover.png`, open
    Command Palette and run **外部画像を assets に固定…** /
    **Pin external images into assets…**.
-2. Confirm status reports pinned count and **save to keep on disk**.
-3. Confirm buffer is dirty, Markdown now references `assets/…` under the workspace,
+4. Confirm status reports pinned count and **save to keep on disk**.
+5. Confirm buffer is dirty, Markdown now references `assets/…` under the workspace,
    and a new file exists under workspace `assets/`.
-4. **Cmd+Z** once restores the previous Markdown (one Undo step). Redo may restore
+6. **Cmd+Z** once restores the previous Markdown (one Undo step). Redo may restore
    the pin edit.
-5. Save explicitly; confirm disk source matches the pinned paths. Confirm Preview
+7. Save explicitly; confirm disk source matches the pinned paths. Confirm Preview
    loads the new workspace-relative image without outside approval.
-6. Refuse path: with Assist generation lock or IME composition active if available,
+8. Refuse path: with Assist generation lock or IME composition active if available,
    confirm pin is refused without partial rewrite (Assist-lock message or status).
 
 ### Preferences surface

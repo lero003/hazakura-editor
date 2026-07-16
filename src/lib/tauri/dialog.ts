@@ -194,6 +194,17 @@ export async function confirmImportMarkdownDraft(options: {
   });
 }
 
+/** Confirm the network side effect when pinning remote images while Preview remote is Off. */
+export async function confirmPinRemoteImages(options: {
+  message: string;
+  title: string;
+}): Promise<boolean> {
+  return confirm(options.message, {
+    title: options.title,
+    kind: "warning",
+  });
+}
+
 // macOS save-as dialogs sometimes append a duplicate extension
 // when the user types "foo.md" against a filter that lists
 // ".md" (the OS sees "foo.md.md"). Strip the duplicate only

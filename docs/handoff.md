@@ -137,11 +137,12 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    is Keep.** Next bias: Continuity, Writing Loop, Trust edges, Media
    boundaries, or hands-on friction. **Media boundaries** (outside-local /
    remote Preferences, export materialize, optional assets rewrite):
-   `docs/v1.xx-image-media-boundary-plan.md` — still planning; default remains
+   `docs/v1.xx-image-media-boundary-plan.md`; default remains
    **Theme G M0–M4 Keep** (honest blocks; outside-local consent; remote Pref
    default Off; export materialize; palette pin to assets + Undo). Manual smoke
    checklist: `docs/smoke-checklist.md` § Theme G. Defaults: no automatic remote
-   / unapproved outside load. Next: packaged hands-on smoke + external review.
+   / unapproved outside load. Source review fixed redirect traversal and added
+   remote-pin confirmation. Next: packaged hands-on smoke.
    Do not reopen published `1.12.0` without a hotfix decision.
 2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
    explicit user approval for a patch release.

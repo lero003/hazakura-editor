@@ -1,8 +1,8 @@
 # External Code Review Brief — Theme G Media Boundaries (v1.13)
 
-Status: Advisory packet for external reviewer  
-Scope: Theme G M0–M4 source (post-published `1.12.0`)  
-Date: 2026-07-17  
+Status: Reviewed; two boundary fixes applied before packaging
+Scope: Theme G M0–M4 source (post-published `1.12.0`)
+Date: 2026-07-17
 Audience: Outside code/security/product reviewer (not App Store submission)
 
 ## Product / release target
@@ -10,8 +10,8 @@ Audience: Outside code/security/product reviewer (not App Store submission)
 - **Product:** Hazakura Editor (macOS, Markdown-first Safe Editor)
 - **Published baseline (immutable):** Mac App Store / source tag **`1.12.0`**
 - **Development line:** package version **`1.13.0`** (refinement, not a store claim)
-- **Slice under review:** Theme G — Image / Media Boundaries  
-  Plan: `docs/v1.xx-image-media-boundary-plan.md`  
+- **Slice under review:** Theme G — Image / Media Boundaries
+  Plan: `docs/v1.xx-image-media-boundary-plan.md`
   Parent mode: `docs/v1.13-plus-refinement-roadmap.md`
 
 ## Current git state (fill at review time)
@@ -132,6 +132,18 @@ git diff --check
 4. Pin of many images is sequential; no cancel UI mid-pin.
 5. L Mode image widget still uses its own classifier (preview is the primary Theme G surface).
 6. `open_image_file` (image tab path) remains a separate disk open path for references — do not confuse with Markdown Preview policy.
+
+## Review outcome (2026-07-17)
+
+- Fixed the native redirect gap: remote image requests no longer follow redirects,
+  so an initial `https` URL cannot traverse an intermediate `http` hop. Redirects
+  fail soft and ask the user to use the final `https` URL.
+- Added a warning confirmation before palette pin performs its first remote fetch
+  while Preview remote loading is Off. Declining performs no network request and
+  leaves source/assets unchanged.
+- Parent-folder approval remains the deliberate manuscript-sized scope. Rust
+  canonical containment is still defense in depth around roots supplied by the
+  trusted main-window frontend; it is not a durable OS bookmark boundary.
 
 ## Review focus (please stress these)
 

@@ -1511,6 +1511,7 @@ export function useAppShellController() {
         editorSettings.outsideImages,
       ),
     },
+    menuLanguage,
     setStatus,
     workspaceRootPath,
   });
