@@ -209,11 +209,9 @@ fn open_workspace_image_rejects_paths_outside_root() {
     .expect("approved root should open local image");
     assert!(allowed.data_url.starts_with("data:image/png;base64,"));
 
-    let http_err = fetch_remote_image_with_label(
-        MAIN_WINDOW_LABEL,
-        "http://example.com/a.png".to_string(),
-    )
-    .expect_err("http remote must be rejected");
+    let http_err =
+        fetch_remote_image_with_label(MAIN_WINDOW_LABEL, "http://example.com/a.png".to_string())
+            .expect_err("http remote must be rejected");
     assert!(http_err.contains("https"), "{http_err}");
 
     let _ = fs::remove_dir_all(root);

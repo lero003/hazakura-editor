@@ -85,10 +85,7 @@ pub(crate) fn open_local_image_under_roots_with_label(
     }
     let image_path = PathBuf::from(&path);
     let canonical = ensure_path_under_any_root(&image_path, &allowed_roots)?;
-    read_image_preview_document(
-        canonical.to_string_lossy().to_string(),
-        canonical,
-    )
+    read_image_preview_document(canonical.to_string_lossy().to_string(), canonical)
 }
 
 pub(crate) fn fetch_remote_image_with_label(
@@ -116,8 +113,14 @@ pub(crate) fn fetch_remote_image_with_label(
 
     let response = agent
         .get(trimmed)
-        .set("User-Agent", "HazakuraEditor/1.13 (local preview image fetch)")
-        .set("Accept", "image/png,image/jpeg,image/gif,image/webp,image/*;q=0.8")
+        .set(
+            "User-Agent",
+            "HazakuraEditor/1.13 (local preview image fetch)",
+        )
+        .set(
+            "Accept",
+            "image/png,image/jpeg,image/gif,image/webp,image/*;q=0.8",
+        )
         .call()
         .map_err(|err| format!("Remote image fetch failed: {err}"))?;
 
@@ -152,9 +155,8 @@ pub(crate) fn fetch_remote_image_with_label(
         ));
     }
 
-    let mime_type = image_mime_type_from_bytes(&bytes).ok_or_else(|| {
-        "Remote image contents do not match a supported image type.".to_string()
-    })?;
+    let mime_type = image_mime_type_from_bytes(&bytes)
+        .ok_or_else(|| "Remote image contents do not match a supported image type.".to_string())?;
     let name = remote_image_name_from_url(&final_url);
 
     Ok(ImagePreviewDocument {
@@ -173,8 +175,8 @@ pub(crate) fn ensure_path_under_any_root(
     if !path.exists() {
         return Err("Selected image path does not exist.".to_string());
     }
-    let canonical = fs::canonicalize(path)
-        .map_err(|err| format!("Cannot resolve image path: {err}"))?;
+    let canonical =
+        fs::canonicalize(path).map_err(|err| format!("Cannot resolve image path: {err}"))?;
     if !canonical.is_file() {
         return Err("Selected path is not an image file.".to_string());
     }
