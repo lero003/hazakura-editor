@@ -22,9 +22,10 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   `docs/internal/app-store-candidates/latest.json`. Do not reopen `1.12.0`
   without a reproduced hotfix; published tags remain immutable.
 - **v1.13+ try-and-error refinement is open.** Direction:
-  `docs/v1.13-plus-refinement-roadmap.md`. Theme A candidates:
-  `docs/v1.13-interaction-clarity-plan.md` (Command availability is a good
-  first bias). Image / media loosening (settings, consent, export materialize)
+  `docs/v1.13-plus-refinement-roadmap.md`. Theme A pool:
+  `docs/v1.13-interaction-clarity-plan.md`. Keeps so far: Command availability,
+  Quick Open scope honesty. Next bias: Search status locale or hands-on
+  Continuity. Image / media loosening (settings, consent, export materialize)
   is planned in `docs/v1.xx-image-media-boundary-plan.md` and is not
   implemented yet; default remains no automatic remote or outside-workspace
   image load. One hypothesis per run; version numbers are shipping boxes for
