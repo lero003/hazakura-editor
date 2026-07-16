@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.12 local TestFlight candidate ready)
+Last reviewed: 2026-07-16 (v1.12 App Review; v1.13 clarity direction)
 
 ## Current Position
 
@@ -15,7 +15,8 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.12.0`** (v1.12 local signed candidate ready;
+- Package/app version in tree: **`1.12.0`** (v1.12 App Review is in progress,
+  user-reported 2026-07-16;
   the published Mac App Store version remains `1.8.0`). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.8.0`.** App Review passed and the
@@ -63,8 +64,14 @@ Current release state:
 - **v1.12 OKF Starter Scaffold is locally candidate-ready.** Explicit
   multi-file starters (minimal + book-like) from palette, sidebar, context menu,
   and OS File menu. Source, representative four-entry smoke, and signed local
-  package gates passed; upload/install remain separate. Templates and integrity checks share the pin in
+  package gates passed; App Review is now Apple-side (user-reported 2026-07-16).
+  Templates and integrity checks share the pin in
   `docs/okf-spec-pin.md`. Contract: `docs/v1.12-okf-scaffold-design.md`.
+- **v1.13 Interaction Clarity is proposed after v1.12 review.** It is a set of
+  small v1.x fixes for silent actions, misleading scope, loading/focus
+  feedback, and progressive disclosure. It does not redesign the shell or
+  widen Quick Open into background indexing. Plan:
+  `docs/v1.13-interaction-clarity-plan.md`.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`, `v1.11`,
   `v1.12`, and additional `v1.xx` releases as useful. Clarify the writing loop,
   add single-document structure, prove bounded OKF compatibility, add starter

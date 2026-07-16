@@ -3,18 +3,21 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
+Last reviewed: 2026-07-16 (v1.12 App Review user-reported)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.12.0`** across npm, Tauri, Cargo,
   and lockfile metadata. The published Mac App Store version remains
-  `1.8.0`. v1.12 has a verified local signed TestFlight candidate containing
-  the OKF starter scaffolds. Upload, TestFlight installation, App Review, and
-  public release remain separate.
+  `1.8.0`. v1.12 has a verified local signed candidate containing the OKF
+  starter scaffolds, and App Review is in progress (user-reported 2026-07-16).
+  Apple-side outcome and public release remain separate.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
+- **Post-review v1.13 is planning-only.** The bounded Interaction Clarity queue
+  lives in `docs/v1.13-interaction-clarity-plan.md`; do not mix it into the
+  submitted v1.12 candidate without an explicit hotfix decision.
 - **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
   and the release was published (user-reported 2026-07-14). App/package
   signatures, sandbox and helper entitlements, version/build,

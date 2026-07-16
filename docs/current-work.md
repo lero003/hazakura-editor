@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.12 local TestFlight candidate; v1.11 held inside it
+Scope: v1.12 App Review; post-review v1.13 Interaction Clarity queue
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
+Last reviewed: 2026-07-16 (v1.12 App Review user-reported; v1.13 proposed)
 
 ## Purpose
 
@@ -21,14 +21,31 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.9** | **Source complete / rolled into current candidate** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. The work is rolled into the in-tree `1.11.0` candidate rather than published alone. |
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
 | **v1.11** | **Local TestFlight candidate ready / held** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review. Local signed candidate ready; TestFlight install remains separate. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
-| **v1.12** | **Local TestFlight candidate ready** | OKF starter scaffold (minimal + book-like). Source, representative four-entry smoke, and signed local package gates passed; upload/install are separate. Contract: `docs/v1.12-okf-scaffold-design.md`. |
+| **v1.12** | **App Review in progress (user-reported 2026-07-16)** | OKF starter scaffold (minimal + book-like). Source, representative four-entry smoke, and signed local package gates passed. Treat App Store Connect as authoritative; do not mix post-submission polish into this candidate. Contract: `docs/v1.12-okf-scaffold-design.md`. |
+| **v1.13** | **Proposed after v1.12 review** | Interaction Clarity: remove silent failure and clarify scope/state through small, testable slices. Plan: `docs/v1.13-interaction-clarity-plan.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
 
 Package/app version in tree is **`1.12.0`**; the published Mac App Store
-version is **`1.8.0`**. v1.12 is the current local signed TestFlight candidate;
-v1.11 is held inside it. See
+version is **`1.8.0`**. v1.12 App Review is in progress (user-reported
+2026-07-16); v1.11 is held inside it. See
 `current-status.md` for lane truth; treat Connect as authoritative for store
 counters.
+
+## Next Queue — v1.13 Interaction Clarity
+
+Start only after the v1.12 review lane is closed or an explicit hotfix decision
+is made. Pick one independently verifiable slice at a time:
+
+1. Command availability and localized disabled reasons.
+2. Honest Quick Open scope/truncation copy; no background index.
+3. Search-result open status localization.
+4. Quick Settings popover/dialog semantics and focus return.
+5. Non-blank delayed loading feedback for Preview / e-book.
+6. Progressive disclosure for OKF starters in the New surface.
+7. Exact destructive target and disabled reason for Workspace Trash.
+
+Detailed evidence, already-covered findings, deferrals, and verification:
+`docs/v1.13-interaction-clarity-plan.md`.
 
 ## Active Queue — v1.12 OKF Starter Scaffold
 

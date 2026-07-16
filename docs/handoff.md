@@ -1,14 +1,14 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for the next coding agent
+Scope: Short handoff for v1.12 review and post-review v1.13 planning
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
+Last reviewed: 2026-07-16 (v1.12 App Review user-reported; v1.13 proposed)
 
 ## Current State
 
-- Package/app version in tree is **`1.12.0`** with a verified local signed
-  TestFlight candidate for the v1.12 OKF scaffold lane. The published Mac App
+- Package/app version in tree is **`1.12.0`** and App Review is in progress for
+  the v1.12 OKF scaffold lane (user-reported 2026-07-16). The published Mac App
   Store version is **`1.8.0`**. App Review passed and publication was user-reported on
   2026-07-14 (build `89`). Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
@@ -131,12 +131,15 @@ Last reviewed: 2026-07-15 (v1.12 local signed candidate ready)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.12 TestFlight follow-up:** source/build/sandbox gates, representative
-   four-entry scaffold smoke, and the signed local candidate pass. No full OKF
-   scan on workspace open. Upload remains
-   a separate explicit action. After installation, repeat the core OKF flow
-   and the inherited IME/Save As/recovery/e-book/EPUB/a11y breadth.
-2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
+1. **v1.12 App Review:** keep the submitted candidate stable and treat App
+   Store Connect as authoritative. Do not fold post-submission UX polish into
+   v1.12 without a reproduced hotfix blocker and explicit decision.
+2. **v1.13 after review:** choose one slice from
+   `docs/v1.13-interaction-clarity-plan.md`. Start with Command availability,
+   honest Quick Open scope, status localization, Quick Settings semantics,
+   loading feedback, OKF progressive disclosure, or destructive-target
+   clarity. Revalidate each static-review observation against live source.
+3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
    (variable-height windowing is deferred); pathless
