@@ -3,12 +3,13 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-15 (v1.12 OKF scaffold + shared OKF pin doc)
+Last reviewed: 2026-07-16 (AGENTS.md entry link)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Start with `current-work.md` when choosing the next UX, post-approval,
-or quality-polish slice.
+Agent entry rules live at the repository root: `AGENTS.md`. Start with
+`current-work.md` when choosing the next UX, post-approval, or quality-polish
+slice.
 
 ## Current Canonical Docs
 
