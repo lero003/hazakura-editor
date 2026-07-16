@@ -21,6 +21,7 @@ import { DiffPane } from "../diff/DiffPane";
 import { DiffSetupPane } from "../diff/DiffSetupPane";
 import { OutlinePane } from "../editor/OutlinePane";
 import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane";
+import type { PreviewRenderCompleteKind } from "../editor/preview/PreviewPane";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
@@ -133,29 +134,41 @@ export function SidePane({
       scrollRatio: Math.min(1, Math.max(0, scrollRatio)),
     });
   }, [onPreviewScroll, onPreviewViewStateChange, previewPaneRef]);
-  const restorePreviewScroll = useCallback(() => {
-    const restoreDocumentKey = activePreviewDocumentKeyRef.current;
-    if (previewRestoreFrameRef.current !== null) {
-      window.cancelAnimationFrame(previewRestoreFrameRef.current);
-    }
-    previewRestoreFrameRef.current = window.requestAnimationFrame(() => {
-      previewRestoreFrameRef.current = null;
-      if (activePreviewDocumentKeyRef.current !== restoreDocumentKey) {
+  const restorePreviewScroll = useCallback(
+    (kind: PreviewRenderCompleteKind = "initial") => {
+      // Same-document re-renders (typing headings/lists/fences, image
+      // inlining) change scrollHeight. Re-applying a saved ratio jumps the
+      // viewport and reads as scroll jank / misalignment. Keep the browser's
+      // absolute scrollTop for updates; only ratio-restore on the first paint
+      // of a document identity (or after Preview remount).
+      if (kind === "update") {
         return;
       }
-      const previewPane = previewPaneRef.current;
-      const savedState = previewViewStateRef.current;
-      if (!previewPane || !savedState) {
-        return;
+
+      const restoreDocumentKey = activePreviewDocumentKeyRef.current;
+      if (previewRestoreFrameRef.current !== null) {
+        window.cancelAnimationFrame(previewRestoreFrameRef.current);
       }
-      const scrollableHeight =
-        previewPane.scrollHeight - previewPane.clientHeight;
-      previewPane.scrollTop =
-        scrollableHeight <= 0
-          ? 0
-          : scrollableHeight * savedState.scrollRatio;
-    });
-  }, [previewPaneRef]);
+      previewRestoreFrameRef.current = window.requestAnimationFrame(() => {
+        previewRestoreFrameRef.current = null;
+        if (activePreviewDocumentKeyRef.current !== restoreDocumentKey) {
+          return;
+        }
+        const previewPane = previewPaneRef.current;
+        const savedState = previewViewStateRef.current;
+        if (!previewPane || !savedState) {
+          return;
+        }
+        const scrollableHeight =
+          previewPane.scrollHeight - previewPane.clientHeight;
+        previewPane.scrollTop =
+          scrollableHeight <= 0
+            ? 0
+            : scrollableHeight * savedState.scrollRatio;
+      });
+    },
+    [previewPaneRef],
+  );
   const compareCase = compareView
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;

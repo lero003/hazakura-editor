@@ -26,7 +26,18 @@ afterEach(() => {
 
 async function flushPreviewFrame() {
   await act(async () => {
-    vi.advanceTimersByTime(250);
+    // Adaptive debounce (≤480ms) + rAF (+ optional idle timeout).
+    vi.advanceTimersByTime(700);
+    // Drain any rAF-linked timers used by the scheduler under fake timers.
+    try {
+      vi.runOnlyPendingTimers();
+    } catch {
+      // No pending timers left.
+    }
+  });
+  // startTransition commits may settle on a microtask.
+  await act(async () => {
+    await Promise.resolve();
   });
 }
 
@@ -77,10 +88,9 @@ describe("PreviewPane local link routing", () => {
     expect(
       screen.queryByRole("heading", { name: "Next Draft" }),
     ).toBeNull();
+    // Same-document refreshes keep the previous HTML without flipping into
+    // the loading skeleton (and without an extra pending React commit).
     expect(container.querySelector(".markdown-preview-loading")).toBeNull();
-    expect(
-      container.querySelector(".markdown-preview")?.getAttribute("aria-busy"),
-    ).toBe("true");
 
     await flushPreviewFrame();
 
@@ -91,9 +101,37 @@ describe("PreviewPane local link routing", () => {
       screen.queryByRole("heading", { name: "Previous Draft" }),
     ).toBeNull();
     expect(container.querySelector(".markdown-preview-loading")).toBeNull();
-    expect(
-      container.querySelector(".markdown-preview")?.getAttribute("aria-busy"),
-    ).toBeNull();
+  });
+
+  it("reports initial then update on same-document re-renders", async () => {
+    const onRenderComplete = vi.fn();
+    const { rerender } = render(
+      <PreviewPane
+        documentKey="draft-1"
+        onRenderComplete={onRenderComplete}
+        source={["# First", "", "Body"].join("\n")}
+      />,
+    );
+    await flushPreviewFrame();
+
+    await waitFor(() => {
+      expect(onRenderComplete).toHaveBeenCalledWith("initial");
+    });
+    onRenderComplete.mockClear();
+
+    rerender(
+      <PreviewPane
+        documentKey="draft-1"
+        onRenderComplete={onRenderComplete}
+        source={["# First", "", "Body edited"].join("\n")}
+      />,
+    );
+    await flushPreviewFrame();
+
+    await waitFor(() => {
+      expect(onRenderComplete).toHaveBeenCalledWith("update");
+    });
+    expect(onRenderComplete).not.toHaveBeenCalledWith("initial");
   });
 
   it("clears stale preview content while the next document is waiting for its frame", async () => {

@@ -16,16 +16,45 @@ export type RenderMarkdownOptions = {
   workspaceRoot?: string | null;
 };
 
+const MARKDOWN_DOMPURIFY_CONFIG = {
+  USE_PROFILES: { html: true },
+  ALLOWED_URI_REGEXP:
+    /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  FORBID_TAGS: [
+    "script",
+    "iframe",
+    "object",
+    "embed",
+    // v0.17 slice 2.3: explicit blocks for Safe Editor
+    // preview/export. `<style>` with CSS url(https://...)
+    // is an external-fetch path that DOMPurify does not
+    // sanitise; `<form>` / `<input>` / `<button>` /
+    // `<textarea>` / `<select>` / `<option>` are
+    // non-script form controls whose `action` attribute
+    // could point to an off-site submit target in
+    // exported HTML. Neither is useful inside a Markdown
+    // preview; both are stripped so the App Store lane
+    // can reasonably claim "no external fetch or
+    // submission path appears".
+    "style",
+    "form",
+    "input",
+    "button",
+    "textarea",
+    "select",
+    "option",
+  ],
+  FORBID_ATTR: ["onerror", "onload", "onclick"],
+};
+
 export function renderMarkdown(
   source: string,
   options?: RenderMarkdownOptions,
 ): string {
   const rawHtml = marked.parse(source, { async: false }) as string;
 
-  // v0.34: 3つのポリシー(画像/テーブル/タスクリスト)をそれぞれ別の <template>
-  // で parse/シリアライズすると HTML が5回 parse されていた(各ポリシー1回ずつ +
-  // DOMPurify)。1つの template に1回 parse し、同じ DOM に全ポリシーを適用して
-  // から1回だけシリアライズ → DOMPurify に渡す。
+  // v0.34: policies used to each re-parse HTML; fold into one template parse.
+  // Task-list policy must still run before purify (FORBID_TAGS includes `input`).
   const template = document.createElement("template");
   template.innerHTML = rawHtml;
   const fragment = template.content;
@@ -38,36 +67,12 @@ export function renderMarkdown(
   applyTablePreviewPolicyToFragment(fragment);
   applyTaskListPreviewPolicyToFragment(fragment);
 
-  return DOMPurify.sanitize(template.innerHTML, {
-    USE_PROFILES: { html: true },
-    ALLOWED_URI_REGEXP:
-      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-    FORBID_TAGS: [
-      "script",
-      "iframe",
-      "object",
-      "embed",
-      // v0.17 slice 2.3: explicit blocks for Safe Editor
-      // preview/export. `<style>` with CSS url(https://...)
-      // is an external-fetch path that DOMPurify does not
-      // sanitise; `<form>` / `<input>` / `<button>` /
-      // `<textarea>` / `<select>` / `<option>` are
-      // non-script form controls whose `action` attribute
-      // could point to an off-site submit target in
-      // exported HTML. Neither is useful inside a Markdown
-      // preview; both are stripped so the App Store lane
-      // can reasonably claim "no external fetch or
-      // submission path appears".
-      "style",
-      "form",
-      "input",
-      "button",
-      "textarea",
-      "select",
-      "option",
-    ],
-    FORBID_ATTR: ["onerror", "onload", "onclick"],
-  });
+  // Serialize once after policies, then sanitize. (Passing a host Element
+  // into DOMPurify with RETURN_DOM tends to re-introduce an outer <div>,
+  // which breaks EPUB page-break spine splitting.)
+  return String(
+    DOMPurify.sanitize(template.innerHTML, MARKDOWN_DOMPURIFY_CONFIG),
+  );
 }
 
 export async function inlineWorkspaceAssetImages(

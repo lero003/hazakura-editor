@@ -1,7 +1,9 @@
 import {
   type MouseEvent,
+  startTransition,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -11,11 +13,19 @@ import {
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
 import { openWorkspaceImage } from "../../../lib/tauri";
 
+/** Why Preview finished a paint. Parent scroll restore only needs `initial`. */
+export type PreviewRenderCompleteKind = "initial" | "update";
+
 type PreviewPaneProps = {
   documentKey?: string | null;
   documentPath?: string | null;
   onOpenLocalLink?: (href: string) => void;
-  onRenderComplete?: () => void;
+  /**
+   * Fires after a settled Markdown paint.
+   * - `initial`: first paint for this document identity (or after remount)
+   * - `update`: same-document re-render (typing, image inline, …)
+   */
+  onRenderComplete?: (kind: PreviewRenderCompleteKind) => void;
   source: string;
   workspaceRoot?: string | null;
 };
@@ -54,23 +64,30 @@ export default function PreviewPane({
     identity: previewIdentity,
     pending: true,
   }));
+  // First settled paint per document identity is `initial`; later paints
+  // (typing debounce, workspace image inlining) are `update` so the parent
+  // can avoid re-applying scroll-ratio after content height changes.
+  const completedIdentityRef = useRef<string | null>(null);
+  // First paint for the current identity skips the typing debounce.
+  const paintedIdentityRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    const isSameDocumentPaint =
+      paintedIdentityRef.current === previewIdentity;
 
     setPreview((current) => {
       if (current.identity === previewIdentity && current.html.length > 0) {
-        if (current.pending) {
-          return current;
-        }
-
-        return { ...current, pending: true };
+        // Same document: keep showing the last good HTML. Flipping
+        // `pending` here forces an extra React commit on every keystroke
+        // burst without changing visible content.
+        return current;
       }
 
       return { html: "", identity: previewIdentity, pending: true };
     });
 
-    const cancelRender = schedulePreviewRender(() => {
+    const paint = () => {
       if (cancelled) {
         return;
       }
@@ -79,11 +96,43 @@ export default function PreviewPane({
         documentPath,
         workspaceRoot,
       });
-      setPreview({
-        html: renderedHtml,
-        identity: previewIdentity,
-        pending: false,
-      });
+
+      const commitHtml = (html: string) => {
+        if (cancelled) {
+          return;
+        }
+
+        setPreview((current) => {
+          if (
+            current.identity === previewIdentity &&
+            current.html === html &&
+            !current.pending
+          ) {
+            return current;
+          }
+
+          return {
+            html,
+            identity: previewIdentity,
+            pending: false,
+          };
+        });
+      };
+
+      const commit = () => {
+        commitHtml(renderedHtml);
+      };
+
+      // Deprioritize preview commits relative to editor input when this is
+      // a same-document refresh. First paint stays synchronous after the
+      // scheduler yields so opening Preview feels immediate.
+      if (isSameDocumentPaint) {
+        startTransition(commit);
+      } else {
+        commit();
+      }
+
+      paintedIdentityRef.current = previewIdentity;
 
       if (!workspaceRoot) {
         return;
@@ -93,14 +142,19 @@ export default function PreviewPane({
         const image = await openWorkspaceImage(workspaceRoot, path);
         return image.dataUrl;
       }).then((nextHtml) => {
-        if (!cancelled) {
-          setPreview({
-            html: nextHtml,
-            identity: previewIdentity,
-            pending: false,
-          });
+        if (cancelled || nextHtml === renderedHtml) {
+          return;
         }
+
+        startTransition(() => {
+          commitHtml(nextHtml);
+        });
       });
+    };
+
+    const cancelRender = schedulePreviewRender(paint, {
+      immediate: !isSameDocumentPaint,
+      sourceLength: source.length,
     });
 
     return () => {
@@ -111,13 +165,24 @@ export default function PreviewPane({
 
   useEffect(() => {
     if (
-      !preview.pending &&
-      preview.identity === previewIdentity &&
-      preview.html.length > 0
+      preview.pending ||
+      preview.identity !== previewIdentity ||
+      preview.html.length === 0
     ) {
-      onRenderComplete?.();
+      return;
     }
-  }, [onRenderComplete, preview.html.length, preview.identity, preview.pending, previewIdentity]);
+
+    const kind: PreviewRenderCompleteKind =
+      completedIdentityRef.current === previewIdentity ? "update" : "initial";
+    completedIdentityRef.current = previewIdentity;
+    onRenderComplete?.(kind);
+  }, [
+    onRenderComplete,
+    preview.html,
+    preview.identity,
+    preview.pending,
+    previewIdentity,
+  ]);
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     if (!onOpenLocalLink) {

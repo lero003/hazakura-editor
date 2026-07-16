@@ -358,7 +358,8 @@ export default function EBookPane({
       });
     };
 
-    // 初回は即時、2回目以降はデバウンス。
+    // 初回は同期で即時描画（開いた瞬間の空白を避ける）。2回目以降は
+    // 文書長に応じたデバウンス + rAF/idle へ退避して入力フレームを守る。
     if (!hasRenderedOnceRef.current) {
       hasRenderedOnceRef.current = true;
       renderChapter();
@@ -367,7 +368,9 @@ export default function EBookPane({
       };
     }
 
-    const cancelRender = schedulePreviewRender(renderChapter);
+    const cancelRender = schedulePreviewRender(renderChapter, {
+      sourceLength: target.chapter.source.length,
+    });
 
     return () => {
       cancelled = true;

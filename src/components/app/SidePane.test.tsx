@@ -1,5 +1,6 @@
 import { createRef, useState } from "react";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -181,6 +182,102 @@ describe("SidePane", () => {
       },
       { timeout: 3_000 },
     );
+  });
+
+  it("keeps absolute Preview scroll across same-document edits that change height", async () => {
+    const previewPaneRef = createRef<HTMLDivElement>();
+    const firstContents = [
+      "# Title",
+      "",
+      "Paragraph one.",
+      "",
+      "Paragraph two.",
+      "",
+      "Paragraph three.",
+    ].join("\n");
+    // Extra headings inflate rendered height after the debounce paint,
+    // which used to re-apply a stale scroll ratio and jump the viewport.
+    const editedContents = [
+      "# Title",
+      "",
+      "## Section",
+      "",
+      "Paragraph one.",
+      "",
+      "### Subsection",
+      "",
+      "Paragraph two.",
+      "",
+      "Paragraph three.",
+    ].join("\n");
+    const tab = {
+      ...activeTab,
+      contents: firstContents,
+      id: "/workspace/scroll-stable.md",
+      name: "scroll-stable.md",
+      path: "/workspace/scroll-stable.md",
+    };
+
+    const { rerender } = renderSidePane({
+      activeContents: firstContents,
+      activeTab: tab,
+      previewPaneRef,
+      // Stale ratio that would jump scrollTop if re-applied after height grows.
+      previewViewState: { scrollRatio: 0.1 },
+      sidePaneMode: "preview",
+    });
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole("heading", { name: "Title" })).toBeTruthy();
+      },
+      { timeout: 3_000 },
+    );
+
+    const previewContainer = previewPaneRef.current;
+    expect(previewContainer).not.toBeNull();
+    if (!previewContainer) throw new Error("preview container missing");
+
+    Object.defineProperty(previewContainer, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(previewContainer, "clientHeight", {
+      configurable: true,
+      value: 200,
+    });
+    // Flush the initial ratio-restore rAF so it cannot overwrite the
+    // mid-document position we set below.
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
+    });
+    // Reader is mid-document. A stale ratio of 0.1 would jump this to 80
+    // if same-document re-renders re-applied controlled view state.
+    previewContainer.scrollTop = 480;
+
+    rerender(
+      <SidePane
+        {...sidePaneProps({
+          activeContents: editedContents,
+          activeTab: { ...tab, contents: editedContents },
+          previewPaneRef,
+          previewViewState: { scrollRatio: 0.1 },
+          sidePaneMode: "preview",
+        })}
+      />,
+    );
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole("heading", { name: "Section" })).toBeTruthy();
+      },
+      { timeout: 3_000 },
+    );
+
+    // Height changed, but same-document update must not re-apply ratio 0.1.
+    expect(previewContainer.scrollTop).toBe(480);
   });
 
   it("shows a clear empty state for e-book mode when preview content is unavailable", () => {
