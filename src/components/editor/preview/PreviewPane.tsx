@@ -1,4 +1,5 @@
 import {
+  type KeyboardEvent,
   type MouseEvent,
   startTransition,
   useEffect,
@@ -7,11 +8,16 @@ import {
   useState,
 } from "react";
 import {
-  inlineWorkspaceAssetImages,
+  inlineMarkdownImages,
   renderMarkdown,
 } from "../../../features/editor/markdown";
+import type { MediaImageAccessOptions } from "../../../features/editor/imagePolicy";
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
-import { openWorkspaceImage } from "../../../lib/tauri";
+import {
+  fetchRemoteImage,
+  openLocalImageUnderRoots,
+  openWorkspaceImage,
+} from "../../../lib/tauri";
 
 /** Why Preview finished a paint. Parent scroll restore only needs `initial`. */
 export type PreviewRenderCompleteKind = "initial" | "update";
@@ -19,6 +25,8 @@ export type PreviewRenderCompleteKind = "initial" | "update";
 type PreviewPaneProps = {
   documentKey?: string | null;
   documentPath?: string | null;
+  mediaAccess?: MediaImageAccessOptions | null;
+  onApproveLocalImageParent?: (resolvedPath: string) => void;
   onOpenLocalLink?: (href: string) => void;
   /**
    * Fires after a settled Markdown paint.
@@ -50,14 +58,26 @@ type PreviewState = {
 export default function PreviewPane({
   documentKey,
   documentPath,
+  mediaAccess = null,
+  onApproveLocalImageParent,
   onOpenLocalLink,
   onRenderComplete,
   source,
   workspaceRoot,
 }: PreviewPaneProps) {
+  const mediaAccessKey = useMemo(
+    () =>
+      JSON.stringify({
+        outsideImages: mediaAccess?.outsideImages ?? "ask",
+        loadRemoteImages: mediaAccess?.loadRemoteImages ?? false,
+        approvedRoots: mediaAccess?.approvedRoots ?? [],
+      }),
+    [mediaAccess],
+  );
   const previewIdentity = useMemo(
-    () => `${documentKey ?? documentPath ?? ""}\u0000${workspaceRoot ?? ""}`,
-    [documentKey, documentPath, workspaceRoot],
+    () =>
+      `${documentKey ?? documentPath ?? ""}\u0000${workspaceRoot ?? ""}\u0000${mediaAccessKey}`,
+    [documentKey, documentPath, mediaAccessKey, workspaceRoot],
   );
   const [preview, setPreview] = useState<PreviewState>(() => ({
     html: "",
@@ -95,6 +115,7 @@ export default function PreviewPane({
       const renderedHtml = renderMarkdown(source, {
         documentPath,
         workspaceRoot,
+        mediaAccess,
       });
 
       const commitHtml = (html: string) => {
@@ -134,13 +155,25 @@ export default function PreviewPane({
 
       paintedIdentityRef.current = previewIdentity;
 
-      if (!workspaceRoot) {
-        return;
-      }
-
-      void inlineWorkspaceAssetImages(renderedHtml, async (path) => {
-        const image = await openWorkspaceImage(workspaceRoot, path);
-        return image.dataUrl;
+      const approvedRoots = [...(mediaAccess?.approvedRoots ?? [])];
+      void inlineMarkdownImages(renderedHtml, {
+        loadWorkspaceImage: async (path) => {
+          if (!workspaceRoot) {
+            throw new Error("workspace root required");
+          }
+          const image = await openWorkspaceImage(workspaceRoot, path);
+          return image.dataUrl;
+        },
+        loadApprovedLocalImage: async (path) => {
+          const image = await openLocalImageUnderRoots(path, approvedRoots);
+          return image.dataUrl;
+        },
+        loadRemoteImage: mediaAccess?.loadRemoteImages
+          ? async (url) => {
+              const image = await fetchRemoteImage(url);
+              return image.dataUrl;
+            }
+          : undefined,
       }).then((nextHtml) => {
         if (cancelled || nextHtml === renderedHtml) {
           return;
@@ -161,7 +194,7 @@ export default function PreviewPane({
       cancelled = true;
       cancelRender();
     };
-  }, [documentPath, previewIdentity, source, workspaceRoot]);
+  }, [documentPath, mediaAccess, previewIdentity, source, workspaceRoot]);
 
   useEffect(() => {
     if (
@@ -184,14 +217,29 @@ export default function PreviewPane({
     previewIdentity,
   ]);
 
+  const handleMediaAction = (actionHost: Element) => {
+    const action = actionHost.getAttribute("data-hazakura-image-action");
+    const resolved =
+      actionHost.getAttribute("data-hazakura-resolved-path")?.trim() ?? "";
+    if (action === "approve-parent" && resolved && onApproveLocalImageParent) {
+      onApproveLocalImageParent(resolved);
+    }
+  };
+
   const handleClick = (event: MouseEvent<HTMLElement>) => {
-    if (!onOpenLocalLink) {
+    const target = event.target;
+    if (!(target instanceof Element)) {
       return;
     }
 
-    const target = event.target;
+    const actionHost = target.closest("[data-hazakura-image-action]");
+    if (actionHost && event.currentTarget.contains(actionHost)) {
+      event.preventDefault();
+      handleMediaAction(actionHost);
+      return;
+    }
 
-    if (!(target instanceof Element)) {
+    if (!onOpenLocalLink) {
       return;
     }
 
@@ -207,6 +255,22 @@ export default function PreviewPane({
     onOpenLocalLink(href);
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const actionHost = target.closest("[data-hazakura-image-action]");
+    if (!actionHost || !event.currentTarget.contains(actionHost)) {
+      return;
+    }
+    event.preventDefault();
+    handleMediaAction(actionHost);
+  };
+
   return (
     <article
       aria-busy={preview.pending ? "true" : undefined}
@@ -217,6 +281,7 @@ export default function PreviewPane({
       }
       dangerouslySetInnerHTML={{ __html: preview.html }}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
     />
   );
 }

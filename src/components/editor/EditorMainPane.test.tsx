@@ -54,6 +54,9 @@ afterEach(() => {
 const editorSettings: EditorSettings = {
   ambientIntensity: "subtle",
   appleAssistDiffInitiallyOpen: true,
+  outsideImages: "ask",
+  loadRemoteImages: false,
+  materializeImagesOnExport: true,
   autoBackupEnabled: true,
   editorFontSize: 14,
   lModeEnabled: false,

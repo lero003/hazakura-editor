@@ -6,7 +6,9 @@ import {
   useEffect,
   useRef,
 } from "react";
+// useCallback retained for preview scroll handlers below.
 import type { PreviewViewState } from "../../features/editor/documentViewState";
+import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import type { SidePaneCopy } from "../../lib/locale";
 import type {
   CompareAnchor,
@@ -74,6 +76,9 @@ type SidePaneProps = {
   previewVisible: boolean;
   ebookLocation: EBookReaderLocation | null;
   sidePaneMode: RightPaneMode;
+  /** Theme G media access (outside-local consent + remote Preference). */
+  mediaAccess?: MediaImageAccessOptions | null;
+  onApproveLocalImageParent?: (resolvedPath: string) => void;
   workspaceRootPath: string | null;
 };
 
@@ -88,7 +93,9 @@ export function SidePane({
   documentStructureItems,
   documentStructureAdvisories,
   getCompareCaseByKey,
+  mediaAccess = null,
   menuLanguage,
+  onApproveLocalImageParent,
   onClearCompareSource,
   onClearCompareTarget,
   onApplyBackup,
@@ -232,7 +239,9 @@ export function SidePane({
             documentKey={activeEbookDocumentKey ?? undefined}
             documentPath={activeTab.path}
             initialLocation={initialEbookLocation}
+            mediaAccess={mediaAccess}
             menuLanguage={menuLanguage}
+            onApproveLocalImageParent={onApproveLocalImageParent}
             onEnterReadingFocus={onOpenEbookReadingFocus}
             onLocationChange={onEbookLocationChange}
             onOpenLocalLink={onOpenPreviewLocalLink}
@@ -250,6 +259,8 @@ export function SidePane({
           <PreviewPane
             documentKey={activeTab.id}
             documentPath={activeTab.path}
+            mediaAccess={mediaAccess}
+            onApproveLocalImageParent={onApproveLocalImageParent}
             onOpenLocalLink={onOpenPreviewLocalLink}
             onRenderComplete={restorePreviewScroll}
             source={activeContents}

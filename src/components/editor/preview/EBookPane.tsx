@@ -1,7 +1,7 @@
 // v0.24 e-book Mode — display-only active chapter reader.
 //
 // This is still Path Y: Markdown is rendered through the existing
-// `renderMarkdown()` / `inlineWorkspaceAssetImages()` safety pipeline,
+// `renderMarkdown()` / `inlineMarkdownImages()` safety pipeline,
 // never through CodeMirror decoration. The Markdown source is never
 // edited here; this pane is read-only by construction (it only sets
 // `dangerouslySetInnerHTML` on sanitised HTML, with no input or
@@ -31,12 +31,17 @@ import {
   coalesceChaptersToTopLevel,
   splitMarkdownIntoChapters,
 } from "../../../features/editor/ebookChapters";
+import type { MediaImageAccessOptions } from "../../../features/editor/imagePolicy";
 import {
-  inlineWorkspaceAssetImages,
+  inlineMarkdownImages,
   renderMarkdown,
 } from "../../../features/editor/markdown";
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
-import { openWorkspaceImage } from "../../../lib/tauri";
+import {
+  fetchRemoteImage,
+  openLocalImageUnderRoots,
+  openWorkspaceImage,
+} from "../../../lib/tauri";
 import type { MenuLanguage } from "../../../types";
 import { isJapaneseMenuLanguage } from "../../../types";
 import {
@@ -69,7 +74,9 @@ type EBookPaneProps = {
   documentKey?: string;
   documentPath?: string | null;
   initialLocation?: EBookReaderLocation | null;
+  mediaAccess?: MediaImageAccessOptions | null;
   menuLanguage?: MenuLanguage;
+  onApproveLocalImageParent?: (resolvedPath: string) => void;
   onEnterReadingFocus?: (location: EBookReaderLocation) => void;
   onExitReadingFocus?: (location: EBookReaderLocation) => void;
   onLocationChange?: (location: EBookReaderLocation) => void;
@@ -116,7 +123,9 @@ export default function EBookPane({
   documentKey,
   documentPath,
   initialLocation,
+  mediaAccess = null,
   menuLanguage = "en",
+  onApproveLocalImageParent,
   onEnterReadingFocus,
   onExitReadingFocus,
   onLocationChange,
@@ -265,15 +274,35 @@ export default function EBookPane({
         workspaceRoot,
       }
     : null;
-  const activeRenderKey = `${activeChapterIndexSafe}\u0000${source}\u0000${documentPath ?? ""}\u0000${workspaceRoot ?? ""}`;
+  const mediaAccessKey = useMemo(
+    () =>
+      JSON.stringify({
+        outsideImages: mediaAccess?.outsideImages ?? "ask",
+        loadRemoteImages: mediaAccess?.loadRemoteImages ?? false,
+        approvedRoots: mediaAccess?.approvedRoots ?? [],
+      }),
+    [mediaAccess],
+  );
+  const activeRenderKey = `${activeChapterIndexSafe}\u0000${source}\u0000${documentPath ?? ""}\u0000${workspaceRoot ?? ""}\u0000${mediaAccessKey}`;
   const nextChapter = chapters[activeChapterIndexSafe + 1];
   const nextRenderedChapter = useMemo<RenderedChapter | null>(() => {
     if (!readingFocusActive || !nextChapter) {
       return null;
     }
 
-    return renderEbookChapter(nextChapter, documentPath, workspaceRoot);
-  }, [documentPath, nextChapter, readingFocusActive, workspaceRoot]);
+    return renderEbookChapter(
+      nextChapter,
+      documentPath,
+      workspaceRoot,
+      mediaAccess,
+    );
+  }, [
+    documentPath,
+    mediaAccess,
+    nextChapter,
+    readingFocusActive,
+    workspaceRoot,
+  ]);
 
   const [activeChapterHtml, setActiveChapterHtml] =
     useState<RenderedChapter | null>(null);
@@ -332,27 +361,25 @@ export default function EBookPane({
         target.chapter,
         target.documentPath,
         target.workspaceRoot,
+        mediaAccess,
       );
       setActiveChapterHtml(rendered);
 
-      if (!target.workspaceRoot) {
+      // Inline only when placeholders exist (keeps paging layout stable when
+      // the chapter has no images — avoids a second state write that can
+      // race keyboard page turns during open).
+      const needsInline =
+        rendered.html.includes("data-hazakura-image-path") ||
+        rendered.html.includes("data-hazakura-image-remote");
+      if (!needsInline) {
         return;
       }
 
-      // Inline workspace images for the visible chapter only. This keeps
-      // the Preview safety boundary while avoiding the v0.21 all-chapter
-      // rebuild cost.
-      void inlineWorkspaceAssetImages(
+      void inlineMarkdownImages(
         rendered.html,
-        async (path) => {
-          const image = await openWorkspaceImage(
-            target.workspaceRoot!,
-            path,
-          );
-          return image.dataUrl;
-        },
+        createMarkdownImageLoaders(target.workspaceRoot, mediaAccess),
       ).then((inlined) => {
-        if (!cancelled) {
+        if (!cancelled && inlined !== rendered.html) {
           setActiveChapterHtml({ ...rendered, html: inlined });
         }
       });
@@ -380,26 +407,32 @@ export default function EBookPane({
     // activeRenderKey(文字列)のみに依存し、非同期画像インライン処理が
     // state 更新のたびにキャンセルされないようにする。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRenderKey]);
+  }, [activeRenderKey, mediaAccess]);
 
   useEffect(() => {
     let cancelled = false;
     setNextChapterHtml(nextRenderedChapter);
 
-    if (!nextRenderedChapter || !workspaceRoot) {
+    if (!nextRenderedChapter) {
       return () => {
         cancelled = true;
       };
     }
 
-    void inlineWorkspaceAssetImages(
+    const needsInline =
+      nextRenderedChapter.html.includes("data-hazakura-image-path") ||
+      nextRenderedChapter.html.includes("data-hazakura-image-remote");
+    if (!needsInline) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void inlineMarkdownImages(
       nextRenderedChapter.html,
-      async (path) => {
-        const image = await openWorkspaceImage(workspaceRoot, path);
-        return image.dataUrl;
-      },
+      createMarkdownImageLoaders(workspaceRoot, mediaAccess),
     ).then((inlined) => {
-      if (!cancelled) {
+      if (!cancelled && inlined !== nextRenderedChapter.html) {
         setNextChapterHtml({
           ...nextRenderedChapter,
           html: inlined,
@@ -410,7 +443,7 @@ export default function EBookPane({
     return () => {
       cancelled = true;
     };
-  }, [nextRenderedChapter, workspaceRoot]);
+  }, [mediaAccess, nextRenderedChapter, workspaceRoot]);
 
   useLayoutEffect(() => {
     if (!activeChapterHtml || activeChapterHtml.index !== activeChapter?.index) {
@@ -923,13 +956,29 @@ export default function EBookPane({
     }, WHEEL_PAGE_COOLDOWN_MS);
   };
 
+  const handleMediaAction = (actionHost: Element) => {
+    const action = actionHost.getAttribute("data-hazakura-image-action");
+    const resolved =
+      actionHost.getAttribute("data-hazakura-resolved-path")?.trim() ?? "";
+    if (action === "approve-parent" && resolved && onApproveLocalImageParent) {
+      onApproveLocalImageParent(resolved);
+    }
+  };
+
   const handleClick = (event: MouseEvent<HTMLElement>) => {
-    if (!onOpenLocalLink) {
+    const target = event.target;
+    if (!(target instanceof Element)) {
       return;
     }
 
-    const target = event.target;
-    if (!(target instanceof Element)) {
+    const actionHost = target.closest("[data-hazakura-image-action]");
+    if (actionHost && event.currentTarget.contains(actionHost)) {
+      event.preventDefault();
+      handleMediaAction(actionHost);
+      return;
+    }
+
+    if (!onOpenLocalLink) {
       return;
     }
 
@@ -1335,11 +1384,13 @@ function renderEbookChapter(
   },
   documentPath: string | null | undefined,
   workspaceRoot: string | null | undefined,
+  mediaAccess?: MediaImageAccessOptions | null,
 ): RenderedChapter {
   const html = markEbookImagePages(
     renderMarkdown(applyEbookPageBreakMarkers(chapter.source), {
       documentPath,
       workspaceRoot,
+      mediaAccess,
     }),
   );
 
@@ -1350,6 +1401,32 @@ function renderEbookChapter(
     html,
     isStandaloneImage:
       chapter.headingLevel === null && isStandaloneMarkdownImage(chapter.source),
+  };
+}
+
+function createMarkdownImageLoaders(
+  workspaceRoot: string | null | undefined,
+  mediaAccess: MediaImageAccessOptions | null | undefined,
+) {
+  const approvedRoots = [...(mediaAccess?.approvedRoots ?? [])];
+  return {
+    loadWorkspaceImage: async (path: string) => {
+      if (!workspaceRoot) {
+        throw new Error("workspace root required");
+      }
+      const image = await openWorkspaceImage(workspaceRoot, path);
+      return image.dataUrl;
+    },
+    loadApprovedLocalImage: async (path: string) => {
+      const image = await openLocalImageUnderRoots(path, approvedRoots);
+      return image.dataUrl;
+    },
+    loadRemoteImage: mediaAccess?.loadRemoteImages
+      ? async (url: string) => {
+          const image = await fetchRemoteImage(url);
+          return image.dataUrl;
+        }
+      : undefined,
   };
 }
 

@@ -422,6 +422,27 @@
   font-weight: 400;
 }
 
+.blocked-image-action {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-muted));
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 4px 10px;
+  text-decoration: none;
+}
+
+.blocked-image-action:hover,
+.blocked-image-action:focus-visible {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-muted));
+  outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline-offset: 1px;
+}
+
 .status-bar {
   align-items: center;
   background: var(--status-bg);

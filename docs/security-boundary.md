@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-07-17 (M0 blocked-image honesty; load policy unchanged)
+Last reviewed: 2026-07-17 (Theme G M0–M3 media consent; defaults stay safe)
 
 ## Core Rule
 
@@ -73,11 +73,14 @@ Markdownプレビューを実装する場合は、初期状態で安全側に倒
 - `script` は実行しない
 - 外部リンクを勝手に開かない
 - リンククリックでアプリ本体のWebViewをページ遷移させない
-- 外部画像を勝手に読み込まない
+- 外部画像を勝手に読み込まない（リモート既定オフ、https のみ・有界 fetch）
 - ローカルファイル参照の扱いをUI上で明示する
 - ブロックした画像は、理由（workspace 外相対 / 絶対 / リモート / 未配置など）と
-  次の操作をプレースホルダに書く。読み込み境界を広げたことにはしない
-  （同意・設定でのゆるめは `docs/v1.xx-image-media-boundary-plan.md`）
+  次の操作をプレースホルダに書く
+- workspace 外ローカル画像は **設定（オフ / 都度許可 / フォルダ記憶）と明示許可**
+  があるときだけ読み込む。許可はファイル親フォルダ単位。Rust は承認 root 外を拒否
+- 書き出し時の画像埋め込みは設定で制御（既定オン）。Markdown source は黙って書き換えない
+- 詳細: `docs/v1.xx-image-media-boundary-plan.md`
 
 ユーザーが明示的にクリックしたリンクの扱いは、次の境界を守る。
 

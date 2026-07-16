@@ -393,6 +393,19 @@ export type EditorSettings = {
   // diff by default so the edit is immediately visible. Users can
   // turn this off when the bar feels too large for their workflow.
   appleAssistDiffInitiallyOpen: boolean;
+  /**
+   * Theme G — outside-workspace / absolute local images.
+   * off: always block. ask: session consent via Preview control.
+   * remember: durable approved folders per workspace.
+   */
+  outsideImages: import("./features/editor/mediaImageSettings").OutsideImagePolicy;
+  /** Theme G — https remote images in Preview / e-book. Default false. */
+  loadRemoteImages: boolean;
+  /**
+   * Theme G — when exporting, embed resolvable images into the package.
+   * Does not rewrite Markdown source by itself.
+   */
+  materializeImagesOnExport: boolean;
 };
 
 export type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";

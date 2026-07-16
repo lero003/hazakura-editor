@@ -197,6 +197,8 @@ pub fn run() {
             move_workspace_entry_to_trash,
             open_image_file,
             open_workspace_image,
+            open_local_image_under_roots,
+            fetch_remote_image,
             search_workspace_files,
             scan_okf_bundle,
             cancel_okf_bundle_scan,

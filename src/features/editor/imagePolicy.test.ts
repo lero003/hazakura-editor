@@ -39,6 +39,24 @@ describe("classifyMarkdownImageSource", () => {
       kind: "blocked",
       reason: "outside-workspace",
       reference: "../assets/cover.jpg",
+      resolvedPath: "/project/assets/cover.jpg",
+      canApproveLocal: true,
+    });
+  });
+
+  it("allows outside paths under approved roots when policy is not off", () => {
+    const result = classifyMarkdownImageSource(
+      "../assets/cover.jpg",
+      "/project/book",
+      "/project/book/chapter.md",
+      {
+        outsideImages: "ask",
+        approvedRoots: ["/project/assets"],
+      },
+    );
+    expect(result).toEqual({
+      kind: "allowed-approved-local",
+      path: "/project/assets/cover.jpg",
     });
   });
 
@@ -52,6 +70,8 @@ describe("classifyMarkdownImageSource", () => {
       kind: "blocked",
       reason: "absolute-outside",
       reference: "/etc/passwd",
+      resolvedPath: "/etc/passwd",
+      canApproveLocal: true,
     });
   });
 
@@ -121,9 +141,9 @@ describe("formatBlockedImageNote", () => {
       alt: "remote",
       reference: "example.com/shot.png",
     });
-    expect(note.reasonLine).toContain("リモート画像は既定で読み込みません");
+    expect(note.reasonLine).toContain("リモート画像は設定で許可するまで読み込みません");
     expect(note.nextLine).toContain("ローカルに保存");
-    expect(note.nextLine).toMatch(/今後/);
+    expect(note.nextLine).toMatch(/設定/);
   });
 
   it("pins load-failed next actions for missing workspace files", () => {

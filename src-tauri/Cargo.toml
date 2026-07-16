@@ -19,6 +19,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
+# Bounded https image fetch for Theme G remote Preview / export materialize.
+# Keep default features (TLS) so App Store network.client can reach https hosts.
+ureq = "2.12"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block2 = "0.6.2"

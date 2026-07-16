@@ -9,6 +9,7 @@ import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
 import { LMODE_SETTINGS_DEFAULTS, parseLModeSettings } from "../../features/editor/lMode/settings";
+import { parseMediaImageSettings } from "../../features/editor/mediaImageSettings";
 import {
   EDITOR_SETTINGS_STORAGE_KEY,
   AUTO_BACKUP_USER_CHOICE_STORAGE_KEY,
@@ -227,6 +228,7 @@ function readStoredPreviewVisible(): boolean {
 }
 
 function readStoredEditorSettings(): EditorSettings {
+  const mediaDefaults = parseMediaImageSettings(null);
   const defaults: EditorSettings = {
     wrapLines: true,
     showInvisibles: false,
@@ -239,6 +241,9 @@ function readStoredEditorSettings(): EditorSettings {
     autoBackupEnabled: false,
     ambientIntensity: "normal",
     appleAssistDiffInitiallyOpen: true,
+    outsideImages: mediaDefaults.outsideImages,
+    loadRemoteImages: mediaDefaults.loadRemoteImages,
+    materializeImagesOnExport: mediaDefaults.materializeImagesOnExport,
     // L Mode defaults are spread in below — keeping the
     // defaults in one place (lMode/settings.ts) so adding a
     // new L Mode toggle is a one-file change.
@@ -313,6 +318,7 @@ function readStoredEditorSettings(): EditorSettings {
         typeof parsed.appleAssistDiffInitiallyOpen === "boolean"
           ? parsed.appleAssistDiffInitiallyOpen
           : defaults.appleAssistDiffInitiallyOpen,
+      ...parseMediaImageSettings(parsed),
       ...parseLModeSettings(parsed),
     };
   } catch {

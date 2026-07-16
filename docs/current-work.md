@@ -69,9 +69,9 @@ another theme instead of finishing the list:
 - **Writing Loop** — purpose vocabulary, Preview vs e-book copy (no shell rewrite)
 - **Trust edges** — export result clarity, Assist lock wording
 - **Media boundaries** — Plan: `docs/v1.xx-image-media-boundary-plan.md`.
-  **M0 Keep** (blocked-image reason + next actions; no new load power).
-  Next: **M1** outside-local consent / approval list, then M2 remote Preference
-  (default Off), M3 export materialize, optional M4 assets rewrite
+  **M0–M3 Keep** (honest blocks; outside-local ask/remember; remote Pref default
+  Off https-only; export materialize default On). **M4** pure pin helpers in
+  tree; palette command optional. Hands-on / packaged smoke remaining.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

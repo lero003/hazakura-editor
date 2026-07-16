@@ -1,14 +1,22 @@
 // Shared Markdown image policy for surfaces that render image URLs directly
-// into the WebView. Workspace image files are handled separately through the
-// bounded Rust image commands.
+// into the WebView. Workspace / approved-local / remote loads go through
+// bounded loaders (Rust). Classification is pure and side-effect free.
 //
-// M0 (Theme G): classify *why* an image is blocked and show reason + next
-// actions. Load policy is unchanged — no remote fetch, no outside-workspace
-// disk open.
+// Theme G:
+//   M0 — honest block reasons + next actions
+//   M1 — outside-local only when approved roots + preference allow
+//   M2 — https remote only when Preference is On (http always blocked)
+
+import {
+  isPathUnderApprovedRoots,
+  type MediaImageSettings,
+  type OutsideImagePolicy,
+  DEFAULT_MEDIA_IMAGE_SETTINGS,
+} from "./mediaImageSettings";
 
 export const MAX_EMBEDDED_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
 
-/** Stable machine keys for blocked-image notes (tests + future actions). */
+/** Stable machine keys for blocked-image notes (tests + actions). */
 export type ImageBlockReason =
   | "outside-workspace"
   | "absolute-outside"
@@ -19,14 +27,31 @@ export type ImageBlockReason =
   | "missing-context"
   | "load-failed";
 
+export type ImageLoadOrigin = "workspace" | "approved-local" | "remote";
+
+export type MediaImageAccessOptions = {
+  outsideImages?: OutsideImagePolicy;
+  loadRemoteImages?: boolean;
+  /** Absolute approved file or folder paths for outside-local loads. */
+  approvedRoots?: readonly string[];
+};
+
 export type MarkdownImageClassification =
   | { kind: "allowed-data"; src: string }
   | { kind: "allowed-workspace"; path: string }
+  | { kind: "allowed-approved-local"; path: string }
+  | { kind: "allowed-remote"; url: string }
   | {
       kind: "blocked";
       reason: ImageBlockReason;
       /** Short display-safe hint (relative src, host URL, scheme). */
       reference?: string;
+      /** Absolute resolved path when known (for approve actions). */
+      resolvedPath?: string;
+      /** Full remote URL when reason is remote (display still truncated). */
+      remoteUrl?: string;
+      /** Offer parent-folder approve control (M1). */
+      canApproveLocal?: boolean;
     };
 
 export function isAllowedEmbeddedImageSource(src: string): boolean {
@@ -34,6 +59,21 @@ export function isAllowedEmbeddedImageSource(src: string): boolean {
     return false;
   }
   return /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(src);
+}
+
+export function resolveMediaAccessOptions(
+  options?: MediaImageAccessOptions | null,
+  settings?: Partial<MediaImageSettings> | null,
+): Required<MediaImageAccessOptions> {
+  const media = {
+    ...DEFAULT_MEDIA_IMAGE_SETTINGS,
+    ...settings,
+  };
+  return {
+    outsideImages: options?.outsideImages ?? media.outsideImages,
+    loadRemoteImages: options?.loadRemoteImages ?? media.loadRemoteImages,
+    approvedRoots: options?.approvedRoots ?? [],
+  };
 }
 
 /**
@@ -44,7 +84,9 @@ export function classifyMarkdownImageSource(
   src: string,
   workspaceRoot: string | null,
   documentPath: string | null,
+  access?: MediaImageAccessOptions | null,
 ): MarkdownImageClassification {
+  const media = resolveMediaAccessOptions(access);
   const trimmed = src.trim();
   if (!trimmed) {
     return { kind: "blocked", reason: "invalid-src" };
@@ -68,11 +110,24 @@ export function classifyMarkdownImageSource(
   const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(decodedSrc);
   if (schemeMatch) {
     const scheme = schemeMatch[1]?.toLowerCase() ?? "";
-    if (scheme === "http" || scheme === "https") {
+    if (scheme === "https") {
+      if (media.loadRemoteImages) {
+        return { kind: "allowed-remote", url: decodedSrc };
+      }
       return {
         kind: "blocked",
         reason: "remote",
         reference: displayRemoteReference(decodedSrc),
+        remoteUrl: decodedSrc,
+      };
+    }
+    if (scheme === "http") {
+      // http is never auto-fetched (clearer privacy / mixed-content boundary).
+      return {
+        kind: "blocked",
+        reason: "remote",
+        reference: displayRemoteReference(decodedSrc),
+        remoteUrl: decodedSrc,
       };
     }
     return {
@@ -128,12 +183,25 @@ export function classifyMarkdownImageSource(
     }
   }
 
+  const outsidePolicy = media.outsideImages;
+  const approved =
+    outsidePolicy !== "off" &&
+    isPathUnderApprovedRoots(resolved, media.approvedRoots);
+
+  if (approved) {
+    return { kind: "allowed-approved-local", path: resolved };
+  }
+
+  const canApproveLocal = outsidePolicy === "ask" || outsidePolicy === "remember";
+
   // Relative escape: same Preview / HTML / PDF matrix as before.
   if (workspaceRoot && !srcIsAbsolute) {
     return {
       kind: "blocked",
       reason: "outside-workspace",
       reference: displayLocalReference(decodedSrc),
+      resolvedPath: resolved,
+      canApproveLocal,
     };
   }
 
@@ -142,6 +210,8 @@ export function classifyMarkdownImageSource(
       kind: "blocked",
       reason: "absolute-outside",
       reference: displayLocalReference(decodedSrc),
+      resolvedPath: resolved,
+      canApproveLocal,
     };
   }
 
@@ -156,6 +226,7 @@ export type BlockedImageNoteCopy = {
   title: string;
   reasonLine: string;
   nextLine: string;
+  approveLabel?: string;
 };
 
 /**
@@ -166,10 +237,14 @@ export function formatBlockedImageNote(options: {
   reason: ImageBlockReason;
   alt?: string | null;
   reference?: string | null;
+  canApproveLocal?: boolean;
 }): BlockedImageNoteCopy {
   const alt = options.alt?.trim() || "";
   const ref = options.reference?.trim() || "";
   const title = alt ? `画像を表示できません: ${alt}` : "画像を表示できません";
+  const approveLabel = options.canApproveLocal
+    ? "この画像の親フォルダを許可して表示"
+    : undefined;
 
   switch (options.reason) {
     case "outside-workspace":
@@ -178,32 +253,35 @@ export function formatBlockedImageNote(options: {
         reasonLine: ref
           ? `理由: ワークスペース外の相対パスです（${ref}）。`
           : "理由: ワークスペース外の相対パスです。",
-        nextLine:
-          "次の操作: 画像を含む親フォルダをワークスペースとして開く。または workspace 内（例: assets/）へ画像を置いて相対パスを直す。",
+        nextLine: options.canApproveLocal
+          ? "次の操作: 下の許可を使うか、親フォルダをワークスペースとして開く。または workspace 内（例: assets/）へ画像を置く。"
+          : "次の操作: 画像を含む親フォルダをワークスペースとして開く。または workspace 内（例: assets/）へ画像を置いて相対パスを直す。設定で「ワークスペース外の画像」を変更できます。",
+        approveLabel,
       };
     case "absolute-outside":
       return {
         title,
         reasonLine: ref
-          ? `理由: ワークスペース外の絶対パスは開きません（${ref}）。`
-          : "理由: ワークスペース外の絶対パスは開きません。",
-        nextLine:
-          "次の操作: 画像を選択中の workspace 内へ置き、文書からの相対パスで参照する。",
+          ? `理由: ワークスペース外の絶対パスです（${ref}）。`
+          : "理由: ワークスペース外の絶対パスです。",
+        nextLine: options.canApproveLocal
+          ? "次の操作: 下の許可を使うか、画像を workspace 内へ置いて相対パスで参照する。"
+          : "次の操作: 画像を選択中の workspace 内へ置き、文書からの相対パスで参照する。",
+        approveLabel,
       };
     case "remote":
       return {
         title,
         reasonLine: ref
-          ? `理由: リモート画像は既定で読み込みません（${ref}）。`
-          : "理由: リモート画像は既定で読み込みません。",
+          ? `理由: リモート画像は設定で許可するまで読み込みません（${ref}）。`
+          : "理由: リモート画像は設定で許可するまで読み込みません。",
         nextLine:
-          "次の操作: 画像をローカルに保存し workspace 内の相対パスで参照する（設定での許可は今後）。",
+          "次の操作: 設定 → 表示とメディア で「Preview でリモート画像を読み込む」をオン（https のみ・サーバーに要求が届きます）。またはローカルに保存して相対パスで参照する。",
       };
     case "unsupported-scheme":
       return {
         title,
-        // Do not render a live `scheme:` token (e.g. `javascript:`) that
-        // scanners treat as an active URI; show the scheme name only.
+        // Do not render a live `scheme:` token (e.g. `javascript:`).
         reasonLine: ref
           ? `理由: この参照形式は使えません（スキーム ${ref}）。`
           : "理由: この参照形式は使えません。",
@@ -231,10 +309,10 @@ export function formatBlockedImageNote(options: {
       return {
         title,
         reasonLine: ref
-          ? `理由: ワークスペース内の画像を読めませんでした（${ref}）。`
-          : "理由: ワークスペース内の画像を読めませんでした。",
+          ? `理由: 画像を読めませんでした（${ref}）。`
+          : "理由: 画像を読めませんでした。",
         nextLine:
-          "次の操作: ファイルの有無・名前・拡張子を確認する。必要なら assets/ に置き直す。",
+          "次の操作: ファイルの有無・名前・拡張子・許可範囲を確認する。必要なら assets/ に置き直す。",
       };
     case "invalid-src":
     default:
@@ -254,6 +332,8 @@ export function buildBlockedImageElement(options: {
   reason: ImageBlockReason;
   alt?: string | null;
   reference?: string | null;
+  resolvedPath?: string | null;
+  canApproveLocal?: boolean;
 }): HTMLSpanElement {
   const copy = formatBlockedImageNote(options);
   const replacement = document.createElement("span");
@@ -269,6 +349,10 @@ export function buildBlockedImageElement(options: {
   if (ref) {
     replacement.setAttribute("data-hazakura-image-ref", ref);
   }
+  const resolved = options.resolvedPath?.trim();
+  if (resolved) {
+    replacement.setAttribute("data-hazakura-resolved-path", resolved);
+  }
 
   const title = document.createElement("span");
   title.className = "blocked-image-title";
@@ -283,6 +367,19 @@ export function buildBlockedImageElement(options: {
   next.textContent = copy.nextLine;
 
   replacement.append(title, reason, next);
+
+  if (options.canApproveLocal && resolved && copy.approveLabel) {
+    // Use a span (not <button>) so DOMPurify FORBID_TAGS does not strip it.
+    const action = document.createElement("span");
+    action.className = "blocked-image-action";
+    action.setAttribute("role", "button");
+    action.setAttribute("tabindex", "0");
+    action.setAttribute("data-hazakura-image-action", "approve-parent");
+    action.setAttribute("data-hazakura-resolved-path", resolved);
+    action.textContent = copy.approveLabel;
+    replacement.append(action);
+  }
+
   return replacement;
 }
 
@@ -325,7 +422,6 @@ function displayLocalReference(path: string): string | undefined {
   if (!trimmed) {
     return undefined;
   }
-  // Avoid echoing multi-kilobyte garbage; keep what the author typed.
   return truncateDisplay(trimmed, 96);
 }
 

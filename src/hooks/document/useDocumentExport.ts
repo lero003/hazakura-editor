@@ -3,6 +3,8 @@ import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
   exportPdfFile,
+  fetchRemoteImage,
+  openLocalImageUnderRoots,
   openWorkspaceImage,
   saveBinaryFileAs,
   saveTextFileAs,
@@ -25,7 +27,12 @@ import {
 } from "../../features/document/pdfExport";
 import { embedAndStampPdfImages } from "../../features/document/pdfExportImages";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
-import { renderMarkdown } from "../../features/editor/markdown";
+import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
+import {
+  inlineMarkdownImages,
+  renderMarkdown,
+} from "../../features/editor/markdown";
+import { DEFAULT_MEDIA_IMAGE_SETTINGS } from "../../features/editor/mediaImageSettings";
 import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab } from "../../types";
 
@@ -35,6 +42,9 @@ type UseDocumentExportOptions = {
   setGlobalError: (message: string | null) => void;
   setStatus: (message: string) => void;
   workspaceRootPath: string | null;
+  /** Theme G: when true, embed approved-local / optional remote images. */
+  materializeImagesOnExport?: boolean;
+  mediaAccess?: MediaImageAccessOptions | null;
 };
 
 export type EpubExportRequest = {
@@ -57,11 +67,54 @@ export function useDocumentExport({
   setGlobalError,
   setStatus,
   workspaceRootPath,
+  materializeImagesOnExport = DEFAULT_MEDIA_IMAGE_SETTINGS.materializeImagesOnExport,
+  mediaAccess = null,
 }: UseDocumentExportOptions) {
   const activeContentsRef = useRef(activeContents);
   activeContentsRef.current = activeContents;
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
+  const materializeRef = useRef(materializeImagesOnExport);
+  materializeRef.current = materializeImagesOnExport;
+  const mediaAccessRef = useRef(mediaAccess);
+  mediaAccessRef.current = mediaAccess;
+
+  const buildExportMediaAccess = useCallback((): MediaImageAccessOptions => {
+    const access = mediaAccessRef.current;
+    const materialize = materializeRef.current;
+    return {
+      outsideImages: access?.outsideImages ?? "ask",
+      // Export never fetches remote unless both materialize and remote prefs allow.
+      loadRemoteImages: Boolean(
+        materialize && (access?.loadRemoteImages ?? false),
+      ),
+      approvedRoots: materialize ? (access?.approvedRoots ?? []) : [],
+    };
+  }, []);
+
+  const createExportImageLoaders = useCallback(() => {
+    const access = buildExportMediaAccess();
+    const approvedRoots = [...(access.approvedRoots ?? [])];
+    return {
+      loadWorkspaceImage: async (path: string) => {
+        if (!workspaceRootPath) {
+          throw new Error("Workspace image access requires an open workspace");
+        }
+        const image = await openWorkspaceImage(workspaceRootPath, path);
+        return image.dataUrl;
+      },
+      loadApprovedLocalImage: async (path: string) => {
+        const image = await openLocalImageUnderRoots(path, approvedRoots);
+        return image.dataUrl;
+      },
+      loadRemoteImage: access.loadRemoteImages
+        ? async (url: string) => {
+            const image = await fetchRemoteImage(url);
+            return image.dataUrl;
+          }
+        : undefined,
+    };
+  }, [buildExportMediaAccess, workspaceRootPath]);
   const [epubExportRequest, setEpubExportRequest] =
     useState<EpubExportRequest | null>(null);
   const [pdfExportRequest, setPdfExportRequest] =
@@ -102,10 +155,17 @@ export function useDocumentExport({
 
     setStatus("Preparing PDF export...");
     try {
+      const exportMedia = buildExportMediaAccess();
       let rendered = renderMarkdown(activeContentsRef.current, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath ?? undefined,
+        mediaAccess: exportMedia,
       });
+      // Theme G M3: materialize resolvable placeholders before PDF embed.
+      rendered = await inlineMarkdownImages(
+        rendered,
+        createExportImageLoaders(),
+      );
       rendered = preparePdfExportTables(rendered);
 
       const pdfLayout = pdfScreenPageLayout(preset);
@@ -121,10 +181,8 @@ export function useDocumentExport({
         Math.floor(pdfLayout.contentHeightPoints * 0.72),
       );
 
-      // Embed every workspace-contained local image as a data: URL, then stamp
-      // createPDF-safe sizes. The shared Markdown image policy has already
-      // blocked paths outside the selected workspace, so Preview, HTML, and
-      // PDF share one document-relative containment boundary.
+      // Embed remaining workspace path placeholders as data: URLs, then stamp
+      // createPDF-safe sizes. Shared image policy + Theme G mediaAccess.
       const embedResult = await embedAndStampPdfImages(
         rendered,
         async (path) => {
@@ -472,7 +530,14 @@ ${bodyHtml}
       setGlobalError(`PDF export failed: ${String(err)}`);
       setStatus("PDF export unavailable");
     }
-  }, [pdfExportRequest, setGlobalError, setStatus, workspaceRootPath]);
+  }, [
+    buildExportMediaAccess,
+    createExportImageLoaders,
+    pdfExportRequest,
+    setGlobalError,
+    setStatus,
+    workspaceRootPath,
+  ]);
 
   const exportHtml = useCallback(async () => {
     if (!activeTab || activeContents === undefined) {
@@ -497,7 +562,12 @@ ${bodyHtml}
       let bodyHtml = renderMarkdown(contentsForExport, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath,
+        mediaAccess: buildExportMediaAccess(),
       });
+      bodyHtml = await inlineMarkdownImages(
+        bodyHtml,
+        createExportImageLoaders(),
+      );
       const htmlEmbed = await embedAndStampPdfImages(
         bodyHtml,
         async (path) => {
@@ -627,7 +697,15 @@ ${bodyHtml}
       setGlobalError(`Export HTML failed: ${String(err)}`);
       setStatus("Export HTML failed");
     }
-  }, [activeContents, activeTab, setGlobalError, setStatus, workspaceRootPath]);
+  }, [
+    activeContents,
+    activeTab,
+    buildExportMediaAccess,
+    createExportImageLoaders,
+    setGlobalError,
+    setStatus,
+    workspaceRootPath,
+  ]);
 
   const exportEpubBeta = useCallback(async () => {
     if (!activeTab || activeContents === undefined) {
@@ -671,22 +749,43 @@ ${bodyHtml}
         return;
       }
 
+      const exportMedia = buildExportMediaAccess();
+      // Pre-materialize for EPUB so renderMarkdown inside the archive builder
+      // sees data URLs where possible; workspace loader still covers leftovers.
+      let markdownForEpub = activeContentsRef.current;
+      try {
+        const preHtml = renderMarkdown(markdownForEpub, {
+          documentPath: tabForExport.path,
+          workspaceRoot: workspaceRootPath,
+          mediaAccess: exportMedia,
+        });
+        await inlineMarkdownImages(preHtml, createExportImageLoaders());
+      } catch {
+        // Best-effort preflight; archive builder still runs with workspace loader.
+      }
+      const loaders = createExportImageLoaders();
       const { archive, warnings } = await buildEpubBetaArchiveWithReport({
         documentPath: tabForExport.path,
         documentName: tabForExport.name,
-        loadWorkspaceImage: workspaceRootPath
-          ? async (path) => {
-              const image = await openWorkspaceImage(workspaceRootPath, path);
-              return { dataUrl: image.dataUrl };
+        loadWorkspaceImage: async (path) => {
+          try {
+            const dataUrl = await loaders.loadWorkspaceImage(path);
+            return { dataUrl };
+          } catch {
+            if (loaders.loadApprovedLocalImage) {
+              const dataUrl = await loaders.loadApprovedLocalImage(path);
+              return { dataUrl };
             }
-          : undefined,
+            throw new Error("image unavailable");
+          }
+        },
         metadata: {
           author: settings.author.trim(),
           language: settings.language.trim() || "ja",
           modified: formatEpubModifiedDate(new Date()),
           title: settings.title.trim() || request.settings.title,
         },
-        markdown: activeContentsRef.current,
+        markdown: markdownForEpub,
         workspaceRoot: workspaceRootPath,
       });
       await saveBinaryFileAs(destPath, archive);
@@ -699,7 +798,14 @@ ${bodyHtml}
       setGlobalError(`Export EPUB beta failed: ${String(err)}`);
       setStatus("Export EPUB beta failed");
     }
-  }, [epubExportRequest, setGlobalError, setStatus, workspaceRootPath]);
+  }, [
+    buildExportMediaAccess,
+    createExportImageLoaders,
+    epubExportRequest,
+    setGlobalError,
+    setStatus,
+    workspaceRootPath,
+  ]);
 
   return {
     cancelPdfExport,

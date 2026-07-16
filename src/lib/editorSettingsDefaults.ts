@@ -13,6 +13,7 @@
 
 import type { EditorSettings } from "../types";
 import { LMODE_SETTINGS_DEFAULTS } from "../features/editor/lMode/settings";
+import { DEFAULT_MEDIA_IMAGE_SETTINGS } from "../features/editor/mediaImageSettings";
 
 export function defaultEditorSettings(
   overrides: Partial<EditorSettings> = {},
@@ -29,6 +30,10 @@ export function defaultEditorSettings(
     autoBackupEnabled: false,
     ambientIntensity: "normal",
     appleAssistDiffInitiallyOpen: true,
+    outsideImages: DEFAULT_MEDIA_IMAGE_SETTINGS.outsideImages,
+    loadRemoteImages: DEFAULT_MEDIA_IMAGE_SETTINGS.loadRemoteImages,
+    materializeImagesOnExport:
+      DEFAULT_MEDIA_IMAGE_SETTINGS.materializeImagesOnExport,
     ...LMODE_SETTINGS_DEFAULTS,
     ...overrides,
   };

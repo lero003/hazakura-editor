@@ -47,6 +47,18 @@ export type PreferencesCopy = {
   theme: string;
   themeHint: (theme: ThemePreference) => string;
   wrapLines: string;
+  // Theme G — display & media (images)
+  mediaAndDisplay: string;
+  outsideImages: string;
+  outsideImagesOff: string;
+  outsideImagesAsk: string;
+  outsideImagesRemember: string;
+  outsideImagesHint: string;
+  loadRemoteImages: string;
+  loadRemoteImagesHint: string;
+  materializeImagesOnExport: string;
+  materializeImagesOnExportHint: string;
+  clearApprovedImageFolders: string;
   // Local Data Disclosure used to expose its chrome and
   // bodies through this copy map. The v0.16 pane now
   // reads a bundled English `.md` file
@@ -92,6 +104,20 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       tabSize: "いんでんとはば",
       theme: "いろあひ",
       wrapLines: "くだりををる",
+      mediaAndDisplay: "ひょうじ と めでぃあ",
+      outsideImages: "わーくすぺーす そと の がぞう",
+      outsideImagesOff: "つねに とめる",
+      outsideImagesAsk: "きょか してから よむ",
+      outsideImagesRemember: "きょかした フォルダ を おぼえる",
+      outsideImagesHint:
+        "しんさく の おや フォルダ を わーくすぺーす に していない とき に つかいます。きょか は フォルダ たんい。",
+      loadRemoteImages: "Preview で りもーと がぞう を よむ",
+      loadRemoteImagesHint:
+        "https のみ。オン に すると サーバー に ようきゅう が とどきます。きてい は オフ。",
+      materializeImagesOnExport: "かきだし に がぞう を ふくめる",
+      materializeImagesOnExportHint:
+        "よめる がぞう を HTML / PDF / EPUB に うめこみます。Markdown は かきかえません。",
+      clearApprovedImageFolders: "きょかした がぞう フォルダ を クリア",
       ambientIntensity: "うつろひ",
       ambientIntensityOff: "なし",
       ambientIntensitySubtle: "ほのか",
@@ -156,6 +182,20 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         tabSize: "インデント幅",
         theme: "テーマ",
         wrapLines: "行を折り返す",
+        mediaAndDisplay: "表示とメディア",
+        outsideImages: "ワークスペース外の画像",
+        outsideImagesOff: "常にブロック",
+        outsideImagesAsk: "許可してから読む",
+        outsideImagesRemember: "許可したフォルダを覚える",
+        outsideImagesHint:
+          "原稿の親フォルダを workspace にしていないときに使います。許可はフォルダ単位（親フォルダ）です。",
+        loadRemoteImages: "Preview でリモート画像を読み込む",
+        loadRemoteImagesHint:
+          "https のみ。オンにすると画像ホストへリクエストが届きます。既定はオフです。",
+        materializeImagesOnExport: "書き出しに画像を含める",
+        materializeImagesOnExportHint:
+          "読める画像を HTML / PDF / EPUB パッケージに埋め込みます。Markdown 本文は書き換えません。",
+        clearApprovedImageFolders: "許可した画像フォルダをクリア",
         ambientIntensity: "アンビエント演出",
         ambientIntensityOff: "オフ",
         ambientIntensitySubtle: "控えめ",
@@ -216,6 +256,20 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         tabSize: "Indent size",
         theme: "Theme",
         wrapLines: "Wrap lines",
+        mediaAndDisplay: "Display & media",
+        outsideImages: "Images outside the workspace",
+        outsideImagesOff: "Always block",
+        outsideImagesAsk: "Ask before loading",
+        outsideImagesRemember: "Remember approved folders",
+        outsideImagesHint:
+          "Use when the manuscript’s parent folder is not the workspace. Approval is per parent folder.",
+        loadRemoteImages: "Load remote images in Preview",
+        loadRemoteImagesHint:
+          "https only. When on, the image host receives a request. Default is off.",
+        materializeImagesOnExport: "Include images in export packages",
+        materializeImagesOnExportHint:
+          "Embed readable images into HTML / PDF / EPUB. Does not rewrite Markdown source.",
+        clearApprovedImageFolders: "Clear approved image folders",
         ambientIntensity: "Ambient effects",
         ambientIntensityOff: "Off",
         ambientIntensitySubtle: "Subtle",

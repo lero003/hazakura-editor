@@ -1,3 +1,4 @@
+import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import type { EditorTab } from "../../types";
 import { useAutoBackup } from "../workspace/useAutoBackup";
 import { useDocumentExport } from "./useDocumentExport";
@@ -10,6 +11,8 @@ type UseDocumentPersistenceOptions = {
   setStatus: (message: string) => void;
   tabs: EditorTab[];
   workspaceRootPath: string | null;
+  materializeImagesOnExport?: boolean;
+  mediaAccess?: MediaImageAccessOptions | null;
 };
 
 export function useDocumentPersistence({
@@ -20,6 +23,8 @@ export function useDocumentPersistence({
   setStatus,
   tabs,
   workspaceRootPath,
+  materializeImagesOnExport,
+  mediaAccess,
 }: UseDocumentPersistenceOptions) {
   const exportActions = useDocumentExport({
     activeContents,
@@ -27,6 +32,8 @@ export function useDocumentPersistence({
     setGlobalError,
     setStatus,
     workspaceRootPath,
+    materializeImagesOnExport,
+    mediaAccess,
   });
 
   useAutoBackup({

@@ -187,6 +187,35 @@ fn open_workspace_image_rejects_paths_outside_root() {
 
     assert!(err.contains("outside the workspace root"), "{err}");
 
+    // Theme G M1: approved root can open the same outside path; empty roots cannot.
+    let approved_err = open_local_image_under_roots_with_label(
+        MAIN_WINDOW_LABEL,
+        outside_image.to_string_lossy().to_string(),
+        Vec::new(),
+    )
+    .expect_err("empty approved roots must reject");
+    assert!(
+        approved_err.contains("No approved image roots"),
+        "{approved_err}"
+    );
+
+    let outside_png = outside.join("tiny.png");
+    fs::write(&outside_png, b"\x89PNG\r\n\x1a\n").expect("write png");
+    let allowed = open_local_image_under_roots_with_label(
+        MAIN_WINDOW_LABEL,
+        outside_png.to_string_lossy().to_string(),
+        vec![outside.to_string_lossy().to_string()],
+    )
+    .expect("approved root should open local image");
+    assert!(allowed.data_url.starts_with("data:image/png;base64,"));
+
+    let http_err = fetch_remote_image_with_label(
+        MAIN_WINDOW_LABEL,
+        "http://example.com/a.png".to_string(),
+    )
+    .expect_err("http remote must be rejected");
+    assert!(http_err.contains("https"), "{http_err}");
+
     let _ = fs::remove_dir_all(root);
     let _ = fs::remove_dir_all(outside);
 }

@@ -48,6 +48,7 @@ import { buildLineDiff } from "../../features/diff/diff";
 import { compareColumnLabel } from "../../lib/locale/review";
 import { localizeCompareError } from "../../lib/utils";
 import type { CompareCase } from "../../types";
+import { getApprovedRoots } from "../../features/editor/mediaImageApprovals";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
@@ -1115,6 +1116,15 @@ export function useAppShellController() {
     activeTab,
     activeTabId,
     autoBackupEnabled: editorSettings.autoBackupEnabled,
+    materializeImagesOnExport: editorSettings.materializeImagesOnExport,
+    mediaAccess: {
+      outsideImages: editorSettings.outsideImages,
+      loadRemoteImages: editorSettings.loadRemoteImages,
+      approvedRoots: getApprovedRoots(
+        workspaceRootPath,
+        editorSettings.outsideImages,
+      ),
+    },
     refreshWorkspaceTree,
     rememberRecentFile,
     setActiveTabId,

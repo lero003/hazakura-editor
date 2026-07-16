@@ -3,6 +3,7 @@ import { marked } from "marked";
 import {
   buildBlockedImageElement,
   classifyMarkdownImageSource,
+  type MediaImageAccessOptions,
 } from "./imagePolicy";
 
 marked.use({
@@ -11,12 +12,25 @@ marked.use({
 });
 
 const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
+const IMAGE_ORIGIN_ATTR = "data-hazakura-image-origin";
+const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
 const TRANSPARENT_IMAGE_SRC =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
 export type RenderMarkdownOptions = {
   documentPath?: string | null;
   workspaceRoot?: string | null;
+  /** Theme G media access (outside-local consent + remote Preference). */
+  mediaAccess?: MediaImageAccessOptions | null;
+};
+
+export type InlineMarkdownImageLoaders = {
+  /** Workspace-contained absolute path. */
+  loadWorkspaceImage: (absolutePath: string) => Promise<string>;
+  /** Outside-local path under approved roots. */
+  loadApprovedLocalImage?: (absolutePath: string) => Promise<string>;
+  /** https remote URL → data URL (only when Preference On). */
+  loadRemoteImage?: (url: string) => Promise<string>;
 };
 
 const MARKDOWN_DOMPURIFY_CONFIG = {
@@ -66,6 +80,7 @@ export function renderMarkdown(
     fragment,
     options?.workspaceRoot ?? null,
     options?.documentPath ?? null,
+    options?.mediaAccess ?? null,
   );
   applyTablePreviewPolicyToFragment(fragment);
   applyTaskListPreviewPolicyToFragment(fragment);
@@ -78,11 +93,28 @@ export function renderMarkdown(
   );
 }
 
+/**
+ * Legacy helper: workspace-only path loader.
+ * Prefer `inlineMarkdownImages` when approved-local / remote may appear.
+ */
 export async function inlineWorkspaceAssetImages(
   html: string,
   loadImageDataUrl: (absolutePath: string) => Promise<string>,
 ): Promise<string> {
-  if (!html.includes(WORKSPACE_IMAGE_PATH_ATTR)) {
+  return inlineMarkdownImages(html, {
+    loadWorkspaceImage: loadImageDataUrl,
+    loadApprovedLocalImage: loadImageDataUrl,
+  });
+}
+
+/** Inline workspace, approved-local, and optional remote image placeholders. */
+export async function inlineMarkdownImages(
+  html: string,
+  loaders: InlineMarkdownImageLoaders,
+): Promise<string> {
+  const hasLocal = html.includes(WORKSPACE_IMAGE_PATH_ATTR);
+  const hasRemote = html.includes(REMOTE_IMAGE_URL_ATTR);
+  if (!hasLocal && !hasRemote) {
     return html;
   }
 
@@ -96,11 +128,16 @@ export async function inlineWorkspaceAssetImages(
     if (!path) {
       continue;
     }
+    const origin = image.getAttribute(IMAGE_ORIGIN_ATTR) ?? "workspace";
 
     try {
-      const dataUrl = await loadImageDataUrl(path);
+      const dataUrl =
+        origin === "approved-local" && loaders.loadApprovedLocalImage
+          ? await loaders.loadApprovedLocalImage(path)
+          : await loaders.loadWorkspaceImage(path);
       image.setAttribute("src", dataUrl);
       image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
+      image.removeAttribute(IMAGE_ORIGIN_ATTR);
     } catch {
       const basename = path.split("/").filter(Boolean).pop() ?? path;
       image.replaceWith(
@@ -108,6 +145,40 @@ export async function inlineWorkspaceAssetImages(
           reason: "load-failed",
           alt: image.getAttribute("alt")?.trim(),
           reference: basename,
+          resolvedPath: path,
+        }),
+      );
+    }
+  }
+
+  for (const image of Array.from(
+    template.content.querySelectorAll(`img[${REMOTE_IMAGE_URL_ATTR}]`),
+  )) {
+    const url = image.getAttribute(REMOTE_IMAGE_URL_ATTR);
+    if (!url) {
+      continue;
+    }
+    if (!loaders.loadRemoteImage) {
+      image.replaceWith(
+        buildBlockedImageElement({
+          reason: "remote",
+          alt: image.getAttribute("alt")?.trim(),
+          reference: url,
+        }),
+      );
+      continue;
+    }
+    try {
+      const dataUrl = await loaders.loadRemoteImage(url);
+      image.setAttribute("src", dataUrl);
+      image.removeAttribute(REMOTE_IMAGE_URL_ATTR);
+      image.removeAttribute(IMAGE_ORIGIN_ATTR);
+    } catch {
+      image.replaceWith(
+        buildBlockedImageElement({
+          reason: "load-failed",
+          alt: image.getAttribute("alt")?.trim(),
+          reference: url,
         }),
       );
     }
@@ -120,6 +191,7 @@ function applyImagePreviewPolicyToFragment(
   fragment: DocumentFragment,
   workspaceRoot: string | null,
   documentPath: string | null,
+  mediaAccess: MediaImageAccessOptions | null,
 ): void {
   for (const image of Array.from(fragment.querySelectorAll("img"))) {
     const src = image.getAttribute("src")?.trim() ?? "";
@@ -127,6 +199,7 @@ function applyImagePreviewPolicyToFragment(
       src,
       workspaceRoot,
       documentPath,
+      mediaAccess,
     );
 
     if (classification.kind === "allowed-data") {
@@ -139,18 +212,40 @@ function applyImagePreviewPolicyToFragment(
     if (classification.kind === "allowed-workspace") {
       image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
       image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, classification.path);
+      image.setAttribute(IMAGE_ORIGIN_ATTR, "workspace");
       image.removeAttribute("srcset");
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
       continue;
     }
 
-    // Blocked: no remote fetch and no outside-workspace disk open (M0).
+    if (classification.kind === "allowed-approved-local") {
+      image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
+      image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, classification.path);
+      image.setAttribute(IMAGE_ORIGIN_ATTR, "approved-local");
+      image.removeAttribute("srcset");
+      image.setAttribute("loading", "lazy");
+      image.setAttribute("decoding", "async");
+      continue;
+    }
+
+    if (classification.kind === "allowed-remote") {
+      image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
+      image.setAttribute(REMOTE_IMAGE_URL_ATTR, classification.url);
+      image.setAttribute(IMAGE_ORIGIN_ATTR, "remote");
+      image.removeAttribute("srcset");
+      image.setAttribute("loading", "lazy");
+      image.setAttribute("decoding", "async");
+      continue;
+    }
+
     image.replaceWith(
       buildBlockedImageElement({
         reason: classification.reason,
         alt: image.getAttribute("alt")?.trim(),
         reference: classification.reference,
+        resolvedPath: classification.resolvedPath,
+        canApproveLocal: classification.canApproveLocal,
       }),
     );
   }

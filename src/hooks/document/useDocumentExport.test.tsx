@@ -14,7 +14,9 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
 
 const tauriApi = vi.hoisted(() => ({
   exportPdfFile: vi.fn(),
+  fetchRemoteImage: vi.fn(),
   isTauriRuntime: vi.fn(() => false),
+  openLocalImageUnderRoots: vi.fn(),
   openWorkspaceImage: vi.fn(),
   saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
@@ -35,7 +37,9 @@ const epubApi = vi.hoisted(() => ({
 
 vi.mock("../../lib/tauri", () => ({
   exportPdfFile: tauriApi.exportPdfFile,
+  fetchRemoteImage: tauriApi.fetchRemoteImage,
   isTauriRuntime: tauriApi.isTauriRuntime,
+  openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
@@ -62,10 +66,12 @@ vi.mock("../../features/document/markdownExportCss", () => ({
 
 const markdownApi = vi.hoisted(() => ({
   renderMarkdown: vi.fn((contents: string) => `<p>${contents}</p>`),
+  inlineMarkdownImages: vi.fn(async (html: string) => html),
 }));
 
 vi.mock("../../features/editor/markdown", () => ({
   renderMarkdown: markdownApi.renderMarkdown,
+  inlineMarkdownImages: markdownApi.inlineMarkdownImages,
 }));
 
 const useDocumentExportSource = readFileSync(
@@ -108,12 +114,16 @@ describe("useDocumentExport", () => {
     vi.useRealTimers();
     dialogApi.save.mockReset();
     markdownApi.renderMarkdown.mockClear();
+    markdownApi.inlineMarkdownImages.mockClear();
+    markdownApi.inlineMarkdownImages.mockImplementation(async (html: string) => html);
     epubApi.buildEpubBetaArchive.mockClear();
     epubApi.buildEpubBetaArchiveWithReport.mockClear();
     epubApi.defaultEpubExportSettings.mockClear();
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
+    tauriApi.openLocalImageUnderRoots.mockReset();
+    tauriApi.fetchRemoteImage.mockReset();
     tauriApi.exportPdfFile.mockReset();
     tauriApi.isTauriRuntime.mockReset();
     tauriApi.isTauriRuntime.mockReturnValue(false);
@@ -166,6 +176,11 @@ describe("useDocumentExport", () => {
     expect(markdownApi.renderMarkdown).toHaveBeenCalledWith("after dialog", {
       documentPath: "/workspace/a.md",
       workspaceRoot: null,
+      mediaAccess: {
+        approvedRoots: [],
+        loadRemoteImages: false,
+        outsideImages: "ask",
+      },
     });
     expect(tauriApi.saveTextFileAs.mock.calls[0]?.[1]).toContain(
       "after dialog",
@@ -302,6 +317,11 @@ describe("useDocumentExport", () => {
     expect(markdownApi.renderMarkdown).toHaveBeenCalledWith("# Print me", {
       documentPath: "/workspace/a.md",
       workspaceRoot: "/workspace",
+      mediaAccess: {
+        approvedRoots: [],
+        loadRemoteImages: false,
+        outsideImages: "ask",
+      },
     });
     expect(dialogApi.save).toHaveBeenCalledWith({
       defaultPath: "print-me.pdf",

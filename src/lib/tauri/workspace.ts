@@ -45,6 +45,24 @@ export async function openWorkspaceImage(
   return invoke<ImagePreviewDocument>("open_workspace_image", { root, path });
 }
 
+/** Theme G M1: load a local image only under FE-approved roots. */
+export async function openLocalImageUnderRoots(
+  path: string,
+  allowedRoots: string[],
+): Promise<ImagePreviewDocument> {
+  return invoke<ImagePreviewDocument>("open_local_image_under_roots", {
+    path,
+    allowedRoots,
+  });
+}
+
+/** Theme G M2: bounded https image fetch (Preference-gated on the FE). */
+export async function fetchRemoteImage(
+  url: string,
+): Promise<ImagePreviewDocument> {
+  return invoke<ImagePreviewDocument>("fetch_remote_image", { url });
+}
+
 export async function savePastedImage(
   workspaceRoot: string,
   dataBase64: string,

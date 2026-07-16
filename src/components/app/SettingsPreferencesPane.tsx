@@ -1,4 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
+import type { OutsideImagePolicy } from "../../features/editor/mediaImageSettings";
+import { clearStoredApprovedRoots } from "../../features/editor/mediaImageSettings";
 import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
 import type {
   EditorSettings,
@@ -20,6 +22,9 @@ type SettingsPreferencesPaneProps = {
   onThemePreferenceChange: (theme: ThemePreference) => void;
   previewVisible: boolean;
   themePreference: ThemePreference;
+  /** When set, enables clearing durable approved image folders for this workspace. */
+  workspaceRootPath?: string | null;
+  onClearApprovedImageFolders?: () => void;
 };
 
 type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";
@@ -51,6 +56,8 @@ export function SettingsPreferencesPane({
   onThemePreferenceChange,
   previewVisible,
   themePreference,
+  workspaceRootPath = null,
+  onClearApprovedImageFolders,
 }: SettingsPreferencesPaneProps) {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
 
@@ -190,6 +197,61 @@ export function SettingsPreferencesPane({
             <option value={8}>8</option>
           </select>
         </label>
+      </section>
+      <section className="preference-section" aria-label={copy.mediaAndDisplay}>
+        <h3>{copy.mediaAndDisplay}</h3>
+        <label className="field-control">
+          <span>{copy.outsideImages}</span>
+          <select
+            aria-label={copy.outsideImages}
+            value={editorSettings.outsideImages}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                outsideImages: event.target.value as OutsideImagePolicy,
+              }))
+            }
+          >
+            <option value="off">{copy.outsideImagesOff}</option>
+            <option value="ask">{copy.outsideImagesAsk}</option>
+            <option value="remember">{copy.outsideImagesRemember}</option>
+          </select>
+          <span className="field-hint">{copy.outsideImagesHint}</span>
+        </label>
+        <ToggleSwitch
+          checked={editorSettings.loadRemoteImages}
+          hint={copy.loadRemoteImagesHint}
+          label={copy.loadRemoteImages}
+          onChange={(loadRemoteImages) =>
+            onEditorSettingsChange((current) => ({
+              ...current,
+              loadRemoteImages,
+            }))
+          }
+        />
+        <ToggleSwitch
+          checked={editorSettings.materializeImagesOnExport}
+          hint={copy.materializeImagesOnExportHint}
+          label={copy.materializeImagesOnExport}
+          onChange={(materializeImagesOnExport) =>
+            onEditorSettingsChange((current) => ({
+              ...current,
+              materializeImagesOnExport,
+            }))
+          }
+        />
+        {workspaceRootPath ? (
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() => {
+              clearStoredApprovedRoots(workspaceRootPath);
+              onClearApprovedImageFolders?.();
+            }}
+          >
+            {copy.clearApprovedImageFolders}
+          </button>
+        ) : null}
       </section>
       <section className="preference-section" aria-label={copy.application}>
         <h3>{copy.application}</h3>

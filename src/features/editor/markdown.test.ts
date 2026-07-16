@@ -131,7 +131,8 @@ describe("renderMarkdown image policy", () => {
     });
 
     expect(html).toContain('data-hazakura-image-block="absolute-outside"');
-    expect(html).toContain("絶対パスは開きません");
+    expect(html).toContain("ワークスペース外の絶対パス");
+    expect(html).toContain("data-hazakura-image-action=\"approve-parent\"");
     expect(html).not.toContain("data-hazakura-image-path");
   });
 
@@ -143,11 +144,21 @@ describe("renderMarkdown image policy", () => {
 
     expect(html).toContain('data-hazakura-image-block="remote"');
     expect(html).toContain("画像を表示できません: remote");
-    expect(html).toContain("リモート画像は既定で読み込みません");
+    expect(html).toContain("リモート画像は設定で許可するまで読み込みません");
     expect(html).toContain("example.com");
     // Full URL must not remain as an image source (no automatic fetch path).
     expect(html).not.toMatch(/src=["']https:\/\/example\.com/);
     expect(html).not.toContain("data-hazakura-image-path");
+  });
+
+  it("loads remote placeholders only when Preference allows https", () => {
+    const html = renderMarkdown("![remote](https://example.com/shot.png)", {
+      documentPath: "/ws/README.md",
+      workspaceRoot: "/ws",
+      mediaAccess: { loadRemoteImages: true },
+    });
+    expect(html).toContain('data-hazakura-image-remote="https://example.com/shot.png"');
+    expect(html).not.toContain('data-hazakura-image-block="remote"');
   });
 
   // v0.17 app-store-quality: markdown-preview-export-security

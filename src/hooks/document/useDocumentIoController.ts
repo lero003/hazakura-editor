@@ -4,7 +4,10 @@ import { useSaveActions } from "./useSaveActions";
 type UseDocumentIoControllerOptions = Parameters<typeof useSaveActions>[0] &
   Pick<
     Parameters<typeof useDocumentPersistence>[0],
-    "activeContents" | "autoBackupEnabled"
+    | "activeContents"
+    | "autoBackupEnabled"
+    | "materializeImagesOnExport"
+    | "mediaAccess"
   >;
 
 export function useDocumentIoController(
