@@ -62,6 +62,13 @@ Developer / GitHub レーンとの差は `docs/app-store-build.md` と `docs/ass
 - ローカルパス、証明書名、Connect 固有情報を tracked docs に書かない（`docs/internal/` / `*.local.md`）。
 - 改善はスクラップアンドビルドの精神でよいが、境界と正本ドキュメントは壊さない。
 
+### Test-Driven Development
+
+- バグ修正、純粋ロジック、path / 保存 / 実行 / AI の境界変更は、可能なら再現する**失敗テストを先に**追加し、最小修正で通してから整理する（red → green → refactor）。
+- 新機能は acceptance と代表的な失敗条件を先にテストへ固定する。実装都合だけを写した brittle なテストや、snapshot の大量更新で済ませない。
+- UI / IME / macOS host / 署名など test-first が現実的でない面は、無理に自動化したふりをせず、理由と代替の focused test / packaged smoke / 手動確認を報告する。
+- docs のみ、機械的変更、既存挙動を変えない小修正には新規テストを強制しない。ただし下記 Verification は省略しない。
+
 ## Verification
 
 変更の種類に応じて、**下から必要な段まで**を走らせてから完了報告する。
