@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-16 (v1.12 App Review user-reported)
+Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
 
 ## Current State
 
@@ -15,9 +15,14 @@ Last reviewed: 2026-07-16 (v1.12 App Review user-reported)
   Apple-side outcome and public release remain separate.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- **Post-review v1.13 is planning-only.** The bounded Interaction Clarity queue
-  lives in `docs/v1.13-interaction-clarity-plan.md`; do not mix it into the
-  submitted v1.12 candidate without an explicit hotfix decision.
+- **Post-review refinement is planning-only until v1.12 closes.** Direction is
+  try-and-error: `docs/v1.13-plus-refinement-roadmap.md`. Theme A candidates:
+  `docs/v1.13-interaction-clarity-plan.md`. Image / media loosening (settings,
+  consent, export materialize) is planned in
+  `docs/v1.xx-image-media-boundary-plan.md` and is not implemented yet; default
+  remains no automatic remote or outside-workspace image load. Do not mix
+  refinement source into the submitted v1.12 candidate without an explicit
+  hotfix decision.
 - **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
   and the release was published (user-reported 2026-07-14). App/package
   signatures, sandbox and helper entitlements, version/build,

@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for v1.12 review and post-review v1.13 planning
+Scope: Short handoff for v1.12 review and post-review try-and-error refinement
 Authority: Medium
-Last reviewed: 2026-07-16 (v1.12 App Review user-reported; v1.13 proposed)
+Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
 
 ## Current State
 
@@ -134,11 +134,15 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 1. **v1.12 App Review:** keep the submitted candidate stable and treat App
    Store Connect as authoritative. Do not fold post-submission UX polish into
    v1.12 without a reproduced hotfix blocker and explicit decision.
-2. **v1.13 after review:** choose one slice from
-   `docs/v1.13-interaction-clarity-plan.md`. Start with Command availability,
-   honest Quick Open scope, status localization, Quick Settings semantics,
-   loading feedback, OKF progressive disclosure, or destructive-target
-   clarity. Revalidate each static-review observation against live source.
+2. **Post-v1.12 refinement (try-and-error):** follow
+   `docs/v1.13-plus-refinement-roadmap.md`. One hypothesis per run; Keep /
+   Iterate / Revert with evidence. Theme A pool:
+   `docs/v1.13-interaction-clarity-plan.md` (Command availability is a good
+   first bias, not a mandatory order). Jump to Continuity / Writing Loop /
+   Trust edges when hands-on friction is clearer. **Media boundaries**
+   (outside-local / remote Preferences, export materialize, optional assets
+   rewrite): `docs/v1.xx-image-media-boundary-plan.md` — planning only; do not
+   implement into the in-review v1.12 candidate. Do not batch theme packages.
 3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering

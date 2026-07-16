@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-16 (v1.13 Interaction Clarity plan)
+Last reviewed: 2026-07-16 (refinement + image media boundary plan)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -17,15 +17,17 @@ slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: v1.12 review boundary and next v1.13 clarity queue.
+- `current-work.md`: v1.12 review boundary and post-review experiment queue.
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
 - `okf-spec-pin.md`: shared OKF pin, co-update surfaces, and version-upgrade process.
-- `v1.8-plus-product-review-roadmap.md`: accepted v1.9–v1.12 sequencing and v2 bridge.
+- `v1.8-plus-product-review-roadmap.md`: accepted v1.8–v1.12 bridge and v2 entry gate.
+- `v1.13-plus-refinement-roadmap.md`: post-v1.12 try-and-error themes and keep/drop loop.
+- `v1.xx-image-media-boundary-plan.md`: v1.xx image preview/export consent, Preferences, materialize.
 - `v1.10-single-document-structure-design.md`: completed v1.10 implementation and verification contract.
 - `v1.11-okf-draft-preview-design.md`: held OKF v0.1 Draft compatibility and v1.11 verification contract.
 - `v1.12-okf-scaffold-design.md`: active OKF starter scaffold (minimal + book-like) contract.
-- `v1.13-interaction-clarity-plan.md`: review-derived, bounded post-v1.12 UX clarity queue.
+- `v1.13-interaction-clarity-plan.md`: Theme A Signal & Silence candidate pool.
 - `l-mode-plan.md`: active source-preserving L Mode writing-surface direction.
 - `ebook-mode-epub-export-plan.md`: active single-document e-book and EPUB planning detail.
 
@@ -43,7 +45,9 @@ slice.
 ## Current Planning Docs
 
 The active planning surface is intentionally small: `v1.8-plus-product-review-roadmap.md`,
-`okf-spec-pin.md`, `v1.12-okf-scaffold-design.md`, `v1.13-interaction-clarity-plan.md`, `v1.11-okf-draft-preview-design.md`,
+`v1.13-plus-refinement-roadmap.md`, `v1.xx-image-media-boundary-plan.md`,
+`okf-spec-pin.md`, `v1.12-okf-scaffold-design.md`,
+`v1.13-interaction-clarity-plan.md`, `v1.11-okf-draft-preview-design.md`,
 `l-mode-plan.md`, and `ebook-mode-epub-export-plan.md`. Completed lane plans,
 retired proposals, and speculative future notes live under `archive/`.
 

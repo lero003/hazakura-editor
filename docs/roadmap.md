@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-16 (v1.12 App Review; v1.13 clarity direction)
+Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
 
 ## Current Position
 
@@ -67,18 +67,24 @@ Current release state:
   package gates passed; App Review is now Apple-side (user-reported 2026-07-16).
   Templates and integrity checks share the pin in
   `docs/okf-spec-pin.md`. Contract: `docs/v1.12-okf-scaffold-design.md`.
-- **v1.13 Interaction Clarity is proposed after v1.12 review.** It is a set of
-  small v1.x fixes for silent actions, misleading scope, loading/focus
-  feedback, and progressive disclosure. It does not redesign the shell or
-  widen Quick Open into background indexing. Plan:
-  `docs/v1.13-interaction-clarity-plan.md`.
-- **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`, `v1.11`,
-  `v1.12`, and additional `v1.xx` releases as useful. Clarify the writing loop,
-  add single-document structure, prove bounded OKF compatibility, add starter
-  scaffolds, then keep distribution confidence before v2. Detail:
-  `docs/v1.8-plus-product-review-roadmap.md`.
+- **Post-v1.12 is a try-and-error refinement era, not a fixed feature train.**
+  Theme pools (Signal & Silence, Continuity, Writing Loop, Trust edges,
+  **Media boundaries**, Structure/OKF depth, Distribution confidence) supply
+  hypotheses. Each run tries one reversible slice, keeps or drops it with
+  evidence, then picks the next hypothesis. Version numbers are shipping boxes
+  for Keep results, not promises of a fixed checklist. Plan:
+  `docs/v1.13-plus-refinement-roadmap.md`. Theme A detail:
+  `docs/v1.13-interaction-clarity-plan.md`. Image / media consent and export
+  materialize: `docs/v1.xx-image-media-boundary-plan.md` (remote default Off;
+  Preferences + session approval; no silent source rewrite).
+- **Accepted post-v1.7 sequence through scaffold:** `v1.8`–`v1.12` remain the
+  trust → clarity → structure → OKF review → starter scaffold bridge. Detail:
+  `docs/v1.8-plus-product-review-roadmap.md`. After that bridge, prefer
+  experiment loops over inventing `v1.14 Continuity` / `v1.15 Writing Loop` as
+  mandatory packages.
 - **Next major structural boundary: v2** — explicit multi-file Book Scope,
-  then vertical writing (縦書き). Design:
+  then vertical writing (縦書き). Not started by try-and-error alone; needs
+  the v2 entry gate. Design:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 - Current work queue: `docs/current-work.md`.
 
@@ -90,6 +96,11 @@ Post-v0.25 refinement lens:
 
 > 編集空間はひとつ。Markdown source を、読む・書く・比べる・変換する
 > レイヤーとして扱う。
+
+Post-v1.12 experiment lens:
+
+> 無反応をなくし、対象と状態を明示し、摩擦を小さく試して残す。
+> 境界（indexing / auto-apply / 二画面編集 / IDE 化）は試行で壊さない。
 
 This does not mean automatic agent application. It means Hazakura should
 make Markdown drafts easier to read as a book, easier to structure as
@@ -239,8 +250,15 @@ Near-term phase order:
      read-only compatibility advice, then run a larger packaged / signed matrix
      across structure, long documents, recovery, Reference, Assist, export,
      accessibility, sandbox, and failure boundaries before v2 implementation.
+   - **v1.12 OKF Starter Scaffold:** explicit multi-file starters sharing the
+     OKF pin; App Review is the public gate for this bridge.
+   - **v1.13+ refinement (try-and-error):** after the scaffold bridge, pick
+     small reversible experiments from theme pools rather than a fixed
+     Continuity → Writing Loop package train. Plan:
+     `docs/v1.13-plus-refinement-roadmap.md`.
    Detailed rationale, acceptance, and v2 entry gate:
-   `docs/v1.8-plus-product-review-roadmap.md`.
+   `docs/v1.8-plus-product-review-roadmap.md` (through v1.12) and
+   `docs/v1.13-plus-refinement-roadmap.md` (after).
 17. v2.0 is the multi-file Book Scope and vertical writing
    target. Two pillars, in order:
    - **OKF compatibility plus Hazakura Book semantics.** Treat a

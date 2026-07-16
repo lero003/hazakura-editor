@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.12 App Review; post-review v1.13 Interaction Clarity queue
+Scope: v1.12 App Review; post-review try-and-error refinement
 Authority: High
-Last reviewed: 2026-07-16 (v1.12 App Review user-reported; v1.13 proposed)
+Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
 
 ## Purpose
 
@@ -22,8 +22,8 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.10** | **Implementation complete / held as candidate** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. Representative packaged Outline/advice/edit/Undo passed. Remaining breadth moves into the v1.11 distribution-confidence matrix. |
 | **v1.11** | **Local TestFlight candidate ready / held** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review. Local signed candidate ready; TestFlight install remains separate. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
 | **v1.12** | **App Review in progress (user-reported 2026-07-16)** | OKF starter scaffold (minimal + book-like). Source, representative four-entry smoke, and signed local package gates passed. Treat App Store Connect as authoritative; do not mix post-submission polish into this candidate. Contract: `docs/v1.12-okf-scaffold-design.md`. |
-| **v1.13** | **Proposed after v1.12 review** | Interaction Clarity: remove silent failure and clarify scope/state through small, testable slices. Plan: `docs/v1.13-interaction-clarity-plan.md`. |
-| **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. |
+| **v1.13+** | **Refinement era after v1.12** | Try-and-error: one hypothesis per run, keep/drop with evidence. Themes include Signal & Silence, Continuity, Writing Loop, Trust edges, **Media boundaries**, Structure/OKF depth. Plan: `docs/v1.13-plus-refinement-roadmap.md`. Theme A: `docs/v1.13-interaction-clarity-plan.md`. Media: `docs/v1.xx-image-media-boundary-plan.md`. |
+| **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. Not started by experiment alone. |
 
 Package/app version in tree is **`1.12.0`**; the published Mac App Store
 version is **`1.8.0`**. v1.12 App Review is in progress (user-reported
@@ -31,10 +31,22 @@ version is **`1.8.0`**. v1.12 App Review is in progress (user-reported
 `current-status.md` for lane truth; treat Connect as authoritative for store
 counters.
 
-## Next Queue — v1.13 Interaction Clarity
+## Next Queue — Post-v1.12 Refinement (try-and-error)
 
-Start only after the v1.12 review lane is closed or an explicit hotfix decision
-is made. Pick one independently verifiable slice at a time:
+Direction: `docs/v1.13-plus-refinement-roadmap.md`.
+
+Start source changes only after the v1.12 review lane is closed or an explicit
+hotfix decision is made. Planning, revalidation, and branch-only experiments
+that never mix into the submitted candidate are fine earlier.
+
+**Operating rule:** 1 run = 1 hypothesis. Observe → revalidate live source →
+slice → try → prove → **Keep / Iterate / Revert**. Do not batch a theme into
+one giant PR. Version numbers are shipping boxes for Keep results, not a fixed
+feature promise.
+
+### Suggested first experiments (bias only)
+
+Theme A — Signal & Silence (`docs/v1.13-interaction-clarity-plan.md`):
 
 1. Command availability and localized disabled reasons.
 2. Honest Quick Open scope/truncation copy; no background index.
@@ -44,8 +56,19 @@ is made. Pick one independently verifiable slice at a time:
 6. Progressive disclosure for OKF starters in the New surface.
 7. Exact destructive target and disabled reason for Workspace Trash.
 
-Detailed evidence, already-covered findings, deferrals, and verification:
-`docs/v1.13-interaction-clarity-plan.md`.
+After the first Keep (or a hands-on friction that hurts more), you may jump to
+another theme instead of finishing the list:
+
+- **Continuity** — recents, same-name tabs, Reference retained state
+- **Writing Loop** — purpose vocabulary, Preview vs e-book copy (no shell rewrite)
+- **Trust edges** — export result clarity, Assist lock wording
+- **Media boundaries** — consent / Preferences for outside-local and remote
+  images; export materialize; optional assets rewrite. Plan:
+  `docs/v1.xx-image-media-boundary-plan.md` (M0→M4; remote default Off)
+- **Structure / OKF depth** — first-fix guidance, template preview (still bounded)
+- **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
+
+Hard rails and v2 entry gate: `docs/v1.13-plus-refinement-roadmap.md`.
 
 ## Active Queue — v1.12 OKF Starter Scaffold
 
