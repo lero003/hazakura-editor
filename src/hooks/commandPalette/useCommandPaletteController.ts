@@ -696,13 +696,17 @@ export function useCommandPaletteController({
           "diff",
           "disk",
         ]),
-        ...(activeTab
+        // Pathless drafts (new file / Import Assist) have activeTab but no
+        // disk path; openTextFile("") would fail if we only checked tab presence.
+        ...(activeTab?.path
           ? {}
           : {
-              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+              disabledReason: activeTab
+                ? paletteCopy.disabledReasons.needSavedDocument
+                : paletteCopy.disabledReasons.needActiveDocument,
             }),
         run: () => {
-          if (activeTab) {
+          if (activeTab?.path) {
             actions.requestReviewTabAgainstDisk(activeTab);
           }
         },

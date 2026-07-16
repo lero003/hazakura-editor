@@ -22,6 +22,8 @@ export type CommandPaletteCopy = {
   /** Localized reasons when a command cannot run (stay visible, not runnable). */
   disabledReasons: {
     needActiveDocument: string;
+    /** Disk review / path-backed compare needs a saved path, not a pathless draft. */
+    needSavedDocument: string;
     needWorkspace: string;
   };
   commands: {
@@ -81,6 +83,7 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       },
       disabledReasons: {
         needActiveDocument: "ドキュメントを ひらいてください",
+        needSavedDocument: "いちど ほぞんしてください",
         needWorkspace: "ワークスペースを ひらいてください",
       },
       commands: {
@@ -276,6 +279,7 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       },
       disabledReasons: {
         needActiveDocument: "ドキュメントを開いてください",
+        needSavedDocument: "一度保存してください",
         needWorkspace: "ワークスペースを開いてください",
       },
       commands: {
@@ -463,6 +467,7 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
     },
     disabledReasons: {
       needActiveDocument: "Open a document first.",
+      needSavedDocument: "Save the document once first.",
       needWorkspace: "Open a workspace first.",
     },
     commands: {

@@ -751,7 +751,9 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.12 OKF scaffold queue (v1.11 held).
+- `docs/current-work.md`: active **v1.13+ try-and-error refinement** queue
+  (v1.12 closed / published). Command availability is Keep (with pathless disk
+  review and empty-PDF export alignment).
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -766,6 +768,7 @@ baseline, and smoke evidence are archived under
 - `docs/v1.12-okf-scaffold-design.md`: closed / published v1.12 implementation
   and verification contract.
 - `docs/v1.13-plus-refinement-roadmap.md`: active post-v1.12 experiment direction.
+- `docs/v1.13-interaction-clarity-plan.md`: Theme A candidate pool (Signal & Silence).
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
@@ -773,8 +776,9 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.12 (`1.12.0`) as published and closed** after App Review passed
    (user-reported 2026-07-17). Do not move its public tag or reopen it without
    a reproduced hotfix need. Prior baselines (`1.8.0` and earlier) stay closed.
-2. **Start v1.13+ try-and-error refinement** from `docs/current-work.md`.
-   Recommended first bias: Theme A Command availability
+2. **Continue v1.13+ try-and-error refinement** from `docs/current-work.md`.
+   Theme A Command availability is **Keep**. Next bias: Quick Open scope
+   honesty, Search status locale, or hands-on Continuity friction
    (`docs/v1.13-interaction-clarity-plan.md`). One hypothesis per run; Keep /
    Iterate / Revert with evidence. Do not batch theme packages.
 3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.

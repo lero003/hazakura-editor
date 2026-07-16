@@ -525,6 +525,38 @@ describe("useDocumentExport", () => {
     expect(setStatus).toHaveBeenCalledWith("PDF export unavailable");
   });
 
+  it("opens PDF settings for an empty active document", async () => {
+    const setStatus = vi.fn();
+    const emptyTab = makeTab({
+      contents: "",
+      lastSavedContents: "",
+      name: "empty.md",
+    });
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "",
+        activeTab: emptyTab,
+        setGlobalError: vi.fn(),
+        setStatus,
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+
+    expect(result.current.pdfExportRequest).toEqual(
+      expect.objectContaining({
+        documentName: "empty.md",
+        tabId: emptyTab.id,
+      }),
+    );
+    expect(setStatus).not.toHaveBeenCalledWith(
+      "No active document to export PDF",
+    );
+  });
+
   it("cancels PDF settings without opening the save dialog", async () => {
     const { result } = renderHook(() =>
       useDocumentExport({

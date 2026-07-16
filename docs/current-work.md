@@ -44,10 +44,10 @@ immutable; hotfix only with a reproduced blocker and explicit decision.
 
 Theme A — Signal & Silence (`docs/v1.13-interaction-clarity-plan.md`):
 
-1. **Command availability** and localized disabled reasons. *(Keep: model +
-   palette guard + save/export/close/OKF preconditions; more commands can
-   adopt `disabledReason` as needed)*
-2. Honest Quick Open scope/truncation copy; no background index.
+1. **Command availability** and localized disabled reasons. **Keep** (model +
+   palette guard + save/export/close/OKF preconditions; pathless disk review
+   needs save-first reason; empty PDF export allowed when a tab is open).
+2. Honest Quick Open scope/truncation copy; no background index. *(next bias)*
 3. Search-result open status localization.
 4. Quick Settings popover/dialog semantics and focus return.
 5. Non-blank delayed loading feedback for Preview / e-book.

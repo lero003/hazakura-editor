@@ -105,6 +105,92 @@ describe("useCommandPaletteController", () => {
       (command) => command.id === "file.save",
     );
     expect(saveCommand?.disabledReason).toBe("Open a document first.");
+
+    const diskReview = result.current.filteredCommands.find(
+      (command) => command.id === "review.tabAgainstDisk",
+    );
+    expect(diskReview?.disabledReason).toBe("Open a document first.");
+  });
+
+  it("disables disk review for pathless drafts with a save-first reason", () => {
+    const requestReviewTabAgainstDisk = vi.fn();
+    const pathlessTab = {
+      id: "tab-pathless",
+      path: "",
+      title: "Untitled",
+      contents: "draft",
+    } as never;
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
+          openReferenceFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk,
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: pathlessTab,
+        activeTabId: "tab-pathless",
+        appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
+        editorPaneRef: { current: null },
+        lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: "/tmp/workspace",
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+    const diskReview = result.current.filteredCommands.find(
+      (command) => command.id === "review.tabAgainstDisk",
+    );
+    expect(diskReview?.disabledReason).toBe("Save the document once first.");
+    act(() => {
+      if (diskReview) {
+        result.current.runCommand(diskReview);
+      }
+    });
+    expect(requestReviewTabAgainstDisk).not.toHaveBeenCalled();
+
+    // Pathless drafts still allow Save / PDF (active document exists).
+    const saveCommand = result.current.filteredCommands.find(
+      (command) => command.id === "file.save",
+    );
+    expect(saveCommand?.disabledReason).toBeUndefined();
+    const pdfCommand = result.current.filteredCommands.find(
+      (command) => command.id === "file.exportPdf",
+    );
+    expect(pdfCommand?.disabledReason).toBeUndefined();
   });
 
   it("enables workspace and document commands when preconditions hold", () => {

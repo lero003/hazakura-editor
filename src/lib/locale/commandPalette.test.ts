@@ -61,8 +61,14 @@ describe("getCommandPaletteCopy", () => {
     expect(getCommandPaletteCopy("en").disabledReasons.needWorkspace).toContain(
       "workspace",
     );
+    expect(getCommandPaletteCopy("en").disabledReasons.needSavedDocument).toContain(
+      "Save",
+    );
     expect(getCommandPaletteCopy("ja").disabledReasons.needActiveDocument).toContain(
       "ドキュメント",
+    );
+    expect(getCommandPaletteCopy("ja").disabledReasons.needSavedDocument).toContain(
+      "保存",
     );
     expect(getCommandPaletteCopy("kana").disabledReasons.needWorkspace).toContain(
       "ワークスペース",

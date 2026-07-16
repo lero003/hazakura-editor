@@ -68,7 +68,9 @@ export function useDocumentExport({
     useState<PdfExportRequest | null>(null);
 
   const exportPdf = useCallback(async () => {
-    if (!activeContents || !activeTab) {
+    // Match HTML / EPUB: an open tab may be empty (pathless draft or blank
+    // file). Only a missing active tab is "no document".
+    if (!activeTab || activeContents === undefined) {
       setStatus("No active document to export PDF");
       return;
     }
