@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { isImeComposing } from "../../lib/keyboard";
 import { useLatestValueRef } from "../../hooks/app/useLatestValueRef";
-import type { Command } from "../../hooks/commandPalette/useCommandPalette";
+import {
+  isCommandEnabled,
+  type Command,
+} from "../../hooks/commandPalette/useCommandPalette";
 import type { MenuLanguage } from "../../types";
 
 type CommandPaletteProps = {
@@ -86,7 +89,7 @@ export function CommandPalette({
     } else if (event.key === "Enter") {
       event.preventDefault();
       const command = commandsRef.current[activeIndexRef.current];
-      if (command) {
+      if (command && isCommandEnabled(command)) {
         onRun(command);
       }
     } else if (event.key === "Escape") {
@@ -128,30 +131,51 @@ export function CommandPalette({
           {commands.length === 0 ? (
             <div className="command-palette-empty">{copy.empty}</div>
           ) : (
-            commands.map((command, index) => (
-              <button
-                key={command.id}
-                aria-selected={index === activeIndex}
-                className={`command-palette-item${
-                  index === activeIndex ? " active" : ""
-                }`}
-                id={`command-palette-option-${index}`}
-                onMouseEnter={() => onSetActiveIndex(index)}
-                onPointerDown={() => onRun(command)}
-                role="option"
-                type="button"
-              >
-                <span className="command-palette-label">{command.label}</span>
-                <span className="command-palette-category">
-                  {command.category}
-                </span>
-                {command.shortcut ? (
-                  <span className="command-palette-shortcut">
-                    {command.shortcut}
+            commands.map((command, index) => {
+              const enabled = isCommandEnabled(command);
+              const reason = command.disabledReason;
+              return (
+                <button
+                  key={command.id}
+                  aria-disabled={enabled ? undefined : true}
+                  aria-selected={index === activeIndex}
+                  className={`command-palette-item${
+                    index === activeIndex ? " active" : ""
+                  }${enabled ? "" : " is-disabled"}`}
+                  id={`command-palette-option-${index}`}
+                  onMouseEnter={() => onSetActiveIndex(index)}
+                  onPointerDown={(event) => {
+                    if (!enabled) {
+                      event.preventDefault();
+                      return;
+                    }
+                    onRun(command);
+                  }}
+                  role="option"
+                  title={reason}
+                  type="button"
+                >
+                  <span className="command-palette-item-main">
+                    <span className="command-palette-label">
+                      {command.label}
+                    </span>
+                    {reason ? (
+                      <span className="command-palette-disabled-reason">
+                        {reason}
+                      </span>
+                    ) : null}
                   </span>
-                ) : null}
-              </button>
-            ))
+                  <span className="command-palette-category">
+                    {command.category}
+                  </span>
+                  {command.shortcut ? (
+                    <span className="command-palette-shortcut">
+                      {command.shortcut}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })
           )}
         </div>
       </div>

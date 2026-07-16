@@ -133,9 +133,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 1. **v1.13+ try-and-error refinement:** follow
    `docs/v1.13-plus-refinement-roadmap.md`. One hypothesis per run; Keep /
    Iterate / Revert with evidence. Theme A pool:
-   `docs/v1.13-interaction-clarity-plan.md` (Command availability is a good
-   first bias, not a mandatory order). Jump to Continuity / Writing Loop /
-   Trust edges when hands-on friction is clearer. **Media boundaries**
+   `docs/v1.13-interaction-clarity-plan.md`. **Command availability is Keep for
+   the foundation** (`disabledReason` on palette commands; save/export/close/OKF
+   preconditions). Next bias: Quick Open honesty, Search status locale, or
+   hands-on Continuity friction. **Media boundaries**
    (outside-local / remote Preferences, export materialize, optional assets
    rewrite): `docs/v1.xx-image-media-boundary-plan.md` — still planning; default
    remains no automatic remote or outside-workspace image load. Do not batch

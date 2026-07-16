@@ -19,6 +19,11 @@ export type CommandPaletteEntryCopy = {
 
 export type CommandPaletteCopy = {
   categories: Record<CommandPaletteCategoryId, string>;
+  /** Localized reasons when a command cannot run (stay visible, not runnable). */
+  disabledReasons: {
+    needActiveDocument: string;
+    needWorkspace: string;
+  };
   commands: {
     "file.new": CommandPaletteEntryCopy;
     "file.open": CommandPaletteEntryCopy;
@@ -73,6 +78,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         writingCompanion: "Local Assist",
         settings: "せってい",
         help: "へるぷ",
+      },
+      disabledReasons: {
+        needActiveDocument: "ドキュメントを ひらいてください",
+        needWorkspace: "ワークスペースを ひらいてください",
       },
       commands: {
         "file.new": {
@@ -265,6 +274,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         settings: "設定",
         help: "ヘルプ",
       },
+      disabledReasons: {
+        needActiveDocument: "ドキュメントを開いてください",
+        needWorkspace: "ワークスペースを開いてください",
+      },
       commands: {
         "file.new": {
           label: "新規ファイル",
@@ -447,6 +460,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       writingCompanion: "Writing Companion",
       settings: "Settings",
       help: "Help",
+    },
+    disabledReasons: {
+      needActiveDocument: "Open a document first.",
+      needWorkspace: "Open a workspace first.",
     },
     commands: {
       "file.new": { label: "New File", keywords: ["write", "create"] },

@@ -438,6 +438,11 @@ export function useCommandPaletteController({
         category: paletteCopy.categories.file,
         id: "file.save",
         ...commandPaletteEntry(paletteCopy, "file.save", ["save", "write"]),
+        ...(activeTab
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           void actions.saveActiveTab();
         },
@@ -451,6 +456,11 @@ export function useCommandPaletteController({
           "as",
           "duplicate",
         ]),
+        ...(activeTab
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           void actions.saveActiveTabAs();
         },
@@ -460,6 +470,11 @@ export function useCommandPaletteController({
         category: paletteCopy.categories.file,
         id: "file.closeTab",
         ...commandPaletteEntry(paletteCopy, "file.closeTab", ["close", "tab"]),
+        ...(activeTabId
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           if (activeTabId) {
             actions.requestCloseTab(activeTabId);
@@ -487,6 +502,11 @@ export function useCommandPaletteController({
           "export",
           "html",
         ]),
+        ...(activeTab
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           void actions.exportHtml();
         },
@@ -499,6 +519,11 @@ export function useCommandPaletteController({
           "epub",
           "book",
         ]),
+        ...(activeTab
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           void actions.exportEpubBeta();
         },
@@ -510,6 +535,11 @@ export function useCommandPaletteController({
           "export",
           "pdf",
         ]),
+        ...(activeTab
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           void actions.exportPdf();
         },
@@ -666,6 +696,11 @@ export function useCommandPaletteController({
           "diff",
           "disk",
         ]),
+        ...(activeTab
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }),
         run: () => {
           if (activeTab) {
             actions.requestReviewTabAgainstDisk(activeTab);
@@ -682,6 +717,11 @@ export function useCommandPaletteController({
           "frontmatter",
           "review",
         ]),
+        ...(workspaceRootPath
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needWorkspace,
+            }),
         run: () => {
           actions.openOkfReview();
         },
@@ -696,6 +736,11 @@ export function useCommandPaletteController({
           "starter",
           "knowledge",
         ]),
+        ...(workspaceRootPath
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needWorkspace,
+            }),
         run: () => {
           actions.createOkfScaffold("minimal");
         },
@@ -710,6 +755,11 @@ export function useCommandPaletteController({
           "book",
           "chapter",
         ]),
+        ...(workspaceRootPath
+          ? {}
+          : {
+              disabledReason: paletteCopy.disabledReasons.needWorkspace,
+            }),
         run: () => {
           actions.createOkfScaffold("book-like");
         },
@@ -904,6 +954,7 @@ export function useCommandPaletteController({
       markdownPaletteCommands,
       paletteCopy,
       themePreference,
+      workspaceRootPath,
     ],
   );
   const {

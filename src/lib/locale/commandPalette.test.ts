@@ -56,4 +56,16 @@ describe("getCommandPaletteCopy", () => {
       expect.arrayContaining(["diff", "compare", "確かめる"]),
     );
   });
+
+  it("localizes disabled reasons across languages", () => {
+    expect(getCommandPaletteCopy("en").disabledReasons.needWorkspace).toContain(
+      "workspace",
+    );
+    expect(getCommandPaletteCopy("ja").disabledReasons.needActiveDocument).toContain(
+      "ドキュメント",
+    );
+    expect(getCommandPaletteCopy("kana").disabledReasons.needWorkspace).toContain(
+      "ワークスペース",
+    );
+  });
 });

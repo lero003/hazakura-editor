@@ -93,10 +93,106 @@ describe("useCommandPaletteController", () => {
       (command) => command.id === "review.okfDraftCompatibility",
     );
     expect(okfCommand?.label).toBe("Review knowledge folder (OKF)");
+    expect(okfCommand?.disabledReason).toBe("Open a workspace first.");
     act(() => {
-      okfCommand?.run();
+      if (okfCommand) {
+        result.current.runCommand(okfCommand);
+      }
+    });
+    expect(openOkfReview).not.toHaveBeenCalled();
+
+    const saveCommand = result.current.filteredCommands.find(
+      (command) => command.id === "file.save",
+    );
+    expect(saveCommand?.disabledReason).toBe("Open a document first.");
+  });
+
+  it("enables workspace and document commands when preconditions hold", () => {
+    const openOkfReview = vi.fn();
+    const saveActiveTab = vi.fn();
+    const activeTab = {
+      id: "tab-1",
+      path: "/tmp/note.md",
+      title: "note.md",
+    } as never;
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
+          openReferenceFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openOkfReview,
+          createOkfScaffold: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab,
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab,
+        activeTabId: "tab-1",
+        appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
+        editorPaneRef: { current: null },
+        lModeCopy: getLModeCopy("en"),
+        menuLanguage: "en",
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: "/tmp/workspace",
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+    const okfCommand = result.current.filteredCommands.find(
+      (command) => command.id === "review.okfDraftCompatibility",
+    );
+    const saveCommand = result.current.filteredCommands.find(
+      (command) => command.id === "file.save",
+    );
+    expect(okfCommand?.disabledReason).toBeUndefined();
+    expect(saveCommand?.disabledReason).toBeUndefined();
+    act(() => {
+      if (okfCommand) {
+        result.current.runCommand(okfCommand);
+      }
     });
     expect(openOkfReview).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+    const saveAgain = result.current.filteredCommands.find(
+      (command) => command.id === "file.save",
+    );
+    act(() => {
+      if (saveAgain) {
+        result.current.runCommand(saveAgain);
+      }
+    });
+    expect(saveActiveTab).toHaveBeenCalledTimes(1);
   });
 
   it("opens the selected global search match and jumps to its line", async () => {

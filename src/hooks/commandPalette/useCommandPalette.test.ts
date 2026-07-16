@@ -53,4 +53,51 @@ describe("useCommandPalette", () => {
 
     expect(result.current.filteredCommands).toEqual([]);
   });
+
+  it("does not run or close when a command has disabledReason", () => {
+    const run = vi.fn();
+    const disabled: Command = {
+      category: "File",
+      disabledReason: "Open a document first.",
+      id: "file.save",
+      label: "Save",
+      run,
+    };
+    const { result } = renderHook(() =>
+      useCommandPalette({ commands: [disabled] }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+    expect(result.current.commandPaletteVisible).toBe(true);
+
+    act(() => {
+      result.current.runCommand(disabled);
+    });
+
+    expect(run).not.toHaveBeenCalled();
+    expect(result.current.commandPaletteVisible).toBe(true);
+  });
+
+  it("runs enabled commands and closes the palette", () => {
+    const run = vi.fn();
+    const enabled: Command = {
+      category: "View",
+      id: "view.preview",
+      label: "Show Preview",
+      run,
+    };
+    const { result } = renderHook(() =>
+      useCommandPalette({ commands: [enabled] }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+      result.current.runCommand(enabled);
+    });
+
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(result.current.commandPaletteVisible).toBe(false);
+  });
 });

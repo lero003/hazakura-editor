@@ -5,10 +5,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // file actions, not a plugin surface. Each command declares its
 // label, category, optional shortcut hint, optional keywords for
 // fuzzy matching, and a `run` callback that fires the underlying
-// action. There is no per-command `enabled` state at this layer —
-// existing modal-open guards already block run-after-close races,
-// and the underlying actions are expected to be no-ops when their
-// preconditions are not met.
+// action. When a precondition is not met, set `disabledReason` to a
+// localized string: the command stays visible for discoverability and
+// VoiceOver, but Enter / click must not run it (v1.13 Command availability).
 
 export type Command = {
   id: string;
@@ -16,9 +15,15 @@ export type Command = {
   category: string;
   shortcut?: string;
   description?: string;
+  /** Localized reason when the command cannot run. Presence means disabled. */
+  disabledReason?: string;
   keywords?: readonly string[];
   run: () => void;
 };
+
+export function isCommandEnabled(command: Command): boolean {
+  return !command.disabledReason;
+}
 
 type UseCommandPaletteOptions = {
   commands: Command[];
@@ -120,6 +125,10 @@ export function useCommandPalette({
   }, []);
 
   const runCommand = useCallback((command: Command) => {
+    if (!isCommandEnabled(command)) {
+      // Keep the palette open so the disabled reason remains readable.
+      return;
+    }
     setCommandPaletteVisible(false);
     command.run();
   }, []);
