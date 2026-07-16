@@ -20,12 +20,19 @@ describe("getWorkspaceFileOpsCopy Theme A clarity", () => {
   it("names the trash target and distinct disabled reasons", () => {
     const en = getWorkspaceFileOpsCopy("en");
     expect(en.sidebarTrashTarget("draft.md")).toContain("draft.md");
-    expect(en.sidebarTrashDisabledNoActive).toMatch(/select/i);
+    expect(en.sidebarTrashDisabledNoActive).toMatch(/open a file/i);
     expect(en.sidebarTrashDisabledNotInTree).toMatch(/expand/i);
 
     const ja = getWorkspaceFileOpsCopy("ja");
     expect(ja.sidebarTrashTarget("下書き.md")).toContain("下書き.md");
-    expect(ja.sidebarTrashDisabledNoActive).toContain("選択");
+    expect(ja.sidebarTrashDisabledNoActive).toContain("ファイルを開いて");
     expect(ja.sidebarTrashDisabledNotInTree).toContain("展開");
+  });
+
+  it("keeps the copy key set aligned across languages", () => {
+    const keys = Object.keys(getWorkspaceFileOpsCopy("en")).sort();
+    for (const language of ["ja", "kana"] as const) {
+      expect(Object.keys(getWorkspaceFileOpsCopy(language)).sort()).toEqual(keys);
+    }
   });
 });

@@ -232,12 +232,14 @@ describe("AppTopChrome", () => {
     expect(windowMocks.startDragging).toHaveBeenCalledTimes(1);
   });
 
-  it("opens an editor quick settings menu from the top-left button", () => {
+  it("opens an editor quick settings dialog from the top-left button", () => {
     renderTopChrome();
 
     fireEvent.click(screen.getByRole("button", { name: "Editor settings" }));
 
-    expect(screen.getByRole("menu", { name: "Editor settings" })).toBeTruthy();
+    expect(
+      screen.getByRole("dialog", { name: "Editor settings" }),
+    ).toBeTruthy();
     expect(
       screen.getByRole("checkbox", { name: "Wrap lines" }),
     ).toBeTruthy();

@@ -78,7 +78,7 @@ export function getWorkspaceFileOpsCopy(
       moveToTrashError: "ごみばこへの すてかたに しっぱいしました。",
       sidebarTrashButton: "ごみばこ",
       sidebarTrashTarget: (name) => `「${name}」を ごみばこへ`,
-      sidebarTrashDisabledNoActive: "ツリーで ふみまたは ふぉるだを えらんでください",
+      sidebarTrashDisabledNoActive: "ツリーから ふみを ひらいてください",
       sidebarTrashDisabledNotInTree:
         "ひらいている ふみが ツリーに みえるまで ふぉるだを ひらいてください",
     };
@@ -116,8 +116,7 @@ export function getWorkspaceFileOpsCopy(
         moveToTrashError: "ゴミ箱への移動に失敗しました。",
         sidebarTrashButton: "ゴミ箱",
         sidebarTrashTarget: (name) => `「${name}」をゴミ箱へ`,
-        sidebarTrashDisabledNoActive:
-          "ツリーでファイルまたはフォルダを選択してください",
+        sidebarTrashDisabledNoActive: "ツリーからファイルを開いてください",
         sidebarTrashDisabledNotInTree:
           "開いているファイルがツリーに見えるまでフォルダを展開してください",
       }
@@ -152,7 +151,7 @@ export function getWorkspaceFileOpsCopy(
         moveToTrashError: "Could not move the entry to the Trash.",
         sidebarTrashButton: "Trash",
         sidebarTrashTarget: (name) => `Move “${name}” to Trash`,
-        sidebarTrashDisabledNoActive: "Select a file or folder in the tree",
+        sidebarTrashDisabledNoActive: "Open a file from the workspace tree",
         sidebarTrashDisabledNotInTree:
           "Expand the tree until the active file is visible",
       };
