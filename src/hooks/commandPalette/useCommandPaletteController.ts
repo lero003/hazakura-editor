@@ -57,6 +57,7 @@ type UseCommandPaletteControllerActions = {
   exportEpubBeta: () => Promise<void>;
   exportHtml: () => Promise<void>;
   exportPdf: () => Promise<void>;
+  pinExternalImages: () => Promise<void>;
   focusAdjacentTab: (direction: "next" | "previous") => void;
   handleSendSelectionToAgent: (text: string) => void;
   importSourceAsMarkdownDraft: () => Promise<void>;
@@ -549,6 +550,28 @@ export function useCommandPaletteController({
             }),
         run: () => {
           void actions.exportPdf();
+        },
+      },
+      {
+        category: paletteCopy.categories.file,
+        id: "file.pinExternalImages",
+        ...commandPaletteEntry(paletteCopy, "file.pinExternalImages", [
+          "pin",
+          "image",
+          "assets",
+          "media",
+        ]),
+        ...(!activeTab
+          ? {
+              disabledReason: paletteCopy.disabledReasons.needActiveDocument,
+            }
+          : !workspaceRootPath
+            ? {
+                disabledReason: paletteCopy.disabledReasons.needWorkspace,
+              }
+            : {}),
+        run: () => {
+          void actions.pinExternalImages();
         },
       },
       {

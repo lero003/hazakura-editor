@@ -69,9 +69,9 @@ another theme instead of finishing the list:
 - **Writing Loop** — purpose vocabulary, Preview vs e-book copy (no shell rewrite)
 - **Trust edges** — export result clarity, Assist lock wording
 - **Media boundaries** — Plan: `docs/v1.xx-image-media-boundary-plan.md`.
-  **M0–M3 Keep** (honest blocks; outside-local ask/remember; remote Pref default
-  Off https-only; export materialize default On). **M4** pure pin helpers in
-  tree; palette command optional. Hands-on / packaged smoke remaining.
+  **M0–M4 Keep** (honest blocks; outside-local ask/remember; remote Pref default
+  Off https-only; export materialize default On; palette pin to assets + Undo).
+  Manual smoke: `docs/smoke-checklist.md` § Theme G. Packaged hands-on remaining.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

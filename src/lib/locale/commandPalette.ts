@@ -40,6 +40,7 @@ export type CommandPaletteCopy = {
     "file.exportHtml": CommandPaletteEntryCopy;
     "file.exportEpubBeta": CommandPaletteEntryCopy;
     "file.exportPdf": CommandPaletteEntryCopy;
+    "file.pinExternalImages": CommandPaletteEntryCopy;
     "file.restoreBackup": CommandPaletteEntryCopy;
     "edit.find": CommandPaletteEntryCopy;
     "edit.findInFiles": CommandPaletteEntryCopy;
@@ -138,6 +139,17 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         "file.exportPdf": {
           label: "PDF に かきだす…",
           keywords: ["ゆしゅつ", "いんさつ"],
+        },
+        "file.pinExternalImages": {
+          label: "そとの がぞうを assets に こてい…",
+          keywords: [
+            "がぞう",
+            "assets",
+            "ピン",
+            "かきかえ",
+            "メディア",
+            "pin",
+          ],
         },
         "file.restoreBackup": {
           label: "じどう バックアップから もどす…",
@@ -335,6 +347,18 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           label: "PDF に書き出す…",
           keywords: ["エクスポート", "印刷"],
         },
+        "file.pinExternalImages": {
+          label: "外部画像を assets に固定…",
+          keywords: [
+            "画像",
+            "assets",
+            "ピン",
+            "書き換え",
+            "メディア",
+            "pin",
+            "import",
+          ],
+        },
         "file.restoreBackup": {
           label: "自動バックアップから復元…",
           keywords: ["復旧", "確かめる"],
@@ -490,6 +514,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       "file.exportHtml": { label: "Export HTML…", keywords: ["deliver"] },
       "file.exportEpubBeta": { label: "Export EPUB…", keywords: ["book"] },
       "file.exportPdf": { label: "Export PDF…" },
+      "file.pinExternalImages": {
+        label: "Pin external images into assets…",
+        keywords: ["image", "assets", "pin", "rewrite", "media", "import"],
+      },
       "file.restoreBackup": {
         label: "Restore from Auto-Backup…",
         keywords: ["verify", "recover"],

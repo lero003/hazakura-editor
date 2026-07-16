@@ -119,6 +119,11 @@ export type EditorPaneHandle = {
   setScrollRatio: (ratio: number, tolerancePx?: number) => boolean;
   replaceCurrent: (replacement: string) => boolean;
   replaceAll: (replacement: string) => void;
+  /**
+   * Replace the full document in one CodeMirror transaction (one Undo step).
+   * Refuses read-only, Assist-lock surfaces (caller should gate), and IME composition.
+   */
+  replaceDocumentContents: (next: string) => boolean;
   getSelectionText: () => string;
   // v0.12+ Hazakura Local Assist Writing Companion (slice 3).
   // Returns the active document text plus the selection range
@@ -386,6 +391,30 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           },
         });
         view.focus();
+      },
+      replaceDocumentContents(next) {
+        const view = viewRef.current;
+        if (
+          !view ||
+          readOnly ||
+          compositionActiveRef.current ||
+          view.composing
+        ) {
+          return false;
+        }
+        const current = view.state.doc.toString();
+        if (current === next) {
+          return false;
+        }
+        const selection = view.state.selection.main;
+        const anchor = Math.min(selection.anchor, next.length);
+        const head = Math.min(selection.head, next.length);
+        view.dispatch({
+          changes: { from: 0, to: current.length, insert: next },
+          selection: { anchor, head },
+        });
+        view.focus();
+        return true;
       },
       setScrollRatio(ratio, tolerancePx = 0) {
         const view = viewRef.current;

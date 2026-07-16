@@ -53,6 +53,7 @@ import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
 import { useDocumentPreviewController } from "../document/useDocumentPreviewController";
+import { usePinExternalImagesAction } from "../document/usePinExternalImagesAction";
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
@@ -1498,6 +1499,22 @@ export function useAppShellController() {
     workspaceRootPath,
   });
 
+  const { pinExternalImages } = usePinExternalImagesAction({
+    activeTab,
+    appleAssistGenerationLock,
+    editorPaneRef,
+    mediaAccess: {
+      outsideImages: editorSettings.outsideImages,
+      loadRemoteImages: editorSettings.loadRemoteImages,
+      approvedRoots: getApprovedRoots(
+        workspaceRootPath,
+        editorSettings.outsideImages,
+      ),
+    },
+    setStatus,
+    workspaceRootPath,
+  });
+
   const {
     closeCommandPalette,
     closeGlobalSearch,
@@ -1538,6 +1555,7 @@ export function useAppShellController() {
       },
       openOkfReview,
       openWorkspaceFile,
+      pinExternalImages,
       requestCloseTab,
       requestRestoreFromBackup,
       requestReviewTabAgainstDisk,

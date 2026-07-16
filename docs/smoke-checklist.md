@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-15 (v1.12 scaffold entry points + shared OKF pin)
+Last reviewed: 2026-07-17 (Theme G media M0–M4 palette + smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -420,14 +420,96 @@ Run when the file tree or workspace commands change:
 Run when Markdown preview, image assets, export, or authoring helpers change:
 
 1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes (`- [ ]` / `- [x]` as display-only checkbox glyphs, not raw marker text), and local workspace-relative images such as `assets/...` and `docs/images/...`.
-2. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, exported HTML, and PDF. Reopen only the child folder and confirm all three surfaces block it with the same parent-workspace guidance. Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows an honest placeholder.
-3. Confirm external image URLs and unsafe local image paths are blocked.
+2. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, exported HTML, and PDF. Reopen only the child folder and confirm all three surfaces show a blocked note with **outside-workspace** reason and parent-folder next action (Theme G M0/M1). Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows a **load-failed** note.
+3. Confirm external `https://` image URLs stay blocked by default (remote Preference off) and show a **remote** reason without a live `<img src="https://…">`. Absolute outside paths show **absolute-outside**.
 4. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
 5. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
 6. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
 7. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
 8. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
 9. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+
+## Theme G Media Boundaries Smoke (v1.13+)
+
+Run after Theme G media work (M0–M4) or before treating media consent as
+packaged-app proven. Prefer a **fresh desktop bundle** (`npm run build` or
+Developer app), not browser-only Preview. Defaults must stay safe: remote Off,
+outside-local Ask, export materialize On, no silent Markdown rewrite.
+
+### Fixtures (manual, throwaway)
+
+1. Create a temp tree, e.g. `media-smoke/book/chapter.md` and
+   `media-smoke/assets/cover.png` (any small PNG).
+2. In `chapter.md` put:
+   - `![cover](../assets/cover.png)` (outside-workspace when root is `book/`)
+   - `![remote](https://example.com/does-not-need-to-exist.png)` (blocked by default)
+   - optional: `![ok](assets/local.png)` after pinning or drag-drop into `book/assets/`
+
+### M0 — Honest block reasons
+
+1. Open **`book/`** as the workspace (not `media-smoke/`). Open `chapter.md`, show Preview.
+2. Confirm the cover image is **not** shown as an `<img>` from disk outside root.
+3. Confirm a blocked note with reason for **workspace-外相対** / next action mentioning
+   parent workspace or assets, and stable machine key available in DOM if inspected
+   (`data-hazakura-image-block="outside-workspace"`).
+4. Confirm remote shows **remote** reason without network flash or live remote `src`.
+
+### M1 — Outside-local consent
+
+1. With outside policy **許可してから読む** (default), click
+   **「この画像の親フォルダを許可して表示」** on the cover note.
+2. Confirm the cover image appears in Preview after approve (session only).
+3. Open e-book for the same doc and confirm the same image policy (approved root shared).
+4. Settings → **表示とメディア**: switch outside images to **常にブロック**, confirm
+   cover is blocked again without an approve control. Restore **許可してから読む**.
+5. Switch to **許可したフォルダを覚える**, approve once, quit/relaunch the app, reopen
+   the same workspace + file, confirm the cover still loads without re-approving.
+6. Use **許可した画像フォルダをクリア** (when workspace root is available in Settings)
+   or switch policy to off/ask and confirm remembered approvals no longer apply.
+
+### M2 — Remote Preference (default Off)
+
+1. Confirm Settings **Preview でリモート画像を読み込む** is Off; remote stays blocked.
+2. Turn **On**, reopen Preview, confirm https remote may load **or** fail soft with
+   load-failed / network error — never silent blank without a note. Confirm **http://**
+   remains blocked if you try a non-TLS URL.
+3. Turn remote **Off** again before other smoke (keep default-safe evidence).
+
+### M3 — Export materialize
+
+1. With cover approved (M1) and materialize **On** (default), export **HTML** and
+   **PDF**. Confirm the cover is embedded when resolvable; remote remains not
+   packaged unless remote Pref is On and materialize On.
+2. Turn materialize **Off**, export once, confirm outside/remote are not newly
+   fetched into the package; blocked notes or warnings remain honest.
+3. Restore materialize **On**. Confirm Markdown source on disk is unchanged
+   throughout (no silent path rewrite).
+
+### M4 — Pin external images (Command Palette)
+
+1. With `book/` workspace, `chapter.md` still using `../assets/cover.png`, open
+   Command Palette and run **外部画像を assets に固定…** /
+   **Pin external images into assets…**.
+2. Confirm status reports pinned count and **save to keep on disk**.
+3. Confirm buffer is dirty, Markdown now references `assets/…` under the workspace,
+   and a new file exists under workspace `assets/`.
+4. **Cmd+Z** once restores the previous Markdown (one Undo step). Redo may restore
+   the pin edit.
+5. Save explicitly; confirm disk source matches the pinned paths. Confirm Preview
+   loads the new workspace-relative image without outside approval.
+6. Refuse path: with Assist generation lock or IME composition active if available,
+   confirm pin is refused without partial rewrite (Assist-lock message or status).
+
+### Preferences surface
+
+1. Open Settings → **表示とメディア** / **Display & media**.
+2. Confirm three outside modes, remote toggle + privacy hint, materialize toggle.
+3. Confirm Japanese / English / kana labels are readable (no raw English key leaks
+   in ja/kana UI).
+
+Record pass/fail per subsection. `npm run smoke:macos-window` does **not** replace
+these interactions. Do not claim App Store / TestFlight proof from Developer bundle
+alone.
 
 ## v0.33 EPUB Export Smoke
 

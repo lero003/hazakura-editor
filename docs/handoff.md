@@ -138,10 +138,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    boundaries, or hands-on friction. **Media boundaries** (outside-local /
    remote Preferences, export materialize, optional assets rewrite):
    `docs/v1.xx-image-media-boundary-plan.md` — still planning; default remains
-   **Theme G M0–M3 Keep** (honest blocks; outside-local consent; remote Pref
-   default Off; export materialize). M4 pin helpers only. Defaults: no automatic
-   remote / unapproved outside load. Optional next: palette pin command +
-   packaged smoke. Do not reopen published `1.12.0` without a hotfix decision.
+   **Theme G M0–M4 Keep** (honest blocks; outside-local consent; remote Pref
+   default Off; export materialize; palette pin to assets + Undo). Manual smoke
+   checklist: `docs/smoke-checklist.md` § Theme G. Defaults: no automatic remote
+   / unapproved outside load. Next: packaged hands-on smoke + external review.
+   Do not reopen published `1.12.0` without a hotfix decision.
 2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
    explicit user approval for a patch release.
 3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
