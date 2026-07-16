@@ -11,6 +11,7 @@ import type { EditorPaneHandle, EditorSelectionInfo } from "../editor/EditorPane
 import { EditorMainPane } from "../editor/EditorMainPane";
 import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
+import { DelayedLoadingFallback } from "./DelayedLoadingFallback";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
 import { PanelLeftOpenIcon } from "./Icons";
 import {
@@ -788,7 +789,11 @@ export function AppWorkspace({
           aria-label={sidePaneCopy.ebookReading}
           className="ebook-reading-focus-surface"
         >
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <DelayedLoadingFallback label={sidePaneCopy.loadingEbook} />
+            }
+          >
             <EBookPane
               documentKey={activeDocumentKey ?? undefined}
               documentPath={activeTab.path}

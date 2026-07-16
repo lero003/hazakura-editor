@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { localizeStatusMessage } from "./statusMessages";
+import {
+  localizeStatusMessage,
+  openedSearchMatchStatus,
+} from "./statusMessages";
 
 // v0.15 IPC status feedback.
 //
@@ -111,6 +114,20 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
     const d = localizeStatusMessage("Failed to update app menu state", "ja");
     const e = localizeStatusMessage("Failed to update theme menu state", "ja");
     expect(new Set([a, b, c, d, e]).size).toBe(5);
+  });
+});
+
+describe("openedSearchMatchStatus", () => {
+  it("keeps path:line diagnostics across locales", () => {
+    expect(openedSearchMatchStatus("docs/note.md", 12, "en")).toBe(
+      "Opened docs/note.md:12",
+    );
+    expect(openedSearchMatchStatus("docs/note.md", 12, "ja")).toBe(
+      "開きました: docs/note.md:12",
+    );
+    expect(openedSearchMatchStatus("docs/note.md", 12, "kana")).toBe(
+      "ひらきました: docs/note.md:12",
+    );
   });
 });
 

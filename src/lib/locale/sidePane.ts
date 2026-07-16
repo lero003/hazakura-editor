@@ -46,6 +46,10 @@ export type SidePaneCopy = {
   referenceRetainedStatus: string;
   lModeReferenceRetainedStatus: string;
   previewUnavailable: string;
+  /** Delayed Suspense status for Preview chunk load. */
+  loadingPreview: string;
+  /** Delayed Suspense status for e-book chunk load. */
+  loadingEbook: string;
   reviewMenu: string;
   reviewMenuTitle: string;
   resizeColumns: string;
@@ -106,6 +110,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       lModeReferenceRetainedStatus:
         "L Mode ちゅうは さんしょうを かくします。おわると もどります。",
       previewUnavailable: "したみをしめせません",
+      loadingPreview: "したみを よみこみちゅう…",
+      loadingEbook: "えーぼっくを よみこみちゅう…",
       reviewMenu: "かくにん",
       reviewMenuTitle: "へんこうをかくにん",
       resizeColumns: "えでぃたとよこのまどのはばをかへる",
@@ -168,6 +174,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         lModeReferenceRetainedStatus:
           "L Mode 中は参照を一時的に隠します。終了すると戻ります。",
         previewUnavailable: "プレビューを表示できません",
+        loadingPreview: "プレビューを読み込み中…",
+        loadingEbook: "電子書籍表示を読み込み中…",
         reviewMenu: "確認",
         reviewMenuTitle: "変更を確認",
         resizeColumns: "エディタとサイドペインの幅を変更",
@@ -227,6 +235,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         lModeReferenceRetainedStatus:
           "L Mode hides Reference for now; it returns when you leave.",
         previewUnavailable: "Preview unavailable",
+        loadingPreview: "Loading preview…",
+        loadingEbook: "Loading e-book…",
         reviewMenu: "Review",
         reviewMenuTitle: "Review changes",
         resizeColumns: "Resize editor and side pane columns",

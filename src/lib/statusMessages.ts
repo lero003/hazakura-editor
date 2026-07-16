@@ -1,5 +1,26 @@
 import type { MarkdownFormat } from "../components/editor/EditorPane";
 import type { MenuLanguage } from "../types";
+import { isJapaneseMenuLanguage } from "../types";
+import { isKanaStyle } from "./locale/_helpers";
+
+/**
+ * Global Search / Find-in-Files: open a match and report path:line.
+ * Builds the final status string in the active locale (no English-only intermediate).
+ */
+export function openedSearchMatchStatus(
+  relativePath: string,
+  line: number,
+  menuLanguage: MenuLanguage,
+): string {
+  const detail = `${relativePath}:${line}`;
+  if (isKanaStyle(menuLanguage)) {
+    return `ひらきました: ${detail}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `開きました: ${detail}`;
+  }
+  return `Opened ${detail}`;
+}
 
 export function localizeStatusMessage(
   message: string,

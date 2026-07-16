@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type Dispatch,
@@ -23,7 +24,17 @@ export function EditorQuickSettingsMenu({
 }: EditorQuickSettingsMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelId = useId();
   const copy = getEditorQuickSettingsCopy(menuLanguage);
+
+  const closePanel = (returnFocus: boolean) => {
+    // Focus the trigger while it remains mounted, then close the panel.
+    if (returnFocus) {
+      triggerRef.current?.focus();
+    }
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (!open) {
@@ -32,20 +43,22 @@ export function EditorQuickSettingsMenu({
 
     const closeOnPointerDown = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
+        closePanel(true);
       }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        event.preventDefault();
+        event.stopPropagation();
+        closePanel(true);
       }
     };
 
     window.addEventListener("pointerdown", closeOnPointerDown);
-    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", closeOnEscape, true);
     return () => {
       window.removeEventListener("pointerdown", closeOnPointerDown);
-      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("keydown", closeOnEscape, true);
     };
   }, [open]);
 
@@ -76,11 +89,19 @@ export function EditorQuickSettingsMenu({
   return (
     <div className="editor-quick-settings" ref={rootRef}>
       <button
+        ref={triggerRef}
+        aria-controls={open ? panelId : undefined}
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         aria-label={copy.title}
         className="chrome-icon-button editor-quick-settings-trigger"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (open) {
+            closePanel(false);
+          } else {
+            setOpen(true);
+          }
+        }}
         title={copy.title}
         type="button"
       >
@@ -90,9 +111,13 @@ export function EditorQuickSettingsMenu({
         <div
           aria-label={copy.title}
           className="editor-quick-settings-popover"
-          role="menu"
+          id={panelId}
+          role="dialog"
         >
-          <section aria-label={copy.display} className="editor-quick-settings-section">
+          <section
+            aria-label={copy.display}
+            className="editor-quick-settings-section"
+          >
             <span className="editor-quick-settings-heading">
               {copy.display}
             </span>
@@ -107,7 +132,10 @@ export function EditorQuickSettingsMenu({
               onChange={(checked) => updateSetting("showInvisibles", checked)}
             />
           </section>
-          <section aria-label={copy.textSize} className="editor-quick-settings-section">
+          <section
+            aria-label={copy.textSize}
+            className="editor-quick-settings-section"
+          >
             <span className="editor-quick-settings-heading">
               {copy.textSize}
             </span>
@@ -139,7 +167,10 @@ export function EditorQuickSettingsMenu({
               value={editorSettings.workspaceFontSize}
             />
           </section>
-          <section aria-label={copy.editing} className="editor-quick-settings-section">
+          <section
+            aria-label={copy.editing}
+            className="editor-quick-settings-section"
+          >
             <span className="editor-quick-settings-heading">
               {copy.editing}
             </span>

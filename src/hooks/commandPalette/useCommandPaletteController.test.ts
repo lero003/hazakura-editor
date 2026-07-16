@@ -365,6 +365,85 @@ describe("useCommandPaletteController", () => {
     vi.useRealTimers();
   });
 
+  it("localizes search-open status for Japanese", async () => {
+    vi.useFakeTimers();
+    const setStatus = vi.fn();
+    const openWorkspaceFile = vi.fn(async () => undefined);
+    const goToLine = vi.fn();
+    const editorPane = { goToLine } as unknown as EditorPaneHandle;
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
+          openReferenceFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openOkfReview: vi.fn(),
+          createOkfScaffold: vi.fn(),
+          openWorkspaceFile,
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
+        editorPaneRef: { current: editorPane },
+        lModeCopy: getLModeCopy("ja"),
+        menuLanguage: "ja",
+        setStatus,
+        themePreference: "light",
+        workspaceRootPath: "/workspace",
+      }),
+    );
+    const row: GlobalSearchRow = {
+      fileIndex: 0,
+      matchIndex: 0,
+      file: {
+        matches: [{ column: 1, line: 3, text: "hit" }],
+        path: "/workspace/docs/note.md",
+        relativePath: "docs/note.md",
+        truncated: false,
+      },
+      match: { column: 1, line: 3, text: "hit" },
+    };
+
+    act(() => {
+      result.current.runGlobalSearchMatch(row);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(setStatus).toHaveBeenCalledWith("開きました: docs/note.md:3");
+    vi.useRealTimers();
+  });
+
   it("exposes the L Mode toggle command in the purpose-led View category", () => {
     // filteredCommands is empty while the palette is closed, so
     // the test must open the palette first to read the command

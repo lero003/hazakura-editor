@@ -35,6 +35,7 @@ import {
   type LModeCopy,
 } from "../../lib/locale";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
+import { openedSearchMatchStatus } from "../../lib/statusMessages";
 import type {
   AssistSurfacePreference,
   EditorSettings,
@@ -323,10 +324,16 @@ export function useCommandPaletteController({
         setTimeout(() => {
           editorPaneRef.current?.goToLine(row.match.line);
         }, 50);
-        setStatus(`Opened ${row.file.relativePath}:${row.match.line}`);
+        setStatus(
+          openedSearchMatchStatus(
+            row.file.relativePath,
+            row.match.line,
+            menuLanguage,
+          ),
+        );
       });
     },
-    [actions, editorPaneRef, setStatus],
+    [actions, editorPaneRef, menuLanguage, setStatus],
   );
   const markdownPaletteCommands = useMemo(() => {
     const insertCategory =

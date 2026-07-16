@@ -50,10 +50,13 @@ Theme A — Signal & Silence (`docs/v1.13-interaction-clarity-plan.md`):
 2. Honest Quick Open scope/truncation copy; no background index. **Keep**
    (loaded-tree scope hint; partial tree + first-100 result cap copy; no
    whole-workspace index).
-3. Search-result open status localization. *(next bias)*
-4. Quick Settings popover/dialog semantics and focus return.
-5. Non-blank delayed loading feedback for Preview / e-book.
-6. Progressive disclosure for OKF starters in the New surface.
+3. Search-result open status localization. **Keep** (`openedSearchMatchStatus`
+   en/ja/kana with path:line intact).
+4. Quick Settings popover/dialog semantics and focus return. **Keep**
+   (`role="dialog"`, Escape/outside close, focus return to trigger).
+5. Non-blank delayed loading feedback for Preview / e-book. **Keep**
+   (`DelayedLoadingFallback` ~180ms; polite status; no flash on fast loads).
+6. Progressive disclosure for OKF starters in the New surface. *(next bias)*
 7. Exact destructive target and disabled reason for Workspace Trash.
 
 After the first Keep (or a hands-on friction that hurts more), you may jump to

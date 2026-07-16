@@ -1822,6 +1822,17 @@
   color: var(--diff-removed-fg);
 }
 
+.pane-loading-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8rem;
+  padding: 1rem 1.25rem;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 .preview-pane {
   background: var(--surface-strong);
   overflow: auto;

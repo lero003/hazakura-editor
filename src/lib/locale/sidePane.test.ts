@@ -34,6 +34,14 @@ describe("getSidePaneCopy purpose-led pane titles", () => {
     });
   });
 
+  it("localizes delayed loading status for Preview and e-book", () => {
+    expect(getSidePaneCopy("en").loadingPreview).toMatch(/preview/i);
+    expect(getSidePaneCopy("en").loadingEbook).toMatch(/e-book/i);
+    expect(getSidePaneCopy("ja").loadingPreview).toContain("プレビュー");
+    expect(getSidePaneCopy("ja").loadingEbook).toContain("電子書籍");
+    expect(getSidePaneCopy("kana").loadingPreview.length).toBeGreaterThan(4);
+  });
+
   it("keeps each purpose tooltip distinct within every language", () => {
     for (const lang of ["en", "ja", "kana"] as const) {
       const copy = getSidePaneCopy(lang);
