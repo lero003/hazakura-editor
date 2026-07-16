@@ -3,21 +3,21 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-17
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
 Latest GitHub source / local-app tag:
 
-- `v0.35.0` (no dedicated source-tag body is tracked for this tag)
+- `v1.12.0` — `1.12.0-source-tag.release.md` (no binary assets)
 
 Latest stored source-tag note:
 
-- `0.27.0-source-tag.release.md`
+- `1.12.0-source-tag.release.md`
 
 Latest published GitHub Release body:
 
-- `0.20.0-warning-expected-dmg-preview.release.md`
+- `1.12.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
 
 Latest downloadable GitHub DMG Release body:
 
@@ -64,11 +64,13 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
-- `1.11.0-app-store-release-notes.md` is the active TestFlight candidate copy;
-  upload, install, App Review, and public release are not yet claimed.
+- `1.12.0-app-store-release-notes.md` is the active v1.12 candidate / App Store
+  Connect copy; Mac App Store publication remains separate from the GitHub
+  source tag `v1.12.0`.
+- `1.11.0-app-store-release-notes.md` is retained as the prior OKF review
+  candidate copy rolled into `1.12.0`.
 - `1.10.0-app-store-release-notes.md` is retained as held TestFlight candidate
-  copy; its v1.9 / v1.10 content is expected to roll forward after v1.11 rather
-  than publish as the next App Store release.
+  history; v1.9 / v1.10 content rolled forward through v1.11 into `1.12.0`.
 - `0.34.0-app-store-submission-candidate.release.md`
 - `0.33.0-app-store-submission-candidate.release.md`
 - `0.32.0-app-store-submission-candidate.release.md`
@@ -83,8 +85,10 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
-- `1.11.0-app-store-release-notes.md` (active TestFlight candidate copy)
-- `1.10.0-app-store-release-notes.md` (held TestFlight candidate; not active publish copy)
+- `1.12.0-app-store-release-notes.md` (active v1.12 candidate / Connect copy)
+- `1.12.0-source-tag.release.md` (GitHub source / local-app tag body)
+- `1.11.0-app-store-release-notes.md` (prior OKF review candidate; rolled into 1.12)
+- `1.10.0-app-store-release-notes.md` (held TestFlight candidate history)
 - `1.8.0-app-store-release-notes.md`
 - `1.7.0-app-store-release-notes.md`
 - `1.6.0-app-store-release-notes.md`

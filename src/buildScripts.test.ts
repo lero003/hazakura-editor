@@ -631,6 +631,7 @@ describe("macOS build scripts", () => {
         "Hazakura Editor `1.8.0` is published",
         "Current package/app version is `1.12.0`",
         "The published App Store version is `1.8.0`",
+        "The latest prepared GitHub source / local-app tag is [v1.12.0]",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `1.8.0`",
@@ -639,12 +640,13 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`1.12.0`",
         "Published Mac App Store version: **`1.8.0`",
+        "Latest GitHub source / local-app tag: `v1.12.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is locally candidate-ready",
       ],
       "docs/current-work.md": [
-        "Scope: v1.12 local TestFlight candidate; v1.11 held inside it",
-        "Active Queue — v1.12 OKF Starter Scaffold",
+        "Scope: v1.12 App Review; post-review try-and-error refinement",
+        "Next Queue — Post-v1.12 Refinement (try-and-error)",
       ],
       "docs/development-automation.md": [
         "Phase: **v1.12 OKF Starter Scaffold**",

@@ -3,15 +3,16 @@
 Status: Operational
 Scope: Short handoff for v1.12 review and post-review try-and-error refinement
 Authority: Medium
-Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
+Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
 
 ## Current State
 
-- Package/app version in tree is **`1.12.0`** and App Review is in progress for
-  the v1.12 OKF scaffold lane (user-reported 2026-07-16). The published Mac App
-  Store version is **`1.8.0`**. App Review passed and publication was user-reported on
-  2026-07-14 (build `89`). Local package provenance lives in ignored
-  `docs/internal/app-store-candidates/latest.json`.
+- Package/app version in tree is **`1.12.0`**. GitHub source tag **`v1.12.0`**
+  is published (source archive only; no binary assets). App Review is in
+  progress for the v1.12 OKF scaffold lane (user-reported 2026-07-16). The
+  published Mac App Store version is **`1.8.0`**. App Review passed and
+  publication was user-reported on 2026-07-14 (build `89`). Local package
+  provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - Selected and published candidate is **`1.8.0` build `89`** from source commit
   `4f4abaf7`. App/package signatures, sandbox and both helpers' inherited
   entitlements, version/build/minimum-OS metadata, package XML, and checksum
@@ -67,9 +68,11 @@ Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
   open/edit/recheck. Explicit, bounded, read-only; no startup scan, auto-repair,
   Book Scope, or multi-file export. Contract:
   `docs/v1.11-okf-draft-preview-design.md`.
-- `v1.8.0` is the immutable published source tag. The published signed pkg is
+- `v1.12.0` is the current immutable GitHub source tag (source archive only).
+  `v1.8.0` remains the prior published source tag. The published signed pkg is
   **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
-  checks passed before upload. Do not move the tag or mutate published assets.
+  checks passed before upload. Do not move published tags or mutate published
+  assets.
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.

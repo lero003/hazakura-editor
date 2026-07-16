@@ -3,16 +3,19 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
+Last reviewed: 2026-07-17 (v1.12.0 GitHub source tag)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.12.0`** across npm, Tauri, Cargo,
-  and lockfile metadata. The published Mac App Store version remains
-  `1.8.0`. v1.12 has a verified local signed candidate containing the OKF
-  starter scaffolds, and App Review is in progress (user-reported 2026-07-16).
-  Apple-side outcome and public release remain separate.
+  and lockfile metadata. The GitHub source / local-app tag is **`v1.12.0`**
+  (source archive and release notes only; no binary assets). See
+  `docs/releases/1.12.0-source-tag.release.md`. The published Mac App Store
+  version remains `1.8.0` until a later store publication supersedes it.
+  v1.12 has a verified local signed candidate containing the OKF starter
+  scaffolds, and App Review is in progress (user-reported 2026-07-16).
+  Apple-side outcome remains separate from the GitHub source tag.
   Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **Post-review refinement is planning-only until v1.12 closes.** Direction is
@@ -356,7 +359,8 @@ Last reviewed: 2026-07-16 (v1.12 App Review; refinement + image media plan)
 - Published Mac App Store version: **`1.8.0`** (App Review passed and release
   published, user-reported 2026-07-14). It adds the v1.8 Daily Trust Completion
   hardening on top of the v1.7 Reference Compare and earlier v1 surfaces.
-- Latest GitHub source / local-app tag: `v1.8.0`.
+- Latest GitHub source / local-app tag: `v1.12.0` (source archive only; see
+  `docs/releases/1.12.0-source-tag.release.md`).
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in
