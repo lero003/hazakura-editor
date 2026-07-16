@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-07-15 (v1.11 reviewed OKF boundary pinned)
+Last reviewed: 2026-07-17 (M0 blocked-image honesty; load policy unchanged)
 
 ## Core Rule
 
@@ -75,6 +75,9 @@ Markdownプレビューを実装する場合は、初期状態で安全側に倒
 - リンククリックでアプリ本体のWebViewをページ遷移させない
 - 外部画像を勝手に読み込まない
 - ローカルファイル参照の扱いをUI上で明示する
+- ブロックした画像は、理由（workspace 外相対 / 絶対 / リモート / 未配置など）と
+  次の操作をプレースホルダに書く。読み込み境界を広げたことにはしない
+  （同意・設定でのゆるめは `docs/v1.xx-image-media-boundary-plan.md`）
 
 ユーザーが明示的にクリックしたリンクの扱いは、次の境界を守る。
 

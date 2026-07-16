@@ -27,10 +27,12 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   rows 1–7 are **Keep**. Next bias: Continuity / Writing Loop / Trust edges /
   Media boundaries, or hands-on friction. Image / media loosening (settings,
   consent, export materialize)
-  is planned in `docs/v1.xx-image-media-boundary-plan.md` and is not
-  implemented yet; default remains no automatic remote or outside-workspace
-  image load. One hypothesis per run; version numbers are shipping boxes for
-  Keep results.
+  is planned in `docs/v1.xx-image-media-boundary-plan.md`. **M0 is Keep in
+  source** (specific blocked reason + next-action copy; stable
+  `data-hazakura-image-block` keys). Load policy is unchanged: default remains
+  no automatic remote or outside-workspace image load. M1+ (consent /
+  Preferences / materialize) is not implemented. One hypothesis per run;
+  version numbers are shipping boxes for Keep results.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

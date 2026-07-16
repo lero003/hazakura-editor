@@ -63,13 +63,15 @@ describe("renderMarkdown image policy", () => {
     expect(html).not.toContain("画像を表示できません");
   });
 
-  it("blocks relative images that escape the workspace", () => {
+  it("blocks relative images that escape the workspace with outside-workspace reason", () => {
     const html = renderMarkdown("![secret](../outside.png)", {
       documentPath: "/ws/README.md",
       workspaceRoot: "/ws",
     });
 
+    expect(html).toContain('data-hazakura-image-block="outside-workspace"');
     expect(html).toContain("画像を表示できません: secret");
+    expect(html).toContain("親フォルダをワークスペースとして開く");
     expect(html).not.toContain("data-hazakura-image-path");
   });
 
@@ -88,10 +90,10 @@ describe("renderMarkdown image policy", () => {
       documentPath: manuscriptPath,
       workspaceRoot: "/project/book",
     });
+    expect(childWorkspace).toContain('data-hazakura-image-block="outside-workspace"');
     expect(childWorkspace).toContain("画像を表示できません: cover");
-    expect(childWorkspace).toContain(
-      "画像を含む親フォルダをワークスペースとして開いてください",
-    );
+    expect(childWorkspace).toContain("../assets/cover.jpg");
+    expect(childWorkspace).toContain("親フォルダをワークスペースとして開く");
     expect(childWorkspace).not.toContain("data-hazakura-image-path");
 
     // Drag-and-drop writes to the selected workspace's `assets/` directory.
@@ -104,7 +106,7 @@ describe("renderMarkdown image policy", () => {
     );
   });
 
-  it("keeps a missing workspace image on the shared loader path", async () => {
+  it("keeps a missing workspace image on the shared loader path with load-failed reason", async () => {
     const html = renderMarkdown("![missing](assets/missing.png)", {
       documentPath: "/project/book/chapter.md",
       workspaceRoot: "/project",
@@ -116,28 +118,36 @@ describe("renderMarkdown image policy", () => {
     const preview = await inlineWorkspaceAssetImages(html, async () => {
       throw new Error("missing fixture");
     });
+    expect(preview).toContain('data-hazakura-image-block="load-failed"');
     expect(preview).toContain("画像を表示できません: missing");
+    expect(preview).toContain("読めませんでした");
     expect(preview).not.toContain("data-hazakura-image-path");
   });
 
-  it("blocks absolute paths outside the workspace", () => {
+  it("blocks absolute paths outside the workspace with absolute-outside reason", () => {
     const html = renderMarkdown("![x](/etc/passwd)", {
       documentPath: "/ws/book/chapter.md",
       workspaceRoot: "/ws/book",
     });
 
-    expect(html).toContain("画像を表示できません");
+    expect(html).toContain('data-hazakura-image-block="absolute-outside"');
+    expect(html).toContain("絶対パスは開きません");
     expect(html).not.toContain("data-hazakura-image-path");
   });
 
-  it("continues to block external images", () => {
+  it("continues to block external images with remote reason and no live src", () => {
     const html = renderMarkdown("![remote](https://example.com/shot.png)", {
       documentPath: "/ws/README.md",
       workspaceRoot: "/ws",
     });
 
+    expect(html).toContain('data-hazakura-image-block="remote"');
     expect(html).toContain("画像を表示できません: remote");
-    expect(html).not.toContain("https://example.com/shot.png");
+    expect(html).toContain("リモート画像は既定で読み込みません");
+    expect(html).toContain("example.com");
+    // Full URL must not remain as an image source (no automatic fetch path).
+    expect(html).not.toMatch(/src=["']https:\/\/example\.com/);
+    expect(html).not.toContain("data-hazakura-image-path");
   });
 
   // v0.17 app-store-quality: markdown-preview-export-security
@@ -157,6 +167,7 @@ describe("renderMarkdown image policy", () => {
       "![svg](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+)",
     );
 
+    expect(html).toContain('data-hazakura-image-block="unsafe-data"');
     expect(html).toContain("画像を表示できません");
     expect(html).not.toContain("data:image/svg+xml");
   });
@@ -317,11 +328,12 @@ describe("renderMarkdown sanitization", () => {
       "![xss](javascript:alert(document.cookie))",
     );
 
+    // Must not remain as an image source or raw URI token.
     expect(html).not.toContain("javascript:");
-    // The alt text should remain as the blocked-image
-    // message or a replacement node — not as a passive
-    // `<img src="...">`.
+    expect(html).not.toContain("alert(document.cookie)");
     expect(html).not.toContain('<img src="javascript');
+    expect(html).toContain('data-hazakura-image-block="unsupported-scheme"');
+    expect(html).toContain("スキーム javascript");
   });
 
   it("does not mutate the source Markdown string", () => {

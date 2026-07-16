@@ -68,9 +68,10 @@ another theme instead of finishing the list:
 - **Continuity** — recents, same-name tabs, Reference retained state
 - **Writing Loop** — purpose vocabulary, Preview vs e-book copy (no shell rewrite)
 - **Trust edges** — export result clarity, Assist lock wording
-- **Media boundaries** — consent / Preferences for outside-local and remote
-  images; export materialize; optional assets rewrite. Plan:
-  `docs/v1.xx-image-media-boundary-plan.md` (M0→M4; remote default Off)
+- **Media boundaries** — Plan: `docs/v1.xx-image-media-boundary-plan.md`.
+  **M0 Keep** (blocked-image reason + next actions; no new load power).
+  Next: **M1** outside-local consent / approval list, then M2 remote Preference
+  (default Off), M3 export materialize, optional M4 assets rewrite
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

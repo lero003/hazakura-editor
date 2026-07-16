@@ -1,6 +1,7 @@
 import { renderMarkdown } from "../editor/markdown";
 import { applyEbookPageBreakMarkers } from "../editor/ebookChapters";
 import { parseMarkdownStructure } from "../editor/markdownStructure";
+import { blockedImageWarningLabel } from "../editor/imagePolicy";
 import {
   escapeXml,
   extensionFromMediaType,
@@ -483,12 +484,7 @@ function cleanupPreviewOnlyMarkup(
   for (const blocked of Array.from(
     template.content.querySelectorAll<HTMLElement>(".blocked-image"),
   )) {
-    const label =
-      blocked.textContent
-        ?.replace(/^Image blocked:\s*/i, "")
-        .replace(/^画像を表示できません:\s*/u, "")
-        .replace(/^画像を表示できません（.*）$/u, "")
-        .trim() || null;
+    const label = blockedImageWarningLabel(blocked);
     warnings.push({
       label,
       type: "image-unavailable",

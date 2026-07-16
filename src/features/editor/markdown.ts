@@ -1,6 +1,9 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { isAllowedEmbeddedImageSource } from "./imagePolicy";
+import {
+  buildBlockedImageElement,
+  classifyMarkdownImageSource,
+} from "./imagePolicy";
 
 marked.use({
   gfm: true,
@@ -99,7 +102,14 @@ export async function inlineWorkspaceAssetImages(
       image.setAttribute("src", dataUrl);
       image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
     } catch {
-      image.replaceWith(blockedImageMessage(image.getAttribute("alt")?.trim()));
+      const basename = path.split("/").filter(Boolean).pop() ?? path;
+      image.replaceWith(
+        buildBlockedImageElement({
+          reason: "load-failed",
+          alt: image.getAttribute("alt")?.trim(),
+          reference: basename,
+        }),
+      );
     }
   }
 
@@ -113,53 +123,37 @@ function applyImagePreviewPolicyToFragment(
 ): void {
   for (const image of Array.from(fragment.querySelectorAll("img"))) {
     const src = image.getAttribute("src")?.trim() ?? "";
+    const classification = classifyMarkdownImageSource(
+      src,
+      workspaceRoot,
+      documentPath,
+    );
 
-    if (isAllowedEmbeddedImageSource(src)) {
+    if (classification.kind === "allowed-data") {
       image.removeAttribute("srcset");
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
       continue;
     }
 
-    const resolution = resolveLocalImagePath(src, workspaceRoot, documentPath);
-    if (resolution.kind === "allowed") {
+    if (classification.kind === "allowed-workspace") {
       image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
-      image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, resolution.path);
+      image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, classification.path);
       image.removeAttribute("srcset");
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
       continue;
     }
 
+    // Blocked: no remote fetch and no outside-workspace disk open (M0).
     image.replaceWith(
-      blockedImageMessage(
-        image.getAttribute("alt")?.trim(),
-        resolution.kind === "outside-workspace",
-      ),
+      buildBlockedImageElement({
+        reason: classification.reason,
+        alt: image.getAttribute("alt")?.trim(),
+        reference: classification.reference,
+      }),
     );
   }
-}
-
-function blockedImageMessage(
-  alt?: string | null,
-  outsideWorkspace = false,
-): HTMLSpanElement {
-  const replacement = document.createElement("span");
-  replacement.className = "blocked-image";
-  replacement.setAttribute("role", "note");
-  // Japanese-first (Q-IMP-1 / product locale). Class stays `blocked-image`
-  // for export / CSS. Do not silently load remote or outside-workspace files.
-  if (outsideWorkspace) {
-    replacement.textContent = alt
-      ? `画像を表示できません: ${alt}（画像を含む親フォルダをワークスペースとして開いてください）`
-      : "画像を表示できません（画像を含む親フォルダをワークスペースとして開いてください）";
-    return replacement;
-  }
-
-  replacement.textContent = alt
-    ? `画像を表示できません: ${alt}`
-    : "画像を表示できません（ワークスペース外・未配置・リモートは読み込みません）";
-  return replacement;
 }
 
 // v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。
@@ -200,122 +194,4 @@ function applyTaskListPreviewPolicyToFragment(
     item?.classList.add("markdown-task-list-item");
     checkbox.replaceWith(replacement);
   }
-}
-
-type LocalImagePathResolution =
-  | { kind: "allowed"; path: string }
-  | { kind: "outside-workspace" }
-  | { kind: "blocked" };
-
-/** Resolve a document-relative local image under the selected workspace. */
-function resolveLocalImagePath(
-  src: string,
-  workspaceRoot: string | null,
-  documentPath: string | null,
-): LocalImagePathResolution {
-  let decodedSrc: string;
-  try {
-    decodedSrc = decodeURIComponent(src);
-  } catch {
-    return { kind: "blocked" };
-  }
-
-  if (
-    !decodedSrc ||
-    decodedSrc.includes("\\") ||
-    decodedSrc.includes("?") ||
-    decodedSrc.includes("#") ||
-    /^[a-z][a-z0-9+.-]*:/i.test(decodedSrc)
-  ) {
-    return { kind: "blocked" };
-  }
-
-  const srcIsAbsolute = isAbsolutePosix(decodedSrc);
-  const documentDir =
-    documentPath && isAbsolutePosix(documentPath)
-      ? dirnamePosix(documentPath)
-      : null;
-
-  let resolved: string;
-  if (srcIsAbsolute) {
-    resolved = normalizePosix(decodedSrc);
-  } else {
-    // Prefer the real document directory for relative links so `../assets`
-    // is not forced through the workspace root alone.
-    const baseDir =
-      documentDir ??
-      (workspaceRoot ? normalizeWorkspaceRoot(workspaceRoot) : null);
-    if (!baseDir) {
-      return { kind: "blocked" };
-    }
-    resolved = resolvePosix(baseDir, decodedSrc);
-  }
-
-  if (workspaceRoot) {
-    const normalizedRoot = normalizeWorkspaceRoot(workspaceRoot);
-    if (
-      resolved === normalizedRoot ||
-      resolved.startsWith(`${normalizedRoot}/`)
-    ) {
-      return { kind: "allowed", path: resolved };
-    }
-  }
-
-  // Keep Preview, HTML, and PDF on the same document-relative containment
-  // rule. An escaped relative path is useful feedback: opening the project
-  // parent as the workspace grants the same image access in all three views.
-  if (workspaceRoot && !srcIsAbsolute) {
-    return { kind: "outside-workspace" };
-  }
-
-  return { kind: "blocked" };
-}
-
-function normalizeWorkspaceRoot(root: string): string {
-  const withoutTrailingSlash = root.replace(/\/+$/, "");
-  return withoutTrailingSlash || "/";
-}
-
-function isAbsolutePosix(path: string): boolean {
-  return path.startsWith("/");
-}
-
-function dirnamePosix(path: string): string {
-  const normalized = normalizePosix(path);
-  if (normalized === "/") {
-    return "/";
-  }
-
-  const index = normalized.lastIndexOf("/");
-  if (index <= 0) {
-    return "/";
-  }
-  return normalized.slice(0, index);
-}
-
-function resolvePosix(baseDir: string, relativePath: string): string {
-  return normalizePosix(`${baseDir}/${relativePath}`);
-}
-
-function normalizePosix(path: string): string {
-  const absolute = path.startsWith("/");
-  const segments: string[] = [];
-
-  for (const segment of path.split("/")) {
-    if (!segment || segment === ".") {
-      continue;
-    }
-    if (segment === "..") {
-      if (segments.length > 0 && segments[segments.length - 1] !== "..") {
-        segments.pop();
-      } else if (!absolute) {
-        segments.push(segment);
-      }
-      continue;
-    }
-    segments.push(segment);
-  }
-
-  const normalized = segments.join("/");
-  return absolute ? `/${normalized}` : normalized;
 }

@@ -7,6 +7,8 @@
  * because Preview, HTML, and PDF share the same containment policy.
  */
 
+import { buildBlockedImageElement } from "../editor/imagePolicy";
+
 const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
 const TRANSPARENT_GIF_PREFIX = "data:image/gif;base64,";
 
@@ -48,12 +50,15 @@ export async function embedAndStampPdfImages(
       embeddedCount += 1;
     } catch {
       failedPaths.push(path);
-      // Leave a visible note rather than a blank hole.
-      const note = document.createElement("span");
-      note.className = "blocked-image";
-      note.setAttribute("role", "note");
-      note.textContent = "画像を埋め込めませんでした（パスまたはアクセス権を確認）";
-      image.replaceWith(note);
+      // Leave a visible note rather than a blank hole (same M0 contract as Preview).
+      const basename = path.split("/").filter(Boolean).pop() ?? path;
+      image.replaceWith(
+        buildBlockedImageElement({
+          reason: "load-failed",
+          alt: image.getAttribute("alt")?.trim(),
+          reference: basename,
+        }),
+      );
     }
   }
 

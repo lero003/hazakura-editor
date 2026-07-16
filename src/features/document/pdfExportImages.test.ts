@@ -37,6 +37,7 @@ describe("embedAndStampPdfImages", () => {
     );
     expect(result.embeddedCount).toBe(0);
     expect(result.failedPaths).toEqual(["/missing.png"]);
-    expect(result.html).toContain("画像を埋め込めませんでした");
+    expect(result.html).toContain('data-hazakura-image-block="load-failed"');
+    expect(result.html).toContain("読めませんでした");
   });
 });

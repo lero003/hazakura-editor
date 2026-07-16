@@ -491,7 +491,10 @@ describe("useDocumentExport", () => {
     expect(tauriApi.openWorkspaceImage).not.toHaveBeenCalled();
     expect(useDocumentExportSource).not.toContain("openImageFile");
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
-      "画像を含む親フォルダをワークスペースとして開いてください",
+      'data-hazakura-image-block="outside-workspace"',
+    );
+    expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
+      "親フォルダをワークスペースとして開く",
     );
   });
 

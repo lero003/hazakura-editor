@@ -138,8 +138,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    boundaries, or hands-on friction. **Media boundaries** (outside-local /
    remote Preferences, export materialize, optional assets rewrite):
    `docs/v1.xx-image-media-boundary-plan.md` — still planning; default remains
-   no automatic remote or outside-workspace image load. Do not batch theme
-   packages. Do not reopen published `1.12.0` without a hotfix decision.
+   **M0 Keep** (honest blocked-image reasons; load policy unchanged). Next media
+   slice is M1 outside-local consent. Default remains no automatic remote or
+   outside-workspace image load. Do not batch theme packages. Do not reopen
+   published `1.12.0` without a hotfix decision.
 2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
    explicit user approval for a patch release.
 3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
