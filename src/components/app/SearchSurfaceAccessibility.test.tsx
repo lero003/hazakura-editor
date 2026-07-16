@@ -63,6 +63,40 @@ describe("search surface accessibility semantics", () => {
     expect(combobox.getAttribute("aria-controls")).toBe("quick-open-results");
     expect(combobox.getAttribute("aria-activedescendant")).toBe(option.id);
     expect(option.getAttribute("aria-selected")).toBe("true");
+    expect(
+      screen.getByText(/already loaded in the workspace tree/i),
+    ).toBeTruthy();
+  });
+
+  it("states partial tree and result cap honestly", () => {
+    const manyFiles = Array.from({ length: 120 }, (_, i) => ({
+      name: `f${i}.md`,
+      path: `/workspace/f${i}.md`,
+      kind: "file" as const,
+      children_loaded: true,
+      children_truncated: false,
+      children: [],
+    }));
+    render(
+      <QuickOpen
+        menuLanguage="en"
+        onClose={vi.fn()}
+        onOpenFile={vi.fn()}
+        tree={{
+          name: "workspace",
+          path: "/workspace",
+          kind: "directory",
+          children_loaded: true,
+          children_truncated: true,
+          children: manyFiles,
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText(/truncated by the per-folder cap/i),
+    ).toBeTruthy();
+    expect(screen.getByText(/Showing 100 of 120/i)).toBeTruthy();
   });
 
   it("links the Command Palette combobox to its active option", () => {

@@ -11,6 +11,7 @@ export * from "./editorChrome";
 export * from "./okfReview";
 export * from "./lMode";
 export * from "./preferences";
+export * from "./quickOpen";
 export * from "./recovery";
 export * from "./review";
 export * from "./reviewDesk";

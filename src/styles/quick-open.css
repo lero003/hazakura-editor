@@ -40,6 +40,23 @@
   color: var(--text-muted);
 }
 
+.quick-open-scope {
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted, transparent);
+}
+
+.quick-open-scope-line {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.quick-open-scope-line + .quick-open-scope-line {
+  margin-top: 4px;
+}
+
 .quick-open-results {
   flex: 1;
   overflow-y: auto;

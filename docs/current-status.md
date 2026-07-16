@@ -752,8 +752,8 @@ baseline, and smoke evidence are archived under
 ## Active Planning Sources
 
 - `docs/current-work.md`: active **v1.13+ try-and-error refinement** queue
-  (v1.12 closed / published). Command availability is Keep (with pathless disk
-  review and empty-PDF export alignment).
+  (v1.12 closed / published). Keeps so far: Command availability (pathless disk
+  review + empty-PDF alignment); Quick Open loaded-tree scope honesty.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -777,10 +777,10 @@ baseline, and smoke evidence are archived under
    (user-reported 2026-07-17). Do not move its public tag or reopen it without
    a reproduced hotfix need. Prior baselines (`1.8.0` and earlier) stay closed.
 2. **Continue v1.13+ try-and-error refinement** from `docs/current-work.md`.
-   Theme A Command availability is **Keep**. Next bias: Quick Open scope
-   honesty, Search status locale, or hands-on Continuity friction
-   (`docs/v1.13-interaction-clarity-plan.md`). One hypothesis per run; Keep /
-   Iterate / Revert with evidence. Do not batch theme packages.
+   Theme A Keeps: Command availability, Quick Open scope honesty. Next bias:
+   Search status locale, Quick Settings semantics, or hands-on Continuity
+   friction (`docs/v1.13-interaction-clarity-plan.md`). One hypothesis per run;
+   Keep / Iterate / Revert with evidence. Do not batch theme packages.
 3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
    Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and
    VoiceOver breadth remain quality follow-up, not reasons to reopen `1.12.0`.

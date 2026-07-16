@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  flattenWorkspaceFiles,
+  QUICK_OPEN_RESULT_LIMIT,
+  workspaceTreeIsPartial,
+} from "../../features/workspace/quickOpenFiles";
 import { isImeComposing } from "../../lib/keyboard";
+import { getQuickOpenCopy } from "../../lib/locale/quickOpen";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { MenuLanguage } from "../../types";
 
@@ -9,26 +15,6 @@ type QuickOpenProps = {
   onClose: () => void;
   menuLanguage: MenuLanguage;
 };
-
-type FlatFile = {
-  path: string;
-  name: string;
-};
-
-/** Flatten the workspace tree into a list of file entries. */
-function flattenFiles(entry: WorkspaceTreeEntry): FlatFile[] {
-  const result: FlatFile[] = [];
-  function walk(node: WorkspaceTreeEntry) {
-    if (node.kind === "file") {
-      result.push({ path: node.path, name: node.name });
-    }
-    for (const child of node.children ?? []) {
-      walk(child);
-    }
-  }
-  walk(entry);
-  return result;
-}
 
 /** Simple fuzzy scorer: higher = better match.
  *  Checks that all query characters appear in order in the target.
@@ -76,11 +62,27 @@ export function QuickOpen({
   const listRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const copy = useMemo(() => getQuickOpenCopy(menuLanguage), [menuLanguage]);
 
-  const files = useMemo(() => (tree ? flattenFiles(tree) : []), [tree]);
+  const files = useMemo(() => (tree ? flattenWorkspaceFiles(tree) : []), [tree]);
+  const treePartial = useMemo(
+    () => (tree ? workspaceTreeIsPartial(tree) : false),
+    [tree],
+  );
+
+  const matchTotal = useMemo(() => {
+    if (!query.trim()) {
+      return files.length;
+    }
+    return files.filter(
+      (f) => fuzzyScore(query, f.path, f.name) >= 0,
+    ).length;
+  }, [query, files]);
 
   const results = useMemo(() => {
-    if (!query.trim()) return files.slice(0, 100);
+    if (!query.trim()) {
+      return files.slice(0, QUICK_OPEN_RESULT_LIMIT);
+    }
     const scored = files
       .map((f) => ({
         ...f,
@@ -88,8 +90,10 @@ export function QuickOpen({
       }))
       .filter((f) => f.score >= 0)
       .sort((a, b) => b.score - a.score);
-    return scored.slice(0, 100);
+    return scored.slice(0, QUICK_OPEN_RESULT_LIMIT);
   }, [query, files]);
+
+  const resultsCapped = matchTotal > results.length;
 
   // Reset active index when results change
   useEffect(() => {
@@ -153,24 +157,6 @@ export function QuickOpen({
 
   if (!tree) return null;
 
-  const placeholder =
-    menuLanguage === "kana"
-      ? "ふみのなまえを..."
-      : menuLanguage === "ja"
-        ? "ファイル名を入力..."
-        : "Type a file name...";
-  const emptyMsg =
-    menuLanguage === "kana"
-      ? "ぴったりのふみはありません"
-      : menuLanguage === "ja"
-        ? "一致するファイルがありません"
-        : "No matching files";
-  const dialogLabel =
-    menuLanguage === "kana"
-      ? "ふみを すぐひらく"
-      : menuLanguage === "ja"
-        ? "クイックオープン"
-        : "Quick Open";
   const activeOptionId = results[activeIndex]
     ? `quick-open-option-${activeIndex}`
     : undefined;
@@ -178,7 +164,7 @@ export function QuickOpen({
   return (
     <div className="quick-open-overlay" onPointerDown={onClose}>
       <div
-        aria-label={dialogLabel}
+        aria-label={copy.dialogLabel}
         aria-modal="true"
         className="quick-open-dialog"
         onPointerDown={(e) => e.stopPropagation()}
@@ -189,16 +175,27 @@ export function QuickOpen({
           aria-activedescendant={activeOptionId}
           aria-controls="quick-open-results"
           aria-expanded="true"
-          aria-label={dialogLabel}
+          aria-label={copy.dialogLabel}
           aria-haspopup="listbox"
           className="quick-open-input"
           type="text"
-          placeholder={placeholder}
+          placeholder={copy.placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           role="combobox"
         />
+        <div className="quick-open-scope" role="note">
+          <p className="quick-open-scope-line">{copy.scopeHint}</p>
+          {treePartial ? (
+            <p className="quick-open-scope-line">{copy.treePartialHint}</p>
+          ) : null}
+          {resultsCapped ? (
+            <p className="quick-open-scope-line">
+              {copy.resultCapHint(results.length, matchTotal)}
+            </p>
+          ) : null}
+        </div>
         <div
           className="quick-open-results"
           id="quick-open-results"
@@ -206,7 +203,7 @@ export function QuickOpen({
           role="listbox"
         >
           {results.length === 0 ? (
-            <div className="quick-open-empty">{emptyMsg}</div>
+            <div className="quick-open-empty">{copy.empty}</div>
           ) : (
             results.map((file, i) => (
               <button
