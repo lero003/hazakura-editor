@@ -176,6 +176,11 @@ export function WorkspaceSidebar({
   // because we can't reliably know its display name + kind.
   const activeEntry = findEntryByPath(workspaceTree, activePath);
   const canTrashActive = activeEntry !== null;
+  const trashLabel = canTrashActive
+    ? fileOpsCopy.sidebarTrashTarget(activeEntry.name)
+    : activePath
+      ? fileOpsCopy.sidebarTrashDisabledNotInTree
+      : fileOpsCopy.sidebarTrashDisabledNoActive;
   const handleTrashActive = () => {
     if (!activeEntry) return;
     onMoveToTrash(
@@ -256,20 +261,32 @@ export function WorkspaceSidebar({
                     <button type="button" role="menuitem" onClick={handleNewFolder}>
                       {fileOpsCopy.newFolderRoot}
                     </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleOkfScaffoldMinimal}
+                    <div
+                      aria-label={fileOpsCopy.newOkfScaffoldGroup}
+                      className="workspace-new-menu-group"
+                      role="group"
                     >
-                      {fileOpsCopy.newOkfScaffoldMinimalRoot}
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleOkfScaffoldBookLike}
-                    >
-                      {fileOpsCopy.newOkfScaffoldBookLikeRoot}
-                    </button>
+                      <span
+                        aria-hidden="true"
+                        className="workspace-new-menu-group-label"
+                      >
+                        {fileOpsCopy.newOkfScaffoldGroup}
+                      </span>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleOkfScaffoldMinimal}
+                      >
+                        {fileOpsCopy.newOkfScaffoldMinimalRoot}
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleOkfScaffoldBookLike}
+                      >
+                        {fileOpsCopy.newOkfScaffoldBookLikeRoot}
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -332,15 +349,11 @@ export function WorkspaceSidebar({
       {workspaceTree ? (
         <div className="workspace-footer">
           <button
-            aria-label={fileOpsCopy.sidebarTrashButton}
+            aria-label={trashLabel}
             className="workspace-trash-button"
             disabled={!canTrashActive}
             onClick={handleTrashActive}
-            title={
-              canTrashActive
-                ? fileOpsCopy.sidebarTrashButton
-                : copy.noFolderOpen
-            }
+            title={trashLabel}
             type="button"
           >
             <TrashIcon />

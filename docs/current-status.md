@@ -23,11 +23,10 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   without a reproduced hotfix; published tags remain immutable.
 - **v1.13+ try-and-error refinement is open.** Direction:
   `docs/v1.13-plus-refinement-roadmap.md`. Theme A pool:
-  `docs/v1.13-interaction-clarity-plan.md`. Keeps so far: Command availability,
-  Quick Open scope honesty, search-open status locale, Quick Settings dialog
-  semantics, delayed Preview/e-book loading feedback. Next bias: OKF New-surface
-  progressive disclosure, Workspace Trash target clarity, or hands-on
-  Continuity. Image / media loosening (settings, consent, export materialize)
+  `docs/v1.13-interaction-clarity-plan.md`. Theme A (Signal & Silence) candidate
+  rows 1–7 are **Keep**. Next bias: Continuity / Writing Loop / Trust edges /
+  Media boundaries, or hands-on friction. Image / media loosening (settings,
+  consent, export materialize)
   is planned in `docs/v1.xx-image-media-boundary-plan.md` and is not
   implemented yet; default remains no automatic remote or outside-workspace
   image load. One hypothesis per run; version numbers are shipping boxes for
@@ -755,9 +754,7 @@ baseline, and smoke evidence are archived under
 ## Active Planning Sources
 
 - `docs/current-work.md`: active **v1.13+ try-and-error refinement** queue
-  (v1.12 closed / published). Theme A Keeps: Command availability, Quick Open
-  honesty, search-open locale, Quick Settings dialog semantics, delayed
-  Preview/e-book loading.
+  (v1.12 closed / published). Theme A Signal & Silence (rows 1–7) is Keep.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -781,9 +778,10 @@ baseline, and smoke evidence are archived under
    (user-reported 2026-07-17). Do not move its public tag or reopen it without
    a reproduced hotfix need. Prior baselines (`1.8.0` and earlier) stay closed.
 2. **Continue v1.13+ try-and-error refinement** from `docs/current-work.md`.
-   Theme A Keeps through delayed loading feedback. Next bias: OKF New-surface
-   progressive disclosure, Workspace Trash clarity, or Continuity
-   (`docs/v1.13-interaction-clarity-plan.md`). One hypothesis per run;
+   Theme A Signal & Silence is Keep. Next bias: Continuity, Writing Loop,
+   Trust edges, Media boundaries, or hands-on friction
+   (`docs/v1.13-interaction-clarity-plan.md` /
+   `docs/v1.13-plus-refinement-roadmap.md`). One hypothesis per run;
    Keep / Iterate / Revert with evidence. Do not batch theme packages.
 3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
    Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and

@@ -20,6 +20,8 @@ export type WorkspaceFileOpsCopy = {
   newFolderRoot: string;
   newOkfScaffoldMinimalRoot: string;
   newOkfScaffoldBookLikeRoot: string;
+  /** Section label grouping OKF starters under New (progressive disclosure). */
+  newOkfScaffoldGroup: string;
   newFileHere: string;
   newFolderHere: string;
   rename: string;
@@ -36,6 +38,10 @@ export type WorkspaceFileOpsCopy = {
   moveToTrashCancel: string;
   moveToTrashError: string;
   sidebarTrashButton: string;
+  /** Footer trash when the target is known (exact name). */
+  sidebarTrashTarget: (name: string) => string;
+  sidebarTrashDisabledNoActive: string;
+  sidebarTrashDisabledNotInTree: string;
 };
 
 export function getWorkspaceFileOpsCopy(
@@ -50,9 +56,9 @@ export function getWorkspaceFileOpsCopy(
       sidebarNewButton: "あたらしく",
       newFileRoot: "あたらしきふみ",
       newFolderRoot: "あたらしきふぉるだ",
-      newOkfScaffoldMinimalRoot: "ちしきフォルダの ひながた（さいしょう）",
-      newOkfScaffoldBookLikeRoot:
-        "ちしきフォルダの ひながた（ほんっぽい しょうだて）",
+      newOkfScaffoldMinimalRoot: "さいしょう",
+      newOkfScaffoldBookLikeRoot: "ほんっぽい しょうだて",
+      newOkfScaffoldGroup: "ちしきフォルダの ひながた",
       newFileHere: "このふぉるだに あたらしきふみ",
       newFolderHere: "このふぉるだに あたらしきふぉるだ",
       rename: "なまえを かえる",
@@ -71,6 +77,10 @@ export function getWorkspaceFileOpsCopy(
       moveToTrashCancel: "やめる",
       moveToTrashError: "ごみばこへの すてかたに しっぱいしました。",
       sidebarTrashButton: "ごみばこ",
+      sidebarTrashTarget: (name) => `「${name}」を ごみばこへ`,
+      sidebarTrashDisabledNoActive: "ツリーで ふみまたは ふぉるだを えらんでください",
+      sidebarTrashDisabledNotInTree:
+        "ひらいている ふみが ツリーに みえるまで ふぉるだを ひらいてください",
     };
   }
 
@@ -83,8 +93,9 @@ export function getWorkspaceFileOpsCopy(
         sidebarNewButton: "新規",
         newFileRoot: "新規ファイル",
         newFolderRoot: "新規フォルダ",
-        newOkfScaffoldMinimalRoot: "知識フォルダのひな形（最小）",
-        newOkfScaffoldBookLikeRoot: "知識フォルダのひな形（本っぽい章立て）",
+        newOkfScaffoldMinimalRoot: "最小",
+        newOkfScaffoldBookLikeRoot: "本っぽい章立て",
+        newOkfScaffoldGroup: "知識フォルダのひな形",
         newFileHere: "このフォルダに新規ファイル",
         newFolderHere: "このフォルダに新規フォルダ",
         rename: "名前を変更",
@@ -104,6 +115,11 @@ export function getWorkspaceFileOpsCopy(
         moveToTrashCancel: "キャンセル",
         moveToTrashError: "ゴミ箱への移動に失敗しました。",
         sidebarTrashButton: "ゴミ箱",
+        sidebarTrashTarget: (name) => `「${name}」をゴミ箱へ`,
+        sidebarTrashDisabledNoActive:
+          "ツリーでファイルまたはフォルダを選択してください",
+        sidebarTrashDisabledNotInTree:
+          "開いているファイルがツリーに見えるまでフォルダを展開してください",
       }
     : {
         loading: "Loading…",
@@ -113,8 +129,9 @@ export function getWorkspaceFileOpsCopy(
         sidebarNewButton: "New",
         newFileRoot: "New File",
         newFolderRoot: "New Folder",
-        newOkfScaffoldMinimalRoot: "Knowledge folder starter (minimal)",
-        newOkfScaffoldBookLikeRoot: "Knowledge folder starter (book-like)",
+        newOkfScaffoldMinimalRoot: "Minimal",
+        newOkfScaffoldBookLikeRoot: "Book-like chapters",
+        newOkfScaffoldGroup: "Knowledge folder starters",
         newFileHere: "New File Here",
         newFolderHere: "New Folder Here",
         rename: "Rename",
@@ -134,5 +151,9 @@ export function getWorkspaceFileOpsCopy(
         moveToTrashCancel: "Cancel",
         moveToTrashError: "Could not move the entry to the Trash.",
         sidebarTrashButton: "Trash",
+        sidebarTrashTarget: (name) => `Move “${name}” to Trash`,
+        sidebarTrashDisabledNoActive: "Select a file or folder in the tree",
+        sidebarTrashDisabledNotInTree:
+          "Expand the tree until the active file is visible",
       };
 }

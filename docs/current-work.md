@@ -56,8 +56,11 @@ Theme A — Signal & Silence (`docs/v1.13-interaction-clarity-plan.md`):
    (`role="dialog"`, Escape/outside close, focus return to trigger).
 5. Non-blank delayed loading feedback for Preview / e-book. **Keep**
    (`DelayedLoadingFallback` ~180ms; polite status; no flash on fast loads).
-6. Progressive disclosure for OKF starters in the New surface. *(next bias)*
-7. Exact destructive target and disabled reason for Workspace Trash.
+6. Progressive disclosure for OKF starters in the New surface. **Keep**
+   (file/folder primary; OKF under labeled group; keyboard menuitem order
+   preserved).
+7. Exact destructive target and disabled reason for Workspace Trash. **Keep**
+   (name in label/title; distinct no-active vs not-in-tree reasons).
 
 After the first Keep (or a hands-on friction that hurts more), you may jump to
 another theme instead of finishing the list:

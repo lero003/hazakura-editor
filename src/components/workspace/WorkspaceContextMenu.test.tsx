@@ -11,8 +11,13 @@ afterEach(() => {
 const fileOpsCopy = {
   newFileHere: "New file here",
   newFolderHere: "New folder here",
-  newOkfScaffoldMinimalRoot: "Knowledge folder starter (minimal)",
-  newOkfScaffoldBookLikeRoot: "Knowledge folder starter (book-like)",
+  newOkfScaffoldMinimalRoot: "Minimal",
+  newOkfScaffoldBookLikeRoot: "Book-like chapters",
+  newOkfScaffoldGroup: "Knowledge folder starters",
+  sidebarTrashTarget: (name: string) => `Move “${name}” to Trash`,
+  sidebarTrashDisabledNoActive: "Select a file or folder in the tree",
+  sidebarTrashDisabledNotInTree:
+    "Expand the tree until the active file is visible",
   rename: "Rename",
   moveToTrash: "Move to Trash",
   moveToTrashTitle: "Trash",
