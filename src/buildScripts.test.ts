@@ -645,16 +645,16 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v1.14+ try-and-error refinement (after published v1.13)",
-        "Active Queue — v1.14+ Refinement (try-and-error)",
+        "Scope: v1.14 local candidate boxed; residual refinement after Keep set",
+        "Active Queue — after the v1.14 box",
       ],
       "docs/development-automation.md": [
         "Phase: **v1.14+ try-and-error refinement**",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree is **`1.14.0`",
-        "published Mac App Store version is **`1.13.0`",
-        "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
+        "Package/app version in tree: **`1.14.0`",
+        "Published Mac App Store: **`1.13.0`",
+        "Latest recorded GitHub source tag: **`v1.12.0`",
       ],
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.14.0`",

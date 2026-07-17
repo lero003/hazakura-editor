@@ -27,7 +27,7 @@ is **`1.13.0`**. Connect is authoritative for store counters.
 
 ## v1.14 Candidate Box (source Keep set)
 
-Direction: `docs/v1.13-plus-refinement-roadmap.md`.  
+Direction: `docs/v1.13-plus-refinement-roadmap.md`.
 Release-note draft: `docs/releases/1.14.0-app-store-release-notes.md`.
 
 Treat the following as **one shipping box** for a future store/TestFlight

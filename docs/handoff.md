@@ -18,6 +18,9 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
   docs alone). Inventory and draft App Store copy:
   `docs/releases/1.14.0-app-store-release-notes.md`. Queue:
   `docs/current-work.md`.
+- Review follow-up fixed Space-key activation for the always-visible e-book
+  edit action and realigned the CSS / living-doc contract tests with the boxed
+  v1.14 state.
 
 ### v1.14 Keep summary (one line each)
 
@@ -30,9 +33,19 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 
 ### Still open evidence
 
-- Packaged / TestFlight hands-on of the Keep set.
+- Full hands-on / TestFlight coverage of the Keep set. A local App Store
+  preview build and basic macOS window smoke pass, but do not cover the full
+  interaction checklist.
 - Narrow-window tab truncation, VoiceOver speech, long-doc / IME breadth.
 - Theme G signed export recheck and pin-to-assets Undo (carry-over from 1.13).
+
+### Latest verification
+
+- `npm run typecheck`, `npm test` (193 files / 1618 tests),
+  `npm run build:vite`, `npm run smoke:app-store-surface`, `npm run build`.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+  `cargo test --manifest-path src-tauri/Cargo.toml` (362 passed / 2 ignored),
+  `git diff --check`, and `SKIP_BUILD=1 npm run smoke:macos-window`.
 
 ### Deferred residual (after candidate, optional)
 

@@ -290,6 +290,32 @@ describe("EBookPane chapter reader", () => {
     );
   });
 
+  it("lets Space activate the edit-this-place button without turning the page", async () => {
+    const onEditCurrentLocation = vi.fn();
+    vi.mocked(measureEBookPageCount).mockReturnValue(2);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        onEditCurrentLocation={onEditCurrentLocation}
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 2")).toBeTruthy();
+    });
+
+    const editButton = screen.getByRole("button", { name: "Edit this place" });
+    editButton.focus();
+    fireEvent.keyDown(editButton, { key: " " });
+    fireEvent.keyUp(editButton, { key: " " });
+    fireEvent.click(editButton);
+
+    expect(onEditCurrentLocation).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Page 1 / 2")).toBeTruthy();
+  });
+
   it("shows a Reading Focus table of contents drawer and jumps to a chapter", async () => {
     const onLocationChange = vi.fn();
 

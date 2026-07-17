@@ -822,6 +822,15 @@ export default function EBookPane({
     ) {
       return;
     }
+    if (
+      (event.key === " " || event.key === "Spacebar") &&
+      event.target instanceof Element &&
+      event.target.closest("button, [role='button']")
+    ) {
+      // Space is the native activation key for buttons. Let the focused
+      // control receive it instead of turning the reader page underneath it.
+      return;
+    }
     event.preventDefault();
 
     if (event.key === "ArrowLeft") {
@@ -878,6 +887,15 @@ export default function EBookPane({
         return null;
       }
       if (event.metaKey || event.ctrlKey || event.altKey) {
+        return null;
+      }
+      if (
+        (event.key === " " || event.key === "Spacebar") &&
+        event.target instanceof Element &&
+        event.target.closest("button, [role='button']")
+      ) {
+        // The capture listener runs before React and native button handling.
+        // Do not consume Space when a reader action owns that key press.
         return null;
       }
       if (event.key === "ArrowLeft") {
