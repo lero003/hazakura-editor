@@ -134,7 +134,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    `docs/v1.13-plus-refinement-roadmap.md`. One hypothesis per run; Keep /
    Iterate / Revert with evidence. Theme A pool:
    `docs/v1.13-interaction-clarity-plan.md`. **Theme A Signal & Silence (1–7)
-   is Keep.** Next bias: Continuity, Writing Loop, Trust edges, Media
+   is Keep.** A settings-density follow-up is also Keep: the four settings
+   sections use a desktop 2×2 grid and retain a narrow-window single column,
+   without changing setting semantics or order. Next bias: Continuity, Writing
+   Loop, Trust edges, Media
    boundaries, or hands-on friction. **Media boundaries** (outside-local /
    remote Preferences, export materialize, optional assets rewrite):
    `docs/v1.xx-image-media-boundary-plan.md`; default remains

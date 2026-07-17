@@ -61,6 +61,9 @@ Theme A — Signal & Silence (`docs/v1.13-interaction-clarity-plan.md`):
    preserved).
 7. Exact destructive target and disabled reason for Workspace Trash. **Keep**
    (name in label/title; distinct no-active vs not-in-tree reasons).
+8. Settings dialog density balance. **Keep** (four sections use a desktop 2×2
+   grid and collapse to one column on narrow windows; setting semantics and
+   order remain unchanged).
 
 After the first Keep (or a hands-on friction that hurts more), you may jump to
 another theme instead of finishing the list:
@@ -72,7 +75,9 @@ another theme instead of finishing the list:
   **M0–M4 Keep** (honest blocks; outside-local ask/allow without remembered
   folders; remote Pref default
   Off https-only; export materialize default On; palette pin to assets + Undo).
-  Manual smoke: `docs/smoke-checklist.md` § Theme G. Packaged hands-on remaining.
+  Manual smoke: `docs/smoke-checklist.md` § Theme G. Built-app ask/allow and
+  remote-Off branching passed; export materialize and pin-to-assets Undo remain
+  signed-device breadth.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

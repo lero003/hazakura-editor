@@ -117,6 +117,24 @@ describe("editor tab close affordance CSS", () => {
     expect(unavailable).toMatch(/--availability-accent:\s*var\(--danger/);
   });
 
+  it("balances the four settings sections as a two-column desktop grid", () => {
+    const settingsGrid = ruleBody(dialogsCss, ".settings-preferences");
+    const oddSection = ruleBody(
+      dialogsCss,
+      ".settings-preferences .preference-section:nth-child(2n + 1)",
+    );
+    const lowerSection = ruleBody(
+      dialogsCss,
+      ".settings-preferences .preference-section:nth-child(n + 3)",
+    );
+
+    expect(settingsGrid).toMatch(
+      /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    );
+    expect(oddSection).toMatch(/border-left:\s*0/);
+    expect(lowerSection).toMatch(/border-top:\s*1px solid var\(--border\)/);
+  });
+
   it("keeps the EPUB scope note more specific than generic dialog paragraphs", () => {
     const note = ruleBody(
       dialogsCss,
