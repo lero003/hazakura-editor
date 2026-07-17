@@ -57,6 +57,9 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
   state why editing is paused and when it resumes; review-bar and applied
   status make “not saved yet” visible without changing accept/discard
   semantics or auto-save behavior.
+- **v1.14 Continuity Reference retained Keep:** the Reference chrome toggle
+  visually and accessibly marks a loaded-but-hidden session so hide ≠ close
+  is obvious without changing session lifetime.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

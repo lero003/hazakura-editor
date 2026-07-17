@@ -257,6 +257,23 @@
   color: var(--text);
 }
 
+/* Reference session is loaded but the column is hidden (Preview / e-book / etc.). */
+.pane-toggle.pane-toggle-retained {
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-muted));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.pane-toggle.pane-toggle-retained::after {
+  background: var(--accent);
+  border-radius: 999px;
+  content: "";
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 5px;
+  margin-left: 1px;
+  width: 5px;
+}
+
 .pane-review-action {
   background: color-mix(in srgb, var(--accent-soft) 34%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);

@@ -97,6 +97,11 @@ another theme instead of finishing the list:
   uses an English key with Japanese localization; the overlay explains that
   editing resumes after generation. The Local Assist review bar shows a
   visible “not saved yet” note; applied status localization repeats it.
+- **Continuity / Reference retained state** — **Keep in source.** When a
+  Reference session is loaded but the column is hidden, the Reference toggle
+  shows a retained visual (accent ring + dot), `data-retained`, and an
+  accessible name that matches the “show again” title. Close still ends the
+  session; hide via other panes still keeps it.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

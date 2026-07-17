@@ -38,27 +38,44 @@ export interface RightPaneToggleCopy {
 
 type PaneToggleProps = {
   active?: boolean;
+  /** Accessible name when it should differ from the visible caption (e.g. retained). */
+  ariaLabel?: string;
   caption: string;
   className?: string;
   disabled?: boolean;
   icon: ReactNode;
   onClick: () => void;
+  /** Loaded-but-hidden affordance (Reference session retained). */
+  retained?: boolean;
   title: string;
 };
 
 function PaneToggle({
   active,
+  ariaLabel,
   caption,
   className,
   disabled,
   icon,
   onClick,
+  retained = false,
   title,
 }: PaneToggleProps) {
+  const classes = [
+    "pane-toggle",
+    active ? "active" : "",
+    retained ? "pane-toggle-retained" : "",
+    className ?? "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <button
+      aria-label={ariaLabel}
       aria-pressed={active}
-      className={`pane-toggle${active ? " active" : ""}${className ? ` ${className}` : ""}`}
+      className={classes}
+      data-retained={retained ? "true" : undefined}
       disabled={disabled}
       onClick={onClick}
       title={title}
@@ -156,9 +173,15 @@ export function RightPaneToggleControls({
         />
         <PaneToggle
           active={referenceActive}
+          ariaLabel={
+            referenceLoaded && !referenceActive
+              ? titles.reference
+              : undefined
+          }
           caption={copy.referenceTab}
           icon={<ReferenceIcon />}
           onClick={onToggleReference}
+          retained={referenceLoaded && !referenceActive}
           title={titles.reference}
         />
         <PaneToggle

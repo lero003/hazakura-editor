@@ -189,14 +189,19 @@ describe("RightPaneToggleControls", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("button", { name: "Reference" }).getAttribute("title"),
-    ).toBe("Show retained Reference");
+    const retained = screen.getByRole("button", {
+      name: "Show retained Reference",
+    });
+    expect(retained.getAttribute("title")).toBe("Show retained Reference");
+    expect(retained.getAttribute("data-retained")).toBe("true");
+    expect(retained.className).toContain("pane-toggle-retained");
+    expect(retained.getAttribute("aria-pressed")).toBe("false");
     unmount();
 
     renderControls({ referenceActive: true, referenceLoaded: true });
-    expect(
-      screen.getByRole("button", { name: "Reference" }).getAttribute("title"),
-    ).toBe("Hide Reference");
+    const active = screen.getByRole("button", { name: "Reference" });
+    expect(active.getAttribute("title")).toBe("Hide Reference");
+    expect(active.getAttribute("data-retained")).toBeNull();
+    expect(active.className).not.toContain("pane-toggle-retained");
   });
 });
