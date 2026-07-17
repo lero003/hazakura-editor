@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
+Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -28,7 +28,7 @@ Local Assistは利用可能なMac上のオンデバイスモデルを使うプ�
 
 ## Mac App Store
 
-Hazakura Editor `1.12.0` is published on the Mac App Store:
+Hazakura Editor `1.13.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -132,7 +132,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): active v1.13+ try-and-error refinement queue
+- [Current Work](docs/current-work.md): active v1.14+ try-and-error refinement queue
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
 - [v1.10 Single-document Structure Design](docs/v1.10-single-document-structure-design.md): completed shared structure, advisory, and bounded edit contract
@@ -143,6 +143,7 @@ For the full implementation inventory and release state, see
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
 - [v1.7 App Store Release Notes](docs/releases/1.7.0-app-store-release-notes.md): published Reference Compare + trust hardening release
 - [v1.12 App Store Release Notes](docs/releases/1.12.0-app-store-release-notes.md): published OKF scaffold + structure / OKF review line
+- [v1.13 App Store Release Notes](docs/releases/1.13.0-app-store-release-notes.md): published interaction clarity + bounded media line
 - [v1.8 App Store Release Notes](docs/releases/1.8.0-app-store-release-notes.md): historical Daily Trust Completion release
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
@@ -233,8 +234,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.13.0` across npm, Tauri, and Cargo metadata (v1.13+ refinement development line). The published App Store version is `1.12.0`. The GitHub source / local-app tag is [v1.12.0](https://github.com/lero003/hazakura-editor/tree/v1.12.0) (no binary assets).
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.12.0`; extended recovery, long-reference, and accessibility smoke continues as follow-up rather than reopening a published store lane by force-pushing tags.
+- Current package/app version is `1.14.0` across npm, Tauri, and Cargo metadata (post-v1.13 refinement development line). The published App Store version is `1.13.0`. The latest recorded GitHub source / local-app tag remains [v1.12.0](https://github.com/lero003/hazakura-editor/tree/v1.12.0) (no binary assets).
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.13.0`; extended recovery, long-reference, accessibility, and media smoke continues as follow-up rather than reopening a published store lane.
 - The latest prepared GitHub source / local-app tag is [v1.12.0](https://github.com/lero003/hazakura-editor/tree/v1.12.0). Release-note evidence: [1.12.0 source tag](docs/releases/1.12.0-source-tag.release.md) and [1.12.0 App Store notes](docs/releases/1.12.0-app-store-release-notes.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).

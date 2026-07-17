@@ -1,21 +1,24 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for published v1.12 and open v1.13+ refinement
+Scope: Short handoff for published v1.13 and open v1.14+ refinement
 Authority: Medium
-Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
+Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 
 ## Current State
 
-- Package/app version in tree is **`1.13.0`** (v1.13+ development line).
+- Package/app version in tree is **`1.14.0`** (post-v1.13 development line).
   GitHub source tag **`v1.12.0`** is published (source archive only; no binary
-  assets). The published Mac App Store version is **`1.12.0`** (App Review
-  passed and release published, user-reported 2026-07-17). Prior store
+  assets). The published Mac App Store version is **`1.13.0`** (App Review
+  passed and release published, user-reported 2026-07-18). Prior store
   baseline **`1.8.0` build `89`** remains historical. Local package provenance
   lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- Selected and published store line is **`1.12.0`**. Do not move published
+- Selected and published store line is **`1.13.0`**. Do not move published
   tags or reopen without a reproduced hotfix. Extended signed TestFlight
   interaction and spoken VoiceOver remain ongoing quality evidence.
+- v1.14 Continuity has one source Keep: duplicate text-tab filenames add the
+  immediate parent folder to visible/accessibility/close labels. Unique names
+  stay unchanged; narrow-window visual truncation remains manual evidence.
 - Build `89` contains the PDF-reference zoom simplification: fit-page was
   removed, 150% now means 1.5 times the fitted pane width, and the zoomed page
   supports native two-axis scrolling plus keyboard panning. Static package
@@ -99,7 +102,7 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
-- Published Mac App Store version is **`1.12.0`**. Raw App Store Connect logs
+- Published Mac App Store version is **`1.13.0`**. Raw App Store Connect logs
   stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
@@ -130,7 +133,7 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.13+ try-and-error refinement:** follow
+1. **v1.14+ try-and-error refinement after published v1.13:** follow
    `docs/v1.13-plus-refinement-roadmap.md`. One hypothesis per run; Keep /
    Iterate / Revert with evidence. Theme A pool:
    `docs/v1.13-interaction-clarity-plan.md`. **Theme A Signal & Silence (1–7)
@@ -158,8 +161,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    fresh local app export produced a visible first-page PDF cover and an EPUB
    resource whose SHA-256 matched the source image. Next: signed TestFlight
    recheck for both exports and pin-to-assets Undo breadth.
-   Do not reopen published `1.12.0` without a hotfix decision.
-2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
+   Theme A and Theme G shipped in `1.13.0`; next bias is Continuity, Writing
+   Loop, Trust edges, Structure / OKF depth, or distribution confidence.
+   Do not reopen published `1.13.0` without a hotfix decision.
+2. **Hotfix gate:** only with a reproduced blocker on shipped `1.13.0` and
    explicit user approval for a patch release.
 3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference

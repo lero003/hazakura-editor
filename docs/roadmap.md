@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
+Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 
 ## Current Position
 
@@ -15,13 +15,13 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.13.0`** (v1.13+ try-and-error refinement
-  development line after published `1.12.0`). Local package provenance lives in
+- Package/app version in tree: **`1.14.0`** (try-and-error refinement
+  development line after published `1.13.0`). Local package provenance lives in
   `docs/internal/app-store-candidates/latest.json`.
-- **Published Mac App Store version: `1.12.0`.** App Review passed and the
-  release was published (user-reported 2026-07-17). Release notes:
-  `docs/releases/1.12.0-app-store-release-notes.md`. GitHub source tag:
-  `v1.12.0`.
+- **Published Mac App Store version: `1.13.0`.** App Review passed and the
+  release was published (user-reported 2026-07-18). Release notes:
+  `docs/releases/1.13.0-app-store-release-notes.md`. The latest recorded
+  GitHub source tag remains `v1.12.0`; no `v1.13.0` source tag is claimed.
 - **v1.8 (`1.8.0`) is closed and published** (historical store baseline before
   `1.12.0`). Release notes: `docs/releases/1.8.0-app-store-release-notes.md`.
 - **v1.7 (`1.7.0`) is closed and published.** App Review passed and the
@@ -68,7 +68,7 @@ Current release state:
   and OS File menu. App Review passed and the release was published
   (user-reported 2026-07-17). Templates and integrity checks share the pin in
   `docs/okf-spec-pin.md`. Contract: `docs/v1.12-okf-scaffold-design.md`.
-- **Post-v1.12 is an active try-and-error refinement era, not a fixed feature train.**
+- **Post-v1.13 remains an active try-and-error refinement era, not a fixed feature train.**
   Theme pools (Signal & Silence, Continuity, Writing Loop, Trust edges,
   **Media boundaries**, Structure/OKF depth, Distribution confidence) supply
   hypotheses. Each run tries one reversible slice, keeps or drops it with
@@ -78,6 +78,10 @@ Current release state:
   `docs/v1.13-interaction-clarity-plan.md`. Image / media consent and export
   materialize: `docs/v1.xx-image-media-boundary-plan.md` (remote default Off;
   Preferences + session approval; no silent source rewrite).
+- **v1.13 is closed / published as `1.13.0`.** The kept Theme A interaction
+  clarity and Theme G media-boundary slices shipped together. Continue with
+  Continuity, Writing Loop, Trust edges, Structure / OKF depth, or distribution
+  confidence; do not reopen v1.13 without a reproduced regression.
 - **Accepted post-v1.7 sequence through scaffold:** `v1.8`–`v1.12` remain the
   trust → clarity → structure → OKF review → starter scaffold bridge. Detail:
   `docs/v1.8-plus-product-review-roadmap.md`. After that bridge, prefer

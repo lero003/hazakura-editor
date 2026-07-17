@@ -78,6 +78,11 @@ function getFileIcon(fileName: string) {
   return <TabTextIcon />;
 }
 
+function getParentFolderName(path: string): string | null {
+  const parts = path.split(/[\\/]+/).filter(Boolean);
+  return parts.length >= 2 ? parts.at(-2) ?? null : null;
+}
+
 export function TabBar({
   activeTabId,
   children,
@@ -103,6 +108,11 @@ export function TabBar({
 }: TabBarProps) {
   const tabButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const showEmptyState = tabs.length === 0 && selectedImage === null;
+  const duplicateTabNames = new Set(
+    tabs
+      .map((tab) => tab.name)
+      .filter((name, index, names) => names.indexOf(name) !== names.lastIndexOf(name)),
+  );
 
   const handleWindowDragMouseDown = (
     event: ReactMouseEvent<HTMLDivElement>,
@@ -199,6 +209,12 @@ export function TabBar({
           <>
             {tabs.map((tab) => {
               const dirty = isDirty(tab);
+              const parentFolder = duplicateTabNames.has(tab.name)
+                ? getParentFolderName(tab.path)
+                : null;
+              const visibleTabLabel = parentFolder
+                ? `${tab.name} — ${parentFolder}`
+                : tab.name;
 
               return (
                 <div
@@ -237,6 +253,7 @@ export function TabBar({
                   }}
                 >
                   <button
+                    aria-label={visibleTabLabel}
                     aria-describedby={dirty ? `tab-dirty-${encodeURIComponent(tab.id)}` : undefined}
                     aria-selected={tab.id === activeTabId}
                     className="tab-button"
@@ -255,7 +272,12 @@ export function TabBar({
                     <span className="tab-file-icon" aria-hidden="true">
                       {getFileIcon(tab.name)}
                     </span>
-                    <span className="tab-name">{tab.name}</span>
+                    <span className="tab-name">
+                      <span>{tab.name}</span>
+                      {parentFolder ? (
+                        <span className="tab-parent"> — {parentFolder}</span>
+                      ) : null}
+                    </span>
                     {dirty ? (
                       <>
                         <span className="tab-dirty-dot" aria-hidden="true" />
@@ -269,7 +291,7 @@ export function TabBar({
                     ) : null}
                   </button>
                   <button
-                    aria-label={closeFileLabel(tab.name)}
+                    aria-label={closeFileLabel(visibleTabLabel)}
                     className="tab-close"
                     data-close-affordance="x"
                     onClick={() => onCloseTab(tab.id)}

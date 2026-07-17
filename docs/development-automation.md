@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-17 (v1.13+ try-and-error after published v1.12)
+Last reviewed: 2026-07-18 (v1.14+ try-and-error after published v1.13)
 
 ## Purpose
 
@@ -17,10 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.13+ try-and-error refinement**, after published Mac App Store
-`1.12.0` (OKF starter scaffold + rolled-forward v1.9–v1.11). Prefer one
+Phase: **v1.14+ try-and-error refinement**, after published Mac App Store
+`1.13.0` (Theme A interaction clarity + Theme G bounded media on the v1.12
+structure baseline). Prefer one
 hypothesis per run with Keep / Iterate / Revert. Do not reopen published
-`1.12.0` without a reproduced hotfix and explicit decision. Direction:
+`1.13.0` without a reproduced hotfix and explicit decision. Direction:
 `docs/v1.13-plus-refinement-roadmap.md`,
 `docs/v1.13-interaction-clarity-plan.md`, and `docs/current-work.md`.
 
@@ -33,10 +34,9 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. The first suggested Theme A experiment from `docs/current-work.md`
-   (Command availability) unless hands-on friction clearly points elsewhere.
-   Revalidate live source before coding; some static UX notes are already
-   covered.
+1. One open hypothesis from Continuity, Writing Loop, Trust edges,
+   Structure / OKF depth, or distribution confidence. Theme A and Theme G
+   shipped in `1.13.0`; reopen them only for a reproduced regression.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

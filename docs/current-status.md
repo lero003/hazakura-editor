@@ -3,25 +3,24 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
+Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`1.13.0`** across npm, Tauri, Cargo,
-  and lockfile metadata (post-publish development line for v1.13+
-  refinement). The GitHub source / local-app tag for the closed scaffold
+- Current package/app version: **`1.14.0`** across npm, Tauri, Cargo,
+  and lockfile metadata (post-v1.13 refinement development line). The latest
+  recorded GitHub source / local-app tag for the closed scaffold
   lane is **`v1.12.0`** (source archive and release notes only; no binary
   assets). See `docs/releases/1.12.0-source-tag.release.md`.
-- **Published Mac App Store version: `1.12.0`.** App Review passed and the
-  release was published (user-reported 2026-07-17). It ships v1.9 Writing
-  Loop Clarity, v1.10 Single-document Structure Foundation, v1.11 OKF Draft
-  Compatibility Preview, and v1.12 OKF Starter Scaffold. Release notes:
-  `docs/releases/1.12.0-app-store-release-notes.md`. Local package provenance
+- **Published Mac App Store version: `1.13.0`.** App Review passed and the
+  release was published (user-reported 2026-07-18). It adds the kept Theme A
+  interaction-clarity and Theme G bounded-media slices to the v1.12 baseline.
+  Release notes: `docs/releases/1.13.0-app-store-release-notes.md`. Local package provenance
   (build counter, pkg path, SHA-256) for candidates lives in ignored
-  `docs/internal/app-store-candidates/latest.json`. Do not reopen `1.12.0`
+  `docs/internal/app-store-candidates/latest.json`. Do not reopen `1.13.0`
   without a reproduced hotfix; published tags remain immutable.
-- **v1.13+ try-and-error refinement is open.** Direction:
+- **v1.14+ try-and-error refinement is open after v1.13 publication.** Direction:
   `docs/v1.13-plus-refinement-roadmap.md`. Theme A pool:
   `docs/v1.13-interaction-clarity-plan.md`. Theme A (Signal & Silence) candidate
   rows 1–7 are **Keep**. Next bias: Continuity / Writing Loop / Trust edges /
@@ -42,7 +41,13 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   Source now makes PDF export images eager + synchronously decoded and routes
   each EPUB image origin through its bounded loader. A fresh local app export
   rendered the leading PDF image and packaged an EPUB image resource with the
-  same SHA-256 as its source; signed TestFlight recheck remains required.
+  same SHA-256 as its source. Theme A and Theme G shipped in `1.13.0`; signed
+  TestFlight recheck and pin-to-assets Undo breadth remain ongoing evidence.
+- **v1.14 Continuity first Keep:** duplicate open text-tab names now show the
+  immediate parent folder in the visible tab name, accessible tab name, and
+  close-action name. Unique filenames remain unchanged and full paths remain
+  available as the tab title. This is presentation-only; tab identity, path,
+  dirty state, selection, save, and close behavior are unchanged.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
@@ -364,9 +369,10 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: **`1.12.0`** (App Review passed and release
-  published, user-reported 2026-07-17). Ships v1.9–v1.12 writing / structure /
-  OKF review / starter scaffold. Prior store baseline `1.8.0` remains historical.
+- Published Mac App Store version: **`1.13.0`** (App Review passed and release
+  published, user-reported 2026-07-18). Ships Theme A interaction clarity and
+  Theme G bounded media on the v1.12 writing / structure / OKF baseline.
+  Prior store baselines remain historical.
 - Latest GitHub source / local-app tag: `v1.12.0` (source archive only; see
   `docs/releases/1.12.0-source-tag.release.md`).
 - Latest local App Store / TestFlight package candidate metadata
@@ -765,8 +771,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: active **v1.13+ try-and-error refinement** queue
-  (v1.12 closed / published). Theme A Signal & Silence (rows 1–7) is Keep.
+- `docs/current-work.md`: active **v1.14+ try-and-error refinement** queue
+  (v1.13 closed / published). Theme A and Theme G shipped in `1.13.0`.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -780,24 +786,24 @@ baseline, and smoke evidence are archived under
 - `docs/v1.11-okf-draft-preview-design.md`: completed v1.11 implementation and verification contract.
 - `docs/v1.12-okf-scaffold-design.md`: closed / published v1.12 implementation
   and verification contract.
-- `docs/v1.13-plus-refinement-roadmap.md`: active post-v1.12 experiment direction.
+- `docs/v1.13-plus-refinement-roadmap.md`: active post-v1.13 experiment direction.
 - `docs/v1.13-interaction-clarity-plan.md`: Theme A candidate pool (Signal & Silence).
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
 
-1. Treat **v1.12 (`1.12.0`) as published and closed** after App Review passed
-   (user-reported 2026-07-17). Do not move its public tag or reopen it without
-   a reproduced hotfix need. Prior baselines (`1.8.0` and earlier) stay closed.
-2. **Continue v1.13+ try-and-error refinement** from `docs/current-work.md`.
-   Theme A Signal & Silence is Keep. Next bias: Continuity, Writing Loop,
-   Trust edges, Media boundaries, or hands-on friction
+1. Treat **v1.13 (`1.13.0`) as published and closed** after App Review passed
+   (user-reported 2026-07-18). Do not reopen it without a reproduced hotfix
+   need. The latest recorded GitHub source tag remains `v1.12.0`.
+2. **Continue v1.14+ try-and-error refinement** from `docs/current-work.md`.
+   Theme A and Theme G shipped in v1.13. Next bias: Continuity, Writing Loop,
+   Trust edges, Structure / OKF depth, or distribution confidence
    (`docs/v1.13-interaction-clarity-plan.md` /
    `docs/v1.13-plus-refinement-roadmap.md`). One hypothesis per run;
    Keep / Iterate / Revert with evidence. Do not batch theme packages.
 3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
    Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and
-   VoiceOver breadth remain quality follow-up, not reasons to reopen `1.12.0`.
+   VoiceOver breadth remain quality follow-up, not reasons to reopen `1.13.0`.
 4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces. Historical notes remain in
    `docs/archive/operations/v1.1-v1.2-followup.md` and
@@ -814,4 +820,4 @@ baseline, and smoke evidence are archived under
    `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
 8. Do not tag, upload, submit, or publish without explicit approval. In-tree
-   version is `1.13.0`; the published Mac App Store version is `1.12.0`.
+   version is `1.14.0`; the published Mac App Store version is `1.13.0`.

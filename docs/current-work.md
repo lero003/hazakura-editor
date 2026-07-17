@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.13+ try-and-error refinement (after published v1.12)
+Scope: v1.14+ try-and-error refinement (after published v1.13)
 Authority: High
-Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
+Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 
 ## Purpose
 
@@ -22,22 +22,23 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.10** | **Source complete / rolled into `1.12.0`** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, one Undo-able heading-level edit. |
 | **v1.11** | **Source complete / rolled into `1.12.0`** | Explicit, bounded, read-only OKF v0.1 Draft compatibility review. Contract: `docs/v1.11-okf-draft-preview-design.md`. |
 | **v1.12** | **Closed / published as `1.12.0`** | OKF starter scaffold (minimal + book-like). GitHub source tag `v1.12.0`. Mac App Store App Review passed and the release was published (user-reported 2026-07-17). Contract: `docs/v1.12-okf-scaffold-design.md`. Release notes: `docs/releases/1.12.0-app-store-release-notes.md`. Do not reopen without a reproduced hotfix. |
-| **v1.13+** | **Active — try-and-error refinement** | One hypothesis per run, keep/drop with evidence. Themes: Signal & Silence, Continuity, Writing Loop, Trust edges, **Media boundaries**, Structure/OKF depth. Plan: `docs/v1.13-plus-refinement-roadmap.md`. Theme A: `docs/v1.13-interaction-clarity-plan.md`. Media: `docs/v1.xx-image-media-boundary-plan.md`. |
+| **v1.13** | **Closed / published as `1.13.0`** | Theme A interaction clarity + Theme G bounded media access/export. App Review passed and the release was published (user-reported 2026-07-18). Release notes: `docs/releases/1.13.0-app-store-release-notes.md`. |
+| **v1.14+** | **Active — try-and-error refinement** | One hypothesis per run, keep/drop with evidence. Next themes: Continuity, Writing Loop, Trust edges, Structure/OKF depth, and distribution confidence. Plan: `docs/v1.13-plus-refinement-roadmap.md`. |
 | **v2** | Later | Full multi-file Book Scope and Hazakura-defined book semantics, then 縦書き. Not started by experiment alone. |
 
-Package/app version in tree is **`1.13.0`** (post-publish development
-line). The published Mac App Store version is **`1.12.0`**. See
+Package/app version in tree is **`1.14.0`** (post-v1.13 development
+line). The published Mac App Store version is **`1.13.0`**. See
 `current-status.md` for lane truth; treat Connect as authoritative for store
 counters.
 
-## Active Queue — v1.13+ Refinement (try-and-error)
+## Active Queue — v1.14+ Refinement (try-and-error)
 
 Direction: `docs/v1.13-plus-refinement-roadmap.md`.
 
 **Operating rule:** 1 run = 1 hypothesis. Observe → revalidate live source →
 slice → try → prove → **Keep / Iterate / Revert**. Do not batch a theme into
 one giant PR. Version numbers are shipping boxes for Keep results, not a fixed
-feature promise. Published tags and the shipped `1.12.0` store lane are
+feature promise. Published tags and the shipped `1.13.0` store lane are
 immutable; hotfix only with a reproduced blocker and explicit decision.
 
 ### Suggested first experiments (bias only)
@@ -80,6 +81,14 @@ another theme instead of finishing the list:
   EPUB-image packaging regressions; both are fixed in source, with fresh local
   app proof for a visible PDF cover and byte-identical packaged EPUB resource.
   Signed TestFlight export recheck and pin-to-assets Undo remain device breadth.
+- **v1.13 closure** — Theme A and Theme G shipped in `1.13.0`; do not reopen
+  them without a reproduced regression. Continue with one hypothesis from
+  Continuity, Writing Loop, Trust edges, Structure / OKF depth, or distribution
+  confidence.
+- **Continuity / same-name tabs** — **Keep in source.** When two open text tabs
+  share a filename, each tab and close action adds its immediate parent folder
+  as a quiet disambiguator. Unique names stay unchanged; full paths remain in
+  the title. Narrow-window visual truncation remains packaged/manual evidence.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

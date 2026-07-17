@@ -181,6 +181,55 @@ describe("AppTopChrome", () => {
     ).toBeTruthy();
   });
 
+  it("shows parent folders only when open text tabs share the same name", () => {
+    const baseTab: EditorTab = {
+      contents: "# Index",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/alpha/index.md",
+      sessionId: "session:alpha-index",
+      large_file_warning: false,
+      lastSavedContents: "# Index",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "index.md",
+      path: "/workspace/alpha/index.md",
+      saveStatus: "idle",
+      size: 7,
+    };
+    const uniqueTab: EditorTab = {
+      ...baseTab,
+      id: "/workspace/notes.md",
+      sessionId: "session:notes",
+      name: "notes.md",
+      path: "/workspace/notes.md",
+    };
+
+    renderTopChrome({
+      activeTabId: baseTab.id,
+      tabs: [
+        baseTab,
+        {
+          ...baseTab,
+          id: "/workspace/beta/index.md",
+          sessionId: "session:beta-index",
+          path: "/workspace/beta/index.md",
+        },
+        uniqueTab,
+      ],
+    });
+
+    expect(screen.getByRole("tab", { name: "index.md — alpha" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "index.md — beta" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "notes.md" })).toBeTruthy();
+    expect(document.querySelectorAll(".tab-parent")).toHaveLength(2);
+  });
+
   it("marks top chrome gaps as Tauri drag regions without making tabs draggable", () => {
     const tab: EditorTab = {
       contents: "draft",

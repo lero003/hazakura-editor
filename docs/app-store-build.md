@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-07-15 (1.8.0 published; v1.11 local candidate ready)
+Last reviewed: 2026-07-18 (1.13.0 published; v1.14+ development open)
 
 ## Purpose
 
@@ -41,11 +41,12 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `1.12.0` (App Review passed and publication was
-  user-reported 2026-07-17; OKF starter scaffold plus v1.9–v1.11 writing /
-  structure / OKF review). See `docs/releases/1.12.0-app-store-release-notes.md`.
-- Current source / Developer version: `1.13.0` (v1.13+ try-and-error refinement
-  after published `1.12.0`). See `docs/current-work.md` and
+- Published App Store version: `1.13.0` (App Review passed and publication was
+  user-reported 2026-07-18; interaction clarity plus bounded image consent /
+  export on top of the v1.12 structure baseline). See
+  `docs/releases/1.13.0-app-store-release-notes.md`.
+- Current source / Developer version: `1.14.0` (try-and-error refinement
+  after published `1.13.0`). See `docs/current-work.md` and
   `docs/v1.13-plus-refinement-roadmap.md`.
 - Latest local App Store package candidate metadata (version, build
   counter, pkg path, SHA-256, generated time, source commit): see

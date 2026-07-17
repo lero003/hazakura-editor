@@ -483,3 +483,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.tab-parent {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-weight: 400;
+}

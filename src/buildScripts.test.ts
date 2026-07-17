@@ -628,37 +628,37 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `1.12.0` is published",
-        "Current package/app version is `1.13.0`",
-        "The published App Store version is `1.12.0`",
+        "Hazakura Editor `1.13.0` is published",
+        "Current package/app version is `1.14.0`",
+        "The published App Store version is `1.13.0`",
         "The latest prepared GitHub source / local-app tag is [v1.12.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `1.12.0`",
-        "Current source / Developer version: `1.13.0`",
+        "Published App Store version: `1.13.0`",
+        "Current source / Developer version: `1.14.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`1.13.0`",
-        "Published Mac App Store version: **`1.12.0`",
+        "Current package/app version: **`1.14.0`",
+        "Published Mac App Store version: **`1.13.0`",
         "Latest GitHub source / local-app tag: `v1.12.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v1.13+ try-and-error refinement (after published v1.12)",
-        "Active Queue — v1.13+ Refinement (try-and-error)",
+        "Scope: v1.14+ try-and-error refinement (after published v1.13)",
+        "Active Queue — v1.14+ Refinement (try-and-error)",
       ],
       "docs/development-automation.md": [
-        "Phase: **v1.13+ try-and-error refinement**",
+        "Phase: **v1.14+ try-and-error refinement**",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree is **`1.13.0`",
-        "published Mac App Store version is **`1.12.0`",
+        "Package/app version in tree is **`1.14.0`",
+        "published Mac App Store version is **`1.13.0`",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/roadmap.md": [
-        "Package/app version in tree: **`1.13.0`",
-        "Published Mac App Store version: `1.12.0`",
+        "Package/app version in tree: **`1.14.0`",
+        "Published Mac App Store version: `1.13.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
       ],

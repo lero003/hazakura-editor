@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-17
+Last reviewed: 2026-07-18
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,6 +25,11 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- **`1.13.0` is approved and published** on the Mac App Store (user-reported
+  2026-07-18): interaction clarity plus bounded local/remote image consent,
+  export materialization, and explicit pin-to-assets. See
+  `1.13.0-app-store-release-notes.md`. No GitHub `v1.13.0` source tag is
+  recorded here.
 - **`1.12.0` is approved and published** on the Mac App Store (user-reported
   2026-07-17): OKF starter scaffold plus rolled-forward v1.9 writing loop,
   v1.10 structure foundation, and v1.11 OKF review. See
@@ -65,9 +70,11 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `1.13.0-app-store-release-notes.md` is the **published** v1.13 App Store
+  copy (user-reported 2026-07-18). Next refinement work uses package
+  `1.14.0+`.
 - `1.12.0-app-store-release-notes.md` is the **published** v1.12 App Store
-  copy (user-reported 2026-07-17). Next refinement work uses package
-  `1.13.0+` and is not yet a store candidate.
+  copy (user-reported 2026-07-17), retained as prior release history.
 - `1.11.0-app-store-release-notes.md` is retained as the prior OKF review
   candidate copy rolled into `1.12.0`.
 - `1.10.0-app-store-release-notes.md` is retained as held TestFlight candidate
@@ -86,6 +93,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
+- `1.13.0-app-store-release-notes.md` (published Mac App Store `1.13.0`)
 - `1.12.0-app-store-release-notes.md` (published Mac App Store `1.12.0`)
 - `1.12.0-source-tag.release.md` (GitHub source / local-app tag body)
 - `1.11.0-app-store-release-notes.md` (prior OKF review candidate; rolled into 1.12)
