@@ -8,8 +8,9 @@ import type { AppleAssistGenerationLock } from "../../types";
  * the same logical document is locked). Callers must not invent a third
  * ad-hoc check.
  */
+/** English status key; Japanese/kana via `localizeStatusMessage`. */
 export const APPLE_ASSIST_TAB_LOCKED_STATUS_MESSAGE =
-  "生成中のため、この文書の編集を一時停止しています";
+  "Hazakura Local Assist is generating; editing is paused on this document";
 
 export type TabIdentity = {
   id?: string | null;

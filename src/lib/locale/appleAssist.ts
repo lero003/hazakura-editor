@@ -32,7 +32,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
       commandCategory: "はざくら ろーかる あしす と",
       generationInProgressTitle: "はざくら ろーかる あしす とが せいせいちゅうです",
       generationInProgressMessage:
-        "ほんぶんは みえますが、へんしゅうは いちじ ていししています。",
+        "せいせいが おわると へんしゅう できます。ほんぶんは みえますが、いまは かきかえ できません。",
       summarizeLabel: "せんたくはんいを ようやく",
       summarizeHint:
         "あっぷる の この Mac の きのうで えらんだ ぶんしょうを ようやく します。さぶんを みてから つかいます。",
@@ -54,7 +54,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
         commandCategory: "Hazakura Local Assist",
         generationInProgressTitle: "Hazakura Local Assist が生成中です",
         generationInProgressMessage:
-          "本文は表示できますが、編集は一時停止しています。",
+          "生成が終わると編集できます。本文は見えますが、いまは書き込めません。",
         summarizeLabel: "選択範囲を要約",
         summarizeHint:
           "Apple のオンデバイス機能で、選択した文章を要約します。差分を確認してから明示的に適用してください。",
@@ -74,7 +74,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
         commandCategory: "Hazakura Local Assist",
         generationInProgressTitle: "Hazakura Local Assist is generating",
         generationInProgressMessage:
-          "The document remains visible, but editing is paused.",
+          "Editing resumes when generation finishes. The document stays visible, but you cannot type yet.",
         summarizeLabel: "Summarize selection",
         summarizeHint:
           "Generate a summary of the selected text using Apple's on-device model. Output is never auto-applied; review the diff before applying it explicitly.",

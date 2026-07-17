@@ -105,6 +105,10 @@ export function AppleAssistReviewBar({
             {" — "}
             {latest.request} ({latest.target.kind})
           </span>
+          <span className="apple-assist-review-bar-unsaved">
+            {" · "}
+            {copy.appleAssistReviewBarUnsavedNote}
+          </span>
         </span>
         {summary ? (
           <span

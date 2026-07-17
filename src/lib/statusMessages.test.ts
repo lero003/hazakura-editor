@@ -184,6 +184,30 @@ describe("localizeStatusMessage: EPUB export polish", () => {
   });
 });
 
+describe("localizeStatusMessage: Local Assist lock and apply", () => {
+  it("localizes the generation lock status for Japanese", () => {
+    expect(
+      localizeStatusMessage(
+        "Hazakura Local Assist is generating; editing is paused on this document",
+        "ja",
+      ),
+    ).toBe(
+      "Hazakura Local Assist が生成中のため、この文書の編集を一時停止しています",
+    );
+  });
+
+  it("localizes applied status with an unsaved note", () => {
+    expect(
+      localizeStatusMessage(
+        "Hazakura Local Assist applied: Rewrite (selection)",
+        "ja",
+      ),
+    ).toBe(
+      "Hazakura Local Assist を反映しました（まだ保存されていません）: Rewrite (selection)",
+    );
+  });
+});
+
 describe("localizeStatusMessage: export destination clarity", () => {
   it("localizes successful PDF export with destination path", () => {
     expect(

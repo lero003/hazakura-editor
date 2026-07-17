@@ -6,14 +6,17 @@ describe("getReviewCopy", () => {
     expect(getReviewCopy("en")).toMatchObject({
       appleAssistReviewBarAcceptLabel: "Accept",
       appleAssistReviewBarDiscardLabel: "Discard",
+      appleAssistReviewBarUnsavedNote: "Not saved yet",
     });
     expect(getReviewCopy("ja")).toMatchObject({
       appleAssistReviewBarAcceptLabel: "採用",
       appleAssistReviewBarDiscardLabel: "破棄",
+      appleAssistReviewBarUnsavedNote: "まだ保存されていません",
     });
     expect(getReviewCopy("kana")).toMatchObject({
       appleAssistReviewBarAcceptLabel: "さいよう",
       appleAssistReviewBarDiscardLabel: "はき",
+      appleAssistReviewBarUnsavedNote: "まだ ほぞん されていません",
     });
   });
 

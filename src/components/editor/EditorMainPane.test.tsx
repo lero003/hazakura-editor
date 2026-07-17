@@ -247,7 +247,7 @@ describe("EditorMainPane", () => {
 
     expect(status.textContent).toContain("Hazakura Local Assist が生成中です");
     expect(status.textContent).toContain(
-      "本文は表示できますが、編集は一時停止しています。",
+      "生成が終わると編集できます。本文は見えますが、いまは書き込めません。",
     );
   });
 
@@ -263,7 +263,7 @@ describe("EditorMainPane", () => {
     });
 
     expect(screen.getByRole("status").textContent).toContain(
-      "Hazakura Local Assist is generatingThe document remains visible, but editing is paused.",
+      "Hazakura Local Assist is generatingEditing resumes when generation finishes. The document stays visible, but you cannot type yet.",
     );
   });
 

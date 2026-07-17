@@ -19,6 +19,8 @@ export type ReviewCopy = {
   appleAssistReviewBarAcceptTitle: string;
   appleAssistReviewBarDiscardLabel: string;
   appleAssistReviewBarDiscardTitle: string;
+  /** Visible short note that Accept keeps the buffer dirty / unsaved. */
+  appleAssistReviewBarUnsavedNote: string;
   appleAssistReviewBarEmptyDiffLabel: string;
   // ai-edit-vs-buffer column labels (moved from AppleAssistReviewBar locals).
   appleAssistReviewBarBeforeLabel: string;
@@ -153,6 +155,7 @@ export function getReviewCopy(lang: MenuLanguage): ReviewCopy {
         "へんこうを のこして れびゅーを おえます。ほぞんは まだ おこないません",
       appleAssistReviewBarDiscardLabel: "はき",
       appleAssistReviewBarDiscardTitle: "へんこうを もとに もどして はきします",
+      appleAssistReviewBarUnsavedNote: "まだ ほぞん されていません",
       appleAssistReviewBarEmptyDiffLabel: "さぶんが ありません",
       appleAssistReviewBarBeforeLabel: "もとの ぶん",
       appleAssistReviewBarAfterLabel: "へんこうご",
@@ -182,6 +185,7 @@ export function getReviewCopy(lang: MenuLanguage): ReviewCopy {
           "変更を残してレビューを終了します。保存はまだ行われません",
         appleAssistReviewBarDiscardLabel: "破棄",
         appleAssistReviewBarDiscardTitle: "変更を元に戻して破棄します",
+        appleAssistReviewBarUnsavedNote: "まだ保存されていません",
         appleAssistReviewBarEmptyDiffLabel: "差分がありません",
         appleAssistReviewBarBeforeLabel: "変更前",
         appleAssistReviewBarAfterLabel: "変更後",
@@ -208,6 +212,7 @@ export function getReviewCopy(lang: MenuLanguage): ReviewCopy {
           "Keep the edit and finish review. The document is not saved yet",
         appleAssistReviewBarDiscardLabel: "Discard",
         appleAssistReviewBarDiscardTitle: "Revert the buffer and clear the review",
+        appleAssistReviewBarUnsavedNote: "Not saved yet",
         appleAssistReviewBarEmptyDiffLabel: "No diff to show",
         appleAssistReviewBarBeforeLabel: "Before",
         appleAssistReviewBarAfterLabel: "After",

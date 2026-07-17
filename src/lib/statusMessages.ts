@@ -46,6 +46,10 @@ export function localizeStatusMessage(
     "Agent terminal resize failed": "Agent ターミナルのリサイズに失敗しました",
     "Hazakura Local Assist discard failed": "Hazakura Local Assist の破棄に失敗しました",
     "Hazakura Local Assist edit discarded": "Hazakura Local Assist の編集を破棄しました",
+    "Hazakura Local Assist is generating; editing is paused on this document":
+      "Hazakura Local Assist が生成中のため、この文書の編集を一時停止しています",
+    "Hazakura Local Assist is generating a change...":
+      "Hazakura Local Assist が変更案を生成しています…",
     "Backup applied — save to keep changes":
       "バックアップを適用しました。変更を保存して保持してください",
     "Backup apply failed": "バックアップの適用に失敗しました",
@@ -403,6 +407,12 @@ export function localizeStatusMessage(
     if (pdfWarningOnly) {
       return `PDFを書き出しました（画像警告 ${pdfWarningOnly[1]} 件）`;
     }
+  }
+
+  if (message.startsWith("Hazakura Local Assist applied: ")) {
+    return `Hazakura Local Assist を反映しました（まだ保存されていません）: ${message.slice(
+      "Hazakura Local Assist applied: ".length,
+    )}`;
   }
 
   if (message.startsWith("Image saved: ")) {

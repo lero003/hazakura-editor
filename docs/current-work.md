@@ -93,6 +93,10 @@ another theme instead of finishing the list:
   export status includes the destination path (and image-warning count when
   needed) and no longer auto-clears after 2s. HTML export reports image
   warnings the same way EPUB already did. Localized ja copy keeps the path.
+- **Trust / Assist lock wording** — **Keep in source.** Generation lock status
+  uses an English key with Japanese localization; the overlay explains that
+  editing resumes after generation. The Local Assist review bar shows a
+  visible “not saved yet” note; applied status localization repeats it.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

@@ -10,7 +10,7 @@ describe("getAppleAssistCopy", () => {
       "Hazakura Local Assist is generating",
     );
     expect(copy.generationInProgressMessage).toBe(
-      "The document remains visible, but editing is paused.",
+      "Editing resumes when generation finishes. The document stays visible, but you cannot type yet.",
     );
     expect(copy.summarizeLabel).toBe("Summarize selection");
     expect(copy.rephraseLabel).toBe("Rephrase selection");
@@ -24,7 +24,7 @@ describe("getAppleAssistCopy", () => {
       "Hazakura Local Assist が生成中です",
     );
     expect(copy.generationInProgressMessage).toBe(
-      "本文は表示できますが、編集は一時停止しています。",
+      "生成が終わると編集できます。本文は見えますが、いまは書き込めません。",
     );
     expect(copy.summarizeLabel).toBe("選択範囲を要約");
     expect(copy.rephraseLabel).toBe("選択範囲を言い換え");

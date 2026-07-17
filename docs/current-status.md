@@ -53,6 +53,10 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
   auto-clears after two seconds. HTML export success can also surface image
   warnings with the destination, matching EPUB. Status copy stays English-key
   based with Japanese localization that preserves the path.
+- **v1.14 Trust Assist lock wording Keep:** generation-lock status and overlay
+  state why editing is paused and when it resumes; review-bar and applied
+  status make “not saved yet” visible without changing accept/discard
+  semantics or auto-save behavior.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

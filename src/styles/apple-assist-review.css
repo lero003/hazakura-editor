@@ -71,6 +71,11 @@
   margin-left: 2px;
 }
 
+.apple-assist-review-bar-unsaved {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 .apple-assist-review-bar-counts {
   display: inline-flex;
   align-items: center;
