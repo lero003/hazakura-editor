@@ -121,6 +121,11 @@ another theme instead of finishing the list:
 - **Structure / OKF first-fix guidance** — **Keep in source.** When required
   findings exist, the review panel shows a “まずここを直す” card for the first
   required finding with open-to-edit only (no auto-repair).
+- **Outline advice / Undo** — **Keep in source.** Structure advisories read as
+  hints (not errors); heading level promote/demote sets a status with Cmd+Z
+  Undo guidance.
+- **Import Assist draft status** — **Keep in source.** Success status stresses
+  unsaved draft / edit-before-save and that nothing is written to disk yet.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

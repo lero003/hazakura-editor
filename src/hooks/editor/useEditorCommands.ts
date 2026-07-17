@@ -114,8 +114,19 @@ export function useEditorCommands({
     (
       heading: MarkdownStructureHeading,
       direction: HeadingLevelChangeDirection,
-    ) => editorPaneRef.current?.changeHeadingLevel(heading, direction) ?? false,
-    [editorPaneRef],
+    ) => {
+      const ok =
+        editorPaneRef.current?.changeHeadingLevel(heading, direction) ?? false;
+      if (ok) {
+        setStatus(
+          direction === "promote"
+            ? "Heading level raised — Undo (Cmd+Z) to reverse"
+            : "Heading level lowered — Undo (Cmd+Z) to reverse",
+        );
+      }
+      return ok;
+    },
+    [editorPaneRef, setStatus],
   );
 
   const convertActiveLineEnding = useCallback(

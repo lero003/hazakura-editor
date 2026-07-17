@@ -72,6 +72,10 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
   New-menu titles summarize starter file lists before create.
 - **v1.14 OKF first-fix Keep:** review panel surfaces one required finding as
   the next explicit open-and-edit step without auto-repair.
+- **v1.14 Outline advice / Undo Keep:** structure advisories are labeled as
+  hints; heading-level edits announce Undo (Cmd+Z) in status.
+- **v1.14 Import Assist draft status Keep:** import success copy emphasizes
+  unsaved draft and no disk write until the user saves.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

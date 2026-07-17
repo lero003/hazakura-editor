@@ -120,6 +120,10 @@ export function localizeStatusMessage(
     "Import failed": "取り込みに失敗しました",
     "Imported text draft": "テキスト抽出の下書きを開きました",
     "Imported OCR draft": "OCR 下書きを開きました",
+    "Heading level raised — Undo (Cmd+Z) to reverse":
+      "見出しレベルを上げました。元に戻すには Cmd+Z",
+    "Heading level lowered — Undo (Cmd+Z) to reverse":
+      "見出しレベルを下げました。元に戻すには Cmd+Z",
     "Image preview closed": "画像プレビューを閉じました",
     "Image preview failed": "画像プレビューに失敗しました",
     "Image preview opened": "画像プレビューを開きました",
@@ -432,13 +436,13 @@ export function localizeStatusMessage(
   if (message.startsWith("Imported text draft (")) {
     return `テキスト抽出の下書きを開きました（${formatImportedDraftTail(
       message.slice("Imported text draft (".length),
-    )}`;
+    )}。保存するまでディスクには書きません`;
   }
 
   if (message.startsWith("Imported OCR draft (")) {
     return `OCR 下書きを開きました（${formatImportedDraftTail(
       message.slice("Imported OCR draft (".length),
-    )}`;
+    )}。保存するまでディスクには書きません`;
   }
 
   if (message.startsWith("Failed to import image: ")) {
@@ -477,7 +481,8 @@ function localizeWorkspaceRestoreDetail(detail: string): string {
 
 /** Tail after `Imported … draft (` — e.g. `2 pages, unsaved)` or `1 page)`. */
 function formatImportedDraftTail(tail: string): string {
-  const match = tail.match(/^(\d+)\s+pages?(?:,\s*unsaved)?\)$/);
+  // Accept "2 pages, unsaved)", "1 page, unsaved — …)", or plain "2 pages)".
+  const match = tail.match(/^(\d+)\s+pages?(?:,\s*unsaved[^)]*)?\)$/);
   if (!match) {
     return tail;
   }

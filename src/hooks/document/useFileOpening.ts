@@ -384,8 +384,8 @@ export function useFileOpening({
           result.pageCount === 1 ? "1 page" : `${result.pageCount} pages`;
         setStatus(
           result.usedOcr
-            ? `Imported OCR draft (${pageLabel}, unsaved)`
-            : `Imported text draft (${pageLabel}, unsaved)`,
+            ? `Imported OCR draft (${pageLabel}, unsaved — edit before save)`
+            : `Imported text draft (${pageLabel}, unsaved — edit before save)`,
         );
       } catch (err) {
         setGlobalError(String(err));

@@ -106,9 +106,11 @@ describe("OutlinePane", () => {
       />,
     );
 
-    expect(screen.getByText("構造の提案 1件")).toBeTruthy();
     expect(
-      screen.getByText("見出しレベルが 1 から 3 へ飛んでいます"),
+      screen.getByText("構造のヒント 1件（エラーではありません）"),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("ヒント: 見出しレベルが 1 から 3 へ飛んでいます"),
     ).toBeTruthy();
     expect(screen.getByRole("button", { name: "2: Scene" })).toBeTruthy();
   });

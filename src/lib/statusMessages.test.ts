@@ -184,6 +184,34 @@ describe("localizeStatusMessage: EPUB export polish", () => {
   });
 });
 
+describe("localizeStatusMessage: outline heading level and import draft", () => {
+  it("localizes heading level change with an Undo hint", () => {
+    expect(
+      localizeStatusMessage(
+        "Heading level raised — Undo (Cmd+Z) to reverse",
+        "ja",
+      ),
+    ).toBe("見出しレベルを上げました。元に戻すには Cmd+Z");
+    expect(
+      localizeStatusMessage(
+        "Heading level lowered — Undo (Cmd+Z) to reverse",
+        "ja",
+      ),
+    ).toBe("見出しレベルを下げました。元に戻すには Cmd+Z");
+  });
+
+  it("localizes import draft success with unsaved-before-save wording", () => {
+    expect(
+      localizeStatusMessage(
+        "Imported OCR draft (1 page, unsaved — edit before save)",
+        "ja",
+      ),
+    ).toBe(
+      "OCR 下書きを開きました（1ページ・未保存）。保存するまでディスクには書きません",
+    );
+  });
+});
+
 describe("localizeStatusMessage: Local Assist lock and apply", () => {
   it("localizes the generation lock status for Japanese", () => {
     expect(

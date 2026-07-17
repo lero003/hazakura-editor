@@ -2000,9 +2000,10 @@
 }
 
 .outline-advisory-summary {
-  color: var(--accent);
+  color: var(--text-muted);
   display: block;
   font-size: 10px;
+  font-weight: 500;
   margin-top: 4px;
   text-transform: none;
 }
@@ -2072,10 +2073,12 @@
 }
 
 .outline-advisory {
+  border-left: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.45;
-  padding: 2px 10px 5px 56px;
+  margin: 0 10px 4px 52px;
+  padding: 2px 8px 4px 8px;
 }
 
 .outline-item:hover,
