@@ -801,6 +801,9 @@ export function AppWorkspace({
             onCloseCompareView={closeCompareView}
             ebookLocation={initialEbookLocation}
             onEbookLocationChange={handleSidePaneEbookLocationChange}
+            onEditEbookLocation={(location) =>
+              moveEditorToEbookLocation(location, { focus: true })
+            }
             onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}

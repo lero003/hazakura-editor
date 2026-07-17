@@ -79,6 +79,8 @@ type EBookPaneProps = {
   onApproveLocalImageParent?: (resolvedPath: string) => void;
   onEnterReadingFocus?: (location: EBookReaderLocation) => void;
   onExitReadingFocus?: (location: EBookReaderLocation) => void;
+  /** Side-pane: focus the editor at the current chapter/page location. */
+  onEditCurrentLocation?: (location: EBookReaderLocation) => void;
   onLocationChange?: (location: EBookReaderLocation) => void;
   onOpenLocalLink?: (href: string) => void;
   readingFocusActive?: boolean;
@@ -104,6 +106,9 @@ type EBookReaderCopy = {
   closeTableOfContents: string;
   enterReadingFocus: string;
   exitReadingFocus: string;
+  /** Always-visible control: jump/focus editor at the current reader place. */
+  editCurrentLocation: string;
+  editCurrentLocationTitle: string;
   footerChapter: string;
   footerPageProgress: string;
   frontMatter: string;
@@ -128,6 +133,7 @@ export default function EBookPane({
   onApproveLocalImageParent,
   onEnterReadingFocus,
   onExitReadingFocus,
+  onEditCurrentLocation,
   onLocationChange,
   onOpenLocalLink,
   readingFocusActive = false,
@@ -1073,6 +1079,27 @@ export default function EBookPane({
           <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
             {copy.pageProgress} {activePageIndexSafe + 1} / {measuredPageCount}
           </div>
+          {/* Always-visible: e-book → editor discovery (not hover-only). */}
+          {readingFocusActive && onExitReadingFocus ? (
+            <button
+              className="ebook-reader-button ebook-reader-edit-here"
+              onClick={() => onExitReadingFocus(activeReaderLocation)}
+              title={copy.editCurrentLocationTitle}
+              type="button"
+            >
+              {copy.exitReadingFocus}
+            </button>
+          ) : null}
+          {!readingFocusActive && onEditCurrentLocation ? (
+            <button
+              className="ebook-reader-button ebook-reader-edit-here"
+              onClick={() => onEditCurrentLocation(activeReaderLocation)}
+              title={copy.editCurrentLocationTitle}
+              type="button"
+            >
+              {copy.editCurrentLocation}
+            </button>
+          ) : null}
         </div>
         {/* 進捗テキストの下の操作帯。e-book エリアにホバー（または子の
             キーボードフォーカス）でふわっと出る。前/次/目次/集中をまとめる。 */}
@@ -1100,15 +1127,11 @@ export default function EBookPane({
               {copy.tableOfContents}
             </button>
           ) : null}
-          {focusAction ? (
+          {focusAction && !readingFocusActive ? (
             <button
               className="ebook-reader-button ebook-reader-floating-action"
               onClick={() => {
-                if (readingFocusActive) {
-                  onExitReadingFocus?.(activeReaderLocation);
-                } else {
-                  onEnterReadingFocus?.(activeReaderLocation);
-                }
+                onEnterReadingFocus?.(activeReaderLocation);
               }}
               type="button"
             >
@@ -1545,7 +1568,10 @@ function getEBookReaderCopy(
       chapterProgress: "章",
       closeTableOfContents: "もくじを閉じる",
       enterReadingFocus: "よむことに集中",
-      exitReadingFocus: "編集にもどる",
+      exitReadingFocus: "このいちを へんしゅう",
+      editCurrentLocation: "このいちを へんしゅう",
+      editCurrentLocationTitle:
+        "いまの ページに 対応する いちへ エディタを うごかして フォーカスします",
       footerChapter: "章",
       footerPageProgress: "章内ページ",
       frontMatter: "前付",
@@ -1563,7 +1589,10 @@ function getEBookReaderCopy(
       chapterProgress: "章",
       closeTableOfContents: "目次を閉じる",
       enterReadingFocus: "集中して読む",
-      exitReadingFocus: "編集に戻る",
+      exitReadingFocus: "この位置を編集",
+      editCurrentLocation: "この位置を編集",
+      editCurrentLocationTitle:
+        "いまのページに対応する位置へエディタを動かしてフォーカスします",
       footerChapter: "章",
       footerPageProgress: "章内ページ",
       frontMatter: "前付",
@@ -1580,7 +1609,10 @@ function getEBookReaderCopy(
     chapterProgress: "Chapter",
     closeTableOfContents: "Close contents",
     enterReadingFocus: "Focus reading",
-    exitReadingFocus: "Back to editor",
+    exitReadingFocus: "Edit this place",
+    editCurrentLocation: "Edit this place",
+    editCurrentLocationTitle:
+      "Move the editor caret to this page’s source and focus the editor",
     footerChapter: "Chapter",
     footerPageProgress: "Chapter page",
     frontMatter: "Front matter",

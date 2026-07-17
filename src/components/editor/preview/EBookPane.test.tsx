@@ -189,7 +189,7 @@ describe("EBookPane chapter reader", () => {
         "章: Chapter One",
       );
 
-      fireEvent.click(screen.getByRole("button", { name: "編集に戻る" }));
+      fireEvent.click(screen.getByRole("button", { name: "この位置を編集" }));
 
       expect(onExitReadingFocus).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -252,15 +252,42 @@ describe("EBookPane chapter reader", () => {
     const article = screen.getByRole("article", { name: "本のように読む" });
     expect(article.classList.contains("ebook-pane-focus")).toBe(true);
 
-    const exitButton = screen.getByRole("button", { name: "編集に戻る" });
+    const exitButton = screen.getByRole("button", { name: "この位置を編集" });
     fireEvent.click(exitButton);
 
     expect(onExitReadingFocus).toHaveBeenCalledTimes(1);
-    expect(exitButton.classList.contains("ebook-reader-floating-action")).toBe(
-      true,
-    );
-    expect(exitButton.closest(".ebook-reader-toolbar")).not.toBeNull();
+    // Always visible in status chrome (not hover-only toolbar).
+    expect(exitButton.classList.contains("ebook-reader-edit-here")).toBe(true);
+    expect(exitButton.closest(".ebook-reader-status")).not.toBeNull();
     expect(exitButton.closest(".ebook-reader-chrome")).not.toBeNull();
+  });
+
+  it("exposes an always-visible edit-this-place control in the side pane", async () => {
+    const onEditCurrentLocation = vi.fn();
+    vi.mocked(measureEBookPageCount).mockReturnValue(2);
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        onEditCurrentLocation={onEditCurrentLocation}
+        onEnterReadingFocus={vi.fn()}
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 1 / 2")).toBeTruthy();
+    });
+
+    const editButton = screen.getByRole("button", { name: "この位置を編集" });
+    expect(editButton.closest(".ebook-reader-status")).not.toBeNull();
+    fireEvent.click(editButton);
+    expect(onEditCurrentLocation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chapterIndex: 0,
+        pageIndex: 0,
+      }),
+    );
   });
 
   it("shows a Reading Focus table of contents drawer and jumps to a chapter", async () => {

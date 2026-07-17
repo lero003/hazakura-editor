@@ -61,6 +61,7 @@ type SidePaneProps = {
   onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
   onEbookLocationChange: (location: EBookReaderLocation) => void;
   onOpenEbookReadingFocus: (location: EBookReaderLocation) => void;
+  onEditEbookLocation?: (location: EBookReaderLocation) => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
   onPreviewViewStateChange: (state: PreviewViewState) => void;
@@ -101,6 +102,7 @@ export function SidePane({
   onApplyBackup,
   onCloseCompareView,
   onEbookLocationChange,
+  onEditEbookLocation,
   onOpenEbookReadingFocus,
   onOpenPreviewLocalLink,
   onPreviewScroll,
@@ -246,6 +248,7 @@ export function SidePane({
               mediaAccess={mediaAccess}
               menuLanguage={menuLanguage}
               onApproveLocalImageParent={onApproveLocalImageParent}
+              onEditCurrentLocation={onEditEbookLocation}
               onEnterReadingFocus={onOpenEbookReadingFocus}
               onLocationChange={onEbookLocationChange}
               onOpenLocalLink={onOpenPreviewLocalLink}

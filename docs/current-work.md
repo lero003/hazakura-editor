@@ -109,6 +109,9 @@ another theme instead of finishing the list:
 - **Writing Loop / Preview vs e-book** — **Keep in source.** Toggle titles,
   empty states, and a short purpose note contrast continuous-scroll Preview
   with paged e-book reading. No shell rewrite.
+- **Writing Loop / e-book → edit** — **Keep in source.** Always-visible
+  “この位置を編集 / Edit this place” in the e-book status chrome focuses the
+  editor at the current reader location (side pane and Reading Focus exit).
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 
