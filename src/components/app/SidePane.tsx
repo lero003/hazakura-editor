@@ -204,6 +204,15 @@ export function SidePane({
   const header = resolveSidePaneHeader(sidePaneMode, copy, {
     outlinePurpose,
   });
+  const handleHeaderClose = () => {
+    // Diff result close clears compare state; then hide the column.
+    if (sidePaneMode === "compare" && compareView && rightPaneCompareCase) {
+      onCloseCompareView({
+        returnToEditor: rightPaneCompareCase.kind === "changes",
+      });
+    }
+    onHideSidePane?.();
+  };
 
   return (
     <div
@@ -216,8 +225,9 @@ export function SidePane({
         mode={header.mode}
         title={header.title}
         purpose={header.purpose}
+        purposeTitle={header.purposeTitle}
         closeLabel={header.closeLabel}
-        onClose={onHideSidePane}
+        onClose={onHideSidePane ? handleHeaderClose : undefined}
       />
       {sidePaneMode === "compare" && compareView && rightPaneCompareCase ? (
         <DiffPane

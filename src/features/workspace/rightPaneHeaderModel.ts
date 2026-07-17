@@ -17,6 +17,8 @@ export type RightPaneHeaderCopy = {
   referenceTab: string;
   previewPurposeHint: string;
   ebookPurposeHint: string;
+  /** Short Diff orientation (header only; longer titles stay on toggles). */
+  diffTabTitle: string;
   closeRightPane: string;
   /** Outline-only optional summary line (e.g. structure hints count). */
   outlinePurposeFallback: string;
@@ -26,6 +28,8 @@ export type RightPaneHeaderContent = {
   mode: RightPaneMode | "reference";
   title: string;
   purpose: string | null;
+  /** Optional fuller text for the purpose hover / title attribute. */
+  purposeTitle: string | null;
   closeLabel: string;
 };
 
@@ -43,6 +47,7 @@ export function resolveSidePaneHeader(
         mode,
         title: copy.previewTab,
         purpose: copy.previewPurposeHint,
+        purposeTitle: null,
         closeLabel,
       };
     case "ebook":
@@ -50,6 +55,7 @@ export function resolveSidePaneHeader(
         mode,
         title: copy.ebookTab,
         purpose: copy.ebookPurposeHint,
+        purposeTitle: null,
         closeLabel,
       };
     case "outline":
@@ -57,13 +63,15 @@ export function resolveSidePaneHeader(
         mode,
         title: copy.outlineTab,
         purpose: options?.outlinePurpose?.trim() || copy.outlinePurposeFallback,
+        purposeTitle: null,
         closeLabel,
       };
     case "compare":
       return {
         mode,
         title: copy.diffTab,
-        purpose: null,
+        purpose: copy.diffTabTitle,
+        purposeTitle: null,
         closeLabel,
       };
   }
@@ -72,13 +80,16 @@ export function resolveSidePaneHeader(
 export function resolveReferencePaneHeader(options: {
   title: string;
   fileName: string;
+  filePath: string;
   readOnlyLabel: string;
   closeLabel: string;
 }): RightPaneHeaderContent {
   return {
     mode: "reference",
     title: options.title,
-    purpose: `${options.readOnlyLabel} · ${options.fileName}`,
+    // Filename first so the path-bearing identity is what you scan for.
+    purpose: `${options.fileName} · ${options.readOnlyLabel}`,
+    purposeTitle: options.filePath,
     closeLabel: options.closeLabel,
   };
 }

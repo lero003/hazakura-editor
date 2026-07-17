@@ -74,6 +74,7 @@ export function ReferenceTextPane({
   const header = resolveReferencePaneHeader({
     title: copy.referenceLabel,
     fileName: name,
+    filePath: reference.path,
     readOnlyLabel: copy.readOnly,
     closeLabel: copy.closeReference,
   });
@@ -91,6 +92,7 @@ export function ReferenceTextPane({
         mode={header.mode}
         title={header.title}
         purpose={header.purpose}
+        purposeTitle={header.purposeTitle}
         closeLabel={header.closeLabel}
         onClose={onClose}
         actions={

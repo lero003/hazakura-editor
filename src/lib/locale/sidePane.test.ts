@@ -7,14 +7,12 @@ describe("getSidePaneCopy purpose-led pane titles", () => {
       previewTabTitle:
         "Scroll continuously to check Markdown layout (not e-book pages)",
       previewTabTitleHide: "Hide preview — source stays in the editor",
-      previewPurposeHint:
-        "Preview — continuous scroll to check layout (no page turns)",
+      previewPurposeHint: "Continuous scroll to check layout",
       referenceTabTitle: "Edit while checking the source beside it",
       referenceTabTitleRetained: "Show the loaded reference again",
       ebookTabTitle:
         "Turn pages and read like a book (not continuous preview)",
-      ebookPurposeHint:
-        "E-book — turn pages to reread (separate from Preview)",
+      ebookPurposeHint: "Turn pages to reread",
       outlineTabTitle: "Jump to a section from its headings",
       diffTabTitle: "Compare changes before deciding",
     });
@@ -23,14 +21,12 @@ describe("getSidePaneCopy purpose-led pane titles", () => {
       previewTabTitle:
         "縦スクロールで Markdown の見た目を確認（電子書籍ではない）",
       previewTabTitleHide: "プレビューを隠す（原稿は残る）",
-      previewPurposeHint:
-        "プレビュー — 縦スクロールで見た目を確認（ページめくりなし）",
+      previewPurposeHint: "縦スクロールで見た目を確認",
       referenceTabTitle: "原本を横に見ながら直す",
       referenceTabTitleRetained: "読み込み済みの参照を再表示",
       ebookTabTitle:
         "ページめくりで本のように読み返す（プレビューとは別）",
-      ebookPurposeHint:
-        "電子書籍 — ページめくりで読み返す（プレビューとは別）",
+      ebookPurposeHint: "ページめくりで読み返す",
       outlineTabTitle: "見出しから目的の場所へ移動",
       diffTabTitle: "変更を見比べて確認",
     });

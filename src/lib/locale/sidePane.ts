@@ -107,10 +107,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         "ぺーじめくりで ほんのように よむ えーぼっくです。てきすとのふみを ひらいてください。",
       previewDisabled:
         "したみは おこのみで つかわないせっていです。ふみそのものは のこります。",
-      previewPurposeHint:
-        "したみ — たてスクロールで みためを たしかめる（ぺーじめくりなし）",
-      ebookPurposeHint:
-        "えーぼっく — ぺーじめくりで よみかへす（したみとは べつ）",
+      previewPurposeHint: "たてスクロールで みためを たしかめる",
+      ebookPurposeHint: "ぺーじめくりで よみかへす",
       previewTab: "したみ",
       previewTabTitle:
         "たてスクロールで Markdown の みためを たしかめる（えーぼっくではない）",
@@ -180,10 +178,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
           "ページめくりで本のように読む電子書籍表示です。テキストファイルを開いてください。",
         previewDisabled:
           "プレビューは設定でオフです。原稿そのものは残ります。",
-        previewPurposeHint:
-          "プレビュー — 縦スクロールで見た目を確認（ページめくりなし）",
-        ebookPurposeHint:
-          "電子書籍 — ページめくりで読み返す（プレビューとは別）",
+        previewPurposeHint: "縦スクロールで見た目を確認",
+        ebookPurposeHint: "ページめくりで読み返す",
         previewTab: "プレビュー",
         previewTabTitle:
           "縦スクロールで Markdown の見た目を確認（電子書籍ではない）",
@@ -250,10 +246,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
           "E-book is for paged, book-like reading. Open a text file.",
         previewDisabled:
           "Preview is off in Preferences. Your source stays intact.",
-        previewPurposeHint:
-          "Preview — continuous scroll to check layout (no page turns)",
-        ebookPurposeHint:
-          "E-book — turn pages to reread (separate from Preview)",
+        previewPurposeHint: "Continuous scroll to check layout",
+        ebookPurposeHint: "Turn pages to reread",
         previewTab: "Preview",
         previewTabTitle:
           "Scroll continuously to check Markdown layout (not e-book pages)",

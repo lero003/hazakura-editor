@@ -77,8 +77,8 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 - **v1.14 Import Assist draft status Keep:** import success copy emphasizes
   unsaved draft and no disk write until the user saves.
 - **v1.14 right-pane shared header Keep:** Preview / e-book / Outline / Diff /
-  Reference share a reversible header chrome (title + purpose + close). No
-  new document model.
+  Reference share a sticky header (short purpose, path hover on Reference).
+  Diff header close clears compare then hides the column. No new document model.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

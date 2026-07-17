@@ -9,6 +9,8 @@ export type RightPaneHeaderProps = {
   mode: string;
   title: string;
   purpose?: string | null;
+  /** Hover / accessible fuller purpose (e.g. full reference path). */
+  purposeTitle?: string | null;
   closeLabel: string;
   onClose?: () => void;
   /** Trailing actions before the close control (replace, show diff, …). */
@@ -19,6 +21,7 @@ export function RightPaneHeader({
   mode,
   title,
   purpose = null,
+  purposeTitle = null,
   closeLabel,
   onClose,
   actions = null,
@@ -39,7 +42,11 @@ export function RightPaneHeader({
       <div className="right-pane-header-text">
         <h2 className="right-pane-header-title">{title}</h2>
         {purpose ? (
-          <p className="right-pane-header-purpose" role="note">
+          <p
+            className="right-pane-header-purpose"
+            role="note"
+            title={purposeTitle ?? purpose}
+          >
             {purpose}
           </p>
         ) : null}

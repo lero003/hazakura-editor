@@ -302,7 +302,7 @@ describe("SidePane", () => {
     expect(header.getAttribute("data-right-pane-mode")).toBe("preview");
     expect(screen.getByRole("heading", { name: "Preview" })).toBeTruthy();
     expect(
-      screen.getByText(/continuous scroll to check layout/i),
+      screen.getByText("Continuous scroll to check layout"),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Close side pane" }));
