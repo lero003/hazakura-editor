@@ -47,6 +47,8 @@ import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
+  BookScopeChapter,
+  BookScopeUnavailableEntry,
   WorkspaceTreeEntry,
 } from "../../lib/tauri";
 import type {
@@ -89,6 +91,10 @@ type AppWorkspaceProps = {
   activeMatchIndex: number;
   activeTab: EditorTab | null;
   approvedImageRoots: string[];
+  bookScopeChapterRelativePaths?: readonly string[];
+  bookScopeChapters?: readonly BookScopeChapter[];
+  bookScopeResolving?: boolean;
+  bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
   agentLaunchGate: AgentLaunchGateState;
   agentOutput: AgentWorkbenchOutputChunk[];
   agentSession: AgentWorkbenchSession | null;
@@ -109,6 +115,7 @@ type AppWorkspaceProps = {
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
+  commitBookScopeChapterPaths?: (paths: readonly string[]) => void;
   createFile: (parentPath: string) => Promise<void> | void;
   createOkfScaffoldAt: (
     parentPath: string,
@@ -180,6 +187,7 @@ type AppWorkspaceProps = {
   openWorkspaceFile: (path: string) => unknown;
   orphanPathlessDrafts?: DraftRecord[];
   recoveryCopy: RecoveryCopy;
+  revalidateBookScope?: () => void;
   recentFolders: import("../../types").RecentEntry[];
   reopenPersistedWorkspace: () => unknown;
   restoreDraft: (draft: DraftRecord) => void;
@@ -229,6 +237,10 @@ export function AppWorkspace({
   activeMatchIndex,
   activeTab,
   approvedImageRoots,
+  bookScopeChapterRelativePaths = [],
+  bookScopeChapters = [],
+  bookScopeResolving = false,
+  bookScopeUnavailable = [],
   agentLaunchGate,
   agentOutput,
   agentSession,
@@ -249,6 +261,7 @@ export function AppWorkspace({
   compareAnchor,
   compareTarget,
   compareView,
+  commitBookScopeChapterPaths = () => {},
   createFile,
   createFolder,
   createOkfScaffoldAt,
@@ -302,6 +315,7 @@ export function AppWorkspace({
   orphanPathlessDrafts = [],
   recentFolders,
   recoveryCopy,
+  revalidateBookScope = () => {},
   reopenPersistedWorkspace,
   restoreDraft,
   previewColumnPercent,
@@ -528,12 +542,18 @@ export function AppWorkspace({
       ) : (
         <WorkspaceSidebar
           activePath={selectedImage?.path ?? activeTab?.path ?? null}
+          bookScopeChapterRelativePaths={bookScopeChapterRelativePaths}
+          bookScopeChapters={bookScopeChapters}
+          bookScopeResolving={bookScopeResolving}
+          bookScopeUnavailable={bookScopeUnavailable}
           compareSelectionEnabled={sidePaneMode === "compare"}
           compareSourcePath={compareAnchor?.path ?? null}
           compareTargetPath={compareTarget?.path ?? null}
           copy={safeEditorCopy}
           dirtyFilePaths={workspaceTabMarkers.dirtyFilePaths}
           fileOpsCopy={fileOpsCopy}
+          menuLanguage={menuLanguage}
+          onCommitBookScope={commitBookScopeChapterPaths}
           onCollapse={
             editorSettings.lModeEnabled
               ? undefined
@@ -566,6 +586,7 @@ export function AppWorkspace({
           onOpenRootContextMenu={openRootWorkspaceContextMenu}
           onOpenFile={(path) => void openWorkspaceFile(path)}
           onOpenWorkspace={() => void openWorkspace()}
+          onRevalidateBookScope={revalidateBookScope}
           openFilePaths={workspaceTabMarkers.openFilePaths}
           onClearCompareSelection={() => {
             clearCompareSource();

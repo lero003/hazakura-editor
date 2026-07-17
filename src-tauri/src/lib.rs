@@ -7,6 +7,7 @@ pub(crate) mod commands {
     pub(crate) mod apple_assist;
     pub(crate) mod apple_assist_supervisor;
     pub(crate) mod apple_assist_target;
+    pub(crate) mod book_scope;
     pub(crate) mod export;
     pub(crate) mod external_links;
     pub(crate) mod files;
@@ -89,6 +90,8 @@ use crate::commands::apple_assist::*;
 use crate::commands::apple_assist_supervisor::*;
 #[allow(unused_imports)]
 use crate::commands::apple_assist_target::*;
+#[allow(unused_imports)]
+use crate::commands::book_scope::*;
 #[allow(unused_imports)]
 use crate::commands::export::*;
 #[allow(unused_imports)]
@@ -200,6 +203,7 @@ pub fn run() {
             open_local_image_under_roots,
             fetch_remote_image,
             search_workspace_files,
+            resolve_book_scope,
             scan_okf_bundle,
             cancel_okf_bundle_scan,
             create_okf_scaffold,

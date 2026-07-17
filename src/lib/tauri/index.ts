@@ -10,6 +10,7 @@ export * from "./app";
 export * from "./agent";
 export * from "./appleAssist";
 export * from "./autoBackup";
+export * from "./bookScope";
 export * from "./dialog";
 export * from "./external";
 export * from "./files";

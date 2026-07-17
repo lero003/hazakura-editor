@@ -88,6 +88,7 @@ describe("useWorkspaceFileOps", () => {
 
   it("trashing a folder clears descendant editor state", async () => {
     workspaceApi.moveWorkspaceEntryToTrash.mockResolvedValue(undefined);
+    const onWorkspaceEntryRemoved = vi.fn();
     let tabs: EditorTab[] = [
       makeTab("/workspace/notes/a.md"),
       makeTab("/workspace/keep.md"),
@@ -170,6 +171,7 @@ describe("useWorkspaceFileOps", () => {
           }),
           tabs,
           workspaceRootPath: "/workspace",
+          onWorkspaceEntryRemoved,
         }),
       ),
     );
@@ -188,6 +190,10 @@ describe("useWorkspaceFileOps", () => {
     expect(workspaceApi.moveWorkspaceEntryToTrash).toHaveBeenCalledWith(
       "/workspace/notes",
       "/workspace",
+    );
+    expect(onWorkspaceEntryRemoved).toHaveBeenCalledWith(
+      "/workspace/notes",
+      true,
     );
     expect(tabs.map((tab) => tab.path)).toEqual(["/workspace/keep.md"]);
     expect(activeTabId).toBeNull();

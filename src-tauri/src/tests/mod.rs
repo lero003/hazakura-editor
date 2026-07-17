@@ -15,6 +15,7 @@ mod app_window;
 mod apple_assist;
 mod apple_assist_supervisor;
 mod backup;
+mod book_scope;
 mod common;
 mod encoding;
 mod external_links;

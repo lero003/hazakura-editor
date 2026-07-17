@@ -1,8 +1,8 @@
 # v2 Book Scope Design
 
-Status: Proposal — active development phase opened
+Status: Review — first Book Scope Alpha slice implemented
 Scope: v2.0 Book Workspace Alpha と構造型 Markdown の方向・境界・未解決の UI 問い
-Last reviewed: 2026-07-18 (v2 development open; Help/value copy deferred to ship polish)
+Last reviewed: 2026-07-18 (first Alpha spine implemented; whole-book reading next)
 
 ## Goal
 
@@ -35,6 +35,22 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
 - OKF base 互換と Hazakura Book semantics は実装中も分離する。
 - **Help / 機能説明の拡充**は、OKF multi-file の使い心地が ship できる水準になった
   **出荷 polish** で行う。
+
+## First Alpha Slice Contract
+
+2026-07-18 の最初の実装スライスは次で固定する。
+
+- UI は既存左 sidebar 内の **ファイル / 本** 切替。Book view は明示選択した
+  Markdown 章と順序だけを表示し、右側は既存の単一編集bufferを使う。
+- scope は app-private localStorage に workspace root ごとの相対path列として保存する。
+  workspace内manifest、Markdown source、OKF metadataは書き換えない。
+- Rust `resolve_book_scope` が main-window、100章、Markdown拡張子、相対path、
+  canonical workspace containment、regular text file、symlink拒否を検証する。
+- 欠損・外部移動・読取不能の章はscopeから黙って消さず、利用不能として表示し、
+  再確認または明示削除を待つ。アプリ内rename / move / Trashはscopeへ追従する。
+- 選択編集は保存 / キャンセル付き。並べ替えはdisk上のfile moveではなく、
+  app-privateな解釈順だけを上下する。
+- 全編読書、book export、manifest共有、OKF Book semantics、AI構造編集は次slice以降。
 
 ## Current Direction
 

@@ -8,6 +8,7 @@ import type {
 
 export const THEME_STORAGE_KEY = "hazakura-note-theme";
 export const WORKSPACE_STATE_STORAGE_KEY = "hazakura-note-workspace-state";
+export const BOOK_SCOPE_STORAGE_KEY = "hazakura-note-book-scopes";
 export const PREVIEW_VISIBLE_STORAGE_KEY = "hazakura-note-preview-visible";
 export const EDITOR_SETTINGS_STORAGE_KEY = "hazakura-note-editor-settings";
 export const AUTO_BACKUP_USER_CHOICE_STORAGE_KEY =

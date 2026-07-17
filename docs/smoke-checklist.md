@@ -403,6 +403,24 @@ Run when file I/O, tabs, close behavior, or save logic changes:
 
 ## Workspace File Operations
 
+### v2 Book Scope Alpha
+
+- Open a workspace with Markdown files at the root and in a nested folder.
+- Switch the sidebar from **Files** to **Book**; confirm Files behavior is
+  unchanged when switching back.
+- Choose chapters explicitly, expand the nested folder, Save, then reorder with
+  the up/down controls. Confirm no file moved on disk.
+- Edit one chapter without saving, switch to another chapter from Book, then
+  return. Confirm the dirty buffer and Undo history remain intact.
+- Relaunch and confirm the workspace-specific scope/order returns.
+- Move or rename a selected chapter in-app and confirm its scope path follows.
+  Trash a selected chapter and confirm it leaves the scope after the confirmed
+  Trash succeeds.
+- Delete or move a selected chapter externally, choose **Recheck**, and confirm
+  it remains listed as unavailable until explicitly removed.
+- Confirm Book selection never adds non-Markdown files, performs background
+  workspace scanning, creates a manifest, or rewrites Markdown source.
+
 Run when the file tree or workspace commands change:
 
 1. Open a throwaway workspace.

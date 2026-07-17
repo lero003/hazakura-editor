@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-18 (v1.14+ try-and-error after published v1.13)
+Last reviewed: 2026-07-18 (v2 Book Scope development)
 
 ## Purpose
 
@@ -17,13 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.14+ try-and-error refinement**, after published Mac App Store
-`1.13.0` (Theme A interaction clarity + Theme G bounded media on the v1.12
-structure baseline). Prefer one
-hypothesis per run with Keep / Iterate / Revert. Do not reopen published
-`1.13.0` without a reproduced hotfix and explicit decision. Direction:
-`docs/v1.13-plus-refinement-roadmap.md`,
-`docs/v1.13-interaction-clarity-plan.md`, and `docs/current-work.md`.
+Phase: **v2 Book Scope development.** The first explicit selection / order /
+single-buffer Alpha spine is in source. Prefer one verifiable v2 slice per run:
+OKF multi-file daily feel, whole-book reading over the explicit scope, or a
+reproduced Alpha friction. v1.14 review work is hotfix-only. Direction:
+`docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
 
 For recurring automation, use the Active Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -34,9 +32,9 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. One open hypothesis from Continuity, Writing Loop, Trust edges,
-   Structure / OKF depth, or distribution confidence. Theme A and Theme G
-   shipped in `1.13.0`; reopen them only for a reproduced regression.
+1. One v2 Book Scope slice from the Active Queue: OKF multi-file daily feel,
+   whole-book reading, or reproduced selection/order/navigation friction.
+   Keep every read bounded to the explicit scope.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

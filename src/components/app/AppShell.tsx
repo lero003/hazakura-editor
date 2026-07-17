@@ -157,12 +157,18 @@ export function AppShell(props: AppShellProps) {
             typewriterModeEnabled={props.editorSettings.lModeTypewriter}
             workspaceSidebarProps={{
               activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
+              bookScopeChapterRelativePaths: props.bookScopeChapterRelativePaths,
+              bookScopeChapters: props.bookScopeChapters,
+              bookScopeResolving: props.bookScopeResolving,
+              bookScopeUnavailable: props.bookScopeUnavailable,
               compareSelectionEnabled: props.sidePaneMode === "compare",
               compareSourcePath: props.compareAnchor?.path ?? null,
               compareTargetPath: props.compareTarget?.path ?? null,
               copy: props.safeEditorCopy,
               dirtyFilePaths: workspaceTabMarkers.dirtyFilePaths,
               fileOpsCopy: props.fileOpsCopy,
+              menuLanguage: props.menuLanguage,
+              onCommitBookScope: props.commitBookScopeChapterPaths,
               onCreateFile: () => {
                 if (props.workspaceRootPath) {
                   void props.createFile(props.workspaceRootPath);
@@ -196,6 +202,7 @@ export function AppShell(props: AppShellProps) {
               onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
               onOpenFile: (path) => void props.openWorkspaceFile(path),
               onOpenWorkspace: () => void props.openWorkspace(),
+              onRevalidateBookScope: props.revalidateBookScope,
               openFilePaths: workspaceTabMarkers.openFilePaths,
               onClearCompareSelection: () => {
                 props.clearCompareSource();

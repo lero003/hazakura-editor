@@ -30,6 +30,7 @@ v2 lens:
 
 Queue of record: `docs/current-work.md`.
 v2 design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
 ## Phase Decision (2026-07-18)
 
@@ -61,20 +62,18 @@ in-review builds.
 
 Order of work (detail in the design doc; refine while building):
 
-1. **Implementation contract** — raise the v2 design from Proposal toward a
-   first Review slice: UI direction (start from candidates A/B; do not block
-   forever on a perfect graph design), explicit scope selection, chapter
-   order, reversible interpretation.
-2. **Minimal multi-file spine** — user-selected set of Markdown files as one
-   book; one primary editable buffer at a time; no background indexing.
-3. **OKF multi-file feel** — reuse v1.11 review + v1.12 scaffold as inputs;
+1. **Done in source: implementation contract + minimal multi-file spine.**
+   Existing-left-sidebar Files / Book view, explicit bounded Markdown scope,
+   app-private order, unavailable retention, one primary editable buffer, and
+   no background indexing.
+2. **Now: OKF multi-file feel** — reuse v1.11 review + v1.12 scaffold as inputs;
    deepen only what makes “folder as knowledge / book” trustworthy day to day.
    Keep base OKF compatibility separate from Hazakura Book semantics
    (`docs/okf-spec-pin.md`).
-4. **Whole-book reading (and export only when ready)** — e-book / navigation
+3. **Next: Whole-book reading (and export only when ready)** — e-book / navigation
    over the explicit scope; export breadth is not required for the first
    Alpha cut unless the slice needs it.
-5. **Ship polish including Help** — when the multi-file / OKF loop feels
+4. **Ship polish including Help** — when the multi-file / OKF loop feels
    shippable: Help pages, in-app feature explanation, store/release copy.
    Do **not** front-load long product essays before the feel exists.
 
@@ -108,6 +107,7 @@ Order of work (detail in the design doc; refine while building):
 | Broad distribution-confidence matrix complete | **Parked** — not blocking v2 start |
 | Pre-v2 multi-file value essay | **Deferred to Help at ship** |
 | Book Scope UI fully converged before any code | **Softened** — pick a first direction and iterate in slices |
+| Explicit Book Scope + order + one primary edit buffer | **Met in source** — first Alpha spine |
 | OKF pin vs Hazakura Book semantics kept separate | **In force** during implementation |
 | Help / feature explanation expansion | **v2 ship polish**, not a start gate |
 

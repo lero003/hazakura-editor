@@ -8,6 +8,11 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import type {
+  BookScopeChapter,
+  BookScopeUnavailableEntry,
+} from "../../lib/tauri/bookScope";
+import type { MenuLanguage } from "../../types";
 import type { SafeEditorCopy, WorkspaceFileOpsCopy } from "../../lib/locale";
 import {
   OpenFolderIcon,
@@ -16,17 +21,24 @@ import {
   TrashIcon,
 } from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
+import { BookScopePanel } from "./BookScopePanel";
 
 const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
 
 type WorkspaceSidebarProps = {
   activePath: string | null;
+  bookScopeChapterRelativePaths?: readonly string[];
+  bookScopeChapters?: readonly BookScopeChapter[];
+  bookScopeResolving?: boolean;
+  bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
   compareSelectionEnabled: boolean;
   compareSourcePath: string | null;
   compareTargetPath: string | null;
   copy: SafeEditorCopy;
   dirtyFilePaths: readonly string[];
   fileOpsCopy: WorkspaceFileOpsCopy;
+  menuLanguage?: MenuLanguage;
+  onCommitBookScope?: (paths: readonly string[]) => void;
   onCreateFile: () => void;
   onCreateFolder: () => void;
   onCreateOkfScaffoldMinimal: () => void;
@@ -43,6 +55,7 @@ type WorkspaceSidebarProps = {
   onOpenRootContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
+  onRevalidateBookScope?: () => void;
   openFilePaths: readonly string[];
   onClearCompareSelection: () => void;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
@@ -55,12 +68,18 @@ type WorkspaceSidebarProps = {
 
 export function WorkspaceSidebar({
   activePath,
+  bookScopeChapterRelativePaths = [],
+  bookScopeChapters = [],
+  bookScopeResolving = false,
+  bookScopeUnavailable = [],
   compareSelectionEnabled,
   compareSourcePath,
   compareTargetPath,
   copy,
   dirtyFilePaths,
   fileOpsCopy,
+  menuLanguage = "ja",
+  onCommitBookScope = () => {},
   onCreateFile,
   onCreateFolder,
   onCreateOkfScaffoldMinimal,
@@ -73,6 +92,7 @@ export function WorkspaceSidebar({
   onOpenRootContextMenu,
   onOpenFile,
   onOpenWorkspace,
+  onRevalidateBookScope = () => {},
   openFilePaths,
   onClearCompareSelection,
   onSelectCompareFile,
@@ -82,6 +102,7 @@ export function WorkspaceSidebar({
   workspaceRootPath,
   workspaceTree,
 }: WorkspaceSidebarProps) {
+  const [sidebarView, setSidebarView] = useState<"files" | "book">("files");
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const newMenuRef = useRef<HTMLDivElement | null>(null);
   const newMenuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -219,9 +240,9 @@ export function WorkspaceSidebar({
     <aside className="file-tree-pane" aria-label={copy.workspaceFileTree}>
       <div
         className="workspace-header"
-        onContextMenu={onOpenRootContextMenu}
-        onDragOver={handleRootDragOver}
-        onDrop={handleRootDrop}
+        onContextMenu={sidebarView === "files" ? onOpenRootContextMenu : undefined}
+        onDragOver={sidebarView === "files" ? handleRootDragOver : undefined}
+        onDrop={sidebarView === "files" ? handleRootDrop : undefined}
       >
         <div className="workspace-heading">
           <div className="workspace-labels">
@@ -317,6 +338,37 @@ export function WorkspaceSidebar({
         </div>
       </div>
       {workspaceTree ? (
+        <div className="workspace-view-switch" role="tablist" aria-label={menuLanguage === "en" ? "Workspace view" : "ワークスペース表示"}>
+          <button
+            aria-selected={sidebarView === "files"}
+            onClick={() => setSidebarView("files")}
+            role="tab"
+            type="button"
+          >{menuLanguage === "en" ? "Files" : "ファイル"}</button>
+          <button
+            aria-selected={sidebarView === "book"}
+            onClick={() => setSidebarView("book")}
+            role="tab"
+            type="button"
+          >{menuLanguage === "en" ? "Book" : "本"}</button>
+        </div>
+      ) : null}
+      {workspaceTree && workspaceRootPath && sidebarView === "book" ? (
+        <BookScopePanel
+          activePath={activePath}
+          chapterRelativePaths={bookScopeChapterRelativePaths}
+          chapters={bookScopeChapters}
+          menuLanguage={menuLanguage}
+          onCommit={onCommitBookScope}
+          onLoadDirectory={onLoadDirectory}
+          onOpenChapter={(path) => void onOpenFile(path)}
+          onRevalidate={onRevalidateBookScope}
+          resolving={bookScopeResolving}
+          unavailable={bookScopeUnavailable}
+          workspaceRootPath={workspaceRootPath}
+          workspaceTree={workspaceTree}
+        />
+      ) : workspaceTree ? (
         <WorkspaceTree
           activePath={activePath}
           compareSourcePath={compareSourcePath}
@@ -348,7 +400,7 @@ export function WorkspaceSidebar({
           </button>
         </div>
       )}
-      {workspaceTree ? (
+      {workspaceTree && sidebarView === "files" ? (
         <div className="workspace-footer">
           <button
             aria-label={trashLabel}

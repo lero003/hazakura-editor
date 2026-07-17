@@ -645,22 +645,22 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v1.14 tagged / selected candidate; residual refinement after Keep set",
-        "Active Queue — after the v1.14 box",
+        "Scope: v2 development phase; v1.14 in App Store review",
+        "First Alpha spine — source implemented",
       ],
       "docs/development-automation.md": [
-        "Phase: **v1.14+ try-and-error refinement**",
+        "Phase: **v2 Book Scope development.**",
       ],
       "docs/handoff.md": [
         "Package/app version in tree: **`1.14.0`",
-        "Published Mac App Store: **`1.13.0`",
-        "Latest GitHub source / local-app tag: **`v1.14.0`",
+        "Published Mac App Store (last confirmed in docs): **`1.13.0`",
+        "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
-        "Package/app version in tree: **`1.14.0`",
-        "Published Mac App Store version: `1.13.0`",
-        "Historical MAS baselines (`1.3.0` Daily Trust",
-        "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
+        "Package / app version in tree | **`1.14.0`",
+        "Published Mac App Store | **`1.13.0`",
+        "Done in source: implementation contract + minimal multi-file spine",
+        "Explicit Book Scope + order + one primary edit buffer",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [
         "Status: Implemented; local candidate gate passed; TestFlight interaction pending",

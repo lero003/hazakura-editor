@@ -80,6 +80,7 @@ import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
 import { useWorkspaceFileOpening } from "../workspace/useWorkspaceFileOpening";
+import { useBookScopeController } from "../workspace/useBookScopeController";
 import { useAppShellFoundation } from "./useAppShellFoundation";
 import { useAppShellRefs } from "./useAppShellRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
@@ -650,6 +651,13 @@ export function useAppShellController() {
     setGenerationLock: setAppleAssistGenerationLockWithMirror,
   });
 
+  const bookScope = useBookScopeController({
+    menuLanguage,
+    setGlobalError,
+    setStatus,
+    workspaceRootPath,
+  });
+
   // section: workspace file opening
   const {
     cancelPendingRename,
@@ -706,6 +714,8 @@ export function useAppShellController() {
     setWorkspaceTree,
     tabs,
     workspaceRootPath,
+    onWorkspaceEntryRekey: bookScope.remapBookScopeWorkspaceEntry,
+    onWorkspaceEntryRemoved: bookScope.removeBookScopeWorkspaceEntry,
   });
 
   // v0.18 accessibility follow-up: the move-to-trash dialog
@@ -2168,5 +2178,6 @@ export function useAppShellController() {
     workspaceContextMenu,
     workspaceRootPath,
     workspaceTree,
+    ...bookScope,
   };
 }

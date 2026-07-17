@@ -47,21 +47,24 @@ Connect is authoritative for store counters.
 **Operating rule:** 1 run = 1 verifiable slice. Keep Safe Editor rails
 (`docs/security-boundary.md`, design SoT boundary section).
 
-### Immediate next (design → first slices)
+### First Alpha spine — source implemented
 
-1. **Pick a first UI direction** and write a short implementation contract
-   slice (not a long manifesto). Prefer iterating from tree outline or
-   single-pane chapter switcher; graph stays out unless evidence demands it.
-   Open questions: design SoT § Open UI Questions / UI Candidates.
-2. **Explicit Book Scope selection** — user-chosen set of Markdown files;
-   reversible; no background workspace scan.
-3. **Chapter order + one primary edit buffer** — multi-file structure without
-   a second simultaneous editable buffer as the default model.
-4. **OKF multi-file daily feel** — deepen review / scaffold / navigation only
+1. **Done in source:** existing-left-sidebar `ファイル / 本` direction and
+   short implementation contract in the design SoT.
+2. **Done in source:** explicit bounded Markdown selection, app-private
+   workspace scope persistence, unavailable-entry retention, no background scan.
+3. **Done in source:** manual chapter order and chapter switching through the
+   existing one-primary-edit-buffer / dirty-tab / Undo path.
+
+### Immediate next
+
+1. **OKF multi-file daily feel** — deepen review / scaffold / navigation only
    where it makes the folder-as-book loop trustworthy. Pin:
    `docs/okf-spec-pin.md`. Keep base OKF ≠ Hazakura Book semantics.
-5. **Whole-book reading** over the explicit scope (export when the slice needs
+2. **Whole-book reading** over the explicit scope (export when the slice needs
    it — not a forced Alpha checklist item).
+3. Observe the first Alpha sidebar in built-app use; adjust only reproduced
+   selection/order/navigation friction before widening the surface.
 
 ### At v2 ship (not now)
 

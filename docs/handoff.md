@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: v2 development open; v1.14 in App Store review
+Scope: v2 Book Scope Alpha spine implemented; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 phase; residual parked)
+Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
 
 ## Current State
 
@@ -13,6 +13,10 @@ Last reviewed: 2026-07-18 (v2 phase; residual parked)
   look OK. Publication not claimed until the user reports it.
 - **Active phase: v2 Book Scope development.** Residual polish, broad
   evidence matrix, and optional `v1.15+` boxes are parked.
+- **First Alpha spine is in source:** existing sidebar Files / Book switch,
+  explicit Markdown selection, app-private workspace order, unavailable-entry
+  retention/recheck, chapter switching through the existing single editor,
+  and Rust path/symlink/100-chapter validation.
 - Value / multi-file narrative and **Help expansion** are **v2 ship polish**
   (when OKF multi-file feel is good enough), not a pre-implementation essay.
 - Design SoT:
@@ -33,6 +37,23 @@ Last reviewed: 2026-07-18 (v2 phase; residual parked)
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
+## Verification (2026-07-18)
+
+- `npm run typecheck` — pass.
+- `npm test` — 196 files / 1,634 tests pass.
+- `npm run build:vite` — pass (existing large-chunk warning only).
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 366 pass / 2 ignored
+  host-dependent tests.
+- `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
+- `npm run build` — App Store preview bundle built successfully; notarization
+  was not attempted.
+- `smoke:macos-window` against the resulting `Hazakura Editor.app` — onscreen
+  main window confirmed.
+- Interactive Book Scope smoke (nested selection, dirty chapter switching,
+  relaunch restoration, external deletion) remains a human QA step; use the
+  v2 section in `docs/smoke-checklist.md`.
+
 ## Durable Pins
 
 - Safe Editor primary; Markdown/text source canonical (per file in v2).
@@ -45,8 +66,8 @@ Last reviewed: 2026-07-18 (v2 phase; residual parked)
 
 ## Next For Agents
 
-1. **Start from v2** — implementation contract / first Book Scope slice.
-   Prefer `docs/current-work.md` + v2 design SoT.
+1. **Continue v2** from OKF multi-file daily feel or whole-book reading over
+   the explicit scope. Do not rebuild the completed selection/order spine.
 2. One verifiable slice per run. Do not front-load Help essays before the
    multi-file feel exists.
 3. Hotfix only for reproduced v1.14 review or daily-use blockers.
@@ -69,3 +90,7 @@ Last reviewed: 2026-07-18 (v2 phase; residual parked)
 | Parked refinement | `docs/v1.13-plus-refinement-roadmap.md` |
 | Smoke | `docs/smoke-checklist.md` |
 | App Store build | `docs/app-store-build.md` |
+
+Local package provenance remains in
+`docs/internal/app-store-candidates/latest.json`; do not copy per-build paths or
+hashes into this handoff.

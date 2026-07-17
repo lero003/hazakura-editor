@@ -49,6 +49,8 @@ type UseWorkspaceFileOpsOptions = {
   tabs: EditorTab[];
   workspaceRootPath: string | null;
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
+  onWorkspaceEntryRekey?: (srcPath: string, newPath: string) => void;
+  onWorkspaceEntryRemoved?: (srcPath: string, includeDescendants: boolean) => void;
 };
 
 type PendingRename = {
@@ -108,6 +110,8 @@ export function useWorkspaceFileOps({
   tabs,
   workspaceRootPath,
   getCompareCaseByKey,
+  onWorkspaceEntryRekey,
+  onWorkspaceEntryRemoved,
 }: UseWorkspaceFileOpsOptions) {
   const [pendingRename, setPendingRename] = useState<PendingRename | null>(
     null,
@@ -384,6 +388,7 @@ export function useWorkspaceFileOps({
         // descendants follow the rename into the new folder.
         rekeyPath(srcPath, newPath);
         rekeyPathPrefix(srcPath, newPath);
+        onWorkspaceEntryRekey?.(srcPath, newPath);
         setRenamingPath(null);
         try {
           await reloadWorkspaceParent(parentPath);
@@ -400,6 +405,7 @@ export function useWorkspaceFileOps({
     [
       rekeyPath,
       rekeyPathPrefix,
+      onWorkspaceEntryRekey,
       reloadWorkspaceParent,
       setGlobalError,
       setStatus,
@@ -516,6 +522,7 @@ export function useWorkspaceFileOps({
         await moveWorkspaceEntry(srcPath, newPath, workspaceRootPath);
         rekeyPath(srcPath, newPath);
         rekeyPathPrefix(srcPath, newPath);
+        onWorkspaceEntryRekey?.(srcPath, newPath);
         // Refresh both parents (source + destination) so the
         // move is visible from both sides of the tree.
         try {
@@ -537,6 +544,7 @@ export function useWorkspaceFileOps({
       reloadWorkspaceParent,
       rekeyPath,
       rekeyPathPrefix,
+      onWorkspaceEntryRekey,
       setGlobalError,
       setStatus,
       workspaceRootPath,
@@ -575,6 +583,7 @@ export function useWorkspaceFileOps({
 
     try {
       await moveWorkspaceEntryToTrash(pending.srcPath, workspaceRootPath);
+      onWorkspaceEntryRemoved?.(pending.srcPath, pending.isDirectory);
       // The trashed path is gone, so the editor fan-out closes
       // the affected tab / draft / recent / compare slot. This
       // is the same set of stores that `rekeyPath` rewrites
@@ -627,6 +636,7 @@ export function useWorkspaceFileOps({
     }
   }, [
     pendingTrash,
+    onWorkspaceEntryRemoved,
     reloadWorkspaceParent,
     setActiveTabId,
     setCompareAnchor,

@@ -17,6 +17,7 @@ import {
   type DraftRecord,
   type EditorTab,
 } from "../../types";
+import { migrateBookScopeWorkspaceRoot } from "../../features/bookScope";
 
 type UseWorkspaceRestoreOptions = {
   onError: (message: string) => void;
@@ -63,6 +64,10 @@ export function useWorkspaceRestore({
 
       const resolvedPath = await resolveSecurityScopedBookmark(bookmark);
       const tree = await listWorkspaceTree(resolvedPath);
+
+      if (resolvedPath !== path) {
+        migrateBookScopeWorkspaceRoot(path, resolvedPath);
+      }
 
       if (!cancelled) {
         setWorkspaceTree(tree);

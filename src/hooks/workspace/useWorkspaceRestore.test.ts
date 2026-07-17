@@ -14,6 +14,7 @@
 
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readBookScope, writeBookScope } from "../../features/bookScope";
 import { useWorkspaceRestore } from "./useWorkspaceRestore";
 
 const openTextFile = vi.fn();
@@ -55,6 +56,7 @@ function buildArgs(): RestoreArgs {
 
 describe("useWorkspaceRestore", () => {
   beforeEach(() => {
+    window.localStorage.clear();
     openTextFile.mockReset();
     listWorkspaceTree.mockReset();
     resolveSecurityScopedBookmark.mockReset();
@@ -452,6 +454,40 @@ describe("useWorkspaceRestore", () => {
     expect(args.onStatus).not.toHaveBeenCalledWith(
       expect.stringContaining("skipped"),
     );
+  });
+
+  it("migrates Book Scope when bookmark resolution changes the workspace root", async () => {
+    const tree = {
+      name: "renamed-root",
+      path: "/new/root",
+      kind: "directory" as const,
+      children: [],
+      children_loaded: true,
+      children_truncated: false,
+    };
+    writeBookScope("/old/root", ["chapters/one.md"], 10);
+    readPersistedWorkspaceState.mockReturnValue({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [9, 8, 7],
+      tabPaths: [],
+      activeTabPath: null,
+    });
+    readStoredDrafts.mockReturnValue([]);
+    listWorkspaceTree
+      .mockRejectedValueOnce(new Error("Cannot read folder: moved"))
+      .mockResolvedValueOnce(tree);
+    resolveSecurityScopedBookmark.mockResolvedValue("/new/root");
+    const args = buildArgs();
+
+    renderHook(() => useWorkspaceRestore(args));
+
+    await waitFor(() => {
+      expect(args.setWorkspaceRootPath).toHaveBeenCalledWith("/new/root");
+    });
+    expect(readBookScope("/old/root")).toBeNull();
+    expect(readBookScope("/new/root")?.chapterRelativePaths).toEqual([
+      "chapters/one.md",
+    ]);
   });
 
   it("fires the restore-complete latch exactly once across the restore", async () => {

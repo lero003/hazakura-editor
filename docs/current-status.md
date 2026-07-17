@@ -3,14 +3,14 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 development open; v1.14 submitted; residual parked)
+Last reviewed: 2026-07-18 (v2 Book Scope Alpha spine implemented)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.14.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. The latest GitHub source / local-app tag is
-  **`v1.14.0`** (source archive only; no binary assets). See
+  lockfile metadata. Latest GitHub source / local-app tag is `v1.14.0`
+  (source archive only; no binary assets). See
   `docs/releases/1.14.0-source-tag.release.md`.
 - **Published Mac App Store version: `1.13.0`.** App Review passed and the
   release was published (user-reported 2026-07-18): Theme A interaction
@@ -29,12 +29,22 @@ Last reviewed: 2026-07-18 (v2 development open; v1.14 submitted; residual parked
   Multi-file value copy and Help expansion are **v2 ship polish** (when OKF
   multi-file feel is ready), not a pre-coding essay gate. Queue:
   `docs/current-work.md`. Phase: `docs/roadmap.md`.
-- **v1.14 Keep themes (source):** Continuity (same-name tabs, Reference
+- **v2 Book Scope Alpha spine is implemented in source.** The existing left
+  sidebar now switches between Files and Book. Users explicitly select up to
+  100 Markdown chapters, keep an app-private per-workspace order, reopen that
+  scope after relaunch, and switch chapters through the existing single active
+  editor buffer. Rust validates relative paths, workspace containment,
+  Markdown/text eligibility, and symlink/file identity. Missing or externally
+  moved chapters remain visible as unavailable until rechecked or explicitly
+  removed. No workspace manifest, source rewrite, background indexing,
+  whole-book reader/export, or OKF semantic expansion was added.
+- **v1.14 review-candidate Keep themes:** Continuity (same-name tabs, Reference
   retained toggle, recent workspaces, shared right-pane header), Trust (export
   destination/warnings, Assist lock & not-saved, Import draft status), Writing
   Loop (Preview vs e-book, e-book edit-here, Outline hints + heading Undo
   status), Structure/OKF (scaffold pre-create copy, first-fix open guidance).
-  No Book Scope, indexing, auto-repair, or second editable buffer.
+  That submitted candidate predates Book Scope and contains no indexing,
+  auto-repair, or second editable buffer.
 - **The v1.14 returning Start Panel is compact in source.** It keeps one short
   write/read/verify pitch, shows the resume target by folder name, moves the
   three basic actions before recents, and lays recent folders out in two short
@@ -50,7 +60,8 @@ Last reviewed: 2026-07-18 (v2 development open; v1.14 submitted; residual parked
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open main queue:** v2 Book Scope implementation slices (design SoT
+- **Open main queue:** OKF multi-file daily feel and whole-book reading over
+  the explicit Book Scope (design SoT
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
 - **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
   broad TestFlight / VoiceOver / evidence matrix.

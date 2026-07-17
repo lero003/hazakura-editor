@@ -11,6 +11,7 @@ pub(crate) const MAX_EDITABLE_BYTES: u64 = 10 * 1024 * 1024;
 pub(crate) const MAX_IMAGE_PREVIEW_BYTES: u64 = 20 * 1024 * 1024;
 pub(crate) const BINARY_SNIFF_BYTES: u64 = 8192;
 pub(crate) const MAX_WORKSPACE_ENTRIES: usize = 2000;
+pub(crate) const MAX_BOOK_SCOPE_CHAPTERS: usize = 100;
 // Bounded workspace search caps. These keep `search_workspace_files`
 // responsive on a prototype machine: a 500-file ceiling is enough to
 // cover daily-editor workspaces (notes, drafts, scratch) without
@@ -368,6 +369,28 @@ pub(crate) struct WorkspaceTreeEntry {
     pub(crate) children: Vec<WorkspaceTreeEntry>,
     pub(crate) children_loaded: bool,
     pub(crate) children_truncated: bool,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct BookScopeChapter {
+    pub(crate) path: String,
+    pub(crate) relative_path: String,
+    pub(crate) name: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct BookScopeUnavailableEntry {
+    pub(crate) relative_path: String,
+    pub(crate) reason: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct BookScopeResolveResult {
+    pub(crate) chapters: Vec<BookScopeChapter>,
+    pub(crate) unavailable: Vec<BookScopeUnavailableEntry>,
 }
 
 #[derive(Debug, Serialize)]

@@ -60,6 +60,8 @@ Use this when you want to:
 - export content as standalone HTML or PDF
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
+- explicitly select, order, and revisit a small Book Scope of Markdown chapters
+  from the existing sidebar without creating a manifest or scanning in background
 - use えるモード / L Mode as a WYSIWYG-tier one-pane writing surface with magazine-feel typography, where Markdown source remains the truth
 - write in L Mode with reduced decoration churn, steadier Typewriter / IME behavior, keyboard-toggleable task checkboxes, and pinned visual-overlap / screen-print fallback checks
 - review and explicitly apply auto-backup snapshots to the active document buffer without auto-saving
@@ -121,6 +123,10 @@ Hazakura Editor currently focuses on these surfaces:
 - Import Assist (v1.6): open a user-selected PDF or image and create an
   unsaved on-device Markdown draft via PDFKit / Vision, with no cloud OCR and
   no auto-save.
+- Book Scope Alpha (v2 source): explicitly selected Markdown chapters,
+  app-private per-workspace ordering, unavailable-entry recheck, and navigation
+  through the existing single active editor buffer. Whole-book reading/export
+  and shared manifests are not part of this first slice.
 
 For the full implementation inventory and release state, see
 [`docs/current-status.md`](docs/current-status.md).
