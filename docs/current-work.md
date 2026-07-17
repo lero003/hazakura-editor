@@ -38,7 +38,8 @@ or explicit decision.
 
 - Same-name open text tabs show parent folder (presentation only).
 - Reference loaded-but-hidden: retained toggle visual + a11y name.
-- Start Panel: up to five recent workspaces (explicit open; no auto-scan).
+- Start Panel: up to five recent workspaces (explicit open; no auto-scan), with
+  compact copy, short folder-name rows, and a two-column recent list.
 - Shared right-pane header (Preview / e-book / Outline / Diff / Reference):
   short purpose, sticky chrome, Reference path hover; Diff header close clears
   compare then hides column.

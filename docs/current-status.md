@@ -29,6 +29,11 @@ Last reviewed: 2026-07-18 (v1.14.0 local source candidate; store 1.13.0)
   Loop (Preview vs e-book, e-book edit-here, Outline hints + heading Undo
   status), Structure/OKF (scaffold pre-create copy, first-fix open guidance).
   No Book Scope, indexing, auto-repair, or second editable buffer.
+- **The v1.14 returning Start Panel is compact in source.** It keeps one short
+  write/read/verify pitch, shows the resume target by folder name, moves the
+  three basic actions before recents, and lays recent folders out in two short
+  columns. Full action wording remains available to assistive technology; the
+  panel itself scrolls rather than clipping when recovery items add height.
 - **The reproduced v1.14 PDF Reference 150% scroll friction is fixed in
   source.** The PDF stage is the only overflow container. A standard mouse
   wheel pans vertically while room remains, then uses the remaining motion for

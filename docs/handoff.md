@@ -24,6 +24,9 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 - Reproduced PDF Reference 150% mouse friction is fixed in source: the PDF
   stage now owns both scroll axes, ordinary wheel input moves vertically then
   horizontally at the vertical edge, and trackpad two-axis input stays native.
+- The returning Start Panel now removes repeated explanatory paragraphs,
+  keeps long action wording in accessible names, places basic actions before
+  recents, and uses a compact two-column recent-folder list with safe overflow.
 
 ### v1.14 Keep summary (one line each)
 
@@ -47,9 +50,9 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 
 ### Latest verification
 
-- Current PDF-scroll source: `npm run typecheck`, `npm test` (193 files / 1621
-  tests), `npm run build:vite`, `npm run smoke:app-store-surface` (10 files /
-  107 tests), and `git diff --check`.
+- Current Start Panel source: focused Start Panel / locale / CSS tests (3 files
+  / 19 tests), `npm run typecheck`, `npm test` (193 files / 1622 tests),
+  `npm run smoke:app-store-surface` (10 files / 107 tests), and `npm run build`.
 - The preceding candidate also passed
   `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
   `cargo test --manifest-path src-tauri/Cargo.toml` (362 passed / 2 ignored),

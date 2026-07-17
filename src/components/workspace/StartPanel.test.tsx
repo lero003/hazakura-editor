@@ -50,7 +50,7 @@ describe("StartPanel recent file surface", () => {
     expect(screen.queryByRole("button", { name: "Unpin file" })).toBeNull();
   });
 
-  it("shows purpose-led write / read / verify hints", () => {
+  it("keeps the purpose pitch without repeating a three-line feature list", () => {
     render(
       <StartPanel
         copy={getSafeEditorCopy("en")}
@@ -63,10 +63,12 @@ describe("StartPanel recent file surface", () => {
 
     const panel = document.querySelector(".start-panel");
     expect(panel?.textContent).toContain("Write, read, and verify.");
-    expect(panel?.textContent).toMatch(/Write/);
-    expect(panel?.textContent).toMatch(/Read/);
-    expect(panel?.textContent).toMatch(/Verify/);
-    expect(panel?.querySelectorAll(".start-purpose-hints li").length).toBe(3);
+    expect(panel?.querySelector(".start-purpose-hints")).toBeNull();
+    expect(panel?.textContent).not.toContain("Markdown in the center");
+    expect(panel?.textContent).not.toContain("right-hand reference");
+    expect(screen.getByLabelText("Start actions").className).toBe(
+      "start-actions",
+    );
     expect(panel?.getAttribute("data-start-mode")).toBe("first-use");
   });
 });
@@ -92,9 +94,19 @@ describe("StartPanel returning visit", () => {
       "Continue where you left off",
     );
 
-    fireEvent.click(
-      screen.getByRole("button", { name: 'Open last folder “novel”' }),
+    const resumeButton = screen.getByRole("button", {
+      name: 'Open last folder “novel”',
+    });
+    expect(resumeButton.textContent).toBe("novel");
+    expect(screen.getByLabelText("Start actions").classList).toContain(
+      "start-actions-secondary",
     );
+    expect(
+      screen.queryByText("Reopens your last folder.", { exact: false }),
+    ).toBeNull();
+    expect(screen.queryByText("Continue writing")).toBeNull();
+
+    fireEvent.click(resumeButton);
     expect(onReopenPersistedWorkspace).toHaveBeenCalledTimes(1);
   });
 
@@ -204,5 +216,12 @@ describe("StartPanel returning visit", () => {
     expect(
       screen.getByRole("button", { name: 'Open folder “essays - Archive”' }),
     ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: 'Open folder “essays - Projects”' })
+        .textContent,
+    ).toBe("essays - Projects");
+    expect(
+      screen.queryByText("Nothing is scanned automatically.", { exact: false }),
+    ).toBeNull();
   });
 });

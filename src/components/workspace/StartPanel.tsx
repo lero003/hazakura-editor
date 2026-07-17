@@ -93,11 +93,6 @@ export function StartPanel({
         </div>
         <h1>{heading}</h1>
         <p className="start-value-pitch">{copy.startValuePitch}</p>
-        <ul className="start-purpose-hints" aria-label={copy.startValuePitch}>
-          <li>{copy.startHintWrite}</li>
-          <li>{copy.startHintRead}</li>
-          <li>{copy.startHintVerify}</li>
-        </ul>
 
         {returning.showResumeWorkspace &&
         returning.resumeWorkspaceLabel &&
@@ -106,19 +101,41 @@ export function StartPanel({
             className="start-resume-section"
             aria-label={copy.startResumeSection}
           >
-            <h2 className="start-section-heading">{copy.startResumeSection}</h2>
-            <p className="start-section-hint">{copy.startResumeWorkspaceHint}</p>
             <div className="start-actions start-actions-primary">
               <button
                 type="button"
                 className="start-resume-button"
+                aria-label={copy.startResumeWorkspace(
+                  returning.resumeWorkspaceLabel,
+                )}
                 onClick={() => void onReopenPersistedWorkspace()}
               >
-                {copy.startResumeWorkspace(returning.resumeWorkspaceLabel)}
+                {returning.resumeWorkspaceLabel}
               </button>
             </div>
           </section>
         ) : null}
+
+        <div
+          className={`start-actions${
+            returning.showResumeWorkspace &&
+            returning.resumeWorkspaceLabel &&
+            onReopenPersistedWorkspace
+              ? " start-actions-secondary"
+              : ""
+          }`}
+          aria-label={copy.startActions}
+        >
+          <button type="button" onClick={() => void onOpenFile()}>
+            {copy.openFile}
+          </button>
+          <button type="button" onClick={() => void onOpenFolder()}>
+            {copy.openFolder}
+          </button>
+          <button type="button" onClick={() => void onNewFile()}>
+            {copy.newFile}
+          </button>
+        </div>
 
         {recentWorkspaceRows.length > 0 && onOpenRecentWorkspace ? (
           <section
@@ -129,17 +146,19 @@ export function StartPanel({
             <h2 className="start-section-heading">
               {copy.startRecentWorkspacesSection}
             </h2>
-            <p className="start-section-hint">{copy.startRecentWorkspacesHint}</p>
             <ul className="start-recent-list">
               {recentWorkspaceRows.map((entry) => (
                 <li key={entry.path}>
                   <button
                     type="button"
                     className="start-recent-button"
+                    aria-label={copy.startOpenRecentWorkspace(
+                      entry.displayLabel,
+                    )}
                     title={entry.path}
                     onClick={() => void onOpenRecentWorkspace(entry.path)}
                   >
-                    {copy.startOpenRecentWorkspace(entry.displayLabel)}
+                    {entry.displayLabel}
                   </button>
                 </li>
               ))}
@@ -199,18 +218,6 @@ export function StartPanel({
             </ul>
           </section>
         ) : null}
-
-        <div className="start-actions" aria-label={copy.startActions}>
-          <button type="button" onClick={() => void onOpenFile()}>
-            {copy.openFile}
-          </button>
-          <button type="button" onClick={() => void onOpenFolder()}>
-            {copy.openFolder}
-          </button>
-          <button type="button" onClick={() => void onNewFile()}>
-            {copy.newFile}
-          </button>
-        </div>
       </div>
     </div>
   );

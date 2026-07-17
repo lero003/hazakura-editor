@@ -1247,28 +1247,28 @@
 }
 
 .start-panel {
-  align-items: center;
-  display: grid;
-  gap: 28px;
+  box-sizing: border-box;
   height: 100%;
-  justify-items: start;
-  margin: 0 auto;
-  max-width: 440px;
-  padding: 48px clamp(32px, 7vw, 96px);
+  overflow: auto;
+  padding: clamp(24px, 5vh, 44px) clamp(24px, 6vw, 72px);
+  width: 100%;
 }
 
 .start-panel-main {
   align-items: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: 560px;
   min-width: 0;
+  width: 100%;
 }
 
 .start-brand {
   align-items: center;
   display: flex;
-  gap: 12px;
+  gap: 9px;
   min-width: 0;
 }
 
@@ -1280,10 +1280,10 @@
   box-shadow: var(--shadow-sm);
   display: block;
   flex: 0 0 auto;
-  height: 52px;
+  height: 40px;
   object-fit: cover;
   overflow: hidden;
-  width: 52px;
+  width: 40px;
 }
 
 .start-kicker {
@@ -1293,28 +1293,15 @@
 }
 
 .start-value-pitch {
-  margin: 0.35rem 0 0.75rem;
+  margin: -0.15rem 0 0.25rem;
   color: var(--text-muted, color-mix(in srgb, var(--text) 72%, transparent));
   font-size: 0.95rem;
   letter-spacing: 0.01em;
 }
 
-.start-purpose-hints {
-  margin: 0 0 1.25rem;
-  padding-left: 1.15rem;
-  color: var(--text-muted, color-mix(in srgb, var(--text) 68%, transparent));
-  font-size: 0.85rem;
-  line-height: 1.55;
-  max-width: 28rem;
-}
-
-.start-purpose-hints li {
-  margin: 0.15rem 0;
-}
-
 .start-panel h1 {
   color: var(--text);
-  font-size: clamp(28px, 3.2vw, 40px);
+  font-size: clamp(26px, 3vw, 34px);
   font-weight: 740;
   letter-spacing: 0;
   line-height: 1.15;
@@ -1329,7 +1316,7 @@
   gap: 8px;
 }
 
-.start-actions button:first-child,
+.start-actions:not(.start-actions-secondary) > button:first-child,
 .start-actions-primary button,
 .start-resume-button {
   background: var(--accent);
@@ -1345,33 +1332,26 @@
   margin: 0 0 0.35rem;
 }
 
-.start-section-hint {
-  color: var(--text-muted, color-mix(in srgb, var(--text) 68%, transparent));
-  font-size: 0.8rem;
-  line-height: 1.45;
-  margin: 0 0 0.65rem;
-  max-width: 28rem;
-}
-
 .start-resume-section,
 .start-recent-section,
 .start-recovery-section {
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin: 0 0 0.35rem;
-  max-width: 28rem;
+  margin: 0.15rem 0 0;
+  max-width: 100%;
   min-width: 0;
   width: 100%;
 }
 
 .start-recent-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   list-style: none;
-  margin: 0 0 0.75rem;
+  margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .start-recent-button {
@@ -1432,13 +1412,13 @@
   gap: 6px;
 }
 
-:root[data-theme="yakou"] .start-actions button:first-child,
+:root[data-theme="yakou"] .start-actions:not(.start-actions-secondary) > button:first-child,
 :root[data-theme="yakou"] .start-actions-primary button,
 :root[data-theme="yakou"] .start-resume-button,
-:root[data-theme="edohigan"] .start-actions button:first-child,
+:root[data-theme="edohigan"] .start-actions:not(.start-actions-secondary) > button:first-child,
 :root[data-theme="edohigan"] .start-actions-primary button,
 :root[data-theme="edohigan"] .start-resume-button,
-:root[data-theme="shinkai"] .start-actions button:first-child,
+:root[data-theme="shinkai"] .start-actions:not(.start-actions-secondary) > button:first-child,
 :root[data-theme="shinkai"] .start-actions-primary button,
 :root[data-theme="shinkai"] .start-resume-button {
   background: var(--accent-gradient);
@@ -1447,7 +1427,7 @@
   padding: 7px 13px;
 }
 
-:root[data-theme="shokou"] .start-actions button:first-child,
+:root[data-theme="shokou"] .start-actions:not(.start-actions-secondary) > button:first-child,
 :root[data-theme="shokou"] .start-actions-primary button,
 :root[data-theme="shokou"] .start-resume-button {
   background: var(--accent-gradient);

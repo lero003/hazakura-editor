@@ -21,16 +21,11 @@ export type SafeEditorCopy = {
   startActions: string;
   /** Short purpose-led pitch: write / read / verify. */
   startValuePitch: string;
-  startHintWrite: string;
-  startHintRead: string;
-  startHintVerify: string;
   /** Primary resume control for the last workspace folder. */
   startResumeWorkspace: (folderLabel: string) => string;
-  startResumeWorkspaceHint: string;
   startResumeSection: string;
   /** Explicit recent workspace folders (capped list; no indexing). */
   startRecentWorkspacesSection: string;
-  startRecentWorkspacesHint: string;
   startOpenRecentWorkspace: (folderLabel: string) => string;
   startRecoverySection: string;
   startRecoveryHeading: string;
@@ -58,17 +53,10 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       startHeadingReturning: "つづきから かく",
       startActions: "はじめのわざ",
       startValuePitch: "かき、よみ、たしかめる。",
-      startHintWrite: "かく — Markdown を中央で",
-      startHintRead: "よむ — プレビュー・L・電子書籍・参照",
-      startHintVerify: "たしかめる — 差分・要確認・下書き復旧",
       startResumeWorkspace: (folderLabel) =>
         `まへの ところ「${folderLabel}」をひらく`,
-      startResumeWorkspaceHint:
-        "まえの ふぉるだを ひらきなおします。ひらけないときは もういちど えらびます。",
       startResumeSection: "つづきを かく",
       startRecentWorkspacesSection: "さいきん ひらいた ところ",
-      startRecentWorkspacesHint:
-        "えらんだ ふぉるだだけを ひらきます。じどうでは よみません。",
       startOpenRecentWorkspace: (folderLabel) =>
         `ところ「${folderLabel}」をひらく`,
       startRecoverySection: "たしかめる",
@@ -97,18 +85,10 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startHeadingReturning: "続きから書く",
         startActions: "開始操作",
         startValuePitch: "書いて、読んで、確かめる。",
-        startHintWrite: "書く — 中央の Markdown 編集",
-        startHintRead:
-          "読む — プレビュー / L Mode / 電子書籍 / 右の参照",
-        startHintVerify: "確かめる — 差分・要確認・未保存下書きの復旧",
         startResumeWorkspace: (folderLabel) =>
           `前回のフォルダ「${folderLabel}」を開く`,
-        startResumeWorkspaceHint:
-          "前回のフォルダを開き直します。開けないときは、もう一度選び直してください。",
         startResumeSection: "続きを書く",
         startRecentWorkspacesSection: "最近開いたフォルダ",
-        startRecentWorkspacesHint:
-          "選んだフォルダだけを開きます。自動では読み込みません。",
         startOpenRecentWorkspace: (folderLabel) =>
           `フォルダ「${folderLabel}」を開く`,
         startRecoverySection: "確かめる",
@@ -134,17 +114,10 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startHeadingReturning: "Continue where you left off",
         startActions: "Start actions",
         startValuePitch: "Write, read, and verify.",
-        startHintWrite: "Write — Markdown in the center",
-        startHintRead: "Read — Preview, L Mode, e-book, or a right-hand reference",
-        startHintVerify: "Verify — Diff, review flags, and draft recovery",
         startResumeWorkspace: (folderLabel) =>
           `Open last folder “${folderLabel}”`,
-        startResumeWorkspaceHint:
-          "Reopens your last folder. If access expired, you will pick it again.",
         startResumeSection: "Continue writing",
         startRecentWorkspacesSection: "Recent folders",
-        startRecentWorkspacesHint:
-          "Opens only the folder you choose. Nothing is scanned automatically.",
         startOpenRecentWorkspace: (folderLabel) =>
           `Open folder “${folderLabel}”`,
         startRecoverySection: "Verify",

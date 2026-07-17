@@ -100,6 +100,15 @@ describe("workspace.css", () => {
     expect(ruleBody(".reference-pdf-stage")).toMatch(/overflow:\s*auto/);
   });
 
+  it("keeps the Start Panel compact and scroll-safe", () => {
+    expect(ruleBody(".start-panel")).toMatch(/overflow:\s*auto/);
+    expect(ruleBody(".start-panel-main")).toMatch(/width:\s*100%/);
+    expect(ruleBody(".start-recent-list")).toMatch(/display:\s*grid/);
+    expect(ruleBody(".start-recent-list")).toMatch(
+      /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    );
+  });
+
   it("lets Reading Focus occupy the workspace without the editor grid", () => {
     expect(ruleBody(".workspace.workspace-reading-focus")).toMatch(
       /grid-template-columns:\s*minmax\(0,\s*1fr\)/,
