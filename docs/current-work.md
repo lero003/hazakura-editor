@@ -42,6 +42,9 @@ or explicit decision.
 - Shared right-pane header (Preview / e-book / Outline / Diff / Reference):
   short purpose, sticky chrome, Reference path hover; Diff header close clears
   compare then hides column.
+- PDF Reference 150%: one scroll container; mouse wheel pans vertically first
+  and continues horizontally at the vertical edge; trackpad two-axis input stays
+  native.
 
 ### Trust
 

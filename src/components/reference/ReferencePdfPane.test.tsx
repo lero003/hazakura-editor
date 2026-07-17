@@ -154,7 +154,9 @@ describe("ReferencePdfPane", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("img", { name: /a\.pdf — ページ 1 \/ 2/ })).toBeTruthy();
+      expect(
+        screen.getByRole("img", { name: /a\.pdf — ページ 1 \/ 2/ }),
+      ).toBeTruthy();
     });
     expect(screen.queryByRole("button", { name: "ページに合わせる" })).toBeNull();
 
@@ -169,6 +171,54 @@ describe("ReferencePdfPane", () => {
     fireEvent.keyDown(stage, { key: "ArrowDown" });
     expect(stage.scrollLeft).toBe(80);
     expect(stage.scrollTop).toBe(80);
+    expect(onPageIndexChange).not.toHaveBeenCalled();
+  });
+
+  it("uses a mouse wheel for vertical panning, then horizontal panning at the edge", async () => {
+    const onPageIndexChange = vi.fn();
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={onPageIndexChange}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 2,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("img", { name: /a\.pdf — ページ 1 \/ 2/ })).toBeTruthy();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "拡大" }));
+    const stage = screen.getByRole("region", {
+      name: "a.pdf — ページ 1 / 2 — 150%",
+    });
+    Object.defineProperties(stage, {
+      clientHeight: { configurable: true, value: 200 },
+      clientWidth: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 600 },
+      scrollWidth: { configurable: true, value: 900 },
+    });
+
+    fireEvent.wheel(stage, { deltaX: 0, deltaY: 120, deltaMode: 0 });
+    expect(stage.scrollTop).toBe(120);
+    expect(stage.scrollLeft).toBe(0);
+
+    stage.scrollTop = 400;
+    fireEvent.wheel(stage, { deltaX: 0, deltaY: 120, deltaMode: 0 });
+    expect(stage.scrollTop).toBe(400);
+    expect(stage.scrollLeft).toBe(120);
+
+    stage.scrollTop = 200;
+    stage.scrollLeft = 200;
+    fireEvent.wheel(stage, { deltaX: 30, deltaY: 40, deltaMode: 0 });
+    expect(stage.scrollTop).toBe(200);
+    expect(stage.scrollLeft).toBe(200);
     expect(onPageIndexChange).not.toHaveBeenCalled();
   });
 

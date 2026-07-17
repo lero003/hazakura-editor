@@ -832,9 +832,13 @@ recovered state separately where relevant.
     alt text, while the draft remains editable in the center. Exercise
     next/previous page, fit width, and 150%; keep the existing CSP unchanged
     (`data:` allowed, `blob:` not required). At 150%, confirm the page is 1.5
-    times the fitted pane width and every edge can be reached with native
-    scrolling. Focus the zoomed page and confirm Arrow keys plus Page Up / Page
-    Down pan the page without changing the PDF page. While a page is
+    times the fitted pane width and the PDF stage is the only scroll owner
+    (no nested parent scrollbar). With a standard mouse wheel, confirm vertical
+    movement works while room remains and continues horizontally at the
+    vertical edge; confirm Shift+wheel pans horizontally. With a trackpad,
+    confirm native two-axis panning is unchanged and every edge is reachable.
+    Focus the zoomed page and confirm Arrow keys plus Page Up / Page Down pan
+    the page without changing the PDF page. While a page is
     rendering, confirm the live status announces localized loading copy rather
     than an ellipsis-only placeholder. With the menu language set to kana,
     confirm the 150% control announces `かくだい`; then force a stale PDF

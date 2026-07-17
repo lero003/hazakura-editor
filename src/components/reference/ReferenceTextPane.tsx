@@ -139,7 +139,9 @@ export function ReferenceTextPane({
         </div>
       ) : null}
       <div
-        className="reference-pane-body"
+        className={`reference-pane-body${
+          isPdfReference(reference) ? " reference-pane-body--pdf" : ""
+        }`}
         data-testid="reference-pane-body"
       >
         {isTextReference(reference) ? (

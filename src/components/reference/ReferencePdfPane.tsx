@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type WheelEvent as ReactWheelEvent,
 } from "react";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import { nextReviewPage } from "../../features/referenceCompare/importPageMarkers";
@@ -46,6 +47,7 @@ type PageCacheEntry = {
 
 const PAGE_CACHE_MAX = 3;
 const PDF_PAN_STEP_PX = 80;
+const PDF_WHEEL_LINE_PX = 40;
 
 /** Shared render budget so 100% / 150% differ only by CSS scale. */
 function maxPixelsForZoom(mode: ZoomMode): number {
@@ -231,6 +233,34 @@ export function ReferencePdfPane({
     stage.scrollTop += top;
   };
 
+  const onStageWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    if (zoom !== "150" || event.ctrlKey || event.deltaX !== 0) return;
+
+    const stage = event.currentTarget;
+    const delta = normalizeWheelDelta(
+      event.deltaY,
+      event.deltaMode,
+      stage.clientHeight,
+    );
+    if (delta === 0) return;
+
+    let horizontalDelta = delta;
+    let nextTop = stage.scrollTop;
+    if (!event.shiftKey) {
+      const maxTop = Math.max(0, stage.scrollHeight - stage.clientHeight);
+      nextTop = clamp(stage.scrollTop + delta, 0, maxTop);
+      horizontalDelta -= nextTop - stage.scrollTop;
+    }
+
+    const maxLeft = Math.max(0, stage.scrollWidth - stage.clientWidth);
+    const nextLeft = clamp(stage.scrollLeft + horizontalDelta, 0, maxLeft);
+    if (nextTop === stage.scrollTop && nextLeft === stage.scrollLeft) return;
+
+    event.preventDefault();
+    stage.scrollTop = nextTop;
+    stage.scrollLeft = nextLeft;
+  };
+
   const pageStatus = `${copy.pageLabel} ${safePage + 1} / ${pageCount}`;
   const reviewStatus = hasReview
     ? `${copy.reviewLabel} ${reviewPageIndices.indexOf(safePage) >= 0 ? reviewPageIndices.indexOf(safePage) + 1 : "–"} / ${reviewPageIndices.length}`
@@ -348,6 +378,7 @@ export function ReferencePdfPane({
         className={`reference-pdf-stage reference-pdf-stage--${zoom}`}
         data-testid="reference-pdf-stage"
         onKeyDown={onStageKeyDown}
+        onWheel={onStageWheel}
         role={zoom === "150" ? "region" : undefined}
         tabIndex={zoom === "150" ? 0 : undefined}
       >
@@ -379,6 +410,24 @@ export function ReferencePdfPane({
       </div>
     </div>
   );
+}
+
+function normalizeWheelDelta(
+  delta: number,
+  deltaMode: number,
+  viewportHeight: number,
+): number {
+  if (deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    return delta * PDF_WHEEL_LINE_PX;
+  }
+  if (deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    return delta * Math.max(PDF_PAN_STEP_PX, viewportHeight * 0.8);
+  }
+  return delta;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
 function rememberPage(

@@ -21,6 +21,9 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 - Review follow-up fixed Space-key activation for the always-visible e-book
   edit action and realigned the CSS / living-doc contract tests with the boxed
   v1.14 state.
+- Reproduced PDF Reference 150% mouse friction is fixed in source: the PDF
+  stage now owns both scroll axes, ordinary wheel input moves vertically then
+  horizontally at the vertical edge, and trackpad two-axis input stays native.
 
 ### v1.14 Keep summary (one line each)
 
@@ -38,14 +41,20 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
   interaction checklist.
 - Narrow-window tab truncation, VoiceOver speech, long-doc / IME breadth.
 - Theme G signed export recheck and pin-to-assets Undo (carry-over from 1.13).
+- Hands-on packaged PDF Reference 150% check with a standard mouse: confirm
+  one scrollbar owner, vertical-to-horizontal wheel handoff, Shift+wheel, and
+  unchanged trackpad two-axis panning.
 
 ### Latest verification
 
-- `npm run typecheck`, `npm test` (193 files / 1618 tests),
-  `npm run build:vite`, `npm run smoke:app-store-surface`, `npm run build`.
-- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+- Current PDF-scroll source: `npm run typecheck`, `npm test` (193 files / 1621
+  tests), `npm run build:vite`, `npm run smoke:app-store-surface` (10 files /
+  107 tests), and `git diff --check`.
+- The preceding candidate also passed
+  `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
   `cargo test --manifest-path src-tauri/Cargo.toml` (362 passed / 2 ignored),
-  `git diff --check`, and `SKIP_BUILD=1 npm run smoke:macos-window`.
+  `npm run build`, and `SKIP_BUILD=1 npm run smoke:macos-window`; packaged
+  standard-mouse interaction remains separate evidence.
 
 ### Deferred residual (after candidate, optional)
 

@@ -93,6 +93,13 @@ describe("workspace.css", () => {
     expect(ruleBody(".preview-pane-ebook")).toMatch(/overflow:\s*hidden/);
   });
 
+  it("keeps PDF reference scrolling on the stage instead of nesting scrollers", () => {
+    const pdfBody = ruleBody(".reference-pane-body--pdf");
+    expect(pdfBody).toMatch(/display:\s*flex/);
+    expect(pdfBody).toMatch(/overflow:\s*hidden/);
+    expect(ruleBody(".reference-pdf-stage")).toMatch(/overflow:\s*auto/);
+  });
+
   it("lets Reading Focus occupy the workspace without the editor grid", () => {
     expect(ruleBody(".workspace.workspace-reading-focus")).toMatch(
       /grid-template-columns:\s*minmax\(0,\s*1fr\)/,

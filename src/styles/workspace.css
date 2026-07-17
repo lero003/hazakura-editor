@@ -753,6 +753,12 @@
   overflow: auto;
 }
 
+/* PDF stage owns both axes; the body must not become a second scroller. */
+.reference-pane-body--pdf {
+  display: flex;
+  overflow: hidden;
+}
+
 /* Body is the only scroller; the pre must not create a nested overflow. */
 .reference-text-surface {
   display: block;

@@ -60,6 +60,29 @@ describe("ReferenceTextPane", () => {
     expect(screen.queryByTestId("reference-text-surface")).toBeNull();
   });
 
+  it("marks a PDF body so only the PDF stage owns scrolling", () => {
+    render(
+      <ReferenceTextPane
+        copy={referenceCompareCopy("ja")}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 1,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    expect(
+      screen
+        .getByTestId("reference-pane-body")
+        .classList.contains("reference-pane-body--pdf"),
+    ).toBe(true);
+  });
+
   it("uses the kana role label for a read-only reference", () => {
     render(
       <ReferenceTextPane
