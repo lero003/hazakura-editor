@@ -1874,11 +1874,20 @@
 
 .preview-pane {
   background: var(--surface-strong);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: auto;
 }
 
 .preview-pane-ebook {
   overflow: hidden;
+}
+
+.preview-pane > .side-pane-purpose + * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 .preview-pane-card {
@@ -1942,15 +1951,35 @@
   color: var(--accent);
 }
 
+.side-pane-purpose {
+  color: var(--text-muted);
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 1.4;
+  margin: 0;
+  padding: 6px 12px 4px;
+}
+
+.side-pane-purpose-empty {
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
 .preview-unavailable {
   align-items: center;
   color: var(--text-muted);
   display: flex;
+  flex-direction: column;
   font-size: 13px;
   height: 100%;
   justify-content: center;
   padding: 32px;
   text-align: center;
+}
+
+.preview-unavailable-reason {
+  margin: 0;
+  max-width: 22rem;
 }
 
 .outline-pane {

@@ -232,47 +232,64 @@ export function SidePane({
           truncated={outlineTruncated}
         />
       ) : sidePaneMode === "ebook" && activeTab && previewVisible ? (
-        <Suspense
-          fallback={<DelayedLoadingFallback label={copy.loadingEbook} />}
-        >
-          <EBookPane
-            documentKey={activeEbookDocumentKey ?? undefined}
-            documentPath={activeTab.path}
-            initialLocation={initialEbookLocation}
-            mediaAccess={mediaAccess}
-            menuLanguage={menuLanguage}
-            onApproveLocalImageParent={onApproveLocalImageParent}
-            onEnterReadingFocus={onOpenEbookReadingFocus}
-            onLocationChange={onEbookLocationChange}
-            onOpenLocalLink={onOpenPreviewLocalLink}
-            source={activeContents}
-            workspaceRoot={
-              workspaceRootPath ??
-              (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
-            }
-          />
-        </Suspense>
+        <>
+          <p className="side-pane-purpose" role="note">
+            {copy.ebookPurposeHint}
+          </p>
+          <Suspense
+            fallback={<DelayedLoadingFallback label={copy.loadingEbook} />}
+          >
+            <EBookPane
+              documentKey={activeEbookDocumentKey ?? undefined}
+              documentPath={activeTab.path}
+              initialLocation={initialEbookLocation}
+              mediaAccess={mediaAccess}
+              menuLanguage={menuLanguage}
+              onApproveLocalImageParent={onApproveLocalImageParent}
+              onEnterReadingFocus={onOpenEbookReadingFocus}
+              onLocationChange={onEbookLocationChange}
+              onOpenLocalLink={onOpenPreviewLocalLink}
+              source={activeContents}
+              workspaceRoot={
+                workspaceRootPath ??
+                (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+              }
+            />
+          </Suspense>
+        </>
       ) : activeTab && previewVisible ? (
-        <Suspense
-          fallback={<DelayedLoadingFallback label={copy.loadingPreview} />}
-        >
-          <PreviewPane
-            documentKey={activeTab.id}
-            documentPath={activeTab.path}
-            mediaAccess={mediaAccess}
-            onApproveLocalImageParent={onApproveLocalImageParent}
-            onOpenLocalLink={onOpenPreviewLocalLink}
-            onRenderComplete={restorePreviewScroll}
-            source={activeContents}
-            workspaceRoot={
-              workspaceRootPath ??
-              (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
-            }
-          />
-        </Suspense>
+        <>
+          <p className="side-pane-purpose" role="note">
+            {copy.previewPurposeHint}
+          </p>
+          <Suspense
+            fallback={<DelayedLoadingFallback label={copy.loadingPreview} />}
+          >
+            <PreviewPane
+              documentKey={activeTab.id}
+              documentPath={activeTab.path}
+              mediaAccess={mediaAccess}
+              onApproveLocalImageParent={onApproveLocalImageParent}
+              onOpenLocalLink={onOpenPreviewLocalLink}
+              onRenderComplete={restorePreviewScroll}
+              source={activeContents}
+              workspaceRoot={
+                workspaceRootPath ??
+                (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+              }
+            />
+          </Suspense>
+        </>
       ) : (
         <PreviewUnavailablePane
           ariaLabel={copy.previewUnavailable}
+          purposeHint={
+            sidePaneMode === "ebook"
+              ? copy.ebookPurposeHint
+              : sidePaneMode === "preview"
+                ? copy.previewPurposeHint
+                : undefined
+          }
           reason={
             activeTab
               ? copy.previewDisabled

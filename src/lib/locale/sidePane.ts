@@ -35,6 +35,9 @@ export type SidePaneCopy = {
   openTextFileToPreview: string;
   openTextFileToEbook: string;
   previewDisabled: string;
+  /** One-line contrast: continuous scroll vs paged book reading. */
+  previewPurposeHint: string;
+  ebookPurposeHint: string;
   previewTab: string;
   previewTabTitle: string;
   previewTabTitleHide: string;
@@ -69,7 +72,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       diffTabTitleHide: "さぶんを かくす（げんぽんは のこる）",
       ebookReading: "ほんのやうに よむ (えーぼっく)",
       ebookTab: "ゑーほん",
-      ebookTabTitle: "ほんのやうに ふみを よみかへす",
+      ebookTabTitle:
+        "ぺーじめくりで ほんのように よみかへす（したみとは べつ）",
       ebookTabTitleHide: "えーぼっくを かくす（ふみは のこる）",
       fileComparison: "ふみくらべ",
       imagePreview: "ゑのしたみ",
@@ -93,13 +97,18 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       outlineTruncated: "みだしがおほいため、はじめの200件までしめします。",
       documentOutline: "ふみのみだし",
       openTextFileToPreview:
-        "よむには、てきすとのふみを ひらいてください。",
+        "みた目を たしかめる したみです。てきすとのふみを ひらいてください。",
       openTextFileToEbook:
-        "ほんのように よむには、てきすとのふみを ひらいてください。",
+        "ぺーじめくりで ほんのように よむ えーぼっくです。てきすとのふみを ひらいてください。",
       previewDisabled:
         "したみは おこのみで つかわないせっていです。ふみそのものは のこります。",
+      previewPurposeHint:
+        "したみ — たてスクロールで みためを たしかめる（ぺーじめくりなし）",
+      ebookPurposeHint:
+        "えーぼっく — ぺーじめくりで よみかへす（したみとは べつ）",
       previewTab: "したみ",
-      previewTabTitle: "かいた Markdown の みためを たしかめる",
+      previewTabTitle:
+        "たてスクロールで Markdown の みためを たしかめる（えーぼっくではない）",
       previewTabTitleHide: "したみを かくす（げんぽんは のこる）",
       referenceTab: "さんしょう",
       referenceTabTitle: "げんぽんを よこに みながら なおす",
@@ -131,7 +140,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         diffTabTitleHide: "差分を隠す（原稿は残る）",
         ebookReading: "本のように読む（電子書籍）",
         ebookTab: "電子書籍",
-        ebookTabTitle: "本のように読み返す",
+        ebookTabTitle:
+          "ページめくりで本のように読み返す（プレビューとは別）",
         ebookTabTitleHide: "電子書籍表示を隠す（原稿は残る）",
         fileComparison: "ファイル比較",
         imagePreview: "画像プレビュー",
@@ -157,13 +167,18 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         outlineTruncated: "見出しが多いため、最初の200件まで表示しています。",
         documentOutline: "文書アウトライン",
         openTextFileToPreview:
-          "読む・見た目を確かめるには、テキストファイルを開いてください。",
+          "見た目確認用のプレビューです。テキストファイルを開いてください。",
         openTextFileToEbook:
-          "本のように読むには、テキストファイルを開いてください。",
+          "ページめくりで本のように読む電子書籍表示です。テキストファイルを開いてください。",
         previewDisabled:
           "プレビューは設定でオフです。原稿そのものは残ります。",
+        previewPurposeHint:
+          "プレビュー — 縦スクロールで見た目を確認（ページめくりなし）",
+        ebookPurposeHint:
+          "電子書籍 — ページめくりで読み返す（プレビューとは別）",
         previewTab: "プレビュー",
-        previewTabTitle: "書いた Markdown の見た目を確認",
+        previewTabTitle:
+          "縦スクロールで Markdown の見た目を確認（電子書籍ではない）",
         previewTabTitleHide: "プレビューを隠す（原稿は残る）",
         referenceTab: "参照",
         referenceTabTitle: "原本を横に見ながら直す",
@@ -193,7 +208,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         diffTabTitleHide: "Hide Diff — source stays in the editor",
         ebookReading: "Read as a book (e-book)",
         ebookTab: "e-book",
-        ebookTabTitle: "Read the document like a book",
+        ebookTabTitle:
+          "Turn pages and read like a book (not continuous preview)",
         ebookTabTitleHide: "Hide e-book reading — source stays",
         fileComparison: "File comparison",
         imagePreview: "Image Preview",
@@ -219,12 +235,18 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
           "Showing the first 200 headings because this file has more.",
         documentOutline: "Document outline",
         openTextFileToPreview:
-          "Open a text file to read and check how it looks.",
-        openTextFileToEbook: "Open a text file to read it like a book.",
+          "Preview is for continuous scroll layout checks. Open a text file.",
+        openTextFileToEbook:
+          "E-book is for paged, book-like reading. Open a text file.",
         previewDisabled:
           "Preview is off in Preferences. Your source stays intact.",
+        previewPurposeHint:
+          "Preview — continuous scroll to check layout (no page turns)",
+        ebookPurposeHint:
+          "E-book — turn pages to reread (separate from Preview)",
         previewTab: "Preview",
-        previewTabTitle: "Check how the Markdown looks",
+        previewTabTitle:
+          "Scroll continuously to check Markdown layout (not e-book pages)",
         previewTabTitleHide: "Hide preview — source stays in the editor",
         referenceTab: "Reference",
         referenceTabTitle: "Edit while checking the source beside it",

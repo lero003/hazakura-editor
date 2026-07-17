@@ -4,29 +4,43 @@ import { getSidePaneCopy } from "./sidePane";
 describe("getSidePaneCopy purpose-led pane titles", () => {
   it("explains the task behind each pane instead of repeating its feature name", () => {
     expect(getSidePaneCopy("en")).toMatchObject({
-      previewTabTitle: "Check how the Markdown looks",
+      previewTabTitle:
+        "Scroll continuously to check Markdown layout (not e-book pages)",
       previewTabTitleHide: "Hide preview — source stays in the editor",
+      previewPurposeHint:
+        "Preview — continuous scroll to check layout (no page turns)",
       referenceTabTitle: "Edit while checking the source beside it",
       referenceTabTitleRetained: "Show the loaded reference again",
-      ebookTabTitle: "Read the document like a book",
+      ebookTabTitle:
+        "Turn pages and read like a book (not continuous preview)",
+      ebookPurposeHint:
+        "E-book — turn pages to reread (separate from Preview)",
       outlineTabTitle: "Jump to a section from its headings",
       diffTabTitle: "Compare changes before deciding",
     });
 
     expect(getSidePaneCopy("ja")).toMatchObject({
-      previewTabTitle: "書いた Markdown の見た目を確認",
+      previewTabTitle:
+        "縦スクロールで Markdown の見た目を確認（電子書籍ではない）",
       previewTabTitleHide: "プレビューを隠す（原稿は残る）",
+      previewPurposeHint:
+        "プレビュー — 縦スクロールで見た目を確認（ページめくりなし）",
       referenceTabTitle: "原本を横に見ながら直す",
       referenceTabTitleRetained: "読み込み済みの参照を再表示",
-      ebookTabTitle: "本のように読み返す",
+      ebookTabTitle:
+        "ページめくりで本のように読み返す（プレビューとは別）",
+      ebookPurposeHint:
+        "電子書籍 — ページめくりで読み返す（プレビューとは別）",
       outlineTabTitle: "見出しから目的の場所へ移動",
       diffTabTitle: "変更を見比べて確認",
     });
 
     expect(getSidePaneCopy("kana")).toMatchObject({
-      previewTabTitle: "かいた Markdown の みためを たしかめる",
+      previewTabTitle:
+        "たてスクロールで Markdown の みためを たしかめる（えーぼっくではない）",
       referenceTabTitle: "げんぽんを よこに みながら なおす",
-      ebookTabTitle: "ほんのやうに ふみを よみかへす",
+      ebookTabTitle:
+        "ぺーじめくりで ほんのように よみかへす（したみとは べつ）",
       outlineTabTitle: "みだしから もくてきの ばしょへ うつる",
       diffTabTitle: "へんかを みくらべて たしかめる",
       previewDisabled:
