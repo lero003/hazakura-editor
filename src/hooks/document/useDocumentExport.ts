@@ -509,12 +509,13 @@ ${bodyHtml}
         }
 
         await exportPdfFile(destPath, standaloneHtml);
+        // Keep the destination path visible (HTML/EPUB parity). Do not
+        // auto-clear success so the user can still read where the file went.
         setStatus(
           embedResult.failedPaths.length > 0
-            ? `PDF exported with ${embedResult.failedPaths.length} image warning(s)`
-            : "PDF exported",
+            ? `PDF exported with ${embedResult.failedPaths.length} image warning(s): ${destPath}`
+            : `PDF exported: ${destPath}`,
         );
-        setTimeout(() => setStatus(""), 2000);
         return;
       }
 
@@ -696,7 +697,11 @@ ${bodyHtml}
 </html>`;
 
       await saveTextFileAs(destPath, standaloneHtml, "lf", "utf-8", null);
-      setStatus(`Exported HTML: ${destPath}`);
+      setStatus(
+        htmlEmbed.failedPaths.length > 0
+          ? `Exported HTML with image warnings: ${destPath}`
+          : `Exported HTML: ${destPath}`,
+      );
     } catch (err) {
       setGlobalError(`Export HTML failed: ${String(err)}`);
       setStatus("Export HTML failed");

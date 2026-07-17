@@ -48,6 +48,11 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
   close-action name. Unique filenames remain unchanged and full paths remain
   available as the tab title. This is presentation-only; tab identity, path,
   dirty state, selection, save, and close behavior are unchanged.
+- **v1.14 Trust export destination Keep:** PDF success status includes the
+  chosen destination path and any image-warning count, and no longer
+  auto-clears after two seconds. HTML export success can also surface image
+  warnings with the destination, matching EPUB. Status copy stays English-key
+  based with Japanese localization that preserves the path.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

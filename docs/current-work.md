@@ -89,6 +89,10 @@ another theme instead of finishing the list:
   share a filename, each tab and close action adds its immediate parent folder
   as a quiet disambiguator. Unique names stay unchanged; full paths remain in
   the title. Narrow-window visual truncation remains packaged/manual evidence.
+- **Trust / export destination clarity** — **Keep in source.** Successful PDF
+  export status includes the destination path (and image-warning count when
+  needed) and no longer auto-clears after 2s. HTML export reports image
+  warnings the same way EPUB already did. Localized ja copy keeps the path.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

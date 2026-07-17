@@ -413,7 +413,7 @@ describe("useDocumentExport", () => {
   .markdown-preview pre,
   .markdown-preview code,
   .markdown-preview .markdown-table-frame th { background: transparent; }`);
-    expect(setStatus).toHaveBeenCalledWith("PDF exported");
+    expect(setStatus).toHaveBeenCalledWith("PDF exported: /tmp/print-me.pdf");
   });
 
   it("treats encoding-only changes as unsaved in export preflight", async () => {
@@ -471,7 +471,7 @@ describe("useDocumentExport", () => {
 
     expect(tauriApi.exportPdfFile).toHaveBeenCalledTimes(1);
     expect(setStatus).toHaveBeenLastCalledWith(
-      "PDF exported with 1 image warning(s)",
+      "PDF exported with 1 image warning(s): /tmp/image-warning.pdf",
     );
   });
 

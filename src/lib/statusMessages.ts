@@ -354,6 +354,12 @@ export function localizeStatusMessage(
     return `参照を開きました: ${message.slice("Reference opened: ".length)}`;
   }
 
+  if (message.startsWith("Exported HTML with image warnings: ")) {
+    return `HTML を保存しました（一部の画像は置き換えました）: ${message.slice(
+      "Exported HTML with image warnings: ".length,
+    )}`;
+  }
+
   if (message.startsWith("Exported HTML: ")) {
     return `HTML を保存しました: ${message.slice("Exported HTML: ".length)}`;
   }
@@ -372,6 +378,31 @@ export function localizeStatusMessage(
 
   if (message.startsWith("Exported EPUB: ")) {
     return `EPUBを保存しました: ${message.slice("Exported EPUB: ".length)}`;
+  }
+
+  {
+    const pdfWarningMatch = message.match(
+      /^PDF exported with (\d+) image warning\(s\): ([\s\S]+)$/,
+    );
+    if (pdfWarningMatch) {
+      const count = pdfWarningMatch[1];
+      const destPath = pdfWarningMatch[2];
+      return `PDFを書き出しました（画像警告 ${count} 件）: ${destPath}`;
+    }
+  }
+
+  if (message.startsWith("PDF exported: ")) {
+    return `PDFを書き出しました: ${message.slice("PDF exported: ".length)}`;
+  }
+
+  // Legacy count-only warning (no destination) for older callers / tests.
+  {
+    const pdfWarningOnly = message.match(
+      /^PDF exported with (\d+) image warning\(s\)$/,
+    );
+    if (pdfWarningOnly) {
+      return `PDFを書き出しました（画像警告 ${pdfWarningOnly[1]} 件）`;
+    }
   }
 
   if (message.startsWith("Image saved: ")) {
