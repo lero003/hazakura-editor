@@ -1,619 +1,69 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for published v1.13 and open v1.14+ refinement
+Scope: Short handoff for v1.14 local candidate after published v1.13
 Authority: Medium
-Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
+Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 
 ## Current State
 
-- Package/app version in tree is **`1.14.0`** (post-v1.13 development line).
-  GitHub source tag **`v1.12.0`** is published (source archive only; no binary
-  assets). The published Mac App Store version is **`1.13.0`** (App Review
-  passed and release published, user-reported 2026-07-18). Prior store
-  baseline **`1.8.0` build `89`** remains historical. Local package provenance
-  lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- Selected and published store line is **`1.13.0`**. Do not move published
-  tags or reopen without a reproduced hotfix. Extended signed TestFlight
-  interaction and spoken VoiceOver remain ongoing quality evidence.
-- v1.14 Continuity has one source Keep: duplicate text-tab filenames add the
-  immediate parent folder to visible/accessibility/close labels. Unique names
-  stay unchanged; narrow-window visual truncation remains manual evidence.
-- Build `89` contains the PDF-reference zoom simplification: fit-page was
-  removed, 150% now means 1.5 times the fitted pane width, and the zoomed page
-  supports native two-axis scrolling plus keyboard panning. Static package
-  verification passed; hands-on panning with a real PDF is user-side follow-up.
-- Build `89` also contains the v1.8 structured-Markdown preparation:
-  `findYamlFrontmatter` is the shared leading-frontmatter boundary for Outline,
-  e-book chapter splitting, and EPUB export. It is interpretation-only and does
-  not add a structure UI, hidden model, or source rewrite.
-- v1.9 Writing Loop Clarity W1–W4 are source complete and reviewed. The review
-  fixed Command Palette labels staying stale when locale changed while open,
-  aligned the kana returning CTA, and repaired living-doc release/lane checks.
-  v1.9 stayed source-complete without its own public release and is present
-  inside the `1.11.0` candidate rather than shipping alone.
-- **v1.10 S1–S4 implementation is complete and held as a candidate with
-  representative packaged smoke.** The shared
-  source-offset model drives Outline, e-book chapters/page-breaks, and EPUB
-  navigation. Outline now shows hierarchy/page-breaks, four non-blocking advice
-  kinds, and explicit H1–H6 one-level controls. The edit revalidates the live
-  source, dispatches once through CodeMirror, participates in Undo/dirty, and
-  refuses read-only, Assist-lock, IME, boundary, and stale-offset cases. Fixture:
-  `npm run smoke:fixtures:v1.10-structure`; contract:
-  `docs/v1.10-single-document-structure-design.md`.
-  A fresh local bundle on 2026-07-14 confirmed the temporary-fixture Outline,
-  three overview advice kinds, 803-line advice, dirty transition, and single-step
-  Undo restoration. Source-jump breadth, IME, Save As, recovery, e-book/EPUB,
-  and signed TestFlight remain open manual evidence and move into v1.11 S4.
-- **v1.12 OKF Starter Scaffold is closed and published as `1.12.0`.** Explicit
-  create of minimal / book-like Markdown trees from Command Palette, folder
-  context menu, workspace **新規 (+)**, and OS **File → 知識フォルダのひな形**.
-  Bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable).
-  Source hardening now uses the actual local creation date, strict path/text
-  validation, non-recursive owned-artifact cleanup, visible post-create partial
-  failures, and keyboard-complete sidebar New menu semantics. A representative
-  developer-app smoke created both templates through all four entry points,
-  preserved existing roots with `-2` names, expanded the local date, opened
-  `index.md`, and returned a required-clean explicit OKF review. The signed
-  universal app/pkg then passed signature, entitlement, notice, metadata, and
-  checksum verification. Candidate specifics remain in ignored
-  `docs/internal/app-store-candidates/latest.json`. Contract:
-  `docs/v1.12-okf-scaffold-design.md`.
-- **Shared OKF pin:** review and scaffolds use one Draft pin (`ee67a5c` /
-  v0.1). When upstream OKF moves, update pure model, fixtures, scaffold assets,
-  and docs **together** — process in `docs/okf-spec-pin.md`.
-- **v1.11 OKF Draft Compatibility Preview is held as a local TestFlight
-  candidate.** S0–S4 source and local candidate gates passed: fixtures, `yaml`
-  pure model, async `scan_okf_bundle`, writer-facing review panel with
-  open/edit/recheck. Explicit, bounded, read-only; no startup scan, auto-repair,
-  Book Scope, or multi-file export. Contract:
-  `docs/v1.11-okf-draft-preview-design.md`.
-- `v1.12.0` is the current immutable GitHub source tag and published Mac App
-  Store version line (source archive on GitHub; store binary via App Store).
-  `v1.8.0` / build `89` remain prior published history. Do not move published
-  tags or mutate published assets.
-- **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
-  without issues (user-reported 2026-07-10). Release notes:
-  `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
-- **v1.7 Reference Compare is closed and published** — **R0–R4 source landed**.
-  Layout: **editor center-left (primary), reference right (preview-like)**.
-  Not Diff — reference while editing. Text/MD + PDF/image open as read-only
-  right reference; workspace PDF/text “beside” opens are preview treatment,
-  not dirty editor tabs. Import Assist pair/follow; page-level advisory 要確認
-  from OCR confidence (never per-char claims). Discovery: File menu /
-  Command Palette `参照ファイルを横に開く…`; workspace and open-tab context
-  menus `参照として横に開く`. PDF page rasters use CSP-allowed bounded
-  `data:image/png` (do not restore `blob:` without CSP re-review).
-  Top chrome separates L Mode (editing presentation) from right-pane content;
-  `参照` is an explicit right-pane toggle. Switching to Preview / e-book /
-  Outline / Diff hides but retains the loaded reference; only its in-pane close
-  action ends the session.
-  Source: `docs/archive/planning/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
-- **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
-  historical for v1.6: `docs/archive/reviews/import-assist-boundary-review-v1.6.md`.
-- Quality packs A/B + PDF tail/theme/timeout shipped with v1.6. See
-  **`docs/archive/operations/quality-inventory-v1.6.md`** (historical).
-- PDF export caps **in-body** embedded images to the shortened column
-  height; the larger leading-cover bound applies only after the cover is split
-  onto its own A4 page.
-- **Q-IMG-1 A+D shipped** with v1.6: parent workspace owns manuscript and
-  images; Preview/HTML/PDF share document-relative containment. Optional
-  packaged re-smoke is regression breadth, not a v1.6 reopen trigger.
-- Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
-  `externalBin` (`npm run build:import-assist-helper:live`). Both nested
-  helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
-- Published Mac App Store version is **`1.13.0`**. Raw App Store Connect logs
-  stay outside the repo. The v1 public promise is
-  `Markdownで書き、本として読み、ローカルAIで整える。`
-- The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
-  Manuscript baseline. No public-release hotfix blocker has been
-  reported. All commented observations are routed to
-  `docs/archive/operations/v1.1-v1.2-followup.md`.
-- Earlier v1 lanes (1.0–1.5, Local Assist preview, position continuity,
-  Daily Trust) remain historical product history. Detailed verification
-  notes live in release notes and `docs/archive/`.
-- PDF capture treats export layout as one A4-high horizontal row and counts
-  occupied text/media columns; do not restore document-wide scroll
-  height/width as the normal measurement.
-- Local App Store / TestFlight package candidate metadata lives in
-  `docs/internal/app-store-candidates/latest.json`, regenerated by
-  `npm run release:candidate -- --with-app-store-pkg`. Tracked docs no
-  longer carry per-build SHA / pkg path values; consult `latest.json`
-  for local artifact provenance, not as proof of the public build number.
-- The user-facing PDF action is direct PDF export, not print UI: Save
-  dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML /
-  existing parent folder / `.pdf` destination, an app-owned WebView
-  renders the generated HTML, WebKit creates PDF data, and Rust writes
-  the selected file. The path does not use a browser, shell, external
-  opener, or macOS print dialog. Do not revive the user-facing macOS
-  print UI path; the TestFlight build still showed macOS' "This
-  application does not support printing" alert.
+- Package/app version in tree: **`1.14.0`** (local source candidate).
+- Published Mac App Store: **`1.13.0`** (user-reported 2026-07-18). Do not
+  reopen without a reproduced hotfix. Tags and published assets are immutable.
+- Latest recorded GitHub source tag: **`v1.12.0`** (source archive only). No
+  `v1.13.0` / `v1.14.0` source tags are claimed here.
+- Local package provenance: ignored
+  `docs/internal/app-store-candidates/latest.json`.
+- **v1.14 Keep box is source-complete for a candidate cut** (not store-ready by
+  docs alone). Inventory and draft App Store copy:
+  `docs/releases/1.14.0-app-store-release-notes.md`. Queue:
+  `docs/current-work.md`.
 
-## Current Work Queue
+### v1.14 Keep summary (one line each)
 
-Use `docs/current-work.md` for the active queue. Current priority order:
+- Continuity: same-name tabs parent folder; Reference retained toggle; recent
+  workspaces; shared sticky right-pane header.
+- Trust: export path/warnings; Assist lock & not-saved; Import draft status.
+- Writing Loop: Preview vs e-book purpose; e-book edit-here; Outline hints +
+  heading Undo status.
+- OKF: scaffold pre-create file list; first-fix “open to edit” card.
 
-1. **v1.14+ try-and-error refinement after published v1.13:** follow
-   `docs/v1.13-plus-refinement-roadmap.md`. One hypothesis per run; Keep /
-   Iterate / Revert with evidence. Theme A pool:
-   `docs/v1.13-interaction-clarity-plan.md`. **Theme A Signal & Silence (1–7)
-   is Keep.** A settings-density follow-up is also Keep: the four settings
-   sections use a desktop 2×2 grid and retain a narrow-window single column,
-   without changing setting semantics or order. Next bias: Continuity, Writing
-   Loop, Trust edges, Media
-   boundaries, or hands-on friction. **Media boundaries** (outside-local /
-   remote Preferences, export materialize, optional assets rewrite):
-   `docs/v1.xx-image-media-boundary-plan.md`; default remains
-   **Theme G M0–M4 Keep** (honest blocks; outside-local current-document
-   consent or explicit allow-all; no remembered folders; remote Pref
-   default Off; export materialize; palette pin to assets + Undo). Manual smoke
-   checklist: `docs/smoke-checklist.md` § Theme G. Defaults: no automatic remote
-   / unapproved outside load in the default mode. Source review fixed redirect
-   traversal and added remote-pin confirmation. A follow-up removed the
-   workspace-global approval cache so newly opened tabs ask again. Built-app
-   hands-on smoke confirmed: ask blocks first, explicit approval is tab-local,
-   close/reopen asks again, allow-all survives reopen, remote stays Off, and
-   returning to ask blocks immediately without rewriting Markdown. Next:
-   TestFlight build 97 exposed a blank PDF cover page and EPUB image references
-   falling back to unavailable-path text. The source fix makes PDF images eager
-   and synchronously decoded for hidden WebKit capture, and keeps workspace /
-   approved-local / remote EPUB loaders distinct through archive packaging. A
-   fresh local app export produced a visible first-page PDF cover and an EPUB
-   resource whose SHA-256 matched the source image. Next: signed TestFlight
-   recheck for both exports and pin-to-assets Undo breadth.
-   Theme A and Theme G shipped in `1.13.0`; next bias is Continuity, Writing
-   Loop, Trust edges, Structure / OKF depth, or distribution confidence.
-   Do not reopen published `1.13.0` without a hotfix decision.
-2. **Hotfix gate:** only with a reproduced blocker on shipped `1.13.0` and
-   explicit user approval for a patch release.
-3. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
-   `session:N`); pathless restore always opens a new pathless tab; reference
-   text scrolls on `.reference-pane-body` with wrap-safe full rendering
-   (variable-height windowing is deferred); pathless
-   budgets separate from path drafts + storage failure status; L Mode is
-   Markdown-only and now hides a loaded Reference pane without clearing its
-   session. Local Developer packaged T-1 continuity and T-2 forced-termination
-   recovery have passed. Signed TestFlight T-1/T-2 breadth and S-3
-   long-reference copy/signed breadth remain open. The repeatable fixtures are
-   generated by `npm run smoke:fixtures:v1.8-reference`. Follow-up self-review
-   fixes now propagate bulk draft removal results and surface cleanup failure
-   for Save / Save As / restore / discard / tab close / window close without
-   blocking editing or an explicit close. Text Reference keeps wrap-safe full
-   rendering inside a separate 1.5M-character / 50,000-line DOM budget;
-   over-budget input fails visibly
-   before replacing the existing reference. The exact signed-TestFlight status
-   copy, narrow Japanese wrapping, and budget boundary remain manual proof
-   rather than source-complete claims.
-3. **v1.8 source slices:** host-only bookmark / native Trash integration
-   checks are explicit ignored tests; Trash backup cleanup uses an injected
-   unit fixture; provider-process polling tolerates full-suite parallel load.
-   Quick Open, Command Palette, and Global Search now expose modal dialog,
-   combobox/listbox, active-option, and live search-status semantics. Inline
-   rename accessible names now follow English / Japanese / kana UI copy.
-   Global Search missing-workspace and runtime failure status now follows the
-   active language, retains raw diagnostic detail, and suppresses the false
-   zero-match message on failure. Command Palette and Global Search
-   dialog/combobox names, placeholders, and empty states now follow English /
-   Japanese / kana. A latest-HEAD Developer bundle AX pass confirmed the
-   Japanese and kana names; actual VoiceOver speech remains manual.
-   The Reference Compare empty-editor hint now has an explicit polite live
-   region and an AppWorkspace regression test. Its narrow-pane Draft /
-   Reference toggles now expose `aria-pressed` inside a localized named toolbar,
-   with a focused regression that pins the selected target; packaged spoken
-   VoiceOver remains a separate proof boundary. Locale tests also pin the
-   toolbar key parity and the English / Japanese / kana names. The contextual
-   Slash command listbox now uses the same localized-name contract, with a
-   focused component and locale regression. Open-file tab row and tablist
-   containers now receive localized names through Safe Editor copy as well. The
-   primary Editor pane label follows the same contract and has focused coverage.
-   Workspace file rows also localize the open / unsaved state spoken by the
-   tree buttons, with WorkspaceTree and file-ops locale tests. Loading and
-   per-folder truncation notices now use that same localized copy. Text and
-   image tab close controls also use active English / Japanese / kana copy,
-   with AppTopChrome and Safe Editor locale coverage. Dirty tab descriptions
-   now use the localized unsaved-state copy as well. The Local Assist
-   generation-lock status also follows the active English / Japanese / kana
-   copy while retaining its polite live-region and read-only boundary. The
-   Editor full-path copy button also has a kana accessible name rather than an
-   English fallback. Reference PDF loading also announces localized status
-   copy instead of an ellipsis-only live status.
-   Reference Text/Image panes also keep a kana read-only role label instead of
-   falling back to English.
-   PDF stale-handle errors now keep kana copy as well, while unknown diagnostic
-   details remain unchanged.
-   The PDF 150% zoom control also keeps a kana accessible name instead of
-   falling back to Japanese kanji.
-   Editor内検索のkana「前へ」操作も誤記を修正し、検索バーの表示名と
-   VoiceOver名を`まえへ`に揃えた。
-   L Modeのkana Typewriter説明に残っていた文字化けも修正し、カーソル行を
-   縦方向中央付近へ保つ説明を自然なかな表記へ揃えた。
-   Side PaneのPreview無効理由もkanaで表示し、漢字の`無効`へ戻らないようにした。
-   Preferencesのkanaテーマ説明に残っていた`じょうけ ん て ま す`の分割崩れも
-   修正し、テーマの説明文を自然なかな表記へ揃えた。
-   Auto-backupのkana説明に残っていた`未保存`もかな化した。
-   `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
-   tests**); this is source/App Store-lane surface evidence, not signed
-   TestFlight or spoken VoiceOver evidence.
-   The latest local App Store preview bundle also passed
-   `smoke:macos-window` with a 1282x822 onscreen window; its macOS
-   accessibility tree exposed the Japanese tab row/list, tab close names,
-   pane controls, workspace tree, and Editor region. This remains AX-tree
-   evidence only, not spoken VoiceOver or signed TestFlight evidence.
-   Local Poppler rendering of PDF pages 1–3 found no clipping and white four-
-   corner edge samples, but reported a local `Adobe-Japan1` language-pack
-   limitation. A disposable Japanese Markdown fixture was exported to a
-   one-page A4 PDF and opened in macOS Preview on 2026-07-13; Japanese glyphs
-   were visible without clipping and Preview's accessibility tree exposed the
-   same text. This closes the local Developer glyph check; signed TestFlight
-   export breadth remains separate evidence.
-   L Mode Reference hide/restore now has an AppWorkspace regression test, and
-   T-3 close/replace wiring now has an AppWorkspace regression test that keeps
-  the center editor change path untouched. Developer packaged proof for these
-  source contracts remains separate from signed TestFlight evidence. S-3
-   long-reference wrap/scroll/selection and both
-   budget rejection paths have Developer packaged proof; full-reference copy was
-   verified by paste-back of the `END-MARKER-5000` tail into a disposable editor
-   buffer on 2026-07-13. Still open: signed TestFlight breadth, packaged/manual a11y matrix,
-   spoken VoiceOver, and measured device FPS baseline. P2 now
-   has a shared pre-export summary in both dialogs plus local Developer
-   PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
-   source guards were already present. S-1 bounded failure UX is source +
-   packaged smoke verified: focused Global Search / Diff / PDF tests and Rust
-   search/export tests passed on 2026-07-13, and an isolated Developer bundle
-   covered missing-workspace plus workspace-path failure without a false
-   zero-match result. Edohigan's resident WebGL overlay now uses the shared
-   intensity-aware DPR cap and frame throttle used by CRT/Shinkai; focused theme
-   tests and Developer CRT / Edohigan / Shinkai switching kept the editor and
-   Preview content intact after each boot animation.
-4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
-   notes: `docs/archive/operations/quality-inventory-v1.6.md`.
-5. Keep `@codemirror/view` at **6.43.2**. `1.8.0` passed App Review and is
-   published on the Mac App Store (build `89`). **v1.12 OKF Starter Scaffold**
-   is locally candidate-ready; v1.11 is held inside that candidate.
-6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
-   disposable separate-bundle Developer app also restored a force-terminated
-   pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.
-   Google Drive remains `manual-blocked` until a dedicated fixture is available;
-   do not scan or create content in the user's cloud folders implicitly.
-7. Do not expand OKF review/scaffold into two editable panes, Review Desk
-   revival, chapter ordering, multi-file apply, Book Scope, cloud OCR, or
-   Git-aware merge. **Book Scope Alpha remains v2.** When upstream OKF changes,
-   co-update pin surfaces per `docs/okf-spec-pin.md`.
-8. **Accepted post-v1.7 direction:** two-digit minor versions such as `v1.10`
-   are valid. Sequence v1.8 → v1.9 → v1.10 → v1.11 OKF review → v1.12 scaffolds,
-   then decide v2 multi-file Book Scope. The v1.10 bridge may interpret
-   headings, frontmatter, page-breaks, and navigation through one shared model
-   and apply only bounded explicit Undo-able edits to the active buffer. It must
-   not add a manifest/database, background scan, or second editable model.
-   Source: `docs/v1.8-plus-product-review-roadmap.md`.
+### Still open evidence
 
-Detailed v0.18-v1.0 completed-slice history and per-version verification
-records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
-Read it only for historical context.
+- Packaged / TestFlight hands-on of the Keep set.
+- Narrow-window tab truncation, VoiceOver speech, long-doc / IME breadth.
+- Theme G signed export recheck and pin-to-assets Undo (carry-over from 1.13).
 
-## Source Docs
+### Deferred residual (after candidate, optional)
 
-- Current work: `docs/current-work.md`
-- v1.7 scope brief: `docs/archive/planning/v1.7-scope-brief.md`
-- v1.7 hardening plan: `docs/archive/operations/v1.7-trust-scale-plan.md`
-- v1.8+ product review / v2 bridge: `docs/v1.8-plus-product-review-roadmap.md`
-- v1.10 structure contract: `docs/v1.10-single-document-structure-design.md`
-- OKF pin / upgrade process: `docs/okf-spec-pin.md`
-- v1.11 OKF compatibility contract: `docs/v1.11-okf-draft-preview-design.md`
-- v1.12 OKF scaffold contract: `docs/v1.12-okf-scaffold-design.md`
-- Quality inventory (v1.6): `docs/archive/operations/quality-inventory-v1.6.md`
-- v1.7 Reference Compare design: `docs/archive/planning/v1.7-reference-compare-design.md`
-- Current implementation state: `docs/current-status.md`
-- Phase boundaries: `docs/roadmap.md`
-- Product boundary: `docs/product-brief.md`
-- Security boundary: `docs/security-boundary.md`
-- Agent Workbench boundary: `docs/agent-workbench-boundary.md`
-- Manual smoke: `docs/smoke-checklist.md`
-- Release gates: `docs/source-release-checklist.md`,
-  `docs/dmg-preview-checklist.md`, `docs/release-pre-check.md`
+- Tab overflow; nav history “back”; global status TTL; dependency cadence
+  (`@codemirror/view` **6.43.2** pin).
 
-## Archive Notes
+## Durable Pins
 
-- v0.17 App Store-quality request packets and closeout evidence moved to
-  `docs/archive/operations/app-store-v0.17/`.
-- Completed v0.27 execution planning moved to
-  `docs/archive/planning/v0.27-refinement-slice-plan.md`.
-- Completed pre-release fix planning moved to
-  `docs/archive/operations/pre-release-fix-plan-2026-06-13.md`.
-- Older commercial-quality, authoring-readiness, and product-copy drafts
-  moved to `docs/archive/planning/`.
-- WorkspaceTree v0.17 accessibility decision moved to
-  `docs/archive/reviews/workspace-tree-accessibility-decision-v0.17.md`.
-- v0.18-v0.36 implementation logs moved from `current-work.md` to
-  `docs/archive/operations/current-work-through-v1.0.md`.
-- v0.18-v1.0 handoff detail and per-version verification records moved
-  to `docs/archive/operations/handoff-detail-through-v1.0.md`.
-- Historical release notes remain in `docs/releases/`.
+- Safe Editor primary; Markdown/text source canonical.
+- No Book Scope, indexing, auto-apply, auto-save, second editable buffer.
+- App Store lane: no Agent Workbench / external CLI agent.
+- Import Assist: on-device, edit-before-save, no cloud OCR auto-save.
+- OKF: explicit, bounded, read-only review + explicit scaffold; no auto-repair.
+- PDF export path remains direct PDF export (not macOS print UI).
 
-## Boundaries To Preserve
+## Next For Agents
 
-- Safe Editor remains primary.
-- Markdown/text source remains canonical.
-- Do not add Git, LSP, terminal, arbitrary command execution, plugins,
-  project-wide indexing, auto-apply, or auto-commit.
-- OKF review requires an explicit selected root, bounded cancellable discovery,
-  symlink-free Markdown-only disk reads, in-memory derived results, and no
-  auto-fetch, Markdown rendering, auto-repair, or persistent index.
-- Agent Workbench remains optional, allowlisted, one-session, no-restore,
-  and outside the App Store lane.
-- Do not move or replace published tags/assets silently.
+1. Prefer residual polish or verification over new feature expansion.
+2. One hypothesis per run; Keep / Iterate / Revert with evidence.
+3. Do not tag, upload, submit, or publish without explicit user approval.
+4. On security/path/AI surfaces, re-read `docs/security-boundary.md`.
+5. Start from `docs/current-work.md` and `docs/current-status.md`.
 
-## Verification Guidance
+## Key Paths
 
-- 2026-07-15 v1.12 scaffold quality hardening: focused frontend passed
-  (**4 files / 59 tests**), full frontend passed (**180 files / 1536 tests**),
-  focused scaffold Rust passed (**7 tests**), and full Rust passed (**362 passed /
-  2 explicit host-integration ignored / 0 failed**). `npm run typecheck`,
-  `npm run build:vite`, Rust format, `npm run build`, `git diff --check`, and
-  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed. The a11y scanner's
-  component-level landmark/comment matches were false positives; keyboard menu
-  behavior is covered by a focused interaction test. The representative
-  developer-app pass then created minimal/book-like trees through Command
-  Palette, root context, sidebar New, and OS File menu; verified `-2` collision
-  naming, actual `2026-07-15` log dates, `index.md` opening, menu Escape, and a
-  required-clean explicit OKF review.
-- 2026-07-15 v1.12 local candidate: source commit was fixed before packaging;
-  the universal App Store app and installer package passed deep signature,
-  app/helper entitlement, bundled notice, version/build, installer signature,
-  metadata, and SHA-256 verification. Exact candidate values live only in
-  ignored `docs/internal/app-store-candidates/latest.json`. No upload or
-  TestFlight installation was performed.
-- 2026-07-15 v1.11 S0–S3 source hardening: focused OKF/S3 frontend passed
-  (**8 files / 82 tests**), full frontend passed (**178 files / 1511 tests**),
-  focused Rust OKF passed (**17 tests**), and full Rust passed (**355 passed /
-  2 explicit host-integration ignored / 0 failed**). `npm run build:vite`,
-  deterministic v1.11 fixture generation, Rust format, `git diff --check`, and
-  a local App Store preview `npm run build` passed. The local app bundle build
-  is not a hands-on packaged S3 smoke, signed TestFlight proof, or release gate.
-- 2026-07-15 v1.11 OKF external design review incorporation and living-doc
-  sync: the spec commit, reserved-file matrix, link rules, budgets, TS/Rust
-  split, dirty-tab/disk rule, and S3/S4 completion boundary were pinned.
-  Focused living-doc contract tests passed (**1 file / 21 tests**) with
-  `npm test -- src/buildScripts.test.ts`; `git diff --check` passed. No product
-  build, packaged smoke, version bump, or App Store mutation ran because this
-  slice changed docs and their alignment expectations only.
-- 2026-07-13 frontmatter alignment + build `89`: focused frontend passed
-  (**5 files / 93 tests**), full frontend passed (**165 files / 1417 tests**),
-  App Store surface passed (**10 files / 99 tests**), and Rust passed (**338
-  passed / 2 explicit host-integration ignored / 0 failed**). Rust format,
-  `npm run build:vite`, `npm run build`, and `git diff --check` passed. Signed
-  package/app verification, App Sandbox and helper inherit entitlements,
-  version `1.8.0`, build `89`, minimum macOS `26.0`, package XML, and SHA-256
-  provenance passed. App Store Connect upload and signed TestFlight interaction
-  remain unverified.
-- 2026-07-13 PDF-reference zoom simplification: focused Reference/locale/
-  workspace tests passed (**3 files / 37 tests**); full frontend passed
-  (**164/164 files / 1412 tests**); App Store surface passed (**10 files / 99
-  tests**); Rust passed (**338 passed / 2 explicit host-integration ignored /
-  0 failed**); Rust format, `npm run build:vite`, `npm run build`, and `git
-  diff --check` passed. The local app bundle built successfully. Packaged
-  signed build `89` package/app verification passed. Hands-on panning with a
-  real PDF remains unverified.
-- 2026-07-13 v1.8.0 candidate review/package pass: frontend suite passed
-  (**164/164 files / 1411 tests**), App Store surface smoke passed (**10 files /
-  99 tests**), Rust passed (**338 passed / 2 explicit host-integration ignored /
-  0 failed**), Rust format and `git diff --check` passed, and the local App
-  Store preview build plus sandbox-preview entitlement probe passed. `npm
-  audit` reported 0 vulnerabilities; `cargo audit` exited 0 with 18 allowed
-  transitive warnings. Signed `1.8.0` build `86` package/app verification
-  passed. Manual spoken VoiceOver, App Store Connect processing, and signed
-  TestFlight interaction were not performed.
-
-- 2026-07-12 v1.8 sandbox preview proof:
-  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed against the latest
-  source-built app. Deep signature, app sandbox, user-selected read/write,
-  app-scoped bookmark, and both helpers' inherit entitlements were verified.
-  Window smoke was skipped because its script would quit the user's existing
-  same-bundle-ID app; picker and VoiceOver interaction remain manual.
-- 2026-07-13 sandbox preview recheck: `SKIP_BUILD=1
-  npm run smoke:macos-sandbox-preview` passed on current HEAD. App and helper
-  deep signatures were valid; app sandbox, user-selected read/write,
-  app-scoped bookmark, and both helpers' sandbox + inherit entitlements were
-  present. This remains bundle-shape evidence, not picker or TestFlight proof.
-- 2026-07-12 v1.8 disposable packaged interaction: `npm run build:macos-lanes`
-  produced the separate-ID `Hazakura Editor Dev.app`; window smoke passed, and
-  the native picker opened `/private/tmp/hazakura-v1.8-smoke`. A Markdown editor
-  remained editable while `reference.txt` opened read-only at right; switching
-  Preview -> Reference preserved that reference session. A second ad-hoc,
-  separate-ID copy was force-terminated with an unsaved pathless draft; relaunch
-  offered `Restore draft`, restored it as a new `untitled.md` unsaved tab, and
-  preserved `RECOVERY-MARKER-2026-07-12`. This is Developer/ad-hoc local evidence,
-  not App Store sandbox or signed TestFlight interaction proof.
-- 2026-07-12 v1.8 T-1 packaged continuity: the separate-ID Developer app first
-  reproduced a loaded Reference pane remaining visible in L Mode. The fix keeps
-  the Reference session but omits its pane while L Mode owns the writing surface.
-  After rebuilding, L Mode hid `reference.txt`, edit mode restored the same
-  read-only reference, and `Command-Z` removed only the edit made before the
-  L Mode remount. Focused tests passed (**21/21**); the full frontend suite
-  passed (**159/159 files / 1370 tests**) and Rust passed (**338 passed / 2
-  explicit host-integration ignored / 0 failed**). Signed TestFlight breadth
-  remains open.
-- 2026-07-12 v1.8 S-3 long-reference budget:
-  `npm run smoke:fixtures:v1.8-reference` generated deterministic 5,000-line,
-  1,500,001-character, and 50,001-line fixtures. In the separate-ID Developer
-  app, the Japanese 5,000-line reference wrapped in the narrow pane, scrolled to
-  `END-MARKER-5000`, and allowed marker selection. Both over-budget files failed
-  with the English and Japanese localized limit reason while preserving
-  `EDITOR-BUFFER-MARKER` and the already-open reference. Clipboard contents were
-  intentionally not read, so copy remains a manual follow-up. Focused tests
-  passed (**37/37**); full frontend passed (**159/159 files / 1371 tests**) and
-  Rust passed (**338 passed / 2 explicit host-integration ignored / 0 failed**).
-- 2026-07-12 v1.8 S-1 Global Search failure UX: focused search-surface tests
-  passed (**6/6**); `npm run test` passed (**159/159 files / 1374 tests**).
-  `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust format,
-  full `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
-  failed**), and `git diff --check` passed. Missing-workspace and injected
-  runtime failures are covered at component level; packaged failure injection
-  was not performed, so no packaged interaction claim is made.
-- 2026-07-12 v1.8 packaged search-surface AX follow-up: the latest-HEAD
-  separate-ID Developer bundle opened Quick Open, Command Palette, and Global
-  Search from their keyboard shortcuts; Escape returned to the editor and the
-  accessibility tree retained combobox focus/active-result semantics. The
-  fixed bundle exposed `コマンドパレット` / `ファイル内検索` and
-  `こまんどを さがす` / `ふみのなかを さがす` as matching dialog and
-  combobox names. Japanese pane toggles and the editor/pane splitter also had
-  localized AX labels. Focused tests passed (**8/8**); `npm run test` passed
-  (**159/159 files / 1376 tests**); `npm run build:macos-lanes`, Rust format,
-  full `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
-  failed**), and `git diff --check` passed. This is keyboard + AX-tree evidence,
-  not a claim that actual VoiceOver speech or signed TestFlight breadth passed.
-- 2026-07-13 v1.8 public-build keyboard/menu follow-up: the installed
-  `/Applications/Hazakura Editor.app` reported `1.7.0` build `85` with Apple
-  Mac OS Application Signing. `⌘⇧P` opened the Command Palette, `⌘⇧F` opened
-  Global Search with the Japanese placeholder and no-workspace hint, and the
-  native `表示` menu exposed localized L Mode, wrap, invisible characters,
-  Spellcheck, theme, and fullscreen items. This closes the native-menu
-  traversal evidence gap for the public build only; spoken VoiceOver and
-  signed TestFlight breadth remain open.
-- 2026-07-13 v1.8 S-4 purpose-led discovery: Preview / Reference / e-book /
-  Outline / Diff pane titles now describe the user task in English / Japanese /
-  kana while keeping the existing controls and boundaries. Focused locale
-  checks passed (**2/2**), and the rebuilt separate-ID Developer bundle's AX
-  tree exposed the localized Help strings for all five controls. This is
-  packaged AX evidence, not spoken VoiceOver or signed TestFlight evidence.
-- 2026-07-13 v1.8 T-2 cleanup-failure regression: pathless `Discard All` now has
-  a focused hook test proving that a failed `removeStoredDrafts` call emits
-  `Closing; recovery cleanup unavailable`, still resets the close dialog, and
-  continues the window close. This is source evidence; signed TestFlight and
-  stale-candidate relaunch behavior remain manual.
-- 2026-07-13 v1.8 S-2 deterministic Rust recheck: current HEAD passed three
-  serial `cargo test --manifest-path src-tauri/Cargo.toml --quiet` runs, each
-  with **338 passed / 2 ignored / 0 failed**. The ignored bookmark/Trash cases
-  still require a suitable interactive host.
-- 2026-07-13 v1.8 S-1 packaged missing-workspace smoke: a fresh isolated-ID
-  Developer bundle opened Global Search with `⌘⇧F`; the combobox exposed
-  `Open a workspace to search its files` and no false zero-match result.
--  A disposable workspace-path failure injection then exposed
-  `Selected workspace path is not a folder.` without a false zero-match result;
-  the original fixture path was restored. S-1 packaged failure coverage is now
-  complete for these two bounded search states.
-- 2026-07-13 v1.8 T-3 PDF/image Reference proof: the separate-ID Developer
-  bundle selected `/private/tmp/hazakura-valid-text.pdf` through the native
-  picker and opened workspace `reference-image.png` through its context menu.
-  Both appeared as read-only right-side content; the PDF exposed page 1/1
-  controls and the center `EDITOR-BUFFER-MARKER` stayed intact. This is local
-  PDF/image evidence only; additional matrix cases, signed TestFlight
-  interaction, and the full a11y matrix remain open. A focused component test
-  now pins the image alt name/data URL, confirms no editable text surface is
-  rendered for image references, and checks the PDF raster file-and-page
-  accessible name.
-- 2026-07-13 v1.8 T-3 replacement follow-up: the separate-ID Developer bundle
-  closed and reopened `reference-image.png`, then replaced it with the
-  nine-page `/private/tmp/hazakura-v1.8-export-proof-20260712-fixed.pdf`.
-  Page 2/9, fit-page, and 150% controls worked while the center marker stayed
-  intact; narrowing the Reference column to 25% kept the image contained and
-  the center marker intact. Signed TestFlight and spoken VoiceOver checks
-  remain open.
-- 2026-07-13 v1.8 T-3 external-change follow-up: a separate-ID Developer bundle
-  temporarily moved `reference-image.png` out of the disposable workspace.
-  The Reference pane surfaced `The reference file has changed on disk.` with
-  an explicit Reload action; restoring the path and reloading returned the
-  read-only image. The fixture was restored afterward.
-- The PDF Reference source contract also has a focused race regression: a
-  raster that resolves after the Reference ID changes is ignored, so the old
-  page cannot replace the current Reference.
-- 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
-  unsaved-source inclusion, image-warning handling, and the next Save-dialog
-  destination step in English / Japanese / kana. PDF success retains the final
-  image-warning count instead of replacing it with generic success. The
-  latest-HEAD separate-ID Developer bundle displayed both summaries; both were
-  cancelled before Save, so no destination was selected and no output file was
-  written. Focused tests passed (**22/22**); `npm run test` passed (**159/159
-  files / 1377 tests**); `npm run build:macos-lanes`, Rust format, full
-  `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
-  failed**), and `git diff --check` passed. Signed TestFlight breadth remains
-  open.
-- 2026-07-13 v1.8 S-3 packaged copy proof: the separate-ID Developer bundle
-  selected and copied the complete 5,000-line Japanese reference, pasted it into
-  a disposable editor buffer, and exposed the `END-MARKER-5000` tail. The
-  fixture was restored to its original SHA-256 and the Developer app was quit;
-  clipboard contents were not read directly. Signed TestFlight and actual
-  VoiceOver speech remain unverified.
-- 2026-07-13 v1.8 S-1 failure/limit review: focused frontend checks passed (**3
-  files / 16 tests**); Rust workspace-search caps and PDF export failure/limit
-  checks passed (**14 + 7 tests**). No reproducible source defect was found at
-  that source-only checkpoint; later isolated packaged missing-workspace and
-  workspace-path failure smoke is recorded above.
-- 2026-07-13 v1.8 P2 theme budget hardening: `EdohiganShaderOverlay` was the
-  remaining resident WebGL path bypassing the shared DPR/frame budget. It now
-  uses `resolveAmbientDevicePixelRatio` and `ambientMinFrameIntervalMs`, with
-  focused theme tests (**7/7**), full Vitest (**159/159 files / 1378 tests**),
-  Rust (**338 passed / 2 ignored**), typecheck, Vite, `npm run build`, and
-  `npm run build:macos-lanes` passing. Developer theme switching through CRT,
-  Edohigan, and Shinkai preserved editor/Preview markers after boot; this is
-  not a signed TestFlight or measured device-FPS claim.
-- 2026-07-13 v1.8 P2 Japanese PDF visual proof: a Japanese Markdown fixture was
-  exported to `/private/tmp/hazakura-v1.8-japanese-export.pdf` through the
-  Developer bundle. macOS Preview displayed the Japanese glyphs within the A4
-  page without clipping, and its accessibility tree exposed the Japanese text.
-  Poppler's local `Adobe-Japan1` warning is therefore a local rasterizer
-  limitation, not a demonstrated export defect; signed TestFlight export
-  breadth remains open.
-- 2026-07-12 v1.8 P2 Developer output proof: unsaved ASCII markers were exported
-  to PDF and EPUB while the source SHA-256 remained unchanged. The EPUB archive
-  contained `mimetype`, container, OPF, navigation, stylesheet, and two spine
-  documents; Japanese metadata and the unavailable-image replacement were
-  present. The first PDF exposed a black rendered tail caused by transparent
-  page background. An explicit white background layer fixed it; the replacement
-  rendered as nine A4 pages, and all five sampled edge pixels on every page were
-  white. The local Developer Japanese-glyph check is recorded above; signed
-  TestFlight breadth remains manual follow-up evidence.
-  Focused export-hook tests passed (**16/16**); `npm run test` passed (**159/159
-  files / 1377 tests**); `npm run typecheck`, `npm run build:macos-lanes`, Rust
-  format, full `cargo test` (**338 passed / 2 explicit host-integration ignored /
-  0 failed**), and `git diff --check` passed.
-- 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
-  tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
-  tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust
-  format, full `cargo test` (**338 passed / 2 explicit host-integration ignored
-  / 0 failed**), and `git diff --check` passed. The local app build used the
-  expected SwiftPM fallback and completed with existing chunk-size and
-  not-notarized warnings. Packaged multilingual VoiceOver interaction remains
-  manual.
-- 2026-07-12 v1.8 search-surface accessibility: focused semantics tests
-  passed (**3/3**); `npm run test` passed (**159/159 files / 1368 tests**)
-  under a high-load 68-second run; `npm run typecheck`, `npm run build:vite`,
-  `npm run build`, Rust format, full `cargo test` (**338 passed / 2 explicit
-  host-integration ignored / 0 failed**), and `git diff --check` passed. The
-  local app build used the expected SwiftPM `--disable-sandbox` fallback and
-  completed with existing chunk-size and not-notarized warnings. Packaged
-  VoiceOver interaction remains manual.
-- 2026-07-12 v1.7 publication / v1.8 Rust stabilization: Rust format passed;
-  focused Trash cleanup passed; focused Agent Workbench PATH process test
-  passed repeatedly; full `cargo test` passed three consecutive confirmation
-  runs (**338 passed / 2 explicit host-integration ignored / 0 failed** each).
-  `npm run typecheck`, `npm run test` (**158/158 files / 1365 tests**),
-  `npm run build:vite`, and `npm run build` passed. The local app build used
-  the expected SwiftPM `--disable-sandbox` fallback and completed with the
-  existing chunk-size and not-notarized warnings. `git diff --check` passed.
-- 2026-07-11 v1.8+ / v2 bridge docs sync: `git diff --check` passed;
-  focused drift and referenced-file checks passed. No code or packaged-app
-  tests were run because this slice changes planning docs only.
-- 2026-07-11 top-chrome / Reference pane follow-up: `npm run typecheck`,
-  `npm run test` (**158/158 files / 1365 tests**), `npm run build:vite`,
-  `npm run build`, Rust format, and `git diff --check` passed.
-  The earlier `cargo test` run reached **336/340** because bookmark / Trash
-  require host permissions and the Agent Workbench process test timed out
-  under parallel load. v1.8 isolates the two host integrations, unit-tests
-  Trash cleanup, and widens bounded process polling; the current green
-  verification is recorded above.
-  `npm audit` (0 vulnerabilities) and `cargo audit` (18 allowed warnings,
-  exit 0) passed. App Store surface smoke was 10 files / 95 tests; signed build
-  85 checksum, metadata, entitlements, helpers, and signatures passed. Basic
-  packaged behavior was user-tested without a reported issue; the extended
-  matrix remains v1.8 follow-up evidence. `1.7.0` is published.
-- For docs-only work, run `git diff --check`.
-- For code changes, follow `docs/development-automation.md`.
-- For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
-- Do not claim manual smoke passed unless it was actually exercised.
-- Current known local worktree caveat: App Store build-number changes
-  belong only to the explicit App Store lane; do not fold them into
-  unrelated quality slices.
-- Historical per-version verification records (v0.23-v0.36 code gates,
-  App Store package gates, docs closeout runs) moved to
-  `docs/archive/operations/handoff-detail-through-v1.0.md`.
+| Need | Path |
+|------|------|
+| Next slice | `docs/current-work.md` |
+| Status truth | `docs/current-status.md` |
+| v1.14 draft notes | `docs/releases/1.14.0-app-store-release-notes.md` |
+| Refinement rails | `docs/v1.13-plus-refinement-roadmap.md` |
+| Smoke | `docs/smoke-checklist.md` |
+| App Store build | `docs/app-store-build.md` |
+| v2 boundary | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |

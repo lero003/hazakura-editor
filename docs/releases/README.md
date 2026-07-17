@@ -25,6 +25,9 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- **`1.14.0` is a local source candidate only** (package version in tree).
+  Draft copy: `1.14.0-app-store-release-notes.md`. Not published, tagged, or
+  submitted by this archive alone. Published store remains `1.13.0`.
 - **`1.13.0` is approved and published** on the Mac App Store (user-reported
   2026-07-18): interaction clarity plus bounded local/remote image consent,
   export materialization, and explicit pin-to-assets. See
@@ -70,9 +73,10 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `1.14.0-app-store-release-notes.md` is the **local candidate draft** for the
+  Continuity / Trust / Writing Loop / OKF Keep box (package `1.14.0`).
 - `1.13.0-app-store-release-notes.md` is the **published** v1.13 App Store
-  copy (user-reported 2026-07-18). Next refinement work uses package
-  `1.14.0+`.
+  copy (user-reported 2026-07-18).
 - `1.12.0-app-store-release-notes.md` is the **published** v1.12 App Store
   copy (user-reported 2026-07-17), retained as prior release history.
 - `1.11.0-app-store-release-notes.md` is retained as the prior OKF review

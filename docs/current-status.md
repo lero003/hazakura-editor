@@ -3,82 +3,39 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
+Last reviewed: 2026-07-18 (v1.14.0 local source candidate; store 1.13.0)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`1.14.0`** across npm, Tauri, Cargo,
-  and lockfile metadata (post-v1.13 refinement development line). The latest
-  recorded GitHub source / local-app tag for the closed scaffold
-  lane is **`v1.12.0`** (source archive and release notes only; no binary
-  assets). See `docs/releases/1.12.0-source-tag.release.md`.
+- Current package/app version: **`1.14.0`** across npm, Tauri, Cargo, and
+  lockfile metadata (**local source candidate** after published `1.13.0`).
+  The latest recorded GitHub source tag remains **`v1.12.0`** (source archive
+  only). See `docs/releases/1.12.0-source-tag.release.md`. No `v1.14.0` tag
+  is claimed.
 - **Published Mac App Store version: `1.13.0`.** App Review passed and the
-  release was published (user-reported 2026-07-18). It adds the kept Theme A
-  interaction-clarity and Theme G bounded-media slices to the v1.12 baseline.
-  Release notes: `docs/releases/1.13.0-app-store-release-notes.md`. Local package provenance
-  (build counter, pkg path, SHA-256) for candidates lives in ignored
-  `docs/internal/app-store-candidates/latest.json`. Do not reopen `1.13.0`
-  without a reproduced hotfix; published tags remain immutable.
-- **v1.14+ try-and-error refinement is open after v1.13 publication.** Direction:
-  `docs/v1.13-plus-refinement-roadmap.md`. Theme A pool:
-  `docs/v1.13-interaction-clarity-plan.md`. Theme A (Signal & Silence) candidate
-  rows 1–7 are **Keep**. Next bias: Continuity / Writing Loop / Trust edges /
-  Media boundaries, or hands-on friction. Image / media loosening (settings,
-  consent, export materialize)
-  is in `docs/v1.xx-image-media-boundary-plan.md`. **M0–M4 are Keep in source:**
-  blocked-image reason keys; outside-local Preferences are now only **current
-  document approval (default ask)** or explicit **allow all within OS access**;
-  approvals do not persist across a newly opened tab; remote https remains a
-  separate default-off setting; Rust
-  `open_local_image_under_roots` / `fetch_remote_image`; export materialize
-  (default on) without silent source rewrite; Command Palette pin to `assets/`
-  with one Undo-able editor transaction. Manual smoke:
-  `docs/smoke-checklist.md` § Theme G. Defaults remain no automatic remote or
-  unapproved outside load. TestFlight build 97 exposed two export blockers:
-  the PDF leading image could be captured before decode, and EPUB discarded
-  approved-local / remote materialization and wrote an unavailable-path note.
-  Source now makes PDF export images eager + synchronously decoded and routes
-  each EPUB image origin through its bounded loader. A fresh local app export
-  rendered the leading PDF image and packaged an EPUB image resource with the
-  same SHA-256 as its source. Theme A and Theme G shipped in `1.13.0`; signed
-  TestFlight recheck and pin-to-assets Undo breadth remain ongoing evidence.
-- **v1.14 Continuity first Keep:** duplicate open text-tab names now show the
-  immediate parent folder in the visible tab name, accessible tab name, and
-  close-action name. Unique filenames remain unchanged and full paths remain
-  available as the tab title. This is presentation-only; tab identity, path,
-  dirty state, selection, save, and close behavior are unchanged.
-- **v1.14 Trust export destination Keep:** PDF success status includes the
-  chosen destination path and any image-warning count, and no longer
-  auto-clears after two seconds. HTML export success can also surface image
-  warnings with the destination, matching EPUB. Status copy stays English-key
-  based with Japanese localization that preserves the path.
-- **v1.14 Trust Assist lock wording Keep:** generation-lock status and overlay
-  state why editing is paused and when it resumes; review-bar and applied
-  status make “not saved yet” visible without changing accept/discard
-  semantics or auto-save behavior.
-- **v1.14 Continuity Reference retained Keep:** the Reference chrome toggle
-  visually and accessibly marks a loaded-but-hidden session so hide ≠ close
-  is obvious without changing session lifetime.
-- **v1.14 Continuity recent workspaces Keep:** Start Panel surfaces capped
-  recent folders from the existing recents store for explicit reopen only
-  (no indexing or startup scan).
-- **v1.14 Writing Loop Preview vs e-book Keep:** UI copy and a short purpose
-  note distinguish continuous-scroll Preview from paged e-book reading.
-- **v1.14 Writing Loop e-book → edit Keep:** an always-visible control jumps
-  the editor caret to the current e-book page and focuses the editor; Reading
-  Focus exit uses the same wording for discovery.
-- **v1.14 OKF template pre-create Keep:** Command Palette descriptions and
-  New-menu titles summarize starter file lists before create.
-- **v1.14 OKF first-fix Keep:** review panel surfaces one required finding as
-  the next explicit open-and-edit step without auto-repair.
-- **v1.14 Outline advice / Undo Keep:** structure advisories are labeled as
-  hints; heading-level edits announce Undo (Cmd+Z) in status.
-- **v1.14 Import Assist draft status Keep:** import success copy emphasizes
-  unsaved draft and no disk write until the user saves.
-- **v1.14 right-pane shared header Keep:** Preview / e-book / Outline / Diff /
-  Reference share a sticky header (short purpose, path hover on Reference).
-  Diff header close clears compare then hides the column. No new document model.
+  release was published (user-reported 2026-07-18): Theme A interaction
+  clarity + Theme G bounded media on the v1.12 baseline. Release notes:
+  `docs/releases/1.13.0-app-store-release-notes.md`. Do not reopen without a
+  reproduced hotfix. Local package provenance lives in ignored
+  `docs/internal/app-store-candidates/latest.json`.
+- **v1.14 is boxed as a local source candidate (`1.14.0`).** Draft store copy:
+  `docs/releases/1.14.0-app-store-release-notes.md`. Active queue:
+  `docs/current-work.md`. It is **not** published, tagged, uploaded, or under
+  App Review by this status alone.
+- **v1.14 Keep themes (source):** Continuity (same-name tabs, Reference
+  retained toggle, recent workspaces, shared right-pane header), Trust (export
+  destination/warnings, Assist lock & not-saved, Import draft status), Writing
+  Loop (Preview vs e-book, e-book edit-here, Outline hints + heading Undo
+  status), Structure/OKF (scaffold pre-create copy, first-fix open guidance).
+  No Book Scope, indexing, auto-repair, or second editable buffer.
+- **Theme G media (shipped in `1.13.0`, evidence ongoing):** M0–M4 remain Keep
+  in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
+  remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
+  `docs/smoke-checklist.md` § Theme G.
+- **Open before treating v1.14 as ship-ready:** packaged/manual smoke of the
+  Keep set; optional residual polish (tab overflow, nav history, status TTL);
+  distribution-confidence matrix (TestFlight / VoiceOver / narrow / long-doc).
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
@@ -802,8 +759,9 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: active **v1.14+ try-and-error refinement** queue
-  (v1.13 closed / published). Theme A and Theme G shipped in `1.13.0`.
+- `docs/current-work.md`: **v1.14 local candidate** Keep box + residual queue.
+- `docs/releases/1.14.0-app-store-release-notes.md`: draft store copy for `1.14.0`
+  (not published).
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -812,26 +770,25 @@ baseline, and smoke evidence are archived under
 - `docs/ebook-mode-epub-export-plan.md`: e-book Mode / EPUB export
   planning and source-preserving reader/export boundaries.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
-- `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, v1.11 OKF / distribution-confidence, and v2 sequencing.
+- `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9–v1.12 bridge and v2 sequencing.
 - `docs/v1.10-single-document-structure-design.md`: completed v1.10 structure contract.
 - `docs/v1.11-okf-draft-preview-design.md`: completed v1.11 implementation and verification contract.
 - `docs/v1.12-okf-scaffold-design.md`: closed / published v1.12 implementation
   and verification contract.
-- `docs/v1.13-plus-refinement-roadmap.md`: active post-v1.13 experiment direction.
-- `docs/v1.13-interaction-clarity-plan.md`: Theme A candidate pool (Signal & Silence).
+- `docs/v1.13-plus-refinement-roadmap.md`: post-v1.13 experiment direction;
+  v1.14 is the first Keep shipping box after published `1.13.0`.
+- `docs/v1.13-interaction-clarity-plan.md`: Theme A candidate pool (shipped in v1.13).
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
 
-1. Treat **v1.13 (`1.13.0`) as published and closed** after App Review passed
-   (user-reported 2026-07-18). Do not reopen it without a reproduced hotfix
-   need. The latest recorded GitHub source tag remains `v1.12.0`.
-2. **Continue v1.14+ try-and-error refinement** from `docs/current-work.md`.
-   Theme A and Theme G shipped in v1.13. Next bias: Continuity, Writing Loop,
-   Trust edges, Structure / OKF depth, or distribution confidence
-   (`docs/v1.13-interaction-clarity-plan.md` /
-   `docs/v1.13-plus-refinement-roadmap.md`). One hypothesis per run;
-   Keep / Iterate / Revert with evidence. Do not batch theme packages.
+1. Treat **v1.13 (`1.13.0`) as published and closed**. Do not reopen without a
+   reproduced hotfix. Latest recorded GitHub source tag remains `v1.12.0`.
+2. Treat **v1.14 (`1.14.0`) as a local source candidate**: Keep set boxed in
+   `docs/current-work.md` and draft notes
+   `docs/releases/1.14.0-app-store-release-notes.md`. Run packaged/manual smoke
+   before upload language. Residual polish and distribution evidence are next;
+   do not invent a mandatory v1.15 feature train.
 3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
    Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and
    VoiceOver breadth remain quality follow-up, not reasons to reopen `1.13.0`.
