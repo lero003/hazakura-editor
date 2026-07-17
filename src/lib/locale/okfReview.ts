@@ -27,6 +27,9 @@ export type OkfReviewCopy = {
   close: string;
   openConcept: string;
   openForEdit: string;
+  /** One explicit next step when required findings exist (no auto-repair). */
+  firstFixHeading: string;
+  firstFixHint: string;
   filesHeading: string;
   requiredHeading: string;
   conversionHeading: string;
@@ -264,6 +267,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       close: "とぢる",
       openConcept: "ひらく",
       openForEdit: "ひらいて なおす",
+      firstFixHeading: "まず ここを なおす",
+      firstFixHint:
+        "じどうでは なおしません。ひらいて しゅうせいし、ほぞんしてから さいてんけんしてください。",
       filesHeading: "ファイル",
       requiredHeading: "なおした ほうが よいこと",
       conversionHeading: "OKF として ととのえる じゅんび",
@@ -347,6 +353,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
       close: "閉じる",
       openConcept: "開く",
       openForEdit: "開いて修正",
+      firstFixHeading: "まずここを直す",
+      firstFixHint:
+        "自動では直しません。開いて修正し、保存してから再点検してください。",
       filesHeading: "ファイル",
       requiredHeading: "直した方がよいこと",
       conversionHeading: "OKF として整える準備",
@@ -428,6 +437,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     close: "Close",
     openConcept: "Open",
     openForEdit: "Open to edit",
+    firstFixHeading: "Start with this fix",
+    firstFixHint:
+      "Nothing is auto-repaired. Open, edit, save, then run review again.",
     filesHeading: "Files",
     requiredHeading: "Needs attention",
     conversionHeading: "Prepare as OKF",

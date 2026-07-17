@@ -20,6 +20,9 @@ export type WorkspaceFileOpsCopy = {
   newFolderRoot: string;
   newOkfScaffoldMinimalRoot: string;
   newOkfScaffoldBookLikeRoot: string;
+  /** Short pre-create content summary (title / aria). */
+  newOkfScaffoldMinimalHint: string;
+  newOkfScaffoldBookLikeHint: string;
   /** Section label grouping OKF starters under New (progressive disclosure). */
   newOkfScaffoldGroup: string;
   newFileHere: string;
@@ -58,6 +61,10 @@ export function getWorkspaceFileOpsCopy(
       newFolderRoot: "あたらしきふぉるだ",
       newOkfScaffoldMinimalRoot: "さいしょう",
       newOkfScaffoldBookLikeRoot: "ほんっぽい しょうだて",
+      newOkfScaffoldMinimalHint:
+        "index.md・notes/first-note.md・log.md。Draft ごかんの しゅっぱつてん。",
+      newOkfScaffoldBookLikeHint:
+        "index.md・chapters/ ふたつ・notes・log.md。章だては れい。Book Scope ではない。",
       newOkfScaffoldGroup: "ちしきフォルダの ひながた",
       newFileHere: "このふぉるだに あたらしきふみ",
       newFolderHere: "このふぉるだに あたらしきふぉるだ",
@@ -95,6 +102,10 @@ export function getWorkspaceFileOpsCopy(
         newFolderRoot: "新規フォルダ",
         newOkfScaffoldMinimalRoot: "最小",
         newOkfScaffoldBookLikeRoot: "本っぽい章立て",
+        newOkfScaffoldMinimalHint:
+          "index.md・notes/first-note.md・log.md。Draft 互換の出発点です。",
+        newOkfScaffoldBookLikeHint:
+          "index.md・chapters/ 2本・notes・log.md。章立ては例示です（Book Scope ではない）。",
         newOkfScaffoldGroup: "知識フォルダのひな形",
         newFileHere: "このフォルダに新規ファイル",
         newFolderHere: "このフォルダに新規フォルダ",
@@ -130,6 +141,10 @@ export function getWorkspaceFileOpsCopy(
         newFolderRoot: "New Folder",
         newOkfScaffoldMinimalRoot: "Minimal",
         newOkfScaffoldBookLikeRoot: "Book-like chapters",
+        newOkfScaffoldMinimalHint:
+          "index.md, notes/first-note.md, log.md — Draft-compatible start point.",
+        newOkfScaffoldBookLikeHint:
+          "index.md, two chapters/, notes, log.md — illustrative layout, not Book Scope.",
         newOkfScaffoldGroup: "Knowledge folder starters",
         newFileHere: "New File Here",
         newFolderHere: "New Folder Here",

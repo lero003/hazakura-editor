@@ -71,6 +71,32 @@
   border-color: color-mix(in srgb, #c97a5a 30%, transparent);
 }
 
+.okf-review-first-fix {
+  margin: 0.5rem 0 0.35rem;
+  padding: 0.65rem 0.7rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #c97a5a 38%, var(--border));
+  background: color-mix(in srgb, #c97a5a 12%, transparent);
+}
+
+.okf-review-first-fix-heading {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.okf-review-first-fix-hint {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.okf-review-first-fix .okf-review-list-item {
+  list-style: none;
+  margin: 0;
+}
+
 .okf-review-primary-results {
   display: grid;
   gap: 0.5rem;

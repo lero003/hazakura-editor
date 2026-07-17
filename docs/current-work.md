@@ -112,6 +112,15 @@ another theme instead of finishing the list:
 - **Writing Loop / e-book → edit** — **Keep in source.** Always-visible
   “この位置を編集 / Edit this place” in the e-book status chrome focuses the
   editor at the current reader location (side pane and Reading Focus exit).
+- **Theme A / status lifetime** — partially covered by export destination
+  Keep (success no longer auto-clears). Global status TTL unification remains
+  optional polish, not a separate ship box yet.
+- **Structure / OKF template pre-create copy** — **Keep in source.** Palette
+  descriptions and New-menu titles list which files each starter writes and
+  that auto-repair is not included.
+- **Structure / OKF first-fix guidance** — **Keep in source.** When required
+  findings exist, the review panel shows a “まずここを直す” card for the first
+  required finding with open-to-edit only (no auto-repair).
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

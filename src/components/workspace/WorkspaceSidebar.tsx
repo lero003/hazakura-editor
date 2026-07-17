@@ -275,6 +275,7 @@ export function WorkspaceSidebar({
                       <button
                         type="button"
                         role="menuitem"
+                        title={fileOpsCopy.newOkfScaffoldMinimalHint}
                         onClick={handleOkfScaffoldMinimal}
                       >
                         {fileOpsCopy.newOkfScaffoldMinimalRoot}
@@ -282,6 +283,7 @@ export function WorkspaceSidebar({
                       <button
                         type="button"
                         role="menuitem"
+                        title={fileOpsCopy.newOkfScaffoldBookLikeHint}
                         onClick={handleOkfScaffoldBookLike}
                       >
                         {fileOpsCopy.newOkfScaffoldBookLikeRoot}

@@ -13,6 +13,8 @@ export type CommandPaletteCategoryId =
 
 export type CommandPaletteEntryCopy = {
   label: string;
+  /** Optional short purpose line shown under the label (e.g. scaffold contents). */
+  description?: string;
   /** Extra locale-specific keywords for discoverability. */
   keywords?: readonly string[];
 };
@@ -209,6 +211,8 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         },
         "file.okfScaffoldMinimal": {
           label: "ちしきフォルダの ひながたを つくる（さいしょう）",
+          description:
+            "index.md・notes/first-note.md・log.md。Draft ごかんの しゅっぱつてん。じどうしゅうせいは しません。",
           keywords: [
             "OKF",
             "ひながた",
@@ -220,6 +224,8 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         },
         "file.okfScaffoldBookLike": {
           label: "ちしきフォルダの ひながたを つくる（ほんっぽい しょうだて）",
+          description:
+            "index.md・chapters/ ふたつ・notes/characters.md・log.md。章だては れい。Book Scope ではありません。",
           keywords: [
             "OKF",
             "ひながた",
@@ -417,6 +423,8 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         },
         "file.okfScaffoldMinimal": {
           label: "知識フォルダのひな形を作成（最小）",
+          description:
+            "index.md・notes/first-note.md・log.md を置きます。Draft 互換の出発点です。自動修正はしません。",
           keywords: [
             "OKF",
             "ひな形",
@@ -428,6 +436,8 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         },
         "file.okfScaffoldBookLike": {
           label: "知識フォルダのひな形を作成（本っぽい章立て）",
+          description:
+            "index.md・chapters/ 2本・notes/characters.md・log.md。章立ては例示です。Book Scope ではありません。",
           keywords: ["OKF", "ひな形", "本", "章", "scaffold", "book"],
         },
         "agent.open": {
@@ -557,6 +567,8 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       },
       "file.okfScaffoldMinimal": {
         label: "Create knowledge folder starter (minimal)",
+        description:
+          "Writes index.md, notes/first-note.md, and log.md. A Draft-compatible start point—no auto-repair.",
         keywords: [
           "OKF",
           "scaffold",
@@ -567,6 +579,8 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       },
       "file.okfScaffoldBookLike": {
         label: "Create knowledge folder starter (book-like)",
+        description:
+          "Writes index.md, two chapters/, notes/characters.md, and log.md. Chapter layout is illustrative—not Book Scope.",
         keywords: ["OKF", "scaffold", "template", "book", "chapter"],
       },
       "agent.open": { label: "Open Agent Window" },
@@ -617,10 +631,11 @@ export function commandPaletteEntry(
   copy: CommandPaletteCopy,
   id: keyof CommandPaletteCopy["commands"],
   baseKeywords: readonly string[] = [],
-): { label: string; keywords: string[] } {
+): { label: string; keywords: string[]; description?: string } {
   const entry = copy.commands[id];
   return {
     label: entry.label,
     keywords: [...baseKeywords, ...(entry.keywords ?? [])],
+    ...(entry.description ? { description: entry.description } : {}),
   };
 }

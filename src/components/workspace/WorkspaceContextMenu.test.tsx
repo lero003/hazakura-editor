@@ -13,6 +13,8 @@ const fileOpsCopy = {
   newFolderHere: "New folder here",
   newOkfScaffoldMinimalRoot: "Minimal",
   newOkfScaffoldBookLikeRoot: "Book-like chapters",
+  newOkfScaffoldMinimalHint: "index.md, notes, log",
+  newOkfScaffoldBookLikeHint: "index, chapters, notes, log",
   newOkfScaffoldGroup: "Knowledge folder starters",
   sidebarTrashTarget: (name: string) => `Move “${name}” to Trash`,
   sidebarTrashDisabledNoActive: "Select a file or folder in the tree",

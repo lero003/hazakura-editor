@@ -131,10 +131,16 @@ describe("OkfReviewPanel", () => {
     expect(screen.getByText(/直した方がよいこと/)).not.toBeNull();
     expect(screen.getByText(/任意の改善案/)).not.toBeNull();
 
+    expect(screen.getByRole("heading", { name: "まずここを直す" })).not.toBeNull();
+    expect(
+      screen.getByText(/開いて修正し、保存してから再点検/),
+    ).not.toBeNull();
+
     const openButtons = screen.getAllByRole("button", {
       name: /開いて修正: concepts\/a\.md/,
     });
-    expect(openButtons).toHaveLength(2);
+    // First-fix card + list row for the same finding.
+    expect(openButtons.length).toBeGreaterThanOrEqual(2);
     fireEvent.click(openButtons[0]);
     expect(onOpenConcept).toHaveBeenCalledWith("concepts/a.md", 12);
   });

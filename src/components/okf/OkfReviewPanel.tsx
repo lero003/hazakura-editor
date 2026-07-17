@@ -246,6 +246,29 @@ export function OkfReviewPanel({
           </p>
         ) : null}
 
+        {presentation &&
+        presentation.requiredFindings.length > 0 &&
+        openablePaths.has(presentation.requiredFindings[0]!.relativePath) ? (
+          <section
+            className="okf-review-first-fix"
+            aria-label={copy.firstFixHeading}
+          >
+            <h3 className="okf-review-first-fix-heading">
+              {copy.firstFixHeading}
+            </h3>
+            <p className="okf-review-first-fix-hint">{copy.firstFixHint}</p>
+            <FindingRow
+              badgeLabel={copy.severityFailure}
+              copy={copy}
+              finding={presentation.requiredFindings[0]!}
+              onOpenConcept={onOpenConcept}
+              openable
+              scanning={scanning}
+              toneClass="required"
+            />
+          </section>
+        ) : null}
+
         {presentation ? (
           <div className="okf-review-primary-results">
             <FindingGroup

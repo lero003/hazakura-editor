@@ -57,6 +57,22 @@ describe("getCommandPaletteCopy", () => {
     );
   });
 
+  it("includes a short pre-create description for OKF scaffolds", () => {
+    const minimal = commandPaletteEntry(
+      getCommandPaletteCopy("ja"),
+      "file.okfScaffoldMinimal",
+    );
+    expect(minimal.description).toMatch(/index\.md/);
+    expect(minimal.description).toMatch(/自動修正はしません|Draft/);
+
+    const book = commandPaletteEntry(
+      getCommandPaletteCopy("en"),
+      "file.okfScaffoldBookLike",
+    );
+    expect(book.description).toMatch(/chapters/i);
+    expect(book.description).toMatch(/Book Scope/i);
+  });
+
   it("localizes disabled reasons across languages", () => {
     expect(getCommandPaletteCopy("en").disabledReasons.needWorkspace).toContain(
       "workspace",

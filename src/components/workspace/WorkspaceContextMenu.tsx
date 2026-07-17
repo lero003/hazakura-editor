@@ -193,6 +193,7 @@ export function WorkspaceContextMenu({
           <button
             type="button"
             role="menuitem"
+            title={fileOpsCopy.newOkfScaffoldMinimalHint}
             onClick={() => onCreateOkfScaffoldMinimal()}
           >
             {okfCopy.contextMenuScaffoldMinimal}
@@ -200,6 +201,7 @@ export function WorkspaceContextMenu({
           <button
             type="button"
             role="menuitem"
+            title={fileOpsCopy.newOkfScaffoldBookLikeHint}
             onClick={() => onCreateOkfScaffoldBookLike()}
           >
             {okfCopy.contextMenuScaffoldBookLike}

@@ -152,7 +152,7 @@ export function CommandPalette({
                     onRun(command);
                   }}
                   role="option"
-                  title={reason}
+                  title={reason ?? command.description}
                   type="button"
                 >
                   <span className="command-palette-item-main">
@@ -162,6 +162,10 @@ export function CommandPalette({
                     {reason ? (
                       <span className="command-palette-disabled-reason">
                         {reason}
+                      </span>
+                    ) : command.description ? (
+                      <span className="command-palette-description">
+                        {command.description}
                       </span>
                     ) : null}
                   </span>

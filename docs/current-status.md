@@ -68,6 +68,10 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 - **v1.14 Writing Loop e-book → edit Keep:** an always-visible control jumps
   the editor caret to the current e-book page and focuses the editor; Reading
   Focus exit uses the same wording for discovery.
+- **v1.14 OKF template pre-create Keep:** Command Palette descriptions and
+  New-menu titles summarize starter file lists before create.
+- **v1.14 OKF first-fix Keep:** review panel surfaces one required finding as
+  the next explicit open-and-edit step without auto-repair.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
