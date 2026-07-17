@@ -144,8 +144,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    checklist: `docs/smoke-checklist.md` § Theme G. Defaults: no automatic remote
    / unapproved outside load in the default mode. Source review fixed redirect
    traversal and added remote-pin confirmation. A follow-up removed the
-   workspace-global approval cache so newly opened tabs ask again. Next:
-   packaged hands-on smoke.
+   workspace-global approval cache so newly opened tabs ask again. Built-app
+   hands-on smoke confirmed: ask blocks first, explicit approval is tab-local,
+   close/reopen asks again, allow-all survives reopen, remote stays Off, and
+   returning to ask blocks immediately without rewriting Markdown. Next:
+   signed-device breadth for export materialize and pin-to-assets Undo.
    Do not reopen published `1.12.0` without a hotfix decision.
 2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
    explicit user approval for a patch release.
