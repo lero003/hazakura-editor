@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.14 local candidate boxed; residual refinement after Keep set
+Scope: v1.14 tagged / selected candidate; residual refinement after Keep set
 Authority: High
-Last reviewed: 2026-07-18 (v1.14.0 source candidate; store still 1.13.0)
+Last reviewed: 2026-07-18 (v1.14.0 tagged / selected; store still 1.13.0)
 
 ## Purpose
 
@@ -15,7 +15,7 @@ Start here when choosing the next small `Hazakura Editor` slice.
 |------|--------|--------|
 | **v1.12** | **Closed / published as `1.12.0`** | OKF starter scaffold + rolled v1.9–v1.11. Source tag `v1.12.0`. |
 | **v1.13** | **Closed / published as `1.13.0`** | Theme A interaction clarity + Theme G media. Do not reopen without hotfix. |
-| **v1.14** | **Local source candidate (`1.14.0`)** | Continuity / Trust / Writing Loop / OKF depth Keeps boxed. Draft notes: `docs/releases/1.14.0-app-store-release-notes.md`. **Not published / not tagged / not submitted.** |
+| **v1.14** | **Tagged / selected candidate (`1.14.0`)** | Source tag `v1.14.0`; local App Store candidate selected. Store upload / submission / publication remain unconfirmed. |
 | **v1.14 residual** | Open after candidate cut | Deferred polish + distribution evidence only; not a second feature train. |
 | **v2** | Later | multi-file Book Scope, then 縦書き. Needs v2 entry gate. |
 
@@ -30,9 +30,8 @@ is **`1.13.0`**. Connect is authoritative for store counters.
 Direction: `docs/v1.13-plus-refinement-roadmap.md`.
 Release-note draft: `docs/releases/1.14.0-app-store-release-notes.md`.
 
-Treat the following as **one shipping box** for a future store/TestFlight
-candidate. Do not reopen for drive-by expansion without a reproduced friction
-or explicit decision.
+Treat the following as **one selected shipping box**. Do not reopen it for
+drive-by expansion without a reproduced blocker or explicit decision.
 
 ### Continuity
 
@@ -103,9 +102,8 @@ Hard rails and v2 entry gate: `docs/v1.13-plus-refinement-roadmap.md`.
 | v1.12 | Published `1.12.0` — OKF scaffold |
 | v1.11–v1.8 | Rolled or published history; contracts stay closed |
 
-## Next Human Gates (v1.14 candidate)
+## Next Human Gates (v1.14 selected candidate)
 
-1. Hands-on / packaged smoke of the Keep set (`docs/smoke-checklist.md`).
-2. Local candidate package when ready (see `docs/app-store-build.md`).
-3. Explicit approval before upload, TestFlight, App Review, or source tag.
-4. After ship (or explicit drop): residual queue only, or next Keep box.
+1. User-side App Store Connect upload / submission and Apple processing.
+2. TestFlight / review follow-up only when new evidence or a blocker appears.
+3. After ship (or explicit drop): residual queue only, or next Keep box.

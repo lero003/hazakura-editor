@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-18 (v1.14.0 local source candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (v1.14.0 tagged / selected candidate; store 1.13.0)
 
 ## Current Position
 
@@ -15,15 +15,15 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.14.0`** (**local source candidate** after
-  published `1.13.0`). Draft notes:
+- Package/app version in tree: **`1.14.0`** (**tagged source / selected local
+  App Store candidate** after published `1.13.0`). Store notes:
   `docs/releases/1.14.0-app-store-release-notes.md`. Local package provenance
   lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.13.0`.** App Review passed and the
   release was published (user-reported 2026-07-18). Release notes:
-  `docs/releases/1.13.0-app-store-release-notes.md`. The latest recorded
-  GitHub source tag remains `v1.12.0`; no `v1.13.0` / `v1.14.0` source tag is
-  claimed.
+  `docs/releases/1.13.0-app-store-release-notes.md`. The latest GitHub source /
+  local-app tag is `v1.14.0`; App Store upload, review, and publication are not
+  implied by that tag.
 - **v1.8 (`1.8.0`) is closed and published** (historical store baseline before
   `1.12.0`). Release notes: `docs/releases/1.8.0-app-store-release-notes.md`.
 - **v1.7 (`1.7.0`) is closed and published.** App Review passed and the
@@ -75,9 +75,9 @@ Current release state:
   results. Plan: `docs/v1.13-plus-refinement-roadmap.md`.
 - **v1.13 is closed / published as `1.13.0`.** Theme A + Theme G. Do not reopen
   without a reproduced regression.
-- **v1.14 is a local source candidate (`1.14.0`)** boxing Continuity / Trust /
-  Writing Loop / OKF depth Keeps. Not published. Residual polish and
-  distribution evidence remain open. Draft:
+- **v1.14 is tagged and selected (`1.14.0`)** boxing Continuity / Trust /
+  Writing Loop / OKF depth Keeps. App Store submission/publication remains
+  unconfirmed. Residual polish and distribution evidence remain open. Notes:
   `docs/releases/1.14.0-app-store-release-notes.md`.
 - **Accepted post-v1.7 sequence through scaffold:** `v1.8`–`v1.12` remain the
   trust → clarity → structure → OKF review → starter scaffold bridge. Detail:

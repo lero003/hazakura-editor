@@ -3,26 +3,27 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v1.14.0 local source candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (v1.14.0 source tag / selected store candidate; store 1.13.0)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`1.14.0`** across npm, Tauri, Cargo, and
-  lockfile metadata (**local source candidate** after published `1.13.0`).
-  The latest recorded GitHub source tag remains **`v1.12.0`** (source archive
-  only). See `docs/releases/1.12.0-source-tag.release.md`. No `v1.14.0` tag
-  is claimed.
+  lockfile metadata. The latest GitHub source / local-app tag is
+  **`v1.14.0`** (source archive only; no binary assets). See
+  `docs/releases/1.14.0-source-tag.release.md`.
 - **Published Mac App Store version: `1.13.0`.** App Review passed and the
   release was published (user-reported 2026-07-18): Theme A interaction
   clarity + Theme G bounded media on the v1.12 baseline. Release notes:
   `docs/releases/1.13.0-app-store-release-notes.md`. Do not reopen without a
   reproduced hotfix. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **v1.14 is boxed as a local source candidate (`1.14.0`).** Draft store copy:
-  `docs/releases/1.14.0-app-store-release-notes.md`. Active queue:
-  `docs/current-work.md`. It is **not** published, tagged, uploaded, or under
-  App Review by this status alone.
+- **v1.14 is boxed and selected as the local App Store submission candidate
+  (`1.14.0`).** Store copy: `docs/releases/1.14.0-app-store-release-notes.md`.
+  Exact local package provenance lives in ignored
+  `docs/internal/app-store-candidates/latest.json`. App Store Connect upload,
+  submission, review, and publication remain **unconfirmed** until reported by
+  the user; the source tag does not prove any of those states.
 - **v1.14 Keep themes (source):** Continuity (same-name tabs, Reference
   retained toggle, recent workspaces, shared right-pane header), Trust (export
   destination/warnings, Assist lock & not-saved, Import draft status), Writing
@@ -44,9 +45,10 @@ Last reviewed: 2026-07-18 (v1.14.0 local source candidate; store 1.13.0)
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open before treating v1.14 as ship-ready:** packaged/manual smoke of the
-  Keep set; optional residual polish (tab overflow, nav history, status TTL);
-  distribution-confidence matrix (TestFlight / VoiceOver / narrow / long-doc).
+- **Open after the v1.14 candidate cut:** user-side App Store Connect submission
+  and Apple processing evidence; optional residual polish (tab overflow, nav
+  history, status TTL); broader distribution-confidence evidence (TestFlight /
+  VoiceOver / narrow / long-doc).
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
@@ -770,9 +772,10 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: **v1.14 local candidate** Keep box + residual queue.
-- `docs/releases/1.14.0-app-store-release-notes.md`: draft store copy for `1.14.0`
-  (not published).
+- `docs/current-work.md`: **v1.14 tagged / selected candidate** + residual queue.
+- `docs/releases/1.14.0-source-tag.release.md`: `v1.14.0` source-tag boundary.
+- `docs/releases/1.14.0-app-store-release-notes.md`: selected candidate store
+  copy for `1.14.0` (App Store publication unconfirmed).
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -794,12 +797,12 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. Treat **v1.13 (`1.13.0`) as published and closed**. Do not reopen without a
-   reproduced hotfix. Latest recorded GitHub source tag remains `v1.12.0`.
-2. Treat **v1.14 (`1.14.0`) as a local source candidate**: Keep set boxed in
-   `docs/current-work.md` and draft notes
-   `docs/releases/1.14.0-app-store-release-notes.md`. Run packaged/manual smoke
-   before upload language. Residual polish and distribution evidence are next;
-   do not invent a mandatory v1.15 feature train.
+   reproduced hotfix. Latest GitHub source / local-app tag is `v1.14.0`.
+2. Treat **v1.14 (`1.14.0`) as tagged and selected for App Store submission**:
+   Keep set and store copy are boxed in `docs/current-work.md` and
+   `docs/releases/1.14.0-app-store-release-notes.md`. Do not claim App Store
+   upload, review, or publication until the user reports it. Residual polish and
+   broader distribution evidence are follow-up, not a mandatory v1.15 train.
 3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
    Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and
    VoiceOver breadth remain quality follow-up, not reasons to reopen `1.13.0`.
@@ -818,5 +821,6 @@ baseline, and smoke evidence are archived under
 7. For Hazakura Local Assist, use `docs/assist-surface-strategy.md` and
    `docs/app-store-build.md`; keep direct
    buffer edits as explicit AI edit transactions.
-8. Do not tag, upload, submit, or publish without explicit approval. In-tree
-   version is `1.14.0`; the published Mac App Store version is `1.13.0`.
+8. `v1.14.0` source tagging is approved and complete. Do not upload, submit,
+   publish, move tags, or attach release assets without separate evidence or
+   approval. Published Mac App Store version remains `1.13.0` here.

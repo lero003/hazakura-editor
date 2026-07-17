@@ -1,21 +1,21 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for v1.14 local candidate after published v1.13
+Scope: Short handoff for v1.14 tagged / selected candidate after published v1.13
 Authority: Medium
-Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (v1.14.0 tagged / selected; store 1.13.0)
 
 ## Current State
 
-- Package/app version in tree: **`1.14.0`** (local source candidate).
+- Package/app version in tree: **`1.14.0`** (source tag `v1.14.0`).
 - Published Mac App Store: **`1.13.0`** (user-reported 2026-07-18). Do not
   reopen without a reproduced hotfix. Tags and published assets are immutable.
-- Latest recorded GitHub source tag: **`v1.12.0`** (source archive only). No
-  `v1.13.0` / `v1.14.0` source tags are claimed here.
+- Latest GitHub source / local-app tag: **`v1.14.0`** (source archive only; no
+  binary assets). Release note: `docs/releases/1.14.0-source-tag.release.md`.
 - Local package provenance: ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **v1.14 Keep box is source-complete for a candidate cut** (not store-ready by
-  docs alone). Inventory and draft App Store copy:
+- **v1.14 Keep box is tagged and selected as the local App Store candidate.**
+  This does not prove upload, review, or publication. Inventory and store copy:
   `docs/releases/1.14.0-app-store-release-notes.md`. Queue:
   `docs/current-work.md`.
 - Review follow-up fixed Space-key activation for the always-visible e-book
@@ -77,7 +77,8 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 
 1. Prefer residual polish or verification over new feature expansion.
 2. One hypothesis per run; Keep / Iterate / Revert with evidence.
-3. Do not tag, upload, submit, or publish without explicit user approval.
+3. Do not upload, submit, publish, move tags, or attach release assets without
+   explicit user approval or fresh evidence.
 4. On security/path/AI surfaces, re-read `docs/security-boundary.md`.
 5. Start from `docs/current-work.md` and `docs/current-status.md`.
 
@@ -87,7 +88,8 @@ Last reviewed: 2026-07-18 (v1.14.0 source candidate; store 1.13.0)
 |------|------|
 | Next slice | `docs/current-work.md` |
 | Status truth | `docs/current-status.md` |
-| v1.14 draft notes | `docs/releases/1.14.0-app-store-release-notes.md` |
+| v1.14 source tag | `docs/releases/1.14.0-source-tag.release.md` |
+| v1.14 store notes | `docs/releases/1.14.0-app-store-release-notes.md` |
 | Refinement rails | `docs/v1.13-plus-refinement-roadmap.md` |
 | Smoke | `docs/smoke-checklist.md` |
 | App Store build | `docs/app-store-build.md` |

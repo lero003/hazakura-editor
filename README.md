@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-18 (v1.14.0 local source candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (v1.14.0 tagged / selected candidate; store 1.13.0)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -132,7 +132,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v1.14 local candidate Keep box + residual queue
+- [Current Work](docs/current-work.md): v1.14 tagged / selected candidate + residual queue
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
 - [v1.10 Single-document Structure Design](docs/v1.10-single-document-structure-design.md): completed shared structure, advisory, and bounded edit contract
@@ -144,7 +144,8 @@ For the full implementation inventory and release state, see
 - [v1.7 App Store Release Notes](docs/releases/1.7.0-app-store-release-notes.md): published Reference Compare + trust hardening release
 - [v1.12 App Store Release Notes](docs/releases/1.12.0-app-store-release-notes.md): published OKF scaffold + structure / OKF review line
 - [v1.13 App Store Release Notes](docs/releases/1.13.0-app-store-release-notes.md): published interaction clarity + bounded media line
-- [v1.14 App Store Release Notes (draft)](docs/releases/1.14.0-app-store-release-notes.md): local candidate Continuity / Trust / Writing Loop / OKF Keep box
+- [v1.14 Source Tag Notes](docs/releases/1.14.0-source-tag.release.md): source-only `v1.14.0` checkpoint
+- [v1.14 App Store Release Notes](docs/releases/1.14.0-app-store-release-notes.md): selected Continuity / Trust / Writing Loop / OKF Keep box
 - [v1.8 App Store Release Notes](docs/releases/1.8.0-app-store-release-notes.md): historical Daily Trust Completion release
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
@@ -235,9 +236,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.14.0` across npm, Tauri, and Cargo metadata (**local source candidate** after published `1.13.0`; draft notes in [1.14.0 App Store notes](docs/releases/1.14.0-app-store-release-notes.md)). The published App Store version is `1.13.0`. The latest recorded GitHub source / local-app tag remains [v1.12.0](https://github.com/lero003/hazakura-editor/tree/v1.12.0) (no binary assets). No `v1.14.0` tag is claimed.
+- Current package/app version is `1.14.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag is [v1.14.0](https://github.com/lero003/hazakura-editor/tree/v1.14.0) (no binary assets). The selected App Store candidate uses the same app version; App Store upload, review, and publication remain human-gated and are not implied by the tag.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.13.0`; do not reopen a published store lane. v1.14 packaging / TestFlight remains human-gated.
-- The latest prepared GitHub source / local-app tag is [v1.12.0](https://github.com/lero003/hazakura-editor/tree/v1.12.0). Release-note evidence: [1.12.0 source tag](docs/releases/1.12.0-source-tag.release.md) and [1.12.0 App Store notes](docs/releases/1.12.0-app-store-release-notes.md).
+- The latest prepared GitHub source / local-app tag is [v1.14.0](https://github.com/lero003/hazakura-editor/tree/v1.14.0). Release-note evidence: [1.14.0 source tag](docs/releases/1.14.0-source-tag.release.md) and [1.14.0 App Store notes](docs/releases/1.14.0-app-store-release-notes.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
