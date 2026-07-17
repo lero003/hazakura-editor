@@ -35,10 +35,6 @@ import {
   type PreviewViewState,
 } from "../../features/editor/documentViewState";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
-import {
-  approveParentFolder,
-  loadInitialApprovedRoots,
-} from "../../features/editor/mediaImageApprovals";
 import type {
   AppleAssistCopy,
   LModeCopy,
@@ -92,6 +88,7 @@ type AppWorkspaceProps = {
   activeDocumentLineCount: number;
   activeMatchIndex: number;
   activeTab: EditorTab | null;
+  approvedImageRoots: string[];
   agentLaunchGate: AgentLaunchGateState;
   agentOutput: AgentWorkbenchOutputChunk[];
   agentSession: AgentWorkbenchSession | null;
@@ -156,6 +153,7 @@ type AppWorkspaceProps = {
     direction: HeadingLevelChangeDirection,
   ) => void;
   onApplyBackup?: (documentPath: string, backupContents: string) => void;
+  onApproveLocalImageParent: (resolvedPath: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
@@ -227,6 +225,7 @@ export function AppWorkspace({
   activeDocumentLineCount,
   activeMatchIndex,
   activeTab,
+  approvedImageRoots,
   agentLaunchGate,
   agentOutput,
   agentSession,
@@ -278,6 +277,7 @@ export function AppWorkspace({
   loadWorkspaceDirectory,
   lModeCopy,
   onApplyBackup,
+  onApproveLocalImageParent,
   menuLanguage,
   onMoveEntry,
   onMoveToTrash,
@@ -346,28 +346,11 @@ export function AppWorkspace({
   const [documentViewStates, setDocumentViewStates] =
     useState<DocumentViewStateRegistry>({});
   const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
-  const [approvedImageRoots, setApprovedImageRoots] = useState<string[]>(() =>
-    loadInitialApprovedRoots(
-      workspaceRootPath,
-      editorSettings.outsideImages,
-    ),
-  );
-
-  useEffect(() => {
-    setApprovedImageRoots(
-      loadInitialApprovedRoots(
-        workspaceRootPath,
-        editorSettings.outsideImages,
-      ),
-    );
-  }, [editorSettings.outsideImages, workspaceRootPath]);
-
   const mediaAccess = useMemo(
     () => ({
       outsideImages: editorSettings.outsideImages,
       loadRemoteImages: editorSettings.loadRemoteImages,
-      approvedRoots:
-        editorSettings.outsideImages === "off" ? [] : approvedImageRoots,
+      approvedRoots: approvedImageRoots,
     }),
     [
       approvedImageRoots,
@@ -376,23 +359,6 @@ export function AppWorkspace({
     ],
   );
 
-  const handleApproveLocalImageParent = useCallback(
-    (resolvedPath: string) => {
-      if (editorSettings.outsideImages === "off") {
-        return;
-      }
-      setApprovedImageRoots((current) => {
-        const next = approveParentFolder(
-          resolvedPath,
-          current,
-          workspaceRootPath,
-          editorSettings.outsideImages,
-        );
-        return next;
-      });
-    },
-    [editorSettings.outsideImages, workspaceRootPath],
-  );
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
   const setWorkspaceSidebarCollapsed = (collapsed: boolean) => {
@@ -813,7 +779,7 @@ export function AppWorkspace({
             activeContents={activeContents}
             activeTab={activeTab}
             mediaAccess={mediaAccess}
-            onApproveLocalImageParent={handleApproveLocalImageParent}
+            onApproveLocalImageParent={onApproveLocalImageParent}
             compareSource={compareAnchor}
             compareTarget={compareTarget}
             compareView={compareView}
@@ -861,7 +827,7 @@ export function AppWorkspace({
               initialLocation={initialEbookLocation}
               mediaAccess={mediaAccess}
               menuLanguage={menuLanguage}
-              onApproveLocalImageParent={handleApproveLocalImageParent}
+              onApproveLocalImageParent={onApproveLocalImageParent}
               onExitReadingFocus={closeEbookReadingFocus}
               onLocationChange={handleEbookLocationChange}
               onOpenLocalLink={openPreviewMarkdownLink}

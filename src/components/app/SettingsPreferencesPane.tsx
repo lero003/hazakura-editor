@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { OutsideImagePolicy } from "../../features/editor/mediaImageSettings";
-import { clearStoredApprovedRoots } from "../../features/editor/mediaImageSettings";
 import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
 import type {
   EditorSettings,
@@ -22,9 +21,6 @@ type SettingsPreferencesPaneProps = {
   onThemePreferenceChange: (theme: ThemePreference) => void;
   previewVisible: boolean;
   themePreference: ThemePreference;
-  /** When set, enables clearing durable approved image folders for this workspace. */
-  workspaceRootPath?: string | null;
-  onClearApprovedImageFolders?: () => void;
 };
 
 type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";
@@ -56,8 +52,6 @@ export function SettingsPreferencesPane({
   onThemePreferenceChange,
   previewVisible,
   themePreference,
-  workspaceRootPath = null,
-  onClearApprovedImageFolders,
 }: SettingsPreferencesPaneProps) {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
 
@@ -212,9 +206,8 @@ export function SettingsPreferencesPane({
               }))
             }
           >
-            <option value="off">{copy.outsideImagesOff}</option>
             <option value="ask">{copy.outsideImagesAsk}</option>
-            <option value="remember">{copy.outsideImagesRemember}</option>
+            <option value="allow">{copy.outsideImagesAllow}</option>
           </select>
           <span className="field-hint">{copy.outsideImagesHint}</span>
         </label>
@@ -240,18 +233,6 @@ export function SettingsPreferencesPane({
             }))
           }
         />
-        {workspaceRootPath ? (
-          <button
-            className="secondary-button"
-            type="button"
-            onClick={() => {
-              clearStoredApprovedRoots(workspaceRootPath);
-              onClearApprovedImageFolders?.();
-            }}
-          >
-            {copy.clearApprovedImageFolders}
-          </button>
-        ) : null}
       </section>
       <section className="preference-section" aria-label={copy.application}>
         <h3>{copy.application}</h3>

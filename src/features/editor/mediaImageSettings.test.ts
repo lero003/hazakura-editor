@@ -3,6 +3,7 @@ import {
   isPathUnderApprovedRoots,
   mergeApprovedRoot,
   parentDirectoryOfPath,
+  parseOutsideImagePolicy,
   parseMediaImageSettings,
 } from "./mediaImageSettings";
 
@@ -12,6 +13,13 @@ describe("mediaImageSettings", () => {
     expect(settings.loadRemoteImages).toBe(false);
     expect(settings.outsideImages).toBe("ask");
     expect(settings.materializeImagesOnExport).toBe(true);
+  });
+
+  it("keeps only ask / allow and migrates legacy policies to ask", () => {
+    expect(parseOutsideImagePolicy("ask")).toBe("ask");
+    expect(parseOutsideImagePolicy("allow")).toBe("allow");
+    expect(parseOutsideImagePolicy("off")).toBe("ask");
+    expect(parseOutsideImagePolicy("remember")).toBe("ask");
   });
 
   it("approves parent folder coverage for nested assets", () => {

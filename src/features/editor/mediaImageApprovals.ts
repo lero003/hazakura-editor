@@ -1,90 +1,49 @@
 /**
- * Session + optional durable approved roots for outside-workspace images.
- * Shared module store so Preview (AppWorkspace) and export (shell) agree.
+ * Outside-local approvals are controller-owned and scoped to one open tab.
+ * No module cache and no localStorage persistence: a newly opened document
+ * always starts at the safe ask boundary.
  */
 
 import {
-  clearStoredApprovedRoots,
   mergeApprovedRoot,
   parentDirectoryOfPath,
-  readStoredApprovedRoots,
-  writeStoredApprovedRoots,
   type OutsideImagePolicy,
 } from "./mediaImageSettings";
 
-const sessionRootsByWorkspace = new Map<string, string[]>();
+export type MediaImageApprovalState = {
+  contextKey: string | null;
+  roots: string[];
+};
 
-function workspaceKey(workspaceRoot: string | null): string {
-  return workspaceRoot?.replace(/\/+$/, "") || "";
-}
-
-export function loadInitialApprovedRoots(
-  workspaceRoot: string | null,
+export function effectiveApprovedRoots(
+  state: MediaImageApprovalState,
+  contextKey: string | null,
   policy: OutsideImagePolicy,
 ): string[] {
-  const key = workspaceKey(workspaceRoot);
-  if (policy === "off") {
-    if (key) {
-      sessionRootsByWorkspace.delete(key);
-    }
+  if (policy === "allow") {
+    return ["/"];
+  }
+  if (!contextKey || state.contextKey !== contextKey) {
     return [];
   }
-  if (policy === "remember") {
-    const stored = readStoredApprovedRoots(workspaceRoot);
-    if (key) {
-      sessionRootsByWorkspace.set(key, stored);
-    }
-    return stored;
-  }
-  // ask: session-only
-  if (key && sessionRootsByWorkspace.has(key)) {
-    return [...(sessionRootsByWorkspace.get(key) ?? [])];
-  }
-  return [];
+  return [...state.roots];
 }
 
-export function getApprovedRoots(
-  workspaceRoot: string | null,
-  policy: OutsideImagePolicy,
-): string[] {
-  if (policy === "off") {
-    return [];
-  }
-  const key = workspaceKey(workspaceRoot);
-  if (key && sessionRootsByWorkspace.has(key)) {
-    return [...(sessionRootsByWorkspace.get(key) ?? [])];
-  }
-  return loadInitialApprovedRoots(workspaceRoot, policy);
-}
-
-export function approveParentFolder(
+export function approveParentFolderForContext(
+  state: MediaImageApprovalState,
+  contextKey: string | null,
   resolvedImagePath: string,
-  currentRoots: readonly string[],
-  workspaceRoot: string | null,
   policy: OutsideImagePolicy,
-): string[] {
-  const parent = parentDirectoryOfPath(resolvedImagePath);
-  const next = mergeApprovedRoot(currentRoots, parent);
-  const key = workspaceKey(workspaceRoot);
-  if (key) {
-    sessionRootsByWorkspace.set(key, next);
+): MediaImageApprovalState {
+  if (policy !== "ask" || !contextKey) {
+    return state;
   }
-  if (policy === "remember") {
-    writeStoredApprovedRoots(workspaceRoot, next);
-  }
-  return next;
-}
-
-export function revokeApprovedRoots(
-  workspaceRoot: string | null,
-  policy: OutsideImagePolicy,
-): string[] {
-  const key = workspaceKey(workspaceRoot);
-  if (key) {
-    sessionRootsByWorkspace.delete(key);
-  }
-  if (policy === "remember") {
-    clearStoredApprovedRoots(workspaceRoot);
-  }
-  return [];
+  const currentRoots = state.contextKey === contextKey ? state.roots : [];
+  return {
+    contextKey,
+    roots: mergeApprovedRoot(
+      currentRoots,
+      parentDirectoryOfPath(resolvedImagePath),
+    ),
+  };
 }

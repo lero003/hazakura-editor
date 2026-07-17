@@ -60,6 +60,20 @@ describe("classifyMarkdownImageSource", () => {
     });
   });
 
+  it("allows outside local images only after the explicit allow setting", () => {
+    expect(
+      classifyMarkdownImageSource(
+        "/Users/writer/Pictures/cover.jpg",
+        "/project/book",
+        "/project/book/chapter.md",
+        { outsideImages: "allow" },
+      ),
+    ).toEqual({
+      kind: "allowed-approved-local",
+      path: "/Users/writer/Pictures/cover.jpg",
+    });
+  });
+
   it("classifies absolute paths outside the workspace distinctly", () => {
     const result = classifyMarkdownImageSource(
       "/etc/passwd",

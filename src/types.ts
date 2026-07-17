@@ -395,8 +395,8 @@ export type EditorSettings = {
   appleAssistDiffInitiallyOpen: boolean;
   /**
    * Theme G — outside-workspace / absolute local images.
-   * off: always block. ask: session consent via Preview control.
-   * remember: durable approved folders per workspace.
+   * ask: explicit parent-folder consent for the current open document.
+   * allow: load any supported local image the OS sandbox permits.
    */
   outsideImages: import("./features/editor/mediaImageSettings").OutsideImagePolicy;
   /** Theme G — https remote images in Preview / e-book. Default false. */

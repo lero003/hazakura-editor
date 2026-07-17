@@ -48,7 +48,11 @@ import { buildLineDiff } from "../../features/diff/diff";
 import { compareColumnLabel } from "../../lib/locale/review";
 import { localizeCompareError } from "../../lib/utils";
 import type { CompareCase } from "../../types";
-import { getApprovedRoots } from "../../features/editor/mediaImageApprovals";
+import {
+  approveParentFolderForContext,
+  effectiveApprovedRoots,
+  type MediaImageApprovalState,
+} from "../../features/editor/mediaImageApprovals";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
@@ -345,6 +349,38 @@ export function useAppShellController() {
     activeLModeEnabled === editorSettings.lModeEnabled
       ? editorSettings
       : { ...editorSettings, lModeEnabled: false };
+  const mediaApprovalContextKey =
+    workspaceRootPath && activeTab
+      ? `${workspaceRootPath}\u0000${activeTab.sessionId}`
+      : null;
+  const [mediaImageApprovalState, setMediaImageApprovalState] =
+    useState<MediaImageApprovalState>({ contextKey: null, roots: [] });
+  const approvedImageRoots = useMemo(
+    () =>
+      effectiveApprovedRoots(
+        mediaImageApprovalState,
+        mediaApprovalContextKey,
+        editorSettings.outsideImages,
+      ),
+    [
+      editorSettings.outsideImages,
+      mediaApprovalContextKey,
+      mediaImageApprovalState,
+    ],
+  );
+  const approveLocalImageParent = useCallback(
+    (resolvedPath: string) => {
+      setMediaImageApprovalState((current) =>
+        approveParentFolderForContext(
+          current,
+          mediaApprovalContextKey,
+          resolvedPath,
+          editorSettings.outsideImages,
+        ),
+      );
+    },
+    [editorSettings.outsideImages, mediaApprovalContextKey],
+  );
 
   // section: refs (editor + dialog; depends on tabs + editor tab state)
   const {
@@ -1121,10 +1157,7 @@ export function useAppShellController() {
     mediaAccess: {
       outsideImages: editorSettings.outsideImages,
       loadRemoteImages: editorSettings.loadRemoteImages,
-      approvedRoots: getApprovedRoots(
-        workspaceRootPath,
-        editorSettings.outsideImages,
-      ),
+      approvedRoots: approvedImageRoots,
     },
     refreshWorkspaceTree,
     rememberRecentFile,
@@ -1506,10 +1539,7 @@ export function useAppShellController() {
     mediaAccess: {
       outsideImages: editorSettings.outsideImages,
       loadRemoteImages: editorSettings.loadRemoteImages,
-      approvedRoots: getApprovedRoots(
-        workspaceRootPath,
-        editorSettings.outsideImages,
-      ),
+      approvedRoots: approvedImageRoots,
     },
     menuLanguage,
     setStatus,
@@ -1811,6 +1841,7 @@ export function useAppShellController() {
     orphanPathlessDrafts,
     activeTab,
     activeTabId,
+    approvedImageRoots,
     agentLaunchGate,
     agentOutput,
     agentSession,
@@ -2100,6 +2131,7 @@ export function useAppShellController() {
     setAgentWorkbenchProvider: updateAgentWorkbenchProvider,
     setAssistSurfacePreference: updateAssistSurfacePreference,
     onApplyBackup: applyBackupToActiveTab,
+    onApproveLocalImageParent: approveLocalImageParent,
     onCloseRestoreBackupDialog: closeRestoreBackupDialog,
     onSelectAutoBackupEntry: selectAutoBackupEntry,
     setCompareSource,

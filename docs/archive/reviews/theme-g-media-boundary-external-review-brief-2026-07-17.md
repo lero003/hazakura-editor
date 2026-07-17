@@ -60,9 +60,10 @@ Hard rails (must not regress):
 
 ### M1 — Outside-local consent
 
-- Preferences: outside images **off / ask (default) / remember**
+- Preferences: outside images **ask (default) / allow all within OS access**
 - Approve control on blocked note: parent folder of the resolved path
-- Session map shared with export; **remember** persists per workspace root
+- One controller-owned approval state is shared with Preview and export; ask
+  approval is scoped to the current open tab and is never persisted
 - Rust: `open_local_image_under_roots(path, allowed_roots)` — canonical containment
 
 ### M2 — Remote Preference
@@ -127,7 +128,8 @@ git diff --check
 ## Known gaps / residual risk
 
 1. **Hands-on smoke** is the main remaining evidence gap — use Theme G section in `docs/smoke-checklist.md`.
-2. Settings **clear approved folders** button needs workspace root prop wiring in overlays for best UX (clear via policy switch still works).
+2. The remembered-folder branch and its clear button were removed after hands-on
+   feedback showed workspace-global approval was too easy to misread.
 3. Remote On path: first-network UX and failure copy should be judged on a real host; timeout/size tests exist in Rust path but full e2e network is host-dependent.
 4. Pin of many images is sequential; no cancel UI mid-pin.
 5. L Mode image widget still uses its own classifier (preview is the primary Theme G surface).
@@ -147,7 +149,8 @@ git diff --check
 
 ## Review focus (please stress these)
 
-1. **Consent model:** Is ask/remember/off clear? Any path where outside disk or network runs without user intent?
+1. **Consent model:** Does ask reset on a newly opened tab? Is explicit allow-all
+   clearly separate from remote URL permission?
 2. **Rust gates:** Can FE spoof `allowed_roots` to open arbitrary files? (Expected: only paths under provided roots after canonicalize; still requires FE to pass roots — is that acceptable for this trust model?)
 3. **Pin vs Preview:** Pin may fetch remote / import outside paths even when Preview remote is Off (explicit command). Is that the right product call?
 4. **Export:** Can materialize On + remote Off still leak network? (Expected: no.)
@@ -178,7 +181,8 @@ Please review Hazakura Editor Theme G media boundary work (v1.13 development lin
 Baseline published 1.12.0 is immutable. Plan: docs/v1.xx-image-media-boundary-plan.md.
 Brief: docs/archive/reviews/theme-g-media-boundary-external-review-brief-2026-07-17.md.
 Smoke: docs/smoke-checklist.md § Theme G Media Boundaries Smoke.
-Focus: consent (outside-local ask/remember), Rust under-roots + https-only fetch,
+Focus: consent (outside-local ask/allow, no remembered folders), Rust path/image
+checks + https-only fetch,
 export materialize without source rewrite, palette pin + one Undo, no silent network.
 Defaults must stay safe (remote Off). Report bugs/boundary gaps before polish nits.
 ```

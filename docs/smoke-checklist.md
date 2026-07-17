@@ -458,14 +458,15 @@ outside-local Ask, export materialize On, no silent Markdown rewrite.
 
 1. With outside policy **許可してから読む** (default), click
    **「この画像の親フォルダを許可して表示」** on the cover note.
-2. Confirm the cover image appears in Preview after approve (session only).
+2. Confirm the cover image appears in Preview after approve (current tab only).
 3. Open e-book for the same doc and confirm the same image policy (approved root shared).
-4. Settings → **表示とメディア**: switch outside images to **常にブロック**, confirm
-   cover is blocked again without an approve control. Restore **許可してから読む**.
-5. Switch to **許可したフォルダを覚える**, approve once, quit/relaunch the app, reopen
-   the same workspace + file, confirm the cover still loads without re-approving.
-6. Use **許可した画像フォルダをクリア** (when workspace root is available in Settings)
-   or switch policy to off/ask and confirm remembered approvals no longer apply.
+4. Close the tab and open `chapter.md` again. Confirm **許可してから読む** asks
+   again and does not reuse the previous parent-folder approval.
+5. Switch to **すべて読む（OS が許可した範囲）** and confirm the local cover can
+   load without the per-folder control. Confirm this does not enable remote URL
+   loading while the separate remote toggle is Off.
+6. Restore **許可してから読む** and confirm the current tab returns to the
+   explicit blocked/approve path.
 
 ### M2 — Remote Preference (default Off)
 
@@ -507,7 +508,8 @@ outside-local Ask, export materialize On, no silent Markdown rewrite.
 ### Preferences surface
 
 1. Open Settings → **表示とメディア** / **Display & media**.
-2. Confirm three outside modes, remote toggle + privacy hint, materialize toggle.
+2. Confirm two outside modes (ask / allow), remote toggle + privacy hint,
+   materialize toggle. Confirm no remembered-folder option remains.
 3. Confirm Japanese / English / kana labels are readable (no raw English key leaks
    in ja/kana UI).
 

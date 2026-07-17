@@ -28,8 +28,10 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   Media boundaries, or hands-on friction. Image / media loosening (settings,
   consent, export materialize)
   is in `docs/v1.xx-image-media-boundary-plan.md`. **M0–M4 are Keep in source:**
-  blocked-image reason keys; Preferences for outside images (default ask) and
-  remote https (default off); session/remember approved folders; Rust
+  blocked-image reason keys; outside-local Preferences are now only **current
+  document approval (default ask)** or explicit **allow all within OS access**;
+  approvals do not persist across a newly opened tab; remote https remains a
+  separate default-off setting; Rust
   `open_local_image_under_roots` / `fetch_remote_image`; export materialize
   (default on) without silent source rewrite; Command Palette pin to `assets/`
   with one Undo-able editor transaction. Manual smoke:

@@ -43,6 +43,20 @@ function renderWithState(initial: EditorSettings) {
 }
 
 describe("SettingsPreferencesPane", () => {
+  it("offers only per-document approval or explicit allow-all for outside images", () => {
+    const copy = getPreferencesCopy("en");
+    renderWithState(defaultEditorSettings());
+
+    const select = screen.getByRole("combobox", {
+      name: copy.outsideImages,
+    }) as HTMLSelectElement;
+    expect(Array.from(select.options, (option) => option.value)).toEqual([
+      "ask",
+      "allow",
+    ]);
+    expect(screen.queryByText(/Remember approved folders/i)).toBeNull();
+  });
+
   it("toggles the Hazakura Local Assist diff default-open preference", () => {
     // appleAssistDiffInitiallyOpen トグルをクリックした結果、最終状態の
     // editorSettings が反転していることを本物の state を通して検証する。

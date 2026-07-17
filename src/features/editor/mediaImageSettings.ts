@@ -5,7 +5,7 @@
  * export materialize On for package self-containment when sources are readable.
  */
 
-export type OutsideImagePolicy = "off" | "ask" | "remember";
+export type OutsideImagePolicy = "ask" | "allow";
 
 export type MediaImageSettings = {
   /** Outside-workspace / absolute-local images. Default: ask. */
@@ -26,12 +26,12 @@ export const DEFAULT_MEDIA_IMAGE_SETTINGS: MediaImageSettings = {
   materializeImagesOnExport: true,
 };
 
-const APPROVED_ROOTS_STORAGE_PREFIX = "hazakura.media.approvedImageRoots.v1:";
-
 export function parseOutsideImagePolicy(value: unknown): OutsideImagePolicy {
-  if (value === "off" || value === "ask" || value === "remember") {
+  if (value === "ask" || value === "allow") {
     return value;
   }
+  // v1.13 migration: retired `off` / `remember` values must not preserve
+  // broad or durable access. Re-enter through the explicit ask path.
   return DEFAULT_MEDIA_IMAGE_SETTINGS.outsideImages;
 }
 
@@ -121,51 +121,4 @@ export function mergeApprovedRoot(
   );
   next.push(normalized);
   return next;
-}
-
-export function approvedRootsStorageKey(workspaceRoot: string): string {
-  return `${APPROVED_ROOTS_STORAGE_PREFIX}${normalizeAbsolutePosixPath(workspaceRoot)}`;
-}
-
-export function readStoredApprovedRoots(workspaceRoot: string | null): string[] {
-  if (!workspaceRoot || typeof window === "undefined") {
-    return [];
-  }
-  try {
-    const raw = window.localStorage.getItem(
-      approvedRootsStorageKey(workspaceRoot),
-    );
-    if (!raw) {
-      return [];
-    }
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed
-      .filter((entry): entry is string => typeof entry === "string")
-      .map(normalizeAbsolutePosixPath)
-      .filter((entry) => entry.startsWith("/"));
-  } catch {
-    return [];
-  }
-}
-
-export function writeStoredApprovedRoots(
-  workspaceRoot: string | null,
-  roots: readonly string[],
-): void {
-  if (!workspaceRoot || typeof window === "undefined") {
-    return;
-  }
-  const key = approvedRootsStorageKey(workspaceRoot);
-  if (roots.length === 0) {
-    window.localStorage.removeItem(key);
-    return;
-  }
-  window.localStorage.setItem(key, JSON.stringify([...roots]));
-}
-
-export function clearStoredApprovedRoots(workspaceRoot: string | null): void {
-  writeStoredApprovedRoots(workspaceRoot, []);
 }

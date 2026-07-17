@@ -185,14 +185,14 @@ export function classifyMarkdownImageSource(
 
   const outsidePolicy = media.outsideImages;
   const approved =
-    outsidePolicy !== "off" &&
+    outsidePolicy === "allow" ||
     isPathUnderApprovedRoots(resolved, media.approvedRoots);
 
   if (approved) {
     return { kind: "allowed-approved-local", path: resolved };
   }
 
-  const canApproveLocal = outsidePolicy === "ask" || outsidePolicy === "remember";
+  const canApproveLocal = outsidePolicy === "ask";
 
   // Relative escape: same Preview / HTML / PDF matrix as before.
   if (workspaceRoot && !srcIsAbsolute) {
