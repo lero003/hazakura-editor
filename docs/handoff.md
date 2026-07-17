@@ -40,7 +40,7 @@ Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
 ## Verification (2026-07-18)
 
 - `npm run typecheck` — pass.
-- `npm test` — 196 files / 1,634 tests pass.
+- `npm test` — 196 files / 1,636 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 366 pass / 2 ignored
@@ -50,9 +50,11 @@ Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
   was not attempted.
 - `smoke:macos-window` against the resulting `Hazakura Editor.app` — onscreen
   main window confirmed.
-- Interactive Book Scope smoke (nested selection, dirty chapter switching,
-  relaunch restoration, external deletion) remains a human QA step; use the
-  v2 section in `docs/smoke-checklist.md`.
+- Interactive Book Scope smoke passed in the built app: nested selection,
+  reorder, dirty chapter switching/return, scope-external file opening,
+  relaunch restoration, external deletion/unavailable retention, in-app
+  rename tracking, and confirmed Trash removal. The narrow follow-up localizes
+  lazy-folder status and unavailable reasons.
 
 ## Durable Pins
 

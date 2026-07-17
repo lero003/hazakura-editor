@@ -101,6 +101,8 @@ export function localizeStatusMessage(
     "External change refreshed": "外部変更を再読み込みしました",
     "Find closed": "検索を閉じました",
     "Folder load failed": "フォルダの読み込みに失敗しました",
+    "Folder loaded": "フォルダを読み込みました",
+    "Folder partially loaded": "フォルダの一部を読み込みました",
     "Folder open cancelled": "フォルダを開く操作をキャンセルしました",
     "Folder open failed": "フォルダを開けませんでした",
     "Folder opened": "フォルダを開きました",

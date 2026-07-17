@@ -421,6 +421,11 @@ Run when file I/O, tabs, close behavior, or save logic changes:
 - Confirm Book selection never adds non-Markdown files, performs background
   workspace scanning, creates a manifest, or rewrites Markdown source.
 
+Fresh local evidence (2026-07-18, built App Store preview): nested selection,
+reorder, dirty chapter switching/return, scope-external file opening, relaunch
+restore, external deletion with unavailable retention, in-app rename tracking,
+and confirmed Trash removal passed. No manifest or source rewrite was observed.
+
 Run when the file tree or workspace commands change:
 
 1. Open a throwaway workspace.

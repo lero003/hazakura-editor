@@ -117,6 +117,24 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
   });
 });
 
+describe("localizeStatusMessage: lazy workspace folders", () => {
+  it("localizes complete and partial folder loads in Japanese", () => {
+    expect(localizeStatusMessage("Folder loaded", "ja")).toBe(
+      "フォルダを読み込みました",
+    );
+    expect(localizeStatusMessage("Folder partially loaded", "ja")).toBe(
+      "フォルダの一部を読み込みました",
+    );
+  });
+
+  it("keeps the canonical English messages in English", () => {
+    expect(localizeStatusMessage("Folder loaded", "en")).toBe("Folder loaded");
+    expect(localizeStatusMessage("Folder partially loaded", "en")).toBe(
+      "Folder partially loaded",
+    );
+  });
+});
+
 describe("openedSearchMatchStatus", () => {
   it("keeps path:line diagnostics across locales", () => {
     expect(openedSearchMatchStatus("docs/note.md", 12, "en")).toBe(

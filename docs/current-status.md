@@ -38,6 +38,12 @@ Last reviewed: 2026-07-18 (v2 Book Scope Alpha spine implemented)
   moved chapters remain visible as unavailable until rechecked or explicitly
   removed. No workspace manifest, source rewrite, background indexing,
   whole-book reader/export, or OKF semantic expansion was added.
+- **Book Scope Alpha built-app interaction smoke passed on 2026-07-18.** A
+  throwaway nested workspace covered explicit selection, order changes, dirty
+  chapter switching and return, scope-external file opening, relaunch restore,
+  external deletion with unavailable retention, in-app rename path tracking,
+  and confirmed Trash removal. The follow-up polish localizes lazy-folder
+  status and unavailable reasons without changing the scope contract.
 - **v1.14 review-candidate Keep themes:** Continuity (same-name tabs, Reference
   retained toggle, recent workspaces, shared right-pane header), Trust (export
   destination/warnings, Assist lock & not-saved, Import draft status), Writing

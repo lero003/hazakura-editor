@@ -62,7 +62,7 @@ describe("BookScopePanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "a.md" }));
     expect(onOpenChapter).toHaveBeenCalledWith("/workspace/a.md");
-    expect(screen.getByText("利用できません: missing")).toBeTruthy();
+    expect(screen.getByText("利用できません: ファイルが見つかりません")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "missing.mdを上へ移動" }));
     expect(onCommit).toHaveBeenCalledWith(["missing.md", "a.md"]);
   });

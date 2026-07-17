@@ -225,7 +225,7 @@ function bookScopeCopy(language: MenuLanguage) {
       chapterCount: (count: number) => `${count} chapters`,
       moveUp: (path: string) => `Move ${path} up`, moveDown: (path: string) => `Move ${path} down`,
       remove: (path: string) => `Remove ${path} from book`,
-      unavailable: (reason: string) => `Unavailable: ${reason}`,
+      unavailable: (reason: string) => `Unavailable: ${bookScopeReason(reason, "en")}`,
     };
   }
   return {
@@ -237,6 +237,32 @@ function bookScopeCopy(language: MenuLanguage) {
     chapterCount: (count: number) => `${count}章`,
     moveUp: (path: string) => `${path}を上へ移動`, moveDown: (path: string) => `${path}を下へ移動`,
     remove: (path: string) => `${path}を本から外す`,
-    unavailable: (reason: string) => `利用できません: ${reason}`,
+    unavailable: (reason: string) => `利用できません: ${bookScopeReason(reason, "ja")}`,
   };
+}
+
+function bookScopeReason(reason: string, language: "en" | "ja"): string {
+  const reasons = language === "en"
+    ? {
+        duplicate: "duplicate entry",
+        "invalid-path": "invalid path",
+        missing: "file not found",
+        "not-file": "not a file",
+        "outside-workspace": "outside the workspace",
+        symlink: "symbolic links are not allowed",
+        unreadable: "file cannot be read",
+        "unsupported-extension": "not a Markdown file",
+      }
+    : {
+        duplicate: "章が重複しています",
+        "invalid-path": "安全でないパスです",
+        missing: "ファイルが見つかりません",
+        "not-file": "ファイルではありません",
+        "outside-workspace": "ワークスペース外です",
+        symlink: "シンボリックリンクは使えません",
+        unreadable: "ファイルを読み込めません",
+        "unsupported-extension": "Markdownファイルではありません",
+      };
+  return reasons[reason as keyof typeof reasons]
+    ?? (language === "en" ? "recheck required" : "再確認が必要です");
 }
