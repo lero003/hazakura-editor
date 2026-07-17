@@ -169,6 +169,7 @@ type AppWorkspaceProps = {
   openPreviewMarkdownLink: (path: string) => void | Promise<void>;
   openReferenceFile: () => void | Promise<void>;
   openWorkspace: () => unknown;
+  openWorkspacePath: (path: string) => unknown;
   openWorkspaceContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -178,6 +179,7 @@ type AppWorkspaceProps = {
   openWorkspaceFile: (path: string) => unknown;
   orphanPathlessDrafts?: DraftRecord[];
   recoveryCopy: RecoveryCopy;
+  recentFolders: import("../../types").RecentEntry[];
   reopenPersistedWorkspace: () => unknown;
   restoreDraft: (draft: DraftRecord) => void;
   previewColumnPercent: number;
@@ -291,10 +293,12 @@ export function AppWorkspace({
   openPreviewMarkdownLink,
   openReferenceFile,
   openWorkspace,
+  openWorkspacePath,
   openWorkspaceContextMenu,
   openRootWorkspaceContextMenu,
   openWorkspaceFile,
   orphanPathlessDrafts = [],
+  recentFolders,
   recoveryCopy,
   reopenPersistedWorkspace,
   restoreDraft,
@@ -645,6 +649,7 @@ export function AppWorkspace({
             onNewFile={() => void createNewFile()}
             onOpenFile={() => void openFile()}
             onOpenFolder={() => void openWorkspace()}
+            onOpenRecentWorkspace={(path) => void openWorkspacePath(path)}
             onPasteImage={handlePasteImage}
             onReopenPersistedWorkspace={() => void reopenPersistedWorkspace()}
             onRestoreDraft={restoreDraft}
@@ -652,6 +657,7 @@ export function AppWorkspace({
             onSelectionChange={setSelectionInfo}
             onSendToAgent={handleSendSelectionToAgent}
             pathlessDrafts={orphanPathlessDrafts}
+            recentWorkspaces={recentFolders}
             recoveryCopy={recoveryCopy}
             restoreComplete={restoreComplete}
             scrollHudContext={scrollHudContext}

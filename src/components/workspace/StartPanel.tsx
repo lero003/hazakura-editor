@@ -4,7 +4,11 @@ import { draftStorageKey } from "../../features/document/pathlessDraftRecovery";
 import { resolveStartPanelReturningContext } from "../../features/workspace/startPanelReturning";
 import { readPersistedWorkspaceState } from "../../lib/storage";
 import type { RecoveryCopy, SafeEditorCopy } from "../../lib/locale";
-import type { DraftRecord } from "../../types";
+import { buildRecentDisplayEntries } from "../../lib/utils";
+import type { DraftRecord, RecentEntry } from "../../types";
+
+/** Visible cap on Start Panel (storage may keep more for the OS menu). */
+export const START_PANEL_RECENT_WORKSPACES_LIMIT = 5;
 
 export function StartPanel({
   copy,
@@ -13,11 +17,13 @@ export function StartPanel({
   onNewFile,
   onOpenFile,
   onOpenFolder,
+  onOpenRecentWorkspace,
   onReopenPersistedWorkspace,
   onRestoreDraft,
   pathlessDrafts = [],
   /** Test override for the last workspace root; live app reads storage. */
   persistedWorkspaceRootPath,
+  recentWorkspaces = [],
   recoveryCopy,
 }: {
   copy: SafeEditorCopy;
@@ -26,10 +32,12 @@ export function StartPanel({
   onNewFile: () => void | Promise<void>;
   onOpenFile: () => void | Promise<void>;
   onOpenFolder: () => void | Promise<void>;
+  onOpenRecentWorkspace?: (path: string) => void | Promise<void>;
   onReopenPersistedWorkspace?: () => void | Promise<void>;
   onRestoreDraft?: (draft: DraftRecord) => void;
   pathlessDrafts?: DraftRecord[];
   persistedWorkspaceRootPath?: string | null;
+  recentWorkspaces?: RecentEntry[];
   recoveryCopy?: RecoveryCopy;
 }) {
   const resolvedPersistedRoot =
@@ -47,8 +55,28 @@ export function StartPanel({
     [liveWorkspaceRootPath, pathlessDrafts, resolvedPersistedRoot],
   );
 
+  const recentWorkspaceRows = useMemo(() => {
+    const live = liveWorkspaceRootPath ?? "";
+    const resumePath = returning.resumeWorkspacePath;
+    const filtered = recentWorkspaces.filter((entry) => {
+      if (!entry.path) return false;
+      if (live && entry.path === live) return false;
+      // Primary resume control already covers this path.
+      if (resumePath && entry.path === resumePath) return false;
+      return true;
+    });
+    return buildRecentDisplayEntries(filtered).slice(
+      0,
+      START_PANEL_RECENT_WORKSPACES_LIMIT,
+    );
+  }, [
+    liveWorkspaceRootPath,
+    recentWorkspaces,
+    returning.resumeWorkspacePath,
+  ]);
+
   const heading =
-    returning.mode === "returning"
+    returning.mode === "returning" || recentWorkspaceRows.length > 0
       ? copy.startHeadingReturning
       : copy.startHeading;
 
@@ -89,6 +117,33 @@ export function StartPanel({
                 {copy.startResumeWorkspace(returning.resumeWorkspaceLabel)}
               </button>
             </div>
+          </section>
+        ) : null}
+
+        {recentWorkspaceRows.length > 0 && onOpenRecentWorkspace ? (
+          <section
+            className="start-recent-section"
+            aria-label={copy.startRecentWorkspacesSection}
+            data-testid="start-panel-recent-workspaces"
+          >
+            <h2 className="start-section-heading">
+              {copy.startRecentWorkspacesSection}
+            </h2>
+            <p className="start-section-hint">{copy.startRecentWorkspacesHint}</p>
+            <ul className="start-recent-list">
+              {recentWorkspaceRows.map((entry) => (
+                <li key={entry.path}>
+                  <button
+                    type="button"
+                    className="start-recent-button"
+                    title={entry.path}
+                    onClick={() => void onOpenRecentWorkspace(entry.path)}
+                  >
+                    {copy.startOpenRecentWorkspace(entry.displayLabel)}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </section>
         ) : null}
 

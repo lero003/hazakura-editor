@@ -28,6 +28,10 @@ export type SafeEditorCopy = {
   startResumeWorkspace: (folderLabel: string) => string;
   startResumeWorkspaceHint: string;
   startResumeSection: string;
+  /** Explicit recent workspace folders (capped list; no indexing). */
+  startRecentWorkspacesSection: string;
+  startRecentWorkspacesHint: string;
+  startOpenRecentWorkspace: (folderLabel: string) => string;
   startRecoverySection: string;
   startRecoveryHeading: string;
   workspace: string;
@@ -62,6 +66,11 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       startResumeWorkspaceHint:
         "まえの ふぉるだを ひらきなおします。ひらけないときは もういちど えらびます。",
       startResumeSection: "つづきを かく",
+      startRecentWorkspacesSection: "さいきん ひらいた ところ",
+      startRecentWorkspacesHint:
+        "えらんだ ふぉるだだけを ひらきます。じどうでは よみません。",
+      startOpenRecentWorkspace: (folderLabel) =>
+        `ところ「${folderLabel}」をひらく`,
       startRecoverySection: "たしかめる",
       startRecoveryHeading: "ほぞんまえの メモを ふっきゅう",
       workspace: "ところ",
@@ -97,6 +106,11 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startResumeWorkspaceHint:
           "前回のフォルダを開き直します。開けないときは、もう一度選び直してください。",
         startResumeSection: "続きを書く",
+        startRecentWorkspacesSection: "最近開いたフォルダ",
+        startRecentWorkspacesHint:
+          "選んだフォルダだけを開きます。自動では読み込みません。",
+        startOpenRecentWorkspace: (folderLabel) =>
+          `フォルダ「${folderLabel}」を開く`,
         startRecoverySection: "確かめる",
         startRecoveryHeading: "保存前のメモを復旧",
         workspace: "ワークスペース",
@@ -128,6 +142,11 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startResumeWorkspaceHint:
           "Reopens your last folder. If access expired, you will pick it again.",
         startResumeSection: "Continue writing",
+        startRecentWorkspacesSection: "Recent folders",
+        startRecentWorkspacesHint:
+          "Opens only the folder you choose. Nothing is scanned automatically.",
+        startOpenRecentWorkspace: (folderLabel) =>
+          `Open folder “${folderLabel}”`,
         startRecoverySection: "Verify",
         startRecoveryHeading: "Recover pre-save notes",
         workspace: "Workspace",

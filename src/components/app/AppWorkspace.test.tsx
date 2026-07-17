@@ -321,10 +321,12 @@ function makeWorkspaceProps(
     openReferenceFile: vi.fn(),
     openRootWorkspaceContextMenu: vi.fn(),
     openWorkspace: vi.fn(),
+    openWorkspacePath: vi.fn(),
     openWorkspaceContextMenu: vi.fn(),
     openWorkspaceFile: vi.fn(),
     orphanPathlessDrafts: [],
     outlineTruncated: false,
+    recentFolders: [],
     recoveryCopy: {
       closeWithoutSaving: "Close without saving",
       conflictActions: "Conflict actions",

@@ -60,6 +60,9 @@ Last reviewed: 2026-07-18 (v1.13 Mac App Store published; open v1.14+)
 - **v1.14 Continuity Reference retained Keep:** the Reference chrome toggle
   visually and accessibly marks a loaded-but-hidden session so hide ≠ close
   is obvious without changing session lifetime.
+- **v1.14 Continuity recent workspaces Keep:** Start Panel surfaces capped
+  recent folders from the existing recents store for explicit reopen only
+  (no indexing or startup scan).
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than

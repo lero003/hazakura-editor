@@ -1348,6 +1348,7 @@
 }
 
 .start-resume-section,
+.start-recent-section,
 .start-recovery-section {
   display: flex;
   flex-direction: column;
@@ -1355,6 +1356,25 @@
   margin: 0 0 0.35rem;
   max-width: 28rem;
   min-width: 0;
+  width: 100%;
+}
+
+.start-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.start-recent-button {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: 100%;
 }
 

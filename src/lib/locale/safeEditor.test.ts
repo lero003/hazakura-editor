@@ -49,6 +49,12 @@ describe("getSafeEditorCopy tab accessibility labels", () => {
     expect(getSafeEditorCopy("kana").startResumeWorkspace("novel")).toBe(
       "まへの ところ「novel」をひらく",
     );
+    expect(getSafeEditorCopy("en").startRecentWorkspacesSection).toBe(
+      "Recent folders",
+    );
+    expect(getSafeEditorCopy("ja").startOpenRecentWorkspace("essays")).toBe(
+      "フォルダ「essays」を開く",
+    );
     expect(getSafeEditorCopy("en").startRecoveryHeading).toMatch(
       /pre-save notes/i,
     );

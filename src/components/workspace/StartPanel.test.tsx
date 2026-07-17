@@ -154,4 +154,55 @@ describe("StartPanel returning visit", () => {
     ).toBeTruthy();
     expect(screen.getByText("保存前のメモを復旧")).toBeTruthy();
   });
+
+  it("lists recent workspaces for explicit reopen without auto-scan", () => {
+    const onOpenRecentWorkspace = vi.fn();
+
+    render(
+      <StartPanel
+        copy={getSafeEditorCopy("en")}
+        onNewFile={vi.fn()}
+        onOpenFile={vi.fn()}
+        onOpenFolder={vi.fn()}
+        onOpenRecentWorkspace={onOpenRecentWorkspace}
+        onReopenPersistedWorkspace={vi.fn()}
+        persistedWorkspaceRootPath="/Users/me/Writing/novel"
+        recentWorkspaces={[
+          {
+            path: "/Users/me/Writing/novel",
+            label: "novel",
+            openedAt: 3,
+            pinnedAt: null,
+          },
+          {
+            path: "/Users/me/Projects/essays",
+            label: "essays",
+            openedAt: 2,
+            pinnedAt: null,
+          },
+          {
+            path: "/Users/me/Archive/essays",
+            label: "essays",
+            openedAt: 1,
+            pinnedAt: null,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByTestId("start-panel-recent-workspaces")).toBeTruthy();
+    // Resume owns the last workspace; recents skip that path.
+    expect(
+      screen.queryByRole("button", { name: 'Open folder “novel”' }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: 'Open folder “essays - Projects”' }),
+    );
+    expect(onOpenRecentWorkspace).toHaveBeenCalledWith(
+      "/Users/me/Projects/essays",
+    );
+    expect(
+      screen.getByRole("button", { name: 'Open folder “essays - Archive”' }),
+    ).toBeTruthy();
+  });
 });

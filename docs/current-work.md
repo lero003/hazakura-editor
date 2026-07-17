@@ -102,6 +102,10 @@ another theme instead of finishing the list:
   shows a retained visual (accent ring + dot), `data-retained`, and an
   accessible name that matches the “show again” title. Close still ends the
   session; hide via other panes still keeps it.
+- **Continuity / recent workspaces** — **Keep in source.** Start Panel lists up
+  to five recent workspace folders from existing localStorage recents
+  (explicit open only; no auto-scan). Last-folder resume stays primary; that
+  path is omitted from the list. Same-name folders disambiguate via parent.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

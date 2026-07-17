@@ -24,6 +24,7 @@ import type {
   ImagePreviewState,
   MarkdownHeadingContext,
   MenuLanguage,
+  RecentEntry,
   TextMatch,
 } from "../../types";
 import type { SlashCommand } from "../../types/slash";
@@ -55,6 +56,7 @@ type EditorMainPaneProps = {
   onNewFile: () => void | Promise<void>;
   onOpenFile: () => void | Promise<void>;
   onOpenFolder: () => void | Promise<void>;
+  onOpenRecentWorkspace?: (path: string) => void | Promise<void>;
   onPasteImage: (
     dataBase64: string,
     fileName: string,
@@ -65,6 +67,7 @@ type EditorMainPaneProps = {
   onSelectionChange: (selection: EditorSelectionInfo) => void;
   onSendToAgent: (text: string) => void;
   pathlessDrafts?: DraftRecord[];
+  recentWorkspaces?: RecentEntry[];
   recoveryCopy?: RecoveryCopy;
   restoreComplete: boolean;
   scrollHudContext: MarkdownHeadingContext;
@@ -100,6 +103,7 @@ export function EditorMainPane({
   onNewFile,
   onOpenFile,
   onOpenFolder,
+  onOpenRecentWorkspace,
   onPasteImage,
   onReopenPersistedWorkspace,
   onRestoreDraft,
@@ -107,6 +111,7 @@ export function EditorMainPane({
   onSelectionChange,
   onSendToAgent,
   pathlessDrafts = [],
+  recentWorkspaces = [],
   recoveryCopy,
   restoreComplete,
   scrollHudContext,
@@ -211,9 +216,11 @@ export function EditorMainPane({
           onNewFile={onNewFile}
           onOpenFile={onOpenFile}
           onOpenFolder={onOpenFolder}
+          onOpenRecentWorkspace={onOpenRecentWorkspace}
           onReopenPersistedWorkspace={onReopenPersistedWorkspace}
           onRestoreDraft={onRestoreDraft}
           pathlessDrafts={pathlessDrafts}
+          recentWorkspaces={recentWorkspaces}
           recoveryCopy={recoveryCopy}
         />
       )}
