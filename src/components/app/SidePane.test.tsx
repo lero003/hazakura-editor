@@ -291,6 +291,24 @@ describe("SidePane", () => {
     ).toBeTruthy();
   });
 
+  it("shows a shared right-pane header and can hide the column", () => {
+    const onHideSidePane = vi.fn();
+    renderSidePane({
+      onHideSidePane,
+      sidePaneMode: "preview",
+    });
+
+    const header = screen.getByTestId("right-pane-header");
+    expect(header.getAttribute("data-right-pane-mode")).toBe("preview");
+    expect(screen.getByRole("heading", { name: "Preview" })).toBeTruthy();
+    expect(
+      screen.getByText(/continuous scroll to check layout/i),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close side pane" }));
+    expect(onHideSidePane).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps the e-book reader position when switching right-pane modes", async () => {
     const source = "# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two";
     const bookTab = {

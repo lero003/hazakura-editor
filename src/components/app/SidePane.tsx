@@ -29,6 +29,8 @@ import type { MarkdownStructureItem } from "../../features/editor/markdownStruct
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
 import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
 import { DelayedLoadingFallback } from "./DelayedLoadingFallback";
+import { RightPaneHeader } from "./RightPaneHeader";
+import { resolveSidePaneHeader } from "../../features/workspace/rightPaneHeaderModel";
 
 // PreviewPane pulls in marked + DOMPurify, which together add
 // ~150 kB gzipped to the main bundle. The preview is off by
@@ -62,6 +64,8 @@ type SidePaneProps = {
   onEbookLocationChange: (location: EBookReaderLocation) => void;
   onOpenEbookReadingFocus: (location: EBookReaderLocation) => void;
   onEditEbookLocation?: (location: EBookReaderLocation) => void;
+  /** Hide the whole right column (toggle-off). Reversible chrome. */
+  onHideSidePane?: () => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
   onPreviewViewStateChange: (state: PreviewViewState) => void;
@@ -103,6 +107,7 @@ export function SidePane({
   onCloseCompareView,
   onEbookLocationChange,
   onEditEbookLocation,
+  onHideSidePane,
   onOpenEbookReadingFocus,
   onOpenPreviewLocalLink,
   onPreviewScroll,
@@ -192,6 +197,13 @@ export function SidePane({
     sidePaneMode === "preview" && activeTab !== null && previewVisible;
   const activeEbookDocumentKey = activeTab ? ebookDocumentKey(activeTab) : null;
   const initialEbookLocation = activeEbookDocumentKey ? ebookLocation : null;
+  const outlinePurpose =
+    documentStructureAdvisories.length > 0
+      ? copy.outlineAdvisorySummary(documentStructureAdvisories.length)
+      : null;
+  const header = resolveSidePaneHeader(sidePaneMode, copy, {
+    outlinePurpose,
+  });
 
   return (
     <div
@@ -200,6 +212,13 @@ export function SidePane({
       aria-label={sidePaneAriaLabel(sidePaneMode, copy)}
       onScroll={sidePaneMode === "preview" ? handlePreviewScroll : undefined}
     >
+      <RightPaneHeader
+        mode={header.mode}
+        title={header.title}
+        purpose={header.purpose}
+        closeLabel={header.closeLabel}
+        onClose={onHideSidePane}
+      />
       {sidePaneMode === "compare" && compareView && rightPaneCompareCase ? (
         <DiffPane
           menuLanguage={menuLanguage}
@@ -231,68 +250,52 @@ export function SidePane({
           items={documentStructureItems}
           onChangeHeadingLevel={onChangeHeadingLevel}
           onSelect={onSelectHeading}
+          showLocalHeader={false}
           truncated={outlineTruncated}
         />
       ) : sidePaneMode === "ebook" && activeTab && previewVisible ? (
-        <>
-          <p className="side-pane-purpose" role="note">
-            {copy.ebookPurposeHint}
-          </p>
-          <Suspense
-            fallback={<DelayedLoadingFallback label={copy.loadingEbook} />}
-          >
-            <EBookPane
-              documentKey={activeEbookDocumentKey ?? undefined}
-              documentPath={activeTab.path}
-              initialLocation={initialEbookLocation}
-              mediaAccess={mediaAccess}
-              menuLanguage={menuLanguage}
-              onApproveLocalImageParent={onApproveLocalImageParent}
-              onEditCurrentLocation={onEditEbookLocation}
-              onEnterReadingFocus={onOpenEbookReadingFocus}
-              onLocationChange={onEbookLocationChange}
-              onOpenLocalLink={onOpenPreviewLocalLink}
-              source={activeContents}
-              workspaceRoot={
-                workspaceRootPath ??
-                (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
-              }
-            />
-          </Suspense>
-        </>
+        <Suspense
+          fallback={<DelayedLoadingFallback label={copy.loadingEbook} />}
+        >
+          <EBookPane
+            documentKey={activeEbookDocumentKey ?? undefined}
+            documentPath={activeTab.path}
+            initialLocation={initialEbookLocation}
+            mediaAccess={mediaAccess}
+            menuLanguage={menuLanguage}
+            onApproveLocalImageParent={onApproveLocalImageParent}
+            onEditCurrentLocation={onEditEbookLocation}
+            onEnterReadingFocus={onOpenEbookReadingFocus}
+            onLocationChange={onEbookLocationChange}
+            onOpenLocalLink={onOpenPreviewLocalLink}
+            source={activeContents}
+            workspaceRoot={
+              workspaceRootPath ??
+              (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+            }
+          />
+        </Suspense>
       ) : activeTab && previewVisible ? (
-        <>
-          <p className="side-pane-purpose" role="note">
-            {copy.previewPurposeHint}
-          </p>
-          <Suspense
-            fallback={<DelayedLoadingFallback label={copy.loadingPreview} />}
-          >
-            <PreviewPane
-              documentKey={activeTab.id}
-              documentPath={activeTab.path}
-              mediaAccess={mediaAccess}
-              onApproveLocalImageParent={onApproveLocalImageParent}
-              onOpenLocalLink={onOpenPreviewLocalLink}
-              onRenderComplete={restorePreviewScroll}
-              source={activeContents}
-              workspaceRoot={
-                workspaceRootPath ??
-                (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
-              }
-            />
-          </Suspense>
-        </>
+        <Suspense
+          fallback={<DelayedLoadingFallback label={copy.loadingPreview} />}
+        >
+          <PreviewPane
+            documentKey={activeTab.id}
+            documentPath={activeTab.path}
+            mediaAccess={mediaAccess}
+            onApproveLocalImageParent={onApproveLocalImageParent}
+            onOpenLocalLink={onOpenPreviewLocalLink}
+            onRenderComplete={restorePreviewScroll}
+            source={activeContents}
+            workspaceRoot={
+              workspaceRootPath ??
+              (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+            }
+          />
+        </Suspense>
       ) : (
         <PreviewUnavailablePane
           ariaLabel={copy.previewUnavailable}
-          purposeHint={
-            sidePaneMode === "ebook"
-              ? copy.ebookPurposeHint
-              : sidePaneMode === "preview"
-                ? copy.previewPurposeHint
-                : undefined
-          }
           reason={
             activeTab
               ? copy.previewDisabled

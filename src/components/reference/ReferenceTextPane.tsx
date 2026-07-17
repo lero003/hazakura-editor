@@ -1,4 +1,4 @@
-import { useMemo, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useMemo } from "react";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import {
   isImageReference,
@@ -11,6 +11,8 @@ import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
+import { resolveReferencePaneHeader } from "../../features/workspace/rightPaneHeaderModel";
+import { RightPaneHeader } from "../app/RightPaneHeader";
 import { ReferencePdfPane } from "./ReferencePdfPane";
 
 type ReferenceTextPaneProps = {
@@ -69,12 +71,12 @@ export function ReferenceTextPane({
       isTextReference(reference) ? reference.contents.split("\n") : ([] as string[]),
     [reference],
   );
-  const onHeaderKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-    }
-  };
+  const header = resolveReferencePaneHeader({
+    title: copy.referenceLabel,
+    fileName: name,
+    readOnlyLabel: copy.readOnly,
+    closeLabel: copy.closeReference,
+  });
 
   return (
     <section
@@ -82,47 +84,39 @@ export function ReferenceTextPane({
       className="reference-pane pane"
       data-testid="reference-pane"
     >
-      <header className="reference-pane-header">
-        <div className="reference-pane-titles">
-          <span className="reference-pane-role" data-testid="reference-role">
-            {copy.referenceLabel}
-          </span>
-          <span className="reference-pane-name" title={reference.path}>
-            {name}
-          </span>
-          <span className="reference-pane-readonly">{copy.readOnly}</span>
-        </div>
-        <div className="reference-pane-actions">
-          {showDiffEnabled && onShowDiff && isTextReference(reference) ? (
-            <button
-              type="button"
-              className="reference-pane-action"
-              onClick={onShowDiff}
-              data-testid="reference-show-diff"
-            >
-              {copy.showDiff}
-            </button>
-          ) : null}
-          {onReplace ? (
-            <button
-              type="button"
-              className="reference-pane-action"
-              onClick={onReplace}
-            >
-              {copy.replaceReference}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="reference-pane-action reference-pane-close"
-            onClick={onClose}
-            onKeyDown={onHeaderKeyDown}
-            aria-label={copy.closeReference}
-          >
-            ×
-          </button>
-        </div>
-      </header>
+      <div data-testid="reference-role" hidden>
+        {copy.referenceLabel}
+      </div>
+      <RightPaneHeader
+        mode={header.mode}
+        title={header.title}
+        purpose={header.purpose}
+        closeLabel={header.closeLabel}
+        onClose={onClose}
+        actions={
+          <>
+            {showDiffEnabled && onShowDiff && isTextReference(reference) ? (
+              <button
+                type="button"
+                className="reference-pane-action"
+                onClick={onShowDiff}
+                data-testid="reference-show-diff"
+              >
+                {copy.showDiff}
+              </button>
+            ) : null}
+            {onReplace ? (
+              <button
+                type="button"
+                className="reference-pane-action"
+                onClick={onReplace}
+              >
+                {copy.replaceReference}
+              </button>
+            ) : null}
+          </>
+        }
+      />
       {externalChangePending ? (
         <div
           className="reference-external-change"

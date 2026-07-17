@@ -26,8 +26,10 @@ describe("ReferenceTextPane", () => {
     );
 
     expect(screen.getByTestId("reference-role").textContent).toContain("参照");
-    expect(screen.getByText("style.md")).toBeTruthy();
-    expect(screen.getByText("読み取り専用")).toBeTruthy();
+    expect(screen.getByTestId("right-pane-header").getAttribute("data-right-pane-mode")).toBe(
+      "reference",
+    );
+    expect(screen.getByText(/読み取り専用 · style\.md/)).toBeTruthy();
     expect(screen.getByText("line one")).toBeTruthy();
     expect(screen.getByText("line two")).toBeTruthy();
 
@@ -53,7 +55,7 @@ describe("ReferenceTextPane", () => {
 
     const image = screen.getByRole("img", { name: "cover.png" });
     expect(image.getAttribute("src")).toBe("data:image/png;base64,aaa");
-    expect(screen.getByText("読み取り専用")).toBeTruthy();
+    expect(screen.getByText(/読み取り専用 · cover\.png/)).toBeTruthy();
     expect(screen.queryByTestId("reference-text-surface")).toBeNull();
   });
 

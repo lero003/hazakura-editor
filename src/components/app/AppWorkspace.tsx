@@ -169,6 +169,7 @@ type AppWorkspaceProps = {
   openPreviewMarkdownLink: (path: string) => void | Promise<void>;
   openReferenceFile: () => void | Promise<void>;
   openWorkspace: () => unknown;
+  hideSidePane: () => void;
   openWorkspacePath: (path: string) => unknown;
   openWorkspaceContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -274,6 +275,7 @@ export function AppWorkspace({
   handlePreviewResizePointerMove,
   handleSendSelectionToAgent,
   hasWorkspaceSelection,
+  hideSidePane,
   jumpToHeading,
   changeHeadingLevel,
   loadWorkspaceDirectory,
@@ -804,6 +806,7 @@ export function AppWorkspace({
             onEditEbookLocation={(location) =>
               moveEditorToEbookLocation(location, { focus: true })
             }
+            onHideSidePane={hideSidePane}
             onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}

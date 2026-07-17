@@ -56,6 +56,7 @@ export function useSidePaneController({
     sidePaneVisible,
   });
   const {
+    hideSidePane,
     toggleDiffPane,
     toggleEbookPane,
     toggleOutlinePane,
@@ -76,6 +77,7 @@ export function useSidePaneController({
     handlePreviewResizePointerDown,
     handlePreviewResizePointerMove,
     hasWorkspaceSelection,
+    hideSidePane,
     previewColumnPercent,
     sidePaneMode,
     sidePaneVisible,

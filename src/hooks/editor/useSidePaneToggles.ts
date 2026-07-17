@@ -68,7 +68,12 @@ export function useSidePaneToggles({
     setSidePaneOpen(true);
   }, [activeTab, setPreviewVisible, setRightPaneMode, setSidePaneOpen, sidePaneMode, sidePaneOpen]);
 
+  const hideSidePane = useCallback(() => {
+    setSidePaneOpen(false);
+  }, [setSidePaneOpen]);
+
   return {
+    hideSidePane,
     toggleDiffPane,
     toggleEbookPane,
     toggleOutlinePane,

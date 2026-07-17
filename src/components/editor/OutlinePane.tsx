@@ -24,6 +24,7 @@ export function OutlinePane({
   items,
   onChangeHeadingLevel,
   onSelect,
+  showLocalHeader = true,
   truncated,
 }: {
   copy: OutlinePaneCopy;
@@ -35,18 +36,25 @@ export function OutlinePane({
     direction: HeadingLevelChangeDirection,
   ) => void;
   onSelect: (item: MarkdownStructureItem) => void;
+  /**
+   * When false, the shared right-pane header owns the title/summary.
+   * Defaults true so standalone tests keep a usable chrome.
+   */
+  showLocalHeader?: boolean;
   truncated: boolean;
 }) {
   return (
     <div className="outline-pane">
-      <div className="outline-pane-header">
-        <span>{copy.documentOutline}</span>
-        {advisories.length > 0 ? (
-          <span className="outline-advisory-summary" role="note">
-            {copy.outlineAdvisorySummary(advisories.length)}
-          </span>
-        ) : null}
-      </div>
+      {showLocalHeader ? (
+        <div className="outline-pane-header">
+          <span>{copy.documentOutline}</span>
+          {advisories.length > 0 ? (
+            <span className="outline-advisory-summary" role="note">
+              {copy.outlineAdvisorySummary(advisories.length)}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       {items.length > 0 ? (
         <>
           <div className="outline-list">

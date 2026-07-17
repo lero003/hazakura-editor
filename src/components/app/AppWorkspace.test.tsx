@@ -320,6 +320,7 @@ function makeWorkspaceProps(
     openPreviewMarkdownLink: vi.fn(),
     openReferenceFile: vi.fn(),
     openRootWorkspaceContextMenu: vi.fn(),
+    hideSidePane: vi.fn(),
     openWorkspace: vi.fn(),
     openWorkspacePath: vi.fn(),
     openWorkspaceContextMenu: vi.fn(),

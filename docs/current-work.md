@@ -126,6 +126,10 @@ another theme instead of finishing the list:
   Undo guidance.
 - **Import Assist draft status** — **Keep in source.** Success status stresses
   unsaved draft / edit-before-save and that nothing is written to disk yet.
+- **Continuity / right-pane shared header** — **Keep in source.** Thin
+  `RightPaneHeader` + pure `resolveSidePaneHeader` / `resolveReferencePaneHeader`
+  model. SidePane (Preview / e-book / Outline / Diff) and Reference use the same
+  chrome (title, purpose, close / actions). Easy to restyle or drop.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

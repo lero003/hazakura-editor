@@ -58,6 +58,10 @@ export type SidePaneCopy = {
   resizeColumns: string;
   resizeColumnsTitle: string;
   sidePaneMode: string;
+  /** Shared right-pane header close control. */
+  closeRightPane: string;
+  /** Outline header purpose when there are no structure hints. */
+  outlinePurposeFallback: string;
 };
 
 export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
@@ -127,6 +131,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       resizeColumns: "えでぃたとよこのまどのはばをかへる",
       resizeColumnsTitle: "ひきて、えでぃたとよこのまどのはばをかへます",
       sidePaneMode: "よこのまど",
+      closeRightPane: "みぎの ペインを とぢる",
+      outlinePurposeFallback: "みだしから ばしょへ うつる",
     };
   }
 
@@ -199,6 +205,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         resizeColumnsTitle:
           "ドラッグしてエディタとサイドペインの幅を変更",
         sidePaneMode: "サイドペイン表示",
+        closeRightPane: "右ペインを閉じる",
+        outlinePurposeFallback: "見出しから目的の場所へ移動",
       }
     : {
         agentWindow: "Agent",
@@ -266,5 +274,7 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         resizeColumns: "Resize editor and side pane columns",
         resizeColumnsTitle: "Drag to resize editor and side pane",
         sidePaneMode: "Side pane mode",
+        closeRightPane: "Close side pane",
+        outlinePurposeFallback: "Jump to a section from its headings",
       };
 }
