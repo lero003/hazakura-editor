@@ -478,9 +478,11 @@ outside-local Ask, export materialize On, no silent Markdown rewrite.
 
 ### M3 — Export materialize
 
-1. With cover approved (M1) and materialize **On** (default), export **HTML** and
-   **PDF**. Confirm the cover is embedded when resolvable; remote remains not
-   packaged unless remote Pref is On and materialize On.
+1. With cover approved (M1) and materialize **On** (default), export **HTML**,
+   **PDF**, and **EPUB**. Confirm the cover is embedded when resolvable; the PDF
+   first page is not blank, and EPUB XHTML points to a packaged `OEBPS/images/…`
+   resource instead of displaying the original path. Remote remains not packaged
+   unless remote Pref is On and materialize On.
 2. Turn materialize **Off**, export once, confirm outside/remote are not newly
    fetched into the package; blocked notes or warnings remain honest.
 3. Restore materialize **On**. Confirm Markdown source on disk is unchanged

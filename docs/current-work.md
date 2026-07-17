@@ -76,8 +76,10 @@ another theme instead of finishing the list:
   folders; remote Pref default
   Off https-only; export materialize default On; palette pin to assets + Undo).
   Manual smoke: `docs/smoke-checklist.md` § Theme G. Built-app ask/allow and
-  remote-Off branching passed; export materialize and pin-to-assets Undo remain
-  signed-device breadth.
+  remote-Off branching passed. TestFlight build 97 found PDF-first-image and
+  EPUB-image packaging regressions; both are fixed in source, with fresh local
+  app proof for a visible PDF cover and byte-identical packaged EPUB resource.
+  Signed TestFlight export recheck and pin-to-assets Undo remain device breadth.
 - **Structure / OKF depth** — first-run guidance, template preview (still bounded)
 - **Distribution confidence** — TestFlight / VoiceOver / long-doc evidence
 

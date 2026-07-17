@@ -138,6 +138,51 @@ describe("buildEpubBetaArchive", () => {
     expect(text).not.toContain("data:image/gif;base64");
   });
 
+  it("packages an explicitly approved outside-local image", async () => {
+    const loadApprovedLocalImage = vi.fn(async () => ({
+      dataUrl: "data:image/png;base64,iVBORw0KGgo=",
+    }));
+
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Images\n\n![outside](/shared/cover.png)",
+      documentName: "draft.md",
+      documentPath: "/workspace/draft.md",
+      workspaceRoot: "/workspace",
+      mediaAccess: {
+        outsideImages: "ask",
+        approvedRoots: ["/shared"],
+      },
+      loadApprovedLocalImage,
+    });
+    const text = archiveText(archive);
+
+    expect(loadApprovedLocalImage).toHaveBeenCalledWith("/shared/cover.png");
+    expect(text).toContain('<img src="images/image-1.png" alt="outside"');
+    expect(text).not.toContain("Image unavailable");
+    expect(text).not.toContain("/shared/cover.png");
+  });
+
+  it("packages an enabled https image without leaking its URL into XHTML", async () => {
+    const loadRemoteImage = vi.fn(async () => ({
+      dataUrl: "data:image/jpeg;base64,/9j/4AAQ",
+    }));
+
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Images\n\n![remote](https://example.com/cover.jpg)",
+      documentName: "draft.md",
+      mediaAccess: { loadRemoteImages: true },
+      loadRemoteImage,
+    });
+    const text = archiveText(archive);
+
+    expect(loadRemoteImage).toHaveBeenCalledWith(
+      "https://example.com/cover.jpg",
+    );
+    expect(text).toContain('<img src="images/image-1.jpg" alt="remote"');
+    expect(text).not.toContain("Image unavailable");
+    expect(text).not.toContain("https://example.com/cover.jpg");
+  });
+
   it("packages allowed embedded data images as EPUB resources", async () => {
     const archive = await buildEpubBetaArchive({
       markdown: "# Images\n\n![inline](data:image/png;base64,iVBORw0KGgo=)",

@@ -792,6 +792,79 @@ describe("useDocumentExport", () => {
     expect(loaded).toEqual({ dataUrl: "data:image/png;base64,AAAA" });
   });
 
+  it("keeps approved-local and enabled https EPUB loaders on their own boundaries", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/a.epub");
+    tauriApi.saveBinaryFileAs.mockResolvedValue(undefined);
+    tauriApi.openLocalImageUnderRoots.mockResolvedValue({
+      dataUrl: "data:image/png;base64,LOCAL",
+    });
+    tauriApi.fetchRemoteImage.mockResolvedValue({
+      dataUrl: "data:image/png;base64,REMOTE",
+    });
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "![outside](/shared/cover.png)",
+        activeTab: makeTab({ name: "book.md" }),
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: "/workspace",
+        materializeImagesOnExport: true,
+        mediaAccess: {
+          outsideImages: "ask",
+          approvedRoots: ["/shared"],
+          loadRemoteImages: true,
+        },
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportEpubBeta();
+    });
+    await act(async () => {
+      await result.current.confirmEpubBetaExport({
+        author: "",
+        language: "ja",
+        title: "Book",
+      });
+    });
+
+    type MediaEpubOptions = {
+      loadApprovedLocalImage?: (path: string) => Promise<{ dataUrl: string }>;
+      loadRemoteImage?: (url: string) => Promise<{ dataUrl: string }>;
+      mediaAccess: {
+        approvedRoots: string[];
+        loadRemoteImages: boolean;
+        outsideImages: string;
+      };
+    };
+    const calls = epubApi.buildEpubBetaArchiveWithReport.mock.calls as unknown as
+      Array<[MediaEpubOptions]>;
+    const options = calls.at(-1)?.[0];
+    expect(options).toMatchObject({
+      mediaAccess: {
+        outsideImages: "ask",
+        approvedRoots: ["/shared"],
+        loadRemoteImages: true,
+      },
+      loadApprovedLocalImage: expect.any(Function),
+      loadRemoteImage: expect.any(Function),
+    });
+    await expect(
+      options?.loadApprovedLocalImage?.("/shared/cover.png"),
+    ).resolves.toEqual({ dataUrl: "data:image/png;base64,LOCAL" });
+    await expect(
+      options?.loadRemoteImage?.("https://example.com/cover.png"),
+    ).resolves.toEqual({ dataUrl: "data:image/png;base64,REMOTE" });
+    expect(tauriApi.openLocalImageUnderRoots).toHaveBeenCalledWith(
+      "/shared/cover.png",
+      ["/shared"],
+    );
+    expect(tauriApi.fetchRemoteImage).toHaveBeenCalledWith(
+      "https://example.com/cover.png",
+    );
+  });
+
   it("stops EPUB beta export when the active tab changes while the dialog is open", async () => {
     const firstTab = makeTab();
     const secondTab = makeTab({

@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { embedAndStampPdfImages } from "./pdfExportImages";
+import {
+  embedAndStampPdfImages,
+  preparePdfImagesForCapture,
+} from "./pdfExportImages";
 
 describe("embedAndStampPdfImages", () => {
   it("inlines path placeholders and stamps max-height on data images", async () => {
@@ -39,5 +42,19 @@ describe("embedAndStampPdfImages", () => {
     expect(result.failedPaths).toEqual(["/missing.png"]);
     expect(result.html).toContain('data-hazakura-image-block="load-failed"');
     expect(result.html).toContain("読めませんでした");
+  });
+});
+
+describe("preparePdfImagesForCapture", () => {
+  it("makes an async lazy cover eager and synchronously decoded", () => {
+    const html =
+      '<p><img src="data:image/png;base64,iVBORw0KGgo=" loading="lazy" decoding="async" alt="cover"></p>';
+
+    const prepared = preparePdfImagesForCapture(html);
+
+    expect(prepared).toContain('loading="eager"');
+    expect(prepared).toContain('decoding="sync"');
+    expect(prepared).not.toContain('loading="lazy"');
+    expect(prepared).not.toContain('decoding="async"');
   });
 });

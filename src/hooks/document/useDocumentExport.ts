@@ -25,7 +25,10 @@ import {
   preparePdfExportTables,
   type PdfMarginPreset,
 } from "../../features/document/pdfExport";
-import { embedAndStampPdfImages } from "../../features/document/pdfExportImages";
+import {
+  embedAndStampPdfImages,
+  preparePdfImagesForCapture,
+} from "../../features/document/pdfExportImages";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import {
@@ -198,6 +201,7 @@ export function useDocumentExport({
         { bodyMaxHeightPx: imageMaxHeightPx },
       );
       rendered = embedResult.html;
+      rendered = preparePdfImagesForCapture(rendered);
       if (embedResult.failedPaths.length > 0) {
         setStatus(
           `PDF: ${embedResult.embeddedCount} image(s) embedded, ${embedResult.failedPaths.length} skipped (access/path)`,
@@ -750,42 +754,31 @@ ${bodyHtml}
       }
 
       const exportMedia = buildExportMediaAccess();
-      // Pre-materialize for EPUB so renderMarkdown inside the archive builder
-      // sees data URLs where possible; workspace loader still covers leftovers.
-      let markdownForEpub = activeContentsRef.current;
-      try {
-        const preHtml = renderMarkdown(markdownForEpub, {
-          documentPath: tabForExport.path,
-          workspaceRoot: workspaceRootPath,
-          mediaAccess: exportMedia,
-        });
-        await inlineMarkdownImages(preHtml, createExportImageLoaders());
-      } catch {
-        // Best-effort preflight; archive builder still runs with workspace loader.
-      }
       const loaders = createExportImageLoaders();
+      const loadApprovedLocalImage = loaders.loadApprovedLocalImage;
+      const loadRemoteImage = loaders.loadRemoteImage;
       const { archive, warnings } = await buildEpubBetaArchiveWithReport({
         documentPath: tabForExport.path,
         documentName: tabForExport.name,
-        loadWorkspaceImage: async (path) => {
-          try {
-            const dataUrl = await loaders.loadWorkspaceImage(path);
-            return { dataUrl };
-          } catch {
-            if (loaders.loadApprovedLocalImage) {
-              const dataUrl = await loaders.loadApprovedLocalImage(path);
-              return { dataUrl };
-            }
-            throw new Error("image unavailable");
-          }
-        },
+        loadApprovedLocalImage: loadApprovedLocalImage
+          ? async (path) => ({
+              dataUrl: await loadApprovedLocalImage(path),
+            })
+          : undefined,
+        loadRemoteImage: loadRemoteImage
+          ? async (url) => ({ dataUrl: await loadRemoteImage(url) })
+          : undefined,
+        loadWorkspaceImage: async (path) => ({
+          dataUrl: await loaders.loadWorkspaceImage(path),
+        }),
+        mediaAccess: exportMedia,
         metadata: {
           author: settings.author.trim(),
           language: settings.language.trim() || "ja",
           modified: formatEpubModifiedDate(new Date()),
           title: settings.title.trim() || request.settings.title,
         },
-        markdown: markdownForEpub,
+        markdown: activeContentsRef.current,
         workspaceRoot: workspaceRootPath,
       });
       await saveBinaryFileAs(destPath, archive);

@@ -71,6 +71,26 @@ export async function embedAndStampPdfImages(
   };
 }
 
+/**
+ * PDF capture runs in a hidden WKWebView. Preview defaults (`lazy` + async
+ * decode) can leave an eager first-page capture with an unpainted image even
+ * though the data URL is already present. Make every export image part of the
+ * page load and request synchronous decoding before WebKit reports load done.
+ */
+export function preparePdfImagesForCapture(html: string): string {
+  if (!html.includes("<img")) {
+    return html;
+  }
+
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  for (const image of Array.from(template.content.querySelectorAll("img"))) {
+    image.setAttribute("loading", "eager");
+    image.setAttribute("decoding", "sync");
+  }
+  return template.innerHTML;
+}
+
 /** Apply fixed-px sizing so WebKit createPDF paints data: images reliably. */
 export function stampEmbeddedImageStyles(
   root: ParentNode,

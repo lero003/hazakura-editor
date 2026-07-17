@@ -1,7 +1,10 @@
 import { renderMarkdown } from "../editor/markdown";
 import { applyEbookPageBreakMarkers } from "../editor/ebookChapters";
 import { parseMarkdownStructure } from "../editor/markdownStructure";
-import { blockedImageWarningLabel } from "../editor/imagePolicy";
+import {
+  blockedImageWarningLabel,
+  type MediaImageAccessOptions,
+} from "../editor/imagePolicy";
 import {
   escapeXml,
   extensionFromMediaType,
@@ -14,7 +17,10 @@ import {
 type BuildEpubBetaArchiveOptions = {
   documentPath?: string | null;
   documentName: string;
+  loadApprovedLocalImage?: (absolutePath: string) => Promise<LoadedEpubImage>;
+  loadRemoteImage?: (url: string) => Promise<LoadedEpubImage>;
   loadWorkspaceImage?: (absolutePath: string) => Promise<LoadedEpubImage>;
+  mediaAccess?: MediaImageAccessOptions | null;
   metadata?: Partial<EpubExportMetadata>;
   markdown: string;
   workspaceRoot?: string | null;
@@ -90,11 +96,16 @@ type ImageEntry = EpubEntry & {
 
 const encoder = new TextEncoder();
 const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
+const IMAGE_ORIGIN_ATTR = "data-hazakura-image-origin";
+const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
 
 export async function buildEpubBetaArchive({
   documentPath = null,
   documentName,
+  loadApprovedLocalImage,
+  loadRemoteImage,
   loadWorkspaceImage,
+  mediaAccess = null,
   metadata,
   markdown,
   workspaceRoot = null,
@@ -102,7 +113,10 @@ export async function buildEpubBetaArchive({
   const { archive } = await buildEpubBetaArchiveWithReport({
     documentPath,
     documentName,
+    loadApprovedLocalImage,
+    loadRemoteImage,
     loadWorkspaceImage,
+    mediaAccess,
     metadata,
     markdown,
     workspaceRoot,
@@ -113,7 +127,10 @@ export async function buildEpubBetaArchive({
 export async function buildEpubBetaArchiveWithReport({
   documentPath = null,
   documentName,
+  loadApprovedLocalImage,
+  loadRemoteImage,
   loadWorkspaceImage,
+  mediaAccess = null,
   metadata,
   markdown,
   workspaceRoot = null,
@@ -122,7 +139,10 @@ export async function buildEpubBetaArchiveWithReport({
     await buildContent({
       documentName,
       documentPath,
+      loadApprovedLocalImage,
+      loadRemoteImage,
       loadWorkspaceImage,
+      mediaAccess,
       markdown,
       workspaceRoot,
     });
@@ -193,17 +213,26 @@ export function defaultEpubExportSettings({
 async function buildContent({
   documentName,
   documentPath,
+  loadApprovedLocalImage,
+  loadRemoteImage,
   loadWorkspaceImage,
+  mediaAccess,
   markdown,
   workspaceRoot,
 }: Required<Pick<BuildEpubBetaArchiveOptions, "documentName" | "markdown">> &
   Pick<
     BuildEpubBetaArchiveOptions,
-    "documentPath" | "loadWorkspaceImage" | "workspaceRoot"
+    | "documentPath"
+    | "loadApprovedLocalImage"
+    | "loadRemoteImage"
+    | "loadWorkspaceImage"
+    | "mediaAccess"
+    | "workspaceRoot"
   >) {
   const contentMarkdown = stripYamlFrontmatter(markdown);
   const rendered = renderMarkdown(applyEbookPageBreakMarkers(contentMarkdown), {
     documentPath,
+    mediaAccess,
     workspaceRoot,
   });
   const template = document.createElement("template");
@@ -214,6 +243,8 @@ async function buildContent({
     template,
     warnings,
     loadWorkspaceImage,
+    loadApprovedLocalImage,
+    loadRemoteImage,
   );
   cleanupPreviewOnlyMarkup(template, warnings);
   const headingElements = Array.from(
@@ -392,15 +423,19 @@ async function packageWorkspaceImages(
   template: HTMLTemplateElement,
   warnings: EpubExportWarning[],
   loadWorkspaceImage?: (absolutePath: string) => Promise<LoadedEpubImage>,
+  loadApprovedLocalImage?: (absolutePath: string) => Promise<LoadedEpubImage>,
+  loadRemoteImage?: (url: string) => Promise<LoadedEpubImage>,
 ): Promise<ImageEntry[]> {
   const images: ImageEntry[] = [];
   const imageElements = Array.from(template.content.querySelectorAll("img"));
 
   for (const image of imageElements) {
     const workspacePath = image.getAttribute(WORKSPACE_IMAGE_PATH_ATTR);
+    const remoteUrl = image.getAttribute(REMOTE_IMAGE_URL_ATTR);
+    const origin = image.getAttribute(IMAGE_ORIGIN_ATTR) ?? "workspace";
     const dataSrc = image.getAttribute("src")?.trim() ?? "";
 
-    if (!workspacePath && isSupportedImageDataUrl(dataSrc)) {
+    if (!workspacePath && !remoteUrl && isSupportedImageDataUrl(dataSrc)) {
       try {
         const asset = imageAssetFromDataUrl(dataSrc);
         addImageAsset(image, images, asset);
@@ -410,13 +445,20 @@ async function packageWorkspaceImages(
       continue;
     }
 
-    if (!workspacePath || !loadWorkspaceImage) {
+    const reference = remoteUrl ?? workspacePath;
+    const loader = remoteUrl
+      ? loadRemoteImage
+      : origin === "approved-local"
+        ? loadApprovedLocalImage
+        : loadWorkspaceImage;
+
+    if (!reference || !loader) {
       replaceImageWithWarning(image, warnings);
       continue;
     }
 
     try {
-      const loaded = await loadWorkspaceImage(workspacePath);
+      const loaded = await loader(reference);
       const asset = normalizeLoadedImage(loaded);
       addImageAsset(image, images, asset);
     } catch {
@@ -449,6 +491,8 @@ function addImageAsset(
   const relativePath = `images/${id}.${asset.extension}`;
   image.setAttribute("src", relativePath);
   image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
+  image.removeAttribute(REMOTE_IMAGE_URL_ATTR);
+  image.removeAttribute(IMAGE_ORIGIN_ATTR);
   image.removeAttribute("loading");
   image.removeAttribute("decoding");
   images.push({

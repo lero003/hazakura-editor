@@ -151,7 +151,13 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    hands-on smoke confirmed: ask blocks first, explicit approval is tab-local,
    close/reopen asks again, allow-all survives reopen, remote stays Off, and
    returning to ask blocks immediately without rewriting Markdown. Next:
-   signed-device breadth for export materialize and pin-to-assets Undo.
+   TestFlight build 97 exposed a blank PDF cover page and EPUB image references
+   falling back to unavailable-path text. The source fix makes PDF images eager
+   and synchronously decoded for hidden WebKit capture, and keeps workspace /
+   approved-local / remote EPUB loaders distinct through archive packaging. A
+   fresh local app export produced a visible first-page PDF cover and an EPUB
+   resource whose SHA-256 matched the source image. Next: signed TestFlight
+   recheck for both exports and pin-to-assets Undo breadth.
    Do not reopen published `1.12.0` without a hotfix decision.
 2. **Hotfix gate:** only with a reproduced blocker on shipped `1.12.0` and
    explicit user approval for a patch release.

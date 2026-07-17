@@ -36,7 +36,13 @@ Last reviewed: 2026-07-17 (v1.12 Mac App Store published; open v1.13)
   (default on) without silent source rewrite; Command Palette pin to `assets/`
   with one Undo-able editor transaction. Manual smoke:
   `docs/smoke-checklist.md` § Theme G. Defaults remain no automatic remote or
-  unapproved outside load.
+  unapproved outside load. TestFlight build 97 exposed two export blockers:
+  the PDF leading image could be captured before decode, and EPUB discarded
+  approved-local / remote materialization and wrote an unavailable-path note.
+  Source now makes PDF export images eager + synchronously decoded and routes
+  each EPUB image origin through its bounded loader. A fresh local app export
+  rendered the leading PDF image and packaged an EPUB image resource with the
+  same SHA-256 as its source; signed TestFlight recheck remains required.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
