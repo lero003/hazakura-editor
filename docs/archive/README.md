@@ -3,7 +3,7 @@
 Status: Archive
 Scope: Retired planning, operational prompts, and historical evidence
 Authority: Low
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-18
 
 This directory preserves old material without letting it guide current implementation by accident.
 
@@ -19,7 +19,9 @@ Use current docs in `docs/` for decisions. Read archived files only when you nee
 - `operations/smoke-checklist-version-notes-through-v0.18.md`: version-specific TestFlight, App Store candidate, release-candidate, and accessibility smoke observations for v0.11-v0.19 moved out of `docs/smoke-checklist.md`.
 - `operations/app-store-v0.17/`: v0.17 App Store-quality request packets, closeout, smoke, and performance evidence. Use `docs/current-work.md` for current work instead.
 - `releases/`: old release review briefs or release proposals that are not current release bodies.
-- `roadmaps/`: superseded roadmap sequences.
+- `roadmaps/`: superseded roadmap sequences and extracted historical phase
+  narratives. See `roadmaps/roadmap-historical-phases-through-v1.x.md` for the
+  long v0.30–v1.x detail formerly in `docs/roadmap.md`.
 - `reviews/`: historical review gates and design decisions.
 - `reviews/import-assist-boundary-review-v1.6.md`: shipped v1.6 Import Assist boundary review.
 - `operations/quality-inventory-v1.6.md`: closed v1.6 cross-cutting quality inventory.

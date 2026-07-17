@@ -3,13 +3,13 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-16 (refinement + image media boundary plan)
+Last reviewed: 2026-07-18 (v2 development phase open)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Agent entry rules live at the repository root: `AGENTS.md`. Start with
-`current-work.md` when choosing the next UX, post-approval, or quality-polish
-slice.
+Agent entry rules live at the repository root: `AGENTS.md`. **Active phase is
+v2 Book Scope development.** Start with `current-work.md` and `roadmap.md`.
+v1 residual / evidence pools are parked.
 
 ## Current Canonical Docs
 
@@ -17,19 +17,20 @@ slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: v1.12 review boundary and post-review experiment queue.
-- `roadmap.md`: active lane and future phase boundaries.
+- `current-work.md`: **v2 active queue** (Book Scope slices; v1 residual parked).
+- `roadmap.md`: **v2 development phase**, parked residual/evidence, ship-time Help.
 - `current-status.md`: current implementation and release state.
 - `okf-spec-pin.md`: shared OKF pin, co-update surfaces, and version-upgrade process.
-- `v1.8-plus-product-review-roadmap.md`: accepted v1.8–v1.12 bridge and v2 entry gate.
-- `v1.13-plus-refinement-roadmap.md`: post-v1.12 try-and-error themes and keep/drop loop.
-- `v1.xx-image-media-boundary-plan.md`: v1.xx image preview/export consent, Preferences, materialize.
-- `v1.10-single-document-structure-design.md`: completed v1.10 implementation and verification contract.
-- `v1.11-okf-draft-preview-design.md`: held OKF v0.1 Draft compatibility and v1.11 verification contract.
-- `v1.12-okf-scaffold-design.md`: active OKF starter scaffold (minimal + book-like) contract.
-- `v1.13-interaction-clarity-plan.md`: Theme A Signal & Silence candidate pool.
+- `v1.8-plus-product-review-roadmap.md`: completed v1.8–v1.12 bridge (historical + gate wording).
+- `v1.13-plus-refinement-roadmap.md`: **parked** post-v1.12 theme pools.
+- `v1.xx-image-media-boundary-plan.md`: Theme G image preview/export consent, Preferences, materialize.
+- `v1.10-single-document-structure-design.md`: completed v1.10 structure contract.
+- `v1.11-okf-draft-preview-design.md`: completed v1.11 OKF compatibility contract.
+- `v1.12-okf-scaffold-design.md`: closed / published v1.12 scaffold contract.
+- `v1.13-interaction-clarity-plan.md`: Theme A candidate pool (much shipped in v1.13).
 - `l-mode-plan.md`: active source-preserving L Mode writing-surface direction.
 - `ebook-mode-epub-export-plan.md`: active single-document e-book and EPUB planning detail.
+- `superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 Book Scope design SoT (Proposal).
 
 ## Current Operational Docs
 
@@ -44,12 +45,20 @@ slice.
 
 ## Current Planning Docs
 
-The active planning surface is intentionally small: `v1.8-plus-product-review-roadmap.md`,
-`v1.13-plus-refinement-roadmap.md`, `v1.xx-image-media-boundary-plan.md`,
-`okf-spec-pin.md`, `v1.12-okf-scaffold-design.md`,
-`v1.13-interaction-clarity-plan.md`, `v1.11-okf-draft-preview-design.md`,
-`l-mode-plan.md`, and `ebook-mode-epub-export-plan.md`. Completed lane plans,
-retired proposals, and speculative future notes live under `archive/`.
+Active planning surface (intentionally small):
+
+- `roadmap.md` — **v2 phase** + parked residual
+- `current-work.md` — next v2 slices
+- `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 design SoT
+- `okf-spec-pin.md` + closed v1.10 / v1.11 / v1.12 contracts
+- `v1.8-plus-product-review-roadmap.md` — closed bridge
+- `v1.13-plus-refinement-roadmap.md` — parked themes
+- `v1.xx-image-media-boundary-plan.md` — Theme G (parked with refinement)
+- `l-mode-plan.md`, `ebook-mode-epub-export-plan.md`
+
+Completed lane plans, retired proposals, and speculative future notes live under
+`archive/`. Detailed pre-v1.x roadmap narratives:
+`archive/roadmaps/roadmap-historical-phases-through-v1.x.md`.
 
 ## Local-Only Internal Notes
 
@@ -63,6 +72,7 @@ git-ignored and should not be referenced from public-facing docs.
 - `archive/`: old setup notes, early MVP plans, superseded roadmaps, older goal prompts, past release review briefs, and detailed status history.
 - `releases/`: release-note bodies used for published or prepared GitHub Releases.
 - `archive/reviews/`: historical review gates and design decisions that may still be referenced from code comments.
+- `archive/roadmaps/`: superseded or extracted historical roadmap narratives.
 - `archive/operations/app-store-v0.17/`: v0.17 App Store-quality request packets, closeout, smoke, and performance evidence.
 - `archive/operations/current-work-through-v1.0.md`: completed v0.18-v0.36 implementation logs and pre-v1.0 submission-prep evidence moved out of `current-work.md` during the v1.1 slim-down.
 - `archive/operations/handoff-detail-through-v1.0.md`: v0.18-v1.0 handoff detail, completed-slice history, and per-version verification records moved out of `handoff.md`.

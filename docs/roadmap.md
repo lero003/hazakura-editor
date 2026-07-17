@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-18 (v1.14.0 tagged / selected candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (v2 development phase opened; v1.14 submitted)
 
 ## Current Position
 
@@ -11,283 +11,110 @@ Last reviewed: 2026-07-18 (v1.14.0 tagged / selected candidate; store 1.13.0)
 Git client, general terminal, plugin platform, project analyzer, or
 automatic agent-apply system.
 
-Current release state:
+| Fact | Value |
+|------|--------|
+| Package / app version in tree | **`1.14.0`** (source tag `v1.14.0`) |
+| Published Mac App Store | **`1.13.0`** (user-reported 2026-07-18) |
+| v1.14 | **Submitted** for App Store review (user-reported 2026-07-18). Early look OK. Publication not claimed until confirmed. |
+| Active product phase | **v2 development** — Book Scope / OKF multi-file feel |
+| Parked (not the main queue) | v1.14 residual polish, broad distribution evidence matrix, optional Keep boxes |
 
-- Mac App Store listing:
-  `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.14.0`** (**tagged source / selected local
-  App Store candidate** after published `1.13.0`). Store notes:
-  `docs/releases/1.14.0-app-store-release-notes.md`. Local package provenance
-  lives in `docs/internal/app-store-candidates/latest.json`.
-- **Published Mac App Store version: `1.13.0`.** App Review passed and the
-  release was published (user-reported 2026-07-18). Release notes:
-  `docs/releases/1.13.0-app-store-release-notes.md`. The latest GitHub source /
-  local-app tag is `v1.14.0`; App Store upload, review, and publication are not
-  implied by that tag.
-- **v1.8 (`1.8.0`) is closed and published** (historical store baseline before
-  `1.12.0`). Release notes: `docs/releases/1.8.0-app-store-release-notes.md`.
-- **v1.7 (`1.7.0`) is closed and published.** App Review passed and the
-  release was published (user-reported 2026-07-12). Release notes:
-  `docs/releases/1.7.0-app-store-release-notes.md`.
-- **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
-- **v1.6 (`1.6.0`) is closed / published:** Import Assist Phase 1 + edohigan +
-  CodeMirror view pin + quality packs + `pdf-extract` security update.
-  Do not describe edohigan as a v1.5 feature. Do not reopen v1.6 without a
-  reproduced hotfix need.
-- Historical MAS baselines (`1.3.0` Daily Trust and earlier) remain part of
-  public product history; store Connect is authoritative for listing numbers.
-- **v1.7 is closed / published.** Reference Compare keeps one
-  read-only PDF/image/text reference beside one editable Markdown document,
-  including automatic source pairing after Import Assist. Design:
-  `docs/archive/planning/v1.7-reference-compare-design.md`. Scope brief:
-  `docs/archive/planning/v1.7-scope-brief.md`. **R0–R4 source landed.** Trust slices (L Mode
-  continuity, pathless recovery, wrap-safe long-reference rendering, root recovery)
-  shipped with v1.8. Extended recovery, long-reference, and accessibility
-  checks remain v1.8 follow-up evidence rather than reasons to reopen the
-  published lane.
-- **v1.8 is closed / published as `1.8.0`** (App Review passed, release
-  published, user-reported 2026-07-14). It completes the Daily Trust hardening
-  on top of v1.7: deterministic Rust suite isolation, bounded long-reference
-  rendering, L Mode Reference continuity, keyboard / VoiceOver semantics, kana
-  UI copy, export preflight, theme cost, and failure-state messaging. No new
-  product surface. Do not reopen without a reproduced hotfix.
-- **v1.9 Writing Loop Clarity is source complete and rolled into the `1.11.0`
-  candidate.**
-  W1–W4 organize Preview / Reference / e-book / Outline / Diff /
-  L Mode around `書く・読む・確かめる` without adding chrome or a new model.
-- **v1.10 Single-document Structure Foundation implementation is complete.**
-  One source-offset model now drives Outline,
-  e-book, and EPUB; Outline adds read-only structure/advice plus one explicit,
-  Undo-able heading-level transaction. The temporary-fixture Outline/advice/edit/
-  Undo path passed; its changes are rolled into `1.11.0`. Extended manual
-  breadth moves into v1.11 rather than reopening v1.10.
-- **v1.11 OKF Draft Compatibility Preview is locally candidate-ready.** It adds one
-  explicit, bounded, read-only review of an OKF v0.1 Draft root, then runs the
-  larger packaged distribution-confidence matrix. Full Book Scope remains v2.
-  Shared pin / upgrade process: `docs/okf-spec-pin.md`.
-- **v1.12 OKF Starter Scaffold is closed and published as `1.12.0`.** Explicit
-  multi-file starters (minimal + book-like) from palette, sidebar, context menu,
-  and OS File menu. App Review passed and the release was published
-  (user-reported 2026-07-17). Templates and integrity checks share the pin in
-  `docs/okf-spec-pin.md`. Contract: `docs/v1.12-okf-scaffold-design.md`.
-- **Post-v1.13 is a try-and-error refinement era, not a fixed feature train.**
-  Theme pools supply hypotheses; version numbers are shipping boxes for Keep
-  results. Plan: `docs/v1.13-plus-refinement-roadmap.md`.
-- **v1.13 is closed / published as `1.13.0`.** Theme A + Theme G. Do not reopen
-  without a reproduced regression.
-- **v1.14 is tagged and selected (`1.14.0`)** boxing Continuity / Trust /
-  Writing Loop / OKF depth Keeps. App Store submission/publication remains
-  unconfirmed. Residual polish and distribution evidence remain open. Notes:
-  `docs/releases/1.14.0-app-store-release-notes.md`.
-- **Accepted post-v1.7 sequence through scaffold:** `v1.8`–`v1.12` remain the
-  trust → clarity → structure → OKF review → starter scaffold bridge. Detail:
-  `docs/v1.8-plus-product-review-roadmap.md`. After that bridge, prefer
-  experiment loops over inventing `v1.14 Continuity` / `v1.15 Writing Loop` as
-  mandatory packages.
-- **Next major structural boundary: v2** — explicit multi-file Book Scope,
-  then vertical writing (縦書き). Not started by try-and-error alone; needs
-  the v2 entry gate. Design:
-  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-- Current work queue: `docs/current-work.md`.
-
-North star for the next product arc:
+North star:
 
 > Markdownで書き、本として読み、ローカルAIで整える。
 
-Post-v0.25 refinement lens:
+v2 lens:
 
-> 編集空間はひとつ。Markdown source を、読む・書く・比べる・変換する
-> レイヤーとして扱う。
+> 明示的に選んだ Markdown 群を一冊として読み・整え・（後で）書き出す。
+> source は個々の Markdown。indexing / auto-apply / IDE 化はしない。
 
-Post-v1.12 experiment lens:
+Queue of record: `docs/current-work.md`.
+v2 design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
-> 無反応をなくし、対象と状態を明示し、摩擦を小さく試して残す。
-> 境界（indexing / auto-apply / 二画面編集 / IDE 化）は試行で壊さない。
+## Phase Decision (2026-07-18)
 
-This does not mean automatic agent application. It means Hazakura should
-make Markdown drafts easier to read as a book, easier to structure as
-chapters, and easier to accept or reject through explicit Diff / Review
-flows.
+User direction:
 
-Near-term phase order:
+1. **v1.14 is in review.** Light check looks fine. Fix reproduced bugs while
+   using; do not drive the main queue from residual polish or evidence lists.
+2. **Open v2 development.** The v1.8–v1.12 bridge is enough to start Book
+   Scope work. Do not wait for a pre-v2 essay on “multi-file value.”
+3. **Product narrative / Help** lands when v2 is shippable and OKF multi-file
+   feel is good enough — expand Help (and other feature explanations) as part
+   of **v2 ship polish**, not as a pre-implementation gate.
 
-1. v0.30 makes e-book Mode a daily paged-flow surface for reading and
-   revising long Markdown prose while keeping the view book-like.
-2. v0.31 adds Spread View for book-like two-page inspection, with
-   single-page fallback and coarse navigation.
-3. v0.32 connects editor and reader positions so the user can read,
-   notice a problem, and return to the corresponding Markdown location.
-   Source-level and local package evidence exist; normal / unsaved /
-   recovered built-app interaction smoke remains user-side proof.
-4. v0.33 polishes EPUB export as an explicit initial-v1 workflow for a
-   single Markdown document. Source-level polish is implemented and an
-   external fixture EPUB passed archive inspection plus external
-   EPUBCheck, and signed build `41` package evidence exists. Built-app
-   manual EPUB smoke remains a proof task.
-5. v0.34 attempted to close the PDF print gap with an app-owned native
-   print WebView, but TestFlight still rejected the print UI path after
-   local manual smoke passed.
-6. v0.35 replaces that path with direct PDF export and then resumes the
-   v1.0 Release Candidate golden manuscript smoke. RC work should focus
-   on built-app manual smoke, remaining TestFlight / release proof gaps,
-   release wording, and only the smallest file-intake polish that
-   directly supports reading the manuscript.
-7. v0.36 stabilizes e-book reader page-turning for long illustrated
-   manuscripts. Long documents with many `###` subheadings no longer
-   fragment into dozens of one-screen chapters (only H1 / H2 are chapter
-   boundaries), chapter crosses no longer skip pages (one action moves
-   one spread and crosses at most one chapter, EPUB-like), keyboard
-   auto-repeat no longer outruns the page state, and image-decode no
-   longer shrinks the committed page count. EPUB export also splits the
-   body into separate XHTML content documents at explicit page-break
-   markers. This work is included in the published `0.36.0` App Store
-   build; detailed long-manuscript and exported-EPUB page-break smoke
-   remain useful focused proof.
-8. v1.0 publishes the coherent single-document product and its
-   `書く・読む・整える・書き出す` message. This release is complete.
-9. v1.1 shipped daily-use continuity and trust: position ownership across
-   editor / Preview / reader. This release is complete.
-10. v1.2 is the prepared expectation-setting and lower-risk polish lane around
-   Local Assist quality, export UX, safe command discovery, and empty states.
-   The `1.2.0` candidate (command discovery, context-menu containment, EPUB
-   scope note) is prepared locally with a signed pkg; upload and publication
-   remain gated on explicit user approval.
-11. v1.3 Daily Trust is approved and published on the Mac App Store as
-   `1.3.0`: Save As session continuity, explicit Local Assist `採用` /
-   `破棄`, richer Reading Focus TOC context, and fixed A4 PDF margin
-   presets. Full gates and representative built-app interaction/rendered-PDF
-   proof pass. This lane is closed; the next lane is v1.4.
-12. v1.4 is the prepared candidate lane, prepared as `1.4.0`. It adds two
-   opt-in joke themes (CRT, Shinkai) as presentation-only WebGL overlays, a
-   review stale-diff warning for Local Assist proposals, and a window-close
-   / assist-cancel reconciliation, alongside the Observability And
-   Testability pure-logic seams with focused tests: e-book page-commit /
-   navigation (`ebookPageTarget.ts`), reader-location
-   (`ebookReaderLocation.ts`), PDF screen-page-layout tests, and EPUB text
-   helpers (`epubTextHelpers.ts`). The joke themes add no new product
-   surface beyond a visual overlay; the safe editor surfaces, Markdown
-   source contract, and export paths are unchanged when they are off. No
-   App Store lane boundary change. The remaining `useAppShellController`
-   and Local Assist transaction seams stay trigger-driven candidates under
-   the Observation-driven Maintenance Backlog.
-13. v1.5 was the stabilization and reading-polish arc built
-   from the small/medium items in the Observation-driven Maintenance
-   Backlog. Each is an independent slice; none adds a new product surface,
-   a second document model, or any arbitrary-execution / Git / LSP /
-   terminal / plugin behavior. The v1.5 slices are:
-   - **Settings surface consistency.** Bring the Spellcheck toggle (today
-     only in the editor Quick Settings popover,
-     `src/components/app/EditorQuickSettingsMenu.tsx`) into the main
-     Settings preferences pane
-     (`src/components/app/SettingsPreferencesPane.tsx`), reusing the
-     existing `spellcheckEnabled` setting. Small UX alignment, not a new
-     feature.
-   - **Dead code sweep.** Remove unused exports, stale branches,
-     retired-surface leftovers (Review Desk retire remnants, old
-     Apple-branded helper names), and unreachable CSS. Low-risk
-     housekeeping.
-   - **Dependency updates.** Keep `npm` and Cargo dependencies current on
-     a cadence. Watch DOMPurify / marked / Tauri / React major bumps for
-     sanitizer or build-lane regressions. Routine maintenance, not a
-     feature.
-   - **Reading Focus TOC density.** Show denser chapter context
-     (subheadings, progress, or a denser entry) in the Reading Focus
-     contents drawer instead of a bare chapter-number list.
-   - **Preview / render performance** *(trigger-driven)*. A structural
-     review can target redundant re-parse, unnecessary DOM passes, and
-     measurement churn on long manuscripts. Pick only when a concrete
-     long-document perf case gives a measurable baseline. The goal is
-     smoother scroll and faster re-render without changing the
-     source-preserving render pipeline or adding Preview DOM editing.
-   - **Observability refactor** *(trigger-driven)*. Refactor for
-     diagnosability so a reproduced issue is easier to localize:
-     concentrated state in `useAppShellController`, Local Assist
-     transaction state, and the render / measurement path should expose
-     enough named seams for focused regression tests and error traces.
-     Refactor-for-debuggability only; no public-behavior change, no
-     Markdown source change, no App Store lane change.
-   - **Long-document editor ↔ e-book position bridge** *(trigger-driven)*.
-     Harden drift or jump between the editor cursor and the e-book
-     simulated page position on very long manuscripts. Pick only when a
-     concrete reproduced case appears.
-   The lane is closed as `1.5.0`; its acceptance history remains in release
-   notes and git history.
-14. v1.6 is the Import Assist Phase 1 lane (Vision OCR). PDF / 画像 →
-   Markdown via on-device Vision OCR, edit-before-save, no-cloud-OCR,
-   no-auto-save. Its Book Project generation connects to v2 Book Scope.
-   **v1.6 is closed and published as `1.6.0`** after App Review passed without
-   issues (2026-07-10). Boundary review:
-   `docs/archive/reviews/import-assist-boundary-review-v1.6.md`. Design:
-   `docs/archive/superpowers/specs/2026-07-02-import-assist-design.md`. Release notes:
-   `docs/releases/1.6.0-app-store-release-notes.md`.
-15. v1.7 is the **active** Reference Compare lane. It generalizes the
-   post-import review need into one safe model: editable Markdown stays
-   center/primary; one read-only PDF, image, Markdown, or text reference
-   opens on the **right as a preview-like pane** (not Diff). Import Assist
-   pairs its source (right) with the unsaved draft (center); ordinary
-   workspace files may also open as right-hand reference while editing
-   (PDF↔MD and MD↔MD visual reference). It is not a generic split editor,
-   does not create two editable buffers, does not open PDFs as dirty tabs,
-   and does not revive standalone Review Desk. Design:
-   `docs/archive/planning/v1.7-reference-compare-design.md`.
-16. v1.8+ is the deliberate bridge from the mature single-document editor to
-   v2. Two-digit minor versions such as `v1.10` are valid; version numbering
-   must not force a premature major boundary. The accepted sequence is:
-   - **v1.8 Daily Trust Completion (closed / published as `1.8.0`):**
-     deterministic full tests, pathless recovery proof, packaged Reference
-     Compare, long-reference and a11y gates shipped. Extended TestFlight and
-     spoken VoiceOver breadth remain follow-up evidence.
-   - **v1.9 Writing Loop Clarity (source complete; rolled into the
-     `1.11.0` candidate):**
-     organize Preview / Reference /
-     e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
-     adding chrome.
-   - **v1.10 Single-document Structure Foundation (implementation complete;
-     candidate held):** interpret headings,
-     frontmatter, page-break markers, and navigation candidates through one
-     shared structure model; show structure and allow only bounded, explicit,
-     undoable single-buffer structure edits. No multi-file Book Scope.
-   - **v1.11 OKF Draft Compatibility Preview + Distribution Confidence:**
-     explicitly inspect one selected OKF v0.1 Draft root with bounded,
-     read-only compatibility advice, then run a larger packaged / signed matrix
-     across structure, long documents, recovery, Reference, Assist, export,
-     accessibility, sandbox, and failure boundaries before v2 implementation.
-   - **v1.12 OKF Starter Scaffold:** explicit multi-file starters sharing the
-     OKF pin; App Review is the public gate for this bridge.
-   - **v1.13+ refinement (try-and-error):** after the scaffold bridge, pick
-     small reversible experiments from theme pools rather than a fixed
-     Continuity → Writing Loop package train. Plan:
-     `docs/v1.13-plus-refinement-roadmap.md`.
-   Detailed rationale, acceptance, and v2 entry gate:
-   `docs/v1.8-plus-product-review-roadmap.md` (through v1.12) and
-   `docs/v1.13-plus-refinement-roadmap.md` (after).
-17. v2.0 is the multi-file Book Scope and vertical writing
-   target. Two pillars, in order:
-   - **OKF compatibility plus Hazakura Book semantics.** Treat a
-     user-selected, explicit set of structurally related Markdown files
-     as one book. Reuse the v1.11 OKF (Open Knowledge Format) compatibility
-     model where useful, but define chapter order, manifest behavior, and
-     whole-book reading/export as visible Hazakura conventions because base
-     OKF does not define a book format. The v2 Book Scope design — including the Workspace As
-     Book direction, the Safe Editor boundary that carries into v2, the
-     open UI questions, and UI candidates that are not yet decided —
-     lives in `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-     Treat that spec as the single source of truth for v2 multi-file Book Scope
-     design; the scattered Book / Workspace As Book / OKF notes elsewhere
-     are historical context. Re-check the latest OKF shape before
-     treating it as an implementation contract.
-   - **Vertical writing (縦書き).** Add vertical-text reading to e-book
-     Mode and export layers after the horizontal e-book surface, Spread
-     View, and EPUB export are stable (the pre-existing trigger), and
-     after the Hazakura Book Scope structural foundation is in place. Markdown
-     source stays canonical; vertical writing is a render / export layer,
-     not a second saved model.
+```text
+[done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
+[now]    v2.0 Book Scope development (design → slices → ship)
+[parked] residual polish · broad evidence matrix · optional v1.15+ Keep boxes
+[at ship] Help / feature copy expansion (when OKF multi-file feel is ready)
+[later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
+```
 
-Historical phase details now live in release notes and archive files:
+## Active Path — v2 Development
 
-- `docs/releases/`
-- `docs/archive/roadmaps/`
-- `docs/archive/operations/app-store-v0.17/`
+Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
+Hotfix only for reproduced App Store / daily-use blockers on published or
+in-review builds.
+
+### Now (v2.0 Book Scope Alpha)
+
+Order of work (detail in the design doc; refine while building):
+
+1. **Implementation contract** — raise the v2 design from Proposal toward a
+   first Review slice: UI direction (start from candidates A/B; do not block
+   forever on a perfect graph design), explicit scope selection, chapter
+   order, reversible interpretation.
+2. **Minimal multi-file spine** — user-selected set of Markdown files as one
+   book; one primary editable buffer at a time; no background indexing.
+3. **OKF multi-file feel** — reuse v1.11 review + v1.12 scaffold as inputs;
+   deepen only what makes “folder as knowledge / book” trustworthy day to day.
+   Keep base OKF compatibility separate from Hazakura Book semantics
+   (`docs/okf-spec-pin.md`).
+4. **Whole-book reading (and export only when ready)** — e-book / navigation
+   over the explicit scope; export breadth is not required for the first
+   Alpha cut unless the slice needs it.
+5. **Ship polish including Help** — when the multi-file / OKF loop feels
+   shippable: Help pages, in-app feature explanation, store/release copy.
+   Do **not** front-load long product essays before the feel exists.
+
+### Parked (resume only if friction or a release needs them)
+
+| Bucket | Examples | When to touch |
+|--------|----------|----------------|
+| Residual polish | Tab overflow, nav “back”, status TTL, dep cadence | Reproduced daily friction or cheap adjacent change |
+| Distribution evidence | Full TestFlight / VoiceOver / narrow / long-doc matrix | Release gate, regression, or user-reported gap |
+| Optional Keep boxes (`v1.15+`) | Theme pools in `docs/v1.13-plus-refinement-roadmap.md` | Enough unrelated Keeps justify a box; not a train before v2 |
+| v1.14 review follow-up | Apple questions, rejection, hotfix | Only if review or usage surfaces a real issue |
+
+### Hard rails (v2 does not lift these)
+
+- Safe Editor primary; Markdown/text source canonical per file.
+- No Git / LSP / general terminal / plugins / arbitrary command execution.
+- No project-wide background indexing or hidden chapter inference.
+- No auto-apply / auto-save / auto multi-file rewrite.
+- No second simultaneous editable buffer as the default model.
+- App Store lane still excludes Agent Workbench / external CLI agents.
+- Published tags and assets stay immutable.
+
+## v2 Entry Status
+
+| Criterion | Status (2026-07-18) |
+|-----------|---------------------|
+| v1.10 single-document structure shared by Outline / e-book / export | **Met** |
+| Structure edits Undo / dirty / explicit | **Met** (source) |
+| v1.11 OKF preview bounded / explicit / no persistent index | **Met** |
+| v1.12 starter scaffold explicit / no auto-repair | **Met** (published) |
+| Broad distribution-confidence matrix complete | **Parked** — not blocking v2 start |
+| Pre-v2 multi-file value essay | **Deferred to Help at ship** |
+| Book Scope UI fully converged before any code | **Softened** — pick a first direction and iterate in slices |
+| OKF pin vs Hazakura Book semantics kept separate | **In force** during implementation |
+| Help / feature explanation expansion | **v2 ship polish**, not a start gate |
+
+Historical gate wording remains in
+`docs/v1.8-plus-product-review-roadmap.md` and
+`docs/v1.13-plus-refinement-roadmap.md` for context. **Active go decision:**
+v2 development is open.
 
 ## Product Boundary
 
@@ -301,749 +128,127 @@ These boundaries stay active across roadmap changes:
 - Agent Workbench is a separate Developer / GitHub lane trust boundary:
   explicit, consent-gated, allowlisted providers only, selected
   workspace root only, one active session, no restore, no auto-apply.
-- The standalone Review Desk screen is retired from the current product
-  surface. Hazakura Local Assist and other AI-assist paths must remain
-  explicit, inspectable through Diff / change history or an equivalent
-  review surface, and never auto-save or auto-apply without user action.
+- The standalone Review Desk screen is retired. Local Assist and other
+  AI-assist paths stay explicit, Diff-reviewable, and never auto-save or
+  auto-apply without user action.
 - Workspace file operations stay bounded to the selected workspace and
   must not become a full file manager.
 
-## Shipped Phase Summary
-
-Older phase-level details live in `docs/releases/`, `docs/current-work.md`,
-and `docs/archive/`. Keep this roadmap focused on current and future
-decisions.
-
-- **v0.18-v0.20**: Safe Editor polish, App Store lane separation, Sakura
-  workspace ergonomics, bounded image handling, save/recovery hardening,
-  and helper-free App Store surface checks.
-- **v0.21-v0.24**: e-book Mode progressed from display-only PoC to
-  heading-based single-document reading, CSS-column pseudo-pagination, and
-  single-page reading-surface polish while keeping Markdown source
-  canonical.
-- **v0.25**: native-feeling Safe Editor chrome polish landed as a
-  source/CSS-level pass; native vibrancy and macOS floor changes remain a
-  separate distribution-lane decision.
-- **v0.26**: no-workspace authoring, e-book empty-state polish, and initial
-  EPUB export beta shipped before heavier AI review or book-workspace work.
-- **v0.27-v0.29.1**: source-preserving refinement, AI review foundation,
-  Hazakura Local Assist transaction review, detached companion polish,
-  Local Assist responsiveness hardening, and preview flicker reduction
-  shipped through the `0.29.1` App Store update.
-
-The durable exclusions from these phases still apply: no Git/LSP/terminal,
-plugin system, arbitrary command execution, background workspace indexing,
-Preview DOM editing, hidden save-time rewriting, or automatic AI application.
-
-## v0.30-v1.0 Reader UX Stabilization Lane
-
-Goal: ship `Hazakura Editor` v1 as a polished single-document Safe
-Markdown Book Editor with Local Assist Review.
-
-The v1 lane should not add broad new product surfaces. It should make the
-parts already shipped by `0.29.1` feel like one coherent product: a safe
-Markdown editor where the user can write Markdown, read it as a book,
-inspect it in a two-page spread, export it explicitly, and review AI
-proposals through Diff / Discard.
-
-### Product Definition
-
-v1.0 is:
-
-- a single-document, book-oriented Markdown editor;
-- a source-preserving set of reading, writing, preview, diff, recovery,
-  assist-review, and export layers over one Markdown source;
-- an editor where e-book Mode can be used to read prose, notice issues,
-  and return to Markdown editing;
-- an app where EPUB export is an explicit user action;
-- an app where Hazakura Local Assist proposals remain user-initiated,
-  unsaved until accepted, and reviewable through Diff / Discard.
-
-v1.0 is not:
-
-- Book Workspace Alpha or a multi-file book manifest;
-- a full WYSIWYG editor or Preview DOM editing surface;
-- an IDE, Git client, terminal, LSP host, plugin platform, or project
-  analyzer;
-- an external AI/API client or Agent Workbench integration in the App
-  Store lane;
-- an AI auto-apply, auto-save, auto-rewrite, or hidden workspace rewrite
-  system.
-
-### Product Focus
-
-The post-`0.29.1` v1 lane shifts from Hazakura Local Assist stabilization
-to e-book Mode reader UX. Hazakura Local Assist remains part of the
-product, but dedicated post-`0.29.1` work should be observation-driven
-polish only unless a safety, review, App Store, availability, generation
-failure, or transaction-boundary issue appears.
-
-### Required Before v1.0
-
-- e-book Mode supports a comfortable daily reading / revision flow for
-  single-document Japanese Markdown prose.
-- e-book Mode is not button-only page-turning; it provides low-friction
-  wheel / trackpad / keyboard movement while keeping the simulated page
-  surface book-like.
-- e-book Mode provides a two-page Spread View for book-like inspection
-  when the window size allows it, with a single-page fallback for narrow
-  windows.
-- Page navigation includes keyboard shortcuts, clear progress, heading
-  jump, and coarse navigation such as a slider or equivalent control.
-- The user can move between editor position and e-book reading position
-  without getting lost.
-- One realistic Japanese long-form Markdown manuscript covers headings,
-  long prose, lists, images, links, code blocks, Local Assist review,
-  Diff / Discard, Recovery, relaunch, and EPUB export as the v1 proof
-  fixture.
-- The workspace tree makes open files legible even when they are not the
-  active tab, without implying Git status or background indexing.
-- The workspace tree makes open but unsaved files legible by reusing the
-  existing tab dirty state; Save remains explicit.
-- The editor can wrap or insert a small allowlisted set of Markdown /
-  tag snippets around selected text through a simple user action. Source
-  text remains visible, undoable, and saved only by explicit Save.
-- L Mode, Preview, e-book Mode, Diff, Recovery, EPUB export, and AI
-  review remain source-preserving layers over one Markdown document.
-- EPUB export remains an explicit user action and is polished enough for
-  initial v1 use.
-- e-book Mode preview and final EPUB rendering are described as related
-  but not identical outputs, so the app does not imply reader-perfect
-  EPUB reproduction.
-- Hazakura Local Assist remains user-initiated, on-device,
-  availability-gated, unsaved until accepted, and reviewable through
-  Diff / Discard.
-- Any v1 file-intake polish stays bounded: larger local images may be
-  made readable only with explicit size / memory safeguards, and extra
-  text-open extensions may be added only while preserving binary
-  detection, file-size warnings, workspace boundaries, and no background
-  project indexing.
-
-### Suggested Slices
-
-#### v0.30: e-book Mode Paged Flow
-
-Make e-book Mode usable as a daily reading and revision surface.
-
-- Keep e-book Mode on a simulated book page rather than a Preview-like
-  continuous document.
-- Reduce page-turn friction for normal reading with wheel / trackpad /
-  keyboard movement.
-- Preserve chapter / page reading position across mode switches.
-- Preserve the reader location contract for the later editor / reader
-  position bridge.
-- Re-tune Japanese prose layout: width, line height, margins, paragraph
-  rhythm, and empty states.
-- Confirm large-document behavior.
-
-Acceptance: long Markdown prose can be read naturally in a book-like
-page surface without relying only on buttons, and switching from Normal
-Mode / L Mode / Preview does not leave the user badly lost.
-
-#### v0.31: e-book Mode Spread View
-
-Add book-like two-page inspection without making page-turning the only
-way to read.
-
-- Add a `集中して読む` Reading Focus entry for the e-book reader.
-- In Reading Focus, let workspace/sidebar/editor chrome recede so the
-  active Markdown document can use the main window as a book surface.
-- Add a two-page spread layout when the focused reader has enough width.
-- Fall back to single-page focused reading on narrow windows.
-- Add previous / next page controls.
-- Support keyboard navigation such as Left / Right and Space.
-- Show current page / total page or equivalent progress.
-- Add coarse navigation; the current v0.31 path uses a Reading
-  Focus-only table-of-contents drawer for heading/chapter jumps, with
-  page sliders left as a later display-option candidate.
-- Keep Markdown source canonical and avoid Preview DOM editing.
-- Keep a fully detached separate reader window as a later option, not
-  the first v0.31 path.
-
-Acceptance: the surface can feel book-like while paged flow remains the
-daily revision path.
-
-#### v0.32: Editor / Reader Position Bridge
-
-Make writing and reading feel connected.
-
-- Open e-book Mode near the current editor cursor or visible heading.
-- Return from e-book Mode to the corresponding Markdown location.
-- Reduce position drift across Normal Mode, L Mode, Preview, and e-book
-  Mode.
-- Keep mode transitions stable for unsaved documents and recovered
-  buffers.
-
-Acceptance: "read, notice, return, fix" feels like one revision cycle
-rather than a separate viewer.
-
-#### v0.33: EPUB Export v1 Polish
-
-Align initial EPUB export with the single-document book-writing promise.
-
-- Improve the explicit export flow.
-- Check Japanese text, headings, local images, links, code blocks, and
-  failure messages.
-- Report non-fatal image replacement warnings after a successful export
-  and keep generated XHTML language metadata aligned with the export
-  settings.
-- Keep advanced metadata, cover, navigation editing, and validation
-  workflow deferred to v1.x.
-- Document the difference between e-book Mode preview and final EPUB
-  rendering where necessary.
-
-Acceptance: v1 can truthfully say it has an initial EPUB export without
-claiming to be a full EPUB production tool.
-
-### Pre-RC Quality Slices (v1 Polish)
-
-A 2026-06-25 read of the editor, preview, e-book reader, and stylesheet
-surfaced observation-driven quality gaps in what `v0.29.1` plus the
-`v0.30-v0.33` work already ship. Close three polish slices before
-freezing v1.0 at `v0.34`. Each stays inside the Safe Editor boundary:
-source-preserving, no new product surfaces, no arbitrary execution, no
-new dependencies. The token foundation is good; these slices finish the
-last coherence pass over it.
-
-#### Slice A: Reader Stability
-
-Performance and correctness of the daily editor + e-book reader path.
-
-- `EBookPane` runs `marked` + `DOMPurify` synchronously on every
-  keystroke with no debounce
-  (`src/components/editor/preview/EBookPane.tsx:118,214-220`), unlike
-  `PreviewPane` which debounces at 200ms
-  (`src/components/editor/preview/PreviewPane.tsx:135`). Add the same
-  debounce and stabilize the `activeRenderedChapter` memo deps so it
-  does not invalidate on every keystroke.
-- E-book pagination measurement forces a per-child reflow
-  (`getBoundingClientRect` + a `getClientRects()` loop over every child)
-  on every render, resize, and image-load
-  (`EBookPane.tsx:298,346,379`; `src/components/editor/preview/ebookPagination.ts:67`).
-  Coalesce into one `requestAnimationFrame`-throttled measurement guarded
-  by a dirty flag, and only re-measure when column geometry actually
-  changes.
-- The known "scroll stays near the previous focus / reads as text
-  selection" symptom traces to unconditional
-  `view.contentDOM.blur()` on scrollbar `mousedown` with no refocus
-  (`src/components/editor/EditorPane.tsx:581-585`). Remove the blur or
-  refocus on `pointerup`.
-- `renderMarkdown` does five sequential HTML parses per render
-  (`src/features/editor/markdown.ts:19-27`; three `apply*Policy`
-  template round-trips plus DOMPurify). Fold into one DOM mutation
-  pass, then sanitize once.
-- rAF-throttle the preview->editor scroll-sync direction, which today
-  reads `scrollHeight` synchronously on every scroll event
-  (`src/hooks/editor/usePreviewScrollSync.ts:130`), to match the
-  editor->preview path that is already throttled. This is also the
-  cause of the reported trackpad / Magic Trackpad inertial-scroll jank
-  in Preview: `onPreviewScroll` -> `syncEditorScroll` forces the editor
-  scroll position, and the editor's scroll handler writes a different
-  `scrollTop` back into the preview pane every frame. Because
-  `scrollSyncSourceRef` clears after a fixed 80ms timeout, the guard
-  does not hold for the full duration of an inertial scroll, so the
-  OS-driven inertial position and the JS-driven sync position collide
-  every frame and the preview "stutters and does not move". A normal
-  mouse wheel does not reproduce it because its events are coarser.
-  Fix: rAF-throttle `syncEditorScroll`, and keep the sync-source guard
-  alive for the full duration of an active preview scroll (clear it on
-  the next editor-emitted scroll or on scroll-end, not a fixed timeout),
-  so the editor->preview write-back does not fight the OS inertia.
-- Per-image `load`/`error` listeners each trigger a full re-measurement
-  (`EBookPane.tsx:379-391`); collapse them through the same dirty flag.
-
-Acceptance: a long Japanese manuscript (around 30k characters) types and
-scrolls without jank in Normal Mode, Preview, and e-book Mode; trackpad
-inertial scrolling in Preview is smooth and does not stutter or fight
-the OS-driven position; and scrollbar / wheel scrolling no longer sticks
-near the last caret line.
-
-Status as of v0.36.0: all six items are implemented and pinned by
-focused tests. `EBookPane` debounces rendering at 200ms through the
-shared `previewRenderDebounce` (same value as `PreviewPane`), with the
-first render immediate and subsequent renders debounced. Page
-measurement is coalesced into one `requestAnimationFrame` per frame
-through a dirty-flag `scheduleRemeasure`, driven by layout effect,
-`ResizeObserver`, `MutationObserver`, and per-image `load`/`error`
-listeners alike. The scrollbar `contentDOM.blur()` scroll-stick bug is
-fixed by restoring focus on `mouseup`. The five-HTML-parse
-`renderMarkdown` pipeline is folded into one DOM mutation pass plus one
-`DOMPurify.sanitize`. The preview->editor scroll-sync path is
-rAF-throttled and keeps the sync-source guard alive through the whole
-active preview scroll via a self-extending timer, so trackpad inertial
-scrolling no longer stutters. The legacy per-image re-measurement is
-collapsed through the same dirty flag.
-
-#### Slice B: Token and Motion Coherence
-
-The token system in `tokens.css` is sound, but execution above it leaks
-undefined tokens, keyword easings, and `transition: all`. One CSS pass
-to unify.
-
-- Define missing tokens: `--info`, `--accent-hover`, `--accent-contrast`,
-  `--error` (alias of `--danger`), `--bg-elev`, `--bg-elev-hover`,
-  `--font-editor`, `--font-ui`, `--app-font-family`. Remove inline
-  fallbacks; the Local Assist Apply button currently falls back to
-  `#2f7eb8` blue (`src/styles/apple-assist-window.css`) and the
-  slash-menu shortcut badge references undefined `--info`
-  (`src/styles/slash-menu.css:99`).
-- Add a single global `prefers-reduced-motion` reset in
-  `src/styles/base.css`. Today only two of fifteen stylesheets reference
-  it, so dialogs, toasts, the slash menu, and the agent pulse animate
-  unconditionally.
-- Add duration tokens (`--dur-1`..`--dur-4`) and a `--z-*` z-index scale;
-  sweep bare `ease` keywords to `var(--ease-standard)` and replace every
-  `transition: all` with an explicit property list (perf + consistency).
-- Drop the global `button:hover { transform: translateY(-1px) }` lift
-  (`src/styles/animations.css:104-109`). It reads as a bouncy web-app
-  hover for a quiet book editor and is the reason several components
-  carry `transform: none` overrides. Keep a subtle `:active` scale only.
-- Tame motion toward calm: reduce the save-affirmation spring overshoot
-  (`src/styles/save-affirmation.css:3-18`), and gate the perpetual agent
-  pulse (`src/styles/status.css:15-27`) and ambient background drift
-  (`src/styles/app-shell.css`) behind focus / reduced-motion.
-
-Acceptance: the Local Assist window, slash menu, notifications, and
-global controls render against the real token system rather than
-fallback literals; motion uses one easing / duration voice; and
-reduced-motion users get a calm, non-animated surface.
-
-Status as of v0.36.0: token definitions, the global reduced-motion
-reset, duration / z-index tokens, the `transition: all` sweep, the
-`button:hover` lift removal, and the transition-level bare `ease` sweep
-are done. `ease-out` / `ease-in-out` animations intentionally remain
-where they carry specific entrance or ambient motion.
-
-#### Slice C: Robustness
-
-Correctness of Save-As, mode switching, and the assist-lock path.
-
-- Save-As rekey changes `documentKey` and forces a full editor remount,
-  losing scroll position and undo history
-  (`src/components/editor/EditorPane.tsx:413-453`). **Deferred to v1.1:**
-  a proper fix needs an editor session id separate from `documentKey`,
-  which touches tab state management beyond this slice. Save-As still
-  works; it just resets scroll/undo.
-- `goToLine` reports scroll ratio in a single `requestAnimationFrame`
-  before CodeMirror's asynchronous `scrollIntoView` has settled
-  (`EditorPane.tsx:247-275`), so the preview and scroll HUD misalign for
-  one beat after a heading jump. Use a double-rAF or `requestMeasure`.
-- Add `readOnly` to the `EditorPane` `useImperativeHandle` dependency
-  list (`EditorPane.tsx:241-374`) so an assist lock gates imperative
-  `insertText` / `applyMarkdownFormat` instead of acting on a stale
-  lock state.
-- Pass an explicit `tabId` to `setActiveTabContents` in the Apple Assist
-  apply path
-  (`src/hooks/app/useAppShellController.ts:450-464`;
-  `src/hooks/editor/useAppleAssistApplyHandler.ts`) rather than closing
-  over `activeTab.id`, so a tab switch during generation writes to the
-  validated target.
-
-Acceptance: heading jumps do not lag the preview, and the assist-lock
-and cross-tab apply paths are race-free. Save-As rekey remount
-(preserving scroll + undo history) requires an editor session id
-separate from `documentKey`, so it is deferred to v1.1 — Save-As still
-works, it just resets scroll/undo. These slices do not change the v1
-product definition; after Slice A-C, proceed to `v0.34` Golden
-Manuscript smoke.
-
-Status as of v0.36.0: `goToLine` uses a double-rAF so the scroll ratio
-is reported after CodeMirror's asynchronous `scrollIntoView` settles;
-`readOnly` is in the `useImperativeHandle` dependency list and the
-`insertText` / `applyMarkdownFormat` / `insertTable` handlers guard on
-it; and the Apple Assist apply path passes a validated `tabId` rather
-than closing over `activeTab.id`. Only the Save-As rekey remount remains
-deferred to v1.1.
-
-#### v0.34: v1.0 Release Candidate
-
-Freeze features and verify product quality.
-
-- Create or select one realistic Japanese long-form Markdown document as
-  the v1 Golden Manuscript. It should include headings, long paragraphs,
-  lists, images, links, code blocks, and text that makes Local Assist
-  review useful.
-- Run golden-path smoke against that manuscript for New File, Open, Save
-  / Save As, L Mode, Preview, e-book Mode paged flow, Spread View,
-  heading jump, editor/reader return, EPUB export, Local Assist, Diff /
-  Discard, Recovery, relaunch, and large documents.
-- Verify workspace-file open / dirty markers and right-click
-  slash-command selection insertion as fit-and-finish items, not as a
-  new workspace model or formatting system.
-- If the Golden Manuscript exposes a small blocker around local images or
-  plain-text file intake, allow one narrow v1 fit-and-finish slice:
-  larger readable local image handling or additional text-open file
-  extensions. Do not turn this into external image loading, a binary
-  viewer, log viewer, project indexer, or broad file manager.
-- Make the App Store and Help wording emphasize the user-facing roles:
-  write, read, compare, export, and review AI proposals before explicit
-  save.
-- Use App Store screenshots and release copy to show the product story in
-  order: write Markdown, read it like a book, inspect a spread, review an
-  AI proposal through Diff, then export EPUB.
-- Make first-run / empty-state / tooltip copy answer which surface is
-  for writing, reading, comparing, exporting, and reviewing proposals.
-- Keep Diff / Discard / Save-state copy strong enough that AI proposals,
-  Recovery, and manual edits remain visibly unsaved and reversible before
-  Save.
-- Document the expected difference between e-book Mode preview and final
-  EPUB reader output where the user could otherwise expect identical
-  rendering.
-- Set internal large-document expectations before RC judgment. A useful
-  starting line is: 10k Japanese characters feels comfortable, 30k is
-  practical, and 100k may wait but must not crash, lose source, or hide
-  that work is in progress.
-- Update App Store screenshots, description, and release notes.
-- Verify the App Store lane excludes Agent Workbench, external AI/API
-  calls, CLI launch, arbitrary command execution, network fallback,
-  auto-save, and auto-apply.
-
-Acceptance: the product can be described without qualification as:
-
-> Safe Markdown Book Editor with Local Assist Review
-
-Golden Manuscript acceptance: the app can complete "write -> read ->
-notice -> return -> revise -> review -> export" without the user losing
-document position, source ownership, or save-state confidence.
-
-#### Pre-v1.0 Close-out Checklist
-
-Status as of 2026-06-29: closed. v1.0 passed review and is published on
-the Mac App Store. The user-side checklist confirmed the
-Golden Manuscript path, practical long-form e-book page-turning, EPUB
-page breaks in Apple Books, Local Assist success/failure/apply/discard,
-and the App Store safety boundary. No No-Go condition was reported.
-
-Unchecked boxes were not automatic blockers. Commented observations are
-preserved in `docs/archive/operations/v1.1-v1.2-followup.md` and now feed the active v1.2
-queue one reproducible item at a time. v1.0 release artifacts and
-published tags remain immutable.
-
-Save-As session continuity, 100k-character comfort, consecutive-image
-layout, Recovery edge cases, and detailed review/export polish are
-accepted post-v1 work unless they reproduce a No-Go condition.
-
-### Deferred Beyond v1.0
-
-- Book Workspace Alpha.
-- Multiple Markdown files as chapters.
-- Saved book manifests.
-- Vertical writing.
-- Advanced EPUB metadata, cover, navigation editing, and validation
-  workflow.
-- External AI/API providers, plugin systems, arbitrary local model
-  runtimes, agent orchestration, or automatic AI application.
-
-## Post-v1 Product Direction
-
-After v1.0, Hazakura should not immediately rush into broad workspace,
-agent, or AI-provider expansion. The first post-v1 goal is to prove that
-the single-document book-writing surface is useful in daily writing.
-
-The durable question for every post-v1 idea is:
-
-> Does this make it easier to read Markdown as a book and fix it through
-> explicit review?
-
-If the answer is not clearly yes, keep the idea out of the active lane.
-
-## v1.x Deepen The Single-document Product
-
-Goal: deepen the single-document writing / review / export model after
-the first daily-use surface is proven.
-
-### v1.7 Trust And Daily Use Hardening (closed)
-
-The active v1.7 lane is now **Reference Compare plus trust / daily-use
-hardening**, not another broad feature arc. R0–R4 are source-landed, so the
-next work should prove that the user can keep one editable Markdown source,
-refer to one read-only source, move between reading and writing, and recover
-from failure without losing context or data.
-
-The v1.7 lane is closed and published. Its scope and execution documents are
-preserved as historical references at
-`docs/archive/planning/v1.7-scope-brief.md` and
-`docs/archive/operations/v1.7-trust-scale-plan.md`; do not use them as an
-active queue. Start new work from `docs/current-work.md` and
-`docs/v1.8-plus-product-review-roadmap.md`.
-
-The scope-level themes are:
-
-1. L Mode continuity: restore prior reading/review context and preserve Undo.
-2. Explicit recovery for pathless new / Import Assist drafts without
-   auto-saving to the source file.
-3. Packaged Reference Compare proof across PDF/image/text, Import Assist,
-   narrow-window, keyboard, deletion, and App Store sandbox paths.
-4. Bounded processing for draft persistence, Diff, search, PDF export, and
-   reference raster; failure containment; deterministic test signal.
-5. Long-reference accessibility, purpose-led discovery, export confidence,
-   and measured theme polish.
-
-These are planned v1.7 scope even when older backlog text below calls them
-observation-driven. Book Scope Alpha is the deliberate exception: it remains
-v2 and must not be pulled forward by this hardening plan.
-
-Possible directions:
-
-- Keep the v1 Golden Manuscript as a reusable release fixture and expand
-  it only when a real regression or product claim needs coverage.
-- Deepen safe file intake after v1: additional text-open extensions,
-  better large local-image readability, and clearer warnings for files
-  that are too large or not safely editable. This must not become a
-  binary viewer, log viewer, project indexer, or broad file manager.
-- Improve AI proposal review, provenance display, and Diff / Review
-  ergonomics without making Hazakura an agent platform: clearer changed
-  areas, better large-prose diff readability, partial Accept / Reject
-  where it can stay understandable, and visible distinction between AI
-  proposals, manual edits, and Recovery changes.
-- Improve EPUB export with metadata, cover selection, navigation, and
-  clearer pre-export / manual validation guidance.
-- Improve PDF export polish after v1. The v0.35 direct PDF export
-  already paginates into A4-sized pages, but the page rect is currently
-  margin-less at the PDF-generation layer
-  (`src-tauri/src/commands/export.rs`: `PDF_A4_PAGE_WIDTH_POINTS` /
-  `PDF_A4_PAGE_HEIGHT_POINTS` with `origin_x: 0.0`, content split only by
-  page height). Open design questions to resolve before implementing:
-  whether to expose a user-facing margin / page-size option (and how far
-  to go without turning Hazakura into a print-layout tool), whether
-  margins should live in the export HTML CSS or in the Rust page-rect
-  calculation, and how page-break markers (`---`) should interact with
-  PDF page boundaries (today only EPUB uses them). Keep this as an
-  explicit user consultation item, not a silent default change.
-- Improve movement between writing, reading, Preview, Recovery, and AI
-  review layers without creating a second document model.
-- Explore a Hazakura-owned expression font as an opt-in document display
-  font, not as the default app UI font.
-- Explore preview and export output using that expression font, including
-  whether HTML / PDF / EPUB output can embed or hand off the font
-  cleanly.
-- Explore explicit source-visible tags that render only the wrapped span
-  in the expression font in Preview / e-book / export layers. The tags
-  must be allowlisted, reversible, and source-preserving.
-- Treat any intentionally hard-to-read or cipher-like typeface as a
-  visual expression mode only, not as a privacy, encryption, security, or
-  access-control feature.
-- Add vertical writing only after the horizontal e-book surface, Spread
-  View, and EPUB export are already stable, and after the Hazakura Book Scope
-  structural foundation is in place. Vertical writing is
-  a v2 target, not a v1.x slice.
-- Improve Developer / GitHub distribution only when needed: Developer ID
-  signing, notarization, updater, DMG stability, and clear App Store vs
-  Developer-lane feature differences. Keep Agent Workbench Developer /
-  GitHub-only.
-- Keep Hazakura Local Assist polish observation-driven, and avoid turning
-  it into a generic AI chat, provider plugin, or agent platform.
-- Reduce UI friction around L Mode, e-book Mode, Preview, Diff, and
-  Recovery as layers over the same Markdown source.
-
-OKF v0.1 Draft compatibility now has a bounded v1.11 contract in
-`docs/v1.11-okf-draft-preview-design.md`. Re-check the latest OKF shape before
-v2 and keep base OKF conformance separate from Hazakura-defined Book Scope
-semantics. The v2 boundary is assessed in
-`docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-
-### Observation-driven Maintenance Backlog
-
-These are not v1.0 blockers and not scheduled releases. They are items
-worth picking up whenever a quiet moment or a related change makes one
-cheap to close. Each is a candidate, not a commitment. Keep them small
-and inside the Safe Editor boundary. The v1.7 items promoted into
-`docs/archive/operations/v1.7-trust-scale-plan.md` are no longer merely optional candidates;
-the remaining bullets below retain this observation-driven status.
-
-- **Theme customization.** Today the app ships five themes
-  (`light` / `dark` / `sakura` / `yakou` / `shokou`; the earlier
-  "fixed light/dark + Sakura accent" note was outdated). Personal taste
-  still varies, so an accent / per-surface adjustment path may be worth
-  it. Open question: how far to go without turning the app into a theme
-  editor. Start from observation, not from a settings panel.
-- **UI review pass (post-v1).** The v0.27-v0.36 UI work settled a lot,
-  but "is the current shape actually best?" deserves a periodic read.
-  Revisit chrome density, L Mode / e-book / Preview layering, and
-  control placement against real daily use after v1 ships.
-- **e-book Mode table-of-contents drawer is too sparse.** The Reading
-  Focus contents drawer omits too much. Consider showing more chapter
-  context (subheadings, progress, or a denser entry) so navigation
-  does not feel like a bare chapter-number list.
-- **Long-document editor ↔ e-book simulation coupling feels unstable.**
-  At long lengths the editor cursor and the e-book simulated page
-  position can drift or jump. This overlaps the v0.32 position bridge;
-  treat it as observation-driven hardening of the bridge for very long
-  manuscripts rather than a new surface.
-- **PDF export A4 margin / page-size adjustment.** (Carried from the
-  PDF consultation item above.) Margin-less A4 page rects today; this is
-  likely a swamp, so keep it as an explicit consultation, not a silent
-  default change.
-- **Long-document performance.** Already partially addressed by the
-  Pre-RC Slice A work (debounce, rAF-coalesced measurement, single
-  renderMarkdown parse), but keep watching typing / scrolling /
-  page-turn latency on very long manuscripts and add narrow throttling
-  where observation finds jank.
-- **Code clarity / refactor for faster incident response.** When a bug
-  lands (like the e-book page-skip), deep call sites slow the fix. Keep
-  opportunistic readability / decoupling refactors on the backlog so the
-  next incident is cheaper to trace. No big-bang rewrite.
-- **Dead code sweep.** Periodically check for unused exports, stale
-  branches, retired-surface leftovers (e.g. Review Desk retire remnants,
-  old Apple-branded helper names), and unreachable CSS. Low-risk
-  housekeeping.
-- **Dependency updates.** Keep `npm` and Cargo dependencies current on a
-  cadence. Watch DOMPurify / marked / Tauri / React major bumps for
-  sanitizer or build-lane regressions. Treat as routine, not as a
-  feature.
-- **Settings surface consistency.** The Spellcheck toggle currently lives
-  only in the editor Quick Settings popover
-  (`src/components/app/EditorQuickSettingsMenu.tsx`) and is missing from
-  the main Settings preferences pane
-  (`src/components/app/SettingsPreferencesPane.tsx`). Bring the same
-  toggle into Settings so display / editing preferences are in one place,
-  reusing the existing `spellcheckEnabled` setting. This is a small UX
-  alignment, not a new feature or a new editor behavior.
-
-Pick one when a slice is small, verifiable, and does not reopen a
-product-boundary decision. None of these add arbitrary execution,
-plugins, Git/LSP/terminal, external AI/API, or a second document model.
+## Closed Phase Snapshot
+
+| Era | What it established | Status |
+|-----|---------------------|--------|
+| v0.18–v0.29.1 | Safe Editor, App Store lane, Local Assist foundation | Published / historical |
+| v0.30–v1.0 | e-book / Spread / position bridge / EPUB / PDF → v1 message | Published |
+| v1.1–v1.5 | Continuity, trust, polish | Closed / published |
+| v1.6 | Import Assist Phase 1 + edohigan | Closed / published |
+| v1.7 | Reference Compare | Closed / published |
+| v1.8–v1.12 | Trust → clarity → structure → OKF review → scaffold | Bridge **complete** |
+| v1.13–v1.14 | Refinement Keep boxes | v1.13 published; v1.14 **in review** |
+| **v2.0** | Multi-file Book Scope Alpha + OKF multi-file feel | **Active development** |
+| v2.x | Book Scope practicalization | After Alpha |
+| 縦書き | Vertical reading / export layer | After Book Scope foundation |
+| v3.x | Speculative local-AI re-evaluation only | Speculative |
+
+Bridge rationale: `docs/v1.8-plus-product-review-roadmap.md`.
+Historical phase prose:
+`docs/archive/roadmaps/roadmap-historical-phases-through-v1.x.md`.
 
 ## v2.0 Book Scope / Book Workspace Alpha
 
-Book Scope Alpha remains explicitly deferred until the v1.10
-single-document-structure bridge and v1.11 OKF compatibility /
-distribution-confidence gate are complete. v1.11 may read one selected bundle,
-but does not add chapter order, whole-book reading/export, manifest authoring,
-or multi-file edits. The entry criteria live in
-`docs/v1.8-plus-product-review-roadmap.md`.
+Goal: introduce a user-selected Book Scope — a small, explicit set of
+Markdown files treated as one book — without turning Hazakura into a
+project analyzer, Obsidian-like workspace, or full file manager.
 
-Goal: introduce a user-selected Book Scope: a small, explicit set of
-Markdown files treated as one book without turning Hazakura into a
-project analyzer, Obsidian-like workspace system, or full file manager.
+Two pillars, in order:
 
-This is the right place for the difficult multi-file part of `Workspace = Book`:
-several Markdown files, explicit order, chapter metadata, and book-level
-reading / export. It should build on the single-document e-book, EPUB,
-AI review, and v1.10 shared structure primitives instead of arriving before them.
+1. **OKF compatibility + Hazakura Book semantics.** Reuse v1.11/v1.12 as
+   inputs; define chapter order, scope behavior, and whole-book reading as
+   **Hazakura** conventions (base OKF is not a book format).
+2. **Vertical writing (縦書き).** Later, after horizontal multi-file reading
+   is stable. Markdown source stays canonical.
 
 Possible first shape:
 
-- Let the user explicitly choose a Book Scope from the selected
-  workspace, such as an `index.md`, a small manifest, or a selected
-  chapter list.
-- Treat chosen Markdown files as chapter candidates with manual order
-  and visible table-of-contents structure.
-- Connect book scope to e-book Mode, EPUB export, and AI proposal review
-  only after the scope is explicit and reversible.
-- Keep saved source as Markdown plus a small explicit structure file if
-  needed; do not hide a database-like document model behind the app.
-- Review AI or external edits only inside the selected Book Scope and
-  only through explicit Diff / Review.
+- Explicit Book Scope choice (index, small manifest, or selected chapter list).
+- Manual chapter order and visible TOC structure.
+- Connect scope to e-book Mode (and export when the slice is ready).
+- Saved source remains Markdown (+ small explicit structure file if needed).
 
-Do not add:
+Do not add: automatic project-wide indexing, hidden chapter inference,
+database-like book storage, Git/LSP/terminal/plugins, background AI
+restructuring, or automatic multi-file rewrite.
 
-- automatic project-wide indexing or semantic analysis;
-- hidden chapter inference across the whole workspace;
-- database-like book storage hidden from the user;
-- Git, LSP, terminal, plugin, or arbitrary command behavior;
-- background AI restructuring or automatic multi-file rewrite.
+Design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+
+### v2 ship polish (including Help)
+
+When Alpha (or the first public v2 cut) is ready to explain itself:
+
+- Expand **Help** for Book Scope / OKF multi-file use, and other features that
+  still lack a clear in-app explanation.
+- Prefer Help + short UI purpose copy over pre-dev product essays.
+- Keep claims aligned with implemented, verified behavior.
 
 ## v2.x Book Scope Practicalization
 
-Goal: make Book Scope useful after the alpha proves its source-preserving
-shape.
+After Alpha proves the source-preserving shape:
 
-Possible directions:
-
-- Chapter reordering and chapter-title confirmation.
-- Book-level e-book Mode and book-level EPUB export.
-- Table-of-contents generation from the explicit scope.
-- Chapter-level Diff / Review and chapter-scoped search.
-- A small explicit manifest if needed, with no hidden database-like book
-  model.
-
-Do not add whole-workspace background indexing, hidden chapter inference,
-automatic multi-file rewriting, or Git / LSP / terminal behavior.
+- Chapter reordering and title confirmation
+- Book-level e-book Mode and book-level EPUB export
+- TOC generation from the explicit scope
+- Chapter-level Diff / Review and chapter-scoped search
+- Small explicit manifest if needed (no hidden database model)
 
 ## v3.x Speculative Local AI Re-evaluation
 
-Goal: decide whether OS-provided local AI belongs in the product after
-the book / review primitives are strong.
-
-Use `docs/archive/planning/speculative-local-ai-future-plan.md` only as historical context. v3.x is not "AI expansion
-by default"; it is the earliest reasonable point to re-evaluate whether
-stronger local AI, OS-provided models, whitelisted `.aimodel` support, or
-much later local image generation belongs in the product after book
-structure, explicit review, and export flows are mature.
-
-Do not start this work just because model APIs exist. Require a fresh
-product-boundary decision and working proof that edits remain explicit,
-unsaved until accepted, and reviewable. The deciding question remains
-whether the AI layer strengthens reading Markdown as a book and fixing it
-through explicit review.
+Not “AI expansion by default.” Earliest reasonable point to re-evaluate
+stronger OS-provided local models, whitelisted `.aimodel` support, or much
+later local image generation — only after book structure, explicit review,
+and export flows are mature. Historical context:
+`docs/archive/planning/speculative-local-ai-future-plan.md`.
 
 ## Distribution Lanes
 
-Current preview releases are warning-expected DMG previews unless the
-user opens a different lane.
+- **App Store:** Safe Editor + L Mode + Diff / explicit review + on-device
+  Local Assist. No External Agent Workbench, CLI launch, arbitrary
+  command execution, external AI/API, or network fallback.
+- **Developer / GitHub:** same base + optional Agent Workbench for
+  allowlisted local CLI providers.
 
-The intended stable distribution shape remains two public binary lanes:
+Operational checklists:
 
-- App Store build: Safe Editor + L Mode + Diff / explicit change review
-  plus Hazakura Local Assist as an on-device, availability-gated writing
-  companion; without External Agent Workbench, CLI launch, arbitrary
-  command execution, external AI/API calls, or network fallback.
-- Developer / GitHub build: the same base plus optional Agent Workbench
-  for allowlisted local CLI providers.
+- `docs/source-release-checklist.md`
+- `docs/dmg-preview-checklist.md`
+- `docs/release-pre-check.md`
+- `docs/releases/`
 
-Use:
+## Related Docs
 
-- Source-preview release rules: `docs/source-release-checklist.md`
-- Warning-expected DMG rules: `docs/dmg-preview-checklist.md`
-- Final release hygiene: `docs/release-pre-check.md`
-- Release-note evidence: `docs/releases/`
+| Need | Path |
+|------|------|
+| Next slice | `docs/current-work.md` |
+| Implementation truth | `docs/current-status.md` |
+| v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
+| OKF pin | `docs/okf-spec-pin.md` |
+| Closed bridge | `docs/v1.8-plus-product-review-roadmap.md` |
+| Parked refinement themes | `docs/v1.13-plus-refinement-roadmap.md` |
+| Product non-goals | `docs/product-brief.md` |
+| Security | `docs/security-boundary.md` |
+| Historical phase detail | `docs/archive/roadmaps/roadmap-historical-phases-through-v1.x.md` |
 
-Developer ID signing, notarization, updater work, installer packaging,
-and stable distribution remain explicit future distribution-lane work.
-Treat this as v1.x-or-later work when distribution friction makes it
-necessary, not as a reason to delay or bloat v1.0.
+## Future Product Direction (durable)
 
-## Future Product Direction
+Keep future work source-preserving and narrow:
 
-Keep future product work source-preserving and narrow:
+- L Mode: `docs/l-mode-plan.md`
+- e-book / EPUB: `docs/ebook-mode-epub-export-plan.md`
+- Local Assist: `docs/assist-surface-strategy.md`
+- Agent Workbench: `docs/agent-workbench-boundary.md` (Developer lane only)
+- Book Scope: **active** v2 work under the design SoT above
+- Native macOS appearance / post-v0.25 refinement memos: historical under
+  `docs/archive/planning/`
 
-- L Mode: treat it as the existing Live Source writing surface and a
-  potential e-book Mode integration target. Use `docs/l-mode-plan.md`.
-- e-book Mode / EPUB export: make it the next book-oriented authoring
-  arc. Use `docs/ebook-mode-epub-export-plan.md`.
-- AI proposal ingest: keep AI output explicit, file-based or
-  transaction-based, and Diff / Review centered. The retired standalone
-  ingest proposal is preserved at
-  `docs/archive/planning/ai-markdown-ingest-plan.md`.
-- Book Scope / Book Workspace: target v2.0 only after v1.10 proves the
-  single-document structure model and v1.11 records bounded OKF compatibility
-  plus the larger packaged test
-  matrix. Treat a small, explicit, user-selected set of Markdown files as one
-  book. Keep the scope reversible and avoid
-  background project indexing, hidden chapter inference, or a hidden
-  document model.
-- Hazakura Local Assist: keep it as an explicit, on-device, availability-
-  gated writing companion with unsaved, diff-reviewable edits. Use
-  `docs/assist-surface-strategy.md`; the former detailed plans are archived.
-- Native macOS appearance: explore a more native-feeling macOS 26+
-  interface, with macOS 27 treated as a future verification target. Use
-  `docs/archive/planning/native-macos-appearance-plan.md` as historical context.
-- Post-v0.25 product refinement: keep the product feeling like one
-  quiet, safe Markdown editing space while tightening book structure,
-  mode transitions, chrome density, and reliability. Use
-  `docs/archive/planning/post-v0.25-product-refinement-plan.md` as historical context.
-- Speculative local AI future: preserve, but do not yet commit to,
-  v3.x-or-later re-evaluation for OS-provided local models, whitelisted
-  external `.aimodel` support, and much later local image generation.
-  Keep arbitrary local model runtimes out unless a fresh product and
-  security boundary decision explicitly reopens that risk. The detailed
-  speculative memo is archived at
-  `docs/archive/planning/speculative-local-ai-future-plan.md`.
-- Agent Workbench: keep it optional, allowlisted, one-session, no-restore,
-  and outside the App Store lane. Use `docs/agent-workbench-boundary.md`.
-
-Any broader WYSIWYG editing model, database-like workspace layer,
-collaboration feature, updater, plugin system, arbitrary model runtime,
-local image-generation platform, or automated agent-apply flow needs a
-fresh product-boundary decision before implementation.
+Any broader WYSIWYG model, database-like workspace, collaboration feature,
+plugin system, arbitrary model runtime, local image-generation platform, or
+automated agent-apply flow needs a fresh product-boundary decision first.

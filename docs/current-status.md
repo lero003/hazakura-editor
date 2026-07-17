@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v1.14.0 source tag / selected store candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (v2 development open; v1.14 submitted; residual parked)
 
 ## Current State
 
@@ -18,12 +18,17 @@ Last reviewed: 2026-07-18 (v1.14.0 source tag / selected store candidate; store 
   `docs/releases/1.13.0-app-store-release-notes.md`. Do not reopen without a
   reproduced hotfix. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **v1.14 is boxed and selected as the local App Store submission candidate
-  (`1.14.0`).** Store copy: `docs/releases/1.14.0-app-store-release-notes.md`.
-  Exact local package provenance lives in ignored
-  `docs/internal/app-store-candidates/latest.json`. App Store Connect upload,
-  submission, review, and publication remain **unconfirmed** until reported by
-  the user; the source tag does not prove any of those states.
+- **v1.14 (`1.14.0`) is submitted for App Store review** (user-reported
+  2026-07-18). Early look OK. Publication is **not** claimed here until the
+  user reports it. Store copy:
+  `docs/releases/1.14.0-app-store-release-notes.md`. Local package provenance
+  lives in ignored `docs/internal/app-store-candidates/latest.json`. The source
+  tag alone does not prove publication.
+- **Active product phase: v2 Book Scope development.** Residual polish, broad
+  distribution-evidence matrix, and optional `v1.15+` Keep boxes are parked.
+  Multi-file value copy and Help expansion are **v2 ship polish** (when OKF
+  multi-file feel is ready), not a pre-coding essay gate. Queue:
+  `docs/current-work.md`. Phase: `docs/roadmap.md`.
 - **v1.14 Keep themes (source):** Continuity (same-name tabs, Reference
   retained toggle, recent workspaces, shared right-pane header), Trust (export
   destination/warnings, Assist lock & not-saved, Import draft status), Writing
@@ -45,10 +50,10 @@ Last reviewed: 2026-07-18 (v1.14.0 source tag / selected store candidate; store 
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open after the v1.14 candidate cut:** user-side App Store Connect submission
-  and Apple processing evidence; optional residual polish (tab overflow, nav
-  history, status TTL); broader distribution-confidence evidence (TestFlight /
-  VoiceOver / narrow / long-doc).
+- **Open main queue:** v2 Book Scope implementation slices (design SoT
+  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
+- **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
+  broad TestFlight / VoiceOver / evidence matrix.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
@@ -374,8 +379,8 @@ Last reviewed: 2026-07-18 (v1.14.0 source tag / selected store candidate; store 
   published, user-reported 2026-07-18). Ships Theme A interaction clarity and
   Theme G bounded media on the v1.12 writing / structure / OKF baseline.
   Prior store baselines remain historical.
-- Latest GitHub source / local-app tag: `v1.12.0` (source archive only; see
-  `docs/releases/1.12.0-source-tag.release.md`).
+- Latest GitHub source / local-app tag: `v1.14.0` (source archive only; see
+  `docs/releases/1.14.0-source-tag.release.md`).
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in
@@ -772,11 +777,12 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: **v1.14 tagged / selected candidate** + residual queue.
+- `docs/roadmap.md`: **v2 development phase** (active); residual/evidence parked.
+- `docs/current-work.md`: **v2 slice queue**.
+- `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
 - `docs/releases/1.14.0-source-tag.release.md`: `v1.14.0` source-tag boundary.
-- `docs/releases/1.14.0-app-store-release-notes.md`: selected candidate store
-  copy for `1.14.0` (App Store publication unconfirmed).
-- `docs/roadmap.md`: phase order and future boundaries.
+- `docs/releases/1.14.0-app-store-release-notes.md`: store copy for submitted
+  `1.14.0` (publication unconfirmed).
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
 - `docs/agent-workbench-boundary.md`: implemented Agent Workbench trust boundary.
@@ -784,43 +790,35 @@ baseline, and smoke evidence are archived under
 - `docs/ebook-mode-epub-export-plan.md`: e-book Mode / EPUB export
   planning and source-preserving reader/export boundaries.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
-- `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9–v1.12 bridge and v2 sequencing.
+- `docs/v1.8-plus-product-review-roadmap.md`: completed v1.8–v1.12 bridge.
 - `docs/v1.10-single-document-structure-design.md`: completed v1.10 structure contract.
 - `docs/v1.11-okf-draft-preview-design.md`: completed v1.11 implementation and verification contract.
-- `docs/v1.12-okf-scaffold-design.md`: closed / published v1.12 implementation
-  and verification contract.
-- `docs/v1.13-plus-refinement-roadmap.md`: post-v1.13 experiment direction;
-  v1.14 is the first Keep shipping box after published `1.13.0`.
-- `docs/v1.13-interaction-clarity-plan.md`: Theme A candidate pool (shipped in v1.13).
+- `docs/v1.12-okf-scaffold-design.md`: closed / published v1.12 contract.
+- `docs/v1.13-plus-refinement-roadmap.md`: **parked** refinement theme pools.
+- `docs/v1.13-interaction-clarity-plan.md`: Theme A candidate pool (historical for main queue).
+- `docs/okf-spec-pin.md`: shared OKF pin for review + scaffold + v2 inputs.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
 
-1. Treat **v1.13 (`1.13.0`) as published and closed**. Do not reopen without a
-   reproduced hotfix. Latest GitHub source / local-app tag is `v1.14.0`.
-2. Treat **v1.14 (`1.14.0`) as tagged and selected for App Store submission**:
-   Keep set and store copy are boxed in `docs/current-work.md` and
-   `docs/releases/1.14.0-app-store-release-notes.md`. Do not claim App Store
-   upload, review, or publication until the user reports it. Residual polish and
-   broader distribution evidence are follow-up, not a mandatory v1.15 train.
-3. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
-   Extended IME, Save As, recovery, e-book/EPUB, a11y, long/failure, and
-   VoiceOver breadth remain quality follow-up, not reasons to reopen `1.13.0`.
-4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
-   closed unless a gap reproduces. Historical notes remain in
-   `docs/archive/operations/v1.1-v1.2-followup.md` and
-   `docs/archive/operations/v1.3-followup.md`.
-5. Complete Google Drive Recovery smoke only with a dedicated user-approved
-   fixture. The local-folder path-backed and disposable local packaged pathless
-   forced-termination paths have passed; signed TestFlight pathless recovery
-   remains follow-up evidence.
-6. Local package provenance for any future candidate lives in
-   `docs/internal/app-store-candidates/latest.json`. App Store Connect,
-   TestFlight, and App Review logs remain outside this repository unless
-   public-safe evidence is recorded.
-7. For Hazakura Local Assist, use `docs/assist-surface-strategy.md` and
-   `docs/app-store-build.md`; keep direct
-   buffer edits as explicit AI edit transactions.
-8. `v1.14.0` source tagging is approved and complete. Do not upload, submit,
-   publish, move tags, or attach release assets without separate evidence or
-   approval. Published Mac App Store version remains `1.13.0` here.
+1. **Drive v2 Book Scope slices** from `docs/current-work.md` and the v2 design
+   SoT. Prefer a first UI direction + explicit scope selection over essays.
+2. Treat **v1.13 as published/closed** and **v1.14 as in review**. Hotfix only
+   for reproduced review or daily-use blockers. Do not claim publication of
+   `1.14.0` until the user reports it. Published listing last confirmed here:
+   `1.13.0`.
+3. **Park** residual polish, broad evidence matrix, and mandatory-feeling
+   `v1.15+` trains. Resume only for friction or release needs.
+4. Plan **Help / feature explanation expansion** as **v2 ship polish** when
+   OKF multi-file feel is good enough — not as a pre-dev gate.
+5. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
+6. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
+   closed unless a gap reproduces.
+7. Local package provenance lives in
+   `docs/internal/app-store-candidates/latest.json`. App Store Connect /
+   TestFlight / Review logs stay outside the repo unless public-safe evidence
+   is recorded.
+8. For Local Assist, keep explicit AI edit transactions
+   (`docs/assist-surface-strategy.md`, `docs/app-store-build.md`).
+9. Do not upload, submit, publish, move tags, or attach release assets without
+   separate evidence or approval.

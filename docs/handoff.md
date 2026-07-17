@@ -1,96 +1,71 @@
 # Handoff
 
 Status: Operational
-Scope: Short handoff for v1.14 tagged / selected candidate after published v1.13
+Scope: v2 development open; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (v1.14.0 tagged / selected; store 1.13.0)
+Last reviewed: 2026-07-18 (v2 phase; residual parked)
 
 ## Current State
 
 - Package/app version in tree: **`1.14.0`** (source tag `v1.14.0`).
-- Published Mac App Store: **`1.13.0`** (user-reported 2026-07-18). Do not
-  reopen without a reproduced hotfix. Tags and published assets are immutable.
-- Latest GitHub source / local-app tag: **`v1.14.0`** (source archive only; no
-  binary assets). Release note: `docs/releases/1.14.0-source-tag.release.md`.
-- Local package provenance: ignored
-  `docs/internal/app-store-candidates/latest.json`.
-- **v1.14 Keep box is tagged and selected as the local App Store candidate.**
-  This does not prove upload, review, or publication. Inventory and store copy:
-  `docs/releases/1.14.0-app-store-release-notes.md`. Queue:
-  `docs/current-work.md`.
-- Review follow-up fixed Space-key activation for the always-visible e-book
-  edit action and realigned the CSS / living-doc contract tests with the boxed
-  v1.14 state.
-- Reproduced PDF Reference 150% mouse friction is fixed in source: the PDF
-  stage now owns both scroll axes, ordinary wheel input moves vertically then
-  horizontally at the vertical edge, and trackpad two-axis input stays native.
-- The returning Start Panel now removes repeated explanatory paragraphs,
-  keeps long action wording in accessible names, places basic actions before
-  recents, and uses a compact two-column recent-folder list with safe overflow.
+- Published Mac App Store (last confirmed in docs): **`1.13.0`**.
+- **v1.14 submitted** for App Store review (user-reported 2026-07-18). Early
+  look OK. Publication not claimed until the user reports it.
+- **Active phase: v2 Book Scope development.** Residual polish, broad
+  evidence matrix, and optional `v1.15+` boxes are parked.
+- Value / multi-file narrative and **Help expansion** are **v2 ship polish**
+  (when OKF multi-file feel is good enough), not a pre-implementation essay.
+- Design SoT:
+  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+- Queue: `docs/current-work.md`. Roadmap: `docs/roadmap.md`.
 
-### v1.14 Keep summary (one line each)
+### v1.14 Keep summary (shipped in review candidate)
 
-- Continuity: same-name tabs parent folder; Reference retained toggle; recent
-  workspaces; shared sticky right-pane header.
+- Continuity: same-name tabs; Reference retained toggle; recent workspaces;
+  shared sticky right-pane header; PDF 150% scroll fix.
 - Trust: export path/warnings; Assist lock & not-saved; Import draft status.
-- Writing Loop: Preview vs e-book purpose; e-book edit-here; Outline hints +
-  heading Undo status.
-- OKF: scaffold pre-create file list; first-fix “open to edit” card.
+- Writing Loop: Preview vs e-book; e-book edit-here; Outline hints + heading Undo.
+- OKF: scaffold pre-create list; first-fix open guidance.
 
-### Still open evidence
+### Parked (not main queue)
 
-- Full hands-on / TestFlight coverage of the Keep set. A local App Store
-  preview build and basic macOS window smoke pass, but do not cover the full
-  interaction checklist.
-- Narrow-window tab truncation, VoiceOver speech, long-doc / IME breadth.
-- Theme G signed export recheck and pin-to-assets Undo (carry-over from 1.13).
-- Hands-on packaged PDF Reference 150% check with a standard mouse: confirm
-  one scrollbar owner, vertical-to-horizontal wheel handoff, Shift+wheel, and
-  unchanged trackpad two-axis panning.
-
-### Latest verification
-
-- Current Start Panel source: focused Start Panel / locale / CSS tests (3 files
-  / 19 tests), `npm run typecheck`, `npm test` (193 files / 1622 tests),
-  `npm run smoke:app-store-surface` (10 files / 107 tests), and `npm run build`.
-- The preceding candidate also passed
-  `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
-  `cargo test --manifest-path src-tauri/Cargo.toml` (362 passed / 2 ignored),
-  `npm run build`, and `SKIP_BUILD=1 npm run smoke:macos-window`; packaged
-  standard-mouse interaction remains separate evidence.
-
-### Deferred residual (after candidate, optional)
-
-- Tab overflow; nav history “back”; global status TTL; dependency cadence
-  (`@codemirror/view` **6.43.2** pin).
+- Tab overflow; nav history “back”; status TTL; dep cadence.
+- Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
+- Theme G signed export recheck breadth.
 
 ## Durable Pins
 
-- Safe Editor primary; Markdown/text source canonical.
-- No Book Scope, indexing, auto-apply, auto-save, second editable buffer.
+- Safe Editor primary; Markdown/text source canonical (per file in v2).
+- No indexing, auto-apply, auto-save, second editable buffer as default.
 - App Store lane: no Agent Workbench / external CLI agent.
 - Import Assist: on-device, edit-before-save, no cloud OCR auto-save.
-- OKF: explicit, bounded, read-only review + explicit scaffold; no auto-repair.
+- OKF: explicit, bounded review + explicit scaffold; no auto-repair.
+- v2: explicit user-selected Book Scope only; base OKF ≠ Hazakura Book order.
 - PDF export path remains direct PDF export (not macOS print UI).
 
 ## Next For Agents
 
-1. Prefer residual polish or verification over new feature expansion.
-2. One hypothesis per run; Keep / Iterate / Revert with evidence.
-3. Do not upload, submit, publish, move tags, or attach release assets without
-   explicit user approval or fresh evidence.
-4. On security/path/AI surfaces, re-read `docs/security-boundary.md`.
-5. Start from `docs/current-work.md` and `docs/current-status.md`.
+1. **Start from v2** — implementation contract / first Book Scope slice.
+   Prefer `docs/current-work.md` + v2 design SoT.
+2. One verifiable slice per run. Do not front-load Help essays before the
+   multi-file feel exists.
+3. Hotfix only for reproduced v1.14 review or daily-use blockers.
+4. Do not invent a mandatory `v1.15` feature train before v2.
+5. Do not upload, submit, publish, move tags, or attach release assets without
+   explicit user approval.
+6. On security/path/AI/multi-file surfaces, re-read
+   `docs/security-boundary.md` and the v2 design boundary section.
 
 ## Key Paths
 
 | Need | Path |
 |------|------|
 | Next slice | `docs/current-work.md` |
+| Phase / path | `docs/roadmap.md` |
+| v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
 | Status truth | `docs/current-status.md` |
-| v1.14 source tag | `docs/releases/1.14.0-source-tag.release.md` |
+| OKF pin | `docs/okf-spec-pin.md` |
 | v1.14 store notes | `docs/releases/1.14.0-app-store-release-notes.md` |
-| Refinement rails | `docs/v1.13-plus-refinement-roadmap.md` |
+| Parked refinement | `docs/v1.13-plus-refinement-roadmap.md` |
 | Smoke | `docs/smoke-checklist.md` |
 | App Store build | `docs/app-store-build.md` |
-| v2 boundary | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
