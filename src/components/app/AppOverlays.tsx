@@ -58,6 +58,7 @@ import type { AutoBackupRestoreCopy } from "../../lib/locale/autoBackup";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { PdfMarginPreset } from "../../features/document/pdfExport";
+import type { DocumentExportScope } from "../../features/document/exportScope";
 import type {
   EpubExportRequest,
   PdfExportRequest,
@@ -151,8 +152,14 @@ type AppOverlaysProps = {
   menuLanguage: MenuLanguage;
   onCancelEpubBetaExport: () => void;
   onCancelPdfExport: () => void;
-  onConfirmEpubBetaExport: (settings: EpubExportSettings) => void | Promise<void>;
-  onConfirmPdfExport: (preset: PdfMarginPreset) => void | Promise<void>;
+  onConfirmEpubBetaExport: (
+    settings: EpubExportSettings,
+    scope?: DocumentExportScope,
+  ) => void | Promise<void>;
+  onConfirmPdfExport: (
+    preset: PdfMarginPreset,
+    scope?: DocumentExportScope,
+  ) => void | Promise<void>;
   onOpenCommandPalette: () => void;
   onRunCommand: (command: Command) => void;
   openWorkspaceFile: (path: string) => void | Promise<void>;
@@ -479,6 +486,7 @@ export function AppOverlays({
 
       {epubExportRequest ? (
         <EpubExportSettingsDialog
+          bookAvailable={epubExportRequest.bookAvailable}
           cancelButtonRef={epubExportCancelButtonRef}
           dialogRef={epubExportDialogRef}
           documentName={epubExportRequest.documentName}
@@ -486,12 +494,13 @@ export function AppOverlays({
           initialSettings={epubExportRequest.settings}
           menuLanguage={menuLanguage}
           onCancel={onCancelEpubBetaExport}
-          onConfirm={(settings) => void onConfirmEpubBetaExport(settings)}
+          onConfirm={(settings, scope) => void onConfirmEpubBetaExport(settings, scope)}
         />
       ) : null}
 
       {pdfExportRequest ? (
         <PdfExportSettingsDialog
+          bookAvailable={pdfExportRequest.bookAvailable}
           cancelButtonRef={pdfExportCancelButtonRef}
           dialogRef={pdfExportDialogRef}
           documentName={pdfExportRequest.documentName}
@@ -499,7 +508,7 @@ export function AppOverlays({
           initialPreset={pdfExportRequest.preset}
           menuLanguage={menuLanguage}
           onCancel={onCancelPdfExport}
-          onConfirm={(preset) => void onConfirmPdfExport(preset)}
+          onConfirm={(preset, scope) => void onConfirmPdfExport(preset, scope)}
         />
       ) : null}
 

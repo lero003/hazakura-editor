@@ -1,5 +1,9 @@
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import type { EditorTab } from "../../types";
+import type {
+  BookScopeChapter,
+  BookScopeUnavailableEntry,
+} from "../../lib/tauri/bookScope";
 import { useAutoBackup } from "../workspace/useAutoBackup";
 import { useDocumentExport } from "./useDocumentExport";
 
@@ -13,6 +17,8 @@ type UseDocumentPersistenceOptions = {
   workspaceRootPath: string | null;
   materializeImagesOnExport?: boolean;
   mediaAccess?: MediaImageAccessOptions | null;
+  bookScopeChapters?: readonly BookScopeChapter[];
+  bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
 };
 
 export function useDocumentPersistence({
@@ -25,6 +31,8 @@ export function useDocumentPersistence({
   workspaceRootPath,
   materializeImagesOnExport,
   mediaAccess,
+  bookScopeChapters,
+  bookScopeUnavailable,
 }: UseDocumentPersistenceOptions) {
   const exportActions = useDocumentExport({
     activeContents,
@@ -34,6 +42,9 @@ export function useDocumentPersistence({
     workspaceRootPath,
     materializeImagesOnExport,
     mediaAccess,
+    bookScopeChapters,
+    bookScopeUnavailable,
+    tabs,
   });
 
   useAutoBackup({

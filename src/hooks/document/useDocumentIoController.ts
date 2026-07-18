@@ -8,6 +8,8 @@ type UseDocumentIoControllerOptions = Parameters<typeof useSaveActions>[0] &
     | "autoBackupEnabled"
     | "materializeImagesOnExport"
     | "mediaAccess"
+    | "bookScopeChapters"
+    | "bookScopeUnavailable"
   >;
 
 export function useDocumentIoController(

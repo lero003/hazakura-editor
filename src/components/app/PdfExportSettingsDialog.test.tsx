@@ -6,6 +6,28 @@ import { PdfExportSettingsDialog } from "./PdfExportSettingsDialog";
 afterEach(cleanup);
 
 describe("PdfExportSettingsDialog", () => {
+  it("submits Book Scope only after the user selects it explicitly", () => {
+    const onConfirm = vi.fn();
+    render(
+      <PdfExportSettingsDialog
+        bookAvailable
+        cancelButtonRef={{ current: null }}
+        dialogRef={{ current: null }}
+        documentName="chapter.md"
+        hasUnsavedChanges={false}
+        initialPreset="standard"
+        initialScope="document"
+        menuLanguage="en"
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("radio", { name: "Book Scope" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    expect(onConfirm).toHaveBeenCalledWith("standard", "book");
+  });
+
   it("offers A4 narrow, standard, and wide margin presets", () => {
     const onConfirm = vi.fn();
     render(
@@ -31,7 +53,7 @@ describe("PdfExportSettingsDialog", () => {
 
     fireEvent.click(screen.getByLabelText(/広い/));
     fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
-    expect(onConfirm).toHaveBeenCalledWith("wide");
+    expect(onConfirm).toHaveBeenCalledWith("wide", "document");
   });
 
   it("cancels without confirming and exposes modal refs", () => {

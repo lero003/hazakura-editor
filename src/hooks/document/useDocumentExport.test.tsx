@@ -22,6 +22,10 @@ const tauriApi = vi.hoisted(() => ({
   saveTextFileAs: vi.fn(),
 }));
 
+const filesApi = vi.hoisted(() => ({
+  openTextFile: vi.fn(),
+}));
+
 const epubApi = vi.hoisted(() => ({
   buildEpubBetaArchive: vi.fn(async () => new Uint8Array([1, 2, 3])),
   buildEpubBetaArchiveWithReport: vi.fn(async () => ({
@@ -43,6 +47,10 @@ vi.mock("../../lib/tauri", () => ({
   openWorkspaceImage: tauriApi.openWorkspaceImage,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
+}));
+
+vi.mock("../../lib/tauri/files", () => ({
+  openTextFile: filesApi.openTextFile,
 }));
 
 vi.mock("../../features/document/epubExport", () => ({
@@ -127,6 +135,7 @@ describe("useDocumentExport", () => {
     tauriApi.exportPdfFile.mockReset();
     tauriApi.isTauriRuntime.mockReset();
     tauriApi.isTauriRuntime.mockReturnValue(false);
+    filesApi.openTextFile.mockReset();
     document.documentElement.removeAttribute("style");
   });
 
@@ -672,6 +681,143 @@ describe("useDocumentExport", () => {
       new Uint8Array([1, 2, 3]),
     );
     expect(setStatus).toHaveBeenCalledWith("Exported EPUB: /tmp/a.epub");
+  });
+
+  it("exports Book Scope EPUB in chapter order using live buffers", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/workspace.epub");
+    tauriApi.saveBinaryFileAs.mockResolvedValue(undefined);
+    filesApi.openTextFile.mockResolvedValue({ contents: "# One\n", size: 6 });
+    const chapters = [
+      { name: "one.md", path: "/workspace/parts/one.md", relativePath: "parts/one.md" },
+      { name: "two.md", path: "/workspace/parts/two.md", relativePath: "parts/two.md" },
+    ];
+    const dirtySecond = makeTab({
+      contents: "# Two dirty\n",
+      id: "/workspace/parts/two.md",
+      name: "two.md",
+      path: "/workspace/parts/two.md",
+    });
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Active\n",
+        activeTab: makeTab(),
+        bookScopeChapters: chapters,
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        tabs: [dirtySecond],
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    await act(async () => result.current.exportEpubBeta());
+    expect(result.current.epubExportRequest).toMatchObject({
+      bookAvailable: true,
+      bookChapterRelativePaths: ["parts/one.md", "parts/two.md"],
+    });
+    await act(async () => result.current.confirmEpubBetaExport({
+      author: "",
+      language: "ja",
+      title: "Workspace",
+    }, "book"));
+
+    expect(dialogApi.save).toHaveBeenCalledWith({
+      defaultPath: "workspace.epub",
+      filters: [{ name: "EPUB", extensions: ["epub"] }],
+    });
+    expect(epubApi.buildEpubBetaArchiveWithReport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chapters: [
+          {
+            documentName: "one.md",
+            documentPath: "/workspace/parts/one.md",
+            markdown: "# One\n",
+          },
+          {
+            documentName: "two.md",
+            documentPath: "/workspace/parts/two.md",
+            markdown: "# Two dirty\n",
+          },
+        ],
+        markdown: "",
+      }),
+    );
+    expect(filesApi.openTextFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops Book Scope export before a save dialog when a chapter is unavailable", async () => {
+    const setStatus = vi.fn();
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Active\n",
+        activeTab: makeTab(),
+        bookScopeChapters: [
+          { name: "one.md", path: "/workspace/one.md", relativePath: "one.md" },
+        ],
+        bookScopeUnavailable: [
+          { relativePath: "missing.md", reason: "missing" },
+        ],
+        setGlobalError: vi.fn(),
+        setStatus,
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    await act(async () => result.current.exportEpubBeta());
+    await act(async () => result.current.confirmEpubBetaExport({
+      author: "",
+      language: "ja",
+      title: "Workspace",
+    }, "book"));
+
+    expect(dialogApi.save).not.toHaveBeenCalled();
+    expect(setStatus).toHaveBeenCalledWith(
+      "Export EPUB beta stopped; Book Scope changed or has unavailable chapters",
+    );
+  });
+
+  it("renders every Book Scope chapter separately for PDF", async () => {
+    tauriApi.isTauriRuntime.mockReturnValue(true);
+    dialogApi.save.mockResolvedValue("/tmp/workspace.pdf");
+    tauriApi.exportPdfFile.mockResolvedValue(undefined);
+    filesApi.openTextFile
+      .mockResolvedValueOnce({ contents: "# One", size: 5 })
+      .mockResolvedValueOnce({ contents: "# Two", size: 5 });
+    const chapters = [
+      { name: "one.md", path: "/workspace/a/one.md", relativePath: "a/one.md" },
+      { name: "two.md", path: "/workspace/b/two.md", relativePath: "b/two.md" },
+    ];
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Active",
+        activeTab: makeTab(),
+        bookScopeChapters: chapters,
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    await act(async () => result.current.exportPdf());
+    await act(async () => result.current.confirmPdfExport("standard", "book"));
+
+    expect(markdownApi.renderMarkdown).toHaveBeenNthCalledWith(1, "# One", {
+      documentPath: "/workspace/a/one.md",
+      workspaceRoot: "/workspace",
+      mediaAccess: expect.any(Object),
+    });
+    expect(markdownApi.renderMarkdown).toHaveBeenNthCalledWith(2, "# Two", {
+      documentPath: "/workspace/b/two.md",
+      workspaceRoot: "/workspace",
+      mediaAccess: expect.any(Object),
+    });
+    expect(dialogApi.save).toHaveBeenCalledWith({
+      defaultPath: "workspace.pdf",
+      filters: [{ name: "PDF", extensions: ["pdf"] }],
+    });
+    expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
+      "book-scope-page-break",
+    );
   });
 
   it("opens EPUB metadata settings before the save dialog", async () => {

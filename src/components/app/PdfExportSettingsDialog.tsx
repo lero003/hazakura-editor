@@ -5,30 +5,37 @@ import {
 } from "../../features/document/pdfExport";
 import type { MenuLanguage } from "../../types";
 import { ExportPreflightSummary } from "./ExportPreflightSummary";
+import type { DocumentExportScope } from "../../features/document/exportScope";
+import { ExportScopeSelector } from "./ExportScopeSelector";
 
 type PdfExportSettingsDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
+  bookAvailable?: boolean;
   dialogRef: RefObject<HTMLElement | null>;
   documentName: string;
   initialPreset: PdfMarginPreset;
   hasUnsavedChanges: boolean;
+  initialScope?: DocumentExportScope;
   menuLanguage: MenuLanguage;
   onCancel: () => void;
-  onConfirm: (preset: PdfMarginPreset) => void;
+  onConfirm: (preset: PdfMarginPreset, scope: DocumentExportScope) => void;
 };
 
 export function PdfExportSettingsDialog({
+  bookAvailable = false,
   cancelButtonRef,
   dialogRef,
   documentName,
   initialPreset,
   hasUnsavedChanges,
+  initialScope = "document",
   menuLanguage,
   onCancel,
   onConfirm,
 }: PdfExportSettingsDialogProps) {
   const copy = getPdfExportSettingsCopy(menuLanguage);
   const [preset, setPreset] = useState<PdfMarginPreset>(initialPreset);
+  const [scope, setScope] = useState<DocumentExportScope>(initialScope);
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -45,6 +52,13 @@ export function PdfExportSettingsDialog({
           {documentName}
         </p>
         <p className="pdf-export-settings-note">{copy.scopeNote}</p>
+        {bookAvailable ? (
+          <ExportScopeSelector
+            menuLanguage={menuLanguage}
+            onChange={setScope}
+            value={scope}
+          />
+        ) : null}
         <ExportPreflightSummary
           format="PDF"
           hasUnsavedChanges={hasUnsavedChanges}
@@ -54,7 +68,7 @@ export function PdfExportSettingsDialog({
           className="pdf-export-settings-form"
           onSubmit={(event) => {
             event.preventDefault();
-            onConfirm(preset);
+            onConfirm(preset, scope);
           }}
         >
           <fieldset className="pdf-margin-presets">

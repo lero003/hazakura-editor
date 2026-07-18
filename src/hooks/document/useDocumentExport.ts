@@ -38,6 +38,13 @@ import {
 import { DEFAULT_MEDIA_IMAGE_SETTINGS } from "../../features/editor/mediaImageSettings";
 import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab } from "../../types";
+import type {
+  BookScopeChapter,
+  BookScopeUnavailableEntry,
+} from "../../lib/tauri/bookScope";
+import { openTextFile } from "../../lib/tauri/files";
+import { loadBookScopeReaderDocuments } from "../../features/bookScope";
+import type { DocumentExportScope } from "../../features/document/exportScope";
 
 type UseDocumentExportOptions = {
   activeContents: string;
@@ -48,9 +55,14 @@ type UseDocumentExportOptions = {
   /** Theme G: when true, embed approved-local / optional remote images. */
   materializeImagesOnExport?: boolean;
   mediaAccess?: MediaImageAccessOptions | null;
+  bookScopeChapters?: readonly BookScopeChapter[];
+  bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
+  tabs?: readonly EditorTab[];
 };
 
 export type EpubExportRequest = {
+  bookAvailable: boolean;
+  bookChapterRelativePaths: string[];
   documentName: string;
   hasUnsavedChanges: boolean;
   settings: EpubExportSettings;
@@ -58,6 +70,8 @@ export type EpubExportRequest = {
 };
 
 export type PdfExportRequest = {
+  bookAvailable: boolean;
+  bookChapterRelativePaths: string[];
   documentName: string;
   hasUnsavedChanges: boolean;
   preset: PdfMarginPreset;
@@ -72,6 +86,9 @@ export function useDocumentExport({
   workspaceRootPath,
   materializeImagesOnExport = DEFAULT_MEDIA_IMAGE_SETTINGS.materializeImagesOnExport,
   mediaAccess = null,
+  bookScopeChapters = [],
+  bookScopeUnavailable = [],
+  tabs = [],
 }: UseDocumentExportOptions) {
   const activeContentsRef = useRef(activeContents);
   activeContentsRef.current = activeContents;
@@ -81,6 +98,12 @@ export function useDocumentExport({
   materializeRef.current = materializeImagesOnExport;
   const mediaAccessRef = useRef(mediaAccess);
   mediaAccessRef.current = mediaAccess;
+  const bookScopeChaptersRef = useRef(bookScopeChapters);
+  bookScopeChaptersRef.current = bookScopeChapters;
+  const bookScopeUnavailableRef = useRef(bookScopeUnavailable);
+  bookScopeUnavailableRef.current = bookScopeUnavailable;
+  const tabsRef = useRef(tabs);
+  tabsRef.current = tabs;
 
   const buildExportMediaAccess = useCallback((): MediaImageAccessOptions => {
     const access = mediaAccessRef.current;
@@ -132,18 +155,23 @@ export function useDocumentExport({
     }
 
     setPdfExportRequest({
+      bookAvailable: bookScopeChapters.length > 0,
+      bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
       documentName: activeTab.name,
       hasUnsavedChanges: isDirty(activeTab),
       preset: DEFAULT_PDF_MARGIN_PRESET,
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, setStatus]);
+  }, [activeContents, activeTab, bookScopeChapters, setStatus]);
 
   const cancelPdfExport = useCallback(() => {
     setPdfExportRequest(null);
   }, []);
 
-  const confirmPdfExport = useCallback(async (preset: PdfMarginPreset) => {
+  const confirmPdfExport = useCallback(async (
+    preset: PdfMarginPreset,
+    scope: DocumentExportScope = "document",
+  ) => {
     const request = pdfExportRequest;
     if (!request) {
       return;
@@ -151,19 +179,57 @@ export function useDocumentExport({
 
     setPdfExportRequest(null);
     const tabForExport = activeTabRef.current;
-    if (!tabForExport || tabForExport.id !== request.tabId) {
+    if (scope === "document" && (!tabForExport || tabForExport.id !== request.tabId)) {
       setStatus("PDF export stopped; document changed");
       return;
     }
 
     setStatus("Preparing PDF export...");
     try {
+      let bookDocuments: Awaited<ReturnType<typeof loadBookScopeReaderDocuments>> | null = null;
+      if (scope === "book") {
+        const currentChapters = bookScopeChaptersRef.current;
+        const currentPaths = currentChapters.map((chapter) => chapter.relativePath);
+        if (
+          bookScopeUnavailableRef.current.length > 0 ||
+          currentPaths.join("\0") !== request.bookChapterRelativePaths.join("\0")
+        ) {
+          setStatus("PDF export stopped; Book Scope changed or has unavailable chapters");
+          return;
+        }
+        bookDocuments = await loadBookScopeReaderDocuments({
+          chapters: currentChapters,
+          tabs: tabsRef.current,
+          openTextFile,
+        });
+        if (
+          bookDocuments.documents.length === 0 ||
+          bookDocuments.failures.length > 0 ||
+          bookDocuments.truncated
+        ) {
+          setStatus("PDF export stopped; Book Scope could not be read completely");
+          return;
+        }
+      }
       const exportMedia = buildExportMediaAccess();
-      let rendered = renderMarkdown(activeContentsRef.current, {
-        documentPath: tabForExport.path,
-        workspaceRoot: workspaceRootPath ?? undefined,
-        mediaAccess: exportMedia,
-      });
+      let rendered = bookDocuments
+        ? bookDocuments.documents
+          .map((chapter, index) => {
+            const html = renderMarkdown(chapter.source, {
+              documentPath: chapter.path,
+              workspaceRoot: workspaceRootPath ?? undefined,
+              mediaAccess: exportMedia,
+            });
+            return index === 0
+              ? html
+              : `<div class="book-scope-page-break" aria-hidden="true"></div>${html}`;
+          })
+          .join("\n")
+        : renderMarkdown(activeContentsRef.current, {
+          documentPath: tabForExport?.path ?? null,
+          workspaceRoot: workspaceRootPath ?? undefined,
+          mediaAccess: exportMedia,
+        });
       // Theme G M3: materialize resolvable placeholders before PDF embed.
       rendered = await inlineMarkdownImages(
         rendered,
@@ -219,7 +285,7 @@ export function useDocumentExport({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(tabForExport.name)}</title>
+<title>${escapeHtml(scope === "book" ? workspaceLabel(workspaceRootPath) : (tabForExport?.name ?? request.documentName))}</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -417,6 +483,7 @@ export function useDocumentExport({
     font-size: 0.85em;
   }
   @media print {
+    .book-scope-page-break { break-before: page; page-break-before: always; }
     @page { margin: ${pdfMarginCss(preset)}; }
     html { min-height: 0; min-width: 0; }
     body {
@@ -494,7 +561,10 @@ ${bodyHtml}
 
       if (isTauriRuntime()) {
         const destPath = await saveDialog({
-          defaultPath: request.documentName.replace(/\.[^.]+$/, "") + ".pdf",
+          defaultPath:
+            scope === "book"
+              ? `${workspaceLabel(workspaceRootPath)}.pdf`
+              : request.documentName.replace(/\.[^.]+$/, "") + ".pdf",
           filters: [{ name: "PDF", extensions: ["pdf"] }],
         });
         if (!destPath) {
@@ -503,7 +573,7 @@ ${bodyHtml}
         }
 
         const currentTab = activeTabRef.current;
-        if (!currentTab || currentTab.id !== request.tabId) {
+        if (scope === "document" && (!currentTab || currentTab.id !== request.tabId)) {
           setStatus("PDF export stopped; document changed");
           return;
         }
@@ -723,6 +793,8 @@ ${bodyHtml}
     }
 
     setEpubExportRequest({
+      bookAvailable: bookScopeChapters.length > 0,
+      bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
       documentName: activeTab.name,
       hasUnsavedChanges: isDirty(activeTab),
       settings: defaultEpubExportSettings({
@@ -731,13 +803,16 @@ ${bodyHtml}
       }),
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, setStatus]);
+  }, [activeContents, activeTab, bookScopeChapters, setStatus]);
 
   const cancelEpubBetaExport = useCallback(() => {
     setEpubExportRequest(null);
   }, []);
 
-  const confirmEpubBetaExport = useCallback(async (settings: EpubExportSettings) => {
+  const confirmEpubBetaExport = useCallback(async (
+    settings: EpubExportSettings,
+    scope: DocumentExportScope = "document",
+  ) => {
     const request = epubExportRequest;
     if (!request) {
       return;
@@ -746,14 +821,42 @@ ${bodyHtml}
     setEpubExportRequest(null);
 
     try {
+      let bookDocuments: Awaited<ReturnType<typeof loadBookScopeReaderDocuments>> | null = null;
+      if (scope === "book") {
+        const currentChapters = bookScopeChaptersRef.current;
+        const currentPaths = currentChapters.map((chapter) => chapter.relativePath);
+        if (
+          bookScopeUnavailableRef.current.length > 0 ||
+          currentPaths.join("\0") !== request.bookChapterRelativePaths.join("\0")
+        ) {
+          setStatus("Export EPUB beta stopped; Book Scope changed or has unavailable chapters");
+          return;
+        }
+        bookDocuments = await loadBookScopeReaderDocuments({
+          chapters: currentChapters,
+          tabs: tabsRef.current,
+          openTextFile,
+        });
+        if (
+          bookDocuments.documents.length === 0 ||
+          bookDocuments.failures.length > 0 ||
+          bookDocuments.truncated
+        ) {
+          setStatus("Export EPUB beta stopped; Book Scope could not be read completely");
+          return;
+        }
+      }
       const destPath = await saveDialog({
-        defaultPath: request.documentName.replace(/\.[^.]+$/, "") + ".epub",
+        defaultPath:
+          scope === "book"
+            ? `${workspaceLabel(workspaceRootPath)}.epub`
+            : request.documentName.replace(/\.[^.]+$/, "") + ".epub",
         filters: [{ name: "EPUB", extensions: ["epub"] }],
       });
       if (!destPath) return;
 
       const tabForExport = activeTabRef.current;
-      if (!tabForExport || tabForExport.id !== request.tabId) {
+      if (scope === "document" && (!tabForExport || tabForExport.id !== request.tabId)) {
         setStatus("Export EPUB beta stopped; document changed");
         return;
       }
@@ -763,8 +866,13 @@ ${bodyHtml}
       const loadApprovedLocalImage = loaders.loadApprovedLocalImage;
       const loadRemoteImage = loaders.loadRemoteImage;
       const { archive, warnings } = await buildEpubBetaArchiveWithReport({
-        documentPath: tabForExport.path,
-        documentName: tabForExport.name,
+        chapters: bookDocuments?.documents.map((chapter) => ({
+          documentName: chapter.name,
+          documentPath: chapter.path,
+          markdown: chapter.source,
+        })),
+        documentPath: tabForExport?.path ?? null,
+        documentName: scope === "book" ? workspaceLabel(workspaceRootPath) : (tabForExport?.name ?? request.documentName),
         loadApprovedLocalImage: loadApprovedLocalImage
           ? async (path) => ({
               dataUrl: await loadApprovedLocalImage(path),
@@ -783,7 +891,7 @@ ${bodyHtml}
           modified: formatEpubModifiedDate(new Date()),
           title: settings.title.trim() || request.settings.title,
         },
-        markdown: activeContentsRef.current,
+        markdown: scope === "book" ? "" : activeContentsRef.current,
         workspaceRoot: workspaceRootPath,
       });
       await saveBinaryFileAs(destPath, archive);
@@ -828,4 +936,13 @@ function escapeHtml(text: string): string {
 
 function formatEpubModifiedDate(date: Date): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+function workspaceLabel(workspaceRootPath: string | null): string {
+  const label = workspaceRootPath
+    ?.split(/[\\/]/)
+    .filter(Boolean)
+    .at(-1)
+    ?.trim();
+  return label || "book";
 }

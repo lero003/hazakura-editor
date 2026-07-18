@@ -6,6 +6,31 @@ import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
 afterEach(cleanup);
 
 describe("EpubExportSettingsDialog", () => {
+  it("requires an explicit current-file or Book Scope choice when a book exists", () => {
+    const onConfirm = vi.fn();
+    render(
+      <EpubExportSettingsDialog
+        bookAvailable
+        cancelButtonRef={{ current: null }}
+        dialogRef={{ current: null }}
+        documentName="chapter.md"
+        hasUnsavedChanges={false}
+        initialScope="document"
+        initialSettings={{ author: "", language: "ja", title: "Book" }}
+        menuLanguage="ja"
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("radio", { name: "Book Scope" }));
+    fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
+    expect(onConfirm).toHaveBeenCalledWith(
+      { author: "", language: "ja", title: "Book" },
+      "book",
+    );
+  });
+
   it("submits dialog-scoped EPUB metadata settings", () => {
     const onCancel = vi.fn();
     const onConfirm = vi.fn();
@@ -38,11 +63,14 @@ describe("EpubExportSettingsDialog", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Export" }));
 
-    expect(onConfirm).toHaveBeenCalledWith({
-      author: "Kaguya",
-      language: "en",
-      title: "Edited Title",
-    });
+    expect(onConfirm).toHaveBeenCalledWith(
+      {
+        author: "Kaguya",
+        language: "en",
+        title: "Edited Title",
+      },
+      "document",
+    );
     expect(onCancel).not.toHaveBeenCalled();
     expect(
       screen.getByText("Current unsaved changes are included in the export."),

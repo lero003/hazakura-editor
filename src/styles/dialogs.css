@@ -413,6 +413,40 @@
   opacity: 0.85;
 }
 
+.export-scope-selector {
+  border: 0;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.export-scope-selector legend {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 650;
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+}
+
+.export-scope-selector label {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 10px;
+}
+
+.export-scope-selector label:has(input:checked) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
 .export-preflight-summary {
   background: var(--surface-muted);
   border: 1px solid var(--border);

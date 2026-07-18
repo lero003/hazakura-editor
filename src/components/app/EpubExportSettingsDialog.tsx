@@ -2,24 +2,30 @@ import { useState, type RefObject } from "react";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { MenuLanguage } from "../../types";
 import { ExportPreflightSummary } from "./ExportPreflightSummary";
+import type { DocumentExportScope } from "../../features/document/exportScope";
+import { ExportScopeSelector } from "./ExportScopeSelector";
 
 type EpubExportSettingsDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
+  bookAvailable?: boolean;
   dialogRef: RefObject<HTMLElement | null>;
   documentName: string;
   initialSettings: EpubExportSettings;
   hasUnsavedChanges: boolean;
+  initialScope?: DocumentExportScope;
   menuLanguage: MenuLanguage;
   onCancel: () => void;
-  onConfirm: (settings: EpubExportSettings) => void;
+  onConfirm: (settings: EpubExportSettings, scope: DocumentExportScope) => void;
 };
 
 export function EpubExportSettingsDialog({
+  bookAvailable = false,
   cancelButtonRef,
   dialogRef,
   documentName,
   initialSettings,
   hasUnsavedChanges,
+  initialScope = "document",
   menuLanguage,
   onCancel,
   onConfirm,
@@ -28,6 +34,7 @@ export function EpubExportSettingsDialog({
   const [title, setTitle] = useState(initialSettings.title);
   const [author, setAuthor] = useState(initialSettings.author);
   const [language, setLanguage] = useState(initialSettings.language);
+  const [scope, setScope] = useState<DocumentExportScope>(initialScope);
   const titleValid = title.trim().length > 0;
 
   return (
@@ -47,6 +54,13 @@ export function EpubExportSettingsDialog({
         <p className="epub-export-settings-note">
           {copy.scopeNote}
         </p>
+        {bookAvailable ? (
+          <ExportScopeSelector
+            menuLanguage={menuLanguage}
+            onChange={setScope}
+            value={scope}
+          />
+        ) : null}
         <ExportPreflightSummary
           format="EPUB"
           hasUnsavedChanges={hasUnsavedChanges}
@@ -63,7 +77,7 @@ export function EpubExportSettingsDialog({
               author,
               language,
               title,
-            });
+            }, scope);
           }}
         >
           <label className="field-control">
@@ -110,7 +124,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       export: "かきだす",
       languageField: "ことば",
       scopeNote:
-        "でんししょせきもーどは よむための ぷれびゅーです。かきだすEPUBは ひとつのMarkdownのふみを たいしょうにします。Hazakuraは EPUBを すべてつくるための どうぐではありません。",
+        "でんししょせきもーどは よむための ぷれびゅーです。ファイルか Book Scopeを えらんで かきだします。",
       title: "EPUBかきだし",
       titleField: "しょめい",
     };
@@ -123,7 +137,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       export: "書き出す",
       languageField: "言語",
       scopeNote:
-        "電子書籍モードは読むためのプレビューです。書き出されるEPUBは単一Markdown文書を対象とし、Hazakuraは完全なEPUB制作ツールではありません。",
+        "電子書籍モードは読むためのプレビューです。現在のファイルまたはBook Scopeを選んで書き出します。",
       title: "EPUB書き出し",
       titleField: "書名",
     };
@@ -135,7 +149,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
     export: "Export",
     languageField: "Language",
     scopeNote:
-      "E-book Mode is a reading preview. The exported EPUB targets a single Markdown document, and Hazakura is not a full EPUB production tool.",
+      "E-book Mode is a reading preview. Export either the current file or the explicit Book Scope.",
     title: "EPUB Export",
     titleField: "Title",
   };
