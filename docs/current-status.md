@@ -41,11 +41,22 @@ Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
   explicit layers described below.
 - **Book Scope can now create an explicit chapter suggestion draft.** The user
   starts one bounded, cancellable OKF disk snapshot from the Book view. Root
-  `index.md` internal links lead the proposed order; remaining readable `.md`
-  files follow in stable path order, while `index.md` / `log.md` and unreadable
-  files stay out. The result remains an editable checkbox draft until Save;
+  `index.md` internal links lead the proposed order; linked nested indexes expand
+  their own local chapter links in place, and remaining readable `.md` files
+  follow in stable path order. `index.md` / `log.md` and unreadable files stay
+  out. The result remains an editable checkbox draft until Save;
   startup/background scanning, scan caches, source changes, and automatic
   scope persistence were not added.
+- **A real five-work e-book manuscript now passes source and built-app suggestion
+  smoke.** Its 44 Markdown files (33 chapters, 4 supplementary notes, 7 reserved
+  index/log files; 390,618 bytes total) produce 37 editable candidates in work,
+  chapter, then root supplementary order. The sample's five local PNG files are
+  individually below the existing 20 MiB image limit. The latest local ad-hoc
+  App Store preview showed 37 selected candidates with index/log files left
+  unchecked; the draft was cancelled without persistence. Automatic cover/part-page
+  use of index files and semantic use of custom `Chapter` / `Note` frontmatter
+  remain explicitly held for v2.x; full signed TestFlight PDF/EPUB visual proof
+  for this manuscript is not yet claimed.
 - **Book Scope now has a whole-book reader in source.** It opens only from an
   explicit Book-view action, renders chapters in saved order through the
   existing sanitized Preview/image boundary, and keeps each chapter's source
@@ -62,7 +73,7 @@ Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
   and blocks Book export when a chapter is unavailable. It adds no manifest,
   background indexing, source rewrite, or second editable buffer.
 - **Latest source and built-app candidate proof is green.** TypeScript/Vitest
-  (**201 files / 1,664 tests**), Vite, Rust (**367 pass / 2 host-dependent
+  (**201 files / 1,665 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
   Store preview build all pass on tree `2.0.0`. The built bundle reports
   `2.0.0`, passes deep/strict code-sign verification, and opens an onscreen

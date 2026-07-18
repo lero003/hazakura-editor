@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 Book Scope vertical slice + candidate proof; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
+Last reviewed: 2026-07-18 (heavy multi-book suggestion final adjustment)
 
 ## Current State
 
@@ -19,9 +19,15 @@ Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
   retention/recheck, chapter switching through the existing single editor,
   and Rust path/symlink/100-chapter validation.
 - **Explicit chapter suggestions are in source:** Book view can run the existing
-  bounded/cancellable OKF snapshot on demand, prioritize root `index.md` links,
-  append remaining readable `.md` paths, and open the result as an unsaved
-  checkbox draft. It adds no startup/background scan or persistent scan cache.
+  bounded/cancellable OKF snapshot on demand, expand root-linked nested indexes
+  in their local chapter order, append remaining readable `.md` paths, and open
+  the result as an unsaved checkbox draft. It adds no startup/background scan
+  or persistent scan cache.
+- **Heavy manuscript proof is green for candidate creation:** a real five-work
+  e-book split into 44 Markdown files produces 37 editable candidates in work,
+  chapter, then root supplementary order. The latest local ad-hoc App Store
+  preview displayed all 37 with index/log files unchecked; the draft was
+  cancelled without persistence. Signed TestFlight PDF/EPUB appearance is held.
 - **Whole-book reader is in source:** explicit Book action, saved scope order,
   live dirty buffers before disk, chapter-relative image/link bases, 32 MiB
   total budget, visible unavailable/skipped notices, and edit return through
@@ -56,6 +62,22 @@ Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
 - Theme G signed export recheck breadth.
 
 ## Verification (2026-07-18)
+
+### Heavy nested-index manuscript adjustment
+
+- `npm run typecheck` — pass.
+- `npm test` — 201 files / 1,665 tests pass.
+- `npm run build:vite` — pass (existing large-chunk warning only).
+- `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- `npm run build` — live helper probes and local ad-hoc App Store preview build
+  pass; bundle `2.0.0`, deep/strict code-sign, bundled notices pass.
+- Built-app smoke — real manuscript opened read-only; Suggest reported 37
+  index-ordered candidates; six first-work chapters + four supplementary notes
+  checked; root/nested indexes and log unchecked; Cancel used, no scope saved.
+- Not run: signed TestFlight PDF/EPUB visual export for the heavy manuscript.
 
 ### Help + version 2.0.0 slice
 

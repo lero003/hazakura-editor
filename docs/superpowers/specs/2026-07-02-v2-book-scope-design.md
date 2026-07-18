@@ -2,7 +2,7 @@
 
 Status: Review — Book Scope vertical slice implemented
 Scope: v2.0 Book Workspace Alpha と構造型 Markdown の方向・境界・未解決の UI 問い
-Last reviewed: 2026-07-18 (Book Scope UX quieting: progressive disclosure)
+Last reviewed: 2026-07-18 (nested index ordering + heavy manuscript sample)
 
 ## Goal
 
@@ -59,15 +59,37 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
 
 - 既存の main-window-only OKF disk snapshot を再利用する。一回限り、停止可能、
   最大200 `.md`、walk 2,000 entry、1 file 10 MiB、合計32 MiB、深さ16まで。
-- root `index.md` の安全に解決できる内部 Markdown link 順を先頭にし、残りの
-  読取可能な本文 `.md` を安定した相対path順で末尾へ置く。`index.md` / `log.md`
-  と読取不能fileは候補から外す。
+- root `index.md` の安全に解決できる内部 Markdown link 順を先頭にする。link先が
+  下位 `index.md` の場合は、cycleを避けた有界な走査で、そのindex配下にある内部
+  Markdown link順を展開する。下位indexから配下外の共通資料へ戻るlinkはそこで
+  先取りせず、rootが示す位置または末尾の安定path順へ残す。
+- 残りの読取可能な本文 `.md` を安定した相対path順で末尾へ置く。`index.md` /
+  `log.md` と読取不能fileは候補から外す。index link解釈は全体500件までとする。
 - 結果は **Hazakura Book Scope の候補順**であり、OKF準拠やOKF book orderを
   意味しない。候補は選択画面のdraftへ入るだけで、自動保存しない。
 - ユーザーはcheckboxで調整し、「保存」で初めてworkspaceのBook Scopeへ反映する。
   走査打切り・100章上限はdraft上で明示する。
 - 起動時走査、background indexing、watcher、永続scan cache、source/manifestの
   書換えは追加しない。`.markdown` / `.mdx` 等は従来の手動選択で追加できる。
+
+### Heavy manuscript evidence and held items
+
+2026-07-18 に、実際にe-book化した原稿を5作品へ分割したサンプルでsource-level
+smokeを行った。root index → 5つの作品index → 各章という構造、Markdown 44本
+（本文候補33章 + 副読4本 + reserved 7本）、Markdown合計390,618 bytesを読み、
+37本を作品順・章順・rootの副読順で候補化できた。最新のローカルad-hoc
+App Store previewでも候補画面が37件を表示し、本文と副読を選択済み、reserved
+index/logを未選択で提示した。100章 / 32 MiB上限には達せず、確認時は候補を
+キャンセルしてsource変更や候補の保存を行っていない。
+
+Alphaでは次を**保留**する。
+
+- root / 下位 `index.md` を表紙・扉・部タイトルとして自動採用しない。必要なら
+  章選択で明示追加できるが、専用のfront matter / part page意味付けはv2.xで再検討する。
+- `type: Chapter` / `type: Note` 等の独自frontmatterを章種別へ自動変換しない。
+  候補順はlinkと明示選択を正本とし、metadata roleの導入は別スライスとする。
+- この実原稿全体のsigned TestFlight PDF / EPUB見た目確認は、pkg作成・提出laneの
+  手動smokeへ残す。source-level候補順の成功だけで配布版の出力品質を言い切らない。
 
 ## Whole-book Reader Contract
 

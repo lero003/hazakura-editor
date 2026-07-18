@@ -41,6 +41,8 @@ remain parked unless a release gate needs them.
 
 1. Files / Book sidebar, explicit scope, order, unavailable retention.
 2. Chapter suggestion draft; whole-book reader; PDF/EPUB + preflight.
+   Linked nested indexes now preserve a real five-work manuscript's chapter
+   order; cover/part-page semantics remain held rather than inferred.
 3. UX quieting (read/edit primary; suggest/recheck progressive).
 4. **Help:** native Help menu / Command Palette → **Books and knowledge
    folders…** (English Help body; JP/EN/kana labels). About / diagnostics derive
@@ -50,7 +52,8 @@ remain parked unless a release gate needs them.
 ### Immediate next
 
 1. The local `2.0.0` bundle builds, launches, and passes code-sign verification.
-   Run signed App Store / TestFlight Book + Help smoke if preparing an upload.
+   Run signed App Store / TestFlight Book + Help smoke, including the heavy
+   five-work manuscript's PDF/EPUB appearance, if preparing an upload.
 2. Human gate: tag `v2.0.0`, build App Store pkg, submit — only with approval.
 3. Hotfix only for reproduced review blockers on published/in-review builds.
 

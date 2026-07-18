@@ -50,6 +50,21 @@ passed deep/strict code-sign verification, launched, and showed an onscreen
 window. Direct native-menu clicking and signed TestFlight interaction are not
 claimed by this follow-up.
 
+Heavy-manuscript follow-up (2026-07-18): the read-only source smoke uses a
+five-work e-book manuscript with root and nested indexes. Confirm the draft has
+33 body chapters in the five-work index order followed by the four root-linked
+supplementary notes (37 selected candidates total), with all six `index.md`
+files and `log.md` left unselected. Before submission, manually decide whether
+to add any index page as a cover/part page, then check the five local images and
+chapter boundaries in signed TestFlight PDF and EPUB output. The source smoke
+does not substitute for that visual export check.
+
+Latest local ad-hoc App Store preview evidence: opening the real manuscript and
+choosing Book → Suggest produced `37章を候補にしました（index.md順: 37）`.
+The first work's six chapters and all four supplementary notes were checked;
+root / nested index files and `log.md` were unchecked. The draft was cancelled,
+not saved. Signed TestFlight reader/export appearance remains unclaimed.
+
 Historical smoke logs and old per-release notes are archived in `docs/archive/operations/smoke-checklist-through-v0.10-doc-refactor.md` and `docs/archive/operations/smoke-checklist-version-notes-through-v0.18.md`.
 
 ## Smoke Environment Boundary

@@ -67,7 +67,8 @@ Order of work (detail in the design doc; refine while building):
    app-private order, unavailable retention, one primary editable buffer, and
    no background indexing.
 2. **Done in source: explicit chapter suggestion draft.** One user-triggered,
-   bounded OKF snapshot proposes root `index.md` link order plus remaining
+   bounded OKF snapshot proposes root and linked nested `index.md` local link
+   order plus remaining
    readable `.md` files. The checkbox draft is never saved automatically;
    base OKF compatibility remains separate from Hazakura Book semantics.
 3. **Done in source: Whole-book reading.** A read-only scroll reader uses scope

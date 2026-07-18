@@ -46,6 +46,43 @@ describe("Book Scope chapter suggestions", () => {
     expect(result.linkedChapterCount).toBe(2);
   });
 
+  it("follows linked nested indexes to preserve multi-book chapter order", () => {
+    const result = suggestBookScopeFromDiscovery(
+      discovery([
+        {
+          relativePath: "index.md",
+          content:
+            "# Collection\n\n[Book two](books/02/index.md)\n[Book one](books/01/index.md)\n[Afterword](notes/afterword.md)\n",
+        },
+        {
+          relativePath: "books/01/index.md",
+          content:
+            "# Book one\n\n[First](chapters/01.md)\n[Second](chapters/02.md)\n[Self](index.md)\n[Back](../../index.md)\n[Shared afterword](../../notes/afterword.md)\n",
+        },
+        {
+          relativePath: "books/02/index.md",
+          content:
+            "# Book two\n\n[Opening](chapters/00.md)\n[Ending](chapters/09.md)\n[Shared afterword](../../notes/afterword.md)\n",
+        },
+        { relativePath: "books/01/chapters/01.md", content: "# First\n" },
+        { relativePath: "books/01/chapters/02.md", content: "# Second\n" },
+        { relativePath: "books/02/chapters/00.md", content: "# Opening\n" },
+        { relativePath: "books/02/chapters/09.md", content: "# Ending\n" },
+        { relativePath: "notes/afterword.md", content: "# Afterword\n" },
+      ]),
+    );
+
+    expect(result.chapterRelativePaths).toEqual([
+      "books/02/chapters/00.md",
+      "books/02/chapters/09.md",
+      "books/01/chapters/01.md",
+      "books/01/chapters/02.md",
+      "notes/afterword.md",
+    ]);
+    expect(result.linkedChapterCount).toBe(5);
+    expect(result.excludedSupportFileCount).toBe(3);
+  });
+
   it("excludes OKF support files, unreadable files, duplicate and external links", () => {
     const result = suggestBookScopeFromDiscovery(
       discovery([
