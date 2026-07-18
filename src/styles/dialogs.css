@@ -470,6 +470,17 @@
   margin: 0;
 }
 
+.export-preflight-issues {
+  display: grid;
+  gap: 3px;
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.export-preflight-issues li[data-severity="error"] {
+  color: var(--danger, #b42318);
+}
+
 .export-preflight-summary dt {
   color: var(--text);
   font-weight: 700;

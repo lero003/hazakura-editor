@@ -45,6 +45,10 @@ import type {
 import { openTextFile } from "../../lib/tauri/files";
 import { loadBookScopeReaderDocuments } from "../../features/bookScope";
 import type { DocumentExportScope } from "../../features/document/exportScope";
+import {
+  analyzeExportPreflight,
+  type ExportPreflightResult,
+} from "../../features/document/exportPreflight";
 
 type UseDocumentExportOptions = {
   activeContents: string;
@@ -65,6 +69,7 @@ export type EpubExportRequest = {
   bookChapterRelativePaths: string[];
   documentName: string;
   hasUnsavedChanges: boolean;
+  preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
   settings: EpubExportSettings;
   tabId: string;
 };
@@ -74,6 +79,7 @@ export type PdfExportRequest = {
   bookChapterRelativePaths: string[];
   documentName: string;
   hasUnsavedChanges: boolean;
+  preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
   preset: PdfMarginPreset;
   tabId: string;
 };
@@ -146,6 +152,47 @@ export function useDocumentExport({
   const [pdfExportRequest, setPdfExportRequest] =
     useState<PdfExportRequest | null>(null);
 
+  const buildPreflightByScope = useCallback(async (): Promise<
+    Record<DocumentExportScope, ExportPreflightResult>
+  > => {
+    const currentChapters = bookScopeChaptersRef.current;
+    const document: ExportPreflightResult = {
+      chapterCount: activeTabRef.current ? 1 : 0,
+      checkedImageCount: 0,
+      issues: [],
+    };
+    if (
+      currentChapters.length === 0 &&
+      bookScopeUnavailableRef.current.length === 0
+    ) {
+      return {
+        book: { chapterCount: 0, checkedImageCount: 0, issues: [] },
+        document,
+      };
+    }
+    const loaders = createExportImageLoaders();
+    const loadResult = await loadBookScopeReaderDocuments({
+      chapters: currentChapters,
+      tabs: tabsRef.current,
+      openTextFile,
+    });
+    const book = await analyzeExportPreflight({
+      documents: loadResult.documents.map((chapter) => ({
+        markdown: chapter.source,
+        name: chapter.name,
+        path: chapter.path,
+      })),
+      loadWorkspaceImage: loaders.loadWorkspaceImage,
+      unavailableChapterPaths: [
+        ...bookScopeUnavailableRef.current.map((entry) => entry.relativePath),
+        ...loadResult.failures.map((entry) => entry.relativePath),
+        ...loadResult.skippedForBudget,
+      ],
+      workspaceRoot: workspaceRootPath,
+    });
+    return { book, document };
+  }, [createExportImageLoaders, workspaceRootPath]);
+
   const exportPdf = useCallback(async () => {
     // Match HTML / EPUB: an open tab may be empty (pathless draft or blank
     // file). Only a missing active tab is "no document".
@@ -154,15 +201,21 @@ export function useDocumentExport({
       return;
     }
 
+    const preflightByScope = await buildPreflightByScope();
+    if (activeTabRef.current?.id !== activeTab.id) {
+      setStatus("PDF export stopped; document changed");
+      return;
+    }
     setPdfExportRequest({
-      bookAvailable: bookScopeChapters.length > 0,
+      bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
       documentName: activeTab.name,
       hasUnsavedChanges: isDirty(activeTab),
+      preflightByScope,
       preset: DEFAULT_PDF_MARGIN_PRESET,
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, bookScopeChapters, setStatus]);
+  }, [activeContents, activeTab, bookScopeChapters, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
 
   const cancelPdfExport = useCallback(() => {
     setPdfExportRequest(null);
@@ -792,18 +845,24 @@ ${bodyHtml}
       return;
     }
 
+    const preflightByScope = await buildPreflightByScope();
+    if (activeTabRef.current?.id !== activeTab.id) {
+      setStatus("Export EPUB beta stopped; document changed");
+      return;
+    }
     setEpubExportRequest({
-      bookAvailable: bookScopeChapters.length > 0,
+      bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
       documentName: activeTab.name,
       hasUnsavedChanges: isDirty(activeTab),
+      preflightByScope,
       settings: defaultEpubExportSettings({
         documentName: activeTab.name,
         markdown: activeContents,
       }),
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, bookScopeChapters, setStatus]);
+  }, [activeContents, activeTab, bookScopeChapters, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
 
   const cancelEpubBetaExport = useCallback(() => {
     setEpubExportRequest(null);

@@ -6,6 +6,39 @@ import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
 afterEach(cleanup);
 
 describe("EpubExportSettingsDialog", () => {
+  it("switches the visible preflight with the selected export scope", () => {
+    render(
+      <EpubExportSettingsDialog
+        bookAvailable
+        cancelButtonRef={{ current: null }}
+        dialogRef={{ current: null }}
+        documentName="chapter.md"
+        hasUnsavedChanges={false}
+        initialSettings={{ author: "", language: "ja", title: "Book" }}
+        menuLanguage="ja"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+        preflightByScope={{
+          document: { chapterCount: 1, checkedImageCount: 0, issues: [] },
+          book: {
+            chapterCount: 2,
+            checkedImageCount: 1,
+            issues: [
+              { kind: "heading-missing", severity: "warning", subject: "two.md" },
+              { kind: "image-unavailable", severity: "warning", subject: "/workspace/lost.png" },
+            ],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText(/1章を確認/)).toBeTruthy();
+    expect(screen.getByText("著者名が未入力です。")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "Book Scope" }));
+    expect(screen.getByText(/見出しがない章: two.md/)).toBeTruthy();
+    expect(screen.getByText(/読み込めない画像: \/workspace\/lost.png/)).toBeTruthy();
+  });
+
   it("requires an explicit current-file or Book Scope choice when a book exists", () => {
     const onConfirm = vi.fn();
     render(

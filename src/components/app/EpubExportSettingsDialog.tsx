@@ -4,6 +4,7 @@ import type { MenuLanguage } from "../../types";
 import { ExportPreflightSummary } from "./ExportPreflightSummary";
 import type { DocumentExportScope } from "../../features/document/exportScope";
 import { ExportScopeSelector } from "./ExportScopeSelector";
+import type { ExportPreflightResult } from "../../features/document/exportPreflight";
 
 type EpubExportSettingsDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
@@ -14,6 +15,7 @@ type EpubExportSettingsDialogProps = {
   hasUnsavedChanges: boolean;
   initialScope?: DocumentExportScope;
   menuLanguage: MenuLanguage;
+  preflightByScope?: Record<DocumentExportScope, ExportPreflightResult>;
   onCancel: () => void;
   onConfirm: (settings: EpubExportSettings, scope: DocumentExportScope) => void;
 };
@@ -27,6 +29,7 @@ export function EpubExportSettingsDialog({
   hasUnsavedChanges,
   initialScope = "document",
   menuLanguage,
+  preflightByScope,
   onCancel,
   onConfirm,
 }: EpubExportSettingsDialogProps) {
@@ -36,6 +39,9 @@ export function EpubExportSettingsDialog({
   const [language, setLanguage] = useState(initialSettings.language);
   const [scope, setScope] = useState<DocumentExportScope>(initialScope);
   const titleValid = title.trim().length > 0;
+  const hasBlockingIssue = preflightByScope?.[scope].issues.some(
+    (issue) => issue.severity === "error",
+  ) ?? false;
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -65,6 +71,12 @@ export function EpubExportSettingsDialog({
           format="EPUB"
           hasUnsavedChanges={hasUnsavedChanges}
           menuLanguage={menuLanguage}
+          metadataMissing={[
+            ...(title.trim() ? [] : [copy.titleField]),
+            ...(author.trim() ? [] : [copy.authorField]),
+            ...(language.trim() ? [] : [copy.languageField]),
+          ]}
+          preflight={preflightByScope?.[scope]}
         />
         <form
           className="epub-export-settings-form"
@@ -103,7 +115,7 @@ export function EpubExportSettingsDialog({
             />
           </label>
           <div className="dialog-actions">
-            <button type="submit" disabled={!titleValid}>
+            <button type="submit" disabled={!titleValid || hasBlockingIssue}>
               {copy.export}
             </button>
             <button ref={cancelButtonRef} type="button" onClick={onCancel}>

@@ -742,7 +742,7 @@ describe("useDocumentExport", () => {
         markdown: "",
       }),
     );
-    expect(filesApi.openTextFile).toHaveBeenCalledTimes(1);
+    expect(filesApi.openTextFile).toHaveBeenCalledTimes(2);
   });
 
   it("stops Book Scope export before a save dialog when a chapter is unavailable", async () => {
@@ -764,6 +764,13 @@ describe("useDocumentExport", () => {
     );
 
     await act(async () => result.current.exportEpubBeta());
+    expect(result.current.epubExportRequest?.preflightByScope.book.issues).toContainEqual(
+      expect.objectContaining({
+        kind: "chapter-unavailable",
+        severity: "error",
+        subject: "missing.md",
+      }),
+    );
     await act(async () => result.current.confirmEpubBetaExport({
       author: "",
       language: "ja",
@@ -780,9 +787,10 @@ describe("useDocumentExport", () => {
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/workspace.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);
-    filesApi.openTextFile
-      .mockResolvedValueOnce({ contents: "# One", size: 5 })
-      .mockResolvedValueOnce({ contents: "# Two", size: 5 });
+    filesApi.openTextFile.mockImplementation(async (path: string) => ({
+      contents: path.endsWith("one.md") ? "# One" : "# Two",
+      size: 5,
+    }));
     const chapters = [
       { name: "one.md", path: "/workspace/a/one.md", relativePath: "a/one.md" },
       { name: "two.md", path: "/workspace/b/two.md", relativePath: "b/two.md" },
@@ -799,6 +807,7 @@ describe("useDocumentExport", () => {
     );
 
     await act(async () => result.current.exportPdf());
+    markdownApi.renderMarkdown.mockClear();
     await act(async () => result.current.confirmPdfExport("standard", "book"));
 
     expect(markdownApi.renderMarkdown).toHaveBeenNthCalledWith(1, "# One", {

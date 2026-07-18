@@ -493,6 +493,7 @@ export function AppOverlays({
           hasUnsavedChanges={epubExportRequest.hasUnsavedChanges}
           initialSettings={epubExportRequest.settings}
           menuLanguage={menuLanguage}
+          preflightByScope={epubExportRequest.preflightByScope}
           onCancel={onCancelEpubBetaExport}
           onConfirm={(settings, scope) => void onConfirmEpubBetaExport(settings, scope)}
         />
@@ -507,6 +508,7 @@ export function AppOverlays({
           hasUnsavedChanges={pdfExportRequest.hasUnsavedChanges}
           initialPreset={pdfExportRequest.preset}
           menuLanguage={menuLanguage}
+          preflightByScope={pdfExportRequest.preflightByScope}
           onCancel={onCancelPdfExport}
           onConfirm={(preset, scope) => void onConfirmPdfExport(preset, scope)}
         />

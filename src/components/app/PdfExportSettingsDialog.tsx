@@ -7,6 +7,7 @@ import type { MenuLanguage } from "../../types";
 import { ExportPreflightSummary } from "./ExportPreflightSummary";
 import type { DocumentExportScope } from "../../features/document/exportScope";
 import { ExportScopeSelector } from "./ExportScopeSelector";
+import type { ExportPreflightResult } from "../../features/document/exportPreflight";
 
 type PdfExportSettingsDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
@@ -17,6 +18,7 @@ type PdfExportSettingsDialogProps = {
   hasUnsavedChanges: boolean;
   initialScope?: DocumentExportScope;
   menuLanguage: MenuLanguage;
+  preflightByScope?: Record<DocumentExportScope, ExportPreflightResult>;
   onCancel: () => void;
   onConfirm: (preset: PdfMarginPreset, scope: DocumentExportScope) => void;
 };
@@ -30,12 +32,16 @@ export function PdfExportSettingsDialog({
   hasUnsavedChanges,
   initialScope = "document",
   menuLanguage,
+  preflightByScope,
   onCancel,
   onConfirm,
 }: PdfExportSettingsDialogProps) {
   const copy = getPdfExportSettingsCopy(menuLanguage);
   const [preset, setPreset] = useState<PdfMarginPreset>(initialPreset);
   const [scope, setScope] = useState<DocumentExportScope>(initialScope);
+  const hasBlockingIssue = preflightByScope?.[scope].issues.some(
+    (issue) => issue.severity === "error",
+  ) ?? false;
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -63,6 +69,7 @@ export function PdfExportSettingsDialog({
           format="PDF"
           hasUnsavedChanges={hasUnsavedChanges}
           menuLanguage={menuLanguage}
+          preflight={preflightByScope?.[scope]}
         />
         <form
           className="pdf-export-settings-form"
@@ -101,7 +108,7 @@ export function PdfExportSettingsDialog({
             })}
           </fieldset>
           <div className="dialog-actions">
-            <button type="submit">{copy.export}</button>
+            <button disabled={hasBlockingIssue} type="submit">{copy.export}</button>
             <button ref={cancelButtonRef} type="button" onClick={onCancel}>
               {copy.cancel}
             </button>
