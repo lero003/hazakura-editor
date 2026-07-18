@@ -153,6 +153,19 @@ describe("extractPdfLeadingCoverHtml", () => {
     expect(coverHtml).toBe("");
     expect(bodyHtml).toContain("<h1>Title</h1>");
   });
+
+  it("pulls a leading cover from the first Book Scope chapter section", () => {
+    const html =
+      '<section class="book-scope-pdf-chapter"><p><img src="data:image/png;base64,aaa" alt="cover"></p><h1>First</h1></section>' +
+      '<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next"><h1>Second</h1></section>';
+    const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(html, 640);
+
+    expect(coverHtml).toContain("data:image/png;base64,aaa");
+    expect(bodyHtml).toContain("book-scope-pdf-chapter");
+    expect(bodyHtml).toContain("<h1>First</h1>");
+    expect(bodyHtml).toContain("<h1>Second</h1>");
+    expect(bodyHtml).not.toContain("data:image/png;base64,aaa");
+  });
 });
 
 describe("formatPdfPointValue", () => {

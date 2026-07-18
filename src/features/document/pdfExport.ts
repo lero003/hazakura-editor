@@ -117,6 +117,21 @@ export function extractPdfLeadingCoverHtml(
     first = first.nextSibling;
   }
 
+  if (
+    first instanceof HTMLElement &&
+    first.classList.contains("book-scope-pdf-chapter")
+  ) {
+    let chapterFirst: ChildNode | null = first.firstChild;
+    while (
+      chapterFirst &&
+      chapterFirst.nodeType === Node.TEXT_NODE &&
+      !(chapterFirst.textContent ?? "").trim()
+    ) {
+      chapterFirst = chapterFirst.nextSibling;
+    }
+    first = chapterFirst;
+  }
+
   let coverNode: Element | null = null;
   if (first instanceof HTMLImageElement) {
     coverNode = first;

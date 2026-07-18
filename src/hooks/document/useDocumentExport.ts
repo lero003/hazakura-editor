@@ -267,15 +267,22 @@ export function useDocumentExport({
       const exportMedia = buildExportMediaAccess();
       let rendered = bookDocuments
         ? bookDocuments.documents
-          .map((chapter, index) => {
+          .map((chapter, index, chapters) => {
             const html = renderMarkdown(chapter.source, {
               documentPath: chapter.path,
               workspaceRoot: workspaceRootPath ?? undefined,
               mediaAccess: exportMedia,
             });
-            return index === 0
-              ? html
-              : `<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next">${html}</section>`;
+            const isLast = index === chapters.length - 1;
+            const className = [
+              "book-scope-pdf-chapter",
+              index > 0 ? "book-scope-pdf-chapter--next" : "",
+              isLast ? "book-scope-pdf-chapter--last" : "",
+            ].filter(Boolean).join(" ");
+            const tailGuard = isLast
+              ? '<p class="pdf-export-tail-guard" aria-hidden="true">&#8203;</p>'
+              : "";
+            return `<section class="${className}">${html}${tailGuard}</section>`;
           })
           .join("\n")
         : renderMarkdown(activeContentsRef.current, {
@@ -462,7 +469,10 @@ export function useDocumentExport({
   }
   /* Put the break on non-empty chapter content. WebKit may discard an empty
      multicol break marker, which would pack short chapters onto one page. */
-  .book-scope-pdf-chapter { break-inside: auto; }
+  .book-scope-pdf-chapter {
+    break-inside: auto;
+    min-height: var(--pdf-content-height);
+  }
   .book-scope-pdf-chapter--next {
     -webkit-column-break-before: always;
     break-before: column;
@@ -543,6 +553,7 @@ export function useDocumentExport({
     font-size: 0.85em;
   }
   @media print {
+    .book-scope-pdf-chapter { min-height: 0; }
     .book-scope-pdf-chapter--next { break-before: page; page-break-before: always; }
     @page { margin: ${pdfMarginCss(preset)}; }
     html { min-height: 0; min-width: 0; }
@@ -614,7 +625,7 @@ ${
 }
 <div class="markdown-preview">
 ${bodyHtml}
-<p class="pdf-export-tail-guard" aria-hidden="true">&#8203;</p>
+${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&#8203;</p>'}
 </div>
 </body>
 </html>`;

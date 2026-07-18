@@ -825,7 +825,10 @@ describe("useDocumentExport", () => {
       filters: [{ name: "PDF", extensions: ["pdf"] }],
     });
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
-      '<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next"><p># Two</p></section>',
+      '<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next book-scope-pdf-chapter--last"><p># Two</p><p class="pdf-export-tail-guard"',
+    );
+    expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
+      "min-height: var(--pdf-content-height);",
     );
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
       "break-before: column;",
