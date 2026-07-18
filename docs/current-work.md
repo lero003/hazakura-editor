@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 development phase; v1.14 in App Store review
 Authority: High
-Last reviewed: 2026-07-18 (v2 active; residual/evidence parked)
+Last reviewed: 2026-07-18 (v2 Book Scope vertical slice source-complete)
 
 ## Purpose
 
@@ -56,7 +56,7 @@ Connect is authoritative for store counters.
 3. **Done in source:** manual chapter order and chapter switching through the
    existing one-primary-edit-buffer / dirty-tab / Undo path.
 
-### Immediate next
+### Completed vertical slice
 
 1. **Done in source: explicit chapter suggestion draft.** A user-triggered,
    bounded OKF snapshot proposes chapters from root `index.md` link order plus
@@ -66,10 +66,21 @@ Connect is authoritative for store counters.
    scroll reader in saved scope order, uses live dirty buffers before disk,
    preserves each chapter's image base path, and shows missing/budget-skipped
    chapters instead of silently dropping them.
-3. **Next: Book export + preflight** — explicit Current file / Book Scope choice for
-   EPUB and PDF, followed by missing chapter/image/heading/metadata checks.
-4. Observe the first Alpha sidebar in built-app use; adjust only reproduced
+3. **Done in source: Book export + preflight.** EPUB and PDF settings explicitly
+   choose Current file or Book Scope. Book export preserves scope order, live
+   dirty buffers, and each chapter's image base path. A bounded preflight checks
+   unavailable chapters, up to 100 workspace images, missing headings, and EPUB
+   metadata before the Save dialog; unavailable chapters block Book export.
+
+### Immediate next
+
+1. **Candidate proof in progress:** latest automated gates and app build pass;
+   built-app dialog/preflight/unavailable blocking passed. Successful Book PDF
+   and EPUB artifact inspection remains a hands-on proof item.
+2. Observe the first Alpha sidebar/export loop in built-app use; adjust only reproduced
    selection/order/navigation friction before widening the surface.
+3. Decide whether this vertical slice is the first v2 candidate boundary, then
+   align version / Help / store copy only with explicit release direction.
 
 ### At v2 ship (not now)
 
@@ -123,5 +134,5 @@ Inventory and store copy:
 
 1. Apple processing / App Review for `1.14.0` — respond only if needed.
 2. Report publication when it happens (do not assume from submission).
-3. Product decisions during v2: first UI direction, scope of first Alpha cut,
-   when Help polish is “good enough to ship.”
+3. Product decisions during v2: candidate/version boundary and when Help polish
+   is “good enough to ship.”

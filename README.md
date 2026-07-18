@@ -57,7 +57,8 @@ Use this when you want to:
 - compare text files and review local changes without Git awareness
 - notice save conflicts and external changes before overwriting
 - paste or drag-drop images into `assets/` for inline Markdown references
-- export content as standalone HTML or PDF
+- export the current Markdown file or an explicit Book Scope as PDF / EPUB,
+  with standalone HTML remaining current-file only
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
 - explicitly select, order, and revisit a small Book Scope of Markdown chapters
@@ -124,9 +125,10 @@ Hazakura Editor currently focuses on these surfaces:
   unsaved on-device Markdown draft via PDFKit / Vision, with no cloud OCR and
   no auto-save.
 - Book Scope Alpha (v2 source): explicitly selected Markdown chapters,
-  app-private per-workspace ordering, unavailable-entry recheck, and navigation
-  through the existing single active editor buffer. Whole-book reading/export
-  and shared manifests are not part of this first slice.
+  app-private per-workspace ordering, unavailable-entry recheck, navigation
+  through the existing single active editor buffer, whole-book reading, and
+  explicit PDF / EPUB export with bounded preflight. Shared manifests and
+  automatic background indexing are not part of this slice.
 
 For the full implementation inventory and release state, see
 [`docs/current-status.md`](docs/current-status.md).
@@ -138,7 +140,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v1.14 tagged / selected candidate + residual queue
+- [Current Work](docs/current-work.md): v2 Book Scope candidate proof + ship-polish queue
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
 - [v1.10 Single-document Structure Design](docs/v1.10-single-document-structure-design.md): completed shared structure, advisory, and bounded edit contract

@@ -7,6 +7,30 @@ Last reviewed: 2026-07-17 (Theme G media M0–M4 palette + smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
+## v2 Book Scope Export Smoke
+
+1. Build and launch the latest `Hazakura Editor.app`. Open a disposable nested
+   workspace with two Markdown chapters in different folders, each using a
+   relative workspace image; keep one chapter dirty in an open tab.
+2. In Book view, select and order both chapters. Open PDF and EPUB export and
+   confirm **Current file / Book Scope** defaults to Current file and switches
+   the visible preflight without changing the saved scope.
+3. For Book Scope, confirm chapter count/order, dirty-buffer inclusion, missing
+   heading and EPUB metadata warnings. Temporarily remove one image and confirm
+   it is listed before the Save dialog. Restore it and re-run.
+4. Temporarily remove one chapter and recheck Book Scope. Confirm the unavailable
+   chapter is visible and Book export is disabled; Current file export remains
+   available. Restore/recheck rather than letting export silently drop it.
+5. Export Book Scope PDF and EPUB. Confirm the PDF begins each later chapter on
+   a new page and both relative images render. Open the EPUB in a reader or
+   inspect the archive and confirm chapter/navigation order and both images.
+6. Cancel each destination dialog once and confirm no file is written. Confirm
+   source files, dirty state, Undo history, and app-private Book order are
+   unchanged by preflight/export.
+
+Record PDF and EPUB separately. Window-launch proof alone does not pass these
+interactions, and a Developer bundle does not prove signed TestFlight behavior.
+
 Historical smoke logs and old per-release notes are archived in `docs/archive/operations/smoke-checklist-through-v0.10-doc-refactor.md` and `docs/archive/operations/smoke-checklist-version-notes-through-v0.18.md`.
 
 ## Smoke Environment Boundary

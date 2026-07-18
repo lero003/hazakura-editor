@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 development phase opened; v1.14 submitted)
+Last reviewed: 2026-07-18 (v2 Book Scope vertical slice source-complete)
 
 ## Current Position
 
@@ -25,7 +25,7 @@ North star:
 
 v2 lens:
 
-> 明示的に選んだ Markdown 群を一冊として読み・整え・（後で）書き出す。
+> 明示的に選んだ Markdown 群を一冊として読み・整え・書き出す。
 > source は個々の Markdown。indexing / auto-apply / IDE 化はしない。
 
 Queue of record: `docs/current-work.md`.
@@ -73,9 +73,12 @@ Order of work (detail in the design doc; refine while building):
 3. **Done in source: Whole-book reading.** A read-only scroll reader uses scope
    order, live dirty buffers, per-chapter image bases, and visible partial-load
    notices without creating a second editable buffer.
-4. **Now: Book export + preflight** — explicit Current file / Book Scope
-   choice for EPUB/PDF, with missing chapter/image/heading/metadata checks.
-5. **Ship polish including Help** — when the multi-file / OKF loop feels
+4. **Done in source: Book export + preflight** — explicit Current file / Book
+   Scope choice for EPUB/PDF, ordered multi-chapter output, and bounded missing
+   chapter/image/heading/metadata checks before destination selection.
+5. **Now: candidate proof + ship polish decision** — run the full gates and
+   built-app Book export smoke, then decide the v2 version/candidate boundary.
+6. **Ship polish including Help** — when the multi-file / OKF loop feels
    shippable: Help pages, in-app feature explanation, store/release copy.
    Do **not** front-load long product essays before the feel exists.
 
@@ -196,9 +199,9 @@ When Alpha (or the first public v2 cut) is ready to explain itself:
 
 After Alpha proves the source-preserving shape:
 
-- Chapter reordering and title confirmation
-- Book-level e-book Mode and book-level EPUB export
-- TOC generation from the explicit scope
+- Richer chapter-title / navigation editing beyond source headings
+- Reader pagination or book-level e-book presentation beyond the Alpha scroll reader
+- Editable generated TOC beyond the current scope-order EPUB navigation
 - Chapter-level Diff / Review and chapter-scoped search
 - Small explicit manifest if needed (no hidden database model)
 

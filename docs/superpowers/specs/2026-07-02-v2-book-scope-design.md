@@ -1,8 +1,8 @@
 # v2 Book Scope Design
 
-Status: Review — Book Scope Alpha + whole-book reader implemented
+Status: Review — Book Scope vertical slice implemented
 Scope: v2.0 Book Workspace Alpha と構造型 Markdown の方向・境界・未解決の UI 問い
-Last reviewed: 2026-07-18 (whole-book reader implemented; book export next)
+Last reviewed: 2026-07-18 (Book Scope PDF/EPUB + preflight implemented)
 
 ## Goal
 
@@ -83,6 +83,21 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
   Undo、document view-stateをdisk内容で置き換えない。
 - reader内のlocal linkは元chapter基準でworkspace内に解決する。外部 / 危険schemeは
   既存Markdown link境界へ渡し、WebViewを直接遷移させない。
+
+## Book Export And Preflight Contract
+
+- PDF / EPUB の既存settings dialogで **現在のファイル / Book Scope** を明示選択する。
+  Book Scopeがない場合は従来の単一文書UIと挙動を保つ。HTMLは今回拡張しない。
+- Book出力は保存済みscope順でchapterを扱い、open tabの未保存bufferをdiskより優先する。
+  chapterごとのdocument pathを保持し、相対画像をworkspace rootやactive file基準へ潰さない。
+- EPUBはchapterごとのcontent document / navigationをscope順で生成する。PDFはchapter境界を
+  page breakとして一つのdirect-PDF HTMLへ組み、macOS print UIへ戻さない。
+- 書き出し開始時の明示操作でだけpreflightする。既存32 MiB Book読込上限と、最大100画像の
+  workspace image確認を使い、利用不能chapter、読めない画像、見出しなし、EPUB metadata
+  未入力をsettings dialogへ表示する。利用不能chapterはBook出力を停止し、warningはsourceを
+  書き換えずユーザー判断に残す。
+- preflight / exportはmanifest、scan cache、background watcherを作らない。scope変更は確認時に
+  再検証し、dialog中に対象が変わった場合は古いsnapshotを書き出さない。
 
 ## Current Direction
 
