@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 Book Scope vertical slice + candidate proof; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (pre-manual-test Book UX quieting + Help accuracy)
+Last reviewed: 2026-07-18 (v2 external review synthesis linked)
 
 ## Current State
 
@@ -53,6 +53,8 @@ Last reviewed: 2026-07-18 (pre-manual-test Book UX quieting + Help accuracy)
 - Design SoT:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 - Queue: `docs/current-work.md`. Roadmap: `docs/roadmap.md`.
+- Advisory review pool (four-agent synthesis; not the active queue):
+  `docs/v2-external-review-synthesis-2026-07-18.md`.
 
 ### v1.14 Keep summary (shipped in review candidate)
 

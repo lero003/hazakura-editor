@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-18 (v2.0.0 version + Help ship polish in source)
+Last reviewed: 2026-07-18 (v2 review synthesis linked for planning)
 
 ## Current Position
 
@@ -30,6 +30,8 @@ v2 lens:
 
 Queue of record: `docs/current-work.md`.
 v2 design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+External review pool (advisory, not the queue):
+`docs/v2-external-review-synthesis-2026-07-18.md`.
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
 ## Phase Decision (2026-07-18)
@@ -90,6 +92,12 @@ Order of work (detail in the design doc; refine while building):
 | Distribution evidence | Full TestFlight / VoiceOver / narrow / long-doc matrix | Release gate, regression, or user-reported gap |
 | Optional Keep boxes (`v1.15+`) | Theme pools in `docs/v1.13-plus-refinement-roadmap.md` | Enough unrelated Keeps justify a box; not a train before v2 |
 | v1.14 review follow-up | Apple questions, rejection, hotfix | Only if review or usage surfaces a real issue |
+| External review candidates | Engineering hygiene, journeys, portable recipe, CI | Promote one slice at a time from `docs/v2-external-review-synthesis-2026-07-18.md` |
+
+Packaging-gate candidates distilled from the same reviews (smoke card, JP
+export visual check, can/cannot copy, Book-order storage disclosure, Book
+VoiceOver minimum) live under **§3.1** of that synthesis. They support the
+human gate above; they are not a parallel implementation queue.
 
 ### Hard rails (v2 does not lift these)
 
@@ -205,6 +213,11 @@ After Alpha proves the source-preserving shape:
 - Chapter-level Diff / Review and chapter-scoped search
 - Small explicit manifest if needed (no hidden database model)
 
+Review-reinforced candidates for this phase (search, chapter nav + private
+reading position, portable recipe export/import, Assist expectation UX, Book
+vs OKF copy): `docs/v2-external-review-synthesis-2026-07-18.md` §3.2.
+Still no background index, auto-repair, or second edit buffer.
+
 ## v3.x Speculative Local AI Re-evaluation
 
 Not “AI expansion by default.” Earliest reasonable point to re-evaluate
@@ -235,6 +248,7 @@ Operational checklists:
 | Next slice | `docs/current-work.md` |
 | Implementation truth | `docs/current-status.md` |
 | v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
+| v2 external review pool | `docs/v2-external-review-synthesis-2026-07-18.md` |
 | OKF pin | `docs/okf-spec-pin.md` |
 | Closed bridge | `docs/v1.8-plus-product-review-roadmap.md` |
 | Parked refinement themes | `docs/v1.13-plus-refinement-roadmap.md` |

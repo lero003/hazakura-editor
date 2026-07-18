@@ -19,6 +19,7 @@ v1 residual / evidence pools are parked.
 - `assist-surface-strategy.md`: future assist-surface direction.
 - `current-work.md`: **v2 active queue** (Book Scope slices; v1 residual parked).
 - `roadmap.md`: **v2 development phase**, parked residual/evidence, ship-time Help.
+- `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
 - `current-status.md`: current implementation and release state.
 - `okf-spec-pin.md`: shared OKF pin, co-update surfaces, and version-upgrade process.
 - `v1.8-plus-product-review-roadmap.md`: completed v1.8–v1.12 bridge (historical + gate wording).
@@ -50,6 +51,7 @@ Active planning surface (intentionally small):
 - `roadmap.md` — **v2 phase** + parked residual
 - `current-work.md` — next v2 slices
 - `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 design SoT
+- `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
 - `okf-spec-pin.md` + closed v1.10 / v1.11 / v1.12 contracts
 - `v1.8-plus-product-review-roadmap.md` — closed bridge
 - `v1.13-plus-refinement-roadmap.md` — parked themes

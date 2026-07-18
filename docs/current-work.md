@@ -21,6 +21,8 @@ remain parked unless a release gate needs them.
   **not** claim tag, upload, or publication for `2.0.0`.
 - Plan of record: `docs/roadmap.md`.
 - Design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+- External review pool (advisory candidates for gate / v2.x / hygiene):
+  `docs/v2-external-review-synthesis-2026-07-18.md`.
 - Store draft: `docs/releases/2.0.0-app-store-release-notes.md`.
 
 ## Lane Timeline
