@@ -275,7 +275,7 @@ export function useDocumentExport({
             });
             return index === 0
               ? html
-              : `<div class="book-scope-page-break" aria-hidden="true"></div>${html}`;
+              : `<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next">${html}</section>`;
           })
           .join("\n")
         : renderMarkdown(activeContentsRef.current, {
@@ -460,7 +460,10 @@ export function useDocumentExport({
     padding: 0;
     visibility: hidden;
   }
-  .book-scope-page-break { break-before: column; }
+  /* Put the break on non-empty chapter content. WebKit may discard an empty
+     multicol break marker, which would pack short chapters onto one page. */
+  .book-scope-pdf-chapter { break-inside: auto; }
+  .book-scope-pdf-chapter--next { break-before: column; }
   .markdown-preview h1,
   .markdown-preview h2,
   .markdown-preview h3,
@@ -537,7 +540,7 @@ export function useDocumentExport({
     font-size: 0.85em;
   }
   @media print {
-    .book-scope-page-break { break-before: page; page-break-before: always; }
+    .book-scope-pdf-chapter--next { break-before: page; page-break-before: always; }
     @page { margin: ${pdfMarginCss(preset)}; }
     html { min-height: 0; min-width: 0; }
     body {

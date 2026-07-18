@@ -825,10 +825,10 @@ describe("useDocumentExport", () => {
       filters: [{ name: "PDF", extensions: ["pdf"] }],
     });
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
-      "book-scope-page-break",
+      '<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next"><p># Two</p></section>',
     );
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
-      ".book-scope-page-break { break-before: column; }",
+      ".book-scope-pdf-chapter--next { break-before: column; }",
     );
   });
 
