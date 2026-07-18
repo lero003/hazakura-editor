@@ -154,6 +154,7 @@ pub(crate) const MENU_LOCAL_DATA_DISCLOSURE: &str = "local-data-disclosure";
 pub(crate) const MENU_OPEN_SUPPORT_DIAGNOSTICS: &str = "open-support-diagnostics";
 pub(crate) const MENU_PRIVACY_POLICY: &str = "privacy-policy";
 pub(crate) const MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS: &str = "open-source-acknowledgements";
+pub(crate) const MENU_BOOKS_AND_KNOWLEDGE_FOLDERS: &str = "books-and-knowledge-folders";
 pub(crate) const MENU_ABOUT_HELP: &str = "about-help";
 pub(crate) const MENU_OPEN_AGENT_WINDOW: &str = "open-agent-window";
 pub(crate) const MENU_OPEN_APPLE_ASSIST_WINDOW: &str = "open-apple-assist-window";

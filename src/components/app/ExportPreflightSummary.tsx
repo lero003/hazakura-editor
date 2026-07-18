@@ -34,12 +34,15 @@ export function ExportPreflightSummary({
             {preflight.issues.length > 0 ? (
               <ul className="export-preflight-issues">
                 {preflight.issues.map((issue, index) => (
-                  <li data-severity={issue.severity} key={`${issue.kind}:${issue.subject}:${index}`}>
+                  <li
+                    data-severity={issue.severity}
+                    key={`${issue.kind}:${issue.subject}:${index}`}
+                  >
                     {copy.issue(issue.kind, issue.subject)}
                   </li>
                 ))}
               </ul>
-            ) : ` ${copy.noStructureIssues}`}
+            ) : null}
           </dd>
         </div>
       ) : null}
@@ -82,7 +85,6 @@ function getExportPreflightCopy(
       issue: issueCopyKana,
       metadataLabel: "しょしじょうほう",
       metadataMissing: (fields: readonly string[]) => `${fields.join("・")}が まだ ありません。`,
-      noStructureIssues: "もんだいは みつかりませんでした。",
       savedSource: "いまの ふみと おなじです。",
       sourceLabel: "もとの ふみ",
       structureLabel: "こうせい",
@@ -101,7 +103,6 @@ function getExportPreflightCopy(
       issue: issueCopyJa,
       metadataLabel: "書誌情報",
       metadataMissing: (fields: readonly string[]) => `${fields.join("・")}が未入力です。`,
-      noStructureIssues: "問題は見つかりませんでした。",
       savedSource: "現在の文書に未保存の変更はありません。",
       sourceLabel: "元の文書",
       structureLabel: "構成",
@@ -119,7 +120,6 @@ function getExportPreflightCopy(
     issue: issueCopyEn,
     metadataLabel: "Metadata",
     metadataMissing: (fields: readonly string[]) => `Missing: ${fields.join(", ")}.`,
-    noStructureIssues: " No issues found.",
     savedSource: "No unsaved changes are currently detected.",
     sourceLabel: "Source",
     structureLabel: "Structure",

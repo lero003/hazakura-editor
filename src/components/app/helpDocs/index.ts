@@ -27,11 +27,13 @@
 // English so the document is uniform regardless of
 // `menuLanguage`).
 import aboutMd from "./en/about.md?raw";
+import booksAndKnowledgeFoldersMd from "./en/books-and-knowledge-folders.md?raw";
 import localDataDisclosureMd from "./en/local-data-disclosure.md?raw";
 import supportDiagnosticsMd from "./en/support-diagnostics.md?raw";
 import openSourceAcknowledgementsMd from "./en/open-source-acknowledgements.md?raw";
 import privacyPolicyMd from "./en/privacy-policy.md?raw";
 import type { HelpDocumentDialogMode } from "../../../types";
+import { APP_VERSION } from "../../../lib/appVersion";
 
 export type HelpDocSection = {
   testId: string;
@@ -112,6 +114,34 @@ export const openSourceAcknowledgements: HelpDoc = {
   ],
 };
 
+export const booksAndKnowledgeFolders: HelpDoc = {
+  id: "books-and-knowledge-folders",
+  title: "Books and knowledge folders",
+  kicker: "Help",
+  boundaryNoteTitle: "Structured Markdown",
+  boundaryNoteBody:
+    "Short how-to for treating chosen Markdown files as one book and for optional OKF knowledge-folder review. Explicit actions only; no auto-repair.",
+  footerNote:
+    "Book order is private to Hazakura. OKF review checks compatibility and does not rewrite files for you.",
+  source: booksAndKnowledgeFoldersMd,
+  sections: [
+    { testId: "help-doc-section-book-tab", title: "Book tab" },
+    {
+      testId: "help-doc-section-suggest",
+      title: "Suggest from workspace",
+    },
+    {
+      testId: "help-doc-section-okf",
+      title: "Knowledge folder (OKF)",
+    },
+    {
+      testId: "help-doc-section-export-book",
+      title: "Export whole book",
+    },
+    { testId: "help-doc-section-boundaries", title: "Boundaries" },
+  ],
+};
+
 export const aboutHazakuraEditor: HelpDoc = {
   id: "about",
   title: "About Hazakura Editor",
@@ -120,8 +150,8 @@ export const aboutHazakuraEditor: HelpDoc = {
   boundaryNoteBody:
     "About keeps product identity, support direction, and distribution-lane wording in one small Help document.",
   footerNote:
-    "The current version is 0.18.0. Release, signing, and App Store status must be checked against the current build before publication claims are made.",
-  source: aboutMd,
+    `The current package version is ${APP_VERSION}. Release, signing, and App Store status must be checked against the current build before publication claims are made.`,
+  source: aboutMd.replaceAll("{{APP_VERSION}}", APP_VERSION),
   sections: [
     { testId: "help-doc-section-app", title: "App" },
     { testId: "help-doc-section-lanes", title: "Distribution lanes" },
@@ -154,6 +184,7 @@ export const helpDocsByMode: Record<HelpDocumentDialogMode, HelpDoc> = {
   diagnostics: supportDiagnostics,
   "privacy-policy": privacyPolicy,
   "open-source-acknowledgements": openSourceAcknowledgements,
+  "books-and-knowledge-folders": booksAndKnowledgeFolders,
   about: aboutHazakuraEditor,
 };
 

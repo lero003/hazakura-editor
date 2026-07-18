@@ -67,6 +67,7 @@ export type CommandPaletteCopy = {
     "help.supportDiagnostics": CommandPaletteEntryCopy;
     "help.privacyPolicy": CommandPaletteEntryCopy;
     "help.openSourceAcknowledgements": CommandPaletteEntryCopy;
+    "help.booksAndKnowledgeFolders": CommandPaletteEntryCopy;
     "help.about": CommandPaletteEntryCopy;
   };
 };
@@ -275,6 +276,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           label: "オープンソース の しゃじ…",
           keywords: ["ライセンス", "依存"],
         },
+        "help.booksAndKnowledgeFolders": {
+          label: "ほんと ちしきフォルダ…",
+          keywords: ["本", "Book", "OKF", "章", "知識"],
+        },
         "help.about": {
           label: "Hazakura Editor について…",
           keywords: ["バージョン", "情報"],
@@ -480,6 +485,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
           label: "オープンソースの謝辞…",
           keywords: ["ライセンス", "依存"],
         },
+        "help.booksAndKnowledgeFolders": {
+          label: "本と知識フォルダ…",
+          keywords: ["本", "Book", "OKF", "章", "知識フォルダ", "構造"],
+        },
         "help.about": {
           label: "Hazakura Editor について…",
           keywords: ["バージョン", "情報"],
@@ -596,6 +605,10 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       "help.privacyPolicy": { label: "Privacy Policy…" },
       "help.openSourceAcknowledgements": {
         label: "Open Source Acknowledgements…",
+      },
+      "help.booksAndKnowledgeFolders": {
+        label: "Books and knowledge folders…",
+        keywords: ["book", "OKF", "chapter", "structure", "markdown"],
       },
       "help.about": { label: "About Hazakura Editor…" },
     },

@@ -38,6 +38,8 @@ export const MENU_OPEN_SUPPORT_DIAGNOSTICS = "open-support-diagnostics";
 export const MENU_PRIVACY_POLICY = "privacy-policy";
 export const MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS =
   "open-source-acknowledgements";
+export const MENU_BOOKS_AND_KNOWLEDGE_FOLDERS =
+  "books-and-knowledge-folders";
 export const MENU_ABOUT_HELP = "about-help";
 export const MENU_QUIT_APP = "quit-app";
 export const MENU_EXPORT_EPUB_BETA = "export-epub-beta";
@@ -122,6 +124,7 @@ export type HelpDocumentDialogMode =
   | "diagnostics"
   | "privacy-policy"
   | "open-source-acknowledgements"
+  | "books-and-knowledge-folders"
   | "about";
 
 export type PreferencesDialogMode =

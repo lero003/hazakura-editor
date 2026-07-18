@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 Book Scope vertical slice source-complete)
+Last reviewed: 2026-07-18 (v2.0.0 version + Help ship polish in source)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`1.14.0`** (source tag `v1.14.0`) |
+| Package / app version in tree | **`2.0.0`** (tag `v2.0.0` not claimed until cut) |
 | Published Mac App Store | **`1.13.0`** (user-reported 2026-07-18) |
-| v1.14 | **Submitted** for App Store review (user-reported 2026-07-18). Early look OK. Publication not claimed until confirmed. |
-| Active product phase | **v2 development** — Book Scope / OKF multi-file feel |
-| Parked (not the main queue) | v1.14 residual polish, broad distribution evidence matrix, optional Keep boxes |
+| v1.14 | **Submitted** for App Store review (user-reported). Separate from tree `2.0.0`. |
+| Active product phase | **v2.0 source candidate** — Book Scope + OKF multi-file + Help |
+| Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
 
@@ -40,15 +40,15 @@ User direction:
    using; do not drive the main queue from residual polish or evidence lists.
 2. **Open v2 development.** The v1.8–v1.12 bridge is enough to start Book
    Scope work. Do not wait for a pre-v2 essay on “multi-file value.”
-3. **Product narrative / Help** lands when v2 is shippable and OKF multi-file
-   feel is good enough — expand Help (and other feature explanations) as part
-   of **v2 ship polish**, not as a pre-implementation gate.
+3. **Product narrative / Help** for books and OKF is **in source** for `2.0.0`
+   (Command Palette Help page + store draft). Packaging and publication stay
+   human-gated.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
-[now]    v2.0 Book Scope development (design → slices → ship)
-[parked] residual polish · broad evidence matrix · optional v1.15+ Keep boxes
-[at ship] Help / feature copy expansion (when OKF multi-file feel is ready)
+[done]   v2.0 Book Scope Alpha + UX quieting + Help (tree version 2.0.0)
+[now]    packaged candidate / tag / store gate for 2.0.0 (human)
+[parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
 
@@ -73,14 +73,13 @@ Order of work (detail in the design doc; refine while building):
 3. **Done in source: Whole-book reading.** A read-only scroll reader uses scope
    order, live dirty buffers, per-chapter image bases, and visible partial-load
    notices without creating a second editable buffer.
-4. **Done in source: Book export + preflight** — explicit Current file / Book
-   Scope choice for EPUB/PDF, ordered multi-chapter output, and bounded missing
+4. **Done in source: Book export + preflight** — explicit Current file / Whole
+   book choice for EPUB/PDF, ordered multi-chapter output, and bounded missing
    chapter/image/heading/metadata checks before destination selection.
-5. **Now: candidate proof + ship polish decision** — run the full gates and
-   built-app Book export smoke, then decide the v2 version/candidate boundary.
-6. **Ship polish including Help** — when the multi-file / OKF loop feels
-   shippable: Help pages, in-app feature explanation, store/release copy.
-   Do **not** front-load long product essays before the feel exists.
+5. **Done in source: UX quieting + Help + version `2.0.0`.** Settled Book view
+   presentation, Help **Books and knowledge folders**, store draft notes.
+6. **Now: human packaging gate** — tag/pkg/submit only with approval; fix only
+   reproduced friction.
 
 ### Parked (resume only if friction or a release needs them)
 

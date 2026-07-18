@@ -609,11 +609,6 @@
   line-height: 1.6;
 }
 
-.book-scope-panel button.primary {
-  color: var(--button-primary-text, white);
-  background: var(--accent);
-}
-
 .book-scope-purpose {
   margin: 4px 2px 10px;
   color: var(--text-muted);
@@ -650,19 +645,41 @@
 }
 
 .book-scope-toolbar {
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
   position: sticky;
   z-index: 2;
   top: 0;
+  gap: 8px;
   padding: 4px 0 8px;
   background: var(--surface-muted);
 }
 
-.book-scope-toolbar span {
-  flex: 1 0 100%;
-  margin-right: auto;
+.book-scope-toolbar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
   color: var(--text-muted);
   font-size: 0.88em;
+}
+
+.book-scope-toolbar-warning {
+  color: var(--warning-color, #b06a24);
+}
+
+.book-scope-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.book-scope-toolbar-actions .primary,
+.book-scope-edit-actions .primary,
+.book-scope-empty button.primary {
+  color: var(--button-primary-text, white);
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
 }
 
 .book-scope-toolbar button,
@@ -670,6 +687,7 @@
 .book-scope-empty button,
 .book-scope-row-actions button {
   min-height: 28px;
+  padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text);
@@ -679,9 +697,15 @@
 .book-scope-edit-actions {
   position: sticky;
   bottom: 0;
+  flex-wrap: wrap;
   justify-content: flex-end;
   padding: 10px 0 2px;
   background: var(--surface-muted);
+}
+
+.book-scope-edit-actions-spacer {
+  flex: 1 1 auto;
+  min-width: 8px;
 }
 
 .book-scope-list {

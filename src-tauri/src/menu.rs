@@ -394,6 +394,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         &[
             &MenuItem::with_id(
                 app,
+                MENU_BOOKS_AND_KNOWLEDGE_FOLDERS,
+                label("Books and Knowledge Folders…", "本と知識フォルダ…"),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
                 MENU_LOCAL_DATA_DISCLOSURE,
                 label("Local Data Disclosure...", "ローカルデータの扱い..."),
                 true,
@@ -594,6 +601,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "しまう" => "しまふ",
         "拡大/縮小" => "おほきく/ちひさく",
         "ヘルプ" => "たすけ",
+        "本と知識フォルダ…" => "ほんと ちしきふぉるだ…",
         "ローカルデータの扱い..." => "ろーかるでーたのあつかひ...",
         "Hazakura Editor について" => "Hazakura Editor のこと",
         "サービス" => "つかへ",
@@ -698,6 +706,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_OPEN_SUPPORT_DIAGNOSTICS
                 | MENU_PRIVACY_POLICY
                 | MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS
+                | MENU_BOOKS_AND_KNOWLEDGE_FOLDERS
                 | MENU_ABOUT_HELP
                 | MENU_OPEN_AGENT_WINDOW
                 | MENU_OPEN_APPLE_ASSIST_WINDOW

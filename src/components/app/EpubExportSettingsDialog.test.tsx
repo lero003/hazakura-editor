@@ -34,12 +34,12 @@ describe("EpubExportSettingsDialog", () => {
 
     expect(screen.getByText(/1章を確認/)).toBeTruthy();
     expect(screen.getByText("著者名が未入力です。")).toBeTruthy();
-    fireEvent.click(screen.getByRole("radio", { name: "Book Scope" }));
+    fireEvent.click(screen.getByRole("radio", { name: "本全体" }));
     expect(screen.getByText(/見出しがない章: two.md/)).toBeTruthy();
     expect(screen.getByText(/読み込めない画像: \/workspace\/lost.png/)).toBeTruthy();
   });
 
-  it("requires an explicit current-file or Book Scope choice when a book exists", () => {
+  it("requires an explicit current-file or whole-book choice when a book exists", () => {
     const onConfirm = vi.fn();
     render(
       <EpubExportSettingsDialog
@@ -56,7 +56,7 @@ describe("EpubExportSettingsDialog", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("radio", { name: "Book Scope" }));
+    fireEvent.click(screen.getByRole("radio", { name: "本全体" }));
     fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
     expect(onConfirm).toHaveBeenCalledWith(
       { author: "", language: "ja", title: "Book" },

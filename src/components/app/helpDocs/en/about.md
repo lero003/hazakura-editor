@@ -5,10 +5,11 @@ Hazakura Editor is a Markdown-first safe editor for local text work. It is desig
 ## App
 
 - Product name: Hazakura Editor
-- Current app/package version: 0.18.0
+- Current app/package version: {{APP_VERSION}}
 - Developer: Hazakura Lab
 - Primary surface: Safe Editor
 - Saved document model: Markdown and text files on disk
+- Multi-file: optional Book tab for an explicit chapter list; optional OKF knowledge-folder review and starters
 
 ## Distribution lanes
 
@@ -18,7 +19,7 @@ The current public GitHub preview builds are warning-expected developer previews
 
 ## Support
 
-For support, include the app version, distribution lane if visible, macOS version, and a short description of what you were doing. Do not include document contents unless you choose to share them.
+For support, include the app version, distribution lane if visible, macOS version, and a short description of what you were doing. Do not include document contents unless you choose to share them. Help → Books and knowledge folders covers multi-file book scope and OKF checks.
 
 ## Legal notes
 

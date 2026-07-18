@@ -23,7 +23,7 @@ describe("PdfExportSettingsDialog", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("radio", { name: "Book Scope" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Whole book" }));
     fireEvent.click(screen.getByRole("button", { name: "Export" }));
     expect(onConfirm).toHaveBeenCalledWith("standard", "book");
   });

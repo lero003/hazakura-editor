@@ -183,7 +183,10 @@ export function OkfReviewPanel({
         </header>
 
         <p className="okf-review-intro">{copy.purposeIntro}</p>
-        <p className="okf-review-note">{copy.diskSnapshotNote}</p>
+        {/* Disk-snapshot note only after a scan — avoid two explanation walls up front. */}
+        {result ? (
+          <p className="okf-review-note">{copy.diskSnapshotNote}</p>
+        ) : null}
 
         {bundleRoot ? (
           <p className="okf-review-root" title={bundleRoot}>

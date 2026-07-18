@@ -44,6 +44,7 @@ function setup() {
     saveActiveTabAs: vi.fn(),
   };
   const setThemePreference = vi.fn();
+  const setPreferencesDialogMode = vi.fn();
 
   renderHook(() =>
     useAppMenuActionListener({
@@ -52,13 +53,13 @@ function setup() {
       recentFilesRef: { current: [] },
       recentFoldersRef: { current: [] },
       setEditorSettings: vi.fn(),
-      setPreferencesDialogMode: vi.fn(),
+      setPreferencesDialogMode,
       setPreviewVisible: vi.fn(),
       setThemePreference,
     }),
   );
 
-  return { actions, setThemePreference };
+  return { actions, setPreferencesDialogMode, setThemePreference };
 }
 
 describe("useAppMenuActionListener", () => {
@@ -102,6 +103,16 @@ describe("useAppMenuActionListener", () => {
 
     expect(actions.createOkfScaffold).toHaveBeenNthCalledWith(1, "minimal");
     expect(actions.createOkfScaffold).toHaveBeenNthCalledWith(2, "book-like");
+  });
+
+  it("routes the books and knowledge folders Help menu action", () => {
+    const { setPreferencesDialogMode } = setup();
+
+    void menuListeners[0]?.({ payload: "books-and-knowledge-folders" } as never);
+
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith(
+      "books-and-knowledge-folders",
+    );
   });
 
   it("routes the CRT theme menu action to setThemePreference", () => {

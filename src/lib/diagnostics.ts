@@ -11,6 +11,7 @@
 // in the snapshot.
 
 import { readHazakuraDistributionLane } from "./distributionLane";
+import { APP_VERSION } from "./appVersion";
 
 // -----------------------------------------------------------------------
 //  Diagnostics snapshot
@@ -105,7 +106,7 @@ export function collectDiagnostics(
 
   return {
     app: {
-      version: "0.18.0",
+      version: APP_VERSION,
       distributionLane: readHazakuraDistributionLane(),
     },
     system: {

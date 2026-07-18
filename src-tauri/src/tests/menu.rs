@@ -41,6 +41,25 @@ fn file_menu_exposes_okf_scaffold_starters() {
 }
 
 #[test]
+fn help_menu_exposes_books_and_knowledge_folders() {
+    let source = include_str!("../menu.rs");
+
+    assert_eq!(
+        MENU_BOOKS_AND_KNOWLEDGE_FOLDERS,
+        "books-and-knowledge-folders"
+    );
+    assert!(source.contains("MENU_BOOKS_AND_KNOWLEDGE_FOLDERS"));
+    assert!(source.contains("Books and Knowledge Folders…"));
+    assert!(source.contains("本と知識フォルダ…"));
+
+    let emit_match = source
+        .split("matches!(")
+        .find(|section| section.contains("MENU_LOCAL_DATA_DISCLOSURE"))
+        .expect("find menu action allowlist");
+    assert!(emit_match.contains("MENU_BOOKS_AND_KNOWLEDGE_FOLDERS"));
+}
+
+#[test]
 fn file_menu_exposes_reference_beside_editor_action() {
     let source = include_str!("../menu.rs");
 

@@ -255,9 +255,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     return {
       title: "ちしきフォルダ（OKF）を てんけん",
       purposeIntro:
-        "ほんの ならびかえでは ありません。えらんだ フォルダの Markdown が OKF v0.1 Draft として よめるかを かくにんします。じどうでは なおしません。",
+        "えらんだ フォルダが OKF v0.1 Draft として よめるかを かくにんします。じどうでは なおしません。",
       diskSnapshotNote:
-        "けっかは ディスク上の ファイルを みます。ひらいている みほぞんの タブと ちがう ことがあります。",
+        "ディスク上の ほぞんないようを みます。みほぞんの タブと ちがう ことがあります。",
       dirtyTabNote: "この ファイルは みほぞんの タブで ひらいています。",
       noWorkspace: "ところを ひらいてから てんけんして ください。",
       scanning: "てんけん ちゅう…",
@@ -341,9 +341,9 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     return {
       title: "知識フォルダ（OKF）を点検",
       purposeIntro:
-        "本の並べ替えではありません。選んだフォルダの Markdown が OKF v0.1 Draft として読めるかを確認します。自動では直しません。",
+        "選んだフォルダが OKF v0.1 Draft として読めるかを確認します。自動では直しません。",
       diskSnapshotNote:
-        "結果はディスク上のファイルを反映します。開いている未保存タブと異なる場合があります。",
+        "ディスク上の保存内容を見ます。未保存のタブとは違うことがあります。",
       dirtyTabNote: "このファイルは未保存のタブとして開いています。",
       noWorkspace: "ワークスペースを開いてから点検してください。",
       scanning: "点検中…",
@@ -425,7 +425,7 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
   return {
     title: "Review knowledge folder (OKF)",
     purposeIntro:
-      "This is not chapter reordering. It only checks whether Markdown in the selected folder can be read as OKF v0.1 Draft. Nothing is changed automatically.",
+      "Checks whether the selected folder can be read as OKF v0.1 Draft. Nothing is changed automatically.",
     diskSnapshotNote:
       "Results reflect files on disk. An open dirty tab may differ from the scan.",
     dirtyTabNote: "This file is open in a dirty tab.",

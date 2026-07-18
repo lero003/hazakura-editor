@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book Scope post-proof lane)
+Last reviewed: 2026-07-18 (v2.0 source candidate post-review lane)
 
 ## Purpose
 
@@ -17,11 +17,12 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2 Book Scope development.** Candidate proof is complete for explicit
-selection/order, bounded OKF suggestions, whole-book reading, and Book Scope
-EPUB/PDF export with preflight. Prefer one verifiable run around reproduced
-Alpha friction or an explicitly chosen version/Help/store-copy ship-polish
-decision. v1.14 review work is hotfix-only. Direction:
+Phase: **v2.0 source candidate post-review.** Candidate proof is complete for
+explicit selection/order, bounded OKF suggestions, whole-book reading,
+PDF/EPUB export with preflight, quieted Book UX, Help discoverability, and
+version surfaces. Prefer one verifiable run around reproduced friction or an
+explicitly approved signed App Store / TestFlight / package gate. v1.14 review
+work is hotfix-only. Direction:
 `docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
 
 For recurring automation, use the Active Queue in
@@ -33,9 +34,9 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. One v2 Book Scope item from the Active Queue: reproduced selection/order/
-   reader/export friction, or candidate/version/Help polish explicitly chosen
-   for ship. Keep every read bounded and user-triggered.
+1. One v2.0 item from the Active Queue: reproduced Book/Help/export friction,
+   or an explicitly approved signed candidate gate. Keep every read bounded
+   and user-triggered.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

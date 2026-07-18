@@ -961,6 +961,25 @@ export function useCommandPaletteController({
       },
       {
         category: paletteCopy.categories.help,
+        id: "help.booksAndKnowledgeFolders",
+        ...commandPaletteEntry(paletteCopy, "help.booksAndKnowledgeFolders", [
+          "book",
+          "books",
+          "chapter",
+          "okf",
+          "knowledge",
+          "folder",
+          "structure",
+          "markdown",
+          "export",
+          "scope",
+        ]),
+        run: () => {
+          actions.setPreferencesDialogMode("books-and-knowledge-folders");
+        },
+      },
+      {
+        category: paletteCopy.categories.help,
         id: "help.about",
         ...commandPaletteEntry(paletteCopy, "help.about", [
           "about",

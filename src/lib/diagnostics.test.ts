@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import packageMetadata from "../../package.json";
 import {
   assertNoForbiddenKeys,
   collectDiagnostics,
@@ -122,7 +123,7 @@ describe("collectDiagnostics", () => {
     const snapshot = collectDiagnostics(basicOptions());
 
     expect(snapshot.app.distributionLane).toBe("app-store");
-    expect(snapshot.app.version).toBe("0.18.0");
+    expect(snapshot.app.version).toBe(packageMetadata.version);
   });
 
   it("excludes document contents, workspace paths, and secret-looking keys", () => {

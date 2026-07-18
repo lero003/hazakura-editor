@@ -3,15 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
+Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`1.14.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. Latest GitHub source / local-app tag is `v1.14.0`
-  (source archive only; no binary assets). See
-  `docs/releases/1.14.0-source-tag.release.md`.
+- Current package/app version: **`2.0.0`** across npm, Tauri, Cargo, and
+  lockfile metadata. Latest prepared GitHub source / local-app tag remains
+  `v1.14.0` until a `v2.0.0` tag is cut. Draft notes:
+  `docs/releases/2.0.0-app-store-release-notes.md`,
+  `docs/releases/2.0.0-source-tag.release.md`.
 - **Published Mac App Store version: `1.13.0`.** App Review passed and the
   release was published (user-reported 2026-07-18): Theme A interaction
   clarity + Theme G bounded media on the v1.12 baseline. Release notes:
@@ -24,10 +25,9 @@ Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
   `docs/releases/1.14.0-app-store-release-notes.md`. Local package provenance
   lives in ignored `docs/internal/app-store-candidates/latest.json`. The source
   tag alone does not prove publication.
-- **Active product phase: v2 Book Scope development.** Residual polish, broad
-  distribution-evidence matrix, and optional `v1.15+` Keep boxes are parked.
-  Multi-file value copy and Help expansion are **v2 ship polish** (when OKF
-  multi-file feel is ready), not a pre-coding essay gate. Queue:
+- **Active product phase: v2.0 source candidate.** Book Scope Alpha, UX
+  quieting, and Help for books/OKF are in source at package **`2.0.0`**.
+  Residual polish and broad evidence stay parked. Queue:
   `docs/current-work.md`. Phase: `docs/roadmap.md`.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
@@ -55,22 +55,41 @@ Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
   remain visible as notices. Editing a chapter returns through the existing
   workspace tab path rather than creating a second editable buffer.
 - **Book Scope PDF/EPUB export and bounded preflight are implemented in source.**
-  Existing export dialogs now explicitly choose Current file or Book Scope.
+  Existing export dialogs now explicitly choose Current file or Whole book.
   Book output keeps saved chapter order, live dirty buffers, and chapter-local
   image bases. Preflight runs only from the export action, checks unavailable
   chapters, up to 100 workspace images, missing headings, and EPUB metadata,
   and blocks Book export when a chapter is unavailable. It adds no manifest,
   background indexing, source rewrite, or second editable buffer.
 - **Latest source and built-app candidate proof is green.** TypeScript/Vitest
-  (**201 files / 1,659 tests**), Vite, Rust (**366 pass / 2 host-dependent
-  ignored**), App Store surface (**107 tests**), and the helper-enabled App Store
-  preview build pass. A fresh built app proposed three chapters from the official
+  (**201 files / 1,664 tests**), Vite, Rust (**367 pass / 2 host-dependent
+  ignored**), App Store surface (**107 tests**), and the helper-enabled App
+  Store preview build all pass on tree `2.0.0`. The built bundle reports
+  `2.0.0`, passes deep/strict code-sign verification, and opens an onscreen
+  app window. A fresh built app proposed three chapters from the official
   OKF fixture, restored their saved order, and read all three in the whole-book
   reader. Export produced a three-page A4 PDF verified in macOS Preview with one
   chapter per page, plus a valid three-document EPUB whose metadata, spine, and
   navigation preserve Book Scope order. Preflight showed the fixture's missing
   headings and author metadata; a retained unavailable chapter blocked Book PDF
   and EPUB while leaving Current file available.
+- **The v2.0 UX review closed three release-facing gaps.** Books and knowledge
+  folders is reachable from the native Help menu as well as Command Palette;
+  saving or cancelling chapter selection restores focus to its trigger; About
+  and diagnostics derive the visible version from package metadata instead of
+  duplicating it.
+- **Dependency audits have no release-blocking finding.** `npm audit
+  --audit-level=high` reports 0 vulnerabilities. `cargo audit` exits 0 with 18
+  allowed warnings already represented by the existing Tauri Linux / GTK,
+  transitive unmaintained-crate, and `pdf-extract` exception set; it reports no
+  vulnerability or new macOS blocker.
+- **Structured Markdown / OKF readiness (claim boundary for v2 Alpha):** With
+  single-document structure (v1.10), OKF review (v1.11), starter scaffold
+  (v1.12), and Book Scope select/order/suggest/read/export + quieted presentation,
+  the product can support OKF-style structured Markdown as an **explicit,
+  local, non-auto-repair** workflow. In-app Help **Books and knowledge folders**
+  documents the loop; store copy is drafted for `2.0.0`. Indexing and auto
+  structure detection remain out of scope.
 - **Book Scope Alpha built-app interaction smoke passed on 2026-07-18.** A
   throwaway nested workspace covered explicit selection, order changes, dirty
   chapter switching and return, scope-external file opening, relaunch restore,
@@ -99,8 +118,19 @@ Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open main queue:** the v2 candidate/version and ship-polish decision,
-  followed only by reproduced Alpha friction (design SoT
+- **Book Scope UX quieting is in source.** After scope is saved, the Book view
+  leads with whole-book read + edit. Workspace suggestion stays a setup action
+  (empty state and chapter edit). Recheck is shown only when entries are
+  unavailable. Chapter rows hide root-level path noise. Export dialogs say
+  “本全体 / Whole book” instead of internal Book Scope jargon; OKF review opens
+  with one short purpose line and shows the disk-snapshot note only after a
+  scan.
+- **v2 Help expansion is in source.** The native Help menu and Command Palette
+  open **Books and knowledge folders…** (English Help body). Local Data
+  Disclosure mentions whole-book export and app-private book order. About /
+  diagnostics derive `2.0.0` from package metadata.
+- **Open main queue:** packaged candidate gates and human decisions for tag /
+  App Store package of `2.0.0`, then only reproduced Alpha friction (design SoT
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
 - **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
   broad TestFlight / VoiceOver / evidence matrix.
@@ -830,6 +860,10 @@ baseline, and smoke evidence are archived under
 - `docs/roadmap.md`: **v2 development phase** (active); residual/evidence parked.
 - `docs/current-work.md`: **v2 slice queue**.
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
+- `docs/releases/2.0.0-app-store-release-notes.md`: store draft for tree
+  `2.0.0` (not published by the draft alone).
+- `docs/releases/2.0.0-source-tag.release.md`: boundary for a future `v2.0.0`
+  source tag (not cut by the note alone).
 - `docs/releases/1.14.0-source-tag.release.md`: `v1.14.0` source-tag boundary.
 - `docs/releases/1.14.0-app-store-release-notes.md`: store copy for submitted
   `1.14.0` (publication unconfirmed).

@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-18 (v1.14.0 tagged / selected candidate; store 1.13.0)
+Last reviewed: 2026-07-18 (tree 2.0.0 Book Scope + Help; store 1.13.0)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -244,9 +244,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.14.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag is [v1.14.0](https://github.com/lero003/hazakura-editor/tree/v1.14.0) (no binary assets). The selected App Store candidate uses the same app version; App Store upload, review, and publication remain human-gated and are not implied by the tag.
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.13.0`; do not reopen a published store lane. v1.14 packaging / TestFlight remains human-gated.
-- The latest prepared GitHub source / local-app tag is [v1.14.0](https://github.com/lero003/hazakura-editor/tree/v1.14.0). Release-note evidence: [1.14.0 source tag](docs/releases/1.14.0-source-tag.release.md) and [1.14.0 App Store notes](docs/releases/1.14.0-app-store-release-notes.md).
+- Current package/app version is `2.0.0` across npm, Tauri, and Cargo metadata. The latest prepared GitHub source / local-app tag is still [v1.14.0](https://github.com/lero003/hazakura-editor/tree/v1.14.0) until a `v2.0.0` tag is cut. App Store upload, review, and publication remain human-gated and are not implied by the tree version.
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.13.0`; do not reopen a published store lane. `2.0.0` packaging / TestFlight remains human-gated.
+- Draft release notes for the tree version: [2.0.0 App Store notes](docs/releases/2.0.0-app-store-release-notes.md) and [2.0.0 source-tag boundary](docs/releases/2.0.0-source-tag.release.md). Prior checkpoint: [1.14.0 source tag](docs/releases/1.14.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

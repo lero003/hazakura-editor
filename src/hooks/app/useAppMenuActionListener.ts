@@ -5,6 +5,7 @@ import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   APP_MENU_ACTION_EVENT,
   MENU_ABOUT_HELP,
+  MENU_BOOKS_AND_KNOWLEDGE_FOLDERS,
   MENU_EXPORT_EPUB_BETA,
   MENU_LOCAL_DATA_DISCLOSURE,
   MENU_IMPORT_PDF_IMAGE,
@@ -222,6 +223,9 @@ export function useAppMenuActionListener({
           break;
         case MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS:
           setPreferencesDialogMode("open-source-acknowledgements");
+          break;
+        case MENU_BOOKS_AND_KNOWLEDGE_FOLDERS:
+          setPreferencesDialogMode("books-and-knowledge-folders");
           break;
         case MENU_ABOUT_HELP:
           setPreferencesDialogMode("about");

@@ -124,10 +124,13 @@ describe("OkfReviewPanel", () => {
     const { onOpenConcept } = renderPanel();
 
     expect(screen.getByRole("heading", { name: /知識フォルダ（OKF）を点検/ })).not.toBeNull();
-    expect(screen.getByText(/本の並べ替えではありません/)).not.toBeNull();
+    expect(
+      screen.getByText(/選んだフォルダが OKF v0.1 Draft として読めるかを確認/),
+    ).not.toBeNull();
+    expect(screen.getByText(/ディスク上の保存内容を見ます/)).not.toBeNull();
     expect(screen.getAllByText(/リンク先のファイルがない/).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/Broken internal link/)).toBeNull();
-    expect(screen.getByText(/未保存のタブ/)).not.toBeNull();
+    expect(screen.getAllByText(/未保存のタブ/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/直した方がよいこと/)).not.toBeNull();
     expect(screen.getByText(/任意の改善案/)).not.toBeNull();
 

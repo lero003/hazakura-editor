@@ -961,6 +961,11 @@ describe("useCommandPaletteController", () => {
     ).toBe("Open Source Acknowledgements…");
     expect(
       result.current.filteredCommands.find(
+        (command) => command.id === "help.booksAndKnowledgeFolders",
+      )?.label,
+    ).toBe("Books and knowledge folders…");
+    expect(
+      result.current.filteredCommands.find(
         (command) => command.id === "help.about",
       )?.label,
     ).toBe("About Hazakura Editor…");
@@ -1043,11 +1048,15 @@ describe("useCommandPaletteController", () => {
     const openSource = result.current.filteredCommands.find(
       (command) => command.id === "help.openSourceAcknowledgements",
     );
+    const booksHelp = result.current.filteredCommands.find(
+      (command) => command.id === "help.booksAndKnowledgeFolders",
+    );
     const about = result.current.filteredCommands.find(
       (command) => command.id === "help.about",
     );
     expect(privacyPolicy?.category).toBe("Help");
     expect(openSource?.category).toBe("Help");
+    expect(booksHelp?.category).toBe("Help");
     expect(about?.category).toBe("Help");
 
     act(() => {
@@ -1063,6 +1072,12 @@ describe("useCommandPaletteController", () => {
     });
     expect(setPreferencesDialogMode).toHaveBeenCalledWith(
       "open-source-acknowledgements",
+    );
+    act(() => {
+      booksHelp?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith(
+      "books-and-knowledge-folders",
     );
     act(() => {
       about?.run();

@@ -43,6 +43,7 @@ import { vi } from "vitest";
 
 import {
   aboutHazakuraEditor,
+  booksAndKnowledgeFolders,
   helpDocsByMode,
   injectHelpDocSectionAnchors,
   localDataDisclosure,
@@ -119,6 +120,7 @@ describe("helpDocs bundle", () => {
       supportDiagnostics,
       privacyPolicy,
       openSourceAcknowledgements,
+      booksAndKnowledgeFolders,
       aboutHazakuraEditor,
     ]);
 
@@ -282,7 +284,7 @@ describe("PrivacyPreferencesPane", () => {
 
     const text = screen.getByTestId("help-doc-body").textContent ?? "";
     expect(text).toContain("About Hazakura Editor");
-    expect(text).toContain("0.18.0");
+    expect(text).toContain("2.0.0");
     expect(text).toContain("Safe Editor");
   });
 

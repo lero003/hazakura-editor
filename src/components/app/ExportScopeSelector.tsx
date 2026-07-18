@@ -8,11 +8,21 @@ type Props = {
 };
 
 export function ExportScopeSelector({ menuLanguage, onChange, value }: Props) {
-  const copy = menuLanguage === "en"
-    ? { legend: "Export range", document: "Current file", book: "Book Scope" }
-    : menuLanguage === "kana"
-      ? { legend: "かきだす はんい", document: "いまの ファイル", book: "Book Scope" }
-      : { legend: "書き出す範囲", document: "現在のファイル", book: "Book Scope" };
+  // Prefer plain product words over internal "Book Scope" jargon in the dialog.
+  const copy =
+    menuLanguage === "en"
+      ? { legend: "Export range", document: "Current file", book: "Whole book" }
+      : menuLanguage === "kana"
+        ? {
+            legend: "かきだす はんい",
+            document: "いまの ファイル",
+            book: "ほん ぜんたい",
+          }
+        : {
+            legend: "書き出す範囲",
+            document: "現在のファイル",
+            book: "本全体",
+          };
   return (
     <fieldset className="export-scope-selector">
       <legend>{copy.legend}</legend>
