@@ -124,11 +124,12 @@ Hazakura Editor currently focuses on these surfaces:
 - Import Assist (v1.6): open a user-selected PDF or image and create an
   unsaved on-device Markdown draft via PDFKit / Vision, with no cloud OCR and
   no auto-save.
-- Book Scope Alpha (v2 source): explicitly selected Markdown chapters,
-  app-private per-workspace ordering, unavailable-entry recheck, navigation
-  through the existing single active editor buffer, whole-book reading, and
-  explicit PDF / EPUB export with bounded preflight. Shared manifests and
-  automatic background indexing are not part of this slice.
+- Book Scope Alpha (v2 source): explicitly selected Markdown chapters in an
+  app-private per-workspace document/group tree, same-group ordering,
+  unavailable-entry recheck, navigation through the existing single active
+  editor buffer, whole-book reading, and explicit PDF / EPUB export with
+  bounded preflight. Shared manifests and automatic background indexing are not
+  part of this slice.
 
 For the full implementation inventory and release state, see
 [`docs/current-status.md`](docs/current-status.md).

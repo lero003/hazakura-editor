@@ -42,14 +42,19 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
 
 - UI は既存左 sidebar 内の **ファイル / 本** 切替。Book view は明示選択した
   Markdown 章と順序だけを表示し、右側は既存の単一編集bufferを使う。
-- scope は app-private localStorage に workspace root ごとの相対path列として保存する。
+- scope は app-private localStorage に workspace root ごとのversion付き
+  **ordered tree** として保存する。nodeはMarkdown documentまたは表示用groupで、
+  OKF version/type等を保存形式へ持ち込まない。従来のflat path列はroot直下の
+  document列として無損失に読み、再度候補を作って保存した時だけ階層を採用する。
   workspace内manifest、Markdown source、OKF metadataは書き換えない。
 - Rust `resolve_book_scope` が main-window、100章、Markdown拡張子、相対path、
   canonical workspace containment、regular text file、symlink拒否を検証する。
 - 欠損・外部移動・読取不能の章はscopeから黙って消さず、利用不能として表示し、
   再確認または明示削除を待つ。アプリ内rename / move / Trashはscopeへ追従する。
 - 選択編集は保存 / キャンセル付き。並べ替えはdisk上のfile moveではなく、
-  app-privateな解釈順だけを上下する。
+  app-privateな解釈順だけを上下する。矢印移動は同じ親の兄弟内に限定し、
+  groupを越える移動は暗黙に行わない。Reader / PDF / Rust validationはtreeを
+  preorderで章列へ展開する。
 - 全編読書、book export、manifest共有、OKF Book semantics、AI構造編集は次slice以降。
 
 ## Explicit Chapter Suggestion Contract
@@ -66,12 +71,20 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
   Markdown link順を展開し、その下位index自体を配下本文の直前へ置く。下位index
   から配下外の共通資料へ戻るlinkはそこで
   先取りせず、rootが示す位置または末尾の安定path順へ残す。
+- index本文の見出しsectionはBook Scopeの表示用group候補として保持する。
+  standard Markdown linkのrelative / bundle-root形式は、現行pinに閉じた
+  adapterで安全に解決する。Book Scope保存tree自体はOKF固有fieldを持たず、
+  upstream変更時はadapter / fixtureだけを再評価できる形にする。
+- v2.0 adapterが構造候補として読むのはATX見出しとinline Markdown linkまで。
+  Setext見出し、reference-style link、frontmatter role、将来のmanifest semanticsは
+  推測で採用しない。実fixtureまたはOKF pin更新で必要になった時にadapterとtestを
+  追加し、保存済みBook treeを黙って再解釈しない。
 - 残りの読取可能な本文 `.md` を安定した相対path順で末尾へ置く。`log.md` と
   読取不能fileは候補から外す。optionをOFFにした場合は全 `index.md` も外す。
   候補draftでは個々のindexも通常のcheckboxで外せる。index link解釈は全体
   500件までとする。
-- 結果は **Hazakura Book Scope の候補順**であり、OKF準拠やOKF book orderを
-  意味しない。候補は選択画面のdraftへ入るだけで、自動保存しない。
+- 結果は **Hazakura Book Scope の候補tree / 読書順**であり、OKF準拠や
+  OKF book orderを意味しない。候補は選択画面のdraftへ入るだけで、自動保存しない。
 - ユーザーはcheckboxで調整し、「保存」で初めてworkspaceのBook Scopeへ反映する。
   走査打切り・100章上限はdraft上で明示する。
 - 起動時走査、background indexing、watcher、永続scan cache、source/manifestの
@@ -101,8 +114,8 @@ Alphaでは次を**保留**する。
 
 - Book view の「本全体を読む」からだけ開く、読み取り専用のscroll readerとする。
   editor / workspace chromeを一時的に覆うが、第二の編集bufferは作らない。
-- chapterは保存済みBook Scope順。開いているtabは未保存bufferを優先し、未openの
-  chapterだけdiskから読む。readerからsourceを変更・保存しない。
+- chapterは保存済みBook Scope treeのpreorder順。開いているtabは未保存bufferを
+  優先し、未openのchapterだけdiskから読む。readerからsourceを変更・保存しない。
 - 各chapterは元のdocument pathを保ち、既存のsanitize / workspace image / remote
   image設定をchapter単位で通す。相対画像を連結文書の基準pathへ誤変換しない。
 - 全体読込は明示操作時のみ、既存の1 file 10 MiB上限に加えて合計32 MiBまで。
@@ -116,10 +129,18 @@ Alphaでは次を**保留**する。
 
 - PDF / EPUB の既存settings dialogで **現在のファイル / Book Scope** を明示選択する。
   Book Scopeがない場合は従来の単一文書UIと挙動を保つ。HTMLは今回拡張しない。
-- Book出力は保存済みscope順でchapterを扱い、open tabの未保存bufferをdiskより優先する。
+- Book出力は保存済みscope treeのpreorder順でchapterを扱い、open tabの
+  未保存bufferをdiskより優先する。
   chapterごとのdocument pathを保持し、相対画像をworkspace rootやactive file基準へ潰さない。
-- EPUBはchapterごとのcontent document / navigationをscope順で生成する。PDFはchapter境界を
-  page breakとして一つのdirect-PDF HTMLへ組み、macOS print UIへ戻さない。
+- EPUBはchapterごとのcontent documentをpreorder順で生成する。`nav.xhtml` は
+  保存済みBook Scope treeを正本としてdocument/group階層を出力し、各chapter内の
+  Markdown見出し階層を末端に保つ。export時にindex.mdを再解釈して別の順序を
+  作らない。PDFはchapter境界をpage breakとして一つのdirect-PDF HTMLへ組み、
+  macOS print UIへ戻さない。
+- EPUB本文中で、含まれるMarkdown chapterを指すrelative / bundle-root linkは、生成した
+  `content-N.xhtml` と該当heading anchorへ書き換える。外部link、scope外link、
+  解釈不能linkを別の対象へ推測変換しない。同じchapter内でも改ページにより
+  別content documentへ移ったheading anchorは生成先へ合わせる。sourceは変更しない。
 - 書き出し開始時の明示操作でだけpreflightする。既存32 MiB Book読込上限と、最大100画像の
   workspace image確認を使い、利用不能chapter、読めない画像、見出しなし、EPUB metadata
   未入力をsettings dialogへ表示する。利用不能chapterはBook出力を停止し、warningはsourceを
@@ -134,10 +155,11 @@ Alphaでは次を**保留**する。
 - **主操作**: 「本全体を読む」と「編集」。章立て済みの画面では候補生成を並べない。
 - **候補を作る**: 空状態と章編集中の setup 操作。index.md 順の提案はここでだけ。
 - **再確認**: 利用不能章があるときだけ。問題がない日常ループでは出さない。
-- **章行**: ルート直下はファイル名のみ。入れ子 path だけ副題。title に相対 path。
+- **章行**: 保存済みgroup / document階層を静かなindentで表示する。ルート直下は
+  ファイル名のみ、入れ子 path だけ副題、titleに相対path。上下矢印は同じ親内だけ。
 - **書き出し UI**: 内部名 Book Scope ではなく「本全体 / Whole book」。
 - **keyboard**: 章選択のキャンセルと保存後は、起点の操作へ focus を戻す。
-- 契約（明示選択・app-private 順・単一編集 buffer・自動走査なし）は変えない。
+- 契約（明示選択・app-private tree・単一編集 buffer・自動走査なし）は変えない。
 
 ## Current Direction
 

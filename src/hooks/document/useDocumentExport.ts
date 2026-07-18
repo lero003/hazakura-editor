@@ -45,6 +45,7 @@ import type {
 } from "../../lib/tauri/bookScope";
 import { openTextFile } from "../../lib/tauri/files";
 import { loadBookScopeReaderDocuments } from "../../features/bookScope";
+import type { BookScopeNode } from "../../features/bookScope";
 import type { DocumentExportScope } from "../../features/document/exportScope";
 import {
   analyzeExportPreflight,
@@ -61,6 +62,7 @@ type UseDocumentExportOptions = {
   materializeImagesOnExport?: boolean;
   mediaAccess?: MediaImageAccessOptions | null;
   bookScopeChapters?: readonly BookScopeChapter[];
+  bookScopeNodes?: readonly BookScopeNode[];
   bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
   tabs?: readonly EditorTab[];
 };
@@ -68,6 +70,7 @@ type UseDocumentExportOptions = {
 export type EpubExportRequest = {
   bookAvailable: boolean;
   bookChapterRelativePaths: string[];
+  bookNavigationSignature: string;
   documentName: string;
   hasUnsavedChanges: boolean;
   preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
@@ -94,6 +97,7 @@ export function useDocumentExport({
   materializeImagesOnExport = DEFAULT_MEDIA_IMAGE_SETTINGS.materializeImagesOnExport,
   mediaAccess = null,
   bookScopeChapters = [],
+  bookScopeNodes = [],
   bookScopeUnavailable = [],
   tabs = [],
 }: UseDocumentExportOptions) {
@@ -107,6 +111,8 @@ export function useDocumentExport({
   mediaAccessRef.current = mediaAccess;
   const bookScopeChaptersRef = useRef(bookScopeChapters);
   bookScopeChaptersRef.current = bookScopeChapters;
+  const bookScopeNodesRef = useRef(bookScopeNodes);
+  bookScopeNodesRef.current = bookScopeNodes;
   const bookScopeUnavailableRef = useRef(bookScopeUnavailable);
   bookScopeUnavailableRef.current = bookScopeUnavailable;
   const tabsRef = useRef(tabs);
@@ -872,6 +878,7 @@ ${bodyHtml}
     setEpubExportRequest({
       bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
+      bookNavigationSignature: JSON.stringify(bookScopeNodes),
       documentName: activeTab.name,
       hasUnsavedChanges: isDirty(activeTab),
       preflightByScope,
@@ -881,7 +888,7 @@ ${bodyHtml}
       }),
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, bookScopeChapters, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
+  }, [activeContents, activeTab, bookScopeChapters, bookScopeNodes, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
 
   const cancelEpubBetaExport = useCallback(() => {
     setEpubExportRequest(null);
@@ -905,7 +912,8 @@ ${bodyHtml}
         const currentPaths = currentChapters.map((chapter) => chapter.relativePath);
         if (
           bookScopeUnavailableRef.current.length > 0 ||
-          currentPaths.join("\0") !== request.bookChapterRelativePaths.join("\0")
+          currentPaths.join("\0") !== request.bookChapterRelativePaths.join("\0") ||
+          JSON.stringify(bookScopeNodesRef.current) !== request.bookNavigationSignature
         ) {
           setStatus("Export EPUB beta stopped; book chapters changed or are unavailable");
           return;
@@ -945,6 +953,7 @@ ${bodyHtml}
       const loadApprovedLocalImage = loaders.loadApprovedLocalImage;
       const loadRemoteImage = loaders.loadRemoteImage;
       const { archive, warnings } = await buildEpubBetaArchiveWithReport({
+        bookNavigation: scope === "book" ? bookScopeNodesRef.current : undefined,
         chapters: bookDocuments?.documents.map((chapter) => ({
           documentName: chapter.name,
           documentPath: chapter.path,

@@ -1165,6 +1165,7 @@ export function useAppShellController() {
     activeTabId,
     autoBackupEnabled: editorSettings.autoBackupEnabled,
     bookScopeChapters: bookScope.bookScopeChapters,
+    bookScopeNodes: bookScope.bookScopeNodes,
     bookScopeUnavailable: bookScope.bookScopeUnavailable,
     materializeImagesOnExport: editorSettings.materializeImagesOnExport,
     mediaAccess: {

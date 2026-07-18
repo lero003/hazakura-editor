@@ -1,4 +1,24 @@
 export const MAX_BOOK_SCOPE_CHAPTERS = 100;
+export const MAX_BOOK_SCOPE_DEPTH = 16;
+export const MAX_BOOK_SCOPE_GROUP_TITLE_LENGTH = 200;
+
+export type BookScopeDocumentNode = {
+  kind: "document";
+  relativePath: string;
+  children: BookScopeNode[];
+};
+
+export type BookScopeGroupNode = {
+  kind: "group";
+  title: string;
+  children: BookScopeNode[];
+};
+
+/**
+ * App-private interpretation of one book. OKF/index data may suggest this tree,
+ * but the persisted shape deliberately contains no OKF version or metadata.
+ */
+export type BookScopeNode = BookScopeDocumentNode | BookScopeGroupNode;
 
 const MARKDOWN_EXTENSIONS = new Set(["md", "markdown", "mdown", "mkd", "mdx"]);
 
@@ -16,53 +36,214 @@ export function normalizeBookScopeRelativePath(path: string): string | null {
   return isBookScopeMarkdownPath(normalized) ? normalized : null;
 }
 
-export function mergeBookScopeSelection(
-  currentOrder: readonly string[],
-  selectedTreeOrder: readonly string[],
-): string[] {
-  const selected = new Set(selectedTreeOrder);
-  const retained = currentOrder.filter((path) => selected.has(path));
-  const retainedSet = new Set(retained);
-  const added = selectedTreeOrder.filter((path) => !retainedSet.has(path));
-  return [...retained, ...added].slice(0, MAX_BOOK_SCOPE_CHAPTERS);
+export function documentBookScopeNodes(paths: readonly string[]): BookScopeNode[] {
+  return paths.flatMap((value) => {
+    const relativePath = normalizeBookScopeRelativePath(value);
+    return relativePath
+      ? [{ kind: "document" as const, relativePath, children: [] }]
+      : [];
+  });
 }
 
-export function moveBookScopeChapter(
-  paths: readonly string[],
-  index: number,
+export function flattenBookScopeNodes(nodes: readonly BookScopeNode[]): string[] {
+  const paths: string[] = [];
+  const visit = (entries: readonly BookScopeNode[]): void => {
+    for (const node of entries) {
+      if (node.kind === "document") paths.push(node.relativePath);
+      visit(node.children);
+    }
+  };
+  visit(nodes);
+  return paths.slice(0, MAX_BOOK_SCOPE_CHAPTERS);
+}
+
+export function sanitizeBookScopeNodes(nodes: readonly unknown[]): BookScopeNode[] {
+  const seenPaths = new Set<string>();
+  let documentCount = 0;
+
+  const visit = (entries: readonly unknown[], depth: number): BookScopeNode[] => {
+    if (depth > MAX_BOOK_SCOPE_DEPTH || documentCount >= MAX_BOOK_SCOPE_CHAPTERS) {
+      return [];
+    }
+    const sanitized: BookScopeNode[] = [];
+    for (const value of entries) {
+      if (
+        !value ||
+        typeof value !== "object" ||
+        documentCount >= MAX_BOOK_SCOPE_CHAPTERS
+      ) {
+        continue;
+      }
+      const candidate = value as {
+        kind?: unknown;
+        relativePath?: unknown;
+        title?: unknown;
+        children?: unknown;
+      };
+      const childrenInput = Array.isArray(candidate.children)
+        ? candidate.children
+        : [];
+      if (candidate.kind === "document") {
+        if (typeof candidate.relativePath !== "string") continue;
+        const relativePath = normalizeBookScopeRelativePath(candidate.relativePath);
+        if (!relativePath || seenPaths.has(relativePath)) continue;
+        seenPaths.add(relativePath);
+        documentCount += 1;
+        sanitized.push({
+          kind: "document",
+          relativePath,
+          children: visit(childrenInput, depth + 1),
+        });
+        continue;
+      }
+      if (candidate.kind === "group" && typeof candidate.title === "string") {
+        const title = candidate.title.trim().slice(0, MAX_BOOK_SCOPE_GROUP_TITLE_LENGTH);
+        if (!title) continue;
+        const children = visit(childrenInput, depth + 1);
+        if (children.length > 0) {
+          sanitized.push({ kind: "group", title, children });
+        }
+      }
+    }
+    return sanitized;
+  };
+
+  return visit(nodes, 0);
+}
+
+export function moveBookScopeNode(
+  nodes: readonly BookScopeNode[],
+  relativePath: string,
   direction: -1 | 1,
-): string[] {
-  const target = index + direction;
-  if (index < 0 || index >= paths.length || target < 0 || target >= paths.length) {
-    return [...paths];
-  }
-  const next = [...paths];
-  [next[index], next[target]] = [next[target], next[index]];
-  return next;
+): BookScopeNode[] {
+  const visit = (entries: readonly BookScopeNode[]): BookScopeNode[] => {
+    const index = entries.findIndex(
+      (node) => node.kind === "document" && node.relativePath === relativePath,
+    );
+    if (index >= 0) {
+      const target = index + direction;
+      if (target < 0 || target >= entries.length) return [...entries];
+      const next = entries.map(cloneBookScopeNode);
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    }
+    return entries.map((node) => ({
+      ...node,
+      children: visit(node.children),
+    }));
+  };
+  return visit(nodes);
 }
 
-export function removeBookScopePath(
-  paths: readonly string[],
+export function bookScopeSiblingPosition(
+  nodes: readonly BookScopeNode[],
+  relativePath: string,
+): { index: number; count: number } | null {
+  for (const entries of siblingLists(nodes)) {
+    const index = entries.findIndex(
+      (node) => node.kind === "document" && node.relativePath === relativePath,
+    );
+    if (index >= 0) return { index, count: entries.length };
+  }
+  return null;
+}
+
+export function mergeBookScopeTreeSelection(
+  currentNodes: readonly BookScopeNode[],
+  selectedTreeOrder: readonly string[],
+): BookScopeNode[] {
+  const selected = new Set(selectedTreeOrder);
+  const retained = filterBookScopeNodes(currentNodes, selected);
+  const retainedPaths = new Set(flattenBookScopeNodes(retained));
+  const added = selectedTreeOrder
+    .filter((path) => !retainedPaths.has(path))
+    .map((relativePath) => ({
+      kind: "document" as const,
+      relativePath,
+      children: [],
+    }));
+  return sanitizeBookScopeNodes([...retained, ...added]);
+}
+
+export function removeBookScopeNodePath(
+  nodes: readonly BookScopeNode[],
   relativePath: string,
   includeDescendants = false,
-): string[] {
-  return paths.filter(
-    (path) =>
-      path !== relativePath &&
-      !(includeDescendants && path.startsWith(`${relativePath}/`)),
+): BookScopeNode[] {
+  const visit = (entries: readonly BookScopeNode[]): BookScopeNode[] =>
+    entries.flatMap((node): BookScopeNode[] => {
+      const children = visit(node.children);
+      if (node.kind === "group") {
+        return children.length ? [{ ...node, children }] : [];
+      }
+      const matches =
+        node.relativePath === relativePath ||
+        (includeDescendants && node.relativePath.startsWith(`${relativePath}/`));
+      if (matches) return includeDescendants ? [] : children;
+      return [{ ...node, children }];
+    });
+  return visit(nodes);
+}
+
+export function remapBookScopeNodePathPrefix(
+  nodes: readonly BookScopeNode[],
+  oldRelativePath: string,
+  newRelativePath: string,
+): BookScopeNode[] {
+  return sanitizeBookScopeNodes(
+    nodes.map((node): BookScopeNode => {
+      if (node.kind === "group") {
+        return {
+          ...node,
+          children: remapBookScopeNodePathPrefix(
+            node.children,
+            oldRelativePath,
+            newRelativePath,
+          ),
+        };
+      }
+      const relativePath =
+        node.relativePath === oldRelativePath
+          ? newRelativePath
+          : node.relativePath.startsWith(`${oldRelativePath}/`)
+            ? `${newRelativePath}${node.relativePath.slice(oldRelativePath.length)}`
+            : node.relativePath;
+      return {
+        ...node,
+        relativePath,
+        children: remapBookScopeNodePathPrefix(
+          node.children,
+          oldRelativePath,
+          newRelativePath,
+        ),
+      };
+    }),
   );
 }
 
-export function remapBookScopePathPrefix(
-  paths: readonly string[],
-  oldRelativePath: string,
-  newRelativePath: string,
-): string[] {
-  return paths.map((path) => {
-    if (path === oldRelativePath) return newRelativePath;
-    if (path.startsWith(`${oldRelativePath}/`)) {
-      return `${newRelativePath}${path.slice(oldRelativePath.length)}`;
+function cloneBookScopeNode(node: BookScopeNode): BookScopeNode {
+  return { ...node, children: node.children.map(cloneBookScopeNode) };
+}
+
+function* siblingLists(
+  nodes: readonly BookScopeNode[],
+): Generator<readonly BookScopeNode[]> {
+  yield nodes;
+  for (const node of nodes) {
+    yield* siblingLists(node.children);
+  }
+}
+
+function filterBookScopeNodes(
+  nodes: readonly BookScopeNode[],
+  selected: ReadonlySet<string>,
+): BookScopeNode[] {
+  return nodes.flatMap((node): BookScopeNode[] => {
+    const children = filterBookScopeNodes(node.children, selected);
+    if (node.kind === "group") {
+      return children.length ? [{ ...node, children }] : [];
     }
-    return path;
+    if (selected.has(node.relativePath)) return [{ ...node, children }];
+    return children;
   });
 }

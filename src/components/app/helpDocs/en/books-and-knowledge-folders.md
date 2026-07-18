@@ -6,11 +6,11 @@ Use ordinary Markdown files. When you want several of them to act as one book, o
 
 Open a workspace, then switch the sidebar from **Files** to **Book**.
 
-- **Choose chapters** selects Markdown files and saves an order private to this app. Disk files and folders are not rearranged.
+- **Choose chapters** selects Markdown files and saves an ordered tree private to this app. Disk files and folders are not rearranged.
 - After you save a scope, the list is for opening chapters and reading. **Read all** opens a read-only whole-book scroll view in that order.
-- **Edit** changes membership or order. Setup actions stay there, not on the everyday list.
+- **Edit** changes membership or order. Arrow moves stay inside the current group; they do not silently move a chapter into another work or section. Setup actions stay there, not on the everyday list.
 - Unavailable chapters stay listed until you recheck or remove them. The app does not drop them silently.
-- Saved book order is kept only in app-private settings for up to eight workspace roots. It is not written into the project folder. Saving a list for another workspace may drop the oldest saved list to keep storage small.
+- The saved book tree is kept only in app-private settings for up to eight workspace roots. It is not written into the project folder. Saving a tree for another workspace may drop the oldest saved entry to keep storage small.
 
 Each chapter is still a normal Markdown file. Only one primary edit buffer is active at a time.
 
@@ -18,7 +18,8 @@ Each chapter is still a normal Markdown file. Only one primary edit buffer is ac
 
 From an empty Book view, or while editing chapters, **Suggest from workspace** can propose a draft from the open workspace.
 
-- Root `index.md` internal links, when they resolve safely, shape the proposed order. Linked nested `index.md` files expand their local chapter links in place.
+- Root `index.md` internal links, when they resolve safely, shape the proposed tree. Linked nested `index.md` files expand their local chapter links in place, and index section headings become quiet Book groups.
+- Relative links and bundle-root links beginning with `/` are interpreted by the current OKF input adapter. The saved Book tree itself does not store an OKF version, so later OKF changes do not redefine an already saved book silently.
 - **Include index.md as cover / contents pages** is on by default. With it on, the root index and each linked nested index are included immediately before their local chapters. Turn the option off and regenerate for a body-only draft, or uncheck any individual index in the draft.
 - Remaining readable `.md` files follow in a stable path order. Support files such as `log.md` stay out of the suggestion.
 - The result is a checkbox draft. Nothing is saved until you press **Save**.
@@ -39,7 +40,7 @@ OKF (Open Knowledge Format) v0.1 Draft is a way to lay out linked Markdown notes
 
 PDF and EPUB export can use **Current file** or **Whole book**.
 
-- Whole book follows the saved Book order and prefers open unsaved tabs over disk for those files.
+- Whole book follows the saved Book tree in reading order and prefers open unsaved tabs over disk for those files. EPUB uses the same saved groups for its table of contents.
 - A short preflight runs only when you start export. Missing chapters block whole-book export; heading or metadata gaps are warnings you can still decide on.
 - Source Markdown is not rewritten by export.
 

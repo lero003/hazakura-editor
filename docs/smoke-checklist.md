@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 Book Scope candidate smoke)
+Last reviewed: 2026-07-18 (v2 Book tree + EPUB link smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -12,19 +12,30 @@ Use this checklist after changes to file operations, saving, preview rendering, 
 1. Build and launch the latest `Hazakura Editor.app`. Open a disposable nested
    workspace with two Markdown chapters in different folders, each using a
    relative workspace image; keep one chapter dirty in an open tab.
-2. In Book view, select and order both chapters. Open PDF and EPUB export and
-   confirm **Current file / Whole book** defaults to Current file and switches
-   the visible preflight without changing the saved scope.
-3. For Whole book, confirm chapter count/order, dirty-buffer inclusion, missing
+2. If the workspace has a saved v1 flat scope, launch once and confirm its
+   chapters keep the same root-level order. Run **Suggest from workspace** on a
+   disposable root/nested `index.md` fixture, Save, and confirm index section
+   headings appear as quiet indented groups. Confirm the first/last chapter
+   arrows stop at their current group and moving a middle chapter does not move
+   it into a neighboring group.
+3. Open PDF and EPUB export and confirm **Current file / Whole book** defaults
+   to Current file and switches the visible preflight without changing the
+   saved scope.
+4. For Whole book, confirm chapter count/order, dirty-buffer inclusion, missing
    heading and EPUB metadata warnings. Temporarily remove one image and confirm
    it is listed before the Save dialog. Restore it and re-run.
-4. Temporarily remove one chapter and recheck Book Scope. Confirm the unavailable
+5. Temporarily remove one chapter and recheck Book Scope. Confirm the unavailable
    chapter is visible and Book export is disabled; Current file export remains
    available. Restore/recheck rather than letting export silently drop it.
-5. Export Whole-book PDF and EPUB. Confirm the PDF begins each later chapter on
-   a new page and both relative images render. Open the EPUB in a reader or
-   inspect the archive and confirm chapter/navigation order and both images.
-6. Cancel each destination dialog once and confirm no file is written. Confirm
+6. Export Whole-book PDF and EPUB. Confirm the PDF begins each later chapter on
+   a new page and both relative images render. Open the EPUB in Apple Books and
+   confirm chapter/navigation order and both images. For a root `index.md` that
+   links a nested `index.md`, confirm the Books TOC nests the work and its
+   chapters instead of flattening every heading, and matches the groups saved in
+   the Book sidebar. Follow one relative link and one bundle-root `/...` link on
+   the index pages; confirm both open the packaged work/chapter rather than a
+   missing `.md` target.
+7. Cancel each destination dialog once and confirm no file is written. Confirm
    source files, dirty state, Undo history, and app-private Book order are
    unchanged by preflight/export.
 
@@ -58,8 +69,11 @@ chapters, then four root-linked supplementary notes (43 selected items total:
 33 body chapters + 4 supplementary notes + 6 indexes). `log.md` stays unselected.
 Turn the option off and recreate the draft once to confirm the previous 37-item
 body-only result. Before submission, check the five local images and boundaries
-in signed TestFlight PDF and EPUB output. The source smoke does not substitute
-for that visual export check.
+in signed TestFlight PDF and EPUB output. In the EPUB, confirm root title → five
+works → local chapters appears as nested Apple Books navigation, root/nested
+index links open the packaged targets, and shared supplementary notes are not
+incorrectly adopted by the first nested work. The source smoke does not
+substitute for that visual/export interaction check.
 
 Latest local ad-hoc App Store preview evidence: the default-on option produced
 `43件を候補にしました（本文・資料37・扉/目次6）`; root `index.md` was selected and

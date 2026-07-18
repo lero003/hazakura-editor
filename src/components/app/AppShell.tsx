@@ -158,6 +158,7 @@ export function AppShell(props: AppShellProps) {
             workspaceSidebarProps={{
               activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
               bookScopeChapterRelativePaths: props.bookScopeChapterRelativePaths,
+              bookScopeNodes: props.bookScopeNodes,
               bookScopeChapters: props.bookScopeChapters,
               bookScopeResolving: props.bookScopeResolving,
               bookScopeSuggesting: props.bookScopeSuggesting,
@@ -170,7 +171,7 @@ export function AppShell(props: AppShellProps) {
               dirtyFilePaths: workspaceTabMarkers.dirtyFilePaths,
               fileOpsCopy: props.fileOpsCopy,
               menuLanguage: props.menuLanguage,
-              onCommitBookScope: props.commitBookScopeChapterPaths,
+              onCommitBookScope: props.commitBookScopeNodes,
               onCancelBookScopeSuggestion: props.cancelBookScopeSuggestion,
               onCreateBookScopeSuggestion: props.createBookScopeSuggestion,
               onCreateFile: () => {

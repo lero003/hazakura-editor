@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
+Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
 
 ## Current State
 
@@ -31,20 +31,27 @@ Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
   `docs/current-work.md`. Phase: `docs/roadmap.md`.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
-  100 Markdown chapters, keep an app-private per-workspace order, reopen that
-  scope after relaunch, and switch chapters through the existing single active
-  editor buffer. Rust validates relative paths, workspace containment,
+  100 Markdown chapters, keep an app-private per-workspace ordered tree, reopen
+  that scope after relaunch, and switch chapters through the existing single
+  active editor buffer. Rust validates relative paths, workspace containment,
   Markdown/text eligibility, and symlink/file identity. Missing or externally
   moved chapters remain visible as unavailable until rechecked or explicitly
-  removed. No workspace manifest, source rewrite, background indexing,
-  OKF semantic expansion was added. Whole-book reading/export are separate,
-  explicit layers described below.
+  removed. Quiet group labels and indentation show saved hierarchy; arrow moves
+  stay inside the current parent group. Reader, PDF, and Rust validation consume
+  the same tree in preorder. Existing flat v1 settings migrate without changing
+  order as root-level chapters; hierarchy is adopted only after an explicit new
+  suggestion is saved. No workspace manifest, source rewrite, background
+  indexing, or OKF semantic expansion was added. Whole-book reading/export are
+  separate, explicit layers described below.
 - **Book Scope can now create an explicit chapter suggestion draft.** The user
   starts one bounded, cancellable OKF disk snapshot from the Book view. Root
-  `index.md` internal links lead the proposed order; a default-on, explicit
-  option includes the root index first and each linked nested index immediately
-  before its local chapters as cover/contents candidates. The option can be
-  disabled, and every index can still be unchecked individually in the draft.
+  and nested `index.md` inline links lead the proposed tree, while ATX section
+  headings become display groups. The current adapter resolves safe relative
+  links and OKF's bundle-root `/...` form without storing an OKF version or type
+  in the Book tree. A default-on, explicit option includes the root index first
+  and each linked nested index immediately before its local chapters as
+  cover/contents candidates. The option can be disabled, and every index can
+  still be unchecked individually in the draft.
   Remaining readable `.md` files follow in stable path order; `log.md` and
   unreadable files stay out. The result remains an editable checkbox draft until Save;
   startup/background scanning, scan caches, source changes, and automatic
@@ -77,8 +84,20 @@ Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
   chapters, up to 100 workspace images, missing headings, and EPUB metadata,
   and blocks Book export when a chapter is unavailable. It adds no manifest,
   background indexing, source rewrite, or second editable buffer.
+- **EPUB Book navigation now uses the saved Book tree.** `nav.xhtml` preserves
+  the same document/group hierarchy shown in the Book sidebar instead of
+  reparsing `index.md` into a second export-only order; remaining unclaimed
+  chapters keep saved Book order as a conservative fallback. Relative and
+  bundle-root links between included Markdown chapters are rewritten to their
+  packaged XHTML/heading targets, so exported index pages no longer point at
+  absent `.md` files.
+  Same-chapter anchors also follow headings moved into later XHTML documents by
+  explicit page breaks. Single-document EPUB navigation preserves Markdown
+  heading levels.
+  Apple Books interaction on the heavy manuscript remains a manual TestFlight
+  check; source is not changed and no background scan or manifest is added.
 - **Latest source and built-app candidate proof is green.** TypeScript/Vitest
-  (**201 files / 1,667 tests**), Vite, Rust (**367 pass / 2 host-dependent
+  (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
   Store preview build all pass on tree `2.0.0`. The built bundle reports
   `2.0.0`, passes deep/strict code-sign verification, and opens an onscreen

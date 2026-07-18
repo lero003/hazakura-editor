@@ -29,6 +29,7 @@ import {
 } from "../../features/editor/ebookChapters";
 import {
   loadBookScopeReaderDocuments,
+  type BookScopeNode,
   type BookScopeReaderLoadResult,
   type BookScopeSuggestion,
   type BookScopeSuggestionOptions,
@@ -105,6 +106,7 @@ type AppWorkspaceProps = {
   activeTab: EditorTab | null;
   approvedImageRoots: string[];
   bookScopeChapterRelativePaths?: readonly string[];
+  bookScopeNodes?: readonly BookScopeNode[];
   bookScopeChapters?: readonly BookScopeChapter[];
   bookScopeResolving?: boolean;
   bookScopeSuggesting?: boolean;
@@ -130,7 +132,7 @@ type AppWorkspaceProps = {
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
-  commitBookScopeChapterPaths?: (paths: readonly string[]) => void;
+  commitBookScopeNodes?: (nodes: readonly BookScopeNode[]) => void;
   cancelBookScopeSuggestion?: () => void;
   createBookScopeSuggestion?: (
     options: BookScopeSuggestionOptions,
@@ -257,6 +259,7 @@ export function AppWorkspace({
   activeTab,
   approvedImageRoots,
   bookScopeChapterRelativePaths = [],
+  bookScopeNodes = [],
   bookScopeChapters = [],
   bookScopeResolving = false,
   bookScopeSuggesting = false,
@@ -282,7 +285,7 @@ export function AppWorkspace({
   compareAnchor,
   compareTarget,
   compareView,
-  commitBookScopeChapterPaths = () => {},
+  commitBookScopeNodes = () => {},
   cancelBookScopeSuggestion = () => {},
   createBookScopeSuggestion,
   createFile,
@@ -620,6 +623,7 @@ export function AppWorkspace({
         <WorkspaceSidebar
           activePath={selectedImage?.path ?? activeTab?.path ?? null}
           bookScopeChapterRelativePaths={bookScopeChapterRelativePaths}
+          bookScopeNodes={bookScopeNodes}
           bookScopeChapters={bookScopeChapters}
           bookScopeReaderLoading={bookReaderLoading}
           bookScopeResolving={bookScopeResolving}
@@ -633,7 +637,7 @@ export function AppWorkspace({
           dirtyFilePaths={workspaceTabMarkers.dirtyFilePaths}
           fileOpsCopy={fileOpsCopy}
           menuLanguage={menuLanguage}
-          onCommitBookScope={commitBookScopeChapterPaths}
+          onCommitBookScope={commitBookScopeNodes}
           onCancelBookScopeSuggestion={cancelBookScopeSuggestion}
           onCreateBookScopeSuggestion={createBookScopeSuggestion}
           onCollapse={

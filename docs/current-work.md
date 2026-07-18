@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.0.0 source tree; pre-manual-test UX quieting residual
 Authority: High
-Last reviewed: 2026-07-18 (Help index accuracy + Book copy quieting)
+Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
 
 ## Purpose
 
@@ -41,11 +41,18 @@ remain parked unless a release gate needs them.
 
 ### Done in source (Alpha + ship polish)
 
-1. Files / Book sidebar, explicit scope, order, unavailable retention.
+1. Files / Book sidebar, explicit scope, app-private ordered tree, quiet group
+   labels, same-parent reordering, legacy flat-scope migration, unavailable
+   retention.
 2. Chapter suggestion draft; whole-book reader; PDF/EPUB + preflight.
    Linked nested indexes now preserve a real five-work manuscript's chapter
    order. An explicit, default-on draft option includes root/nested indexes as
-   cover/contents pages; semantic metadata-to-cover/part mapping remains held.
+   cover/contents pages. The bounded OKF adapter turns index headings and safe
+   relative / bundle-root links into a draft tree; saving remains explicit and
+   the saved tree contains no OKF version/type. Whole-book EPUB now uses that
+   saved tree for navigation and rewrites links between included Markdown
+   chapters to packaged XHTML targets; semantic metadata-to-cover/part mapping
+   remains held.
 3. UX quieting (read/edit primary; suggest/recheck progressive).
 4. **Help:** native Help menu / Command Palette → **Books and knowledge
    folders…** (English Help body; JP/EN/kana labels). About / diagnostics derive
@@ -58,8 +65,10 @@ remain parked unless a release gate needs them.
 
 ### Immediate next
 
-1. Human manual smoke on the `2.0.0` tree (Book + Help + heavy manuscript
-   PDF/EPUB appearance), then signed App Store / TestFlight if preparing upload.
+1. Human manual smoke on the `2.0.0` tree (Book group indentation and
+   same-parent movement; Help; heavy-manuscript PDF/EPUB appearance; matching
+   Apple Books TOC; relative/bundle-root index links), then signed App Store /
+   TestFlight if preparing upload.
 2. Human gate: tag `v2.0.0`, build App Store pkg, submit — only with approval.
 3. Hotfix only for reproduced review blockers on published/in-review builds.
 
@@ -73,6 +82,8 @@ remain parked unless a release gate needs them.
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+- Setext heading / reference-style link / future OKF manifest adaptation, only
+  when a pinned spec or real fixture demonstrates the need.
 
 ## Next Human Gates
 

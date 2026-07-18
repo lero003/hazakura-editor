@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 Book Scope vertical slice + candidate proof; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 external review synthesis linked)
+Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
 
 ## Current State
 
@@ -15,13 +15,17 @@ Last reviewed: 2026-07-18 (v2 external review synthesis linked)
 - **Active phase: v2.0 source candidate** (Book Scope + Help + version bump).
   Residual polish, broad evidence matrix, and optional Keep boxes are parked.
 - **First Alpha spine is in source:** existing sidebar Files / Book switch,
-  explicit Markdown selection, app-private workspace order, unavailable-entry
-  retention/recheck, chapter switching through the existing single editor,
-  and Rust path/symlink/100-chapter validation.
+  explicit Markdown selection, app-private ordered document/group tree,
+  same-parent reordering, unavailable-entry retention/recheck, chapter switching
+  through the existing single editor, and Rust path/symlink/100-chapter
+  validation. Version-1 flat settings migrate as root chapters without
+  reinterpreting the workspace; re-Suggest + Save explicitly adopts hierarchy.
 - **Explicit chapter suggestions are in source:** Book view can run the existing
-  bounded/cancellable OKF snapshot on demand, expand root-linked nested indexes
-  in their local chapter order, append remaining readable `.md` paths, and open
-  the result as an unsaved checkbox draft. It adds no startup/background scan
+  bounded/cancellable OKF snapshot on demand, adapt index section headings plus
+  safe relative / bundle-root links into a document/group tree, expand
+  root-linked nested indexes in their local chapter order, append remaining
+  readable `.md` paths, and open the result as an unsaved checkbox draft. The
+  saved tree has no OKF version/type field. It adds no startup/background scan
   or persistent scan cache.
 - **Heavy manuscript candidate adjustment is built-app verified:** a real five-work
   e-book split into 44 Markdown files now produces 43 editable candidates with
@@ -41,6 +45,13 @@ Last reviewed: 2026-07-18 (v2 external review synthesis linked)
   and each chapter's own document path. Preflight checks unavailable chapters,
   up to 100 workspace images, missing headings, and EPUB metadata; unavailable
   chapters block Book export before a destination is chosen.
+- **EPUB navigation/link repair is in source:** the saved Book document/group
+  tree is the EPUB TOC source, chapter headings retain their local hierarchy,
+  and relative / bundle-root links between included Markdown chapters are
+  rewritten to packaged XHTML/heading targets. Scope order remains the
+  fallback. Book storage is versioned v2; Markdown source and OKF metadata are
+  unchanged. Heavy-manuscript Apple Books interaction remains the manual proof
+  boundary.
 - **Book Scope UX quieting is in source:** settled list = read/edit primary;
   suggest only in empty/edit setup; recheck only when unavailable; quieter
   path/label density; shorter OKF review intro.
@@ -71,6 +82,33 @@ Last reviewed: 2026-07-18 (v2 external review synthesis linked)
 - Theme G signed export recheck breadth.
 
 ## Verification (2026-07-18)
+
+### Book Scope ordered tree + flexible OKF link adapter
+
+- `npm run typecheck` — pass.
+- Focused Vitest (Book model/storage/suggestion/panel/controller + EPUB export)
+  — 9 files / 88 tests pass.
+- `npm test` — 201 files / 1,678 tests pass.
+- `npm run build:vite` — pass (existing large-chunk warning only).
+- `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- `npm run build` — helper probes and helper-enabled App Store preview build
+  pass; bundle reports `2.0.0`.
+- `codesign --verify --deep --strict --verbose=2` — pass for the rebuilt app.
+- `npm run smoke:fixtures:v1.11-okf` — pinned `ee67a5c` fixture bundles
+  generated successfully.
+- `SKIP_BUILD=1 npm run smoke:macos-window -- '<built app>'` — pass; the
+  rebuilt `2.0.0` app launched, exposed a `1280x820` window, and quit cleanly.
+- Automated coverage pins v1 flat-scope migration, bounded tree sanitization,
+  same-parent movement, nested index-heading groups, relative/bundle-root link
+  adaptation, saved-tree EPUB navigation, included `.md` link rewrites,
+  same-chapter cross-page-break anchors, external-link preservation, and
+  conservative unknown-fragment fallback.
+- Not run: heavy-manuscript export opened/clicked in Apple Books or signed
+  TestFlight; built-app group indentation/click interaction also remains manual.
+  Keep those as the next proof; do not infer them from unit tests.
 
 ### Heavy nested-index manuscript adjustment
 

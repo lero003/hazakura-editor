@@ -6,11 +6,18 @@ import {
   type OkfDiscoveryLike,
 } from "../okf";
 import { directoryFromRelativePath } from "../okf/okfPaths";
-import { MAX_BOOK_SCOPE_CHAPTERS } from "./model";
+import { parseMarkdownStructure } from "../editor/markdownStructure";
+import {
+  flattenBookScopeNodes,
+  MAX_BOOK_SCOPE_CHAPTERS,
+  sanitizeBookScopeNodes,
+  type BookScopeNode,
+} from "./model";
 
 const MAX_INDEX_LINKS = 500;
 
 export type BookScopeSuggestion = {
+  nodes: BookScopeNode[];
   chapterRelativePaths: string[];
   linkedChapterCount: number;
   includedIndexPageCount: number;
@@ -48,6 +55,7 @@ export function suggestBookScopeFromDiscovery(
   const eligible = new Set(eligiblePaths);
 
   const linked: string[] = [];
+  const rootNodes: BookScopeNode[] = [];
   const linkedChapterPaths = new Set<string>();
   const includedIndexPagePaths = new Set<string>();
   const seen = new Set<string>();
@@ -62,12 +70,14 @@ export function suggestBookScopeFromDiscovery(
   );
   if (rootIndex) {
     let remainingLinks = MAX_INDEX_LINKS;
-    const visitIndex = (indexPath: string): void => {
-      if (visitedIndexes.has(indexPath) || remainingLinks <= 0) return;
+    const visitIndex = (indexPath: string): BookScopeNode[] => {
+      if (visitedIndexes.has(indexPath) || remainingLinks <= 0) return [];
       visitedIndexes.add(indexPath);
 
       const indexFile = readableByPath.get(indexPath);
-      if (!indexFile || indexFile.content === null) return;
+      if (!indexFile || indexFile.content === null) return [];
+      const children: BookScopeNode[] = [];
+      const sectionGroups = new Map<number, Extract<BookScopeNode, { kind: "group" }>>();
       if (options.includeIndexPages && !seen.has(indexPath)) {
         linked.push(indexPath);
         seen.add(indexPath);
@@ -79,6 +89,8 @@ export function suggestBookScopeFromDiscovery(
         remainingLinks,
       );
       remainingLinks -= extracted.links.length;
+      const headings = parseMarkdownStructure(indexFile.content).headings;
+      const titleHeading = headings.find((heading) => heading.level === 1) ?? null;
 
       for (const link of extracted.links) {
         const classified = classifyOkfInlineLink(link.destination, {
@@ -101,26 +113,79 @@ export function suggestBookScopeFromDiscovery(
         ) {
           continue;
         }
+        let targetNodes: BookScopeNode[] = [];
         if (eligible.has(target) && !seen.has(target)) {
           linked.push(target);
           seen.add(target);
           linkedChapterPaths.add(target);
-          continue;
+          targetNodes = [
+            { kind: "document", relativePath: target, children: [] },
+          ];
+        } else if (fileName(target).toLowerCase() === "index.md") {
+          const nested = visitIndex(target);
+          targetNodes =
+            options.includeIndexPages || nested.length === 0
+              ? nested
+              : [
+                  {
+                    kind: "group",
+                    title: link.text.trim() || fileName(target),
+                    children: nested,
+                  },
+                ];
         }
-        if (fileName(target).toLowerCase() === "index.md") {
-          visitIndex(target);
+        if (targetNodes.length === 0) continue;
+
+        const headingPath: typeof headings = [];
+        for (const heading of headings) {
+          if (heading.startOffset > link.sourceOffset) break;
+          if (heading === titleHeading || !heading.navigationLabel) continue;
+          while (
+            headingPath.length > 0 &&
+            headingPath[headingPath.length - 1].level >= heading.level
+          ) {
+            headingPath.pop();
+          }
+          headingPath.push(heading);
         }
+        let container = children;
+        for (const heading of headingPath) {
+          let group = sectionGroups.get(heading.startOffset);
+          if (!group) {
+            group = {
+              kind: "group",
+              title: heading.navigationLabel!,
+              children: [],
+            };
+            sectionGroups.set(heading.startOffset, group);
+            container.push(group);
+          }
+          container = group.children;
+        }
+        container.push(...targetNodes);
       }
+
+      if (options.includeIndexPages) {
+        return [
+          { kind: "document", relativePath: indexPath, children },
+        ];
+      }
+      return children;
     };
 
-    visitIndex(rootIndex.relativePath);
+    rootNodes.push(...visitIndex(rootIndex.relativePath));
   }
 
   const ordered = [
     ...linked,
     ...eligiblePaths.filter((path) => !seen.has(path)),
   ];
-  const chapterRelativePaths = ordered.slice(0, MAX_BOOK_SCOPE_CHAPTERS);
+  for (const path of eligiblePaths) {
+    if (seen.has(path)) continue;
+    rootNodes.push({ kind: "document", relativePath: path, children: [] });
+  }
+  const nodes = sanitizeBookScopeNodes(rootNodes);
+  const chapterRelativePaths = flattenBookScopeNodes(nodes);
   const linkedChapterCount = chapterRelativePaths.filter((path) =>
     linkedChapterPaths.has(path),
   ).length;
@@ -129,6 +194,7 @@ export function suggestBookScopeFromDiscovery(
   ).length;
 
   return {
+    nodes,
     chapterRelativePaths,
     linkedChapterCount,
     includedIndexPageCount,

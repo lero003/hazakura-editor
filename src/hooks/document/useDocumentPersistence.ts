@@ -6,6 +6,7 @@ import type {
 } from "../../lib/tauri/bookScope";
 import { useAutoBackup } from "../workspace/useAutoBackup";
 import { useDocumentExport } from "./useDocumentExport";
+import type { BookScopeNode } from "../../features/bookScope";
 
 type UseDocumentPersistenceOptions = {
   activeContents: string;
@@ -18,6 +19,7 @@ type UseDocumentPersistenceOptions = {
   materializeImagesOnExport?: boolean;
   mediaAccess?: MediaImageAccessOptions | null;
   bookScopeChapters?: readonly BookScopeChapter[];
+  bookScopeNodes?: readonly BookScopeNode[];
   bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
 };
 
@@ -32,6 +34,7 @@ export function useDocumentPersistence({
   materializeImagesOnExport,
   mediaAccess,
   bookScopeChapters,
+  bookScopeNodes,
   bookScopeUnavailable,
 }: UseDocumentPersistenceOptions) {
   const exportActions = useDocumentExport({
@@ -43,6 +46,7 @@ export function useDocumentPersistence({
     materializeImagesOnExport,
     mediaAccess,
     bookScopeChapters,
+    bookScopeNodes,
     bookScopeUnavailable,
     tabs,
   });

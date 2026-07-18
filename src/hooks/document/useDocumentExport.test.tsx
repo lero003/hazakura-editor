@@ -691,6 +691,17 @@ describe("useDocumentExport", () => {
       { name: "one.md", path: "/workspace/parts/one.md", relativePath: "parts/one.md" },
       { name: "two.md", path: "/workspace/parts/two.md", relativePath: "parts/two.md" },
     ];
+    const bookScopeNodes = [
+      {
+        kind: "group" as const,
+        title: "Parts",
+        children: chapters.map((chapter) => ({
+          kind: "document" as const,
+          relativePath: chapter.relativePath,
+          children: [],
+        })),
+      },
+    ];
     const dirtySecond = makeTab({
       contents: "# Two dirty\n",
       id: "/workspace/parts/two.md",
@@ -703,6 +714,7 @@ describe("useDocumentExport", () => {
         activeContents: "# Active\n",
         activeTab: makeTab(),
         bookScopeChapters: chapters,
+        bookScopeNodes,
         setGlobalError: vi.fn(),
         setStatus: vi.fn(),
         tabs: [dirtySecond],
@@ -727,6 +739,7 @@ describe("useDocumentExport", () => {
     });
     expect(epubApi.buildEpubBetaArchiveWithReport).toHaveBeenCalledWith(
       expect.objectContaining({
+        bookNavigation: bookScopeNodes,
         chapters: [
           {
             documentName: "one.md",

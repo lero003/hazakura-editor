@@ -1,13 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import type {
   BookScopeChapter,
   BookScopeUnavailableEntry,
   WorkspaceTreeEntry,
 } from "../../lib/tauri";
 import {
-  mergeBookScopeSelection,
-  moveBookScopeChapter,
-  removeBookScopePath,
+  bookScopeSiblingPosition,
+  flattenBookScopeNodes,
+  mergeBookScopeTreeSelection,
+  moveBookScopeNode,
+  removeBookScopeNodePath,
+  type BookScopeNode,
 } from "../../features/bookScope";
 import type { BookScopeSuggestion } from "../../features/bookScope";
 import type { BookScopeSuggestionOptions } from "../../features/bookScope";
@@ -22,7 +31,8 @@ type Props = {
   chapterRelativePaths: readonly string[];
   chapters: readonly BookScopeChapter[];
   menuLanguage: MenuLanguage;
-  onCommit: (paths: readonly string[]) => void;
+  nodes: readonly BookScopeNode[];
+  onCommit: (nodes: readonly BookScopeNode[]) => void;
   onCancelSuggest?: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenChapter: (path: string) => void;
@@ -45,6 +55,7 @@ export function BookScopePanel({
   chapterRelativePaths,
   chapters,
   menuLanguage,
+  nodes,
   onCommit,
   onCancelSuggest = () => {},
   onLoadDirectory,
@@ -65,9 +76,7 @@ export function BookScopePanel({
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(
     () => new Set(chapterRelativePaths),
   );
-  const [draftOrder, setDraftOrder] = useState<string[]>(
-    () => [...chapterRelativePaths],
-  );
+  const [draftNodes, setDraftNodes] = useState<BookScopeNode[]>(() => [...nodes]);
   const [suggestion, setSuggestion] = useState<BookScopeSuggestion | null>(null);
   const [includeIndexPages, setIncludeIndexPages] = useState(true);
   const editTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -100,11 +109,12 @@ export function BookScopePanel({
     [unavailable],
   );
   const hasUnavailable = unavailable.length > 0;
+  const displayRows = useMemo(() => bookScopeDisplayRows(nodes), [nodes]);
 
   const beginEditing = () => {
     restoreFocusRef.current = false;
     setSelectedPaths(new Set(chapterRelativePaths));
-    setDraftOrder([...chapterRelativePaths]);
+    setDraftNodes([...nodes]);
     setSuggestion(null);
     setEditing(true);
   };
@@ -118,8 +128,12 @@ export function BookScopePanel({
       workspaceRootPath,
       selectedPaths,
     );
-    const retained = draftOrder.filter((path) => selectedPaths.has(path));
-    onCommit(mergeBookScopeSelection(draftOrder, [...retained, ...treeOrder]));
+    const retained = flattenBookScopeNodes(draftNodes).filter((path) =>
+      selectedPaths.has(path),
+    );
+    onCommit(
+      mergeBookScopeTreeSelection(draftNodes, [...retained, ...treeOrder]),
+    );
     restoreFocusRef.current = true;
     setEditing(false);
   };
@@ -128,7 +142,7 @@ export function BookScopePanel({
     const next = await onSuggest({ includeIndexPages });
     if (!next) return;
     setSelectedPaths(new Set(next.chapterRelativePaths));
-    setDraftOrder([...next.chapterRelativePaths]);
+    setDraftNodes(next.nodes);
     setSuggestion(next);
     setEditing(true);
   };
@@ -288,7 +302,20 @@ export function BookScopePanel({
         </div>
       </div>
       <ol className="book-scope-list">
-        {chapterRelativePaths.map((relativePath, index) => {
+        {displayRows.map((row) => {
+          if (row.node.kind === "group") {
+            return (
+              <li
+                className="book-scope-group"
+                key={row.key}
+                style={{ "--book-scope-depth": row.depth } as CSSProperties}
+              >
+                <span>{row.node.title}</span>
+              </li>
+            );
+          }
+          const relativePath = row.node.relativePath;
+          const index = row.chapterIndex;
           const chapter = chapterByPath.get(relativePath);
           const unavailableEntry = unavailableByPath.get(relativePath);
           const displayName =
@@ -298,6 +325,7 @@ export function BookScopePanel({
             <li
               className={`${chapter?.path === activePath ? "active" : ""}${unavailableEntry ? " unavailable" : ""}`}
               key={relativePath}
+              style={{ "--book-scope-depth": row.depth } as CSSProperties}
             >
               <button
                 aria-label={displayName}
@@ -320,9 +348,11 @@ export function BookScopePanel({
               <div className="book-scope-row-actions">
                 <button
                   aria-label={copy.moveUp(relativePath)}
-                  disabled={index === 0}
+                  disabled={
+                    (bookScopeSiblingPosition(nodes, relativePath)?.index ?? 0) === 0
+                  }
                   onClick={() =>
-                    onCommit(moveBookScopeChapter(chapterRelativePaths, index, -1))
+                    onCommit(moveBookScopeNode(nodes, relativePath, -1))
                   }
                   type="button"
                 >
@@ -330,9 +360,12 @@ export function BookScopePanel({
                 </button>
                 <button
                   aria-label={copy.moveDown(relativePath)}
-                  disabled={index === chapterRelativePaths.length - 1}
+                  disabled={(() => {
+                    const position = bookScopeSiblingPosition(nodes, relativePath);
+                    return !position || position.index === position.count - 1;
+                  })()}
                   onClick={() =>
-                    onCommit(moveBookScopeChapter(chapterRelativePaths, index, 1))
+                    onCommit(moveBookScopeNode(nodes, relativePath, 1))
                   }
                   type="button"
                 >
@@ -341,7 +374,7 @@ export function BookScopePanel({
                 <button
                   aria-label={copy.remove(relativePath)}
                   onClick={() =>
-                    onCommit(removeBookScopePath(chapterRelativePaths, relativePath))
+                    onCommit(removeBookScopeNodePath(nodes, relativePath))
                   }
                   type="button"
                 >
@@ -354,6 +387,36 @@ export function BookScopePanel({
       </ol>
     </div>
   );
+}
+
+type BookScopeDisplayRow = {
+  chapterIndex: number;
+  depth: number;
+  key: string;
+  node: BookScopeNode;
+};
+
+function bookScopeDisplayRows(nodes: readonly BookScopeNode[]): BookScopeDisplayRow[] {
+  const rows: BookScopeDisplayRow[] = [];
+  let chapterIndex = 0;
+  const visit = (
+    entries: readonly BookScopeNode[],
+    depth: number,
+    prefix: string,
+  ): void => {
+    entries.forEach((node, index) => {
+      const key =
+        node.kind === "document"
+          ? node.relativePath
+          : `${prefix}/group-${index}-${node.title}`;
+      const currentChapterIndex = chapterIndex;
+      if (node.kind === "document") chapterIndex += 1;
+      rows.push({ chapterIndex: currentChapterIndex, depth, key, node });
+      visit(node.children, depth + 1, key);
+    });
+  };
+  visit(nodes, 0, "root");
+  return rows;
 }
 
 /** Nested paths keep a path subtitle; root-level names stay one line. */

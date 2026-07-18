@@ -1,5 +1,6 @@
 import { renderMarkdown } from "../editor/markdown";
 import { applyEbookPageBreakMarkers } from "../editor/ebookChapters";
+import { resolveLocalMarkdownLinkTarget } from "../editor/markdownLinks";
 import { parseMarkdownStructure } from "../editor/markdownStructure";
 import {
   blockedImageWarningLabel,
@@ -13,8 +14,16 @@ import {
   stripYamlFrontmatter,
   titleFromDocumentName,
 } from "./epubTextHelpers";
+import { extractInlineMarkdownLinksBounded } from "../okf/okfLinks";
+import {
+  directoryPathFromPath,
+  isPathInsideDirectory,
+  normalizeAbsolutePath,
+} from "../../lib/utils";
+import type { BookScopeNode } from "../bookScope/model";
 
 type BuildEpubBetaArchiveOptions = {
+  bookNavigation?: readonly BookScopeNode[];
   chapters?: readonly EpubExportChapter[];
   documentPath?: string | null;
   documentName: string;
@@ -61,6 +70,7 @@ type EpubEntry = {
 };
 
 type HeadingEntry = {
+  chapterIndex: number;
   contentPath: string;
   id: string;
   level: number;
@@ -68,6 +78,7 @@ type HeadingEntry = {
 };
 
 type MarkdownHeadingEntry = {
+  chapterIndex: number;
   level: number;
   text: string;
   navigationLabel: string | null;
@@ -75,16 +86,24 @@ type MarkdownHeadingEntry = {
 
 type ContentDocument = {
   body: string;
+  chapterIndex: number;
   id: string;
   navigationLabel: string | null;
   path: string;
 };
 
 type ContentDocumentNodes = {
+  chapterIndex: number;
   id: string;
   navigationLabel: string | null;
   nodes: ChildNode[];
   path: string;
+};
+
+type NavigationNode = {
+  children: NavigationNode[];
+  href: string | null;
+  text: string;
 };
 
 type LoadedEpubImage =
@@ -110,6 +129,7 @@ const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
 const EPUB_CHAPTER_INDEX_ATTR = "data-hazakura-epub-chapter-index";
 
 export async function buildEpubBetaArchive({
+  bookNavigation,
   chapters,
   documentPath = null,
   documentName,
@@ -122,6 +142,7 @@ export async function buildEpubBetaArchive({
   workspaceRoot = null,
 }: BuildEpubBetaArchiveOptions): Promise<Uint8Array> {
   const { archive } = await buildEpubBetaArchiveWithReport({
+    bookNavigation,
     chapters,
     documentPath,
     documentName,
@@ -137,6 +158,7 @@ export async function buildEpubBetaArchive({
 }
 
 export async function buildEpubBetaArchiveWithReport({
+  bookNavigation,
   chapters,
   documentPath = null,
   documentName,
@@ -148,8 +170,9 @@ export async function buildEpubBetaArchiveWithReport({
   markdown,
   workspaceRoot = null,
 }: BuildEpubBetaArchiveOptions): Promise<EpubExportArchiveReport> {
-  const { contentDocuments, headings, images, title, warnings } =
+  const { contentDocuments, images, navigation, title, warnings } =
     await buildContent({
+      bookNavigation,
       chapters,
       documentName,
       documentPath,
@@ -178,8 +201,7 @@ export async function buildEpubBetaArchiveWithReport({
       navXhtml(
         epubMetadata.title,
         epubMetadata.language,
-        headings,
-        contentDocuments,
+        navigation,
       ),
     ),
     ...contentDocuments.map((contentDocument) =>
@@ -210,7 +232,7 @@ export function defaultEpubExportSettings({
   markdown: string;
 }): EpubExportSettings {
   const contentMarkdown = stripYamlFrontmatter(markdown);
-  const firstHeading = collectMarkdownHeadings(contentMarkdown).find(
+  const firstHeading = collectMarkdownHeadings(contentMarkdown, 0).find(
     (heading) => heading.navigationLabel !== null,
   );
   const title = firstHeading
@@ -225,6 +247,7 @@ export function defaultEpubExportSettings({
 }
 
 async function buildContent({
+  bookNavigation,
   chapters,
   documentName,
   documentPath,
@@ -238,6 +261,7 @@ async function buildContent({
   Pick<
     BuildEpubBetaArchiveOptions,
     | "chapters"
+    | "bookNavigation"
     | "documentPath"
     | "loadApprovedLocalImage"
     | "loadRemoteImage"
@@ -273,7 +297,14 @@ async function buildContent({
       });
   const template = document.createElement("template");
   template.innerHTML = rendered;
-  const markdownHeadings = collectMarkdownHeadings(contentMarkdown);
+  const markdownHeadings = bookChapters
+    ? bookChapters.flatMap((chapter, chapterIndex) =>
+        collectMarkdownHeadings(
+          stripYamlFrontmatter(chapter.markdown),
+          chapterIndex,
+        ),
+      )
+    : collectMarkdownHeadings(contentMarkdown, 0);
   const warnings: EpubExportWarning[] = [];
   const images = await packageWorkspaceImages(
     template,
@@ -312,44 +343,66 @@ async function buildContent({
     );
     heading.setAttribute("id", id);
     pendingHeadings.push({
+      chapterIndex: sourceHeading.chapterIndex,
       id,
       level: sourceHeading.level,
       text,
     });
   });
 
-  const { contentDocuments, headingContentPaths } =
-    splitTemplateContentIntoDocuments(
+  const { contentDocumentNodes, headingContentPaths } =
+    splitTemplateContentIntoDocumentNodes(
       template.content,
       bookChapters?.map((chapter) => titleFromDocumentName(chapter.documentName)) ?? [],
     );
-  const firstContentPath = contentDocuments[0]?.path ?? "content.xhtml";
+  const firstContentPath = contentDocumentNodes[0]?.path ?? "content.xhtml";
   const headings = pendingHeadings.map((heading) => ({
     ...heading,
     contentPath: headingContentPaths.get(heading.id) ?? firstContentPath,
   }));
+  if (bookChapters && workspaceRoot) {
+    rewritePackagedMarkdownLinks(
+      contentDocumentNodes,
+      headings,
+      bookChapters,
+      workspaceRoot,
+    );
+  }
+  const contentDocuments = serializeContentDocuments(contentDocumentNodes);
+  const navigation = buildNavigation(
+    headings,
+    contentDocuments,
+    bookChapters,
+    workspaceRoot,
+    bookNavigation,
+  );
   const title = headings[0]?.text || titleFromDocumentName(documentName);
 
-  return { contentDocuments, headings, images, title, warnings };
+  return { contentDocuments, images, navigation, title, warnings };
 }
 
-function collectMarkdownHeadings(markdown: string): MarkdownHeadingEntry[] {
+function collectMarkdownHeadings(
+  markdown: string,
+  chapterIndex: number,
+): MarkdownHeadingEntry[] {
   return parseMarkdownStructure(markdown).headings.map((heading) => ({
+    chapterIndex,
     level: heading.level,
     text: heading.text,
     navigationLabel: heading.navigationLabel,
   }));
 }
 
-function splitTemplateContentIntoDocuments(
+function splitTemplateContentIntoDocumentNodes(
   fragment: DocumentFragment,
   chapterNavigationLabels: readonly string[],
 ): {
-  contentDocuments: ContentDocument[];
+  contentDocumentNodes: ContentDocumentNodes[];
   headingContentPaths: Map<string, string>;
 } {
   const documents: ContentDocumentNodes[] = [];
   let currentNodes: ChildNode[] = [];
+  let activeChapterIndex = 0;
   let pendingNavigationLabel: string | null = null;
 
   const pushDocument = () => {
@@ -359,6 +412,7 @@ function splitTemplateContentIntoDocuments(
     }
     const index = documents.length;
     documents.push({
+      chapterIndex: activeChapterIndex,
       id: contentDocumentId(index),
       navigationLabel: pendingNavigationLabel,
       nodes: currentNodes,
@@ -371,6 +425,7 @@ function splitTemplateContentIntoDocuments(
   for (const node of Array.from(fragment.childNodes)) {
     const chapterIndex = epubChapterIndex(node);
     if (chapterIndex !== null) {
+      activeChapterIndex = chapterIndex;
       pendingNavigationLabel = chapterNavigationLabels[chapterIndex] ?? null;
       continue;
     }
@@ -384,6 +439,7 @@ function splitTemplateContentIntoDocuments(
 
   if (documents.length === 0) {
     documents.push({
+      chapterIndex: 0,
       id: contentDocumentId(0),
       navigationLabel: chapterNavigationLabels[0] ?? null,
       nodes: [],
@@ -391,7 +447,6 @@ function splitTemplateContentIntoDocuments(
     });
   }
 
-  const serializer = new XMLSerializer();
   const headingContentPaths = new Map<string, string>();
   for (const contentDocument of documents) {
     rememberHeadingContentPaths(
@@ -402,16 +457,149 @@ function splitTemplateContentIntoDocuments(
   }
 
   return {
-    contentDocuments: documents.map((contentDocument) => ({
-      body: contentDocument.nodes
-        .map((node) => serializer.serializeToString(node))
-        .join("\n"),
-      id: contentDocument.id,
-      navigationLabel: contentDocument.navigationLabel,
-      path: contentDocument.path,
-    })),
+    contentDocumentNodes: documents,
     headingContentPaths,
   };
+}
+
+function serializeContentDocuments(
+  documents: readonly ContentDocumentNodes[],
+): ContentDocument[] {
+  const serializer = new XMLSerializer();
+  return documents.map((contentDocument) => ({
+    body: contentDocument.nodes
+      .map((node) => serializer.serializeToString(node))
+      .join("\n"),
+    chapterIndex: contentDocument.chapterIndex,
+    id: contentDocument.id,
+    navigationLabel: contentDocument.navigationLabel,
+    path: contentDocument.path,
+  }));
+}
+
+function rewritePackagedMarkdownLinks(
+  documents: readonly ContentDocumentNodes[],
+  headings: readonly HeadingEntry[],
+  chapters: readonly EpubExportChapter[],
+  workspaceRoot: string,
+): void {
+  const chapterByPath = new Map(
+    chapters.map((chapter, index) => [
+      normalizeAbsolutePath(chapter.documentPath),
+      index,
+    ] as const),
+  );
+  const firstDocumentByChapter = new Map<number, ContentDocumentNodes>();
+  for (const contentDocument of documents) {
+    if (!firstDocumentByChapter.has(contentDocument.chapterIndex)) {
+      firstDocumentByChapter.set(contentDocument.chapterIndex, contentDocument);
+    }
+  }
+
+  for (const contentDocument of documents) {
+    const sourceChapter = chapters[contentDocument.chapterIndex];
+    if (!sourceChapter) continue;
+
+    for (const anchor of anchorsInNodes(contentDocument.nodes)) {
+      const href = anchor.getAttribute("href")?.trim() ?? "";
+      let targetChapterIndex: number | undefined;
+      if (href.startsWith("#")) {
+        targetChapterIndex = contentDocument.chapterIndex;
+      } else {
+        const targetPath = resolvePackagedMarkdownLinkTarget(
+          href,
+          sourceChapter.documentPath,
+          workspaceRoot,
+        );
+        if (!targetPath) continue;
+        targetChapterIndex =
+          chapterByPath.get(targetPath) ??
+          chapterByPath.get(normalizeAbsolutePath(`${targetPath}/index.md`));
+      }
+      if (targetChapterIndex === undefined) continue;
+
+      const targetHeading = targetHeadingForLink(
+        headings.filter((heading) => heading.chapterIndex === targetChapterIndex),
+        href,
+      );
+      if (hasLinkFragment(href) && !targetHeading) continue;
+      const targetDocument = targetHeading
+        ? documents.find((document) => document.path === targetHeading.contentPath)
+        : firstDocumentByChapter.get(targetChapterIndex);
+      if (!targetDocument) continue;
+
+      anchor.setAttribute(
+        "href",
+        `${targetDocument.path}${targetHeading ? `#${targetHeading.id}` : ""}`,
+      );
+    }
+  }
+}
+
+function resolvePackagedMarkdownLinkTarget(
+  href: string,
+  sourcePath: string,
+  workspaceRoot: string,
+): string | null {
+  const trimmed = href.trim();
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) {
+    return resolveLocalMarkdownLinkTarget(trimmed, sourcePath, workspaceRoot);
+  }
+  const hrefWithoutAnchor = trimmed.split("#", 1)[0] ?? "";
+  const hrefPath = hrefWithoutAnchor.split("?", 1)[0]?.trim() ?? "";
+  let decodedPath: string;
+  try {
+    decodedPath = decodeURIComponent(hrefPath.slice(1));
+  } catch {
+    return null;
+  }
+  if (!decodedPath || decodedPath.includes("\0") || decodedPath.startsWith("/")) {
+    return null;
+  }
+  const root = normalizeAbsolutePath(workspaceRoot);
+  const target = normalizeAbsolutePath(`${root}/${decodedPath}`);
+  return isPathInsideDirectory(target, root) ? target : null;
+}
+
+function anchorsInNodes(nodes: readonly ChildNode[]): HTMLAnchorElement[] {
+  const anchors: HTMLAnchorElement[] = [];
+  for (const node of nodes) {
+    if (!(node instanceof Element)) continue;
+    if (node.matches("a[href]")) {
+      anchors.push(node as HTMLAnchorElement);
+    }
+    anchors.push(...Array.from(node.querySelectorAll<HTMLAnchorElement>("a[href]")));
+  }
+  return anchors;
+}
+
+function targetHeadingForLink(
+  headings: readonly HeadingEntry[],
+  href: string,
+): HeadingEntry | null {
+  const hashIndex = href.indexOf("#");
+  if (hashIndex === -1 || hashIndex === href.length - 1) {
+    return headings[0] ?? null;
+  }
+  const encodedFragment = href.slice(hashIndex + 1).split("?", 1)[0] ?? "";
+  let fragment = encodedFragment;
+  try {
+    fragment = decodeURIComponent(encodedFragment);
+  } catch {
+    // Keep the literal fragment for a conservative best-effort match.
+  }
+  const normalizedFragment = slugify(fragment);
+  return (
+    headings.find(
+      (heading) =>
+        heading.id === fragment || slugify(heading.text) === normalizedFragment,
+    ) ?? null
+  );
+}
+
+function hasLinkFragment(href: string): boolean {
+  const hashIndex = href.indexOf("#");
+  return hashIndex !== -1 && hashIndex < href.length - 1;
 }
 
 function epubChapterIndex(node: ChildNode): number | null {
@@ -768,34 +956,226 @@ function createUuid(): string {
   ].join("-");
 }
 
+function buildNavigation(
+  headings: readonly HeadingEntry[],
+  contentDocuments: readonly ContentDocument[],
+  chapters: readonly EpubExportChapter[] | null,
+  workspaceRoot: string | null | undefined,
+  bookNavigation: readonly BookScopeNode[] | null | undefined,
+): NavigationNode[] {
+  if (!chapters?.length) {
+    return headingNavigationTree(headings);
+  }
+
+  const chapterNodes = new Map<number, NavigationNode>();
+  for (let chapterIndex = 0; chapterIndex < chapters.length; chapterIndex += 1) {
+    const chapterHeadings = headings.filter(
+      (heading) => heading.chapterIndex === chapterIndex,
+    );
+    const firstDocument = contentDocuments.find(
+      (contentDocument) => contentDocument.chapterIndex === chapterIndex,
+    );
+    chapterNodes.set(
+      chapterIndex,
+      chapterNavigationNode(
+        chapterHeadings,
+        firstDocument,
+        titleFromDocumentName(chapters[chapterIndex].documentName),
+      ),
+    );
+  }
+
+  if (!workspaceRoot) {
+    return chapters.flatMap((_, index) => {
+      const node = chapterNodes.get(index);
+      return node ? [node] : [];
+    });
+  }
+
+  const chapterByPath = new Map(
+    chapters.map((chapter, index) => [
+      normalizeAbsolutePath(chapter.documentPath),
+      index,
+    ] as const),
+  );
+  if (bookNavigation?.length) {
+    return buildBookScopeNavigation(
+      bookNavigation,
+      chapterNodes,
+      chapterByPath,
+      chapters,
+      workspaceRoot,
+    );
+  }
+  const rootIndexPath = normalizeAbsolutePath(`${workspaceRoot}/index.md`);
+  const rootIndex = chapterByPath.get(rootIndexPath);
+  const claimed = new Set<number>();
+
+  const visitChapter = (
+    chapterIndex: number,
+    ancestors: ReadonlySet<number>,
+  ): NavigationNode | null => {
+    const sourceNode = chapterNodes.get(chapterIndex);
+    const chapter = chapters[chapterIndex];
+    if (!sourceNode || !chapter) return null;
+
+    claimed.add(chapterIndex);
+    const node: NavigationNode = {
+      ...sourceNode,
+      children: isIndexDocument(chapter.documentName)
+        ? []
+        : sourceNode.children,
+    };
+    if (!isIndexDocument(chapter.documentName)) return node;
+
+    const nextAncestors = new Set(ancestors);
+    nextAncestors.add(chapterIndex);
+    const indexPath = normalizeAbsolutePath(chapter.documentPath);
+    const indexDirectory = directoryPathFromPath(indexPath);
+    const links = extractInlineMarkdownLinksBounded(chapter.markdown, 500).links;
+
+    for (const link of links) {
+      const resolved = resolveLocalMarkdownLinkTarget(
+        link.destination,
+        chapter.documentPath,
+        workspaceRoot,
+      );
+      if (!resolved) continue;
+      const targetIndex =
+        chapterByPath.get(resolved) ??
+        chapterByPath.get(normalizeAbsolutePath(`${resolved}/index.md`));
+      if (
+        targetIndex === undefined ||
+        targetIndex === chapterIndex ||
+        nextAncestors.has(targetIndex) ||
+        claimed.has(targetIndex)
+      ) {
+        continue;
+      }
+      const targetPath = normalizeAbsolutePath(chapters[targetIndex].documentPath);
+      if (
+        indexPath !== rootIndexPath &&
+        !isPathInsideDirectory(targetPath, indexDirectory)
+      ) {
+        continue;
+      }
+      const child = visitChapter(targetIndex, nextAncestors);
+      if (child) node.children.push(child);
+    }
+    return node;
+  };
+
+  const navigation: NavigationNode[] = [];
+  if (rootIndex !== undefined) {
+    const root = visitChapter(rootIndex, new Set());
+    if (root) navigation.push(root);
+  }
+  for (let chapterIndex = 0; chapterIndex < chapters.length; chapterIndex += 1) {
+    if (claimed.has(chapterIndex)) continue;
+    const node = visitChapter(chapterIndex, new Set());
+    if (node) navigation.push(node);
+  }
+  return navigation;
+}
+
+function buildBookScopeNavigation(
+  nodes: readonly BookScopeNode[],
+  chapterNodes: ReadonlyMap<number, NavigationNode>,
+  chapterByPath: ReadonlyMap<string, number>,
+  chapters: readonly EpubExportChapter[],
+  workspaceRoot: string,
+): NavigationNode[] {
+  const claimed = new Set<number>();
+  const visit = (entries: readonly BookScopeNode[]): NavigationNode[] =>
+    entries.flatMap((entry): NavigationNode[] => {
+      const children = visit(entry.children);
+      if (entry.kind === "group") {
+        return children.length
+          ? [{ children, href: null, text: entry.title }]
+          : [];
+      }
+      const targetPath = normalizeAbsolutePath(
+        `${workspaceRoot}/${entry.relativePath}`,
+      );
+      const chapterIndex = chapterByPath.get(targetPath);
+      if (chapterIndex === undefined || claimed.has(chapterIndex)) return children;
+      const sourceNode = chapterNodes.get(chapterIndex);
+      if (!sourceNode) return children;
+      claimed.add(chapterIndex);
+      return [
+        {
+          ...sourceNode,
+          children: children.length > 0 ? children : sourceNode.children,
+        },
+      ];
+    });
+
+  const navigation = visit(nodes);
+  for (let index = 0; index < chapters.length; index += 1) {
+    if (claimed.has(index)) continue;
+    const node = chapterNodes.get(index);
+    if (node) navigation.push(node);
+  }
+  return navigation;
+}
+
+function chapterNavigationNode(
+  headings: readonly HeadingEntry[],
+  firstDocument: ContentDocument | undefined,
+  fallbackLabel: string,
+): NavigationNode {
+  const firstHeading = headings[0];
+  if (!firstHeading) {
+    return {
+      children: [],
+      href: firstDocument?.path ?? "content.xhtml",
+      text: fallbackLabel,
+    };
+  }
+  return {
+    children: headingNavigationTree(headings.slice(1)),
+    href: `${firstHeading.contentPath}#${firstHeading.id}`,
+    text: firstHeading.text,
+  };
+}
+
+function headingNavigationTree(
+  headings: readonly HeadingEntry[],
+): NavigationNode[] {
+  const roots: NavigationNode[] = [];
+  const stack: Array<{ level: number; node: NavigationNode }> = [];
+  for (const heading of headings) {
+    const node: NavigationNode = {
+      children: [],
+      href: `${heading.contentPath}#${heading.id}`,
+      text: heading.text,
+    };
+    while (stack.length > 0 && stack[stack.length - 1].level >= heading.level) {
+      stack.pop();
+    }
+    const parent = stack[stack.length - 1]?.node;
+    if (parent) {
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+    stack.push({ level: heading.level, node });
+  }
+  return roots;
+}
+
+function isIndexDocument(documentName: string): boolean {
+  return documentName.toLowerCase() === "index.md";
+}
+
 function navXhtml(
   title: string,
   language: string,
-  headings: HeadingEntry[],
-  contentDocuments: ContentDocument[],
+  navigation: readonly NavigationNode[],
 ): string {
-  const navigationEntries = contentDocuments.flatMap((contentDocument) => {
-    const documentHeadings = headings.filter(
-      (heading) => heading.contentPath === contentDocument.path,
-    );
-    if (documentHeadings.length > 0) {
-      return documentHeadings.map((heading) => ({
-        href: `${heading.contentPath}#${heading.id}`,
-        text: heading.text,
-      }));
-    }
-    return contentDocument.navigationLabel
-      ? [{ href: contentDocument.path, text: contentDocument.navigationLabel }]
-      : [];
-  });
-  const navItems = navigationEntries.length > 0
-    ? navigationEntries
-        .map(
-          (entry) =>
-            `      <li><a href="${escapeXml(entry.href)}">${escapeXml(entry.text)}</a></li>`,
-        )
-        .join("\n")
-    : `      <li><a href="${escapeXml(contentDocuments[0]?.path ?? "content.xhtml")}">本文</a></li>`;
+  const navItems = navigation.length > 0
+    ? serializeNavigationNodes(navigation, 6)
+    : `      <li><a href="content.xhtml">本文</a></li>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -814,6 +1194,30 @@ ${navItems}
 </body>
 </html>
 `;
+}
+
+function serializeNavigationNodes(
+  nodes: readonly NavigationNode[],
+  indentation: number,
+): string {
+  const padding = " ".repeat(indentation);
+  return nodes
+    .map((node) => {
+      const link = node.href
+        ? `<a href="${escapeXml(node.href)}">${escapeXml(node.text)}</a>`
+        : `<span>${escapeXml(node.text)}</span>`;
+      if (node.children.length === 0) {
+        return `${padding}<li>${link}</li>`;
+      }
+      return [
+        `${padding}<li>${link}`,
+        `${padding}  <ol>`,
+        serializeNavigationNodes(node.children, indentation + 4),
+        `${padding}  </ol>`,
+        `${padding}</li>`,
+      ].join("\n");
+    })
+    .join("\n");
 }
 
 function contentXhtml(title: string, language: string, body: string): string {

@@ -87,6 +87,19 @@ describe("useBookScopeController suggestions", () => {
     expect(suggestion).toMatchObject({
       chapterRelativePaths: ["index.md", "chapter.md"],
       includedIndexPageCount: 1,
+      nodes: [
+        {
+          kind: "document",
+          relativePath: "index.md",
+          children: [
+            {
+              kind: "document",
+              relativePath: "chapter.md",
+              children: [],
+            },
+          ],
+        },
+      ],
     });
     expect(result.current.bookScopeChapterRelativePaths).toEqual([]);
     expect(setStatus).toHaveBeenLastCalledWith("本の候補を作りました: 2件");

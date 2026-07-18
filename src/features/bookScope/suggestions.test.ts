@@ -89,6 +89,80 @@ describe("Book Scope chapter suggestions", () => {
     expect(result.excludedSupportFileCount).toBe(0);
   });
 
+  it("builds an index-section tree and accepts recommended bundle-root links", () => {
+    const result = suggestBookScopeFromDiscovery(
+      discovery([
+        {
+          relativePath: "index.md",
+          content:
+            "# Collection\n\n## Works\n\n### Primary\n\n[Book one](/books/one/index.md)\n\n## Notes\n\n[Afterword](/notes/afterword.md)\n",
+        },
+        {
+          relativePath: "books/one/index.md",
+          content: "# Book one\n\n## Chapters\n\n[Opening](/books/one/01.md)\n",
+        },
+        { relativePath: "books/one/01.md", content: "# Opening\n" },
+        { relativePath: "notes/afterword.md", content: "# Afterword\n" },
+      ]),
+      { includeIndexPages: true },
+    );
+
+    expect(result.chapterRelativePaths).toEqual([
+      "index.md",
+      "books/one/index.md",
+      "books/one/01.md",
+      "notes/afterword.md",
+    ]);
+    expect(result.nodes).toEqual([
+      {
+        kind: "document",
+        relativePath: "index.md",
+        children: [
+          {
+            kind: "group",
+            title: "Works",
+            children: [
+              {
+                kind: "group",
+                title: "Primary",
+                children: [
+                  {
+                    kind: "document",
+                    relativePath: "books/one/index.md",
+                    children: [
+                      {
+                        kind: "group",
+                        title: "Chapters",
+                        children: [
+                          {
+                            kind: "document",
+                            relativePath: "books/one/01.md",
+                            children: [],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            kind: "group",
+            title: "Notes",
+            children: [
+              {
+                kind: "document",
+                relativePath: "notes/afterword.md",
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
   it("excludes OKF support files, unreadable files, duplicate and external links", () => {
     const result = suggestBookScopeFromDiscovery(
       discovery([

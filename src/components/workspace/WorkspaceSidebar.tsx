@@ -8,8 +8,12 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
-import type { BookScopeSuggestion } from "../../features/bookScope";
-import type { BookScopeSuggestionOptions } from "../../features/bookScope";
+import {
+  documentBookScopeNodes,
+  type BookScopeNode,
+  type BookScopeSuggestion,
+  type BookScopeSuggestionOptions,
+} from "../../features/bookScope";
 import type {
   BookScopeChapter,
   BookScopeUnavailableEntry,
@@ -30,6 +34,7 @@ const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
 type WorkspaceSidebarProps = {
   activePath: string | null;
   bookScopeChapterRelativePaths?: readonly string[];
+  bookScopeNodes?: readonly BookScopeNode[];
   bookScopeChapters?: readonly BookScopeChapter[];
   bookScopeResolving?: boolean;
   bookScopeSuggesting?: boolean;
@@ -42,7 +47,7 @@ type WorkspaceSidebarProps = {
   dirtyFilePaths: readonly string[];
   fileOpsCopy: WorkspaceFileOpsCopy;
   menuLanguage?: MenuLanguage;
-  onCommitBookScope?: (paths: readonly string[]) => void;
+  onCommitBookScope?: (nodes: readonly BookScopeNode[]) => void;
   onCancelBookScopeSuggestion?: () => void;
   onCreateBookScopeSuggestion?: (
     options: BookScopeSuggestionOptions,
@@ -79,6 +84,7 @@ type WorkspaceSidebarProps = {
 export function WorkspaceSidebar({
   activePath,
   bookScopeChapterRelativePaths = [],
+  bookScopeNodes = [],
   bookScopeChapters = [],
   bookScopeResolving = false,
   bookScopeSuggesting = false,
@@ -118,6 +124,11 @@ export function WorkspaceSidebar({
   workspaceRootPath,
   workspaceTree,
 }: WorkspaceSidebarProps) {
+  // Tolerate legacy/test callers while version 1 flat scopes migrate in memory.
+  const effectiveBookScopeNodes =
+    bookScopeNodes.length > 0
+      ? bookScopeNodes
+      : documentBookScopeNodes(bookScopeChapterRelativePaths);
   const [sidebarView, setSidebarView] = useState<"files" | "book">("files");
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const newMenuRef = useRef<HTMLDivElement | null>(null);
@@ -375,6 +386,7 @@ export function WorkspaceSidebar({
           chapterRelativePaths={bookScopeChapterRelativePaths}
           chapters={bookScopeChapters}
           menuLanguage={menuLanguage}
+          nodes={effectiveBookScopeNodes}
           onCommit={onCommitBookScope}
           onCancelSuggest={onCancelBookScopeSuggestion}
           onLoadDirectory={onLoadDirectory}

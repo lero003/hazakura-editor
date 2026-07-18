@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   resolveBookScope,
   type BookScopeChapter,
@@ -6,11 +6,13 @@ import {
 } from "../../lib/tauri/bookScope";
 import {
   readBookScope,
-  remapBookScopePathPrefix,
-  removeBookScopePath,
+  flattenBookScopeNodes,
+  remapBookScopeNodePathPrefix,
+  removeBookScopeNodePath,
   suggestBookScopeFromDiscovery,
   type BookScopeSuggestion,
   type BookScopeSuggestionOptions,
+  type BookScopeNode,
   writeBookScope,
 } from "../../features/bookScope";
 import { cancelOkfBundleScan, scanOkfBundle } from "../../lib/tauri/okf";
@@ -30,7 +32,11 @@ export function useBookScopeController({
   menuLanguage,
   workspaceRootPath,
 }: UseBookScopeControllerOptions) {
-  const [chapterRelativePaths, setChapterRelativePaths] = useState<string[]>([]);
+  const [nodes, setNodes] = useState<BookScopeNode[]>([]);
+  const chapterRelativePaths = useMemo(
+    () => flattenBookScopeNodes(nodes),
+    [nodes],
+  );
   const [chapters, setChapters] = useState<BookScopeChapter[]>([]);
   const [unavailable, setUnavailable] = useState<BookScopeUnavailableEntry[]>([]);
   const [resolving, setResolving] = useState(false);
@@ -46,9 +52,9 @@ export function useBookScopeController({
     suggestionActiveRef.current = false;
     setSuggesting(false);
     setSuggestionError(null);
-    setChapterRelativePaths(
+    setNodes(
       workspaceRootPath
-        ? (readBookScope(workspaceRootPath)?.chapterRelativePaths ?? [])
+        ? (readBookScope(workspaceRootPath)?.nodes ?? [])
         : [],
     );
   }, [workspaceRootPath]);
@@ -92,15 +98,16 @@ export function useBookScopeController({
       });
   }, [chapterRelativePaths, menuLanguage, revision, setGlobalError, setStatus, workspaceRootPath]);
 
-  const commitChapterPaths = useCallback(
-    (nextPaths: readonly string[]) => {
+  const commitNodes = useCallback(
+    (nextNodes: readonly BookScopeNode[]) => {
       if (!workspaceRootPath) return;
-      const persisted = writeBookScope(workspaceRootPath, nextPaths);
-      const saved =
+      const persisted = writeBookScope(workspaceRootPath, nextNodes);
+      const savedScope =
         persisted.workspaces.find(
           (scope) => scope.workspaceRootPath === workspaceRootPath,
-        )?.chapterRelativePaths ?? [];
-      setChapterRelativePaths(saved);
+        ) ?? null;
+      const saved = savedScope?.chapterRelativePaths ?? [];
+      setNodes(savedScope?.nodes ?? []);
       setStatus(
         isJapaneseMenuLanguage(menuLanguage)
           ? saved.length
@@ -120,13 +127,17 @@ export function useBookScopeController({
       const oldRelative = workspaceRelativePath({ workspaceRoot: workspaceRootPath, filePath: oldPath });
       const newRelative = workspaceRelativePath({ workspaceRoot: workspaceRootPath, filePath: newPath });
       if (!oldRelative || !newRelative) return;
-      setChapterRelativePaths((current) => {
-        const next = remapBookScopePathPrefix(current, oldRelative, newRelative);
+      setNodes((current) => {
+        const next = remapBookScopeNodePathPrefix(
+          current,
+          oldRelative,
+          newRelative,
+        );
         const persisted = writeBookScope(workspaceRootPath, next);
         return (
           persisted.workspaces.find(
             (scope) => scope.workspaceRootPath === workspaceRootPath,
-          )?.chapterRelativePaths ?? []
+          )?.nodes ?? []
         );
       });
     },
@@ -138,13 +149,17 @@ export function useBookScopeController({
       if (!workspaceRootPath) return;
       const relative = workspaceRelativePath({ workspaceRoot: workspaceRootPath, filePath: path });
       if (!relative) return;
-      setChapterRelativePaths((current) => {
-        const next = removeBookScopePath(current, relative, includeDescendants);
+      setNodes((current) => {
+        const next = removeBookScopeNodePath(
+          current,
+          relative,
+          includeDescendants,
+        );
         const persisted = writeBookScope(workspaceRootPath, next);
         return (
           persisted.workspaces.find(
             (scope) => scope.workspaceRootPath === workspaceRootPath,
-          )?.chapterRelativePaths ?? []
+          )?.nodes ?? []
         );
       });
     },
@@ -208,12 +223,13 @@ export function useBookScopeController({
 
   return {
     bookScopeChapterRelativePaths: chapterRelativePaths,
+    bookScopeNodes: nodes,
     bookScopeChapters: chapters,
     bookScopeResolving: resolving,
     bookScopeSuggesting: suggesting,
     bookScopeSuggestionError: suggestionError,
     bookScopeUnavailable: unavailable,
-    commitBookScopeChapterPaths: commitChapterPaths,
+    commitBookScopeNodes: commitNodes,
     createBookScopeSuggestion: createSuggestion,
     cancelBookScopeSuggestion: cancelSuggestion,
     revalidateBookScope: () => setRevision((current) => current + 1),

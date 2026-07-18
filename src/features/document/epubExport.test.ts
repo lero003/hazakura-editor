@@ -198,6 +198,220 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain('<li><a href="content-2.xhtml">02-afternoon</a></li>');
   });
 
+  it("builds hierarchical Book Scope navigation from included index links", async () => {
+    const archive = await buildEpubBetaArchive({
+      chapters: [
+        {
+          documentName: "index.md",
+          documentPath: "/workspace/index.md",
+          markdown: [
+            "# Collection",
+            "",
+            "- [Book One](books/one/index.md)",
+            "- [Notes](notes.md)",
+          ].join("\n"),
+        },
+        {
+          documentName: "index.md",
+          documentPath: "/workspace/books/one/index.md",
+          markdown: [
+            "# Book One",
+            "",
+            "- [Chapter One](chapters/01.md)",
+          ].join("\n"),
+        },
+        {
+          documentName: "01.md",
+          documentPath: "/workspace/books/one/chapters/01.md",
+          markdown: "# Chapter One\n\n## A deeper question\n\nBody.",
+        },
+        {
+          documentName: "notes.md",
+          documentPath: "/workspace/notes.md",
+          markdown: "# Notes\n\nReference notes.",
+        },
+      ],
+      documentName: "workspace",
+      markdown: "",
+      workspaceRoot: "/workspace",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain(
+      '<li><a href="content.xhtml#collection">Collection</a>\n        <ol>',
+    );
+    expect(text).toContain(
+      '<li><a href="content-2.xhtml#book-one">Book One</a>\n            <ol>',
+    );
+    expect(text).toContain(
+      '<li><a href="content-3.xhtml#chapter-one">Chapter One</a>\n                <ol>',
+    );
+    expect(text).toContain(
+      '<li><a href="content-3.xhtml#a-deeper-question">A deeper question</a></li>',
+    );
+    expect(text.indexOf("Book One")).toBeLessThan(text.indexOf("Notes"));
+  });
+
+  it("uses the saved Book Scope tree for groups and rewrites bundle-root links", async () => {
+    const archive = await buildEpubBetaArchive({
+      bookNavigation: [
+        {
+          kind: "document",
+          relativePath: "index.md",
+          children: [
+            {
+              kind: "group",
+              title: "Works",
+              children: [
+                {
+                  kind: "document",
+                  relativePath: "books/one.md",
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      chapters: [
+        {
+          documentName: "index.md",
+          documentPath: "/workspace/index.md",
+          markdown: "# Collection\n\n[Book one](/books/one.md)",
+        },
+        {
+          documentName: "one.md",
+          documentPath: "/workspace/books/one.md",
+          markdown: "# Book one\n",
+        },
+      ],
+      documentName: "workspace",
+      markdown: "",
+      workspaceRoot: "/workspace",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain("<li><span>Works</span>");
+    expect(text).toContain(
+      '<a href="content-2.xhtml#book-one">Book one</a>',
+    );
+    expect(text).not.toContain('href="/books/one.md"');
+  });
+
+  it("rewrites included Markdown links to packaged EPUB content documents", async () => {
+    const archive = await buildEpubBetaArchive({
+      chapters: [
+        {
+          documentName: "index.md",
+          documentPath: "/workspace/index.md",
+          markdown: [
+            "# Collection",
+            "",
+            "[Read the book](books/one/index.md#book-one)",
+          ].join("\n"),
+        },
+        {
+          documentName: "index.md",
+          documentPath: "/workspace/books/one/index.md",
+          markdown: [
+            "# Book One",
+            "",
+            "[Start](chapters/01.md)",
+          ].join("\n"),
+        },
+        {
+          documentName: "01.md",
+          documentPath: "/workspace/books/one/chapters/01.md",
+          markdown: [
+            "# Chapter One",
+            "",
+            "[Back to book](../index.md)",
+            "",
+            "[External](https://example.com)",
+          ].join("\n"),
+        },
+      ],
+      documentName: "workspace",
+      markdown: "",
+      workspaceRoot: "/workspace",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain(
+      '<a href="content-2.xhtml#book-one">Read the book</a>',
+    );
+    expect(text).toContain('<a href="content-3.xhtml#chapter-one">Start</a>');
+    expect(text).toContain(
+      '<a href="content-2.xhtml#book-one">Back to book</a>',
+    );
+    expect(text).toContain('<a href="https://example.com">External</a>');
+    expect(text).not.toContain('href="books/one/index.md');
+    expect(text).not.toContain('href="chapters/01.md');
+    expect(text).not.toContain('href="../index.md');
+  });
+
+  it("rewrites same-chapter anchors across packaged page-break documents", async () => {
+    const archive = await buildEpubBetaArchive({
+      chapters: [
+        {
+          documentName: "chapter.md",
+          documentPath: "/workspace/chapter.md",
+          markdown: [
+            "# Chapter",
+            "",
+            "[Continue](#after-break)",
+            "",
+            "[Unknown](#missing-heading)",
+            "",
+            "---",
+            "",
+            "## After break",
+            "",
+            "Body.",
+          ].join("\n"),
+        },
+      ],
+      documentName: "workspace",
+      markdown: "",
+      workspaceRoot: "/workspace",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain(
+      '<a href="content-2.xhtml#after-break">Continue</a>',
+    );
+    expect(text).toContain('<a href="#missing-heading">Unknown</a>');
+  });
+
+  it("nests single-document EPUB navigation by Markdown heading level", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: [
+        "# Part One",
+        "",
+        "## Chapter One",
+        "",
+        "### Detail",
+        "",
+        "## Chapter Two",
+        "",
+        "# Part Two",
+      ].join("\n"),
+      documentName: "nested.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain(
+      '<li><a href="content.xhtml#part-one">Part One</a>\n        <ol>',
+    );
+    expect(text).toContain(
+      '<li><a href="content.xhtml#chapter-one">Chapter One</a>\n            <ol>',
+    );
+    expect(text).toContain(
+      '<li><a href="content.xhtml#detail">Detail</a></li>',
+    );
+    expect(text.indexOf("Chapter Two")).toBeLessThan(text.indexOf("Part Two"));
+  });
+
   it("packages an explicitly approved outside-local image", async () => {
     const loadApprovedLocalImage = vi.fn(async () => ({
       dataUrl: "data:image/png;base64,iVBORw0KGgo=",

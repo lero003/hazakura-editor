@@ -3,6 +3,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import { BookScopePanel, shouldShowChapterPathHint } from "./BookScopePanel";
 
+const nodes = (paths: readonly string[]) =>
+  paths.map((relativePath) => ({
+    kind: "document" as const,
+    relativePath,
+    children: [],
+  }));
+
 const workspaceTree: WorkspaceTreeEntry = {
   name: "workspace",
   path: "/workspace",
@@ -43,6 +50,7 @@ describe("BookScopePanel", () => {
   it("opens workspace suggestions as a draft and commits only on Save", async () => {
     const onCommit = vi.fn();
     const onSuggest = vi.fn(async () => ({
+      nodes: nodes(["nested/chapter.md", "a.md"]),
       chapterRelativePaths: ["nested/chapter.md", "a.md"],
       linkedChapterCount: 1,
       includedIndexPageCount: 1,
@@ -57,6 +65,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="ja"
+        nodes={[]}
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -76,7 +85,9 @@ describe("BookScopePanel", () => {
     ).toBeTruthy();
     expect(onCommit).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "保存 (2)" }));
-    expect(onCommit).toHaveBeenCalledWith(["nested/chapter.md", "a.md"]);
+    expect(onCommit).toHaveBeenCalledWith(
+      nodes(["nested/chapter.md", "a.md"]),
+    );
   });
 
   it("lets the user exclude index pages before creating a suggestion", async () => {
@@ -87,6 +98,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="ja"
+        nodes={[]}
         onCommit={vi.fn()}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -114,6 +126,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="en"
+        nodes={[]}
         onCancelSuggest={onCancelSuggest}
         onCommit={vi.fn()}
         onLoadDirectory={vi.fn(async () => {})}
@@ -143,6 +156,7 @@ describe("BookScopePanel", () => {
           { name: "a.md", path: "/workspace/a.md", relativePath: "a.md" },
         ]}
         menuLanguage="ja"
+        nodes={nodes(["a.md", "missing.md"])}
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={onOpenChapter}
@@ -163,7 +177,85 @@ describe("BookScopePanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "再確認" }));
     expect(onRevalidate).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "missing.mdを上へ移動" }));
-    expect(onCommit).toHaveBeenCalledWith(["missing.md", "a.md"]);
+    expect(onCommit).toHaveBeenCalledWith(nodes(["missing.md", "a.md"]));
+  });
+
+  it("shows saved groups and keeps arrow reordering inside one parent", () => {
+    const onCommit = vi.fn();
+    const structuredNodes = [
+      {
+        kind: "document" as const,
+        relativePath: "index.md",
+        children: [
+          {
+            kind: "group" as const,
+            title: "Works",
+            children: [
+              {
+                kind: "document" as const,
+                relativePath: "books/one.md",
+                children: [],
+              },
+              {
+                kind: "document" as const,
+                relativePath: "books/two.md",
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={["index.md", "books/one.md", "books/two.md"]}
+        chapters={[
+          { name: "index.md", path: "/workspace/index.md", relativePath: "index.md" },
+          { name: "one.md", path: "/workspace/books/one.md", relativePath: "books/one.md" },
+          { name: "two.md", path: "/workspace/books/two.md", relativePath: "books/two.md" },
+        ]}
+        menuLanguage="en"
+        nodes={structuredNodes}
+        onCommit={onCommit}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onRevalidate={vi.fn()}
+        resolving={false}
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    expect(screen.getByText("Works")).toBeTruthy();
+    expect(
+      (screen.getByRole("button", {
+        name: "Move books/one.md up",
+      }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole("button", {
+        name: "Move books/two.md down",
+      }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Move books/two.md up" }),
+    );
+    expect(onCommit).toHaveBeenCalledWith([
+      {
+        ...structuredNodes[0],
+        children: [
+          {
+            ...structuredNodes[0].children[0],
+            children: [
+              structuredNodes[0].children[0].children[1],
+              structuredNodes[0].children[0].children[0],
+            ],
+          },
+        ],
+      },
+    ]);
   });
 
   it("keeps the settled book view quiet: read/edit primary, suggest only while editing", () => {
@@ -177,6 +269,7 @@ describe("BookScopePanel", () => {
           { name: "a.md", path: "/workspace/a.md", relativePath: "a.md" },
         ]}
         menuLanguage="ja"
+        nodes={nodes(["a.md"])}
         onCommit={vi.fn()}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -216,6 +309,7 @@ describe("BookScopePanel", () => {
           },
         ]}
         menuLanguage="en"
+        nodes={nodes(["a.md", "nested/chapter.md"])}
         onCommit={vi.fn()}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -239,6 +333,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="en"
+        nodes={[]}
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -261,6 +356,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="en"
+        nodes={[]}
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -274,7 +370,7 @@ describe("BookScopePanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Choose chapters" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "a.md" }));
     fireEvent.click(screen.getByRole("button", { name: "Save (1)" }));
-    expect(onCommit).toHaveBeenCalledWith(["a.md"]);
+    expect(onCommit).toHaveBeenCalledWith(nodes(["a.md"]));
   });
 
   it("cancels a draft with Escape and restores focus to the edit trigger", () => {
@@ -285,6 +381,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="en"
+        nodes={[]}
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -320,6 +417,7 @@ describe("BookScopePanel", () => {
           { name: "a.md", path: "/workspace/a.md", relativePath: "a.md" },
         ]}
         menuLanguage="ja"
+        nodes={nodes(["a.md"])}
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={vi.fn()}
@@ -334,7 +432,7 @@ describe("BookScopePanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "編集" }));
     fireEvent.click(screen.getByRole("button", { name: "保存 (1)" }));
 
-    expect(onCommit).toHaveBeenCalledWith(["a.md"]);
+    expect(onCommit).toHaveBeenCalledWith(nodes(["a.md"]));
     expect(document.activeElement).toBe(
       screen.getByRole("button", { name: "編集" }),
     );
@@ -348,6 +446,7 @@ describe("BookScopePanel", () => {
         chapterRelativePaths={[]}
         chapters={[]}
         menuLanguage="en"
+        nodes={[]}
         onCommit={vi.fn()}
         onLoadDirectory={onLoadDirectory}
         onOpenChapter={vi.fn()}

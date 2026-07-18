@@ -9,6 +9,7 @@ type UseDocumentIoControllerOptions = Parameters<typeof useSaveActions>[0] &
     | "materializeImagesOnExport"
     | "mediaAccess"
     | "bookScopeChapters"
+    | "bookScopeNodes"
     | "bookScopeUnavailable"
   >;
 

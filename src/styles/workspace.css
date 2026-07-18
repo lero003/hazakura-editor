@@ -746,13 +746,22 @@
   opacity: 0.72;
 }
 
+.book-scope-list li.book-scope-group {
+  display: block;
+  padding: 7px 6px 2px calc(8px + var(--book-scope-depth, 0) * 14px);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .book-scope-chapter-open {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
   align-items: start;
   gap: 4px;
   min-width: 0;
-  padding: 7px 4px;
+  padding: 7px 4px 7px calc(4px + var(--book-scope-depth, 0) * 14px);
   border: 0;
   text-align: left;
   color: var(--text);
