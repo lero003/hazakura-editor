@@ -460,6 +460,7 @@ export function useDocumentExport({
     padding: 0;
     visibility: hidden;
   }
+  .book-scope-page-break { break-before: column; }
   .markdown-preview h1,
   .markdown-preview h2,
   .markdown-preview h3,

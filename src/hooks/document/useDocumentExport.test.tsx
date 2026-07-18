@@ -827,6 +827,9 @@ describe("useDocumentExport", () => {
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
       "book-scope-page-break",
     );
+    expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
+      ".book-scope-page-break { break-before: column; }",
+    );
   });
 
   it("opens EPUB metadata settings before the save dialog", async () => {
