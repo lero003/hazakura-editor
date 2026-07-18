@@ -828,7 +828,10 @@ describe("useDocumentExport", () => {
       '<section class="book-scope-pdf-chapter book-scope-pdf-chapter--next"><p># Two</p></section>',
     );
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
-      ".book-scope-pdf-chapter--next { break-before: column; }",
+      "break-before: column;",
+    );
+    expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
+      "-webkit-column-break-before: always;",
     );
   });
 

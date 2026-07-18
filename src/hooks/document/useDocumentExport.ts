@@ -463,7 +463,10 @@ export function useDocumentExport({
   /* Put the break on non-empty chapter content. WebKit may discard an empty
      multicol break marker, which would pack short chapters onto one page. */
   .book-scope-pdf-chapter { break-inside: auto; }
-  .book-scope-pdf-chapter--next { break-before: column; }
+  .book-scope-pdf-chapter--next {
+    -webkit-column-break-before: always;
+    break-before: column;
+  }
   .markdown-preview h1,
   .markdown-preview h2,
   .markdown-preview h3,
