@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 Book Scope vertical slice + candidate proof; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (Book Scope PDF/EPUB + preflight in source)
+Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
 
 ## Current State
 
@@ -53,7 +53,7 @@ Last reviewed: 2026-07-18 (Book Scope PDF/EPUB + preflight in source)
 ## Verification (2026-07-18)
 
 - `npm run typecheck` — pass.
-- `npm test` — 201 files / 1,657 tests pass.
+- `npm test` — 201 files / 1,659 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 366 pass / 2 ignored
@@ -68,11 +68,13 @@ Last reviewed: 2026-07-18 (Book Scope PDF/EPUB + preflight in source)
   relaunch restoration, external deletion/unavailable retention, in-app
   rename tracking, and confirmed Trash removal. The narrow follow-up localizes
   lazy-folder status and unavailable reasons.
-- Latest built-app export smoke passed the explicit Current file default,
-  Book Scope switch, unavailable-chapter preflight text, and disabled Book
-  action in both EPUB/PDF dialogs. Successful Book artifacts were not generated
-  in that pass because the retained boundary fixture intentionally had one
-  unavailable chapter; success output remains automated-test proof only.
+- Latest built-app candidate smoke used the official OKF fixture to suggest,
+  save, restore, and read three chapters in order. It generated a three-page A4
+  Book PDF, visually verified in macOS Preview as one ordered chapter per page,
+  and a valid three-document EPUB with ordered spine and chapter-name fallback
+  navigation. The preflight exposed missing headings/author metadata; a separate
+  retained unavailable chapter blocked both Book exports while Current file
+  remained available.
 
 ## Durable Pins
 
@@ -86,11 +88,11 @@ Last reviewed: 2026-07-18 (Book Scope PDF/EPUB + preflight in source)
 
 ## Next For Agents
 
-1. **Prove the current v2 vertical slice** with full gates and built-app Book
-   PDF/EPUB smoke. Do not rebuild the completed selection/order/suggestion/
-   reader/export spine.
-2. One verifiable slice per run. Do not front-load Help essays before the
-   multi-file feel exists.
+1. **Decide the v2 candidate/version boundary** and the matching Help/store-copy
+   polish. The tree is still `1.14.0`; do not infer a release or version bump.
+2. Do not rebuild the proven selection/order/suggestion/reader/export spine.
+   Take one verifiable slice per run, driven by reproduced friction or explicit
+   ship-polish direction.
 3. Hotfix only for reproduced v1.14 review or daily-use blockers.
 4. Do not invent a mandatory `v1.15` feature train before v2.
 5. Do not upload, submit, publish, move tags, or attach release assets without

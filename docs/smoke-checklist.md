@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-17 (Theme G media M0–M4 palette + smoke)
+Last reviewed: 2026-07-18 (v2 Book Scope candidate smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -30,6 +30,18 @@ Use this checklist after changes to file operations, saving, preview rendering, 
 
 Record PDF and EPUB separately. Window-launch proof alone does not pass these
 interactions, and a Developer bundle does not prove signed TestFlight behavior.
+
+Representative result (2026-07-18): the latest helper-enabled built app used
+the official v1.11 OKF fixture to suggest, save, restore, and read three chapters
+in order. Preflight reported all three missing headings and missing author
+metadata. The Book PDF was a valid three-page A4 file and macOS Preview showed
+the three chapters on pages 1–3 in scope order. The EPUB passed archive checks
+with three ordered content documents, matching spine order, Japanese metadata,
+and chapter-filename fallback navigation. A separate retained unavailable entry
+blocked Book PDF/EPUB while Current file stayed available. This fixture had no
+workspace images, so missing-image/materialization behavior remains automated
+coverage plus the earlier Theme G export evidence; signed TestFlight export and
+cancel-dialog coverage were not claimed by this pass.
 
 Historical smoke logs and old per-release notes are archived in `docs/archive/operations/smoke-checklist-through-v0.10-doc-refactor.md` and `docs/archive/operations/smoke-checklist-version-notes-through-v0.18.md`.
 

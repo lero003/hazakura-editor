@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 development phase; v1.14 in App Store review
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book Scope vertical slice source-complete)
+Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
 
 ## Purpose
 
@@ -74,13 +74,13 @@ Connect is authoritative for store counters.
 
 ### Immediate next
 
-1. **Candidate proof in progress:** latest automated gates and app build pass;
-   built-app dialog/preflight/unavailable blocking passed. Successful Book PDF
-   and EPUB artifact inspection remains a hands-on proof item.
-2. Observe the first Alpha sidebar/export loop in built-app use; adjust only reproduced
-   selection/order/navigation friction before widening the surface.
-3. Decide whether this vertical slice is the first v2 candidate boundary, then
-   align version / Help / store copy only with explicit release direction.
+1. **Candidate proof complete:** latest full gates and app build pass. The built
+   app created a three-page A4 Book PDF with one chapter per page and a valid
+   three-document EPUB whose spine and navigation preserve Book Scope order.
+2. Observe the first Alpha sidebar/reader/export loop in daily use; adjust only
+   reproduced selection/order/navigation friction before widening the surface.
+3. Decide the v2 version / Help / store-copy boundary. The current tree remains
+   `1.14.0`; this proof does not imply a version bump, tag, upload, or publication.
 
 ### At v2 ship (not now)
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book Scope PDF/EPUB + preflight implemented)
+Last reviewed: 2026-07-18 (v2 Book Scope candidate proof complete)
 
 ## Current State
 
@@ -61,15 +61,16 @@ Last reviewed: 2026-07-18 (v2 Book Scope PDF/EPUB + preflight implemented)
   chapters, up to 100 workspace images, missing headings, and EPUB metadata,
   and blocks Book export when a chapter is unavailable. It adds no manifest,
   background indexing, source rewrite, or second editable buffer.
-- **Latest source and built-app candidate proof is green with one manual edge
-  still open.** TypeScript/Vitest (**201 files / 1,657 tests**), Vite, Rust
-  (**366 pass / 2 host-dependent ignored**), App Store surface (**107 tests**),
-  and the helper-enabled App Store preview build pass. The fresh built app
-  reopened the nested Book fixture and passed Current file default, Book Scope
-  switching, concrete unavailable-chapter preflight, and disabled EPUB/PDF Book
-  export. Successful Book PDF/EPUB artifact generation and reader inspection
-  were not exercised manually in that pass; automated controller/builder tests
-  cover the success paths.
+- **Latest source and built-app candidate proof is green.** TypeScript/Vitest
+  (**201 files / 1,659 tests**), Vite, Rust (**366 pass / 2 host-dependent
+  ignored**), App Store surface (**107 tests**), and the helper-enabled App Store
+  preview build pass. A fresh built app proposed three chapters from the official
+  OKF fixture, restored their saved order, and read all three in the whole-book
+  reader. Export produced a three-page A4 PDF verified in macOS Preview with one
+  chapter per page, plus a valid three-document EPUB whose metadata, spine, and
+  navigation preserve Book Scope order. Preflight showed the fixture's missing
+  headings and author metadata; a retained unavailable chapter blocked Book PDF
+  and EPUB while leaving Current file available.
 - **Book Scope Alpha built-app interaction smoke passed on 2026-07-18.** A
   throwaway nested workspace covered explicit selection, order changes, dirty
   chapter switching and return, scope-external file opening, relaunch restore,
@@ -98,8 +99,8 @@ Last reviewed: 2026-07-18 (v2 Book Scope PDF/EPUB + preflight implemented)
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open main queue:** latest-HEAD full gates and built-app Book PDF/EPUB proof,
-  followed by the v2 candidate/version and ship-polish decision (design SoT
+- **Open main queue:** the v2 candidate/version and ship-polish decision,
+  followed only by reproduced Alpha friction (design SoT
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
 - **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
   broad TestFlight / VoiceOver / evidence matrix.
