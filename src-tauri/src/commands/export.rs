@@ -24,9 +24,24 @@ JSON.stringify((() => {
   // remainder of the current column with a real block so every later Book
   // Scope chapter begins at the top of the next A4 capture column.
   if (preview) {
-    const chapters = Array.from(
-      preview.querySelectorAll(".book-scope-pdf-chapter--next")
+    const allChapters = Array.from(
+      preview.querySelectorAll(".book-scope-pdf-chapter")
     );
+    const firstChapterContentRect = (chapter) => {
+      const walker = document.createTreeWalker(chapter, NodeFilter.SHOW_TEXT);
+      const range = document.createRange();
+      let textNode = walker.nextNode();
+      while (textNode) {
+        if (textNode.textContent.trim()) {
+          range.selectNodeContents(textNode);
+          const rect = range.getClientRects()[0];
+          if (rect) return rect;
+        }
+        textNode = walker.nextNode();
+      }
+      const media = chapter.querySelector("img, svg, canvas, video, hr");
+      return media?.getClientRects()[0] || chapter.getClientRects()[0] || null;
+    };
     const previewStyle = window.getComputedStyle(preview);
     const paddingTop = Number.parseFloat(previewStyle.paddingTop) || 0;
     const paddingBottom = Number.parseFloat(previewStyle.paddingBottom) || 0;
@@ -35,17 +50,21 @@ JSON.stringify((() => {
       preview.clientHeight - paddingTop - paddingBottom
     );
     const contentTop = preview.getBoundingClientRect().top + paddingTop;
-    for (const chapter of chapters) {
-      const firstRect = chapter.getClientRects()[0];
+    const referenceRect = allChapters[0]
+      ? firstChapterContentRect(allChapters[0])
+      : null;
+    const referenceTop = referenceRect ? referenceRect.top - contentTop : 0;
+    for (const chapter of allChapters.slice(1)) {
+      const firstRect = firstChapterContentRect(chapter);
       if (!firstRect) continue;
-      const topInColumn = firstRect.top - contentTop;
-      if (topInColumn <= 0.5 || topInColumn >= flowHeight - 0.5) continue;
+      const topDelta = firstRect.top - contentTop - referenceTop;
+      if (topDelta <= 0.5 || topDelta >= flowHeight - 0.5) continue;
       const spacer = document.createElement("div");
       spacer.className = "book-scope-pdf-runtime-spacer";
       spacer.setAttribute("aria-hidden", "true");
       spacer.style.cssText = [
         "display:block",
-        `height:${Math.ceil(flowHeight - topInColumn)}px`,
+        `height:${Math.ceil(flowHeight - topDelta)}px`,
         "margin:0",
         "padding:0",
         "width:1px"

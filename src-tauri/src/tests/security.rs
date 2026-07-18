@@ -709,6 +709,7 @@ fn export_pdf_measures_rendered_content_instead_of_trailing_scroll_area() {
     assert!(
         PDF_CAPTURE_SIZE_SCRIPT.contains("book-scope-pdf-runtime-spacer")
             && PDF_CAPTURE_SIZE_SCRIPT.contains("preview.clientHeight")
+            && PDF_CAPTURE_SIZE_SCRIPT.contains("firstChapterContentRect")
             && PDF_CAPTURE_SIZE_SCRIPT.contains("insertBefore"),
         "Book Scope capture must fill the current WebKit column before each later chapter"
     );
