@@ -453,6 +453,27 @@
   line-height: 1.5;
 }
 
+.book-scope-suggestion-summary,
+.book-scope-inline-error {
+  margin: 0 2px 10px;
+  padding: 7px 8px;
+  border-left: 2px solid var(--accent);
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  font-size: 0.84em;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.book-scope-inline-error {
+  border-left-color: var(--warning-color, #b06a24);
+}
+
+.book-scope-empty-actions {
+  display: grid;
+  gap: 6px;
+}
+
 .book-scope-toolbar,
 .book-scope-edit-actions {
   display: flex;
@@ -461,6 +482,7 @@
 }
 
 .book-scope-toolbar {
+  flex-wrap: wrap;
   position: sticky;
   z-index: 2;
   top: 0;
@@ -469,6 +491,7 @@
 }
 
 .book-scope-toolbar span {
+  flex: 1 0 100%;
   margin-right: auto;
   color: var(--text-muted);
   font-size: 0.88em;

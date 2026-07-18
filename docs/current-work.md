@@ -58,12 +58,14 @@ Connect is authoritative for store counters.
 
 ### Immediate next
 
-1. **OKF multi-file daily feel** — deepen review / scaffold / navigation only
-   where it makes the folder-as-book loop trustworthy. Pin:
-   `docs/okf-spec-pin.md`. Keep base OKF ≠ Hazakura Book semantics.
-2. **Whole-book reading** over the explicit scope (export when the slice needs
-   it — not a forced Alpha checklist item).
-3. Observe the first Alpha sidebar in built-app use; adjust only reproduced
+1. **Done in source: explicit chapter suggestion draft.** A user-triggered,
+   bounded OKF snapshot proposes chapters from root `index.md` link order plus
+   remaining readable `.md` files. It never runs on startup or saves until the
+   user reviews the checkbox draft and chooses Save.
+2. **Whole-book reading** over the explicit scope.
+3. **Book export + preflight** — explicit Current file / Book Scope choice for
+   EPUB and PDF, followed by missing chapter/image/heading/metadata checks.
+4. Observe the first Alpha sidebar in built-app use; adjust only reproduced
    selection/order/navigation friction before widening the surface.
 
 ### At v2 ship (not now)

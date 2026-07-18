@@ -26,6 +26,7 @@ import {
   coalesceChaptersToTopLevel,
   splitMarkdownIntoChapters,
 } from "../../features/editor/ebookChapters";
+import type { BookScopeSuggestion } from "../../features/bookScope";
 import {
   documentViewStateKey,
   patchDocumentViewState,
@@ -94,6 +95,8 @@ type AppWorkspaceProps = {
   bookScopeChapterRelativePaths?: readonly string[];
   bookScopeChapters?: readonly BookScopeChapter[];
   bookScopeResolving?: boolean;
+  bookScopeSuggesting?: boolean;
+  bookScopeSuggestionError?: string | null;
   bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
   agentLaunchGate: AgentLaunchGateState;
   agentOutput: AgentWorkbenchOutputChunk[];
@@ -116,6 +119,8 @@ type AppWorkspaceProps = {
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
   commitBookScopeChapterPaths?: (paths: readonly string[]) => void;
+  cancelBookScopeSuggestion?: () => void;
+  createBookScopeSuggestion?: () => Promise<BookScopeSuggestion | null>;
   createFile: (parentPath: string) => Promise<void> | void;
   createOkfScaffoldAt: (
     parentPath: string,
@@ -240,6 +245,8 @@ export function AppWorkspace({
   bookScopeChapterRelativePaths = [],
   bookScopeChapters = [],
   bookScopeResolving = false,
+  bookScopeSuggesting = false,
+  bookScopeSuggestionError = null,
   bookScopeUnavailable = [],
   agentLaunchGate,
   agentOutput,
@@ -262,6 +269,8 @@ export function AppWorkspace({
   compareTarget,
   compareView,
   commitBookScopeChapterPaths = () => {},
+  cancelBookScopeSuggestion = () => {},
+  createBookScopeSuggestion,
   createFile,
   createFolder,
   createOkfScaffoldAt,
@@ -545,6 +554,8 @@ export function AppWorkspace({
           bookScopeChapterRelativePaths={bookScopeChapterRelativePaths}
           bookScopeChapters={bookScopeChapters}
           bookScopeResolving={bookScopeResolving}
+          bookScopeSuggesting={bookScopeSuggesting}
+          bookScopeSuggestionError={bookScopeSuggestionError}
           bookScopeUnavailable={bookScopeUnavailable}
           compareSelectionEnabled={sidePaneMode === "compare"}
           compareSourcePath={compareAnchor?.path ?? null}
@@ -554,6 +565,8 @@ export function AppWorkspace({
           fileOpsCopy={fileOpsCopy}
           menuLanguage={menuLanguage}
           onCommitBookScope={commitBookScopeChapterPaths}
+          onCancelBookScopeSuggestion={cancelBookScopeSuggestion}
+          onCreateBookScopeSuggestion={createBookScopeSuggestion}
           onCollapse={
             editorSettings.lModeEnabled
               ? undefined

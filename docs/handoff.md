@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: v2 Book Scope Alpha spine implemented; v1.14 in App Store review
+Scope: v2 Book Scope Alpha + explicit chapter suggestions; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
+Last reviewed: 2026-07-18 (explicit chapter suggestion draft in source)
 
 ## Current State
 
@@ -17,6 +17,10 @@ Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
   explicit Markdown selection, app-private workspace order, unavailable-entry
   retention/recheck, chapter switching through the existing single editor,
   and Rust path/symlink/100-chapter validation.
+- **Explicit chapter suggestions are in source:** Book view can run the existing
+  bounded/cancellable OKF snapshot on demand, prioritize root `index.md` links,
+  append remaining readable `.md` paths, and open the result as an unsaved
+  checkbox draft. It adds no startup/background scan or persistent scan cache.
 - Value / multi-file narrative and **Help expansion** are **v2 ship polish**
   (when OKF multi-file feel is good enough), not a pre-implementation essay.
 - Design SoT:
@@ -40,7 +44,7 @@ Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
 ## Verification (2026-07-18)
 
 - `npm run typecheck` — pass.
-- `npm test` — 196 files / 1,636 tests pass.
+- `npm test` — 198 files / 1,644 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 366 pass / 2 ignored
@@ -68,8 +72,9 @@ Last reviewed: 2026-07-18 (first Book Scope Alpha spine in source)
 
 ## Next For Agents
 
-1. **Continue v2** from OKF multi-file daily feel or whole-book reading over
-   the explicit scope. Do not rebuild the completed selection/order spine.
+1. **Continue v2** with whole-book reading over the explicit scope, then the
+   explicit Current file / Book Scope EPUB/PDF export + preflight lane. Do not
+   rebuild the completed selection/order/suggestion spine.
 2. One verifiable slice per run. Do not front-load Help essays before the
    multi-file feel exists.
 3. Hotfix only for reproduced v1.14 review or daily-use blockers.

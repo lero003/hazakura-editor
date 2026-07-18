@@ -8,6 +8,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import type { BookScopeSuggestion } from "../../features/bookScope";
 import type {
   BookScopeChapter,
   BookScopeUnavailableEntry,
@@ -30,6 +31,8 @@ type WorkspaceSidebarProps = {
   bookScopeChapterRelativePaths?: readonly string[];
   bookScopeChapters?: readonly BookScopeChapter[];
   bookScopeResolving?: boolean;
+  bookScopeSuggesting?: boolean;
+  bookScopeSuggestionError?: string | null;
   bookScopeUnavailable?: readonly BookScopeUnavailableEntry[];
   compareSelectionEnabled: boolean;
   compareSourcePath: string | null;
@@ -39,6 +42,8 @@ type WorkspaceSidebarProps = {
   fileOpsCopy: WorkspaceFileOpsCopy;
   menuLanguage?: MenuLanguage;
   onCommitBookScope?: (paths: readonly string[]) => void;
+  onCancelBookScopeSuggestion?: () => void;
+  onCreateBookScopeSuggestion?: () => Promise<BookScopeSuggestion | null>;
   onCreateFile: () => void;
   onCreateFolder: () => void;
   onCreateOkfScaffoldMinimal: () => void;
@@ -71,6 +76,8 @@ export function WorkspaceSidebar({
   bookScopeChapterRelativePaths = [],
   bookScopeChapters = [],
   bookScopeResolving = false,
+  bookScopeSuggesting = false,
+  bookScopeSuggestionError = null,
   bookScopeUnavailable = [],
   compareSelectionEnabled,
   compareSourcePath,
@@ -80,6 +87,8 @@ export function WorkspaceSidebar({
   fileOpsCopy,
   menuLanguage = "ja",
   onCommitBookScope = () => {},
+  onCancelBookScopeSuggestion = () => {},
+  onCreateBookScopeSuggestion,
   onCreateFile,
   onCreateFolder,
   onCreateOkfScaffoldMinimal,
@@ -360,10 +369,14 @@ export function WorkspaceSidebar({
           chapters={bookScopeChapters}
           menuLanguage={menuLanguage}
           onCommit={onCommitBookScope}
+          onCancelSuggest={onCancelBookScopeSuggestion}
           onLoadDirectory={onLoadDirectory}
           onOpenChapter={(path) => void onOpenFile(path)}
           onRevalidate={onRevalidateBookScope}
+          onSuggest={onCreateBookScopeSuggestion}
           resolving={bookScopeResolving}
+          suggesting={bookScopeSuggesting}
+          suggestionError={bookScopeSuggestionError}
           unavailable={bookScopeUnavailable}
           workspaceRootPath={workspaceRootPath}
           workspaceTree={workspaceTree}

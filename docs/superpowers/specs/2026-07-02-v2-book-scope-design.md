@@ -1,8 +1,8 @@
 # v2 Book Scope Design
 
-Status: Review — first Book Scope Alpha slice implemented
+Status: Review — Book Scope Alpha + explicit chapter suggestions implemented
 Scope: v2.0 Book Workspace Alpha と構造型 Markdown の方向・境界・未解決の UI 問い
-Last reviewed: 2026-07-18 (first Alpha spine implemented; whole-book reading next)
+Last reviewed: 2026-07-18 (explicit chapter suggestion draft implemented; whole-book reading next)
 
 ## Goal
 
@@ -51,6 +51,23 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
 - 選択編集は保存 / キャンセル付き。並べ替えはdisk上のfile moveではなく、
   app-privateな解釈順だけを上下する。
 - 全編読書、book export、manifest共有、OKF Book semantics、AI構造編集は次slice以降。
+
+## Explicit Chapter Suggestion Contract
+
+最初の spine に続く OKF multi-file feel のスライスとして、Book view から
+**「ワークスペースから候補を作る」**を明示実行できる。
+
+- 既存の main-window-only OKF disk snapshot を再利用する。一回限り、停止可能、
+  最大200 `.md`、walk 2,000 entry、1 file 10 MiB、合計32 MiB、深さ16まで。
+- root `index.md` の安全に解決できる内部 Markdown link 順を先頭にし、残りの
+  読取可能な本文 `.md` を安定した相対path順で末尾へ置く。`index.md` / `log.md`
+  と読取不能fileは候補から外す。
+- 結果は **Hazakura Book Scope の候補順**であり、OKF準拠やOKF book orderを
+  意味しない。候補は選択画面のdraftへ入るだけで、自動保存しない。
+- ユーザーはcheckboxで調整し、「保存」で初めてworkspaceのBook Scopeへ反映する。
+  走査打切り・100章上限はdraft上で明示する。
+- 起動時走査、background indexing、watcher、永続scan cache、source/manifestの
+  書換えは追加しない。`.markdown` / `.mdx` 等は従来の手動選択で追加できる。
 
 ## Current Direction
 

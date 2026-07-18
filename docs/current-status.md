@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book Scope Alpha spine implemented)
+Last reviewed: 2026-07-18 (v2 explicit chapter suggestion draft implemented)
 
 ## Current State
 
@@ -38,6 +38,13 @@ Last reviewed: 2026-07-18 (v2 Book Scope Alpha spine implemented)
   moved chapters remain visible as unavailable until rechecked or explicitly
   removed. No workspace manifest, source rewrite, background indexing,
   whole-book reader/export, or OKF semantic expansion was added.
+- **Book Scope can now create an explicit chapter suggestion draft.** The user
+  starts one bounded, cancellable OKF disk snapshot from the Book view. Root
+  `index.md` internal links lead the proposed order; remaining readable `.md`
+  files follow in stable path order, while `index.md` / `log.md` and unreadable
+  files stay out. The result remains an editable checkbox draft until Save;
+  startup/background scanning, scan caches, source changes, and automatic
+  scope persistence were not added.
 - **Book Scope Alpha built-app interaction smoke passed on 2026-07-18.** A
   throwaway nested workspace covered explicit selection, order changes, dirty
   chapter switching and return, scope-external file opening, relaunch restore,
@@ -66,8 +73,8 @@ Last reviewed: 2026-07-18 (v2 Book Scope Alpha spine implemented)
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open main queue:** OKF multi-file daily feel and whole-book reading over
-  the explicit Book Scope (design SoT
+- **Open main queue:** whole-book reading, then explicit Book Scope EPUB/PDF
+  export and preflight checks (design SoT
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
 - **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
   broad TestFlight / VoiceOver / evidence matrix.

@@ -66,14 +66,14 @@ Order of work (detail in the design doc; refine while building):
    Existing-left-sidebar Files / Book view, explicit bounded Markdown scope,
    app-private order, unavailable retention, one primary editable buffer, and
    no background indexing.
-2. **Now: OKF multi-file feel** — reuse v1.11 review + v1.12 scaffold as inputs;
-   deepen only what makes “folder as knowledge / book” trustworthy day to day.
-   Keep base OKF compatibility separate from Hazakura Book semantics
-   (`docs/okf-spec-pin.md`).
-3. **Next: Whole-book reading (and export only when ready)** — e-book / navigation
-   over the explicit scope; export breadth is not required for the first
-   Alpha cut unless the slice needs it.
-4. **Ship polish including Help** — when the multi-file / OKF loop feels
+2. **Done in source: explicit chapter suggestion draft.** One user-triggered,
+   bounded OKF snapshot proposes root `index.md` link order plus remaining
+   readable `.md` files. The checkbox draft is never saved automatically;
+   base OKF compatibility remains separate from Hazakura Book semantics.
+3. **Now: Whole-book reading** — e-book / navigation over the explicit scope.
+4. **Next: Book export + preflight** — explicit Current file / Book Scope
+   choice for EPUB/PDF, with missing chapter/image/heading/metadata checks.
+5. **Ship polish including Help** — when the multi-file / OKF loop feels
    shippable: Help pages, in-app feature explanation, store/release copy.
    Do **not** front-load long product essays before the feel exists.
 

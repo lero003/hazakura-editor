@@ -40,6 +40,66 @@ const workspaceTree: WorkspaceTreeEntry = {
 afterEach(cleanup);
 
 describe("BookScopePanel", () => {
+  it("opens workspace suggestions as a draft and commits only on Save", async () => {
+    const onCommit = vi.fn();
+    const onSuggest = vi.fn(async () => ({
+      chapterRelativePaths: ["nested/chapter.md", "a.md"],
+      linkedChapterCount: 1,
+      excludedSupportFileCount: 2,
+      unreadableFileCount: 0,
+      candidateLimitReached: false,
+      scanIncomplete: false,
+    }));
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={[]}
+        chapters={[]}
+        menuLanguage="ja"
+        onCommit={onCommit}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onRevalidate={vi.fn()}
+        onSuggest={onSuggest}
+        resolving={false}
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "ワークスペースから候補を作る" }));
+    expect(await screen.findByText("2章を候補にしました（index.mdの順序: 1章）")).toBeTruthy();
+    expect(onCommit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "保存 (2)" }));
+    expect(onCommit).toHaveBeenCalledWith(["nested/chapter.md", "a.md"]);
+  });
+
+  it("offers cancellation while a workspace suggestion scan is running", () => {
+    const onCancelSuggest = vi.fn();
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={[]}
+        chapters={[]}
+        menuLanguage="en"
+        onCancelSuggest={onCancelSuggest}
+        onCommit={vi.fn()}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onRevalidate={vi.fn()}
+        resolving={false}
+        suggesting
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop scan" }));
+    expect(onCancelSuggest).toHaveBeenCalledOnce();
+  });
+
   it("opens available chapters, exposes unavailable entries, and reorders explicitly", () => {
     const onCommit = vi.fn();
     const onOpenChapter = vi.fn();

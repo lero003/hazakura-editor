@@ -8,8 +8,11 @@ import {
   readBookScope,
   remapBookScopePathPrefix,
   removeBookScopePath,
+  suggestBookScopeFromDiscovery,
+  type BookScopeSuggestion,
   writeBookScope,
 } from "../../features/bookScope";
+import { cancelOkfBundleScan, scanOkfBundle } from "../../lib/tauri/okf";
 import { workspaceRelativePath } from "./workspaceRelativePath";
 import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
 
@@ -30,10 +33,18 @@ export function useBookScopeController({
   const [chapters, setChapters] = useState<BookScopeChapter[]>([]);
   const [unavailable, setUnavailable] = useState<BookScopeUnavailableEntry[]>([]);
   const [resolving, setResolving] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
   const requestIdRef = useRef(0);
+  const suggestionRequestIdRef = useRef(0);
+  const suggestionActiveRef = useRef(false);
 
   useEffect(() => {
+    suggestionRequestIdRef.current += 1;
+    suggestionActiveRef.current = false;
+    setSuggesting(false);
+    setSuggestionError(null);
     setChapterRelativePaths(
       workspaceRootPath
         ? (readBookScope(workspaceRootPath)?.chapterRelativePaths ?? [])
@@ -139,12 +150,69 @@ export function useBookScopeController({
     [workspaceRootPath],
   );
 
+  const createSuggestion = useCallback(async (): Promise<BookScopeSuggestion | null> => {
+    if (!workspaceRootPath || suggestionActiveRef.current) return null;
+    const requestId = ++suggestionRequestIdRef.current;
+    suggestionActiveRef.current = true;
+    setSuggesting(true);
+    setSuggestionError(null);
+    setStatus(
+      isJapaneseMenuLanguage(menuLanguage)
+        ? "章候補を探しています…"
+        : "Looking for chapter suggestions…",
+    );
+    try {
+      const discovery = await scanOkfBundle(workspaceRootPath, workspaceRootPath);
+      if (requestId !== suggestionRequestIdRef.current) return null;
+      if (discovery.cancelled) {
+        setStatus(
+          isJapaneseMenuLanguage(menuLanguage)
+            ? "章候補の走査を停止しました"
+            : "Chapter suggestion scan stopped",
+        );
+        return null;
+      }
+      const suggestion = suggestBookScopeFromDiscovery(discovery);
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? `章候補を作りました: ${suggestion.chapterRelativePaths.length}章`
+          : `Chapter draft created: ${suggestion.chapterRelativePaths.length} chapter(s)`,
+      );
+      return suggestion;
+    } catch (error) {
+      if (requestId !== suggestionRequestIdRef.current) return null;
+      const message = String(error);
+      setSuggestionError(message);
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? "章候補を作れませんでした"
+          : "Could not create chapter suggestions",
+      );
+      return null;
+    } finally {
+      if (requestId === suggestionRequestIdRef.current) {
+        suggestionActiveRef.current = false;
+        setSuggesting(false);
+      }
+    }
+  }, [menuLanguage, setStatus, workspaceRootPath]);
+
+  const cancelSuggestion = useCallback(() => {
+    void cancelOkfBundleScan().catch((error) => {
+      setSuggestionError(String(error));
+    });
+  }, []);
+
   return {
     bookScopeChapterRelativePaths: chapterRelativePaths,
     bookScopeChapters: chapters,
     bookScopeResolving: resolving,
+    bookScopeSuggesting: suggesting,
+    bookScopeSuggestionError: suggestionError,
     bookScopeUnavailable: unavailable,
     commitBookScopeChapterPaths: commitChapterPaths,
+    createBookScopeSuggestion: createSuggestion,
+    cancelBookScopeSuggestion: cancelSuggestion,
     revalidateBookScope: () => setRevision((current) => current + 1),
     remapBookScopeWorkspaceEntry: remapWorkspaceEntry,
     removeBookScopeWorkspaceEntry: removeWorkspaceEntry,

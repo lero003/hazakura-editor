@@ -160,6 +160,8 @@ export function AppShell(props: AppShellProps) {
               bookScopeChapterRelativePaths: props.bookScopeChapterRelativePaths,
               bookScopeChapters: props.bookScopeChapters,
               bookScopeResolving: props.bookScopeResolving,
+              bookScopeSuggesting: props.bookScopeSuggesting,
+              bookScopeSuggestionError: props.bookScopeSuggestionError,
               bookScopeUnavailable: props.bookScopeUnavailable,
               compareSelectionEnabled: props.sidePaneMode === "compare",
               compareSourcePath: props.compareAnchor?.path ?? null,
@@ -169,6 +171,8 @@ export function AppShell(props: AppShellProps) {
               fileOpsCopy: props.fileOpsCopy,
               menuLanguage: props.menuLanguage,
               onCommitBookScope: props.commitBookScopeChapterPaths,
+              onCancelBookScopeSuggestion: props.cancelBookScopeSuggestion,
+              onCreateBookScopeSuggestion: props.createBookScopeSuggestion,
               onCreateFile: () => {
                 if (props.workspaceRootPath) {
                   void props.createFile(props.workspaceRootPath);

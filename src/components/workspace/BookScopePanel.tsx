@@ -9,6 +9,7 @@ import {
   moveBookScopeChapter,
   removeBookScopePath,
 } from "../../features/bookScope";
+import type { BookScopeSuggestion } from "../../features/bookScope";
 import type { MenuLanguage } from "../../types";
 import {
   BookScopeSelectorTree,
@@ -21,10 +22,14 @@ type Props = {
   chapters: readonly BookScopeChapter[];
   menuLanguage: MenuLanguage;
   onCommit: (paths: readonly string[]) => void;
+  onCancelSuggest?: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenChapter: (path: string) => void;
   onRevalidate: () => void;
+  onSuggest?: () => Promise<BookScopeSuggestion | null>;
   resolving: boolean;
+  suggesting?: boolean;
+  suggestionError?: string | null;
   unavailable: readonly BookScopeUnavailableEntry[];
   workspaceRootPath: string;
   workspaceTree: WorkspaceTreeEntry;
@@ -36,10 +41,14 @@ export function BookScopePanel({
   chapters,
   menuLanguage,
   onCommit,
+  onCancelSuggest = () => {},
   onLoadDirectory,
   onOpenChapter,
   onRevalidate,
+  onSuggest,
   resolving,
+  suggesting = false,
+  suggestionError = null,
   unavailable,
   workspaceRootPath,
   workspaceTree,
@@ -49,6 +58,10 @@ export function BookScopePanel({
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(
     () => new Set(chapterRelativePaths),
   );
+  const [draftOrder, setDraftOrder] = useState<string[]>(
+    () => [...chapterRelativePaths],
+  );
+  const [suggestion, setSuggestion] = useState<BookScopeSuggestion | null>(null);
   const editTriggerRef = useRef<HTMLButtonElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef(false);
@@ -82,6 +95,8 @@ export function BookScopePanel({
   const beginEditing = () => {
     restoreFocusRef.current = false;
     setSelectedPaths(new Set(chapterRelativePaths));
+    setDraftOrder([...chapterRelativePaths]);
+    setSuggestion(null);
     setEditing(true);
   };
   const cancelEditing = () => {
@@ -94,9 +109,18 @@ export function BookScopePanel({
       workspaceRootPath,
       selectedPaths,
     );
-    const retained = chapterRelativePaths.filter((path) => selectedPaths.has(path));
-    onCommit(mergeBookScopeSelection(retained, [...retained, ...treeOrder]));
+    const retained = draftOrder.filter((path) => selectedPaths.has(path));
+    onCommit(mergeBookScopeSelection(draftOrder, [...retained, ...treeOrder]));
     setEditing(false);
+  };
+  const createSuggestion = async () => {
+    if (!onSuggest || suggesting) return;
+    const next = await onSuggest();
+    if (!next) return;
+    setSelectedPaths(new Set(next.chapterRelativePaths));
+    setDraftOrder([...next.chapterRelativePaths]);
+    setSuggestion(next);
+    setEditing(true);
   };
 
   if (editing) {
@@ -114,6 +138,17 @@ export function BookScopePanel({
         role="group"
       >
         <p className="book-scope-purpose">{copy.selectionPurpose}</p>
+        {suggestion ? (
+          <p className="book-scope-suggestion-summary" role="status">
+            {copy.suggestionSummary(
+              suggestion.chapterRelativePaths.length,
+              suggestion.linkedChapterCount,
+            )}
+            {suggestion.scanIncomplete || suggestion.candidateLimitReached
+              ? ` ${copy.suggestionIncomplete}`
+              : ""}
+          </p>
+        ) : null}
         <BookScopeSelectorTree
           entry={workspaceTree}
           onLoadDirectory={onLoadDirectory}
@@ -144,9 +179,17 @@ export function BookScopePanel({
     return (
       <div className="book-scope-panel book-scope-empty">
         <p>{copy.empty}</p>
-        <button className="primary" onClick={beginEditing} ref={editTriggerRef} type="button">
-          {copy.choose}
-        </button>
+        {suggestionError ? <p className="book-scope-inline-error" role="alert">{suggestionError}</p> : null}
+        <div className="book-scope-empty-actions">
+          <button className="primary" onClick={beginEditing} ref={editTriggerRef} type="button">
+            {copy.choose}
+          </button>
+          {suggesting ? (
+            <button onClick={onCancelSuggest} type="button">{copy.stopSuggestion}</button>
+          ) : onSuggest ? (
+            <button onClick={() => void createSuggestion()} type="button">{copy.suggest}</button>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -156,6 +199,11 @@ export function BookScopePanel({
       <div className="book-scope-toolbar">
         <span>{copy.chapterCount(chapterRelativePaths.length)}</span>
         <button onClick={beginEditing} ref={editTriggerRef} type="button">{copy.edit}</button>
+        {suggesting ? (
+          <button onClick={onCancelSuggest} type="button">{copy.stopSuggestion}</button>
+        ) : onSuggest ? (
+          <button onClick={() => void createSuggestion()} type="button">{copy.suggestShort}</button>
+        ) : null}
         <button disabled={resolving} onClick={onRevalidate} type="button">
           {copy.recheck}
         </button>
@@ -220,6 +268,10 @@ function bookScopeCopy(language: MenuLanguage) {
       cancel: "Cancel", choose: "Choose chapters", edit: "Edit chapters",
       empty: "Choose Markdown files explicitly and treat them as one book.",
       recheck: "Recheck", save: "Save",
+      stopSuggestion: "Stop scan", suggest: "Suggest from workspace", suggestShort: "Suggest",
+      suggestionIncomplete: "The scan was partial; review the draft before saving.",
+      suggestionSummary: (count: number, linked: number) =>
+        `${count} chapter(s) suggested (${linked} ordered from index.md).`,
       selectionPurpose: "Select Markdown chapters. Expanding a folder reads only that folder.",
       selectionLabel: "Choose book chapters",
       chapterCount: (count: number) => `${count} chapters`,
@@ -232,6 +284,10 @@ function bookScopeCopy(language: MenuLanguage) {
     cancel: "キャンセル", choose: "章を選ぶ", edit: "章を編集",
     empty: "Markdownを明示的に選び、一冊として扱います。",
     recheck: "再確認", save: "保存",
+    stopSuggestion: "走査を停止", suggest: "ワークスペースから候補を作る", suggestShort: "候補を作る",
+    suggestionIncomplete: "走査結果は一部です。保存前に候補を確認してください。",
+    suggestionSummary: (count: number, linked: number) =>
+      `${count}章を候補にしました（index.mdの順序: ${linked}章）`,
     selectionPurpose: "本に含めるMarkdownを選びます。フォルダは開いた時だけ読み込みます。",
     selectionLabel: "本の章を選択",
     chapterCount: (count: number) => `${count}章`,
