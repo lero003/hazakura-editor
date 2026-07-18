@@ -36,6 +36,7 @@ describe("Book Scope chapter suggestions", () => {
         { relativePath: "chapters/02.md", content: "# Second\n" },
         { relativePath: "appendix.md", content: "# Appendix\n" },
       ]),
+      { includeIndexPages: false },
     );
 
     expect(result.chapterRelativePaths).toEqual([
@@ -70,17 +71,22 @@ describe("Book Scope chapter suggestions", () => {
         { relativePath: "books/02/chapters/09.md", content: "# Ending\n" },
         { relativePath: "notes/afterword.md", content: "# Afterword\n" },
       ]),
+      { includeIndexPages: true },
     );
 
     expect(result.chapterRelativePaths).toEqual([
+      "index.md",
+      "books/02/index.md",
       "books/02/chapters/00.md",
       "books/02/chapters/09.md",
+      "books/01/index.md",
       "books/01/chapters/01.md",
       "books/01/chapters/02.md",
       "notes/afterword.md",
     ]);
     expect(result.linkedChapterCount).toBe(5);
-    expect(result.excludedSupportFileCount).toBe(3);
+    expect(result.includedIndexPageCount).toBe(3);
+    expect(result.excludedSupportFileCount).toBe(0);
   });
 
   it("excludes OKF support files, unreadable files, duplicate and external links", () => {
@@ -96,6 +102,7 @@ describe("Book Scope chapter suggestions", () => {
         { relativePath: "nested/index.md", content: "# Nested index\n" },
         { relativePath: "broken.md", content: null },
       ]),
+      { includeIndexPages: false },
     );
 
     expect(result.chapterRelativePaths).toEqual(["one.md"]);
@@ -112,10 +119,34 @@ describe("Book Scope chapter suggestions", () => {
         })),
         { truncated: true },
       ),
+      { includeIndexPages: true },
     );
 
     expect(result.chapterRelativePaths).toHaveLength(100);
     expect(result.candidateLimitReached).toBe(true);
     expect(result.scanIncomplete).toBe(true);
+  });
+
+  it("reports linked and index counts only for items inside the capped draft", () => {
+    const chapterFiles = Array.from({ length: 105 }, (_, index) => ({
+      relativePath: `chapters/${String(index).padStart(3, "0")}.md`,
+      content: `# ${index}\n`,
+    }));
+    const links = chapterFiles
+      .map((file) => `[${file.relativePath}](${file.relativePath})`)
+      .join("\n");
+    const result = suggestBookScopeFromDiscovery(
+      discovery([
+        { relativePath: "index.md", content: links },
+        ...chapterFiles,
+      ]),
+      { includeIndexPages: true },
+    );
+
+    expect(result.chapterRelativePaths).toHaveLength(100);
+    expect(result.chapterRelativePaths[0]).toBe("index.md");
+    expect(result.includedIndexPageCount).toBe(1);
+    expect(result.linkedChapterCount).toBe(99);
+    expect(result.candidateLimitReached).toBe(true);
   });
 });

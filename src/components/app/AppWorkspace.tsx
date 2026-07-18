@@ -31,6 +31,7 @@ import {
   loadBookScopeReaderDocuments,
   type BookScopeReaderLoadResult,
   type BookScopeSuggestion,
+  type BookScopeSuggestionOptions,
 } from "../../features/bookScope";
 import {
   hasUnsafeMarkdownLinkScheme,
@@ -131,7 +132,9 @@ type AppWorkspaceProps = {
   compareView: CompareViewState | null;
   commitBookScopeChapterPaths?: (paths: readonly string[]) => void;
   cancelBookScopeSuggestion?: () => void;
-  createBookScopeSuggestion?: () => Promise<BookScopeSuggestion | null>;
+  createBookScopeSuggestion?: (
+    options: BookScopeSuggestionOptions,
+  ) => Promise<BookScopeSuggestion | null>;
   createFile: (parentPath: string) => Promise<void> | void;
   createOkfScaffoldAt: (
     parentPath: string,

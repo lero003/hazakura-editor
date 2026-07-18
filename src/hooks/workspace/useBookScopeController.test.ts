@@ -75,16 +75,21 @@ describe("useBookScopeController suggestions", () => {
 
     let suggestion = null;
     await act(async () => {
-      suggestion = await result.current.createBookScopeSuggestion();
+      suggestion = await result.current.createBookScopeSuggestion({
+        includeIndexPages: true,
+      });
     });
 
     expect(mocks.scanOkfBundle).toHaveBeenCalledWith(
       "/workspace",
       "/workspace",
     );
-    expect(suggestion).toMatchObject({ chapterRelativePaths: ["chapter.md"] });
+    expect(suggestion).toMatchObject({
+      chapterRelativePaths: ["index.md", "chapter.md"],
+      includedIndexPageCount: 1,
+    });
     expect(result.current.bookScopeChapterRelativePaths).toEqual([]);
-    expect(setStatus).toHaveBeenLastCalledWith("章候補を作りました: 1章");
+    expect(setStatus).toHaveBeenLastCalledWith("本の候補を作りました: 2件");
   });
 
   it("invalidates a pending suggestion when the workspace changes", async () => {
@@ -109,7 +114,9 @@ describe("useBookScopeController suggestions", () => {
 
     let pending: Promise<unknown>;
     act(() => {
-      pending = result.current.createBookScopeSuggestion();
+      pending = result.current.createBookScopeSuggestion({
+        includeIndexPages: true,
+      });
     });
     await waitFor(() => expect(result.current.bookScopeSuggesting).toBe(true));
     rerender({ root: "/other" });

@@ -14,7 +14,7 @@ describe("BookScopeReader", () => {
     render(
       <BookScopeReader
         documents={[
-          { name: "one.md", path: "/workspace/one.md", relativePath: "one.md", source: "# One", usesLiveBuffer: true },
+          { name: "one.md", path: "/workspace/one.md", relativePath: "one.md", source: "---\ntitle: One\n---\n# One", usesLiveBuffer: true },
           { name: "two.md", path: "/workspace/two.md", relativePath: "two.md", source: "# Two", usesLiveBuffer: false },
         ]}
         failures={[]}
@@ -31,6 +31,8 @@ describe("BookScopeReader", () => {
       "1. one.md未保存の編集を反映",
       "2. two.md",
     ]);
+    expect(await screen.findByText("# One")).toBeTruthy();
+    expect(screen.queryByText(/title: One/)).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "two.mdを編集" }));
     expect(onEditChapter).toHaveBeenCalledWith("/workspace/two.md");
   });

@@ -637,6 +637,21 @@
   gap: 6px;
 }
 
+.book-scope-index-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 0.82em;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.book-scope-index-option input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 .book-scope-toolbar,
 .book-scope-edit-actions {
   display: flex;
@@ -2306,6 +2321,13 @@
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
+}
+
+/* The pane owns scrolling, but the preview card must keep its content height.
+   This must follow the shared body rule above so long Markdown cannot be
+   flexed back down to the first viewport and paint outside its background. */
+.preview-pane-preview > .markdown-preview {
+  flex: 0 0 auto;
 }
 
 .preview-pane-card {

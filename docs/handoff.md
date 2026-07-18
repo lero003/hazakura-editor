@@ -23,15 +23,19 @@ Last reviewed: 2026-07-18 (heavy multi-book suggestion final adjustment)
   in their local chapter order, append remaining readable `.md` paths, and open
   the result as an unsaved checkbox draft. It adds no startup/background scan
   or persistent scan cache.
-- **Heavy manuscript proof is green for candidate creation:** a real five-work
-  e-book split into 44 Markdown files produces 37 editable candidates in work,
-  chapter, then root supplementary order. The latest local ad-hoc App Store
-  preview displayed all 37 with index/log files unchecked; the draft was
-  cancelled without persistence. Signed TestFlight PDF/EPUB appearance is held.
+- **Heavy manuscript candidate adjustment is built-app verified:** a real five-work
+  e-book split into 44 Markdown files now produces 43 editable candidates with
+  the default-on index-page option: root index first, then each linked nested
+  index before its chapters, followed by root supplementary notes. Turning the
+  option off preserves the previous 37-item body draft; `log.md` stays excluded.
+  Signed TestFlight PDF/EPUB appearance is held.
 - **Whole-book reader is in source:** explicit Book action, saved scope order,
   live dirty buffers before disk, chapter-relative image/link bases, 32 MiB
   total budget, visible unavailable/skipped notices, and edit return through
   the existing tab path. It is read-only and does not create a second buffer.
+- **Book frontmatter presentation is aligned:** closed leading YAML is stripped
+  for whole-book Reader and PDF, matching EPUB, without changing source. Custom
+  metadata is not mapped into cover/part/chapter semantics.
 - **Book Scope export is in source:** PDF and EPUB dialogs explicitly choose
   Current file or whole book. Book output uses scope order, live dirty buffers,
   and each chapter's own document path. Preflight checks unavailable chapters,
@@ -66,7 +70,7 @@ Last reviewed: 2026-07-18 (heavy multi-book suggestion final adjustment)
 ### Heavy nested-index manuscript adjustment
 
 - `npm run typecheck` — pass.
-- `npm test` — 201 files / 1,665 tests pass.
+- `npm test` — 201 files / 1,667 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
@@ -74,10 +78,13 @@ Last reviewed: 2026-07-18 (heavy multi-book suggestion final adjustment)
   host-dependent ignored.
 - `npm run build` — live helper probes and local ad-hoc App Store preview build
   pass; bundle `2.0.0`, deep/strict code-sign, bundled notices pass.
-- Built-app smoke — real manuscript opened read-only; Suggest reported 37
-  index-ordered candidates; six first-work chapters + four supplementary notes
-  checked; root/nested indexes and log unchecked; Cancel used, no scope saved.
-- Not run: signed TestFlight PDF/EPUB visual export for the heavy manuscript.
+- Built-app smoke — real manuscript default Suggest reported 43 items (37 body,
+  6 root/nested indexes); option-off Suggest returned 37; `log.md` stayed out;
+  Cancel used, no scope saved. Reader displayed body without closed leading YAML.
+- Whole-book PDF smoke — A4, 289 pages; extracted PDF text contained none of the
+  ASCII `type: Chapter`, `description:`, or `tags:` keys. Bundled Poppler lacked
+  Japanese font mapping, so signed TestFlight PDF/EPUB visual appearance remains
+  unclaimed.
 
 ### Help + version 2.0.0 slice
 

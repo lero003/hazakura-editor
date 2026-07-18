@@ -37,6 +37,7 @@ import {
 } from "../../features/editor/markdown";
 import { DEFAULT_MEDIA_IMAGE_SETTINGS } from "../../features/editor/mediaImageSettings";
 import { isDirty } from "../../features/editor/editorTabs";
+import { stripYamlFrontmatter } from "../../features/editor/markdownFrontmatter";
 import type { EditorTab } from "../../types";
 import type {
   BookScopeChapter,
@@ -268,7 +269,7 @@ export function useDocumentExport({
       let rendered = bookDocuments
         ? bookDocuments.documents
           .map((chapter, index, chapters) => {
-            const html = renderMarkdown(chapter.source, {
+            const html = renderMarkdown(stripYamlFrontmatter(chapter.source), {
               documentPath: chapter.path,
               workspaceRoot: workspaceRootPath ?? undefined,
               mediaAccess: exportMedia,
@@ -285,7 +286,7 @@ export function useDocumentExport({
             return `<section class="${className}">${html}${tailGuard}</section>`;
           })
           .join("\n")
-        : renderMarkdown(activeContentsRef.current, {
+        : renderMarkdown(stripYamlFrontmatter(activeContentsRef.current), {
           documentPath: tabForExport?.path ?? null,
           workspaceRoot: workspaceRootPath ?? undefined,
           mediaAccess: exportMedia,

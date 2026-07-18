@@ -10,6 +10,7 @@ import {
   removeBookScopePath,
 } from "../../features/bookScope";
 import type { BookScopeSuggestion } from "../../features/bookScope";
+import type { BookScopeSuggestionOptions } from "../../features/bookScope";
 import type { MenuLanguage } from "../../types";
 import {
   BookScopeSelectorTree,
@@ -27,7 +28,9 @@ type Props = {
   onOpenChapter: (path: string) => void;
   onReadBook?: () => void;
   onRevalidate: () => void;
-  onSuggest?: () => Promise<BookScopeSuggestion | null>;
+  onSuggest?: (
+    options: BookScopeSuggestionOptions,
+  ) => Promise<BookScopeSuggestion | null>;
   resolving: boolean;
   readerLoading?: boolean;
   suggesting?: boolean;
@@ -66,6 +69,7 @@ export function BookScopePanel({
     () => [...chapterRelativePaths],
   );
   const [suggestion, setSuggestion] = useState<BookScopeSuggestion | null>(null);
+  const [includeIndexPages, setIncludeIndexPages] = useState(true);
   const editTriggerRef = useRef<HTMLButtonElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef(false);
@@ -121,7 +125,7 @@ export function BookScopePanel({
   };
   const createSuggestion = async () => {
     if (!onSuggest || suggesting) return;
-    const next = await onSuggest();
+    const next = await onSuggest({ includeIndexPages });
     if (!next) return;
     setSelectedPaths(new Set(next.chapterRelativePaths));
     setDraftOrder([...next.chapterRelativePaths]);
@@ -149,6 +153,7 @@ export function BookScopePanel({
             {copy.suggestionSummary(
               suggestion.chapterRelativePaths.length,
               suggestion.linkedChapterCount,
+              suggestion.includedIndexPageCount,
             )}
             {suggestion.scanIncomplete || suggestion.candidateLimitReached
               ? ` ${copy.suggestionIncomplete}`
@@ -175,6 +180,17 @@ export function BookScopePanel({
           workspaceRootPath={workspaceRootPath}
         />
         <div className="book-scope-edit-actions">
+          {onSuggest ? (
+            <label className="book-scope-index-option">
+              <input
+                checked={includeIndexPages}
+                disabled={suggesting}
+                onChange={(event) => setIncludeIndexPages(event.currentTarget.checked)}
+                type="checkbox"
+              />
+              {copy.includeIndexPages}
+            </label>
+          ) : null}
           {suggesting ? (
             <button onClick={onCancelSuggest} type="button">
               {copy.stopSuggestion}
@@ -206,6 +222,17 @@ export function BookScopePanel({
           </p>
         ) : null}
         <div className="book-scope-empty-actions">
+          {onSuggest ? (
+            <label className="book-scope-index-option">
+              <input
+                checked={includeIndexPages}
+                disabled={suggesting}
+                onChange={(event) => setIncludeIndexPages(event.currentTarget.checked)}
+                type="checkbox"
+              />
+              {copy.includeIndexPages}
+            </label>
+          ) : null}
           <button
             className="primary"
             onClick={beginEditing}
@@ -347,12 +374,13 @@ function bookScopeCopy(language: MenuLanguage) {
       readBook: "Read all",
       stopSuggestion: "Stop scan",
       suggest: "Suggest from workspace",
+      includeIndexPages: "Include index.md as cover / contents pages",
       suggestionIncomplete: "Partial scan — review before saving.",
-      suggestionSummary: (count: number, linked: number) =>
-        `${count} chapter(s) suggested (${linked} from index.md).`,
+      suggestionSummary: (count: number, linked: number, indexes: number) =>
+        `${count} item(s) suggested (${linked} body / note item(s), ${indexes} cover / contents page(s)).`,
       selectionPurpose: "Check the Markdown chapters to include.",
       selectionLabel: "Choose book chapters",
-      chapterCount: (count: number) => `${count} chapters`,
+      chapterCount: (count: number) => `${count} items`,
       unavailableCount: (count: number) =>
         count === 1 ? "1 unavailable" : `${count} unavailable`,
       moveUp: (path: string) => `Move ${path} up`,
@@ -373,12 +401,13 @@ function bookScopeCopy(language: MenuLanguage) {
     readBook: "本全体を読む",
     stopSuggestion: "走査を停止",
     suggest: "候補を作る",
+    includeIndexPages: "index.mdを扉・目次として含める",
     suggestionIncomplete: "走査は一部です。保存前に確認してください。",
-    suggestionSummary: (count: number, linked: number) =>
-      `${count}章を候補にしました（index.md順: ${linked}）`,
+    suggestionSummary: (count: number, linked: number, indexes: number) =>
+      `${count}件を候補にしました（本文・資料${linked}・扉/目次${indexes}）`,
     selectionPurpose: "含めるMarkdownにチェックを入れます。",
     selectionLabel: "本の章を選択",
-    chapterCount: (count: number) => `${count}章`,
+    chapterCount: (count: number) => `${count}項目`,
     unavailableCount: (count: number) => `利用不可 ${count}`,
     moveUp: (path: string) => `${path}を上へ移動`,
     moveDown: (path: string) => `${path}を下へ移動`,

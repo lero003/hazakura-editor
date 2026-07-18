@@ -90,6 +90,14 @@ describe("workspace.css", () => {
   it("keeps the e-book side pane from using the generic preview scroll", () => {
     expect(ruleBody(".preview-pane")).toMatch(/overflow:\s*hidden/);
     expect(ruleBody(".preview-pane-preview")).toMatch(/overflow:\s*auto/);
+    expect(
+      ruleBody(".preview-pane-preview > .markdown-preview"),
+    ).toMatch(/flex:\s*0\s+0\s+auto/);
+    expect(
+      workspaceCss.indexOf(".preview-pane-preview > .markdown-preview"),
+    ).toBeGreaterThan(
+      workspaceCss.indexOf(".preview-pane > :not(.right-pane-header)"),
+    );
     expect(ruleBody(".preview-pane-ebook")).toMatch(/overflow:\s*hidden/);
   });
 

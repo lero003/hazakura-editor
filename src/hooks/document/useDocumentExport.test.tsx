@@ -299,7 +299,7 @@ describe("useDocumentExport", () => {
 
     const { result } = renderHook(() =>
       useDocumentExport({
-        activeContents: "# Print me",
+        activeContents: "---\ntitle: Print me\n---\n# Print me",
         activeTab: makeTab({ name: "print-me.md" }),
         setGlobalError: vi.fn(),
         setStatus,
@@ -788,7 +788,9 @@ describe("useDocumentExport", () => {
     dialogApi.save.mockResolvedValue("/tmp/workspace.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);
     filesApi.openTextFile.mockImplementation(async (path: string) => ({
-      contents: path.endsWith("one.md") ? "# One" : "# Two",
+      contents: path.endsWith("one.md")
+        ? "---\ntitle: One\ntags: [book]\n---\n# One"
+        : "# Two",
       size: 5,
     }));
     const chapters = [

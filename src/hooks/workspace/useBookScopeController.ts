@@ -10,6 +10,7 @@ import {
   removeBookScopePath,
   suggestBookScopeFromDiscovery,
   type BookScopeSuggestion,
+  type BookScopeSuggestionOptions,
   writeBookScope,
 } from "../../features/bookScope";
 import { cancelOkfBundleScan, scanOkfBundle } from "../../lib/tauri/okf";
@@ -150,7 +151,9 @@ export function useBookScopeController({
     [workspaceRootPath],
   );
 
-  const createSuggestion = useCallback(async (): Promise<BookScopeSuggestion | null> => {
+  const createSuggestion = useCallback(async (
+    options: BookScopeSuggestionOptions,
+  ): Promise<BookScopeSuggestion | null> => {
     if (!workspaceRootPath || suggestionActiveRef.current) return null;
     const requestId = ++suggestionRequestIdRef.current;
     suggestionActiveRef.current = true;
@@ -172,11 +175,11 @@ export function useBookScopeController({
         );
         return null;
       }
-      const suggestion = suggestBookScopeFromDiscovery(discovery);
+      const suggestion = suggestBookScopeFromDiscovery(discovery, options);
       setStatus(
         isJapaneseMenuLanguage(menuLanguage)
-          ? `章候補を作りました: ${suggestion.chapterRelativePaths.length}章`
-          : `Chapter draft created: ${suggestion.chapterRelativePaths.length} chapter(s)`,
+          ? `本の候補を作りました: ${suggestion.chapterRelativePaths.length}件`
+          : `Book draft created: ${suggestion.chapterRelativePaths.length} item(s)`,
       );
       return suggestion;
     } catch (error) {

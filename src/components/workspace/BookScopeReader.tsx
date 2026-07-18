@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { BookScopeReaderLoadResult } from "../../features/bookScope";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
+import { stripYamlFrontmatter } from "../../features/editor/markdownFrontmatter";
 import type { MenuLanguage } from "../../types";
 
 const PreviewPane = lazy(() => import("../editor/preview/PreviewPane"));
@@ -152,7 +153,7 @@ export function BookScopeReader({
                   mediaAccess={mediaAccess}
                   onApproveLocalImageParent={onApproveLocalImageParent}
                   onOpenLocalLink={(href) => onOpenLink(document.path, href)}
-                  source={document.source}
+                  source={stripYamlFrontmatter(document.source)}
                   workspaceRoot={workspaceRoot}
                 />
               </Suspense>
@@ -171,22 +172,22 @@ function bookReaderChapterId(index: number): string {
 function readerCopy(language: MenuLanguage) {
   if (language === "en") {
     return {
-      close: "Close", contents: "Contents", edit: "Edit chapter",
+      close: "Close", contents: "Contents", edit: "Edit Markdown",
       editLabel: (name: string) => `Edit ${name}`,
-      empty: "No available chapters could be loaded.", kicker: "BOOK SCOPE",
-      liveBuffer: "Unsaved edits included", loading: "Rendering chapter…",
+      empty: "No available Markdown could be loaded.", kicker: "BOOK SCOPE",
+      liveBuffer: "Unsaved edits included", loading: "Rendering Markdown…",
       overBudget: "not loaded because the reader limit was reached",
-      partial: "Some chapters are not shown", title: "Read whole book",
-      count: (count: number) => `${count} chapter(s) loaded`,
+      partial: "Some items are not shown", title: "Read whole book",
+      count: (count: number) => `${count} item(s) loaded`,
     };
   }
   return {
-    close: "閉じる", contents: "目次", edit: "この章を編集",
+    close: "閉じる", contents: "目次", edit: "このMarkdownを編集",
     editLabel: (name: string) => `${name}を編集`,
-    empty: "読み込める章がありません。", kicker: "BOOK SCOPE",
-    liveBuffer: "未保存の編集を反映", loading: "章を描画しています…",
+    empty: "読み込めるMarkdownがありません。", kicker: "BOOK SCOPE",
+    liveBuffer: "未保存の編集を反映", loading: "Markdownを描画しています…",
     overBudget: "読書上限に達したため読み込みませんでした",
-    partial: "表示していない章があります", title: "本全体を読む",
-    count: (count: number) => `${count}章を読み込み`,
+    partial: "表示していない項目があります", title: "本全体を読む",
+    count: (count: number) => `${count}件を読み込み`,
   };
 }

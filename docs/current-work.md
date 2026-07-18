@@ -42,7 +42,8 @@ remain parked unless a release gate needs them.
 1. Files / Book sidebar, explicit scope, order, unavailable retention.
 2. Chapter suggestion draft; whole-book reader; PDF/EPUB + preflight.
    Linked nested indexes now preserve a real five-work manuscript's chapter
-   order; cover/part-page semantics remain held rather than inferred.
+   order. An explicit, default-on draft option includes root/nested indexes as
+   cover/contents pages; semantic metadata-to-cover/part mapping remains held.
 3. UX quieting (read/edit primary; suggest/recheck progressive).
 4. **Help:** native Help menu / Command Palette → **Books and knowledge
    folders…** (English Help body; JP/EN/kana labels). About / diagnostics derive

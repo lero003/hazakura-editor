@@ -45,6 +45,7 @@ describe("BookScopePanel", () => {
     const onSuggest = vi.fn(async () => ({
       chapterRelativePaths: ["nested/chapter.md", "a.md"],
       linkedChapterCount: 1,
+      includedIndexPageCount: 1,
       excludedSupportFileCount: 2,
       unreadableFileCount: 0,
       candidateLimitReached: false,
@@ -69,12 +70,40 @@ describe("BookScopePanel", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "候補を作る" }));
+    expect(onSuggest).toHaveBeenCalledWith({ includeIndexPages: true });
     expect(
-      await screen.findByText("2章を候補にしました（index.md順: 1）"),
+      await screen.findByText("2件を候補にしました（本文・資料1・扉/目次1）"),
     ).toBeTruthy();
     expect(onCommit).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "保存 (2)" }));
     expect(onCommit).toHaveBeenCalledWith(["nested/chapter.md", "a.md"]);
+  });
+
+  it("lets the user exclude index pages before creating a suggestion", async () => {
+    const onSuggest = vi.fn(async () => null);
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={[]}
+        chapters={[]}
+        menuLanguage="ja"
+        onCommit={vi.fn()}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onRevalidate={vi.fn()}
+        onSuggest={onSuggest}
+        resolving={false}
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "index.mdを扉・目次として含める" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "候補を作る" }));
+    expect(onSuggest).toHaveBeenCalledWith({ includeIndexPages: false });
   });
 
   it("offers cancellation while a workspace suggestion scan is running", () => {

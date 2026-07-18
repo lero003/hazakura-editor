@@ -13,10 +13,15 @@ const MAX_INDEX_LINKS = 500;
 export type BookScopeSuggestion = {
   chapterRelativePaths: string[];
   linkedChapterCount: number;
+  includedIndexPageCount: number;
   excludedSupportFileCount: number;
   unreadableFileCount: number;
   candidateLimitReached: boolean;
   scanIncomplete: boolean;
+};
+
+export type BookScopeSuggestionOptions = {
+  includeIndexPages: boolean;
 };
 
 /**
@@ -25,6 +30,7 @@ export type BookScopeSuggestion = {
  */
 export function suggestBookScopeFromDiscovery(
   discovery: OkfDiscoveryLike,
+  options: BookScopeSuggestionOptions,
 ): BookScopeSuggestion {
   const normalizedFiles = discovery.files.map((file) => ({
     ...file,
@@ -42,6 +48,8 @@ export function suggestBookScopeFromDiscovery(
   const eligible = new Set(eligiblePaths);
 
   const linked: string[] = [];
+  const linkedChapterPaths = new Set<string>();
+  const includedIndexPagePaths = new Set<string>();
   const seen = new Set<string>();
   const visitedIndexes = new Set<string>();
   const readableByPath = new Map(
@@ -52,14 +60,19 @@ export function suggestBookScopeFromDiscovery(
   const rootIndex = readableFiles.find(
     (file) => file.relativePath.toLowerCase() === "index.md",
   );
-  if (rootIndex?.content) {
+  if (rootIndex) {
     let remainingLinks = MAX_INDEX_LINKS;
     const visitIndex = (indexPath: string): void => {
       if (visitedIndexes.has(indexPath) || remainingLinks <= 0) return;
       visitedIndexes.add(indexPath);
 
       const indexFile = readableByPath.get(indexPath);
-      if (!indexFile?.content) return;
+      if (!indexFile || indexFile.content === null) return;
+      if (options.includeIndexPages && !seen.has(indexPath)) {
+        linked.push(indexPath);
+        seen.add(indexPath);
+        includedIndexPagePaths.add(indexPath);
+      }
       const indexDirectory = directoryFromRelativePath(indexPath);
       const extracted = extractInlineMarkdownLinksBounded(
         indexFile.content,
@@ -91,6 +104,7 @@ export function suggestBookScopeFromDiscovery(
         if (eligible.has(target) && !seen.has(target)) {
           linked.push(target);
           seen.add(target);
+          linkedChapterPaths.add(target);
           continue;
         }
         if (fileName(target).toLowerCase() === "index.md") {
@@ -106,13 +120,22 @@ export function suggestBookScopeFromDiscovery(
     ...linked,
     ...eligiblePaths.filter((path) => !seen.has(path)),
   ];
+  const chapterRelativePaths = ordered.slice(0, MAX_BOOK_SCOPE_CHAPTERS);
+  const linkedChapterCount = chapterRelativePaths.filter((path) =>
+    linkedChapterPaths.has(path),
+  ).length;
+  const includedIndexPageCount = chapterRelativePaths.filter((path) =>
+    includedIndexPagePaths.has(path),
+  ).length;
 
   return {
-    chapterRelativePaths: ordered.slice(0, MAX_BOOK_SCOPE_CHAPTERS),
-    linkedChapterCount: linked.length,
-    excludedSupportFileCount: normalizedFiles.filter((file) =>
-      isReservedOkfFileName(fileName(file.relativePath)),
-    ).length,
+    chapterRelativePaths,
+    linkedChapterCount,
+    includedIndexPageCount,
+    excludedSupportFileCount:
+      normalizedFiles.filter((file) =>
+        isReservedOkfFileName(fileName(file.relativePath)),
+      ).length - includedIndexPageCount,
     unreadableFileCount: normalizedFiles.filter((file) => file.content === null)
       .length,
     candidateLimitReached: ordered.length > MAX_BOOK_SCOPE_CHAPTERS,

@@ -51,19 +51,25 @@ window. Direct native-menu clicking and signed TestFlight interaction are not
 claimed by this follow-up.
 
 Heavy-manuscript follow-up (2026-07-18): the read-only source smoke uses a
-five-work e-book manuscript with root and nested indexes. Confirm the draft has
-33 body chapters in the five-work index order followed by the four root-linked
-supplementary notes (37 selected candidates total), with all six `index.md`
-files and `log.md` left unselected. Before submission, manually decide whether
-to add any index page as a cover/part page, then check the five local images and
-chapter boundaries in signed TestFlight PDF and EPUB output. The source smoke
-does not substitute for that visual export check.
+five-work e-book manuscript with root and nested indexes. Confirm the explicit
+`index.mdを扉・目次として含める` option is on by default. The draft should have
+the root index first, each of five nested indexes immediately before its linked
+chapters, then four root-linked supplementary notes (43 selected items total:
+33 body chapters + 4 supplementary notes + 6 indexes). `log.md` stays unselected.
+Turn the option off and recreate the draft once to confirm the previous 37-item
+body-only result. Before submission, check the five local images and boundaries
+in signed TestFlight PDF and EPUB output. The source smoke does not substitute
+for that visual export check.
 
-Latest local ad-hoc App Store preview evidence: opening the real manuscript and
-choosing Book → Suggest produced `37章を候補にしました（index.md順: 37）`.
-The first work's six chapters and all four supplementary notes were checked;
-root / nested index files and `log.md` were unchecked. The draft was cancelled,
-not saved. Signed TestFlight reader/export appearance remains unclaimed.
+Latest local ad-hoc App Store preview evidence: the default-on option produced
+`43件を候補にしました（本文・資料37・扉/目次6）`; root `index.md` was selected and
+`log.md` was not. Turning the option off and regenerating produced
+`37件を候補にしました（本文・資料37・扉/目次0）`. The draft was cancelled, not saved.
+The existing 37-item scope then opened in Reader with body headings visible and
+leading `type` / `title` / `description` / `tags` metadata absent. A whole-book
+A4 PDF also exported (289 pages); extraction found no ASCII frontmatter keys.
+The bundled Poppler renderer lacked its Japanese font mapping, so signed
+TestFlight visual appearance remains unclaimed.
 
 Historical smoke logs and old per-release notes are archived in `docs/archive/operations/smoke-checklist-through-v0.10-doc-refactor.md` and `docs/archive/operations/smoke-checklist-version-notes-through-v0.18.md`.
 
@@ -501,14 +507,15 @@ Run when the file tree or workspace commands change:
 Run when Markdown preview, image assets, export, or authoring helpers change:
 
 1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes (`- [ ]` / `- [x]` as display-only checkbox glyphs, not raw marker text), and local workspace-relative images such as `assets/...` and `docs/images/...`.
-2. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, exported HTML, and PDF. Reopen only the child folder and confirm all three surfaces show a blocked note with **outside-workspace** reason and parent-folder next action (Theme G M0/M1). Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows a **load-failed** note.
-3. Confirm external `https://` image URLs stay blocked by default (remote Preference off) and show a **remote** reason without a live `<img src="https://…">`. Absolute outside paths show **absolute-outside**.
-4. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
-5. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
-6. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
-7. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
-8. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
-9. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+2. Open a document taller than the Preview viewport and scroll to its end. Confirm the preview card background, border, and padding continue behind the whole document instead of ending at the first viewport.
+3. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, exported HTML, and PDF. Reopen only the child folder and confirm all three surfaces show a blocked note with **outside-workspace** reason and parent-folder next action (Theme G M0/M1). Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows a **load-failed** note.
+4. Confirm external `https://` image URLs stay blocked by default (remote Preference off) and show a **remote** reason without a live `<img src="https://…">`. Absolute outside paths show **absolute-outside**.
+5. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
+6. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
+7. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
+8. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
+9. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
+10. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
 
 ## Theme G Media Boundaries Smoke (v1.13+)
 

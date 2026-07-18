@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { BookScopeSuggestion } from "../../features/bookScope";
+import type { BookScopeSuggestionOptions } from "../../features/bookScope";
 import type {
   BookScopeChapter,
   BookScopeUnavailableEntry,
@@ -43,7 +44,9 @@ type WorkspaceSidebarProps = {
   menuLanguage?: MenuLanguage;
   onCommitBookScope?: (paths: readonly string[]) => void;
   onCancelBookScopeSuggestion?: () => void;
-  onCreateBookScopeSuggestion?: () => Promise<BookScopeSuggestion | null>;
+  onCreateBookScopeSuggestion?: (
+    options: BookScopeSuggestionOptions,
+  ) => Promise<BookScopeSuggestion | null>;
   onCreateFile: () => void;
   onCreateFolder: () => void;
   onCreateOkfScaffoldMinimal: () => void;
