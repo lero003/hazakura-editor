@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
+Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
 
 ## Current State
 
@@ -108,6 +108,19 @@ Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
   navigation preserve Book Scope order. Preflight showed the fixture's missing
   headings and author metadata; a retained unavailable chapter blocked Book PDF
   and EPUB while leaving Current file available.
+- **Release-quality export smoke passed on a disposable nested fixture (2026-07-18).**
+  The helper-enabled `2.0.0` app rendered Preview with headings, local images,
+  and links; saved a five-entry Book tree with `Works → One → Chapters` and
+  `Notes` groups; and read all five entries in order with the local images and
+  explicit page-break section intact. The exported seven-page A4 PDF was
+  rendered page-by-page with no clipping or overlap. The exported EPUB passed
+  `epubcheck` with 0 errors and 0 warnings, preserved the saved nested TOC,
+  packaged both images, and rewrote the included Markdown links. Opening that
+  EPUB in macOS Books showed the nested navigation; clicking `First` and then
+  `Second` landed on the packaged `Second Section` target. This is disposable
+  fixture evidence only; the heavy manuscript in signed TestFlight remains a
+  separate manual proof boundary. `pdftotext` was unavailable on this host, so
+  PDF evidence used `pdfinfo` plus Poppler page renders.
 - **The v2.0 UX review closed three release-facing gaps.** Books and knowledge
   folders is reachable from the native Help menu as well as Command Palette;
   saving or cancelling chapter selection restores focus to its trigger; About

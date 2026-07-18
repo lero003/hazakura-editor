@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 Book tree + EPUB link smoke)
+Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -53,6 +53,19 @@ blocked Book PDF/EPUB while Current file stayed available. This fixture had no
 workspace images, so missing-image/materialization behavior remains automated
 coverage plus the earlier Theme G export evidence; signed TestFlight export and
 cancel-dialog coverage were not claimed by this pass.
+
+Release-quality disposable export smoke (2026-07-18): a nested `/private/tmp`
+fixture was opened in the helper-enabled `2.0.0` app. Preview showed headings,
+links, and both local images; Book Scope saved five entries with nested `Works →
+One → Chapters` plus `Notes`; and whole-book Reader displayed all five entries in
+order with the page-break section intact. PDF export produced seven A4 pages;
+`pdfinfo` and Poppler renders of pages 1–7 showed no clipping or overlap. EPUB
+export passed `epubcheck` with 0 errors and 0 warnings, and archive inspection
+confirmed saved-tree navigation, two packaged images, metadata, spine order, and
+rewritten included Markdown links. Opening the EPUB in macOS Books showed the
+nested TOC; clicking `First` and then `Second` reached the packaged `Second
+Section` target. `pdftotext` was unavailable on this host, so PDF text extraction
+was not claimed. Heavy-manuscript signed TestFlight proof remains separate.
 
 UX/release follow-up (2026-07-18): automated checks cover focus return after
 chapter-selection Save/Cancel and both routes to Books and knowledge folders

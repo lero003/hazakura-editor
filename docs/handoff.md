@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 Book Scope vertical slice + candidate proof; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
+Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
 
 ## Current State
 
@@ -107,8 +107,24 @@ Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
   same-chapter cross-page-break anchors, external-link preservation, and
   conservative unknown-fragment fallback.
 - Not run: heavy-manuscript export opened/clicked in Apple Books or signed
-  TestFlight; built-app group indentation/click interaction also remains manual.
-  Keep those as the next proof; do not infer them from unit tests.
+  TestFlight; keep that as the next proof boundary and do not infer it from the
+  disposable fixture below.
+
+### Release-quality disposable export smoke
+
+- A throwaway nested workspace under `/private/tmp` covered Preview headings,
+  two local images, root/nested index links, Book Scope save, whole-book Reader,
+  and an explicit page-break section without clipping or source mutation.
+- The saved five-entry tree showed `Works → One → Chapters` and `Notes`; Reader
+  rendered all five entries in order. PDF export produced seven A4 pages; all
+  pages were rendered with Poppler for visual review and showed no clipping or
+  overlap.
+- EPUB export passed `epubcheck` with 0 errors and 0 warnings. Archive inspection
+  confirmed two packaged images, saved-tree navigation, spine order, metadata,
+  and rewritten relative/bundle-root links. macOS Books displayed the nested
+  TOC; `First` → `Second` reached the `Second Section` target in the packaged
+  chapter. `pdftotext` was unavailable, so PDF evidence used `pdfinfo` and
+  rendered PNG pages.
 
 ### Heavy nested-index manuscript adjustment
 
