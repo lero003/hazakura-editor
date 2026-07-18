@@ -15,6 +15,7 @@ import {
 } from "./epubTextHelpers";
 
 type BuildEpubBetaArchiveOptions = {
+  chapters?: readonly EpubExportChapter[];
   documentPath?: string | null;
   documentName: string;
   loadApprovedLocalImage?: (absolutePath: string) => Promise<LoadedEpubImage>;
@@ -24,6 +25,12 @@ type BuildEpubBetaArchiveOptions = {
   metadata?: Partial<EpubExportMetadata>;
   markdown: string;
   workspaceRoot?: string | null;
+};
+
+export type EpubExportChapter = {
+  documentName: string;
+  documentPath: string;
+  markdown: string;
 };
 
 export type EpubExportMetadata = {
@@ -100,6 +107,7 @@ const IMAGE_ORIGIN_ATTR = "data-hazakura-image-origin";
 const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
 
 export async function buildEpubBetaArchive({
+  chapters,
   documentPath = null,
   documentName,
   loadApprovedLocalImage,
@@ -111,6 +119,7 @@ export async function buildEpubBetaArchive({
   workspaceRoot = null,
 }: BuildEpubBetaArchiveOptions): Promise<Uint8Array> {
   const { archive } = await buildEpubBetaArchiveWithReport({
+    chapters,
     documentPath,
     documentName,
     loadApprovedLocalImage,
@@ -125,6 +134,7 @@ export async function buildEpubBetaArchive({
 }
 
 export async function buildEpubBetaArchiveWithReport({
+  chapters,
   documentPath = null,
   documentName,
   loadApprovedLocalImage,
@@ -137,6 +147,7 @@ export async function buildEpubBetaArchiveWithReport({
 }: BuildEpubBetaArchiveOptions): Promise<EpubExportArchiveReport> {
   const { contentDocuments, headings, images, title, warnings } =
     await buildContent({
+      chapters,
       documentName,
       documentPath,
       loadApprovedLocalImage,
@@ -211,6 +222,7 @@ export function defaultEpubExportSettings({
 }
 
 async function buildContent({
+  chapters,
   documentName,
   documentPath,
   loadApprovedLocalImage,
@@ -222,6 +234,7 @@ async function buildContent({
 }: Required<Pick<BuildEpubBetaArchiveOptions, "documentName" | "markdown">> &
   Pick<
     BuildEpubBetaArchiveOptions,
+    | "chapters"
     | "documentPath"
     | "loadApprovedLocalImage"
     | "loadRemoteImage"
@@ -229,12 +242,32 @@ async function buildContent({
     | "mediaAccess"
     | "workspaceRoot"
   >) {
-  const contentMarkdown = stripYamlFrontmatter(markdown);
-  const rendered = renderMarkdown(applyEbookPageBreakMarkers(contentMarkdown), {
-    documentPath,
-    mediaAccess,
-    workspaceRoot,
-  });
+  const bookChapters = chapters?.length ? chapters : null;
+  const contentMarkdown = bookChapters
+    ? bookChapters
+        .map((chapter) => stripYamlFrontmatter(chapter.markdown))
+        .join("\n\n")
+    : stripYamlFrontmatter(markdown);
+  const rendered = bookChapters
+    ? bookChapters
+        .map((chapter) =>
+          renderMarkdown(
+            applyEbookPageBreakMarkers(stripYamlFrontmatter(chapter.markdown)),
+            {
+              documentPath: chapter.documentPath,
+              mediaAccess,
+              workspaceRoot,
+            },
+          ),
+        )
+        .join(
+          '<div class="page-break" role="separator" aria-label="Page break"></div>',
+        )
+    : renderMarkdown(applyEbookPageBreakMarkers(contentMarkdown), {
+        documentPath,
+        mediaAccess,
+        workspaceRoot,
+      });
   const template = document.createElement("template");
   template.innerHTML = rendered;
   const markdownHeadings = collectMarkdownHeadings(contentMarkdown);

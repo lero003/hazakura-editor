@@ -138,6 +138,42 @@ describe("buildEpubBetaArchive", () => {
     expect(text).not.toContain("data:image/gif;base64");
   });
 
+  it("exports ordered Book Scope chapters with each chapter image base path", async () => {
+    const loadWorkspaceImage = vi.fn(async (path: string) => ({
+      bytes: new Uint8Array([137, 80, 78, 71]),
+      mediaType: "image/png",
+      extension: "png",
+      path,
+    }));
+    const archive = await buildEpubBetaArchive({
+      chapters: [
+        {
+          documentName: "one.md",
+          documentPath: "/workspace/part-a/one.md",
+          markdown: "# One\n\n![one](images/one.png)",
+        },
+        {
+          documentName: "two.md",
+          documentPath: "/workspace/part-b/two.md",
+          markdown: "# Two\n\n![two](images/two.png)",
+        },
+      ],
+      documentName: "workspace",
+      markdown: "",
+      workspaceRoot: "/workspace",
+      loadWorkspaceImage,
+    });
+    const text = archiveText(archive);
+
+    expect(loadWorkspaceImage.mock.calls.map(([path]) => path)).toEqual([
+      "/workspace/part-a/images/one.png",
+      "/workspace/part-b/images/two.png",
+    ]);
+    expect(text).toContain('href="content.xhtml#one"');
+    expect(text).toContain('href="content-2.xhtml#two"');
+    expect(text.indexOf("One")).toBeLessThan(text.indexOf("Two"));
+  });
+
   it("packages an explicitly approved outside-local image", async () => {
     const loadApprovedLocalImage = vi.fn(async () => ({
       dataUrl: "data:image/png;base64,iVBORw0KGgo=",
