@@ -19,6 +19,40 @@ JSON.stringify((() => {
   const doc = document.documentElement;
   const cover = document.querySelector(".pdf-export-cover-page");
   const preview = document.querySelector(".markdown-preview");
+  // WebKit's screen-layout multicol flow ignores both standard and prefixed
+  // forced-column breaks in some createPDF builds. Before measuring, fill the
+  // remainder of the current column with a real block so every later Book
+  // Scope chapter begins at the top of the next A4 capture column.
+  if (preview) {
+    const chapters = Array.from(
+      preview.querySelectorAll(".book-scope-pdf-chapter--next")
+    );
+    const previewStyle = window.getComputedStyle(preview);
+    const paddingTop = Number.parseFloat(previewStyle.paddingTop) || 0;
+    const paddingBottom = Number.parseFloat(previewStyle.paddingBottom) || 0;
+    const flowHeight = Math.max(
+      1,
+      preview.clientHeight - paddingTop - paddingBottom
+    );
+    const contentTop = preview.getBoundingClientRect().top + paddingTop;
+    for (const chapter of chapters) {
+      const firstRect = chapter.getClientRects()[0];
+      if (!firstRect) continue;
+      const topInColumn = firstRect.top - contentTop;
+      if (topInColumn <= 0.5 || topInColumn >= flowHeight - 0.5) continue;
+      const spacer = document.createElement("div");
+      spacer.className = "book-scope-pdf-runtime-spacer";
+      spacer.setAttribute("aria-hidden", "true");
+      spacer.style.cssText = [
+        "display:block",
+        `height:${Math.ceil(flowHeight - topInColumn)}px`,
+        "margin:0",
+        "padding:0",
+        "width:1px"
+      ].join(";");
+      chapter.parentNode.insertBefore(spacer, chapter);
+    }
+  }
   // Prefer body.scrollWidth so a dedicated cover page (flex row) + multicol
   // columns are both included. Snap up to whole A4 columns.
   let width = Math.max(

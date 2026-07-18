@@ -471,7 +471,6 @@ export function useDocumentExport({
      multicol break marker, which would pack short chapters onto one page. */
   .book-scope-pdf-chapter {
     break-inside: auto;
-    min-height: var(--pdf-content-height);
   }
   .book-scope-pdf-chapter--next {
     -webkit-column-break-before: always;
@@ -553,7 +552,6 @@ export function useDocumentExport({
     font-size: 0.85em;
   }
   @media print {
-    .book-scope-pdf-chapter { min-height: 0; }
     .book-scope-pdf-chapter--next { break-before: page; page-break-before: always; }
     @page { margin: ${pdfMarginCss(preset)}; }
     html { min-height: 0; min-width: 0; }
