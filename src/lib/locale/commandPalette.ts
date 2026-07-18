@@ -226,7 +226,7 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         "file.okfScaffoldBookLike": {
           label: "ちしきフォルダの ひながたを つくる（ほんっぽい しょうだて）",
           description:
-            "index.md・chapters/ ふたつ・notes/characters.md・log.md。章だては れい。Book Scope ではありません。",
+            "index.md・chapters/ ふたつ・notes/characters.md・log.md。章だては れい。本の章一覧ではありません。",
           keywords: [
             "OKF",
             "ひながた",
@@ -442,7 +442,7 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
         "file.okfScaffoldBookLike": {
           label: "知識フォルダのひな形を作成（本っぽい章立て）",
           description:
-            "index.md・chapters/ 2本・notes/characters.md・log.md。章立ては例示です。Book Scope ではありません。",
+            "index.md・chapters/ 2本・notes/characters.md・log.md。章立ては例示です。本の章一覧ではありません。",
           keywords: ["OKF", "ひな形", "本", "章", "scaffold", "book"],
         },
         "agent.open": {
@@ -589,7 +589,7 @@ export function getCommandPaletteCopy(lang: MenuLanguage): CommandPaletteCopy {
       "file.okfScaffoldBookLike": {
         label: "Create knowledge folder starter (book-like)",
         description:
-          "Writes index.md, two chapters/, notes/characters.md, and log.md. Chapter layout is illustrative—not Book Scope.",
+          "Writes index.md, two chapters/, notes/characters.md, and log.md. Chapter layout is illustrative—not the Book chapter list.",
         keywords: ["OKF", "scaffold", "template", "book", "chapter"],
       },
       "agent.open": { label: "Open Agent Window" },

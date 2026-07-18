@@ -645,7 +645,7 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.0.0 source tree; Help + version ship polish in progress",
+        "Scope: v2.0.0 source tree; pre-manual-test UX quieting residual",
         "Help:** native Help menu / Command Palette",
       ],
       "docs/development-automation.md": [

@@ -779,7 +779,7 @@ describe("useDocumentExport", () => {
 
     expect(dialogApi.save).not.toHaveBeenCalled();
     expect(setStatus).toHaveBeenCalledWith(
-      "Export EPUB beta stopped; Book Scope changed or has unavailable chapters",
+      "Export EPUB beta stopped; book chapters changed or are unavailable",
     );
   });
 

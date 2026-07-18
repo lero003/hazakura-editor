@@ -71,8 +71,8 @@ export function useBookScopeController({
         if (result.unavailable.length > 0) {
           setStatus(
             isJapaneseMenuLanguage(menuLanguage)
-              ? `Book Scope: ${result.unavailable.length}章を利用できません`
-              : `Book Scope: ${result.unavailable.length} chapter(s) unavailable`,
+              ? `本: ${result.unavailable.length}項目を利用できません`
+              : `Book: ${result.unavailable.length} item(s) unavailable`,
           );
         }
       })
@@ -83,8 +83,8 @@ export function useBookScopeController({
         setGlobalError(String(error));
         setStatus(
           isJapaneseMenuLanguage(menuLanguage)
-            ? "Book Scopeの確認に失敗しました"
-            : "Book Scope validation failed",
+            ? "本の確認に失敗しました"
+            : "Book validation failed",
         );
       })
       .finally(() => {
@@ -104,11 +104,11 @@ export function useBookScopeController({
       setStatus(
         isJapaneseMenuLanguage(menuLanguage)
           ? saved.length
-            ? `Book Scopeを保存しました: ${saved.length}章`
-            : "Book Scopeを解除しました"
+            ? `本を保存しました: ${saved.length}項目`
+            : "本の設定を解除しました"
           : saved.length
-            ? `Book Scope saved: ${saved.length} chapter(s)`
-            : "Book Scope cleared",
+            ? `Book saved: ${saved.length} item(s)`
+            : "Book cleared",
       );
     },
     [menuLanguage, setStatus, workspaceRootPath],

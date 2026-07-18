@@ -554,6 +554,7 @@ export function AppWorkspace({
         chapters: bookScopeChapters,
         tabs,
         openTextFile,
+        workspaceRoot: workspaceRootPath,
       });
       if (requestId === bookReaderRequestRef.current) {
         setBookReaderResult(result);

@@ -136,7 +136,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       export: "かきだす",
       languageField: "ことば",
       scopeNote:
-        "でんししょせきもーどは よむための ぷれびゅーです。ファイルか Book Scopeを えらんで かきだします。",
+        "でんししょせきもーどは よむための ぷれびゅーです。いまのファイルか 本全体を えらんで かきだします。",
       title: "EPUBかきだし",
       titleField: "しょめい",
     };
@@ -149,7 +149,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       export: "書き出す",
       languageField: "言語",
       scopeNote:
-        "電子書籍モードは読むためのプレビューです。現在のファイルまたはBook Scopeを選んで書き出します。",
+        "電子書籍モードは読むためのプレビューです。現在のファイルまたは本全体を選んで書き出します。",
       title: "EPUB書き出し",
       titleField: "書名",
     };
@@ -161,7 +161,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
     export: "Export",
     languageField: "Language",
     scopeNote:
-      "E-book Mode is a reading preview. Export either the current file or the explicit Book Scope.",
+      "E-book Mode is a reading preview. Export either the current file or the whole book.",
     title: "EPUB Export",
     titleField: "Title",
   };

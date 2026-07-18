@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.0.0 source tree; Help + version ship polish in progress
+Scope: v2.0.0 source tree; pre-manual-test UX quieting residual
 Authority: High
-Last reviewed: 2026-07-18 (Help expansion + version 2.0.0)
+Last reviewed: 2026-07-18 (Help index accuracy + Book copy quieting)
 
 ## Purpose
 
@@ -47,14 +47,17 @@ remain parked unless a release gate needs them.
 3. UX quieting (read/edit primary; suggest/recheck progressive).
 4. **Help:** native Help menu / Command Palette → **Books and knowledge
    folders…** (English Help body; JP/EN/kana labels). About / diagnostics derive
-   `2.0.0` from package metadata.
+   `2.0.0` from package metadata. Help now documents the default-on
+   index-as-cover/contents option and app-private recent-workspace retention.
 5. **Version surfaces:** npm, Tauri, Cargo, lockfile package version → `2.0.0`.
+6. **Pre-manual-test polish:** user-facing “Book Scope” jargon quieted in
+   status / Reader kicker / EPUB dialog / scaffold hints; live dirty buffers
+   match tabs by relative path and Unicode NFC as well as absolute path.
 
 ### Immediate next
 
-1. The local `2.0.0` bundle builds, launches, and passes code-sign verification.
-   Run signed App Store / TestFlight Book + Help smoke, including the heavy
-   five-work manuscript's PDF/EPUB appearance, if preparing an upload.
+1. Human manual smoke on the `2.0.0` tree (Book + Help + heavy manuscript
+   PDF/EPUB appearance), then signed App Store / TestFlight if preparing upload.
 2. Human gate: tag `v2.0.0`, build App Store pkg, submit — only with approval.
 3. Hotfix only for reproduced review blockers on published/in-review builds.
 

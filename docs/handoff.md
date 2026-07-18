@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2 Book Scope vertical slice + candidate proof; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (heavy multi-book suggestion final adjustment)
+Last reviewed: 2026-07-18 (pre-manual-test Book UX quieting + Help accuracy)
 
 ## Current State
 
@@ -47,6 +47,9 @@ Last reviewed: 2026-07-18 (heavy multi-book suggestion final adjustment)
 - **Help expansion is in source:** native Help menu / Command Palette → Books
   and knowledge folders…; About/diagnostics derive `2.0.0` from package
   metadata. Saving or cancelling Book chapter selection restores trigger focus.
+  Help documents default-on index cover/contents option and recent-workspace
+  book-order retention. User-facing status/dialogs avoid “Book Scope” jargon;
+  live book buffers also match open tabs by relative path / NFC.
 - Design SoT:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 - Queue: `docs/current-work.md`. Roadmap: `docs/roadmap.md`.

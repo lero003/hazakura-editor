@@ -26,23 +26,37 @@ export async function loadBookScopeReaderDocuments(options: {
   tabs: readonly ReaderTab[];
   openTextFile: (path: string) => Promise<ReaderDiskDocument>;
   maxTotalBytes?: number;
+  /** When set, match open tabs by workspace-relative path as well as absolute path. */
+  workspaceRoot?: string | null;
 }): Promise<BookScopeReaderLoadResult> {
   const maxTotalBytes = Math.max(
     0,
     options.maxTotalBytes ?? MAX_BOOK_READER_TOTAL_BYTES,
   );
-  const liveBuffers = new Map(
-    options.tabs
-      .filter((tab): tab is ReaderTab & { path: string } => Boolean(tab.path))
-      .map((tab) => [tab.path, tab.contents]),
-  );
+  const liveByAbsolutePath = new Map<string, string>();
+  const liveByRelativePath = new Map<string, string>();
+  const workspaceRoot = options.workspaceRoot
+    ? normalizePathKey(options.workspaceRoot.replace(/\/+$/, ""))
+    : null;
+  for (const tab of options.tabs) {
+    if (!tab.path) continue;
+    liveByAbsolutePath.set(normalizePathKey(tab.path), tab.contents);
+    if (workspaceRoot) {
+      const relative = relativePathUnderRoot(tab.path, workspaceRoot);
+      if (relative) {
+        liveByRelativePath.set(normalizePathKey(relative), tab.contents);
+      }
+    }
+  }
   const documents: BookScopeReaderDocument[] = [];
   const failures: BookScopeReaderLoadResult["failures"] = [];
   const skippedForBudget: string[] = [];
   let totalBytes = 0;
 
   for (const chapter of options.chapters) {
-    const liveSource = liveBuffers.get(chapter.path);
+    const liveSource =
+      liveByAbsolutePath.get(normalizePathKey(chapter.path)) ??
+      liveByRelativePath.get(normalizePathKey(chapter.relativePath));
     try {
       const disk = liveSource === undefined
         ? await options.openTextFile(chapter.path)
@@ -78,6 +92,19 @@ export async function loadBookScopeReaderDocuments(options: {
     totalBytes,
     truncated: skippedForBudget.length > 0,
   };
+}
+
+/** NFC so Japanese filenames from different path sources still match. */
+function normalizePathKey(path: string): string {
+  return path.normalize("NFC");
+}
+
+function relativePathUnderRoot(filePath: string, workspaceRoot: string): string | null {
+  const path = normalizePathKey(filePath.replace(/\/+$/, ""));
+  if (path === workspaceRoot || !path.startsWith(`${workspaceRoot}/`)) {
+    return null;
+  }
+  return path.slice(workspaceRoot.length + 1);
 }
 
 function utf8ByteLength(source: string): number {

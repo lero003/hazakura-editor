@@ -176,6 +176,7 @@ export function useDocumentExport({
       chapters: currentChapters,
       tabs: tabsRef.current,
       openTextFile,
+      workspaceRoot: workspaceRootPath,
     });
     const book = await analyzeExportPreflight({
       documents: loadResult.documents.map((chapter) => ({
@@ -248,20 +249,21 @@ export function useDocumentExport({
           bookScopeUnavailableRef.current.length > 0 ||
           currentPaths.join("\0") !== request.bookChapterRelativePaths.join("\0")
         ) {
-          setStatus("PDF export stopped; Book Scope changed or has unavailable chapters");
+          setStatus("PDF export stopped; book chapters changed or are unavailable");
           return;
         }
         bookDocuments = await loadBookScopeReaderDocuments({
           chapters: currentChapters,
           tabs: tabsRef.current,
           openTextFile,
+          workspaceRoot: workspaceRootPath,
         });
         if (
           bookDocuments.documents.length === 0 ||
           bookDocuments.failures.length > 0 ||
           bookDocuments.truncated
         ) {
-          setStatus("PDF export stopped; Book Scope could not be read completely");
+          setStatus("PDF export stopped; book chapters could not be read completely");
           return;
         }
       }
@@ -905,20 +907,21 @@ ${bodyHtml}
           bookScopeUnavailableRef.current.length > 0 ||
           currentPaths.join("\0") !== request.bookChapterRelativePaths.join("\0")
         ) {
-          setStatus("Export EPUB beta stopped; Book Scope changed or has unavailable chapters");
+          setStatus("Export EPUB beta stopped; book chapters changed or are unavailable");
           return;
         }
         bookDocuments = await loadBookScopeReaderDocuments({
           chapters: currentChapters,
           tabs: tabsRef.current,
           openTextFile,
+          workspaceRoot: workspaceRootPath,
         });
         if (
           bookDocuments.documents.length === 0 ||
           bookDocuments.failures.length > 0 ||
           bookDocuments.truncated
         ) {
-          setStatus("Export EPUB beta stopped; Book Scope could not be read completely");
+          setStatus("Export EPUB beta stopped; book chapters could not be read completely");
           return;
         }
       }

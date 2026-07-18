@@ -10,15 +10,17 @@ Open a workspace, then switch the sidebar from **Files** to **Book**.
 - After you save a scope, the list is for opening chapters and reading. **Read all** opens a read-only whole-book scroll view in that order.
 - **Edit** changes membership or order. Setup actions stay there, not on the everyday list.
 - Unavailable chapters stay listed until you recheck or remove them. The app does not drop them silently.
+- Saved book order is kept only in app-private settings for up to eight workspace roots. It is not written into the project folder. Saving a list for another workspace may drop the oldest saved list to keep storage small.
 
 Each chapter is still a normal Markdown file. Only one primary edit buffer is active at a time.
 
 ## Suggest from workspace
 
-From an empty Book view, or while editing chapters, **Suggest** can propose a draft from the open workspace.
+From an empty Book view, or while editing chapters, **Suggest from workspace** can propose a draft from the open workspace.
 
-- Root `index.md` internal links, when they resolve safely, come first.
-- Other readable `.md` files follow in a stable path order. Support files such as `index.md` and `log.md` are left out of the chapter list.
+- Root `index.md` internal links, when they resolve safely, shape the proposed order. Linked nested `index.md` files expand their local chapter links in place.
+- **Include index.md as cover / contents pages** is on by default. With it on, the root index and each linked nested index are included immediately before their local chapters. Turn the option off and regenerate for a body-only draft, or uncheck any individual index in the draft.
+- Remaining readable `.md` files follow in a stable path order. Support files such as `log.md` stay out of the suggestion.
 - The result is a checkbox draft. Nothing is saved until you press **Save**.
 - A suggestion is a Hazakura book order, not a claim that the folder is OKF-compliant.
 
@@ -31,7 +33,7 @@ OKF (Open Knowledge Format) v0.1 Draft is a way to lay out linked Markdown notes
 - **Review knowledge folder (OKF)** (Command Palette or folder context menu) runs an explicit, read-only check of the selected folder.
 - Findings are grouped so ordinary manuscript folders stay writable as-is. Preparing as OKF is optional.
 - **Open to edit** opens a file in the normal editor. After you save, run review again yourself.
-- **Create knowledge folder starter** writes a fixed minimal or book-like template into a new uniquely named folder and opens `index.md`. The chapter layout in the book-like template is an example only; it is not Book scope.
+- **Create knowledge folder starter** writes a fixed minimal or book-like template into a new uniquely named folder and opens `index.md`. The chapter layout in the book-like template is an example only; it is not the Book chapter list.
 
 ## Export whole book
 
@@ -44,5 +46,5 @@ PDF and EPUB export can use **Current file** or **Whole book**.
 ## Boundaries
 
 - No background workspace indexing, no silent multi-file rewrite, no automatic structure “fix.”
-- Book order is app-private interpretation. OKF review is a separate compatibility check.
-- The App Store lane stays a Safe Editor surface: no Agent Workbench, no arbitrary commands, no external AI network fallback for Local Assist.
+- Book order is app-private interpretation for up to eight workspaces only. OKF review is a separate compatibility check.
+- The App Store lane stays a Safe Editor surface: no Agent Workbench, no arbitrary command execution, no external AI network fallback for Local Assist.

@@ -70,7 +70,7 @@ describe("getCommandPaletteCopy", () => {
       "file.okfScaffoldBookLike",
     );
     expect(book.description).toMatch(/chapters/i);
-    expect(book.description).toMatch(/Book Scope/i);
+    expect(book.description).toMatch(/Book chapter list|本の章一覧/i);
   });
 
   it("localizes disabled reasons across languages", () => {
