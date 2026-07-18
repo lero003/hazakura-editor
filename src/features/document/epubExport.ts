@@ -76,11 +76,13 @@ type MarkdownHeadingEntry = {
 type ContentDocument = {
   body: string;
   id: string;
+  navigationLabel: string | null;
   path: string;
 };
 
 type ContentDocumentNodes = {
   id: string;
+  navigationLabel: string | null;
   nodes: ChildNode[];
   path: string;
 };
@@ -105,6 +107,7 @@ const encoder = new TextEncoder();
 const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
 const IMAGE_ORIGIN_ATTR = "data-hazakura-image-origin";
 const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
+const EPUB_CHAPTER_INDEX_ATTR = "data-hazakura-epub-chapter-index";
 
 export async function buildEpubBetaArchive({
   chapters,
@@ -176,7 +179,7 @@ export async function buildEpubBetaArchiveWithReport({
         epubMetadata.title,
         epubMetadata.language,
         headings,
-        contentDocuments[0]?.path ?? "content.xhtml",
+        contentDocuments,
       ),
     ),
     ...contentDocuments.map((contentDocument) =>
@@ -250,15 +253,15 @@ async function buildContent({
     : stripYamlFrontmatter(markdown);
   const rendered = bookChapters
     ? bookChapters
-        .map((chapter) =>
-          renderMarkdown(
+        .map((chapter, index) =>
+          `<span ${EPUB_CHAPTER_INDEX_ATTR}="${index}" hidden="hidden"></span>${renderMarkdown(
             applyEbookPageBreakMarkers(stripYamlFrontmatter(chapter.markdown)),
             {
               documentPath: chapter.documentPath,
               mediaAccess,
               workspaceRoot,
             },
-          ),
+          )}`,
         )
         .join(
           '<div class="page-break" role="separator" aria-label="Page break"></div>',
@@ -316,7 +319,10 @@ async function buildContent({
   });
 
   const { contentDocuments, headingContentPaths } =
-    splitTemplateContentIntoDocuments(template.content);
+    splitTemplateContentIntoDocuments(
+      template.content,
+      bookChapters?.map((chapter) => titleFromDocumentName(chapter.documentName)) ?? [],
+    );
   const firstContentPath = contentDocuments[0]?.path ?? "content.xhtml";
   const headings = pendingHeadings.map((heading) => ({
     ...heading,
@@ -337,12 +343,14 @@ function collectMarkdownHeadings(markdown: string): MarkdownHeadingEntry[] {
 
 function splitTemplateContentIntoDocuments(
   fragment: DocumentFragment,
+  chapterNavigationLabels: readonly string[],
 ): {
   contentDocuments: ContentDocument[];
   headingContentPaths: Map<string, string>;
 } {
   const documents: ContentDocumentNodes[] = [];
   let currentNodes: ChildNode[] = [];
+  let pendingNavigationLabel: string | null = null;
 
   const pushDocument = () => {
     if (!hasSerializableContent(currentNodes)) {
@@ -352,13 +360,20 @@ function splitTemplateContentIntoDocuments(
     const index = documents.length;
     documents.push({
       id: contentDocumentId(index),
+      navigationLabel: pendingNavigationLabel,
       nodes: currentNodes,
       path: contentDocumentPath(index),
     });
     currentNodes = [];
+    pendingNavigationLabel = null;
   };
 
   for (const node of Array.from(fragment.childNodes)) {
+    const chapterIndex = epubChapterIndex(node);
+    if (chapterIndex !== null) {
+      pendingNavigationLabel = chapterNavigationLabels[chapterIndex] ?? null;
+      continue;
+    }
     if (isPageBreakElement(node)) {
       pushDocument();
       continue;
@@ -370,6 +385,7 @@ function splitTemplateContentIntoDocuments(
   if (documents.length === 0) {
     documents.push({
       id: contentDocumentId(0),
+      navigationLabel: chapterNavigationLabels[0] ?? null,
       nodes: [],
       path: contentDocumentPath(0),
     });
@@ -391,10 +407,22 @@ function splitTemplateContentIntoDocuments(
         .map((node) => serializer.serializeToString(node))
         .join("\n"),
       id: contentDocument.id,
+      navigationLabel: contentDocument.navigationLabel,
       path: contentDocument.path,
     })),
     headingContentPaths,
   };
+}
+
+function epubChapterIndex(node: ChildNode): number | null {
+  if (!(node instanceof HTMLElement)) {
+    return null;
+  }
+  const value = node.getAttribute(EPUB_CHAPTER_INDEX_ATTR);
+  if (value === null || !/^\d+$/.test(value)) {
+    return null;
+  }
+  return Number(value);
 }
 
 function contentDocumentId(index: number): string {
@@ -744,19 +772,30 @@ function navXhtml(
   title: string,
   language: string,
   headings: HeadingEntry[],
-  firstContentPath: string,
+  contentDocuments: ContentDocument[],
 ): string {
-  const navItems =
-    headings.length > 0
-      ? headings
-          .map(
-            (heading) =>
-              `      <li><a href="${escapeXml(
-                heading.contentPath,
-              )}#${escapeXml(heading.id)}">${escapeXml(heading.text)}</a></li>`,
-          )
-          .join("\n")
-      : `      <li><a href="${escapeXml(firstContentPath)}">本文</a></li>`;
+  const navigationEntries = contentDocuments.flatMap((contentDocument) => {
+    const documentHeadings = headings.filter(
+      (heading) => heading.contentPath === contentDocument.path,
+    );
+    if (documentHeadings.length > 0) {
+      return documentHeadings.map((heading) => ({
+        href: `${heading.contentPath}#${heading.id}`,
+        text: heading.text,
+      }));
+    }
+    return contentDocument.navigationLabel
+      ? [{ href: contentDocument.path, text: contentDocument.navigationLabel }]
+      : [];
+  });
+  const navItems = navigationEntries.length > 0
+    ? navigationEntries
+        .map(
+          (entry) =>
+            `      <li><a href="${escapeXml(entry.href)}">${escapeXml(entry.text)}</a></li>`,
+        )
+        .join("\n")
+    : `      <li><a href="${escapeXml(contentDocuments[0]?.path ?? "content.xhtml")}">本文</a></li>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>

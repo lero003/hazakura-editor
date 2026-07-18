@@ -174,6 +174,30 @@ describe("buildEpubBetaArchive", () => {
     expect(text.indexOf("One")).toBeLessThan(text.indexOf("Two"));
   });
 
+  it("uses ordered chapter filenames as Book Scope navigation fallbacks", async () => {
+    const archive = await buildEpubBetaArchive({
+      chapters: [
+        {
+          documentName: "01-morning.md",
+          documentPath: "/workspace/chapters/01-morning.md",
+          markdown: "Morning body.",
+        },
+        {
+          documentName: "02-afternoon.md",
+          documentPath: "/workspace/chapters/02-afternoon.md",
+          markdown: "Afternoon body.",
+        },
+      ],
+      documentName: "workspace",
+      markdown: "",
+      workspaceRoot: "/workspace",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain('<li><a href="content.xhtml">01-morning</a></li>');
+    expect(text).toContain('<li><a href="content-2.xhtml">02-afternoon</a></li>');
+  });
+
   it("packages an explicitly approved outside-local image", async () => {
     const loadApprovedLocalImage = vi.fn(async () => ({
       dataUrl: "data:image/png;base64,iVBORw0KGgo=",
