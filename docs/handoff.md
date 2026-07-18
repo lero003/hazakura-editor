@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: v2 Book Scope Alpha + explicit chapter suggestions; v1.14 in App Store review
+Scope: v2 Book Scope Alpha + whole-book reader; v1.14 in App Store review
 Authority: Medium
-Last reviewed: 2026-07-18 (explicit chapter suggestion draft in source)
+Last reviewed: 2026-07-18 (whole-book reader in source)
 
 ## Current State
 
@@ -21,6 +21,10 @@ Last reviewed: 2026-07-18 (explicit chapter suggestion draft in source)
   bounded/cancellable OKF snapshot on demand, prioritize root `index.md` links,
   append remaining readable `.md` paths, and open the result as an unsaved
   checkbox draft. It adds no startup/background scan or persistent scan cache.
+- **Whole-book reader is in source:** explicit Book action, saved scope order,
+  live dirty buffers before disk, chapter-relative image/link bases, 32 MiB
+  total budget, visible unavailable/skipped notices, and edit return through
+  the existing tab path. It is read-only and does not create a second buffer.
 - Value / multi-file narrative and **Help expansion** are **v2 ship polish**
   (when OKF multi-file feel is good enough), not a pre-implementation essay.
 - Design SoT:
@@ -44,7 +48,7 @@ Last reviewed: 2026-07-18 (explicit chapter suggestion draft in source)
 ## Verification (2026-07-18)
 
 - `npm run typecheck` — pass.
-- `npm test` — 198 files / 1,644 tests pass.
+- `npm test` — 200 files / 1,648 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 366 pass / 2 ignored
@@ -72,9 +76,9 @@ Last reviewed: 2026-07-18 (explicit chapter suggestion draft in source)
 
 ## Next For Agents
 
-1. **Continue v2** with whole-book reading over the explicit scope, then the
-   explicit Current file / Book Scope EPUB/PDF export + preflight lane. Do not
-   rebuild the completed selection/order/suggestion spine.
+1. **Continue v2** with explicit Current file / Book Scope EPUB/PDF export and
+   preflight. Do not rebuild the completed selection/order/suggestion/reader
+   spine.
 2. One verifiable slice per run. Do not front-load Help essays before the
    multi-file feel exists.
 3. Hotfix only for reproduced v1.14 review or daily-use blockers.

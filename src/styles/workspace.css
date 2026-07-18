@@ -4,6 +4,174 @@
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   min-height: 0;
+  position: relative;
+}
+
+.book-reader-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-width: 0;
+  background: var(--surface-strong);
+  color: var(--text);
+}
+
+.book-reader-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.book-reader-header span,
+.book-reader-header p {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.book-reader-header h1 {
+  margin: 2px 0 3px;
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.book-reader-header button,
+.book-reader-chapter > header button,
+.book-reader-contents button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+}
+
+.book-reader-notice {
+  display: grid;
+  gap: 2px;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--warning-color, #b06a24) 8%, transparent);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.book-reader-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.book-reader-contents {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.book-reader-contents > strong {
+  padding: 0 8px 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.book-reader-contents button {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 4px;
+  width: 100%;
+  padding: 6px 7px;
+  border-color: transparent;
+  text-align: left;
+}
+
+.book-reader-contents button:hover,
+.book-reader-contents button:focus-visible {
+  background: var(--accent-soft);
+}
+
+.book-reader-contents button span {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.book-reader-manuscript {
+  min-height: 0;
+  overflow: auto;
+  scroll-behavior: smooth;
+  padding: 32px clamp(24px, 6vw, 88px) 80px;
+}
+
+.book-reader-chapter {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 0 56px;
+  scroll-margin-top: 24px;
+}
+
+.book-reader-chapter + .book-reader-chapter {
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+}
+
+.book-reader-chapter > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.book-reader-chapter h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.book-reader-chapter h2 > span {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.book-reader-chapter h2 small {
+  margin-left: 10px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.book-reader-chapter .markdown-preview {
+  min-height: 120px;
+  padding: clamp(24px, 5vw, 52px);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  background: var(--surface);
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+.book-reader-empty {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .book-reader-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .book-reader-contents {
+    display: none;
+  }
+
+  .book-reader-manuscript {
+    padding: 24px 16px 64px;
+  }
 }
 
 .workspace.workspace-sidebar-collapsed {

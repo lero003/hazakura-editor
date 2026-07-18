@@ -60,7 +60,9 @@ type WorkspaceSidebarProps = {
   onOpenRootContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
+  onReadBookScope?: () => void;
   onRevalidateBookScope?: () => void;
+  bookScopeReaderLoading?: boolean;
   openFilePaths: readonly string[];
   onClearCompareSelection: () => void;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
@@ -101,7 +103,9 @@ export function WorkspaceSidebar({
   onOpenRootContextMenu,
   onOpenFile,
   onOpenWorkspace,
+  onReadBookScope,
   onRevalidateBookScope = () => {},
+  bookScopeReaderLoading = false,
   openFilePaths,
   onClearCompareSelection,
   onSelectCompareFile,
@@ -372,9 +376,11 @@ export function WorkspaceSidebar({
           onCancelSuggest={onCancelBookScopeSuggestion}
           onLoadDirectory={onLoadDirectory}
           onOpenChapter={(path) => void onOpenFile(path)}
+          onReadBook={onReadBookScope}
           onRevalidate={onRevalidateBookScope}
           onSuggest={onCreateBookScopeSuggestion}
           resolving={bookScopeResolving}
+          readerLoading={bookScopeReaderLoading}
           suggesting={bookScopeSuggesting}
           suggestionError={bookScopeSuggestionError}
           unavailable={bookScopeUnavailable}

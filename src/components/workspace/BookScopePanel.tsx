@@ -25,9 +25,11 @@ type Props = {
   onCancelSuggest?: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenChapter: (path: string) => void;
+  onReadBook?: () => void;
   onRevalidate: () => void;
   onSuggest?: () => Promise<BookScopeSuggestion | null>;
   resolving: boolean;
+  readerLoading?: boolean;
   suggesting?: boolean;
   suggestionError?: string | null;
   unavailable: readonly BookScopeUnavailableEntry[];
@@ -44,9 +46,11 @@ export function BookScopePanel({
   onCancelSuggest = () => {},
   onLoadDirectory,
   onOpenChapter,
+  onReadBook,
   onRevalidate,
   onSuggest,
   resolving,
+  readerLoading = false,
   suggesting = false,
   suggestionError = null,
   unavailable,
@@ -198,6 +202,11 @@ export function BookScopePanel({
     <div className="book-scope-panel">
       <div className="book-scope-toolbar">
         <span>{copy.chapterCount(chapterRelativePaths.length)}</span>
+        {onReadBook ? (
+          <button disabled={readerLoading} onClick={onReadBook} type="button">
+            {readerLoading ? copy.loadingReader : copy.readBook}
+          </button>
+        ) : null}
         <button onClick={beginEditing} ref={editTriggerRef} type="button">{copy.edit}</button>
         {suggesting ? (
           <button onClick={onCancelSuggest} type="button">{copy.stopSuggestion}</button>
@@ -268,6 +277,7 @@ function bookScopeCopy(language: MenuLanguage) {
       cancel: "Cancel", choose: "Choose chapters", edit: "Edit chapters",
       empty: "Choose Markdown files explicitly and treat them as one book.",
       recheck: "Recheck", save: "Save",
+      loadingReader: "Loading…", readBook: "Read all",
       stopSuggestion: "Stop scan", suggest: "Suggest from workspace", suggestShort: "Suggest",
       suggestionIncomplete: "The scan was partial; review the draft before saving.",
       suggestionSummary: (count: number, linked: number) =>
@@ -284,6 +294,7 @@ function bookScopeCopy(language: MenuLanguage) {
     cancel: "キャンセル", choose: "章を選ぶ", edit: "章を編集",
     empty: "Markdownを明示的に選び、一冊として扱います。",
     recheck: "再確認", save: "保存",
+    loadingReader: "読み込み中…", readBook: "本全体を読む",
     stopSuggestion: "走査を停止", suggest: "ワークスペースから候補を作る", suggestShort: "候補を作る",
     suggestionIncomplete: "走査結果は一部です。保存前に候補を確認してください。",
     suggestionSummary: (count: number, linked: number) =>

@@ -62,8 +62,11 @@ Connect is authoritative for store counters.
    bounded OKF snapshot proposes chapters from root `index.md` link order plus
    remaining readable `.md` files. It never runs on startup or saves until the
    user reviews the checkbox draft and chooses Save.
-2. **Whole-book reading** over the explicit scope.
-3. **Book export + preflight** — explicit Current file / Book Scope choice for
+2. **Done in source: whole-book reading.** The Book view opens a read-only
+   scroll reader in saved scope order, uses live dirty buffers before disk,
+   preserves each chapter's image base path, and shows missing/budget-skipped
+   chapters instead of silently dropping them.
+3. **Next: Book export + preflight** — explicit Current file / Book Scope choice for
    EPUB and PDF, followed by missing chapter/image/heading/metadata checks.
 4. Observe the first Alpha sidebar in built-app use; adjust only reproduced
    selection/order/navigation friction before widening the surface.

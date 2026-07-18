@@ -1,8 +1,8 @@
 # v2 Book Scope Design
 
-Status: Review — Book Scope Alpha + explicit chapter suggestions implemented
+Status: Review — Book Scope Alpha + whole-book reader implemented
 Scope: v2.0 Book Workspace Alpha と構造型 Markdown の方向・境界・未解決の UI 問い
-Last reviewed: 2026-07-18 (explicit chapter suggestion draft implemented; whole-book reading next)
+Last reviewed: 2026-07-18 (whole-book reader implemented; book export next)
 
 ## Goal
 
@@ -68,6 +68,21 @@ v1 までの姿は「書く・読む・整える・書き出す」一本の Mark
   走査打切り・100章上限はdraft上で明示する。
 - 起動時走査、background indexing、watcher、永続scan cache、source/manifestの
   書換えは追加しない。`.markdown` / `.mdx` 等は従来の手動選択で追加できる。
+
+## Whole-book Reader Contract
+
+- Book view の「本全体を読む」からだけ開く、読み取り専用のscroll readerとする。
+  editor / workspace chromeを一時的に覆うが、第二の編集bufferは作らない。
+- chapterは保存済みBook Scope順。開いているtabは未保存bufferを優先し、未openの
+  chapterだけdiskから読む。readerからsourceを変更・保存しない。
+- 各chapterは元のdocument pathを保ち、既存のsanitize / workspace image / remote
+  image設定をchapter単位で通す。相対画像を連結文書の基準pathへ誤変換しない。
+- 全体読込は明示操作時のみ、既存の1 file 10 MiB上限に加えて合計32 MiBまで。
+  読取失敗、既存の利用不能chapter、合計上限で省略したchapterはreader内に表示する。
+- 「この章を編集」はreaderを閉じて既存のworkspace file open経路を使う。dirty tab、
+  Undo、document view-stateをdisk内容で置き換えない。
+- reader内のlocal linkは元chapter基準でworkspace内に解決する。外部 / 危険schemeは
+  既存Markdown link境界へ渡し、WebViewを直接遷移させない。
 
 ## Current Direction
 

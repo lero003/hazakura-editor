@@ -70,8 +70,10 @@ Order of work (detail in the design doc; refine while building):
    bounded OKF snapshot proposes root `index.md` link order plus remaining
    readable `.md` files. The checkbox draft is never saved automatically;
    base OKF compatibility remains separate from Hazakura Book semantics.
-3. **Now: Whole-book reading** — e-book / navigation over the explicit scope.
-4. **Next: Book export + preflight** — explicit Current file / Book Scope
+3. **Done in source: Whole-book reading.** A read-only scroll reader uses scope
+   order, live dirty buffers, per-chapter image bases, and visible partial-load
+   notices without creating a second editable buffer.
+4. **Now: Book export + preflight** — explicit Current file / Book Scope
    choice for EPUB/PDF, with missing chapter/image/heading/metadata checks.
 5. **Ship polish including Help** — when the multi-file / OKF loop feels
    shippable: Help pages, in-app feature explanation, store/release copy.

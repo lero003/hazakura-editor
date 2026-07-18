@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 explicit chapter suggestion draft implemented)
+Last reviewed: 2026-07-18 (v2 whole-book reader implemented)
 
 ## Current State
 
@@ -45,6 +45,14 @@ Last reviewed: 2026-07-18 (v2 explicit chapter suggestion draft implemented)
   files stay out. The result remains an editable checkbox draft until Save;
   startup/background scanning, scan caches, source changes, and automatic
   scope persistence were not added.
+- **Book Scope now has a whole-book reader in source.** It opens only from an
+  explicit Book-view action, renders chapters in saved order through the
+  existing sanitized Preview/image boundary, and keeps each chapter's source
+  path for relative images and links. Live open-tab buffers win over disk, so
+  unsaved edits are visible without being saved or overwritten. Total disk/live
+  content is capped at 32 MiB; missing, unreadable, and budget-skipped chapters
+  remain visible as notices. Editing a chapter returns through the existing
+  workspace tab path rather than creating a second editable buffer.
 - **Book Scope Alpha built-app interaction smoke passed on 2026-07-18.** A
   throwaway nested workspace covered explicit selection, order changes, dirty
   chapter switching and return, scope-external file opening, relaunch restore,
@@ -73,8 +81,8 @@ Last reviewed: 2026-07-18 (v2 explicit chapter suggestion draft implemented)
   in source. Signed TestFlight export recheck and pin-to-assets Undo breadth
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
-- **Open main queue:** whole-book reading, then explicit Book Scope EPUB/PDF
-  export and preflight checks (design SoT
+- **Open main queue:** explicit Book Scope EPUB/PDF export and preflight checks
+  (design SoT
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
 - **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
   broad TestFlight / VoiceOver / evidence matrix.

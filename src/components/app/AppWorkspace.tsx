@@ -21,12 +21,22 @@ import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
 import { DelayedLoadingFallback } from "./DelayedLoadingFallback";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
+import { BookScopeReader } from "../workspace/BookScopeReader";
 import { PanelLeftOpenIcon } from "./Icons";
 import {
   coalesceChaptersToTopLevel,
   splitMarkdownIntoChapters,
 } from "../../features/editor/ebookChapters";
-import type { BookScopeSuggestion } from "../../features/bookScope";
+import {
+  loadBookScopeReaderDocuments,
+  type BookScopeReaderLoadResult,
+  type BookScopeSuggestion,
+} from "../../features/bookScope";
+import {
+  hasUnsafeMarkdownLinkScheme,
+  normalizeExternalMarkdownLink,
+  resolveLocalMarkdownLinkTarget,
+} from "../../features/editor/markdownLinks";
 import {
   documentViewStateKey,
   patchDocumentViewState,
@@ -52,6 +62,7 @@ import type {
   BookScopeUnavailableEntry,
   WorkspaceTreeEntry,
 } from "../../lib/tauri";
+import { openTextFile } from "../../lib/tauri";
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,
@@ -369,6 +380,10 @@ export function AppWorkspace({
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
   const [ebookFocusOpen, setEbookFocusOpen] = useState(false);
+  const [bookReaderLoading, setBookReaderLoading] = useState(false);
+  const [bookReaderResult, setBookReaderResult] =
+    useState<BookScopeReaderLoadResult | null>(null);
+  const bookReaderRequestRef = useRef(0);
   // v1.1 position-continuity: AppWorkspace owns the per-document view state
   // shared by Editor, e-book, and (when real-layout evidence requires it)
   // Preview. Individual panes report patches without owning a parallel map.
@@ -520,6 +535,55 @@ export function AppWorkspace({
   };
   const ebookReadingFocusActive =
     ebookFocusOpen && activeTab !== null && previewVisible && selectedImage === null;
+  useEffect(() => {
+    bookReaderRequestRef.current += 1;
+    setBookReaderLoading(false);
+    setBookReaderResult(null);
+  }, [workspaceRootPath]);
+  const openBookScopeReader = async () => {
+    if (!workspaceRootPath || bookScopeChapters.length === 0 || bookReaderLoading) {
+      return;
+    }
+    const requestId = ++bookReaderRequestRef.current;
+    setBookReaderLoading(true);
+    try {
+      const result = await loadBookScopeReaderDocuments({
+        chapters: bookScopeChapters,
+        tabs,
+        openTextFile,
+      });
+      if (requestId === bookReaderRequestRef.current) {
+        setBookReaderResult(result);
+      }
+    } finally {
+      if (requestId === bookReaderRequestRef.current) {
+        setBookReaderLoading(false);
+      }
+    }
+  };
+  const closeBookScopeReader = () => {
+    bookReaderRequestRef.current += 1;
+    setBookReaderLoading(false);
+    setBookReaderResult(null);
+  };
+  const openBookReaderLink = (sourcePath: string, href: string) => {
+    if (
+      normalizeExternalMarkdownLink(href) ||
+      hasUnsafeMarkdownLinkScheme(href)
+    ) {
+      void openPreviewMarkdownLink(href);
+      return;
+    }
+    if (!workspaceRootPath) return;
+    const target = resolveLocalMarkdownLinkTarget(
+      href,
+      sourcePath,
+      workspaceRootPath,
+    );
+    if (!target) return;
+    closeBookScopeReader();
+    void openWorkspaceFile(target);
+  };
   const workspaceTabMarkers = useMemo(
     () => getWorkspaceTabMarkerPaths(tabs, workspaceRootPath),
     [tabs, workspaceRootPath],
@@ -553,6 +617,7 @@ export function AppWorkspace({
           activePath={selectedImage?.path ?? activeTab?.path ?? null}
           bookScopeChapterRelativePaths={bookScopeChapterRelativePaths}
           bookScopeChapters={bookScopeChapters}
+          bookScopeReaderLoading={bookReaderLoading}
           bookScopeResolving={bookScopeResolving}
           bookScopeSuggesting={bookScopeSuggesting}
           bookScopeSuggestionError={bookScopeSuggestionError}
@@ -599,6 +664,7 @@ export function AppWorkspace({
           onOpenRootContextMenu={openRootWorkspaceContextMenu}
           onOpenFile={(path) => void openWorkspaceFile(path)}
           onOpenWorkspace={() => void openWorkspace()}
+          onReadBookScope={() => void openBookScopeReader()}
           onRevalidateBookScope={revalidateBookScope}
           openFilePaths={workspaceTabMarkers.openFilePaths}
           onClearCompareSelection={() => {
@@ -886,6 +952,29 @@ export function AppWorkspace({
             />
           </Suspense>
         </div>
+      ) : null}
+      {bookReaderResult && workspaceRootPath ? (
+        <BookScopeReader
+          documents={bookReaderResult.documents}
+          failures={[
+            ...bookReaderResult.failures,
+            ...bookScopeUnavailable.map((entry) => ({
+              relativePath: entry.relativePath,
+              reason: entry.reason,
+            })),
+          ]}
+          mediaAccess={mediaAccess}
+          menuLanguage={menuLanguage}
+          onApproveLocalImageParent={onApproveLocalImageParent}
+          onClose={closeBookScopeReader}
+          onEditChapter={(path) => {
+            closeBookScopeReader();
+            void openWorkspaceFile(path);
+          }}
+          onOpenLink={openBookReaderLink}
+          skippedForBudget={bookReaderResult.skippedForBudget}
+          workspaceRoot={workspaceRootPath}
+        />
       ) : null}
     </section>
   );
