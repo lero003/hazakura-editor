@@ -21,7 +21,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 # Bounded https image fetch for Theme G remote Preview / export materialize.
 # Keep default features (TLS) so App Store network.client can reach https hosts.
-ureq = "2.12"
+ureq = "3.3"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block2 = "0.6.2"
