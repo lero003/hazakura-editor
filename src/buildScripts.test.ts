@@ -628,38 +628,38 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `1.13.0` is published",
+        "Hazakura Editor `2.0.0` is published",
         "Current package/app version is `2.0.0`",
-        "The published App Store version is `1.13.0`",
-        "The latest prepared GitHub source / local-app tag is still [v1.14.0]",
+        "The published App Store version is `2.0.0`",
+        "GitHub source / local-app tag is [v2.0.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `1.13.0`",
+        "Published App Store version: `2.0.0`",
         "Current source / Developer version: `2.0.0`",
       ],
       "docs/current-status.md": [
         "Current package/app version: **`2.0.0`",
-        "Published Mac App Store version: **`1.13.0`",
-        "Latest GitHub source / local-app tag: `v1.14.0`",
+        "Published Mac App Store version: `2.0.0`",
+        "Latest GitHub source / local-app tag: `v2.0.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.0.0 source tree; pre-manual-test UX quieting residual",
+        "Scope: Post-v2.0.0 ship; next slices after published Book Scope Alpha",
         "Help:** native Help menu / Command Palette",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.0 source candidate post-review.**",
+        "Phase: **post-v2.0.0 ship.**",
       ],
       "docs/handoff.md": [
         "Package/app version in tree: **`2.0.0`",
-        "Published Mac App Store (last confirmed in docs): **`1.13.0`",
+        "Published Mac App Store (last confirmed in docs): **`2.0.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.0.0`",
-        "Published Mac App Store | **`1.13.0`",
-        "Done in source: implementation contract + minimal multi-file spine",
+        "Published Mac App Store | **`2.0.0`",
+        "Active product phase | **Post-v2.0 ship**",
         "Explicit Book Scope + order + one primary edit buffer",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [
