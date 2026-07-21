@@ -2,10 +2,16 @@ import {
   lazy,
   Suspense,
   useEffect,
+  useMemo,
   useRef,
+  useState,
   type KeyboardEvent,
 } from "react";
-import type { BookScopeReaderLoadResult } from "../../features/bookScope";
+import {
+  createBookScopeReaderSearchCorpus,
+  searchBookScopeReaderCorpus,
+  type BookScopeReaderLoadResult,
+} from "../../features/bookScope";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import { stripYamlFrontmatter } from "../../features/editor/markdownFrontmatter";
 import type { MenuLanguage } from "../../types";
@@ -40,6 +46,30 @@ export function BookScopeReader({
   const copy = readerCopy(menuLanguage);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const normalizedSearchQuery = searchQuery.trim();
+  const searchCorpus = useMemo(
+    () => createBookScopeReaderSearchCorpus(documents),
+    [documents],
+  );
+  const searchMatches = useMemo(
+    () => searchBookScopeReaderCorpus(searchCorpus, searchQuery),
+    [searchCorpus, searchQuery],
+  );
+  const visibleContents = normalizedSearchQuery
+    ? searchMatches.map((match) => ({
+        ...match,
+        document: documents[match.documentIndex],
+      }))
+    : documents.map((document, documentIndex) => ({
+        document,
+        documentIndex,
+        occurrenceCount: 0,
+      }));
+  const totalSearchOccurrences = searchMatches.reduce(
+    (total, match) => total + match.occurrenceCount,
+    0,
+  );
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -47,6 +77,16 @@ export function BookScopeReader({
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
+      if (
+        searchQuery &&
+        event.target instanceof HTMLInputElement &&
+        event.target.type === "search"
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        setSearchQuery("");
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       onClose();
@@ -55,7 +95,7 @@ export function BookScopeReader({
     if (event.key !== "Tab") return;
     const focusable = Array.from(
       surfaceRef.current?.querySelectorAll<HTMLElement>(
-        "button:not([disabled]), a[href], [tabindex]:not([tabindex='-1'])",
+        "button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex='-1'])",
       ) ?? [],
     );
     if (focusable.length === 0) return;
@@ -107,18 +147,37 @@ export function BookScopeReader({
       <div className="book-reader-layout">
         <nav aria-label={copy.contents} className="book-reader-contents">
           <strong>{copy.contents}</strong>
-          {documents.map((document, index) => (
+          <label className="book-reader-search">
+            <span>{copy.search}</span>
+            <input
+              aria-label={copy.search}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={copy.searchPlaceholder}
+              type="search"
+              value={searchQuery}
+            />
+          </label>
+          {normalizedSearchQuery ? (
+            <p aria-live="polite" className="book-reader-search-status" role="status">
+              {copy.searchSummary(searchMatches.length, totalSearchOccurrences)}
+            </p>
+          ) : null}
+          {visibleContents.map(({ document, documentIndex, occurrenceCount }) => (
             <button
               key={document.path}
+              aria-label={copy.goToLabel(document.name, occurrenceCount)}
               onClick={() =>
                 globalThis.document
-                  .getElementById(bookReaderChapterId(index))
+                  .getElementById(bookReaderChapterId(documentIndex))
                   ?.scrollIntoView({ behavior: "smooth", block: "start" })
               }
               type="button"
             >
-              <span>{index + 1}</span>
-              {document.name}
+              <span>{documentIndex + 1}</span>
+              <span className="book-reader-contents-name">{document.name}</span>
+              {normalizedSearchQuery ? (
+                <small>{copy.matchCount(occurrenceCount)}</small>
+              ) : null}
             </button>
           ))}
         </nav>
@@ -174,20 +233,34 @@ function readerCopy(language: MenuLanguage) {
     return {
       close: "Close", contents: "Contents", edit: "Edit Markdown",
       editLabel: (name: string) => `Edit ${name}`,
+      goToLabel: (name: string, count: number) => count > 0
+        ? `Go to ${name}, ${count} matches`
+        : `Go to ${name}`,
       empty: "No available Markdown could be loaded.", kicker: "BOOK",
       liveBuffer: "Unsaved edits included", loading: "Rendering Markdown…",
+      matchCount: (count: number) => `${count}`,
       overBudget: "not loaded because the reader limit was reached",
       partial: "Some items are not shown", title: "Read whole book",
+      search: "Search this book", searchPlaceholder: "Words in loaded chapters",
+      searchSummary: (chapters: number, occurrences: number) =>
+        `${chapters} chapter(s), ${occurrences} match(es)`,
       count: (count: number) => `${count} item(s) loaded`,
     };
   }
   return {
     close: "閉じる", contents: "目次", edit: "このMarkdownを編集",
     editLabel: (name: string) => `${name}を編集`,
+    goToLabel: (name: string, count: number) => count > 0
+      ? `${name}へ移動、${count}件一致`
+      : `${name}へ移動`,
     empty: "読み込めるMarkdownがありません。", kicker: "本",
     liveBuffer: "未保存の編集を反映", loading: "Markdownを描画しています…",
+    matchCount: (count: number) => `${count}件`,
     overBudget: "読書上限に達したため読み込みませんでした",
     partial: "表示していない項目があります", title: "本全体を読む",
+    search: "本の中を検索", searchPlaceholder: "読み込んだ章の言葉",
+    searchSummary: (chapters: number, occurrences: number) =>
+      `${chapters}章・${occurrences}件一致`,
     count: (count: number) => `${count}件を読み込み`,
   };
 }

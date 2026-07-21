@@ -1,4 +1,5 @@
 import type { BookScopeChapter } from "../../lib/tauri/bookScope";
+import { stripYamlFrontmatter } from "../editor/markdownFrontmatter";
 
 export const MAX_BOOK_READER_TOTAL_BYTES = 32 * 1024 * 1024;
 
@@ -17,6 +18,16 @@ export type BookScopeReaderLoadResult = {
   totalBytes: number;
   truncated: boolean;
 };
+
+export type BookScopeReaderSearchMatch = {
+  documentIndex: number;
+  occurrenceCount: number;
+};
+
+export type BookScopeReaderSearchCorpus = ReadonlyArray<{
+  documentIndex: number;
+  text: string;
+}>;
 
 type ReaderTab = { path: string | null; contents: string };
 type ReaderDiskDocument = { contents: string; size: number };
@@ -94,6 +105,44 @@ export async function loadBookScopeReaderDocuments(options: {
   };
 }
 
+/**
+ * Search only the bounded documents already loaded for the explicit reader.
+ * Frontmatter is omitted because the reader does not render it.
+ */
+export function searchBookScopeReaderDocuments(
+  documents: readonly BookScopeReaderDocument[],
+  rawQuery: string,
+): BookScopeReaderSearchMatch[] {
+  return searchBookScopeReaderCorpus(
+    createBookScopeReaderSearchCorpus(documents),
+    rawQuery,
+  );
+}
+
+export function createBookScopeReaderSearchCorpus(
+  documents: readonly BookScopeReaderDocument[],
+): BookScopeReaderSearchCorpus {
+  return documents.map((document, documentIndex) => ({
+    documentIndex,
+    text: normalizeSearchText(
+      `${document.name}\n${stripYamlFrontmatter(document.source)}`,
+    ),
+  }));
+}
+
+export function searchBookScopeReaderCorpus(
+  corpus: BookScopeReaderSearchCorpus,
+  rawQuery: string,
+): BookScopeReaderSearchMatch[] {
+  const query = normalizeSearchText(rawQuery.trim());
+  if (!query) return [];
+
+  return corpus.flatMap(({ documentIndex, text }) => {
+    const occurrenceCount = countOccurrences(text, query);
+    return occurrenceCount > 0 ? [{ documentIndex, occurrenceCount }] : [];
+  });
+}
+
 /** NFC so Japanese filenames from different path sources still match. */
 function normalizePathKey(path: string): string {
   return path.normalize("NFC");
@@ -109,4 +158,20 @@ function relativePathUnderRoot(filePath: string, workspaceRoot: string): string 
 
 function utf8ByteLength(source: string): number {
   return new TextEncoder().encode(source).byteLength;
+}
+
+function normalizeSearchText(value: string): string {
+  return value.normalize("NFKC").toLowerCase();
+}
+
+function countOccurrences(value: string, query: string): number {
+  let count = 0;
+  let offset = 0;
+  while (offset <= value.length - query.length) {
+    const index = value.indexOf(query, offset);
+    if (index < 0) break;
+    count += 1;
+    offset = index + query.length;
+  }
+  return count;
 }

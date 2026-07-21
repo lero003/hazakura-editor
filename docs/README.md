@@ -3,13 +3,14 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-21 (Qwen UX proposal synthesis linked)
+Last reviewed: 2026-07-22 (v2.1.0 local candidate)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **Active phase is
-v2 Book Scope development.** Start with `current-work.md` and `roadmap.md`.
-v1 residual / evidence pools are parked.
+the v2.1.0 bounded whole-book search candidate.** Start with `current-work.md`
+and `roadmap.md`. Published v2.0.0 stays immutable; other residual / evidence
+pools are parked.
 
 ## Current Canonical Docs
 
@@ -17,8 +18,8 @@ v1 residual / evidence pools are parked.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: **v2 active queue** (Book Scope slices; v1 residual parked).
-- `roadmap.md`: **v2 development phase**, parked residual/evidence, ship-time Help.
+- `current-work.md`: **v2.1 candidate queue** (bounded Reader search; other slices parked).
+- `roadmap.md`: **v2.1 candidate phase**, published v2.0 boundary, future v2.x practicalization.
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md`: Qwen UX pack triage (advisory; L Mode corrections; not the active queue).
 - `current-status.md`: current implementation and release state.

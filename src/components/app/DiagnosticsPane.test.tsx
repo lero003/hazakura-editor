@@ -151,7 +151,7 @@ describe("DiagnosticsPane", () => {
       theme: "edohigan",
     });
     const json = parseJson();
-    expect(json.app.version).toBe("2.0.0");
+    expect(json.app.version).toBe("2.1.0");
     expect(json.app.distributionLane).toBeTruthy();
     expect(json.features.appleLocalAssistAvailable).toBe(true);
     expect(json.features.autoBackupEnabled).toBe(true);
@@ -186,7 +186,7 @@ describe("DiagnosticsPane", () => {
     const text = onCopy.mock.calls[0]?.[0] ?? "";
     expect(text.length).toBeGreaterThan(0);
     const parsed = JSON.parse(text);
-    expect(parsed.app.version).toBe("2.0.0");
+    expect(parsed.app.version).toBe("2.1.0");
     expect(button.textContent).toBe("Copied");
   });
 

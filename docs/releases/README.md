@@ -3,21 +3,21 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-18
+Last reviewed: 2026-07-22
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
 Latest GitHub source / local-app tag:
 
-- `v1.12.0` — `1.12.0-source-tag.release.md` (no binary assets)
+- `v2.0.0` — `2.0.0-source-tag.release.md` (no binary assets)
 
 Latest stored source-tag note:
 
-- `1.12.0-source-tag.release.md`
+- `2.0.0-source-tag.release.md`
 
 Latest published GitHub Release body:
 
-- `1.12.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
+- `2.0.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
 
 Latest downloadable GitHub DMG Release body:
 
@@ -25,9 +25,13 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`2.0.0` is the current package/app version in tree** (Book Scope + Help).
-  Draft copy: `2.0.0-app-store-release-notes.md`. Not published or tagged by
-  this archive alone. Published store remains `1.13.0`.
+- **`2.1.0` is the current package/app version in tree** (bounded whole-book
+  Reader search). Candidate copy: `2.1.0-app-store-release-notes.md`. It is not
+  uploaded, tagged, or published by this archive alone.
+- **`2.0.0` is approved and published** on the Mac App Store (user-reported
+  2026-07-21): Book Scope Alpha, whole-book read/export, UX quieting, and Help.
+  Source tag `v2.0.0` remains immutable. See
+  `2.0.0-app-store-release-notes.md` and `2.0.0-source-tag.release.md`.
 - **`1.14.0` was a Continuity/Trust Keep candidate** (source tag `v1.14.0`;
   App Store submission was user-reported). Draft: `1.14.0-app-store-release-notes.md`.
 - **`1.13.0` is approved and published** on the Mac App Store (user-reported
@@ -75,8 +79,10 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
-- `2.0.0-app-store-release-notes.md` is the **local draft** for Book Scope /
-  structured Markdown (package `2.0.0`).
+- `2.1.0-app-store-release-notes.md` is the **local candidate** for bounded
+  whole-book Reader search (package `2.1.0`; manual TestFlight gate pending).
+- `2.0.0-app-store-release-notes.md` records the published Book Scope /
+  structured Markdown release.
 - `1.14.0-app-store-release-notes.md` is retained for the Continuity / Trust /
   Writing Loop / OKF Keep box (package `1.14.0`).
 - `1.13.0-app-store-release-notes.md` is the **published** v1.13 App Store

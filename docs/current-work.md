@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Post-v2.0.0 ship; next slices after published Book Scope Alpha
+Scope: v2.1.0 whole-book search candidate after published v2.0.0
 Authority: High
-Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
+Last reviewed: 2026-07-22 (v2.1.0 local candidate; manual gate pending)
 
 ## Purpose
 
@@ -11,11 +11,11 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.0.0 is shipped.** Book Scope Alpha + UX quieting + Help are in the
-published Mac App Store line and the GitHub source tag `v2.0.0`. Residual
-polish and broad evidence remain parked unless a release gate needs them.
+**v2.0.0 is shipped and immutable. v2.1.0 is the active local candidate.**
+The first post-ship practicalization slice is bounded whole-book Reader search;
+other advisory items remain parked.
 
-- Package/app version in tree: **`2.0.0`**.
+- Package/app version in tree: **`2.1.0`**.
 - Published Mac App Store (last confirmed): **`2.0.0`** (user-reported
   2026-07-21).
 - GitHub source / local-app tag: **`v2.0.0`** (no binary assets).
@@ -24,7 +24,8 @@ polish and broad evidence remain parked unless a release gate needs them.
 - External review pools (advisory; not this queue):
   `docs/v2-external-review-synthesis-2026-07-18.md` (four-agent),
   `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage).
-- Store notes: `docs/releases/2.0.0-app-store-release-notes.md`.
+- Candidate notes: `docs/releases/2.1.0-app-store-release-notes.md`.
+- Published store notes: `docs/releases/2.0.0-app-store-release-notes.md`.
 
 ## Lane Timeline
 
@@ -34,7 +35,8 @@ polish and broad evidence remain parked unless a release gate needs them.
 | **v1.13** | Closed / published `1.13.0` | Theme A + Theme G |
 | **v1.14** | Source tag `v1.14.0`; store superseded by `2.0.0` | Intermediate Keep box |
 | **v2.0** | **Shipped** MAS + source tag `2.0.0` | Book Scope + Help |
-| **v2.x** | Next product phase | Practicalization candidates (not auto-queue) |
+| **v2.1** | **Local candidate** | Bounded in-book Reader search |
+| **v2.x** | Later slices | Practicalization candidates (not auto-queue) |
 | **縦書き** | After v2.x foundation | Render / export layer only |
 
 ## Active Queue — v2
@@ -64,20 +66,24 @@ polish and broad evidence remain parked unless a release gate needs them.
 6. **Pre-manual-test polish:** user-facing “Book Scope” jargon quieted in
    status / Reader kicker / EPUB dialog / scaffold hints; live dirty buffers
    match tabs by relative path and Unicode NFC as well as absolute path.
+7. **v2.1 bounded Reader search:** the explicit whole-book Reader searches only
+   its already loaded chapter names and visible Markdown (100 chapters / 32 MiB
+   existing load budget), including unsaved live buffers. Results show chapter
+   and occurrence counts and jump through the existing contents navigation.
+   Search creates no persistent index, background scan, or source change.
+8. **Version surfaces:** npm, Tauri, Cargo, and lockfile package version are
+   `2.1.0`; published store and latest source tag remain `2.0.0` / `v2.0.0`.
 
-### Immediate next
+### Immediate next — v2.1 candidate
 
-1. **Hotfix only** for reproduced blockers on published `2.0.0` (App Review,
-   TestFlight, or daily use). Do not reopen closed store lanes for polish.
-2. Pick **one** post-ship slice when ready — prefer honesty / friction over
-   backlog digestion:
-   - packaging residual evidence (heavy-manuscript PDF/EPUB visual, Book
-     VoiceOver minimum) if a real gap appears;
-   - one item from the advisory pools (`v2-external-review-synthesis` N/X/E or
-     `v2-qwen-ux-proposal-synthesis` Q-1–Q-5);
-   - or a parked residual only when daily friction reproduces.
-3. Do **not** start a rigid v2.1 train from external proposals. Promote one
-   candidate into this queue at a time.
+1. Complete automated source, App Store surface, signed bundle/pkg, metadata,
+   checksum, and provenance gates for `2.1.0`.
+2. Stop before upload/publication. Human gate: install the signed candidate and
+   check Japanese input, result counts, chapter jump, Escape, narrow layout,
+   VoiceOver labels, ordinary Reader scroll/edit return, and local images.
+3. Fix only blockers found by those gates. Do not add another advisory feature
+   to `2.1.0`; mode pills, static lint, Compare Center, persistent indexing,
+   and source rewrite remain out.
 
 ### Hotfix only (published `2.0.0`)
 
@@ -95,7 +101,6 @@ polish and broad evidence remain parked unless a release gate needs them.
 ## Next Human Gates
 
 1. Published `2.0.0` is closed unless a hotfix is needed.
-2. Optional: deepen distribution evidence (signed heavy-manuscript appearance,
-   Book-critical a11y) without reopening the shipped feature set.
-3. Choose the first **v2.x** practicalization slice only when product direction
-   is clear — not as auto-catch-up of review pools.
+2. Run the `2.1.0` installed/TestFlight manual gate described above.
+3. Upload, TestFlight distribution, tag, App Review, and publication require a
+   separate explicit handoff; none is implied by local package proof.

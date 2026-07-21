@@ -83,9 +83,43 @@
   font-size: 0.78rem;
 }
 
+.book-reader-search {
+  display: grid;
+  gap: 5px;
+  padding: 0 4px 6px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.book-reader-search input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.book-reader-search input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  outline-offset: 1px;
+}
+
+.book-reader-search-status {
+  margin: 0;
+  padding: 0 8px 4px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
 .book-reader-contents button {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr) auto;
   gap: 4px;
   width: 100%;
   padding: 6px 7px;
@@ -100,6 +134,19 @@
 
 .book-reader-contents button span {
   color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.book-reader-contents button .book-reader-contents-name {
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-reader-contents button small {
+  color: var(--text-muted);
+  font-size: 0.68rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -163,10 +210,14 @@
 @media (max-width: 760px) {
   .book-reader-layout {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .book-reader-contents {
-    display: none;
+    max-height: min(220px, 32vh);
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 12px;
   }
 
   .book-reader-manuscript {

@@ -284,7 +284,7 @@ describe("PrivacyPreferencesPane", () => {
 
     const text = screen.getByTestId("help-doc-body").textContent ?? "";
     expect(text).toContain("About Hazakura Editor");
-    expect(text).toContain("2.0.0");
+    expect(text).toContain("2.1.0");
     expect(text).toContain("Safe Editor");
   });
 

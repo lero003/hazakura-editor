@@ -3,15 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
+Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.0.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. GitHub source / local-app tag: **`v2.0.0`** (no binary
-  assets). Notes: `docs/releases/2.0.0-app-store-release-notes.md`,
-  `docs/releases/2.0.0-source-tag.release.md`.
+- Current package/app version: **`2.1.0`** across npm, Tauri, Cargo, and
+  lockfile metadata. It is a local candidate, not uploaded, tagged, or
+  published. Notes: `docs/releases/2.1.0-app-store-release-notes.md`.
+  GitHub source / local-app tag remains immutable **`v2.0.0`** (no binary
+  assets).
 - **Published Mac App Store version: `2.0.0`.** App Review passed and the
   release was published (user-reported 2026-07-21): Book Scope Alpha,
   whole-book read/export, UX quieting, and Help for books/OKF. Release notes:
@@ -21,8 +22,10 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 - **Prior lines:** `1.13.0` remains a historical published store baseline.
   `1.14.0` is an intermediate source tag / submission line superseded on the
   live listing by `2.0.0`. Do not rewrite those tags.
-- **Active product phase: post-v2.0 ship.** Residual polish and broad evidence
-  stay parked. Queue: `docs/current-work.md`. Phase: `docs/roadmap.md`.
+- **Active product phase: v2.1.0 local candidate.** The one selected post-ship
+  slice is bounded whole-book Reader search. Residual polish and other review
+  candidates stay parked. Queue: `docs/current-work.md`. Phase:
+  `docs/roadmap.md`.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
   100 Markdown chapters, keep an app-private per-workspace ordered tree, reopen
@@ -67,6 +70,15 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
   content is capped at 32 MiB; missing, unreadable, and budget-skipped chapters
   remain visible as notices. Editing a chapter returns through the existing
   workspace tab path rather than creating a second editable buffer.
+- **The v2.1 candidate adds bounded search inside the whole-book Reader.** It
+  searches only chapter names and visible Markdown already loaded by the
+  explicit Reader action, including unsaved live buffers, under the existing
+  100-chapter / 32 MiB load boundary. Unicode-normalized, case-insensitive
+  results show matching chapters and occurrence counts and jump through the
+  existing contents navigation. Hidden leading YAML frontmatter is excluded
+  because Reader does not render it. Escape clears a non-empty search before
+  closing the Reader. The feature creates no persistent index, background
+  scan, source edit, auto-save, or new file access path.
 - **Book presentation hides closed leading YAML frontmatter without rewriting
   source.** Whole-book Reader and PDF now use the same bounded strip behavior
   already used by EPUB. Unclosed frontmatter remains visible as source text;
@@ -90,7 +102,19 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
   heading levels.
   Apple Books interaction on the heavy manuscript remains a manual TestFlight
   check; source is not changed and no background scan or manifest is added.
-- **Latest source and built-app candidate proof is green.** TypeScript/Vitest
+- **v2.1 source and local App Store preview proof is green.** TypeScript/Vitest
+  (**201 files / 1,682 tests**), focused Reader search tests (**2 files / 10
+  tests**), typecheck, Vite, Rust (**367 pass / 2 host-dependent ignored**),
+  and App Store surface (**107 tests**) pass on tree `2.1.0`. `npm audit`
+  reports 0 vulnerabilities; `cargo audit` exits 0 with the existing 18
+  allowed unmaintained/unsound warnings and no vulnerability. The helper-enabled
+  App Store preview bundle reports `2.1.0` / `dev.hazakura.editor`, passes
+  deep/strict code-sign verification, and directly launches a `1280x820`
+  window. LaunchServices `open -n` remains unavailable on this host with
+  `kLSNoExecutableErr`; direct executable launch was used for the window proof.
+  Signed pkg/provenance and installed/TestFlight interaction are separate next
+  gates.
+- **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
   Store preview build all pass on tree `2.0.0`. The built bundle reports
@@ -170,11 +194,10 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive `2.0.0` from package metadata.
-- **Open main queue:** hotfixes for published `2.0.0` only when reproduced;
-  optional one post-ship slice from `docs/current-work.md` (design SoT
-  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` remains Book
-  boundary authority).
+  diagnostics derive the current `2.1.0` candidate version from package metadata.
+- **Open main queue:** finish automated/local package gates for `2.1.0`, then
+  stop for installed/TestFlight interaction checks. Published `2.0.0` remains
+  hotfix-only; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -498,6 +521,10 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
+- Current development-tree candidate: **`2.1.0`**. Scope is bounded
+  whole-book Reader search; local source/package evidence is recorded here and
+  in `docs/internal/app-store-candidates/latest.json`. No upload, TestFlight
+  install, source tag, App Review, or publication is claimed.
 - Published Mac App Store version: **`2.0.0`** (App Review passed and release
   published, user-reported 2026-07-21). Ships Book Scope Alpha, whole-book
   read/export, UX quieting, and Help on the Safe Editor baseline. Prior store
@@ -905,6 +932,8 @@ baseline, and smoke evidence are archived under
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
 - `docs/releases/2.0.0-app-store-release-notes.md`: published store notes for
   `2.0.0` (user-reported 2026-07-21).
+- `docs/releases/2.1.0-app-store-release-notes.md`: local candidate notes for
+  bounded whole-book Reader search; manual installed/TestFlight gate pending.
 - `docs/releases/2.0.0-source-tag.release.md`: `v2.0.0` source-tag boundary.
 - `docs/releases/1.14.0-source-tag.release.md`: intermediate `v1.14.0` source tag.
 - `docs/releases/1.14.0-app-store-release-notes.md`: intermediate `1.14.0` store
@@ -927,14 +956,12 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
-   reproduced review or daily-use blockers. Queue:
-   `docs/current-work.md`.
-2. **Park** residual polish, broad evidence matrix, and bulk digestion of
-   external review pools. Promote **one** candidate at a time when product
-   direction is clear.
-3. Optional post-ship evidence (heavy-manuscript export appearance, Book-critical
-   a11y) only if a real gap appears — not as a reopened feature train.
+1. Finish automated/local package evidence for the **`2.1.0` candidate**, then
+   stop at the installed/TestFlight manual gate in `docs/current-work.md`.
+2. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
+   reproduced review or daily-use blockers.
+3. **Park** residual polish, broad evidence matrix, and bulk digestion of
+   external review pools. Do not add another feature to `2.1.0`.
 4. Keep v1.9–v1.12 product contracts and Book Scope design rails closed unless a
    regression reproduces.
 5. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
@@ -945,5 +972,6 @@ baseline, and smoke evidence are archived under
    is recorded.
 7. For Local Assist, keep explicit AI edit transactions
    (`docs/assist-surface-strategy.md`, `docs/app-store-build.md`).
-8. Do not move published tags or reopen the `2.0.0` store lane without a
-   reproduced hotfix and explicit approval.
+8. Do not move published tags or upload/publish `2.1.0` without a separate
+   explicit handoff. Do not reopen the `2.0.0` store lane without a reproduced
+   hotfix.

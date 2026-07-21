@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
+Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.0.0`** |
+| Package / app version in tree | **`2.1.0`** |
 | GitHub source / local-app tag | **`v2.0.0`** (no binary assets) |
 | Published Mac App Store | **`2.0.0`** (user-reported 2026-07-21) |
 | Prior store / source lines | `1.13.0` published historical; `1.14.0` intermediate source tag |
-| Active product phase | **Post-v2.0 ship** — hotfixes + optional v2.x practicalization |
+| Active product phase | **v2.1.0 local candidate** — bounded whole-book Reader search |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -36,7 +36,7 @@ External review pools (advisory, not the queue):
 `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage; L Mode corrections).
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
-## Phase Decision (2026-07-21)
+## Phase Decision (2026-07-22)
 
 User direction:
 
@@ -48,21 +48,36 @@ User direction:
    verifiable slice (honesty UX, evidence, or v2.x practicalization) when
    ready. Qwen mode-pill / static-lint / Compare Center designs stay triaged
    out unless product explicitly accepts them.
+4. **First v2.x slice selected:** explicit, bounded in-book search (July 18
+   X-1). It searches only the whole-book Reader's already loaded documents,
+   creates no persistent index, and is the complete `2.1.0` feature scope.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[now]    hotfixes for 2.0.0 · optional first post-ship slice
+[now]    v2.1.0 local candidate · bounded Reader search · manual gate next
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
 
-## Active Path — Post-v2.0
+## Active Path — v2.1 Candidate
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Hotfix only for reproduced App Store / daily-use blockers on published
-`2.0.0`.
+Published `2.0.0` remains hotfix-only. The selected `2.1.0` slice does not
+reopen or rewrite that release.
+
+### Active (v2.1 whole-book search)
+
+1. **Done in source:** whole-book Reader search over the existing explicit
+   100-chapter / 32 MiB loaded-document budget. Live unsaved tabs win over disk.
+2. **Done in source:** per-chapter and occurrence counts, result-to-chapter
+   jump, Escape-to-clear, Japanese/English labels, and bounded narrow-window
+   contents/search presentation.
+3. **Boundary:** no background or persistent index, workspace-wide scan,
+   Markdown rewrite, auto-save, or second editor buffer.
+4. **Next gate:** local signed package/provenance, then installed/TestFlight
+   manual checks. Upload, tag, review, and publication are separate actions.
 
 ### Shipped (v2.0 Book Scope Alpha)
 
@@ -161,8 +176,9 @@ These boundaries stay active across roadmap changes:
 | v1.7 | Reference Compare | Closed / published |
 | v1.8–v1.12 | Trust → clarity → structure → OKF review → scaffold | Bridge **complete** |
 | v1.13–v1.14 | Refinement Keep boxes | v1.13 published; v1.14 **in review** |
-| **v2.0** | Multi-file Book Scope Alpha + OKF multi-file feel | **Active development** |
-| v2.x | Book Scope practicalization | After Alpha |
+| **v2.0** | Multi-file Book Scope Alpha + OKF multi-file feel | **Closed / published** |
+| **v2.1** | Bounded whole-book Reader search | **Local candidate** |
+| v2.x | Further Book Scope practicalization | After v2.1 gate |
 | 縦書き | Vertical reading / export layer | After Book Scope foundation |
 | v3.x | Speculative local-AI re-evaluation only | Speculative |
 

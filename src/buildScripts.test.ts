@@ -629,37 +629,37 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `2.0.0` is published",
-        "Current package/app version is `2.0.0`",
+        "Current package/app version in the development tree is `2.1.0`",
         "The published App Store version is `2.0.0`",
-        "GitHub source / local-app tag is [v2.0.0]",
+        "latest GitHub source / local-app tag remains [v2.0.0]",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `2.0.0`",
-        "Current source / Developer version: `2.0.0`",
+        "Current source / Developer version: `2.1.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`2.0.0`",
+        "Current package/app version: **`2.1.0`",
         "Published Mac App Store version: `2.0.0`",
         "Latest GitHub source / local-app tag: `v2.0.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: Post-v2.0.0 ship; next slices after published Book Scope Alpha",
+        "Scope: v2.1.0 whole-book search candidate after published v2.0.0",
         "Help:** native Help menu / Command Palette",
       ],
       "docs/development-automation.md": [
-        "Phase: **post-v2.0.0 ship.**",
+        "Phase: **v2.1.0 candidate.**",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree: **`2.0.0`",
+        "Package/app version in tree: **`2.1.0`",
         "Published Mac App Store (last confirmed in docs): **`2.0.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
-        "Package / app version in tree | **`2.0.0`",
+        "Package / app version in tree | **`2.1.0`",
         "Published Mac App Store | **`2.0.0`",
-        "Active product phase | **Post-v2.0 ship**",
+        "Active product phase | **v2.1.0 local candidate**",
         "Explicit Book Scope + order + one primary edit buffer",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

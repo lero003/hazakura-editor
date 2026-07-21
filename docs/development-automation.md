@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-21 (post-v2.0.0 ship; hotfixes + optional slices)
+Last reviewed: 2026-07-22 (v2.1.0 local candidate; manual gate next)
 
 ## Purpose
 
@@ -17,10 +17,10 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **post-v2.0.0 ship.** Mac App Store `2.0.0` is published and source tag
-`v2.0.0` marks Book Scope Alpha + Help. Prefer one verifiable run around
-reproduced friction on the published line, or one explicitly chosen post-ship
-candidate (honesty UX / evidence / v2.x). Do not bulk-digest review pools.
+Phase: **v2.1.0 candidate.** Mac App Store `2.0.0` is published and source tag
+`v2.0.0` remains immutable. The chosen post-ship slice is bounded whole-book
+Reader search. Finish its automated/local package gates, then stop for the
+installed/TestFlight manual checks; do not bulk-digest review pools.
 Direction: `docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
 
 For recurring automation, use the Active Queue in
@@ -32,34 +32,35 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. Hotfix for a reproduced `2.0.0` Book/Help/export or store blocker. Keep
-   every read bounded and user-triggered.
-2. One optional post-ship slice from the Active Queue / advisory pools when
-   the human has chosen it — not auto-train from Qwen or four-agent packs.
+1. A reproduced blocker in the active `2.1.0` Reader-search candidate, or a
+   published `2.0.0` hotfix. Keep every read bounded and user-triggered.
+2. Local package/provenance checks for the chosen `2.1.0` slice; stop before
+   upload/publication and leave installed/TestFlight interaction to the human
+   gate.
 3. Stale or failing quality gates that block the selected slice.
-3. Core Safe Editor quality risks around open, edit, save, close/quit,
+4. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
    standalone files, image handling, keyboard/IME, and error/recovery
    copy. When the known queue is exhausted, pick one of these surfaces,
    state the risk hypothesis, inspect or smoke it, then either make the
    smallest justified fix or close as `verified no-op`.
-4. Recovery forced-termination and local/cloud-folder evidence only when a
+5. Recovery forced-termination and local/cloud-folder evidence only when a
    dedicated fixture exists, unless its risk is escalated by reproduced
    source loss.
-5. Submission-prep or App Store hotfix queue only when explicitly
+6. Submission-prep or App Store hotfix queue only when explicitly
    reopened, especially fuller TestFlight smoke, reviewer notes, license
    packet review, About metadata, and regression evidence.
-6. App Store / Developer lane separation drift, especially Agent
+7. App Store / Developer lane separation drift, especially Agent
    Workbench omission, helper bundle/signing assumptions, external
    process appearance, command palette / Preferences visibility,
    sandbox/review evidence, and `network.client` explanation. Use
    `npm run smoke:app-store-surface` for the lightweight source-level
    App Store surface check before escalating to signed TestFlight smoke.
-7. One concrete user-test friction point from Hazakura Local Assist,
+8. One concrete user-test friction point from Hazakura Local Assist,
    L Mode, theme, settings, status / error copy, export, or
    file/recovery workflows.
-8. Safety-boundary regression checks.
-9. Lightweight accessibility sanity checks only when they are adjacent
+9. Safety-boundary regression checks.
+10. Lightweight accessibility sanity checks only when they are adjacent
    to a selected core surface or cheap to verify: focus reachability,
    keyboard escape/Tab behavior, readable labels, and obvious contrast.
    Do not make broad accessibility audits the default automation work.

@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { loadBookScopeReaderDocuments } from "./reader";
+import {
+  loadBookScopeReaderDocuments,
+  searchBookScopeReaderDocuments,
+} from "./reader";
 
 const chapters = [
   { name: "one.md", path: "/workspace/one.md", relativePath: "one.md" },
@@ -97,5 +100,39 @@ describe("Book Scope reader loading", () => {
     ]);
     expect(result.skippedForBudget).toEqual(["two.md"]);
     expect(result.truncated).toBe(true);
+  });
+});
+
+describe("Book Scope reader search", () => {
+  const documents = [
+    {
+      name: "第一章.md",
+      path: "/workspace/第一章.md",
+      relativePath: "第一章.md",
+      source: "---\ntitle: 秘密の題\n---\n# 朝\n\n桜を二度見た。桜。\n",
+      usesLiveBuffer: false,
+    },
+    {
+      name: "Cafe.md",
+      path: "/workspace/Cafe.md",
+      relativePath: "Cafe.md",
+      source: "# ＣＡＦＥ\n\n午後の本文。\n",
+      usesLiveBuffer: true,
+    },
+  ];
+
+  it("searches only visible names and Markdown with normalized case-insensitive text", () => {
+    expect(searchBookScopeReaderDocuments(documents, "桜")).toEqual([
+      { documentIndex: 0, occurrenceCount: 2 },
+    ]);
+    expect(searchBookScopeReaderDocuments(documents, "cafe")).toEqual([
+      { documentIndex: 1, occurrenceCount: 2 },
+    ]);
+    expect(searchBookScopeReaderDocuments(documents, "秘密の題")).toEqual([]);
+  });
+
+  it("returns no matches for an empty or whitespace-only query", () => {
+    expect(searchBookScopeReaderDocuments(documents, "")).toEqual([]);
+    expect(searchBookScopeReaderDocuments(documents, "  \n ")).toEqual([]);
   });
 });

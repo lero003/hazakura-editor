@@ -1,19 +1,20 @@
 # Handoff
 
 Status: Operational
-Scope: Post-v2.0.0 ship (MAS published + source tag); next optional slice
+Scope: v2.1.0 whole-book search candidate; manual installed gate next
 Authority: Medium
-Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
+Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 ## Current State
 
-- Package/app version in tree: **`2.0.0`**.
+- Package/app version in tree: **`2.1.0`** (local candidate; not uploaded,
+  tagged, or published).
 - GitHub source / local-app tag: **`v2.0.0`** (no binary assets).
 - Published Mac App Store (last confirmed in docs): **`2.0.0`**
   (user-reported 2026-07-21).
-- **Active phase: post-v2.0 ship.** Hotfix only for reproduced blockers;
-  residual polish and broad evidence matrix stay parked. Optional first
-  post-ship slice from advisory pools when product direction is clear.
+- **Active phase: v2.1.0 local candidate.** Bounded whole-book Reader search is
+  the one selected post-ship slice; residual polish and all other advisory
+  candidates stay parked.
 - **First Alpha spine is in source:** existing sidebar Files / Book switch,
   explicit Markdown selection, app-private ordered document/group tree,
   same-parent reordering, unavailable-entry retention/recheck, chapter switching
@@ -37,6 +38,12 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
   live dirty buffers before disk, chapter-relative image/link bases, 32 MiB
   total budget, visible unavailable/skipped notices, and edit return through
   the existing tab path. It is read-only and does not create a second buffer.
+- **v2.1 whole-book search is in source:** the Reader searches only its already
+  loaded chapter names and visible Markdown under the existing 100-chapter /
+  32 MiB budget, including unsaved live buffers. Results show chapter and
+  occurrence counts and jump through the existing contents list. Escape clears
+  input before closing. No persistent/background index, workspace scan, source
+  edit, or auto-save was added; narrow windows keep search/results reachable.
 - **Book frontmatter presentation is aligned:** closed leading YAML is stripped
   for whole-book Reader and PDF, matching EPUB, without changing source. Custom
   metadata is not mapped into cover/part/chapter semantics.
@@ -56,7 +63,7 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
   suggest only in empty/edit setup; recheck only when unavailable; quieter
   path/label density; shorter OKF review intro.
 - **Help expansion is in source:** native Help menu / Command Palette → Books
-  and knowledge folders…; About/diagnostics derive `2.0.0` from package
+  and knowledge folders…; About/diagnostics derive `2.1.0` from package
   metadata. Saving or cancelling Book chapter selection restores trigger focus.
   Help documents default-on index cover/contents option and recent-workspace
   book-order retention. User-facing status/dialogs avoid “Book Scope” jargon;
@@ -82,6 +89,28 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+
+## Verification (2026-07-22)
+
+- Focused Reader search: 2 files / 10 tests pass; frontmatter exclusion,
+  Unicode/case normalization, result filtering/jump, and Escape clear are pinned.
+- `npm run typecheck` — pass.
+- `npm test` — 201 files / 1,682 tests pass.
+- `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- `npm run build` — helper-enabled App Store preview build passes; bundle
+  reports `2.1.0` / `dev.hazakura.editor`.
+- `codesign --verify --deep --strict --verbose=2` — pass for the local preview.
+- Direct executable launch produced one `1280x820` window and was quit cleanly.
+  `open -n` remains host-blocked with `kLSNoExecutableErr`; do not report that
+  LaunchServices path as passed.
+- `npm audit --audit-level=high` — 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` — exit 0; 18 existing allowed
+  warnings, no vulnerability.
+- Not yet run at this checkpoint: signed App Store pkg/provenance and installed
+  / TestFlight manual interaction.
 
 ## Verification (2026-07-18)
 
@@ -185,15 +214,14 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 
 ## Next For Agents
 
-1. **`2.0.0` is shipped** (MAS + source tag). Do not re-run packaging gates
-   unless a hotfix needs a new version.
-2. Do not rebuild the proven Book Scope spine without reproduced friction.
-   Take one verifiable slice per run.
-3. Hotfix only for reproduced `2.0.0` review or daily-use blockers.
-4. Do not invent a mandatory v2.1 train from review pools (including Qwen
-   mode pills / static lint / Compare Center).
-5. Do not move published tags or attach release assets without explicit
-   user approval.
+1. Finish local `2.1.0` package/provenance gates, then stop for the installed /
+   TestFlight manual checks in `docs/current-work.md`.
+2. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
+3. Published `2.0.0` remains hotfix-only.
+4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
+   out of this candidate.
+5. Do not move published tags, upload, or attach release assets without a
+   separate explicit handoff.
 6. On security/path/AI/multi-file surfaces, re-read
    `docs/security-boundary.md` and the v2 design boundary section.
 
@@ -208,6 +236,7 @@ Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 | OKF pin | `docs/okf-spec-pin.md` |
 | v2.0 store notes | `docs/releases/2.0.0-app-store-release-notes.md` |
 | v2.0 source tag | `docs/releases/2.0.0-source-tag.release.md` |
+| v2.1 candidate notes | `docs/releases/2.1.0-app-store-release-notes.md` |
 | Qwen UX triage | `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` |
 | Parked refinement | `docs/v1.13-plus-refinement-roadmap.md` |
 | Smoke | `docs/smoke-checklist.md` |
