@@ -112,8 +112,12 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   deep/strict code-sign verification, and directly launches a `1280x820`
   window. LaunchServices `open -n` remains unavailable on this host with
   `kLSNoExecutableErr`; direct executable launch was used for the window proof.
-  Signed pkg/provenance and installed/TestFlight interaction are separate next
-  gates.
+  The signed universal App Store pkg also passes Apple installer-chain,
+  checksum/provenance, payload version/build, deep-signature, and entitlement
+  checks; its ignored `latest.json` points to the pushed source commit. Local
+  `spctl --type install` rejects the App Store pkg as a distribution installer,
+  which is not treated as notarized Developer ID proof. Installed/TestFlight
+  interaction remains the manual next gate.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -195,8 +199,8 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.1.0` candidate version from package metadata.
-- **Open main queue:** finish automated/local package gates for `2.1.0`, then
-  stop for installed/TestFlight interaction checks. Published `2.0.0` remains
+- **Open main queue:** installed/TestFlight interaction checks for `2.1.0`.
+  Automated/local package gates are complete. Published `2.0.0` remains
   hotfix-only; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
@@ -956,8 +960,8 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Finish automated/local package evidence for the **`2.1.0` candidate**, then
-   stop at the installed/TestFlight manual gate in `docs/current-work.md`.
+1. Run the installed/TestFlight manual gate for the **`2.1.0` candidate** in
+   `docs/current-work.md`; automated/local package evidence is complete.
 2. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
    reproduced review or daily-use blockers.
 3. **Park** residual polish, broad evidence matrix, and bulk digestion of

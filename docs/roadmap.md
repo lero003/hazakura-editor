@@ -76,8 +76,9 @@ reopen or rewrite that release.
    contents/search presentation.
 3. **Boundary:** no background or persistent index, workspace-wide scan,
    Markdown rewrite, auto-save, or second editor buffer.
-4. **Next gate:** local signed package/provenance, then installed/TestFlight
-   manual checks. Upload, tag, review, and publication are separate actions.
+4. **Local gate complete:** signed universal package/provenance and payload
+   checks pass. **Next gate:** installed/TestFlight manual checks. Upload, tag,
+   review, and publication are separate actions.
 
 ### Shipped (v2.0 Book Scope Alpha)
 

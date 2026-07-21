@@ -109,8 +109,13 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 - `npm audit --audit-level=high` — 0 vulnerabilities.
 - `cargo audit --file src-tauri/Cargo.lock` — exit 0; 18 existing allowed
   warnings, no vulnerability.
-- Not yet run at this checkpoint: signed App Store pkg/provenance and installed
-  / TestFlight manual interaction.
+- Signed universal App Store pkg/provenance — pass. Installer chain, SHA-256,
+  payload version/build, universal architectures, deep signature, App Store
+  entitlements, and pushed source commit linkage were independently checked.
+  App Store payload contains no Agent entry artifact. Local `spctl --type
+  install` rejection is not notarized Developer ID proof and is not claimed as
+  a pass.
+- Not run: installed / TestFlight manual interaction. This is the current stop.
 
 ## Verification (2026-07-18)
 
@@ -214,7 +219,7 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 ## Next For Agents
 
-1. Finish local `2.1.0` package/provenance gates, then stop for the installed /
+1. Local `2.1.0` package/provenance gates are complete. Stop for the installed /
    TestFlight manual checks in `docs/current-work.md`.
 2. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
 3. Published `2.0.0` remains hotfix-only.

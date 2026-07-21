@@ -74,11 +74,12 @@ other advisory items remain parked.
 8. **Version surfaces:** npm, Tauri, Cargo, and lockfile package version are
    `2.1.0`; published store and latest source tag remain `2.0.0` / `v2.0.0`.
 
-### Immediate next — v2.1 candidate
+### Current stop — v2.1 manual installed gate
 
-1. Complete automated source, App Store surface, signed bundle/pkg, metadata,
-   checksum, and provenance gates for `2.1.0`.
-2. Stop before upload/publication. Human gate: install the signed candidate and
+1. **Local gates complete:** source tests, App Store surface, signed universal
+   bundle/pkg, payload metadata/entitlements, checksum, and ignored provenance
+   all pass for the `2.1.0` candidate sourced from the pushed commit.
+2. **Stop before upload/publication.** Human gate: install the signed candidate and
    check Japanese input, result counts, chapter jump, Escape, narrow layout,
    VoiceOver labels, ordinary Reader scroll/edit return, and local images.
 3. Fix only blockers found by those gates. Do not add another advisory feature
