@@ -1,7 +1,7 @@
 # Handoff
 
 Status: Operational
-Scope: v2.1.0 search + Preview image hardening; fresh pkg next
+Scope: v2.1.0 search + Preview image hardening; installed gate next
 Authority: Medium
 Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
@@ -119,15 +119,14 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 - `npm audit --audit-level=high` — 0 vulnerabilities.
 - `cargo audit --file src-tauri/Cargo.lock` — exit 0; 18 existing allowed
   warnings, no vulnerability.
-- Previous signed universal App Store pkg/provenance — pass. Installer chain, SHA-256,
-  payload version/build, universal architectures, deep signature, App Store
-  entitlements, and pushed source commit linkage were independently checked.
+- Fresh signed universal App Store pkg/provenance after Preview hardening —
+  pass. Installer chain, SHA-256, payload version/build, universal
+  architectures, deep signature, App Store entitlements, and pushed source
+  commit linkage were checked.
   App Store payload contains no Agent entry artifact. Local `spctl --type
   install` rejection is not notarized Developer ID proof and is not claimed as
-  a pass. That pkg predates the Preview hardening; do not use it as the next
-  installed-test candidate.
-- Not run: fresh signed pkg after Preview hardening; installed / TestFlight
-  manual interaction.
+  a pass.
+- Not run: installed / TestFlight manual interaction.
 
 ## Verification (2026-07-18)
 
@@ -231,17 +230,15 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 ## Next For Agents
 
-1. Commit and push the Preview hardening, then build and verify a fresh signed
-   `2.1.0` pkg/provenance record from that pushed source.
-2. Stop for the installed / TestFlight manual checks in `docs/current-work.md`,
+1. Stop for the installed / TestFlight manual checks in `docs/current-work.md`,
    including the new image-heavy Preview/whole-book Reader item.
-3. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
-4. Published `2.0.0` remains hotfix-only.
-5. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
+2. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
+3. Published `2.0.0` remains hotfix-only.
+4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
    out of this candidate.
-6. Do not move published tags, upload, or attach release assets without a
+5. Do not move published tags, upload, or attach release assets without a
    separate explicit handoff.
-7. On security/path/AI/multi-file surfaces, re-read
+6. On security/path/AI/multi-file surfaces, re-read
    `docs/security-boundary.md` and the v2 design boundary section.
 
 ## Key Paths

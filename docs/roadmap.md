@@ -58,7 +58,7 @@ User direction:
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[now]    v2.1.0 local candidate · search + Preview image hardening · rebuild next
+[now]    v2.1.0 local candidate · search + Preview image hardening · manual gate
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
@@ -82,9 +82,9 @@ reopen or rewrite that release.
    whole-book Reader defer permitted image reads until near the viewport and
    cap each pane at two concurrent reads. Export/e-book settle behavior and
    image consent boundaries are unchanged.
-5. **Next gate:** rebuild signed universal package/provenance from the pushed
-   hardening commit, then run installed/TestFlight manual checks. Upload, tag,
-   review, and publication are separate actions.
+5. **Local package gate complete:** fresh signed universal package/provenance
+   from the pushed hardening commit passes. **Next gate:** installed/TestFlight
+   manual checks. Upload, tag, review, and publication are separate actions.
 
 ### Shipped (v2.0 Book Scope Alpha)
 

@@ -121,13 +121,13 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   deep/strict code-sign verification, and directly launches a `1280x820`
   window. LaunchServices `open -n` remains unavailable on this host with
   `kLSNoExecutableErr`; direct executable launch was used for the window proof.
-  Its signed universal App Store pkg also passes Apple installer-chain,
-  checksum/provenance, payload version/build, deep-signature, and entitlement
-  checks; its ignored `latest.json` points to the pushed source commit. Local
+  A fresh signed universal App Store pkg built after the Preview hardening also
+  passes Apple installer-chain, checksum/provenance, payload version/build,
+  universal architecture, deep-signature, and entitlement checks; its ignored
+  `latest.json` points to the pushed hardening source commit. Local
   `spctl --type install` rejects the App Store pkg as a distribution installer,
   which is not treated as notarized Developer ID proof. Installed/TestFlight
-  interaction remains unperformed. Because that pkg predates the image-loading
-  hardening, rebuild and reverify a fresh pkg before the installed manual gate.
+  interaction remains unperformed and is the current manual gate.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -209,8 +209,8 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.1.0` candidate version from package metadata.
-- **Open main queue:** rebuild the `2.1.0` signed pkg from the pushed Preview
-  hardening source, then run installed/TestFlight interaction checks.
+- **Open main queue:** run the fresh image-hardened `2.1.0` signed pkg through
+  installed/TestFlight interaction checks.
   Published `2.0.0` remains
   hotfix-only; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /

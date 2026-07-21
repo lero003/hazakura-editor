@@ -83,21 +83,18 @@ addition. Other advisory items remain parked.
    because pagination/export must settle all images. Markdown source and image
    access policy are unchanged.
 
-### Current stop — rebuild candidate, then v2.1 manual installed gate
+### Current stop — v2.1 manual installed gate
 
-1. **Source gates complete for the image hardening:** focused deferred-load /
-   concurrency/failure tests, full TypeScript tests, typecheck, Vite, and App
-   Store surface pass. The existing signed package predates this hardening and
-   is not the next installed-test candidate.
-2. **Rebuild from the pushed hardening commit:** create and verify a fresh signed
-   universal pkg/provenance record before handing it to installed/TestFlight
-   testing.
-3. **Stop before upload/publication.** Human gate: install the fresh candidate and
+1. **Local gates complete:** focused deferred-load/concurrency/failure tests,
+   full TypeScript tests, typecheck, Vite, App Store surface, fresh signed
+   universal pkg, payload metadata/entitlements, checksum, and pushed-source
+   provenance pass for the image-hardened `2.1.0` candidate.
+2. **Stop before upload/publication.** Human gate: install the fresh candidate and
    check Japanese input, result counts, chapter jump, Escape, narrow layout,
    VoiceOver labels, ordinary Reader scroll/edit return, and an image-heavy
    Preview/whole-book Reader scroll where near images appear and far images do
    not stall initial opening.
-4. Fix only blockers found by those gates. Do not add another advisory feature
+3. Fix only blockers found by those gates. Do not add another advisory feature
    to `2.1.0`; mode pills, static lint, Compare Center, persistent indexing,
    and source rewrite remain out.
 
@@ -117,7 +114,7 @@ addition. Other advisory items remain parked.
 ## Next Human Gates
 
 1. Published `2.0.0` is closed unless a hotfix is needed.
-2. Rebuild the signed candidate from the pushed image-hardening source, then run
-   the `2.1.0` installed/TestFlight manual gate described above.
+2. Run the fresh image-hardened `2.1.0` candidate through the
+   installed/TestFlight manual gate described above.
 3. Upload, TestFlight distribution, tag, App Review, and publication require a
    separate explicit handoff; none is implied by local package proof.
