@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-18 (v2 development phase open)
+Last reviewed: 2026-07-21 (Qwen UX proposal synthesis linked)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -20,6 +20,7 @@ v1 residual / evidence pools are parked.
 - `current-work.md`: **v2 active queue** (Book Scope slices; v1 residual parked).
 - `roadmap.md`: **v2 development phase**, parked residual/evidence, ship-time Help.
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
+- `v2-qwen-ux-proposal-synthesis-2026-07-21.md`: Qwen UX pack triage (advisory; L Mode corrections; not the active queue).
 - `current-status.md`: current implementation and release state.
 - `okf-spec-pin.md`: shared OKF pin, co-update surfaces, and version-upgrade process.
 - `v1.8-plus-product-review-roadmap.md`: completed v1.8–v1.12 bridge (historical + gate wording).
@@ -52,6 +53,7 @@ Active planning surface (intentionally small):
 - `current-work.md` — next v2 slices
 - `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 design SoT
 - `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
+- `v2-qwen-ux-proposal-synthesis-2026-07-21.md` — Qwen UX proposal triage (post-2.0 thinking)
 - `okf-spec-pin.md` + closed v1.10 / v1.11 / v1.12 contracts
 - `v1.8-plus-product-review-roadmap.md` — closed bridge
 - `v1.13-plus-refinement-roadmap.md` — parked themes

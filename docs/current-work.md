@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.0.0 source tree; pre-manual-test UX quieting residual
+Scope: Post-v2.0.0 ship; next slices after published Book Scope Alpha
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book tree + flexible OKF link adapter)
+Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 
 ## Purpose
 
@@ -11,19 +11,20 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.0 source tree is versioned `2.0.0`.** Book Scope Alpha + UX quieting +
-in-app Help for books/OKF are in source. Residual polish and broad evidence
-remain parked unless a release gate needs them.
+**v2.0.0 is shipped.** Book Scope Alpha + UX quieting + Help are in the
+published Mac App Store line and the GitHub source tag `v2.0.0`. Residual
+polish and broad evidence remain parked unless a release gate needs them.
 
 - Package/app version in tree: **`2.0.0`**.
-- Published Mac App Store (last confirmed): **`1.13.0`**.
-- v1.14 (`1.14.0`) may still be in App Store review; this tree version does
-  **not** claim tag, upload, or publication for `2.0.0`.
+- Published Mac App Store (last confirmed): **`2.0.0`** (user-reported
+  2026-07-21).
+- GitHub source / local-app tag: **`v2.0.0`** (no binary assets).
 - Plan of record: `docs/roadmap.md`.
 - Design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-- External review pool (advisory candidates for gate / v2.x / hygiene):
-  `docs/v2-external-review-synthesis-2026-07-18.md`.
-- Store draft: `docs/releases/2.0.0-app-store-release-notes.md`.
+- External review pools (advisory; not this queue):
+  `docs/v2-external-review-synthesis-2026-07-18.md` (four-agent),
+  `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage).
+- Store notes: `docs/releases/2.0.0-app-store-release-notes.md`.
 
 ## Lane Timeline
 
@@ -31,9 +32,10 @@ remain parked unless a release gate needs them.
 |------|--------|--------|
 | **v1.12** | Closed / published `1.12.0` | OKF starter scaffold |
 | **v1.13** | Closed / published `1.13.0` | Theme A + Theme G |
-| **v1.14** | Submitted (user-reported) | Separate from tree `2.0.0` |
-| **v2.0** | **Active source** | Book Scope + Help; version metadata `2.0.0` |
-| **縦書き** | After v2 ship foundation | Render / export layer only |
+| **v1.14** | Source tag `v1.14.0`; store superseded by `2.0.0` | Intermediate Keep box |
+| **v2.0** | **Shipped** MAS + source tag `2.0.0` | Book Scope + Help |
+| **v2.x** | Next product phase | Practicalization candidates (not auto-queue) |
+| **縦書き** | After v2.x foundation | Render / export layer only |
 
 ## Active Queue — v2
 
@@ -65,17 +67,22 @@ remain parked unless a release gate needs them.
 
 ### Immediate next
 
-1. Human manual smoke on the `2.0.0` tree (Book group indentation and
-   same-parent movement; Help; heavy-manuscript PDF/EPUB appearance; matching
-   Apple Books TOC; relative/bundle-root index links), then signed App Store /
-   TestFlight if preparing upload.
-2. Human gate: tag `v2.0.0`, build App Store pkg, submit — only with approval.
-3. Hotfix only for reproduced review blockers on published/in-review builds.
+1. **Hotfix only** for reproduced blockers on published `2.0.0` (App Review,
+   TestFlight, or daily use). Do not reopen closed store lanes for polish.
+2. Pick **one** post-ship slice when ready — prefer honesty / friction over
+   backlog digestion:
+   - packaging residual evidence (heavy-manuscript PDF/EPUB visual, Book
+     VoiceOver minimum) if a real gap appears;
+   - one item from the advisory pools (`v2-external-review-synthesis` N/X/E or
+     `v2-qwen-ux-proposal-synthesis` Q-1–Q-5);
+   - or a parked residual only when daily friction reproduces.
+3. Do **not** start a rigid v2.1 train from external proposals. Promote one
+   candidate into this queue at a time.
 
-### Hotfix only (published / in-review)
+### Hotfix only (published `2.0.0`)
 
 - Reproduced blocker from App Review, TestFlight, or daily use.
-- Do not reopen v1.13/v1.14 for drive-by polish.
+- Do not reopen `1.13` / intermediate `1.14` for drive-by polish.
 
 ## Parked Queues (do not drive the main lane)
 
@@ -87,7 +94,8 @@ remain parked unless a release gate needs them.
 
 ## Next Human Gates
 
-1. Apple processing for any in-flight `1.14.0` review — respond only if needed.
-2. Decide when to cut `v2.0.0` tag / App Store package (tree is ready for that
-   decision; not auto-tagged).
-3. Report publication when it happens.
+1. Published `2.0.0` is closed unless a hotfix is needed.
+2. Optional: deepen distribution evidence (signed heavy-manuscript appearance,
+   Book-critical a11y) without reopening the shipped feature set.
+3. Choose the first **v2.x** practicalization slice only when product direction
+   is clear — not as auto-catch-up of review pools.

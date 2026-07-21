@@ -3,32 +3,26 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
+Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.0.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. Latest prepared GitHub source / local-app tag remains
-  `v1.14.0` until a `v2.0.0` tag is cut. Draft notes:
-  `docs/releases/2.0.0-app-store-release-notes.md`,
+  lockfile metadata. GitHub source / local-app tag: **`v2.0.0`** (no binary
+  assets). Notes: `docs/releases/2.0.0-app-store-release-notes.md`,
   `docs/releases/2.0.0-source-tag.release.md`.
-- **Published Mac App Store version: `1.13.0`.** App Review passed and the
-  release was published (user-reported 2026-07-18): Theme A interaction
-  clarity + Theme G bounded media on the v1.12 baseline. Release notes:
-  `docs/releases/1.13.0-app-store-release-notes.md`. Do not reopen without a
+- **Published Mac App Store version: `2.0.0`.** App Review passed and the
+  release was published (user-reported 2026-07-21): Book Scope Alpha,
+  whole-book read/export, UX quieting, and Help for books/OKF. Release notes:
+  `docs/releases/2.0.0-app-store-release-notes.md`. Do not reopen without a
   reproduced hotfix. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **v1.14 (`1.14.0`) is submitted for App Store review** (user-reported
-  2026-07-18). Early look OK. Publication is **not** claimed here until the
-  user reports it. Store copy:
-  `docs/releases/1.14.0-app-store-release-notes.md`. Local package provenance
-  lives in ignored `docs/internal/app-store-candidates/latest.json`. The source
-  tag alone does not prove publication.
-- **Active product phase: v2.0 source candidate.** Book Scope Alpha, UX
-  quieting, and Help for books/OKF are in source at package **`2.0.0`**.
-  Residual polish and broad evidence stay parked. Queue:
-  `docs/current-work.md`. Phase: `docs/roadmap.md`.
+- **Prior lines:** `1.13.0` remains a historical published store baseline.
+  `1.14.0` is an intermediate source tag / submission line superseded on the
+  live listing by `2.0.0`. Do not rewrite those tags.
+- **Active product phase: post-v2.0 ship.** Residual polish and broad evidence
+  stay parked. Queue: `docs/current-work.md`. Phase: `docs/roadmap.md`.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
   100 Markdown chapters, keep an app-private per-workspace ordered tree, reopen
@@ -177,11 +171,12 @@ Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive `2.0.0` from package metadata.
-- **Open main queue:** packaged candidate gates and human decisions for tag /
-  App Store package of `2.0.0`, then only reproduced Alpha friction (design SoT
-  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
-- **Parked / on-demand:** v1.14 review follow-up and hotfixes; residual polish;
-  broad TestFlight / VoiceOver / evidence matrix.
+- **Open main queue:** hotfixes for published `2.0.0` only when reproduced;
+  optional one post-ship slice from `docs/current-work.md` (design SoT
+  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` remains Book
+  boundary authority).
+- **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
+  evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
   (published 2026-07-14) superseded by `1.12.0`. Extended TestFlight interaction
   breadth and spoken VoiceOver remain ongoing quality evidence rather than
@@ -503,12 +498,12 @@ Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: **`1.13.0`** (App Review passed and release
-  published, user-reported 2026-07-18). Ships Theme A interaction clarity and
-  Theme G bounded media on the v1.12 writing / structure / OKF baseline.
-  Prior store baselines remain historical.
-- Latest GitHub source / local-app tag: `v1.14.0` (source archive only; see
-  `docs/releases/1.14.0-source-tag.release.md`).
+- Published Mac App Store version: **`2.0.0`** (App Review passed and release
+  published, user-reported 2026-07-21). Ships Book Scope Alpha, whole-book
+  read/export, UX quieting, and Help on the Safe Editor baseline. Prior store
+  baselines (`1.13.0`, …) remain historical.
+- Latest GitHub source / local-app tag: `v2.0.0` (source archive only; see
+  `docs/releases/2.0.0-source-tag.release.md`).
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in
@@ -908,13 +903,12 @@ baseline, and smoke evidence are archived under
 - `docs/roadmap.md`: **v2 development phase** (active); residual/evidence parked.
 - `docs/current-work.md`: **v2 slice queue**.
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
-- `docs/releases/2.0.0-app-store-release-notes.md`: store draft for tree
-  `2.0.0` (not published by the draft alone).
-- `docs/releases/2.0.0-source-tag.release.md`: boundary for a future `v2.0.0`
-  source tag (not cut by the note alone).
-- `docs/releases/1.14.0-source-tag.release.md`: `v1.14.0` source-tag boundary.
-- `docs/releases/1.14.0-app-store-release-notes.md`: store copy for submitted
-  `1.14.0` (publication unconfirmed).
+- `docs/releases/2.0.0-app-store-release-notes.md`: published store notes for
+  `2.0.0` (user-reported 2026-07-21).
+- `docs/releases/2.0.0-source-tag.release.md`: `v2.0.0` source-tag boundary.
+- `docs/releases/1.14.0-source-tag.release.md`: intermediate `v1.14.0` source tag.
+- `docs/releases/1.14.0-app-store-release-notes.md`: intermediate `1.14.0` store
+  copy (live listing superseded by `2.0.0`).
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
 - `docs/agent-workbench-boundary.md`: implemented Agent Workbench trust boundary.
@@ -933,24 +927,23 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. **Drive v2 Book Scope slices** from `docs/current-work.md` and the v2 design
-   SoT. Prefer a first UI direction + explicit scope selection over essays.
-2. Treat **v1.13 as published/closed** and **v1.14 as in review**. Hotfix only
-   for reproduced review or daily-use blockers. Do not claim publication of
-   `1.14.0` until the user reports it. Published listing last confirmed here:
-   `1.13.0`.
-3. **Park** residual polish, broad evidence matrix, and mandatory-feeling
-   `v1.15+` trains. Resume only for friction or release needs.
-4. Plan **Help / feature explanation expansion** as **v2 ship polish** when
-   OKF multi-file feel is good enough — not as a pre-dev gate.
-5. Keep v1.9–v1.12 product contracts closed unless a regression reproduces.
-6. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
+1. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
+   reproduced review or daily-use blockers. Queue:
+   `docs/current-work.md`.
+2. **Park** residual polish, broad evidence matrix, and bulk digestion of
+   external review pools. Promote **one** candidate at a time when product
+   direction is clear.
+3. Optional post-ship evidence (heavy-manuscript export appearance, Book-critical
+   a11y) only if a real gap appears — not as a reopened feature train.
+4. Keep v1.9–v1.12 product contracts and Book Scope design rails closed unless a
+   regression reproduces.
+5. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces.
-7. Local package provenance lives in
+6. Local package provenance lives in
    `docs/internal/app-store-candidates/latest.json`. App Store Connect /
    TestFlight / Review logs stay outside the repo unless public-safe evidence
    is recorded.
-8. For Local Assist, keep explicit AI edit transactions
+7. For Local Assist, keep explicit AI edit transactions
    (`docs/assist-surface-strategy.md`, `docs/app-store-build.md`).
-9. Do not upload, submit, publish, move tags, or attach release assets without
-   separate evidence or approval.
+8. Do not move published tags or reopen the `2.0.0` store lane without a
+   reproduced hotfix and explicit approval.

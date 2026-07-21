@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 review synthesis linked for planning)
+Last reviewed: 2026-07-21 (MAS 2.0.0 published; source tag v2.0.0)
 
 ## Current Position
 
@@ -13,10 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.0.0`** (tag `v2.0.0` not claimed until cut) |
-| Published Mac App Store | **`1.13.0`** (user-reported 2026-07-18) |
-| v1.14 | **Submitted** for App Store review (user-reported). Separate from tree `2.0.0`. |
-| Active product phase | **v2.0 source candidate** — Book Scope + OKF multi-file + Help |
+| Package / app version in tree | **`2.0.0`** |
+| GitHub source / local-app tag | **`v2.0.0`** (no binary assets) |
+| Published Mac App Store | **`2.0.0`** (user-reported 2026-07-21) |
+| Prior store / source lines | `1.13.0` published historical; `1.14.0` intermediate source tag |
+| Active product phase | **Post-v2.0 ship** — hotfixes + optional v2.x practicalization |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -30,59 +31,60 @@ v2 lens:
 
 Queue of record: `docs/current-work.md`.
 v2 design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-External review pool (advisory, not the queue):
-`docs/v2-external-review-synthesis-2026-07-18.md`.
+External review pools (advisory, not the queue):
+`docs/v2-external-review-synthesis-2026-07-18.md` (four-agent),
+`docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage; L Mode corrections).
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
-## Phase Decision (2026-07-18)
+## Phase Decision (2026-07-21)
 
 User direction:
 
-1. **v1.14 is in review.** Light check looks fine. Fix reproduced bugs while
-   using; do not drive the main queue from residual polish or evidence lists.
-2. **Open v2 development.** The v1.8–v1.12 bridge is enough to start Book
-   Scope work. Do not wait for a pre-v2 essay on “multi-file value.”
-3. **Product narrative / Help** for books and OKF is **in source** for `2.0.0`
-   (Command Palette Help page + store draft). Packaging and publication stay
-   human-gated.
+1. **Mac App Store `2.0.0` is published** (user-reported 2026-07-21). Treat as
+   closed store line; hotfix only for reproduced blockers.
+2. **GitHub source tag `v2.0.0`** marks the Book Scope Alpha + Help checkpoint
+   (no binary assets on the tag).
+3. **Next work is not a bulk catch-up** of external review pools. Pick one
+   verifiable slice (honesty UX, evidence, or v2.x practicalization) when
+   ready. Qwen mode-pill / static-lint / Compare Center designs stay triaged
+   out unless product explicitly accepts them.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
-[done]   v2.0 Book Scope Alpha + UX quieting + Help (tree version 2.0.0)
-[now]    packaged candidate / tag / store gate for 2.0.0 (human)
+[done]   v2.0 Book Scope Alpha + UX quieting + Help
+[done]   Mac App Store 2.0.0 published · source tag v2.0.0
+[now]    hotfixes for 2.0.0 · optional first post-ship slice
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
 
-## Active Path — v2 Development
+## Active Path — Post-v2.0
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Hotfix only for reproduced App Store / daily-use blockers on published or
-in-review builds.
+Hotfix only for reproduced App Store / daily-use blockers on published
+`2.0.0`.
 
-### Now (v2.0 Book Scope Alpha)
+### Shipped (v2.0 Book Scope Alpha)
 
-Order of work (detail in the design doc; refine while building):
-
-1. **Done in source: implementation contract + minimal multi-file spine.**
+1. **Done: implementation contract + minimal multi-file spine.**
    Existing-left-sidebar Files / Book view, explicit bounded Markdown scope,
    app-private order, unavailable retention, one primary editable buffer, and
    no background indexing.
-2. **Done in source: explicit chapter suggestion draft.** One user-triggered,
-   bounded OKF snapshot proposes root and linked nested `index.md` local link
-   order plus remaining
-   readable `.md` files. The checkbox draft is never saved automatically;
-   base OKF compatibility remains separate from Hazakura Book semantics.
-3. **Done in source: Whole-book reading.** A read-only scroll reader uses scope
-   order, live dirty buffers, per-chapter image bases, and visible partial-load
+2. **Done: explicit chapter suggestion draft.** One user-triggered, bounded OKF
+   snapshot proposes root and linked nested `index.md` local link order plus
+   remaining readable `.md` files. The checkbox draft is never saved
+   automatically; base OKF compatibility remains separate from Hazakura Book
+   semantics.
+3. **Done: Whole-book reading.** A read-only scroll reader uses scope order,
+   live dirty buffers, per-chapter image bases, and visible partial-load
    notices without creating a second editable buffer.
-4. **Done in source: Book export + preflight** — explicit Current file / Whole
-   book choice for EPUB/PDF, ordered multi-chapter output, and bounded missing
+4. **Done: Book export + preflight** — explicit Current file / Whole book for
+   EPUB/PDF, ordered multi-chapter output, and bounded missing
    chapter/image/heading/metadata checks before destination selection.
-5. **Done in source: UX quieting + Help + version `2.0.0`.** Settled Book view
-   presentation, Help **Books and knowledge folders**, store draft notes.
-6. **Now: human packaging gate** — tag/pkg/submit only with approval; fix only
-   reproduced friction.
+5. **Done: UX quieting + Help + version `2.0.0`.** Settled Book view
+   presentation, Help **Books and knowledge folders**, store notes.
+6. **Done: packaging gate** — App Store publication + source tag `v2.0.0`
+   (user-reported / cut 2026-07-21).
 
 ### Parked (resume only if friction or a release needs them)
 
@@ -91,8 +93,9 @@ Order of work (detail in the design doc; refine while building):
 | Residual polish | Tab overflow, nav “back”, status TTL, dep cadence | Reproduced daily friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver / narrow / long-doc matrix | Release gate, regression, or user-reported gap |
 | Optional Keep boxes (`v1.15+`) | Theme pools in `docs/v1.13-plus-refinement-roadmap.md` | Enough unrelated Keeps justify a box; not a train before v2 |
-| v1.14 review follow-up | Apple questions, rejection, hotfix | Only if review or usage surfaces a real issue |
+| Published 2.0.0 hotfix | App Review / daily-use blocker | Only when reproduced |
 | External review candidates | Engineering hygiene, journeys, portable recipe, CI | Promote one slice at a time from `docs/v2-external-review-synthesis-2026-07-18.md` |
+| Qwen UX candidates | Assist honesty, first-run story, export progress, tree bounds; not mode pills / static lint by default | Promote only after triage in `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` |
 
 Packaging-gate candidates distilled from the same reviews (smoke card, JP
 export visual check, can/cannot copy, Book-order storage disclosure, Book
