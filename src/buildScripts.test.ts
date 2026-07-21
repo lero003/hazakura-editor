@@ -645,7 +645,7 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.1.0 whole-book search candidate after published v2.0.0",
+        "Scope: v2.1.0 search + Preview image-loading hardening candidate",
         "Help:** native Help menu / Command Palette",
       ],
       "docs/development-automation.md": [

@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: v2.1.0 whole-book search candidate after published v2.0.0
+Scope: v2.1.0 search + Preview image-loading hardening candidate
 Authority: High
 Last reviewed: 2026-07-22 (v2.1.0 local candidate; manual gate pending)
 
@@ -13,7 +13,8 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 **v2.0.0 is shipped and immutable. v2.1.0 is the active local candidate.**
 The first post-ship practicalization slice is bounded whole-book Reader search;
-other advisory items remain parked.
+the user-selected Preview image-loading hardening is the only candidate-quality
+addition. Other advisory items remain parked.
 
 - Package/app version in tree: **`2.1.0`**.
 - Published Mac App Store (last confirmed): **`2.0.0`** (user-reported
@@ -35,7 +36,7 @@ other advisory items remain parked.
 | **v1.13** | Closed / published `1.13.0` | Theme A + Theme G |
 | **v1.14** | Source tag `v1.14.0`; store superseded by `2.0.0` | Intermediate Keep box |
 | **v2.0** | **Shipped** MAS + source tag `2.0.0` | Book Scope + Help |
-| **v2.1** | **Local candidate** | Bounded in-book Reader search |
+| **v2.1** | **Local candidate** | Reader search + Preview image-load hardening |
 | **v2.x** | Later slices | Practicalization candidates (not auto-queue) |
 | **縦書き** | After v2.x foundation | Render / export layer only |
 
@@ -73,16 +74,30 @@ other advisory items remain parked.
    Search creates no persistent index, background scan, or source change.
 8. **Version surfaces:** npm, Tauri, Cargo, and lockfile package version are
    `2.1.0`; published store and latest source tag remain `2.0.0` / `v2.0.0`.
+9. **Candidate quality hardening:** interactive Preview now keeps local,
+   approved-local, and enabled remote images as inert placeholders until they
+   approach the viewport, then resolves at most two per Preview concurrently.
+   Reserved placeholder height prevents image-heavy documents from collapsing
+   into one eager-load burst. Whole-book Reader inherits this behavior through
+   its existing Preview panes; e-book/PDF/EPUB keep their eager materialization
+   because pagination/export must settle all images. Markdown source and image
+   access policy are unchanged.
 
-### Current stop — v2.1 manual installed gate
+### Current stop — rebuild candidate, then v2.1 manual installed gate
 
-1. **Local gates complete:** source tests, App Store surface, signed universal
-   bundle/pkg, payload metadata/entitlements, checksum, and ignored provenance
-   all pass for the `2.1.0` candidate sourced from the pushed commit.
-2. **Stop before upload/publication.** Human gate: install the signed candidate and
+1. **Source gates complete for the image hardening:** focused deferred-load /
+   concurrency/failure tests, full TypeScript tests, typecheck, Vite, and App
+   Store surface pass. The existing signed package predates this hardening and
+   is not the next installed-test candidate.
+2. **Rebuild from the pushed hardening commit:** create and verify a fresh signed
+   universal pkg/provenance record before handing it to installed/TestFlight
+   testing.
+3. **Stop before upload/publication.** Human gate: install the fresh candidate and
    check Japanese input, result counts, chapter jump, Escape, narrow layout,
-   VoiceOver labels, ordinary Reader scroll/edit return, and local images.
-3. Fix only blockers found by those gates. Do not add another advisory feature
+   VoiceOver labels, ordinary Reader scroll/edit return, and an image-heavy
+   Preview/whole-book Reader scroll where near images appear and far images do
+   not stall initial opening.
+4. Fix only blockers found by those gates. Do not add another advisory feature
    to `2.1.0`; mode pills, static lint, Compare Center, persistent indexing,
    and source rewrite remain out.
 
@@ -102,6 +117,7 @@ other advisory items remain parked.
 ## Next Human Gates
 
 1. Published `2.0.0` is closed unless a hotfix is needed.
-2. Run the `2.1.0` installed/TestFlight manual gate described above.
+2. Rebuild the signed candidate from the pushed image-hardening source, then run
+   the `2.1.0` installed/TestFlight manual gate described above.
 3. Upload, TestFlight distribution, tag, App Review, and publication require a
    separate explicit handoff; none is implied by local package proof.

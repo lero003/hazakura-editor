@@ -7,20 +7,70 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { openWorkspaceImage } from "../../../lib/tauri";
 import PreviewPane from "./PreviewPane";
 
 vi.mock("../../../lib/tauri", () => ({
+  fetchRemoteImage: vi.fn(),
+  openLocalImageUnderRoots: vi.fn(),
   openWorkspaceImage: vi.fn(),
 }));
+
+type ObserverCallback = ConstructorParameters<typeof IntersectionObserver>[0];
+
+class MockIntersectionObserver {
+  static instances: MockIntersectionObserver[] = [];
+
+  readonly observed = new Set<Element>();
+
+  constructor(private readonly callback: ObserverCallback) {
+    MockIntersectionObserver.instances.push(this);
+  }
+
+  disconnect() {
+    this.observed.clear();
+  }
+
+  observe(target: Element) {
+    this.observed.add(target);
+  }
+
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+
+  trigger(target: Element) {
+    this.callback(
+      [
+        {
+          isIntersecting: true,
+          target,
+        } as IntersectionObserverEntry,
+      ],
+      this as unknown as IntersectionObserver,
+    );
+  }
+
+  unobserve(target: Element) {
+    this.observed.delete(target);
+  }
+}
+
+const originalIntersectionObserver = globalThis.IntersectionObserver;
 
 beforeEach(() => {
   // v0.33: PreviewPane の再描画は debounce(200ms setTimeout)になったため、
   // 偽タイマーで200ms進めて描画を確定させる。
   vi.useFakeTimers({ shouldAdvanceTime: true });
+  MockIntersectionObserver.instances = [];
+  globalThis.IntersectionObserver =
+    MockIntersectionObserver as unknown as typeof IntersectionObserver;
+  vi.mocked(openWorkspaceImage).mockReset();
 });
 
 afterEach(() => {
   cleanup();
+  globalThis.IntersectionObserver = originalIntersectionObserver;
   vi.useRealTimers();
 });
 
@@ -42,6 +92,52 @@ async function flushPreviewFrame() {
 }
 
 describe("PreviewPane local link routing", () => {
+  it("loads workspace images only after they approach the viewport", async () => {
+    vi.mocked(openWorkspaceImage).mockResolvedValue({
+      dataUrl: "data:image/png;base64,NEAR",
+      name: "near.png",
+      path: "/workspace/near.png",
+      size: 4,
+    });
+    const { container } = render(
+      <PreviewPane
+        documentPath="/workspace/draft.md"
+        source={[
+          "![near](near.png)",
+          "",
+          "![far](far.png)",
+        ].join("\n")}
+        workspaceRoot="/workspace"
+      />,
+    );
+    await flushPreviewFrame();
+
+    const images = Array.from(container.querySelectorAll("img"));
+    expect(images).toHaveLength(2);
+    expect(images[0].getAttribute("loading")).toBe("lazy");
+    expect(openWorkspaceImage).not.toHaveBeenCalled();
+
+    const observer = MockIntersectionObserver.instances[0];
+    expect(observer?.observed).toEqual(new Set(images));
+    observer?.trigger(images[0]);
+
+    await waitFor(() => {
+      expect(openWorkspaceImage).toHaveBeenCalledTimes(1);
+    });
+    expect(openWorkspaceImage).toHaveBeenCalledWith(
+      "/workspace",
+      "/workspace/near.png",
+    );
+    await waitFor(() => {
+      expect(images[0].getAttribute("src")).toBe(
+        "data:image/png;base64,NEAR",
+      );
+    });
+    expect(images[1].getAttribute("data-hazakura-image-path")).toBe(
+      "/workspace/far.png",
+    );
+  });
+
   it("defers the initial markdown render until the next animation frame", async () => {
     const { container } = render(
       <PreviewPane source={["# Large Draft", "", "Body"].join("\n")} />,

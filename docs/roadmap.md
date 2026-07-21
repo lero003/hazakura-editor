@@ -17,7 +17,7 @@ automatic agent-apply system.
 | GitHub source / local-app tag | **`v2.0.0`** (no binary assets) |
 | Published Mac App Store | **`2.0.0`** (user-reported 2026-07-21) |
 | Prior store / source lines | `1.13.0` published historical; `1.14.0` intermediate source tag |
-| Active product phase | **v2.1.0 local candidate** — bounded whole-book Reader search |
+| Active product phase | **v2.1.0 local candidate** — Reader search + Preview image hardening |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -50,13 +50,15 @@ User direction:
    out unless product explicitly accepts them.
 4. **First v2.x slice selected:** explicit, bounded in-book search (July 18
    X-1). It searches only the whole-book Reader's already loaded documents,
-   creates no persistent index, and is the complete `2.1.0` feature scope.
+   creates no persistent index, and is the complete `2.1.0` feature scope. The
+   later user-selected Preview image-loading work is release hardening, not an
+   additional product feature.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[now]    v2.1.0 local candidate · bounded Reader search · manual gate next
+[now]    v2.1.0 local candidate · search + Preview image hardening · rebuild next
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
@@ -76,8 +78,12 @@ reopen or rewrite that release.
    contents/search presentation.
 3. **Boundary:** no background or persistent index, workspace-wide scan,
    Markdown rewrite, auto-save, or second editor buffer.
-4. **Local gate complete:** signed universal package/provenance and payload
-   checks pass. **Next gate:** installed/TestFlight manual checks. Upload, tag,
+4. **Done in source: Preview quality hardening.** Interactive Preview and the
+   whole-book Reader defer permitted image reads until near the viewport and
+   cap each pane at two concurrent reads. Export/e-book settle behavior and
+   image consent boundaries are unchanged.
+5. **Next gate:** rebuild signed universal package/provenance from the pushed
+   hardening commit, then run installed/TestFlight manual checks. Upload, tag,
    review, and publication are separate actions.
 
 ### Shipped (v2.0 Book Scope Alpha)

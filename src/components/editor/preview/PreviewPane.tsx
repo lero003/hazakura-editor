@@ -7,10 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  inlineMarkdownImages,
-  renderMarkdown,
-} from "../../../features/editor/markdown";
+import { renderMarkdown } from "../../../features/editor/markdown";
 import type { MediaImageAccessOptions } from "../../../features/editor/imagePolicy";
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
 import {
@@ -18,6 +15,7 @@ import {
   openLocalImageUnderRoots,
   openWorkspaceImage,
 } from "../../../lib/tauri";
+import { loadPreviewImagesNearViewport } from "./previewImageLoader";
 
 /** Why Preview finished a paint. Parent scroll restore only needs `initial`. */
 export type PreviewRenderCompleteKind = "initial" | "update";
@@ -90,6 +88,7 @@ export default function PreviewPane({
   const completedIdentityRef = useRef<string | null>(null);
   // First paint for the current identity skips the typing debounce.
   const paintedIdentityRef = useRef<string | null>(null);
+  const previewHostRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -154,35 +153,6 @@ export default function PreviewPane({
       }
 
       paintedIdentityRef.current = previewIdentity;
-
-      const approvedRoots = [...(mediaAccess?.approvedRoots ?? [])];
-      void inlineMarkdownImages(renderedHtml, {
-        loadWorkspaceImage: async (path) => {
-          if (!workspaceRoot) {
-            throw new Error("workspace root required");
-          }
-          const image = await openWorkspaceImage(workspaceRoot, path);
-          return image.dataUrl;
-        },
-        loadApprovedLocalImage: async (path) => {
-          const image = await openLocalImageUnderRoots(path, approvedRoots);
-          return image.dataUrl;
-        },
-        loadRemoteImage: mediaAccess?.loadRemoteImages
-          ? async (url) => {
-              const image = await fetchRemoteImage(url);
-              return image.dataUrl;
-            }
-          : undefined,
-      }).then((nextHtml) => {
-        if (cancelled || nextHtml === renderedHtml) {
-          return;
-        }
-
-        startTransition(() => {
-          commitHtml(nextHtml);
-        });
-      });
     };
 
     const cancelRender = schedulePreviewRender(paint, {
@@ -195,6 +165,45 @@ export default function PreviewPane({
       cancelRender();
     };
   }, [documentPath, mediaAccess, previewIdentity, source, workspaceRoot]);
+
+  useEffect(() => {
+    if (
+      preview.pending ||
+      preview.identity !== previewIdentity ||
+      preview.html.length === 0 ||
+      !previewHostRef.current
+    ) {
+      return;
+    }
+
+    const approvedRoots = [...(mediaAccess?.approvedRoots ?? [])];
+    return loadPreviewImagesNearViewport(previewHostRef.current, {
+      loadWorkspaceImage: async (path) => {
+        if (!workspaceRoot) {
+          throw new Error("workspace root required");
+        }
+        const image = await openWorkspaceImage(workspaceRoot, path);
+        return image.dataUrl;
+      },
+      loadApprovedLocalImage: async (path) => {
+        const image = await openLocalImageUnderRoots(path, approvedRoots);
+        return image.dataUrl;
+      },
+      loadRemoteImage: mediaAccess?.loadRemoteImages
+        ? async (url) => {
+            const image = await fetchRemoteImage(url);
+            return image.dataUrl;
+          }
+        : undefined,
+    });
+  }, [
+    mediaAccess,
+    preview.html,
+    preview.identity,
+    preview.pending,
+    previewIdentity,
+    workspaceRoot,
+  ]);
 
   useEffect(() => {
     if (
@@ -282,6 +291,7 @@ export default function PreviewPane({
       dangerouslySetInnerHTML={{ __html: preview.html }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      ref={previewHostRef}
     />
   );
 }

@@ -1,7 +1,7 @@
 # Handoff
 
 Status: Operational
-Scope: v2.1.0 whole-book search candidate; manual installed gate next
+Scope: v2.1.0 search + Preview image hardening; fresh pkg next
 Authority: Medium
 Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
@@ -44,6 +44,11 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   occurrence counts and jump through the existing contents list. Escape clears
   input before closing. No persistent/background index, workspace scan, source
   edit, or auto-save was added; narrow windows keep search/results reachable.
+- **Preview image loading is bounded in source:** interactive Preview and each
+  whole-book Reader chapter keep permitted image references inert until near
+  the viewport, reserve placeholder height, and run at most two reads per pane.
+  e-book/PDF/EPUB retain eager settle behavior. Source and media consent policy
+  are unchanged.
 - **Book frontmatter presentation is aligned:** closed leading YAML is stripped
   for whole-book Reader and PDF, matching EPUB, without changing source. Custom
   metadata is not mapped into cover/part/chapter semantics.
@@ -94,14 +99,19 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 - Focused Reader search: 2 files / 10 tests pass; frontmatter exclusion,
   Unicode/case normalization, result filtering/jump, and Escape clear are pinned.
+- Focused Preview image hardening: 3 files / 33 tests pass; near-viewport
+  deferral, two-read concurrency, consent-specific loaders, failure notes, and
+  reserved placeholder height are pinned.
 - `npm run typecheck` — pass.
-- `npm test` — 201 files / 1,682 tests pass.
+- `npm test` — 202 files / 1,688 tests pass after Preview image hardening.
+- `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
   host-dependent ignored.
-- `npm run build` — helper-enabled App Store preview build passes; bundle
-  reports `2.1.0` / `dev.hazakura.editor`.
+- Previous `npm run build` — helper-enabled App Store preview build passes;
+  bundle reports `2.1.0` / `dev.hazakura.editor`; it predates the Preview
+  hardening.
 - `codesign --verify --deep --strict --verbose=2` — pass for the local preview.
 - Direct executable launch produced one `1280x820` window and was quit cleanly.
   `open -n` remains host-blocked with `kLSNoExecutableErr`; do not report that
@@ -109,13 +119,15 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 - `npm audit --audit-level=high` — 0 vulnerabilities.
 - `cargo audit --file src-tauri/Cargo.lock` — exit 0; 18 existing allowed
   warnings, no vulnerability.
-- Signed universal App Store pkg/provenance — pass. Installer chain, SHA-256,
+- Previous signed universal App Store pkg/provenance — pass. Installer chain, SHA-256,
   payload version/build, universal architectures, deep signature, App Store
   entitlements, and pushed source commit linkage were independently checked.
   App Store payload contains no Agent entry artifact. Local `spctl --type
   install` rejection is not notarized Developer ID proof and is not claimed as
-  a pass.
-- Not run: installed / TestFlight manual interaction. This is the current stop.
+  a pass. That pkg predates the Preview hardening; do not use it as the next
+  installed-test candidate.
+- Not run: fresh signed pkg after Preview hardening; installed / TestFlight
+  manual interaction.
 
 ## Verification (2026-07-18)
 
@@ -219,15 +231,17 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 
 ## Next For Agents
 
-1. Local `2.1.0` package/provenance gates are complete. Stop for the installed /
-   TestFlight manual checks in `docs/current-work.md`.
-2. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
-3. Published `2.0.0` remains hotfix-only.
-4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
+1. Commit and push the Preview hardening, then build and verify a fresh signed
+   `2.1.0` pkg/provenance record from that pushed source.
+2. Stop for the installed / TestFlight manual checks in `docs/current-work.md`,
+   including the new image-heavy Preview/whole-book Reader item.
+3. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
+4. Published `2.0.0` remains hotfix-only.
+5. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
    out of this candidate.
-5. Do not move published tags, upload, or attach release assets without a
+6. Do not move published tags, upload, or attach release assets without a
    separate explicit handoff.
-6. On security/path/AI/multi-file surfaces, re-read
+7. On security/path/AI/multi-file surfaces, re-read
    `docs/security-boundary.md` and the v2 design boundary section.
 
 ## Key Paths

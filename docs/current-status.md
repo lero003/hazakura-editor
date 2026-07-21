@@ -79,6 +79,13 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   because Reader does not render it. Escape clears a non-empty search before
   closing the Reader. The feature creates no persistent index, background
   scan, source edit, auto-save, or new file access path.
+- **Interactive Preview image loading is bounded near the viewport.** Workspace,
+  explicitly approved outside-local, and enabled remote images stay as inert,
+  height-reserved placeholders until they approach the visible area, with at
+  most two reads in flight per Preview pane. Whole-book Reader inherits the
+  same behavior. e-book pagination and PDF/EPUB export deliberately keep their
+  existing all-image settle path. This changes neither Markdown source nor the
+  local/remote consent boundary.
 - **Book presentation hides closed leading YAML frontmatter without rewriting
   source.** Whole-book Reader and PDF now use the same bounded strip behavior
   already used by EPUB. Unclosed frontmatter remains visible as source text;
@@ -102,22 +109,25 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   heading levels.
   Apple Books interaction on the heavy manuscript remains a manual TestFlight
   check; source is not changed and no background scan or manifest is added.
-- **v2.1 source and local App Store preview proof is green.** TypeScript/Vitest
-  (**201 files / 1,682 tests**), focused Reader search tests (**2 files / 10
-  tests**), typecheck, Vite, Rust (**367 pass / 2 host-dependent ignored**),
-  and App Store surface (**107 tests**) pass on tree `2.1.0`. `npm audit`
+- **v2.1 source proof is green.** TypeScript/Vitest (**202 files / 1,688
+  tests**), focused Preview deferred-image tests (**3 files / 33 tests**),
+  typecheck, Vite, and App Store surface pass on tree `2.1.0`. Rust (**367 pass /
+  2 host-dependent ignored**) and the dependency
+  audits remain unchanged from the preceding candidate proof. `npm audit`
   reports 0 vulnerabilities; `cargo audit` exits 0 with the existing 18
   allowed unmaintained/unsound warnings and no vulnerability. The helper-enabled
-  App Store preview bundle reports `2.1.0` / `dev.hazakura.editor`, passes
+  App Store preview bundle built before the Preview hardening reports `2.1.0` /
+  `dev.hazakura.editor`, passes
   deep/strict code-sign verification, and directly launches a `1280x820`
   window. LaunchServices `open -n` remains unavailable on this host with
   `kLSNoExecutableErr`; direct executable launch was used for the window proof.
-  The signed universal App Store pkg also passes Apple installer-chain,
+  Its signed universal App Store pkg also passes Apple installer-chain,
   checksum/provenance, payload version/build, deep-signature, and entitlement
   checks; its ignored `latest.json` points to the pushed source commit. Local
   `spctl --type install` rejects the App Store pkg as a distribution installer,
   which is not treated as notarized Developer ID proof. Installed/TestFlight
-  interaction remains the manual next gate.
+  interaction remains unperformed. Because that pkg predates the image-loading
+  hardening, rebuild and reverify a fresh pkg before the installed manual gate.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -199,8 +209,9 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.1.0` candidate version from package metadata.
-- **Open main queue:** installed/TestFlight interaction checks for `2.1.0`.
-  Automated/local package gates are complete. Published `2.0.0` remains
+- **Open main queue:** rebuild the `2.1.0` signed pkg from the pushed Preview
+  hardening source, then run installed/TestFlight interaction checks.
+  Published `2.0.0` remains
   hotfix-only; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.

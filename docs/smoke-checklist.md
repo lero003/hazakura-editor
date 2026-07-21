@@ -543,6 +543,16 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 8. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
 9. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
 10. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+11. Open a throwaway document with at least 20 workspace-local images spread
+    through a tall manuscript. Confirm Preview opens without waiting for every
+    image, muted reserved frames keep the scroll range stable, and images fill
+    in shortly before they are scrolled into view. Rapidly scroll to the end and
+    confirm images keep resolving without a permanent blank or `load-failed`
+    note for valid files.
+12. Add the image-heavy document to a multi-chapter Book and open the whole-book
+    Reader. Confirm the first visible chapter becomes readable without loading
+    every later chapter image first, contents jump still reaches later chapters,
+    and closing the Reader does not rewrite or save any Markdown.
 
 ## Theme G Media Boundaries Smoke (v1.13+)
 

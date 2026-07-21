@@ -41,6 +41,15 @@ describe("preview.css", () => {
     expect(previewCss).not.toMatch(/(?:^|\n)\.preview-loading\s*{/);
   });
 
+  it("reserves space for deferred Preview images", () => {
+    const body = ruleBody(
+      ".markdown-preview img[data-hazakura-image-path],\n.markdown-preview img[data-hazakura-image-remote],\n.markdown-preview img[data-hazakura-image-loading]",
+    );
+
+    expect(body).toMatch(/min-height:\s*clamp\(/);
+    expect(body).toMatch(/background:\s*var\(--surface-muted\)/);
+  });
+
   it("keeps Markdown preview hierarchy scaled from the preview font size", () => {
     for (const selector of [
       ".markdown-preview h1",

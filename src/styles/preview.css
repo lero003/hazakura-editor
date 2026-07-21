@@ -248,6 +248,13 @@
   box-shadow: var(--shadow-sm);
 }
 
+.markdown-preview img[data-hazakura-image-path],
+.markdown-preview img[data-hazakura-image-remote],
+.markdown-preview img[data-hazakura-image-loading] {
+  background: var(--surface-muted);
+  min-height: clamp(140px, 28vh, 280px);
+}
+
 :root[data-theme="edohigan"] .markdown-preview {
   border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
   background:
