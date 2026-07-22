@@ -111,25 +111,13 @@ Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
   heading levels.
   Apple Books interaction on the heavy manuscript remains a manual TestFlight
   check; source is not changed and no background scan or manifest is added.
-- **v2.1 source proof is green.** TypeScript/Vitest (**202 files / 1,688
-  tests**), focused Preview deferred-image tests (**3 files / 33 tests**),
-  typecheck, Vite, and App Store surface pass on tree `2.1.0`. Rust (**367 pass /
-  2 host-dependent ignored**) and the dependency
-  audits remain unchanged from the preceding candidate proof. `npm audit`
-  reports 0 vulnerabilities; `cargo audit` exits 0 with the existing 18
-  allowed unmaintained/unsound warnings and no vulnerability. The helper-enabled
-  App Store preview bundle built before the Preview hardening reports `2.1.0` /
-  `dev.hazakura.editor`, passes
-  deep/strict code-sign verification, and directly launches a `1280x820`
-  window. LaunchServices `open -n` remains unavailable on this host with
-  `kLSNoExecutableErr`; direct executable launch was used for the window proof.
-  A fresh signed universal App Store pkg built after the Preview hardening also
-  passes Apple installer-chain, checksum/provenance, payload version/build,
-  universal architecture, deep-signature, and entitlement checks; its ignored
-  `latest.json` points to the pushed hardening source commit. Local
-  `spctl --type install` rejects the App Store pkg as a distribution installer,
-  which is not treated as notarized Developer ID proof. Installed/TestFlight
-  interaction remains unperformed and is the current manual gate.
+- **v2.2 source proof is green for the quality pack.** TypeScript/Vitest
+  (**202 files / 1,691 tests**), typecheck, Vite, and App Store surface
+  (**10 files / 108 tests**) pass on tree `2.2.0`. Rust (**367 pass /
+  2 host-dependent ignored**). A **fresh signed universal App Store pkg for
+  `2.2.0` is not yet built** in this pass; the prior `2.1.0` image-hardened
+  pkg remains the last packaging evidence. Installed/TestFlight interaction
+  remains unperformed and is the current human gate before upload.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -949,8 +937,10 @@ baseline, and smoke evidence are archived under
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
 - `docs/releases/2.0.0-app-store-release-notes.md`: published store notes for
   `2.0.0` (user-reported 2026-07-21).
-- `docs/releases/2.1.0-app-store-release-notes.md`: local candidate notes for
-  bounded whole-book Reader search; manual installed/TestFlight gate pending.
+- `docs/releases/2.2.0-app-store-release-notes.md`: local quality-pack candidate
+  notes; manual installed/TestFlight gate pending.
+- `docs/releases/2.1.0-app-store-release-notes.md`: historical notes for the
+  folded whole-book search + Preview image-hardening slice.
 - `docs/releases/2.0.0-source-tag.release.md`: `v2.0.0` source-tag boundary.
 - `docs/releases/1.14.0-source-tag.release.md`: intermediate `v1.14.0` source tag.
 - `docs/releases/1.14.0-app-store-release-notes.md`: intermediate `1.14.0` store
@@ -973,12 +963,15 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Run the installed/TestFlight manual gate for the **`2.1.0` candidate** in
-   `docs/current-work.md`; automated/local package evidence is complete.
+1. Build a fresh signed universal App Store pkg for **`2.2.0`**, then run the
+   installed/TestFlight manual gate in `docs/current-work.md` and
+   `docs/releases/2.2.0-app-store-release-notes.md`. Source gates are green;
+   pkg for `2.2.0` is still pending.
 2. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
    reproduced review or daily-use blockers.
-3. **Park** residual polish, broad evidence matrix, and bulk digestion of
-   external review pools. Do not add another feature to `2.1.0`.
+3. **Park** residual polish, broad evidence matrix, 縦書き, and bulk digestion
+   of external review pools. Do not add another feature train to `2.2.0`
+   unless a manual gate finds a blocker.
 4. Keep v1.9–v1.12 product contracts and Book Scope design rails closed unless a
    regression reproduces.
 5. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
@@ -989,6 +982,6 @@ baseline, and smoke evidence are archived under
    is recorded.
 7. For Local Assist, keep explicit AI edit transactions
    (`docs/assist-surface-strategy.md`, `docs/app-store-build.md`).
-8. Do not move published tags or upload/publish `2.1.0` without a separate
+8. Do not move published tags or upload/publish `2.2.0` without a separate
    explicit handoff. Do not reopen the `2.0.0` store lane without a reproduced
    hotfix.
