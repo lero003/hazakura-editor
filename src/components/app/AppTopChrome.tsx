@@ -28,6 +28,7 @@ type AppTopChromeProps = {
   activeTabId: string | null;
   agentWorkbenchAvailable: boolean;
   appleAssistAvailability?: AppleAssistAvailability;
+  appleAssistAvailabilityProbed?: boolean;
   assistSurfaceActive: AssistSurfacePreference;
   closeFileLabel?: (name: string) => string;
   draggingTabId: string | null;
@@ -81,6 +82,7 @@ export function AppTopChrome({
   activeTabId,
   agentWorkbenchAvailable,
   appleAssistAvailability,
+  appleAssistAvailabilityProbed,
   assistSurfaceActive,
   closeFileLabel,
   draggingTabId,
@@ -166,6 +168,7 @@ export function AppTopChrome({
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         appleAssistAvailability={appleAssistAvailability}
+        appleAssistAvailabilityProbed={appleAssistAvailabilityProbed}
         assistSurfaceActive={assistSurfaceActive}
         diffPaneActive={!referencePaneVisible && sidePaneMode === "compare"}
         ebookAvailable={activeTab !== null && selectedImage === null}

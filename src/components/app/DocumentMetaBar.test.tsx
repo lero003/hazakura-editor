@@ -199,6 +199,20 @@ describe("DocumentMetaBar", () => {
     );
   });
 
+  it("keeps the companion title neutral before an explicit availability probe", () => {
+    renderMeta(false, "apple-local", {
+      appleAssistAvailability: { kind: "unsupported" },
+      appleAssistAvailabilityProbed: false,
+    });
+
+    const button = screen.getByRole("button", {
+      name: "Open Hazakura Local Assist Window",
+    });
+    expect(button.className).not.toContain(
+      "open-agent-window-button-unavailable",
+    );
+  });
+
   it("localizes unsupported Local Assist titles from side-pane copy", () => {
     renderMeta(false, "apple-local", {
       appleAssistAvailability: { kind: "unsupported" },

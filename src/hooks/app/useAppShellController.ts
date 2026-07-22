@@ -1474,7 +1474,10 @@ export function useAppShellController() {
   // section: command palette + global search
   const appleLocalAssistActive =
     appleLocalAssistAllowed && assistSurfaceActive === "apple-local";
-  const { availability: appleAssistAvailability } = useAppleAssistAvailability(
+  const {
+    availability: appleAssistAvailability,
+    probed: appleAssistAvailabilityProbed,
+  } = useAppleAssistAvailability(
     appleLocalAssistActive && preferencesDialogMode === "agent",
   );
 
@@ -1869,6 +1872,7 @@ export function useAppShellController() {
     agentWorkbenchRestartRequired,
     appleAssistCopy,
     appleAssistAvailability,
+    appleAssistAvailabilityProbed,
     appleAssistGenerationLock: activeAppleAssistGenerationLock,
     appleLocalAssistAllowed,
     assistSurfaceActive,

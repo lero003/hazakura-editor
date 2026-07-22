@@ -49,8 +49,12 @@ export function useAppleAssistAvailability(
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     if (!enabled) {
-      setAvailability({ kind: "disabled" });
-      setProbed(true);
+      // `enabled` controls whether this hook may perform the explicit probe;
+      // it is not itself a model-availability result. Keep the safe initial
+      // state before the first probe, and retain a completed snapshot when the
+      // settings surface closes. This avoids claiming that Local Assist is
+      // disabled merely because background/startup probing is intentionally
+      // off.
       return () => {
         disposed = true;
       };

@@ -55,6 +55,29 @@ describe("useAppleAssistAvailability", () => {
     resolveProbe({ kind: "unsupported" });
   });
 
+  it("does not invent a disabled state before an explicit probe and retains the last result", async () => {
+    probeAppleAssistAvailability.mockResolvedValue({ kind: "available" });
+
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useAppleAssistAvailability(enabled),
+      { initialProps: { enabled: false } },
+    );
+
+    expect(probeAppleAssistAvailability).not.toHaveBeenCalled();
+    expect(result.current.availability).toEqual({ kind: "unsupported" });
+    expect(result.current.probed).toBe(false);
+
+    rerender({ enabled: true });
+    await waitFor(() => {
+      expect(result.current.availability).toEqual({ kind: "available" });
+    });
+    expect(result.current.probed).toBe(true);
+
+    rerender({ enabled: false });
+    expect(result.current.availability).toEqual({ kind: "available" });
+    expect(result.current.probed).toBe(true);
+  });
+
   it("reflects available once the probe resolves with available", async () => {
     probeAppleAssistAvailability.mockResolvedValue({ kind: "available" });
 

@@ -14,6 +14,8 @@ type DocumentMetaBarProps = {
   agentWorkbenchAvailable: boolean;
   /** Current on-device Assist probe result. Used for honest button titles. */
   appleAssistAvailability?: AppleAssistAvailability;
+  /** Whether the result came from an explicit completed probe. */
+  appleAssistAvailabilityProbed?: boolean;
   assistSurfaceActive: AssistSurfacePreference;
   diffPaneActive: boolean;
   ebookPaneActive: boolean;
@@ -43,6 +45,7 @@ export function DocumentMetaBar({
   activeTab,
   agentWorkbenchAvailable,
   appleAssistAvailability = { kind: "unsupported" },
+  appleAssistAvailabilityProbed = true,
   assistSurfaceActive,
   diffPaneActive,
   ebookPaneActive,
@@ -69,18 +72,22 @@ export function DocumentMetaBar({
     !lModeEnabled &&
     (assistSurfaceActive === "apple-local" ||
       (assistSurfaceActive === "external-cli" && agentWorkbenchAvailable));
-  const appleAssistTitle = appleAssistButtonTitle(
-    sidePaneCopy.appleAssistWindowTitle,
-    appleAssistAvailability,
-    sidePaneCopy,
-  );
+  const appleAssistTitle = appleAssistAvailabilityProbed
+    ? appleAssistButtonTitle(
+        sidePaneCopy.appleAssistWindowTitle,
+        appleAssistAvailability,
+        sidePaneCopy,
+      )
+    : sidePaneCopy.appleAssistWindowTitle;
   const companionCopy =
     assistSurfaceActive === "apple-local"
       ? {
           icon: <SparklesIcon />,
           label: sidePaneCopy.appleAssistWindow,
           title: appleAssistTitle,
-          unavailable: appleAssistAvailability.kind !== "available",
+          unavailable:
+            appleAssistAvailabilityProbed &&
+            appleAssistAvailability.kind !== "available",
           onClick: onOpenAppleAssistWindow,
         }
       : {
