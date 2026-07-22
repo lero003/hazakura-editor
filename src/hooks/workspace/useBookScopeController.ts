@@ -23,7 +23,7 @@ import {
   pickBookRecipeFile,
   pickBookRecipeSavePath,
 } from "../../lib/tauri/dialog";
-import { openTextFile, saveTextFileAs } from "../../lib/tauri/files";
+import { openTextFile, saveBinaryFileAs } from "../../lib/tauri/files";
 import { cancelOkfBundleScan, scanOkfBundle } from "../../lib/tauri/okf";
 import { workspaceRelativePath } from "./workspaceRelativePath";
 import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
@@ -246,13 +246,10 @@ export function useBookScopeController({
         defaultBookRecipeFileName(label),
       );
       if (!destPath) return;
-      await saveTextFileAs(
-        destPath,
-        serializeBookRecipe(nodes),
-        "lf",
-        "utf-8",
-        workspaceRootPath,
-      );
+      // Portable recipes may live outside the workspace (Desktop/backup).
+      // Use the binary write path: no workspace containment, overwrite allowed.
+      const bytes = new TextEncoder().encode(serializeBookRecipe(nodes));
+      await saveBinaryFileAs(destPath, bytes);
       setStatus(
         isJapaneseMenuLanguage(menuLanguage)
           ? `章立てを書き出しました: ${destPath}`

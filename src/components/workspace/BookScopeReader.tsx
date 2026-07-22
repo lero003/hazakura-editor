@@ -104,6 +104,7 @@ export function BookScopeReader({
   }, []);
 
   // Restore app-private reading position once per document load.
+  // Re-apply scroll ratio while lazy Preview panes settle (height grows).
   useEffect(() => {
     const index = resolveReaderDocumentIndex(documents, initialRelativePath);
     setActiveChapterIndex(index);
@@ -111,20 +112,33 @@ export function BookScopeReader({
     const root = manuscriptRef.current;
     if (!root || documents.length === 0) return;
 
-    suppressObserverUntilRef.current = performance.now() + 700;
-    const chapter = globalThis.document.getElementById(
-      bookReaderChapterId(index),
+    const applyResume = (behavior: ScrollBehavior) => {
+      suppressObserverUntilRef.current = performance.now() + 700;
+      const chapter = globalThis.document.getElementById(
+        bookReaderChapterId(index),
+      );
+      if (chapter && typeof chapter.scrollIntoView === "function") {
+        chapter.scrollIntoView({ behavior, block: "start" });
+      }
+      if (initialScrollRatio > 0.01) {
+        const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
+        root.scrollTop =
+          maxScroll * Math.min(1, Math.max(0, initialScrollRatio));
+      }
+    };
+
+    applyResume("auto");
+    // Preview panes load asynchronously; re-apply after layout settles.
+    const retryIds = [120, 400, 900, 1600].map((delay) =>
+      window.setTimeout(() => applyResume("auto"), delay),
     );
-    if (chapter && typeof chapter.scrollIntoView === "function") {
-      chapter.scrollIntoView({ behavior: "auto", block: "start" });
-    }
-    if (initialScrollRatio > 0.01) {
-      const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
-      root.scrollTop = maxScroll * Math.min(1, Math.max(0, initialScrollRatio));
-    }
-    if (!initialRelativePath) return;
-    const hide = window.setTimeout(() => setShowResumeNote(false), 4000);
-    return () => window.clearTimeout(hide);
+    const hide = initialRelativePath
+      ? window.setTimeout(() => setShowResumeNote(false), 4000)
+      : null;
+    return () => {
+      for (const id of retryIds) window.clearTimeout(id);
+      if (hide !== null) window.clearTimeout(hide);
+    };
   }, [documents, initialRelativePath, initialScrollRatio]);
 
   useEffect(() => {
