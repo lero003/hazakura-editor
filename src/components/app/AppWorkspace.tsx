@@ -29,6 +29,8 @@ import {
 } from "../../features/editor/ebookChapters";
 import {
   loadBookScopeReaderDocuments,
+  readBookReaderPosition,
+  writeBookReaderPosition,
   type BookScopeNode,
   type BookScopeReaderLoadResult,
   type BookScopeSuggestion,
@@ -137,6 +139,11 @@ type AppWorkspaceProps = {
   createBookScopeSuggestion?: (
     options: BookScopeSuggestionOptions,
   ) => Promise<BookScopeSuggestion | null>;
+  exportBookRecipe?: () => void | Promise<void>;
+  importBookRecipeDraft?: () => Promise<{
+    nodes: readonly BookScopeNode[];
+    chapterRelativePaths: readonly string[];
+  } | null>;
   createFile: (parentPath: string) => Promise<void> | void;
   createOkfScaffoldAt: (
     parentPath: string,
@@ -288,6 +295,8 @@ export function AppWorkspace({
   commitBookScopeNodes = () => {},
   cancelBookScopeSuggestion = () => {},
   createBookScopeSuggestion,
+  exportBookRecipe,
+  importBookRecipeDraft,
   createFile,
   createFolder,
   createOkfScaffoldAt,
@@ -389,6 +398,10 @@ export function AppWorkspace({
   const [bookReaderLoading, setBookReaderLoading] = useState(false);
   const [bookReaderResult, setBookReaderResult] =
     useState<BookScopeReaderLoadResult | null>(null);
+  const [bookReaderResume, setBookReaderResume] = useState<{
+    relativePath: string;
+    scrollRatio: number;
+  } | null>(null);
   const bookReaderRequestRef = useRef(0);
   // v1.1 position-continuity: AppWorkspace owns the per-document view state
   // shared by Editor, e-book, and (when real-layout evidence requires it)
@@ -545,6 +558,7 @@ export function AppWorkspace({
     bookReaderRequestRef.current += 1;
     setBookReaderLoading(false);
     setBookReaderResult(null);
+    setBookReaderResume(null);
   }, [workspaceRootPath]);
   const openBookScopeReader = async () => {
     if (!workspaceRootPath || bookScopeChapters.length === 0 || bookReaderLoading) {
@@ -560,6 +574,15 @@ export function AppWorkspace({
         workspaceRoot: workspaceRootPath,
       });
       if (requestId === bookReaderRequestRef.current) {
+        const saved = readBookReaderPosition(workspaceRootPath);
+        setBookReaderResume(
+          saved
+            ? {
+                relativePath: saved.relativePath,
+                scrollRatio: saved.scrollRatio,
+              }
+            : null,
+        );
         setBookReaderResult(result);
       }
     } finally {
@@ -572,6 +595,14 @@ export function AppWorkspace({
     bookReaderRequestRef.current += 1;
     setBookReaderLoading(false);
     setBookReaderResult(null);
+    setBookReaderResume(null);
+  };
+  const persistBookReaderPosition = (
+    relativePath: string,
+    scrollRatio: number,
+  ) => {
+    if (!workspaceRootPath) return;
+    writeBookReaderPosition(workspaceRootPath, relativePath, scrollRatio);
   };
   const openBookReaderLink = (sourcePath: string, href: string) => {
     if (
@@ -640,6 +671,8 @@ export function AppWorkspace({
           onCommitBookScope={commitBookScopeNodes}
           onCancelBookScopeSuggestion={cancelBookScopeSuggestion}
           onCreateBookScopeSuggestion={createBookScopeSuggestion}
+          onExportBookRecipe={exportBookRecipe}
+          onImportBookRecipeDraft={importBookRecipeDraft}
           onCollapse={
             editorSettings.lModeEnabled
               ? undefined
@@ -971,6 +1004,8 @@ export function AppWorkspace({
               reason: entry.reason,
             })),
           ]}
+          initialRelativePath={bookReaderResume?.relativePath ?? null}
+          initialScrollRatio={bookReaderResume?.scrollRatio ?? 0}
           mediaAccess={mediaAccess}
           menuLanguage={menuLanguage}
           onApproveLocalImageParent={onApproveLocalImageParent}
@@ -980,6 +1015,7 @@ export function AppWorkspace({
             void openWorkspaceFile(path);
           }}
           onOpenLink={openBookReaderLink}
+          onReadingPositionChange={persistBookReaderPosition}
           skippedForBudget={bookReaderResult.skippedForBudget}
           workspaceRoot={workspaceRootPath}
         />

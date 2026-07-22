@@ -52,6 +52,11 @@ type WorkspaceSidebarProps = {
   onCreateBookScopeSuggestion?: (
     options: BookScopeSuggestionOptions,
   ) => Promise<BookScopeSuggestion | null>;
+  onExportBookRecipe?: () => void | Promise<void>;
+  onImportBookRecipeDraft?: () => Promise<{
+    nodes: readonly BookScopeNode[];
+    chapterRelativePaths: readonly string[];
+  } | null>;
   onCreateFile: () => void;
   onCreateFolder: () => void;
   onCreateOkfScaffoldMinimal: () => void;
@@ -100,6 +105,8 @@ export function WorkspaceSidebar({
   onCommitBookScope = () => {},
   onCancelBookScopeSuggestion = () => {},
   onCreateBookScopeSuggestion,
+  onExportBookRecipe,
+  onImportBookRecipeDraft,
   onCreateFile,
   onCreateFolder,
   onCreateOkfScaffoldMinimal,
@@ -389,6 +396,8 @@ export function WorkspaceSidebar({
           nodes={effectiveBookScopeNodes}
           onCommit={onCommitBookScope}
           onCancelSuggest={onCancelBookScopeSuggestion}
+          onExportRecipe={onExportBookRecipe}
+          onImportRecipeDraft={onImportBookRecipeDraft}
           onLoadDirectory={onLoadDirectory}
           onOpenChapter={(path) => void onOpenFile(path)}
           onReadBook={onReadBookScope}

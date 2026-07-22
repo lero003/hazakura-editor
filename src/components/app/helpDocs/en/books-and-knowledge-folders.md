@@ -7,8 +7,9 @@ Use ordinary Markdown files. When you want several of them to act as one book, o
 Open a workspace, then switch the sidebar from **Files** to **Book**.
 
 - **Choose chapters** selects Markdown files and saves an ordered tree private to this app. Disk files and folders are not rearranged.
-- After you save a scope, the list is for opening chapters and reading. **Read all** opens a read-only whole-book scroll view in that order. The reader shows the current chapter, previous/next chapter controls, and an in-memory search of already loaded chapter names and visible Markdown (no background index).
+- After you save a scope, the list is for opening chapters and reading. **Read all** opens a read-only whole-book scroll view in that order. The reader shows the current chapter, previous/next chapter controls, and an in-memory search of already loaded chapter names and visible Markdown (no background index). The last chapter and scroll place resume on this Mac (app-private; not written into the project).
 - **Edit** changes membership or order. Arrow moves stay inside the current group; they do not silently move a chapter into another work or section. Setup actions stay there, not on the everyday list.
+- **Export recipe** / **Import recipe** write or load a portable JSON list of relative Markdown paths and optional display groups. Import always opens as an editable draft; nothing is saved until you press **Save**. The recipe is a Hazakura order helper, not an OKF standard, and is never auto-loaded on launch.
 - Unavailable chapters stay listed until you recheck or remove them. The app does not drop them silently.
 - The saved book tree is kept only in app-private settings for up to eight workspace roots. It is not written into the project folder. Saving a tree for another workspace may drop the oldest saved entry to keep storage small.
 

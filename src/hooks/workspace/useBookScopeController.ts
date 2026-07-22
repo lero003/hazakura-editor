@@ -5,16 +5,25 @@ import {
   type BookScopeUnavailableEntry,
 } from "../../lib/tauri/bookScope";
 import {
-  readBookScope,
+  bookRecipeErrorMessage,
+  defaultBookRecipeFileName,
   flattenBookScopeNodes,
+  parseBookRecipe,
+  readBookScope,
   remapBookScopeNodePathPrefix,
   removeBookScopeNodePath,
+  serializeBookRecipe,
   suggestBookScopeFromDiscovery,
   type BookScopeSuggestion,
   type BookScopeSuggestionOptions,
   type BookScopeNode,
   writeBookScope,
 } from "../../features/bookScope";
+import {
+  pickBookRecipeFile,
+  pickBookRecipeSavePath,
+} from "../../lib/tauri/dialog";
+import { openTextFile, saveTextFileAs } from "../../lib/tauri/files";
 import { cancelOkfBundleScan, scanOkfBundle } from "../../lib/tauri/okf";
 import { workspaceRelativePath } from "./workspaceRelativePath";
 import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
@@ -221,6 +230,96 @@ export function useBookScopeController({
     });
   }, []);
 
+  const exportBookRecipe = useCallback(async () => {
+    if (!workspaceRootPath || chapterRelativePaths.length === 0) {
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? "書き出す章立てがありません"
+          : "No book chapters to export",
+      );
+      return;
+    }
+    const label =
+      workspaceRootPath.split(/[\\/]/).filter(Boolean).at(-1) ?? null;
+    try {
+      const destPath = await pickBookRecipeSavePath(
+        defaultBookRecipeFileName(label),
+      );
+      if (!destPath) return;
+      await saveTextFileAs(
+        destPath,
+        serializeBookRecipe(nodes),
+        "lf",
+        "utf-8",
+        workspaceRootPath,
+      );
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? `章立てを書き出しました: ${destPath}`
+          : `Book recipe exported: ${destPath}`,
+      );
+    } catch (error) {
+      setGlobalError(String(error));
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? "章立ての書き出しに失敗しました"
+          : "Book recipe export failed",
+      );
+    }
+  }, [
+    chapterRelativePaths.length,
+    menuLanguage,
+    nodes,
+    setGlobalError,
+    setStatus,
+    workspaceRootPath,
+  ]);
+
+  /**
+   * Loads a portable recipe as an editable draft only.
+   * Callers must pass the nodes to the Book panel; nothing is saved until Save.
+   */
+  const importBookRecipeDraft = useCallback(async (): Promise<{
+    nodes: BookScopeNode[];
+    chapterRelativePaths: string[];
+  } | null> => {
+    if (!workspaceRootPath) return null;
+    try {
+      const sourcePath = await pickBookRecipeFile();
+      if (!sourcePath) return null;
+      const document = await openTextFile(sourcePath);
+      const parsed = parseBookRecipe(document.contents);
+      if (!parsed.ok) {
+        const message = bookRecipeErrorMessage(
+          parsed.error,
+          isJapaneseMenuLanguage(menuLanguage) ? "ja" : "en",
+        );
+        setSuggestionError(message);
+        setStatus(message);
+        return null;
+      }
+      setSuggestionError(null);
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? `章立てを取り込みました（下書き）: ${parsed.chapterRelativePaths.length}件。保存するまで反映しません`
+          : `Book recipe loaded as draft: ${parsed.chapterRelativePaths.length} item(s). Save to apply.`,
+      );
+      return {
+        nodes: parsed.nodes,
+        chapterRelativePaths: parsed.chapterRelativePaths,
+      };
+    } catch (error) {
+      const message = String(error);
+      setSuggestionError(message);
+      setStatus(
+        isJapaneseMenuLanguage(menuLanguage)
+          ? "章立ての取り込みに失敗しました"
+          : "Book recipe import failed",
+      );
+      return null;
+    }
+  }, [menuLanguage, setStatus, workspaceRootPath]);
+
   return {
     bookScopeChapterRelativePaths: chapterRelativePaths,
     bookScopeNodes: nodes,
@@ -232,6 +331,8 @@ export function useBookScopeController({
     commitBookScopeNodes: commitNodes,
     createBookScopeSuggestion: createSuggestion,
     cancelBookScopeSuggestion: cancelSuggestion,
+    exportBookRecipe,
+    importBookRecipeDraft,
     revalidateBookScope: () => setRevision((current) => current + 1),
     remapBookScopeWorkspaceEntry: remapWorkspaceEntry,
     removeBookScopeWorkspaceEntry: removeWorkspaceEntry,

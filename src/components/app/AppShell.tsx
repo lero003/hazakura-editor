@@ -174,6 +174,8 @@ export function AppShell(props: AppShellProps) {
               onCommitBookScope: props.commitBookScopeNodes,
               onCancelBookScopeSuggestion: props.cancelBookScopeSuggestion,
               onCreateBookScopeSuggestion: props.createBookScopeSuggestion,
+              onExportBookRecipe: props.exportBookRecipe,
+              onImportBookRecipeDraft: props.importBookRecipeDraft,
               onCreateFile: () => {
                 if (props.workspaceRootPath) {
                   void props.createFile(props.workspaceRootPath);

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-22 (v2.2.0 local candidate; pre-submission gate next)
+Last reviewed: 2026-07-22 (v2.3.0 local candidate; pre-submission gate next)
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.2.0 candidate.** Mac App Store `2.0.0` is published and source tag
+Phase: **v2.3.0 candidate.** Mac App Store `2.0.0` is published and source tag
 `v2.0.0` remains immutable. The chosen post-ship slice is bounded whole-book
 Reader search. Finish its automated/local package gates, then stop for the
 installed/TestFlight manual checks; do not bulk-digest review pools.
@@ -32,9 +32,9 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. A reproduced blocker in the active `2.2.0` quality-pack candidate, or a
+1. A reproduced blocker in the active `2.3.0` quality-pack candidate, or a
    published `2.0.0` hotfix. Keep every read bounded and user-triggered.
-2. Local package/provenance checks for the chosen `2.2.0` slice; stop before
+2. Local package/provenance checks for the chosen `2.3.0` slice; stop before
    upload/publication and leave installed/TestFlight interaction to the human
    gate.
 3. Stale or failing quality gates that block the selected slice.

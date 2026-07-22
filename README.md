@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-22 (tree 2.2.0 candidate; store + source tag 2.0.0)
+Last reviewed: 2026-07-22 (tree 2.3.0 candidate; store + source tag 2.0.0)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -157,7 +157,7 @@ For the full implementation inventory and release state, see
 - [v1.12 App Store Release Notes](docs/releases/1.12.0-app-store-release-notes.md): published OKF scaffold + structure / OKF review line
 - [v1.13 App Store Release Notes](docs/releases/1.13.0-app-store-release-notes.md): published interaction clarity + bounded media line
 - [v2.0 App Store Release Notes](docs/releases/2.0.0-app-store-release-notes.md): published Book Scope + Help line
-- [v2.2 App Store Release Notes](docs/releases/2.2.0-app-store-release-notes.md): local quality-pack candidate; manual TestFlight gate pending
+- [v2.3 App Store Release Notes](docs/releases/2.3.0-app-store-release-notes.md): local Book UX candidate (recipe + resume); manual TestFlight gate pending
 - [v2.1 App Store Release Notes](docs/releases/2.1.0-app-store-release-notes.md): historical whole-book search candidate notes
 - [v2.0 Source Tag Notes](docs/releases/2.0.0-source-tag.release.md): source-only `v2.0.0` checkpoint
 - [v1.14 Source Tag Notes](docs/releases/1.14.0-source-tag.release.md): source-only `v1.14.0` checkpoint
@@ -252,9 +252,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.2.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag remains [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0) (no binary assets on the tag).
+- Current package/app version in the development tree is `2.3.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag remains [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0) (no binary assets on the tag).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.0.0` (user-reported 2026-07-21); do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [2.2.0 local candidate](docs/releases/2.2.0-app-store-release-notes.md), [2.1.0 historical candidate](docs/releases/2.1.0-app-store-release-notes.md), [2.0.0 published App Store notes](docs/releases/2.0.0-app-store-release-notes.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md). No `v2.2.0` tag or publication is claimed.
+- Release notes: [2.3.0 local candidate](docs/releases/2.3.0-app-store-release-notes.md), [2.1.0 historical candidate](docs/releases/2.1.0-app-store-release-notes.md), [2.0.0 published App Store notes](docs/releases/2.0.0-app-store-release-notes.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md). No `v2.3.0` tag or publication is claimed.
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

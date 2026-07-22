@@ -215,6 +215,12 @@
   white-space: nowrap;
 }
 
+.book-reader-resume-note {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
 .book-reader-manuscript {
   min-height: 0;
   overflow: auto;

@@ -1,18 +1,18 @@
 # Handoff
 
 Status: Operational
-Scope: v2.2.0 quality pack; pre-submission gate next
+Scope: v2.3.0 Book UX; pre-submission gate next
 Authority: Medium
-Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Current State
 
-- Package/app version in tree: **`2.2.0`** (local candidate; not uploaded,
+- Package/app version in tree: **`2.3.0`** (local candidate; not uploaded,
   tagged, or published).
 - GitHub source / local-app tag: **`v2.0.0`** (no binary assets).
 - Published Mac App Store (last confirmed in docs): **`2.0.0`**
   (user-reported 2026-07-21).
-- **Active phase: v2.2.0 local candidate (pre-submission quality pack).**
+- **Active phase: v2.3.0 local candidate (pre-submission quality pack).**
   Includes v2.1 search + Preview image hardening and the v2.2 quality pack
   (Reader chapter nav, export Finder reveal, Book order honesty, Assist
   availability honesty, preflight fix hints). 縦書き stays deferred.
@@ -96,25 +96,25 @@ Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
-## Verification (2026-07-22, v2.2.0 quality pack)
+## Verification (2026-07-22, v2.3.0 Book UX)
 
 - Focused quality slices: Reader chapter nav, Book empty-state honesty,
   DocumentMetaBar Assist unavailability, export reveal, preflight fix hints —
   pass.
 - `npm run typecheck` — pass.
-- `npm test` — 202 files / 1,691 tests pass on tree `2.2.0`.
+- `npm test` — 202 files / 1,691 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 108 tests pass.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
   host-dependent ignored.
 - Version surfaces (npm / Tauri / Cargo / lockfiles / living docs alignment
-  tests) report `2.2.0`.
+  tests) report `2.3.0`.
 - Prior `2.1.0` signed universal App Store pkg/provenance remains evidence for
-  the search + image-hardening base; a **fresh `2.2.0` signed pkg** has not
+  the search + image-hardening base; a **fresh `2.3.0` signed pkg** has not
   been built in this quality-pack pass.
 - Not run: installed / TestFlight manual interaction; fresh App Store pkg for
-  `2.2.0`; upload / review / publication.
+  `2.3.0`; upload / review / publication.
 
 ## Verification (2026-07-22, v2.1.0 candidate base)
 

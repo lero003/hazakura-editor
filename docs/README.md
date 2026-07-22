@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-22 (v2.2.0 local candidate)
+Last reviewed: 2026-07-22 (v2.3.0 local candidate)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **Active phase is
-the v2.2.0 quality-pack candidate (includes v2.1 search).** Start with `current-work.md`
+the v2.3.0 Book UX candidate (includes v2.1 search).** Start with `current-work.md`
 and `roadmap.md`. Published v2.0.0 stays immutable; other residual / evidence
 pools are parked.
 

@@ -121,6 +121,7 @@ describe("BookScopeReader", () => {
       configurable: true,
       value: scrollIntoView,
     });
+    const onReadingPositionChange = vi.fn();
     render(
       <BookScopeReader
         documents={[
@@ -132,6 +133,7 @@ describe("BookScopeReader", () => {
         onClose={vi.fn()}
         onEditChapter={vi.fn()}
         onOpenLink={vi.fn()}
+        onReadingPositionChange={onReadingPositionChange}
         skippedForBudget={[]}
         workspaceRoot="/workspace"
       />,
@@ -152,6 +154,37 @@ describe("BookScopeReader", () => {
     expect(
       screen.getByRole("button", { name: "次の章へ" }),
     ).toHaveProperty("disabled", true);
+    expect(
+      screen.getByRole("button", { name: "two.mdへ移動" }).getAttribute("aria-current"),
+    ).toBe("true");
+    expect(onReadingPositionChange).toHaveBeenCalledWith("two.md", 0);
+  });
+
+  it("restores the saved chapter and marks resume", () => {
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
+    render(
+      <BookScopeReader
+        documents={[
+          { name: "one.md", path: "/workspace/one.md", relativePath: "one.md", source: "# One", usesLiveBuffer: false },
+          { name: "two.md", path: "/workspace/two.md", relativePath: "two.md", source: "# Two", usesLiveBuffer: false },
+        ]}
+        failures={[]}
+        initialRelativePath="two.md"
+        initialScrollRatio={0.25}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        onEditChapter={vi.fn()}
+        onOpenLink={vi.fn()}
+        skippedForBudget={[]}
+        workspaceRoot="/workspace"
+      />,
+    );
+
+    expect(screen.getByText("2. two.md")).toBeTruthy();
+    expect(screen.getByText("続きから")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "two.mdへ移動" }).getAttribute("aria-current"),
     ).toBe("true");

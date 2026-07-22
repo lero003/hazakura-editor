@@ -172,6 +172,36 @@ export async function pickWorkspaceFolder(): Promise<string | null> {
   return typeof selected === "string" ? selected : null;
 }
 
+/** Explicit portable Book recipe (JSON). Never auto-loaded by the app. */
+export async function pickBookRecipeFile(): Promise<string | null> {
+  const selected = await open({
+    multiple: false,
+    directory: false,
+    filters: [
+      {
+        name: "Hazakura book recipe",
+        extensions: ["json", "hazakura-book.json"],
+      },
+    ],
+  });
+  return typeof selected === "string" ? selected : null;
+}
+
+export async function pickBookRecipeSavePath(
+  defaultPath: string,
+): Promise<string | null> {
+  const selected = await saveDialog({
+    defaultPath,
+    filters: [
+      {
+        name: "Hazakura book recipe",
+        extensions: ["json"],
+      },
+    ],
+  });
+  return typeof selected === "string" ? selected : null;
+}
+
 export async function confirmDiscardUnsavedChanges(): Promise<boolean> {
   return confirm(
     "The current file has unsaved changes. Discard them and open another file?",

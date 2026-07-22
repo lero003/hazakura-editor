@@ -3,14 +3,14 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.2.0`** across npm, Tauri, Cargo, and
+- Current package/app version: **`2.3.0`** across npm, Tauri, Cargo, and
   lockfile metadata. It is a local candidate, not uploaded, tagged, or
-  published. Notes: `docs/releases/2.2.0-app-store-release-notes.md`.
+  published. Notes: `docs/releases/2.3.0-app-store-release-notes.md`.
   v2.1 search/image hardening is included in this package.
   GitHub source / local-app tag remains immutable **`v2.0.0`** (no binary
   assets).
@@ -23,7 +23,7 @@ Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
 - **Prior lines:** `1.13.0` remains a historical published store baseline.
   `1.14.0` is an intermediate source tag / submission line superseded on the
   live listing by `2.0.0`. Do not rewrite those tags.
-- **Active product phase: v2.2.0 local candidate (pre-submission quality pack).**
+- **Active product phase: v2.3.0 local candidate (pre-submission quality pack).**
   Includes v2.1 Reader search + Preview image hardening plus Reader chapter nav,
   export Finder reveal, Book empty-state honesty, Assist availability honesty,
   and preflight fix hints. 縦書き stays deferred. Queue: `docs/current-work.md`.
@@ -113,9 +113,9 @@ Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
   check; source is not changed and no background scan or manifest is added.
 - **v2.2 source proof is green for the quality pack.** TypeScript/Vitest
   (**202 files / 1,691 tests**), typecheck, Vite, and App Store surface
-  (**10 files / 108 tests**) pass on tree `2.2.0`. Rust (**367 pass /
+  (**10 files / 108 tests**) pass on tree `2.3.0`. Rust (**367 pass /
   2 host-dependent ignored**). A **fresh signed universal App Store pkg for
-  `2.2.0` is not yet built** in this pass; the prior `2.1.0` image-hardened
+  `2.3.0` is not yet built** in this pass; the prior `2.1.0` image-hardened
   pkg remains the last packaging evidence. Installed/TestFlight interaction
   remains unperformed and is the current human gate before upload.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
@@ -198,8 +198,8 @@ Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.2.0` candidate version from package metadata.
-- **Open main queue:** run the `2.2.0` quality-pack signed pkg through
+  diagnostics derive the current `2.3.0` candidate version from package metadata.
+- **Open main queue:** run the `2.3.0` Book UX (recipe + resume) signed pkg through
   installed/TestFlight interaction checks.
   Published `2.0.0` remains
   hotfix-only; other advisory items stay parked.
@@ -526,7 +526,7 @@ Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree candidate: **`2.2.0`**. Scope includes bounded
+- Current development-tree candidate: **`2.3.0`**. Scope includes bounded
   whole-book Reader search; local source/package evidence is recorded here and
   in `docs/internal/app-store-candidates/latest.json`. No upload, TestFlight
   install, source tag, App Review, or publication is claimed.
@@ -937,7 +937,7 @@ baseline, and smoke evidence are archived under
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
 - `docs/releases/2.0.0-app-store-release-notes.md`: published store notes for
   `2.0.0` (user-reported 2026-07-21).
-- `docs/releases/2.2.0-app-store-release-notes.md`: local quality-pack candidate
+- `docs/releases/2.3.0-app-store-release-notes.md`: local Book UX (recipe + resume) candidate
   notes; manual installed/TestFlight gate pending.
 - `docs/releases/2.1.0-app-store-release-notes.md`: historical notes for the
   folded whole-book search + Preview image-hardening slice.
@@ -963,14 +963,14 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Build a fresh signed universal App Store pkg for **`2.2.0`**, then run the
+1. Build a fresh signed universal App Store pkg for **`2.3.0`**, then run the
    installed/TestFlight manual gate in `docs/current-work.md` and
-   `docs/releases/2.2.0-app-store-release-notes.md`. Source gates are green;
-   pkg for `2.2.0` is still pending.
+   `docs/releases/2.3.0-app-store-release-notes.md`. Source gates are green;
+   pkg for `2.3.0` is still pending.
 2. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
    reproduced review or daily-use blockers.
 3. **Park** residual polish, broad evidence matrix, 縦書き, and bulk digestion
-   of external review pools. Do not add another feature train to `2.2.0`
+   of external review pools. Do not add another feature train to `2.3.0`
    unless a manual gate finds a blocker.
 4. Keep v1.9–v1.12 product contracts and Book Scope design rails closed unless a
    regression reproduces.
@@ -982,6 +982,6 @@ baseline, and smoke evidence are archived under
    is recorded.
 7. For Local Assist, keep explicit AI edit transactions
    (`docs/assist-surface-strategy.md`, `docs/app-store-build.md`).
-8. Do not move published tags or upload/publish `2.2.0` without a separate
+8. Do not move published tags or upload/publish `2.3.0` without a separate
    explicit handoff. Do not reopen the `2.0.0` store lane without a reproduced
    hotfix.

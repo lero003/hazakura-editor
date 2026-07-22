@@ -73,6 +73,39 @@ describe("BookScopePanel", () => {
     ).toBeTruthy();
   });
 
+  it("imports a portable recipe as an editable draft without auto-saving", async () => {
+    const onCommit = vi.fn();
+    const onImportRecipeDraft = vi.fn(async () => ({
+      nodes: nodes(["imported.md", "second.md"]),
+      chapterRelativePaths: ["imported.md", "second.md"],
+    }));
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={[]}
+        chapters={[]}
+        menuLanguage="ja"
+        nodes={[]}
+        onCommit={onCommit}
+        onImportRecipeDraft={onImportRecipeDraft}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onRevalidate={vi.fn()}
+        resolving={false}
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "章立てを取り込む" }));
+    expect(onImportRecipeDraft).toHaveBeenCalledOnce();
+    expect(await screen.findByRole("button", { name: "保存 (2)" })).toBeTruthy();
+    expect(onCommit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "保存 (2)" }));
+    expect(onCommit).toHaveBeenCalledWith(nodes(["imported.md", "second.md"]));
+  });
+
   it("opens workspace suggestions as a draft and commits only on Save", async () => {
     const onCommit = vi.fn();
     const onSuggest = vi.fn(async () => ({

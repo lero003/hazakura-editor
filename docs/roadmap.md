@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.2.0`** |
+| Package / app version in tree | **`2.3.0`** |
 | GitHub source / local-app tag | **`v2.0.0`** (no binary assets) |
 | Published Mac App Store | **`2.0.0`** (user-reported 2026-07-21) |
 | Prior store / source lines | `1.13.0` published historical; `1.14.0` intermediate source tag |
-| Active product phase | **v2.2.0 local candidate** — quality pack (nav, export, honesty; no 縦書き) |
+| Active product phase | **v2.3.0 local candidate** — portable recipe + Reader resume (no 縦書き) |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -58,7 +58,7 @@ User direction:
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[now]    v2.2.0 local candidate · quality pack · pre-submission gate
+[now]    v2.3.0 local candidate · quality pack · pre-submission gate
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
@@ -88,7 +88,7 @@ reopen or rewrite that release.
    book progress status; preflight fix hints; Local Assist unavailable honesty
    on chrome and Preferences. 縦書き remains deferred.
 7. **Next gate:** full local gates, signed pkg, installed/TestFlight manual
-   checks for `2.2.0`. Upload, tag, review, and publication are separate.
+   checks for `2.3.0`. Upload, tag, review, and publication are separate.
 
 ### Shipped (v2.0 Book Scope Alpha)
 

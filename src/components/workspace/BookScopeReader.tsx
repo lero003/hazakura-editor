@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   createBookScopeReaderSearchCorpus,
+  resolveReaderDocumentIndex,
   searchBookScopeReaderCorpus,
   type BookScopeReaderLoadResult,
 } from "../../features/bookScope";
@@ -22,12 +23,21 @@ type Props = Pick<
   BookScopeReaderLoadResult,
   "documents" | "failures" | "skippedForBudget"
 > & {
+  /** App-private resume target from a previous Reader session. */
+  initialRelativePath?: string | null;
+  /** 0–1 scroll progress inside the manuscript container. */
+  initialScrollRatio?: number;
   mediaAccess?: MediaImageAccessOptions | null;
   menuLanguage: MenuLanguage;
   onApproveLocalImageParent?: (resolvedPath: string) => void;
   onClose: () => void;
   onEditChapter: (path: string) => void;
   onOpenLink: (documentPath: string, href: string) => void;
+  /** Persist current chapter + scroll ratio (app-private; never writes Markdown). */
+  onReadingPositionChange?: (
+    relativePath: string,
+    scrollRatio: number,
+  ) => void;
   workspaceRoot: string;
 };
 
@@ -35,20 +45,29 @@ export function BookScopeReader({
   documents,
   failures,
   skippedForBudget,
+  initialRelativePath = null,
+  initialScrollRatio = 0,
   mediaAccess = null,
   menuLanguage,
   onApproveLocalImageParent,
   onClose,
   onEditChapter,
   onOpenLink,
+  onReadingPositionChange,
   workspaceRoot,
 }: Props) {
   const copy = readerCopy(menuLanguage);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const manuscriptRef = useRef<HTMLElement | null>(null);
+  const suppressObserverUntilRef = useRef(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+  const [showResumeNote, setShowResumeNote] = useState(
+    () => Boolean(initialRelativePath),
+  );
+  const [activeChapterIndex, setActiveChapterIndex] = useState(() =>
+    resolveReaderDocumentIndex(documents, initialRelativePath),
+  );
   const normalizedSearchQuery = searchQuery.trim();
   const searchCorpus = useMemo(
     () => createBookScopeReaderSearchCorpus(documents),
@@ -84,9 +103,29 @@ export function BookScopeReader({
     closeButtonRef.current?.focus();
   }, []);
 
+  // Restore app-private reading position once per document load.
   useEffect(() => {
-    setActiveChapterIndex(0);
-  }, [documents]);
+    const index = resolveReaderDocumentIndex(documents, initialRelativePath);
+    setActiveChapterIndex(index);
+    setShowResumeNote(Boolean(initialRelativePath));
+    const root = manuscriptRef.current;
+    if (!root || documents.length === 0) return;
+
+    suppressObserverUntilRef.current = performance.now() + 700;
+    const chapter = globalThis.document.getElementById(
+      bookReaderChapterId(index),
+    );
+    if (chapter && typeof chapter.scrollIntoView === "function") {
+      chapter.scrollIntoView({ behavior: "auto", block: "start" });
+    }
+    if (initialScrollRatio > 0.01) {
+      const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
+      root.scrollTop = maxScroll * Math.min(1, Math.max(0, initialScrollRatio));
+    }
+    if (!initialRelativePath) return;
+    const hide = window.setTimeout(() => setShowResumeNote(false), 4000);
+    return () => window.clearTimeout(hide);
+  }, [documents, initialRelativePath, initialScrollRatio]);
 
   useEffect(() => {
     const root = manuscriptRef.current;
@@ -103,6 +142,7 @@ export function BookScopeReader({
     const ratios = new Map<number, number>();
     const observer = new IntersectionObserver(
       (entries) => {
+        if (performance.now() < suppressObserverUntilRef.current) return;
         for (const entry of entries) {
           const index = Number(entry.target.getAttribute("data-chapter-index"));
           if (!Number.isFinite(index)) continue;
@@ -134,12 +174,47 @@ export function BookScopeReader({
     return () => observer.disconnect();
   }, [documents]);
 
+  // Persist scroll + chapter while reading (debounced).
+  useEffect(() => {
+    const root = manuscriptRef.current;
+    if (!root || !onReadingPositionChange || documents.length === 0) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const report = () => {
+      const document = documents[clampedActiveIndex];
+      if (!document) return;
+      const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
+      const scrollRatio =
+        maxScroll <= 0 ? 0 : Math.min(1, Math.max(0, root.scrollTop / maxScroll));
+      onReadingPositionChange(document.relativePath, scrollRatio);
+    };
+    const onScroll = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(report, 250);
+    };
+    root.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      root.removeEventListener("scroll", onScroll);
+      if (timer) clearTimeout(timer);
+      // Flush latest position when leaving the reader.
+      report();
+    };
+  }, [clampedActiveIndex, documents, onReadingPositionChange]);
+
   const scrollToChapter = (index: number) => {
     if (index < 0 || index >= documents.length) return;
+    suppressObserverUntilRef.current = performance.now() + 500;
     setActiveChapterIndex(index);
-    globalThis.document
-      .getElementById(bookReaderChapterId(index))
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const target = globalThis.document.getElementById(
+      bookReaderChapterId(index),
+    );
+    if (target && typeof target.scrollIntoView === "function") {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    const document = documents[index];
+    if (document && onReadingPositionChange) {
+      onReadingPositionChange(document.relativePath, 0);
+    }
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -271,6 +346,9 @@ export function BookScopeReader({
                 <strong>
                   {clampedActiveIndex + 1}. {activeDocument.name}
                 </strong>
+                {showResumeNote ? (
+                  <small className="book-reader-resume-note">{copy.resumed}</small>
+                ) : null}
               </p>
               <button
                 aria-label={copy.nextChapter}
@@ -353,6 +431,7 @@ function readerCopy(language: MenuLanguage) {
       next: "Next",
       previousChapter: "Previous chapter",
       nextChapter: "Next chapter",
+      resumed: "Resumed",
     };
   }
   return {
@@ -376,5 +455,6 @@ function readerCopy(language: MenuLanguage) {
     next: "次の章",
     previousChapter: "前の章へ",
     nextChapter: "次の章へ",
+    resumed: "続きから",
   };
 }

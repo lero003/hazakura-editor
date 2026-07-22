@@ -34,6 +34,11 @@ type Props = {
   nodes: readonly BookScopeNode[];
   onCommit: (nodes: readonly BookScopeNode[]) => void;
   onCancelSuggest?: () => void;
+  onExportRecipe?: () => void | Promise<void>;
+  onImportRecipeDraft?: () => Promise<{
+    nodes: readonly BookScopeNode[];
+    chapterRelativePaths: readonly string[];
+  } | null>;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenChapter: (path: string) => void;
   onReadBook?: () => void;
@@ -58,6 +63,8 @@ export function BookScopePanel({
   nodes,
   onCommit,
   onCancelSuggest = () => {},
+  onExportRecipe,
+  onImportRecipeDraft,
   onLoadDirectory,
   onOpenChapter,
   onReadBook,
@@ -146,6 +153,25 @@ export function BookScopePanel({
     setSuggestion(next);
     setEditing(true);
   };
+  const importRecipeDraft = async () => {
+    if (!onImportRecipeDraft) return;
+    const next = await onImportRecipeDraft();
+    if (!next) return;
+    restoreFocusRef.current = false;
+    setSelectedPaths(new Set(next.chapterRelativePaths));
+    setDraftNodes([...next.nodes]);
+    setSuggestion({
+      nodes: [...next.nodes],
+      chapterRelativePaths: [...next.chapterRelativePaths],
+      linkedChapterCount: next.chapterRelativePaths.length,
+      includedIndexPageCount: 0,
+      excludedSupportFileCount: 0,
+      unreadableFileCount: 0,
+      candidateLimitReached: false,
+      scanIncomplete: false,
+    });
+    setEditing(true);
+  };
 
   if (editing) {
     return (
@@ -214,6 +240,11 @@ export function BookScopePanel({
               {copy.suggest}
             </button>
           ) : null}
+          {onImportRecipeDraft ? (
+            <button onClick={() => void importRecipeDraft()} type="button">
+              {copy.importRecipe}
+            </button>
+          ) : null}
           <span className="book-scope-edit-actions-spacer" />
           <button onClick={cancelEditing} type="button">
             {copy.cancel}
@@ -265,6 +296,11 @@ export function BookScopePanel({
               {copy.suggest}
             </button>
           ) : null}
+          {onImportRecipeDraft ? (
+            <button onClick={() => void importRecipeDraft()} type="button">
+              {copy.importRecipe}
+            </button>
+          ) : null}
         </div>
       </div>
     );
@@ -295,6 +331,16 @@ export function BookScopePanel({
           <button onClick={beginEditing} ref={editTriggerRef} type="button">
             {copy.edit}
           </button>
+          {onExportRecipe ? (
+            <button onClick={() => void onExportRecipe()} type="button">
+              {copy.exportRecipe}
+            </button>
+          ) : null}
+          {onImportRecipeDraft ? (
+            <button onClick={() => void importRecipeDraft()} type="button">
+              {copy.importRecipe}
+            </button>
+          ) : null}
           {hasUnavailable ? (
             <button disabled={resolving} onClick={onRevalidate} type="button">
               {copy.recheck}
@@ -440,6 +486,8 @@ function bookScopeCopy(language: MenuLanguage) {
       readBook: "Read all",
       stopSuggestion: "Stop scan",
       suggest: "Suggest from workspace",
+      exportRecipe: "Export recipe",
+      importRecipe: "Import recipe",
       includeIndexPages: "Include index.md as cover / contents pages",
       suggestionIncomplete: "Partial scan — review before saving.",
       suggestionSummary: (count: number, linked: number, indexes: number) =>
@@ -469,6 +517,8 @@ function bookScopeCopy(language: MenuLanguage) {
     readBook: "本全体を読む",
     stopSuggestion: "走査を停止",
     suggest: "候補を作る",
+    exportRecipe: "章立てを書き出す",
+    importRecipe: "章立てを取り込む",
     includeIndexPages: "index.mdを扉・目次として含める",
     suggestionIncomplete: "走査は一部です。保存前に確認してください。",
     suggestionSummary: (count: number, linked: number, indexes: number) =>
