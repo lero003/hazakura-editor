@@ -13,6 +13,8 @@ const copy: RightPaneToggleCopy = {
   agentWindowTitle: "Open Agent Window",
   appleAssistWindow: "Hazakura Local Assist",
   appleAssistWindowTitle: "Open Hazakura Local Assist Window",
+  appleAssistUnavailableSession: "unavailable in this session",
+  appleAssistUnsupportedMac: "not supported on this Mac",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
   diffTabTitleHide: "Hide Diff",

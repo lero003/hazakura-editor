@@ -12,6 +12,8 @@ const sidePaneCopy: RightPaneToggleCopy = {
   agentWindowTitle: "Open Agent Window",
   appleAssistWindow: "Hazakura Local Assist",
   appleAssistWindowTitle: "Open Hazakura Local Assist Window",
+  appleAssistUnavailableSession: "unavailable in this session",
+  appleAssistUnsupportedMac: "not supported on this Mac",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
   diffTabTitleHide: "Hide Diff",
@@ -195,6 +197,22 @@ describe("DocumentMetaBar", () => {
     expect(button.getAttribute("title")).toContain(
       "Foundation Models unavailable",
     );
+  });
+
+  it("localizes unsupported Local Assist titles from side-pane copy", () => {
+    renderMeta(false, "apple-local", {
+      appleAssistAvailability: { kind: "unsupported" },
+      sidePaneCopy: {
+        ...sidePaneCopy,
+        appleAssistUnsupportedMac: "この Mac では利用できません",
+      },
+    });
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open Hazakura Local Assist Window — この Mac では利用できません",
+      }),
+    ).toBeTruthy();
   });
 
   it("hides the companion button when assist surface is off", () => {

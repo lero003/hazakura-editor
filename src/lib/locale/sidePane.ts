@@ -6,6 +6,8 @@ export type SidePaneCopy = {
   agentWindowTitle: string;
   appleAssistWindow: string;
   appleAssistWindowTitle: string;
+  appleAssistUnavailableSession: string;
+  appleAssistUnsupportedMac: string;
   diffTab: string;
   diffTabTitle: string;
   /** Active Diff: hide the compare pane without discarding source. */
@@ -71,6 +73,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       agentWindowTitle: "Agent まどをひらく",
       appleAssistWindow: "Hazakura Local Assist",
       appleAssistWindowTitle: "Hazakura Local Assist まどを ひらく / かくす",
+      appleAssistUnavailableSession: "この せっしょんでは つかえません",
+      appleAssistUnsupportedMac: "この Mac では つかえません",
       diffTab: "ちがひ",
       diffTabTitle: "へんかを みくらべて たしかめる",
       diffTabTitleHide: "さぶんを かくす（げんぽんは のこる）",
@@ -140,6 +144,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         agentWindowTitle: "Agent ウィンドウを開く",
         appleAssistWindow: "Hazakura Local Assist",
         appleAssistWindowTitle: "Hazakura Local Assist ウィンドウを表示 / 非表示",
+        appleAssistUnavailableSession: "このセッションでは利用できません",
+        appleAssistUnsupportedMac: "この Mac では利用できません",
         diffTab: "差分",
         diffTabTitle: "変更を見比べて確認",
         diffTabTitleHide: "差分を隠す（原稿は残る）",
@@ -209,6 +215,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         agentWindowTitle: "Open Agent window",
         appleAssistWindow: "Hazakura Local Assist",
         appleAssistWindowTitle: "Show or hide Hazakura Local Assist window",
+        appleAssistUnavailableSession: "unavailable in this session",
+        appleAssistUnsupportedMac: "not supported on this Mac",
         diffTab: "Diff",
         diffTabTitle: "Compare changes before deciding",
         diffTabTitleHide: "Hide Diff — source stays in the editor",

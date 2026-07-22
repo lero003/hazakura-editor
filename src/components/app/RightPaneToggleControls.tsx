@@ -15,6 +15,10 @@ export interface RightPaneToggleCopy {
   agentWindowTitle: string;
   appleAssistWindow: string;
   appleAssistWindowTitle: string;
+  /** Title suffix when Assist is disabled for this session. */
+  appleAssistUnavailableSession: string;
+  /** Title suffix when Assist is unsupported on this Mac. */
+  appleAssistUnsupportedMac: string;
   diffTab: string;
   diffTabTitle: string;
   diffTabTitleHide: string;

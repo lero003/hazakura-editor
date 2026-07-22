@@ -72,6 +72,7 @@ export function DocumentMetaBar({
   const appleAssistTitle = appleAssistButtonTitle(
     sidePaneCopy.appleAssistWindowTitle,
     appleAssistAvailability,
+    sidePaneCopy,
   );
   const companionCopy =
     assistSurfaceActive === "apple-local"
@@ -167,6 +168,10 @@ export function DocumentMetaBar({
 export function appleAssistButtonTitle(
   openTitle: string,
   availability: AppleAssistAvailability,
+  copy: Pick<
+    RightPaneToggleCopy,
+    "appleAssistUnavailableSession" | "appleAssistUnsupportedMac"
+  >,
 ): string {
   if (availability.kind === "available") {
     return openTitle;
@@ -175,7 +180,7 @@ export function appleAssistButtonTitle(
     return `${openTitle} — ${availability.reason}`;
   }
   if (availability.kind === "disabled") {
-    return `${openTitle} — unavailable in this session`;
+    return `${openTitle} — ${copy.appleAssistUnavailableSession}`;
   }
-  return `${openTitle} — not supported on this Mac`;
+  return `${openTitle} — ${copy.appleAssistUnsupportedMac}`;
 }
