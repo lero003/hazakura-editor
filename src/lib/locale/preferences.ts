@@ -16,6 +16,11 @@ export type PreferencesCopy = {
   appearanceAndWriting: string;
   appleAssistDiffInitiallyOpen: string;
   appleAssistDiffInitiallyOpenHint: string;
+  appleAssistStatusLabel: string;
+  appleAssistStatusAvailable: string;
+  appleAssistStatusUnavailable: (reason: string) => string;
+  appleAssistStatusDisabled: string;
+  appleAssistStatusUnsupported: string;
   autoBackup: string;
   autoBackupHint: string;
   dark: string;
@@ -77,6 +82,12 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       appleAssistDiffInitiallyOpen: "Hazakura Local Assist の さぶんを ひらく",
       appleAssistDiffInitiallyOpenHint:
         "Hazakura Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
+      appleAssistStatusLabel: "Hazakura Local Assist の じょうたい",
+      appleAssistStatusAvailable: "この Mac で つかえます。さぶんを みてから てきよう します。",
+      appleAssistStatusUnavailable: (reason) =>
+        `いま つかえません: ${reason}`,
+      appleAssistStatusDisabled: "この せっしょんでは むこうです。",
+      appleAssistStatusUnsupported: "この かんきょうでは つかえません。",
       autoBackup: "うつしのこし",
       autoBackupHint:
         "じぶんで ON にした ときだけ、ほぞんしていない へんこうを 30びょう ごとに .bak として のこします。",
@@ -152,6 +163,13 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         appleAssistDiffInitiallyOpen: "Hazakura Local Assist の差分を自動で開く",
         appleAssistDiffInitiallyOpenHint:
           "Hazakura Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
+        appleAssistStatusLabel: "Hazakura Local Assist の状態",
+        appleAssistStatusAvailable:
+          "この Mac で利用できます。提案は差分で確認してから明示的に適用します。",
+        appleAssistStatusUnavailable: (reason) =>
+          `現在は利用できません: ${reason}`,
+        appleAssistStatusDisabled: "このアプリセッションでは無効です。",
+        appleAssistStatusUnsupported: "この環境では利用できません。",
         autoBackup: "自動バックアップ",
         autoBackupHint:
           "自分で有効化した場合だけ、未保存の変更を30秒ごとに .bak として残します。",
@@ -224,6 +242,13 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         appleAssistDiffInitiallyOpen: "Open Hazakura Local Assist diff automatically",
         appleAssistDiffInitiallyOpenHint:
           "Show the compact diff immediately after Hazakura Local Assist changes the text.",
+        appleAssistStatusLabel: "Hazakura Local Assist status",
+        appleAssistStatusAvailable:
+          "Available on this Mac. Review the diff, then apply explicitly.",
+        appleAssistStatusUnavailable: (reason) =>
+          `Currently unavailable: ${reason}`,
+        appleAssistStatusDisabled: "Disabled in this app session.",
+        appleAssistStatusUnsupported: "Not supported in this environment.",
         autoBackup: "Auto-backup",
         autoBackupHint:
           "When you enable it, unsaved changes are written as .bak snapshots every 30 seconds.",

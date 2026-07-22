@@ -1,20 +1,21 @@
 # Handoff
 
 Status: Operational
-Scope: v2.1.0 search + Preview image hardening; installed gate next
+Scope: v2.2.0 quality pack; pre-submission gate next
 Authority: Medium
-Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
 
 ## Current State
 
-- Package/app version in tree: **`2.1.0`** (local candidate; not uploaded,
+- Package/app version in tree: **`2.2.0`** (local candidate; not uploaded,
   tagged, or published).
 - GitHub source / local-app tag: **`v2.0.0`** (no binary assets).
 - Published Mac App Store (last confirmed in docs): **`2.0.0`**
   (user-reported 2026-07-21).
-- **Active phase: v2.1.0 local candidate.** Bounded whole-book Reader search is
-  the one selected post-ship slice; residual polish and all other advisory
-  candidates stay parked.
+- **Active phase: v2.2.0 local candidate (pre-submission quality pack).**
+  Includes v2.1 search + Preview image hardening and the v2.2 quality pack
+  (Reader chapter nav, export Finder reveal, Book order honesty, Assist
+  availability honesty, preflight fix hints). 縦書き stays deferred.
 - **First Alpha spine is in source:** existing sidebar Files / Book switch,
   explicit Markdown selection, app-private ordered document/group tree,
   same-parent reordering, unavailable-entry retention/recheck, chapter switching
@@ -95,38 +96,36 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
-## Verification (2026-07-22)
+## Verification (2026-07-22, v2.2.0 quality pack)
+
+- Focused quality slices: Reader chapter nav, Book empty-state honesty,
+  DocumentMetaBar Assist unavailability, export reveal, preflight fix hints —
+  pass.
+- `npm run typecheck` — pass.
+- `npm test` — 202 files / 1,691 tests pass on tree `2.2.0`.
+- `npm run build:vite` — pass (existing large-chunk warning only).
+- `npm run smoke:app-store-surface` — 10 files / 108 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- Version surfaces (npm / Tauri / Cargo / lockfiles / living docs alignment
+  tests) report `2.2.0`.
+- Prior `2.1.0` signed universal App Store pkg/provenance remains evidence for
+  the search + image-hardening base; a **fresh `2.2.0` signed pkg** has not
+  been built in this quality-pack pass.
+- Not run: installed / TestFlight manual interaction; fresh App Store pkg for
+  `2.2.0`; upload / review / publication.
+
+## Verification (2026-07-22, v2.1.0 candidate base)
 
 - Focused Reader search: 2 files / 10 tests pass; frontmatter exclusion,
   Unicode/case normalization, result filtering/jump, and Escape clear are pinned.
 - Focused Preview image hardening: 3 files / 33 tests pass; near-viewport
   deferral, two-read concurrency, consent-specific loaders, failure notes, and
   reserved placeholder height are pinned.
-- `npm run typecheck` — pass.
-- `npm test` — 202 files / 1,688 tests pass after Preview image hardening.
-- `npm run build:vite` — pass (existing large-chunk warning only).
-- `npm run smoke:app-store-surface` — 10 files / 107 tests pass.
-- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
-- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
-  host-dependent ignored.
-- Previous `npm run build` — helper-enabled App Store preview build passes;
-  bundle reports `2.1.0` / `dev.hazakura.editor`; it predates the Preview
-  hardening.
-- `codesign --verify --deep --strict --verbose=2` — pass for the local preview.
-- Direct executable launch produced one `1280x820` window and was quit cleanly.
-  `open -n` remains host-blocked with `kLSNoExecutableErr`; do not report that
-  LaunchServices path as passed.
-- `npm audit --audit-level=high` — 0 vulnerabilities.
-- `cargo audit --file src-tauri/Cargo.lock` — exit 0; 18 existing allowed
-  warnings, no vulnerability.
-- Fresh signed universal App Store pkg/provenance after Preview hardening —
-  pass. Installer chain, SHA-256, payload version/build, universal
-  architectures, deep signature, App Store entitlements, and pushed source
-  commit linkage were checked.
-  App Store payload contains no Agent entry artifact. Local `spctl --type
-  install` rejection is not notarized Developer ID proof and is not claimed as
-  a pass.
-- Not run: installed / TestFlight manual interaction.
+- Previous helper-enabled App Store preview build and fresh signed universal
+  pkg for the image-hardened `2.1.0` tree passed deep signature and provenance
+  checks on that tree.
 
 ## Verification (2026-07-18)
 

@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Hazakura Editor",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "identifier": "dev.hazakura.editor",
   "build": {
     "beforeDevCommand": "npm run dev:vite",
@@ -19,7 +19,10 @@
         "minHeight": 640,
         "theme": "Dark",
         "titleBarStyle": "Overlay",
-        "trafficLightPosition": { "x": 9, "y": 18 },
+        "trafficLightPosition": {
+          "x": 9,
+          "y": 18
+        },
         "hiddenTitle": true,
         "transparent": true,
         "backgroundColor": "#101613"
@@ -34,7 +37,9 @@
     "targets": "app",
     "publisher": "Hazakura Lab",
     "copyright": "Copyright (c) 2026 Hazakura Lab. All rights reserved.",
-    "icon": ["icons/icon.icns"],
+    "icon": [
+      "icons/icon.icns"
+    ],
     "externalBin": [
       "../binaries/hazakura-local-assist-helper",
       "../binaries/hazakura-import-assist-helper"
@@ -46,22 +51,48 @@
     "fileAssociations": [
       {
         "name": "Markdown files",
-        "ext": ["md", "markdown", "mdown"],
-        "contentTypes": ["public.text"],
+        "ext": [
+          "md",
+          "markdown",
+          "mdown"
+        ],
+        "contentTypes": [
+          "public.text"
+        ],
         "role": "Editor",
         "rank": "Default"
       },
       {
         "name": "Text files",
-        "ext": ["txt", "text", "log", "rst", "adoc"],
-        "contentTypes": ["public.plain-text"],
+        "ext": [
+          "txt",
+          "text",
+          "log",
+          "rst",
+          "adoc"
+        ],
+        "contentTypes": [
+          "public.plain-text"
+        ],
         "role": "Editor",
         "rank": "Default"
       },
       {
         "name": "Data files",
-        "ext": ["json", "jsonl", "yaml", "yml", "toml", "csv", "tsv", "xml"],
-        "contentTypes": ["public.text", "public.json"],
+        "ext": [
+          "json",
+          "jsonl",
+          "yaml",
+          "yml",
+          "toml",
+          "csv",
+          "tsv",
+          "xml"
+        ],
+        "contentTypes": [
+          "public.text",
+          "public.json"
+        ],
         "role": "Editor",
         "rank": "Alternate"
       },
@@ -107,7 +138,11 @@
           "gitattributes",
           "editorconfig"
         ],
-        "contentTypes": ["public.text", "public.source-code", "public.script"],
+        "contentTypes": [
+          "public.text",
+          "public.source-code",
+          "public.script"
+        ],
         "role": "Editor",
         "rank": "Alternate"
       }

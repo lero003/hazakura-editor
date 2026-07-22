@@ -25,8 +25,8 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`2.1.0` is the current package/app version in tree** (bounded whole-book
-  Reader search). Candidate copy: `2.1.0-app-store-release-notes.md`. It is not
+- **`2.2.0` is the current package/app version in tree** (quality pack including
+  v2.1 search). Candidate copy: `2.2.0-app-store-release-notes.md`. It is not
   uploaded, tagged, or published by this archive alone.
 - **`2.0.0` is approved and published** on the Mac App Store (user-reported
   2026-07-21): Book Scope Alpha, whole-book read/export, UX quieting, and Help.
@@ -79,8 +79,10 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
-- `2.1.0-app-store-release-notes.md` is the **local candidate** for bounded
-  whole-book Reader search (package `2.1.0`; manual TestFlight gate pending).
+- `2.2.0-app-store-release-notes.md` is the **local candidate** for the v2.2
+  quality pack (package `2.2.0`; manual TestFlight gate pending).
+- `2.1.0-app-store-release-notes.md` remains historical for the folded search
+  slice.
 - `2.0.0-app-store-release-notes.md` records the published Book Scope /
   structured Markdown release.
 - `1.14.0-app-store-release-notes.md` is retained for the Continuity / Trust /

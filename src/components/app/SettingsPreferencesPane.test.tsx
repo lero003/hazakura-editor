@@ -103,6 +103,33 @@ describe("SettingsPreferencesPane", () => {
     ).toBeTruthy();
   });
 
+  it("shows Hazakura Local Assist unavailability in Preferences", () => {
+    vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
+    render(
+      <SettingsPreferencesPane
+        appleAssistAvailability={{
+          kind: "unavailable",
+          reason: "Foundation Models unavailable",
+        }}
+        copy={getPreferencesCopy("en")}
+        editorSettings={defaultEditorSettings()}
+        lModeCopy={getLModeCopy("en")}
+        menuLanguage="en"
+        onEditorSettingsChange={vi.fn()}
+        onMenuLanguageChange={vi.fn()}
+        onPreviewVisibleChange={vi.fn()}
+        onThemePreferenceChange={vi.fn()}
+        previewVisible={true}
+        themePreference="light"
+      />,
+    );
+
+    expect(screen.getByText("Hazakura Local Assist status")).toBeTruthy();
+    expect(
+      screen.getByText("Currently unavailable: Foundation Models unavailable"),
+    ).toBeTruthy();
+  });
+
   it("records an explicit user choice when toggling auto-backup", () => {
     // autoBackup トグルをクリックすると localStorage にユーザー選択が記録され、
     // editorSettings.autoBackupEnabled が反転することを本物の state で検証する。

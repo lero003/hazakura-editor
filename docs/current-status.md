@@ -3,14 +3,15 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.1.0`** across npm, Tauri, Cargo, and
+- Current package/app version: **`2.2.0`** across npm, Tauri, Cargo, and
   lockfile metadata. It is a local candidate, not uploaded, tagged, or
-  published. Notes: `docs/releases/2.1.0-app-store-release-notes.md`.
+  published. Notes: `docs/releases/2.2.0-app-store-release-notes.md`.
+  v2.1 search/image hardening is included in this package.
   GitHub source / local-app tag remains immutable **`v2.0.0`** (no binary
   assets).
 - **Published Mac App Store version: `2.0.0`.** App Review passed and the
@@ -22,10 +23,11 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 - **Prior lines:** `1.13.0` remains a historical published store baseline.
   `1.14.0` is an intermediate source tag / submission line superseded on the
   live listing by `2.0.0`. Do not rewrite those tags.
-- **Active product phase: v2.1.0 local candidate.** The one selected post-ship
-  slice is bounded whole-book Reader search. Residual polish and other review
-  candidates stay parked. Queue: `docs/current-work.md`. Phase:
-  `docs/roadmap.md`.
+- **Active product phase: v2.2.0 local candidate (pre-submission quality pack).**
+  Includes v2.1 Reader search + Preview image hardening plus Reader chapter nav,
+  export Finder reveal, Book empty-state honesty, Assist availability honesty,
+  and preflight fix hints. 縦書き stays deferred. Queue: `docs/current-work.md`.
+  Phase: `docs/roadmap.md`.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
   100 Markdown chapters, keep an app-private per-workspace ordered tree, reopen
@@ -208,8 +210,8 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.1.0` candidate version from package metadata.
-- **Open main queue:** run the fresh image-hardened `2.1.0` signed pkg through
+  diagnostics derive the current `2.2.0` candidate version from package metadata.
+- **Open main queue:** run the `2.2.0` quality-pack signed pkg through
   installed/TestFlight interaction checks.
   Published `2.0.0` remains
   hotfix-only; other advisory items stay parked.
@@ -536,7 +538,7 @@ Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree candidate: **`2.1.0`**. Scope is bounded
+- Current development-tree candidate: **`2.2.0`**. Scope includes bounded
   whole-book Reader search; local source/package evidence is recorded here and
   in `docs/internal/app-store-candidates/latest.json`. No upload, TestFlight
   install, source tag, App Review, or publication is claimed.

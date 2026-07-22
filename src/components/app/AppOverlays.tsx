@@ -565,6 +565,7 @@ export function AppOverlays({
             <PrivacyPreferencesPane doc={activeHelpDoc} />
           ) : (
             <SettingsPreferencesPane
+              appleAssistAvailability={appleAssistAvailability}
               copy={preferencesCopy}
               editorSettings={editorSettings}
               lModeCopy={lModeCopy}

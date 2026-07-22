@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-22 (v2.1.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-22 (v2.2.0 local candidate; v2.0.0 published)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.1.0`** |
+| Package / app version in tree | **`2.2.0`** |
 | GitHub source / local-app tag | **`v2.0.0`** (no binary assets) |
 | Published Mac App Store | **`2.0.0`** (user-reported 2026-07-21) |
 | Prior store / source lines | `1.13.0` published historical; `1.14.0` intermediate source tag |
-| Active product phase | **v2.1.0 local candidate** — Reader search + Preview image hardening |
+| Active product phase | **v2.2.0 local candidate** — quality pack (nav, export, honesty; no 縦書き) |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -58,18 +58,18 @@ User direction:
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[now]    v2.1.0 local candidate · search + Preview image hardening · manual gate
+[now]    v2.2.0 local candidate · quality pack · pre-submission gate
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
 
-## Active Path — v2.1 Candidate
+## Active Path — v2.2 Candidate
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
 Published `2.0.0` remains hotfix-only. The selected `2.1.0` slice does not
 reopen or rewrite that release.
 
-### Active (v2.1 whole-book search)
+### Active (v2.2 quality pack; includes v2.1)
 
 1. **Done in source:** whole-book Reader search over the existing explicit
    100-chapter / 32 MiB loaded-document budget. Live unsaved tabs win over disk.
@@ -82,9 +82,13 @@ reopen or rewrite that release.
    whole-book Reader defer permitted image reads until near the viewport and
    cap each pane at two concurrent reads. Export/e-book settle behavior and
    image consent boundaries are unchanged.
-5. **Local package gate complete:** fresh signed universal package/provenance
-   from the pushed hardening commit passes. **Next gate:** installed/TestFlight
-   manual checks. Upload, tag, review, and publication are separate actions.
+5. **v2.1 local package gate completed** on the search + image-hardening tree.
+6. **v2.2 quality pack in source:** Reader chapter prev/next + current label;
+   Book empty-state app-private order disclosure; export Finder reveal + whole-
+   book progress status; preflight fix hints; Local Assist unavailable honesty
+   on chrome and Preferences. 縦書き remains deferred.
+7. **Next gate:** full local gates, signed pkg, installed/TestFlight manual
+   checks for `2.2.0`. Upload, tag, review, and publication are separate.
 
 ### Shipped (v2.0 Book Scope Alpha)
 

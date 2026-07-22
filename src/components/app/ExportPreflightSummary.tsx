@@ -128,22 +128,40 @@ function getExportPreflightCopy(
 }
 
 function issueCopyJa(kind: string, subject: string): string {
-  if (kind === "chapter-unavailable") return `利用できない章: ${subject}`;
-  if (kind === "heading-missing") return `見出しがない章: ${subject}`;
-  if (kind === "image-unavailable") return `読み込めない画像: ${subject}`;
-  return `画像確認の上限を超えたため、残り${subject}件は未確認です。`;
+  if (kind === "chapter-unavailable") {
+    return `利用できない章: ${subject} — Bookの「再確認」か章の見直し後に再実行してください。`;
+  }
+  if (kind === "heading-missing") {
+    return `見出しがない章: ${subject} — 先頭に # 見出しを付けると目次が分かりやすくなります。`;
+  }
+  if (kind === "image-unavailable") {
+    return `読み込めない画像: ${subject} — パスやファイルの有無を確認してください。`;
+  }
+  return `画像確認の上限を超えたため、残り${subject}件は未確認です。必要なら件数を減らして再確認してください。`;
 }
 
 function issueCopyKana(kind: string, subject: string): string {
-  if (kind === "chapter-unavailable") return `つかえない しょう: ${subject}`;
-  if (kind === "heading-missing") return `みだしが ない しょう: ${subject}`;
-  if (kind === "image-unavailable") return `よめない がぞう: ${subject}`;
-  return `のこり ${subject}けんの がぞうは みかくにんです。`;
+  if (kind === "chapter-unavailable") {
+    return `つかえない しょう: ${subject} — Book の さいかくにん か しょうの なおしご さいじっこう して ください。`;
+  }
+  if (kind === "heading-missing") {
+    return `みだしが ない しょう: ${subject} — さいしょに # みだし を つけると もくじが わかりやすいです。`;
+  }
+  if (kind === "image-unavailable") {
+    return `よめない がぞう: ${subject} — ぱす や ふぁいるの ありなし を かくにん して ください。`;
+  }
+  return `のこり ${subject}けんの がぞうは みかくにんです。ひつようなら けんすうを へらして さいかくにん して ください。`;
 }
 
 function issueCopyEn(kind: string, subject: string): string {
-  if (kind === "chapter-unavailable") return `Unavailable chapter: ${subject}`;
-  if (kind === "heading-missing") return `Chapter without a heading: ${subject}`;
-  if (kind === "image-unavailable") return `Unavailable image: ${subject}`;
-  return `${subject} image(s) were not checked because the limit was reached.`;
+  if (kind === "chapter-unavailable") {
+    return `Unavailable chapter: ${subject} — recheck or edit chapters in Book, then try again.`;
+  }
+  if (kind === "heading-missing") {
+    return `Chapter without a heading: ${subject} — add a leading # heading for a clearer table of contents.`;
+  }
+  if (kind === "image-unavailable") {
+    return `Unavailable image: ${subject} — check the path and that the file still exists.`;
+  }
+  return `${subject} image(s) were not checked because the limit was reached. Reduce the set and recheck if needed.`;
 }

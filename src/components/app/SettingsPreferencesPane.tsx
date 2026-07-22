@@ -7,10 +7,12 @@ import type {
   ThemePreference,
 } from "../../types";
 import { AUTO_BACKUP_USER_CHOICE_STORAGE_KEY as AUTO_BACKUP_CHOICE_KEY } from "../../types";
+import type { AppleAssistAvailability } from "../../lib/tauri";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { ToggleSwitch } from "../common/ToggleSwitch";
 
 type SettingsPreferencesPaneProps = {
+  appleAssistAvailability?: AppleAssistAvailability;
   copy: PreferencesCopy;
   editorSettings: EditorSettings;
   lModeCopy: LModeCopy;
@@ -42,6 +44,7 @@ const AMBIENT_OPTIONS: {
 ];
 
 export function SettingsPreferencesPane({
+  appleAssistAvailability = { kind: "unsupported" },
   copy,
   editorSettings,
   lModeCopy,
@@ -54,6 +57,10 @@ export function SettingsPreferencesPane({
   themePreference,
 }: SettingsPreferencesPaneProps) {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
+  const appleAssistStatus = appleAssistStatusText(
+    copy,
+    appleAssistAvailability,
+  );
 
   return (
     <div className="preferences-sections settings-preferences">
@@ -258,17 +265,27 @@ export function SettingsPreferencesPane({
           }}
         />
         {appleLocalAssistAllowed ? (
-          <ToggleSwitch
-            checked={editorSettings.appleAssistDiffInitiallyOpen}
-            hint={copy.appleAssistDiffInitiallyOpenHint}
-            label={copy.appleAssistDiffInitiallyOpen}
-            onChange={(appleAssistDiffInitiallyOpen) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                appleAssistDiffInitiallyOpen,
-              }))
-            }
-          />
+          <>
+            <div
+              className="field-control"
+              role="status"
+              aria-label={copy.appleAssistStatusLabel}
+            >
+              <span>{copy.appleAssistStatusLabel}</span>
+              <span className="field-hint">{appleAssistStatus}</span>
+            </div>
+            <ToggleSwitch
+              checked={editorSettings.appleAssistDiffInitiallyOpen}
+              hint={copy.appleAssistDiffInitiallyOpenHint}
+              label={copy.appleAssistDiffInitiallyOpen}
+              onChange={(appleAssistDiffInitiallyOpen) =>
+                onEditorSettingsChange((current) => ({
+                  ...current,
+                  appleAssistDiffInitiallyOpen,
+                }))
+              }
+            />
+          </>
         ) : null}
         <label className="field-control">
           <span>{copy.menuLanguage}</span>
@@ -385,6 +402,22 @@ export function SettingsPreferencesPane({
       </section>
     </div>
   );
+}
+
+function appleAssistStatusText(
+  copy: PreferencesCopy,
+  availability: AppleAssistAvailability,
+): string {
+  if (availability.kind === "available") {
+    return copy.appleAssistStatusAvailable;
+  }
+  if (availability.kind === "unavailable") {
+    return copy.appleAssistStatusUnavailable(availability.reason);
+  }
+  if (availability.kind === "disabled") {
+    return copy.appleAssistStatusDisabled;
+  }
+  return copy.appleAssistStatusUnsupported;
 }
 
 function clampNumber(

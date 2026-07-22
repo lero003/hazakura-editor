@@ -1,6 +1,6 @@
 [package]
 name = "hazakura-editor"
-version = "2.1.0"
+version = "2.2.0"
 description = "Markdown-safe editor prototype"
 authors = ["Hazakura Lab"]
 edition = "2021"
