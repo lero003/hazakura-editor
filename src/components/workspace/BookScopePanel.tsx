@@ -230,6 +230,7 @@ export function BookScopePanel({
     return (
       <div className="book-scope-panel book-scope-empty">
         <p>{copy.empty}</p>
+        <p className="book-scope-storage-note">{copy.storageNote}</p>
         {suggestionError ? (
           <p className="book-scope-inline-error" role="alert">
             {suggestionError}
@@ -431,6 +432,8 @@ function bookScopeCopy(language: MenuLanguage) {
       choose: "Choose chapters",
       edit: "Edit",
       empty: "Choose Markdown files to treat as one book.",
+      storageNote:
+        "Chapter order is saved on this Mac with the app. It is not written into the folder, and it is not OKF book order.",
       recheck: "Recheck",
       save: "Save",
       loadingReader: "Loading…",
@@ -458,6 +461,8 @@ function bookScopeCopy(language: MenuLanguage) {
     choose: "章を選ぶ",
     edit: "編集",
     empty: "Markdownを選び、一冊として扱います。",
+    storageNote:
+      "章の順序はこの Mac のアプリ内に保存します。フォルダ内の並びや OKF の順序ではありません。",
     recheck: "再確認",
     save: "保存",
     loadingReader: "読み込み中…",

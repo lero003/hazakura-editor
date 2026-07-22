@@ -47,6 +47,32 @@ const workspaceTree: WorkspaceTreeEntry = {
 afterEach(cleanup);
 
 describe("BookScopePanel", () => {
+  it("discloses app-private chapter order storage on the empty state", () => {
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={[]}
+        chapters={[]}
+        menuLanguage="ja"
+        nodes={[]}
+        onCommit={vi.fn()}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onRevalidate={vi.fn()}
+        resolving={false}
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "章の順序はこの Mac のアプリ内に保存します。フォルダ内の並びや OKF の順序ではありません。",
+      ),
+    ).toBeTruthy();
+  });
+
   it("opens workspace suggestions as a draft and commits only on Save", async () => {
     const onCommit = vi.fn();
     const onSuggest = vi.fn(async () => ({

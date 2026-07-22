@@ -132,6 +132,11 @@
   background: var(--accent-soft);
 }
 
+.book-reader-contents button.book-reader-contents-active {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
 .book-reader-contents button span {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
@@ -148,6 +153,66 @@
   color: var(--text-muted);
   font-size: 0.68rem;
   font-variant-numeric: tabular-nums;
+}
+
+.book-reader-manuscript-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  min-width: 0;
+}
+
+.book-reader-chapter-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-strong) 88%, var(--surface-muted));
+}
+
+.book-reader-chapter-bar button {
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.book-reader-chapter-bar button:disabled {
+  opacity: 0.45;
+}
+
+.book-reader-chapter-bar button:not(:disabled):hover,
+.book-reader-chapter-bar button:not(:disabled):focus-visible {
+  background: var(--accent-soft);
+}
+
+.book-reader-chapter-bar-label {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.book-reader-chapter-bar-label span {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+.book-reader-chapter-bar-label strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .book-reader-manuscript {
@@ -649,6 +714,13 @@
   flex: 1;
   overflow: auto;
   padding: 2px 10px 12px;
+}
+
+.book-scope-storage-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .book-scope-empty {

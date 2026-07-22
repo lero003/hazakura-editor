@@ -6,11 +6,14 @@ import {
 import { AgentWindowIcon, SparklesIcon } from "./Icons";
 import type { AssistSurfacePreference, EditorTab } from "../../types";
 import type { LModeCopy } from "../../lib/locale";
+import type { AppleAssistAvailability } from "../../lib/tauri";
 
 type DocumentMetaBarProps = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
   agentWorkbenchAvailable: boolean;
+  /** Current on-device Assist probe result. Used for honest button titles. */
+  appleAssistAvailability?: AppleAssistAvailability;
   assistSurfaceActive: AssistSurfacePreference;
   diffPaneActive: boolean;
   ebookPaneActive: boolean;
@@ -39,6 +42,7 @@ export function DocumentMetaBar({
   activeDirty,
   activeTab,
   agentWorkbenchAvailable,
+  appleAssistAvailability = { kind: "unsupported" },
   assistSurfaceActive,
   diffPaneActive,
   ebookPaneActive,
@@ -65,18 +69,24 @@ export function DocumentMetaBar({
     !lModeEnabled &&
     (assistSurfaceActive === "apple-local" ||
       (assistSurfaceActive === "external-cli" && agentWorkbenchAvailable));
+  const appleAssistTitle = appleAssistButtonTitle(
+    sidePaneCopy.appleAssistWindowTitle,
+    appleAssistAvailability,
+  );
   const companionCopy =
     assistSurfaceActive === "apple-local"
       ? {
           icon: <SparklesIcon />,
           label: sidePaneCopy.appleAssistWindow,
-          title: sidePaneCopy.appleAssistWindowTitle,
+          title: appleAssistTitle,
+          unavailable: appleAssistAvailability.kind !== "available",
           onClick: onOpenAppleAssistWindow,
         }
       : {
           icon: <AgentWindowIcon />,
           label: sidePaneCopy.agentWindow,
           title: sidePaneCopy.agentWindowTitle,
+          unavailable: false,
           onClick: onOpenAgentWindow,
         };
 
@@ -130,7 +140,11 @@ export function DocumentMetaBar({
           >
             <button
               aria-label={companionCopy.title}
-              className="open-agent-window-button"
+              className={
+                companionCopy.unavailable
+                  ? "open-agent-window-button open-agent-window-button-unavailable"
+                  : "open-agent-window-button"
+              }
               onClick={companionCopy.onClick}
               title={companionCopy.title}
               type="button"
@@ -147,4 +161,21 @@ export function DocumentMetaBar({
       ) : null}
     </div>
   );
+}
+
+/** Surface a short reason on the chrome button without inventing a second status surface. */
+export function appleAssistButtonTitle(
+  openTitle: string,
+  availability: AppleAssistAvailability,
+): string {
+  if (availability.kind === "available") {
+    return openTitle;
+  }
+  if (availability.kind === "unavailable") {
+    return `${openTitle} — ${availability.reason}`;
+  }
+  if (availability.kind === "disabled") {
+    return `${openTitle} — unavailable in this session`;
+  }
+  return `${openTitle} — not supported on this Mac`;
 }

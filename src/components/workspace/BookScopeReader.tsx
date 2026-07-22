@@ -46,7 +46,9 @@ export function BookScopeReader({
   const copy = readerCopy(menuLanguage);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
+  const manuscriptRef = useRef<HTMLElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const normalizedSearchQuery = searchQuery.trim();
   const searchCorpus = useMemo(
     () => createBookScopeReaderSearchCorpus(documents),
@@ -70,10 +72,75 @@ export function BookScopeReader({
     (total, match) => total + match.occurrenceCount,
     0,
   );
+  const clampedActiveIndex =
+    documents.length === 0
+      ? 0
+      : Math.min(Math.max(activeChapterIndex, 0), documents.length - 1);
+  const activeDocument = documents[clampedActiveIndex] ?? null;
+  const canGoPrevious = clampedActiveIndex > 0;
+  const canGoNext = clampedActiveIndex < documents.length - 1;
 
   useEffect(() => {
     closeButtonRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    setActiveChapterIndex(0);
+  }, [documents]);
+
+  useEffect(() => {
+    const root = manuscriptRef.current;
+    if (!root || documents.length === 0) return;
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const chapterElements = documents
+      .map((_, index) =>
+        globalThis.document.getElementById(bookReaderChapterId(index)),
+      )
+      .filter((element): element is HTMLElement => element !== null);
+    if (chapterElements.length === 0) return;
+
+    const ratios = new Map<number, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const index = Number(entry.target.getAttribute("data-chapter-index"));
+          if (!Number.isFinite(index)) continue;
+          ratios.set(index, entry.isIntersecting ? entry.intersectionRatio : 0);
+        }
+        let bestIndex = 0;
+        let bestRatio = -1;
+        for (const [index, ratio] of ratios) {
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestIndex = index;
+          }
+        }
+        if (bestRatio > 0) {
+          setActiveChapterIndex(bestIndex);
+        }
+      },
+      {
+        root,
+        // Prefer the chapter occupying the upper half of the manuscript.
+        rootMargin: "0px 0px -45% 0px",
+        threshold: [0, 0.15, 0.35, 0.55, 0.75, 1],
+      },
+    );
+
+    for (const element of chapterElements) {
+      observer.observe(element);
+    }
+    return () => observer.disconnect();
+  }, [documents]);
+
+  const scrollToChapter = (index: number) => {
+    if (index < 0 || index >= documents.length) return;
+    setActiveChapterIndex(index);
+    globalThis.document
+      .getElementById(bookReaderChapterId(index))
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
@@ -165,12 +232,14 @@ export function BookScopeReader({
           {visibleContents.map(({ document, documentIndex, occurrenceCount }) => (
             <button
               key={document.path}
+              aria-current={documentIndex === clampedActiveIndex ? "true" : undefined}
               aria-label={copy.goToLabel(document.name, occurrenceCount)}
-              onClick={() =>
-                globalThis.document
-                  .getElementById(bookReaderChapterId(documentIndex))
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              className={
+                documentIndex === clampedActiveIndex
+                  ? "book-reader-contents-active"
+                  : undefined
               }
+              onClick={() => scrollToChapter(documentIndex)}
               type="button"
             >
               <span>{documentIndex + 1}</span>
@@ -182,43 +251,76 @@ export function BookScopeReader({
           ))}
         </nav>
 
-        <main className="book-reader-manuscript">
-          {documents.length === 0 ? (
-            <p className="book-reader-empty">{copy.empty}</p>
-          ) : null}
-          {documents.map((document, index) => (
-            <section
-              className="book-reader-chapter"
-              id={bookReaderChapterId(index)}
-              key={document.path}
+        <div className="book-reader-manuscript-shell">
+          {activeDocument ? (
+            <div
+              aria-label={copy.chapterNav}
+              className="book-reader-chapter-bar"
+              role="navigation"
             >
-              <header>
-                <h2>
-                  <span>{index + 1}.</span> {document.name}
-                  {document.usesLiveBuffer ? <small>{copy.liveBuffer}</small> : null}
-                </h2>
-                <button
-                  aria-label={copy.editLabel(document.name)}
-                  onClick={() => onEditChapter(document.path)}
-                  type="button"
-                >
-                  {copy.edit}
-                </button>
-              </header>
-              <Suspense fallback={<p>{copy.loading}</p>}>
-                <PreviewPane
-                  documentKey={`book-reader:${document.path}`}
-                  documentPath={document.path}
-                  mediaAccess={mediaAccess}
-                  onApproveLocalImageParent={onApproveLocalImageParent}
-                  onOpenLocalLink={(href) => onOpenLink(document.path, href)}
-                  source={stripYamlFrontmatter(document.source)}
-                  workspaceRoot={workspaceRoot}
-                />
-              </Suspense>
-            </section>
-          ))}
-        </main>
+              <button
+                aria-label={copy.previousChapter}
+                disabled={!canGoPrevious}
+                onClick={() => scrollToChapter(clampedActiveIndex - 1)}
+                type="button"
+              >
+                {copy.previous}
+              </button>
+              <p className="book-reader-chapter-bar-label">
+                <span>{copy.nowReading}</span>
+                <strong>
+                  {clampedActiveIndex + 1}. {activeDocument.name}
+                </strong>
+              </p>
+              <button
+                aria-label={copy.nextChapter}
+                disabled={!canGoNext}
+                onClick={() => scrollToChapter(clampedActiveIndex + 1)}
+                type="button"
+              >
+                {copy.next}
+              </button>
+            </div>
+          ) : null}
+          <main className="book-reader-manuscript" ref={manuscriptRef}>
+            {documents.length === 0 ? (
+              <p className="book-reader-empty">{copy.empty}</p>
+            ) : null}
+            {documents.map((document, index) => (
+              <section
+                className="book-reader-chapter"
+                data-chapter-index={index}
+                id={bookReaderChapterId(index)}
+                key={document.path}
+              >
+                <header>
+                  <h2>
+                    <span>{index + 1}.</span> {document.name}
+                    {document.usesLiveBuffer ? <small>{copy.liveBuffer}</small> : null}
+                  </h2>
+                  <button
+                    aria-label={copy.editLabel(document.name)}
+                    onClick={() => onEditChapter(document.path)}
+                    type="button"
+                  >
+                    {copy.edit}
+                  </button>
+                </header>
+                <Suspense fallback={<p>{copy.loading}</p>}>
+                  <PreviewPane
+                    documentKey={`book-reader:${document.path}`}
+                    documentPath={document.path}
+                    mediaAccess={mediaAccess}
+                    onApproveLocalImageParent={onApproveLocalImageParent}
+                    onOpenLocalLink={(href) => onOpenLink(document.path, href)}
+                    source={stripYamlFrontmatter(document.source)}
+                    workspaceRoot={workspaceRoot}
+                  />
+                </Suspense>
+              </section>
+            ))}
+          </main>
+        </div>
       </div>
     </div>
   );
@@ -245,6 +347,12 @@ function readerCopy(language: MenuLanguage) {
       searchSummary: (chapters: number, occurrences: number) =>
         `${chapters} chapter(s), ${occurrences} match(es)`,
       count: (count: number) => `${count} item(s) loaded`,
+      chapterNav: "Chapter navigation",
+      nowReading: "Now reading",
+      previous: "Previous",
+      next: "Next",
+      previousChapter: "Previous chapter",
+      nextChapter: "Next chapter",
     };
   }
   return {
@@ -262,5 +370,11 @@ function readerCopy(language: MenuLanguage) {
     searchSummary: (chapters: number, occurrences: number) =>
       `${chapters}章・${occurrences}件一致`,
     count: (count: number) => `${count}件を読み込み`,
+    chapterNav: "章の移動",
+    nowReading: "いま読んでいる章",
+    previous: "前の章",
+    next: "次の章",
+    previousChapter: "前の章へ",
+    nextChapter: "次の章へ",
   };
 }

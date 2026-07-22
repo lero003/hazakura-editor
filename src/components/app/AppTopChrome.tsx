@@ -19,6 +19,7 @@ import type {
   RightPaneMode,
   AssistSurfacePreference,
 } from "../../types";
+import type { AppleAssistAvailability } from "../../lib/tauri";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type AppTopChromeProps = {
@@ -26,6 +27,7 @@ type AppTopChromeProps = {
   activeTab: EditorTab | null;
   activeTabId: string | null;
   agentWorkbenchAvailable: boolean;
+  appleAssistAvailability?: AppleAssistAvailability;
   assistSurfaceActive: AssistSurfacePreference;
   closeFileLabel?: (name: string) => string;
   draggingTabId: string | null;
@@ -78,6 +80,7 @@ export function AppTopChrome({
   activeTab,
   activeTabId,
   agentWorkbenchAvailable,
+  appleAssistAvailability,
   assistSurfaceActive,
   closeFileLabel,
   draggingTabId,
@@ -162,6 +165,7 @@ export function AppTopChrome({
         activeDirty={activeDirty}
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
+        appleAssistAvailability={appleAssistAvailability}
         assistSurfaceActive={assistSurfaceActive}
         diffPaneActive={!referencePaneVisible && sidePaneMode === "compare"}
         ebookAvailable={activeTab !== null && selectedImage === null}

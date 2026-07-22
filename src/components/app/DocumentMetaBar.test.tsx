@@ -74,6 +74,7 @@ function renderMeta(
       activeDirty
       activeTab={activeTab}
       agentWorkbenchAvailable
+      appleAssistAvailability={{ kind: "available" }}
       assistSurfaceActive={assistSurfacePreference}
       diffPaneActive={false}
       ebookPaneActive={false}
@@ -177,6 +178,23 @@ describe("DocumentMetaBar", () => {
       screen.getByRole("button", { name: "Open Hazakura Local Assist Window" }),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
+  });
+
+  it("surfaces Local Assist unavailability on the companion button", () => {
+    renderMeta(false, "apple-local", {
+      appleAssistAvailability: {
+        kind: "unavailable",
+        reason: "Foundation Models unavailable",
+      },
+    });
+
+    const button = screen.getByRole("button", {
+      name: "Open Hazakura Local Assist Window — Foundation Models unavailable",
+    });
+    expect(button.className).toContain("open-agent-window-button-unavailable");
+    expect(button.getAttribute("title")).toContain(
+      "Foundation Models unavailable",
+    );
   });
 
   it("hides the companion button when assist surface is off", () => {

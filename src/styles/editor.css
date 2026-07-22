@@ -333,6 +333,11 @@
   outline-offset: 1px;
 }
 
+.open-agent-window-button-unavailable {
+  color: color-mix(in srgb, var(--text-muted) 88%, var(--text));
+  opacity: 0.72;
+}
+
 .open-agent-window-icon {
   align-items: center;
   display: inline-flex;

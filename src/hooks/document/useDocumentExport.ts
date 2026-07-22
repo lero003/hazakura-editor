@@ -6,6 +6,7 @@ import {
   fetchRemoteImage,
   openLocalImageUnderRoots,
   openWorkspaceImage,
+  revealPathInFileManager,
   saveBinaryFileAs,
   saveTextFileAs,
 } from "../../lib/tauri";
@@ -245,7 +246,11 @@ export function useDocumentExport({
       return;
     }
 
-    setStatus("Preparing PDF export...");
+    setStatus(
+      scope === "book"
+        ? "Preparing whole-book PDF export..."
+        : "Preparing PDF export...",
+    );
     try {
       let bookDocuments: Awaited<ReturnType<typeof loadBookScopeReaderDocuments>> | null = null;
       if (scope === "book") {
@@ -258,6 +263,7 @@ export function useDocumentExport({
           setStatus("PDF export stopped; book chapters changed or are unavailable");
           return;
         }
+        setStatus("Loading whole-book chapters for PDF...");
         bookDocuments = await loadBookScopeReaderDocuments({
           chapters: currentChapters,
           tabs: tabsRef.current,
@@ -272,6 +278,7 @@ export function useDocumentExport({
           setStatus("PDF export stopped; book chapters could not be read completely");
           return;
         }
+        setStatus("Writing whole-book PDF...");
       }
       const exportMedia = buildExportMediaAccess();
       let rendered = bookDocuments
@@ -659,6 +666,13 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
         await exportPdfFile(destPath, standaloneHtml);
         // Keep the destination path visible (HTML/EPUB parity). Do not
         // auto-clear success so the user can still read where the file went.
+        // Reveal the finished file so long book exports do not end only as a
+        // status path string.
+        try {
+          await revealPathInFileManager(destPath);
+        } catch (revealError) {
+          console.warn("Failed to reveal exported PDF in file manager", revealError);
+        }
         setStatus(
           embedResult.failedPaths.length > 0
             ? `PDF exported with ${embedResult.failedPaths.length} image warning(s): ${destPath}`
@@ -845,6 +859,11 @@ ${bodyHtml}
 </html>`;
 
       await saveTextFileAs(destPath, standaloneHtml, "lf", "utf-8", null);
+      try {
+        await revealPathInFileManager(destPath);
+      } catch (revealError) {
+        console.warn("Failed to reveal exported HTML in file manager", revealError);
+      }
       setStatus(
         htmlEmbed.failedPaths.length > 0
           ? `Exported HTML with image warnings: ${destPath}`
@@ -906,6 +925,11 @@ ${bodyHtml}
     setEpubExportRequest(null);
 
     try {
+      setStatus(
+        scope === "book"
+          ? "Preparing whole-book EPUB export..."
+          : "Preparing EPUB export...",
+      );
       let bookDocuments: Awaited<ReturnType<typeof loadBookScopeReaderDocuments>> | null = null;
       if (scope === "book") {
         const currentChapters = bookScopeChaptersRef.current;
@@ -918,6 +942,7 @@ ${bodyHtml}
           setStatus("Export EPUB beta stopped; book chapters changed or are unavailable");
           return;
         }
+        setStatus("Loading whole-book chapters for EPUB...");
         bookDocuments = await loadBookScopeReaderDocuments({
           chapters: currentChapters,
           tabs: tabsRef.current,
@@ -932,6 +957,7 @@ ${bodyHtml}
           setStatus("Export EPUB beta stopped; book chapters could not be read completely");
           return;
         }
+        setStatus("Writing whole-book EPUB...");
       }
       const destPath = await saveDialog({
         defaultPath:
@@ -983,6 +1009,11 @@ ${bodyHtml}
         workspaceRoot: workspaceRootPath,
       });
       await saveBinaryFileAs(destPath, archive);
+      try {
+        await revealPathInFileManager(destPath);
+      } catch (revealError) {
+        console.warn("Failed to reveal exported EPUB in file manager", revealError);
+      }
       setStatus(
         warnings.length > 0
           ? `Exported EPUB with image warnings: ${destPath}`

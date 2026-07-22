@@ -18,6 +18,7 @@ const tauriApi = vi.hoisted(() => ({
   isTauriRuntime: vi.fn(() => false),
   openLocalImageUnderRoots: vi.fn(),
   openWorkspaceImage: vi.fn(),
+  revealPathInFileManager: vi.fn(),
   saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
 }));
@@ -45,6 +46,7 @@ vi.mock("../../lib/tauri", () => ({
   isTauriRuntime: tauriApi.isTauriRuntime,
   openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
+  revealPathInFileManager: tauriApi.revealPathInFileManager,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
 }));
@@ -133,6 +135,8 @@ describe("useDocumentExport", () => {
     tauriApi.openLocalImageUnderRoots.mockReset();
     tauriApi.fetchRemoteImage.mockReset();
     tauriApi.exportPdfFile.mockReset();
+    tauriApi.revealPathInFileManager.mockReset();
+    tauriApi.revealPathInFileManager.mockResolvedValue(undefined);
     tauriApi.isTauriRuntime.mockReset();
     tauriApi.isTauriRuntime.mockReturnValue(false);
     filesApi.openTextFile.mockReset();
@@ -339,6 +343,9 @@ describe("useDocumentExport", () => {
     expect(tauriApi.exportPdfFile).toHaveBeenCalledWith(
       "/tmp/print-me.pdf",
       expect.stringContaining("@page { margin: 25mm 22mm; }"),
+    );
+    expect(tauriApi.revealPathInFileManager).toHaveBeenCalledWith(
+      "/tmp/print-me.pdf",
     );
     const exportedPdfHtml = tauriApi.exportPdfFile.mock.calls[0]?.[1] ?? "";
     expect(exportedPdfHtml).toContain("--pdf-page-width: 595px;");
@@ -680,6 +687,7 @@ describe("useDocumentExport", () => {
       "/tmp/a.epub",
       new Uint8Array([1, 2, 3]),
     );
+    expect(tauriApi.revealPathInFileManager).toHaveBeenCalledWith("/tmp/a.epub");
     expect(setStatus).toHaveBeenCalledWith("Exported EPUB: /tmp/a.epub");
   });
 
