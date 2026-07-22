@@ -126,11 +126,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   dependency audit as freshly passed.
 - Version surfaces (npm / Tauri / Cargo / lockfiles / living docs alignment
   tests) report `2.3.0`.
-- Prior `2.1.0` signed universal App Store pkg/provenance remains evidence for
-  the search + image-hardening base; a **fresh `2.3.0` signed pkg** has not
-  been built in this quality-pack pass.
-- Not run: installed / TestFlight manual interaction; fresh App Store pkg for
-  `2.3.0`; upload / review / publication.
+- Fresh signed universal App Store pkg candidate for `2.3.0` is recorded in
+  `docs/internal/app-store-candidates/latest.json`; signature, entitlements,
+  bundled helpers/notices, installer signature, and SHA-256 checks passed.
+- Not run: installed / TestFlight manual interaction; upload / Apple validation /
+  review / publication.
 
 ## Verification (2026-07-22, v2.1.0 candidate base)
 

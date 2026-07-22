@@ -128,11 +128,12 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   Rust was rechecked at **367 pass / 2 host-dependent ignored**. A parent
   workspace fixture was also opened in the latest local preview bundle; its
   nested document-relative image appeared in both Preview and e-book display.
-  This is local bundle smoke, not installed/TestFlight proof. A
-  **fresh signed universal App Store pkg for
-  `2.3.0` is not yet built** in this pass; the prior `2.1.0` image-hardened
-  pkg remains the last packaging evidence. Installed/TestFlight interaction
-  remains unperformed and is the current human gate before upload.
+  This is local bundle smoke, not installed/TestFlight proof. A fresh signed
+  universal App Store pkg candidate for `2.3.0` is recorded in
+  `docs/internal/app-store-candidates/latest.json`; local signature, entitlement,
+  payload, and checksum checks passed. This is not upload or Apple processing
+  evidence. Installed/TestFlight interaction remains unperformed and is the
+  current human gate before upload.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -978,10 +979,11 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Build a fresh signed universal App Store pkg for **`2.3.0`**, then run the
-   installed/TestFlight manual gate in `docs/current-work.md` and
-   `docs/releases/2.3.0-app-store-release-notes.md`. Source gates are green;
-   pkg for `2.3.0` is still pending.
+1. Use the signed universal App Store pkg candidate recorded in
+   `docs/internal/app-store-candidates/latest.json` for the installed/TestFlight
+   manual gate in `docs/current-work.md` and
+   `docs/releases/2.3.0-app-store-release-notes.md`. Upload remains a separate
+   human-approved action.
 2. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
    reproduced review or daily-use blockers.
 3. **Park** residual polish, broad evidence matrix, 縦書き, and bulk digestion

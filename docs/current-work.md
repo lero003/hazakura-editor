@@ -54,8 +54,10 @@ from the v2.x practicalization pool (excluding 縦書き).
 
 1. Local source gates and helper-enabled App Store preview bundle are green
    after the image/export repair.
-2. Fresh signed universal pkg + installed/TestFlight manual gate (human),
-   including parent-workspace images and the selected EPUB cover in Apple Books.
+2. Latest signed universal pkg candidate is recorded in
+   `docs/internal/app-store-candidates/latest.json`. Installed/TestFlight manual
+   gate remains human-only, including parent-workspace images and the selected
+   EPUB cover in Apple Books.
 3. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
    auto-load recipes.
 
