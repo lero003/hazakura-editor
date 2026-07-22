@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: v2.3.0 Book UX; pre-submission gate next
+Scope: v2.3.0 Book UX + image/export repair; pre-submission gate next
 Authority: Medium
-Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Current State
 
@@ -48,8 +48,10 @@ Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
 - **Preview image loading is bounded in source:** interactive Preview and each
   whole-book Reader chapter keep permitted image references inert until near
   the viewport, reserve placeholder height, and run at most two reads per pane.
-  e-book/PDF/EPUB retain eager settle behavior. Source and media consent policy
-  are unchanged.
+  A delayed fallback now routes still-unreported placeholders through the same
+  bounded queue when WKWebView omits intersection delivery, covering the
+  parent-workspace blank-image regression. e-book/PDF/EPUB retain eager settle
+  behavior. Source and media consent policy are unchanged.
 - **Book frontmatter presentation is aligned:** closed leading YAML is stripped
   for whole-book Reader and PDF, matching EPUB, without changing source. Custom
   metadata is not mapped into cover/part/chapter semantics.
@@ -65,6 +67,10 @@ Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
   fallback. Book storage is versioned v2; Markdown source and OKF metadata are
   unchanged. Heavy-manuscript Apple Books interaction remains the manual proof
   boundary.
+- **Explicit EPUB cover is in v2.3 source:** the EPUB dialog optionally selects
+  one local PNG/JPEG/GIF/WebP file for that export. The archive emits a marked
+  cover image and cover XHTML before content. No first-image inference, source
+  rewrite, persistent cover setting, cropping, or cover editor was added.
 - **Book Scope UX quieting is in source:** settled list = read/edit primary;
   suggest only in empty/edit setup; recheck only when unavailable; quieter
   path/label density; shorter OKF review intro.
@@ -96,18 +102,28 @@ Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
-## Verification (2026-07-22, v2.3.0 Book UX)
+## Verification (2026-07-23, v2.3.0 Book UX + image/export repair)
 
-- Focused quality slices: Reader chapter nav, Book empty-state honesty,
-  DocumentMetaBar Assist unavailability, export reveal, preflight fix hints —
-  pass.
+- Focused image/EPUB slices: 6 files / 122 tests pass, including missed
+  intersection fallback, Preview/Reader regression, explicit cover dialog,
+  archive contract, and selected-cover file loading.
 - `npm run typecheck` — pass.
-- `npm test` — 202 files / 1,691 tests pass on tree `2.3.0`.
+- `npm test` — 204 files / 1,709 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
-- `npm run smoke:app-store-surface` — 10 files / 108 tests pass.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `npm run build` — helper-enabled App Store preview `.app` built successfully;
+  ad-hoc signed, not notarized and not a submission pkg.
+- Generated covered EPUB — external `epubcheck` 3.3: 0 fatal errors / 0 errors /
+  0 warnings.
+- Latest local preview bundle — parent workspace with nested `book/chapter.md`
+  and `images/cover.png`: image visible in Preview and e-book display. The
+  fixture tab was closed and the prior workspace restored afterward.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
   host-dependent ignored.
+- `npm audit` / `cargo audit` — not completed in this pass. External advisory
+  access was unavailable under the current execution boundary; do not treat
+  dependency audit as freshly passed.
 - Version surfaces (npm / Tauri / Cargo / lockfiles / living docs alignment
   tests) report `2.3.0`.
 - Prior `2.1.0` signed universal App Store pkg/provenance remains evidence for

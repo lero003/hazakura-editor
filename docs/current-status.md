@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Current State
 
@@ -84,10 +84,13 @@ Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
 - **Interactive Preview image loading is bounded near the viewport.** Workspace,
   explicitly approved outside-local, and enabled remote images stay as inert,
   height-reserved placeholders until they approach the visible area, with at
-  most two reads in flight per Preview pane. Whole-book Reader inherits the
-  same behavior. e-book pagination and PDF/EPUB export deliberately keep their
-  existing all-image settle path. This changes neither Markdown source nor the
-  local/remote consent boundary.
+  most two reads in flight per Preview pane. If WKWebView does not deliver an
+  intersection callback, a short fallback feeds the remaining placeholders into
+  that same bounded queue instead of leaving valid document-relative images
+  permanently blank. Whole-book Reader inherits the same behavior. e-book
+  pagination and PDF/EPUB export deliberately keep their existing all-image
+  settle path. This changes neither Markdown source nor the local/remote consent
+  boundary.
 - **Book presentation hides closed leading YAML frontmatter without rewriting
   source.** Whole-book Reader and PDF now use the same bounded strip behavior
   already used by EPUB. Unclosed frontmatter remains visible as source text;
@@ -111,10 +114,22 @@ Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
   heading levels.
   Apple Books interaction on the heavy manuscript remains a manual TestFlight
   check; source is not changed and no background scan or manifest is added.
-- **v2.2 source proof is green for the quality pack.** TypeScript/Vitest
-  (**202 files / 1,691 tests**), typecheck, Vite, and App Store surface
-  (**10 files / 108 tests**) pass on tree `2.3.0`. Rust (**367 pass /
-  2 host-dependent ignored**). A **fresh signed universal App Store pkg for
+- **EPUB export has an optional explicit cover image in v2.3 source.** The
+  metadata dialog selects one local PNG/JPEG/GIF/WebP file for the current
+  export only. The exporter packages a dedicated `cover-image` manifest item
+  and cover XHTML before the content spine. It does not infer the first
+  Markdown image, rewrite source, persist a cover choice, crop/edit the image,
+  or launch an external cover tool. Apple Books appearance remains a manual
+  installed/TestFlight gate.
+- **v2.3 source proof is green for the Book UX and image/export repair.**
+  TypeScript/Vitest (**204 files / 1,709 tests**), typecheck, Vite, and App
+  Store surface (**10 files / 111 tests**) pass on tree `2.3.0`. The
+  helper-enabled App Store preview bundle also builds. No Rust source changed;
+  Rust was rechecked at **367 pass / 2 host-dependent ignored**. A parent
+  workspace fixture was also opened in the latest local preview bundle; its
+  nested document-relative image appeared in both Preview and e-book display.
+  This is local bundle smoke, not installed/TestFlight proof. A
+  **fresh signed universal App Store pkg for
   `2.3.0` is not yet built** in this pass; the prior `2.1.0` image-hardened
   pkg remains the last packaging evidence. Installed/TestFlight interaction
   remains unperformed and is the current human gate before upload.

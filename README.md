@@ -58,7 +58,8 @@ Use this when you want to:
 - notice save conflicts and external changes before overwriting
 - paste or drag-drop images into `assets/` for inline Markdown references
 - export the current Markdown file or an explicit Book Scope as PDF / EPUB,
-  with standalone HTML remaining current-file only
+  with an optional explicitly selected EPUB cover image and standalone HTML
+  remaining current-file only
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
 - explicitly select, order, and revisit a small Book Scope of Markdown chapters

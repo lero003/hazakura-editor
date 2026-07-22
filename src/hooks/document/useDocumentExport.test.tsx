@@ -16,6 +16,7 @@ const tauriApi = vi.hoisted(() => ({
   exportPdfFile: vi.fn(),
   fetchRemoteImage: vi.fn(),
   isTauriRuntime: vi.fn(() => false),
+  openImageFile: vi.fn(),
   openLocalImageUnderRoots: vi.fn(),
   openWorkspaceImage: vi.fn(),
   revealPathInFileManager: vi.fn(),
@@ -44,6 +45,7 @@ vi.mock("../../lib/tauri", () => ({
   exportPdfFile: tauriApi.exportPdfFile,
   fetchRemoteImage: tauriApi.fetchRemoteImage,
   isTauriRuntime: tauriApi.isTauriRuntime,
+  openImageFile: tauriApi.openImageFile,
   openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
   revealPathInFileManager: tauriApi.revealPathInFileManager,
@@ -132,6 +134,7 @@ describe("useDocumentExport", () => {
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
+    tauriApi.openImageFile.mockReset();
     tauriApi.openLocalImageUnderRoots.mockReset();
     tauriApi.fetchRemoteImage.mockReset();
     tauriApi.exportPdfFile.mockReset();
@@ -525,7 +528,7 @@ describe("useDocumentExport", () => {
     });
 
     expect(tauriApi.openWorkspaceImage).not.toHaveBeenCalled();
-    expect(useDocumentExportSource).not.toContain("openImageFile");
+    expect(tauriApi.openImageFile).not.toHaveBeenCalled();
     expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
       'data-hazakura-image-block="outside-workspace"',
     );
@@ -689,6 +692,46 @@ describe("useDocumentExport", () => {
     );
     expect(tauriApi.revealPathInFileManager).toHaveBeenCalledWith("/tmp/a.epub");
     expect(setStatus).toHaveBeenCalledWith("Exported EPUB: /tmp/a.epub");
+  });
+
+  it("loads an explicitly selected EPUB cover without inferring one from Markdown", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/covered.epub");
+    tauriApi.saveBinaryFileAs.mockResolvedValue(undefined);
+    tauriApi.openImageFile.mockResolvedValue({
+      dataUrl: "data:image/png;base64,COVER",
+      name: "cover.png",
+      path: "/workspace/book/images/cover.png",
+      size: 5,
+    });
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Covered Book\n",
+        activeTab: makeTab({ name: "covered.md" }),
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    await act(async () => result.current.exportEpubBeta());
+    await act(async () =>
+      result.current.confirmEpubBetaExport({
+        author: "",
+        coverImagePath: "/workspace/book/images/cover.png",
+        language: "ja",
+        title: "Covered Book",
+      }),
+    );
+
+    expect(tauriApi.openImageFile).toHaveBeenCalledWith(
+      "/workspace/book/images/cover.png",
+    );
+    expect(epubApi.buildEpubBetaArchiveWithReport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        coverImage: { dataUrl: "data:image/png;base64,COVER" },
+      }),
+    );
   });
 
   it("exports Book Scope EPUB in chapter order using live buffers", async () => {

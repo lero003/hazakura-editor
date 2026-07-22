@@ -4,6 +4,7 @@ import {
   isTauriRuntime,
   exportPdfFile,
   fetchRemoteImage,
+  openImageFile,
   openLocalImageUnderRoots,
   openWorkspaceImage,
   revealPathInFileManager,
@@ -978,6 +979,9 @@ ${bodyHtml}
       const loaders = createExportImageLoaders();
       const loadApprovedLocalImage = loaders.loadApprovedLocalImage;
       const loadRemoteImage = loaders.loadRemoteImage;
+      const coverImage = settings.coverImagePath
+        ? await openImageFile(settings.coverImagePath)
+        : null;
       const { archive, warnings } = await buildEpubBetaArchiveWithReport({
         bookNavigation: scope === "book" ? bookScopeNodesRef.current : undefined,
         chapters: bookDocuments?.documents.map((chapter) => ({
@@ -985,6 +989,7 @@ ${bodyHtml}
           documentPath: chapter.path,
           markdown: chapter.source,
         })),
+        coverImage: coverImage ? { dataUrl: coverImage.dataUrl } : null,
         documentPath: tabForExport?.path ?? null,
         documentName: scope === "book" ? workspaceLabel(workspaceRootPath) : (tabForExport?.name ?? request.documentName),
         loadApprovedLocalImage: loadApprovedLocalImage

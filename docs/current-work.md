@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.3.0 Book portability + Reader resume local candidate
 Authority: High
-Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Purpose
 
@@ -27,7 +27,7 @@ from the v2.x practicalization pool (excluding 縦書き).
 |------|--------|--------|
 | **v2.0** | **Shipped** | Book Scope Alpha |
 | **v2.1–v2.2** | Folded into `2.3.0` | Search, image load, quality pack |
-| **v2.3** | **Local candidate** | Portable Book recipe + Reader resume |
+| **v2.3** | **Local candidate** | Portable recipe + Reader resume + image/export repair |
 | **縦書き** | Later | After horizontal foundation |
 
 ## Active Queue — v2.3
@@ -41,12 +41,23 @@ from the v2.x practicalization pool (excluding 縦書き).
    scroll ratio resume for whole-book Reader (max 8 workspaces).
 3. Prior v2.1–v2.2 quality remains in tree (search, chapter nav, export reveal,
    Assist honesty, preflight hints).
+4. **Preview image fallback:** permitted document-relative images still load
+   through the bounded two-read queue when WKWebView does not deliver an
+   `IntersectionObserver` callback. Workspace containment and source stay
+   unchanged.
+5. **Explicit EPUB cover:** the export dialog can optionally select one local
+   PNG/JPEG/GIF/WebP image for that export only. The archive marks it as the
+   EPUB cover image and emits a cover page; it is never inferred from the first
+   Markdown image and is not saved into source or Book settings.
 
 ### Current stop
 
-1. Full local gates green on tree `2.3.0`.
-2. Fresh signed universal pkg + installed/TestFlight manual gate (human).
-3. Do not add 縦書き, Compare Center, static lint, or auto-load recipes.
+1. Local source gates and helper-enabled App Store preview bundle are green
+   after the image/export repair.
+2. Fresh signed universal pkg + installed/TestFlight manual gate (human),
+   including parent-workspace images and the selected EPUB cover in Apple Books.
+3. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
+   auto-load recipes.
 
 ### Parked
 

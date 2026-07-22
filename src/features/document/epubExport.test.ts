@@ -138,6 +138,29 @@ describe("buildEpubBetaArchive", () => {
     expect(text).not.toContain("data:image/gif;base64");
   });
 
+  it("packages an explicitly selected EPUB cover separately from body images", async () => {
+    const archive = await buildEpubBetaArchive({
+      coverImage: {
+        dataUrl: "data:image/png;base64,iVBORw0KGgo=",
+      },
+      markdown: "# Covered Book\n\nBody.",
+      documentName: "covered.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain("OEBPS/images/cover.png");
+    expect(text).toContain("OEBPS/cover.xhtml");
+    expect(text).toContain(
+      '<item id="cover-image" href="images/cover.png" media-type="image/png" properties="cover-image"/>',
+    );
+    expect(text).toContain(
+      '<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml" properties="svg"/>',
+    );
+    expect(text).toContain('<itemref idref="cover"/>');
+    expect(text).toContain('epub:type="cover"');
+    expect(text).toContain('href="images/cover.png"');
+  });
+
   it("exports ordered Book Scope chapters with each chapter image base path", async () => {
     const loadWorkspaceImage = vi.fn(async (path: string) => ({
       bytes: new Uint8Array([137, 80, 78, 71]),

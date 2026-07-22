@@ -48,6 +48,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   globalThis.IntersectionObserver = originalIntersectionObserver;
 });
 
@@ -65,6 +66,54 @@ function makeHost(paths: string[]): HTMLElement {
 }
 
 describe("loadPreviewImagesNearViewport", () => {
+  it("falls back to bounded loading when WebKit never reports an intersection", async () => {
+    vi.useFakeTimers();
+    const host = makeHost(["/workspace/book/images/cover.png"]);
+    const loadWorkspaceImage = vi
+      .fn()
+      .mockResolvedValue("data:image/png;base64,COVER");
+    const cleanup = loadPreviewImagesNearViewport(host, {
+      loadWorkspaceImage,
+    });
+
+    expect(loadWorkspaceImage).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(loadWorkspaceImage).toHaveBeenCalledWith(
+      "/workspace/book/images/cover.png",
+    );
+
+    cleanup();
+    host.remove();
+  });
+
+  it("keeps viewport deferral when WebKit delivers observer callbacks", async () => {
+    vi.useFakeTimers();
+    const host = makeHost(["/visible.png", "/later.png"]);
+    const loadWorkspaceImage = vi
+      .fn()
+      .mockResolvedValue("data:image/png;base64,IMAGE");
+    const cleanup = loadPreviewImagesNearViewport(host, {
+      loadWorkspaceImage,
+    });
+    const visibleImage = host.querySelector("img");
+
+    if (visibleImage) {
+      MockIntersectionObserver.instance?.trigger([visibleImage]);
+    }
+    await vi.waitFor(() => {
+      expect(loadWorkspaceImage).toHaveBeenCalledWith("/visible.png");
+    });
+
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(loadWorkspaceImage).not.toHaveBeenCalledWith("/later.png");
+
+    cleanup();
+    host.remove();
+  });
+
   it("keeps reserved space until the resolved image finishes decoding", async () => {
     const host = makeHost(["/large.png"]);
     const image = host.querySelector("img");

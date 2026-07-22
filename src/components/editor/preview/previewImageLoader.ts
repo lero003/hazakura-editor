@@ -4,6 +4,7 @@ const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
 const IMAGE_ORIGIN_ATTR = "data-hazakura-image-origin";
 const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
 const MAX_CONCURRENT_IMAGE_LOADS = 2;
+const INTERSECTION_FALLBACK_DELAY_MS = 1_200;
 
 type PreviewImageLoaders = {
   loadApprovedLocalImage?: (absolutePath: string) => Promise<string>;
@@ -34,6 +35,7 @@ export function loadPreviewImagesNearViewport(
   const queued = new Set<HTMLImageElement>();
   const queue: HTMLImageElement[] = [];
   let observer: IntersectionObserver | null = null;
+  let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   const drainQueue = () => {
     while (
@@ -67,6 +69,10 @@ export function loadPreviewImagesNearViewport(
   if (typeof globalThis.IntersectionObserver === "function") {
     observer = new IntersectionObserver(
       (entries) => {
+        if (fallbackTimer !== null) {
+          clearTimeout(fallbackTimer);
+          fallbackTimer = null;
+        }
         for (const entry of entries) {
           if (entry.isIntersecting && entry.target instanceof HTMLImageElement) {
             enqueue(entry.target);
@@ -83,6 +89,17 @@ export function loadPreviewImagesNearViewport(
     for (const image of images) {
       observer.observe(image);
     }
+    // WKWebView can occasionally retain a valid placeholder without
+    // delivering any intersection callback when Preview lives inside a nested
+    // scrolling surface. Keep viewport-first loading, but never leave a valid
+    // local image permanently transparent: after a short grace period, feed
+    // the remaining placeholders into the same two-read bounded queue.
+    fallbackTimer = setTimeout(() => {
+      fallbackTimer = null;
+      for (const image of images) {
+        enqueue(image);
+      }
+    }, INTERSECTION_FALLBACK_DELAY_MS);
   } else {
     // IntersectionObserver exists in the supported WebKit runtime. Eagerly
     // retain functionality in unusual/test hosts that do not provide it.
@@ -93,6 +110,9 @@ export function loadPreviewImagesNearViewport(
 
   return () => {
     cancelled = true;
+    if (fallbackTimer !== null) {
+      clearTimeout(fallbackTimer);
+    }
     observer?.disconnect();
     queue.length = 0;
   };

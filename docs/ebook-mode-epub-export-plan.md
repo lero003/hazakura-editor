@@ -3,7 +3,7 @@
 Status: Proposal
 Scope: v0.21+ authoring and export planning
 Authority: Medium
-Last reviewed: 2026-06-23
+Last reviewed: 2026-07-23
 
 ## Summary
 
@@ -815,6 +815,20 @@ e-book Mode が日常執筆面として安定した後に扱う。
 
 OKF対応前には、その時点のOKF仕様を再確認する。
 
+### v2.3: Preview Image Fallback And Explicit EPUB Cover
+
+- Preview / Book Reader の画像参照は Markdown ファイルの親ディレクトリを
+  起点に解決し、選択 workspace は読み取り可能範囲の境界としてのみ使う。
+- WKWebView が `IntersectionObserver` の通知を返さない場合は、短い待機後に
+  未解決画像を既存の最大2件キューへ流す。遅延読込と同時実行上限は維持する。
+- EPUB の表紙は export dialog でローカル PNG / JPEG / GIF / WebP を
+  明示選択する一時入力とする。本文の先頭画像を自動採用せず、workspace設定や
+  Markdown sourceへ保存しない。
+- 選択時は専用 `cover.xhtml` と `cover-image` manifest item を生成し、
+  本文より前に spine へ置く。高度な表紙編集、切り抜き、画像加工は扱わない。
+- packaged-app / Apple Books smoke では、親 workspace のネスト文書画像、
+  表紙あり／なしの両方、表紙なし時に本文画像が昇格しないことを確認する。
+
 ## Performance Notes
 
 リアルタイム反映は慎重に扱う。
@@ -852,7 +866,8 @@ OKF対応前には、その時点のOKF仕様を再確認する。
 - 章分割は見出しベースを初期値にし、改ページ記法を後で足すか。
 - 複数ファイルの章順保存場所は frontmatter、`index.md`、専用目次
   ファイル、アプリ設定のどれがよいか。
-- 表紙画像はユーザー指定にするか、最初の画像を候補にするか。
+- 表紙画像は export ごとの明示指定とし、最初の本文画像は候補にしない
+  （v2.3で決定）。
 - EPUB export の依存は `JSZip` / `marked` 系を再利用するか、
   Tauri/Rust側で組み立てるか。
 

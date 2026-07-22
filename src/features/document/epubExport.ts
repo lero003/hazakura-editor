@@ -25,6 +25,7 @@ import type { BookScopeNode } from "../bookScope/model";
 type BuildEpubBetaArchiveOptions = {
   bookNavigation?: readonly BookScopeNode[];
   chapters?: readonly EpubExportChapter[];
+  coverImage?: LoadedEpubImage | null;
   documentPath?: string | null;
   documentName: string;
   loadApprovedLocalImage?: (absolutePath: string) => Promise<LoadedEpubImage>;
@@ -52,7 +53,10 @@ export type EpubExportMetadata = {
 export type EpubExportSettings = Pick<
   EpubExportMetadata,
   "author" | "language" | "title"
->;
+> & {
+  /** Explicit per-export cover selection; never inferred from Markdown. */
+  coverImagePath?: string | null;
+};
 
 export type EpubExportWarning = {
   label: string | null;
@@ -119,6 +123,7 @@ type LoadedEpubImage =
 type ImageEntry = EpubEntry & {
   id: string;
   mediaType: string;
+  properties?: string;
   relativePath: string;
 };
 
@@ -131,6 +136,7 @@ const EPUB_CHAPTER_INDEX_ATTR = "data-hazakura-epub-chapter-index";
 export async function buildEpubBetaArchive({
   bookNavigation,
   chapters,
+  coverImage = null,
   documentPath = null,
   documentName,
   loadApprovedLocalImage,
@@ -144,6 +150,7 @@ export async function buildEpubBetaArchive({
   const { archive } = await buildEpubBetaArchiveWithReport({
     bookNavigation,
     chapters,
+    coverImage,
     documentPath,
     documentName,
     loadApprovedLocalImage,
@@ -160,6 +167,7 @@ export async function buildEpubBetaArchive({
 export async function buildEpubBetaArchiveWithReport({
   bookNavigation,
   chapters,
+  coverImage = null,
   documentPath = null,
   documentName,
   loadApprovedLocalImage,
@@ -184,6 +192,9 @@ export async function buildEpubBetaArchiveWithReport({
       workspaceRoot,
     });
   const epubMetadata = normalizeEpubMetadata(metadata, title);
+  const coverEntry = coverImage
+    ? buildCoverImageEntry(normalizeLoadedImage(coverImage))
+    : null;
   const entries: EpubEntry[] = [
     textEntry("mimetype", "application/epub+zip"),
     textEntry("META-INF/container.xml", containerXml()),
@@ -194,6 +205,7 @@ export async function buildEpubBetaArchiveWithReport({
         images,
         createEpubIdentifier(),
         contentDocuments,
+        coverEntry,
       ),
     ),
     textEntry(
@@ -204,6 +216,18 @@ export async function buildEpubBetaArchiveWithReport({
         navigation,
       ),
     ),
+    ...(coverEntry
+      ? [
+          textEntry(
+            "OEBPS/cover.xhtml",
+            coverXhtml(
+              epubMetadata.title,
+              epubMetadata.language,
+              coverEntry.relativePath,
+            ),
+          ),
+        ]
+      : []),
     ...contentDocuments.map((contentDocument) =>
       textEntry(
         `OEBPS/${contentDocument.path}`,
@@ -215,6 +239,7 @@ export async function buildEpubBetaArchiveWithReport({
       ),
     ),
     textEntry("OEBPS/styles.css", epubCss()),
+    ...(coverEntry ? [coverEntry] : []),
     ...images,
   ];
 
@@ -753,6 +778,22 @@ function addImageAsset(
   });
 }
 
+function buildCoverImageEntry(asset: {
+  bytes: Uint8Array;
+  extension: string;
+  mediaType: string;
+}): ImageEntry {
+  const relativePath = `images/cover.${asset.extension}`;
+  return {
+    bytes: asset.bytes,
+    id: "cover-image",
+    mediaType: asset.mediaType,
+    path: `OEBPS/${relativePath}`,
+    properties: "cover-image",
+    relativePath,
+  };
+}
+
 function cleanupPreviewOnlyMarkup(
   template: HTMLTemplateElement,
   warnings: EpubExportWarning[],
@@ -875,6 +916,7 @@ function packageOpf(
   images: ImageEntry[],
   identifier: string,
   contentDocuments: ContentDocument[],
+  coverImage: ImageEntry | null,
 ): string {
   const escapedTitle = escapeXml(metadata.title);
   const escapedIdentifier = escapeXml(identifier);
@@ -894,9 +936,19 @@ function packageOpf(
       (image) =>
         `    <item id="${escapeXml(image.id)}" href="${escapeXml(
           image.relativePath,
-        )}" media-type="${escapeXml(image.mediaType)}"/>`,
+        )}" media-type="${escapeXml(image.mediaType)}"${
+          image.properties
+            ? ` properties="${escapeXml(image.properties)}"`
+            : ""
+        }/>`,
     )
     .join("\n");
+  const coverItems = coverImage
+    ? [
+        `    <item id="cover" href="cover.xhtml" media-type="application/xhtml+xml" properties="svg"/>`,
+        `    <item id="${coverImage.id}" href="${escapeXml(coverImage.relativePath)}" media-type="${escapeXml(coverImage.mediaType)}" properties="cover-image"/>`,
+      ].join("\n") + "\n"
+    : "";
   const manifestImageItems = imageItems.length > 0 ? `${imageItems}\n` : "";
   const spineItems = contentDocuments
     .map(
@@ -916,11 +968,35 @@ ${creator}    <dc:language>${escapeXml(metadata.language)}</dc:language>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
 ${contentItems}
     <item id="style" href="styles.css" media-type="text/css"/>
-${manifestImageItems}  </manifest>
+${coverItems}${manifestImageItems}  </manifest>
   <spine>
-${spineItems}
+${coverImage ? '    <itemref idref="cover"/>\n' : ""}${spineItems}
   </spine>
 </package>
+`;
+}
+
+function coverXhtml(
+  title: string,
+  language: string,
+  imagePath: string,
+): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${escapeXml(language)}" xml:lang="${escapeXml(language)}">
+<head>
+  <meta charset="utf-8"/>
+  <title>${escapeXml(title)} - Cover</title>
+  <meta name="viewport" content="width=1000,height=1600"/>
+</head>
+<body style="margin:0; padding:0;">
+  <section epub:type="cover" aria-label="Cover">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapeXml(title)}">
+      <image width="1000" height="1600" href="${escapeXml(imagePath)}" xlink:href="${escapeXml(imagePath)}" preserveAspectRatio="xMidYMid meet"/>
+    </svg>
+  </section>
+</body>
+</html>
 `;
 }
 

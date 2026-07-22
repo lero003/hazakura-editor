@@ -3,9 +3,52 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRef } from "react";
 import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
 
+const dialogApi = vi.hoisted(() => ({
+  pickEpubCoverImage: vi.fn(),
+}));
+
+vi.mock("../../lib/tauri/dialog", () => ({
+  pickEpubCoverImage: dialogApi.pickEpubCoverImage,
+}));
+
 afterEach(cleanup);
 
 describe("EpubExportSettingsDialog", () => {
+  it("adds an optional explicitly selected cover image", async () => {
+    const onConfirm = vi.fn();
+    dialogApi.pickEpubCoverImage.mockResolvedValue(
+      "/workspace/book/images/title-cover.png",
+    );
+    render(
+      <EpubExportSettingsDialog
+        cancelButtonRef={createRef()}
+        dialogRef={createRef()}
+        documentName="book.md"
+        hasUnsavedChanges={false}
+        initialSettings={{ author: "", language: "ja", title: "Book" }}
+        menuLanguage="ja"
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "表紙画像を選ぶ" }));
+
+    expect(dialogApi.pickEpubCoverImage).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("title-cover.png")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
+    expect(onConfirm).toHaveBeenCalledWith(
+      {
+        author: "",
+        coverImagePath: "/workspace/book/images/title-cover.png",
+        language: "ja",
+        title: "Book",
+      },
+      "document",
+    );
+  });
+
   it("switches the visible preflight with the selected export scope", () => {
     render(
       <EpubExportSettingsDialog

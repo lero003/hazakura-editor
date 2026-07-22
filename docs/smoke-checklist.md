@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-18 (v2 Book tree + EPUB quality smoke)
+Last reviewed: 2026-07-23 (v2.3 nested image + explicit EPUB cover smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -535,7 +535,7 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 
 1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes (`- [ ]` / `- [x]` as display-only checkbox glyphs, not raw marker text), and local workspace-relative images such as `assets/...` and `docs/images/...`.
 2. Open a document taller than the Preview viewport and scroll to its end. Confirm the preview card background, border, and padding continue behind the whole document instead of ending at the first viewport.
-3. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, exported HTML, and PDF. Reopen only the child folder and confirm all three surfaces show a blocked note with **outside-workspace** reason and parent-folder next action (Theme G M0/M1). Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows a **load-failed** note.
+3. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, whole-book Reader, exported HTML, and PDF. Leave Preview open briefly without scrolling and confirm a valid visible image does not remain permanently blank if the WebView misses its first visibility callback. Reopen only the child folder and confirm all four surfaces show a blocked note with **outside-workspace** reason and parent-folder next action (Theme G M0/M1). Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows a **load-failed** note.
 4. Confirm external `https://` image URLs stay blocked by default (remote Preference off) and show a **remote** reason without a live `<img src="https://…">`. Absolute outside paths show **absolute-outside**.
 5. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
 6. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
@@ -656,7 +656,9 @@ an in-app EPUB validator workflow.
    page-break hint.
 2. Choose the EPUB export action and confirm the metadata dialog is
    labelled `EPUB書き出し` / `EPUB Export`, with editable title, author,
-   and language fields. Confirm the scope note states that e-book Mode is
+   and language fields. Confirm an optional cover image can be selected,
+   shows only its basename, and can be removed or reselected. Confirm the
+   scope note states that e-book Mode is
    a reading preview, the exported EPUB targets a single Markdown
    document, and Hazakura is not a full EPUB production tool (Japanese
    and English copy both present).
@@ -673,9 +675,13 @@ an in-app EPUB validator workflow.
    external images are replaced with an in-content warning, links remain
    links, code blocks remain readable, tables keep basic borders, and
    page-break hints split the content XHTML and OPF spine in reading order.
+   When a cover was selected, confirm `cover.xhtml` exists, its packaged
+   image has OPF `properties="cover-image"`, and the cover spine item comes
+   before body content. Export without a cover and confirm no body image is
+   promoted automatically.
 5. Confirm the export does not rewrite Markdown source, create a second
    document model, launch EPUBCheck, run external validators, or expose
-   cover / navigation editor / advanced metadata workflows.
+   cover cropping/editing, navigation editor, or advanced metadata workflows.
 6. If `epubcheck` is used, run it manually outside the app and record the
    result as external evidence. Do not treat the app as having launched
    or automated validation.

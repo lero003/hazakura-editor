@@ -400,6 +400,28 @@
   margin-top: 4px;
 }
 
+.epub-cover-field {
+  display: grid;
+  gap: 6px;
+}
+
+.epub-cover-field > span:first-child {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.epub-cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.epub-cover-selection {
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .pdf-export-settings-form {
   display: flex;
   flex-direction: column;
