@@ -43,8 +43,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   loaded chapter names and visible Markdown under the existing 100-chapter /
   32 MiB budget, including unsaved live buffers. Results show chapter and
   occurrence counts and jump through the existing contents list. Escape clears
-  input before closing. No persistent/background index, workspace scan, source
-  edit, or auto-save was added; narrow windows keep search/results reachable.
+  input before closing. `Command+F` is routed to the Reader search instead of
+  the hidden editor find bar; Enter / Shift+Enter advances through matching
+  chapters with wraparound. No persistent/background index, workspace scan,
+  source edit, or auto-save was added; narrow windows keep search/results
+  reachable.
 - **Preview image loading is bounded in source:** interactive Preview and each
   whole-book Reader chapter keep permitted image references inert until near
   the viewport, reserve placeholder height, and run at most two reads per pane.
@@ -121,11 +124,15 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   but macOS rejected launching them without a Store receipt, so the final
   interaction remains an installed/TestFlight check.
 - `npm run typecheck` — pass.
-- `npm test` — 205 files / 1,713 tests pass on tree `2.3.0`.
+- `npm test` — 205 files / 1,715 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `npm run build` — helper-enabled App Store preview `.app` built successfully;
   ad-hoc signed, not notarized and not a submission pkg.
+- `npm run build:developer-preview` — pass after the Reader search routing fix.
+  Computer Use confirmed `Command+F` focused **本の中を検索** and Enter moved
+  a 43-chapter real manuscript from chapter 1 to chapter 2, including visible
+  active-label and manuscript scroll movement.
 - Generated covered EPUB — external `epubcheck` 3.3: 0 fatal errors / 0 errors /
   0 warnings.
 - Build 107 bundle smoke is invalidated and that pkg remains held. Computer Use

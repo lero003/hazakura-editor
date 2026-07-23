@@ -89,6 +89,42 @@ describe("BookScopeReader", () => {
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
   });
 
+  it("jumps to the next matching chapter with Enter from the Reader search", () => {
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    render(
+      <BookScopeReader
+        documents={[
+          { name: "one.md", path: "/workspace/one.md", relativePath: "one.md", source: "# One\nshared", usesLiveBuffer: false },
+          { name: "two.md", path: "/workspace/two.md", relativePath: "two.md", source: "# Two\nshared", usesLiveBuffer: false },
+        ]}
+        failures={[]}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        onEditChapter={vi.fn()}
+        onOpenLink={vi.fn()}
+        skippedForBudget={[]}
+        workspaceRoot="/workspace"
+      />,
+    );
+
+    const search = screen.getByRole("searchbox", { name: "本の中を検索" });
+    fireEvent.change(search, { target: { value: "shared" } });
+    fireEvent.keyDown(search, { key: "Enter" });
+
+    expect(screen.getByText("2. two.md")).toBeTruthy();
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
+
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(screen.getByText("1. one.md")).toBeTruthy();
+
+    fireEvent.keyDown(search, { key: "Enter", shiftKey: true });
+    expect(screen.getByText("2. two.md")).toBeTruthy();
+  });
+
   it("clears a search with Escape before closing the reader", () => {
     const onClose = vi.fn();
     render(

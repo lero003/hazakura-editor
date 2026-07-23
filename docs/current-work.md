@@ -56,6 +56,9 @@ from the v2.x practicalization pool (excluding 縦書き).
    its own security-scoped bookmark. Reopen tries the stored path first, then
    that folder's bookmark. Legacy or stale entries fall back once to the normal
    folder picker instead of leaving a raw `Operation not permitted` error.
+7. **Reader search shortcut/navigation:** while the whole-book Reader is open,
+   `Command+F` targets its bounded search instead of the hidden editor search.
+   Enter / Shift+Enter advances through matching chapters with wraparound.
 
 ### Current stop
 

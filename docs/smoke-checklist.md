@@ -553,6 +553,11 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
     Reader. Confirm the first visible chapter becomes readable without loading
     every later chapter image first, contents jump still reaches later chapters,
     and closing the Reader does not rewrite or save any Markdown.
+13. In the whole-book Reader, press `Command+F` and confirm focus moves to
+    **本の中を検索** without opening the editor find bar behind the Reader.
+    Search for a word present in the current and a later chapter, then press
+    Enter and confirm both the active chapter label and manuscript viewport move
+    to the next matching chapter. Confirm Shift+Enter moves backward.
 
 ## Theme G Media Boundaries Smoke (v1.13+)
 

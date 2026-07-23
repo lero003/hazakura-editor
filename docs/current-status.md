@@ -79,8 +79,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   results show matching chapters and occurrence counts and jump through the
   existing contents navigation. Hidden leading YAML frontmatter is excluded
   because Reader does not render it. Escape clears a non-empty search before
-  closing the Reader. The feature creates no persistent index, background
-  scan, source edit, auto-save, or new file access path.
+  closing the Reader. While Reader is open, `Command+F` now focuses this
+  bounded Reader search instead of the hidden editor search; Enter advances to
+  the next matching chapter (Shift+Enter goes backward, with wraparound). The
+  feature creates no persistent index, background scan, source edit, auto-save,
+  or new file access path.
 - **Interactive Preview image loading is bounded near the viewport.** Workspace,
   explicitly approved outside-local, and enabled remote images stay as inert,
   height-reserved placeholders until they approach the visible area, with at

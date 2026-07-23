@@ -307,7 +307,26 @@ export function BookScopeReader({
             <span>{copy.search}</span>
             <input
               aria-label={copy.search}
+              data-book-reader-search="true"
               onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                const match = event.shiftKey
+                  ? [...searchMatches]
+                      .reverse()
+                      .find(
+                        (candidate) =>
+                          candidate.documentIndex < clampedActiveIndex,
+                      ) ?? searchMatches.at(-1)
+                  : searchMatches.find(
+                      (candidate) =>
+                        candidate.documentIndex > clampedActiveIndex,
+                    ) ?? searchMatches[0];
+                if (!match) return;
+                event.preventDefault();
+                event.stopPropagation();
+                scrollToChapter(match.documentIndex);
+              }}
               placeholder={copy.searchPlaceholder}
               type="search"
               value={searchQuery}

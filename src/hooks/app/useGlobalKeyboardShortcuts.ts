@@ -82,6 +82,21 @@ export function useGlobalKeyboardShortcuts({
         return;
       }
 
+      // The whole-book Reader is rendered above the editor but owns a
+      // separate, bounded search corpus. Route Cmd+F to that visible surface
+      // so the hidden editor find bar does not consume navigation commands.
+      if (isCommandShortcut(event, "f")) {
+        const readerSearch = globalThis.document.querySelector<HTMLInputElement>(
+          "input[data-book-reader-search='true']",
+        );
+        if (readerSearch) {
+          event.preventDefault();
+          readerSearch.focus();
+          readerSearch.select();
+          return;
+        }
+      }
+
       if (modalOpen) {
         return;
       }

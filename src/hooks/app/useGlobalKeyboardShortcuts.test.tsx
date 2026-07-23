@@ -42,7 +42,31 @@ function setup(
 
 describe("useGlobalKeyboardShortcuts", () => {
   afterEach(() => {
+    document.body.replaceChildren();
     vi.restoreAllMocks();
+  });
+
+  it("routes Cmd+F to the open whole-book Reader instead of the hidden editor", () => {
+    const readerSearch = document.createElement("input");
+    readerSearch.type = "search";
+    readerSearch.dataset.bookReaderSearch = "true";
+    document.body.append(readerSearch);
+    const focus = vi.spyOn(readerSearch, "focus");
+    const select = vi.spyOn(readerSearch, "select");
+    const props = setup();
+    const event = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "f",
+      metaKey: true,
+    });
+
+    window.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(focus).toHaveBeenCalledOnce();
+    expect(select).toHaveBeenCalledOnce();
+    expect(props.setFindVisible).not.toHaveBeenCalled();
   });
 
   it("reserves Cmd+Shift+R without opening a retired Review Desk surface", () => {
