@@ -233,7 +233,8 @@ describe("BookScopePanel", () => {
       screen.getByText("利用できません: ファイルが見つかりません"),
     ).toBeTruthy();
     expect(screen.getByText("利用不可 1")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "再確認" }));
+    fireEvent.click(screen.getByRole("button", { name: "その他" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "再確認" }));
     expect(onRevalidate).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "missing.mdを上へ移動" }));
     expect(onCommit).toHaveBeenCalledWith(nodes(["missing.md", "a.md"]));
@@ -354,6 +355,61 @@ describe("BookScopePanel", () => {
     expect(screen.getByText("含めるMarkdownにチェックを入れます。")).toBeTruthy();
   });
 
+  it("keeps settled book actions on one row and folds recipe actions into More", () => {
+    const onExportRecipe = vi.fn();
+    const onImportRecipeDraft = vi.fn(async () => null);
+    render(
+      <BookScopePanel
+        activePath={null}
+        chapterRelativePaths={["nested/chapter.md"]}
+        chapters={[
+          {
+            name: "chapter.md",
+            path: "/workspace/nested/chapter.md",
+            relativePath: "nested/chapter.md",
+          },
+        ]}
+        menuLanguage="ja"
+        nodes={nodes(["nested/chapter.md"])}
+        onCommit={vi.fn()}
+        onExportRecipe={onExportRecipe}
+        onImportRecipeDraft={onImportRecipeDraft}
+        onLoadDirectory={vi.fn(async () => {})}
+        onOpenChapter={vi.fn()}
+        onReadBook={vi.fn()}
+        onRevalidate={vi.fn()}
+        resolving={false}
+        unavailable={[]}
+        workspaceRootPath="/workspace"
+        workspaceTree={workspaceTree}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "章立てを書き出す" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "章立てを取り込む" }),
+    ).toBeNull();
+
+    const more = screen.getByRole("button", { name: "その他" });
+    fireEvent.click(more);
+    more.focus();
+    fireEvent.keyDown(more, { key: "Escape" });
+    expect(
+      screen.queryByRole("menuitem", { name: "章立てを書き出す" }),
+    ).toBeNull();
+    expect(document.activeElement).toBe(more);
+
+    fireEvent.click(more);
+    fireEvent.click(screen.getByRole("menuitem", { name: "章立てを書き出す" }));
+
+    expect(onExportRecipe).toHaveBeenCalledOnce();
+    expect(
+      screen.queryByRole("menuitem", { name: "章立てを取り込む" }),
+    ).toBeNull();
+  });
+
   it("shows nested path hints without repeating root-level paths", () => {
     render(
       <BookScopePanel
@@ -382,6 +438,11 @@ describe("BookScopePanel", () => {
 
     expect(screen.getByText("nested/chapter.md")).toBeTruthy();
     expect(screen.queryByText("a.md", { selector: "small" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "chapter.md" }).querySelector(
+        ".book-scope-chapter-name",
+      ),
+    ).toBeTruthy();
   });
 
   it("keeps selection changes as a draft until Save and supports Cancel", () => {

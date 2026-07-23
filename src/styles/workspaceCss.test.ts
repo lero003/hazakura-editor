@@ -117,6 +117,18 @@ describe("workspace.css", () => {
     );
   });
 
+  it("keeps the settled Book toolbar and chapter labels compact at larger workspace text sizes", () => {
+    const toolbar = ruleBody(".book-scope-toolbar");
+    const chapterName = ruleBody(".book-scope-chapter-name");
+    const rowActions = ruleBody(".book-scope-row-actions");
+
+    expect(toolbar).toMatch(/flex-direction:\s*row/);
+    expect(toolbar).toMatch(/flex-wrap:\s*nowrap/);
+    expect(chapterName).toMatch(/white-space:\s*nowrap/);
+    expect(chapterName).toMatch(/text-overflow:\s*ellipsis/);
+    expect(rowActions).toMatch(/position:\s*absolute/);
+  });
+
   it("lets Reading Focus occupy the workspace without the editor grid", () => {
     expect(ruleBody(".workspace.workspace-reading-focus")).toMatch(
       /grid-template-columns:\s*minmax\(0,\s*1fr\)/,

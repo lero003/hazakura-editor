@@ -88,7 +88,10 @@ export function BookScopePanel({
   const [includeIndexPages, setIncludeIndexPages] = useState(true);
   const editTriggerRef = useRef<HTMLButtonElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
+  const overflowMenuRef = useRef<HTMLDivElement | null>(null);
+  const overflowTriggerRef = useRef<HTMLButtonElement | null>(null);
   const restoreFocusRef = useRef(false);
+  const [overflowOpen, setOverflowOpen] = useState(false);
 
   useEffect(() => {
     if (!editing) setSelectedPaths(new Set(chapterRelativePaths));
@@ -107,6 +110,21 @@ export function BookScopePanel({
     }
   }, [editing]);
 
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !overflowMenuRef.current?.contains(event.target)
+      ) {
+        setOverflowOpen(false);
+      }
+    };
+    window.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () =>
+      window.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [overflowOpen]);
+
   const chapterByPath = useMemo(
     () => new Map(chapters.map((chapter) => [chapter.relativePath, chapter])),
     [chapters],
@@ -116,6 +134,8 @@ export function BookScopePanel({
     [unavailable],
   );
   const hasUnavailable = unavailable.length > 0;
+  const hasOverflowActions =
+    Boolean(onExportRecipe) || Boolean(onImportRecipeDraft) || hasUnavailable;
   const displayRows = useMemo(() => bookScopeDisplayRows(nodes), [nodes]);
 
   const beginEditing = () => {
@@ -328,23 +348,81 @@ export function BookScopePanel({
               {readerLoading ? copy.loadingReader : copy.readBook}
             </button>
           ) : null}
-          <button onClick={beginEditing} ref={editTriggerRef} type="button">
-            {copy.edit}
+          <button
+            aria-label={copy.edit}
+            className="book-scope-icon-action"
+            onClick={beginEditing}
+            ref={editTriggerRef}
+            title={copy.edit}
+            type="button"
+          >
+            <EditIcon />
           </button>
-          {onExportRecipe ? (
-            <button onClick={() => void onExportRecipe()} type="button">
-              {copy.exportRecipe}
-            </button>
-          ) : null}
-          {onImportRecipeDraft ? (
-            <button onClick={() => void importRecipeDraft()} type="button">
-              {copy.importRecipe}
-            </button>
-          ) : null}
-          {hasUnavailable ? (
-            <button disabled={resolving} onClick={onRevalidate} type="button">
-              {copy.recheck}
-            </button>
+          {hasOverflowActions ? (
+            <div
+              className="book-scope-overflow"
+              onKeyDown={(event) => {
+                if (!overflowOpen || event.key !== "Escape") return;
+                event.preventDefault();
+                setOverflowOpen(false);
+                overflowTriggerRef.current?.focus();
+              }}
+              ref={overflowMenuRef}
+            >
+              <button
+                aria-expanded={overflowOpen}
+                aria-haspopup="menu"
+                aria-label={copy.more}
+                className="book-scope-icon-action"
+                onClick={() => setOverflowOpen((current) => !current)}
+                ref={overflowTriggerRef}
+                title={copy.more}
+                type="button"
+              >
+                <MoreIcon />
+              </button>
+              {overflowOpen ? (
+                <div className="book-scope-overflow-menu" role="menu">
+                  {onExportRecipe ? (
+                    <button
+                      onClick={() => {
+                        setOverflowOpen(false);
+                        void onExportRecipe();
+                      }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      {copy.exportRecipe}
+                    </button>
+                  ) : null}
+                  {onImportRecipeDraft ? (
+                    <button
+                      onClick={() => {
+                        setOverflowOpen(false);
+                        void importRecipeDraft();
+                      }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      {copy.importRecipe}
+                    </button>
+                  ) : null}
+                  {hasUnavailable ? (
+                    <button
+                      disabled={resolving}
+                      onClick={() => {
+                        setOverflowOpen(false);
+                        onRevalidate();
+                      }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      {copy.recheck}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>
@@ -385,7 +463,7 @@ export function BookScopePanel({
               >
                 <span className="book-scope-chapter-index">{index + 1}</span>
                 <span className="book-scope-chapter-label">
-                  {displayName}
+                  <span className="book-scope-chapter-name">{displayName}</span>
                   {showPathHint ? <small>{relativePath}</small> : null}
                   {unavailableEntry ? (
                     <em>{copy.unavailable(unavailableEntry.reason)}</em>
@@ -433,6 +511,25 @@ export function BookScopePanel({
         })}
       </ol>
     </div>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 16 16">
+      <path d="M3 11.8V13h1.2l7.1-7.1-1.2-1.2L3 11.8Z" />
+      <path d="m11 3.8 1.2-1.2a.85.85 0 0 1 1.2 1.2L12.2 5 11 3.8Z" />
+    </svg>
+  );
+}
+
+function MoreIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 16 16">
+      <circle cx="3" cy="8" r="1.15" />
+      <circle cx="8" cy="8" r="1.15" />
+      <circle cx="13" cy="8" r="1.15" />
+    </svg>
   );
 }
 
@@ -484,6 +581,7 @@ function bookScopeCopy(language: MenuLanguage) {
       save: "Save",
       loadingReader: "Loading…",
       readBook: "Read all",
+      more: "More",
       stopSuggestion: "Stop scan",
       suggest: "Suggest from workspace",
       exportRecipe: "Export recipe",
@@ -515,6 +613,7 @@ function bookScopeCopy(language: MenuLanguage) {
     save: "保存",
     loadingReader: "読み込み中…",
     readBook: "本全体を読む",
+    more: "その他",
     stopSuggestion: "走査を停止",
     suggest: "候補を作る",
     exportRecipe: "章立てを書き出す",

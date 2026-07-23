@@ -509,6 +509,11 @@ Run when file I/O, tabs, close behavior, or save logic changes:
   Trash succeeds.
 - Delete or move a selected chapter externally, choose **Recheck**, and confirm
   it remains listed as unavailable until explicitly removed.
+- With the workspace text size enlarged, confirm the settled Book toolbar stays
+  on one line, **More** exposes recipe export/import (and **Recheck** only when
+  needed), and long chapter names/path hints ellipsize instead of wrapping.
+  Hover or keyboard-focus a chapter row and confirm its reorder/remove controls
+  appear without permanently narrowing every other chapter label.
 - Confirm Book selection never adds non-Markdown files, performs background
   workspace scanning, creates a manifest, or rewrites Markdown source.
 
