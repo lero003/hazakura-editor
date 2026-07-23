@@ -17,7 +17,8 @@ automatic agent-apply system.
 | GitHub source / local-app tag | **`v2.3.0`** (no binary assets; prior `v2.0.0` immutable) |
 | Published Mac App Store | **`2.3.0`** (user-reported 2026-07-24) |
 | Prior store / source lines | `2.0.0` published historical; `1.13.0` historical; `1.14.0` intermediate source tag |
-| Active product phase | **post-v2.3.0 ship** — hotfix + optional one slices (no 縦書き) |
+| Active product phase | **post-v2.3.0 ship** — hotfix; v2.4 plan ready (not active queue) |
+| Next plan | **`docs/v2.4-plan.md`** — Book depth (chapter Diff / TOC / explainability) |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -58,9 +59,10 @@ User direction:
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
 [done]   Mac App Store 2.3.0 published · source tag v2.3.0
-[now]    post-v2.3.0 ship · hotfix + optional one slices
+[now]    post-v2.3.0 ship · hotfix; compact toolbar on main for 2.4
+[next]   v2.4 Book depth — plan: docs/v2.4-plan.md (open when ready)
 [parked] residual polish · broad evidence matrix · optional Keep boxes
-[later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
+[later]  縦書き  ·  v3.x speculative AI only
 ```
 
 ## Active Path — post-v2.3 ship
@@ -72,12 +74,12 @@ for polish.
 ### Active (post-ship)
 
 1. Hotfix for a reproduced `2.3.0` store / daily-use blocker only.
-2. One optional post-ship slice when product direction is clear — honesty UX,
-   residual friction, distribution evidence, or a single v2.x practicalization
-   candidate promoted from advisory pools.
-3. Do not bulk-digest review packs or start a rigid next-version train.
-4. 縦書き remains deferred until the horizontal multi-file foundation stays
-   stable in daily use.
+2. **v2.4 plan** is ready at `docs/v2.4-plan.md` but is **not** the active
+   implementation queue until a human opens the lane (version bump + one
+   promoted slice). Recommended first feature slice: chapter-level Diff (B-1).
+3. Compact Book toolbar on `main` after `v2.3.0` is carry-in (C-0) for the
+   v2.4 package; do not move the published tag to absorb it.
+4. Do not bulk-digest review packs. 縦書き remains deferred.
 
 ### Shipped (v2.3 quality pack + portability)
 
@@ -192,8 +194,8 @@ These boundaries stay active across roadmap changes:
 | **v2.0** | Multi-file Book Scope Alpha + OKF multi-file feel | **Closed / published** |
 | **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into published 2.3.0** |
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
-| v2.x | Further Book Scope practicalization | After post-ship direction |
-| 縦書き | Vertical reading / export layer | After Book Scope foundation |
+| **v2.4** | Book depth (chapter Diff / TOC / explainability) | **Plan ready** — `docs/v2.4-plan.md` |
+| 縦書き | Vertical reading / export layer | After Book foundation stays stable |
 | v3.x | Speculative local-AI re-evaluation only | Speculative |
 
 Bridge rationale: `docs/v1.8-plus-product-review-roadmap.md`.

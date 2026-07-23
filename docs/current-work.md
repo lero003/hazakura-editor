@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Post-v2.3.0 ship; next optional slices after published Book quality pack
+Scope: Post-v2.3.0 ship; v2.4 plan ready (not yet active queue)
 Authority: High
-Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
+Last reviewed: 2026-07-24 (MAS 2.3.0 published; v2.4 plan drafted)
 
 ## Purpose
 
@@ -34,7 +34,7 @@ friction or a release gate needs them.
 | **v2.0** | **Shipped** | Book Scope Alpha; source tag `v2.0.0` |
 | **v2.1–v2.2** | Folded into published `2.3.0` | Search, image load, quality pack |
 | **v2.3** | **Shipped** MAS + source tag `2.3.0` | Portable recipe + Reader resume + image/export repair |
-| **v2.x** | Next product phase | Practicalization candidates (not auto-queue) |
+| **v2.4** | **Plan ready** | Book depth (chapter Diff / TOC / explainability); see `docs/v2.4-plan.md` |
 | **縦書き** | Later | After horizontal foundation |
 
 ## Active Queue — post-v2.3
@@ -59,20 +59,15 @@ friction or a release gate needs them.
 
 1. **Hotfix only** for reproduced blockers on published `2.3.0` (App Review,
    TestFlight, or daily use). Do not reopen closed store lanes for polish.
-2. Pick **one** post-ship slice when ready — prefer honesty / friction over
-   backlog digestion:
-   - residual Book UX density (for example compact settled toolbar / More menu
-     for recipe + recheck) if daily use shows clutter;
-   - packaging residual evidence (heavy-manuscript PDF/EPUB visual, Book
-     VoiceOver minimum) if a real gap appears;
-   - one item from the advisory pools (`v2-external-review-synthesis` N/X/E or
-     `v2-qwen-ux-proposal-synthesis` Q-1–Q-5);
-   - or a parked residual only when daily friction reproduces.
-3. Do **not** start a rigid v2.4 train from external proposals. Promote one
-   candidate into this queue at a time.
-4. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
+2. **v2.4 plan is drafted** at `docs/v2.4-plan.md` (planning only). Do not
+   bump to `2.4.0` or promote B-slices until the human opens the lane.
+3. On `main` after tag: compact Book toolbar (C-0) is already landed; fold it
+   into the v2.4 store line when that line opens (do not move `v2.3.0`).
+4. Optional pre-lane: packaging residual evidence or one honesty friction item
+   only if daily use reproduces a gap — not bulk review-pool digestion.
+5. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
    auto-load recipes.
-5. Do not move published tags (`v2.0.0`, `v2.3.0`, …) or attach binary assets
+6. Do not move published tags (`v2.0.0`, `v2.3.0`, …) or attach binary assets
    without a separate explicit handoff.
 
 ### Hotfix only (published `2.3.0`)
@@ -90,5 +85,6 @@ friction or a release gate needs them.
 
 1. Published store + source tag `2.3.0` are closed unless a hotfix is needed.
 2. Optional: deepen distribution evidence without reopening the shipped feature set.
-3. Choose the first **v2.x** practicalization slice only when product direction
-   is clear — not as auto-catch-up of review pools.
+3. When ready to open **v2.4**: confirm first slice in `docs/v2.4-plan.md`
+   (recommended **B-1** chapter Diff), bump package surfaces to `2.4.0`, and
+   promote only that one slice into this Active Queue.

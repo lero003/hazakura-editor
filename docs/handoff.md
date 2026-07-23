@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: Post-v2.3.0 ship (MAS published); next optional slice
+Scope: Post-v2.3.0 ship; v2.4 plan ready
 Authority: Medium
-Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
+Last reviewed: 2026-07-24 (MAS 2.3.0 published; v2.4 plan drafted)
 
 ## Current State
 
@@ -292,13 +292,15 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 ## Next For Agents
 
 1. Hotfix only for reproduced blockers on published `2.3.0`.
-2. Pick one optional post-ship slice when product direction is clear — not
-   bulk digestion of advisory pools.
-3. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
+2. **v2.4 plan:** `docs/v2.4-plan.md` (planning only until the human opens the
+   lane). Recommended first feature slice: **B-1 chapter Diff**. Carry-in
+   compact toolbar (C-0) is already on `main` after `v2.3.0`.
+3. Do not bump to `2.4.0` or implement B-slices without explicit lane open.
+4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
    out unless product explicitly accepts them.
-4. Do not move published tags (`v2.0.0`, `v2.3.0`, …), upload, or attach
+5. Do not move published tags (`v2.0.0`, `v2.3.0`, …), upload, or attach
    release assets without a separate explicit handoff.
-5. On security/path/AI/multi-file surfaces, re-read
+6. On security/path/AI/multi-file surfaces, re-read
    `docs/security-boundary.md` and the v2 design boundary section.
 
 ## Key Paths
@@ -306,6 +308,7 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 | Need | Path |
 |------|------|
 | Next slice | `docs/current-work.md` |
+| v2.4 plan | `docs/v2.4-plan.md` |
 | Phase / path | `docs/roadmap.md` |
 | v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
 | Status truth | `docs/current-status.md` |

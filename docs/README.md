@@ -18,8 +18,9 @@ reproduced hotfix; residual / evidence pools are parked.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: **post-v2.3.0 queue** (hotfix + optional one slices).
-- `roadmap.md`: **post-v2.3.0 ship**, published `2.3.0` boundary, future v2.x practicalization.
+- `current-work.md`: **post-v2.3.0 queue** (hotfix; v2.4 plan ready).
+- `roadmap.md`: **post-v2.3.0 ship**, published `2.3.0` boundary, next plan v2.4.
+- `v2.4-plan.md`: **v2.4 Book depth plan** (chapter Diff / TOC / explainability; not yet active queue).
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md`: Qwen UX pack triage (advisory; L Mode corrections; not the active queue).
 - `current-status.md`: current implementation and release state.
@@ -51,7 +52,8 @@ reproduced hotfix; residual / evidence pools are parked.
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **post-v2.3 ship** + parked residual
-- `current-work.md` — next optional slices after published `2.3.0`
+- `current-work.md` — hotfix queue; link to v2.4 plan
+- `v2.4-plan.md` — next product line plan (open when ready)
 - `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 design SoT
 - `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md` — Qwen UX proposal triage (advisory)
