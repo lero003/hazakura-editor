@@ -907,7 +907,11 @@ recovered state separately where relevant.
    after images finish loading.
 7. **Spread View**: if the viewport is wide enough, confirm the
    two-page spread renders and page navigation moves by the spread
-   width.
+   width. Open `Command+F`, search for text on a later page, and use Enter /
+   Shift+Enter. Confirm the active result moves the reader to the containing
+   spread (with the target visible on its left or right page) in both the
+   right pane and Reading Focus, without starting from the right-hand page
+   alone.
 8. **Heading jump**: in the editor, use heading navigation or outline
    to jump to a later chapter. Confirm the preview / e-book reader
    follows to the same area without a one-beat lag.

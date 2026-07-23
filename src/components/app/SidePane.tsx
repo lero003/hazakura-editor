@@ -80,6 +80,7 @@ type SidePaneProps = {
   previewViewState: PreviewViewState | null;
   previewVisible: boolean;
   ebookLocation: EBookReaderLocation | null;
+  searchSourceLine?: number | null;
   sidePaneMode: RightPaneMode;
   /** Theme G media access (outside-local consent + remote Preference). */
   mediaAccess?: MediaImageAccessOptions | null;
@@ -120,6 +121,7 @@ export function SidePane({
   previewViewState,
   previewVisible,
   ebookLocation,
+  searchSourceLine = null,
   sidePaneMode,
   workspaceRootPath,
 }: SidePaneProps) {
@@ -278,6 +280,7 @@ export function SidePane({
             onEnterReadingFocus={onOpenEbookReadingFocus}
             onLocationChange={onEbookLocationChange}
             onOpenLocalLink={onOpenPreviewLocalLink}
+            searchSourceLine={searchSourceLine}
             source={activeContents}
             workspaceRoot={
               workspaceRootPath ??

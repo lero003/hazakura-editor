@@ -59,6 +59,9 @@ from the v2.x practicalization pool (excluding 縦書き).
 7. **Reader search shortcut/navigation:** while the whole-book Reader is open,
    `Command+F` targets its bounded search instead of the hidden editor search.
    Enter / Shift+Enter advances through matching chapters with wraparound.
+8. **e-book find-result sync:** the existing in-file `Command+F` result now
+   moves both the right-pane e-book reader and Reading Focus to the containing
+   chapter/page. Spread mode aligns the result to its containing two-page view.
 
 ### Current stop
 

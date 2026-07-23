@@ -2,9 +2,36 @@ import { describe, expect, it } from "vitest";
 import {
   countMarkdownSourceLines,
   estimateChapterSourceLine,
+  findChapterIndexForSourceLine,
+  getPageIndexForSourceLine,
   getEBookReaderLocation,
   readerLocationsEqual,
 } from "./ebookReaderLocation";
+
+describe("search result location", () => {
+  const chapters = [
+    { startLine: 1 },
+    { startLine: 6 },
+    { startLine: 12 },
+  ];
+
+  it("finds the chapter containing a source line", () => {
+    expect(findChapterIndexForSourceLine(chapters, 1)).toBe(0);
+    expect(findChapterIndexForSourceLine(chapters, 8)).toBe(1);
+    expect(findChapterIndexForSourceLine(chapters, 20)).toBe(2);
+  });
+
+  it("aligns a source line to the left page of its visible spread", () => {
+    const chapter = {
+      source: "one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine",
+      startLine: 1,
+    };
+    expect(getPageIndexForSourceLine(chapter, 7, 5, 2)).toBe(2);
+    expect(getPageIndexForSourceLine(chapter, 9, 5, 2)).toBe(4);
+    expect(getPageIndexForSourceLine(chapter, Number.NaN, 5, 2)).toBe(0);
+    expect(getPageIndexForSourceLine(chapter, 7, Number.NaN, 2)).toBe(0);
+  });
+});
 
 describe("countMarkdownSourceLines", () => {
   it("counts a single-line source as one line", () => {

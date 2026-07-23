@@ -823,6 +823,65 @@ describe("EBookPane chapter reader", () => {
     }
   });
 
+  it("opens the spread containing the active search result", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(5);
+    const clientWidthGetter = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function getClientWidth(this: HTMLElement) {
+        return this.classList.contains("ebook-page-viewport") ? 884 : 0;
+      });
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element) => {
+        const isFlow =
+          element instanceof HTMLElement &&
+          element.classList.contains("ebook-page-flow");
+        return {
+          columnGap: isFlow ? "44px" : "normal",
+          columnWidth: isFlow ? "420px" : "auto",
+          display: "block",
+          getPropertyValue: () => "0px",
+          paddingBottom: "0px",
+          paddingTop: "0px",
+          visibility: "visible",
+        } as unknown as CSSStyleDeclaration;
+      });
+
+    try {
+      const result = await renderEBookPane(
+        <EBookPane
+          menuLanguage="ja"
+          readingFocusActive
+          searchSourceLine={7}
+          source={"# Chapter\n\none\n\ntwo\n\nneedle\n\nfour"}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("ページ 3 / 5")).toBeTruthy();
+      });
+      expect(getEBookPageOffset).toHaveBeenCalledWith(
+        2,
+        expect.any(HTMLElement),
+      );
+
+      result.rerender(
+        <EBookPane
+          menuLanguage="ja"
+          readingFocusActive
+          searchSourceLine={9}
+          source={"# Chapter\n\none\n\ntwo\n\nneedle\n\nfour"}
+        />,
+      );
+      await waitFor(() => {
+        expect(screen.getByText("ページ 5 / 5")).toBeTruthy();
+      });
+    } finally {
+      getComputedStyleSpy.mockRestore();
+      clientWidthGetter.mockRestore();
+    }
+  });
+
   it("opens a previewed one-page next chapter without skipping it", async () => {
     vi.mocked(measureEBookPageCount).mockImplementation((element) => {
       const text = element?.textContent ?? "";

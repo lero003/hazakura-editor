@@ -58,6 +58,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   the transparent placeholder's lazy flag is removed, so later React paints do
   not restore the blank placeholder. e-book/PDF/EPUB retain eager settle
   behavior. Source and media consent policy are unchanged.
+- **In-file search now follows into e-book Mode:** the active `Command+F`
+  result is mapped from its source offset to a Markdown line, then to the
+  e-book chapter and estimated rendered page in both the right pane and
+  Reading Focus. A spread target is aligned to the containing spread's left
+  page; Markdown source and search indexing are unchanged.
 - **Book frontmatter presentation is aligned:** closed leading YAML is stripped
   for whole-book Reader and PDF, matching EPUB, without changing source. Custom
   metadata is not mapped into cover/part/chapter semantics.
@@ -124,15 +129,19 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   but macOS rejected launching them without a Store receipt, so the final
   interaction remains an installed/TestFlight check.
 - `npm run typecheck` — pass.
-- `npm test` — 205 files / 1,715 tests pass on tree `2.3.0`.
+- `npm test` — 205 files / 1,719 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `npm run build` — helper-enabled App Store preview `.app` built successfully;
   ad-hoc signed, not notarized and not a submission pkg.
-- `npm run build:developer-preview` — pass after the Reader search routing fix.
+- `npm run build:developer-preview` — pass after the Reader and e-book search
+  routing fixes.
   Computer Use confirmed `Command+F` focused **本の中を検索** and Enter moved
   a 43-chapter real manuscript from chapter 1 to chapter 2, including visible
-  active-label and manuscript scroll movement.
+  active-label and manuscript scroll movement. A separate real-document smoke
+  confirmed the in-file search moved the e-book right pane to chapter 3 / page
+  4, then Reading Focus to the containing spread at page 3 / 5 with both pages
+  visible; the Developer preview app was quit after verification.
 - Generated covered EPUB — external `epubcheck` 3.3: 0 fatal errors / 0 errors /
   0 warnings.
 - Build 107 bundle smoke is invalidated and that pkg remains held. Computer Use

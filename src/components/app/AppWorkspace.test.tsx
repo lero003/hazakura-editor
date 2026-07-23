@@ -40,6 +40,7 @@ vi.mock("../editor/PaneResizer", () => ({
 vi.mock("./SidePane", () => ({
   SidePane: (props: {
     ebookLocation?: { chapterIndex: number; pageIndex: number } | null;
+    searchSourceLine?: number | null;
     previewViewState?: { scrollRatio: number } | null;
     onEbookLocationChange?: (location: {
       chapterIndex: number;
@@ -61,6 +62,9 @@ vi.mock("./SidePane", () => ({
       </span>
       <span data-testid="side-preview-location">
         preview location {props.previewViewState?.scrollRatio ?? "none"}
+      </span>
+      <span data-testid="side-ebook-search-line">
+        search line {props.searchSourceLine ?? "none"}
       </span>
       <button
         onClick={() =>
@@ -117,6 +121,7 @@ vi.mock("./SidePane", () => ({
 vi.mock("../editor/preview/EBookPane", () => ({
   default: (props: {
     initialLocation?: { chapterIndex: number; pageIndex: number } | null;
+    searchSourceLine?: number | null;
     onExitReadingFocus?: (location: {
       chapterIndex: number;
       pageIndex: number;
@@ -130,6 +135,7 @@ vi.mock("../editor/preview/EBookPane", () => ({
     <div data-testid="ebook-focus-pane">
       focus {props.initialLocation?.chapterIndex ?? 0}:
       {props.initialLocation?.pageIndex ?? 0}
+      {` search ${props.searchSourceLine ?? "none"}`}
       <button
         onClick={() =>
           props.onLocationChange?.({ chapterIndex: 2, pageIndex: 3 })
@@ -604,6 +610,41 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     expect(screen.getByTestId("side-ebook-location").textContent).toContain(
       "side location 1:0",
+    );
+  });
+
+  it("routes the active find match line to the e-book pane and Reading Focus", async () => {
+    const source = [
+      "# Chapter One",
+      "",
+      "body",
+      "",
+      "## Chapter Two",
+      "",
+      "needle",
+    ].join("\n");
+
+    renderWorkspace({
+      activeContents: source,
+      activeDocumentLineCount: 7,
+      activeMatchIndex: 0,
+      activeTab: bookTab,
+      findMatches: [
+        { from: source.indexOf("needle"), to: source.indexOf("needle") + 6 },
+      ],
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(screen.getByTestId("side-ebook-search-line").textContent).toContain(
+      "search line 7",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock enter reading focus" }));
+    expect((await screen.findByTestId("ebook-focus-pane")).textContent).toContain(
+      "search 7",
     );
   });
 

@@ -60,6 +60,8 @@ import {
 import {
   countMarkdownSourceLines,
   estimateChapterSourceLine,
+  findChapterIndexForSourceLine,
+  getPageIndexForSourceLine,
   getEBookReaderLocation,
   readerLocationsEqual,
   type EBookReaderLocation,
@@ -84,6 +86,8 @@ type EBookPaneProps = {
   onLocationChange?: (location: EBookReaderLocation) => void;
   onOpenLocalLink?: (href: string) => void;
   readingFocusActive?: boolean;
+  /** Active in-file find result, expressed as a 1-based Markdown source line. */
+  searchSourceLine?: number | null;
   source: string;
   workspaceRoot?: string | null;
 };
@@ -137,6 +141,7 @@ export default function EBookPane({
   onLocationChange,
   onOpenLocalLink,
   readingFocusActive = false,
+  searchSourceLine = null,
   source,
   workspaceRoot,
 }: EBookPaneProps) {
@@ -172,6 +177,7 @@ export default function EBookPane({
     useState(false);
   const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
   const pendingPageTargetRef = useRef<PendingPageTarget | null>(null);
+  const pendingSearchSourceLineRef = useRef<number | null>(null);
   const chapterPageCountsRef = useRef<Map<number, number>>(new Map());
   const articleRef = useRef<HTMLElement | null>(null);
   const flowRef = useRef<HTMLDivElement | null>(null);
@@ -335,6 +341,43 @@ export default function EBookPane({
   const [nextChapterHtml, setNextChapterHtml] =
     useState<RenderedChapter | null>(nextRenderedChapter);
 
+  useEffect(() => {
+    if (searchSourceLine === null || chapters.length === 0) return;
+
+    const targetChapterIndex = findChapterIndexForSourceLine(
+      chapters,
+      searchSourceLine,
+    );
+    const targetChapter = chapters[targetChapterIndex];
+    if (!targetChapter) return;
+
+    pendingLocationNotificationRef.current = true;
+    setPageTransitionSuppressed(
+      targetChapterIndex !== activeChapterIndexRef.current,
+    );
+
+    if (
+      targetChapterIndex !== activeChapterIndexRef.current ||
+      measuredChapterIndexRef.current !== targetChapterIndex
+    ) {
+      pendingSearchSourceLineRef.current = searchSourceLine;
+      pendingPageTargetRef.current = null;
+      setActivePageIndex(0);
+      setActiveChapterIndex(targetChapterIndex);
+      return;
+    }
+
+    const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
+    setActivePageIndex(
+      getPageIndexForSourceLine(
+        targetChapter,
+        searchSourceLine,
+        measuredPageCountRef.current,
+        pageStep,
+      ),
+    );
+  }, [chapters, searchSourceLine]);
+
   // v0.34: 初回レンダリングは即時に行い、2回目以降（ソース変更時）のみ
   // デバウンスする。これで e-book Mode を開いた直後の表示は速く、連続入力時
   // だけ marked + DOMPurify の重い同期処理を間引ける。
@@ -482,10 +525,22 @@ export default function EBookPane({
       activeChapterIndexSafe,
       normalizeEBookPageCount(nextPageCount),
     );
+    const nextVisiblePageStep = getVisiblePageStep(viewportRef.current, flow);
     setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
-    setVisiblePageStep(getVisiblePageStep(viewportRef.current, flow));
+    setVisiblePageStep(nextVisiblePageStep);
     setMeasuredPageCount(nextPageCount);
     setActivePageIndex((current) => {
+      const pendingSearchSourceLine = pendingSearchSourceLineRef.current;
+      if (pendingSearchSourceLine !== null && activeChapter) {
+        pendingSearchSourceLineRef.current = null;
+        pendingPageTargetRef.current = null;
+        return getPageIndexForSourceLine(
+          activeChapter,
+          pendingSearchSourceLine,
+          nextPageCount,
+          nextVisiblePageStep,
+        );
+      }
       const pendingTarget = pendingPageTargetRef.current;
       pendingPageTargetRef.current = null;
       if (pendingTarget === "last") {

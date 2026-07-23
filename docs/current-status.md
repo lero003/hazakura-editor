@@ -664,6 +664,10 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   reader's approximate source line, so read, notice, and edit can happen
   without entering Reading Focus first; passive source edits and chapter
   reclassification do not push the editor position back from the reader.
+  Active in-file `Command+F` results now travel in the opposite direction as
+  well: the right-pane reader and Reading Focus move to the result's chapter
+  and estimated page. In spread view the target is aligned to the left page of
+  the containing spread so next/previous paging remains on the two-page grid.
   Local build and window-launch smoke passed for the generated preview
   app; built-app interaction checks for normal, unsaved, and recovered
   documents remain pending. A release-hygiene follow-up removed a

@@ -56,6 +56,53 @@ export function estimateChapterSourceLine(
   return chapter.startLine + Math.round((lineCount - 1) * pageRatio);
 }
 
+export function findChapterIndexForSourceLine(
+  chapters: readonly Pick<EbookChapter, "startLine">[],
+  sourceLine: number,
+): number {
+  if (chapters.length === 0) return 0;
+  const safeLine = Number.isFinite(sourceLine)
+    ? Math.max(1, Math.trunc(sourceLine))
+    : 1;
+  let chapterIndex = 0;
+  for (let index = 0; index < chapters.length; index += 1) {
+    if (chapters[index].startLine > safeLine) break;
+    chapterIndex = index;
+  }
+  return chapterIndex;
+}
+
+export function getPageIndexForSourceLine(
+  chapter: Pick<EbookChapter, "source" | "startLine">,
+  sourceLine: number,
+  pageCount: number,
+  visiblePageStep = 1,
+): number {
+  const safePageCount = Number.isFinite(pageCount)
+    ? Math.max(1, Math.trunc(pageCount))
+    : 1;
+  const lineCount = countMarkdownSourceLines(chapter.source);
+  if (lineCount <= 1 || safePageCount <= 1) return 0;
+
+  const safeSourceLine = Number.isFinite(sourceLine)
+    ? Math.trunc(sourceLine)
+    : chapter.startLine;
+  const relativeLine = Math.min(
+    Math.max(safeSourceLine - chapter.startLine, 0),
+    lineCount - 1,
+  );
+  const estimatedPage = Math.round(
+    (relativeLine / (lineCount - 1)) * (safePageCount - 1),
+  );
+  const step = Number.isFinite(visiblePageStep)
+    ? Math.max(1, Math.trunc(visiblePageStep))
+    : 1;
+  return clampPageIndex(
+    Math.floor(estimatedPage / step) * step,
+    safePageCount,
+  );
+}
+
 export function countMarkdownSourceLines(source: string): number {
   if (source.length === 0) {
     return 1;

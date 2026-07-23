@@ -470,6 +470,10 @@ export function AppWorkspace({
     enteringEbookPane && editorAnchoredEbookLocation
       ? editorAnchoredEbookLocation
       : activeEbookLocation ?? editorAnchoredEbookLocation;
+  const activeFindMatch = findMatches[activeMatchIndex] ?? null;
+  const ebookSearchSourceLine = activeFindMatch
+    ? offsetToOneBasedLine(activeContents, activeFindMatch.from)
+    : null;
   useEffect(() => {
     previousSidePaneModeRef.current = sidePaneMode;
   }, [sidePaneMode]);
@@ -959,6 +963,7 @@ export function AppWorkspace({
             previewPaneRef={previewPaneRef}
             previewViewState={activeDocumentViewState?.preview ?? null}
             previewVisible={previewVisible}
+            searchSourceLine={ebookSearchSourceLine}
             sidePaneMode={sidePaneMode}
             workspaceRootPath={workspaceRootPath}
           />
@@ -985,6 +990,7 @@ export function AppWorkspace({
               onLocationChange={handleEbookLocationChange}
               onOpenLocalLink={openPreviewMarkdownLink}
               readingFocusActive
+              searchSourceLine={ebookSearchSourceLine}
               source={activeContents}
               workspaceRoot={
                 workspaceRootPath ??
@@ -1044,6 +1050,17 @@ function getEbookLocationForEditorLine(
     chapterIndex,
     pageIndex: 0,
   };
+}
+
+function offsetToOneBasedLine(source: string, offset: number): number {
+  const safeOffset = Number.isFinite(offset)
+    ? Math.min(Math.max(0, Math.trunc(offset)), source.length)
+    : 0;
+  let line = 1;
+  for (let index = 0; index < safeOffset; index += 1) {
+    if (source.charCodeAt(index) === 10) line += 1;
+  }
+  return line;
 }
 
 function getEditorLineForEbookLocation(
