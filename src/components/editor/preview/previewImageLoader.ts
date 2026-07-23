@@ -10,6 +10,8 @@ type PreviewImageLoaders = {
   loadApprovedLocalImage?: (absolutePath: string) => Promise<string>;
   loadRemoteImage?: (url: string) => Promise<string>;
   loadWorkspaceImage: (absolutePath: string) => Promise<string>;
+  /** Persist a resolved/replaced placeholder in the owning React state. */
+  onDomChange?: () => void;
 };
 
 /**
@@ -69,14 +71,20 @@ export function loadPreviewImagesNearViewport(
   if (typeof globalThis.IntersectionObserver === "function") {
     observer = new IntersectionObserver(
       (entries) => {
-        if (fallbackTimer !== null) {
-          clearTimeout(fallbackTimer);
-          fallbackTimer = null;
-        }
+        let observedIntersection = false;
         for (const entry of entries) {
           if (entry.isIntersecting && entry.target instanceof HTMLImageElement) {
+            observedIntersection = true;
             enqueue(entry.target);
           }
+        }
+        // A nested WKWebView scroll surface can emit one initial
+        // non-intersecting record and then never report the placeholder again.
+        // That record is not proof that viewport loading works, so retain the
+        // bounded fallback until at least one real intersection was observed.
+        if (observedIntersection && fallbackTimer !== null) {
+          clearTimeout(fallbackTimer);
+          fallbackTimer = null;
         }
       },
       {
@@ -147,34 +155,30 @@ async function resolvePreviewImage(
     if (isCancelled() || !image.isConnected) {
       return;
     }
-    image.setAttribute("data-hazakura-image-loading", "");
+    // Reading is already delayed and concurrency-bounded by this loader.
+    // Keeping the transparent placeholder's native lazy flag can make WebKit
+    // retain that completed placeholder after `src` changes in a nested
+    // Preview scroll surface.
+    image.removeAttribute("loading");
     image.setAttribute("src", dataUrl);
     image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
     image.removeAttribute(REMOTE_IMAGE_URL_ATTR);
     image.removeAttribute(IMAGE_ORIGIN_ATTR);
+    loaders.onDomChange?.();
     if (typeof image.decode === "function") {
-      void image
-        .decode()
-        .catch(() => undefined)
-        .finally(() => {
-          if (image.isConnected) {
-            image.removeAttribute("data-hazakura-image-loading");
-          }
-        });
-    } else {
-      image.removeAttribute("data-hazakura-image-loading");
+      void image.decode().catch(() => undefined);
     }
   } catch {
     if (isCancelled() || !image.isConnected) {
       return;
     }
-    image.replaceWith(
-      buildBlockedImageElement({
-        reason: "load-failed",
-        alt: image.getAttribute("alt")?.trim(),
-        reference,
-        resolvedPath: path || undefined,
-      }),
-    );
+    const blocked = buildBlockedImageElement({
+      reason: "load-failed",
+      alt: image.getAttribute("alt")?.trim(),
+      reference,
+      resolvedPath: path || undefined,
+    });
+    image.replaceWith(blocked);
+    loaders.onDomChange?.();
   }
 }

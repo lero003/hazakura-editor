@@ -49,8 +49,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   whole-book Reader chapter keep permitted image references inert until near
   the viewport, reserve placeholder height, and run at most two reads per pane.
   A delayed fallback now routes still-unreported placeholders through the same
-  bounded queue when WKWebView omits intersection delivery, covering the
-  parent-workspace blank-image regression. e-book/PDF/EPUB retain eager settle
+  bounded queue when nested WKWebView Preview reports only an initial false
+  intersection and then goes quiet. A non-intersecting record no longer
+  disables the fallback. A loaded data URL is committed into Preview state and
+  the transparent placeholder's lazy flag is removed, so later React paints do
+  not restore the blank placeholder. e-book/PDF/EPUB retain eager settle
   behavior. Source and media consent policy are unchanged.
 - **Book frontmatter presentation is aligned:** closed leading YAML is stripped
   for whole-book Reader and PDF, matching EPUB, without changing source. Custom
@@ -107,17 +110,23 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 - Focused image/EPUB slices: 6 files / 122 tests pass, including missed
   intersection fallback, Preview/Reader regression, explicit cover dialog,
   archive contract, and selected-cover file loading.
+- Follow-up nested-Preview regressions: focused red tests confirmed both that a
+  non-intersecting observer record cancelled the delayed fallback and that a
+  same-props React rerender restored the transparent placeholder after a data
+  URL had appeared.
 - `npm run typecheck` — pass.
-- `npm test` — 204 files / 1,709 tests pass on tree `2.3.0`.
+- `npm test` — 204 files / 1,710 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `npm run build` — helper-enabled App Store preview `.app` built successfully;
   ad-hoc signed, not notarized and not a submission pkg.
 - Generated covered EPUB — external `epubcheck` 3.3: 0 fatal errors / 0 errors /
   0 warnings.
-- Latest local preview bundle — parent workspace with nested `book/chapter.md`
-  and `images/cover.png`: image visible in Preview and e-book display. The
-  fixture tab was closed and the prior workspace restored afterward.
+- Build 107 bundle smoke is invalidated and that pkg remains held. Computer Use
+  reproduced its flash-then-blank behavior with the real parent workspace,
+  nested `index.md`, and 2.6 MB `images/c00.png`. In the repaired build, Preview
+  retained the image after 12 seconds and after close/reopen; e-book page 2
+  retained the same image after 10 seconds. A replacement pkg is still needed.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
   host-dependent ignored.
@@ -245,8 +254,9 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Next For Agents
 
-1. Stop for the installed / TestFlight manual checks in `docs/current-work.md`,
-   including the new image-heavy Preview/whole-book Reader item.
+1. Replace the held build 107 pkg from the verified source, then continue the
+   installed / TestFlight checks, including the image-heavy whole-book Reader
+   item.
 2. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
 3. Published `2.0.0` remains hotfix-only.
 4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing

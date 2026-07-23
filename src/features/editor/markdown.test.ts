@@ -51,6 +51,7 @@ describe("renderMarkdown image policy", () => {
 
     expect(inlined).toContain('src="data:image/png;base64,iVBORw0KGgo="');
     expect(inlined).not.toContain("data-hazakura-image-path");
+    expect(inlined).not.toContain('loading="lazy"');
   });
 
   it("resolves nested document-relative images inside the workspace", () => {

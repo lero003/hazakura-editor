@@ -84,10 +84,14 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 - **Interactive Preview image loading is bounded near the viewport.** Workspace,
   explicitly approved outside-local, and enabled remote images stay as inert,
   height-reserved placeholders until they approach the visible area, with at
-  most two reads in flight per Preview pane. If WKWebView does not deliver an
-  intersection callback, a short fallback feeds the remaining placeholders into
-  that same bounded queue instead of leaving valid document-relative images
-  permanently blank. Whole-book Reader inherits the same behavior. e-book
+  most two reads in flight per Preview pane. If nested WKWebView Preview only
+  delivers an initial non-intersecting record and no usable intersection, a
+  short fallback feeds the remaining placeholders into that same bounded queue
+  instead of leaving valid document-relative images permanently blank. A false
+  record no longer cancels that fallback. Resolved data URLs are committed back
+  to Preview state and no longer retain the transparent placeholder's native
+  lazy flag, preventing a later parent render from restoring the blank image.
+  Whole-book Reader inherits the same behavior. e-book
   pagination and PDF/EPUB export deliberately keep their existing all-image
   settle path. This changes neither Markdown source nor the local/remote consent
   boundary.
@@ -122,18 +126,19 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   or launch an external cover tool. Apple Books appearance remains a manual
   installed/TestFlight gate.
 - **v2.3 source proof is green for the Book UX and image/export repair.**
-  TypeScript/Vitest (**204 files / 1,709 tests**), typecheck, Vite, and App
-  Store surface (**10 files / 111 tests**) pass on tree `2.3.0`. The
-  helper-enabled App Store preview bundle also builds. No Rust source changed;
-  Rust was rechecked at **367 pass / 2 host-dependent ignored**. A parent
-  workspace fixture was also opened in the latest local preview bundle; its
-  nested document-relative image appeared in both Preview and e-book display.
-  This is local bundle smoke, not installed/TestFlight proof. A fresh signed
-  universal App Store pkg candidate for `2.3.0` is recorded in
-  `docs/internal/app-store-candidates/latest.json`; local signature, entitlement,
-  payload, and checksum checks passed. This is not upload or Apple processing
-  evidence. Installed/TestFlight interaction remains unperformed and is the
-  current human gate before upload.
+  TypeScript/Vitest (**204 files / 1,710 tests**), typecheck, Vite, App Store
+  surface (**10 files / 111 tests**), and the helper-enabled App Store preview
+  build pass on tree `2.3.0`; the new regression covers an initial
+  non-intersecting observer record for `/workspace/book/images/cover.png`.
+  Rust proof remains unchanged at **367 pass / 2 host-dependent ignored**
+  because this follow-up changes only the Preview loader and its test. The
+  prior build 107 smoke only observed the image immediately and is invalidated
+  by the report that it then disappeared; that pkg is held and must not be
+  uploaded. The repaired built app was checked through Computer Use with the
+  real parent workspace, nested `index.md`, and 2.6 MB `images/c00.png`: Preview
+  retained the image after 12 seconds and a pane reopen, and e-book page 2
+  retained it after 10 seconds. A replacement pkg is still required. This is
+  not upload or Apple processing evidence.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App

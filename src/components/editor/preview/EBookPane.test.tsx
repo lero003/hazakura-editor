@@ -1646,6 +1646,7 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
       const img = screen.getByRole("img");
       expect(img.getAttribute("src")).toBe("data:image/png;base64,RESOLVED");
       expect(img.hasAttribute("data-hazakura-image-path")).toBe(false);
+      expect(img.hasAttribute("loading")).toBe(false);
     });
     expect(openWorkspaceImage).toHaveBeenCalledWith(
       "/workspace",

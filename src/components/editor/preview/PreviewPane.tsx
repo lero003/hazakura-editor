@@ -195,6 +195,22 @@ export default function PreviewPane({
             return image.dataUrl;
           }
         : undefined,
+      onDomChange: () => {
+        const host = previewHostRef.current;
+        if (!host) {
+          return;
+        }
+        const resolvedHtml = host.innerHTML;
+        setPreview((current) => {
+          if (
+            current.identity !== previewIdentity ||
+            current.html === resolvedHtml
+          ) {
+            return current;
+          }
+          return { ...current, html: resolvedHtml };
+        });
+      },
     });
   }, [
     mediaAccess,

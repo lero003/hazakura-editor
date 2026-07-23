@@ -99,14 +99,11 @@ describe("PreviewPane local link routing", () => {
       path: "/workspace/near.png",
       size: 4,
     });
-    const { container } = render(
+    const source = ["![near](near.png)", "", "![far](far.png)"].join("\n");
+    const { container, rerender } = render(
       <PreviewPane
         documentPath="/workspace/draft.md"
-        source={[
-          "![near](near.png)",
-          "",
-          "![far](far.png)",
-        ].join("\n")}
+        source={source}
         workspaceRoot="/workspace"
       />,
     );
@@ -136,6 +133,22 @@ describe("PreviewPane local link routing", () => {
     expect(images[1].getAttribute("data-hazakura-image-path")).toBe(
       "/workspace/far.png",
     );
+
+    rerender(
+      <PreviewPane
+        documentPath="/workspace/draft.md"
+        source={source}
+        workspaceRoot="/workspace"
+      />,
+    );
+    expect(container.querySelector("img")?.getAttribute("src")).toBe(
+      "data:image/png;base64,NEAR",
+    );
+    expect(
+      container
+        .querySelector("img")
+        ?.hasAttribute("data-hazakura-image-loading"),
+    ).toBe(false);
   });
 
   it("defers the initial markdown render until the next animation frame", async () => {

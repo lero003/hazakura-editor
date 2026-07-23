@@ -42,9 +42,12 @@ from the v2.x practicalization pool (excluding 縦書き).
 3. Prior v2.1–v2.2 quality remains in tree (search, chapter nav, export reveal,
    Assist honesty, preflight hints).
 4. **Preview image fallback:** permitted document-relative images still load
-   through the bounded two-read queue when WKWebView does not deliver an
-   `IntersectionObserver` callback. Workspace containment and source stay
-   unchanged.
+   through the bounded two-read queue when nested WKWebView Preview reports
+   only an initial non-intersecting record and no usable intersection. A false
+   record no longer disables the fallback. Once loaded, the data URL is
+   committed back to Preview state and the transparent placeholder's native
+   lazy flag is removed, so a later React paint cannot make the image flash and
+   disappear. Workspace containment and source stay unchanged.
 5. **Explicit EPUB cover:** the export dialog can optionally select one local
    PNG/JPEG/GIF/WebP image for that export only. The archive marks it as the
    EPUB cover image and emits a cover page; it is never inferred from the first
@@ -52,12 +55,14 @@ from the v2.x practicalization pool (excluding 縦書き).
 
 ### Current stop
 
-1. Local source gates and helper-enabled App Store preview bundle are green
-   after the image/export repair.
-2. Latest signed universal pkg candidate is recorded in
-   `docs/internal/app-store-candidates/latest.json`. Installed/TestFlight manual
-   gate remains human-only, including parent-workspace images and the selected
-   EPUB cover in Apple Books.
+1. Local source gates and built-app smoke are green after the follow-up
+   nested-Preview state-persistence repair. Build 107 remains held because it
+   predates this fix.
+2. A parent workspace with a nested Markdown file and 2.6 MB document-relative
+   PNG stayed visible in Preview after 12 seconds and after Preview reopen; its
+   e-book image page also stayed visible after 10 seconds. Replace the pkg
+   candidate before upload. Installed/TestFlight and the selected EPUB cover in
+   Apple Books remain human-only gates.
 3. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
    auto-load recipes.
 

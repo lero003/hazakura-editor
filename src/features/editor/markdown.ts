@@ -135,6 +135,12 @@ export async function inlineMarkdownImages(
         origin === "approved-local" && loaders.loadApprovedLocalImage
           ? await loaders.loadApprovedLocalImage(path)
           : await loaders.loadWorkspaceImage(path);
+      // The placeholder itself is lazy so the WebView does not fetch before
+      // the bounded loader decides to. Once the data URL is available, lazy
+      // loading is both redundant and unreliable inside nested WKWebView
+      // scroll/pagination surfaces: WebKit can keep showing the already-loaded
+      // transparent placeholder instead of fetching the replacement source.
+      image.removeAttribute("loading");
       image.setAttribute("src", dataUrl);
       image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
       image.removeAttribute(IMAGE_ORIGIN_ATTR);
@@ -170,6 +176,7 @@ export async function inlineMarkdownImages(
     }
     try {
       const dataUrl = await loaders.loadRemoteImage(url);
+      image.removeAttribute("loading");
       image.setAttribute("src", dataUrl);
       image.removeAttribute(REMOTE_IMAGE_URL_ATTR);
       image.removeAttribute(IMAGE_ORIGIN_ATTR);

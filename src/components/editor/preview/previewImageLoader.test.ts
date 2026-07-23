@@ -24,11 +24,11 @@ class MockIntersectionObserver {
     return [];
   }
 
-  trigger(targets: Element[]) {
+  trigger(targets: Element[], isIntersecting = true) {
     this.callback(
       targets.map(
         (target) =>
-          ({ isIntersecting: true, target }) as IntersectionObserverEntry,
+          ({ isIntersecting, target }) as IntersectionObserverEntry,
       ),
       this as unknown as IntersectionObserver,
     );
@@ -57,6 +57,7 @@ function makeHost(paths: string[]): HTMLElement {
   for (const path of paths) {
     const image = document.createElement("img");
     image.alt = path;
+    image.loading = "lazy";
     image.setAttribute("data-hazakura-image-path", path);
     image.setAttribute("data-hazakura-image-origin", "workspace");
     host.append(image);
@@ -78,6 +79,30 @@ describe("loadPreviewImagesNearViewport", () => {
 
     expect(loadWorkspaceImage).not.toHaveBeenCalled();
 
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(loadWorkspaceImage).toHaveBeenCalledWith(
+      "/workspace/book/images/cover.png",
+    );
+
+    cleanup();
+    host.remove();
+  });
+
+  it("falls back when a nested Preview only reports a non-intersecting placeholder", async () => {
+    vi.useFakeTimers();
+    const host = makeHost(["/workspace/book/images/cover.png"]);
+    const image = host.querySelector("img");
+    const loadWorkspaceImage = vi
+      .fn()
+      .mockResolvedValue("data:image/png;base64,COVER");
+    const cleanup = loadPreviewImagesNearViewport(host, {
+      loadWorkspaceImage,
+    });
+
+    if (image) {
+      MockIntersectionObserver.instance?.trigger([image], false);
+    }
     await vi.advanceTimersByTimeAsync(2_000);
 
     expect(loadWorkspaceImage).toHaveBeenCalledWith(
@@ -114,7 +139,7 @@ describe("loadPreviewImagesNearViewport", () => {
     host.remove();
   });
 
-  it("keeps reserved space until the resolved image finishes decoding", async () => {
+  it("does not retain placeholder loading attributes while decode is pending", async () => {
     const host = makeHost(["/large.png"]);
     const image = host.querySelector("img");
     let finishDecode: (() => void) | undefined;
@@ -135,14 +160,14 @@ describe("loadPreviewImagesNearViewport", () => {
       MockIntersectionObserver.instance?.trigger([image]);
     }
     await vi.waitFor(() => {
-      expect(image?.hasAttribute("data-hazakura-image-loading")).toBe(true);
+      expect(decode).toHaveBeenCalledTimes(1);
     });
-    expect(decode).toHaveBeenCalledTimes(1);
+    expect(image?.getAttribute("src")).toBe("data:image/png;base64,LARGE");
+    expect(image?.hasAttribute("data-hazakura-image-loading")).toBe(false);
+    expect(image?.hasAttribute("loading")).toBe(false);
 
     finishDecode?.();
-    await vi.waitFor(() => {
-      expect(image?.hasAttribute("data-hazakura-image-loading")).toBe(false);
-    });
+    await Promise.resolve();
 
     cleanup();
     host.remove();
