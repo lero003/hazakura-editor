@@ -1,21 +1,21 @@
 # Handoff
 
 Status: Operational
-Scope: v2.3.0 Book UX + image/export repair; pre-submission gate next
+Scope: Post-v2.3.0 ship (MAS published); next optional slice
 Authority: Medium
-Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 
 ## Current State
 
-- Package/app version in tree: **`2.3.0`** (local candidate; not uploaded,
-  tagged, or published).
-- GitHub source / local-app tag: **`v2.0.0`** (no binary assets).
-- Published Mac App Store (last confirmed in docs): **`2.0.0`**
-  (user-reported 2026-07-21).
-- **Active phase: v2.3.0 local candidate (pre-submission quality pack).**
-  Includes v2.1 search + Preview image hardening and the v2.2 quality pack
-  (Reader chapter nav, export Finder reveal, Book order honesty, Assist
-  availability honesty, preflight fix hints). 縦書き stays deferred.
+- Package/app version in tree: **`2.3.0`** (matches published store line).
+- GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
+  checkpoint `v2.0.0` remains immutable.
+- Published Mac App Store (last confirmed in docs): **`2.3.0`**
+  (user-reported 2026-07-24).
+- **Active phase: post-v2.3.0 ship.** Hotfix only for reproduced blockers on
+  published `2.3.0`. Optional next work is one honesty / friction / evidence /
+  v2.x practicalization slice — not bulk review-pool digestion. 縦書き stays
+  deferred.
 - **First Alpha spine is in source:** existing sidebar Files / Book switch,
   explicit Markdown selection, app-private ordered document/group tree,
   same-parent reordering, unavailable-entry retention/recheck, chapter switching
@@ -82,11 +82,13 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   one local PNG/JPEG/GIF/WebP file for that export. The archive emits a marked
   cover image and cover XHTML before content. No first-image inference, source
   rewrite, persistent cover setting, cropping, or cover editor was added.
-- **Book Scope UX quieting is in source:** settled list = read/edit primary;
-  suggest only in empty/edit setup; recheck only when unavailable; quieter
-  path/label density; shorter OKF review intro.
+- **Book Scope UX quieting is in source:** settled list keeps read/edit primary;
+  suggest only in empty/edit setup; recheck progressive when unavailable;
+  quieter path/label density; shorter OKF review intro. Further compact
+  toolbar / More-menu density polish is optional post-ship residual, not a
+  published `2.3.0` claim.
 - **Help expansion is in source:** native Help menu / Command Palette → Books
-  and knowledge folders…; About/diagnostics derive `2.1.0` from package
+  and knowledge folders…; About/diagnostics derive package version from package
   metadata. Saving or cancelling Book chapter selection restores trigger focus.
   Help documents default-on index cover/contents option and recent-workspace
   book-order retention. User-facing status/dialogs avoid “Book Scope” jargon;
@@ -113,6 +115,17 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
+## Publication (2026-07-24)
+
+- Mac App Store **`2.3.0`** App Review passed and the release was published
+  (user-reported). Store notes:
+  `docs/releases/2.3.0-app-store-release-notes.md`.
+- GitHub source / local-app tag **`v2.3.0`** (source archive only; no binary
+  assets). Notes: `docs/releases/2.3.0-source-tag.release.md`. Prior tag
+  `v2.0.0` remains immutable (do not move).
+- Hotfix discipline: only reproduced daily-use / review blockers on the
+  published line. Do not reopen the store lane for polish.
+
 ## Verification (2026-07-23, v2.3.0 Book UX + image/export repair)
 
 - Focused image/EPUB slices: 6 files / 122 tests pass, including missed
@@ -129,7 +142,7 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   but macOS rejected launching them without a Store receipt, so the final
   interaction remains an installed/TestFlight check.
 - `npm run typecheck` — pass.
-- `npm test` — 205 files / 1,719 tests pass on tree `2.3.0`.
+- `npm test` — 205 files / 1,721 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `npm run build` — helper-enabled App Store preview `.app` built successfully;
@@ -159,11 +172,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   dependency audit as freshly passed.
 - Version surfaces (npm / Tauri / Cargo / lockfiles / living docs alignment
   tests) report `2.3.0`.
-- Fresh signed universal App Store pkg candidate for `2.3.0` is recorded in
+- Fresh signed universal App Store pkg candidate for `2.3.0` was recorded in
   `docs/internal/app-store-candidates/latest.json`; signature, entitlements,
   bundled helpers/notices, installer signature, and SHA-256 checks passed.
-- Not run: installed / TestFlight manual interaction; upload / Apple validation /
-  review / publication.
+- Publication of Mac App Store `2.3.0` was later user-reported (2026-07-24).
+  This verification section remains pre-publication local evidence.
 
 ## Verification (2026-07-22, v2.1.0 candidate base)
 
@@ -278,16 +291,14 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 
 ## Next For Agents
 
-1. Replace the held build 107 pkg from the verified source, then continue the
-   installed / TestFlight checks, including the image-heavy whole-book Reader
-   item.
-2. Do not add another feature to `2.1.0` or rebuild the proven Book Scope spine.
-3. Published `2.0.0` remains hotfix-only.
-4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
-   out of this candidate.
-5. Do not move published tags, upload, or attach release assets without a
-   separate explicit handoff.
-6. On security/path/AI/multi-file surfaces, re-read
+1. Hotfix only for reproduced blockers on published `2.3.0`.
+2. Pick one optional post-ship slice when product direction is clear — not
+   bulk digestion of advisory pools.
+3. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
+   out unless product explicitly accepts them.
+4. Do not move published tags (`v2.0.0`, `v2.3.0`, …), upload, or attach
+   release assets without a separate explicit handoff.
+5. On security/path/AI/multi-file surfaces, re-read
    `docs/security-boundary.md` and the v2 design boundary section.
 
 ## Key Paths
@@ -299,9 +310,10 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 | v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
 | Status truth | `docs/current-status.md` |
 | OKF pin | `docs/okf-spec-pin.md` |
+| v2.3 store notes | `docs/releases/2.3.0-app-store-release-notes.md` |
+| v2.3 source tag | `docs/releases/2.3.0-source-tag.release.md` |
 | v2.0 store notes | `docs/releases/2.0.0-app-store-release-notes.md` |
 | v2.0 source tag | `docs/releases/2.0.0-source-tag.release.md` |
-| v2.1 candidate notes | `docs/releases/2.1.0-app-store-release-notes.md` |
 | Qwen UX triage | `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` |
 | Parked refinement | `docs/v1.13-plus-refinement-roadmap.md` |
 | Smoke | `docs/smoke-checklist.md` |

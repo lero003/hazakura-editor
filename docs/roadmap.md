@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-22 (v2.3.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 
 ## Current Position
 
@@ -14,10 +14,10 @@ automatic agent-apply system.
 | Fact | Value |
 |------|--------|
 | Package / app version in tree | **`2.3.0`** |
-| GitHub source / local-app tag | **`v2.0.0`** (no binary assets) |
-| Published Mac App Store | **`2.0.0`** (user-reported 2026-07-21) |
-| Prior store / source lines | `1.13.0` published historical; `1.14.0` intermediate source tag |
-| Active product phase | **v2.3.0 local candidate** — portable recipe + Reader resume (no 縦書き) |
+| GitHub source / local-app tag | **`v2.3.0`** (no binary assets; prior `v2.0.0` immutable) |
+| Published Mac App Store | **`2.3.0`** (user-reported 2026-07-24) |
+| Prior store / source lines | `2.0.0` published historical; `1.13.0` historical; `1.14.0` intermediate source tag |
+| Active product phase | **post-v2.3.0 ship** — hotfix + optional one slices (no 縦書き) |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -36,59 +36,60 @@ External review pools (advisory, not the queue):
 `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage; L Mode corrections).
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
-## Phase Decision (2026-07-22)
+## Phase Decision (2026-07-24)
 
 User direction:
 
-1. **Mac App Store `2.0.0` is published** (user-reported 2026-07-21). Treat as
+1. **Mac App Store `2.3.0` is published** (user-reported 2026-07-24). Treat as
    closed store line; hotfix only for reproduced blockers.
-2. **GitHub source tag `v2.0.0`** marks the Book Scope Alpha + Help checkpoint
-   (no binary assets on the tag).
+2. **GitHub source tag `v2.3.0`** marks the quality pack + recipe + resume
+   checkpoint (no binary assets). Prior `v2.0.0` remains immutable.
 3. **Next work is not a bulk catch-up** of external review pools. Pick one
    verifiable slice (honesty UX, evidence, or v2.x practicalization) when
    ready. Qwen mode-pill / static-lint / Compare Center designs stay triaged
    out unless product explicitly accepts them.
-4. **First v2.x slice selected:** explicit, bounded in-book search (July 18
-   X-1). It searches only the whole-book Reader's already loaded documents,
-   creates no persistent index, and is the complete `2.1.0` feature scope. The
-   later user-selected Preview image-loading work is release hardening, not an
-   additional product feature.
+4. **Closed on the store + source line:** portable Book recipe, Reader resume,
+   folded v2.1–v2.2 quality pack (bounded search, Preview image hardening,
+   chapter nav, export reveal, Assist honesty, preflight hints), explicit EPUB
+   cover, recent-folder sandbox restore.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[now]    v2.3.0 local candidate · quality pack · pre-submission gate
+[done]   Mac App Store 2.3.0 published · source tag v2.3.0
+[now]    post-v2.3.0 ship · hotfix + optional one slices
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  v2.x practicalization  →  縦書き  ·  v3.x speculative AI only
 ```
 
-## Active Path — v2.2 Candidate
+## Active Path — post-v2.3 ship
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.0.0` remains hotfix-only. The selected `2.1.0` slice does not
-reopen or rewrite that release.
+Published `2.3.0` remains hotfix-only. Do not reopen or rewrite that release
+for polish.
 
-### Active (v2.2 quality pack; includes v2.1)
+### Active (post-ship)
 
-1. **Done in source:** whole-book Reader search over the existing explicit
-   100-chapter / 32 MiB loaded-document budget. Live unsaved tabs win over disk.
-2. **Done in source:** per-chapter and occurrence counts, result-to-chapter
-   jump, Escape-to-clear, Japanese/English labels, and bounded narrow-window
-   contents/search presentation.
-3. **Boundary:** no background or persistent index, workspace-wide scan,
-   Markdown rewrite, auto-save, or second editor buffer.
-4. **Done in source: Preview quality hardening.** Interactive Preview and the
-   whole-book Reader defer permitted image reads until near the viewport and
-   cap each pane at two concurrent reads. Export/e-book settle behavior and
-   image consent boundaries are unchanged.
-5. **v2.1 local package gate completed** on the search + image-hardening tree.
-6. **v2.2 quality pack in source:** Reader chapter prev/next + current label;
-   Book empty-state app-private order disclosure; export Finder reveal + whole-
-   book progress status; preflight fix hints; Local Assist unavailable honesty
-   on chrome and Preferences. 縦書き remains deferred.
-7. **Next gate:** full local gates, signed pkg, installed/TestFlight manual
-   checks for `2.3.0`. Upload, tag, review, and publication are separate.
+1. Hotfix for a reproduced `2.3.0` store / daily-use blocker only.
+2. One optional post-ship slice when product direction is clear — honesty UX,
+   residual friction, distribution evidence, or a single v2.x practicalization
+   candidate promoted from advisory pools.
+3. Do not bulk-digest review packs or start a rigid next-version train.
+4. 縦書き remains deferred until the horizontal multi-file foundation stays
+   stable in daily use.
+
+### Shipped (v2.3 quality pack + portability)
+
+1. **Done / published:** portable Book recipe export/import (draft-until-Save).
+2. **Done / published:** whole-book Reader chapter + scroll resume (app-private).
+3. **Done / published:** bounded whole-book Reader search; Preview image
+   hardening; Reader chapter nav; export Finder reveal; Assist honesty;
+   preflight fix hints; e-book find-result sync.
+4. **Done / published:** explicit EPUB cover selection; recent-folder
+   security-scoped bookmark restore.
+5. **Done:** Mac App Store publication of `2.3.0` (user-reported 2026-07-24)
+   and source tag `v2.3.0` (no binary assets).
 
 ### Shipped (v2.0 Book Scope Alpha)
 
@@ -119,7 +120,8 @@ reopen or rewrite that release.
 | Residual polish | Tab overflow, nav “back”, status TTL, dep cadence | Reproduced daily friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver / narrow / long-doc matrix | Release gate, regression, or user-reported gap |
 | Optional Keep boxes (`v1.15+`) | Theme pools in `docs/v1.13-plus-refinement-roadmap.md` | Enough unrelated Keeps justify a box; not a train before v2 |
-| Published 2.0.0 hotfix | App Review / daily-use blocker | Only when reproduced |
+| Published 2.3.0 hotfix | App Review / daily-use blocker | Only when reproduced |
+| Prior published 2.0.0 hotfix | Historical store line | Only when that line still matters |
 | External review candidates | Engineering hygiene, journeys, portable recipe, CI | Promote one slice at a time from `docs/v2-external-review-synthesis-2026-07-18.md` |
 | Qwen UX candidates | Assist honesty, first-run story, export progress, tree bounds; not mode pills / static lint by default | Promote only after triage in `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` |
 
@@ -186,10 +188,11 @@ These boundaries stay active across roadmap changes:
 | v1.6 | Import Assist Phase 1 + edohigan | Closed / published |
 | v1.7 | Reference Compare | Closed / published |
 | v1.8–v1.12 | Trust → clarity → structure → OKF review → scaffold | Bridge **complete** |
-| v1.13–v1.14 | Refinement Keep boxes | v1.13 published; v1.14 **in review** |
+| v1.13–v1.14 | Refinement Keep boxes | v1.13 published; v1.14 intermediate |
 | **v2.0** | Multi-file Book Scope Alpha + OKF multi-file feel | **Closed / published** |
-| **v2.1** | Bounded whole-book Reader search | **Local candidate** |
-| v2.x | Further Book Scope practicalization | After v2.1 gate |
+| **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into published 2.3.0** |
+| **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
+| v2.x | Further Book Scope practicalization | After post-ship direction |
 | 縦書き | Vertical reading / export layer | After Book Scope foundation |
 | v3.x | Speculative local-AI re-evaluation only | Speculative |
 

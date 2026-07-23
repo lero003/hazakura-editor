@@ -3,21 +3,21 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-22
+Last reviewed: 2026-07-24
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
 Latest GitHub source / local-app tag:
 
-- `v2.0.0` — `2.0.0-source-tag.release.md` (no binary assets)
+- `v2.3.0` — `2.3.0-source-tag.release.md` (no binary assets; prior `v2.0.0` immutable)
 
 Latest stored source-tag note:
 
-- `2.0.0-source-tag.release.md`
+- `2.3.0-source-tag.release.md`
 
 Latest published GitHub Release body:
 
-- `2.0.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
+- `2.3.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
 
 Latest downloadable GitHub DMG Release body:
 
@@ -25,12 +25,13 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`2.3.0` is the current package/app version in tree** (quality pack including
-  v2.1 search). Candidate copy: `2.3.0-app-store-release-notes.md`. It is not
-  uploaded, tagged, or published by this archive alone.
-- **`2.0.0` is approved and published** on the Mac App Store (user-reported
-  2026-07-21): Book Scope Alpha, whole-book read/export, UX quieting, and Help.
-  Source tag `v2.0.0` remains immutable. See
+- **`2.3.0` is approved and published** on the Mac App Store (user-reported
+  2026-07-24): portable Book recipe, Reader resume, Preview image / EPUB cover
+  repairs, recent-folder sandbox restore, and the folded v2.1–v2.2 quality pack.
+  Tree package version matches. Source tag `v2.3.0`. See
+  `2.3.0-app-store-release-notes.md` and `2.3.0-source-tag.release.md`.
+- **`2.0.0` remains the prior published** Book Scope Alpha store baseline
+  (user-reported 2026-07-21). Source tag `v2.0.0` remains immutable. See
   `2.0.0-app-store-release-notes.md` and `2.0.0-source-tag.release.md`.
 - **`1.14.0` was a Continuity/Trust Keep candidate** (source tag `v1.14.0`;
   App Store submission was user-reported). Draft: `1.14.0-app-store-release-notes.md`.
@@ -77,11 +78,13 @@ Latest App Store status:
   and App Review logs are not tracked in this repository unless separately
   recorded. See `../current-status.md` for current distribution status.
 
-Latest App Store submission-candidate note:
+Latest App Store release-note evidence:
 
-- `2.3.0-app-store-release-notes.md` is the **local candidate** for the v2.3 Book UX (recipe + resume) (package `2.3.0`; manual TestFlight gate pending).
-- `2.1.0-app-store-release-notes.md` remains historical for the folded search
-  slice.
+- `2.3.0-app-store-release-notes.md` is the **published** v2.3 App Store copy
+  (user-reported 2026-07-24).
+- `2.3.0-source-tag.release.md` is the source / local-app tag body for `v2.3.0`.
+- `2.2.0-app-store-release-notes.md` / `2.1.0-app-store-release-notes.md`
+  remain historical intermediate candidate notes folded into `2.3.0`.
 - `2.0.0-app-store-release-notes.md` records the published Book Scope /
   structured Markdown release.
 - `1.14.0-app-store-release-notes.md` is retained for the Continuity / Trust /

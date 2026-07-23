@@ -628,38 +628,43 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `2.0.0` is published",
+        "Hazakura Editor `2.3.0` is published",
         "Current package/app version in the development tree is `2.3.0`",
-        "The published App Store version is `2.0.0`",
-        "latest GitHub source / local-app tag remains [v2.0.0]",
+        "The published App Store version is `2.3.0`",
+        "latest GitHub source / local-app tag is [v2.3.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `2.0.0`",
+        "Published App Store version: `2.3.0`",
         "Current source / Developer version: `2.3.0`",
+        "GitHub source tag: immutable `v2.3.0`",
       ],
       "docs/current-status.md": [
         "Current package/app version: **`2.3.0`",
-        "Published Mac App Store version: `2.0.0`",
-        "Latest GitHub source / local-app tag: `v2.0.0`",
+        "Published Mac App Store version: `2.3.0`",
+        "Latest GitHub source / local-app tag: `v2.3.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.3.0 Book portability + Reader resume local candidate",
+        "Scope: Post-v2.3.0 ship; next optional slices after published Book quality pack",
         "Package/app version in tree: **`2.3.0`",
+        "GitHub source / local-app tag: **`v2.3.0`",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.3.0 candidate.**",
+        "Phase: **post-v2.3.0 ship.**",
+        "`v2.3.0` marks the quality pack",
       ],
       "docs/handoff.md": [
         "Package/app version in tree: **`2.3.0`",
-        "Published Mac App Store (last confirmed in docs): **`2.0.0`",
+        "Published Mac App Store (last confirmed in docs): **`2.3.0`",
+        "GitHub source / local-app tag: **`v2.3.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.3.0`",
-        "Published Mac App Store | **`2.0.0`",
-        "Active product phase | **v2.3.0 local candidate**",
+        "Published Mac App Store | **`2.3.0`",
+        "GitHub source / local-app tag | **`v2.3.0`",
+        "Active product phase | **post-v2.3.0 ship**",
         "Explicit Book Scope + order + one primary edit buffer",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

@@ -3,30 +3,31 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
+Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.3.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. It is a local candidate, not uploaded, tagged, or
-  published. Notes: `docs/releases/2.3.0-app-store-release-notes.md`.
-  v2.1 search/image hardening is included in this package.
-  GitHub source / local-app tag remains immutable **`v2.0.0`** (no binary
-  assets).
-- **Published Mac App Store version: `2.0.0`.** App Review passed and the
-  release was published (user-reported 2026-07-21): Book Scope Alpha,
-  whole-book read/export, UX quieting, and Help for books/OKF. Release notes:
-  `docs/releases/2.0.0-app-store-release-notes.md`. Do not reopen without a
+  lockfile metadata (matches the published store line). Notes:
+  `docs/releases/2.3.0-app-store-release-notes.md`. v2.1 search/image
+  hardening and the v2.2 quality pack are included in this package.
+  GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
+  checkpoint `v2.0.0` remains immutable.
+- **Published Mac App Store version: `2.3.0`.** App Review passed and the
+  release was published (user-reported 2026-07-24): portable Book recipe,
+  whole-book Reader resume, Preview image / EPUB cover repairs, recent-folder
+  sandbox restore, and the folded v2.1–v2.2 quality pack. Release notes:
+  `docs/releases/2.3.0-app-store-release-notes.md`. Do not reopen without a
   reproduced hotfix. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **Prior lines:** `1.13.0` remains a historical published store baseline.
-  `1.14.0` is an intermediate source tag / submission line superseded on the
-  live listing by `2.0.0`. Do not rewrite those tags.
-- **Active product phase: v2.3.0 local candidate (pre-submission quality pack).**
-  Includes v2.1 Reader search + Preview image hardening plus Reader chapter nav,
-  export Finder reveal, Book empty-state honesty, Assist availability honesty,
-  and preflight fix hints. 縦書き stays deferred. Queue: `docs/current-work.md`.
+- **Prior lines:** `2.0.0` remains the prior published Book Scope Alpha store
+  baseline. `1.13.0` is a historical published store baseline. `1.14.0` is an
+  intermediate source tag / submission line. Do not rewrite those tags.
+- **Active product phase: post-v2.3.0 ship.** Hotfix only for reproduced
+  blockers on published `2.3.0`. Next product work is one optional post-ship
+  slice (honesty / friction / evidence / v2.x practicalization), not bulk
+  review-pool digestion. 縦書き stays deferred. Queue: `docs/current-work.md`.
   Phase: `docs/roadmap.md`.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
@@ -128,21 +129,19 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   Markdown image, rewrite source, persist a cover choice, crop/edit the image,
   or launch an external cover tool. Apple Books appearance remains a manual
   installed/TestFlight gate.
-- **v2.3 source proof is green for the Book UX, image/export, and recent-folder repairs.**
-  TypeScript/Vitest (**205 files / 1,713 tests**), typecheck, Vite, App Store
-  surface (**10 files / 111 tests**), and the helper-enabled App Store preview
-  build pass on tree `2.3.0`; the new regression covers an initial
-  non-intersecting observer record for `/workspace/book/images/cover.png`.
-  Rust proof is **367 pass / 2 host-dependent ignored**. The
-  prior build 107 smoke only observed the image immediately and is invalidated
-  by the report that it then disappeared; that pkg is held and must not be
-  uploaded. The repaired built app was checked through Computer Use with the
+- **v2.3 source proof was green for the Book UX, image/export, and recent-folder repairs
+  before publication.** TypeScript/Vitest (**205 files / 1,721 tests**),
+  typecheck, Vite, App Store surface (**10 files / 111 tests**), and the
+  helper-enabled App Store preview build passed on tree `2.3.0`; the regression
+  covers an initial non-intersecting observer record for
+  `/workspace/book/images/cover.png`. Rust proof was **367 pass / 2
+  host-dependent ignored**. Build 107 smoke was invalidated (flash-then-blank)
+  and held. The repaired built app was checked through Computer Use with the
   real parent workspace, nested `index.md`, and 2.6 MB `images/c00.png`: Preview
   retained the image after 12 seconds and a pane reopen, and e-book page 2
-  retained it after 10 seconds. Before upload, the selected pkg's `sourceCommit`
-  in ignored `docs/internal/app-store-candidates/latest.json` must include the
-  recent-folder bookmark repair. This is not upload or Apple processing
-  evidence.
+  retained it after 10 seconds. **Mac App Store publication of `2.3.0` was
+  user-reported 2026-07-24.** Source tag boundary:
+  `docs/releases/2.3.0-source-tag.release.md`.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -214,20 +213,22 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   remain device evidence, not a reason to reopen `1.13.0`. Manual smoke:
   `docs/smoke-checklist.md` § Theme G.
 - **Book Scope UX quieting is in source.** After scope is saved, the Book view
-  leads with whole-book read + edit. Workspace suggestion stays a setup action
-  (empty state and chapter edit). Recheck is shown only when entries are
-  unavailable. Chapter rows hide root-level path noise. Export dialogs say
-  “本全体 / Whole book” instead of internal Book Scope jargon; OKF review opens
-  with one short purpose line and shows the disk-snapshot note only after a
-  scan.
+  leads with whole-book read + edit (settled list presentation). Workspace
+  suggestion stays a setup action (empty state and chapter edit). Recheck is
+  progressive when entries are unavailable. Chapter rows hide root-level path
+  noise. Export dialogs say “本全体 / Whole book” instead of internal Book Scope
+  jargon; OKF review opens with one short purpose line and shows the
+  disk-snapshot note only after a scan. Further density polish (compact
+  icon toolbar / More menu for recipe + recheck) may land as post-ship residual
+  on main and is not part of the published `2.3.0` claim.
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.3.0` candidate version from package metadata.
-- **Open main queue:** run the `2.3.0` Book UX (recipe + resume) signed pkg through
-  installed/TestFlight interaction checks.
-  Published `2.0.0` remains
-  hotfix-only; other advisory items stay parked.
+  diagnostics derive the current `2.3.0` package version from package metadata.
+- **Open main queue:** post-`2.3.0` ship — hotfix only for reproduced blockers on
+  the published store line; otherwise pick one optional honesty / friction /
+  evidence / v2.x practicalization slice. Published `2.3.0` remains closed
+  without a reproduced hotfix; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -551,16 +552,15 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree candidate: **`2.3.0`**. Scope includes bounded
-  whole-book Reader search; local source/package evidence is recorded here and
-  in `docs/internal/app-store-candidates/latest.json`. No upload, TestFlight
-  install, source tag, App Review, or publication is claimed.
-- Published Mac App Store version: **`2.0.0`** (App Review passed and release
-  published, user-reported 2026-07-21). Ships Book Scope Alpha, whole-book
-  read/export, UX quieting, and Help on the Safe Editor baseline. Prior store
-  baselines (`1.13.0`, …) remain historical.
-- Latest GitHub source / local-app tag: `v2.0.0` (source archive only; see
-  `docs/releases/2.0.0-source-tag.release.md`).
+- Current development-tree version: **`2.3.0`** (matches published store line).
+  Scope includes portable Book recipe, Reader resume, bounded whole-book
+  Reader search, Preview image / EPUB cover repairs, and the v2.2 quality pack.
+  Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
+- Published Mac App Store version: **`2.3.0`** (App Review passed and release
+  published, user-reported 2026-07-24). Prior store baselines (`2.0.0`,
+  `1.13.0`, …) remain historical.
+- Latest GitHub source / local-app tag: `v2.3.0` (source archive only; see
+  `docs/releases/2.3.0-source-tag.release.md`). Prior checkpoint: `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in

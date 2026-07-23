@@ -3,14 +3,14 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-22 (v2.3.0 local candidate)
+Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0; post-ship)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **Active phase is
-the v2.3.0 Book UX candidate (includes v2.1 search).** Start with `current-work.md`
-and `roadmap.md`. Published v2.0.0 stays immutable; other residual / evidence
-pools are parked.
+post-v2.3.0 ship** (Mac App Store `2.3.0` published). Start with
+`current-work.md` and `roadmap.md`. Published `2.3.0` stays immutable without a
+reproduced hotfix; residual / evidence pools are parked.
 
 ## Current Canonical Docs
 
@@ -18,8 +18,8 @@ pools are parked.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: **v2.1 candidate queue** (bounded Reader search; other slices parked).
-- `roadmap.md`: **v2.1 candidate phase**, published v2.0 boundary, future v2.x practicalization.
+- `current-work.md`: **post-v2.3.0 queue** (hotfix + optional one slices).
+- `roadmap.md`: **post-v2.3.0 ship**, published `2.3.0` boundary, future v2.x practicalization.
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md`: Qwen UX pack triage (advisory; L Mode corrections; not the active queue).
 - `current-status.md`: current implementation and release state.
@@ -50,11 +50,11 @@ pools are parked.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2 phase** + parked residual
-- `current-work.md` — next v2 slices
+- `roadmap.md` — **post-v2.3 ship** + parked residual
+- `current-work.md` — next optional slices after published `2.3.0`
 - `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 design SoT
 - `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
-- `v2-qwen-ux-proposal-synthesis-2026-07-21.md` — Qwen UX proposal triage (post-2.0 thinking)
+- `v2-qwen-ux-proposal-synthesis-2026-07-21.md` — Qwen UX proposal triage (advisory)
 - `okf-spec-pin.md` + closed v1.10 / v1.11 / v1.12 contracts
 - `v1.8-plus-product-review-roadmap.md` — closed bridge
 - `v1.13-plus-refinement-roadmap.md` — parked themes

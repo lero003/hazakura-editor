@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-22 (v2.3.0 local candidate; pre-submission gate next)
+Last reviewed: 2026-07-24 (post-v2.3.0 ship; hotfixes + optional slices)
 
 ## Purpose
 
@@ -17,11 +17,13 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.3.0 candidate.** Mac App Store `2.0.0` is published and source tag
-`v2.0.0` remains immutable. The chosen post-ship slice is bounded whole-book
-Reader search. Finish its automated/local package gates, then stop for the
-installed/TestFlight manual checks; do not bulk-digest review pools.
-Direction: `docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
+Phase: **post-v2.3.0 ship.** Mac App Store `2.3.0` is published and source tag
+`v2.3.0` marks the quality pack + recipe + resume checkpoint (no binary
+assets). Prefer one verifiable run around a reproduced friction on the
+published line, or one explicitly chosen post-ship candidate (honesty UX /
+evidence / v2.x). Do not bulk-digest review pools. Direction:
+`docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
+
 
 For recurring automation, use the Active Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -32,11 +34,10 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. A reproduced blocker in the active `2.3.0` quality-pack candidate, or a
-   published `2.0.0` hotfix. Keep every read bounded and user-triggered.
-2. Local package/provenance checks for the chosen `2.3.0` slice; stop before
-   upload/publication and leave installed/TestFlight interaction to the human
-   gate.
+1. Hotfix for a reproduced `2.3.0` Book/Help/export or store blocker. Keep
+   every read bounded and user-triggered.
+2. One optional post-ship slice from the Active Queue / advisory pools when
+   the human has chosen it — not auto-train from Qwen or four-agent packs.
 3. Stale or failing quality gates that block the selected slice.
 4. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
