@@ -22,19 +22,57 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DRAFT_STATE_STORAGE_KEY,
   RECENT_FILES_STORAGE_KEY,
+  RECENT_FOLDERS_STORAGE_KEY,
   WORKSPACE_STATE_STORAGE_KEY,
   type PersistedWorkspaceState,
 } from "../types";
 import {
   readStoredDrafts,
   readStoredRecentFiles,
+  readStoredRecentFolders,
   readPersistedWorkspaceState,
   removeStoredDraft,
   removeStoredDrafts,
   writePersistedFileBookmark,
   writeStoredRecentFiles,
+  writeStoredRecentFolders,
   writePersistedWorkspaceState,
 } from "./storage";
+
+describe("recent workspace bookmarks", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("preserves a security-scoped bookmark with each recent folder", () => {
+    writeStoredRecentFolders([
+      {
+        path: "/workspace/book",
+        label: "book",
+        openedAt: 10,
+        pinnedAt: null,
+        workspaceBookmark: [1, 2, 255],
+      },
+    ]);
+
+    expect(readStoredRecentFolders()).toEqual([
+      {
+        path: "/workspace/book",
+        label: "book",
+        openedAt: 10,
+        pinnedAt: null,
+        workspaceBookmark: [1, 2, 255],
+      },
+    ]);
+    expect(window.localStorage.getItem(RECENT_FOLDERS_STORAGE_KEY)).toContain(
+      '"workspaceBookmark":[1,2,255]',
+    );
+  });
+});
 
 function seedPersistedState(value: PersistedWorkspaceState) {
   window.localStorage.setItem(

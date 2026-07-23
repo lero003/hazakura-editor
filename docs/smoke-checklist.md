@@ -932,6 +932,11 @@ recovered state separately where relevant.
     Save is still explicit.
 14. **Relaunch**: quit the app with the workspace and multiple tabs
     open. Relaunch. Confirm the workspace and tabs are restored.
+    Then open folder A, open folder B, return to the Start Panel, and choose A
+    from **最近開いたフォルダ**. In an installed/TestFlight App Sandbox build,
+    confirm A opens without `Operation not permitted`. For an entry created by
+    an older build, confirm the standard folder picker asks once for A and the
+    next recent-folder reopen succeeds without asking again.
 15. **Large document**: paste the Golden Manuscript content 10× into a
     single tab. Confirm typing, scrolling (especially trackpad inertial
     scroll in Preview), and heading jumps remain smooth.

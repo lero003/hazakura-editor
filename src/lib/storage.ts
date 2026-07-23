@@ -174,11 +174,15 @@ export function upsertRecentEntry(
   entries: RecentEntry[],
   path: string,
   label: string,
+  workspaceBookmark?: number[] | null,
 ): RecentEntry[] {
   // Preserve an existing pin across the upsert. Re-opening a
   // pinned file should not silently unpin it; the user has to
   // explicitly unpin to make it fall back to the recency list.
   const existing = entries.find((entry) => entry.path === path);
+  const bookmark = normalizeBookmarkBytes(
+    workspaceBookmark ?? existing?.workspaceBookmark,
+  );
 
   return [
     {
@@ -186,6 +190,7 @@ export function upsertRecentEntry(
       label,
       openedAt: Date.now(),
       pinnedAt: existing?.pinnedAt ?? null,
+      ...(bookmark.length > 0 ? { workspaceBookmark: bookmark } : {}),
     },
     ...entries.filter((entry) => entry.path !== path),
   ].slice(0, MAX_RECENT_ITEMS);
@@ -536,11 +541,17 @@ function writeStoredRecentEntries(storageKey: string, entries: RecentEntry[]) {
 // the field. The read filter already enforces the shape, so
 // the cast is safe at this point.
 function normalizeRecentEntry(value: RecentEntry): RecentEntry {
-  if (value.pinnedAt === null || typeof value.pinnedAt === "number") {
-    return value;
-  }
-
-  return { ...value, pinnedAt: null };
+  const workspaceBookmark = normalizeBookmarkBytes(value.workspaceBookmark);
+  return {
+    path: value.path,
+    label: value.label,
+    openedAt: value.openedAt,
+    pinnedAt:
+      value.pinnedAt === null || typeof value.pinnedAt === "number"
+        ? value.pinnedAt
+        : null,
+    ...(workspaceBookmark.length > 0 ? { workspaceBookmark } : {}),
+  };
 }
 
 // `recentEntryOrder` is the sort key the start panel uses to

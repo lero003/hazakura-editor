@@ -26,11 +26,21 @@ export function useRecentEntries() {
 
   const rememberRecentFile = useCallback((_path: string) => {}, []);
 
-  const rememberRecentFolder = useCallback((path: string) => {
-    setRecentFolders((currentEntries) =>
-      upsertRecentEntry(currentEntries, path, folderLabelFromPath(path)),
-    );
-  }, []);
+  const rememberRecentFolder = useCallback(
+    (path: string, workspaceBookmark?: number[] | null, replacedPath?: string) => {
+      setRecentFolders((currentEntries) =>
+        upsertRecentEntry(
+          replacedPath && replacedPath !== path
+            ? currentEntries.filter((entry) => entry.path !== replacedPath)
+            : currentEntries,
+          path,
+          folderLabelFromPath(path),
+          workspaceBookmark,
+        ),
+      );
+    },
+    [],
+  );
 
   return {
     recentFiles,

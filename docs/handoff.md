@@ -114,8 +114,14 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   non-intersecting observer record cancelled the delayed fallback and that a
   same-props React rerender restored the transparent placeholder after a data
   URL had appeared.
+- Recent-folder App Sandbox regression: folder history now stores a separate
+  security-scoped bookmark per workspace; focused tests cover direct-path
+  denial, bookmark resolution, legacy-entry picker reauthorization, and fresh
+  bookmark persistence. Local App Store distribution builds signed correctly
+  but macOS rejected launching them without a Store receipt, so the final
+  interaction remains an installed/TestFlight check.
 - `npm run typecheck` — pass.
-- `npm test` — 204 files / 1,710 tests pass on tree `2.3.0`.
+- `npm test` — 205 files / 1,713 tests pass on tree `2.3.0`.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `npm run build` — helper-enabled App Store preview `.app` built successfully;
@@ -126,7 +132,9 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   reproduced its flash-then-blank behavior with the real parent workspace,
   nested `index.md`, and 2.6 MB `images/c00.png`. In the repaired build, Preview
   retained the image after 12 seconds and after close/reopen; e-book page 2
-  retained the same image after 10 seconds. A replacement pkg is still needed.
+  retained the same image after 10 seconds. Before upload, confirm ignored
+  candidate metadata points to a commit containing the later recent-folder
+  bookmark repair as well.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
   host-dependent ignored.

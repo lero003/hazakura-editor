@@ -52,12 +52,16 @@ from the v2.x practicalization pool (excluding 縦書き).
    PNG/JPEG/GIF/WebP image for that export only. The archive marks it as the
    EPUB cover image and emits a cover page; it is never inferred from the first
    Markdown image and is not saved into source or Book settings.
+6. **Recent folder sandbox restore:** each newly opened recent workspace keeps
+   its own security-scoped bookmark. Reopen tries the stored path first, then
+   that folder's bookmark. Legacy or stale entries fall back once to the normal
+   folder picker instead of leaving a raw `Operation not permitted` error.
 
 ### Current stop
 
-1. Local source gates and built-app smoke are green after the follow-up
-   nested-Preview state-persistence repair. Build 107 remains held because it
-   predates this fix.
+1. Local source gates and built-app smoke are green after the nested-Preview
+   and recent-folder repairs. Before upload, confirm the selected pkg's ignored
+   candidate metadata points to a commit containing both fixes.
 2. A parent workspace with a nested Markdown file and 2.6 MB document-relative
    PNG stayed visible in Preview after 12 seconds and after Preview reopen; its
    e-book image page also stayed visible after 10 seconds. Replace the pkg
@@ -65,6 +69,9 @@ from the v2.x practicalization pool (excluding 縦書き).
    Apple Books remain human-only gates.
 3. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
    auto-load recipes.
+4. Recent-folder bookmark logic is source/build verified. Final App Sandbox
+   interaction remains an installed/TestFlight gate because locally generated
+   App Store distribution bundles cannot be launched without a Store receipt.
 
 ### Parked
 

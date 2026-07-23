@@ -125,20 +125,21 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
   Markdown image, rewrite source, persist a cover choice, crop/edit the image,
   or launch an external cover tool. Apple Books appearance remains a manual
   installed/TestFlight gate.
-- **v2.3 source proof is green for the Book UX and image/export repair.**
-  TypeScript/Vitest (**204 files / 1,710 tests**), typecheck, Vite, App Store
+- **v2.3 source proof is green for the Book UX, image/export, and recent-folder repairs.**
+  TypeScript/Vitest (**205 files / 1,713 tests**), typecheck, Vite, App Store
   surface (**10 files / 111 tests**), and the helper-enabled App Store preview
   build pass on tree `2.3.0`; the new regression covers an initial
   non-intersecting observer record for `/workspace/book/images/cover.png`.
-  Rust proof remains unchanged at **367 pass / 2 host-dependent ignored**
-  because this follow-up changes only the Preview loader and its test. The
+  Rust proof is **367 pass / 2 host-dependent ignored**. The
   prior build 107 smoke only observed the image immediately and is invalidated
   by the report that it then disappeared; that pkg is held and must not be
   uploaded. The repaired built app was checked through Computer Use with the
   real parent workspace, nested `index.md`, and 2.6 MB `images/c00.png`: Preview
   retained the image after 12 seconds and a pane reopen, and e-book page 2
-  retained it after 10 seconds. A replacement pkg is still required. This is
-  not upload or Apple processing evidence.
+  retained it after 10 seconds. Before upload, the selected pkg's `sourceCommit`
+  in ignored `docs/internal/app-store-candidates/latest.json` must include the
+  recent-folder bookmark repair. This is not upload or Apple processing
+  evidence.
 - **The v2.0 release candidate proof was green.** TypeScript/Vitest
   (**201 files / 1,678 tests**), Vite, Rust (**367 pass / 2 host-dependent
   ignored**), App Store surface (**107 tests**), and the helper-enabled App
@@ -858,6 +859,11 @@ Last reviewed: 2026-07-23 (v2.3.0 local candidate; v2.0.0 published)
 - The misleading file-level Recent Files surface is removed from the
   start panel and native File menu. Legacy file-recent localStorage is
   cleared, while Recent Folders and explicit Open / Open Folder remain.
+  Each newly opened recent folder now retains its own security-scoped bookmark:
+  reopen tries the stored path and then that folder-specific grant. Legacy or
+  stale entries return to the standard folder picker for one explicit
+  reauthorization instead of leaving the raw sandbox `Operation not permitted`
+  error visible. This remains bounded history, not startup scanning.
 - The macOS About panel inherits canonical Tauri bundle metadata:
   publisher `Hazakura Lab` and
   `Copyright (c) 2026 Hazakura Lab. All rights reserved.`.

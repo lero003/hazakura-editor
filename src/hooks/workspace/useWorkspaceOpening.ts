@@ -13,13 +13,18 @@ import {
 } from "../../lib/tauri";
 import {
   readPersistedWorkspaceState,
+  readStoredRecentFolders,
   writeWorkspaceRootBookmark,
 } from "../../lib/storage";
 import type { CompareAnchor, CompareViewState } from "../../types";
 
 type UseWorkspaceOpeningOptions = {
   clearImagePreview: () => void;
-  rememberRecentFolder: (path: string) => void;
+  rememberRecentFolder: (
+    path: string,
+    workspaceBookmark?: number[] | null,
+    replacedPath?: string,
+  ) => void;
   setCompareAnchor: Dispatch<SetStateAction<CompareAnchor | null>>;
   setCompareTarget: Dispatch<SetStateAction<CompareAnchor | null>>;
   setCompareView: Dispatch<SetStateAction<CompareViewState | null>>;
@@ -41,18 +46,35 @@ export function useWorkspaceOpening({
   setWorkspaceTree,
 }: UseWorkspaceOpeningOptions) {
   const openWorkspacePath = useCallback(
-    async (path: string): Promise<boolean> => {
+    async (
+      path: string,
+      workspaceBookmark?: number[] | null,
+      recentPathToReplace?: string,
+    ): Promise<boolean> => {
       setGlobalError(null);
       setStatus("Reading folder...");
 
       try {
-        const tree = await listWorkspaceTree(path);
-        const bookmark = await createSecurityScopedBookmark(path).catch(
+        let resolvedPath = path;
+        let tree: WorkspaceTreeEntry;
+        try {
+          tree = await listWorkspaceTree(path);
+        } catch (pathError) {
+          if (!workspaceBookmark || workspaceBookmark.length === 0) {
+            throw pathError;
+          }
+          resolvedPath = await resolveSecurityScopedBookmark(workspaceBookmark);
+          tree = await listWorkspaceTree(resolvedPath);
+        }
+        const freshBookmark = await createSecurityScopedBookmark(
+          resolvedPath,
+        ).catch(
           () => null,
         );
-        writeWorkspaceRootBookmark(path, bookmark);
+        const bookmark = freshBookmark ?? workspaceBookmark ?? null;
+        writeWorkspaceRootBookmark(resolvedPath, bookmark);
         setWorkspaceTree(tree);
-        setWorkspaceRootPath(path);
+        setWorkspaceRootPath(resolvedPath);
         // Push the active workspace to the Rust-side cache so the
         // detached Agent window can read it via
         // getMainActiveWorkspace + MAIN_WORKSPACE_CHANGED_EVENT.
@@ -60,12 +82,16 @@ export function useWorkspaceOpening({
         // one in the main window" guard is a friendly affordance,
         // not a hard correctness gate, and a transient cache
         // failure must not block the user's folder-open action.
-        void setMainActiveWorkspace(path);
+        void setMainActiveWorkspace(resolvedPath);
         clearImagePreview();
         setCompareView(null);
         setCompareAnchor(null);
         setCompareTarget(null);
-        rememberRecentFolder(path);
+        rememberRecentFolder(
+          resolvedPath,
+          bookmark,
+          recentPathToReplace ?? (resolvedPath !== path ? path : undefined),
+        );
         setStatus("Folder opened");
         return true;
       } catch (err) {
@@ -87,7 +113,7 @@ export function useWorkspaceOpening({
     ],
   );
 
-  const openWorkspace = useCallback(async () => {
+  const openWorkspace = useCallback(async (recentPathToReplace?: string) => {
     setGlobalError(null);
     setStatus("Choosing folder...");
 
@@ -99,12 +125,30 @@ export function useWorkspaceOpening({
         return;
       }
 
-      await openWorkspacePath(path);
+      await openWorkspacePath(path, undefined, recentPathToReplace);
     } catch (err) {
       setGlobalError(String(err));
       setStatus("Folder open failed");
     }
   }, [openWorkspacePath, setGlobalError, setStatus]);
+
+  const reopenRecentWorkspace = useCallback(
+    async (path: string) => {
+      const recent = readStoredRecentFolders().find(
+        (entry) => entry.path === path,
+      );
+      if (await openWorkspacePath(path, recent?.workspaceBookmark)) {
+        return;
+      }
+
+      // Old recent entries only stored a path. In App Sandbox that path is
+      // useful as history but is not an authorization grant; ask once through
+      // the standard picker, then persist the fresh bookmark for next time.
+      setStatus("Reauthorization required");
+      await openWorkspace(path);
+    },
+    [openWorkspace, openWorkspacePath, setStatus],
+  );
 
   /**
    * Resume the last persisted workspace without inventing new storage.
@@ -146,6 +190,7 @@ export function useWorkspaceOpening({
   return {
     openWorkspace,
     openWorkspacePath,
+    reopenRecentWorkspace,
     reopenPersistedWorkspace,
   };
 }

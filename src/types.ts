@@ -443,6 +443,8 @@ export type RecentEntry = {
   path: string;
   label: string;
   openedAt: number;
+  /** App Sandbox grant for reopening this specific recent workspace. */
+  workspaceBookmark?: number[];
   // `pinnedAt` is a non-null timestamp when the user has pinned
   // this entry to the top of the start panel. Pinned entries
   // are not subject to the FIFO recency cap so a daily note

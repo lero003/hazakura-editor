@@ -675,6 +675,7 @@ export function useAppShellController() {
     openFilePath,
     openWorkspace,
     openWorkspacePath,
+    reopenRecentWorkspace,
     reopenPersistedWorkspace,
     openPreviewMarkdownLink,
     openWorkspaceFile,
@@ -1700,7 +1701,7 @@ export function useAppShellController() {
         }
         void openAppleAssistWindow(themePreference);
       },
-      openWorkspacePath,
+      openWorkspacePath: reopenRecentWorkspace,
       requestAppQuit,
     },
     listener: {
@@ -2087,7 +2088,7 @@ export function useAppShellController() {
     setReferenceNarrowFocus,
     openTabContextMenu,
     openWorkspace,
-    openWorkspacePath,
+    openWorkspacePath: reopenRecentWorkspace,
     openWorkspaceContextMenu,
     openWorkspaceFile,
     recentFolders,
