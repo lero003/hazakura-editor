@@ -13,19 +13,21 @@ Last reviewed: 2026-07-29
 - Published Mac App Store (last confirmed in docs): **`2.3.0`**
   (user-reported 2026-07-24).
 - **Active phase: v2.4 development.** Published `2.3.0` remains immutable.
-  A signed local App Store/TestFlight pkg is prepared. Its build, path,
+  A signed local App Store/TestFlight pkg exists, but it predates the current
+  body-H1 and candidate-provenance hardening and must be held. Its build, path,
   SHA-256, base source commit, and smoke state live only in
-  `docs/internal/app-store-candidates/latest.json`. The package contains the
-  current uncommitted scaffold/docs work, so commit and rebuild before upload
-  if commit-addressable provenance is required. Upload, Apple processing,
-  TestFlight installation/launch, App Review, and publication are not claimed.
+  `docs/internal/app-store-candidates/latest.json`. Commit the coherent quality
+  slice and rebuild before upload. Upload, Apple processing, TestFlight
+  installation/launch, App Review, and publication are not claimed.
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
 - **Book-like starter shows the whole shape:** `index.md` links a four-part
   beginning / development / turning-point / ending arc plus overview,
   character, and setting notes. These are short editable prompts and remain an
-  illustrative scaffold, not OKF or Book Scope chapter-order semantics.
+  illustrative scaffold, not OKF or Book Scope chapter-order semantics. Every
+  concept file also carries a visible body H1 instead of relying on frontmatter
+  title presentation.
 - **B-1 chapter Diff:** an available Book row opens/reuses its chapter tab and
   reviews the current buffer against disk through the existing Diff. Dirty
   buffers win; unavailable rows are disabled. No save/apply, second editor
@@ -157,10 +159,16 @@ Last reviewed: 2026-07-29
   inheritance entitlements, and synthesized installer XML all passed.
 - `npm run smoke:macos-sandbox-preview` — pass after running outside the
   restricted cache sandbox.
-- Package provenance caveat — `latest.json` records the current HEAD as its
-  base `sourceCommit`, while the packaged scaffold/docs changes remain
-  uncommitted. Commit and rebuild before treating that field as exact content
-  provenance.
+- Isolated latest Developer bundle smoke — sidebar New created the expanded
+  nine-file book-like starter in an empty temporary workspace; `index.md`
+  opened with four chapter and three design-note links, and the first chapter
+  opened with a visible body H1. Other creation entry points and installed
+  TestFlight remain unverified in this pass.
+- Package provenance caveat — the existing local package was built before the
+  scaffold-expansion commit and before this quality hardening. Its metadata
+  records only an older base `sourceCommit`. The candidate wrapper now records
+  `sourceDirty` and a changed path count before future builds. Hold the existing
+  package; commit this slice and rebuild before upload.
 - `cargo audit --no-fetch --file src-tauri/Cargo.lock` — no vulnerability;
   18 existing allowed warnings. A fresh `npm audit` was not run because its
   external dependency-graph submission was not authorized.

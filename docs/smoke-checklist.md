@@ -193,6 +193,8 @@ or signed TestFlight proof from this representative run.
 11. For the book-like starter, confirm `index.md` shows the four-part
     beginning / development / turning-point / ending shape and links to
     `notes/overview.md`, `notes/characters.md`, and `notes/setting.md`.
+    Open each chapter and note once; each concept file should show its own H1
+    below frontmatter in Preview / Outline.
 
 Representative result (2026-07-15): template analysis, creation integration,
 partial-failure status, keyboard menu semantics, strict Rust path/text bounds,
@@ -205,6 +207,14 @@ roots remained intact with `-2` collision names; all four `log.md` files used
 `2026-07-15`; `index.md` opened; Escape closed the New menu; explicit OKF review
 reported no required compatibility problem. Intentional post-create partial
 failure remains verified by automated integration coverage.
+
+Focused result (2026-07-29): an isolated latest Developer bundle opened a
+temporary empty workspace. Sidebar **New → Book-like chapters** described four
+chapters plus overview / characters / setting, created the nine-file root, and
+opened `index.md`. Preview showed all four chapter links and three design-note
+links. Opening the first link showed the explicit `# 第一章 はじまり` body H1.
+This pass covered the sidebar New entry only; it does not replace the full
+four-entry-point, collision, OKF review, or installed TestFlight smoke above.
 
 ## v1.11 OKF Draft Compatibility Smoke
 

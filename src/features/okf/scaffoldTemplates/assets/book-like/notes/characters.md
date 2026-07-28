@@ -5,6 +5,8 @@ description: 主要人物の覚え書き。
 tags: [novel, note]
 ---
 
+# 登場人物
+
 ## 主人公
 
 - 名前:

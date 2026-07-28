@@ -326,6 +326,16 @@ describe("macOS build scripts", () => {
     expect(releaseCandidateScript).toContain(
       "docs/internal/app-store-candidates/latest.json",
     );
+    expect(releaseCandidateScript).toContain('"--porcelain=v1"');
+    expect(releaseCandidateScript).toContain('"--untracked-files=all"');
+    expect(releaseCandidateScript).toContain("sourceDirty");
+    expect(releaseCandidateScript).toContain("sourceChangedPathCount");
+    expect(releaseCandidateScript).toContain(
+      "captured immediately before the package build",
+    );
+    expect(releaseCandidateScript).not.toContain(
+      "trackedReleaseDocsUpdated: true",
+    );
     expect(releaseCandidateScript).toContain(
       "Tracked release docs: no manual update needed (latest.json is the source of truth)",
     );

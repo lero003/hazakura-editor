@@ -5,6 +5,8 @@ description: 状況や考えを深める章。
 tags: [novel, chapter]
 ---
 
+# 第二章 展開
+
 ## この章の役割
 
 - 何を深めるか:

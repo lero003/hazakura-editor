@@ -55,6 +55,13 @@ describe("okfScaffoldTemplates", () => {
     expect(overview?.contents).toContain("## 一文で表す");
     expect(overview?.contents).toContain("## 全体の流れ");
     expect(overview?.contents).toContain("## まだ決めていないこと");
+
+    const conceptFiles = template.files.filter(
+      (file) => file.relativePath !== "index.md" && file.relativePath !== "log.md",
+    );
+    for (const file of conceptFiles) {
+      expect(file.contents, file.relativePath).toMatch(/^# .+$/m);
+    }
   });
 
   it.each(listOkfScaffoldTemplateIds())(

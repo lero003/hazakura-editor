@@ -137,6 +137,24 @@ function packagePathFor(version, build) {
   );
 }
 
+function captureSourceProvenance() {
+  const sourceCommit = capture("git", ["rev-parse", "--short", "HEAD"]);
+  const sourceStatus = capture("git", [
+    "status",
+    "--porcelain=v1",
+    "--untracked-files=all",
+  ]);
+  const sourceChangedPathCount = sourceStatus
+    .split(/\r?\n/)
+    .filter(Boolean).length;
+
+  return {
+    sourceCommit,
+    sourceDirty: sourceChangedPathCount > 0,
+    sourceChangedPathCount,
+  };
+}
+
 function printPlan(options) {
   console.log("Release candidate plan:");
   console.log("- App Store package: npm run build:app-store-pkg");
@@ -173,6 +191,9 @@ function writeInternalCandidateNote({
   smoke,
   version,
   keepNotes,
+  sourceCommit,
+  sourceDirty,
+  sourceChangedPathCount,
 }) {
   mkdirSync(internalCandidateDir, { recursive: true });
 
@@ -183,11 +204,12 @@ function writeInternalCandidateNote({
     build,
     pkgPath: relativePkgPath,
     sha256,
-    sourceCommit: capture("git", ["rev-parse", "--short", "HEAD"]),
+    sourceCommit,
+    sourceDirty,
+    sourceChangedPathCount,
     smoke,
-    trackedReleaseDocsUpdated: true,
     note:
-      "Local App Store/TestFlight candidate metadata. This directory is ignored and is the single source of truth for the latest candidate version / build / pkg path / SHA-256. Tracked docs (current-status.md, handoff.md, roadmap.md, app-store-build.md) reference this file and no longer carry per-build values.",
+      "Local App Store/TestFlight candidate metadata. Source worktree state was captured immediately before the package build. A dirty source state means sourceCommit is only the base commit and the package must be rebuilt from the intended committed tree before upload. This directory is ignored and is the single source of truth for the latest candidate version / build / pkg path / SHA-256.",
   };
   const fileName = `HazakuraEditor-${version}-build${build}.json`;
   const payload = `${JSON.stringify(candidate, null, 2)}\n`;
@@ -318,6 +340,13 @@ function main() {
     run("npm", ["run", "smoke:app-store-surface"]);
   }
 
+  const sourceProvenance = captureSourceProvenance();
+  if (sourceProvenance.sourceDirty) {
+    console.warn(
+      `Source worktree is dirty before package build (${sourceProvenance.sourceChangedPathCount} changed paths); candidate metadata will record sourceCommit as a base commit only.`,
+    );
+  }
+
   run("npm", ["run", "build:app-store-pkg"]);
 
   const packageJson = readJson(packageJsonPath);
@@ -350,6 +379,7 @@ function main() {
       smoke: options.skipSmoke ? "skipped" : "passed",
       version,
       keepNotes: options.keepPkgs,
+      ...sourceProvenance,
     });
   }
 
