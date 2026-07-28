@@ -64,7 +64,7 @@ export function getWorkspaceFileOpsCopy(
       newOkfScaffoldMinimalHint:
         "index.md・notes/first-note.md・log.md。Draft ごかんの しゅっぱつてん。",
       newOkfScaffoldBookLikeHint:
-        "index.md・chapters/ ふたつ・notes・log.md。章だては れい。本の章一覧ではない。",
+        "index.md・chapters/ よっつ・全体こうせい・人物・せってい・log.md。章だては れい。",
       newOkfScaffoldGroup: "ちしきフォルダの ひながた",
       newFileHere: "このふぉるだに あたらしきふみ",
       newFolderHere: "このふぉるだに あたらしきふぉるだ",
@@ -105,7 +105,7 @@ export function getWorkspaceFileOpsCopy(
         newOkfScaffoldMinimalHint:
           "index.md・notes/first-note.md・log.md。Draft 互換の出発点です。",
         newOkfScaffoldBookLikeHint:
-          "index.md・chapters/ 2本・notes・log.md。章立ては例示です（本の章一覧ではない）。",
+          "index.md・chapters/ 4本・全体構成・人物・設定・log.md。章立ては例示です。",
         newOkfScaffoldGroup: "知識フォルダのひな形",
         newFileHere: "このフォルダに新規ファイル",
         newFolderHere: "このフォルダに新規フォルダ",
@@ -144,7 +144,7 @@ export function getWorkspaceFileOpsCopy(
         newOkfScaffoldMinimalHint:
           "index.md, notes/first-note.md, log.md — Draft-compatible start point.",
         newOkfScaffoldBookLikeHint:
-          "index.md, two chapters/, notes, log.md — illustrative layout, not the Book chapter list.",
+          "index.md, four chapters, overview, characters, setting, and log.md — an illustrative layout.",
         newOkfScaffoldGroup: "Knowledge folder starters",
         newFileHere: "New File Here",
         newFolderHere: "New Folder Here",

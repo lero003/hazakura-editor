@@ -17,9 +17,13 @@ import minimalIndex from "./scaffoldTemplates/assets/minimal/index.md?raw";
 import minimalFirstNote from "./scaffoldTemplates/assets/minimal/notes/first-note.md?raw";
 import minimalLog from "./scaffoldTemplates/assets/minimal/log.md?raw";
 import bookIndex from "./scaffoldTemplates/assets/book-like/index.md?raw";
-import bookMorning from "./scaffoldTemplates/assets/book-like/chapters/01-morning.md?raw";
-import bookAfternoon from "./scaffoldTemplates/assets/book-like/chapters/02-afternoon.md?raw";
+import bookOpening from "./scaffoldTemplates/assets/book-like/chapters/01-opening.md?raw";
+import bookDevelopment from "./scaffoldTemplates/assets/book-like/chapters/02-development.md?raw";
+import bookTurningPoint from "./scaffoldTemplates/assets/book-like/chapters/03-turning-point.md?raw";
+import bookEnding from "./scaffoldTemplates/assets/book-like/chapters/04-ending.md?raw";
+import bookOverview from "./scaffoldTemplates/assets/book-like/notes/overview.md?raw";
 import bookCharacters from "./scaffoldTemplates/assets/book-like/notes/characters.md?raw";
+import bookSetting from "./scaffoldTemplates/assets/book-like/notes/setting.md?raw";
 import bookLog from "./scaffoldTemplates/assets/book-like/log.md?raw";
 
 export type OkfScaffoldTemplateId = "minimal" | "book-like";
@@ -101,9 +105,13 @@ const TEMPLATES: Record<OkfScaffoldTemplateId, OkfScaffoldTemplate> = {
     openRelativePath: "index.md",
     files: files([
       ["index.md", bookIndex],
-      ["chapters/01-morning.md", bookMorning],
-      ["chapters/02-afternoon.md", bookAfternoon],
+      ["chapters/01-opening.md", bookOpening],
+      ["chapters/02-development.md", bookDevelopment],
+      ["chapters/03-turning-point.md", bookTurningPoint],
+      ["chapters/04-ending.md", bookEnding],
+      ["notes/overview.md", bookOverview],
       ["notes/characters.md", bookCharacters],
+      ["notes/setting.md", bookSetting],
       ["log.md", bookLog],
     ]),
   },

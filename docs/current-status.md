@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-28 (v2.4 lane opened)
+Last reviewed: 2026-07-29 (book-like starter expanded; local pkg refreshed)
 
 ## Current State
 
@@ -35,7 +35,10 @@ Last reviewed: 2026-07-28 (v2.4 lane opened)
   v0.1 bundles, legacy `timestamp`, and body `# Citations` remain best-effort
   readable; no migration, trust tier, stale evaluation, or attester/executor
   execution was added. New starter roots emit `okf_version: "0.2"` without
-  fabricated provenance.
+  fabricated provenance. The book-like starter now makes the whole shape
+  visible through four chapter roles and overview / character / setting notes;
+  it remains an illustrative scaffold, not an OKF or Book Scope chapter-order
+  contract.
 - **Book rows now expose explicit per-chapter change review.** Available rows
   activate/reuse the normal chapter tab and compare its current editor buffer
   with that chapter on disk through the existing buffer-vs-disk Diff. Dirty
@@ -1010,8 +1013,12 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Run the focused built-app Book/OKF smoke in `docs/smoke-checklist.md` before
-   preparing a v2.4 candidate. Source tests do not prove packaged interaction.
+1. Commit the coherent v2.4 tree and rebuild the signed local candidate so its
+   recorded source commit identifies the packaged contents. Only then upload
+   through the human-controlled App Store Connect / Transporter path and run
+   the focused installed TestFlight Book/OKF smoke in
+   `docs/smoke-checklist.md`. Local package and signature checks do not prove
+   upload, Apple processing, installation, or launch.
 2. Promote at most one next v2.4 slice after the current verification closes;
    B-2 display TOC contract is the next candidate, not an automatic train.
 3. Treat published **`2.3.0`** and source tag `v2.3.0` as immutable. Upload,

@@ -15,6 +15,15 @@ describe("getWorkspaceFileOpsCopy Theme A clarity", () => {
     expect(getWorkspaceFileOpsCopy("ja").newOkfScaffoldGroup).toContain(
       "知識フォルダ",
     );
+    expect(getWorkspaceFileOpsCopy("ja").newOkfScaffoldBookLikeHint).toContain(
+      "4本",
+    );
+    expect(getWorkspaceFileOpsCopy("ja").newOkfScaffoldBookLikeHint).toContain(
+      "全体構成",
+    );
+    expect(getWorkspaceFileOpsCopy("en").newOkfScaffoldBookLikeHint).toContain(
+      "four chapters",
+    );
   });
 
   it("names the trash target and distinct disabled reasons", () => {

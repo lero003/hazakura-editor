@@ -20,6 +20,43 @@ describe("okfScaffoldTemplates", () => {
     expect(listOkfScaffoldTemplateIds()).toEqual(["minimal", "book-like"]);
   });
 
+  it("shows the whole book shape in the book-like starter", () => {
+    const template = getOkfScaffoldTemplate(
+      "book-like",
+      new Date(2031, 1, 3, 12, 0, 0),
+    );
+
+    expect(template.files.map((file) => file.relativePath)).toEqual([
+      "index.md",
+      "chapters/01-opening.md",
+      "chapters/02-development.md",
+      "chapters/03-turning-point.md",
+      "chapters/04-ending.md",
+      "notes/overview.md",
+      "notes/characters.md",
+      "notes/setting.md",
+      "log.md",
+    ]);
+
+    const index = template.files.find(
+      (file) => file.relativePath === "index.md",
+    );
+    const overview = template.files.find(
+      (file) => file.relativePath === "notes/overview.md",
+    );
+
+    expect(index?.contents).toContain("## 章立て");
+    expect(index?.contents).toContain(
+      "[全体構成](notes/overview.md)",
+    );
+    expect(index?.contents).toContain(
+      "[第四章 結末](chapters/04-ending.md)",
+    );
+    expect(overview?.contents).toContain("## 一文で表す");
+    expect(overview?.contents).toContain("## 全体の流れ");
+    expect(overview?.contents).toContain("## まだ決めていないこと");
+  });
+
   it.each(listOkfScaffoldTemplateIds())(
     "materializes the local creation date in template %s",
     (id) => {

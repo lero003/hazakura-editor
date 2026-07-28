@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-23 (v2.3 nested image + explicit EPUB cover smoke)
+Last reviewed: 2026-07-29 (book-like OKF starter shape)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -190,6 +190,9 @@ or signed TestFlight proof from this representative run.
 9. Spec pin authority: `docs/okf-spec-pin.md` (review + scaffolds share one pin; upgrade co-updates both).
 10. Confirm both starter roots declare `okf_version: "0.2"` and do not contain
     fixed `timestamp`, invented `generated.by`, or `verified` provenance.
+11. For the book-like starter, confirm `index.md` shows the four-part
+    beginning / development / turning-point / ending shape and links to
+    `notes/overview.md`, `notes/characters.md`, and `notes/setting.md`.
 
 Representative result (2026-07-15): template analysis, creation integration,
 partial-failure status, keyboard menu semantics, strict Rust path/text bounds,

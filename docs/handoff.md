@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.4 active — OKF v0.2 + B-1 chapter Diff
 Authority: Medium
-Last reviewed: 2026-07-28
+Last reviewed: 2026-07-29
 
 ## Current State
 
@@ -13,11 +13,19 @@ Last reviewed: 2026-07-28
 - Published Mac App Store (last confirmed in docs): **`2.3.0`**
   (user-reported 2026-07-24).
 - **Active phase: v2.4 development.** Published `2.3.0` remains immutable.
-  A local ad-hoc-signed app bundle exists; pkg, TestFlight, upload, App Review,
-  and publication are not claimed.
+  A signed local App Store/TestFlight pkg is prepared. Its build, path,
+  SHA-256, base source commit, and smoke state live only in
+  `docs/internal/app-store-candidates/latest.json`. The package contains the
+  current uncommitted scaffold/docs work, so commit and rebuild before upload
+  if commit-addressable provenance is required. Upload, Apple processing,
+  TestFlight installation/launch, App Review, and publication are not claimed.
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
+- **Book-like starter shows the whole shape:** `index.md` links a four-part
+  beginning / development / turning-point / ending arc plus overview,
+  character, and setting notes. These are short editable prompts and remain an
+  illustrative scaffold, not OKF or Book Scope chapter-order semantics.
 - **B-1 chapter Diff:** an available Book row opens/reuses its chapter tab and
   reviews the current buffer against disk through the existing Diff. Dirty
   buffers win; unavailable rows are disabled. No save/apply, second editor
@@ -125,10 +133,10 @@ Last reviewed: 2026-07-28
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
-## Verification (2026-07-28, v2.4 OKF + B-1)
+## Verification (2026-07-29, v2.4 OKF + B-1 + book-like starter)
 
 - `npm run typecheck` — pass.
-- `npm test` — 205 files / 1,727 tests pass.
+- `npm test` — 205 files / 1,728 tests pass.
 - `npm run build:vite` — pass; existing large-chunk warning only.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
@@ -140,8 +148,27 @@ Last reviewed: 2026-07-28
   ad-hoc signing; helper probes passed. `SKIP_BUILD=1 npm run
   smoke:macos-window -- '<built app>'` launched a `1280x820` main window and
   quit cleanly.
-- Focused Book-row/OKF interaction smoke remains **not run**. No pkg,
-  TestFlight, upload, App Review, or publication proof is claimed.
+- `npm run release:candidate -- --with-app-store-pkg --no-prune-pkgs` —
+  App Store surface 111 tests passed; universal app and both helpers were
+  Apple Distribution signed; the installer pkg was signed and recorded in the
+  ignored candidate provenance note.
+- Independent package checks — SHA-256 matched the candidate note; payload,
+  app metadata, minimum OS, universal architectures, deep signature, helper
+  inheritance entitlements, and synthesized installer XML all passed.
+- `npm run smoke:macos-sandbox-preview` — pass after running outside the
+  restricted cache sandbox.
+- Package provenance caveat — `latest.json` records the current HEAD as its
+  base `sourceCommit`, while the packaged scaffold/docs changes remain
+  uncommitted. Commit and rebuild before treating that field as exact content
+  provenance.
+- `cargo audit --no-fetch --file src-tauri/Cargo.lock` — no vulnerability;
+  18 existing allowed warnings. A fresh `npm audit` was not run because its
+  external dependency-graph submission was not authorized.
+- The signed submit app cannot be launched directly on this host without a
+  Store/TestFlight receipt (`RBSRequestErrorDomain Code=5`); focused
+  Book-row/OKF interaction smoke remains **not run** and must use the installed
+  TestFlight build. Upload, Apple processing, TestFlight launch, App Review,
+  and publication are not claimed.
 
 ## Publication (2026-07-24)
 

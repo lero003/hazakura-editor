@@ -60,7 +60,7 @@ User direction:
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
 [done]   Mac App Store 2.3.0 published · source tag v2.3.0
 [done]   v2.4 OKF v0.2 compatibility · compact toolbar · B-1 chapter Diff in source
-[now]    v2.4 local gates + focused manual smoke
+[now]    v2.4 local candidate + commit-addressable rebuild + installed TestFlight Book/OKF smoke
 [next]   one promoted v2.4 slice only (candidate: B-2 display TOC contract)
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  縦書き  ·  v3.x speculative AI only

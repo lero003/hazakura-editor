@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.4 active — OKF v0.2 compatibility + chapter Diff
 Authority: High
-Last reviewed: 2026-07-28 (v2.4 lane opened; OKF v0.2 + B-1 implemented)
+Last reviewed: 2026-07-29 (book-like starter expanded; local pkg refreshed)
 
 ## Purpose
 
@@ -23,8 +23,8 @@ slice rewrites source, adds background indexing, or executes attestation data.
   checkpoint `v2.0.0` remains immutable.
 - Store notes: `docs/releases/2.3.0-app-store-release-notes.md`.
 - Source tag notes: `docs/releases/2.3.0-source-tag.release.md`.
-- v2.4 store-copy draft: `docs/releases/2.4.0-app-store-release-notes.md`
-  (development only; not publication evidence).
+- v2.4 store-copy candidate: `docs/releases/2.4.0-app-store-release-notes.md`
+  (local package only; not upload or publication evidence).
 - Queue design pools (advisory): `docs/v2-external-review-synthesis-2026-07-18.md`,
   `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md`.
 
@@ -45,7 +45,8 @@ slice rewrites source, adds background indexing, or executes attestation data.
 1. **OKF v0.2 compatibility:** pin `3fcbb9f…`; recognize v0.2 optional
    trust/lifecycle/attestation families as inert data; retain best-effort v0.1,
    legacy `timestamp`, and `# Citations`; scaffolds now emit 0.2 without
-   invented provenance.
+   invented provenance. The book-like starter opens with a visible four-part
+   chapter arc plus overview, character, and setting notes.
 2. **C-0 compact Book toolbar:** carried into the 2.4 development line from
    post-tag `main`.
 3. **B-1 chapter Diff:** available Book rows can explicitly review the live
@@ -70,10 +71,13 @@ slice rewrites source, adds background indexing, or executes attestation data.
 
 ### Immediate next
 
-1. Complete local automated gates and the focused Book/OKF manual smoke before
-   preparing any candidate.
-2. After B-1 is accepted, promote at most one next v2.4 slice from
-   `docs/v2.4-plan.md`; B-2 display TOC contract is the next candidate.
+1. Commit the coherent v2.4 tree and rebuild the signed local App Store
+   candidate so package provenance is commit-addressable, then use the
+   human-controlled upload path for focused TestFlight Book/OKF interaction
+   smoke. Local signing and package proof do not establish upload, Apple
+   processing, installation, or launch.
+2. After B-1 is accepted in the installed build, promote at most one next v2.4
+   slice from `docs/v2.4-plan.md`; B-2 display TOC contract is the next candidate.
 3. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
    auto-load recipes.
 4. Do not move published tags (`v2.0.0`, `v2.3.0`, …) or attach binary assets
