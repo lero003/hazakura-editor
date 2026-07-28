@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-24 (post-v2.3.0 ship; hotfixes + optional slices)
+Last reviewed: 2026-07-28 (v2.4 development)
 
 ## Purpose
 
@@ -17,11 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **post-v2.3.0 ship.** Mac App Store `2.3.0` is published and source tag
+Phase: **v2.4 development.** Mac App Store `2.3.0` is published and source tag
 `v2.3.0` marks the quality pack + recipe + resume checkpoint (no binary
-assets). Prefer one verifiable run around a reproduced friction on the
-published line, or one explicitly chosen post-ship candidate (honesty UX /
-evidence / v2.x). Do not bulk-digest review pools. Direction:
+assets). The current run is verification/hardening for the explicit OKF v0.2
+and B-1 chapter Diff slice. After it closes, promote at most one next v2.4
+candidate by human direction. Do not bulk-digest review pools. Direction:
 `docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
 
 
@@ -34,54 +34,56 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. Hotfix for a reproduced `2.3.0` Book/Help/export or store blocker. Keep
+1. Verification or a reproduced defect in the active v2.4 OKF/Book Diff slice.
+   Keep
    every read bounded and user-triggered.
-2. One optional post-ship slice from the Active Queue / advisory pools when
+2. Hotfix for a reproduced `2.3.0` Book/Help/export or store blocker.
+3. One optional v2.4 slice from the Active Queue / advisory pools when
    the human has chosen it — not auto-train from Qwen or four-agent packs.
-3. Stale or failing quality gates that block the selected slice.
-4. Core Safe Editor quality risks around open, edit, save, close/quit,
+4. Stale or failing quality gates that block the selected slice.
+5. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
    standalone files, image handling, keyboard/IME, and error/recovery
    copy. When the known queue is exhausted, pick one of these surfaces,
    state the risk hypothesis, inspect or smoke it, then either make the
    smallest justified fix or close as `verified no-op`.
-5. Recovery forced-termination and local/cloud-folder evidence only when a
+6. Recovery forced-termination and local/cloud-folder evidence only when a
    dedicated fixture exists, unless its risk is escalated by reproduced
    source loss.
-6. Submission-prep or App Store hotfix queue only when explicitly
+7. Submission-prep or App Store hotfix queue only when explicitly
    reopened, especially fuller TestFlight smoke, reviewer notes, license
    packet review, About metadata, and regression evidence.
-7. App Store / Developer lane separation drift, especially Agent
+8. App Store / Developer lane separation drift, especially Agent
    Workbench omission, helper bundle/signing assumptions, external
    process appearance, command palette / Preferences visibility,
    sandbox/review evidence, and `network.client` explanation. Use
    `npm run smoke:app-store-surface` for the lightweight source-level
    App Store surface check before escalating to signed TestFlight smoke.
-8. One concrete user-test friction point from Hazakura Local Assist,
+9. One concrete user-test friction point from Hazakura Local Assist,
    L Mode, theme, settings, status / error copy, export, or
    file/recovery workflows.
-9. Safety-boundary regression checks.
-10. Lightweight accessibility sanity checks only when they are adjacent
+10. Safety-boundary regression checks.
+11. Lightweight accessibility sanity checks only when they are adjacent
    to a selected core surface or cheap to verify: focus reachability,
    keyboard escape/Tab behavior, readable labels, and obvious contrast.
    Do not make broad accessibility audits the default automation work.
-10. Release-prep gaps in Developer / GitHub DMG wording, checksum flow,
+12. Release-prep gaps in Developer / GitHub DMG wording, checksum flow,
    cross-machine smoke guidance, or expected macOS warning instructions.
-11. Performance and bundle-size measurement before chunk-splitting,
+13. Performance and bundle-size measurement before chunk-splitting,
    L Mode decoration-cache work, or broad CSS splitting.
-12. Post-release docs/version drift.
-13. One reproduced bug in implemented L Mode WYSIWYG behavior,
+14. Post-release docs/version drift.
+15. One reproduced bug in implemented L Mode WYSIWYG behavior,
    especially caret, IME, Backspace/Delete, hidden markers, lists,
    dividers, links, tables, images, visual overlap, source preservation,
    or a measured performance baseline.
-14. One concrete theme-quality issue, especially focus visibility,
+16. One concrete theme-quality issue, especially focus visibility,
    contrast, status/error readability, dialog readability, or Increase
    Contrast behavior.
-15. Focused refactor only when it directly supports a verified
+17. Focused refactor only when it directly supports a verified
    user-facing polish fix; do not split a large file for architecture
    aesthetics alone.
-16. Documentation drift.
-17. Verified no-op after inspection when no useful small slice is safe.
+18. Documentation drift.
+19. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 

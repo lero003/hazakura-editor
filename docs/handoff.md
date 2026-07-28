@@ -1,21 +1,31 @@
 # Handoff
 
 Status: Operational
-Scope: Post-v2.3.0 ship; v2.4 plan ready
+Scope: v2.4 active — OKF v0.2 + B-1 chapter Diff
 Authority: Medium
-Last reviewed: 2026-07-24 (MAS 2.3.0 published; v2.4 plan drafted)
+Last reviewed: 2026-07-28
 
 ## Current State
 
-- Package/app version in tree: **`2.3.0`** (matches published store line).
+- Package/app version in tree: **`2.4.0`**.
 - GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
   checkpoint `v2.0.0` remains immutable.
 - Published Mac App Store (last confirmed in docs): **`2.3.0`**
   (user-reported 2026-07-24).
-- **Active phase: post-v2.3.0 ship.** Hotfix only for reproduced blockers on
-  published `2.3.0`. Optional next work is one honesty / friction / evidence /
-  v2.x practicalization slice — not bulk review-pool digestion. 縦書き stays
-  deferred.
+- **Active phase: v2.4 development.** Published `2.3.0` remains immutable.
+  A local ad-hoc-signed app bundle exists; pkg, TestFlight, upload, App Review,
+  and publication are not claimed.
+- **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
+  New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
+  `timestamp`, and `# Citations` stay readable without migration or execution.
+- **B-1 chapter Diff:** an available Book row opens/reuses its chapter tab and
+  reviews the current buffer against disk through the existing Diff. Dirty
+  buffers win; unavailable rows are disabled. No save/apply, second editor
+  buffer, Git comparison, or persistence change was added. Self-review
+  serialized repeated chapter opens so only the newest request can enter Diff.
+- **OKF self-review:** the official v0.2 optional-family fixture now includes
+  sibling `usage_window`, a bare `verified` mapping, valid `sources`, and the
+  documented computation/executor/attester shapes. These remain inert data.
 - **First Alpha spine is in source:** existing sidebar Files / Book switch,
   explicit Markdown selection, app-private ordered document/group tree,
   same-parent reordering, unavailable-entry retention/recheck, chapter switching
@@ -114,6 +124,24 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; v2.4 plan drafted)
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+
+## Verification (2026-07-28, v2.4 OKF + B-1)
+
+- `npm run typecheck` — pass.
+- `npm test` — 205 files / 1,727 tests pass.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- `npm run smoke:fixtures:v1.11-okf` — v0.2 pin, optional-family, and legacy
+  v0.1 bundles generated successfully.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `npm run build` — local helper-enabled App Store preview app built with
+  ad-hoc signing; helper probes passed. `SKIP_BUILD=1 npm run
+  smoke:macos-window -- '<built app>'` launched a `1280x820` main window and
+  quit cleanly.
+- Focused Book-row/OKF interaction smoke remains **not run**. No pkg,
+  TestFlight, upload, App Review, or publication proof is claimed.
 
 ## Publication (2026-07-24)
 
@@ -291,16 +319,14 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; v2.4 plan drafted)
 
 ## Next For Agents
 
-1. Hotfix only for reproduced blockers on published `2.3.0`.
-2. **v2.4 plan:** `docs/v2.4-plan.md` (planning only until the human opens the
-   lane). Recommended first feature slice: **B-1 chapter Diff**. Carry-in
-   compact toolbar (C-0) is already on `main` after `v2.3.0`.
-3. Do not bump to `2.4.0` or implement B-slices without explicit lane open.
-4. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
+1. Finish/inspect v2.4 automated gates and run focused Book/OKF manual smoke.
+2. If accepted, promote at most one next candidate from `docs/v2.4-plan.md`
+   (B-2 display TOC contract is next).
+3. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
    out unless product explicitly accepts them.
-5. Do not move published tags (`v2.0.0`, `v2.3.0`, …), upload, or attach
+4. Do not move published tags (`v2.0.0`, `v2.3.0`, …), upload, or attach
    release assets without a separate explicit handoff.
-6. On security/path/AI/multi-file surfaces, re-read
+5. On security/path/AI/multi-file surfaces, re-read
    `docs/security-boundary.md` and the v2 design boundary section.
 
 ## Key Paths

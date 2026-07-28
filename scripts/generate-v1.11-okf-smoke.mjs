@@ -5,7 +5,8 @@ import { pathToFileURL } from "node:url";
 
 /**
  * Deterministic on-disk OKF fixtures for packaged / discovery smoke.
- * Spec pin: OKF v0.1 Draft commit ee67a5c (docs/okf-spec-pin.md).
+ * Spec pin: OKF v0.2 commit
+ * 3fcbb9f828c2f23d109c855ee403c3a4c81f3a96 (docs/okf-spec-pin.md).
  * When the pin moves, update this script together with the pure model,
  * scaffold assets, and living docs — do not drift alone.
  *
@@ -13,10 +14,11 @@ import { pathToFileURL } from "node:url";
  *   node scripts/generate-v1.11-okf-smoke.mjs [outputDirectory]
  */
 
-export const OKF_FIXTURE_SPEC_COMMIT = "ee67a5c";
+export const OKF_FIXTURE_SPEC_COMMIT =
+  "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96";
 
 const VALID_ROOT_INDEX = `---
-okf_version: "0.1"
+okf_version: "0.2"
 ---
 
 # 作品
@@ -46,7 +48,6 @@ type: Chapter
 title: 第一章 朝の光
 description: 物語の導入部。
 tags: [novel, chapter]
-timestamp: 2026-07-01T09:00:00Z
 ---
 
 春の朝、主人公は駅前の坂をのぼった。
@@ -60,7 +61,6 @@ type: Chapter
 title: 第二章 午後の風
 description: 中盤の転換。
 tags: [novel, chapter]
-timestamp: 2026-07-01T12:00:00Z
 ---
 
 午後、風向きが変わった。朝の出来事は [第一章](/chapters/01-morning.md) にある。
@@ -75,6 +75,65 @@ tags: [novel, note]
 
 - 主人公: まだ名前を決めていない
 - 参照: [外部資料](https://example.com/docs)
+`;
+
+const V02_OPTIONAL_ROOT = `---
+okf_version: "0.2"
+---
+
+# Computation bundle
+
+* [Result](result.md)
+`;
+
+const V02_OPTIONAL_RESULT = `---
+type: Attested Computation
+title: Example result
+sources:
+  - id: input
+    resource: input.md
+    usage_count: 24
+usage_window: { from: 2026-07-01, to: 2026-07-28 }
+generated:
+  at: 2026-07-28T00:00:00Z
+  by: process:fixture-generator
+verified: { by: human:fixture-reviewer, at: 2026-07-28T00:05:00Z }
+status: stable
+stale_after: 2027-07-28T00:00:00Z
+runtime: bigquery
+parameters:
+  - { name: year, type: integer, required: true }
+computation: references/computation.sql
+executor:
+  resource: references/run.md
+  receipt: [job_id, executed_sql, result]
+attester:
+  resource: references/attest.py
+---
+
+Fixture data only. Hazakura must not execute these fields.
+`;
+
+const LEGACY_V01_ROOT = `---
+okf_version: "0.1"
+timestamp: 2026-07-15T00:00:00Z
+---
+
+# Legacy bundle
+
+* [Legacy note](note.md)
+`;
+
+const LEGACY_V01_NOTE = `---
+type: Note
+timestamp: 2026-07-15T00:00:00Z
+---
+
+# Legacy note
+
+# Citations
+
+- Existing citation text remains source text.
 `;
 
 export function buildOkfSmokeFixtureTrees() {
@@ -97,7 +156,7 @@ export function buildOkfSmokeFixtureTrees() {
     },
     "japanese-essay": {
       "index.md": `---
-okf_version: "0.1"
+okf_version: "0.2"
 ---
 
 # 随筆集
@@ -128,6 +187,14 @@ tags: [随筆]
 序は [序](./preface.md)。
 `,
     },
+    "v0.2-optional-families": {
+      "index.md": V02_OPTIONAL_ROOT,
+      "result.md": V02_OPTIONAL_RESULT,
+    },
+    "legacy-v0.1": {
+      "index.md": LEGACY_V01_ROOT,
+      "note.md": LEGACY_V01_NOTE,
+    },
   };
 }
 
@@ -153,7 +220,7 @@ export async function generateOkfSmokeFixtures(outputDirectory) {
 
   const manifest = {
     specCommit: OKF_FIXTURE_SPEC_COMMIT,
-    specLabel: "OKF v0.1 Draft",
+    specLabel: "OKF v0.2",
     output,
     bundles: Object.keys(trees),
     files: written,

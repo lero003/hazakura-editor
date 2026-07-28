@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-24 (tree + store + source tag 2.3.0)
+Last reviewed: 2026-07-28 (2.4.0 development lane; store remains 2.3.0)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -25,6 +25,11 @@ Last reviewed: 2026-07-24 (tree + store + source tag 2.3.0)
 - **届ける**: 明示的な操作でHTML、PDF、EPUBへ書き出す。
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
+
+Current development is on `2.4.0`: OKF v0.2 compatibility and explicit
+per-chapter buffer-vs-disk review are in source. A local ad-hoc-signed app
+bundle has been built, but no submission pkg, upload, review, or publication is
+claimed.
 
 ## Mac App Store
 
@@ -145,12 +150,12 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): post-v2.3.0 ship queue (hotfix + optional slices)
+- [Current Work](docs/current-work.md): v2.4 active queue (OKF v0.2 + chapter Diff verification)
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
 - [v1.10 Single-document Structure Design](docs/v1.10-single-document-structure-design.md): completed shared structure, advisory, and bounded edit contract
 - [OKF Spec Pin](docs/okf-spec-pin.md): shared OKF pin and upgrade co-update checklist
-- [v1.11 OKF Draft Preview Design](docs/v1.11-okf-draft-preview-design.md): held OKF v0.1 Draft compatibility and distribution-confidence contract
+- [v1.11 OKF Draft Preview Design](docs/v1.11-okf-draft-preview-design.md): living OKF review contract, now pinned to v0.2 with v0.1 best-effort reads
 - [v1.12 OKF Scaffold Design](docs/v1.12-okf-scaffold-design.md): OKF starter scaffold (minimal + book-like)
 - [v1.11 App Store Release Notes](docs/releases/1.11.0-app-store-release-notes.md): TestFlight candidate copy and product boundary
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
@@ -254,7 +259,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.3.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag is [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `2.4.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag is [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.3.0` (user-reported 2026-07-24); do not reopen a published store lane without a reproduced hotfix.
 - Release notes: [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), [2.0.0 published App Store notes](docs/releases/2.0.0-app-store-release-notes.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

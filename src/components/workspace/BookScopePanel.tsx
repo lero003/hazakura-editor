@@ -21,6 +21,7 @@ import {
 import type { BookScopeSuggestion } from "../../features/bookScope";
 import type { BookScopeSuggestionOptions } from "../../features/bookScope";
 import type { MenuLanguage } from "../../types";
+import { DiffIcon } from "../app/Icons";
 import {
   BookScopeSelectorTree,
   collectSelectedBookScopePaths,
@@ -41,6 +42,7 @@ type Props = {
   } | null>;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenChapter: (path: string) => void;
+  onReviewChapterChanges?: (path: string) => void;
   onReadBook?: () => void;
   onRevalidate: () => void;
   onSuggest?: (
@@ -67,6 +69,7 @@ export function BookScopePanel({
   onImportRecipeDraft,
   onLoadDirectory,
   onOpenChapter,
+  onReviewChapterChanges = () => {},
   onReadBook,
   onRevalidate,
   onSuggest,
@@ -472,6 +475,17 @@ export function BookScopePanel({
               </button>
               <div className="book-scope-row-actions">
                 <button
+                  aria-label={copy.reviewChanges(displayName)}
+                  disabled={!chapter}
+                  onClick={() =>
+                    chapter && onReviewChapterChanges(chapter.path)
+                  }
+                  title={copy.reviewChanges(displayName)}
+                  type="button"
+                >
+                  <DiffIcon />
+                </button>
+                <button
                   aria-label={copy.moveUp(relativePath)}
                   disabled={
                     (bookScopeSiblingPosition(nodes, relativePath)?.index ?? 0) === 0
@@ -597,6 +611,7 @@ function bookScopeCopy(language: MenuLanguage) {
         count === 1 ? "1 unavailable" : `${count} unavailable`,
       moveUp: (path: string) => `Move ${path} up`,
       moveDown: (path: string) => `Move ${path} down`,
+      reviewChanges: (name: string) => `Review changes for ${name}`,
       remove: (path: string) => `Remove ${path} from book`,
       unavailable: (reason: string) =>
         `Unavailable: ${bookScopeReason(reason, "en")}`,
@@ -628,6 +643,7 @@ function bookScopeCopy(language: MenuLanguage) {
     unavailableCount: (count: number) => `利用不可 ${count}`,
     moveUp: (path: string) => `${path}を上へ移動`,
     moveDown: (path: string) => `${path}を下へ移動`,
+    reviewChanges: (name: string) => `${name}の変更を確認`,
     remove: (path: string) => `${path}を本から外す`,
     unavailable: (reason: string) =>
       `利用できません: ${bookScopeReason(reason, "ja")}`,

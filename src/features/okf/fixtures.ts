@@ -1,9 +1,10 @@
 /**
- * Public-safe OKF v0.1 Draft fixtures for v1.11 S0/S1.
- * Spec pin: commit ee67a5c — do not silently follow main.
+ * Public-safe OKF v0.2 fixtures for the explicit compatibility review.
+ * Spec pin: commit 3fcbb9f828c2f23d109c855ee403c3a4c81f3a96.
  */
 
-export const OKF_FIXTURE_SPEC_COMMIT = "ee67a5c" as const;
+export const OKF_FIXTURE_SPEC_COMMIT =
+  "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96" as const;
 
 export type OkfFixtureFile = {
   relativePath: string;
@@ -40,7 +41,6 @@ type: Chapter
 title: 第一章 朝の光
 description: 物語の導入部。
 tags: [novel, chapter]
-timestamp: 2026-07-01T09:00:00Z
 ---
 
 春の朝、主人公は駅前の坂をのぼった。
@@ -54,7 +54,6 @@ type: Chapter
 title: 第二章 午後の風
 description: 中盤の転換。
 tags: [novel, chapter]
-timestamp: 2026-07-01T12:00:00Z
 ---
 
 午後、風向きが変わった。朝の出来事は [第一章](/chapters/01-morning.md) にある。
@@ -72,7 +71,7 @@ tags: [novel, note]
 `;
 
 const VALID_ROOT_INDEX = `---
-okf_version: "0.1"
+okf_version: "0.2"
 ---
 
 # 作品
@@ -124,6 +123,38 @@ const FIXTURE_BUILDERS: Record<string, () => OkfFixtureBundle> = {
     ],
   }),
 
+  "legacy-v0.1": () => ({
+    name: "legacy-v0.1",
+    description:
+      "Legacy v0.1 bundle remains best-effort readable under the v0.2 consumer.",
+    files: [
+      file(
+        "index.md",
+        `---\nokf_version: "0.1"\n---\n\n# Legacy\n\n* [Note](note.md)\n`,
+      ),
+      file(
+        "note.md",
+        `---\ntype: Note\ntitle: Legacy note\ntimestamp: 2026-07-01T09:00:00Z\n---\n\n# Citations\n\n* [Source](https://example.com/source)\n`,
+      ),
+    ],
+  }),
+
+  "v0.2-optional-families": () => ({
+    name: "v0.2-optional-families",
+    description:
+      "v0.2 provenance, trust, lifecycle, and computation fields are consumed without execution.",
+    files: [
+      file(
+        "index.md",
+        `---\nokf_version: "0.2"\n---\n\n# Signals\n\n* [Metric](metric.md)\n`,
+      ),
+      file(
+        "metric.md",
+        `---\ntype: Attested Computation\ntitle: Revenue\ngenerated: { by: process:reference-agent, at: 2026-07-24T09:00:00Z }\nverified: { by: human:reviewer, at: 2026-07-24T10:00:00Z }\nstatus: stable\nstale_after: 2026-12-31\nsources:\n  - id: policy\n    resource: policies/revenue.md\n    usage_count: 24\nusage_window: { from: 2026-07-01, to: 2026-07-28 }\nruntime: bigquery\nparameters:\n  - { name: year, type: integer, required: true }\ncomputation: references/computation.sql\nexecutor:\n  resource: references/run.md\n  receipt: [job_id, executed_sql, result]\nattester:\n  resource: references/attest.py\n---\n\n# Computation\n\nNo code is executed by Hazakura.\n`,
+      ),
+    ],
+  }),
+
   "versionless-root-index": () => ({
     name: "versionless-root-index",
     description: "Root index without okf_version frontmatter.",
@@ -145,7 +176,7 @@ const FIXTURE_BUILDERS: Record<string, () => OkfFixtureBundle> = {
     files: [
       file(
         "index.md",
-        `---\nokf_version: "0.1"\n---\n\n# Root\n\n* [Sub](sub/)\n`,
+        `---\nokf_version: "0.2"\n---\n\n# Root\n\n* [Sub](sub/)\n`,
       ),
       file(
         "sub/index.md",
@@ -164,7 +195,7 @@ const FIXTURE_BUILDERS: Record<string, () => OkfFixtureBundle> = {
     files: [
       file(
         "index.md",
-        `---\nokf_version: "0.1"\ntype: NotAConcept\n---\n\n# Index\n\n* [A](a.md)\n`,
+        `---\nokf_version: "0.2"\ntype: NotAConcept\n---\n\n# Index\n\n* [A](a.md)\n`,
       ),
       file(
         "log.md",
@@ -314,7 +345,7 @@ const FIXTURE_BUILDERS: Record<string, () => OkfFixtureBundle> = {
     files: [
       file(
         "index.md",
-        `---\nokf_version: "0.1"\n---\n\n# Root\n\n* [Deep](dir/nested.md)\n`,
+        `---\nokf_version: "0.2"\n---\n\n# Root\n\n* [Deep](dir/nested.md)\n`,
       ),
       file(
         "dir/nested.md",
@@ -402,7 +433,7 @@ const FIXTURE_BUILDERS: Record<string, () => OkfFixtureBundle> = {
     files: [
       file(
         "index.md",
-        `---\nokf_version: "0.1"\n---\n\n# 随筆集\n\n* [序](essays/preface.md) - はじめに\n* [本編](essays/body.md) - 本文\n`,
+        `---\nokf_version: "0.2"\n---\n\n# 随筆集\n\n* [序](essays/preface.md) - はじめに\n* [本編](essays/body.md) - 本文\n`,
       ),
       file(
         "essays/preface.md",

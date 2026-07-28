@@ -1,5 +1,5 @@
 /**
- * Side-effect-free OKF v0.1 Draft compatibility analyzer (S1).
+ * Side-effect-free OKF v0.2 compatibility analyzer (S1).
  * Does not touch the filesystem, UI, or Tauri.
  */
 
@@ -38,8 +38,22 @@ const OPTIONAL_METADATA_KEYS = [
   "description",
   "resource",
   "tags",
+  "sources",
+  "usage_window",
+  "generated",
+  "verified",
+  "status",
+  "stale_after",
+  "runtime",
+  "parameters",
+  "computation",
+  "executor",
+  "attester",
+  // v0.1 fallback accepted by the v0.2 consumer contract.
   "timestamp",
 ] as const;
+
+const BEST_EFFORT_LEGACY_OKF_VERSIONS = new Set(["0.1"]);
 
 export function analyzeOkfBundle(
   inputs: OkfMarkdownInput[],
@@ -145,7 +159,10 @@ export function analyzeOkfBundle(
             });
           }
           if (isRootIndex) {
-            if (okfVersion === OKF_SPEC_VERSION) {
+            if (
+              okfVersion === OKF_SPEC_VERSION ||
+              BEST_EFFORT_LEGACY_OKF_VERSIONS.has(okfVersion ?? "")
+            ) {
               declaredOkfVersion = okfVersion;
             } else if (okfVersion) {
               declaredOkfVersion = okfVersion;
@@ -333,7 +350,7 @@ export function analyzeOkfBundle(
         code: "missing-optional-metadata",
         relativePath,
         message:
-          "Concept has no recommended optional metadata (title, description, resource, tags, timestamp).",
+          "Concept has no recognized optional metadata (title, description, resource, tags, provenance, trust, lifecycle, or computation fields).",
       });
     }
 

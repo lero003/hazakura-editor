@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-24
+Last reviewed: 2026-07-28
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,6 +25,8 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- `2.4.0-app-store-release-notes.md` is a **draft only** for the active
+  development lane; it is not package, upload, review, or publication evidence.
 - **`2.3.0` is approved and published** on the Mac App Store (user-reported
   2026-07-24): portable Book recipe, Reader resume, Preview image / EPUB cover
   repairs, recent-folder sandbox restore, and the folded v2.1–v2.2 quality pack.

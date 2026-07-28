@@ -206,6 +206,7 @@ describe("BookScopePanel", () => {
   it("opens available chapters, exposes unavailable entries, and reorders explicitly", () => {
     const onCommit = vi.fn();
     const onOpenChapter = vi.fn();
+    const onReviewChapterChanges = vi.fn();
     const onRevalidate = vi.fn();
     render(
       <BookScopePanel
@@ -219,6 +220,7 @@ describe("BookScopePanel", () => {
         onCommit={onCommit}
         onLoadDirectory={vi.fn(async () => {})}
         onOpenChapter={onOpenChapter}
+        onReviewChapterChanges={onReviewChapterChanges}
         onRevalidate={onRevalidate}
         resolving={false}
         unavailable={[{ relativePath: "missing.md", reason: "missing" }]}
@@ -229,6 +231,15 @@ describe("BookScopePanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "a.md" }));
     expect(onOpenChapter).toHaveBeenCalledWith("/workspace/a.md");
+    fireEvent.click(
+      screen.getByRole("button", { name: "a.mdの変更を確認" }),
+    );
+    expect(onReviewChapterChanges).toHaveBeenCalledWith("/workspace/a.md");
+    expect(
+      (screen.getByRole("button", {
+        name: "missing.mdの変更を確認",
+      }) as HTMLButtonElement).disabled,
+    ).toBe(true);
     expect(
       screen.getByText("利用できません: ファイルが見つかりません"),
     ).toBeTruthy();

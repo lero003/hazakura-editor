@@ -8,10 +8,12 @@ import {
 import { OKF_SPEC_COMMIT } from "./types";
 
 describe("okfScaffoldTemplates", () => {
-  it("shares the single OKF Draft pin with the review model", () => {
+  it("shares the single OKF v0.2 pin with the review model", () => {
     // Pin authority: docs/okf-spec-pin.md — bump commit only with co-updates.
     expect(OKF_SCAFFOLD_SPEC_COMMIT).toBe(OKF_SPEC_COMMIT);
-    expect(OKF_SCAFFOLD_SPEC_COMMIT).toBe("ee67a5c");
+    expect(OKF_SCAFFOLD_SPEC_COMMIT).toBe(
+      "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96",
+    );
   });
 
   it("exposes minimal and book-like starters", () => {
@@ -47,6 +49,16 @@ describe("okfScaffoldTemplates", () => {
       );
       expect(required).toEqual([]);
       expect(result.summary.conceptCount).toBeGreaterThan(0);
+      expect(result.summary.declaredOkfVersion).toBe("0.2");
+      expect(template.files.some((file) => file.contents.includes("timestamp:"))).toBe(
+        false,
+      );
+      expect(template.files.some((file) => file.contents.includes("generated:"))).toBe(
+        false,
+      );
+      expect(template.files.some((file) => file.contents.includes("verified:"))).toBe(
+        false,
+      );
     },
   );
 });

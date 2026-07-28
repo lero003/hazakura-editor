@@ -188,6 +188,8 @@ or signed TestFlight proof from this representative run.
 7. If tree refresh or `index.md` open is intentionally made unavailable, confirm creation remains on disk and the partial failure stays visible in status.
 8. Template bodies live under `src/features/okf/scaffoldTemplates/assets/` (rewriteable Markdown assets).
 9. Spec pin authority: `docs/okf-spec-pin.md` (review + scaffolds share one pin; upgrade co-updates both).
+10. Confirm both starter roots declare `okf_version: "0.2"` and do not contain
+    fixed `timestamp`, invented `generated.by`, or `verified` provenance.
 
 Representative result (2026-07-15): template analysis, creation integration,
 partial-failure status, keyboard menu semantics, strict Rust path/text bounds,
@@ -221,6 +223,22 @@ npm run smoke:fixtures:v1.11-okf
 5. Run the same review from a folder context menu. Start a scan and confirm
    Cancel is available; after failure/cancel, confirm Rerun preserves the last
    completed result until replacement.
+6. Review the v0.2 optional-families fixture and the legacy-v0.1 fixture.
+   Confirm neither produces a required failure or repeated version warning,
+   and no trust/stale computation or attester/executor action appears.
+
+## v2.4 Book Chapter Diff Smoke
+
+1. Open Book view with one dirty open chapter and one unopened available chapter.
+2. Use each row's **変更を確認** action. The dirty chapter must compare its live
+   buffer with disk; the unopened chapter must open through the normal editor
+   path and enter the same buffer-vs-disk Diff.
+3. Close Diff and confirm contents, dirty state, Undo history, and save state
+   are unchanged.
+4. While one chapter is still opening, request review for another. Confirm the
+   newer chapter becomes the Diff target and the older request does not replace it.
+5. Confirm an unavailable chapter's review action is disabled and **再確認**
+   remains the recovery path.
 
 This local built-app flow is not signed TestFlight evidence. Repeat the core
 review → edit → save → recheck path after TestFlight installation.

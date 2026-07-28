@@ -186,7 +186,7 @@ function sharedFindingMessages(
       "unknown-type": "作者どくじの type です（ごかん しっぱいでは ありません）",
       "missing-optional-metadata": "あると べんりな メタデータが ありません（にんい）",
       "root-index-version":
-        "root の index.md に okf_version: \"0.1\" が あると わかりやすいです（にんい）",
+        "root の index.md に okf_version: \"0.2\" が あると わかりやすいです（にんい）",
       "nested-index-frontmatter": "したの index.md に frontmatter が あります（さんこう）",
       "index-shape": "index.md の 見出しや リストを かくにんして ください（にんい）",
       "log-shape": "log.md の ひづけ みだしと ならびを かくにんして ください（にんい）",
@@ -211,7 +211,7 @@ function sharedFindingMessages(
       "unknown-type": "作者独自の type です（互換失敗ではありません）",
       "missing-optional-metadata": "あると便利なメタデータがありません（任意）",
       "root-index-version":
-        "root の index.md に okf_version: \"0.1\" があると分かりやすいです（任意）",
+        "root の index.md に okf_version: \"0.2\" があると分かりやすいです（任意）",
       "nested-index-frontmatter": "下位の index.md に frontmatter があります（参考）",
       "index-shape": "index.md の見出しやリストを確認してください（任意）",
       "log-shape": "log.md の日付見出しと並びを確認してください（任意）",
@@ -235,7 +235,7 @@ function sharedFindingMessages(
     "unknown-type": "Producer-defined type (not a compatibility failure)",
     "missing-optional-metadata": "Recommended metadata is missing (optional)",
     "root-index-version":
-      'Root index.md is clearer with okf_version: "0.1" (optional)',
+      'Root index.md is clearer with okf_version: "0.2" (optional)',
     "nested-index-frontmatter":
       "A nested index.md contains frontmatter (informational)",
     "index-shape": "Review the index.md headings and lists (optional)",
@@ -255,7 +255,7 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     return {
       title: "ちしきフォルダ（OKF）を てんけん",
       purposeIntro:
-        "えらんだ フォルダが OKF v0.1 Draft として よめるかを かくにんします。じどうでは なおしません。",
+        "えらんだ フォルダが OKF v0.2 として よめるかを かくにんします。じどうでは なおしません。",
       diskSnapshotNote:
         "ディスク上の ほぞんないようを みます。みほぞんの タブと ちがう ことがあります。",
       dirtyTabNote: "この ファイルは みほぞんの タブで ひらいています。",
@@ -341,7 +341,7 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
     return {
       title: "知識フォルダ（OKF）を点検",
       purposeIntro:
-        "選んだフォルダが OKF v0.1 Draft として読めるかを確認します。自動では直しません。",
+        "選んだフォルダが OKF v0.2 として読めるかを確認します。自動では直しません。",
       diskSnapshotNote:
         "ディスク上の保存内容を見ます。未保存のタブとは違うことがあります。",
       dirtyTabNote: "このファイルは未保存のタブとして開いています。",
@@ -425,7 +425,7 @@ export function getOkfReviewCopy(lang: MenuLanguage): OkfReviewCopy {
   return {
     title: "Review knowledge folder (OKF)",
     purposeIntro:
-      "Checks whether the selected folder can be read as OKF v0.1 Draft. Nothing is changed automatically.",
+      "Checks whether the selected folder can be read as OKF v0.2. Nothing is changed automatically.",
     diskSnapshotNote:
       "Results reflect files on disk. An open dirty tab may differ from the scan.",
     dirtyTabNote: "This file is open in a dirty tab.",

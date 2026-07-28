@@ -1,4 +1,4 @@
-import { useMemo, useState, type ComponentProps } from "react";
+import { useMemo, useRef, useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
   EditorSettings,
@@ -64,6 +64,8 @@ export function AppShell(props: AppShellProps) {
   useCrtMouseTracking(crtMode);
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
+  const chapterReviewRequestRef = useRef(0);
+  const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
   const workspaceTabMarkers = useMemo(
     () => getWorkspaceTabMarkerPaths(props.tabs, props.workspaceRootPath),
     [props.tabs, props.workspaceRootPath],
@@ -209,6 +211,25 @@ export function AppShell(props: AppShellProps) {
               onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
               onOpenFile: (path) => void props.openWorkspaceFile(path),
               onOpenWorkspace: () => void props.openWorkspace(),
+              onReviewChapterChanges: (path) => {
+                const request = chapterReviewRequestRef.current + 1;
+                chapterReviewRequestRef.current = request;
+                const openRequest = chapterReviewQueueRef.current.then(() =>
+                  Promise.resolve(props.openFilePath(path)),
+                );
+                chapterReviewQueueRef.current = openRequest.then(
+                  () => undefined,
+                  () => undefined,
+                );
+                void openRequest.then(
+                  (tab) => {
+                    if (request === chapterReviewRequestRef.current && tab) {
+                      props.reviewTabAgainstDisk(tab);
+                    }
+                  },
+                  () => undefined,
+                );
+              },
               onRevalidateBookScope: props.revalidateBookScope,
               openFilePaths: workspaceTabMarkers.openFilePaths,
               onClearCompareSelection: () => {

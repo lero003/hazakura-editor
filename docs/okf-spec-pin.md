@@ -3,7 +3,7 @@
 Status: Operational
 Scope: OKF consumer pin, co-update surfaces, and version-upgrade process
 Authority: High for OKF compatibility, review, fixtures, and scaffolds
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-28 (OKF v0.2 pin adopted for v2.4)
 
 ## Current Pin
 
@@ -12,13 +12,13 @@ reviewed upstream snapshot.
 
 | Field | Value |
 |---|---|
-| Label | OKF v0.1 Draft |
-| Version string | `0.1` |
-| Upstream commit | [`ee67a5c`](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/ee67a5c/okf/SPEC.md) |
-| Raw SPEC | [`SPEC.md`](https://raw.githubusercontent.com/GoogleCloudPlatform/knowledge-catalog/ee67a5c/okf/SPEC.md) |
+| Label | OKF v0.2 |
+| Version string | `0.2` |
+| Upstream commit | [`3fcbb9f`](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/3fcbb9f828c2f23d109c855ee403c3a4c81f3a96/okf/SPEC.md) |
+| Raw SPEC | [`SPEC.md`](https://raw.githubusercontent.com/GoogleCloudPlatform/knowledge-catalog/3fcbb9f828c2f23d109c855ee403c3a4c81f3a96/okf/SPEC.md) |
 | In-code constants | `OKF_SPEC_VERSION` / `OKF_SPEC_COMMIT` / `OKF_SPEC_LABEL` in `src/features/okf/types.ts` |
 
-UI and release copy must describe **Draft compatibility / 互換の出発点**, not
+UI and release copy must describe **compatibility / 互換の出発点**, not
 formal certification or complete OKF support. OKF is a knowledge-bundle shape,
 not a book-order or publishing format. Book Scope remains a separate Hazakura
 contract (`docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
@@ -27,9 +27,20 @@ contract (`docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`).
 
 When upstream OKF changes (version, reserved files, frontmatter rules, link
 rules, vocabulary), **templates and integrity checks drift together**. A new
-scaffold that still emits `okf_version: "0.1"` under a consumer that expects a
-later draft, or fixtures that no longer match the pure model, is a product
+scaffold that still emits an earlier `okf_version` under a consumer that expects
+a later version, or fixtures that no longer match the pure model, is a product
 defect—not a cosmetic mismatch.
+
+## v0.2 Consumer Boundary
+
+- New scaffolds declare `okf_version: "0.2"`.
+- Existing v0.1 bundles, legacy `timestamp`, and body `# Citations` remain
+  best-effort readable. Hazakura does not reject, rewrite, or migrate them.
+- `sources`, sibling `usage_window`, `generated`, `verified`, `status`,
+  `stale_after`, and computation/attestation-related mappings are accepted as
+  optional data.
+- Hazakura does not calculate trust tiers or staleness, validate those optional
+  shapes, execute attesters/executors, or add a dashboard for them.
 
 Therefore every OKF consumer surface must share one pin and update as a set.
 
@@ -47,7 +58,7 @@ When the pin moves, review and update **all** of the following in one lane:
 | Locale / UI strings that name the draft | `src/lib/locale/okfReview.ts`, command palette / menu labels if needed |
 | Design contracts | `docs/v1.11-okf-draft-preview-design.md`, `docs/v1.12-okf-scaffold-design.md`, this file |
 | Smoke / living docs | `docs/smoke-checklist.md`, `docs/current-status.md`, handoff if claims change |
-| Tests that hardcode the commit | Vitest + Rust tests that assert `ee67a5c` / version strings |
+| Tests that hardcode the commit | Vitest + Rust tests that assert `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96` / version strings |
 
 Do **not** vendor the full upstream SPEC into the app tree. Link the pinned
 commit; keep Hazakura’s consumer rules in-repo.

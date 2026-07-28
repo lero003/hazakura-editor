@@ -115,6 +115,64 @@ describe("useFileOpening", () => {
     expect(openTextFile).not.toHaveBeenCalled();
   });
 
+  it("returns the existing dirty tab when a workspace file is reused", async () => {
+    const dirtyTab = {
+      id: "/workspace/chapter.md",
+      sessionId: "session:chapter",
+      path: "/workspace/chapter.md",
+      name: "chapter.md",
+      contents: "unsaved",
+      lastSavedContents: "saved",
+      line_ending: "lf" as const,
+      lastSavedLineEnding: "lf" as const,
+      encoding: "utf-8" as const,
+      lastSavedEncoding: "utf-8" as const,
+      size: 7,
+      modified_ms: 1,
+      fingerprint: "fp",
+      large_file_warning: false,
+      ignoredExternalFingerprint: null,
+      externalFingerprint: null,
+      saveStatus: "idle" as const,
+      error: null,
+    };
+    const { result } = setup({ tabs: [dirtyTab] });
+
+    let opened;
+    await act(async () => {
+      opened = await result.current.openFilePath(dirtyTab.path);
+    });
+
+    expect(opened).toBe(dirtyTab);
+    expect(openTextFile).not.toHaveBeenCalled();
+  });
+
+  it("returns a newly opened text tab for immediate chapter review", async () => {
+    vi.mocked(openTextFile).mockResolvedValueOnce({
+      path: "/workspace/chapter.md",
+      name: "chapter.md",
+      contents: "saved",
+      line_ending: "lf",
+      encoding: "utf-8",
+      size: 5,
+      modified_ms: 1,
+      fingerprint: "fp",
+      large_file_warning: false,
+    });
+    const { result } = setup();
+
+    let opened;
+    await act(async () => {
+      opened = await result.current.openFilePath("/workspace/chapter.md");
+    });
+
+    expect(opened).toMatchObject({
+      path: "/workspace/chapter.md",
+      contents: "saved",
+      lastSavedContents: "saved",
+    });
+  });
+
   it("routes a file-dialog-selected image to image preview instead of text open", async () => {
     vi.mocked(pickMarkdownFile).mockResolvedValueOnce("/outside/photo.png");
     const { options, result } = setup();

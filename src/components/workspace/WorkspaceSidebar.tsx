@@ -74,6 +74,7 @@ type WorkspaceSidebarProps = {
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
   onReadBookScope?: () => void;
+  onReviewChapterChanges?: (path: string) => void;
   onRevalidateBookScope?: () => void;
   bookScopeReaderLoading?: boolean;
   openFilePaths: readonly string[];
@@ -120,6 +121,7 @@ export function WorkspaceSidebar({
   onOpenFile,
   onOpenWorkspace,
   onReadBookScope,
+  onReviewChapterChanges = () => {},
   onRevalidateBookScope = () => {},
   bookScopeReaderLoading = false,
   openFilePaths,
@@ -401,6 +403,7 @@ export function WorkspaceSidebar({
           onLoadDirectory={onLoadDirectory}
           onOpenChapter={(path) => void onOpenFile(path)}
           onReadBook={onReadBookScope}
+          onReviewChapterChanges={onReviewChapterChanges}
           onRevalidate={onRevalidateBookScope}
           onSuggest={onCreateBookScopeSuggestion}
           resolving={bookScopeResolving}

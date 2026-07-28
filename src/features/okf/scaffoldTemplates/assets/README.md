@@ -14,7 +14,8 @@ Rewrite wording, headings, or relative paths by editing files under
 
 1. Paths listed in the registry in sync with files on disk.
 2. `okf_version` and concept frontmatter consistent with the **current** pin
-   in `docs/okf-spec-pin.md` (today: OKF v0.1 Draft / `ee67a5c`).
+   in `docs/okf-spec-pin.md` (today: OKF v0.2 /
+   `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`).
 3. Templates analyzable without required failures under
    `analyzeOkfBundle` (see `okfScaffoldTemplates.test.ts`).
 

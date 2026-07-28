@@ -30,12 +30,13 @@ The scan is one-shot, bounded, and cancellable. It does not start on app launch 
 
 ## Knowledge folder (OKF)
 
-OKF (Open Knowledge Format) v0.1 Draft is a way to lay out linked Markdown notes. Hazakura can **check** or **start** that layout; it does not auto-repair it.
+OKF (Open Knowledge Format) v0.2 is a way to lay out linked Markdown notes. Hazakura can **check** or **start** that layout; it does not auto-repair it.
 
 - **Review knowledge folder (OKF)** (Command Palette or folder context menu) runs an explicit, read-only check of the selected folder.
 - Findings are grouped so ordinary manuscript folders stay writable as-is. Preparing as OKF is optional.
 - **Open to edit** opens a file in the normal editor. After you save, run review again yourself.
 - **Create knowledge folder starter** writes a fixed minimal or book-like template into a new uniquely named folder and opens `index.md`. The chapter layout in the book-like template is an example only; it is not the Book chapter list.
+- Hazakura accepts optional v0.2 provenance, trust, lifecycle, and computation metadata as data. It does not calculate trust, run executors or attesters, migrate v0.1 metadata, or rewrite your Markdown.
 
 ## Export whole book
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-07-24 (2.3.0 published on Mac App Store; source tag v2.3.0)
+Last reviewed: 2026-07-28 (2.4.0 development; 2.3.0 remains published)
 
 ## Purpose
 
@@ -46,7 +46,7 @@ Agent Workbench behind its existing boundary.
   v2.1–v2.2 quality pack on the Safe Editor baseline). See
   `docs/releases/2.3.0-app-store-release-notes.md`. Prior store baseline
   `2.0.0` remains historical.
-- Current source / Developer version: `2.3.0` (matches published store line).
+- Current source / Developer version: `2.4.0` (active development lane).
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
   See `docs/current-work.md`, `docs/releases/2.3.0-app-store-release-notes.md`,
   and `docs/releases/2.3.0-source-tag.release.md`.

@@ -3,13 +3,13 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
+Last reviewed: 2026-07-28 (v2.4 lane opened)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.3.0`** across npm, Tauri, Cargo, and
-  lockfile metadata (matches the published store line). Notes:
+- Current package/app version: **`2.4.0`** across npm, Tauri, Cargo, and
+  lockfile metadata. The published store remains 2.3.0. Notes:
   `docs/releases/2.3.0-app-store-release-notes.md`. v2.1 search/image
   hardening and the v2.2 quality pack are included in this package.
   GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
@@ -24,11 +24,25 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 - **Prior lines:** `2.0.0` remains the prior published Book Scope Alpha store
   baseline. `1.13.0` is a historical published store baseline. `1.14.0` is an
   intermediate source tag / submission line. Do not rewrite those tags.
-- **Active product phase: post-v2.3.0 ship.** Hotfix only for reproduced
-  blockers on published `2.3.0`. Next product work is one optional post-ship
-  slice (honesty / friction / evidence / v2.x practicalization), not bulk
-  review-pool digestion. 縦書き stays deferred. Queue: `docs/current-work.md`.
+- **Active product phase: v2.4 development.** OKF v0.2 compatibility, the
+  compact Book toolbar carry-in, and B-1 chapter Diff are implemented in the
+  tree. Published `2.3.0` remains immutable. 縦書き stays deferred. Queue:
+  `docs/current-work.md`.
   Phase: `docs/roadmap.md`.
+- **OKF review/scaffolds now pin v0.2 commit `3fcbb9f…`.** v0.2 optional
+  provenance/trust/lifecycle/attestation families, including `usage_window`,
+  are accepted as inert optional data.
+  v0.1 bundles, legacy `timestamp`, and body `# Citations` remain best-effort
+  readable; no migration, trust tier, stale evaluation, or attester/executor
+  execution was added. New starter roots emit `okf_version: "0.2"` without
+  fabricated provenance.
+- **Book rows now expose explicit per-chapter change review.** Available rows
+  activate/reuse the normal chapter tab and compare its current editor buffer
+  with that chapter on disk through the existing buffer-vs-disk Diff. Dirty
+  tabs therefore win. Unavailable rows are disabled; the action does not save,
+  apply, create a second buffer, or change Book/OKF persistence. Repeated review
+  requests serialize chapter opening, and only the newest request may enter
+  Diff, so an older slow open cannot reclaim the review target afterward.
 - **v2 Book Scope Alpha spine is implemented in source.** The existing left
   sidebar now switches between Files and Book. Users explicitly select up to
   100 Markdown chapters, keep an app-private per-workspace ordered tree, reopen
@@ -224,11 +238,10 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.3.0` package version from package metadata.
-- **Open main queue:** post-`2.3.0` ship — hotfix only for reproduced blockers on
-  the published store line; otherwise pick one optional honesty / friction /
-  evidence / v2.x practicalization slice. Published `2.3.0` remains closed
-  without a reproduced hotfix; other advisory items stay parked.
+  diagnostics derive the current `2.4.0` package version from package metadata.
+- **Open main queue:** v2.4 verification after OKF v0.2 compatibility and B-1
+  chapter Diff. Published `2.3.0` remains closed without a reproduced hotfix;
+  other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -271,8 +284,8 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
   v1.10.
 - **v1.12 OKF Starter Scaffold is closed and published as `1.12.0`.** Explicit
   Command Palette / folder-context actions create a new uniquely named folder
-  with fixed minimal or book-like Markdown templates (OKF v0.1 Draft pin
-  `ee67a5c`), open `index.md`, and invite a separate explicit review. No Book
+  with fixed minimal or book-like Markdown templates (living pin now OKF v0.2
+  `3fcbb9f…`), open `index.md`, and invite a separate explicit review. No Book
   Scope, auto-repair, or multi-file export. Contract:
   `docs/v1.12-okf-scaffold-design.md`. Release notes:
   `docs/releases/1.12.0-app-store-release-notes.md`. Source tag: `v1.12.0`.
@@ -304,9 +317,10 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
   metadata, and checksum verification also passed. This is local candidate
   evidence, not TestFlight installation or interaction proof. The contract remains
   an explicit, bounded, cancellable, read-only
-  review of one user-selected workspace root or subfolder against OKF v0.1
-  Draft. It does not add startup scan, persistent indexing, automatic repair,
-  chapter ordering, multi-file edit, whole-book export, or Book Scope. Contract:
+  review of one user-selected workspace root or subfolder against OKF v0.2,
+  with best-effort v0.1 reads. It does not add startup scan, persistent
+  indexing, automatic repair, chapter ordering, multi-file edit, whole-book
+  export, or Book Scope. Contract:
   `docs/v1.11-okf-draft-preview-design.md`.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
@@ -552,9 +566,8 @@ Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.3.0`** (matches published store line).
-  Scope includes portable Book recipe, Reader resume, bounded whole-book
-  Reader search, Preview image / EPUB cover repairs, and the v2.2 quality pack.
+- Current development-tree version: **`2.4.0`**. Scope adds OKF v0.2
+  compatibility and B-1 chapter Diff to the v2.3 Book foundation.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.3.0`** (App Review passed and release
   published, user-reported 2026-07-24). Prior store baselines (`2.0.0`,
@@ -997,26 +1010,14 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Use the signed universal App Store pkg candidate recorded in
-   `docs/internal/app-store-candidates/latest.json` for the installed/TestFlight
-   manual gate in `docs/current-work.md` and
-   `docs/releases/2.3.0-app-store-release-notes.md`. Upload remains a separate
-   human-approved action.
-2. Treat **`2.0.0` as published/closed** (store + source tag). Hotfix only for
-   reproduced review or daily-use blockers.
-3. **Park** residual polish, broad evidence matrix, 縦書き, and bulk digestion
-   of external review pools. Do not add another feature train to `2.3.0`
-   unless a manual gate finds a blocker.
-4. Keep v1.9–v1.12 product contracts and Book Scope design rails closed unless a
-   regression reproduces.
-5. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
-   closed unless a gap reproduces.
-6. Local package provenance lives in
-   `docs/internal/app-store-candidates/latest.json`. App Store Connect /
-   TestFlight / Review logs stay outside the repo unless public-safe evidence
-   is recorded.
-7. For Local Assist, keep explicit AI edit transactions
-   (`docs/assist-surface-strategy.md`, `docs/app-store-build.md`).
-8. Do not move published tags or upload/publish `2.3.0` without a separate
-   explicit handoff. Do not reopen the `2.0.0` store lane without a reproduced
-   hotfix.
+1. Run the focused built-app Book/OKF smoke in `docs/smoke-checklist.md` before
+   preparing a v2.4 candidate. Source tests do not prove packaged interaction.
+2. Promote at most one next v2.4 slice after the current verification closes;
+   B-2 display TOC contract is the next candidate, not an automatic train.
+3. Treat published **`2.3.0`** and source tag `v2.3.0` as immutable. Upload,
+   TestFlight, App Review, publication, and a future `v2.4.0` tag remain
+   separate human gates.
+4. Park residual polish, broad evidence matrices, 縦書き, and bulk digestion
+   of external review pools.
+5. Keep Local Assist explicit and diff-reviewable; keep Book order app-private
+   and separate from OKF semantics.

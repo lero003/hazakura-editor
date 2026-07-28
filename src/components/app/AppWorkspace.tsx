@@ -200,7 +200,7 @@ type AppWorkspaceProps = {
   renamingPath: string | null;
   restoreComplete: boolean;
   openFile: () => unknown;
-  openFilePath: (path: string) => unknown;
+  openFilePath: (path: string) => EditorTab | null | Promise<EditorTab | null>;
   openPreviewMarkdownLink: (path: string) => void | Promise<void>;
   openReferenceFile: () => void | Promise<void>;
   openWorkspace: () => unknown;
@@ -228,6 +228,7 @@ type AppWorkspaceProps = {
   referenceCopy: ReferenceCompareCopy;
   referenceNarrowFocus: ReferenceNarrowFocus;
   resolvedTheme: ResolvedTheme;
+  reviewTabAgainstDisk: (tab: EditorTab) => void;
   runSelectedFileCompare: () => void;
   safeEditorCopy: SafeEditorCopy;
   setReferenceColumnPercent: (value: number) => void;
@@ -362,6 +363,7 @@ export function AppWorkspace({
   referenceCopy,
   referenceNarrowFocus,
   resolvedTheme,
+  reviewTabAgainstDisk,
   runSelectedFileCompare,
   safeEditorCopy,
   setReferenceColumnPercent,
@@ -398,6 +400,8 @@ export function AppWorkspace({
   const [bookReaderLoading, setBookReaderLoading] = useState(false);
   const [bookReaderResult, setBookReaderResult] =
     useState<BookScopeReaderLoadResult | null>(null);
+  const chapterReviewRequestRef = useRef(0);
+  const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
   const [bookReaderResume, setBookReaderResume] = useState<{
     relativePath: string;
     scrollRatio: number;
@@ -710,6 +714,25 @@ export function AppWorkspace({
           onOpenFile={(path) => void openWorkspaceFile(path)}
           onOpenWorkspace={() => void openWorkspace()}
           onReadBookScope={() => void openBookScopeReader()}
+          onReviewChapterChanges={(path) => {
+            const request = chapterReviewRequestRef.current + 1;
+            chapterReviewRequestRef.current = request;
+            const openRequest = chapterReviewQueueRef.current.then(() =>
+              Promise.resolve(openFilePath(path)),
+            );
+            chapterReviewQueueRef.current = openRequest.then(
+              () => undefined,
+              () => undefined,
+            );
+            void openRequest.then(
+              (tab) => {
+                if (request === chapterReviewRequestRef.current && tab) {
+                  reviewTabAgainstDisk(tab);
+                }
+              },
+              () => undefined,
+            );
+          }}
           onRevalidateBookScope={revalidateBookScope}
           openFilePaths={workspaceTabMarkers.openFilePaths}
           onClearCompareSelection={() => {

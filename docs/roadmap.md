@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-24 (MAS 2.3.0 published; source tag v2.3.0)
+Last reviewed: 2026-07-28 (v2.4 development lane active)
 
 ## Current Position
 
@@ -13,12 +13,12 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.3.0`** |
+| Package / app version in tree | **`2.4.0`** |
 | GitHub source / local-app tag | **`v2.3.0`** (no binary assets; prior `v2.0.0` immutable) |
 | Published Mac App Store | **`2.3.0`** (user-reported 2026-07-24) |
 | Prior store / source lines | `2.0.0` published historical; `1.13.0` historical; `1.14.0` intermediate source tag |
-| Active product phase | **post-v2.3.0 ship** — hotfix; v2.4 plan ready (not active queue) |
-| Next plan | **`docs/v2.4-plan.md`** — Book depth (chapter Diff / TOC / explainability) |
+| Active product phase | **v2.4 active** — OKF v0.2 compatibility + chapter Diff |
+| Next plan | **`docs/v2.4-plan.md`** — verify current slice, then promote one candidate |
 | Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
 
 North star:
@@ -59,27 +59,26 @@ User direction:
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 published · source tag v2.0.0
 [done]   Mac App Store 2.3.0 published · source tag v2.3.0
-[now]    post-v2.3.0 ship · hotfix; compact toolbar on main for 2.4
-[next]   v2.4 Book depth — plan: docs/v2.4-plan.md (open when ready)
+[done]   v2.4 OKF v0.2 compatibility · compact toolbar · B-1 chapter Diff in source
+[now]    v2.4 local gates + focused manual smoke
+[next]   one promoted v2.4 slice only (candidate: B-2 display TOC contract)
 [parked] residual polish · broad evidence matrix · optional Keep boxes
 [later]  縦書き  ·  v3.x speculative AI only
 ```
 
-## Active Path — post-v2.3 ship
+## Active Path — v2.4
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
 Published `2.3.0` remains hotfix-only. Do not reopen or rewrite that release
 for polish.
 
-### Active (post-ship)
+### Active
 
-1. Hotfix for a reproduced `2.3.0` store / daily-use blocker only.
-2. **v2.4 plan** is ready at `docs/v2.4-plan.md` but is **not** the active
-   implementation queue until a human opens the lane (version bump + one
-   promoted slice). Recommended first feature slice: chapter-level Diff (B-1).
-3. Compact Book toolbar on `main` after `v2.3.0` is carry-in (C-0) for the
-   v2.4 package; do not move the published tag to absorb it.
-4. Do not bulk-digest review packs. 縦書き remains deferred.
+1. **Done in source:** v2.4 version surfaces, OKF v0.2 consumer/scaffold pin,
+   compact Book toolbar carry-in, and B-1 chapter-level Diff.
+2. Verify the active tree before promoting another feature slice.
+3. Published `2.3.0` stays immutable; do not bulk-digest review packs.
+   縦書き remains deferred.
 
 ### Shipped (v2.3 quality pack + portability)
 

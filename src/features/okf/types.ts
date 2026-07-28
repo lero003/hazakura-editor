@@ -10,9 +10,10 @@
  * scaffold assets, smoke scripts, and living docs together.
  */
 
-export const OKF_SPEC_VERSION = "0.1" as const;
-export const OKF_SPEC_COMMIT = "ee67a5c" as const;
-export const OKF_SPEC_LABEL = "OKF v0.1 Draft" as const;
+export const OKF_SPEC_VERSION = "0.2" as const;
+export const OKF_SPEC_COMMIT =
+  "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96" as const;
+export const OKF_SPEC_LABEL = "OKF v0.2" as const;
 
 /** Discovery budgets (Rust owns enforcement; mirrored for docs/tests). */
 export const OKF_BUDGETS = {

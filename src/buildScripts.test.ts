@@ -502,7 +502,9 @@ describe("macOS build scripts", () => {
     expect(packageJson.scripts["smoke:fixtures:v1.11-okf"]).toBe(
       "node scripts/generate-v1.11-okf-smoke.mjs",
     );
-    expect(okfSmokeSource).toContain('OKF_FIXTURE_SPEC_COMMIT = "ee67a5c"');
+    expect(okfSmokeSource).toContain(
+      '"3fcbb9f828c2f23d109c855ee403c3a4c81f3a96"',
+    );
     const outputDirectory = join(
       "src-tauri",
       "target",
@@ -534,16 +536,33 @@ describe("macOS build scripts", () => {
         join(outputDirectory, "japanese-essay", "essays", "body.md"),
         "utf8",
       );
+      const optionalFamilies = readFileSync(
+        join(outputDirectory, "v0.2-optional-families", "result.md"),
+        "utf8",
+      );
 
-      expect(result.specCommit).toBe("ee67a5c");
+      expect(result.specCommit).toBe(
+        "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96",
+      );
       expect(result.bundles).toEqual([
         "valid-root-versioned",
         "broken-and-invalid",
         "japanese-essay",
+        "v0.2-optional-families",
+        "legacy-v0.1",
       ]);
       expect(morning).toContain("type: Chapter");
       expect(morning).toContain("春の朝");
       expect(essay).toContain("桜の季節");
+      expect(optionalFamilies).toContain(
+        "usage_window: { from: 2026-07-01, to: 2026-07-28 }",
+      );
+      expect(optionalFamilies).toContain(
+        "verified: { by: human:fixture-reviewer",
+      );
+      expect(optionalFamilies).toContain(
+        "computation: references/computation.sql",
+      );
     } finally {
       rmSync(outputDirectory, { force: true, recursive: true });
     }
@@ -629,48 +648,48 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `2.3.0` is published",
-        "Current package/app version in the development tree is `2.3.0`",
+        "Current development is on `2.4.0`",
         "The published App Store version is `2.3.0`",
         "latest GitHub source / local-app tag is [v2.3.0]",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `2.3.0`",
-        "Current source / Developer version: `2.3.0`",
+        "Current source / Developer version: `2.4.0`",
         "GitHub source tag: immutable `v2.3.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`2.3.0`",
+        "Current package/app version: **`2.4.0`",
         "Published Mac App Store version: `2.3.0`",
         "Latest GitHub source / local-app tag: `v2.3.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: Post-v2.3.0 ship; next optional slices after published Book quality pack",
-        "Package/app version in tree: **`2.3.0`",
+        "Scope: v2.4 active",
+        "Package/app version in tree: **`2.4.0`",
         "GitHub source / local-app tag: **`v2.3.0`",
       ],
       "docs/development-automation.md": [
-        "Phase: **post-v2.3.0 ship.**",
+        "Phase: **v2.4 development.**",
         "`v2.3.0` marks the quality pack",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree: **`2.3.0`",
+        "Package/app version in tree: **`2.4.0`",
         "Published Mac App Store (last confirmed in docs): **`2.3.0`",
         "GitHub source / local-app tag: **`v2.3.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
-        "Package / app version in tree | **`2.3.0`",
+        "Package / app version in tree | **`2.4.0`",
         "Published Mac App Store | **`2.3.0`",
         "GitHub source / local-app tag | **`v2.3.0`",
-        "Active product phase | **post-v2.3.0 ship**",
+        "Active product phase | **v2.4 active**",
         "Explicit Book Scope + order + one primary edit buffer",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [
         "Status: Implemented; local candidate gate passed; TestFlight interaction pending",
-        "Version 0.1 — Draft",
-        "commit: [`ee67a5c`]",
+        "Version 0.2",
+        "commit: [`3fcbb9f`]",
         "docs/okf-spec-pin.md",
         "`MAX_OKF_MARKDOWN_FILES`",
         "S3 — OKF Review Surface (Feature Complete)",
@@ -681,7 +700,7 @@ describe("macOS build scripts", () => {
       ],
       "docs/okf-spec-pin.md": [
         "OKF Spec Pin And Evolution",
-        "ee67a5c",
+        "3fcbb9f",
         "Co-update Surfaces",
         "scaffoldTemplates/assets",
       ],

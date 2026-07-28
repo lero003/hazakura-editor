@@ -1,4 +1,11 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { createRef, type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppWorkspace } from "./AppWorkspace";
@@ -331,6 +338,7 @@ function makeWorkspaceProps(
     openWorkspacePath: vi.fn(),
     openWorkspaceContextMenu: vi.fn(),
     openWorkspaceFile: vi.fn(),
+    reviewTabAgainstDisk: vi.fn(),
     orphanPathlessDrafts: [],
     outlineTruncated: false,
     recentFolders: [],
@@ -444,6 +452,108 @@ function rerenderWorkspace(
 }
 
 describe("AppWorkspace workspace sidebar collapse", () => {
+  it("opens a Book chapter and starts the existing buffer-vs-disk review", async () => {
+    const dirtyTab = makeTab({
+      contents: "unsaved chapter",
+      id: "/workspace/a.md",
+      name: "a.md",
+      path: "/workspace/a.md",
+    });
+    const openFilePath = vi.fn(async () => dirtyTab);
+    const reviewTabAgainstDisk = vi.fn();
+    renderWorkspace({
+      bookScopeChapterRelativePaths: ["a.md"],
+      bookScopeNodes: [
+        { kind: "document", relativePath: "a.md", children: [] },
+      ],
+      bookScopeChapters: [
+        { name: "a.md", path: "/workspace/a.md", relativePath: "a.md" },
+      ],
+      openFilePath,
+      reviewTabAgainstDisk,
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory", [
+        workspaceEntry("a.md", "/workspace/a.md", "file"),
+      ]),
+    });
+
+    fireEvent.click(screen.getByRole("tab", { name: "Book" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Review changes for a.md" }),
+    );
+
+    await waitFor(() => {
+      expect(openFilePath).toHaveBeenCalledWith("/workspace/a.md");
+      expect(reviewTabAgainstDisk).toHaveBeenCalledWith(dirtyTab);
+    });
+  });
+
+  it("ignores an older chapter review when a newer target opens first", async () => {
+    const firstTab = makeTab({
+      id: "/workspace/a.md",
+      name: "a.md",
+      path: "/workspace/a.md",
+    });
+    const secondTab = makeTab({
+      id: "/workspace/b.md",
+      name: "b.md",
+      path: "/workspace/b.md",
+    });
+    let resolveFirst: (tab: EditorTab) => void = () => {};
+    let resolveSecond: (tab: EditorTab) => void = () => {};
+    const firstOpen = new Promise<EditorTab>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const secondOpen = new Promise<EditorTab>((resolve) => {
+      resolveSecond = resolve;
+    });
+    const openFilePath = vi.fn((path: string) =>
+      path.endsWith("/a.md") ? firstOpen : secondOpen,
+    );
+    const reviewTabAgainstDisk = vi.fn();
+    renderWorkspace({
+      bookScopeChapterRelativePaths: ["a.md", "b.md"],
+      bookScopeNodes: [
+        { kind: "document", relativePath: "a.md", children: [] },
+        { kind: "document", relativePath: "b.md", children: [] },
+      ],
+      bookScopeChapters: [
+        { name: "a.md", path: "/workspace/a.md", relativePath: "a.md" },
+        { name: "b.md", path: "/workspace/b.md", relativePath: "b.md" },
+      ],
+      openFilePath,
+      reviewTabAgainstDisk,
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory", [
+        workspaceEntry("a.md", "/workspace/a.md", "file"),
+        workspaceEntry("b.md", "/workspace/b.md", "file"),
+      ]),
+    });
+
+    fireEvent.click(screen.getByRole("tab", { name: "Book" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Review changes for a.md" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Review changes for b.md" }),
+    );
+
+    await waitFor(() => {
+      expect(openFilePath).toHaveBeenCalledTimes(1);
+      expect(openFilePath).toHaveBeenLastCalledWith("/workspace/a.md");
+    });
+    await act(async () => resolveFirst(firstTab));
+    await waitFor(() => {
+      expect(openFilePath).toHaveBeenCalledTimes(2);
+      expect(openFilePath).toHaveBeenLastCalledWith("/workspace/b.md");
+    });
+    await act(async () => resolveSecond(secondTab));
+    await waitFor(() =>
+      expect(reviewTabAgainstDisk).toHaveBeenCalledWith(secondTab),
+    );
+    expect(reviewTabAgainstDisk).toHaveBeenCalledTimes(1);
+  });
+
   it("exposes and keyboard-navigates the workspace new menu", () => {
     const createOkfScaffoldAt = vi.fn();
     renderWorkspace({

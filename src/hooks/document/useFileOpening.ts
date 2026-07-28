@@ -95,7 +95,7 @@ export function useFileOpening({
         setCompareView(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
-        return true;
+        return existingTab;
       }
 
       setStatus("Opening file...");
@@ -137,11 +137,11 @@ export function useFileOpening({
             ? "Opened with large-file warning"
             : "Opened safely",
         );
-        return true;
+        return nextTab;
       } catch (err) {
         setGlobalError(String(err));
         setStatus("Open failed");
-        return false;
+        return null;
       }
     },
     [

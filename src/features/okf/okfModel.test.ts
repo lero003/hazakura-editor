@@ -20,11 +20,15 @@ import {
 } from "./types";
 
 describe("OKF contract pin", () => {
-  it("pins the reviewed Draft commit and budgets", () => {
-    expect(OKF_SPEC_COMMIT).toBe("ee67a5c");
-    expect(OKF_FIXTURE_SPEC_COMMIT).toBe("ee67a5c");
-    expect(OKF_SPEC_VERSION).toBe("0.1");
-    expect(OKF_SPEC_LABEL).toBe("OKF v0.1 Draft");
+  it("pins the reviewed v0.2 commit and budgets", () => {
+    expect(OKF_SPEC_COMMIT).toBe(
+      "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96",
+    );
+    expect(OKF_FIXTURE_SPEC_COMMIT).toBe(
+      "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96",
+    );
+    expect(OKF_SPEC_VERSION).toBe("0.2");
+    expect(OKF_SPEC_LABEL).toBe("OKF v0.2");
     expect(OKF_BUDGETS.MAX_OKF_WALK_ENTRIES).toBe(2_000);
     expect(OKF_BUDGETS.MAX_OKF_MARKDOWN_FILES).toBe(200);
     expect(OKF_BUDGETS.MAX_OKF_FILE_BYTES).toBe(10 * 1024 * 1024);
@@ -38,6 +42,8 @@ describe("OKF contract pin", () => {
     const names = listOkfFixtureNames();
     for (const required of [
       "valid-root-versioned",
+      "legacy-v0.1",
+      "v0.2-optional-families",
       "versionless-root-index",
       "nested-index-frontmatter",
       "reserved-with-type",
@@ -157,7 +163,7 @@ function analyzeFixture(name: string) {
 describe("analyzeOkfBundle matrix", () => {
   it("accepts a valid root-versioned Japanese bundle", () => {
     const result = analyzeFixture("valid-root-versioned");
-    expect(result.summary.declaredOkfVersion).toBe("0.1");
+    expect(result.summary.declaredOkfVersion).toBe("0.2");
     expect(result.summary.conceptCount).toBe(3);
     expect(result.summary.indexCount).toBe(2);
     expect(result.summary.logCount).toBe(1);
@@ -274,6 +280,24 @@ describe("analyzeOkfBundle matrix", () => {
     expect(result.files[0]?.type).toBe("AcmeWidget");
   });
 
+  it("accepts v0.2 optional families without evaluating trust or execution", () => {
+    const result = analyzeFixture("v0.2-optional-families");
+    expect(result.summary.declaredOkfVersion).toBe("0.2");
+    expect(result.summary.failureCount).toBe(0);
+    expect(
+      result.findings.some((item) => item.code === "root-index-version"),
+    ).toBe(false);
+  });
+
+  it("best-effort consumes legacy v0.1 metadata and citations", () => {
+    const result = analyzeFixture("legacy-v0.1");
+    expect(result.summary.declaredOkfVersion).toBe("0.1");
+    expect(result.summary.failureCount).toBe(0);
+    expect(
+      result.findings.some((item) => item.code === "root-index-version"),
+    ).toBe(false);
+  });
+
   it("reports broken, external, root-relative, extensionless, and escape links", () => {
     const broken = analyzeFixture("broken-links");
     expect(
@@ -343,7 +367,7 @@ describe("analyzeOkfBundle matrix", () => {
     const result = analyzeFixture("japanese-essay");
     expect(result.summary.failureCount).toBe(0);
     expect(result.summary.conceptCount).toBe(2);
-    expect(result.summary.declaredOkfVersion).toBe("0.1");
+    expect(result.summary.declaredOkfVersion).toBe("0.2");
   });
 
   it("preserves partial truncated/cancelled metadata", () => {

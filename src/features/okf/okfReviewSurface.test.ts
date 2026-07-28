@@ -10,9 +10,9 @@ function baseResult(
 ): OkfReviewResult {
   return {
     summary: {
-      specLabel: "OKF v0.1 Draft",
-      specVersion: "0.1",
-      specCommit: "ee67a5c",
+      specLabel: "OKF v0.2",
+      specVersion: "0.2",
+      specCommit: "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96",
       bundleRootLabel: "/ws",
       conceptCount: 0,
       indexCount: 0,

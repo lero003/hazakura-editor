@@ -9,9 +9,9 @@ afterEach(() => {
 
 const result: OkfReviewResult = {
   summary: {
-    specLabel: "OKF v0.1 Draft",
-    specVersion: "0.1",
-    specCommit: "ee67a5c",
+    specLabel: "OKF v0.2",
+    specVersion: "0.2",
+    specCommit: "3fcbb9f828c2f23d109c855ee403c3a4c81f3a96",
     bundleRootLabel: "/ws",
     conceptCount: 1,
     indexCount: 0,
@@ -125,7 +125,7 @@ describe("OkfReviewPanel", () => {
 
     expect(screen.getByRole("heading", { name: /知識フォルダ（OKF）を点検/ })).not.toBeNull();
     expect(
-      screen.getByText(/選んだフォルダが OKF v0.1 Draft として読めるかを確認/),
+      screen.getByText(/選んだフォルダが OKF v0.2 として読めるかを確認/),
     ).not.toBeNull();
     expect(screen.getByText(/ディスク上の保存内容を見ます/)).not.toBeNull();
     expect(screen.getAllByText(/リンク先のファイルがない/).length).toBeGreaterThanOrEqual(1);
@@ -174,7 +174,7 @@ describe("OkfReviewPanel", () => {
       screen.getByText((content, element) => {
         return (
           element?.classList.contains("okf-review-spec") === true &&
-          content.includes("ee67a5c")
+          content.includes("3fcbb9f828c2f23d109c855ee403c3a4c81f3a96")
         );
       }),
     ).not.toBeNull();
