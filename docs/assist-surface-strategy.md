@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-06-10
+Last reviewed: 2026-08-07 (v2.5 conversational UX + Core AI whitelist intent)
 
 ## Purpose
 
@@ -109,19 +109,41 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-Hazakura Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Manual Review Desk entry points are retired from the primary Hazakura Local Assist surface.
+### Conversational document edit (v2.5 target)
 
-The companion may show compact operation feedback so users can
-understand alpha behaviour during real-app smoke.  This should be an
-ephemeral UI trail of app-known events (target acquired, request sent,
-generation started, applied, failed), not raw Foundation Models prompts,
-responses, hidden instructions, provider transcripts, or model
-reasoning.  It must not become a persistent log, diagnostics payload, or
-general chat history.
+v2.5 moves Local Assist from **single-shot generate → immediate buffer apply**
+to **proposal-first multi-turn revision conversation**:
+
+1. Pin a document target on the first user request.
+2. Generate and refine an **unapplied proposal** inside the Assist window.
+3. Apply to the unsaved editor buffer **only** on explicit “文書へ反映”.
+4. Record an AI edit transaction and keep Diff / Review Bar discard.
+
+Design SoT: `docs/local-assist-conversational-edit-ux.md`.
+Plan IDs A-1–A-4: `docs/v2.5-plan.md`.
+
+Until those slices ship, the live product may still apply on generate; do not
+document the new flow as already released.
+
+Local Assist may keep a **bounded, document-scoped revision conversation**
+for the active editing session (in-memory only). It must not become a
+persistent general-purpose chat history, workspace-wide assistant, or
+autonomous agent transcript.
+
+Operation feedback (target acquired, request sent, generation started,
+applied, failed) stays compact and must not be shown as chat turns or as
+raw Foundation Models prompts, hidden instructions, provider transcripts,
+or model reasoning.
+
+Hazakura Local Assist may update the unsaved editor buffer **only** as an
+AI edit transaction after explicit apply (v2.5) or, until migration, the
+current single-shot path: before/after record, source label, no auto-save,
+and a path to Diff / change history. Manual Review Desk entry points remain
+retired from the primary Local Assist surface.
 
 Hazakura Local Assist must not start as:
 
-- a general chat surface
+- a general chat surface (unrelated Q&A, search, workspace free chat)
 - a coding agent
 - a tool-calling automation layer with side effects
 - background project indexing
@@ -139,15 +161,45 @@ A possible shape:
 ```txt
 Hazakura Editor
   -> structured request for selected text / current writing context
+  -> (v2.5) revision packet: original + current proposal + recent user turns
 hazakura-local-assist-helper
-  -> Foundation Models framework
+  -> Foundation Models framework  (primary)
+  -> optional Core AI allowlisted writing model  (later)
 Hazakura Editor
-  <- structured candidate output / edit proposal
-AI edit transaction
-  -> unsaved buffer change, Diff / history remains available
+  <- structured candidate / proposal (no buffer mutate on generate)
+explicit apply
+  -> AI edit transaction on unsaved buffer, Diff / history remains available
 ```
 
 The helper must receive only the text needed for the selected task. It should not receive broad workspace context by default.
+
+## Core AI — Allowlisted Writing Models (later)
+
+Product intent for a **later** lane (not the v2.5 A-1 implementation slice):
+
+- **Why:** Foundation Models (Apple Intelligence path) remains the default
+  brain. When writing-specific quality or specialization is still missing,
+  ship a narrow path to run **curated writing-oriented on-device models**.
+- **What users can do:** download, list, delete, and select for Local Assist
+  **only models on an app-maintained allowlist** (packaging may be platform
+  Core AI / `.aimodel`-class artifacts — exact format is an implementation
+  detail of the C-0 spike).
+- **What users cannot do:** paste arbitrary URLs, load unsigned blobs, add
+  generic “any GGUF”, or fall back to cloud inference when local models fail.
+
+Hard rules:
+
+- Allowlist entries are versioned, digest- or signature-verified, size-capped.
+- Network is for **catalog download only**; generation stays on-device.
+- Selecting a Core AI model does not weaken proposal-first apply consent,
+  Diff / discard, or no auto-save.
+- App Store vs Developer disclosure must stay honest about download size and
+  on-device-only claims.
+- Do not build a model marketplace UI or provider-add surface.
+
+Sequence: C-0 design spike → C-1 lifecycle → C-2 Assist selection
+(`docs/v2.5-plan.md`). Do not start C-1 until conversational apply (A-3) is
+stable enough that a second model backend will not fork two UX stories.
 
 Hazakura Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
 
@@ -182,11 +234,21 @@ This strategy is not approval for:
 - generic agent orchestration
 - arbitrary local HTTP providers
 - MCP integration
-- provider plugins
+- provider plugins or arbitrary model URL loaders
 - multiple agent sessions
 - broad workspace indexing
 - background assist tasks
 - hidden or irreversible AI output application
+- persistent general-purpose chat databases
 - Git, terminal, LSP, debugger, package manager, or build integration
 
+Allowlisted Core AI writing models (later) are a **narrow exception** for
+curated on-device packages only; they are not a generic model marketplace.
+
 If a future proposal needs any of those behaviors, it must receive a fresh product and security boundary review before implementation.
+
+## Active Lane Pointer
+
+For the current implementation queue, start at `docs/current-work.md` and
+`docs/v2.5-plan.md`. Do not treat older alpha ship notes in this file as the
+active slice list.

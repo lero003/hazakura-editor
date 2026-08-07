@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.4 active — OKF v0.2 compatibility + chapter Diff
+Scope: v2.5 active planning — Local Assist conversational edit + polish
 Authority: High
-Last reviewed: 2026-07-29 (book-like starter expanded; local pkg refreshed)
+Last reviewed: 2026-08-07 (v2.4 closed; v2.5 lane opened in docs)
 
 ## Purpose
 
@@ -11,92 +11,64 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.4 is the active development lane.** Its first completed compatibility
-slice pins OKF v0.2 while retaining best-effort v0.1 reads. B-1 adds explicit
-per-chapter buffer-vs-disk review through the existing Diff surface. Neither
-slice rewrites source, adds background indexing, or executes attestation data.
+**v2.5 is the active product lane.** Primary theme: move Hazakura Local Assist
+from single-shot buffer apply to **proposal-first, multi-turn document edit
+conversation**, without becoming a general chat or agent.
 
-- Package/app version in tree: **`2.4.0`**.
-- Published Mac App Store (last confirmed): **`2.3.0`** (user-reported
-  2026-07-24).
-- GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
-  checkpoint `v2.0.0` remains immutable.
-- Store notes: `docs/releases/2.3.0-app-store-release-notes.md`.
-- Source tag notes: `docs/releases/2.3.0-source-tag.release.md`.
-- v2.4 store-copy candidate: `docs/releases/2.4.0-app-store-release-notes.md`
-  (local package only; not upload or publication evidence).
-- Queue design pools (advisory): `docs/v2-external-review-synthesis-2026-07-18.md`,
-  `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md`.
+- Package/app version in tree: **`2.4.0`** (bump to `2.5.0` when opening the
+  first implementation slice for the v2.5 store line).
+- Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
+  hotfix only for reproduced blockers.
+- Plan SoT: `docs/v2.5-plan.md`
+- Conversational UX design: `docs/local-assist-conversational-edit-ux.md`
+- Assist / Core AI strategy: `docs/assist-surface-strategy.md`
 
 ## Lane Timeline
 
 | Lane | Status | Notes |
 |------|--------|--------|
-| **v2.0** | **Shipped** | Book Scope Alpha; source tag `v2.0.0` |
-| **v2.1–v2.2** | Folded into published `2.3.0` | Search, image load, quality pack |
-| **v2.3** | **Shipped** MAS + source tag `2.3.0` | Portable recipe + Reader resume + image/export repair |
-| **v2.4** | **Active** | OKF v0.2 compatibility + compact toolbar + B-1 chapter Diff |
-| **縦書き** | Later | After horizontal foundation |
+| **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
+| **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
+| **v2.5** | **Active** | Local Assist conversational edit + quiet polish |
+| **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
+| **縦書き** | Parked | After AI milestone progress; not v2.5 |
+| **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.5 |
 
-## Active Queue — v2.4
+## Active Queue — v2.5
 
-### Completed in the active tree
+### Immediate next (promote one at a time)
 
-1. **OKF v0.2 compatibility:** pin `3fcbb9f…`; recognize v0.2 optional
-   trust/lifecycle/attestation families as inert data; retain best-effort v0.1,
-   legacy `timestamp`, and `# Citations`; scaffolds now emit 0.2 without
-   invented provenance. The book-like starter opens with a visible four-part
-   chapter arc plus overview, character, and setting notes.
-2. **C-0 compact Book toolbar:** carried into the 2.4 development line from
-   post-tag `main`.
-3. **B-1 chapter Diff:** available Book rows can explicitly review the live
-   editor buffer against that chapter on disk. Existing dirty tabs win; unopened
-   chapters use the normal tab-open path. Unavailable rows stay disabled.
+1. **A-1 — Proposal-first generation (P1)**
+   Split generate from buffer apply. Stream into a Local Assist proposal card.
+   Body unchanged until a later explicit apply slice. Design:
+   `docs/local-assist-conversational-edit-ux.md` § Implementation Phases.
+2. Optional interleave: **R-1 — text reference uses `previewFontSize`**
+   CSS / settings wiring only; no new preference control.
+3. Then **A-2 → A-3 → A-4** (pin + multi-turn → explicit apply → UI polish).
 
-### Shipped in `2.3.0` (closed)
+### Do not start yet
 
-1. **Portable Book recipe (X-3):** explicit export/import of relative-path JSON
-   (`hazakura-book-recipe` v1). Import is always an editable draft until Save.
-   Never auto-loaded; not an OKF claim.
-2. **Reader reading position (X-2 rest):** app-private per-workspace chapter +
-   scroll ratio resume for whole-book Reader (max 8 workspaces).
-3. Prior v2.1–v2.2 quality (search, chapter nav, export reveal, Assist honesty,
-   preflight hints).
-4. **Preview image fallback** for nested WKWebView non-intersection + data-URL
-   commit so images do not flash-then-blank.
-5. **Explicit EPUB cover** selection per export (no first-image inference).
-6. **Recent folder sandbox restore** via per-workspace security-scoped bookmark.
-7. **Reader search shortcut/navigation** (`Command+F` / Enter while Reader open).
-8. **e-book find-result sync** into right-pane e-book and Reading Focus.
+- Core AI download / model catalog (needs **C-0** design spike after A-1–A-3)
+- anydoc dependency or Import Assist expansion
+- 縦書き
+- B-2 display TOC as a parallel main queue (residual only if daily friction)
+- Package bump + store upload without human gate
 
-### Immediate next
-
-1. Commit the coherent v2.4 tree and rebuild the signed local App Store
-   candidate so package provenance is commit-addressable, then use the
-   human-controlled upload path for focused TestFlight Book/OKF interaction
-   smoke. Local signing and package proof do not establish upload, Apple
-   processing, installation, or launch.
-2. After B-1 is accepted in the installed build, promote at most one next v2.4
-   slice from `docs/v2.4-plan.md`; B-2 display TOC contract is the next candidate.
-3. Do not add cover cropping/editing, 縦書き, Compare Center, static lint, or
-   auto-load recipes.
-4. Do not move published tags (`v2.0.0`, `v2.3.0`, …) or attach binary assets
-   without a separate explicit handoff.
-
-### Hotfix only (published `2.3.0`)
+### Hotfix only (published `2.4.0`)
 
 - Reproduced blocker from App Review, TestFlight, or daily use.
-- Do not reopen `2.0.0` / intermediate lines for drive-by polish.
+- Do not reopen `2.4.0` for drive-by polish.
 
 ## Parked Queues (do not drive the main lane)
 
-- Editable display TOC (X-5); first-run coach (Q-2).
-- Tab overflow; full a11y matrix; bulk external-review backlog digestion.
-- 縦書き (after horizontal foundation stays stable).
+- 縦書き (after Local Assist depth + horizontal foundation stay stable).
+- anydoc / broad Office import (investigation memo only until demand).
+- Editable display TOC (X-5); first-run coach (Q-2); tab overflow; full a11y matrix.
+- Compare Center; static lint; mode-pill rainbow.
 
 ## Next Human Gates
 
-1. Published store + source tag `2.3.0` remain closed unless a hotfix is needed.
-2. Run packaged/manual Book and OKF smoke; this source work does not prove
-   signing, upload, TestFlight, App Review, or publication.
-3. Decide whether B-2 is promoted only after the current slice is verified.
+1. Confirm first implementation slice is **A-1** (or R-1 if only polish is wanted).
+2. When opening implementation: bump package surfaces to `2.5.0` in the same
+   coherent slice family, not as a drive-by alone.
+3. Do not move published tags or attach binary assets without explicit handoff.

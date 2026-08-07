@@ -1,24 +1,21 @@
 # Handoff
 
 Status: Operational
-Scope: v2.4 active — OKF v0.2 + B-1 chapter Diff
+Scope: v2.5 active planning — Local Assist conversational edit
 Authority: Medium
-Last reviewed: 2026-07-29
+Last reviewed: 2026-08-07
 
 ## Current State
 
-- Package/app version in tree: **`2.4.0`**.
-- GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
-  checkpoint `v2.0.0` remains immutable.
-- Published Mac App Store (last confirmed in docs): **`2.3.0`**
-  (user-reported 2026-07-24).
-- **Active phase: v2.4 development.** Published `2.3.0` remains immutable.
-  A signed local App Store/TestFlight pkg exists, but it predates the current
-  body-H1 and candidate-provenance hardening and must be held. Its build, path,
-  SHA-256, base source commit, and smoke state live only in
-  `docs/internal/app-store-candidates/latest.json`. Commit the coherent quality
-  slice and rebuild before upload. Upload, Apple processing, TestFlight
-  installation/launch, App Review, and publication are not claimed.
+- Package/app version in tree: **`2.4.0`** (bump to `2.5.0` when first v2.5
+  implementation slice opens).
+- Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
+  hotfix only. Prior tags remain immutable.
+- **Active phase: v2.5.** Primary work is Local Assist proposal-first
+  multi-turn document edit (A-1 first), not more Book depth. Plan:
+  `docs/v2.5-plan.md`. Design: `docs/local-assist-conversational-edit-ux.md`.
+  Optional polish: text reference font size (R-1). Core AI allowlisted writing
+  models and 縦書き / anydoc stay later or parked.
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -354,32 +351,30 @@ Last reviewed: 2026-07-29
 
 ## Next For Agents
 
-1. Finish/inspect v2.4 automated gates and run focused Book/OKF manual smoke.
-2. If accepted, promote at most one next candidate from `docs/v2.4-plan.md`
-   (B-2 display TOC contract is next).
-3. Keep Qwen mode pills / static lint / Compare Center and persistent indexing
-   out unless product explicitly accepts them.
-4. Do not move published tags (`v2.0.0`, `v2.3.0`, …), upload, or attach
-   release assets without a separate explicit handoff.
-5. On security/path/AI/multi-file surfaces, re-read
-   `docs/security-boundary.md` and the v2 design boundary section.
+1. Read `docs/current-work.md` and `docs/v2.5-plan.md`. First implementation
+   slice is **A-1** (generate without buffer apply) unless human picks R-1 only.
+2. Use `docs/local-assist-conversational-edit-ux.md` as Assist UX design SoT;
+   do not invent a general chat product.
+3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
+   lint, and persistent indexing out of the active slice.
+4. Do not move published tags, upload, or attach release assets without a
+   separate explicit handoff.
+5. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
+   `docs/assist-surface-strategy.md`.
 
 ## Key Paths
 
 | Need | Path |
 |------|------|
 | Next slice | `docs/current-work.md` |
-| v2.4 plan | `docs/v2.4-plan.md` |
+| v2.5 plan | `docs/v2.5-plan.md` |
+| Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |
+| Assist strategy | `docs/assist-surface-strategy.md` |
 | Phase / path | `docs/roadmap.md` |
-| v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
+| Closed v2.4 plan | `docs/v2.4-plan.md` |
+| v2 Book design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
 | Status truth | `docs/current-status.md` |
 | OKF pin | `docs/okf-spec-pin.md` |
-| v2.3 store notes | `docs/releases/2.3.0-app-store-release-notes.md` |
-| v2.3 source tag | `docs/releases/2.3.0-source-tag.release.md` |
-| v2.0 store notes | `docs/releases/2.0.0-app-store-release-notes.md` |
-| v2.0 source tag | `docs/releases/2.0.0-source-tag.release.md` |
-| Qwen UX triage | `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` |
-| Parked refinement | `docs/v1.13-plus-refinement-roadmap.md` |
 | Smoke | `docs/smoke-checklist.md` |
 | App Store build | `docs/app-store-build.md` |
 

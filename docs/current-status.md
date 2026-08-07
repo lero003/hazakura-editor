@@ -3,32 +3,27 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-29 (book-like starter expanded; local pkg refreshed)
+Last reviewed: 2026-08-07 (v2.4 shipped; v2.5 Assist lane opened in docs)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.4.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. The published store remains 2.3.0. Notes:
-  `docs/releases/2.3.0-app-store-release-notes.md`. v2.1 search/image
-  hardening and the v2.2 quality pack are included in this package.
-  GitHub source / local-app tag: **`v2.3.0`** (no binary assets). Prior
-  checkpoint `v2.0.0` remains immutable.
-- **Published Mac App Store version: `2.3.0`.** App Review passed and the
-  release was published (user-reported 2026-07-24): portable Book recipe,
-  whole-book Reader resume, Preview image / EPUB cover repairs, recent-folder
-  sandbox restore, and the folded v2.1–v2.2 quality pack. Release notes:
-  `docs/releases/2.3.0-app-store-release-notes.md`. Do not reopen without a
-  reproduced hotfix. Local package provenance lives in ignored
+  lockfile metadata. **Published Mac App Store (user direction 2026-08-07):
+  `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
+  include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
+  Do not rewrite tags. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **Prior lines:** `2.0.0` remains the prior published Book Scope Alpha store
-  baseline. `1.13.0` is a historical published store baseline. `1.14.0` is an
-  intermediate source tag / submission line. Do not rewrite those tags.
-- **Active product phase: v2.4 development.** OKF v0.2 compatibility, the
-  compact Book toolbar carry-in, and B-1 chapter Diff are implemented in the
-  tree. Published `2.3.0` remains immutable. 縦書き stays deferred. Queue:
-  `docs/current-work.md`.
-  Phase: `docs/roadmap.md`.
+- **Active product phase: v2.5.** Local Assist conversational document-edit UX
+  + quiet polish (e.g. text-reference font size). Design:
+  `docs/local-assist-conversational-edit-ux.md`. Plan: `docs/v2.5-plan.md`.
+  Queue: `docs/current-work.md`. Phase: `docs/roadmap.md`. Package bump to
+  `2.5.0` waits for the first implementation slice of that line.
+- **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
+  compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
+  items (B-2 display TOC, …) are parked, not the v2.5 main queue.
+- **縦書き** stays deferred **behind** Assist depth. **anydoc** is evaluation
+  only. **Core AI** allowlisted writing models are planned later (not A-1).
 - **OKF review/scaffolds now pin v0.2 commit `3fcbb9f…`.** v0.2 optional
   provenance/trust/lifecycle/attestation families, including `usage_window`,
   are accepted as inert optional data.
@@ -1013,18 +1008,16 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Commit the coherent v2.4 tree and rebuild the signed local candidate so its
-   recorded source commit identifies the packaged contents. Only then upload
-   through the human-controlled App Store Connect / Transporter path and run
-   the focused installed TestFlight Book/OKF smoke in
-   `docs/smoke-checklist.md`. Local package and signature checks do not prove
-   upload, Apple processing, installation, or launch.
-2. Promote at most one next v2.4 slice after the current verification closes;
-   B-2 display TOC contract is the next candidate, not an automatic train.
-3. Treat published **`2.3.0`** and source tag `v2.3.0` as immutable. Upload,
-   TestFlight, App Review, publication, and a future `v2.4.0` tag remain
-   separate human gates.
-4. Park residual polish, broad evidence matrices, 縦書き, and bulk digestion
-   of external review pools.
-5. Keep Local Assist explicit and diff-reviewable; keep Book order app-private
-   and separate from OKF semantics.
+1. Start the v2.5 implementation queue from `docs/current-work.md`: first
+   product slice is **A-1** (Local Assist proposal-first generation without
+   buffer apply). Design SoT:
+   `docs/local-assist-conversational-edit-ux.md`. Optionally interleave **R-1**
+   (text reference font size).
+2. When opening implementation, bump package surfaces to **`2.5.0`** as an
+   explicit step of that lane — not a drive-by alone.
+3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
+   reopen Book-depth trains (B-2+) as the main queue.
+4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
+   and bulk digestion of external review pools until promoted.
+5. Keep Local Assist on-device, explicit, and diff-reviewable; keep Book order
+   app-private and separate from OKF semantics.

@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Product direction and non-goals
 Authority: High
-Last reviewed: 2026-06-28 (v1 product message)
+Last reviewed: 2026-08-07 (v2.5 Assist direction note)
 
 ## Concept
 
@@ -62,6 +62,8 @@ AI支援は、Safe Editor本体に混ぜ込まず、明示的に開く補助面�
 [Assist Surface Strategy](assist-surface-strategy.md) は、既存のExternal Agent Workbenchを分離可能な境界に置き、Apple Foundation ModelsベースのHazakura Local Assistへ切り替えられるようにするための設計方針である。App Store build / developer build の分離は [App Store Build](app-store-build.md) と `assist-surface-strategy.md` を正本とする。以前の詳細なLocal Assist計画は `docs/archive/planning/` に履歴として保存している。
 
 Hazakura Local Assistは、対応Mac上のオンデバイスモデルを使う、利用可否のあるプレビュー機能である。汎用AI platform、provider plugin、任意コマンド実行、agent自動適用ではない。L Mode / Safe Editorでの執筆を補助する外出しWriting Companionとして扱い、明示的なユーザー依頼、AI edit transaction、Diff / change historyでの確認、no auto-save、no network fallbackを守る。
+
+v2.5 以降の方向は、単発の即時本文反映から **対象を固定した編集会話（変更案を育ててから明示反映）** へ移すことである。一般チャットにはしない。詳細は `docs/local-assist-conversational-edit-ux.md` と `docs/assist-surface-strategy.md`。将来の **Core AI** は文章特化のオンデバイスモデルを **ホワイトリスト形式で DL / 管理 / 利用**する道として検討するが、任意モデルランタイムやクラウド推論の逃げ道にはしない。
 
 ## Product Principle
 

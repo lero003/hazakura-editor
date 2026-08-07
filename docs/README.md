@@ -3,23 +3,25 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-28 (v2.4 development lane active)
+Last reviewed: 2026-08-07 (v2.5 Assist lane; v2.4 closed)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **Active phase is
-v2.4 development** while Mac App Store `2.3.0` and source tag `v2.3.0` remain
-immutable. Start with `current-work.md` and `roadmap.md`.
+v2.5** (Local Assist conversational edit) while published `2.4.0` remains
+hotfix-only. Start with `current-work.md` and `roadmap.md`.
 
 ## Current Canonical Docs
 
 - `product-brief.md`: product direction, users, non-goals, and assist direction.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
-- `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: **v2.4 active queue** (OKF v0.2 + B-1 chapter Diff).
-- `roadmap.md`: **v2.4 active**, published `2.3.0` boundary.
-- `v2.4-plan.md`: **v2.4 Book depth plan** (B-1 implemented; later slices one at a time).
+- `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
+- `local-assist-conversational-edit-ux.md`: **v2.5 Local Assist conversation design SoT**.
+- `current-work.md`: **v2.5 active queue** (A-1 proposal-first Assist first).
+- `roadmap.md`: **v2.5 active**, published `2.4.0` boundary.
+- `v2.5-plan.md`: **v2.5 plan** (Assist spine + R-1 polish + later Core AI).
+- `v2.4-plan.md`: **closed** Book depth plan (historical for `2.4.0`).
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md`: Qwen UX pack triage (advisory; L Mode corrections; not the active queue).
 - `current-status.md`: current implementation and release state.
@@ -50,10 +52,13 @@ immutable. Start with `current-work.md` and `roadmap.md`.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.4 active** + parked residual
-- `current-work.md` — OKF v0.2 + B-1 verification queue
-- `v2.4-plan.md` — active product-line plan; promote later slices one at a time
-- `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 design SoT
+- `roadmap.md` — **v2.5 active** + parked residual (縦書き / anydoc / Book leftovers)
+- `current-work.md` — A-1 Local Assist proposal-first queue
+- `v2.5-plan.md` — active product-line plan; promote one slice at a time
+- `local-assist-conversational-edit-ux.md` — conversational Assist design SoT
+- `assist-surface-strategy.md` — Assist + later Core AI whitelist intent
+- `v2.4-plan.md` — closed Book depth plan
+- `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 Book design SoT
 - `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md` — Qwen UX proposal triage (advisory)
 - `okf-spec-pin.md` + closed v1.10 / v1.11 / v1.12 contracts

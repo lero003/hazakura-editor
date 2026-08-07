@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-28 (v2.4 development lane active)
+Last reviewed: 2026-08-07 (v2.5 lane; v2.4 shipped)
 
 ## Current Position
 
@@ -13,125 +13,107 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.4.0`** |
-| GitHub source / local-app tag | **`v2.3.0`** (no binary assets; prior `v2.0.0` immutable) |
-| Published Mac App Store | **`2.3.0`** (user-reported 2026-07-24) |
-| Prior store / source lines | `2.0.0` published historical; `1.13.0` historical; `1.14.0` intermediate source tag |
-| Active product phase | **v2.4 active** — OKF v0.2 compatibility + chapter Diff |
-| Next plan | **`docs/v2.4-plan.md`** — verify current slice, then promote one candidate |
-| Parked (not the main queue) | residual polish, broad distribution evidence matrix, optional Keep boxes |
+| Package / app version in tree | **`2.4.0`** (bump to `2.5.0` when v2.5 implementation opens) |
+| Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
+| Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
+| Active product phase | **v2.5** — Local Assist conversational edit + quiet polish |
+| Next plan | **`docs/v2.5-plan.md`** |
+| Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
+| Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
 
 North star:
 
 > Markdownで書き、本として読み、ローカルAIで整える。
 
-v2 lens:
+v2 lens (Book):
 
 > 明示的に選んだ Markdown 群を一冊として読み・整え・書き出す。
 > source は個々の Markdown。indexing / auto-apply / IDE 化はしない。
 
+v2.5 lens (Assist):
+
+> 対象文章を固定し、オンデバイスで変更案を会話し、納得した案だけを明示反映する。
+> 一般チャット・エージェント自動適用・network fallback にはしない。
+
 Queue of record: `docs/current-work.md`.
-v2 design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-External review pools (advisory, not the queue):
-`docs/v2-external-review-synthesis-2026-07-18.md` (four-agent),
-`docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage; L Mode corrections).
+v2 Book design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+Assist strategy: `docs/assist-surface-strategy.md`.
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
-## Phase Decision (2026-07-24)
+## Phase Decision (2026-08-07)
 
 User direction:
 
-1. **Mac App Store `2.3.0` is published** (user-reported 2026-07-24). Treat as
-   closed store line; hotfix only for reproduced blockers.
-2. **GitHub source tag `v2.3.0`** marks the quality pack + recipe + resume
-   checkpoint (no binary assets). Prior `v2.0.0` remains immutable.
-3. **Next work is not a bulk catch-up** of external review pools. Pick one
-   verifiable slice (honesty UX, evidence, or v2.x practicalization) when
-   ready. Qwen mode-pill / static-lint / Compare Center designs stay triaged
-   out unless product explicitly accepts them.
-4. **Closed on the store + source line:** portable Book recipe, Reader resume,
-   folded v2.1–v2.2 quality pack (bounded search, Preview image hardening,
-   chapter nav, export reveal, Assist honesty, preflight hints), explicit EPUB
-   cover, recent-folder sandbox restore.
+1. **Mac App Store / product line `2.4.0` is shipped.** Treat as closed store
+   line; hotfix only for reproduced blockers. Do not reopen for polish trains.
+2. **Next work is v2.5+**, not more Book-depth by default. Primary theme is
+   **Local Assist brush-up**: conversational document-edit UX based on the
+   implementation request now captured in
+   `docs/local-assist-conversational-edit-ux.md`.
+3. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
+4. **Core AI** is a planned capability: allowlisted **writing-specialized**
+   on-device models (download / manage / use), not arbitrary runtimes. After
+   conversational Assist stabilizes.
+5. **anydoc** stays evaluation-only until product demand is clear.
+6. **Small polish** such as text-reference font size following Preview may
+   interleave; it does not replace the Assist spine.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
-[done]   Mac App Store 2.0.0 published · source tag v2.0.0
-[done]   Mac App Store 2.3.0 published · source tag v2.3.0
-[done]   v2.4 OKF v0.2 compatibility · compact toolbar · B-1 chapter Diff in source
-[now]    v2.4 local candidate + commit-addressable rebuild + installed TestFlight Book/OKF smoke
-[next]   one promoted v2.4 slice only (candidate: B-2 display TOC contract)
-[parked] residual polish · broad evidence matrix · optional Keep boxes
-[later]  縦書き  ·  v3.x speculative AI only
+[done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 published (tags immutable)
+[done]   v2.4 OKF v0.2 · compact toolbar · B-1 chapter Diff
+[now]    v2.5 Local Assist conversational edit (A-1 first) + optional R-1 polish
+[next]   A-2 pin + multi-turn → A-3 explicit apply → A-4 UI
+[later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
+[parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 
-## Active Path — v2.4
+## Active Path — v2.5
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.3.0` remains hotfix-only. Do not reopen or rewrite that release
-for polish.
+Published `2.4.0` remains hotfix-only.
 
-### Active
+### Active spine
 
-1. **Done in source:** v2.4 version surfaces, OKF v0.2 consumer/scaffold pin,
-   compact Book toolbar carry-in, and B-1 chapter-level Diff.
-2. Verify the active tree before promoting another feature slice.
-3. Published `2.3.0` stays immutable; do not bulk-digest review packs.
-   縦書き remains deferred.
+1. **A-1** Proposal-first generation (no immediate buffer apply)
+2. **A-2** Pinned target + multi-turn revision
+3. **A-3** Explicit apply into unsaved buffer + existing Review Bar
+4. **A-4** Conversation UI / i18n / a11y polish
+5. **R-1** (optional) Text reference uses `previewFontSize` like Preview
+
+Plan detail: `docs/v2.5-plan.md`.
+
+### Shipped (v2.4 Book depth)
+
+1. OKF v0.2 consumer/scaffold pin; inert optional provenance families
+2. Compact Book toolbar
+3. B-1 chapter-level Diff (buffer vs disk, no second editor buffer)
+4. Book-like starter shape and related quality carry-in
 
 ### Shipped (v2.3 quality pack + portability)
 
-1. **Done / published:** portable Book recipe export/import (draft-until-Save).
-2. **Done / published:** whole-book Reader chapter + scroll resume (app-private).
-3. **Done / published:** bounded whole-book Reader search; Preview image
-   hardening; Reader chapter nav; export Finder reveal; Assist honesty;
-   preflight fix hints; e-book find-result sync.
-4. **Done / published:** explicit EPUB cover selection; recent-folder
-   security-scoped bookmark restore.
-5. **Done:** Mac App Store publication of `2.3.0` (user-reported 2026-07-24)
-   and source tag `v2.3.0` (no binary assets).
+Portable Book recipe, Reader resume, bounded search, Preview image hardening,
+explicit EPUB cover, recent-folder sandbox restore, Assist honesty, etc.
+Closed on store + source as the `2.3.0` / `2.4.0` lineage history.
 
 ### Shipped (v2.0 Book Scope Alpha)
 
-1. **Done: implementation contract + minimal multi-file spine.**
-   Existing-left-sidebar Files / Book view, explicit bounded Markdown scope,
-   app-private order, unavailable retention, one primary editable buffer, and
-   no background indexing.
-2. **Done: explicit chapter suggestion draft.** One user-triggered, bounded OKF
-   snapshot proposes root and linked nested `index.md` local link order plus
-   remaining readable `.md` files. The checkbox draft is never saved
-   automatically; base OKF compatibility remains separate from Hazakura Book
-   semantics.
-3. **Done: Whole-book reading.** A read-only scroll reader uses scope order,
-   live dirty buffers, per-chapter image bases, and visible partial-load
-   notices without creating a second editable buffer.
-4. **Done: Book export + preflight** — explicit Current file / Whole book for
-   EPUB/PDF, ordered multi-chapter output, and bounded missing
-   chapter/image/heading/metadata checks before destination selection.
-5. **Done: UX quieting + Help + version `2.0.0`.** Settled Book view
-   presentation, Help **Books and knowledge folders**, store notes.
-6. **Done: packaging gate** — App Store publication + source tag `v2.0.0`
-   (user-reported / cut 2026-07-21).
+Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 
-### Parked (resume only if friction or a release needs them)
+### Parked (resume only if friction or a later milestone)
 
 | Bucket | Examples | When to touch |
 |--------|----------|----------------|
-| Residual polish | Tab overflow, nav “back”, status TTL, dep cadence | Reproduced daily friction or cheap adjacent change |
-| Distribution evidence | Full TestFlight / VoiceOver / narrow / long-doc matrix | Release gate, regression, or user-reported gap |
-| Optional Keep boxes (`v1.15+`) | Theme pools in `docs/v1.13-plus-refinement-roadmap.md` | Enough unrelated Keeps justify a box; not a train before v2 |
-| Published 2.3.0 hotfix | App Review / daily-use blocker | Only when reproduced |
-| Prior published 2.0.0 hotfix | Historical store line | Only when that line still matters |
-| External review candidates | Engineering hygiene, journeys, portable recipe, CI | Promote one slice at a time from `docs/v2-external-review-synthesis-2026-07-18.md` |
-| Qwen UX candidates | Assist honesty, first-run story, export progress, tree bounds; not mode pills / static lint by default | Promote only after triage in `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` |
+| 縦書き | Vertical reading / export | After Assist depth and horizontal Book stay stable |
+| anydoc | Office → Markdown import library | After written evaluation + real import demand |
+| Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
+| Residual polish | Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
+| Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
+| Core AI models | Allowlisted `.aimodel` catalog | After A-1–A-3; start with C-0 design only |
+| Published 2.4.0 hotfix | App Review / daily-use blocker | Only when reproduced |
 
-Packaging-gate candidates distilled from the same reviews (smoke card, JP
-export visual check, can/cannot copy, Book-order storage disclosure, Book
-VoiceOver minimum) live under **§3.1** of that synthesis. They support the
-human gate above; they are not a parallel implementation queue.
-
-### Hard rails (v2 does not lift these)
+### Hard rails (v2.x does not lift these)
 
 - Safe Editor primary; Markdown/text source canonical per file.
 - No Git / LSP / general terminal / plugins / arbitrary command execution.
@@ -139,27 +121,11 @@ human gate above; they are not a parallel implementation queue.
 - No auto-apply / auto-save / auto multi-file rewrite.
 - No second simultaneous editable buffer as the default model.
 - App Store lane still excludes Agent Workbench / external CLI agents.
+- Local Assist: no network inference fallback, no tool calling side effects,
+  no general chat DB, no workspace-wide agent editing.
+- Core AI (when added): **allowlist only** — no arbitrary model URL, no cloud
+  inference fallback disguised as “local.”
 - Published tags and assets stay immutable.
-
-## v2 Entry Status
-
-| Criterion | Status (2026-07-18) |
-|-----------|---------------------|
-| v1.10 single-document structure shared by Outline / e-book / export | **Met** |
-| Structure edits Undo / dirty / explicit | **Met** (source) |
-| v1.11 OKF preview bounded / explicit / no persistent index | **Met** |
-| v1.12 starter scaffold explicit / no auto-repair | **Met** (published) |
-| Broad distribution-confidence matrix complete | **Parked** — not blocking v2 start |
-| Pre-v2 multi-file value essay | **Deferred to Help at ship** |
-| Book Scope UI fully converged before any code | **Softened** — pick a first direction and iterate in slices |
-| Explicit Book Scope + order + one primary edit buffer | **Met in source** — first Alpha spine |
-| OKF pin vs Hazakura Book semantics kept separate | **In force** during implementation |
-| Help / feature explanation expansion | **v2 ship polish**, not a start gate |
-
-Historical gate wording remains in
-`docs/v1.8-plus-product-review-roadmap.md` and
-`docs/v1.13-plus-refinement-roadmap.md` for context. **Active go decision:**
-v2 development is open.
 
 ## Product Boundary
 
@@ -175,7 +141,8 @@ These boundaries stay active across roadmap changes:
   workspace root only, one active session, no restore, no auto-apply.
 - The standalone Review Desk screen is retired. Local Assist and other
   AI-assist paths stay explicit, Diff-reviewable, and never auto-save or
-  auto-apply without user action.
+  auto-apply without user action. **v2.5 moves apply later in the flow**
+  (proposal conversation first), not away from explicit consent.
 - Workspace file operations stay bounded to the selected workspace and
   must not become a full file manager.
 
@@ -191,80 +158,73 @@ These boundaries stay active across roadmap changes:
 | v1.8–v1.12 | Trust → clarity → structure → OKF review → scaffold | Bridge **complete** |
 | v1.13–v1.14 | Refinement Keep boxes | v1.13 published; v1.14 intermediate |
 | **v2.0** | Multi-file Book Scope Alpha + OKF multi-file feel | **Closed / published** |
-| **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into published 2.3.0** |
+| **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into 2.3+** |
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
-| **v2.4** | Book depth (chapter Diff / TOC / explainability) | **Plan ready** — `docs/v2.4-plan.md` |
-| 縦書き | Vertical reading / export layer | After Book foundation stays stable |
-| v3.x | Speculative local-AI re-evaluation only | Speculative |
+| **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
+| **v2.5** | Local Assist conversational edit + quiet polish | **Active** — `docs/v2.5-plan.md` |
+| Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
+| 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
+| v3.x | Broader local-AI re-evaluation if still needed | Speculative |
 
 Bridge rationale: `docs/v1.8-plus-product-review-roadmap.md`.
 Historical phase prose:
 `docs/archive/roadmaps/roadmap-historical-phases-through-v1.x.md`.
 
-## v2.0 Book Scope / Book Workspace Alpha
+## v2.0–v2.4 Book Scope (closed foundation)
 
-Goal: introduce a user-selected Book Scope — a small, explicit set of
-Markdown files treated as one book — without turning Hazakura into a
-project analyzer, Obsidian-like workspace, or full file manager.
+Goal achieved in outline: user-selected Book Scope without project analyzer
+behavior. Design SoT remains
+`docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
-Two pillars, in order:
+**縦書き** was listed as a later Book pillar; it is now **explicitly behind**
+the Local Assist milestone (see Phase Decision 2026-08-07).
 
-1. **OKF compatibility + Hazakura Book semantics.** Reuse v1.11/v1.12 as
-   inputs; define chapter order, scope behavior, and whole-book reading as
-   **Hazakura** conventions (base OKF is not a book format).
-2. **Vertical writing (縦書き).** Later, after horizontal multi-file reading
-   is stable. Markdown source stays canonical.
+Residual Book practicalization (display TOC clarity, suggestion
+explainability, …) may return as a dedicated line after v2.5 Assist depth,
+or as single residual slices if daily friction demands it. Not the v2.5 main
+queue.
 
-Possible first shape:
+## v2.5 Local Assist Depth
 
-- Explicit Book Scope choice (index, small manifest, or selected chapter list).
-- Manual chapter order and visible TOC structure.
-- Connect scope to e-book Mode (and export when the slice is ready).
-- Saved source remains Markdown (+ small explicit structure file if needed).
+Goal: proposal-first, multi-turn **document revision conversation** on-device.
 
-Do not add: automatic project-wide indexing, hidden chapter inference,
-database-like book storage, Git/LSP/terminal/plugins, background AI
-restructuring, or automatic multi-file rewrite.
+- Design: `docs/local-assist-conversational-edit-ux.md`
+- Plan: `docs/v2.5-plan.md`
+- Strategy: `docs/assist-surface-strategy.md`
 
-Design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+Not: general chat, provider marketplace, auto multi-file rewrite, or
+docked IDE-like agent panel (docking is a separate future UX decision).
 
-### v2 ship polish (including Help)
+## Core AI — Allowlisted Writing Models (later)
 
-When Alpha (or the first public v2 cut) is ready to explain itself:
+Product intent (not an implementation green light):
 
-- Expand **Help** for Book Scope / OKF multi-file use, and other features that
-  still lack a clear in-app explanation.
-- Prefer Help + short UI purpose copy over pre-dev product essays.
-- Keep claims aligned with implemented, verified behavior.
+- Fill capability gaps that Apple Foundation Models alone cannot cover for
+  **writing-specialized** tasks.
+- Users may **download / manage / use** only **allowlisted** on-device models
+  (e.g. curated writing-oriented packages such as `.aimodel` or the
+  platform’s equivalent packaging).
+- Inference stays on-device. Download network is for catalog assets only —
+  not a hidden cloud chat path.
+- No arbitrary URL, no user-supplied unsigned blobs, no auto-apply.
 
-## v2.x Book Scope Practicalization
+Sequence: **C-0 design spike → C-1 catalog lifecycle → C-2 Assist selection**,
+after conversational UX (A-1–A-3) is trustworthy. See
+`docs/assist-surface-strategy.md` and `docs/v2.5-plan.md`.
 
-After Alpha proves the source-preserving shape:
+## anydoc (evaluation only)
 
-- Richer chapter-title / navigation editing beyond source headings
-- Reader pagination or book-level e-book presentation beyond the Alpha scroll reader
-- Editable generated TOC beyond the current scope-order EPUB navigation
-- Chapter-level Diff / Review and chapter-scoped search
-- Small explicit manifest if needed (no hidden database model)
-
-Review-reinforced candidates for this phase (search, chapter nav + private
-reading position, portable recipe export/import, Assist expectation UX, Book
-vs OKF copy): `docs/v2-external-review-synthesis-2026-07-18.md` §3.2.
-Still no background index, auto-repair, or second edit buffer.
-
-## v3.x Speculative Local AI Re-evaluation
-
-Not “AI expansion by default.” Earliest reasonable point to re-evaluate
-stronger OS-provided local models, whitelisted `.aimodel` support, or much
-later local image generation — only after book structure, explicit review,
-and export flows are mature. Historical context:
-`docs/archive/planning/speculative-local-ai-future-plan.md`.
+[firecrawl/anydoc](https://github.com/firecrawl/anydoc) (Office/PDF → Markdown)
+may later extend **Import** (draft-until-save), not Open-as-source. PDF stays
+with existing Import Assist first. **No v2.5 product adoption** without a
+written evaluation and scope pin (prefer docx-only spike if ever promoted).
 
 ## Distribution Lanes
 
 - **App Store:** Safe Editor + L Mode + Diff / explicit review + on-device
-  Local Assist. No External Agent Workbench, CLI launch, arbitrary
-  command execution, external AI/API, or network fallback.
+  Local Assist (+ future allowlisted on-device models if accepted by review).
+  No External Agent Workbench, CLI launch, arbitrary command execution,
+  external AI/API inference, or network fallback for generation.
 - **Developer / GitHub:** same base + optional Agent Workbench for
   allowlisted local CLI providers.
 
@@ -281,14 +241,14 @@ Operational checklists:
 |------|------|
 | Next slice | `docs/current-work.md` |
 | Implementation truth | `docs/current-status.md` |
-| v2 design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
-| v2 external review pool | `docs/v2-external-review-synthesis-2026-07-18.md` |
+| v2.5 plan | `docs/v2.5-plan.md` |
+| Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |
+| Assist strategy | `docs/assist-surface-strategy.md` |
+| Closed v2.4 plan | `docs/v2.4-plan.md` |
+| v2 Book design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |
 | OKF pin | `docs/okf-spec-pin.md` |
-| Closed bridge | `docs/v1.8-plus-product-review-roadmap.md` |
-| Parked refinement themes | `docs/v1.13-plus-refinement-roadmap.md` |
 | Product non-goals | `docs/product-brief.md` |
 | Security | `docs/security-boundary.md` |
-| Historical phase detail | `docs/archive/roadmaps/roadmap-historical-phases-through-v1.x.md` |
 
 ## Future Product Direction (durable)
 
@@ -296,12 +256,14 @@ Keep future work source-preserving and narrow:
 
 - L Mode: `docs/l-mode-plan.md`
 - e-book / EPUB: `docs/ebook-mode-epub-export-plan.md`
-- Local Assist: `docs/assist-surface-strategy.md`
+- Local Assist: `docs/assist-surface-strategy.md` + conversational UX SoT
 - Agent Workbench: `docs/agent-workbench-boundary.md` (Developer lane only)
-- Book Scope: **active** v2 work under the design SoT above
+- Book Scope: foundation **shipped**; residual only by promotion
 - Native macOS appearance / post-v0.25 refinement memos: historical under
   `docs/archive/planning/`
 
 Any broader WYSIWYG model, database-like workspace, collaboration feature,
-plugin system, arbitrary model runtime, local image-generation platform, or
+plugin system, **arbitrary** model runtime, local image-generation platform, or
 automated agent-apply flow needs a fresh product-boundary decision first.
+Allowlisted writing models under Core AI are the narrow exception path above,
+not a general model marketplace.
