@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.5 active implementation — resizable workspace + clarity polish
 Authority: High
-Last reviewed: 2026-08-09 (non-Assist scope selected; W-1 in source)
+Last reviewed: 2026-08-09 (signed v2.5 candidate prepared; upload remains gated)
 
 ## Purpose
 
@@ -38,10 +38,11 @@ references, bounded trees, Book setup, and export completion.
 
 ### Immediate next
 
-1. Finish W-1 full-suite and built-app smoke for left / center / right widths,
-   keyboard resizing, persistence, collapse, L Mode, and Reference.
-2. Verify Q-4 exact hidden-count contract across Rust and UI.
-3. Run release gates and prepare a clean-source signed 2.5.0 pkg candidate.
+1. Review the v2.5 implementation through its Draft PR and keep CI green.
+2. With explicit human approval, upload the signed 2.5.0 candidate to App Store
+   Connect and wait for Apple processing.
+3. Install the processed TestFlight build and run the remaining manual checks,
+   including Reference font-size extremes and representative workspace layouts.
 
 ### Completed in v2.5 development
 
@@ -64,7 +65,7 @@ references, bounded trees, Book setup, and export completion.
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
-- App Store build-counter bump, package generation, or upload without human gate
+- A second package build, upload, or publication without a new human gate
 
 ### Hotfix only (published `2.4.0`)
 
@@ -81,6 +82,7 @@ references, bounded trees, Book setup, and export completion.
 
 ## Next Human Gates
 
-1. Keep built-app smoke separate from automated source proof.
-2. Build/sign the candidate only from a clean committed source boundary.
-3. TestFlight upload, tag, push, PR, and publication remain explicit human gates.
+1. Upload the existing clean-source signed candidate only after explicit approval;
+   do not rebuild it just to change tracked wording.
+2. Keep Apple processing and installed TestFlight smoke separate from local proof.
+3. Tag and publication remain explicit human gates.

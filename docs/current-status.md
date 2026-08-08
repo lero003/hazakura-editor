@@ -20,12 +20,13 @@ Last reviewed: 2026-08-09 (v2.5 workspace line in source)
   controls. R-1 makes text Reference follow Preview font size. Q-4 reports the
   exact entry count hidden by a per-folder tree cap. Plan: `docs/v2.5-plan.md`.
   Queue: `docs/current-work.md`. Conversational Local Assist is deferred.
-- **Current source verification is green:** frontend 208 files / 1,740 tests,
+- **Current v2.5 candidate verification is green:** frontend 208 files / 1,740 tests,
   Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests, Vite,
   helper-enabled App Store preview build, and a 1280×820 native window smoke.
   Keyboard/drag resizing and collapsed-sidebar separator removal were checked in
-  the built app. A clean-source signed submission pkg and TestFlight upload are
-  still separate gates.
+  the built app. A signed universal submission pkg was generated from a clean
+  source boundary and independently checked against its ignored candidate
+  metadata. TestFlight upload, processing, and install remain human gates.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -244,7 +245,8 @@ Last reviewed: 2026-08-09 (v2.5 workspace line in source)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.5.0` package version from package metadata.
-- **Open main queue:** v2.5 full verification, built-app smoke, and a clean-source signed pkg candidate.
+- **Open main queue:** human-approved TestFlight upload and installed-build
+  checks. Source, built-app, and clean-source signed-pkg gates are complete.
   Published `2.4.0` remains closed without a reproduced hotfix; other advisory
   items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
@@ -1015,9 +1017,9 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Run the full v2.5 source gates and built-app smoke for W-1, R-1, and Q-4.
-2. Prepare a signed 2.5.0 pkg only from a clean committed source boundary;
-   keep the upload as a human approval gate.
+1. Review the v2.5 implementation and candidate evidence through its Draft PR.
+2. Upload the existing signed 2.5.0 candidate only with explicit human approval,
+   then separate Apple processing and installed-TestFlight smoke from local proof.
 3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
 4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,

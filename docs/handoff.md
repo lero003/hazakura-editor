@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.5 active implementation — workspace control + delivery clarity
 Authority: Medium
-Last reviewed: 2026-08-09 (W-1/R-1/Q-4 in source; release gates next)
+Last reviewed: 2026-08-09 (signed v2.5 candidate prepared; upload human-gated)
 
 ## Current State
 
@@ -152,9 +152,11 @@ Last reviewed: 2026-08-09 (W-1/R-1/Q-4 in source; release gates next)
   and drag (→ 365), the right splitter by keyboard (42 → 47), and removal of
   the left splitter while the Workspace is collapsed. Widths were restored to
   280 / 42 afterward; Markdown content was not edited.
-- Signed submission pkg, TestFlight upload/install, App Review, and publication
-  are not yet claimed. The pre-existing App Store `bundleVersion` 114 change is
-  intentionally not absorbed without an explicit source-boundary decision.
+- A signed universal `2.5.0` submission pkg was generated after committing the
+  implementation boundary. Candidate provenance records a clean source commit,
+  and independent payload metadata, architecture, checksum, app signature, and
+  installer-signature checks passed. The build counter is now 115. TestFlight
+  upload/install, App Review, and publication are not claimed.
 
 ## Verification (2026-08-09, v2.5 R-1)
 
