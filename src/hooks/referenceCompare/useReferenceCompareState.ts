@@ -1,10 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   ReferenceCompareState,
   ReferenceDocument,
   ReferenceFollowMode,
   ReferenceNarrowFocus,
 } from "../../features/referenceCompare/types";
+import {
+  readWorkspacePaneLayout,
+  updateStoredWorkspacePaneLayout,
+} from "../../features/workspace/paneLayout";
 
 export function useReferenceCompareState() {
   const [referenceCompare, setReferenceCompare] =
@@ -13,9 +17,15 @@ export function useReferenceCompareState() {
     useState<ReferenceNarrowFocus>("editor");
   const [referencePaneVisible, setReferencePaneVisible] = useState(false);
   /** Share of the editor-preview grid width for the reference column (percent). */
-  const [referenceColumnPercent, setReferenceColumnPercent] = useState(42);
+  const [referenceColumnPercent, setReferenceColumnPercent] = useState(
+    () => readWorkspacePaneLayout().referenceColumnPercent,
+  );
   /** Current PDF page (0-based) for the active PDF reference. */
   const [pdfPageIndex, setPdfPageIndex] = useState(0);
+
+  useEffect(() => {
+    updateStoredWorkspacePaneLayout({ referenceColumnPercent });
+  }, [referenceColumnPercent]);
 
   const clearReferenceCompare = useCallback(() => {
     setReferenceCompare(null);

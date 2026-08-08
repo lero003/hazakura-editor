@@ -564,6 +564,13 @@ Run when the file tree or workspace commands change:
 7. Treat workspace-internal drag/drop Move as experimental unless this exact flow is freshly confirmed in the built app.
 8. In normal mode, collapse the left workspace sidebar and confirm the restore rail remains visible; restore it and confirm the file tree returns without changing the selected workspace or active tab.
 9. Enter L Mode and confirm the normal sidebar restore rail is not shown; use the L Mode workspace button to open and close its temporary file-tree drawer.
+10. In normal mode with Preview open, drag both vertical separators and confirm
+    Workspace / Editor / Preview widths change without hiding the editor. Focus
+    each separator and use Left/Right Arrow. Relaunch and confirm the left width
+    and normal-right width return. Open a text Reference, set a different right
+    width, relaunch, and confirm Reference restores its own width. Collapse the
+    Workspace and enter L Mode / Reading Focus; confirm the inactive separators
+    are absent and Markdown source is unchanged.
 
 ## Preview And Authoring
 
@@ -1007,7 +1014,10 @@ recovered state separately where relevant.
     Confirm L Mode is visually separated from the right-pane controls and
     `参照` is selected while the reference is visible. Switch from `参照` to
     Preview, then back to `参照`; confirm the same reference returns without a
-    picker. Use the in-pane close action and confirm the reference session ends.
+    picker. Set Preview font size to its minimum and maximum values and confirm
+    text Reference follows both changes without reopening; PDF/image Reference
+    sizing remains unchanged. Use the in-pane close action and confirm the
+    reference session ends.
 21. **Reference PDF raster**: import a multi-page PDF and confirm the **right**
     reference shows the actual page image rather than only the filename/page
     alt text, while the draft remains editable in the center. Exercise

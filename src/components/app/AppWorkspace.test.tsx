@@ -41,7 +41,9 @@ vi.mock("../editor/EditorMainPane", () => ({
 }));
 
 vi.mock("../editor/PaneResizer", () => ({
-  PaneResizer: () => <div data-testid="pane-resizer" />,
+  PaneResizer: (props: { label: string }) => (
+    <div aria-label={props.label} data-testid="pane-resizer" />
+  ),
 }));
 
 vi.mock("./SidePane", () => ({
@@ -178,7 +180,10 @@ vi.mock("../editor/preview/EBookPane", () => ({
   ),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+});
 
 const editorSettings: EditorSettings = {
   ambientIntensity: "subtle",
@@ -630,10 +635,16 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     const { container } = renderWorkspace();
 
     expect(screen.getByLabelText("Workspace file tree")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Resize workspace and editor columns"),
+    ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Collapse workspace sidebar" }));
 
     expect(screen.queryByLabelText("Workspace file tree")).toBeNull();
+    expect(
+      screen.queryByLabelText("Resize workspace and editor columns"),
+    ).toBeNull();
     expect(
       container
         .querySelector(".workspace")
@@ -661,6 +672,23 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(
       screen.queryByRole("button", { name: "Restore workspace sidebar" }),
     ).toBeNull();
+    expect(
+      screen.queryByLabelText("Resize workspace and editor columns"),
+    ).toBeNull();
+  });
+
+  it("uses the persisted sidebar width in the normal three-column grid", () => {
+    window.localStorage.setItem(
+      "hazakura-note-workspace-pane-layout",
+      JSON.stringify({ workspaceSidebarWidth: 336 }),
+    );
+
+    const { container } = renderWorkspace();
+
+    expect(
+      (container.querySelector(".workspace") as HTMLElement).style
+        .gridTemplateColumns,
+    ).toBe("336px 6px minmax(0, 1fr)");
   });
 
   it("uses externally controlled sidebar collapse state when provided", () => {

@@ -3,27 +3,34 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-08-07 (v2.4 shipped; v2.5 Assist lane opened in docs)
+Last reviewed: 2026-08-09 (v2.5 workspace line in source)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.4.0`** across npm, Tauri, Cargo, and
+- Current package/app version: **`2.5.0`** across npm, Tauri, Cargo, and
   lockfile metadata. **Published Mac App Store (user direction 2026-08-07):
   `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
   include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **Active product phase: v2.5.** Local Assist conversational document-edit UX
-  + quiet polish (e.g. text-reference font size). Design:
-  `docs/local-assist-conversational-edit-ux.md`. Plan: `docs/v2.5-plan.md`.
-  Queue: `docs/current-work.md`. Phase: `docs/roadmap.md`. Package bump to
-  `2.5.0` waits for the first implementation slice of that line.
+- **Active product phase: v2.5.** Workspace control + delivery clarity. W-1 is
+  in source: the left Workspace width is adjustable, and the normal right pane
+  and Reference widths persist separately with bounded keyboard/pointer
+  controls. R-1 makes text Reference follow Preview font size. Q-4 reports the
+  exact entry count hidden by a per-folder tree cap. Plan: `docs/v2.5-plan.md`.
+  Queue: `docs/current-work.md`. Conversational Local Assist is deferred.
+- **Current source verification is green:** frontend 208 files / 1,740 tests,
+  Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests, Vite,
+  helper-enabled App Store preview build, and a 1280×820 native window smoke.
+  Keyboard/drag resizing and collapsed-sidebar separator removal were checked in
+  the built app. A clean-source signed submission pkg and TestFlight upload are
+  still separate gates.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
-- **縦書き** stays deferred **behind** Assist depth. **anydoc** is evaluation
-  only. **Core AI** allowlisted writing models are planned later (not A-1).
+- **縦書き** stays deferred. **anydoc** is evaluation
+  only. **Core AI** allowlisted writing models and A-1–A-4 Assist depth are later.
 - **OKF review/scaffolds now pin v0.2 commit `3fcbb9f…`.** v0.2 optional
   provenance/trust/lifecycle/attestation families, including `usage_window`,
   are accepted as inert optional data.
@@ -236,10 +243,10 @@ Last reviewed: 2026-08-07 (v2.4 shipped; v2.5 Assist lane opened in docs)
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.4.0` package version from package metadata.
-- **Open main queue:** v2.4 verification after OKF v0.2 compatibility and B-1
-  chapter Diff. Published `2.3.0` remains closed without a reproduced hotfix;
-  other advisory items stay parked.
+  diagnostics derive the current `2.5.0` package version from package metadata.
+- **Open main queue:** v2.5 full verification, built-app smoke, and a clean-source signed pkg candidate.
+  Published `2.4.0` remains closed without a reproduced hotfix; other advisory
+  items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -564,12 +571,12 @@ Last reviewed: 2026-08-07 (v2.4 shipped; v2.5 Assist lane opened in docs)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.4.0`**. Scope adds OKF v0.2
-  compatibility and B-1 chapter Diff to the v2.3 Book foundation.
+- Current development-tree version: **`2.5.0`**. The active v2.5 workspace line
+  adds persistent three-pane widths, Reference font-size alignment, and an
+  exact bounded-tree hidden count. Conversational Assist is later.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
-- Published Mac App Store version: **`2.3.0`** (App Review passed and release
-  published, user-reported 2026-07-24). Prior store baselines (`2.0.0`,
-  `1.13.0`, …) remain historical.
+- Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
+  Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
 - Latest GitHub source / local-app tag: `v2.3.0` (source archive only; see
   `docs/releases/2.3.0-source-tag.release.md`). Prior checkpoint: `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
@@ -1008,13 +1015,9 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Start the v2.5 implementation queue from `docs/current-work.md`: first
-   product slice is **A-1** (Local Assist proposal-first generation without
-   buffer apply). Design SoT:
-   `docs/local-assist-conversational-edit-ux.md`. Optionally interleave **R-1**
-   (text reference font size).
-2. When opening implementation, bump package surfaces to **`2.5.0`** as an
-   explicit step of that lane — not a drive-by alone.
+1. Run the full v2.5 source gates and built-app smoke for W-1, R-1, and Q-4.
+2. Prepare a signed 2.5.0 pkg only from a clean committed source boundary;
+   keep the upload as a human approval gate.
 3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
 4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,

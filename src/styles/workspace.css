@@ -1413,7 +1413,7 @@
 .reference-text-surface {
   display: block;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  font-size: 12.5px;
+  font-size: var(--preview-font-size, 15px);
   line-height: 1.55;
   margin: 0;
   min-height: 100%;

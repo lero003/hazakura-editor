@@ -109,10 +109,10 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (v2.5 target)
+### Conversational document edit (deferred target)
 
-v2.5 moves Local Assist from **single-shot generate → immediate buffer apply**
-to **proposal-first multi-turn revision conversation**:
+A later product line may move Local Assist from **single-shot generate →
+immediate buffer apply** to **proposal-first multi-turn revision conversation**:
 
 1. Pin a document target on the first user request.
 2. Generate and refine an **unapplied proposal** inside the Assist window.
@@ -120,7 +120,7 @@ to **proposal-first multi-turn revision conversation**:
 4. Record an AI edit transaction and keep Diff / Review Bar discard.
 
 Design SoT: `docs/local-assist-conversational-edit-ux.md`.
-Plan IDs A-1–A-4: `docs/v2.5-plan.md`.
+Deferred plan IDs A-1–A-4 remain recorded in `docs/v2.5-plan.md`.
 
 Until those slices ship, the live product may still apply on generate; do not
 document the new flow as already released.

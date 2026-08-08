@@ -108,6 +108,15 @@ describe("workspace.css", () => {
     expect(ruleBody(".reference-pdf-stage")).toMatch(/overflow:\s*auto/);
   });
 
+  it("lets text references follow the Preview font-size setting", () => {
+    const textSurface = ruleBody(".reference-text-surface");
+
+    expect(textSurface).toMatch(
+      /font-size:\s*var\(--preview-font-size,\s*15px\)/,
+    );
+    expect(textSurface).not.toMatch(/font-size:\s*12\.5px/);
+  });
+
   it("keeps the Start Panel compact and scroll-safe", () => {
     expect(ruleBody(".start-panel")).toMatch(/overflow:\s*auto/);
     expect(ruleBody(".start-panel-main")).toMatch(/width:\s*100%/);

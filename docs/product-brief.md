@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Product direction and non-goals
 Authority: High
-Last reviewed: 2026-08-07 (v2.5 Assist direction note)
+Last reviewed: 2026-08-09 (v2.5 workspace direction; product boundary unchanged)
 
 ## Concept
 

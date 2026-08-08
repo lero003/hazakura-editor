@@ -517,6 +517,7 @@ pub(crate) fn build_workspace_directory(path: &Path) -> Result<WorkspaceTreeEntr
         .to_string();
     let mut children = Vec::new();
     let mut children_truncated = false;
+    let mut hidden_children_count = 0;
 
     let mut entries = fs::read_dir(path)
         .map_err(|err| format!("Cannot list workspace folder contents: {err}"))?
@@ -553,6 +554,7 @@ pub(crate) fn build_workspace_directory(path: &Path) -> Result<WorkspaceTreeEntr
 
         if children.len() >= MAX_WORKSPACE_ENTRIES {
             children_truncated = true;
+            hidden_children_count += 1;
             continue;
         }
 
@@ -567,6 +569,7 @@ pub(crate) fn build_workspace_directory(path: &Path) -> Result<WorkspaceTreeEntr
             children: Vec::new(),
             children_loaded: file_type.is_file(),
             children_truncated: false,
+            hidden_children_count: 0,
         });
     }
 
@@ -577,6 +580,7 @@ pub(crate) fn build_workspace_directory(path: &Path) -> Result<WorkspaceTreeEntr
         children,
         children_loaded: true,
         children_truncated,
+        hidden_children_count,
     })
 }
 

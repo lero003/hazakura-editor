@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-28 (v2.4 development)
+Last reviewed: 2026-08-09 (v2.5 implementation)
 
 ## Purpose
 
@@ -17,12 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.4 development.** Mac App Store `2.3.0` is published and source tag
-`v2.3.0` marks the quality pack + recipe + resume checkpoint (no binary
-assets). The current run is verification/hardening for the explicit OKF v0.2
-and B-1 chapter Diff slice. After it closes, promote at most one next v2.4
-candidate by human direction. Do not bulk-digest review pools. Direction:
-`docs/current-work.md`, `docs/roadmap.md`, and the v2 design SoT.
+Phase: **v2.5 development.** Mac App Store `2.4.0` is published and closed for
+drive-by polish. The active spine is persistent three-pane workspace control,
+bounded clarity, and release verification; conversational Assist is deferred.
+Promote only one v2.5 slice at a time. Do not bulk-digest review pools. Direction:
+`docs/current-work.md`, `docs/roadmap.md`, and `docs/v2.5-plan.md`.
 
 
 For recurring automation, use the Active Queue in
@@ -34,12 +33,10 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. Verification or a reproduced defect in the active v2.4 OKF/Book Diff slice.
-   Keep
-   every read bounded and user-triggered.
-2. Hotfix for a reproduced `2.3.0` Book/Help/export or store blocker.
-3. One optional v2.4 slice from the Active Queue / advisory pools when
-   the human has chosen it — not auto-train from Qwen or four-agent packs.
+1. Verification or a reproduced defect in W-1/R-1/Q-4 and the v2.5 release lane.
+2. Hotfix for a reproduced published `2.4.0` blocker.
+3. One v2.5 slice from the Active Queue when the human has chosen it; do not
+   auto-train from Qwen or four-agent packs.
 4. Stale or failing quality gates that block the selected slice.
 5. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

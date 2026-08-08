@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-28
+Last reviewed: 2026-08-09
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,8 +25,11 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `2.4.0-app-store-release-notes.md` is a **draft only** for the active
+- `2.5.0-app-store-release-notes.md` is a **draft only** for the active
   development lane; it is not package, upload, review, or publication evidence.
+- **`2.4.0` is published** on the Mac App Store (user-reported 2026-08-07):
+  OKF v0.2, chapter Diff, Book toolbar and starter clarity. See
+  `2.4.0-app-store-release-notes.md`.
 - **`2.3.0` is approved and published** on the Mac App Store (user-reported
   2026-07-24): portable Book recipe, Reader resume, Preview image / EPUB cover
   repairs, recent-folder sandbox restore, and the folded v2.1–v2.2 quality pack.
@@ -82,6 +85,10 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
+- `2.5.0-app-store-release-notes.md` is the active draft for the v2.5
+  workspace-control line.
+- `2.4.0-app-store-release-notes.md` records the published v2.4 App Store copy
+  (user-reported 2026-08-07).
 - `2.3.0-app-store-release-notes.md` is the **published** v2.3 App Store copy
   (user-reported 2026-07-24).
 - `2.3.0-source-tag.release.md` is the source / local-app tag body for `v2.3.0`.

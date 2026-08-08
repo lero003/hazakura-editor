@@ -8,6 +8,7 @@ export type WorkspaceTreeEntry = {
   children: WorkspaceTreeEntry[];
   children_loaded: boolean;
   children_truncated: boolean;
+  hidden_children_count?: number;
 };
 
 export async function listWorkspaceTree(

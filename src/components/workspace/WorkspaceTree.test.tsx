@@ -28,7 +28,7 @@
 // audit slice does not regress existing coverage.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WorkspaceTree } from "./WorkspaceTree";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 
@@ -49,17 +49,37 @@ function entry(
   path: string,
   kind: WorkspaceTreeEntry["kind"],
   children: WorkspaceTreeEntry[] = [],
-  options: { children_loaded?: boolean } = {},
+  options: {
+    children_loaded?: boolean;
+    children_truncated?: boolean;
+    hidden_children_count?: number;
+  } = {},
 ): WorkspaceTreeEntry {
   return {
     children,
     children_loaded: options.children_loaded ?? true,
-    children_truncated: false,
+    children_truncated: options.children_truncated ?? false,
+    hidden_children_count: options.hidden_children_count ?? 0,
     kind,
     name,
     path,
   };
 }
+
+describe("workspace tree bounded listing", () => {
+  it("shows the exact hidden entry count when the backend caps a folder", () => {
+    const cappedTree = entry("workspace", rootPath, "directory", [], {
+      children_truncated: true,
+      hidden_children_count: 7,
+    });
+
+    renderTree({ entry: cappedTree });
+
+    expect(screen.getByRole("note").textContent).toBe(
+      "7 more entries are hidden",
+    );
+  });
+});
 
 function makeTree(): WorkspaceTreeEntry {
   return entry("workspace", rootPath, "directory", [
@@ -102,11 +122,12 @@ type RenderTreeOverrides = {
   onOpenFile?: (path: string) => void | Promise<void>;
   openFilePaths?: readonly string[];
   dirtyFilePaths?: readonly string[];
+  entry?: WorkspaceTreeEntry;
   onSelectCompareFile?: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename?: (srcPath: string, newName: string) => void;
   openFileStateLabel?: string;
   loadingLabel?: string;
-  partialEntriesLabel?: string;
+  partialEntriesLabel?: (hiddenCount: number) => string;
   renamingPath?: string | null;
   requestRename?: (path: string) => void;
   renameLabel?: string;
@@ -145,7 +166,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       compareSourcePath={overrides.compareSourcePath ?? null}
       compareTargetPath={overrides.compareTargetPath ?? null}
       dirtyFilePaths={overrides.dirtyFilePaths ?? []}
-      entry={makeTree()}
+      entry={overrides.entry ?? makeTree()}
       onClearCompareSelection={onClearCompareSelection}
       onLoadDirectory={onLoadDirectory}
       onMoveEntry={onMoveEntry}
@@ -157,7 +178,8 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       openFileStateLabel={overrides.openFileStateLabel ?? "open"}
       openFilePaths={overrides.openFilePaths ?? []}
       partialEntriesLabel={
-        overrides.partialEntriesLabel ?? "Some entries are hidden"
+        overrides.partialEntriesLabel ??
+        ((hiddenCount) => `${hiddenCount} more entries are hidden`)
       }
       renameLabel={overrides.renameLabel ?? "Rename"}
       renamingPath={overrides.renamingPath ?? null}

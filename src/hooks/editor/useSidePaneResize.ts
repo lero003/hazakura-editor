@@ -3,6 +3,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -14,6 +15,11 @@ import {
   type RightPaneMode,
 } from "../../types";
 import { clampNumber } from "../../lib/utils";
+import {
+  readWorkspacePaneLayout,
+  resizeRightPanePercent,
+  updateStoredWorkspacePaneLayout,
+} from "../../features/workspace/paneLayout";
 
 type UseSidePaneResizeOptions = {
   sidePaneMode: RightPaneMode | null;
@@ -26,8 +32,12 @@ export function useSidePaneResize({
 }: UseSidePaneResizeOptions) {
   const editorPreviewGridRef = useRef<HTMLDivElement | null>(null);
   const [previewColumnPercent, setPreviewColumnPercent] = useState(
-    DEFAULT_PREVIEW_COLUMN_PERCENT,
+    () => readWorkspacePaneLayout().previewColumnPercent,
   );
+
+  useEffect(() => {
+    updateStoredWorkspacePaneLayout({ previewColumnPercent });
+  }, [previewColumnPercent]);
 
   const editorPreviewGridStyle = useMemo<CSSProperties | undefined>(
     () =>
@@ -47,15 +57,12 @@ export function useSidePaneResize({
     }
 
     const rect = grid.getBoundingClientRect();
-    const previewPercent = ((rect.right - clientX) / rect.width) * 100;
-
     setPreviewColumnPercent(
-      clampNumber(
-        previewPercent,
-        MIN_PREVIEW_COLUMN_PERCENT,
-        MAX_PREVIEW_COLUMN_PERCENT,
-        DEFAULT_PREVIEW_COLUMN_PERCENT,
-      ),
+      resizeRightPanePercent({
+        clientX,
+        left: rect.left,
+        right: rect.right,
+      }),
     );
   }, []);
 

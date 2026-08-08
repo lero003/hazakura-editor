@@ -15,6 +15,8 @@ export type SafeEditorCopy = {
   openFolder: string;
   openWorkspaceFolder: string;
   restoreWorkspaceSidebar: string;
+  resizeWorkspaceSidebar: string;
+  resizeWorkspaceSidebarTitle: string;
   startHeading: string;
   /** Returning visit heading when resume or recovery is available. */
   startHeadingReturning: string;
@@ -49,6 +51,8 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       openFolder: "ふぉるだをひらく",
       openWorkspaceFolder: "ところをひらく",
       restoreWorkspaceSidebar: "ところをもどす",
+      resizeWorkspaceSidebar: "ところとへんしゅうのはばをかへる",
+      resizeWorkspaceSidebarTitle: "ひきて、ところとへんしゅうのはばをかへます",
       startHeading: "しづかにかきはじめる",
       startHeadingReturning: "つづきから かく",
       startActions: "はじめのわざ",
@@ -81,6 +85,9 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openFolder: "フォルダを開く",
         openWorkspaceFolder: "ワークスペースフォルダを開く",
         restoreWorkspaceSidebar: "ワークスペースサイドバーを戻す",
+        resizeWorkspaceSidebar: "ワークスペースと編集領域の幅を変更",
+        resizeWorkspaceSidebarTitle:
+          "ドラッグしてワークスペースと編集領域の幅を変更します",
         startHeading: "静かに書き始める",
         startHeadingReturning: "続きから書く",
         startActions: "開始操作",
@@ -110,6 +117,9 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openFolder: "Open Folder",
         openWorkspaceFolder: "Open workspace folder",
         restoreWorkspaceSidebar: "Restore workspace sidebar",
+        resizeWorkspaceSidebar: "Resize workspace and editor columns",
+        resizeWorkspaceSidebarTitle:
+          "Drag to resize the workspace and editor columns",
         startHeading: "Start writing quietly",
         startHeadingReturning: "Continue where you left off",
         startActions: "Start actions",

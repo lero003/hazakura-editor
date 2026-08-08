@@ -1,8 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { useReferenceCompareState } from "./useReferenceCompareState";
+import { WORKSPACE_PANE_LAYOUT_STORAGE_KEY } from "../../types";
+import { readWorkspacePaneLayout } from "../../features/workspace/paneLayout";
 
 describe("useReferenceCompareState", () => {
+  beforeEach(() => window.localStorage.clear());
+
   it("keeps the reference document while its pane is hidden", () => {
     const { result } = renderHook(() => useReferenceCompareState());
 
@@ -41,5 +45,19 @@ describe("useReferenceCompareState", () => {
 
     expect(result.current.referenceCompare).toBeNull();
     expect(result.current.referencePaneVisible).toBe(false);
+  });
+
+  it("restores and persists the reference pane width", () => {
+    window.localStorage.setItem(
+      WORKSPACE_PANE_LAYOUT_STORAGE_KEY,
+      JSON.stringify({ referenceColumnPercent: 61 }),
+    );
+    const { result } = renderHook(() => useReferenceCompareState());
+
+    expect(result.current.referenceColumnPercent).toBe(61);
+
+    act(() => result.current.setReferenceColumnPercent(47));
+
+    expect(readWorkspacePaneLayout().referenceColumnPercent).toBe(47);
   });
 });

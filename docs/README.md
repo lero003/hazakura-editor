@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-08-07 (v2.5 Assist lane; v2.4 closed)
+Last reviewed: 2026-08-09 (v2.5 workspace line)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **Active phase is
-v2.5** (Local Assist conversational edit) while published `2.4.0` remains
+v2.5** (workspace control + delivery clarity) while published `2.4.0` remains
 hotfix-only. Start with `current-work.md` and `roadmap.md`.
 
 ## Current Canonical Docs
@@ -17,10 +17,10 @@ hotfix-only. Start with `current-work.md` and `roadmap.md`.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
-- `local-assist-conversational-edit-ux.md`: **v2.5 Local Assist conversation design SoT**.
-- `current-work.md`: **v2.5 active queue** (A-1 proposal-first Assist first).
+- `local-assist-conversational-edit-ux.md`: **deferred Local Assist conversation design SoT**.
+- `current-work.md`: **v2.5 active queue** (three-pane sizing + release gates).
 - `roadmap.md`: **v2.5 active**, published `2.4.0` boundary.
-- `v2.5-plan.md`: **v2.5 plan** (Assist spine + R-1 polish + later Core AI).
+- `v2.5-plan.md`: **v2.5 plan** (workspace control; Assist deferred; later Core AI).
 - `v2.4-plan.md`: **closed** Book depth plan (historical for `2.4.0`).
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
 - `v2-qwen-ux-proposal-synthesis-2026-07-21.md`: Qwen UX pack triage (advisory; L Mode corrections; not the active queue).
@@ -53,7 +53,7 @@ hotfix-only. Start with `current-work.md` and `roadmap.md`.
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **v2.5 active** + parked residual (縦書き / anydoc / Book leftovers)
-- `current-work.md` — A-1 Local Assist proposal-first queue
+- `current-work.md` — three-pane workspace and TestFlight-ready queue
 - `v2.5-plan.md` — active product-line plan; promote one slice at a time
 - `local-assist-conversational-edit-ux.md` — conversational Assist design SoT
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent

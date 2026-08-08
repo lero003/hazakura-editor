@@ -96,7 +96,7 @@ function TreeEntry({
   onSubmitRename: (srcPath: string, newName: string) => void;
   openFileStateLabel: string;
   openFilePaths: ReadonlySet<string>;
-  partialEntriesLabel: string;
+  partialEntriesLabel: (hiddenCount: number) => string;
   renameLabel: string;
   unsavedOpenFileStateLabel: string;
 }) {
@@ -376,7 +376,7 @@ function TreeEntry({
           ))}
           {entry.children_truncated ? (
             <div className="tree-partial" role="note">
-              {partialEntriesLabel}
+              {partialEntriesLabel(entry.hidden_children_count ?? 0)}
             </div>
           ) : null}
         </div>
@@ -494,7 +494,7 @@ export function WorkspaceTree({
   onSubmitRename: (srcPath: string, newName: string) => void;
   openFileStateLabel: string;
   openFilePaths: readonly string[];
-  partialEntriesLabel: string;
+  partialEntriesLabel: (hiddenCount: number) => string;
   renameLabel: string;
   renamingPath: string | null;
   requestRename: (path: string) => void;

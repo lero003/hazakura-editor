@@ -98,6 +98,12 @@ import { reviewPageIndices as collectReviewPageIndices } from "../../features/re
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
 import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
+import { useWorkspaceSidebarResize } from "../../hooks/workspace/useWorkspaceSidebarResize";
+import {
+  MAX_WORKSPACE_SIDEBAR_WIDTH,
+  MIN_WORKSPACE_SIDEBAR_WIDTH,
+  resizeRightPanePercent,
+} from "../../features/workspace/paneLayout";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -396,6 +402,14 @@ export function AppWorkspace({
 }: AppWorkspaceProps) {
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
+  const {
+    handleWorkspaceResizeKeyDown,
+    handleWorkspaceResizePointerDown,
+    handleWorkspaceResizePointerMove,
+    workspaceGridStyle,
+    workspaceRef,
+    workspaceSidebarWidth,
+  } = useWorkspaceSidebarResize();
   const [ebookFocusOpen, setEbookFocusOpen] = useState(false);
   const [bookReaderLoading, setBookReaderLoading] = useState(false);
   const [bookReaderResult, setBookReaderResult] =
@@ -645,6 +659,14 @@ export function AppWorkspace({
   return (
     <section
       className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${ebookReadingFocusActive ? " workspace-reading-focus" : ""}`}
+      ref={workspaceRef}
+      style={
+        !isWorkspaceSidebarCollapsed &&
+        !editorSettings.lModeEnabled &&
+        !ebookReadingFocusActive
+          ? workspaceGridStyle
+          : undefined
+      }
     >
       {isWorkspaceSidebarCollapsed ? (
         <div className="workspace-sidebar-rail">
@@ -747,6 +769,20 @@ export function AppWorkspace({
           workspaceTree={workspaceTree}
         />
       )}
+      {!isWorkspaceSidebarCollapsed &&
+      !editorSettings.lModeEnabled &&
+      !ebookReadingFocusActive ? (
+        <PaneResizer
+          label={safeEditorCopy.resizeWorkspaceSidebar}
+          max={MAX_WORKSPACE_SIDEBAR_WIDTH}
+          min={MIN_WORKSPACE_SIDEBAR_WIDTH}
+          onKeyDown={handleWorkspaceResizeKeyDown}
+          onPointerDown={handleWorkspaceResizePointerDown}
+          onPointerMove={handleWorkspaceResizePointerMove}
+          title={safeEditorCopy.resizeWorkspaceSidebarTitle}
+          value={workspaceSidebarWidth}
+        />
+      ) : null}
       <div
         ref={editorPreviewGridRef}
         className={`editor-preview-grid${sidePaneVisible && !visibleReferenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}${visibleReferenceCompare ? " reference-compare" : ""}${visibleReferenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${visibleReferenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
@@ -880,13 +916,12 @@ export function AppWorkspace({
                 const grid = editorPreviewGridRef.current;
                 if (!grid) return;
                 const rect = grid.getBoundingClientRect();
-                const percent =
-                  ((rect.right - event.clientX) / rect.width) * 100;
                 setReferenceColumnPercent(
-                  Math.min(
-                    MAX_PREVIEW_COLUMN_PERCENT,
-                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
-                  ),
+                  resizeRightPanePercent({
+                    clientX: event.clientX,
+                    left: rect.left,
+                    right: rect.right,
+                  }),
                 );
               }}
               onPointerMove={(event) => {
@@ -896,13 +931,12 @@ export function AppWorkspace({
                 const grid = editorPreviewGridRef.current;
                 if (!grid) return;
                 const rect = grid.getBoundingClientRect();
-                const percent =
-                  ((rect.right - event.clientX) / rect.width) * 100;
                 setReferenceColumnPercent(
-                  Math.min(
-                    MAX_PREVIEW_COLUMN_PERCENT,
-                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
-                  ),
+                  resizeRightPanePercent({
+                    clientX: event.clientX,
+                    left: rect.left,
+                    right: rect.right,
+                  }),
                 );
               }}
               title={referenceCopy.referenceLabel}

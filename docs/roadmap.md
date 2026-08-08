@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-07 (v2.5 lane; v2.4 shipped)
+Last reviewed: 2026-08-09 (v2.5 non-Assist scope selected)
 
 ## Current Position
 
@@ -13,10 +13,10 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.4.0`** (bump to `2.5.0` when v2.5 implementation opens) |
+| Package / app version in tree | **`2.5.0`** development line |
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
-| Active product phase | **v2.5** — Local Assist conversational edit + quiet polish |
+| Active product phase | **v2.5** — resizable workspace + bounded clarity polish |
 | Next plan | **`docs/v2.5-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -30,10 +30,10 @@ v2 lens (Book):
 > 明示的に選んだ Markdown 群を一冊として読み・整え・書き出す。
 > source は個々の Markdown。indexing / auto-apply / IDE 化はしない。
 
-v2.5 lens (Assist):
+v2.5 lens (Workspace):
 
-> 対象文章を固定し、オンデバイスで変更案を会話し、納得した案だけを明示反映する。
-> 一般チャット・エージェント自動適用・network fallback にはしない。
+> Workspace・Editor・Preview／Reference の幅を用途に合わせ、上限や完了を
+> 分かる形にする。source と Safe Editor の境界は変えない。
 
 Queue of record: `docs/current-work.md`.
 v2 Book design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
@@ -46,25 +46,24 @@ User direction:
 
 1. **Mac App Store / product line `2.4.0` is shipped.** Treat as closed store
    line; hotfix only for reproduced blockers. Do not reopen for polish trains.
-2. **Next work is v2.5+**, not more Book-depth by default. Primary theme is
-   **Local Assist brush-up**: conversational document-edit UX based on the
-   implementation request now captured in
-   `docs/local-assist-conversational-edit-ux.md`.
+2. **Next work is v2.5+**, not more Book-depth by default. The selected v2.5
+   theme is **workspace control + delivery clarity**; conversational Local
+   Assist remains designed but moves to a later line.
 3. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
-4. **Core AI** is a planned capability: allowlisted **writing-specialized**
-   on-device models (download / manage / use), not arbitrary runtimes. After
-   conversational Assist stabilizes.
+4. **Core AI** remains a later planned capability after conversational Assist.
 5. **anydoc** stays evaluation-only until product demand is clear.
-6. **Small polish** such as text-reference font size following Preview may
-   interleave; it does not replace the Assist spine.
+6. **R-1 and the accepted Q-3/Q-4/Q-5/Q-13 clarity set** belong to the v2.5
+   workspace line. Verified existing or measured no-op outcomes are valid.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
 [done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 published (tags immutable)
 [done]   v2.4 OKF v0.2 · compact toolbar · B-1 chapter Diff
-[now]    v2.5 Local Assist conversational edit (A-1 first) + optional R-1 polish
-[next]   A-2 pin + multi-turn → A-3 explicit apply → A-4 UI
+[done]   v2.5 R-1 text Reference follows Preview font size
+[now]    v2.5 persistent three-pane sizing + exact tree cap notice
+[next]   full gates → signed pkg → human TestFlight upload
+[later]  A-1 → A-4 Local Assist conversational edit
 [later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
@@ -76,11 +75,11 @@ Published `2.4.0` remains hotfix-only.
 
 ### Active spine
 
-1. **A-1** Proposal-first generation (no immediate buffer apply)
-2. **A-2** Pinned target + multi-turn revision
-3. **A-3** Explicit apply into unsaved buffer + existing Review Bar
-4. **A-4** Conversation UI / i18n / a11y polish
-5. **R-1** (optional) Text reference uses `previewFontSize` like Preview
+1. **W-1** Persistent three-pane resizing (Workspace / Editor / right pane)
+2. **R-1** Text reference uses `previewFontSize` like Preview
+3. **Q-4** Exact hidden-entry count for bounded workspace directories
+4. **Q-3 / Q-5** Verify existing export/Finder and Book empty-state behavior
+5. **Q-13** Measure lazy chunks; preserve a verified no-op without bottleneck evidence
 
 Plan detail: `docs/v2.5-plan.md`.
 
@@ -161,7 +160,7 @@ These boundaries stay active across roadmap changes:
 | **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into 2.3+** |
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
 | **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
-| **v2.5** | Local Assist conversational edit + quiet polish | **Active** — `docs/v2.5-plan.md` |
+| **v2.5** | Workspace control + delivery clarity | **Active** — `docs/v2.5-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v3.x | Broader local-AI re-evaluation if still needed | Speculative |
@@ -180,13 +179,14 @@ behavior. Design SoT remains
 the Local Assist milestone (see Phase Decision 2026-08-07).
 
 Residual Book practicalization (display TOC clarity, suggestion
-explainability, …) may return as a dedicated line after v2.5 Assist depth,
+explainability, …) may return as a dedicated line after v2.5 workspace work,
 or as single residual slices if daily friction demands it. Not the v2.5 main
 queue.
 
-## v2.5 Local Assist Depth
+## v2.5 Workspace Control and Clarity
 
-Goal: proposal-first, multi-turn **document revision conversation** on-device.
+Goal: a persistent, keyboard-operable three-pane workspace plus honest bounded
+tree and completion feedback. Conversational Assist is deferred to a later line.
 
 - Design: `docs/local-assist-conversational-edit-ux.md`
 - Plan: `docs/v2.5-plan.md`

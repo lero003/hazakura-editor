@@ -20,6 +20,8 @@ export const MENU_LANGUAGE_STORAGE_KEY = "hazakura-note-menu-language";
 export const DRAFT_STATE_STORAGE_KEY = "hazakura-note-unsaved-drafts";
 export const RECENT_FILES_STORAGE_KEY = "hazakura-note-recent-files";
 export const RECENT_FOLDERS_STORAGE_KEY = "hazakura-note-recent-folders";
+export const WORKSPACE_PANE_LAYOUT_STORAGE_KEY =
+  "hazakura-note-workspace-pane-layout";
 
 // ── Storage Keys (Assist Surface: Agent Workbench) ──
 // See docs/assist-surface-strategy.md and docs/agent-workbench-boundary.md.

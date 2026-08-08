@@ -1,21 +1,21 @@
 # Handoff
 
 Status: Operational
-Scope: v2.5 active planning — Local Assist conversational edit
+Scope: v2.5 active implementation — workspace control + delivery clarity
 Authority: Medium
-Last reviewed: 2026-08-07
+Last reviewed: 2026-08-09 (W-1/R-1/Q-4 in source; release gates next)
 
 ## Current State
 
-- Package/app version in tree: **`2.4.0`** (bump to `2.5.0` when first v2.5
-  implementation slice opens).
+- Package/app version in tree: **`2.5.0`** development line.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
-- **Active phase: v2.5.** Primary work is Local Assist proposal-first
-  multi-turn document edit (A-1 first), not more Book depth. Plan:
-  `docs/v2.5-plan.md`. Design: `docs/local-assist-conversational-edit-ux.md`.
-  Optional polish: text reference font size (R-1). Core AI allowlisted writing
-  models and 縦書き / anydoc stay later or parked.
+- **Active phase: v2.5.** Primary work is workspace control and delivery
+  clarity, not Local Assist depth or more Book depth. W-1 gives the left
+  Workspace a bounded accessible resizer and persists normal-right and
+  Reference widths separately. R-1 aligns text Reference font size; Q-4 shows
+  the exact count hidden by a folder cap. Q-3/Q-5 were already implemented;
+  Q-13 is a measured no-op. Plan: `docs/v2.5-plan.md`.
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -131,6 +131,52 @@ Last reviewed: 2026-08-07
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+
+## Verification (2026-08-09, v2.5 workspace line)
+
+- `npm run typecheck` — pass.
+- `npm test` — 208 files / 1,740 tests pass. The expected jsdom canvas
+  capability notices remain non-failing.
+- `npm run build:vite` — pass. App Store lane measurement: main 1,535.76 kB
+  (475.26 kB gzip), shared render chunk 221.64 kB (69.33 kB gzip), Preview
+  4.45 kB (1.89 kB gzip), e-book 20.15 kB (6.74 kB gzip). Preview/e-book are
+  already lazy; the known main-chunk warning remains.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- `npm run build` — helper probes and ad-hoc App Store preview app build pass
+  for `2.5.0`.
+- Native window smoke — `dev.hazakura.editor`, `1280x820`, onscreen and clean
+  quit. Computer Use then verified the left splitter by keyboard (280 → 299)
+  and drag (→ 365), the right splitter by keyboard (42 → 47), and removal of
+  the left splitter while the Workspace is collapsed. Widths were restored to
+  280 / 42 afterward; Markdown content was not edited.
+- Signed submission pkg, TestFlight upload/install, App Review, and publication
+  are not yet claimed. The pre-existing App Store `bundleVersion` 114 change is
+  intentionally not absorbed without an explicit source-boundary decision.
+
+## Verification (2026-08-09, v2.5 R-1)
+
+Superseded for the current v2.5 workspace line by the verification block above;
+retained as the earlier R-1-only checkpoint.
+
+- R-1 red/green CSS contract: `workspaceCss.test.ts` failed on the fixed 12.5px
+  rule, then passed after text Reference adopted `--preview-font-size`.
+- `npm run typecheck` — pass.
+- `npm test` — 205 files / 1,729 tests pass on the clean rerun. An earlier
+  parallel first pass emitted one late CodeMirror `requestAnimationFrame`
+  error from `useSlashMenu.test.ts`; no assertion failed and the isolated full
+  rerun was green.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 367 pass / 2
+  host-dependent ignored.
+- `npm run build` — helper probes and local ad-hoc App Store preview build pass
+  for `2.5.0`. Window smoke opened a `1280x820` main window and quit cleanly.
+- Manual minimum/maximum Preview-font changes inside text Reference, signed
+  TestFlight, pkg, upload, App Review, and publication are not claimed.
 
 ## Verification (2026-07-29, v2.4 OKF + B-1 + book-like starter)
 
@@ -351,10 +397,10 @@ Last reviewed: 2026-08-07
 
 ## Next For Agents
 
-1. Read `docs/current-work.md` and `docs/v2.5-plan.md`. First implementation
-   slice is **A-1** (generate without buffer apply) unless human picks R-1 only.
-2. Use `docs/local-assist-conversational-edit-ux.md` as Assist UX design SoT;
-   do not invent a general chat product.
+1. Read `docs/current-work.md` and `docs/v2.5-plan.md`. Next work is full source
+   verification and built-app smoke for W-1/R-1/Q-4.
+2. Keep `docs/local-assist-conversational-edit-ux.md` as a later-line design;
+   do not pull A-1–A-4 into the v2.5 release gate.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
 4. Do not move published tags, upload, or attach release assets without a

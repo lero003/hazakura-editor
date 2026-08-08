@@ -12,7 +12,7 @@ import { isKanaStyle } from "./_helpers";
 
 export type WorkspaceFileOpsCopy = {
   loading: string;
-  partialEntries: string;
+  partialEntries: (hiddenCount: number) => string;
   openFileState: string;
   unsavedOpenFileState: string;
   sidebarNewButton: string;
@@ -53,7 +53,10 @@ export function getWorkspaceFileOpsCopy(
   if (isKanaStyle(lang)) {
     return {
       loading: "よみこみちゅう…",
-      partialEntries: "ふぉるだごとの じょうげんにより いちぶの ふみは みえません。",
+      partialEntries: (hiddenCount) =>
+        hiddenCount > 0
+          ? `ふぉるだごとの じょうげんにより ほか ${hiddenCount}けんは みえません。`
+          : "ふぉるだごとの じょうげんにより いちぶの ふみは みえません。",
       openFileState: "ひらいている",
       unsavedOpenFileState: "ほぞんまえ",
       sidebarNewButton: "あたらしく",
@@ -94,7 +97,10 @@ export function getWorkspaceFileOpsCopy(
   return isJapaneseMenuLanguage(lang)
     ? {
         loading: "読み込み中…",
-        partialEntries: "フォルダごとの上限により一部の項目は非表示です。",
+        partialEntries: (hiddenCount) =>
+          hiddenCount > 0
+            ? `フォルダごとの上限により、他 ${hiddenCount} 件は非表示です。`
+            : "フォルダごとの上限により一部の項目は非表示です。",
         openFileState: "開いている",
         unsavedOpenFileState: "未保存",
         sidebarNewButton: "新規",
@@ -133,7 +139,10 @@ export function getWorkspaceFileOpsCopy(
       }
     : {
         loading: "Loading…",
-        partialEntries: "Some entries are hidden by the per-folder limit.",
+        partialEntries: (hiddenCount) =>
+          hiddenCount > 0
+            ? `${hiddenCount} more ${hiddenCount === 1 ? "entry is" : "entries are"} hidden by the per-folder limit.`
+            : "Some entries are hidden by the per-folder limit.",
         openFileState: "open",
         unsavedOpenFileState: "unsaved",
         sidebarNewButton: "New",

@@ -67,6 +67,7 @@ fn workspace_tree_uses_per_directory_cap_without_failing_root() {
 
     assert_eq!(tree.children.len(), MAX_WORKSPACE_ENTRIES);
     assert!(tree.children_truncated);
+    assert_eq!(tree.hidden_children_count, 5);
 
     let _ = fs::remove_dir_all(dir);
 }

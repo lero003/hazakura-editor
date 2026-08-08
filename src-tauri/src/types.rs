@@ -370,6 +370,7 @@ pub(crate) struct WorkspaceTreeEntry {
     pub(crate) children: Vec<WorkspaceTreeEntry>,
     pub(crate) children_loaded: bool,
     pub(crate) children_truncated: bool,
+    pub(crate) hidden_children_count: usize,
 }
 
 #[derive(Debug, Serialize)]
