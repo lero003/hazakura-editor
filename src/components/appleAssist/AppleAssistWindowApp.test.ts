@@ -3,10 +3,12 @@ import {
   classifyApplyError,
   getApplyStatusPresentation,
   getAppleAssistWindowCopy,
+  getProposalStatusPresentation,
   getStreamPreviewPresentation,
   type AppleAssistWindowCopy,
   type OperationFeedbackKind,
 } from "./AppleAssistWindowApp";
+import type { AppleAssistProposalStatusEvent } from "../../types";
 
 // v0.12.x Hazakura Local Assist copy + error classification.
 //
@@ -70,6 +72,16 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "streamPreviewHeading",
   "streamPreviewIdle",
   "streamPreviewWaiting",
+  "proposalHeading",
+  "proposalReviewDescription",
+  "proposalReviewPlaceholder",
+  "proposalStreamingStatus",
+  "proposalOriginalLabel",
+  "proposalCandidateLabel",
+  "proposalDiscardButton",
+  "proposalDiscardedStatus",
+  "proposalReadyStatus",
+  "proposalChangeSummary",
   // v0.17 operation-feedback panel. The keys are the
   // minimum required to render the panel; the
   // `feedbackEntry` function shape is exercised in a
@@ -92,6 +104,7 @@ const FEEDBACK_KINDS: ReadonlyArray<OperationFeedbackKind> = [
   "target-acquired",
   "request-sent",
   "generation-started",
+  "proposal-ready",
   "applied",
   "failed",
   "unavailable",
@@ -122,6 +135,7 @@ describe("getAppleAssistWindowCopy", () => {
         expect(copy.targetLabel("H2 見出し")).toMatch(/\S/);
         expect(copy.unknownError("raw detail")).toMatch(/\S/);
         expect(copy.targetReadFailed).toMatch(/\S/);
+        expect(copy.proposalChangeSummary(2, 1)).toMatch(/\S/);
       });
 
       it("exposes the same preset ids in every language", () => {
@@ -334,6 +348,38 @@ describe("getStreamPreviewPresentation", () => {
       text: copy.streamPreviewWaiting,
     });
     expect(presentation.text).not.toContain("HAZAKURA_TEXT_START");
+  });
+});
+
+describe("getProposalStatusPresentation", () => {
+  const copy = getAppleAssistWindowCopy("ja");
+  const base: AppleAssistProposalStatusEvent = {
+    phase: "completed",
+    requestId: "proposal-1",
+    request: "整えて",
+    message: "ready",
+    target: null,
+    emittedAtMs: 0,
+  };
+
+  it("keeps completion copy explicit about the proposal remaining unapplied", () => {
+    const result = getProposalStatusPresentation(base, copy);
+
+    expect(result.feedbackKind).toBe("proposal-ready");
+    expect(result.status).toMatch(/差分レビュー/);
+    expect(result.status).toMatch(/まだ変更していません/);
+    expect(result.error).toBeNull();
+  });
+
+  it("routes cancellation without discarding the previous completed proposal", () => {
+    const result = getProposalStatusPresentation(
+      { ...base, phase: "cancelled", message: "cancelled by user" },
+      copy,
+    );
+
+    expect(result.feedbackKind).toBe("failed");
+    expect(result.status).toBe(copy.cancelledStatus);
+    expect(result.error).toBeNull();
   });
 });
 

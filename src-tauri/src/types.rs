@@ -90,17 +90,18 @@ pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-a
 pub(crate) const APP_EXIT_REQUESTED_EVENT: &str = "hazakura-note://app-exit-requested";
 // v0.12+ Hazakura Local Assist Writing Companion mock (slice 2+).
 // Companion slot: the Hazakura Local Assist window and the Agent window
-// normally replace each other. The Hazakura Local Assist window emits
-// `APPLY_AI_EDIT_TRANSACTION_EVENT` to ask the main window to
-// apply an AI edit transaction. The main window answers the
-// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded
-// target (selection / paragraph / block / section).
+// normally replace each other. The legacy
+// `APPLY_AI_EDIT_TRANSACTION_EVENT` remains the explicit apply path;
+// v2.6 A-1 sends generation-only requests through
+// `REQUEST_AI_EDIT_PROPOSAL_EVENT` and returns the candidate through a
+// separate proposal status event. The main window answers the
+// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target.
 //
 // The Rust constants are the source of truth for the event
 // names; the TS mirror in `src/types.ts` re-states them so
 // the webviews can `emit()` / `listen()` on them. The Rust
 // commands consume these in slice 3+ when the main window's
-// `APPLY_AI_EDIT_TRANSACTION_EVENT` listener is wired up —
+// Local Assist listeners are wired up —
 // keep the `dead_code` allow until then.
 #[allow(dead_code)]
 pub(crate) const APPLY_AI_EDIT_TRANSACTION_EVENT: &str =
@@ -108,6 +109,11 @@ pub(crate) const APPLY_AI_EDIT_TRANSACTION_EVENT: &str =
 #[allow(dead_code)]
 pub(crate) const APPLE_ASSIST_APPLY_STATUS_EVENT: &str =
     "hazakura-note://apple-assist-apply-status";
+#[allow(dead_code)]
+pub(crate) const REQUEST_AI_EDIT_PROPOSAL_EVENT: &str = "hazakura-note://request-ai-edit-proposal";
+#[allow(dead_code)]
+pub(crate) const APPLE_ASSIST_PROPOSAL_STATUS_EVENT: &str =
+    "hazakura-note://apple-assist-proposal-status";
 #[allow(dead_code)]
 pub(crate) const REQUEST_AI_EDIT_TARGET_EVENT: &str = "hazakura-note://request-ai-edit-target";
 #[allow(dead_code)]

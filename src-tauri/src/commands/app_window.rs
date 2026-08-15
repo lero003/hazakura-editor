@@ -439,9 +439,33 @@ pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
     Ok(())
 }
 
+// v2.6 A-1: request generation of an unapplied Local Assist proposal.
+// Keep this command separate from the legacy apply transaction request so
+// the event name itself documents the buffer-mutation boundary. The main
+// window handles the event by streaming a candidate to the detached Diff
+// review surface; it must not write the editor buffer or record a transaction.
+#[tauri::command]
+pub(crate) fn request_apple_assist_proposal<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    payload: serde_json::Value,
+) -> Result<(), String> {
+    ensure_apple_assist_window(&window)?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    app.emit_to(MAIN_WINDOW_LABEL, REQUEST_AI_EDIT_PROPOSAL_EVENT, payload)
+        .map_err(|err| format!("Cannot request Hazakura Local Assist proposal: {err}"))?;
+    Ok(())
+}
+
 #[cfg(desktop)]
 #[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn request_apply_ai_edit_transaction_with_label(label: &str) -> Result<(), String> {
+    ensure_label_is_apple_assist(label)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn request_apple_assist_proposal_with_label(label: &str) -> Result<(), String> {
     ensure_label_is_apple_assist(label)
 }
 

@@ -1,14 +1,14 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions
+Scope: Current implementation state and next safe actions (v2.6 A-1 review)
 Authority: High
-Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 planning opened)
+Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.5.0`** across npm, Tauri, Cargo, and
+- Current package/app version: **`2.6.0`** across npm, Tauri, Cargo, and
   lockfile metadata. **Published Mac App Store (user direction 2026-08-07):
   `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
   include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
@@ -19,11 +19,11 @@ Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 planning opened)
   exact tree-cap counts. The clean signed-candidate boundary is commit
   `6067fbec`; Apple upload, processing, TestFlight, tag, and publication remain
   human gates. Plan: `docs/v2.5-plan.md`.
-- **Active product planning is v2.6.** Local Assist will separate requests and
-  short turn state in a Conversation area from the current unapplied proposal,
-  Diff, stale state, discard, and explicit apply in a Diff review area. No v2.6
-  implementation or version bump is claimed yet. Plan: `docs/v2.6-plan.md`;
-  queue: `docs/current-work.md`.
+- **Active product work is v2.6 A-1.** Local Assist sends a generation-only
+  proposal into a separate Diff review area; the editor buffer and
+  `AiEditTransaction` store remain unchanged, and the proposal can be discarded.
+  Multi-turn, stale apply, and explicit apply remain later slices. Plan:
+  `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
 - **Current v2.5 candidate verification is green:** frontend 208 files / 1,740 tests,
   Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests, Vite,
   helper-enabled App Store preview build, and a 1280×820 native window smoke.
@@ -248,7 +248,7 @@ Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 planning opened)
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.5.0` package version from package metadata.
+  diagnostics derive the current `2.6.0` package version from package metadata.
 - **Open main queue:** human-approved TestFlight upload and installed-build
   checks. Source, built-app, and clean-source signed-pkg gates are complete.
   Published `2.4.0` remains closed without a reproduced hotfix; other advisory
@@ -577,10 +577,9 @@ Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 planning opened)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.5.0`**. The completed v2.5 workspace
-  line adds persistent three-pane widths, Reference font-size alignment, and an
-  exact bounded-tree hidden count. v2.6 conversation/Diff work is planned but
-  not implemented; bump package surfaces only with its first code slice.
+- Current development-tree version: **`2.6.0`**. The A-1 review candidate adds
+  generation-only Local Assist proposals and a separate Diff review surface;
+  the editor remains unchanged until a later explicit-apply slice.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.

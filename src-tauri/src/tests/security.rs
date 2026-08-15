@@ -307,6 +307,24 @@ fn request_apply_ai_edit_transaction_accepts_apple_assist_only() {
 }
 
 #[test]
+fn request_apple_assist_proposal_accepts_apple_assist_only() {
+    request_apple_assist_proposal_with_label(APPLE_ASSIST_WINDOW_LABEL)
+        .expect("apple-assist must be allowed to request a proposal");
+
+    let err = request_apple_assist_proposal_with_label(MAIN_WINDOW_LABEL)
+        .expect_err("main must not request a proposal through the detached-window command");
+    assert!(err.contains(MAIN_WINDOW_LABEL), "{err}");
+
+    let err = request_apple_assist_proposal_with_label(AGENT_WINDOW_LABEL)
+        .expect_err("agent must not request a Local Assist proposal");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let err = request_apple_assist_proposal_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown window must not request a Local Assist proposal");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}
+
+#[test]
 fn get_main_apple_assist_target_allows_main_and_apple_assist_labels() {
     // The detached Hazakura Local Assist window is the primary caller
     // of `get_main_apple_assist_target`; the main window may

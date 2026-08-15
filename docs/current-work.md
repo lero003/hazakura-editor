@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 active planning — Local Assist conversation + Diff review
+Scope: v2.6 A-1 implementation review — Local Assist proposal + Diff review
 Authority: High
-Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 design opened)
+Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
 
 ## Purpose
 
@@ -11,12 +11,12 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.6 planning is the active product lane.** Primary theme: separate Local
+**v2.6 A-1 implementation is the active product lane.** Primary theme: separate Local
 Assist's conversation area from a Diff review area where the current unapplied
 proposal is inspected, discarded, or explicitly applied.
 
-- Package/app version in tree: **`2.5.0`**. Bump to `2.6.0` with the first v2.6
-  implementation slice, not as a docs-only drive-by.
+- Package/app version in tree: **`2.6.0`**. A-1 is a review candidate; it is not
+  a release or App Store claim.
 - Prepared v2.5 candidate: clean source commit **`6067fbec`**; upload,
   processing, TestFlight, tag, and publication remain separate human gates.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
@@ -32,7 +32,7 @@ proposal is inspected, discarded, or explicitly applied.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Candidate prepared** | Resizable workspace + bounded clarity polish; Apple gates remain |
-| **v2.6** | **Active planning** | Local Assist conversation + separate Diff review |
+| **v2.6** | **A-1 review candidate** | Local Assist proposal + separate Diff review; external review pending |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -41,10 +41,11 @@ proposal is inspected, discarded, or explicitly applied.
 
 ### Immediate next
 
-1. **A-1 — Proposal generation + Diff review.** Split generation from buffer
-   mutation. Stream the current unapplied proposal into a dedicated Diff review
-   area; keep the editor buffer unchanged; allow discard; retain presets.
-2. After A-1, promote only one of A-2 → A-4 at a time from `docs/v2.6-plan.md`.
+1. **A-1 external review.** The implementation candidate splits generation from
+   buffer mutation, streams the current unapplied proposal into a dedicated Diff
+   review area, keeps the editor buffer unchanged, allows discard, and retains
+   presets.
+2. After review, promote only one of A-2 → A-4 at a time from `docs/v2.6-plan.md`.
 3. Keep Core AI as a later backend lane after A-3; do not combine model catalog
    work with the conversation/Diff migration.
 
@@ -96,8 +97,7 @@ proposal is inspected, discarded, or explicitly applied.
 
 ## Next Human Gates
 
-1. Confirm A-1 is the first implementation slice and bump package surfaces to
-   `2.6.0` in that coherent code slice.
+1. Complete external review of A-1 and confirm its buffer / transaction boundary.
 2. Upload the existing clean-source v2.5 candidate only after explicit approval;
    do not rebuild it just to include v2.6 docs or work.
 3. TestFlight, tag, and publication remain explicit human gates.

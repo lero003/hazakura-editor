@@ -2,14 +2,15 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
   getMainAppleAssistTarget,
-  requestApplyAiEditTransaction,
+  requestAppleAssistProposal,
   setAppleAssistWindowTheme,
   stopAppleAssistGeneration,
 } from "../../lib/tauri";
+import { buildLineDiff } from "../../features/diff/diff";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import {
-  buildApplyEvent,
+  buildProposalEvent,
   getLocalAssistAction,
   LOCAL_ASSIST_VISIBLE_PRESET_IDS,
   resolveLocalAssistActionId,
@@ -17,12 +18,13 @@ import {
   type LocalAssistPreset,
 } from "../../lib/appleAssist/instruction";
 import {
-  APPLE_ASSIST_APPLY_STATUS_EVENT,
+  APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
   MENU_LANGUAGE_STORAGE_KEY,
   THEME_STORAGE_KEY,
   type AppleAssistApplyEvent,
   type AppleAssistApplyStatusEvent,
+  type AppleAssistProposalStatusEvent,
   type AppleAssistTargetKind,
   type AppleAssistTargetSnapshot,
   type MenuLanguage,
@@ -37,7 +39,7 @@ import {
 //
 // The user picks a bounded request preset, edits the visible
 // request text if needed, and clicks the request button to
-// emit `APPLY_AI_EDIT_TRANSACTION_EVENT` to the main window.
+// emit `REQUEST_AI_EDIT_PROPOSAL_EVENT` to the main window.
 // UI labels stay display-only; `actionId` only routes the
 // helper operation while the request text remains visible and
 // editable. The main window is responsible for:
@@ -45,10 +47,9 @@ import {
 //     block → section) via `REQUEST_AI_EDIT_TARGET_EVENT` round
 //     trip (slice 3),
 //   - asking the bundled helper for a bounded result,
-//   - applying document-changing results to the unsaved
-//     buffer and recording an AI edit transaction,
-//   - showing document-changing results in the Diff /
-//     change-review escape hatch.
+//   - streaming an unapplied candidate back to this window's
+//     dedicated Diff review area. The editor buffer remains
+//     unchanged in v2.6 A-1.
 //
 // The window only renders a thin shell with:
 //   - a header that shows the local-assist disclosure and current
@@ -182,6 +183,14 @@ type FeedbackEntry = {
   payload?: OperationFeedbackPayload;
 };
 
+type LocalAssistProposal = {
+  requestId: string;
+  request: string;
+  originalText: string;
+  candidateText: string;
+  streaming?: boolean;
+};
+
 function readInitialTheme(): ThemePreference {
   if (typeof window === "undefined") {
     return "dark";
@@ -241,10 +250,25 @@ export function AppleAssistWindowApp() {
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
   const [streamPreview, setStreamPreview] = useState<string>("");
+  const [streamOriginalText, setStreamOriginalText] = useState<string>("");
+  const [proposal, setProposal] = useState<LocalAssistProposal | null>(null);
 
   useEffect(() => {
     activeRequestIdRef.current = activeRequestId;
   }, [activeRequestId]);
+
+  const proposalForReview = useMemo(() => {
+    if (streamPreview.trim().length > 0 && streamOriginalText.length > 0) {
+      return {
+        requestId: activeRequestId ?? "streaming",
+        request: requestText,
+        originalText: streamOriginalText,
+        candidateText: streamPreview,
+        streaming: true,
+      } satisfies LocalAssistProposal;
+    }
+    return proposal;
+  }, [activeRequestId, proposal, requestText, streamOriginalText, streamPreview]);
 
   const clearGenerationFallback = useCallback(() => {
     if (generationFallbackRef.current !== null) {
@@ -334,8 +358,8 @@ export function AppleAssistWindowApp() {
     let disposed = false;
     let unlisten: UnlistenFn | null = null;
 
-    void listen<AppleAssistApplyStatusEvent>(
-      APPLE_ASSIST_APPLY_STATUS_EVENT,
+    void listen<AppleAssistProposalStatusEvent>(
+      APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
       (event) => {
         if (disposed) {
           return;
@@ -349,6 +373,9 @@ export function AppleAssistWindowApp() {
           setCancelling(false);
           setError(null);
           setStreamPreview("");
+          if (payload.originalText !== undefined) {
+            setStreamOriginalText(payload.originalText);
+          }
           setStatus(copy.generatingChange);
           pushFeedback({ kind: "generation-started" });
           scheduleGenerationFallback();
@@ -357,7 +384,12 @@ export function AppleAssistWindowApp() {
         if (payload.phase === "partial") {
           setBusy(true);
           setError(null);
-          setStreamPreview(payload.partialText ?? "");
+          // Helper output is streamed before the final candidate sanitizer
+          // runs. Keep prompt boundary markers out of the Diff surface too;
+          // a marker-only partial returns an empty string so the last
+          // completed proposal remains visible while the helper is warming
+          // up its response.
+          setStreamPreview(sanitizeStreamPreviewText(payload.partialText ?? ""));
           return;
         }
         clearGenerationFallback();
@@ -365,8 +397,17 @@ export function AppleAssistWindowApp() {
         setCancelling(false);
         setActiveRequestId(null);
         activeRequestIdRef.current = null;
+        if (payload.phase === "completed" && payload.candidateText) {
+          setProposal({
+            requestId: payload.requestId,
+            request: payload.request,
+            originalText: payload.originalText ?? "",
+            candidateText: payload.candidateText,
+          });
+        }
         setStreamPreview("");
-        const presentation = getApplyStatusPresentation(payload, copy);
+        setStreamOriginalText("");
+        const presentation = getProposalStatusPresentation(payload, copy);
         setStatus(presentation.status);
         setError(presentation.error);
         pushFeedback({ kind: presentation.feedbackKind });
@@ -380,7 +421,7 @@ export function AppleAssistWindowApp() {
         unlisten = handle;
       })
       .catch((err) => {
-        console.warn("Failed to listen for Hazakura Local Assist apply status", err);
+        console.warn("Failed to listen for Hazakura Local Assist proposal status", err);
         if (!disposed) {
           setError(copy.targetReadFailed);
         }
@@ -479,6 +520,7 @@ export function AppleAssistWindowApp() {
     setBusy(true);
     setError(null);
     setStreamPreview("");
+    setStreamOriginalText("");
     setStatus(copy.sendingRequest);
     scheduleGenerationFallback();
     const requestId = createAppleAssistRequestId();
@@ -511,12 +553,12 @@ export function AppleAssistWindowApp() {
         });
       }
       pushFeedback({ kind: "request-sent" });
-      // `buildApplyEvent` keeps the display label, fixed
+      // `buildProposalEvent` keeps the display label, fixed
       // `actionId`, and visible request text separate. The
       // helper maps the action id to a bounded operation while
       // the visible request text is passed as prompt data, not
       // system instruction.
-      const payload = buildApplyEvent({
+      const payload = buildProposalEvent({
         requestId,
         actionId:
           selectedActionId ?? resolveLocalAssistActionId(request, copy.presets),
@@ -524,7 +566,7 @@ export function AppleAssistWindowApp() {
         target: latestTarget,
         requestedAtMs: Date.now(),
       });
-      await requestApplyAiEditTransaction(payload);
+      await requestAppleAssistProposal(payload);
       setStatus(copy.generatingInMain(payload.request));
     } catch (err: unknown) {
       clearGenerationFallback();
@@ -532,6 +574,7 @@ export function AppleAssistWindowApp() {
       setActiveRequestId(null);
       activeRequestIdRef.current = null;
       setStreamPreview("");
+      setStreamOriginalText("");
       setError(classifyApplyError(err, copy));
       // Push a "failed" entry when the IPC call itself
       // throws. The status-event listener above also
@@ -581,11 +624,16 @@ export function AppleAssistWindowApp() {
       // the in-flight generation settles.
     }
   }, [busy, cancelling, copy.cancellingStatus]);
-  const streamPreviewPresentation = getStreamPreviewPresentation(
-    streamPreview,
-    busy,
-    copy,
-  );
+  const discardProposal = useCallback(() => {
+    if (busy) {
+      return;
+    }
+    setProposal(null);
+    setStreamPreview("");
+    setStreamOriginalText("");
+    setError(null);
+    setStatus(copy.proposalDiscardedStatus);
+  }, [busy, copy.proposalDiscardedStatus]);
 
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
@@ -666,24 +714,12 @@ export function AppleAssistWindowApp() {
         </div>
       </section>
 
-      <section
-        className={`apple-assist-window-stream-preview apple-assist-window-stream-preview-${streamPreviewPresentation.kind}`}
-        aria-label={copy.streamPreviewHeading}
-        data-testid="apple-assist-stream-preview"
-      >
-        <p className="apple-assist-stream-preview-heading">
-          {copy.streamPreviewHeading}
-        </p>
-        {streamPreviewPresentation.kind === "content" ? (
-          <pre className="apple-assist-stream-preview-body">
-            {streamPreviewPresentation.text}
-          </pre>
-        ) : (
-          <p className="apple-assist-stream-preview-placeholder">
-            {streamPreviewPresentation.text}
-          </p>
-        )}
-      </section>
+      <ProposalDiffReview
+        proposal={proposalForReview}
+        copy={copy}
+        busy={busy}
+        onDiscard={discardProposal}
+      />
 
       <section
         className="apple-assist-window-feedback"
@@ -767,6 +803,103 @@ export function AppleAssistWindowApp() {
   );
 }
 
+type ProposalDiffReviewProps = {
+  proposal: LocalAssistProposal | null;
+  copy: AppleAssistWindowCopy;
+  busy: boolean;
+  onDiscard: () => void;
+};
+
+function ProposalDiffReview({
+  proposal,
+  copy,
+  busy,
+  onDiscard,
+}: ProposalDiffReviewProps) {
+  const comparison = useMemo(() => {
+    if (!proposal) {
+      return null;
+    }
+    try {
+      return { diff: buildLineDiff(proposal.originalText, proposal.candidateText) };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }, [proposal]);
+  const diff = comparison && "diff" in comparison ? comparison.diff : null;
+
+  return (
+    <section
+      className="apple-assist-window-proposal"
+      aria-label={copy.proposalHeading}
+      data-testid="apple-assist-proposal-review"
+    >
+      <div className="apple-assist-proposal-header">
+        <div>
+          <p className="apple-assist-proposal-heading">{copy.proposalHeading}</p>
+          <p className="apple-assist-proposal-subtitle">
+            {proposal?.streaming ? copy.proposalStreamingStatus : copy.proposalReviewDescription}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="apple-assist-window-discard"
+          onClick={onDiscard}
+          disabled={busy || !proposal}
+        >
+          {copy.proposalDiscardButton}
+        </button>
+      </div>
+      {!proposal ? (
+        <p className="apple-assist-proposal-placeholder">{copy.proposalReviewPlaceholder}</p>
+      ) : comparison?.error ? (
+        <p className="apple-assist-proposal-error" role="alert">
+          {comparison.error}
+        </p>
+      ) : (
+        <>
+          <div className="apple-assist-proposal-columns" aria-hidden="true">
+            <span>{copy.proposalOriginalLabel}</span>
+            <span>{copy.proposalCandidateLabel}</span>
+            {diff ? (
+              <span className="apple-assist-proposal-summary">
+                {copy.proposalChangeSummary(
+                  diff.additions,
+                  diff.removals,
+                )}
+              </span>
+            ) : null}
+          </div>
+          <div className="apple-assist-proposal-body" role="table" aria-label={copy.proposalHeading}>
+            {diff?.lines.map((line, index) => (
+              <div
+                className={`apple-assist-proposal-row apple-assist-proposal-row-${line.kind}`}
+                role="row"
+                key={`${proposal.requestId}-${index}`}
+              >
+                <span className="apple-assist-proposal-cell apple-assist-proposal-cell-left" role="cell">
+                  <span className="apple-assist-proposal-line-number">
+                    {line.leftLine ?? ""}
+                  </span>
+                  <span>{line.kind === "added" ? "" : line.text || " "}</span>
+                </span>
+                <span className="apple-assist-proposal-cell apple-assist-proposal-cell-right" role="cell">
+                  <span className="apple-assist-proposal-line-number">
+                    {line.rightLine ?? ""}
+                  </span>
+                  <span>{line.kind === "removed" ? "" : line.text || " "}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
 export type AppleAssistWindowCopy = {
   activeDocument: (name: string) => string;
   appliedStatus: (request: string) => string;
@@ -812,6 +945,16 @@ export type AppleAssistWindowCopy = {
   streamPreviewHeading: string;
   streamPreviewIdle: string;
   streamPreviewWaiting: string;
+  proposalHeading: string;
+  proposalReviewDescription: string;
+  proposalReviewPlaceholder: string;
+  proposalStreamingStatus: string;
+  proposalOriginalLabel: string;
+  proposalCandidateLabel: string;
+  proposalDiscardButton: string;
+  proposalDiscardedStatus: string;
+  proposalReadyStatus: string;
+  proposalChangeSummary: (additions: number, removals: number) => string;
   // v0.17 operation-feedback panel. The panel shows app-
   // known lifecycle events (target acquired, request sent,
   // generation started, applied, failed, unavailable). It
@@ -837,6 +980,7 @@ export type OperationFeedbackKind =
   | "target-acquired"
   | "request-sent"
   | "generation-started"
+  | "proposal-ready"
   | "applied"
   | "failed"
   | "unavailable";
@@ -867,6 +1011,39 @@ export function getApplyStatusPresentation(
       status: copy.appliedStatus(payload.request),
       error: null,
       feedbackKind: "applied",
+    };
+  }
+
+  if (payload.phase === "cancelled") {
+    return {
+      status: copy.cancelledStatus,
+      error: null,
+      feedbackKind: "failed",
+    };
+  }
+
+  return {
+    status: copy.failedStatus,
+    error: payload.message,
+    feedbackKind: "failed",
+  };
+}
+
+export type ProposalStatusPresentation = {
+  status: string;
+  error: string | null;
+  feedbackKind: Extract<OperationFeedbackKind, "proposal-ready" | "failed">;
+};
+
+export function getProposalStatusPresentation(
+  payload: AppleAssistProposalStatusEvent,
+  copy: AppleAssistWindowCopy,
+): ProposalStatusPresentation {
+  if (payload.phase === "completed") {
+    return {
+      status: copy.proposalReadyStatus,
+      error: null,
+      feedbackKind: "proposal-ready",
     };
   }
 
@@ -1050,7 +1227,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       cancelledStatus: "いらいを とりけしました。",
       cancellingStatus: "とりけし ちゅう...",
       availableDisclosure:
-        "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは ほぞん まえに さぶんで かくにんできます。そとの AI さーびすには おくりません。",
+        "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは みはんえいの まま さぶんで かくにんできます。そとの AI さーびすには おくりません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
@@ -1059,9 +1236,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは おねがいの ないようを かいてください。",
       generatingButton: "おねがい中...",
       generatingChange:
-        "ろーかる もでるで しょり中。ほぞん まえに さぶんで かくにん できます。",
+        "ろーかる もでるで しょり中。みはんえいの あんを さぶんで かくにん できます。ふみは まだ かわりません。",
       generatingInMain: () =>
-        "へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
+        "へんしゅう あんを つくっています。みはんえいの まま さぶんで かくにん できます。ふみは まだ かわりません。",
       failedStatus:
         "おねがいに しっぱいしました。下の めっせーじを みてください。",
       guardrailError:
@@ -1107,9 +1284,22 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
       streamPreviewHeading: "つくっている あん",
       streamPreviewIdle:
-        "おねがいすると、AI が つくっている とちゅうの ぶんが ここに でます。できあがった あんは、ほぞん まえに へんこうてんを かくにん できます。",
+        "おねがいすると、AI が つくっている とちゅうの ぶんが ここに でます。あんは みはんえいの まま さぶんで かくにん できます。ふみは まだ かわりません。",
       streamPreviewWaiting:
         "つくりはじめています。ぶんが とどくと ここに でます。",
+      proposalHeading: "さぶん かくにん",
+      proposalReviewDescription:
+        "つくられた あんを もとの ぶんと くらべます。ふみは まだ かわりません。",
+      proposalReviewPlaceholder:
+        "おねがいすると、もとの ぶんと つくられた あんの さぶんが ここに でます。",
+      proposalStreamingStatus: "あんを つくっています。とちゅうの さぶんです。",
+      proposalOriginalLabel: "もとの ぶん",
+      proposalCandidateLabel: "つくられた あん",
+      proposalDiscardButton: "あんを すてる",
+      proposalDiscardedStatus: "へんしゅう あんを すてました。ふみは かわっていません。",
+      proposalReadyStatus: "へんしゅう あんを さぶん かくにんに おきました。",
+      proposalChangeSummary: (additions, removals) =>
+        `ついか ${additions} / けずる ${removals}`,
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "しんこうじょうきょう",
       feedbackEmpty:
@@ -1144,6 +1334,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         if (kind === "generation-started") {
           return "この Mac で へんしゅう あんを つくっています。";
         }
+        if (kind === "proposal-ready") {
+          return "へんしゅう あんを さぶん かくにんに おきました。ふみは まだ かわっていません。";
+        }
         if (kind === "applied") {
           return "へんしゅう あんを はんえいしました。ほぞん まえに かくにん できます。";
         }
@@ -1165,7 +1358,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       cancelledStatus: "依頼を取り消しました。",
       cancellingStatus: "取り消し中...",
       availableDisclosure:
-        "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未保存の変更として扱い、保存前に差分で確認できます。外部 AI サービスには情報を送りません。",
+        "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未反映のまま差分で確認でき、明示操作まで本文は変更しません。外部 AI サービスには情報を送りません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
@@ -1174,9 +1367,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは依頼内容を入力してください。",
       generatingButton: "依頼中...",
       generatingChange:
-        "ローカルモデルで処理中。保存前に差分で確認できます。",
+        "ローカルモデルで処理中。未反映の案を差分で確認できます。本文はまだ変更しません。",
       generatingInMain: () =>
-        "編集案を作っています。保存前に差分で確認できます。",
+        "編集案を作っています。未反映のまま差分で確認できます。本文はまだ変更しません。",
       failedStatus:
         "依頼に失敗しました。下のメッセージを確認してください。",
       guardrailError:
@@ -1222,9 +1415,22 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
       streamPreviewHeading: "作成中の案",
       streamPreviewIdle:
-        "依頼すると、AI が作っている途中の文章がここに出ます。完成した案は、保存する前に変更点を確認できます。",
+        "依頼すると、AI が作っている途中の文章がここに出ます。案は未反映のまま差分で確認できます。本文はまだ変更しません。",
       streamPreviewWaiting:
         "作り始めています。文章が届くとここに出ます。",
+      proposalHeading: "差分レビュー",
+      proposalReviewDescription:
+        "生成した案を元の文章と比較します。本文はまだ変更しません。",
+      proposalReviewPlaceholder:
+        "依頼すると、元の文章と生成した案の差分がここに表示されます。",
+      proposalStreamingStatus: "案を生成しています。途中の差分を表示しています。",
+      proposalOriginalLabel: "元の文章",
+      proposalCandidateLabel: "生成した案",
+      proposalDiscardButton: "案を破棄",
+      proposalDiscardedStatus: "編集案を破棄しました。本文は変更していません。",
+      proposalReadyStatus: "編集案を差分レビューに表示しました。本文はまだ変更していません。",
+      proposalChangeSummary: (additions, removals) =>
+        `追加 ${additions} / 削除 ${removals}`,
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "進行状況",
       feedbackEmpty:
@@ -1259,6 +1465,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         if (kind === "generation-started") {
           return "この Mac 上で編集案を作っています。";
         }
+        if (kind === "proposal-ready") {
+          return "編集案を差分レビューに表示しました。本文はまだ変更していません。";
+        }
         if (kind === "applied") {
           return "編集案を反映しました。保存前に確認できます。";
         }
@@ -1279,7 +1488,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     cancelledStatus: "Request cancelled.",
     cancellingStatus: "Cancelling...",
     availableDisclosure:
-      "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Document-changing results are applied to unsaved text for diff review. Nothing is sent to an external AI service.",
+      "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Proposals stay unapplied while you review the Diff; the document is unchanged until an explicit action. Nothing is sent to an external AI service.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
@@ -1288,9 +1497,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Type a request first.",
     generatingButton: "Sending...",
     generatingChange:
-      "Processing with the local model. Review the diff before saving.",
+      "Processing with the local model. The unapplied proposal is available in Diff review; the document is unchanged.",
     generatingInMain: () =>
-      "Creating a draft edit. Review the diff before saving.",
+      "Creating an unapplied proposal. You can review it in Diff; the document is unchanged.",
     failedStatus:
       "Request failed. Check the message below.",
     guardrailError:
@@ -1335,9 +1544,22 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     workingLocally: "Working locally on this Mac (no third-party AI service)",
     streamPreviewHeading: "Draft in progress",
     streamPreviewIdle:
-      "When you send a request, the text being written will appear here. You can check the finished changes before saving.",
+      "When you send a request, the text being written will appear here. The proposal stays unapplied in Diff review; the document is unchanged.",
     streamPreviewWaiting:
       "Starting the draft. Text will appear here as it arrives.",
+    proposalHeading: "Diff review",
+    proposalReviewDescription:
+      "Compare the generated proposal with the original. The document is unchanged.",
+    proposalReviewPlaceholder:
+      "Send a request to show the original and the generated proposal here.",
+    proposalStreamingStatus: "Generating a proposal. Showing the in-progress diff.",
+    proposalOriginalLabel: "Original",
+    proposalCandidateLabel: "Proposal",
+    proposalDiscardButton: "Discard proposal",
+    proposalDiscardedStatus: "Discarded the proposal. The document is unchanged.",
+    proposalReadyStatus: "Proposal ready in Diff review. The document is unchanged.",
+    proposalChangeSummary: (additions, removals) =>
+      `${additions} added / ${removals} removed`,
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
     feedbackEmpty:
@@ -1371,6 +1593,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       }
       if (kind === "generation-started") {
         return "Creating a draft edit on this Mac.";
+      }
+      if (kind === "proposal-ready") {
+        return "Proposal ready in Diff review. The document is unchanged.";
       }
       if (kind === "applied") {
         return "Draft edit applied. Review before saving.";
