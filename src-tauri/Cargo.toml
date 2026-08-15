@@ -29,7 +29,7 @@ objc2 = "0.6.4"
 objc2-foundation = { version = "0.3.2", features = ["NSArray", "NSData", "NSError", "NSString", "NSURL"] }
 # Native macOS vibrancy (NSVisualEffectView) for the v0.25 native-feeling
 # shell. macOS-only: guarded by cfg so other platforms stay unaffected.
-window-vibrancy = "0.7"
+window-vibrancy = "0.8"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
