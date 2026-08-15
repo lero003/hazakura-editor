@@ -21,9 +21,11 @@ Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
   tab/session/range/original on the first request, keeps follow-up instructions
   on that target, and replaces the current unapplied proposal in the same Diff
   review. The editor buffer and `AiEditTransaction` store remain unchanged;
-  explicit apply is A-3. Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
+  explicit apply is A-3. This A-2 slice is committed as `9011d3a6` and is
+  integrated into local `main`. Plan: `docs/v2.6-plan.md`; queue:
+  `docs/current-work.md`.
 - **A-4 remains isolated** in Draft PR #34 for narrow Diff layout polish; it is
-  not part of the A-2 branch.
+  not included in the local A-2 `main` commit.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.

@@ -20,6 +20,8 @@ Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
   `AiEditTransaction` store remain unchanged. Partial helper output is
   sanitized before it reaches Diff; cancel/fail keeps the last completed
   proposal. A-3 explicit apply and A-4 narrow layout remain separate slices.
+  The A-2 implementation is committed as `9011d3a6` and fast-forwarded into
+  local `main`; a GitHub PR is not required for this review checkpoint.
   Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 

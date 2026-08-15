@@ -17,6 +17,8 @@ on that target, and revises the current unapplied proposal in the same Diff revi
 
 - Package/app version in tree: **`2.6.0`**. A-2 is a review candidate; it is not
   a release or App Store claim.
+- Local checkpoint: A-2 is committed as `9011d3a6` and fast-forwarded into local
+  `main`; a GitHub PR is not required for this development review.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
@@ -68,7 +70,8 @@ on that target, and revises the current unapplied proposal in the same Diff revi
 
 - A-3 explicit apply before A-2 external review is complete
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
-- A-4 layout polish in the A-2 branch (the separate Draft PR remains isolated)
+- A-4 layout polish in a separate branch/PR (the separate Draft PR remains
+  isolated from the local A-2 `main` commit)
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
