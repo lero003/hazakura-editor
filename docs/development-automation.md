@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-09 (v2.5 implementation)
+Last reviewed: 2026-08-16 (v2.6 Assist planning)
 
 ## Purpose
 
@@ -17,11 +17,13 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.5 development.** Mac App Store `2.4.0` is published and closed for
-drive-by polish. The active spine is persistent three-pane workspace control,
-bounded clarity, and release verification; conversational Assist is deferred.
-Promote only one v2.5 slice at a time. Do not bulk-digest review pools. Direction:
-`docs/current-work.md`, `docs/roadmap.md`, and `docs/v2.5-plan.md`.
+Phase: **v2.6 planning / implementation queue.** Mac App Store `2.4.0` is
+published and closed for drive-by polish; the prepared v2.5 candidate remains a
+separate human-gated release boundary. The active spine is Local Assist
+conversation + separate Diff review, starting with A-1 only. Promote one slice
+at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
+`docs/roadmap.md`, `docs/v2.6-plan.md`, and
+`docs/local-assist-conversational-edit-ux.md`.
 
 
 For recurring automation, use the Active Queue in
@@ -33,10 +35,10 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. Verification or a reproduced defect in W-1/R-1/Q-4 and the v2.5 release lane.
+1. The selected v2.6 A-1 slice: proposal generation/streaming into a separate
+   Diff review while the editor buffer remains unchanged.
 2. Hotfix for a reproduced published `2.4.0` blocker.
-3. One v2.5 slice from the Active Queue when the human has chosen it; do not
-   auto-train from Qwen or four-agent packs.
+3. Verification or a reproduced defect in the prepared v2.5 release lane.
 4. Stale or failing quality gates that block the selected slice.
 5. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

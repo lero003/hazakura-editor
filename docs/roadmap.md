@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-09 (v2.5 non-Assist scope selected)
+Last reviewed: 2026-08-16 (v2.6 conversation / Diff review planning opened)
 
 ## Current Position
 
@@ -13,11 +13,12 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.5.0`** development line |
+| Package / app version in tree | **`2.5.0`**; bump with first v2.6 implementation slice |
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
-| Active product phase | **v2.5** — resizable workspace + bounded clarity polish |
-| Next plan | **`docs/v2.5-plan.md`** |
+| Prepared candidate | **v2.5** at `6067fbec`; Apple gates remain human-owned |
+| Active product phase | **v2.6 planning** — Local Assist conversation + separate Diff review |
+| Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
 
@@ -35,24 +36,30 @@ v2.5 lens (Workspace):
 > Workspace・Editor・Preview／Reference の幅を用途に合わせ、上限や完了を
 > 分かる形にする。source と Safe Editor の境界は変えない。
 
+v2.6 lens (Assist):
+
+> 対象文章について会話し、現在の未反映案は別の Diff 領域で確認する。
+> 本文への反映は Diff からの明示操作に限り、反映しない選択を保つ。
+
 Queue of record: `docs/current-work.md`.
 v2 Book design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 Assist strategy: `docs/assist-surface-strategy.md`.
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
-## Phase Decision (2026-08-07)
+## Phase Decision (2026-08-16)
 
 User direction:
 
 1. **Mac App Store / product line `2.4.0` is shipped.** Treat as closed store
    line; hotfix only for reproduced blockers. Do not reopen for polish trains.
-2. **Next work is v2.5+**, not more Book-depth by default. The selected v2.5
-   theme is **workspace control + delivery clarity**; conversational Local
-   Assist remains designed but moves to a later line.
-3. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
-4. **Core AI** remains a later planned capability after conversational Assist.
-5. **anydoc** stays evaluation-only until product demand is clear.
-6. **R-1 and the accepted Q-3/Q-4/Q-5/Q-13 clarity set** belong to the v2.5
+2. **v2.5 source/candidate is prepared.** Keep its signed candidate and Apple
+   gates separate from later main-branch work.
+3. **v2.6 planning is open.** The selected theme is Local Assist editing
+   conversation with conversation and Diff review as distinct regions.
+4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
+5. **Core AI** remains a later model backend after conversational apply is stable.
+6. **anydoc** stays evaluation-only until product demand is clear.
+7. **R-1 and the accepted Q-3/Q-4/Q-5/Q-13 clarity set** belong to the v2.5
    workspace line. Verified existing or measured no-op outcomes are valid.
 
 ```text
@@ -61,27 +68,29 @@ User direction:
 [done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 published (tags immutable)
 [done]   v2.4 OKF v0.2 · compact toolbar · B-1 chapter Diff
 [done]   v2.5 R-1 text Reference follows Preview font size
-[now]    v2.5 persistent three-pane sizing + exact tree cap notice
-[next]   full gates → signed pkg → human TestFlight upload
-[later]  A-1 → A-4 Local Assist conversational edit
+[done]   v2.5 source + signed candidate at 6067fbec
+[gate]   v2.5 human TestFlight upload / processing / publication
+[now]    v2.6 design: Conversation + separate Diff review
+[next]   A-1 proposal generation → Diff review; editor unchanged
+[then]   A-2 conversation → A-3 Diff apply → A-4 polish
 [later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 
-## Active Path — v2.5
+## Active Path — v2.6
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.4.0` remains hotfix-only.
+Published `2.4.0` remains hotfix-only. The prepared v2.5 candidate remains a
+separate provenance and Apple-gate boundary.
 
 ### Active spine
 
-1. **W-1** Persistent three-pane resizing (Workspace / Editor / right pane)
-2. **R-1** Text reference uses `previewFontSize` like Preview
-3. **Q-4** Exact hidden-entry count for bounded workspace directories
-4. **Q-3 / Q-5** Verify existing export/Finder and Book empty-state behavior
-5. **Q-13** Measure lazy chunks; preserve a verified no-op without bottleneck evidence
+1. **A-1** Proposal generation appears in a separate Diff review; no buffer apply
+2. **A-2** Pinned target + multi-turn updates the current Diff
+3. **A-3** Explicit apply only from Diff review + existing Review Bar
+4. **A-4** Two-region layout / i18n / keyboard / accessibility polish
 
-Plan detail: `docs/v2.5-plan.md`.
+Plan detail: `docs/v2.6-plan.md`.
 
 ### Shipped (v2.4 Book depth)
 
@@ -109,7 +118,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
-| Core AI models | Allowlisted `.aimodel` catalog | After A-1–A-3; start with C-0 design only |
+| Core AI models | Allowlisted `.aimodel` catalog | After A-3; start with C-0 design only |
 | Published 2.4.0 hotfix | App Review / daily-use blocker | Only when reproduced |
 
 ### Hard rails (v2.x does not lift these)
@@ -140,8 +149,9 @@ These boundaries stay active across roadmap changes:
   workspace root only, one active session, no restore, no auto-apply.
 - The standalone Review Desk screen is retired. Local Assist and other
   AI-assist paths stay explicit, Diff-reviewable, and never auto-save or
-  auto-apply without user action. **v2.5 moves apply later in the flow**
-  (proposal conversation first), not away from explicit consent.
+  auto-apply without user action. **v2.6 separates conversation from Diff
+  review and moves apply to the Diff decision surface**, not away from explicit
+  consent.
 - Workspace file operations stay bounded to the selected workspace and
   must not become a full file manager.
 
@@ -160,7 +170,8 @@ These boundaries stay active across roadmap changes:
 | **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into 2.3+** |
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
 | **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
-| **v2.5** | Workspace control + delivery clarity | **Active** — `docs/v2.5-plan.md` |
+| **v2.5** | Workspace control + delivery clarity | **Candidate prepared** — `docs/v2.5-plan.md` |
+| **v2.6** | Local Assist conversation + Diff review | **Planning active** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v3.x | Broader local-AI re-evaluation if still needed | Speculative |
@@ -176,20 +187,30 @@ behavior. Design SoT remains
 `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
 **縦書き** was listed as a later Book pillar; it is now **explicitly behind**
-the Local Assist milestone (see Phase Decision 2026-08-07).
+the Local Assist milestone (see Phase Decision 2026-08-16).
 
 Residual Book practicalization (display TOC clarity, suggestion
 explainability, …) may return as a dedicated line after v2.5 workspace work,
-or as single residual slices if daily friction demands it. Not the v2.5 main
-queue.
+or as single residual slices if daily friction demands it. It is not part of
+the active v2.6 Local Assist queue.
 
-## v2.5 Workspace Control and Clarity
+## v2.5 Workspace Control and Clarity (candidate prepared)
 
 Goal: a persistent, keyboard-operable three-pane workspace plus honest bounded
-tree and completion feedback. Conversational Assist is deferred to a later line.
+tree and completion feedback. This source line is complete at `6067fbec`; Apple
+upload, processing, TestFlight, tag, and publication remain separate gates.
+
+- Plan: `docs/v2.5-plan.md`
+
+## v2.6 Local Assist Conversation + Diff Review
+
+Goal: keep editing conversation and change review distinct. Conversation owns
+requests and short turn state; Diff review owns the current unapplied proposal,
+original-versus-proposal comparison, stale state, discard, and explicit apply.
+The editor buffer stays unchanged until the Diff action is accepted.
 
 - Design: `docs/local-assist-conversational-edit-ux.md`
-- Plan: `docs/v2.5-plan.md`
+- Plan: `docs/v2.6-plan.md`
 - Strategy: `docs/assist-surface-strategy.md`
 
 Not: general chat, provider marketplace, auto multi-file rewrite, or
@@ -209,14 +230,14 @@ Product intent (not an implementation green light):
 - No arbitrary URL, no user-supplied unsigned blobs, no auto-apply.
 
 Sequence: **C-0 design spike → C-1 catalog lifecycle → C-2 Assist selection**,
-after conversational UX (A-1–A-3) is trustworthy. See
-`docs/assist-surface-strategy.md` and `docs/v2.5-plan.md`.
+after conversational apply (A-3) is trustworthy. See
+`docs/assist-surface-strategy.md` and `docs/v2.6-plan.md`.
 
 ## anydoc (evaluation only)
 
 [firecrawl/anydoc](https://github.com/firecrawl/anydoc) (Office/PDF → Markdown)
 may later extend **Import** (draft-until-save), not Open-as-source. PDF stays
-with existing Import Assist first. **No v2.5 product adoption** without a
+with existing Import Assist first. **No v2.6 product adoption** without a
 written evaluation and scope pin (prefer docx-only spike if ever promoted).
 
 ## Distribution Lanes
@@ -241,6 +262,7 @@ Operational checklists:
 |------|------|
 | Next slice | `docs/current-work.md` |
 | Implementation truth | `docs/current-status.md` |
+| v2.6 plan | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |
 | Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |
 | Assist strategy | `docs/assist-surface-strategy.md` |

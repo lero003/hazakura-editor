@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-07-17 (Theme G M0–M3 media consent; defaults stay safe)
+Last reviewed: 2026-08-16 (Local Assist conversation / Diff separation)
 
 ## Core Rule
 
@@ -166,6 +166,11 @@ AI支援を入れる場合も、常時補完や自動書き換えにはしない
 Agent Workbench Mode はこの AI Assistance 方針とは別の任意モードである。`hazakura-note` は汎用 shell prompt や任意コマンド欄を提供せず、直接起動できるのは allowlist された agent CLI だけに限定する。CLI 内部で何ができるかは CLI 側仕様とユーザー操作に依存するため、ユーザー責任と既存の external-change / conflict handling を明示する。
 
 Hazakura Local Assist or Foundation Models-based assistance must stay closer to the AI Assistance rule than to Agent Workbench, including in the App Store lane. It may change the unsaved editor buffer only after an explicit user action and only as an AI edit transaction that records before/after text, source, target scope, and review state. These edits must remain inspectable through Diff, change history, or an equivalent review surface before the user saves. Hazakura Local Assist must not expose tool-calling side effects, background workspace indexing, generic chat, command execution, local HTTP fallback, provider plugins, automatic save, or hidden/irreversible file application without a fresh boundary review.
+
+A bounded editing conversation may refine one current unapplied proposal, but
+the full candidate, original-versus-candidate Diff, stale state, discard, and
+explicit apply controls belong to a distinct review area rather than assistant
+chat turns. Conversation alone must not mutate the editor buffer.
 
 Hazakura Local Assist may show bounded, user-visible operation feedback in
 the Assist Window to make the alpha behaviour understandable.  This

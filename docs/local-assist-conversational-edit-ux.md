@@ -1,9 +1,9 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: Planning (v2.5+ design SoT)
-Scope: Move Hazakura Local Assist from single-shot apply to multi-turn revision conversation
+Status: Planning (v2.6 design SoT)
+Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
-Last reviewed: 2026-08-07
+Last reviewed: 2026-08-16
 
 ## Purpose
 
@@ -12,14 +12,17 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 目標体験:
 
 > 対象となる文章を固定し、AI と会話しながら変更案を育て、
-> 最後にユーザーが明示的に文書へ反映する。
+> 現在の変更案は会話とは別の Diff 確認領域で読み、
+> 最後にユーザーが任意で文書へ反映する。
 
 一般的な AI チャットを足すのではない。現在の文書と変更案を中心にした
-「編集会話」だけを許可する。
+「編集会話」だけを許可する。会話領域に変更本文・Diff・反映操作をすべて
+詰め込まず、**会話する場所**と**本文変更を確認する場所**を分ける。
 
 本ドキュメントは、ユーザー作成の実装依頼書
 （`Local Assistを会話型文書編集UXへ移行する実装依頼書.md`）を repo 正本に
-取り込んだものである。実装キューは `docs/v2.5-plan.md` と
+取り込み、2026-08-16 に Diff 分離型へ具体化したものである。実装キューは
+`docs/v2.6-plan.md` と
 `docs/current-work.md` を優先する。
 
 ## Non-Goals (this migration)
@@ -72,20 +75,52 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 ### Target (proposal-first conversation)
 
 ```text
-対象候補 → 最初の依頼で対象固定 → 会話 → 未反映の変更案を更新
-  → Diff 確認 → 明示「文書へ反映」 → AiEditTransaction → Review Bar
+対象候補 → 最初の依頼で対象固定
+  → 会話領域で依頼・追加指示
+  → Diff 確認領域で現在の未反映案を表示・更新
+  → 任意「文書へ反映」 → AiEditTransaction → Review Bar
 ```
 
-**生成と本文変更を分離する**のが本質。
+**生成と本文変更を分離し、会話と変更確認も分離する**のが本質。
+
+## Surface Contract
+
+Local Assist Window は、一つの会話画面にすべてを積むのではなく、次の責務を
+分ける。
+
+| Surface | Shows | Does not own |
+|---------|-------|--------------|
+| **Conversation** | ユーザーの依頼、追加指示、短い応答、composer、プリセット | 長い変更本文、Diff、反映判断、処理生ログ |
+| **Diff review** | 固定した元文章と現在の未反映案の差分、変更量、stale 状態、反映・破棄 | 会話履歴、モデル内部状態、自動保存 |
+| **Editor** | 現在の Markdown buffer | 未反映案。明示反映までは変えない |
+| **Operation status** | 送信中、生成中、取消中、失敗、利用不可 | 会話ターン、provider transcript、推論過程 |
+
+概念配置:
+
+```text
+┌ Conversation ──────────┐  ┌ Diff review ────────────┐
+│ 対象 / user turns      │  │ 元文章 ↔ 現在の変更案    │
+│ short assistant state  │  │ [案を破棄] [文書へ反映] │
+│ composer / presets     │  │ stale / change summary  │
+└────────────────────────┘  └─────────────────────────┘
+
+Editor buffer: 「文書へ反映」までは不変
+```
+
+ウィンドウ幅が狭い場合は上下に並べてよいが、意味上の領域とフォーカス順は
+混ぜない。会話欄の assistant turn は「変更案を更新しました」のような短い
+状態を示し、変更本文の正本は常に Diff review の `currentProposal` とする。
 
 ## UX Contract
 
 1. **開いた直後** — カーソル / 選択から対象候補を表示。候補はライブ更新してよい。
 2. **最初の依頼送信時** — 対象文書・tab `sessionId`・範囲・元文章・周辺文脈を固定。
 3. **会話中** — カーソル移動で対象を勝手に変えない。変更案はウィンドウ内のみ。
-4. **追加指示** — 本文ではなく **現在の変更案** を基準に次案を生成。
-5. **文書へ反映** — 明示操作のみ。反映前に元文章との stale 再検証。
-6. **反映後** — 既存 `AiEditTransaction` + Review Bar で戻せる。保存はしない。
+4. **追加指示** — 本文ではなく **現在の変更案** を基準に次案を生成し、Diff review を置き換える。
+5. **Diff review** — 会話ターンではなく、固定した元文章と現在案の差分を一箇所で表示する。
+6. **文書へ反映** — Diff review の明示操作のみ。反映前に元文章との stale 再検証。
+7. **任意性** — 反映せずに案を破棄、コピー、または会話を終了できる。終了だけでは本文を変えない。
+8. **反映後** — 既存 `AiEditTransaction` + Review Bar で戻せる。保存はしない。
 
 分離ウィンドウ / companion slot / L Mode 導線 / オンデバイス境界は維持する。
 
@@ -101,7 +136,7 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 | `LocalAssistProposal` | 未反映の変更案（draft / superseded / applied / discarded） |
 
 ```text
-LocalAssistProposal  --「文書へ反映」-->  AiEditTransaction
+LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransaction
 ```
 
 生成しただけでは `AiEditTransactionStore` に書かない。
@@ -111,8 +146,9 @@ LocalAssistProposal  --「文書へ反映」-->  AiEditTransaction
 | Event (names illustrative) | Mutates buffer? |
 |----------------------------|-----------------|
 | request local-assist turn | No — generate proposal only |
-| turn status (partial/completed/failed) | No — update proposal UI |
-| apply local-assist proposal | Yes — only path into existing apply |
+| turn status (partial/completed/failed) | No — update Diff review candidate only |
+| discard local-assist proposal | No — clear current proposal / review state |
+| apply local-assist proposal | Yes — Diff review is the only path into existing apply |
 
 反映時に tab `sessionId`・path・範囲・元文章・バッファ整合を再確認する。
 
@@ -128,10 +164,10 @@ LocalAssistProposal  --「文書へ反映」-->  AiEditTransaction
 
 | Phase | Slice | Done when |
 |-------|--------|-----------|
-| **P1** | 生成と本文反映の分離 | 依頼・streaming・変更案表示。本文は不変。破棄可。プリセット維持 |
-| **P2** | 対象固定 + 複数ターン | 固定対象、追加指示、案基準の再生成、新会話 |
-| **P3** | 明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save |
-| **P4** | UI 仕上げ | スクロール、入力固定、a11y、i18n、stale / empty |
+| **P1** | 生成と本文反映の分離 | 依頼・streaming・Diff review 表示。本文は不変。破棄可。プリセット維持 |
+| **P2** | 対象固定 + 複数ターン | 固定対象、追加指示、案基準の再生成、現在 Diff の置換、新会話 |
+| **P3** | Diff から明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save |
+| **P4** | 二領域 UI 仕上げ | conversation / Diff のレスポンシブ配置、focus、a11y、i18n、stale / empty |
 
 **1 run = 1 phase またはそれ以下の検証可能スライス。**  
 いきなり全面実装しない。最初は P1 のみ。
@@ -139,26 +175,28 @@ LocalAssistProposal  --「文書へ反映」-->  AiEditTransaction
 ## Test Pins (minimum)
 
 1. 初回依頼だけでは本文が変わらない
-2. 結果が proposal として保持される
+2. 結果が proposal として保持され、Diff review に表示される
 3. 会話開始後、カーソル移動で固定対象が変わらない
-4. 追加指示で現在案がモデル入力に使われる
+4. 追加指示で現在案がモデル入力に使われ、完成後は同じ Diff review が更新される
 5. 元文章も入力に残る / 履歴は bounded
 6. partial はプレビューのみ更新
 7. キャンセルで直前の完成案を失わない
 8. 新案で旧案は `superseded`
 9. 「文書へ反映」まで本文不変
-10. 元文章変化時は適用拒否
+10. 反映操作は会話メッセージではなく Diff review にあり、元文章変化時は適用拒否
 11. 別 tab / 異なる `sessionId` は stale または拒否
 12. 反映後 transaction 1 件 + Review Bar で戻せる
 13. 会話・案・処理ログは自動保存されない
 14. 内部プロンプト漏洩なし / 外部ネットワークなし
 15. availability・cancel・timeout・既存プリセットを壊さない
+16. 会話領域へ変更本文全文や operation feedback 生ログを重複表示しない
+17. 狭い幅でも conversation → Diff controls のフォーカス順と反映判断を保つ
 
 ## File Touch Map (guidance)
 
 分割を優先し、`AppleAssistWindowApp` / `useAppleAssistApplyHandler` を肥大化させない。
 
-- UI: `src/components/appleAssist/` に conversation / proposal / composer 分割
+- UI: `src/components/appleAssist/` に conversation / diff review / composer / status 分割
 - Hooks: turn 生成と proposal 適用を分離
 - Features: `localAssistConversation` / `localAssistProposal`（新規）
 - Helper: revision candidate action を追加（既存 generate は移行期間維持）
@@ -166,7 +204,7 @@ LocalAssistProposal  --「文書へ反映」-->  AiEditTransaction
 
 ## Related
 
-- Queue: `docs/v2.5-plan.md`, `docs/current-work.md`
+- Queue: `docs/v2.6-plan.md`, `docs/current-work.md`
 - Assist boundary: `docs/assist-surface-strategy.md`
 - Security: `docs/security-boundary.md`
-- Later Core AI whitelist models: `docs/v2.5-plan.md` § Core AI (not this UX slice)
+- Later Core AI whitelist models: `docs/v2.6-plan.md` § Core AI (not this UX slice)

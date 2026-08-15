@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-08-09 (v2.5 workspace line in source)
+Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 planning opened)
 
 ## Current State
 
@@ -14,12 +14,16 @@ Last reviewed: 2026-08-09 (v2.5 workspace line in source)
   include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **Active product phase: v2.5.** Workspace control + delivery clarity. W-1 is
-  in source: the left Workspace width is adjustable, and the normal right pane
-  and Reference widths persist separately with bounded keyboard/pointer
-  controls. R-1 makes text Reference follow Preview font size. Q-4 reports the
-  exact entry count hidden by a per-folder tree cap. Plan: `docs/v2.5-plan.md`.
-  Queue: `docs/current-work.md`. Conversational Local Assist is deferred.
+- **Implemented source remains v2.5.** Workspace control + delivery clarity is
+  in source: bounded persistent pane widths, Reference font-size alignment, and
+  exact tree-cap counts. The clean signed-candidate boundary is commit
+  `6067fbec`; Apple upload, processing, TestFlight, tag, and publication remain
+  human gates. Plan: `docs/v2.5-plan.md`.
+- **Active product planning is v2.6.** Local Assist will separate requests and
+  short turn state in a Conversation area from the current unapplied proposal,
+  Diff, stale state, discard, and explicit apply in a Diff review area. No v2.6
+  implementation or version bump is claimed yet. Plan: `docs/v2.6-plan.md`;
+  queue: `docs/current-work.md`.
 - **Current v2.5 candidate verification is green:** frontend 208 files / 1,740 tests,
   Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests, Vite,
   helper-enabled App Store preview build, and a 1280×820 native window smoke.
@@ -30,8 +34,8 @@ Last reviewed: 2026-08-09 (v2.5 workspace line in source)
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
-- **縦書き** stays deferred. **anydoc** is evaluation
-  only. **Core AI** allowlisted writing models and A-1–A-4 Assist depth are later.
+- **縦書き** stays deferred. **anydoc** is evaluation only. **Core AI**
+  allowlisted writing models remain later than stable v2.6 conversational apply.
 - **OKF review/scaffolds now pin v0.2 commit `3fcbb9f…`.** v0.2 optional
   provenance/trust/lifecycle/attestation families, including `usage_window`,
   are accepted as inert optional data.
@@ -573,9 +577,10 @@ Last reviewed: 2026-08-09 (v2.5 workspace line in source)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.5.0`**. The active v2.5 workspace line
-  adds persistent three-pane widths, Reference font-size alignment, and an
-  exact bounded-tree hidden count. Conversational Assist is later.
+- Current development-tree version: **`2.5.0`**. The completed v2.5 workspace
+  line adds persistent three-pane widths, Reference font-size alignment, and an
+  exact bounded-tree hidden count. v2.6 conversation/Diff work is planned but
+  not implemented; bump package surfaces only with its first code slice.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
@@ -1017,12 +1022,14 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Review the v2.5 implementation and candidate evidence through its Draft PR.
-2. Upload the existing signed 2.5.0 candidate only with explicit human approval,
+1. Start v2.6 with **A-1 only**: generate/stream an unapplied proposal into a
+   separate Diff review while keeping the editor buffer unchanged.
+2. Review the v2.5 implementation and candidate evidence through its Draft PR.
+3. Upload the existing signed 2.5.0 candidate only with explicit human approval,
    then separate Apple processing and installed-TestFlight smoke from local proof.
-3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
+4. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
-4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
+5. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
    and bulk digestion of external review pools until promoted.
-5. Keep Local Assist on-device, explicit, and diff-reviewable; keep Book order
+6. Keep Local Assist on-device, explicit, and diff-reviewable; keep Book order
    app-private and separate from OKF semantics.

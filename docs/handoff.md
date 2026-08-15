@@ -1,21 +1,27 @@
 # Handoff
 
 Status: Operational
-Scope: v2.5 active implementation — workspace control + delivery clarity
+Scope: v2.6 active planning — Local Assist conversation + Diff review
 Authority: Medium
-Last reviewed: 2026-08-09 (signed v2.5 candidate prepared; upload human-gated)
+Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 design opened)
 
 ## Current State
 
 - Package/app version in tree: **`2.5.0`** development line.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
-- **Active phase: v2.5.** Primary work is workspace control and delivery
-  clarity, not Local Assist depth or more Book depth. W-1 gives the left
+- **v2.5 candidate is prepared at `6067fbec`.** W-1 gives the left
   Workspace a bounded accessible resizer and persists normal-right and
   Reference widths separately. R-1 aligns text Reference font size; Q-4 shows
   the exact count hidden by a folder cap. Q-3/Q-5 were already implemented;
-  Q-13 is a measured no-op. Plan: `docs/v2.5-plan.md`.
+  Q-13 is a measured no-op. Upload, processing, installed TestFlight, tag, and
+  publication remain human gates. Plan: `docs/v2.5-plan.md`.
+- **Active planning is v2.6.** Local Assist conversation owns requests and short
+  turn state; a separate Diff review owns the current unapplied proposal,
+  original-versus-proposal comparison, stale state, discard, and explicit
+  `文書へ反映`. No v2.6 implementation or version bump is claimed. Start with
+  A-1 only. Plan: `docs/v2.6-plan.md`; design:
+  `docs/local-assist-conversational-edit-ux.md`.
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -399,10 +405,12 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Read `docs/current-work.md` and `docs/v2.5-plan.md`. Next work is full source
-   verification and built-app smoke for W-1/R-1/Q-4.
-2. Keep `docs/local-assist-conversational-edit-ux.md` as a later-line design;
-   do not pull A-1–A-4 into the v2.5 release gate.
+1. Read `docs/current-work.md`, `docs/v2.6-plan.md`, and
+   `docs/local-assist-conversational-edit-ux.md`. Next product slice is A-1:
+   generate an unapplied proposal into a separate Diff review and leave the
+   editor buffer unchanged.
+2. Keep the v2.5 candidate at `6067fbec` and its human Apple gates separate
+   from v2.6 development; do not rebuild it just to include later docs.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
 4. Do not move published tags, upload, or attach release assets without a
@@ -415,6 +423,7 @@ retained as the earlier R-1-only checkpoint.
 | Need | Path |
 |------|------|
 | Next slice | `docs/current-work.md` |
+| v2.6 plan | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |
 | Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |
 | Assist strategy | `docs/assist-surface-strategy.md` |

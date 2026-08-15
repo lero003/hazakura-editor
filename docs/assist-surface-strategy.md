@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-08-07 (v2.5 conversational UX + Core AI whitelist intent)
+Last reviewed: 2026-08-16 (v2.6 conversation / Diff separation + Core AI intent)
 
 ## Purpose
 
@@ -109,18 +109,19 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (deferred target)
+### Conversational document edit (v2.6 target)
 
-A later product line may move Local Assist from **single-shot generate →
+v2.6 may move Local Assist from **single-shot generate →
 immediate buffer apply** to **proposal-first multi-turn revision conversation**:
 
 1. Pin a document target on the first user request.
-2. Generate and refine an **unapplied proposal** inside the Assist window.
-3. Apply to the unsaved editor buffer **only** on explicit “文書へ反映”.
-4. Record an AI edit transaction and keep Diff / Review Bar discard.
+2. Use a conversation area for requests and short turn state.
+3. Generate and refine an **unapplied proposal** in a separate Diff review area.
+4. Apply to the unsaved editor buffer **only** from explicit “文書へ反映”.
+5. Record an AI edit transaction and keep Diff / Review Bar discard.
 
 Design SoT: `docs/local-assist-conversational-edit-ux.md`.
-Deferred plan IDs A-1–A-4 remain recorded in `docs/v2.5-plan.md`.
+Plan IDs A-1–A-4 are recorded in `docs/v2.6-plan.md`.
 
 Until those slices ship, the live product may still apply on generate; do not
 document the new flow as already released.
@@ -130,13 +131,20 @@ for the active editing session (in-memory only). It must not become a
 persistent general-purpose chat history, workspace-wide assistant, or
 autonomous agent transcript.
 
+The conversation is a control surface for refining the current proposal, not
+the proposal viewer itself. User turns and short assistant state belong in the
+conversation area. The full candidate text, original-versus-candidate Diff,
+stale state, discard, and explicit apply belong in the separate Diff review
+area. Narrow windows may stack those regions, but must not merge their
+responsibilities.
+
 Operation feedback (target acquired, request sent, generation started,
 applied, failed) stays compact and must not be shown as chat turns or as
 raw Foundation Models prompts, hidden instructions, provider transcripts,
 or model reasoning.
 
 Hazakura Local Assist may update the unsaved editor buffer **only** as an
-AI edit transaction after explicit apply (v2.5) or, until migration, the
+AI edit transaction after explicit apply (v2.6) or, until migration, the
 current single-shot path: before/after record, source label, no auto-save,
 and a path to Diff / change history. Manual Review Desk entry points remain
 retired from the primary Local Assist surface.
@@ -161,21 +169,21 @@ A possible shape:
 ```txt
 Hazakura Editor
   -> structured request for selected text / current writing context
-  -> (v2.5) revision packet: original + current proposal + recent user turns
+  -> (v2.6) revision packet: original + current proposal + recent user turns
 hazakura-local-assist-helper
   -> Foundation Models framework  (primary)
   -> optional Core AI allowlisted writing model  (later)
 Hazakura Editor
-  <- structured candidate / proposal (no buffer mutate on generate)
-explicit apply
-  -> AI edit transaction on unsaved buffer, Diff / history remains available
+  <- structured candidate / proposal -> unapplied Diff review
+explicit apply from Diff review
+  -> AI edit transaction on unsaved buffer -> post-apply Review Bar / history
 ```
 
 The helper must receive only the text needed for the selected task. It should not receive broad workspace context by default.
 
 ## Core AI — Allowlisted Writing Models (later)
 
-Product intent for a **later** lane (not the v2.5 A-1 implementation slice):
+Product intent for a **later** lane (not the v2.6 A-1 implementation slice):
 
 - **Why:** Foundation Models (Apple Intelligence path) remains the default
   brain. When writing-specific quality or specialization is still missing,
@@ -198,7 +206,7 @@ Hard rules:
 - Do not build a model marketplace UI or provider-add surface.
 
 Sequence: C-0 design spike → C-1 lifecycle → C-2 Assist selection
-(`docs/v2.5-plan.md`). Do not start C-1 until conversational apply (A-3) is
+(`docs/v2.6-plan.md`). Do not start C-1 until conversational apply (A-3) is
 stable enough that a second model backend will not fork two UX stories.
 
 Hazakura Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
