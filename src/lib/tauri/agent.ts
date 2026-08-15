@@ -269,8 +269,12 @@ export async function requestApplyAiEditTransaction(
   await invoke("request_apply_ai_edit_transaction", { payload });
 }
 
-// v2.6 A-1: ask the main window to generate an unapplied proposal.
-// This is deliberately a different command from the legacy apply path;
+// v2.6 A-3: the function above asks the main window to apply the already
+// reviewed Diff proposal. The receiving hook never calls the model a second
+// time. The payload carries `proposalText` and the explicit apply flag.
+//
+// v2.6 A-1/A-2: ask the main window to generate an unapplied proposal.
+// This is deliberately a different command from the apply path;
 // the receiving hook streams the candidate to Diff review without mutating
 // the editor buffer or recording an AiEditTransaction.
 export async function requestAppleAssistProposal(

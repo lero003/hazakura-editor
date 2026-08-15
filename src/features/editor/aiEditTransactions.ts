@@ -6,10 +6,10 @@ import type { CompareViewState } from "../../types";
 //
 // An `AiEditTransaction` is the durable record of one
 // "AI wrote to the unsaved buffer" event. The Hazakura Local Assist
-// window fires `APPLY_AI_EDIT_TRANSACTION_EVENT`; the main
-// window's listener asks Hazakura Local Assist for a bounded replacement, mutates
-// the unsaved buffer in place, and records a transaction
-// here. The escape hatch (slice 5) reads `latest` to
+// window fires `APPLY_AI_EDIT_TRANSACTION_EVENT` after the user has
+// reviewed a candidate in Diff; the main window's listener revalidates
+// that candidate, mutates the unsaved buffer in place, and records a
+// transaction here. The existing Review Bar reads `latest` to
 // render the "Open Diff" / "Discard" affordances.
 //
 // The store is session-local and in-memory: closing the
@@ -37,6 +37,7 @@ export type AiEditTransaction = {
 };
 
 export type ApplyAiEditTransactionInput = {
+  /** Open editor session identity; the store key is the same value. */
   tabId: string;
   tabName: string;
   tabPath: string;
@@ -118,6 +119,16 @@ export function applyAiEditTransaction(
     return {
       ok: false,
       error: "Hazakura Local Assist target is stale for the active document.",
+    };
+  }
+  if (
+    target.activeDocumentSessionId !== null &&
+    target.activeDocumentSessionId !== undefined &&
+    target.activeDocumentSessionId !== input.tabId
+  ) {
+    return {
+      ok: false,
+      error: "Hazakura Local Assist target is stale for the active editor session.",
     };
   }
 

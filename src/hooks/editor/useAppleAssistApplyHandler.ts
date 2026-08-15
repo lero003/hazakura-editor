@@ -1,4 +1,4 @@
-import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef } from "react";
 import { emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { buildLineDiff } from "../../features/diff/diff";
 import {
@@ -7,21 +7,14 @@ import {
   type AiEditTransaction,
 } from "../../features/editor/aiEditTransactions";
 import {
-  APPLE_ASSIST_MAX_CONTEXT_CHARS,
-  generateAppleAssistCandidateStreaming,
-  type AppleAssistOperation,
-} from "../../lib/tauri/appleAssist";
-import {
   APPLY_AI_EDIT_TRANSACTION_EVENT,
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   type AppleAssistApplyEvent,
   type AppleAssistApplyStatusEvent,
-  type AppleAssistGenerationLock,
   type AppleAssistTargetSnapshot,
   type CompareViewState,
 } from "../../types";
 import {
-  getLocalAssistAction,
   isLocalAssistActionId,
   type LocalAssistActionId,
 } from "../../lib/appleAssist/instruction";
@@ -57,15 +50,14 @@ export function getAppleAssistContextWindow(
   };
 }
 
-// v0.12+ Hazakura Local Assist Writing Companion (slice 4).
-// `useAppleAssistApplyHandler` is the main window's
-// listener for the `APPLY_AI_EDIT_TRANSACTION_EVENT` that
-// the detached Hazakura Local Assist window fires on Apply. The
-// hook requests a bounded Hazakura Local Assist candidate, rewrites the active
-// tab's unsaved buffer in place, marks the tab dirty, and
-// records an `AiEditTransaction` in the session-local
-// store so the escape hatch (slice 5) can render a
-// "review / discard" affordance.
+// v2.6 A-3: `useAppleAssistApplyHandler` is the main window's
+// listener for the explicit Diff-review
+// `APPLY_AI_EDIT_TRANSACTION_EVENT`. The detached Local Assist
+// window sends the already reviewed candidate; this hook never calls the
+// model and never accepts a request without that candidate.
+// It revalidates the pinned target, rewrites the active tab's unsaved buffer,
+// and records one `AiEditTransaction` in the session-local store so the
+// existing Review Bar can provide the discard/accept escape hatch.
 //
 // The hook is intentionally side-effect-only: it does
 // not own any state, and the only way it talks back to the
@@ -100,14 +92,12 @@ type UseAppleAssistApplyHandlerOptions = {
   // on apply success / failure with a localized message
   // the orchestrator can pass through to its `setStatus`.
   setStatus?: (message: string) => void;
-  setGenerationLock?: Dispatch<SetStateAction<AppleAssistGenerationLock | null>>;
 };
 
 export function useAppleAssistApplyHandler({
   activeTab,
   setActiveTabContents,
   setStatus,
-  setGenerationLock,
 }: UseAppleAssistApplyHandlerOptions): void {
   // Refs let the listener read the latest active tab /
   // status setter without re-subscribing on every change.
@@ -117,8 +107,6 @@ export function useAppleAssistApplyHandler({
   setActiveTabContentsRef.current = setActiveTabContents;
   const setStatusRef = useRef(setStatus);
   setStatusRef.current = setStatus;
-  const setGenerationLockRef = useRef(setGenerationLock);
-  setGenerationLockRef.current = setGenerationLock;
 
   useEffect(() => {
     let unlisten: UnlistenFn | null = null;
@@ -157,6 +145,22 @@ export function useAppleAssistApplyHandler({
       return;
     }
 
+    if (payload.shouldApplyToDocument !== true) {
+      const message =
+        "Hazakura Local Assist apply rejected: only an explicit Diff review action may change the document.";
+      setStatusRef.current?.(message);
+      void emitAppleAssistApplyStatus("failed", message, payload);
+      return;
+    }
+
+    if (typeof payload.proposalText !== "string" || payload.proposalText.trim().length === 0) {
+      const message =
+        "Hazakura Local Assist apply rejected: no reviewed proposal was supplied.";
+      setStatusRef.current?.(message);
+      void emitAppleAssistApplyStatus("failed", message, payload);
+      return;
+    }
+
     const target = payload.target;
     const targetCheck = readTargetTextForGeneration(target, tab);
     if (!targetCheck.ok) {
@@ -165,56 +169,49 @@ export function useAppleAssistApplyHandler({
       void emitAppleAssistApplyStatus("failed", message, payload);
       return;
     }
-    // After the `ok: true` check, `targetCheck.target` is
-    // the validated, non-null snapshot. Re-bind it under a
-    // narrower name so the rest of the function can use
-    // `target.start` / `target.end` without further null
-    // checks.
-    const targetSnapshot = targetCheck.target;
+    if (
+      payload.conversationOriginalText !== undefined &&
+      payload.conversationOriginalText !== targetCheck.before
+    ) {
+      const message =
+        "Hazakura Local Assist apply rejected: the pinned original no longer matches the active document.";
+      setStatusRef.current?.(message);
+      void emitAppleAssistApplyStatus("failed", message, payload);
+      return;
+    }
+
+    const candidateText = sanitizeAppleAssistCandidateText(payload.proposalText);
+    if (candidateText.trim().length === 0) {
+      const message = "Hazakura Local Assist apply rejected: the reviewed proposal is empty.";
+      setStatusRef.current?.(message);
+      void emitAppleAssistApplyStatus("failed", message, payload);
+      return;
+    }
 
     try {
-      const startMessage = "Hazakura Local Assist is generating a change...";
+      const startMessage = "Hazakura Local Assist is applying the reviewed proposal...";
       setStatusRef.current?.(startMessage);
-      setGenerationLockRef.current?.({
-        requestId: payload.requestId,
-        tabId: tab.id,
-        tabPath: tab.path,
-        request: payload.request,
-      });
       await emitAppleAssistApplyStatus("started", startMessage, payload);
-      await yieldBeforeAppleAssistGeneration();
-      const contextWindow = getAppleAssistContextWindow(targetSnapshot.kind);
-      const actionId = resolveApplyActionId(payload);
-      const action = getLocalAssistAction(actionId);
-      const response = await generateAppleAssistCandidateStreaming({
-        operation: action.operation,
-        actionId,
-        selectedText: targetCheck.before,
-        documentContext: buildSurroundingDocumentContext(
-          tab.contents,
-          targetSnapshot.start,
-          targetSnapshot.end,
-          contextWindow.preChars,
-          contextWindow.postChars,
-          APPLE_ASSIST_MAX_CONTEXT_CHARS,
-        ),
-        additionalRequest: payload.additionalRequest,
-      }, payload.requestId, payload.request);
 
       const latestTab = activeTabRef.current;
       if (!latestTab) {
         const message = "Hazakura Local Assist apply ignored: no active tab.";
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload);
-        clearGenerationLock(payload.requestId);
         return;
       }
       if (!isSameAppleAssistTargetTab(tab, latestTab)) {
         const message =
-          "Hazakura Local Assist apply ignored: the active document changed during generation.";
+          "Hazakura Local Assist apply rejected: the active document changed before apply.";
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload);
-        clearGenerationLock(payload.requestId);
+        return;
+      }
+      const latestTargetCheck = readTargetTextForGeneration(payload.target, latestTab);
+      if (!latestTargetCheck.ok) {
+        const message = `Hazakura Local Assist apply failed: ${latestTargetCheck.error}`;
+        setStatusRef.current?.(message);
+        void emitAppleAssistApplyStatus("failed", message, payload);
         return;
       }
       const result = applyAiEditTransaction({
@@ -222,15 +219,14 @@ export function useAppleAssistApplyHandler({
         tabName: latestTab.name,
         tabPath: latestTab.path,
         request: payload.request,
-        target: payload.target,
+        target: latestTargetCheck.target,
         buffer: latestTab.contents,
-        afterText: sanitizeAppleAssistCandidateText(response.candidateText),
+        afterText: candidateText,
       });
       if (!result.ok) {
         const message = `Hazakura Local Assist apply failed: ${result.error}`;
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload);
-        clearGenerationLock(payload.requestId);
         return;
       }
 
@@ -263,45 +259,39 @@ export function useAppleAssistApplyHandler({
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      // A user-initiated cancel (stop command or window/tab close)
-      // surfaces a distinct "cancelled" phase so the companion window
-      // shows the cancel message instead of a failure.
-      if (message.includes("cancelled by user")) {
-        setStatusRef.current?.(message);
-        void emitAppleAssistApplyStatus("cancelled", message, payload);
-      } else {
-        const errorMessage = `Hazakura Local Assist generation failed: ${message}`;
-        setStatusRef.current?.(errorMessage);
-        void emitAppleAssistApplyStatus("failed", errorMessage, payload);
-      }
-    } finally {
-      clearGenerationLock(payload.requestId);
+      const errorMessage = `Hazakura Local Assist apply failed: ${message}`;
+      setStatusRef.current?.(errorMessage);
+      void emitAppleAssistApplyStatus("failed", errorMessage, payload);
     }
-  }
-
-  function clearGenerationLock(requestId: string): void {
-    setGenerationLockRef.current?.((current) =>
-      current?.requestId === requestId ? null : current,
-    );
   }
 }
 
 export function sanitizeAppleAssistCandidateText(candidateText: string): string {
   const trimmed = candidateText.trim();
   const boundaryPatterns = [
-    /<<<HAZAKURA_TEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_TEXT_END>>>/,
-    /<<<HAZAKURA_CONTEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_CONTEXT_END>>>/,
+    /<<<HAZAKURA_TEXT_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_TEXT_END>>>/,
+    /<<<HAZAKURA_CONTEXT_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_CONTEXT_END>>>/,
+    /<<<HAZAKURA_ORIGINAL_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_ORIGINAL_END>>>/,
   ];
 
   for (const pattern of boundaryPatterns) {
     const match = trimmed.match(pattern);
-    const inner = match?.[1]?.trim();
-    if (inner) {
-      return inner;
+    if (match) {
+      return match[1]?.trim() ?? "";
     }
   }
 
-  return candidateText;
+  const withoutBoundaryStart = trimmed
+    .replace(/^<<<HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_START(?:>>>)?\s*/u, "")
+    .replace(/\s*(?:<<<)?HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_END>>>$/u, "")
+    .trim();
+  if (
+    !withoutBoundaryStart ||
+    /^<<<HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_START(?:>>>)?$/u.test(trimmed)
+  ) {
+    return "";
+  }
+  return withoutBoundaryStart === trimmed ? candidateText : withoutBoundaryStart;
 }
 
 async function emitAppleAssistApplyStatus(

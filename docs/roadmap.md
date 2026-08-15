@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.6.0`**; A-2 review candidate |
+| Package / app version in tree | **`2.6.0`**; A-3 implementation candidate |
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.6 A-2 review** — pinned target + multi-turn Diff revision |
+| Active product phase | **v2.6 A-3 review** — explicit Diff apply + stale revalidation |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -54,9 +54,10 @@ User direction:
    line; hotfix only for reproduced blockers. Do not reopen for polish trains.
 2. **v2.5 is released and closed.** Do not reopen its release gates from the
    v2.6 development line.
-3. **v2.6 A-2 is under external review.** A-1 is merged; the current candidate
-   pins the Local Assist target and revises the proposal through follow-up
-   conversation while keeping conversation and Diff review distinct.
+3. **v2.6 A-3 is under external review.** A-1/A-2 are merged locally; the
+   current candidate applies only the reviewed Diff proposal after stale
+   revalidation, records one transaction for Review Bar, and keeps conversation
+   and Diff review distinct.
 4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
 5. **Core AI** remains a later model backend after conversational apply is stable.
 6. **anydoc** stays evaluation-only until product demand is clear.
@@ -71,8 +72,9 @@ User direction:
 [done]   v2.5 R-1 text Reference follows Preview font size
 [done]   v2.5 release (closed)
 [done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
-[now]    v2.6 A-2: pinned target + multi-turn proposal revision
-[next]   External review, then A-3 Diff apply
+[done]   v2.6 A-2: pinned target + multi-turn proposal revision
+[now]    v2.6 A-3: explicit Diff apply + stale revalidation
+[next]   External review, then A-4 two-region layout polish
 [then]   A-4 two-region layout polish (separate Draft PR #34)
 [later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
@@ -172,7 +174,7 @@ These boundaries stay active across roadmap changes:
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
 | **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
 | **v2.5** | Workspace control + delivery clarity | **Released / closed** — `docs/v2.5-plan.md` |
-| **v2.6** | Local Assist conversation + Diff review | **A-2 review candidate** — `docs/v2.6-plan.md` |
+| **v2.6** | Local Assist conversation + Diff review | **A-3 implementation candidate** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v3.x | Broader local-AI re-evaluation if still needed | Speculative |

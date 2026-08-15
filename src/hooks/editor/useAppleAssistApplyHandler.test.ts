@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   APPLE_ASSIST_CONTEXT_POST_CHARS,
   APPLE_ASSIST_CONTEXT_PRE_CHARS,
@@ -348,6 +348,20 @@ describe("sanitizeAppleAssistCandidateText", () => {
     expect(sanitizeAppleAssistCandidateText(candidate)).toBe("Reference context");
   });
 
+  it("strips leaked pinned-original boundary markers from a revision packet", () => {
+    const candidate = [
+      "<<<HAZAKURA_ORIGINAL_START>>>",
+      "Original pinned body",
+      "<<<HAZAKURA_ORIGINAL_END>>>",
+    ].join("\n");
+
+    expect(sanitizeAppleAssistCandidateText(candidate)).toBe("Original pinned body");
+  });
+
+  it("drops a partial pinned-original marker instead of exposing it to the document", () => {
+    expect(sanitizeAppleAssistCandidateText("<<<HAZAKURA_ORIGINAL_START")).toBe("");
+  });
+
   it("keeps normal Markdown content intact", () => {
     const candidate = "# Heading\n\n- item\n";
 
@@ -426,9 +440,6 @@ vi.mock("@tauri-apps/api/event", () => ({
 
 vi.mock("../../lib/tauri/appleAssist", () => ({
   APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000,
-  generateAppleAssistCandidateStreaming: vi.fn(async () => ({
-    candidateText: "整えた本文",
-  })),
 }));
 
 function targetSnapshot(
@@ -449,29 +460,15 @@ function targetSnapshot(
   };
 }
 
-describe("useAppleAssistApplyHandler apply path", () => {
-  const originalRAF = window.requestAnimationFrame;
-
-  beforeEach(() => {
-    // The handler yields to `requestAnimationFrame` before
-    // generating. jsdom's rAF is tied to a frame clock the
-    // test never advances, so the generation promise would
-    // hang and the buffer write would never run. Route the
-    // frame callback through `setTimeout` so a timer pump
-    // flushes it deterministically.
-    window.requestAnimationFrame = ((cb: FrameRequestCallback) =>
-      window.setTimeout(() => cb(0), 0)) as unknown as typeof window.requestAnimationFrame;
-  });
-
+describe("useAppleAssistApplyHandler explicit proposal path", () => {
   afterEach(() => {
     applyListeners.length = 0;
     vi.mocked(listen).mockClear();
     vi.mocked(emitTo).mockClear();
-    window.requestAnimationFrame = originalRAF;
     aiEditTransactionStore.clear("session:tab-1");
   });
 
-  it("writes the generated text back to the tab matched by sessionId", async () => {
+  it("writes only the reviewed proposal back to the tab matched by sessionId", async () => {
     const contents = "hello world";
     const target = targetSnapshot("hello world", contents);
     const setActiveTabContents = vi.fn();
@@ -497,19 +494,12 @@ describe("useAppleAssistApplyHandler apply path", () => {
       requestId: "req-1",
       request: "整えて",
       target,
-      additionalRequest: undefined,
-      actionId: "proofread_only",
+      shouldApplyToDocument: true,
+      proposalText: "整えた本文",
       requestedAtMs: 0,
     };
-    // The listener fires the apply on `void` (the handler does
-    // not return the inner promise), so awaiting the listener
-    // alone does not drain the generation chain. Pump the timer
-    // queue repeatedly to flush the `requestAnimationFrame`
-    // yield and the mocked streaming generation.
     applyListeners[0]?.({ payload } as never);
-    for (let i = 0; i < 10; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(setActiveTabContents).toHaveBeenCalledTimes(1);
     // The write MUST be addressed by `sessionId`, not by `id`.
@@ -523,6 +513,94 @@ describe("useAppleAssistApplyHandler apply path", () => {
     expect(setActiveTabContents).not.toHaveBeenCalledWith(
       expect.any(String),
       "/workspace/note.md",
+    );
+    expect(setActiveTabContents).toHaveBeenCalledWith(
+      "整えた本文",
+      "session:tab-1",
+    );
+    expect(aiEditTransactionStore.getLatest("session:tab-1")).toMatchObject({
+      before: "hello world",
+      after: "整えた本文",
+    });
+  });
+
+  it("rejects a request that does not carry an explicit reviewed proposal", async () => {
+    const contents = "hello world";
+    const setActiveTabContents = vi.fn();
+
+    renderHook(() =>
+      useAppleAssistApplyHandler({
+        activeTab: {
+          id: "tab-1",
+          sessionId: "session:tab-1",
+          name: "note.md",
+          path: "/workspace/note.md",
+          contents,
+        },
+        setActiveTabContents,
+        setStatus: vi.fn(),
+      }),
+    );
+
+    applyListeners[0]?.({
+      payload: {
+        requestId: "req-missing-proposal",
+        request: "整えて",
+        target: targetSnapshot(contents, contents),
+        shouldApplyToDocument: true,
+        requestedAtMs: 0,
+      },
+    } as never);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(setActiveTabContents).not.toHaveBeenCalled();
+    expect(aiEditTransactionStore.getLatest("session:tab-1")).toBeNull();
+    expect(vi.mocked(emitTo)).toHaveBeenCalledWith(
+      "apple-assist",
+      expect.any(String),
+      expect.objectContaining({ phase: "failed" }),
+    );
+  });
+
+  it("rejects a reviewed proposal from a stale editor session before writing", async () => {
+    const contents = "hello world";
+    const setActiveTabContents = vi.fn();
+
+    renderHook(() =>
+      useAppleAssistApplyHandler({
+        activeTab: {
+          id: "tab-1",
+          sessionId: "session:new",
+          name: "note.md",
+          path: "/workspace/note.md",
+          contents,
+        },
+        setActiveTabContents,
+        setStatus: vi.fn(),
+      }),
+    );
+
+    applyListeners[0]?.({
+      payload: {
+        requestId: "req-stale-session",
+        request: "整えて",
+        target: {
+          ...targetSnapshot(contents, contents),
+          activeDocumentSessionId: "session:old",
+        },
+        shouldApplyToDocument: true,
+        proposalText: "整えた本文",
+        requestedAtMs: 0,
+      },
+    } as never);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(setActiveTabContents).not.toHaveBeenCalled();
+    expect(aiEditTransactionStore.getLatest("session:new")).toBeNull();
+    expect(vi.mocked(emitTo)).toHaveBeenCalledWith(
+      "apple-assist",
+      expect.any(String),
+      expect.objectContaining({ phase: "failed", message: expect.stringContaining("session") }),
     );
   });
 });

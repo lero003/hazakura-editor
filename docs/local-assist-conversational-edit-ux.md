@@ -1,6 +1,6 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: A-2 implementation candidate (external review pending)
+Status: A-3 implementation candidate (external review pending)
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
 Last reviewed: 2026-08-16
@@ -64,13 +64,28 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 
 ## Current vs Target Flow
 
-### Current (single-shot apply)
+### Before v2.6 (single-shot apply)
 
 ```text
 依頼 → 生成 → 未保存バッファへ即時反映 → AiEditTransaction → Review Bar
 ```
 
-`APPLY_AI_EDIT_TRANSACTION_EVENT` が生成と本文適用を同時に担っている。
+当時は `APPLY_AI_EDIT_TRANSACTION_EVENT` が生成と本文適用を同時に担って
+いた。現在は生成を `REQUEST_AI_EDIT_PROPOSAL_EVENT` と proposal status
+へ分離し、反映時にモデルをもう一度呼ばない。
+
+### Current (A-3 implementation candidate)
+
+```text
+対象候補 → 最初の依頼で対象固定
+  → 会話領域で依頼・追加指示
+  → proposal status → Diff 確認領域で現在案を表示・更新
+  → Diff の明示「文書へ反映」 → AiEditTransaction → Review Bar
+```
+
+反映しない場合は、案を破棄するか会話を終了できる。どちらも保存は行わ
+ず、本文は変更しない。これは v2.6 A-3 のローカル実装候補であり、公開
+製品や実機 Assist の検証済み状態を意味しない。
 
 ### Target (proposal-first conversation)
 
@@ -133,7 +148,7 @@ Editor buffer: 「文書へ反映」までは不変
 | `LocalAssistConversationSession` | 1 会話（tab + 固定対象 + turns + currentProposal） |
 | `LocalAssistPinnedTarget` | 依頼開始時に固定した範囲と元文章 |
 | `LocalAssistTurn` | ユーザー依頼 / アシスタント UI 文言（生モデル出力ではない） |
-| `LocalAssistProposal` | 未反映の変更案（draft / superseded / applied / discarded） |
+| `LocalAssistProposal` | 現在表示する未反映の変更案。新案は同じ Diff を置き換え、状態 enum を永続化しない |
 
 ```text
 LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransaction
@@ -148,7 +163,7 @@ LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransacti
 | request local-assist turn | No — generate proposal only |
 | turn status (partial/completed/failed) | No — update Diff review candidate only |
 | discard local-assist proposal | No — clear current proposal / review state |
-| apply local-assist proposal | Yes — Diff review is the only path into existing apply |
+| apply local-assist proposal | Yes — Diff review is the only path into existing apply; stale target is rejected |
 
 反映時に tab `sessionId`・path・範囲・元文章・バッファ整合を再確認する。
 
@@ -166,12 +181,13 @@ LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransacti
 |-------|--------|-----------|
 | **P1** | 生成と本文反映の分離 | 依頼・streaming・Diff review 表示。本文は不変。破棄可。プリセット維持 |
 | **P2** | 対象固定 + 複数ターン | 固定対象、追加指示、案基準の再生成、現在 Diff の置換、新会話 |
-| **P3** | Diff から明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save |
+| **P3** | Diff から明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save; local implementation candidate |
 | **P4** | 二領域 UI 仕上げ | conversation / Diff のレスポンシブ配置、focus、a11y、i18n、stale / empty |
 
 **1 run = 1 phase またはそれ以下の検証可能スライス。**  
-A-1 / P1 はマージ済み。現在の実装候補は P2 のみとし、P3 の明示反映と
-P4 のレイアウト / アクセシビリティ仕上げは別のレビュー境界に残す。
+A-1 / P1 と A-2 / P2 はローカル `main` に統合済み。現在の実装候補は
+P3 / A-3 のみとし、P4 / A-4 のレイアウト・アクセシビリティ仕上げは
+別のレビュー境界に残す。
 
 ## Test Pins (minimum)
 
@@ -182,7 +198,7 @@ P4 のレイアウト / アクセシビリティ仕上げは別のレビュー�
 5. 元文章も入力に残る / 履歴は bounded
 6. partial はプレビューのみ更新
 7. キャンセルで直前の完成案を失わない
-8. 新案で旧案は `superseded`
+8. 新案で旧案を同じ Diff 表示に置き換える
 9. 「文書へ反映」まで本文不変
 10. 反映操作は会話メッセージではなく Diff review にあり、元文章変化時は適用拒否
 11. 別 tab / 異なる `sessionId` は stale または拒否
@@ -201,7 +217,7 @@ P4 のレイアウト / アクセシビリティ仕上げは別のレビュー�
 - Hooks: turn 生成と proposal 適用を分離
 - Features: `localAssistConversation` / `localAssistProposal`（新規）
 - Helper: revision candidate action を追加（既存 generate は移行期間維持）
-- Docs: 本ファイル + `assist-surface-strategy.md` のチャット境界文言
+- Docs: 本ファイル + `v2.6-plan.md` + `assist-surface-strategy.md` のチャット境界文言
 
 ## Related
 

@@ -198,7 +198,7 @@ export function buildApplyEvent({
   };
 }
 
-// v2.6 A-1: proposal requests share the bounded action mapping but are
+// v2.6 A-1/A-2: proposal requests share the bounded action mapping but are
 // explicitly marked as unapplied. The receiving proposal handler still
 // treats the event as generation-only; keeping the flag false makes the
 // buffer-mutation boundary visible in the IPC payload as well.
@@ -215,6 +215,32 @@ export function buildProposalEvent(
     conversationTurnIndex: conversation?.turnIndex,
     conversationOriginalText: conversation?.originalText,
     proposalText: conversation?.proposalText,
+    revisionHistory: conversation?.revisionHistory
+      ? [...conversation.revisionHistory]
+      : undefined,
+  };
+}
+
+/**
+ * Build the only payload that may cross the Diff-review apply boundary.
+ * Unlike `buildProposalEvent`, this carries the already reviewed proposal and
+ * explicitly opts into document application; the main-window handler must not
+ * call the model again for this event.
+ */
+export function buildProposalApplyEvent(
+  input: BuildApplyEventInput & {
+    proposalText: string;
+    conversation?: LocalAssistConversationRequest;
+  },
+): AppleAssistApplyEvent {
+  const conversation = input.conversation;
+  return {
+    ...buildApplyEvent(input),
+    shouldApplyToDocument: true,
+    proposalText: input.proposalText,
+    conversationId: conversation?.conversationId,
+    conversationTurnIndex: conversation?.turnIndex,
+    conversationOriginalText: conversation?.originalText,
     revisionHistory: conversation?.revisionHistory
       ? [...conversation.revisionHistory]
       : undefined,

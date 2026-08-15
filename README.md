@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-2 implementation candidate; external review pending)
+Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; external review pending)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,12 +26,13 @@ Last reviewed: 2026-08-16 (v2.6 A-2 implementation candidate; external review pe
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current development is on `2.6.0`: A-1 is merged and Hazakura Local Assist now
-pins a document target for bounded follow-up revision, replacing the current
-unapplied proposal in a separate Diff review surface. The editor buffer stays
-unchanged and the proposal can be discarded. This source state is a review
-candidate, not a submission pkg, upload, review, or publication claim. v2.5 is
-released and closed.
+Current development is on `2.6.0`: A-1/A-2 are merged locally and Hazakura
+Local Assist now pins a document target for bounded follow-up revision,
+replacing the current unapplied proposal in a separate Diff review surface.
+Only the Diff's explicit Apply proposal action sends the reviewed candidate to
+the existing transaction / Review Bar path; the editor is not auto-saved. This
+source state is an A-3 review candidate, not a submission pkg, upload, review,
+or publication claim. v2.5 is released and closed.
 
 ## Mac App Store
 
@@ -152,7 +153,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.6 A-2 review queue (Local Assist pinned multi-turn revision + Diff review)
+- [Current Work](docs/current-work.md): v2.6 A-3 review queue (Local Assist explicit Diff apply)
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing

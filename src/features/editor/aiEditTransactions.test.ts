@@ -125,6 +125,24 @@ describe("applyAiEditTransaction", () => {
     expect(result.error).toContain("no longer matches");
   });
 
+  it("rejects a target snapshot from a different editor session at the same path", () => {
+    const sessionTarget = {
+      ...target(0, 5, "hello"),
+      activeDocumentSessionId: "session:old",
+    };
+    const result = applyAiEditTransaction({
+      tabId: "session:new",
+      tabName: "note.md",
+      tabPath: "/tmp/note.md",
+      request: "整えて",
+      target: sessionTarget,
+      buffer: "hello",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("editor session");
+  });
+
   it("rewrites the buffer at the target range and records the transaction", () => {
     const buffer = "alpha\nbeta\ngamma";
     const result = applyAiEditTransaction({

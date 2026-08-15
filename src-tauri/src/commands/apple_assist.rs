@@ -29,7 +29,7 @@ use crate::commands::apple_assist_supervisor::{
 };
 use crate::distribution::*;
 use crate::security::window_guard::*;
-use crate::types::{APPLE_ASSIST_APPLY_STATUS_EVENT, APPLE_ASSIST_PROPOSAL_STATUS_EVENT};
+use crate::types::APPLE_ASSIST_PROPOSAL_STATUS_EVENT;
 use crate::util::current_time_ms;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -363,7 +363,7 @@ where
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct AppleAssistApplyStatusPayload {
+struct AppleAssistProposalStatusPayload {
     phase: &'static str,
     request_id: String,
     message: String,
@@ -378,24 +378,10 @@ fn emit_partial_status<R: tauri::Runtime>(
     request_label: &str,
     partial: HelperCandidatePartial,
 ) {
-    let payload = AppleAssistApplyStatusPayload {
-        phase: "partial",
-        request_id: request_id.to_string(),
-        message: "Hazakura Local Assist partial candidate".to_string(),
-        request: request_label.to_string(),
-        partial_text: partial.candidate_text.clone(),
-        emitted_at_ms: current_time_ms(),
-    };
-    let _ = app.emit_to(
-        APPLE_ASSIST_WINDOW_LABEL,
-        APPLE_ASSIST_APPLY_STATUS_EVENT,
-        payload,
-    );
-    // v2.6 A-1 shares the helper's partial stream with the separate
-    // proposal status channel. The proposal listener owns Diff review only;
-    // the editor buffer is still untouched until a later explicit-apply
-    // slice.
-    let proposal_payload = AppleAssistApplyStatusPayload {
+    // v2.6 A-3: generation-only partials belong exclusively to the proposal
+    // status channel. The apply channel is reserved for the explicit Diff
+    // review action and must never receive a second copy of generation output.
+    let proposal_payload = AppleAssistProposalStatusPayload {
         phase: "partial",
         request_id: request_id.to_string(),
         message: "Hazakura Local Assist partial candidate".to_string(),

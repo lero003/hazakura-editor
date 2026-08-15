@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, cleanup } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppleAssistWindowApp } from "./AppleAssistWindowApp";
 import {
+  APPLE_ASSIST_APPLY_STATUS_EVENT,
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
 } from "../../types";
@@ -211,9 +212,20 @@ describe("AppleAssistWindowApp render", () => {
           emittedAtMs: 0,
         },
       });
+      proposalStatus?.({
+        payload: {
+          phase: "partial",
+          requestId: cancelledRequestId,
+          request: "整えて",
+          message: "original marker partial",
+          partialText: "<<<HAZAKURA_ORIGINAL_START",
+          emittedAtMs: 0,
+        },
+      });
     });
     expect(screen.getByText("proposal")).toBeTruthy();
     expect(screen.queryByText("HAZAKURA_TEXT_START")).toBeNull();
+    expect(screen.queryByText("HAZAKURA_ORIGINAL_START")).toBeNull();
     await act(async () => {
       proposalStatus?.({
         payload: {
@@ -251,6 +263,98 @@ describe("AppleAssistWindowApp render", () => {
     });
     expect(screen.getByText("proposal")).toBeTruthy();
     expect(requestApplyAiEditTransaction).not.toHaveBeenCalled();
+  });
+
+  it("sends only the reviewed proposal from Diff and clears it after explicit apply succeeds", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: {},
+    });
+    render(<AppleAssistWindowApp />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "整えて" },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Send request" }));
+      await Promise.resolve();
+    });
+    const requestPayload = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0];
+    expect(requestPayload?.conversationId).toBeTruthy();
+
+    const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
+    await act(async () => {
+      proposalStatus?.({
+        payload: {
+          phase: "completed",
+          requestId: requestPayload?.requestId,
+          request: "整えて",
+          message: "ready",
+          target: requestPayload?.target,
+          originalText: "original",
+          candidateText: "proposal",
+          conversationId: requestPayload?.conversationId,
+          conversationTurnIndex: 0,
+          emittedAtMs: 0,
+        },
+      });
+    });
+
+    const applyButton = screen.getByRole("button", {
+      name: /Apply proposal|文書へ反映|ふみに はんえい/,
+    });
+    fireEvent.click(applyButton);
+    const applyPayload = vi.mocked(requestApplyAiEditTransaction).mock.calls.at(-1)?.[0];
+    expect(applyPayload).toMatchObject({
+      shouldApplyToDocument: true,
+      proposalText: "proposal",
+      target: requestPayload?.target,
+      conversationId: requestPayload?.conversationId,
+    });
+    expect(screen.getByTestId("apple-assist-proposal-review")).toBeTruthy();
+
+    const applyStatus = eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT);
+    expect(applyStatus).toBeDefined();
+    await act(async () => {
+      applyStatus?.({
+        payload: {
+          phase: "partial",
+          requestId: applyPayload?.requestId,
+          request: "整えて",
+          message: "legacy partial",
+          partialText: "<<<HAZAKURA_ORIGINAL_START>>>",
+          emittedAtMs: 0,
+        },
+      });
+    });
+    expect(screen.getByText("proposal")).toBeTruthy();
+    await act(async () => {
+      applyStatus?.({
+        payload: {
+          phase: "started",
+          requestId: applyPayload?.requestId,
+          request: "整えて",
+          message: "applying",
+          emittedAtMs: 1,
+        },
+      });
+      applyStatus?.({
+        payload: {
+          phase: "completed",
+          requestId: applyPayload?.requestId,
+          request: "整えて",
+          message: "applied",
+          shouldApplyToDocument: true,
+          emittedAtMs: 2,
+        },
+      });
+    });
+
+    expect(screen.queryByText("proposal")).toBeNull();
+    expect(screen.getByText(/Send a request to show|依頼すると/)).toBeTruthy();
   });
 
   it("keeps follow-up requests on the pinned target and shows the conversation history", async () => {

@@ -435,11 +435,11 @@ pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
     ensure_apple_assist_window(&window)?;
     ensure_apple_assist_allowed_by_distribution()?;
     app.emit_to(MAIN_WINDOW_LABEL, APPLY_AI_EDIT_TRANSACTION_EVENT, payload)
-        .map_err(|err| format!("Cannot request Hazakura Local Assist edit: {err}"))?;
+        .map_err(|err| format!("Cannot request Hazakura Local Assist Diff apply: {err}"))?;
     Ok(())
 }
 
-// v2.6 A-1: request generation of an unapplied Local Assist proposal.
+// v2.6 A-1/A-2: request generation of an unapplied Local Assist proposal.
 // Keep this command separate from the legacy apply transaction request so
 // the event name itself documents the buffer-mutation boundary. The main
 // window handles the event by streaming a candidate to the detached Diff

@@ -1,9 +1,9 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-2 review)
+Scope: Current implementation state and next safe actions (v2.6 A-3 review)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
 
 ## Current State
 
@@ -17,15 +17,14 @@ Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
 - **v2.5 is released and closed** (user-confirmed). The workspace control and
   delivery-clarity evidence below is historical release evidence, not an open
   upload, TestFlight, tag, or publication gate. Plan: `docs/v2.5-plan.md`.
-- **Active product work is v2.6 A-2.** A-1 is merged. Local Assist pins the
-  tab/session/range/original on the first request, keeps follow-up instructions
-  on that target, and replaces the current unapplied proposal in the same Diff
-  review. The editor buffer and `AiEditTransaction` store remain unchanged;
-  explicit apply is A-3. This A-2 slice is committed as `9011d3a6` and is
-  integrated into local `main`. Plan: `docs/v2.6-plan.md`; queue:
+- **Active product work is v2.6 A-3.** A-1/A-2 are merged locally. Local Assist
+  pins the tab/session/range/original, keeps follow-up instructions on that
+  target, and now applies only the reviewed Diff proposal through one stale-
+  checked `AiEditTransaction` / Review Bar path. The A-3 candidate is local
+  source work, not a release claim. Plan: `docs/v2.6-plan.md`; queue:
   `docs/current-work.md`.
 - **A-4 remains isolated** in Draft PR #34 for narrow Diff layout polish; it is
-  not included in the local A-2 `main` commit.
+  not included in local `main`.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -244,8 +243,8 @@ Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.0` package version from package metadata.
-- **Open main queue:** external review of the v2.6 A-2 candidate, followed by a
-  decision on A-3 explicit Diff apply. v2.5 is released and closed; published
+- **Open main queue:** external review of the v2.6 A-3 candidate, followed by
+  separate A-4 narrow-layout and physical Assist checks. v2.5 is released and closed; published
   `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
   parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
@@ -572,10 +571,10 @@ Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.0`**. A-1 is merged and the A-2
-  review candidate adds a pinned target plus bounded multi-turn revision on the
-  same generation-only Local Assist / Diff surface; the editor remains unchanged
-  until the later explicit-apply slice.
+- Current development-tree version: **`2.6.0`**. A-1/A-2 are merged locally and
+  the A-3 review candidate adds a pinned target, bounded multi-turn revision, and
+  explicit Diff apply on the same Local Assist surface; the editor remains
+  unchanged until that explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
@@ -1017,10 +1016,10 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Complete external review of **A-2**: pinned target, follow-up revision,
-   bounded history, and no-buffer-mutation / no-transaction boundary.
-2. Decide whether to start A-3 explicit Diff apply after A-2 review; keep A-4's
-   narrow-layout Draft PR separate.
+1. Complete external review of **A-3**: explicit Diff apply, stale target
+   rejection, one transaction + Review Bar, and no-auto-save boundary.
+2. Keep A-4's narrow-layout Draft PR and physical streaming/cancel checks
+   separate.
 3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
 4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,

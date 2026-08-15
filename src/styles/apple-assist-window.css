@@ -263,6 +263,12 @@
   justify-content: space-between;
 }
 
+.apple-assist-proposal-actions {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
 .apple-assist-proposal-heading,
 .apple-assist-proposal-subtitle {
   margin: 0;
@@ -293,6 +299,27 @@
   font-size: 11.5px;
   padding: 4px 8px;
   white-space: nowrap;
+}
+
+.apple-assist-window-apply-proposal {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent-contrast, #fff);
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 650;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.apple-assist-window-apply-proposal:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.apple-assist-window-apply-proposal:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .apple-assist-window-discard:hover:not(:disabled) {

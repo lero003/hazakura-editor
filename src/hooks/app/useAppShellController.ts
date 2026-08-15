@@ -620,13 +620,12 @@ export function useAppShellController() {
     selectionInfo,
   });
 
-  // v0.12+ Hazakura Local Assist Writing Companion (slice 4).
-  // Main-window listener for `APPLY_AI_EDIT_TRANSACTION_EVENT`.
-  // The detached Hazakura Local Assist window fires this when the user
-  // clicks Apply; the hook runs the fixture transform, mutates
-  // the active tab's unsaved buffer, and records the
-  // transaction in the session-local store so the slice 5
-  // escape hatch can surface a "review / discard" affordance.
+  // v2.6 A-3: main-window listener for the explicit Diff-review
+  // `APPLY_AI_EDIT_TRANSACTION_EVENT`. The detached Hazakura Local Assist
+  // window sends the reviewed proposal; this path revalidates it, mutates
+  // the active tab's unsaved buffer, and records the transaction in the
+  // session-local store so the existing Review Bar can surface its
+  // discard/accept affordance.
   //
   // The hook is purely side-effect: the only output it produces
   // is the tab mutation (via the `setActiveTabContents` callback
@@ -650,7 +649,6 @@ export function useAppShellController() {
       );
     },
     setStatus,
-    setGenerationLock: setAppleAssistGenerationLockWithMirror,
   });
 
   // v2.6 A-1: generation-only Local Assist path. The proposal handler

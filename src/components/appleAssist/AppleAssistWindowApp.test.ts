@@ -79,6 +79,8 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "proposalOriginalLabel",
   "proposalCandidateLabel",
   "proposalDiscardButton",
+  "proposalApplyButton",
+  "proposalApplyingStatus",
   "proposalDiscardedStatus",
   "proposalReadyStatus",
   "proposalChangeSummary",

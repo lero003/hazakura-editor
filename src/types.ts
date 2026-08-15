@@ -179,11 +179,13 @@ export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
 
 // Mirror of the Rust Local Assist request/status event constants.
-// The legacy `APPLY_AI_EDIT_TRANSACTION_EVENT` remains the explicit
-// apply path; v2.6 A-1/A-2 uses `REQUEST_AI_EDIT_PROPOSAL_EVENT` for
-// generation-only requests and returns the candidate through the
-// separate proposal status channel. The main window answers the
-// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target. See
+// `APPLY_AI_EDIT_TRANSACTION_EVENT` is the explicit Diff-review apply path;
+// its payload carries the already reviewed proposal and must not trigger a
+// second model generation. v2.6 A-1/A-2 uses
+// `REQUEST_AI_EDIT_PROPOSAL_EVENT` for generation-only requests and returns
+// the candidate through the separate proposal status channel. The main window
+// answers the `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target.
+// See
 // src-tauri/src/types.rs and
 // docs/apple-local-assist-writing-companion-plan.md.
 export const APPLY_AI_EDIT_TRANSACTION_EVENT =
@@ -256,11 +258,7 @@ export type AppleAssistApplyEvent = {
    * value as prompt data, not system instruction.
    */
   additionalRequest?: string;
-  /**
-   * Whether the generated result may be applied to the active
-   * document buffer. Current Local Assist presets use the same
-   * diff-review document flow.
-   */
+  /** Whether this event is the explicit Diff-review apply request. */
   shouldApplyToDocument?: boolean;
   /**
    * User-facing request label for status, feedback, and AI edit
@@ -272,10 +270,11 @@ export type AppleAssistApplyEvent = {
   instruction?: string;
   requestedAtMs: number;
   target: AppleAssistTargetSnapshot | null;
-  /** v2.6 A-2: the in-memory conversation identity and bounded revision packet. */
+  /** v2.6 A-2/A-3: conversation identity and bounded revision/apply packet. */
   conversationId?: string;
   conversationTurnIndex?: number;
   conversationOriginalText?: string;
+  /** A-2 current proposal input, or A-3's already reviewed apply candidate. */
   proposalText?: string;
   revisionHistory?: string[];
 };

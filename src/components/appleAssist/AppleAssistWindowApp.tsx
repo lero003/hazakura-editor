@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
   getMainAppleAssistTarget,
+  requestApplyAiEditTransaction,
   requestAppleAssistProposal,
   setAppleAssistWindowTheme,
   stopAppleAssistGeneration,
@@ -10,6 +11,7 @@ import { buildLineDiff } from "../../features/diff/diff";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import {
+  buildProposalApplyEvent,
   buildProposalEvent,
   getLocalAssistAction,
   LOCAL_ASSIST_VISIBLE_PRESET_IDS,
@@ -19,11 +21,11 @@ import {
   type LocalAssistPreset,
 } from "../../lib/appleAssist/instruction";
 import {
+  APPLE_ASSIST_APPLY_STATUS_EVENT,
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
   MENU_LANGUAGE_STORAGE_KEY,
   THEME_STORAGE_KEY,
-  type AppleAssistApplyEvent,
   type AppleAssistApplyStatusEvent,
   type AppleAssistProposalStatusEvent,
   type AppleAssistTargetKind,
@@ -48,10 +50,11 @@ import {
 //     block → section) via `REQUEST_AI_EDIT_TARGET_EVENT` round
 //     trip (slice 3),
 //   - asking the bundled helper for a bounded result,
-//   - streaming an unapplied candidate back to this window's
-//     dedicated Diff review area. The editor buffer remains
-//     unchanged through v2.6 A-1/A-2; A-2 keeps a pinned target
-//     and revises the current proposal in the same Diff surface.
+//   - streaming an unapplied candidate back to this window's dedicated Diff
+//     review area. The editor buffer remains unchanged until the user presses
+//     the Diff "Apply proposal" action; A-2 keeps a pinned target and revises
+//     the current proposal in the same Diff surface, while A-3 sends only that
+//     reviewed candidate across the apply boundary.
 //
 // The window only renders a thin shell with:
 //   - a header that shows the local-assist disclosure and current
@@ -70,9 +73,11 @@ import {
 // exclusion.
 //
 // v2.6 A-2 keeps the conversation in this window's bounded
-// React state only. Starting a new conversation or discarding
-// a proposal drops that state; no prompt, proposal, or turn is
-// persisted to disk.
+// React state only. A-3 keeps the reviewed proposal there until
+// the Diff Apply action succeeds, then the main window owns the
+// unsaved buffer transaction. Starting a new conversation or
+// discarding a proposal drops the companion state; no prompt,
+// proposal, or turn is persisted to disk.
 //
 // v0.12.x copy enrichment: the original 3-language copy
 // blocks were lean and most strings collapsed nuance into
@@ -202,6 +207,7 @@ type LocalAssistProposal = {
   request: string;
   originalText: string;
   candidateText: string;
+  target: AppleAssistTargetSnapshot;
   conversationId: string | null;
   turnIndex: number;
   streaming?: boolean;
@@ -278,11 +284,16 @@ export function AppleAssistWindowApp() {
   const [streamPreview, setStreamPreview] = useState<string>("");
   const [streamOriginalText, setStreamOriginalText] = useState<string>("");
   const [proposal, setProposal] = useState<LocalAssistProposal | null>(null);
+  const [applyingProposal, setApplyingProposal] = useState(false);
   const [conversation, setConversation] =
     useState<LocalAssistConversationSession | null>(null);
+  const targetRef = useRef<AppleAssistTargetSnapshot | null>(target);
   const conversationRef = useRef<LocalAssistConversationSession | null>(null);
   const proposalRef = useRef<LocalAssistProposal | null>(null);
+  const [activeApplyRequestId, setActiveApplyRequestId] = useState<string | null>(null);
+  const activeApplyRequestIdRef = useRef<string | null>(null);
   conversationRef.current = conversation;
+  targetRef.current = target;
   proposalRef.current = proposal;
   const displayedTarget = conversation?.pinnedTarget ?? target;
 
@@ -290,20 +301,30 @@ export function AppleAssistWindowApp() {
     activeRequestIdRef.current = activeRequestId;
   }, [activeRequestId]);
 
+  useEffect(() => {
+    activeApplyRequestIdRef.current = activeApplyRequestId;
+  }, [activeApplyRequestId]);
+
   const proposalForReview = useMemo(() => {
-    if (streamPreview.trim().length > 0 && streamOriginalText.length > 0) {
+    const reviewTarget = conversation?.pinnedTarget ?? target;
+    if (
+      reviewTarget &&
+      streamPreview.trim().length > 0 &&
+      streamOriginalText.length > 0
+    ) {
       return {
         requestId: activeRequestId ?? "streaming",
         request: requestText,
         originalText: streamOriginalText,
         candidateText: streamPreview,
+        target: reviewTarget,
         conversationId: conversation?.id ?? null,
         turnIndex: conversation?.turnIndex ?? 0,
         streaming: true,
       } satisfies LocalAssistProposal;
     }
     return proposal;
-  }, [activeRequestId, conversation, proposal, requestText, streamOriginalText, streamPreview]);
+  }, [activeRequestId, conversation, proposal, requestText, streamOriginalText, streamPreview, target]);
 
   const clearGenerationFallback = useCallback(() => {
     if (generationFallbackRef.current !== null) {
@@ -433,12 +454,20 @@ export function AppleAssistWindowApp() {
         setActiveRequestId(null);
         activeRequestIdRef.current = null;
         if (payload.phase === "completed" && payload.candidateText) {
+          const proposalTarget =
+            payload.target ?? conversationRef.current?.pinnedTarget ?? targetRef.current;
+          if (!proposalTarget) {
+            setError(copy.targetReadFailed);
+            pushFeedback({ kind: "failed" });
+            return;
+          }
           const nextProposal: LocalAssistProposal = {
             requestId: payload.requestId,
             request: payload.request,
             originalText:
               payload.originalText ?? conversationRef.current?.originalText ?? "",
             candidateText: payload.candidateText,
+            target: proposalTarget,
             conversationId:
               payload.conversationId ?? conversationRef.current?.id ?? null,
             turnIndex:
@@ -496,7 +525,77 @@ export function AppleAssistWindowApp() {
         unlisten = null;
       }
     };
-  }, [clearGenerationFallback, copy, scheduleGenerationFallback]);
+  }, [clearGenerationFallback, copy, pushFeedback, scheduleGenerationFallback]);
+
+  // A-3: the main window reports only the result of the explicit Diff-review
+  // apply. A completed apply consumes the in-memory proposal; a stale or
+  // failed apply leaves it visible so the user can retry or discard it.
+  useEffect(() => {
+    if (!isTauriEventAvailable()) {
+      return;
+    }
+    let disposed = false;
+    let unlisten: UnlistenFn | null = null;
+
+    void listen<AppleAssistApplyStatusEvent>(
+      APPLE_ASSIST_APPLY_STATUS_EVENT,
+      (event) => {
+        if (disposed) {
+          return;
+        }
+        const payload = event.payload;
+        if (!isApplyStatusForActiveRequest(activeApplyRequestIdRef.current, payload)) {
+          return;
+        }
+        if (payload.phase === "started") {
+          setStatus(copy.proposalApplyingStatus);
+          return;
+        }
+        // A-3 apply status is terminal-only. Generation partials use the
+        // separate proposal channel; ignore a legacy/rogue partial here so a
+        // marker cannot clear the reviewed proposal or make the UI look done.
+        if (payload.phase === "partial") {
+          return;
+        }
+
+        activeApplyRequestIdRef.current = null;
+        setActiveApplyRequestId(null);
+        setApplyingProposal(false);
+        const presentation = getApplyStatusPresentation(payload, copy);
+        if (payload.phase === "completed") {
+          conversationRef.current = null;
+          proposalRef.current = null;
+          setConversation(null);
+          setProposal(null);
+          setStreamPreview("");
+          setStreamOriginalText("");
+          setError(null);
+        } else {
+          setError(presentation.error);
+        }
+        setStatus(presentation.status);
+        pushFeedback({ kind: presentation.feedbackKind });
+      },
+    )
+      .then((handle) => {
+        if (disposed) {
+          void handle();
+          return;
+        }
+        unlisten = handle;
+      })
+      .catch((err) => {
+        console.warn("Failed to listen for Hazakura Local Assist apply status", err);
+      });
+
+    return () => {
+      disposed = true;
+      if (unlisten) {
+        void unlisten();
+        unlisten = null;
+      }
+    };
+  }, [copy, pushFeedback]);
 
   // Pull the initial target snapshot on mount and subscribe
   // to live updates from the main window. The cache is
@@ -720,8 +819,56 @@ export function AppleAssistWindowApp() {
       // the in-flight generation settles.
     }
   }, [busy, cancelling, copy.cancellingStatus]);
+
+  const applyProposal = useCallback(async () => {
+    const currentProposal = proposalRef.current;
+    if (busy || applyingProposal || !currentProposal || !currentProposal.target) {
+      return;
+    }
+    if (!isTauriEventAvailable()) {
+      setError(copy.tauriUnavailableError);
+      return;
+    }
+
+    const requestId = createAppleAssistRequestId();
+    const currentConversation = conversationRef.current;
+    const payload = buildProposalApplyEvent({
+      requestId,
+      actionId: resolveLocalAssistActionId(currentProposal.request, copy.presets),
+      requestText: currentProposal.request,
+      target: currentProposal.target,
+      requestedAtMs: Date.now(),
+      proposalText: currentProposal.candidateText,
+      conversation: currentConversation
+        ? {
+            conversationId: currentConversation.id,
+            turnIndex: currentConversation.turnIndex,
+            originalText: currentConversation.originalText,
+            revisionHistory: currentConversation.revisionHistory,
+          }
+        : undefined,
+    });
+
+    setApplyingProposal(true);
+    setActiveApplyRequestId(requestId);
+    activeApplyRequestIdRef.current = requestId;
+    setError(null);
+    setStatus(copy.proposalApplyingStatus);
+    try {
+      await requestApplyAiEditTransaction(payload);
+    } catch (err: unknown) {
+      activeApplyRequestIdRef.current = null;
+      setActiveApplyRequestId(null);
+      setApplyingProposal(false);
+      const message = err instanceof Error ? err.message : String(err);
+      setError(classifyApplyError(message, copy));
+      setStatus(copy.failedStatus);
+      pushFeedback({ kind: "failed" });
+    }
+  }, [applyingProposal, busy, copy, pushFeedback]);
+
   const discardProposal = useCallback(() => {
-    if (busy) {
+    if (busy || applyingProposal) {
       return;
     }
     conversationRef.current = null;
@@ -732,7 +879,7 @@ export function AppleAssistWindowApp() {
     setStreamOriginalText("");
     setError(null);
     setStatus(copy.proposalDiscardedStatus);
-  }, [busy, copy.proposalDiscardedStatus]);
+  }, [applyingProposal, busy, copy.proposalDiscardedStatus]);
 
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
@@ -771,7 +918,7 @@ export function AppleAssistWindowApp() {
                 setError(null);
                 setStatus(copy.newConversationStatus);
               }}
-              disabled={busy}
+              disabled={busy || applyingProposal}
             >
               {copy.newConversationButton}
             </button>
@@ -811,13 +958,13 @@ export function AppleAssistWindowApp() {
           }}
           rows={3}
           placeholder={copy.placeholder}
-          disabled={busy || !available}
+          disabled={busy || applyingProposal || !available}
         />
         <button
           type="button"
           className="apple-assist-window-apply"
           onClick={() => void applyRoughRequest()}
-          disabled={busy || !available || requestText.trim().length === 0}
+          disabled={busy || applyingProposal || !available || requestText.trim().length === 0}
         >
           {busy ? copy.generatingButton : copy.applyButton}
         </button>
@@ -845,7 +992,7 @@ export function AppleAssistWindowApp() {
                   : "apple-assist-preset"
               }
               onClick={() => onPickPreset(preset)}
-              disabled={busy || !available}
+              disabled={busy || applyingProposal || !available}
             >
               {preset.label}
             </button>
@@ -856,7 +1003,9 @@ export function AppleAssistWindowApp() {
       <ProposalDiffReview
         proposal={proposalForReview}
         copy={copy}
-        busy={busy}
+        busy={busy || applyingProposal}
+        applying={applyingProposal}
+        onApply={applyProposal}
         onDiscard={discardProposal}
       />
 
@@ -946,6 +1095,8 @@ type ProposalDiffReviewProps = {
   proposal: LocalAssistProposal | null;
   copy: AppleAssistWindowCopy;
   busy: boolean;
+  applying: boolean;
+  onApply: () => void;
   onDiscard: () => void;
 };
 
@@ -953,6 +1104,8 @@ function ProposalDiffReview({
   proposal,
   copy,
   busy,
+  applying,
+  onApply,
   onDiscard,
 }: ProposalDiffReviewProps) {
   const comparison = useMemo(() => {
@@ -979,17 +1132,31 @@ function ProposalDiffReview({
         <div>
           <p className="apple-assist-proposal-heading">{copy.proposalHeading}</p>
           <p className="apple-assist-proposal-subtitle">
-            {proposal?.streaming ? copy.proposalStreamingStatus : copy.proposalReviewDescription}
+            {proposal?.streaming
+              ? copy.proposalStreamingStatus
+              : applying
+                ? copy.proposalApplyingStatus
+                : copy.proposalReviewDescription}
           </p>
         </div>
-        <button
-          type="button"
-          className="apple-assist-window-discard"
-          onClick={onDiscard}
-          disabled={busy || !proposal}
-        >
-          {copy.proposalDiscardButton}
-        </button>
+        <div className="apple-assist-proposal-actions">
+          <button
+            type="button"
+            className="apple-assist-window-apply-proposal"
+            onClick={onApply}
+            disabled={busy || applying || !proposal}
+          >
+            {copy.proposalApplyButton}
+          </button>
+          <button
+            type="button"
+            className="apple-assist-window-discard"
+            onClick={onDiscard}
+            disabled={busy || !proposal}
+          >
+            {copy.proposalDiscardButton}
+          </button>
+        </div>
       </div>
       {!proposal ? (
         <p className="apple-assist-proposal-placeholder">{copy.proposalReviewPlaceholder}</p>
@@ -1090,6 +1257,8 @@ export type AppleAssistWindowCopy = {
   proposalStreamingStatus: string;
   proposalOriginalLabel: string;
   proposalCandidateLabel: string;
+  proposalApplyButton: string;
+  proposalApplyingStatus: string;
   proposalDiscardButton: string;
   proposalDiscardedStatus: string;
   proposalReadyStatus: string;
@@ -1231,22 +1400,26 @@ function sanitizeStreamPreviewText(rawPreview: string): string {
     return "";
   }
   const boundaryPatterns = [
-    /<<<HAZAKURA_TEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_TEXT_END>>>/,
-    /<<<HAZAKURA_CONTEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_CONTEXT_END>>>/,
+    /<<<HAZAKURA_TEXT_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_TEXT_END>>>/,
+    /<<<HAZAKURA_CONTEXT_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_CONTEXT_END>>>/,
+    /<<<HAZAKURA_ORIGINAL_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_ORIGINAL_END>>>/,
   ];
 
   for (const pattern of boundaryPatterns) {
-    const inner = trimmed.match(pattern)?.[1]?.trim();
-    if (inner) {
-      return inner;
+    const match = trimmed.match(pattern);
+    if (match) {
+      return match[1]?.trim() ?? "";
     }
   }
 
   const withoutBoundaryStart = trimmed
-    .replace(/^<<<HAZAKURA_(TEXT|CONTEXT)_START\s*/u, "")
-    .replace(/\s*HAZAKURA_(TEXT|CONTEXT)_END>>>$/u, "")
+    .replace(/^<<<HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_START(?:>>>)?\s*/u, "")
+    .replace(/\s*(?:<<<)?HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_END>>>$/u, "")
     .trim();
-  if (!withoutBoundaryStart || /^<<<HAZAKURA_[A-Z_]+_START$/u.test(trimmed)) {
+  if (
+    !withoutBoundaryStart ||
+    /^<<<HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_START(?:>>>)?$/u.test(trimmed)
+  ) {
     return "";
   }
   return withoutBoundaryStart;
@@ -1438,6 +1611,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       proposalStreamingStatus: "あんを つくっています。とちゅうの さぶんです。",
       proposalOriginalLabel: "もとの ぶん",
       proposalCandidateLabel: "つくられた あん",
+      proposalApplyButton: "ふみに はんえい",
+      proposalApplyingStatus: "ふみに はんえい しています...",
       proposalDiscardButton: "あんを すてる",
       proposalDiscardedStatus: "へんしゅう あんを すてました。ふみは かわっていません。",
       proposalReadyStatus: "へんしゅう あんを さぶん かくにんに おきました。",
@@ -1574,6 +1749,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       proposalStreamingStatus: "案を生成しています。途中の差分を表示しています。",
       proposalOriginalLabel: "元の文章",
       proposalCandidateLabel: "生成した案",
+      proposalApplyButton: "文書へ反映",
+      proposalApplyingStatus: "文書へ反映しています…",
       proposalDiscardButton: "案を破棄",
       proposalDiscardedStatus: "編集案を破棄しました。本文は変更していません。",
       proposalReadyStatus: "編集案を差分レビューに表示しました。本文はまだ変更していません。",
@@ -1708,6 +1885,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     proposalStreamingStatus: "Generating a proposal. Showing the in-progress diff.",
     proposalOriginalLabel: "Original",
     proposalCandidateLabel: "Proposal",
+    proposalApplyButton: "Apply proposal",
+    proposalApplyingStatus: "Applying proposal...",
     proposalDiscardButton: "Discard proposal",
     proposalDiscardedStatus: "Discarded the proposal. The document is unchanged.",
     proposalReadyStatus: "Proposal ready in Diff review. The document is unchanged.",

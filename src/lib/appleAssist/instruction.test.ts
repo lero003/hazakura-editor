@@ -3,6 +3,7 @@ import {
   APPLY_LOCAL_ASSIST_ACTION_IDS,
   LOCAL_ASSIST_ACTIONS,
   buildApplyEvent,
+  buildProposalApplyEvent,
   buildProposalEvent,
   getLocalAssistAction,
   resolveLocalAssistActionId,
@@ -253,6 +254,35 @@ describe("buildProposalEvent", () => {
       conversationOriginalText: "target-text",
       proposalText: "proposal v1",
       revisionHistory: ["読みやすくしてください"],
+    });
+  });
+});
+
+describe("buildProposalApplyEvent", () => {
+  it("marks the Diff candidate as an explicit apply request", () => {
+    const event = buildProposalApplyEvent({
+      requestId: "apply-1",
+      actionId: "rewrite_natural",
+      requestText: "もう少し短くしてください",
+      target: SAMPLE_TARGET,
+      requestedAtMs: 456,
+      proposalText: "shorter proposal",
+      conversation: {
+        conversationId: "conversation-1",
+        turnIndex: 1,
+        originalText: "target-text",
+        revisionHistory: ["最初の依頼"],
+      },
+    });
+
+    expect(event).toMatchObject({
+      shouldApplyToDocument: true,
+      proposalText: "shorter proposal",
+      conversationId: "conversation-1",
+      conversationTurnIndex: 1,
+      conversationOriginalText: "target-text",
+      revisionHistory: ["最初の依頼"],
+      target: SAMPLE_TARGET,
     });
   });
 });

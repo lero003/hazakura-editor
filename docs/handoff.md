@@ -1,27 +1,27 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 A-2 review candidate — Local Assist pinned multi-turn revision
+Scope: v2.6 A-3 implementation candidate — Local Assist explicit Diff apply
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.0`** A-2 review candidate.
+- Package/app version in tree: **`2.6.0`** A-3 implementation candidate.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
 - **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
   and the Q-13 measured no-op remain historical release evidence; do not reopen
   that line from v2.6. Plan: `docs/v2.5-plan.md`.
-- **A-1 is merged and A-2 is the review candidate.** Local Assist sends a
-  generation-only proposal event; the detached window pins tab/session/range/
-  original on the first request, keeps follow-ups on that target, and replaces
-  the current proposal in the same Diff review. The editor buffer and
-  `AiEditTransaction` store remain unchanged. Partial helper output is
-  sanitized before it reaches Diff; cancel/fail keeps the last completed
-  proposal. A-3 explicit apply and A-4 narrow layout remain separate slices.
-  The A-2 implementation is committed as `9011d3a6` and fast-forwarded into
-  local `main`; a GitHub PR is not required for this review checkpoint.
+- **A-1/A-2 are merged locally and A-3 is the review candidate.** Local Assist
+  sends a generation-only proposal event; the detached window pins
+  tab/session/range/original on the first request, keeps follow-ups on that
+  target, and replaces the current proposal in the same Diff review. The Diff
+  Apply action sends only that reviewed proposal, the main window revalidates
+  stale state, records one `AiEditTransaction` for the Review Bar, and does not
+  auto-save. Partial helper output and `HAZAKURA_ORIGINAL` markers are
+  sanitized before they reach Diff or the editor. A-4 narrow layout remains a
+  separate slice. A GitHub PR is not required for this local review checkpoint.
   Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
@@ -396,10 +396,10 @@ retained as the earlier R-1-only checkpoint.
   interaction evidence for the multi-file spine. All automated, Rust, audit,
   package, signing, and launch gates above were re-run after the UX review.
 
-## Verification (2026-08-16, v2.6 A-2)
+## Verification (2026-08-16, v2.6 A-3)
 
 - `npm run typecheck` passed.
-- `npm test -- --run` passed: 209 files / 1,752 tests.
+- `npm test -- --run` passed: 209 files / 1,759 tests.
 - `npm run build:vite` passed (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` passed: 10 files / 111 tests.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
@@ -408,7 +408,10 @@ retained as the earlier R-1-only checkpoint.
   large-chunk warning only.
 - `SKIP_BUILD=1 npm run smoke:macos-window` passed: packaged 1280×820 native
   window opened and quit cleanly.
-- Built-app/manual Assist streaming, cancel, narrow-layout, multi-turn, and device
+- Focused A-3 tests cover reviewed-proposal-only apply, stale session rejection,
+  transaction/Review Bar recording, apply-status terminal handling, and
+  `HAZAKURA_ORIGINAL` boundary sanitization.
+- Built-app/manual Assist streaming, cancel, narrow-layout, and physical-device
   availability smoke remain external-review or human-gated evidence; they were
   not claimed here.
 
@@ -424,11 +427,10 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Complete external review of A-2: pinned target, follow-up proposal input,
-   bounded revision history, stale-session rejection, and the no-buffer-mutation
-   / no-transaction boundary.
-2. Keep A-3 explicit apply and A-4 narrow-layout polish separate until A-2 is
-   accepted; A-4 remains Draft PR #34.
+1. Complete external review of A-3: reviewed-proposal-only apply, stale target
+   rejection, one transaction + Review Bar, and no-auto-save boundary.
+2. Keep A-4 narrow-layout polish and physical streaming/cancel checks separate;
+   A-4 remains Draft PR #34.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
 4. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
