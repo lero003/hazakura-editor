@@ -1,22 +1,22 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 A-1 review candidate — Local Assist proposal + Diff review
+Scope: v2.6 post-A-1 narrow Diff polish — Local Assist proposal + Diff review
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
+Last reviewed: 2026-08-16 (v2.6 A-1 merged; narrow Diff polish underway)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.0`** A-1 review candidate.
-- Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
-  hotfix only. Prior tags remain immutable.
-- **v2.5 candidate is prepared at `6067fbec`.** W-1 gives the left
-  Workspace a bounded accessible resizer and persists normal-right and
+- Package/app version in tree: **`2.6.0`**; A-1 is merged and the current
+  branch carries a narrow Diff polish slice.
+- Published Mac App Store: **`2.5.0`** (user-confirmed); v2.5 is closed and
+  hotfix-only. Prior lines remain immutable.
+- **v2.5.0 shipped at implementation boundary `6067fbec`.** W-1 gives the
+  left Workspace a bounded accessible resizer and persists normal-right and
   Reference widths separately. R-1 aligns text Reference font size; Q-4 shows
   the exact count hidden by a folder cap. Q-3/Q-5 were already implemented;
-  Q-13 is a measured no-op. Upload, processing, installed TestFlight, tag, and
-  publication remain human gates. Plan: `docs/v2.5-plan.md`.
-- **A-1 is implemented on the review branch.** Local Assist sends a
+  Q-13 is a measured no-op. Do not rebuild this release line for v2.6 work.
+- **A-1 is merged.** Local Assist sends a
   generation-only proposal event; the detached window owns the
   original-versus-proposal Diff and discard action, while the editor buffer and
   `AiEditTransaction` store remain unchanged. Partial helper output is
@@ -126,6 +126,17 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
   `docs/v2-external-review-synthesis-2026-07-18.md` (four-agent),
   `docs/v2-qwen-ux-proposal-synthesis-2026-07-21.md` (Qwen UX triage; L Mode
   corrections; mode pills / static lint / Compare Center held or rejected as designed).
+
+## Verification (2026-08-16, v2.6 A-4 narrow Diff preflight)
+
+- `npm run typecheck` — pass.
+- `npm test -- --run` — 209 files / 1,747 tests pass. The expected jsdom
+  canvas capability notices remain non-failing.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- This slice changes only the detached Diff layout and its CSS contract tests;
+  Rust checks were not rerun. Manual detached-window narrow-width, streaming,
+  cancellation, and Apple Intelligence availability checks remain open.
 
 ### v1.14 Keep summary (shipped in review candidate)
 
@@ -419,11 +430,10 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Re-review the A-1 branch/PR for the generation-only event, separate Diff
-   representation, boundary-marker sanitization, discard/cancel/fail behavior,
-   and the no-buffer-mutation / no-transaction boundary before starting A-2.
-2. Keep the v2.5 candidate at `6067fbec` and its human Apple gates separate
-   from v2.6 development; do not rebuild it just to include later docs.
+1. Review the narrow Diff layout slice for compact-window containment while
+   preserving the merged A-1 generation-only and no-buffer-mutation boundary.
+2. Keep v2.5.0 at its released boundary `6067fbec`; do not rebuild it or mix
+   its release work into v2.6 development.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
 4. Do not move published tags, upload, or attach release assets without a

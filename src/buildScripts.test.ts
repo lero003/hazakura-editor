@@ -657,44 +657,44 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `2.4.0` is published",
+        "Hazakura Editor `2.5.0` is published",
         "Current development is on `2.6.0`",
-        "The published App Store version is `2.4.0`",
+        "The published App Store version is `2.5.0`",
         "latest GitHub source / local-app tag is [v2.3.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `2.4.0`",
+        "Published App Store version: `2.5.0`",
         "Current source / Developer version: `2.6.0`",
         "GitHub source tag: immutable `v2.3.0`",
       ],
       "docs/current-status.md": [
         "Current package/app version: **`2.6.0`",
-        "Published Mac App Store version: **`2.4.0`",
+        "Published Mac App Store version: **`2.5.0`",
         "Latest GitHub source / local-app tag: `v2.3.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.6 A-1 implementation review — Local Assist proposal + Diff review",
+        "Scope: v2.6 post-A-1 narrow Diff polish — Local Assist proposal + Diff review",
         "Package/app version in tree: **`2.6.0`",
         "W-1 — persistent three-pane workspace",
-        "A-1 external review",
+        "A-4 narrow Diff polish",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.6 A-1 implementation review.**",
+        "Phase: **v2.6 A-4 narrow Diff polish.**",
         "active spine is Local Assist",
         "separate Diff review",
       ],
       "docs/handoff.md": [
         "Package/app version in tree: **`2.6.0`",
-        "Published Mac App Store (user direction 2026-08-07): **`2.4.0`",
+        "Published Mac App Store: **`2.5.0`",
         "GitHub source / local-app tag **`v2.3.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.6.0`",
-        "Published Mac App Store | **`2.4.0`",
-        "Active product phase | **v2.6 A-1 review",
+        "Published Mac App Store | **`2.5.0`",
+        "Active product phase | **v2.6 A-4 narrow polish",
         "R-1 text Reference follows Preview font size",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-1 implementation candidate; external review pending)
+Last reviewed: 2026-08-16 (v2.6 A-1 merged; narrow Diff polish is next)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,14 +26,15 @@ Last reviewed: 2026-08-16 (v2.6 A-1 implementation candidate; external review pe
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current development is on `2.6.0`: Hazakura Local Assist now generates an
+Current development is on `2.6.0`: Hazakura Local Assist generates an
 unapplied proposal into a separate Diff review surface; the editor buffer stays
-unchanged and the proposal can be discarded. This source state is a review
-candidate, not a submission pkg, upload, review, or publication claim.
+unchanged and the proposal can be discarded. A-1 is merged; the next v2.6
+slice is narrow Diff layout polish. This is development-source status, not a
+2.6.0 publication claim.
 
 ## Mac App Store
 
-Hazakura Editor `2.4.0` is published on the Mac App Store:
+Hazakura Editor `2.5.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -150,7 +151,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.6 A-1 review queue (Local Assist proposal + Diff review) and separate v2.5 release gates
+- [Current Work](docs/current-work.md): v2.6 post-A-1 queue (Local Assist proposal + Diff review); v2.5 is closed
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
@@ -261,8 +262,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 Developer preview release boundary:
 
 - Current package/app version in the development tree is `2.6.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag is [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.4.0` (user-reported 2026-08-07); do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.5.0` (user-confirmed); do not reopen the published v2.5 store lane without a reproduced hotfix.
+- Release notes: [2.5.0 published App Store notes](docs/releases/2.5.0-app-store-release-notes.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
