@@ -384,7 +384,12 @@ export function AppleAssistWindowApp() {
         if (payload.phase === "partial") {
           setBusy(true);
           setError(null);
-          setStreamPreview(payload.partialText ?? "");
+          // Helper output is streamed before the final candidate sanitizer
+          // runs. Keep prompt boundary markers out of the Diff surface too;
+          // a marker-only partial returns an empty string so the last
+          // completed proposal remains visible while the helper is warming
+          // up its response.
+          setStreamPreview(sanitizeStreamPreviewText(payload.partialText ?? ""));
           return;
         }
         clearGenerationFallback();
@@ -1231,9 +1236,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは おねがいの ないようを かいてください。",
       generatingButton: "おねがい中...",
       generatingChange:
-        "ろーかる もでるで しょり中。ほぞん まえに さぶんで かくにん できます。",
+        "ろーかる もでるで しょり中。みはんえいの あんを さぶんで かくにん できます。ふみは まだ かわりません。",
       generatingInMain: () =>
-        "へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
+        "へんしゅう あんを つくっています。みはんえいの まま さぶんで かくにん できます。ふみは まだ かわりません。",
       failedStatus:
         "おねがいに しっぱいしました。下の めっせーじを みてください。",
       guardrailError:
@@ -1279,7 +1284,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
       streamPreviewHeading: "つくっている あん",
       streamPreviewIdle:
-        "おねがいすると、AI が つくっている とちゅうの ぶんが ここに でます。できあがった あんは、ほぞん まえに へんこうてんを かくにん できます。",
+        "おねがいすると、AI が つくっている とちゅうの ぶんが ここに でます。あんは みはんえいの まま さぶんで かくにん できます。ふみは まだ かわりません。",
       streamPreviewWaiting:
         "つくりはじめています。ぶんが とどくと ここに でます。",
       proposalHeading: "さぶん かくにん",
@@ -1362,9 +1367,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは依頼内容を入力してください。",
       generatingButton: "依頼中...",
       generatingChange:
-        "ローカルモデルで処理中。保存前に差分で確認できます。",
+        "ローカルモデルで処理中。未反映の案を差分で確認できます。本文はまだ変更しません。",
       generatingInMain: () =>
-        "編集案を作っています。保存前に差分で確認できます。",
+        "編集案を作っています。未反映のまま差分で確認できます。本文はまだ変更しません。",
       failedStatus:
         "依頼に失敗しました。下のメッセージを確認してください。",
       guardrailError:
@@ -1410,7 +1415,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
       streamPreviewHeading: "作成中の案",
       streamPreviewIdle:
-        "依頼すると、AI が作っている途中の文章がここに出ます。完成した案は、保存する前に変更点を確認できます。",
+        "依頼すると、AI が作っている途中の文章がここに出ます。案は未反映のまま差分で確認できます。本文はまだ変更しません。",
       streamPreviewWaiting:
         "作り始めています。文章が届くとここに出ます。",
       proposalHeading: "差分レビュー",
@@ -1492,9 +1497,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Type a request first.",
     generatingButton: "Sending...",
     generatingChange:
-      "Processing with the local model. Review the diff before saving.",
+      "Processing with the local model. The unapplied proposal is available in Diff review; the document is unchanged.",
     generatingInMain: () =>
-      "Creating a draft edit. Review the diff before saving.",
+      "Creating an unapplied proposal. You can review it in Diff; the document is unchanged.",
     failedStatus:
       "Request failed. Check the message below.",
     guardrailError:
@@ -1539,7 +1544,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     workingLocally: "Working locally on this Mac (no third-party AI service)",
     streamPreviewHeading: "Draft in progress",
     streamPreviewIdle:
-      "When you send a request, the text being written will appear here. You can check the finished changes before saving.",
+      "When you send a request, the text being written will appear here. The proposal stays unapplied in Diff review; the document is unchanged.",
     streamPreviewWaiting:
       "Starting the draft. Text will appear here as it arrives.",
     proposalHeading: "Diff review",

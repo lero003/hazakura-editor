@@ -19,7 +19,9 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
 - **A-1 is implemented on the review branch.** Local Assist sends a
   generation-only proposal event; the detached window owns the
   original-versus-proposal Diff and discard action, while the editor buffer and
-  `AiEditTransaction` store remain unchanged. Multi-turn, stale apply, and
+  `AiEditTransaction` store remain unchanged. Partial helper output is
+  sanitized before it reaches Diff so prompt boundary markers cannot appear;
+  cancel/fail keeps the last completed proposal. Multi-turn, stale apply, and
   explicit apply are later slices. Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
@@ -397,7 +399,7 @@ retained as the earlier R-1-only checkpoint.
 ## Verification (2026-08-16, v2.6 A-1)
 
 - `npm run typecheck` passed.
-- `npm test -- --run` passed: 209 files / 1,745 tests.
+- `npm test -- --run` passed: 209 files / 1,746 tests.
 - `npm run build:vite` passed (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` passed: 10 files / 111 tests.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
@@ -417,9 +419,9 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Review the A-1 branch/PR for the generation-only event, separate Diff
-   representation, discard behavior, and the no-buffer-mutation / no-transaction
-   boundary before starting A-2.
+1. Re-review the A-1 branch/PR for the generation-only event, separate Diff
+   representation, boundary-marker sanitization, discard/cancel/fail behavior,
+   and the no-buffer-mutation / no-transaction boundary before starting A-2.
 2. Keep the v2.5 candidate at `6067fbec` and its human Apple gates separate
    from v2.6 development; do not rebuild it just to include later docs.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
