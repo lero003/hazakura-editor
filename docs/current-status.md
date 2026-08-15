@@ -1,36 +1,37 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-1 review)
+Scope: Current implementation state and next safe actions (v2.6 post-A-1 polish)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
+Last reviewed: 2026-08-16 (v2.6 A-1 merged; narrow Diff polish is next)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.6.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. **Published Mac App Store (user direction 2026-08-07):
-  `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
-  include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
+  lockfile metadata. **Published Mac App Store (user-confirmed): `2.5.0`.**
+  Treat v2.5 as released and closed; hotfix only. Prior published
+  lines include `2.4.0` (Book depth), `2.3.0` (recipe/resume quality pack),
+  and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **Implemented source remains v2.5.** Workspace control + delivery clarity is
-  in source: bounded persistent pane widths, Reference font-size alignment, and
-  exact tree-cap counts. The clean signed-candidate boundary is commit
-  `6067fbec`; Apple upload, processing, TestFlight, tag, and publication remain
-  human gates. Plan: `docs/v2.5-plan.md`.
-- **Active product work is v2.6 A-1.** Local Assist sends a generation-only
-  proposal into a separate Diff review area; the editor buffer and
-  `AiEditTransaction` store remain unchanged, and the proposal can be discarded.
-  Multi-turn, stale apply, and explicit apply remain later slices. Plan:
-  `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
-- **Current v2.5 candidate verification is green:** frontend 208 files / 1,740 tests,
-  Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests, Vite,
-  helper-enabled App Store preview build, and a 1280×820 native window smoke.
-  Keyboard/drag resizing and collapsed-sidebar separator removal were checked in
-  the built app. A signed universal submission pkg was generated from a clean
-  source boundary and independently checked against its ignored candidate
-  metadata. TestFlight upload, processing, and install remain human gates.
+- **v2.5.0 is released and closed.** Workspace control + delivery clarity is
+  complete: bounded persistent pane widths, Reference font-size alignment, and
+  exact tree-cap counts. The implementation boundary is commit `6067fbec`;
+  do not reopen this line except for a reproduced release blocker. Plan:
+  `docs/v2.5-plan.md`.
+- **Active product work is v2.6 after A-1 merge.** Local Assist sends a
+  generation-only proposal into a separate Diff review area; the editor buffer
+  and `AiEditTransaction` store remain unchanged, and the proposal can be
+  discarded. The next bounded slice is narrow Diff layout polish; pinned target,
+  multi-turn, and explicit apply remain later slices. Plan: `docs/v2.6-plan.md`;
+  queue: `docs/current-work.md`.
+- **v2.5.0 verification was green before release:** frontend 208 files / 1,740
+  tests, Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests,
+  Vite, helper-enabled App Store preview build, and a 1280×820 native window
+  smoke. Keyboard/drag resizing and collapsed-sidebar separator removal were
+  checked in the built app. The signed universal package was generated from a
+  clean source boundary and checked against its provenance metadata.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -249,9 +250,9 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.0` package version from package metadata.
-- **Open main queue:** human-approved TestFlight upload and installed-build
-  checks. Source, built-app, and clean-source signed-pkg gates are complete.
-  Published `2.4.0` remains closed without a reproduced hotfix; other advisory
+- **Open main queue:** the v2.6 narrow Diff layout polish slice. The merged A-1
+  source, built-app, and local package gates are complete for its scope.
+  Released `2.5.0` remains closed without a reproduced hotfix; other advisory
   items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
@@ -577,11 +578,12 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.0`**. The A-1 review candidate adds
+- Current development-tree version: **`2.6.0`**. Merged v2.6 A-1 adds
   generation-only Local Assist proposals and a separate Diff review surface;
-  the editor remains unchanged until a later explicit-apply slice.
+  the editor remains unchanged until a later explicit-apply slice. The next
+  implementation slice is narrow Diff layout polish.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
-- Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
+- Published Mac App Store version: **`2.5.0`** (user-confirmed; v2.5 is closed).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
 - Latest GitHub source / local-app tag: `v2.3.0` (source archive only; see
   `docs/releases/2.3.0-source-tag.release.md`). Prior checkpoint: `v2.0.0`.
@@ -1021,13 +1023,13 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Start v2.6 with **A-1 only**: generate/stream an unapplied proposal into a
-   separate Diff review while keeping the editor buffer unchanged.
-2. Review the v2.5 implementation and candidate evidence through its Draft PR.
-3. Upload the existing signed 2.5.0 candidate only with explicit human approval,
-   then separate Apple processing and installed-TestFlight smoke from local proof.
-4. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
-   reopen Book-depth trains (B-2+) as the main queue.
+1. Continue v2.6 with the bounded narrow Diff layout polish slice; keep A-2 and
+   A-3 out until that slice is independently reviewed.
+2. After the polish review, promote one of A-2 or A-3 from `docs/v2.6-plan.md`,
+   never both in one patch.
+3. Treat released **`2.5.0`** as closed except for a reproduced hotfix. Do not
+   rebuild or reopen its release lane for v2.6 work.
+4. Treat published **`2.4.0`** and earlier lines as immutable historical lines.
 5. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
    and bulk digestion of external review pools until promoted.
 6. Keep Local Assist on-device, explicit, and diff-reviewable; keep Book order

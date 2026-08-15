@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-08-16 (2.6.0 A-1 review candidate; 2.4.0 remains published)
+Last reviewed: 2026-08-16 (2.6.0 A-4 narrow polish; 2.5.0 remains published)
 
 ## Purpose
 
@@ -41,13 +41,14 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `2.4.0` (publication was user-reported
-  2026-08-07; OKF v0.2 + chapter Diff on the Safe Editor baseline). See
-  `docs/releases/2.4.0-app-store-release-notes.md`. Prior store baselines
-  `2.3.0` and `2.0.0` remain historical.
-- Current source / Developer version: `2.6.0` (v2.6 A-1 review candidate; not a released package).
+- Published App Store version: `2.5.0` (user-confirmed; v2.5 workspace control
+  and delivery-clarity line is closed). See
+  `docs/releases/2.5.0-app-store-release-notes.md`. Prior store baselines
+  `2.4.0`, `2.3.0`, and `2.0.0` remain historical.
+- Current source / Developer version: `2.6.0` (v2.6 A-1 merged; narrow Diff
+  polish is in development and is not a released package).
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
-  See `docs/current-work.md`, `docs/releases/2.4.0-app-store-release-notes.md`,
+  See `docs/current-work.md`, `docs/releases/2.5.0-app-store-release-notes.md`,
   and `docs/releases/2.3.0-source-tag.release.md`.
 - Latest local App Store package candidate metadata (version, build
   counter, pkg path, SHA-256, generated time, base source commit, and

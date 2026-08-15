@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 conversation / Diff review planning opened)
+Last reviewed: 2026-08-16 (v2.6 A-1 merged; narrow Diff polish underway)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.6.0`**; A-1 review candidate |
-| Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
-| Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
-| Prepared candidate | **v2.5** at `6067fbec`; Apple gates remain human-owned |
-| Active product phase | **v2.6 A-1 review** — Local Assist proposal + separate Diff review |
+| Package / app version in tree | **`2.6.0`**; A-1 merged, narrow Diff polish underway |
+| Published Mac App Store | **`2.5.0`** (user-confirmed; v2.5 closed) |
+| Prior store / source lines | `2.4.0`, `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
+| Released v2.5 boundary | **`6067fbec`** implementation boundary; do not reopen the line |
+| Active product phase | **v2.6 A-4 narrow polish** — Local Assist proposal + separate Diff review |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -50,14 +50,15 @@ Local App Store candidate provenance: `docs/internal/app-store-candidates/latest
 
 User direction:
 
-1. **Mac App Store / product line `2.4.0` is shipped.** Treat as closed store
-   line; hotfix only for reproduced blockers. Do not reopen for polish trains.
-2. **v2.5 source/candidate is prepared.** Keep its signed candidate and Apple
-   gates separate from later main-branch work.
-3. **v2.6 A-1 is under external review.** The selected theme is Local Assist
-   editing conversation with conversation and Diff review as distinct regions;
-   the current candidate keeps the editor buffer unchanged while proposals are
-   reviewed.
+1. **Mac App Store / product line `2.5.0` is shipped.** Treat v2.5 as a
+   closed line; hotfix only for reproduced blockers. Do not reopen it for
+   v2.6 polish or feature work.
+2. **v2.5 is a separate released source boundary.** Keep `6067fbec` as its
+   implementation provenance and do not rebuild it to include v2.6 changes.
+3. **v2.6 A-1 is merged.** The selected theme is Local Assist editing
+   conversation with conversation and Diff review as distinct regions; the
+   merged implementation keeps the editor buffer unchanged while proposals are
+   reviewed. A narrow Diff layout polish slice follows before A-2/A-3.
 4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
 5. **Core AI** remains a later model backend after conversational apply is stable.
 6. **anydoc** stays evaluation-only until product demand is clear.
@@ -67,14 +68,14 @@ User direction:
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
-[done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 published (tags immutable)
+[done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 · 2.5.0 published (tags immutable)
 [done]   v2.4 OKF v0.2 · compact toolbar · B-1 chapter Diff
 [done]   v2.5 R-1 text Reference follows Preview font size
-[done]   v2.5 source + signed candidate at 6067fbec
-[gate]   v2.5 human TestFlight upload / processing / publication
-[now]    v2.6 A-1: proposal generation → Diff review; editor unchanged
-[next]   External review, then A-2 conversation → A-3 Diff apply
-[then]   A-2 conversation → A-3 Diff apply → A-4 polish
+[done]   v2.5 released / closed at implementation boundary 6067fbec
+[done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
+[now]    v2.6 narrow Diff layout polish (A-4 preflight)
+[next]   A-2 conversation → A-3 Diff apply, one slice at a time
+[then]   A-4 remaining locale / keyboard / accessibility polish
 [later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
@@ -82,8 +83,8 @@ User direction:
 ## Active Path — v2.6
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.4.0` remains hotfix-only. The prepared v2.5 candidate remains a
-separate provenance and Apple-gate boundary.
+Released `2.5.0` remains hotfix-only. v2.6 work is a separate source and
+provenance line; do not rebuild the released v2.5 package for it.
 
 ### Active spine
 
@@ -121,7 +122,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | After A-3; start with C-0 design only |
-| Published 2.4.0 hotfix | App Review / daily-use blocker | Only when reproduced |
+| Published 2.5.0 hotfix | App Review / daily-use blocker | Only when reproduced |
 
 ### Hard rails (v2.x does not lift these)
 
@@ -172,8 +173,8 @@ These boundaries stay active across roadmap changes:
 | **v2.1–v2.2** | Bounded Reader search + quality pack | **Folded into 2.3+** |
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
 | **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
-| **v2.5** | Workspace control + delivery clarity | **Candidate prepared** — `docs/v2.5-plan.md` |
-| **v2.6** | Local Assist conversation + Diff review | **A-1 review candidate** — `docs/v2.6-plan.md` |
+| **v2.5** | Workspace control + delivery clarity | **Shipped / closed** — `docs/v2.5-plan.md` |
+| **v2.6** | Local Assist conversation + Diff review | **A-4 narrow polish** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v3.x | Broader local-AI re-evaluation if still needed | Speculative |
@@ -196,11 +197,11 @@ explainability, …) may return as a dedicated line after v2.5 workspace work,
 or as single residual slices if daily friction demands it. It is not part of
 the active v2.6 Local Assist queue.
 
-## v2.5 Workspace Control and Clarity (candidate prepared)
+## v2.5 Workspace Control and Clarity (shipped / closed)
 
 Goal: a persistent, keyboard-operable three-pane workspace plus honest bounded
-tree and completion feedback. This source line is complete at `6067fbec`; Apple
-upload, processing, TestFlight, tag, and publication remain separate gates.
+tree and completion feedback. This source line shipped and is closed at
+`6067fbec`; do not reopen it for v2.6 work.
 
 - Plan: `docs/v2.5-plan.md`
 

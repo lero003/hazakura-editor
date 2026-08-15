@@ -21,13 +21,20 @@ function ruleBody(css: string, selector: string): string {
 describe("apple-assist-window.css", () => {
   const css = stripCssComments(appleAssistWindowCss);
 
-  it("keeps the operation feedback panel content-sized rather than taking all remaining height", () => {
+  it("bounds the proposal row while keeping the operation feedback panel content-sized", () => {
     const shell = ruleBody(css, ".apple-assist-window-shell");
+    const proposal = ruleBody(css, ".apple-assist-window-proposal");
     const feedback = ruleBody(css, ".apple-assist-window-feedback");
 
-    expect(shell).not.toMatch(/grid-template-rows:[^;]*1fr/);
+    expect(shell).toMatch(
+      /grid-template-rows:\s*auto auto auto minmax\(11rem,\s*1fr\) minmax\(9\.5rem,\s*auto\) auto/,
+    );
+    expect(proposal).toMatch(/min-height:\s*0/);
     expect(feedback).toMatch(/height:\s*9\.5rem/);
     expect(feedback).toMatch(/min-height:\s*9\.5rem/);
+    expect(css).toMatch(
+      /\.apple-assist-proposal-cell\s*>\s*span:last-child[\s\S]*min-width:\s*0/,
+    );
   });
 
   it("keeps the companion vertically compact for the smaller tool-window height", () => {
@@ -113,6 +120,20 @@ describe("apple-assist-window.css", () => {
     expect(body).toMatch(/overflow-y:\s*auto/);
     expect(body).toMatch(/scrollbar-width:\s*thin/);
     expect(list).toMatch(/gap:\s*4px/);
+  });
+
+  it("stacks the narrow Diff summary without forcing horizontal overflow", () => {
+    const narrow = css.match(
+      /@media\s*\(max-width:\s*520px\)\s*{(?<body>[\s\S]*)$/,
+    )?.groups?.body ?? "";
+
+    expect(narrow).toMatch(
+      /\.apple-assist-proposal-columns[\s\S]*grid-template-columns:/,
+    );
+    expect(narrow).toMatch(
+      /\.apple-assist-proposal-summary[\s\S]*grid-column:\s*1\s*\/\s*-1/,
+    );
+    expect(narrow).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
   it("separates multiple request groups inside the feedback log", () => {
