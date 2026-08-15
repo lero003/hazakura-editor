@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.5.0`**; bump with first v2.6 implementation slice |
+| Package / app version in tree | **`2.6.0`**; A-1 review candidate |
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | Prepared candidate | **v2.5** at `6067fbec`; Apple gates remain human-owned |
-| Active product phase | **v2.6 planning** — Local Assist conversation + separate Diff review |
+| Active product phase | **v2.6 A-1 review** — Local Assist proposal + separate Diff review |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -54,8 +54,10 @@ User direction:
    line; hotfix only for reproduced blockers. Do not reopen for polish trains.
 2. **v2.5 source/candidate is prepared.** Keep its signed candidate and Apple
    gates separate from later main-branch work.
-3. **v2.6 planning is open.** The selected theme is Local Assist editing
-   conversation with conversation and Diff review as distinct regions.
+3. **v2.6 A-1 is under external review.** The selected theme is Local Assist
+   editing conversation with conversation and Diff review as distinct regions;
+   the current candidate keeps the editor buffer unchanged while proposals are
+   reviewed.
 4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
 5. **Core AI** remains a later model backend after conversational apply is stable.
 6. **anydoc** stays evaluation-only until product demand is clear.
@@ -70,8 +72,8 @@ User direction:
 [done]   v2.5 R-1 text Reference follows Preview font size
 [done]   v2.5 source + signed candidate at 6067fbec
 [gate]   v2.5 human TestFlight upload / processing / publication
-[now]    v2.6 design: Conversation + separate Diff review
-[next]   A-1 proposal generation → Diff review; editor unchanged
+[now]    v2.6 A-1: proposal generation → Diff review; editor unchanged
+[next]   External review, then A-2 conversation → A-3 Diff apply
 [then]   A-2 conversation → A-3 Diff apply → A-4 polish
 [later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
@@ -171,7 +173,7 @@ These boundaries stay active across roadmap changes:
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
 | **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
 | **v2.5** | Workspace control + delivery clarity | **Candidate prepared** — `docs/v2.5-plan.md` |
-| **v2.6** | Local Assist conversation + Diff review | **Planning active** — `docs/v2.6-plan.md` |
+| **v2.6** | Local Assist conversation + Diff review | **A-1 review candidate** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v3.x | Broader local-AI re-evaluation if still needed | Speculative |

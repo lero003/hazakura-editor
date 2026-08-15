@@ -3,6 +3,7 @@ import {
   APPLY_LOCAL_ASSIST_ACTION_IDS,
   LOCAL_ASSIST_ACTIONS,
   buildApplyEvent,
+  buildProposalEvent,
   getLocalAssistAction,
   resolveLocalAssistActionId,
   type LocalAssistActionId,
@@ -210,6 +211,21 @@ describe("buildApplyEvent", () => {
       requestedAtMs: 42,
     });
     expect(event.requestedAtMs).toBe(42);
+    expect(event.target).toBe(SAMPLE_TARGET);
+  });
+});
+
+describe("buildProposalEvent", () => {
+  it("marks a request as generation-only even when the preset is normally applicable", () => {
+    const event = buildProposalEvent({
+      requestId: "proposal-1",
+      actionId: "proofread_only",
+      requestText: JA_PRESETS[0].requestText,
+      target: SAMPLE_TARGET,
+      requestedAtMs: 123,
+    });
+
+    expect(event.shouldApplyToDocument).toBe(false);
     expect(event.target).toBe(SAMPLE_TARGET);
   });
 });

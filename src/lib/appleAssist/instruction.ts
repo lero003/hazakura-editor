@@ -189,3 +189,16 @@ export function buildApplyEvent({
     target,
   };
 }
+
+// v2.6 A-1: proposal requests share the bounded action mapping but are
+// explicitly marked as unapplied. The receiving proposal handler still
+// treats the event as generation-only; keeping the flag false makes the
+// buffer-mutation boundary visible in the IPC payload as well.
+export function buildProposalEvent(
+  input: BuildApplyEventInput,
+): AppleAssistApplyEvent {
+  return {
+    ...buildApplyEvent(input),
+    shouldApplyToDocument: false,
+  };
+}

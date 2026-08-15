@@ -61,6 +61,7 @@ import { usePinExternalImagesAction } from "../document/usePinExternalImagesActi
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
+import { useAppleAssistProposalHandler } from "../editor/useAppleAssistProposalHandler";
 import { stopAppleAssistGeneration } from "../../lib/tauri";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
 import {
@@ -647,6 +648,24 @@ export function useAppShellController() {
         replaceTabsBufferBySessionId(currentTabs, sessionId, next),
       );
     },
+    setStatus,
+    setGenerationLock: setAppleAssistGenerationLockWithMirror,
+  });
+
+  // v2.6 A-1: generation-only Local Assist path. The proposal handler
+  // shares target validation and streaming with the legacy apply path but
+  // intentionally has no buffer setter; its completed candidate is sent to
+  // the detached Diff review surface and remains unapplied in memory.
+  useAppleAssistProposalHandler({
+    activeTab: activeTab
+      ? {
+          id: activeTab.id,
+          sessionId: activeTab.sessionId,
+          name: activeTab.name,
+          path: activeTab.path,
+          contents: activeTab.contents,
+        }
+      : null,
     setStatus,
     setGenerationLock: setAppleAssistGenerationLockWithMirror,
   });

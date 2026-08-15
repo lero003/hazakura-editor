@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6 planning / implementation queue.** Mac App Store `2.4.0` is
+Phase: **v2.6 A-1 implementation review.** Mac App Store `2.4.0` is
 published and closed for drive-by polish; the prepared v2.5 candidate remains a
 separate human-gated release boundary. The active spine is Local Assist
 conversation + separate Diff review, starting with A-1 only. Promote one slice

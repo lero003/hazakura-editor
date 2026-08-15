@@ -1,13 +1,13 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 active planning — Local Assist conversation + Diff review
+Scope: v2.6 A-1 review candidate — Local Assist proposal + Diff review
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 design opened)
+Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
 
 ## Current State
 
-- Package/app version in tree: **`2.5.0`** development line.
+- Package/app version in tree: **`2.6.0`** A-1 review candidate.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
 - **v2.5 candidate is prepared at `6067fbec`.** W-1 gives the left
@@ -16,12 +16,13 @@ Last reviewed: 2026-08-16 (v2.5 candidate preserved; v2.6 design opened)
   the exact count hidden by a folder cap. Q-3/Q-5 were already implemented;
   Q-13 is a measured no-op. Upload, processing, installed TestFlight, tag, and
   publication remain human gates. Plan: `docs/v2.5-plan.md`.
-- **Active planning is v2.6.** Local Assist conversation owns requests and short
-  turn state; a separate Diff review owns the current unapplied proposal,
-  original-versus-proposal comparison, stale state, discard, and explicit
-  `文書へ反映`. No v2.6 implementation or version bump is claimed. Start with
-  A-1 only. Plan: `docs/v2.6-plan.md`; design:
+- **A-1 is implemented on the review branch.** Local Assist sends a
+  generation-only proposal event; the detached window owns the
+  original-versus-proposal Diff and discard action, while the editor buffer and
+  `AiEditTransaction` store remain unchanged. Multi-turn, stale apply, and
+  explicit apply are later slices. Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
+
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -393,6 +394,17 @@ retained as the earlier R-1-only checkpoint.
   interaction evidence for the multi-file spine. All automated, Rust, audit,
   package, signing, and launch gates above were re-run after the UX review.
 
+## Verification (2026-08-16, v2.6 A-1)
+
+- `npm run typecheck` passed.
+- `npm test -- --run` passed: 209 files / 1,745 tests.
+- `npm run build:vite` passed (existing large-chunk warning only).
+- `npm run smoke:app-store-surface` passed: 10 files / 111 tests.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed: 368 passed / 2 ignored.
+- Built-app/manual Assist streaming, cancel, narrow-layout, and device availability
+  smoke remain external-review or human-gated evidence; they were not claimed here.
+
 ## Durable Pins
 
 - Safe Editor primary; Markdown/text source canonical (per file in v2).
@@ -405,10 +417,9 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Read `docs/current-work.md`, `docs/v2.6-plan.md`, and
-   `docs/local-assist-conversational-edit-ux.md`. Next product slice is A-1:
-   generate an unapplied proposal into a separate Diff review and leave the
-   editor buffer unchanged.
+1. Review the A-1 branch/PR for the generation-only event, separate Diff
+   representation, discard behavior, and the no-buffer-mutation / no-transaction
+   boundary before starting A-2.
 2. Keep the v2.5 candidate at `6067fbec` and its human Apple gates separate
    from v2.6 development; do not rebuild it just to include later docs.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static

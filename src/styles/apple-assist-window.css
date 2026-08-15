@@ -208,6 +208,139 @@
   overflow: hidden;
 }
 
+/* v2.6 A-1: the proposal is a separate Diff review responsibility.
+ * Keep the original and candidate readable in one bounded, scrollable
+ * surface; the conversation form above never renders the full candidate. */
+.apple-assist-window-proposal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 6px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-height: 11rem;
+  overflow: hidden;
+  padding: 8px 9px;
+}
+
+.apple-assist-proposal-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.apple-assist-proposal-heading,
+.apple-assist-proposal-subtitle {
+  margin: 0;
+}
+
+.apple-assist-proposal-heading {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  opacity: 0.78;
+  text-transform: uppercase;
+}
+
+.apple-assist-proposal-subtitle {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.apple-assist-window-discard {
+  background: transparent;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 11.5px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.apple-assist-window-discard:hover:not(:disabled) {
+  background: var(--bg-elev-hover);
+}
+
+.apple-assist-window-discard:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.apple-assist-proposal-columns {
+  align-items: center;
+  color: var(--text-muted);
+  display: grid;
+  font-size: 10.5px;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  padding: 0 4px;
+}
+
+.apple-assist-proposal-summary {
+  white-space: nowrap;
+}
+
+.apple-assist-proposal-body {
+  background: var(--surface-strong, var(--surface, var(--bg)));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-editor);
+  font-size: 11.5px;
+  line-height: 1.45;
+  min-height: 0;
+  overflow: auto;
+}
+
+.apple-assist-proposal-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-width: 32rem;
+}
+
+.apple-assist-proposal-cell {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.apple-assist-proposal-cell-left {
+  border-right: 1px solid var(--border);
+}
+
+.apple-assist-proposal-row-added .apple-assist-proposal-cell-right {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.apple-assist-proposal-row-removed .apple-assist-proposal-cell-left {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+}
+
+.apple-assist-proposal-line-number {
+  color: var(--text-muted);
+  flex: 0 0 2rem;
+  text-align: right;
+  user-select: none;
+}
+
+.apple-assist-proposal-placeholder,
+.apple-assist-proposal-error {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.apple-assist-proposal-error {
+  color: var(--error);
+}
+
 .apple-assist-feedback-header {
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -282,6 +415,10 @@
 }
 
 .apple-assist-feedback-entry-kind-applied {
+  color: var(--accent);
+}
+
+.apple-assist-feedback-entry-kind-proposal-ready {
   color: var(--accent);
 }
 

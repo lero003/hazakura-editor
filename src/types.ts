@@ -178,19 +178,26 @@ export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 // lives in the same outside-companion slot as the Agent window.
 export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
 
-// Mirror of the Rust APPLY_AI_EDIT_TRANSACTION_EVENT /
-// REQUEST_AI_EDIT_TARGET_EVENT / AI_EDIT_TARGET_RESULT_EVENT
-// constants. The Hazakura Local Assist window emits
-// `APPLY_AI_EDIT_TRANSACTION_EVENT` to ask the main window to
-// apply an AI edit transaction; the main window answers the
-// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded
-// target via `AI_EDIT_TARGET_RESULT_EVENT`. See
+// Mirror of the Rust Local Assist request/status event constants.
+// The legacy `APPLY_AI_EDIT_TRANSACTION_EVENT` remains the explicit
+// apply path; v2.6 A-1 uses `REQUEST_AI_EDIT_PROPOSAL_EVENT` for
+// generation-only requests and returns the candidate through the
+// separate proposal status channel. The main window answers the
+// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target. See
 // src-tauri/src/types.rs and
 // docs/apple-local-assist-writing-companion-plan.md.
 export const APPLY_AI_EDIT_TRANSACTION_EVENT =
   "hazakura-note://apply-ai-edit-transaction";
 export const APPLE_ASSIST_APPLY_STATUS_EVENT =
   "hazakura-note://apple-assist-apply-status";
+// v2.6 A-1: proposal generation is a separate IPC path from the
+// legacy apply transaction path. The main window must keep the
+// editor buffer unchanged while it streams this event's result to
+// the detached Local Assist Diff review area.
+export const REQUEST_AI_EDIT_PROPOSAL_EVENT =
+  "hazakura-note://request-ai-edit-proposal";
+export const APPLE_ASSIST_PROPOSAL_STATUS_EVENT =
+  "hazakura-note://apple-assist-proposal-status";
 export const REQUEST_AI_EDIT_TARGET_EVENT =
   "hazakura-note://request-ai-edit-target";
 export const AI_EDIT_TARGET_RESULT_EVENT =
@@ -275,6 +282,23 @@ export type AppleAssistApplyStatusEvent = {
   request: string;
   partialText?: string;
   shouldApplyToDocument?: boolean;
+  emittedAtMs: number;
+};
+
+// v2.6 A-1 proposal status. The candidate is intentionally kept
+// outside `AppleAssistApplyStatusEvent`: proposal generation never
+// records an AiEditTransaction and never mutates the editor buffer.
+// This payload is delivered only to the detached Local Assist window
+// so the full candidate has one authoritative Diff review surface.
+export type AppleAssistProposalStatusEvent = {
+  phase: "started" | "partial" | "completed" | "failed" | "cancelled";
+  requestId: string;
+  message: string;
+  request: string;
+  target?: AppleAssistTargetSnapshot | null;
+  originalText?: string;
+  partialText?: string;
+  candidateText?: string;
   emittedAtMs: number;
 };
 

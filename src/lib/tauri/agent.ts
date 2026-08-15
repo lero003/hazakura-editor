@@ -269,6 +269,20 @@ export async function requestApplyAiEditTransaction(
   await invoke("request_apply_ai_edit_transaction", { payload });
 }
 
+// v2.6 A-1: ask the main window to generate an unapplied proposal.
+// This is deliberately a different command from the legacy apply path;
+// the receiving hook streams the candidate to Diff review without mutating
+// the editor buffer or recording an AiEditTransaction.
+export async function requestAppleAssistProposal(
+  payload: import("../../types").AppleAssistApplyEvent,
+): Promise<void> {
+  if (!isTauriRuntime()) {
+    throw new Error("Tauri runtime is not available.");
+  }
+
+  await invoke("request_apple_assist_proposal", { payload });
+}
+
 // v0.12+ Hazakura Local Assist Writing Companion (slice 3+).
 // `getMainAppleAssistTarget` reads the latest inferred
 // target snapshot from the Rust-side cache. The main window

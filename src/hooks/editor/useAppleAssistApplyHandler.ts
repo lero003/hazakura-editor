@@ -74,7 +74,7 @@ export function getAppleAssistContextWindow(
 // the store's `clear` path so the next render does not
 // surface a stale pending review.
 
-type ActiveTab = {
+export type ActiveTab = {
   id: string;
   sessionId: string;
   name: string;
@@ -354,7 +354,7 @@ export async function yieldBeforeAppleAssistGeneration(): Promise<void> {
   });
 }
 
-function resolveApplyActionId(payload: AppleAssistApplyEvent): LocalAssistActionId {
+export function resolveApplyActionId(payload: AppleAssistApplyEvent): LocalAssistActionId {
   if (isLocalAssistActionId(payload.actionId)) {
     return payload.actionId;
   }
@@ -368,7 +368,7 @@ function resolveApplyActionId(payload: AppleAssistApplyEvent): LocalAssistAction
   return "rewrite_natural";
 }
 
-function readTargetTextForGeneration(
+export function readTargetTextForGeneration(
   target: AppleAssistTargetSnapshot | null,
   tab: ActiveTab,
 ): { ok: true; target: AppleAssistTargetSnapshot; before: string } | { ok: false; error: string } {
