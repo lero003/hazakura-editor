@@ -35,6 +35,7 @@ import { inferAppleAssistTarget } from "../../features/editor/aiEditTarget";
 
 type ActiveTab = {
   id: string;
+  sessionId: string;
   name: string;
   path: string;
 };
@@ -53,6 +54,7 @@ const EMPTY_SNAPSHOT: AppleAssistTargetSnapshot = {
   label: "",
   activeDocumentPath: null,
   activeDocumentName: null,
+  activeDocumentSessionId: null,
   capturedAtMs: 0,
 };
 
@@ -67,6 +69,7 @@ function snapshotKey(snapshot: AppleAssistTargetSnapshot): string {
     snapshot.label,
     snapshot.activeDocumentPath ?? "",
     snapshot.activeDocumentName ?? "",
+    snapshot.activeDocumentSessionId ?? "",
   ].join("");
 }
 
@@ -117,6 +120,7 @@ export function useAppleAssistTargetSync({
       label: target.label,
       activeDocumentPath: tab?.path ?? null,
       activeDocumentName: tab?.name ?? null,
+      activeDocumentSessionId: tab?.sessionId ?? null,
       capturedAtMs: Date.now(),
     };
     const key = snapshotKey(snapshot);

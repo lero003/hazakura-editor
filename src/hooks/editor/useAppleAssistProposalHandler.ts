@@ -2,6 +2,7 @@ import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
   APPLE_ASSIST_MAX_CONTEXT_CHARS,
+  APPLE_ASSIST_MAX_SELECTED_CHARS,
   generateAppleAssistCandidateStreaming,
 } from "../../lib/tauri/appleAssist";
 import {
@@ -32,7 +33,77 @@ type UseAppleAssistProposalHandlerOptions = {
   setGenerationLock?: Dispatch<SetStateAction<AppleAssistGenerationLock | null>>;
 };
 
-// v2.6 A-1: generation-only Local Assist path. This handler deliberately
+export const APPLE_ASSIST_MAX_CONVERSATION_TURNS = 4;
+export const APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS = 500;
+
+function takeAppleAssistChars(value: string, maxChars: number): string {
+  return Array.from(value).slice(0, maxChars).join("");
+}
+
+/**
+ * Build the bounded revision packet for A-2. The current proposal is passed
+ * as selectedText; this packet keeps the pinned original, recent user turns,
+ * and nearby document context available without persisting a conversation.
+ */
+export function buildAppleAssistRevisionContext(
+  originalText: string,
+  surroundingContext: string,
+  revisionHistory: ReadonlyArray<string> = [],
+): string {
+  const original = takeAppleAssistChars(originalText, APPLE_ASSIST_MAX_SELECTED_CHARS);
+  const history = revisionHistory
+    .slice(-APPLE_ASSIST_MAX_CONVERSATION_TURNS)
+    .map((request) => `- ${takeAppleAssistChars(request, APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS)}`)
+    .join("\n");
+  const header = [
+    "A-2 revision packet (reference only; the current proposal is the target text).",
+    "Pinned original:",
+    "<<<HAZAKURA_ORIGINAL_START>>>",
+    original,
+    "<<<HAZAKURA_ORIGINAL_END>>>",
+    history ? "Previous user requests:" : "Previous user requests: (none)",
+    history,
+  ].filter((line) => line.length > 0).join("\n");
+  const contextLabel = "Nearby document context (reference only):\n";
+  const availableContextChars = Math.max(
+    0,
+    APPLE_ASSIST_MAX_CONTEXT_CHARS - Array.from(header).length - Array.from(contextLabel).length,
+  );
+  return `${header}\n${contextLabel}${takeAppleAssistChars(
+    surroundingContext,
+    availableContextChars,
+  )}`;
+}
+
+function normalizeRevisionHistory(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .filter((entry): entry is string => typeof entry === "string")
+    .slice(-APPLE_ASSIST_MAX_CONVERSATION_TURNS)
+    .map((entry) => takeAppleAssistChars(entry, APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS));
+}
+
+function validateProposalText(
+  proposalText: string | undefined,
+): { ok: true; text: string } | { ok: false; error: string } {
+  if (proposalText === undefined) {
+    return { ok: true, text: "" };
+  }
+  if (proposalText.trim().length === 0) {
+    return { ok: false, error: "Hazakura Local Assist current proposal is empty." };
+  }
+  if (Array.from(proposalText).length > APPLE_ASSIST_MAX_SELECTED_CHARS) {
+    return {
+      ok: false,
+      error: `Hazakura Local Assist current proposal exceeds the maximum length of ${APPLE_ASSIST_MAX_SELECTED_CHARS} characters.`,
+    };
+  }
+  return { ok: true, text: proposalText };
+}
+
+// v2.6 A-1/A-2: generation-only Local Assist path. This handler deliberately
 // does not receive a buffer setter and never calls `applyAiEditTransaction`.
 // It validates the target, streams the bounded candidate, and sends the
 // unapplied proposal to the detached window's Diff review surface.
@@ -96,6 +167,29 @@ export function useAppleAssistProposalHandler({
       return;
     }
 
+    const proposalCheck = validateProposalText(payload.proposalText);
+    if (!proposalCheck.ok) {
+      setStatusRef.current?.(proposalCheck.error);
+      await emitAppleAssistProposalStatus("failed", proposalCheck.error, payload, {
+        target: targetCheck.target,
+        originalText: targetCheck.before,
+      });
+      return;
+    }
+    if (
+      payload.conversationOriginalText !== undefined &&
+      payload.conversationOriginalText !== targetCheck.before
+    ) {
+      const message =
+        "Hazakura Local Assist proposal failed: the pinned original no longer matches the active document.";
+      setStatusRef.current?.(message);
+      await emitAppleAssistProposalStatus("failed", message, payload, {
+        target: targetCheck.target,
+        originalText: targetCheck.before,
+      });
+      return;
+    }
+
     try {
       const startMessage = "Hazakura Local Assist is generating an unapplied proposal...";
       setStatusRef.current?.(startMessage);
@@ -115,18 +209,25 @@ export function useAppleAssistProposalHandler({
       const contextWindow = getAppleAssistContextWindow(target.kind);
       const actionId: LocalAssistActionId = resolveApplyActionId(payload);
       const action = getLocalAssistAction(actionId);
+      const selectedText =
+        payload.proposalText === undefined ? targetCheck.before : proposalCheck.text;
+      const surroundingContext = buildSurroundingDocumentContext(
+        tab.contents,
+        target.start,
+        target.end,
+        contextWindow.preChars,
+        contextWindow.postChars,
+        APPLE_ASSIST_MAX_CONTEXT_CHARS,
+      );
       const response = await generateAppleAssistCandidateStreaming(
         {
           operation: action.operation,
           actionId,
-          selectedText: targetCheck.before,
-          documentContext: buildSurroundingDocumentContext(
-            tab.contents,
-            target.start,
-            target.end,
-            contextWindow.preChars,
-            contextWindow.postChars,
-            APPLE_ASSIST_MAX_CONTEXT_CHARS,
+          selectedText,
+          documentContext: buildAppleAssistRevisionContext(
+            targetCheck.before,
+            surroundingContext,
+            normalizeRevisionHistory(payload.revisionHistory),
           ),
           additionalRequest: payload.additionalRequest,
         },
@@ -196,6 +297,8 @@ async function emitAppleAssistProposalStatus(
       message,
       requestId: payload.requestId,
       request: payload.request,
+      conversationId: payload.conversationId,
+      conversationTurnIndex: payload.conversationTurnIndex,
       ...options,
       emittedAtMs: Date.now(),
     } satisfies AppleAssistProposalStatusEvent);

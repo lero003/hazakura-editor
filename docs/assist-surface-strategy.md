@@ -109,10 +109,10 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (v2.6 target)
+### Conversational document edit (v2.6 A-2 candidate)
 
-v2.6 may move Local Assist from **single-shot generate →
-immediate buffer apply** to **proposal-first multi-turn revision conversation**:
+v2.6 moves Local Assist from **single-shot generate → immediate buffer apply**
+toward a **proposal-first multi-turn revision conversation**:
 
 1. Pin a document target on the first user request.
 2. Use a conversation area for requests and short turn state.
@@ -123,8 +123,9 @@ immediate buffer apply** to **proposal-first multi-turn revision conversation**:
 Design SoT: `docs/local-assist-conversational-edit-ux.md`.
 Plan IDs A-1–A-4 are recorded in `docs/v2.6-plan.md`.
 
-Until those slices ship, the live product may still apply on generate; do not
-document the new flow as already released.
+A-1 is merged and the current A-2 candidate keeps the target pinned and the
+proposal unapplied. A-3 explicit apply is not implemented yet; do not document
+the v2.6 candidate as a released product surface.
 
 Local Assist may keep a **bounded, document-scoped revision conversation**
 for the active editing session (in-memory only). It must not become a
@@ -258,5 +259,5 @@ If a future proposal needs any of those behaviors, it must receive a fresh produ
 ## Active Lane Pointer
 
 For the current implementation queue, start at `docs/current-work.md` and
-`docs/v2.5-plan.md`. Do not treat older alpha ship notes in this file as the
-active slice list.
+`docs/v2.6-plan.md`. v2.5 is released and closed; do not treat older alpha ship
+notes in this file as the active slice list.

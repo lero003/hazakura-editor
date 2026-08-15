@@ -27,6 +27,7 @@ function target(
     label: "",
     activeDocumentPath: "/tmp/note.md",
     activeDocumentName: "note.md",
+    activeDocumentSessionId: "session:note-1",
     capturedAtMs: 0,
   };
 }

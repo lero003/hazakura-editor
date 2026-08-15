@@ -390,6 +390,16 @@ export function readTargetTextForGeneration(
   if (target.activeDocumentPath !== tab.path) {
     return { ok: false, error: "Hazakura Local Assist target is stale for the active document." };
   }
+  if (
+    target.activeDocumentSessionId !== null &&
+    target.activeDocumentSessionId !== undefined &&
+    target.activeDocumentSessionId !== tab.sessionId
+  ) {
+    return {
+      ok: false,
+      error: "Hazakura Local Assist target is stale for the active editor session.",
+    };
+  }
   const before = tab.contents.slice(target.start, target.end);
   if (before !== target.text) {
     return {

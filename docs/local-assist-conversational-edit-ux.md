@@ -1,6 +1,6 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: Planning (v2.6 design SoT)
+Status: A-2 implementation candidate (external review pending)
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
 Last reviewed: 2026-08-16
@@ -170,7 +170,8 @@ LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransacti
 | **P4** | 二領域 UI 仕上げ | conversation / Diff のレスポンシブ配置、focus、a11y、i18n、stale / empty |
 
 **1 run = 1 phase またはそれ以下の検証可能スライス。**  
-いきなり全面実装しない。最初は P1 のみ。
+A-1 / P1 はマージ済み。現在の実装候補は P2 のみとし、P3 の明示反映と
+P4 のレイアウト / アクセシビリティ仕上げは別のレビュー境界に残す。
 
 ## Test Pins (minimum)
 

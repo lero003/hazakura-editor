@@ -125,4 +125,15 @@ describe("apple-assist-window.css", () => {
     expect(groupStart).toMatch(/margin-top:\s*3px/);
     expect(groupStart).toMatch(/padding-top:\s*6px/);
   });
+
+  it("keeps the pinned conversation state and request history bounded", () => {
+    const state = ruleBody(css, ".apple-assist-conversation-state");
+    const button = ruleBody(css, ".apple-assist-window-new-conversation");
+    const history = ruleBody(css, ".apple-assist-conversation-history");
+
+    expect(state).toMatch(/display:\s*flex/);
+    expect(button).toMatch(/white-space:\s*nowrap/);
+    expect(history).toMatch(/max-height:\s*5\.5rem/);
+    expect(history).toMatch(/overflow-y:\s*auto/);
+  });
 });

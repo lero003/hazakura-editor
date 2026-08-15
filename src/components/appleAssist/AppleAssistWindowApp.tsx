@@ -15,6 +15,7 @@ import {
   LOCAL_ASSIST_VISIBLE_PRESET_IDS,
   resolveLocalAssistActionId,
   type LocalAssistActionId,
+  type LocalAssistConversationRequest,
   type LocalAssistPreset,
 } from "../../lib/appleAssist/instruction";
 import {
@@ -49,7 +50,8 @@ import {
 //   - asking the bundled helper for a bounded result,
 //   - streaming an unapplied candidate back to this window's
 //     dedicated Diff review area. The editor buffer remains
-//     unchanged in v2.6 A-1.
+//     unchanged through v2.6 A-1/A-2; A-2 keeps a pinned target
+//     and revises the current proposal in the same Diff surface.
 //
 // The window only renders a thin shell with:
 //   - a header that shows the local-assist disclosure and current
@@ -66,6 +68,11 @@ import {
 // the Hazakura Local Assist window closes the Agent window, and vice
 // versa. The mock itself does not need to coordinate the
 // exclusion.
+//
+// v2.6 A-2 keeps the conversation in this window's bounded
+// React state only. Starting a new conversation or discarding
+// a proposal drops that state; no prompt, proposal, or turn is
+// persisted to disk.
 //
 // v0.12.x copy enrichment: the original 3-language copy
 // blocks were lean and most strings collapsed nuance into
@@ -103,6 +110,13 @@ export function createAppleAssistRequestId(): string {
     return globalThis.crypto.randomUUID();
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function createAppleAssistConversationId(): string {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  return `conversation-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 export function isApplyStatusForActiveRequest(
@@ -188,7 +202,19 @@ type LocalAssistProposal = {
   request: string;
   originalText: string;
   candidateText: string;
+  conversationId: string | null;
+  turnIndex: number;
   streaming?: boolean;
+};
+
+type LocalAssistConversationSession = {
+  id: string;
+  turnIndex: number;
+  pinnedTarget: AppleAssistTargetSnapshot;
+  originalText: string;
+  currentProposalText: string | null;
+  turns: string[];
+  revisionHistory: string[];
 };
 
 function readInitialTheme(): ThemePreference {
@@ -252,6 +278,13 @@ export function AppleAssistWindowApp() {
   const [streamPreview, setStreamPreview] = useState<string>("");
   const [streamOriginalText, setStreamOriginalText] = useState<string>("");
   const [proposal, setProposal] = useState<LocalAssistProposal | null>(null);
+  const [conversation, setConversation] =
+    useState<LocalAssistConversationSession | null>(null);
+  const conversationRef = useRef<LocalAssistConversationSession | null>(null);
+  const proposalRef = useRef<LocalAssistProposal | null>(null);
+  conversationRef.current = conversation;
+  proposalRef.current = proposal;
+  const displayedTarget = conversation?.pinnedTarget ?? target;
 
   useEffect(() => {
     activeRequestIdRef.current = activeRequestId;
@@ -264,11 +297,13 @@ export function AppleAssistWindowApp() {
         request: requestText,
         originalText: streamOriginalText,
         candidateText: streamPreview,
+        conversationId: conversation?.id ?? null,
+        turnIndex: conversation?.turnIndex ?? 0,
         streaming: true,
       } satisfies LocalAssistProposal;
     }
     return proposal;
-  }, [activeRequestId, proposal, requestText, streamOriginalText, streamPreview]);
+  }, [activeRequestId, conversation, proposal, requestText, streamOriginalText, streamPreview]);
 
   const clearGenerationFallback = useCallback(() => {
     if (generationFallbackRef.current !== null) {
@@ -398,12 +433,38 @@ export function AppleAssistWindowApp() {
         setActiveRequestId(null);
         activeRequestIdRef.current = null;
         if (payload.phase === "completed" && payload.candidateText) {
-          setProposal({
+          const nextProposal: LocalAssistProposal = {
             requestId: payload.requestId,
             request: payload.request,
-            originalText: payload.originalText ?? "",
+            originalText:
+              payload.originalText ?? conversationRef.current?.originalText ?? "",
             candidateText: payload.candidateText,
-          });
+            conversationId:
+              payload.conversationId ?? conversationRef.current?.id ?? null,
+            turnIndex:
+              payload.conversationTurnIndex ?? conversationRef.current?.turnIndex ?? 0,
+          };
+          proposalRef.current = nextProposal;
+          setProposal(nextProposal);
+          const conversationId = nextProposal.conversationId;
+          if (conversationId) {
+            setConversation((current) => {
+              if (!current || current.id !== conversationId) {
+                return current;
+              }
+              const nextConversation: LocalAssistConversationSession = {
+                ...current,
+                turnIndex: nextProposal.turnIndex,
+                currentProposalText: payload.candidateText ?? null,
+                revisionHistory: [
+                  ...current.revisionHistory,
+                  payload.request,
+                ].slice(-4),
+              };
+              conversationRef.current = nextConversation;
+              return nextConversation;
+            });
+          }
         }
         setStreamPreview("");
         setStreamOriginalText("");
@@ -524,34 +585,56 @@ export function AppleAssistWindowApp() {
     setStatus(copy.sendingRequest);
     scheduleGenerationFallback();
     const requestId = createAppleAssistRequestId();
+    const previousConversation = conversationRef.current;
+    const hadCurrentProposal = previousConversation?.currentProposalText != null;
+    let createdConversation = false;
     setActiveRequestId(requestId);
     activeRequestIdRef.current = requestId;
     try {
-      // Re-read the latest target snapshot at the moment of
-      // apply — the cached one might be stale by a few
-      // hundred ms. The main window is still free to
-      // re-infer from its own state, but the payload
-      // carries the user's expectation.
-      const latestTarget =
-        (await getMainAppleAssistTarget().catch(() => null)) ?? target;
+      let requestConversation = conversationRef.current;
+      if (!requestConversation) {
+        // Pin the target only once, on the first request. Follow-up turns
+        // never re-read the live cursor/selection, so moving the editor does
+        // not silently redirect the conversation.
+        const latestTarget =
+          (await getMainAppleAssistTarget().catch(() => null)) ?? target;
+        if (!latestTarget) {
+          throw new Error("No Hazakura Local Assist target is available.");
+        }
+        requestConversation = {
+          id: createAppleAssistConversationId(),
+          turnIndex: 0,
+          pinnedTarget: { ...latestTarget },
+          originalText: latestTarget.text,
+          currentProposalText: null,
+          turns: [request],
+          revisionHistory: [],
+        } satisfies LocalAssistConversationSession;
+        createdConversation = true;
+      } else {
+        requestConversation = {
+          ...requestConversation,
+          turnIndex: hadCurrentProposal
+            ? requestConversation.turnIndex + 1
+            : requestConversation.turnIndex,
+          turns: [...requestConversation.turns, request].slice(-4),
+        };
+      }
+      conversationRef.current = requestConversation;
+      setConversation(requestConversation);
+      const pinnedTarget = requestConversation.pinnedTarget;
       // v0.17 operation-feedback: report the target the
       // user is actually about to send to, *before* the
       // `request-sent` entry. The header / target summary
-      // area may have drifted from the cached snapshot
-      // (cursor / selection / document change) while the
-      // window was open, so a "target-acquired" entry
-      // pinned to the apply payload is the only way to
-      // keep the feedback trail in sync with what the
-      // main window actually received.
-      if (latestTarget) {
-        pushFeedback({
-          kind: "target-acquired",
-          payload: {
-            targetKind: latestTarget.kind,
-            targetChars: latestTarget.text.length,
-          },
-        });
-      }
+      // area is explicitly pinned after the first request. A follow-up
+      // reports the same target rather than the live cursor target.
+      pushFeedback({
+        kind: "target-acquired",
+        payload: {
+          targetKind: pinnedTarget.kind,
+          targetChars: pinnedTarget.text.length,
+        },
+      });
       pushFeedback({ kind: "request-sent" });
       // `buildProposalEvent` keeps the display label, fixed
       // `actionId`, and visible request text separate. The
@@ -563,8 +646,17 @@ export function AppleAssistWindowApp() {
         actionId:
           selectedActionId ?? resolveLocalAssistActionId(request, copy.presets),
         requestText: request,
-        target: latestTarget,
+        target: pinnedTarget,
         requestedAtMs: Date.now(),
+        conversation: {
+          conversationId: requestConversation.id,
+          turnIndex: requestConversation.turnIndex,
+          originalText: requestConversation.originalText,
+          proposalText: hadCurrentProposal
+            ? requestConversation.currentProposalText ?? undefined
+            : undefined,
+          revisionHistory: requestConversation.revisionHistory,
+        } satisfies LocalAssistConversationRequest,
       });
       await requestAppleAssistProposal(payload);
       setStatus(copy.generatingInMain(payload.request));
@@ -575,6 +667,10 @@ export function AppleAssistWindowApp() {
       activeRequestIdRef.current = null;
       setStreamPreview("");
       setStreamOriginalText("");
+      if (createdConversation) {
+        conversationRef.current = previousConversation;
+        setConversation(previousConversation);
+      }
       setError(classifyApplyError(err, copy));
       // Push a "failed" entry when the IPC call itself
       // throws. The status-event listener above also
@@ -628,6 +724,9 @@ export function AppleAssistWindowApp() {
     if (busy) {
       return;
     }
+    conversationRef.current = null;
+    proposalRef.current = null;
+    setConversation(null);
     setProposal(null);
     setStreamPreview("");
     setStreamOriginalText("");
@@ -646,16 +745,56 @@ export function AppleAssistWindowApp() {
           {available ? copy.availableDisclosure : availabilityMessage}
         </div>
         <div className="apple-assist-window-doc">
-          {target?.activeDocumentName
-            ? copy.activeDocument(target.activeDocumentName)
+          {displayedTarget?.activeDocumentName
+            ? copy.activeDocument(displayedTarget.activeDocumentName)
             : copy.noActiveDocument}
         </div>
         <div className="apple-assist-window-target" data-testid="apple-assist-target">
-          {renderTargetSummary(target, copy)}
+          {renderTargetSummary(displayedTarget, copy)}
         </div>
+        {conversation ? (
+          <div
+            className="apple-assist-conversation-state"
+            data-testid="apple-assist-conversation-state"
+          >
+            <span>{copy.conversationPinned}</span>
+            <button
+              type="button"
+              className="apple-assist-window-new-conversation"
+              onClick={() => {
+                setConversation(null);
+                conversationRef.current = null;
+                proposalRef.current = null;
+                setProposal(null);
+                setStreamPreview("");
+                setStreamOriginalText("");
+                setError(null);
+                setStatus(copy.newConversationStatus);
+              }}
+              disabled={busy}
+            >
+              {copy.newConversationButton}
+            </button>
+          </div>
+        ) : null}
       </header>
 
       <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
+        {conversation?.turns.length ? (
+          <div
+            className="apple-assist-conversation-history"
+            data-testid="apple-assist-conversation-history"
+          >
+            <p className="apple-assist-conversation-heading">
+              {copy.conversationHeading}
+            </p>
+            <ol>
+              {conversation.turns.map((turn, index) => (
+                <li key={`${conversation.id}-${index}`}>{turn}</li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
         <label
           htmlFor="apple-assist-rough-request"
           className="apple-assist-window-label"
@@ -955,6 +1094,10 @@ export type AppleAssistWindowCopy = {
   proposalDiscardedStatus: string;
   proposalReadyStatus: string;
   proposalChangeSummary: (additions: number, removals: number) => string;
+  conversationHeading: string;
+  conversationPinned: string;
+  newConversationButton: string;
+  newConversationStatus: string;
   // v0.17 operation-feedback panel. The panel shows app-
   // known lifecycle events (target acquired, request sent,
   // generation started, applied, failed, unavailable). It
@@ -1300,6 +1443,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       proposalReadyStatus: "へんしゅう あんを さぶん かくにんに おきました。",
       proposalChangeSummary: (additions, removals) =>
         `ついか ${additions} / けずる ${removals}`,
+      conversationHeading: "この おねがいの ながれ",
+      conversationPinned:
+        "たいしょうを こていしています。ふみは まだ かわっていません。",
+      newConversationButton: "あたらしい おねがい",
+      newConversationStatus: "あたらしい おねがいを はじめました。たいしょうを えらびなおせます。",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "しんこうじょうきょう",
       feedbackEmpty:
@@ -1431,6 +1579,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       proposalReadyStatus: "編集案を差分レビューに表示しました。本文はまだ変更していません。",
       proposalChangeSummary: (additions, removals) =>
         `追加 ${additions} / 削除 ${removals}`,
+      conversationHeading: "この会話の依頼",
+      conversationPinned:
+        "対象を固定しています。本文はまだ変更していません。",
+      newConversationButton: "新しい会話",
+      newConversationStatus: "新しい会話を開始しました。対象を選び直せます。",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "進行状況",
       feedbackEmpty:
@@ -1560,6 +1713,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     proposalReadyStatus: "Proposal ready in Diff review. The document is unchanged.",
     proposalChangeSummary: (additions, removals) =>
       `${additions} added / ${removals} removed`,
+    conversationHeading: "Requests in this conversation",
+    conversationPinned:
+      "Target pinned. The document is still unchanged.",
+    newConversationButton: "New conversation",
+    newConversationStatus: "Started a new conversation. You can choose a new target.",
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
     feedbackEmpty:

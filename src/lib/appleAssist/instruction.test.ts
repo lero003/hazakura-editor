@@ -67,6 +67,7 @@ const SAMPLE_TARGET: AppleAssistTargetSnapshot = {
   label: "selection",
   activeDocumentPath: "/workspace/notes.md",
   activeDocumentName: "notes.md",
+  activeDocumentSessionId: "session:notes-1",
   capturedAtMs: 1,
 };
 
@@ -227,5 +228,31 @@ describe("buildProposalEvent", () => {
 
     expect(event.shouldApplyToDocument).toBe(false);
     expect(event.target).toBe(SAMPLE_TARGET);
+  });
+
+  it("carries the bounded conversation identity without turning it into an apply transaction", () => {
+    const event = buildProposalEvent({
+      requestId: "conversation-1-turn-1",
+      actionId: "rewrite_natural",
+      requestText: "もう少し短くしてください",
+      target: SAMPLE_TARGET,
+      requestedAtMs: 123,
+      conversation: {
+        conversationId: "conversation-1",
+        turnIndex: 1,
+        originalText: "target-text",
+        proposalText: "proposal v1",
+        revisionHistory: ["読みやすくしてください"],
+      },
+    });
+
+    expect(event).toMatchObject({
+      shouldApplyToDocument: false,
+      conversationId: "conversation-1",
+      conversationTurnIndex: 1,
+      conversationOriginalText: "target-text",
+      proposalText: "proposal v1",
+      revisionHistory: ["読みやすくしてください"],
+    });
   });
 });

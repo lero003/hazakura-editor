@@ -1,9 +1,9 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-1 review)
+Scope: Current implementation state and next safe actions (v2.6 A-2 review)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
+Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
 
 ## Current State
 
@@ -14,23 +14,16 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
   include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **Implemented source remains v2.5.** Workspace control + delivery clarity is
-  in source: bounded persistent pane widths, Reference font-size alignment, and
-  exact tree-cap counts. The clean signed-candidate boundary is commit
-  `6067fbec`; Apple upload, processing, TestFlight, tag, and publication remain
-  human gates. Plan: `docs/v2.5-plan.md`.
-- **Active product work is v2.6 A-1.** Local Assist sends a generation-only
-  proposal into a separate Diff review area; the editor buffer and
-  `AiEditTransaction` store remain unchanged, and the proposal can be discarded.
-  Multi-turn, stale apply, and explicit apply remain later slices. Plan:
-  `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
-- **Current v2.5 candidate verification is green:** frontend 208 files / 1,740 tests,
-  Rust 367 pass / 2 host-dependent ignored, App Store surface 111 tests, Vite,
-  helper-enabled App Store preview build, and a 1280×820 native window smoke.
-  Keyboard/drag resizing and collapsed-sidebar separator removal were checked in
-  the built app. A signed universal submission pkg was generated from a clean
-  source boundary and independently checked against its ignored candidate
-  metadata. TestFlight upload, processing, and install remain human gates.
+- **v2.5 is released and closed** (user-confirmed). The workspace control and
+  delivery-clarity evidence below is historical release evidence, not an open
+  upload, TestFlight, tag, or publication gate. Plan: `docs/v2.5-plan.md`.
+- **Active product work is v2.6 A-2.** A-1 is merged. Local Assist pins the
+  tab/session/range/original on the first request, keeps follow-up instructions
+  on that target, and replaces the current unapplied proposal in the same Diff
+  review. The editor buffer and `AiEditTransaction` store remain unchanged;
+  explicit apply is A-3. Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
+- **A-4 remains isolated** in Draft PR #34 for narrow Diff layout polish; it is
+  not part of the A-2 branch.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -249,10 +242,10 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.0` package version from package metadata.
-- **Open main queue:** human-approved TestFlight upload and installed-build
-  checks. Source, built-app, and clean-source signed-pkg gates are complete.
-  Published `2.4.0` remains closed without a reproduced hotfix; other advisory
-  items stay parked.
+- **Open main queue:** external review of the v2.6 A-2 candidate, followed by a
+  decision on A-3 explicit Diff apply. v2.5 is released and closed; published
+  `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
+  parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -577,9 +570,10 @@ Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.0`**. The A-1 review candidate adds
-  generation-only Local Assist proposals and a separate Diff review surface;
-  the editor remains unchanged until a later explicit-apply slice.
+- Current development-tree version: **`2.6.0`**. A-1 is merged and the A-2
+  review candidate adds a pinned target plus bounded multi-turn revision on the
+  same generation-only Local Assist / Diff surface; the editor remains unchanged
+  until the later explicit-apply slice.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
@@ -1021,14 +1015,14 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Start v2.6 with **A-1 only**: generate/stream an unapplied proposal into a
-   separate Diff review while keeping the editor buffer unchanged.
-2. Review the v2.5 implementation and candidate evidence through its Draft PR.
-3. Upload the existing signed 2.5.0 candidate only with explicit human approval,
-   then separate Apple processing and installed-TestFlight smoke from local proof.
-4. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
+1. Complete external review of **A-2**: pinned target, follow-up revision,
+   bounded history, and no-buffer-mutation / no-transaction boundary.
+2. Decide whether to start A-3 explicit Diff apply after A-2 review; keep A-4's
+   narrow-layout Draft PR separate.
+3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
-5. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
+4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
    and bulk digestion of external review pools until promoted.
-6. Keep Local Assist on-device, explicit, and diff-reviewable; keep Book order
+5. Keep v2.5 released/closed and Local Assist on-device, explicit, and
+   diff-reviewable; keep Book order
    app-private and separate from OKF semantics.

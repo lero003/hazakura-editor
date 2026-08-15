@@ -25,6 +25,7 @@ function target(
     label: "",
     activeDocumentPath,
     activeDocumentName: null,
+    activeDocumentSessionId: null,
     capturedAtMs: 0,
   };
 }

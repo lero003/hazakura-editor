@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 Assist planning)
+Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
 
 ## Purpose
 
@@ -17,10 +17,10 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6 A-1 implementation review.** Mac App Store `2.4.0` is
-published and closed for drive-by polish; the prepared v2.5 candidate remains a
-separate human-gated release boundary. The active spine is Local Assist
-conversation + separate Diff review, starting with A-1 only. Promote one slice
+Phase: **v2.6 A-2 implementation review.** Mac App Store `2.4.0` is
+published and closed for drive-by polish; v2.5 is released and closed. The
+active spine is Local Assist conversation + separate Diff review: A-1 is merged
+and A-2 now pins the target and revises the current proposal. Promote one slice
 at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
 `docs/roadmap.md`, `docs/v2.6-plan.md`, and
 `docs/local-assist-conversational-edit-ux.md`.
@@ -35,10 +35,10 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. The selected v2.6 A-1 slice: proposal generation/streaming into a separate
-   Diff review while the editor buffer remains unchanged.
+1. The selected v2.6 A-2 slice: pinned target and bounded multi-turn revision
+   into the same Diff review while the editor buffer remains unchanged.
 2. Hotfix for a reproduced published `2.4.0` blocker.
-3. Verification or a reproduced defect in the prepared v2.5 release lane.
+3. Verification or a reproduced defect in a separately reopened release lane.
 4. Stale or failing quality gates that block the selected slice.
 5. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

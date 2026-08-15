@@ -675,13 +675,13 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.6 A-1 implementation review — Local Assist proposal + Diff review",
+        "Scope: v2.6 A-2 implementation review — Local Assist pinned multi-turn revision",
         "Package/app version in tree: **`2.6.0`",
         "W-1 — persistent three-pane workspace",
-        "A-1 external review",
+        "A-2 external review",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.6 A-1 implementation review.**",
+        "Phase: **v2.6 A-2 implementation review.**",
         "active spine is Local Assist",
         "separate Diff review",
       ],
@@ -694,7 +694,7 @@ describe("macOS build scripts", () => {
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.6.0`",
         "Published Mac App Store | **`2.4.0`",
-        "Active product phase | **v2.6 A-1 review",
+        "Active product phase | **v2.6 A-2 review",
         "R-1 text Reference follows Preview font size",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

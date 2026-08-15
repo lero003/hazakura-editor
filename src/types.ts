@@ -180,7 +180,7 @@ export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
 
 // Mirror of the Rust Local Assist request/status event constants.
 // The legacy `APPLY_AI_EDIT_TRANSACTION_EVENT` remains the explicit
-// apply path; v2.6 A-1 uses `REQUEST_AI_EDIT_PROPOSAL_EVENT` for
+// apply path; v2.6 A-1/A-2 uses `REQUEST_AI_EDIT_PROPOSAL_EVENT` for
 // generation-only requests and returns the candidate through the
 // separate proposal status channel. The main window answers the
 // `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target. See
@@ -190,7 +190,7 @@ export const APPLY_AI_EDIT_TRANSACTION_EVENT =
   "hazakura-note://apply-ai-edit-transaction";
 export const APPLE_ASSIST_APPLY_STATUS_EVENT =
   "hazakura-note://apple-assist-apply-status";
-// v2.6 A-1: proposal generation is a separate IPC path from the
+// v2.6 A-1/A-2: proposal generation is a separate IPC path from the
 // legacy apply transaction path. The main window must keep the
 // editor buffer unchanged while it streams this event's result to
 // the detached Local Assist Diff review area.
@@ -232,6 +232,8 @@ export type AppleAssistTargetSnapshot = {
   label: string;
   activeDocumentPath: string | null;
   activeDocumentName: string | null;
+  /** Lifetime identity of the open editor session, not just its path. */
+  activeDocumentSessionId: string | null;
   capturedAtMs: number;
 };
 
@@ -270,6 +272,12 @@ export type AppleAssistApplyEvent = {
   instruction?: string;
   requestedAtMs: number;
   target: AppleAssistTargetSnapshot | null;
+  /** v2.6 A-2: the in-memory conversation identity and bounded revision packet. */
+  conversationId?: string;
+  conversationTurnIndex?: number;
+  conversationOriginalText?: string;
+  proposalText?: string;
+  revisionHistory?: string[];
 };
 
 export type AppleAssistApplyStatusEvent = {
@@ -285,7 +293,7 @@ export type AppleAssistApplyStatusEvent = {
   emittedAtMs: number;
 };
 
-// v2.6 A-1 proposal status. The candidate is intentionally kept
+// v2.6 A-1/A-2 proposal status. The candidate is intentionally kept
 // outside `AppleAssistApplyStatusEvent`: proposal generation never
 // records an AiEditTransaction and never mutates the editor buffer.
 // This payload is delivered only to the detached Local Assist window
@@ -299,6 +307,9 @@ export type AppleAssistProposalStatusEvent = {
   originalText?: string;
   partialText?: string;
   candidateText?: string;
+  /** Echoed A-2 conversation identity so stale turns cannot replace the Diff. */
+  conversationId?: string;
+  conversationTurnIndex?: number;
   emittedAtMs: number;
 };
 

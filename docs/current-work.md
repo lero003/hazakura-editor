@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 A-1 implementation review — Local Assist proposal + Diff review
+Scope: v2.6 A-2 implementation review — Local Assist pinned multi-turn revision
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
+Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
 
 ## Purpose
 
@@ -11,14 +11,14 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.6 A-1 implementation is the active product lane.** Primary theme: separate Local
-Assist's conversation area from a Diff review area where the current unapplied
-proposal is inspected, discarded, or explicitly applied.
+**v2.6 A-2 implementation is the active product lane.** A-1 is merged. The current
+slice pins the first target (tab/session/range/original), keeps follow-up requests
+on that target, and revises the current unapplied proposal in the same Diff review.
 
-- Package/app version in tree: **`2.6.0`**. A-1 is a review candidate; it is not
+- Package/app version in tree: **`2.6.0`**. A-2 is a review candidate; it is not
   a release or App Store claim.
-- Prepared v2.5 candidate: clean source commit **`6067fbec`**; upload,
-  processing, TestFlight, tag, and publication remain separate human gates.
+- v2.5 is **released and closed** (user-confirmed). Do not reopen its release
+  gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only for reproduced blockers.
 - Plan SoT: `docs/v2.6-plan.md`
@@ -31,8 +31,8 @@ proposal is inspected, discarded, or explicitly applied.
 |------|--------|--------|
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
-| **v2.5** | **Candidate prepared** | Resizable workspace + bounded clarity polish; Apple gates remain |
-| **v2.6** | **A-1 review candidate** | Local Assist proposal + separate Diff review; external review pending |
+| **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
+| **v2.6** | **A-2 review candidate** | Pinned target + multi-turn proposal revision; external review pending |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -41,11 +41,12 @@ proposal is inspected, discarded, or explicitly applied.
 
 ### Immediate next
 
-1. **A-1 external review.** The implementation candidate splits generation from
-   buffer mutation, streams the current unapplied proposal into a dedicated Diff
-   review area, keeps the editor buffer unchanged, allows discard, and retains
-   presets.
-2. After review, promote only one of A-2 → A-4 at a time from `docs/v2.6-plan.md`.
+1. **A-2 external review.** The implementation pins tab/session/range/original on
+   the first request, sends follow-up instructions against the current proposal,
+   bounds recent request history, and keeps the editor buffer and transaction
+   store unchanged.
+2. After review, promote A-3 (explicit Diff apply) as the next implementation
+   slice. A-4 remains a separate narrow-layout Draft PR (#34).
 3. Keep Core AI as a later backend lane after A-3; do not combine model catalog
    work with the conversation/Diff migration.
 
@@ -65,19 +66,18 @@ proposal is inspected, discarded, or explicitly applied.
 
 ### Do not start yet
 
-- A-2–A-4 before A-1 is independently verified
+- A-3 explicit apply before A-2 external review is complete
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
+- A-4 layout polish in the A-2 branch (the separate Draft PR remains isolated)
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
 - A second package build, upload, or publication without a new human gate
 
-### Separate v2.5 release gates
+### Closed v2.5 line
 
-- Review the prepared v2.5 source/candidate evidence through its Draft PR.
-- Upload the existing signed 2.5.0 candidate only with explicit human approval.
-- Keep Apple processing and installed TestFlight smoke separate from local proof
-  and from v2.6 development.
+- v2.5 is released and closed. Do not rebuild, upload, or reopen it as part of
+  v2.6 work; only a separately reproduced blocker can justify a hotfix lane.
 
 ### Hotfix only (published `2.4.0`)
 
@@ -97,7 +97,8 @@ proposal is inspected, discarded, or explicitly applied.
 
 ## Next Human Gates
 
-1. Complete external review of A-1 and confirm its buffer / transaction boundary.
-2. Upload the existing clean-source v2.5 candidate only after explicit approval;
-   do not rebuild it just to include v2.6 docs or work.
-3. TestFlight, tag, and publication remain explicit human gates.
+1. Complete external review of A-2 and confirm pinned-target, multi-turn, and
+   no-buffer-mutation boundaries.
+2. Decide whether to start A-3 explicit apply after the A-2 review.
+3. Keep v2.5 closed; any future package or publication work needs a new explicit
+   release gate.

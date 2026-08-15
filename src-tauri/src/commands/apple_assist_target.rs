@@ -44,6 +44,7 @@ pub(crate) struct AppleAssistTargetSnapshot {
     pub(crate) label: String,
     pub(crate) active_document_path: Option<String>,
     pub(crate) active_document_name: Option<String>,
+    pub(crate) active_document_session_id: Option<String>,
     pub(crate) captured_at_ms: u64,
 }
 

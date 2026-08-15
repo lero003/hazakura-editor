@@ -444,6 +444,7 @@ function targetSnapshot(
     label: "",
     activeDocumentPath: "/workspace/note.md",
     activeDocumentName: "note.md",
+    activeDocumentSessionId: "session:tab-1",
     capturedAtMs: 0,
   };
 }

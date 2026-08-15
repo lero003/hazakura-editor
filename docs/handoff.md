@@ -1,28 +1,26 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 A-1 review candidate — Local Assist proposal + Diff review
+Scope: v2.6 A-2 review candidate — Local Assist pinned multi-turn revision
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-1 review candidate; v2.5 candidate preserved)
+Last reviewed: 2026-08-16 (v2.6 A-2 review candidate; v2.5 release closed)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.0`** A-1 review candidate.
+- Package/app version in tree: **`2.6.0`** A-2 review candidate.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
-- **v2.5 candidate is prepared at `6067fbec`.** W-1 gives the left
-  Workspace a bounded accessible resizer and persists normal-right and
-  Reference widths separately. R-1 aligns text Reference font size; Q-4 shows
-  the exact count hidden by a folder cap. Q-3/Q-5 were already implemented;
-  Q-13 is a measured no-op. Upload, processing, installed TestFlight, tag, and
-  publication remain human gates. Plan: `docs/v2.5-plan.md`.
-- **A-1 is implemented on the review branch.** Local Assist sends a
-  generation-only proposal event; the detached window owns the
-  original-versus-proposal Diff and discard action, while the editor buffer and
+- **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
+  and the Q-13 measured no-op remain historical release evidence; do not reopen
+  that line from v2.6. Plan: `docs/v2.5-plan.md`.
+- **A-1 is merged and A-2 is the review candidate.** Local Assist sends a
+  generation-only proposal event; the detached window pins tab/session/range/
+  original on the first request, keeps follow-ups on that target, and replaces
+  the current proposal in the same Diff review. The editor buffer and
   `AiEditTransaction` store remain unchanged. Partial helper output is
-  sanitized before it reaches Diff so prompt boundary markers cannot appear;
-  cancel/fail keeps the last completed proposal. Multi-turn, stale apply, and
-  explicit apply are later slices. Plan: `docs/v2.6-plan.md`; design:
+  sanitized before it reaches Diff; cancel/fail keeps the last completed
+  proposal. A-3 explicit apply and A-4 narrow layout remain separate slices.
+  Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
@@ -396,16 +394,21 @@ retained as the earlier R-1-only checkpoint.
   interaction evidence for the multi-file spine. All automated, Rust, audit,
   package, signing, and launch gates above were re-run after the UX review.
 
-## Verification (2026-08-16, v2.6 A-1)
+## Verification (2026-08-16, v2.6 A-2)
 
 - `npm run typecheck` passed.
-- `npm test -- --run` passed: 209 files / 1,746 tests.
+- `npm test -- --run` passed: 209 files / 1,752 tests.
 - `npm run build:vite` passed (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` passed: 10 files / 111 tests.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
 - `cargo test --manifest-path src-tauri/Cargo.toml` passed: 368 passed / 2 ignored.
-- Built-app/manual Assist streaming, cancel, narrow-layout, and device availability
-  smoke remain external-review or human-gated evidence; they were not claimed here.
+- `npm run build` passed: helper-enabled App Store preview bundle; existing
+  large-chunk warning only.
+- `SKIP_BUILD=1 npm run smoke:macos-window` passed: packaged 1280×820 native
+  window opened and quit cleanly.
+- Built-app/manual Assist streaming, cancel, narrow-layout, multi-turn, and device
+  availability smoke remain external-review or human-gated evidence; they were
+  not claimed here.
 
 ## Durable Pins
 
@@ -419,14 +422,14 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Re-review the A-1 branch/PR for the generation-only event, separate Diff
-   representation, boundary-marker sanitization, discard/cancel/fail behavior,
-   and the no-buffer-mutation / no-transaction boundary before starting A-2.
-2. Keep the v2.5 candidate at `6067fbec` and its human Apple gates separate
-   from v2.6 development; do not rebuild it just to include later docs.
+1. Complete external review of A-2: pinned target, follow-up proposal input,
+   bounded revision history, stale-session rejection, and the no-buffer-mutation
+   / no-transaction boundary.
+2. Keep A-3 explicit apply and A-4 narrow-layout polish separate until A-2 is
+   accepted; A-4 remains Draft PR #34.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
-4. Do not move published tags, upload, or attach release assets without a
+4. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
    separate explicit handoff.
 5. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
    `docs/assist-surface-strategy.md`.

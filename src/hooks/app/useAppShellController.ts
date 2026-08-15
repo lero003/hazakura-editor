@@ -612,6 +612,7 @@ export function useAppShellController() {
     activeTab: activeTab
       ? {
           id: activeTab.id,
+          sessionId: activeTab.sessionId,
           name: activeTab.name,
           path: activeTab.path,
         }
