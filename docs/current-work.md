@@ -79,6 +79,9 @@ references, bounded trees, Book setup, and export completion.
 - anydoc / broad Office import (investigation memo only until demand).
 - Editable display TOC (X-5); first-run coach (Q-2); tab overflow; full a11y matrix.
 - Compare Center; static lint; mode-pill rainbow.
+- Reference の行番号表示サイズ（本文に対して大きく見えるという観察）。v2.5
+  の対象外とし、将来の Reference 表示ポリッシュで本文とのスケール関係と
+  読みやすさを再評価する。
 
 ## Next Human Gates
 

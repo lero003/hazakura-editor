@@ -107,7 +107,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | 縦書き | Vertical reading / export | After Assist depth and horizontal Book stay stable |
 | anydoc | Office → Markdown import library | After written evaluation + real import demand |
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
-| Residual polish | Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
+| Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | After A-1–A-3; start with C-0 design only |
 | Published 2.4.0 hotfix | App Review / daily-use blocker | Only when reproduced |
