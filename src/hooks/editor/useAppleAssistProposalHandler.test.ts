@@ -113,6 +113,7 @@ describe("useAppleAssistProposalHandler", () => {
       originalText: contents,
       candidateText: "proposal text",
       requestId: "proposal-1",
+      actionId: "proofread_only",
     });
     expect(status).toHaveBeenLastCalledWith(
       "Hazakura Local Assist created an unapplied proposal for Diff review.",

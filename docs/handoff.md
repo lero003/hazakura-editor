@@ -19,7 +19,9 @@ Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release close
   target, and replaces the current proposal in the same Diff review. The Diff
   Apply action sends only that reviewed proposal, the main window revalidates
   stale state, records one `AiEditTransaction` for the Review Bar, and does not
-  auto-save. Partial helper output and `HAZAKURA_ORIGINAL` markers are
+  auto-save. The proposal keeps the generation-time bounded `actionId`, so
+  edited request text cannot change Apply provenance. Partial helper output and
+  `HAZAKURA_ORIGINAL` markers are
   sanitized before they reach Diff or the editor. A-4 narrow layout remains a
   separate slice. A GitHub PR is not required for this local review checkpoint.
   Plan: `docs/v2.6-plan.md`; design:
@@ -410,7 +412,8 @@ retained as the earlier R-1-only checkpoint.
   window opened and quit cleanly.
 - Focused A-3 tests cover reviewed-proposal-only apply, stale session rejection,
   transaction/Review Bar recording, apply-status terminal handling, and
-  `HAZAKURA_ORIGINAL` boundary sanitization.
+  `HAZAKURA_ORIGINAL` boundary sanitization, including generation-time
+  `actionId` retention through explicit Apply.
 - Built-app/manual Assist streaming, cancel, narrow-layout, and physical-device
   availability smoke remain external-review or human-gated evidence; they were
   not claimed here.

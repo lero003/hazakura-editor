@@ -275,14 +275,19 @@ describe("AppleAssistWindowApp render", () => {
       await Promise.resolve();
     });
 
+    fireEvent.click(screen.getByRole("button", { name: "Summary" }));
     fireEvent.change(screen.getByRole("textbox"), {
-      target: { value: "整えて" },
+      target: { value: "200字くらいで要約して" },
     });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Send request" }));
       await Promise.resolve();
     });
     const requestPayload = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0];
+    expect(requestPayload).toMatchObject({
+      actionId: "summarize",
+      request: "200字くらいで要約して",
+    });
     expect(requestPayload?.conversationId).toBeTruthy();
 
     const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
@@ -291,7 +296,7 @@ describe("AppleAssistWindowApp render", () => {
         payload: {
           phase: "completed",
           requestId: requestPayload?.requestId,
-          request: "整えて",
+          request: "200字くらいで要約して",
           message: "ready",
           target: requestPayload?.target,
           originalText: "original",
@@ -310,6 +315,7 @@ describe("AppleAssistWindowApp render", () => {
     const applyPayload = vi.mocked(requestApplyAiEditTransaction).mock.calls.at(-1)?.[0];
     expect(applyPayload).toMatchObject({
       shouldApplyToDocument: true,
+      actionId: "summarize",
       proposalText: "proposal",
       target: requestPayload?.target,
       conversationId: requestPayload?.conversationId,
@@ -323,7 +329,7 @@ describe("AppleAssistWindowApp render", () => {
         payload: {
           phase: "partial",
           requestId: applyPayload?.requestId,
-          request: "整えて",
+          request: "200字くらいで要約して",
           message: "legacy partial",
           partialText: "<<<HAZAKURA_ORIGINAL_START>>>",
           emittedAtMs: 0,
@@ -336,7 +342,7 @@ describe("AppleAssistWindowApp render", () => {
         payload: {
           phase: "started",
           requestId: applyPayload?.requestId,
-          request: "整えて",
+          request: "200字くらいで要約して",
           message: "applying",
           emittedAtMs: 1,
         },
@@ -345,7 +351,7 @@ describe("AppleAssistWindowApp render", () => {
         payload: {
           phase: "completed",
           requestId: applyPayload?.requestId,
-          request: "整えて",
+          request: "200字くらいで要約して",
           message: "applied",
           shouldApplyToDocument: true,
           emittedAtMs: 2,

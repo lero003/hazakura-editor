@@ -148,7 +148,7 @@ Editor buffer: 「文書へ反映」までは不変
 | `LocalAssistConversationSession` | 1 会話（tab + 固定対象 + turns + currentProposal） |
 | `LocalAssistPinnedTarget` | 依頼開始時に固定した範囲と元文章 |
 | `LocalAssistTurn` | ユーザー依頼 / アシスタント UI 文言（生モデル出力ではない） |
-| `LocalAssistProposal` | 現在表示する未反映の変更案。新案は同じ Diff を置き換え、状態 enum を永続化しない |
+| `LocalAssistProposal` | 現在表示する未反映の変更案。生成開始時の bounded `actionId` も保持し、表示用の依頼文を編集しても Apply の provenance を変えない。新案は同じ Diff を置き換え、状態 enum を永続化しない |
 
 ```text
 LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransaction

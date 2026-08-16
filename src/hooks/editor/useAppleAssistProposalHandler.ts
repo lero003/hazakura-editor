@@ -297,6 +297,7 @@ async function emitAppleAssistProposalStatus(
       message,
       requestId: payload.requestId,
       request: payload.request,
+      actionId: payload.actionId,
       conversationId: payload.conversationId,
       conversationTurnIndex: payload.conversationTurnIndex,
       ...options,

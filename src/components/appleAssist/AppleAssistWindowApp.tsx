@@ -14,6 +14,7 @@ import {
   buildProposalApplyEvent,
   buildProposalEvent,
   getLocalAssistAction,
+  isLocalAssistActionId,
   LOCAL_ASSIST_VISIBLE_PRESET_IDS,
   resolveLocalAssistActionId,
   type LocalAssistActionId,
@@ -205,6 +206,8 @@ type FeedbackEntry = {
 type LocalAssistProposal = {
   requestId: string;
   request: string;
+  /** Action selected at generation time; Apply must not infer it from edited request text. */
+  actionId: LocalAssistActionId;
   originalText: string;
   candidateText: string;
   target: AppleAssistTargetSnapshot;
@@ -281,6 +284,7 @@ export function AppleAssistWindowApp() {
   const generationFallbackRef = useRef<number | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
+  const activeActionIdRef = useRef<LocalAssistActionId | null>(null);
   const [streamPreview, setStreamPreview] = useState<string>("");
   const [streamOriginalText, setStreamOriginalText] = useState<string>("");
   const [proposal, setProposal] = useState<LocalAssistProposal | null>(null);
@@ -307,14 +311,17 @@ export function AppleAssistWindowApp() {
 
   const proposalForReview = useMemo(() => {
     const reviewTarget = conversation?.pinnedTarget ?? target;
+    const actionId = activeActionIdRef.current;
     if (
       reviewTarget &&
+      actionId &&
       streamPreview.trim().length > 0 &&
       streamOriginalText.length > 0
     ) {
       return {
         requestId: activeRequestId ?? "streaming",
         request: requestText,
+        actionId,
         originalText: streamOriginalText,
         candidateText: streamPreview,
         target: reviewTarget,
@@ -425,6 +432,9 @@ export function AppleAssistWindowApp() {
           return;
         }
         if (payload.phase === "started") {
+          if (isLocalAssistActionId(payload.actionId)) {
+            activeActionIdRef.current = payload.actionId;
+          }
           setBusy(true);
           setCancelling(false);
           setError(null);
@@ -449,10 +459,14 @@ export function AppleAssistWindowApp() {
           return;
         }
         clearGenerationFallback();
+        const proposalActionId = isLocalAssistActionId(payload.actionId)
+          ? payload.actionId
+          : activeActionIdRef.current;
         setBusy(false);
         setCancelling(false);
         setActiveRequestId(null);
         activeRequestIdRef.current = null;
+        activeActionIdRef.current = null;
         if (payload.phase === "completed" && payload.candidateText) {
           const proposalTarget =
             payload.target ?? conversationRef.current?.pinnedTarget ?? targetRef.current;
@@ -461,9 +475,15 @@ export function AppleAssistWindowApp() {
             pushFeedback({ kind: "failed" });
             return;
           }
+          if (!proposalActionId) {
+            setError(copy.failedStatus);
+            pushFeedback({ kind: "failed" });
+            return;
+          }
           const nextProposal: LocalAssistProposal = {
             requestId: payload.requestId,
             request: payload.request,
+            actionId: proposalActionId,
             originalText:
               payload.originalText ?? conversationRef.current?.originalText ?? "",
             candidateText: payload.candidateText,
@@ -684,6 +704,9 @@ export function AppleAssistWindowApp() {
     setStatus(copy.sendingRequest);
     scheduleGenerationFallback();
     const requestId = createAppleAssistRequestId();
+    const actionId =
+      selectedActionId ?? resolveLocalAssistActionId(request, copy.presets);
+    activeActionIdRef.current = actionId;
     const previousConversation = conversationRef.current;
     const hadCurrentProposal = previousConversation?.currentProposalText != null;
     let createdConversation = false;
@@ -742,8 +765,7 @@ export function AppleAssistWindowApp() {
       // system instruction.
       const payload = buildProposalEvent({
         requestId,
-        actionId:
-          selectedActionId ?? resolveLocalAssistActionId(request, copy.presets),
+        actionId,
         requestText: request,
         target: pinnedTarget,
         requestedAtMs: Date.now(),
@@ -764,6 +786,7 @@ export function AppleAssistWindowApp() {
       setBusy(false);
       setActiveRequestId(null);
       activeRequestIdRef.current = null;
+      activeActionIdRef.current = null;
       setStreamPreview("");
       setStreamOriginalText("");
       if (createdConversation) {
@@ -834,7 +857,7 @@ export function AppleAssistWindowApp() {
     const currentConversation = conversationRef.current;
     const payload = buildProposalApplyEvent({
       requestId,
-      actionId: resolveLocalAssistActionId(currentProposal.request, copy.presets),
+      actionId: currentProposal.actionId,
       requestText: currentProposal.request,
       target: currentProposal.target,
       requestedAtMs: Date.now(),

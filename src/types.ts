@@ -302,6 +302,8 @@ export type AppleAssistProposalStatusEvent = {
   requestId: string;
   message: string;
   request: string;
+  /** Echoed bounded action identity so the reviewed proposal keeps generation provenance through Apply. */
+  actionId?: string;
   target?: AppleAssistTargetSnapshot | null;
   originalText?: string;
   partialText?: string;
