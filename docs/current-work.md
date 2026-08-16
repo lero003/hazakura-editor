@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 A-4 preparation — Local Assist hardening and two-region UX
+Scope: v2.6 A-4 narrow-layout preflight — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
 
 ## Purpose
 
@@ -14,14 +14,16 @@ Start here when choosing the next small `Hazakura Editor` slice.
 **v2.6 A-1–A-3 implementation is complete locally.** The conversation pins the
 target, keeps generation and proposal state separate from the editor buffer, and
 allows only explicit Diff apply through stale revalidation, one
-`AiEditTransaction`, and the existing Review Bar. The next small slices are
-non-blocking A-3 hardening followed by A-4 two-region UX work.
+`AiEditTransaction`, and the existing Review Bar. The current A-4 preflight
+keeps the conversation and Diff regions distinct at narrow widths without
+changing that mutation boundary.
 
 - Package/app version in tree: **`2.6.0`**. A-1–A-3 are locally complete; this is
   not a release or App Store claim.
-- Local checkpoint: A-2 is committed as `9011d3a6` and the A-3 implementation
-  is complete through `c7ff442b` on local `main`. A GitHub PR is not required
-  for this review.
+- Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
+  `c7ff442b`, and the A-4 narrow-layout preflight is being reviewed on a
+  separate branch before push. The A-4 review candidate will remain a Draft PR
+  until the external checks are complete.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
@@ -37,7 +39,7 @@ non-blocking A-3 hardening followed by A-4 two-region UX work.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **A-1–A-3 complete locally** | Conversation + explicit Diff apply + stale revalidation + Review Bar; A-4 next |
+| **v2.6** | **A-1–A-3 complete; A-4 preflight** | Conversation + explicit Diff apply + stale revalidation + Review Bar; narrow Diff layout candidate |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -46,12 +48,13 @@ non-blocking A-3 hardening followed by A-4 two-region UX work.
 
 ### Immediate next
 
-1. **A-3 non-blocking hardening.** Before A-4, consider completion-time target
-   text revalidation, disabling Apply on Diff calculation failure/no-op, and an
-   Apply status watchdog. These do not change the A-3 mutation boundary.
-2. Promote A-4 (two-region narrow-layout polish) after that bounded hardening.
-   A-4 remains separate from the A-3 boundary.
-3. Keep Core AI as a later backend lane after A-3; do not combine model catalog
+1. **A-4 external review.** Review the narrow Diff containment candidate, then
+   separately verify keyboard/VoiceOver/locale, streaming/cancel, and real model
+   availability on the detached window.
+2. Keep the three non-blocking A-3 hardening items separate: completion-time
+   target text revalidation, Diff failure/no-op Apply gating, and an Apply status
+   watchdog. They do not change the A-3 mutation boundary.
+3. Keep Core AI as a later backend lane after A-4; do not combine model catalog
    work with the conversation/Diff migration.
 
 ### Completed in v2.5 development
@@ -71,8 +74,9 @@ non-blocking A-3 hardening followed by A-4 two-region UX work.
 ### Do not start yet
 
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
-- A-4 layout polish in a separate branch/PR (the separate Draft PR remains
-  isolated from local `main`); do not merge it into the A-3 history
+- A-4 behavior beyond the narrow-layout preflight (keyboard/VoiceOver/locale,
+  physical streaming/cancel, and availability) until the external review
+  confirms the next slice; do not mix it into the A-3 mutation history
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
@@ -101,8 +105,9 @@ non-blocking A-3 hardening followed by A-4 two-region UX work.
 
 ## Next Human Gates
 
-1. Decide and verify the three non-blocking A-3 hardening items without
+1. Review the A-4 narrow-layout preflight on its Draft PR; keep the detached
+   window and physical streaming/cancel checks separate.
+2. Decide and verify the three non-blocking A-3 hardening items without
    expanding the apply boundary.
-2. Keep A-4 narrow-layout and physical streaming/cancel checks separate.
 3. Keep v2.5 closed; any future package or publication work needs a new explicit
    release gate.

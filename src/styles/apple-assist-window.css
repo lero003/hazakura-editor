@@ -1,7 +1,7 @@
 /* === apple-assist-window.css === */
 /* ── Detached Hazakura Local Assist Window (v0.12+ mock, slice 2) ──
  * Tool-window-style chrome for the Hazakura Local Assist
- * window: a compact layout (header / form / presets / feedback / footer)
+ * window: a compact layout (header / form / presets / proposal / feedback / footer)
  * that reads as a purpose-built functional surface,
  * not a generic web popup. Mirrors the detached Agent
  * window's restrained palette — 1px borders, no shadows, no
@@ -16,12 +16,13 @@
   color: var(--text);
   display: grid;
   font-family: var(--app-font-family);
-  /* Header / request form / presets / feedback / footer.
-   * The form and feedback log stay compact so the detached companion
-   * reads as a focused request surface, not a mostly empty transcript
-   * viewer. */
-  grid-template-rows: auto auto auto auto auto;
+  /* Header / request form / presets / proposal / feedback / footer.
+   * The proposal owns the bounded remaining height; the feedback log
+   * stays compact so the detached companion reads as a focused request
+   * surface, not a mostly empty transcript viewer. */
+  grid-template-rows: auto auto auto minmax(11rem, 1fr) minmax(9.5rem, auto) auto;
   height: 100vh;
+  min-height: 0;
   padding: 10px;
   gap: 8px;
   box-sizing: border-box;
@@ -251,7 +252,7 @@
   display: grid;
   gap: 6px;
   grid-template-rows: auto auto minmax(0, 1fr);
-  min-height: 11rem;
+  min-height: 0;
   overflow: hidden;
   padding: 8px 9px;
 }
@@ -359,7 +360,7 @@
 .apple-assist-proposal-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-width: 32rem;
+  min-width: 0;
 }
 
 .apple-assist-proposal-cell {
@@ -369,6 +370,10 @@
   padding: 2px 5px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.apple-assist-proposal-cell > span:last-child {
+  min-width: 0;
 }
 
 .apple-assist-proposal-cell-left {
@@ -606,4 +611,31 @@
 .apple-assist-window-error {
   color: var(--error);
   font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .apple-assist-window-shell {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .apple-assist-proposal-columns {
+    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .apple-assist-proposal-summary {
+    grid-column: 1 / -1;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .apple-assist-proposal-cell {
+    gap: 4px;
+    padding: 2px 4px;
+  }
+
+  .apple-assist-proposal-line-number {
+    flex-basis: 1.5rem;
+  }
 }

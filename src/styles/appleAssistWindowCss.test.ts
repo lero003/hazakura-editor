@@ -21,13 +21,38 @@ function ruleBody(css: string, selector: string): string {
 describe("apple-assist-window.css", () => {
   const css = stripCssComments(appleAssistWindowCss);
 
-  it("keeps the operation feedback panel content-sized rather than taking all remaining height", () => {
+  it("gives the proposal the remaining height while keeping feedback bounded", () => {
     const shell = ruleBody(css, ".apple-assist-window-shell");
+    const proposal = ruleBody(css, ".apple-assist-window-proposal");
     const feedback = ruleBody(css, ".apple-assist-window-feedback");
 
-    expect(shell).not.toMatch(/grid-template-rows:[^;]*1fr/);
+    expect(shell).toMatch(
+      /grid-template-rows:\s*auto auto auto minmax\(11rem,\s*1fr\) minmax\(9\.5rem,\s*auto\) auto/,
+    );
+    expect(shell).toMatch(/min-height:\s*0/);
+    expect(proposal).toMatch(/min-height:\s*0/);
     expect(feedback).toMatch(/height:\s*9\.5rem/);
     expect(feedback).toMatch(/min-height:\s*9\.5rem/);
+  });
+
+  it("contains proposal rows and wraps the change summary at narrow widths", () => {
+    const row = ruleBody(css, ".apple-assist-proposal-row");
+    const cellText = ruleBody(css, ".apple-assist-proposal-cell > span:last-child");
+    const narrowMedia = css.match(
+      /@media\s*\(max-width:\s*520px\)\s*{(?<body>[\s\S]*)}\s*$/,
+    )?.groups?.body ?? "";
+
+    expect(row).toMatch(/min-width:\s*0/);
+    expect(cellText).toMatch(/min-width:\s*0/);
+    expect(narrowMedia).toMatch(
+      /\.apple-assist-proposal-columns\s*{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(0,\s*1fr\)/,
+    );
+    expect(narrowMedia).toMatch(
+      /\.apple-assist-proposal-summary\s*{[\s\S]*grid-column:\s*1\s*\/\s*-1[\s\S]*overflow-wrap:\s*anywhere[\s\S]*white-space:\s*normal/,
+    );
+    expect(narrowMedia).toMatch(
+      /\.apple-assist-proposal-line-number\s*{[\s\S]*flex-basis:\s*1\.5rem/,
+    );
   });
 
   it("keeps the companion vertically compact for the smaller tool-window height", () => {

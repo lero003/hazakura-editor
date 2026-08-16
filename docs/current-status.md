@@ -1,9 +1,9 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-4 preparation)
+Scope: Current implementation state and next safe actions (v2.6 A-4 narrow-layout preflight)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
 
 ## Current State
 
@@ -21,10 +21,14 @@ Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
   tab/session/range/original, keeps follow-up instructions on that target, and
   applies only the reviewed Diff proposal through one stale-checked
   `AiEditTransaction` / Review Bar path. This is local source work, not a
-  release claim. Non-blocking hardening and A-4 remain separate next slices.
+  release claim. The current A-4 preflight only tightens detached-window
+  narrow Diff layout; non-blocking hardening and the remaining A-4 interaction
+  checks stay separate.
   Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
-- **A-4 remains isolated** in Draft PR #34 for narrow Diff layout polish; it is
-  not included in local `main`.
+- **A-4 narrow-layout preflight** is being prepared on a separate review branch;
+  it is not included in local `main` until external review is complete. The
+  older Draft PR #34 remains historical and is not the source of truth for this
+  candidate.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.

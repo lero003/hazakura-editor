@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
 
 ## Current Position
 
@@ -17,7 +17,7 @@ automatic agent-apply system.
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.6 A-4 preparation** — bounded hardening, then two-region UX |
+| Active product phase | **v2.6 A-4 narrow-layout preflight** — two-region UX review candidate |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -56,8 +56,9 @@ User direction:
    v2.6 development line.
 3. **v2.6 A-1–A-3 are complete locally.** The reviewed implementation applies
    only the Diff proposal after stale revalidation, records one transaction for
-   Review Bar, and keeps conversation and Diff review distinct. Non-blocking
-   hardening and A-4 remain separate next slices.
+   Review Bar, and keeps conversation and Diff review distinct. The current A-4
+   preflight only tightens narrow Diff layout; hardening and remaining A-4
+   interaction checks stay separate.
 4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
 5. **Core AI** remains a later model backend after conversational apply is stable.
 6. **anydoc** stays evaluation-only until product demand is clear.
@@ -74,8 +75,8 @@ User direction:
 [done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
-[now]    v2.6 A-3 hardening: completion check, Diff gating, Apply watchdog
-[next]   A-4 two-region layout polish (separate Draft PR #34)
+[now]    v2.6 A-4 narrow Diff layout preflight (external review candidate)
+[next]   A-4 keyboard / VoiceOver / locale / streaming-cancel review gates
 [later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
@@ -174,7 +175,7 @@ These boundaries stay active across roadmap changes:
 | **v2.3** | Portable recipe + Reader resume + image/export repair | **Closed / published** |
 | **v2.4** | Book depth (OKF v0.2 / chapter Diff) | **Closed / published** |
 | **v2.5** | Workspace control + delivery clarity | **Released / closed** — `docs/v2.5-plan.md` |
-| **v2.6** | Local Assist conversation + Diff review | **A-1–A-3 complete locally; A-4 next** — `docs/v2.6-plan.md` |
+| **v2.6** | Local Assist conversation + Diff review | **A-1–A-3 complete; A-4 narrow-layout preflight** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v3.x | Broader local-AI re-evaluation if still needed | Speculative |
