@@ -208,3 +208,107 @@
 :root[data-l-mode="on"] .apple-assist-review-bar {
   bottom: 64px;
 }
+
+/* === v2.6 B2: unapplied proposal review (main window) === */
+/* The main window now owns the original-vs-proposal Diff, rendered at the
+   editor font size. It is a larger floating panel than the post-apply review
+   bar because it is the primary review surface, not an inline escape hatch. */
+.local-assist-proposal-review {
+  position: fixed;
+  right: 18px;
+  bottom: 64px;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(960px, calc(100vw - 36px));
+  max-height: min(72vh, 720px);
+  padding: 10px 12px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  backdrop-filter: blur(18px) saturate(1.05);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-family: var(--app-font-family);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.local-assist-proposal-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.local-assist-proposal-review-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.local-assist-proposal-review-title {
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.local-assist-proposal-review-subtitle {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.local-assist-proposal-review-actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.local-assist-proposal-review-button {
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 5px 12px;
+}
+
+.local-assist-proposal-review-button.apply {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent, #fff);
+  font-weight: 650;
+}
+
+.local-assist-proposal-review-button:hover {
+  background: var(--bg-elev-hover);
+}
+
+.local-assist-proposal-review-button.apply:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--text));
+}
+
+.local-assist-proposal-review-diff {
+  border-top: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
+  padding-top: 6px;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* In L Mode, lift the panel so it does not collide with the floating
+   status pill, mirroring the post-apply review bar. */
+:root[data-l-mode="on"] .local-assist-proposal-review {
+  bottom: 64px;
+}

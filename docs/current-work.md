@@ -55,7 +55,12 @@ state. Source review is complete; physical macOS validation is the next gate.
    A Local Assist prompt + visibility polish is merged (revision-packet
    de-duplication, Japanese framing, preamble stripping, and a raw growing-draft
    stream preview); rebuild the live Swift helper before the physical gate so
-   the prompt change is observable.
+   the prompt change is observable. **B2 is also merged:** the unapplied-proposal
+   Diff review and Apply/Discard now live in the MAIN window (a large
+   editor-font `LocalAssistProposalReview` panel), while the detached window
+   keeps only the conversation, growing-draft preview, and Cancel. The proposal
+   is held in a new session-local store separate from `AiEditTransaction`;
+   `applyReviewedLocalAssistProposal` is the single apply path.
 2. Record the smoke evidence in `docs/current-status.md` and decide the source
    tag / App Store-TestFlight lane only after the physical gate.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time

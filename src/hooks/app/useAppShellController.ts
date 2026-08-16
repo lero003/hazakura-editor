@@ -60,10 +60,17 @@ import { useDocumentPreviewController } from "../document/useDocumentPreviewCont
 import { usePinExternalImagesAction } from "../document/usePinExternalImagesAction";
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
-import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
+import {
+  applyReviewedLocalAssistProposal,
+  emitLocalAssistApplyStatus,
+} from "../editor/useAppleAssistApplyHandler";
 import { useAppleAssistProposalHandler } from "../editor/useAppleAssistProposalHandler";
 import { stopAppleAssistGeneration } from "../../lib/tauri";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
+import {
+  localAssistProposalStore,
+  type LocalAssistProposal,
+} from "../../features/editor/localAssistProposal";
 import {
   replaceTabsBufferByPath,
   replaceTabsBufferBySessionId,
@@ -620,36 +627,67 @@ export function useAppShellController() {
     selectionInfo,
   });
 
-  // v2.6 A-3: main-window listener for the explicit Diff-review
-  // `APPLY_AI_EDIT_TRANSACTION_EVENT`. The detached Hazakura Local Assist
-  // window sends the reviewed proposal; this path revalidates it, mutates
-  // the active tab's unsaved buffer, and records the transaction in the
-  // session-local store so the existing Review Bar can surface its
-  // discard/accept affordance.
-  //
-  // The hook is purely side-effect: the only output it produces
-  // is the tab mutation (via the `setActiveTabContents` callback
-  // that updates the active tab's `contents` + `saveStatus` in
-  // one shot) and a status message routed through `setStatus`.
-  useAppleAssistApplyHandler({
-    activeTab: activeTab
-      ? {
+  // v2.6 B2: the main window owns the unapplied-proposal review surface, so
+  // Apply/Discard now happen here rather than through the detached window's
+  // `APPLY_AI_EDIT_TRANSACTION_EVENT`. `applyReviewedLocalAssistProposal`
+  // revalidates the pinned target, rewrites the unsaved buffer, and records
+  // one `AiEditTransaction` for the existing Review Bar.
+  const applyLocalAssistProposal = useCallback(
+    async (proposal: LocalAssistProposal) => {
+      if (!activeTab) {
+        return;
+      }
+      const result = await applyReviewedLocalAssistProposal({
+        proposal,
+        activeTab: {
           id: activeTab.id,
           sessionId: activeTab.sessionId,
           name: activeTab.name,
           path: activeTab.path,
           contents: activeTab.contents,
-        }
-      : null,
-    setActiveTabContents: (next: string, sessionId: string) => {
-      // Match by sessionId (Q-STR-1/3): survives Save As path rekey and
-      // tab switch during generation without writing the wrong buffer.
-      setTabs((currentTabs) =>
-        replaceTabsBufferBySessionId(currentTabs, sessionId, next),
+        },
+        setActiveTabContents: (next: string, sessionId: string) => {
+          setTabs((currentTabs) =>
+            replaceTabsBufferBySessionId(currentTabs, sessionId, next),
+          );
+        },
+        setStatus,
+      });
+      if (result.ok) {
+        localAssistProposalStore.clear(activeTab.sessionId);
+        await emitLocalAssistApplyStatus(
+          "completed",
+          "Hazakura Local Assist applied the reviewed proposal.",
+          proposal.requestId,
+          proposal.request,
+          { shouldApplyToDocument: true },
+        );
+      } else {
+        await emitLocalAssistApplyStatus(
+          "failed",
+          result.error,
+          proposal.requestId,
+          proposal.request,
+        );
+      }
+    },
+    [activeTab, setStatus, setTabs],
+  );
+
+  const discardLocalAssistProposal = useCallback(
+    async (proposal: LocalAssistProposal) => {
+      if (activeTab) {
+        localAssistProposalStore.clear(activeTab.sessionId);
+      }
+      await emitLocalAssistApplyStatus(
+        "discarded",
+        "Hazakura Local Assist proposal discarded.",
+        proposal.requestId,
+        proposal.request,
       );
     },
-    setStatus,
-  });
+    [activeTab],
+  );
 
   // v2.6 A-1: generation-only Local Assist path. The proposal handler
   // shares target validation and streaming with the legacy apply path but
@@ -2028,6 +2066,8 @@ export function useAppShellController() {
     onDiscardAppleAssistEdit: discardAppleAssistEdit,
     onConfirmPendingAssistDiscard: confirmPendingAssistDiscard,
     onCancelPendingAssistDiscard: cancelDiscardAppleAssistEdit,
+    onApplyLocalAssistProposal: applyLocalAssistProposal,
+    onDiscardLocalAssistProposal: discardLocalAssistProposal,
     pendingAssistDiscard,
     onOpenAgentWindow: () => {
       void openAgentWindow(themePreference);

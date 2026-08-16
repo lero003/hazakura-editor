@@ -8,7 +8,6 @@ import {
 } from "../../types";
 import {
   requestAppleAssistProposal,
-  requestApplyAiEditTransaction,
 } from "../../lib/tauri";
 
 const eventListeners = new Map<string, (event: { payload: unknown }) => void>();
@@ -68,7 +67,7 @@ describe("AppleAssistWindowApp render", () => {
     ).toBeNull();
   });
 
-  it("renders the generated proposal in Diff review and discards it without touching the editor", async () => {
+  it("keeps the detached window conversation-focused after a proposal completes", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {},
@@ -87,38 +86,15 @@ describe("AppleAssistWindowApp render", () => {
     });
     const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
       ?.requestId;
-    expect(requestId).toBeTruthy();
 
     const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
-    expect(proposalStatus).toBeDefined();
     await act(async () => {
-      proposalStatus?.({
-        payload: {
-          phase: "started",
-          requestId,
-          request: "整えて",
-          message: "started",
-          originalText: "original",
-          emittedAtMs: 0,
-        },
-      });
       proposalStatus?.({
         payload: {
           phase: "completed",
           requestId,
           request: "整えて",
           message: "ready",
-          target: {
-            kind: "paragraph",
-            start: 0,
-            end: 8,
-            text: "original",
-            label: "",
-            activeDocumentPath: "/workspace/note.md",
-            activeDocumentName: "note.md",
-            activeDocumentSessionId: "session:note-1",
-            capturedAtMs: 0,
-          },
           originalText: "original",
           candidateText: "proposal",
           emittedAtMs: 0,
@@ -126,32 +102,17 @@ describe("AppleAssistWindowApp render", () => {
       });
     });
 
-    expect(screen.getByTestId("apple-assist-proposal-review")).toBeTruthy();
-    expect(screen.getByText("proposal")).toBeTruthy();
-    const diffTable = screen.getByRole("table", { name: "Diff review" });
-    expect(diffTable).toBeTruthy();
-    expect(screen.getByRole("columnheader", { name: "Original" })).toBeTruthy();
-    expect(screen.getByRole("columnheader", { name: "Proposal" })).toBeTruthy();
+    // v2.6 B2: the detached window is conversation-only. The inline Diff
+    // review and Apply/Discard now live in the main window.
+    expect(screen.queryByTestId("apple-assist-proposal-review")).toBeNull();
+    expect(screen.queryByRole("table", { name: "Diff review" })).toBeNull();
     expect(
-      document.querySelector(".apple-assist-proposal-columns")?.getAttribute(
-        "aria-hidden",
-      ),
+      screen.queryByRole("button", { name: /Apply proposal|文書へ反映/ }),
     ).toBeNull();
-    for (const cell of screen.getAllByRole("cell")) {
-      expect(cell.getAttribute("aria-labelledby")).toMatch(
-        /apple-assist-proposal-(original|candidate)-heading/,
-      );
-    }
-    const discard = screen.getByRole("button", {
-      name: /Discard proposal|案を破棄/,
-    });
-    expect((discard as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(discard);
-    expect(screen.getByText(/Send a request to show|依頼すると/)).toBeTruthy();
-    expect(requestApplyAiEditTransaction).not.toHaveBeenCalled();
+    expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
   });
 
-  it("sanitizes partial prompt markers and keeps the completed proposal after cancel or failure", async () => {
+  it("sanitizes partial prompt markers in the stream preview", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {},
@@ -163,53 +124,19 @@ describe("AppleAssistWindowApp render", () => {
     fireEvent.change(screen.getByRole("textbox"), {
       target: { value: "整えて" },
     });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Send request" }));
+      await Promise.resolve();
+    });
+    const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
+      ?.requestId;
 
     const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
-    expect(proposalStatus).toBeDefined();
-
-    const sendRequest = async () => {
-      await act(async () => {
-        fireEvent.click(screen.getByRole("button", { name: "Send request" }));
-        await Promise.resolve();
-      });
-      const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
-        ?.requestId;
-      expect(requestId).toBeTruthy();
-      return requestId as string;
-    };
-
-    const firstRequestId = await sendRequest();
     await act(async () => {
       proposalStatus?.({
         payload: {
           phase: "started",
-          requestId: firstRequestId,
-          request: "整えて",
-          message: "started",
-          originalText: "original",
-          emittedAtMs: 0,
-        },
-      });
-      proposalStatus?.({
-        payload: {
-          phase: "completed",
-          requestId: firstRequestId,
-          request: "整えて",
-          message: "ready",
-          originalText: "original",
-          candidateText: "proposal",
-          emittedAtMs: 0,
-        },
-      });
-    });
-    expect(screen.getByText("proposal")).toBeTruthy();
-
-    const cancelledRequestId = await sendRequest();
-    await act(async () => {
-      proposalStatus?.({
-        payload: {
-          phase: "started",
-          requestId: cancelledRequestId,
+          requestId,
           request: "整えて",
           message: "started",
           originalText: "original",
@@ -219,7 +146,7 @@ describe("AppleAssistWindowApp render", () => {
       proposalStatus?.({
         payload: {
           phase: "partial",
-          requestId: cancelledRequestId,
+          requestId,
           request: "整えて",
           message: "partial",
           partialText: "<<<HAZAKURA_TEXT_START",
@@ -229,7 +156,7 @@ describe("AppleAssistWindowApp render", () => {
       proposalStatus?.({
         payload: {
           phase: "partial",
-          requestId: cancelledRequestId,
+          requestId,
           request: "整えて",
           message: "original marker partial",
           partialText: "<<<HAZAKURA_ORIGINAL_START",
@@ -237,54 +164,29 @@ describe("AppleAssistWindowApp render", () => {
         },
       });
     });
-    expect(screen.getByText("proposal")).toBeTruthy();
+
     expect(screen.queryByText("HAZAKURA_TEXT_START")).toBeNull();
     expect(screen.queryByText("HAZAKURA_ORIGINAL_START")).toBeNull();
+
     await act(async () => {
       proposalStatus?.({
         payload: {
           phase: "cancelled",
-          requestId: cancelledRequestId,
+          requestId,
           request: "整えて",
           message: "cancelled by user",
           emittedAtMs: 0,
         },
       });
     });
-    expect(screen.getByText("proposal")).toBeTruthy();
     const feedbackEntries = screen.getAllByTestId("apple-assist-feedback-entry");
     expect(feedbackEntries.at(-1)?.getAttribute("data-feedback-kind")).toBe(
       "cancelled",
     );
     expect(feedbackEntries.at(-1)?.textContent).not.toMatch(/failed|失敗/i);
-
-    const failedRequestId = await sendRequest();
-    await act(async () => {
-      proposalStatus?.({
-        payload: {
-          phase: "started",
-          requestId: failedRequestId,
-          request: "整えて",
-          message: "started",
-          originalText: "original",
-          emittedAtMs: 0,
-        },
-      });
-      proposalStatus?.({
-        payload: {
-          phase: "failed",
-          requestId: failedRequestId,
-          request: "整えて",
-          message: "failed",
-          emittedAtMs: 0,
-        },
-      });
-    });
-    expect(screen.getByText("proposal")).toBeTruthy();
-    expect(requestApplyAiEditTransaction).not.toHaveBeenCalled();
   });
 
-  it("sends only the reviewed proposal from Diff and clears it after explicit apply succeeds", async () => {
+  it("resets the conversation when the main window reports apply completed or discarded", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {},
@@ -294,92 +196,29 @@ describe("AppleAssistWindowApp render", () => {
       await Promise.resolve();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Summary" }));
     fireEvent.change(screen.getByRole("textbox"), {
-      target: { value: "200字くらいで要約して" },
+      target: { value: "整えて" },
     });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Send request" }));
       await Promise.resolve();
     });
-    const requestPayload = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0];
-    expect(requestPayload).toMatchObject({
-      actionId: "summarize",
-      request: "200字くらいで要約して",
-    });
-    expect(requestPayload?.conversationId).toBeTruthy();
-
-    const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
-    await act(async () => {
-      proposalStatus?.({
-        payload: {
-          phase: "completed",
-          requestId: requestPayload?.requestId,
-          request: "200字くらいで要約して",
-          message: "ready",
-          target: requestPayload?.target,
-          originalText: "original",
-          candidateText: "proposal",
-          conversationId: requestPayload?.conversationId,
-          conversationTurnIndex: 0,
-          emittedAtMs: 0,
-        },
-      });
-    });
-
-    const applyButton = screen.getByRole("button", {
-      name: /Apply proposal|文書へ反映|ふみに はんえい/,
-    });
-    fireEvent.click(applyButton);
-    const applyPayload = vi.mocked(requestApplyAiEditTransaction).mock.calls.at(-1)?.[0];
-    expect(applyPayload).toMatchObject({
-      shouldApplyToDocument: true,
-      actionId: "summarize",
-      proposalText: "proposal",
-      target: requestPayload?.target,
-      conversationId: requestPayload?.conversationId,
-    });
-    expect(screen.getByTestId("apple-assist-proposal-review")).toBeTruthy();
+    expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
 
     const applyStatus = eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT);
-    expect(applyStatus).toBeDefined();
     await act(async () => {
       applyStatus?.({
         payload: {
-          phase: "partial",
-          requestId: applyPayload?.requestId,
-          request: "200字くらいで要約して",
-          message: "legacy partial",
-          partialText: "<<<HAZAKURA_ORIGINAL_START>>>",
+          phase: "discarded",
+          requestId: "req-discard",
+          request: "整えて",
+          message: "discarded",
           emittedAtMs: 0,
         },
       });
     });
-    expect(screen.getByText("proposal")).toBeTruthy();
-    await act(async () => {
-      applyStatus?.({
-        payload: {
-          phase: "started",
-          requestId: applyPayload?.requestId,
-          request: "200字くらいで要約して",
-          message: "applying",
-          emittedAtMs: 1,
-        },
-      });
-      applyStatus?.({
-        payload: {
-          phase: "completed",
-          requestId: applyPayload?.requestId,
-          request: "200字くらいで要約して",
-          message: "applied",
-          shouldApplyToDocument: true,
-          emittedAtMs: 2,
-        },
-      });
-    });
 
-    expect(screen.queryByText("proposal")).toBeNull();
-    expect(screen.getByText(/Send a request to show|依頼すると/)).toBeTruthy();
+    expect(screen.queryByTestId("apple-assist-conversation-state")).toBeNull();
   });
 
   it("keeps follow-up requests on the pinned target and shows the conversation history", async () => {
@@ -508,7 +347,7 @@ describe("AppleAssistWindowApp render", () => {
     expect(screen.queryByTestId("apple-assist-conversation-state")).toBeNull();
   });
 
-  it("shows the raw growing draft while streaming, then the line diff after completion", async () => {
+  it("shows the raw growing draft while streaming, then clears it after completion", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {},
@@ -552,8 +391,8 @@ describe("AppleAssistWindowApp render", () => {
       });
     });
 
-    // While streaming, the growing draft is shown as raw readable text, not
-    // a recomputed line diff.
+    // While streaming, the growing draft is shown as raw readable text in the
+    // conversation window.
     expect(
       screen.getByTestId("apple-assist-stream-preview-body").textContent,
     ).toBe("生成中の途中");
@@ -566,17 +405,6 @@ describe("AppleAssistWindowApp render", () => {
           requestId,
           request: "整えて",
           message: "ready",
-          target: {
-            kind: "paragraph",
-            start: 0,
-            end: 8,
-            text: "original",
-            label: "",
-            activeDocumentPath: "/workspace/note.md",
-            activeDocumentName: "note.md",
-            activeDocumentSessionId: "session:note-1",
-            capturedAtMs: 0,
-          },
           originalText: "original",
           candidateText: "完成した本文",
           emittedAtMs: 0,
@@ -584,7 +412,9 @@ describe("AppleAssistWindowApp render", () => {
       });
     });
 
-    expect(screen.getByRole("table", { name: "Diff review" })).toBeTruthy();
+    // The stream preview clears; the completed Diff is owned by the main
+    // window, so the conversation window never renders a diff table.
     expect(screen.queryByTestId("apple-assist-stream-preview-body")).toBeNull();
+    expect(screen.queryByRole("table", { name: "Diff review" })).toBeNull();
   });
 });

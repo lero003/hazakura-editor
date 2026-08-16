@@ -1,13 +1,12 @@
-import { useEffect, useRef } from "react";
-import { emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { emitTo } from "@tauri-apps/api/event";
 import { buildLineDiff } from "../../features/diff/diff";
 import {
   aiEditTransactionStore,
   applyAiEditTransaction,
   type AiEditTransaction,
 } from "../../features/editor/aiEditTransactions";
+import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import {
-  APPLY_AI_EDIT_TRANSACTION_EVENT,
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   type AppleAssistApplyEvent,
   type AppleAssistApplyStatusEvent,
@@ -50,22 +49,6 @@ export function getAppleAssistContextWindow(
   };
 }
 
-// v2.6 A-3: `useAppleAssistApplyHandler` is the main window's
-// listener for the explicit Diff-review
-// `APPLY_AI_EDIT_TRANSACTION_EVENT`. The detached Local Assist
-// window sends the already reviewed candidate; this hook never calls the
-// model and never accepts a request without that candidate.
-// It revalidates the pinned target, rewrites the active tab's unsaved buffer,
-// and records one `AiEditTransaction` in the session-local store so the
-// existing Review Bar can provide the discard/accept escape hatch.
-//
-// The hook is intentionally side-effect-only: it does
-// not own any state, and the only way it talks back to the
-// user is via the store and (optionally) a status message
-// passed through `setStatus`. Errors are surfaced through
-// the store's `clear` path so the next render does not
-// surface a stale pending review.
-
 export type ActiveTab = {
   id: string;
   sessionId: string;
@@ -74,195 +57,118 @@ export type ActiveTab = {
   contents: string;
 };
 
-type UseAppleAssistApplyHandlerOptions = {
-  // The currently active tab in the main window, or `null`
-  // when no tab is open. The handler early-outs when this
-  // is null (the Hazakura Local Assist window would not be sending
-  // an apply with no active tab on the main side).
-  activeTab: ActiveTab | null;
-  // Replaces the target tab's contents with the new buffer.
-  // The orchestrator owns the tab state; this callback is the
-  // only path through which the handler mutates the buffer.
-  // The second argument is **sessionId** (not path/id) so the
-  // write stays on the validated CodeMirror/Assist session even
-  // after Save As rekeys id/path, and even if the render-time
-  // `activeTab` closure is stale (Q-STR-3).
+export type ApplyReviewedProposalInput = {
+  proposal: LocalAssistProposal;
+  activeTab: ActiveTab;
   setActiveTabContents: (next: string, sessionId: string) => void;
-  // Optional status surface for the main window. Called
-  // on apply success / failure with a localized message
-  // the orchestrator can pass through to its `setStatus`.
   setStatus?: (message: string) => void;
 };
 
-export function useAppleAssistApplyHandler({
-  activeTab,
-  setActiveTabContents,
-  setStatus,
-}: UseAppleAssistApplyHandlerOptions): void {
-  // Refs let the listener read the latest active tab /
-  // status setter without re-subscribing on every change.
-  const activeTabRef = useRef<ActiveTab | null>(activeTab);
-  activeTabRef.current = activeTab;
-  const setActiveTabContentsRef = useRef(setActiveTabContents);
-  setActiveTabContentsRef.current = setActiveTabContents;
-  const setStatusRef = useRef(setStatus);
-  setStatusRef.current = setStatus;
+export type ApplyReviewedProposalResult =
+  | { ok: true }
+  | { ok: false; error: string };
 
-  useEffect(() => {
-    let unlisten: UnlistenFn | null = null;
-    let disposed = false;
+// v2.6 B2: the main window owns the unapplied-proposal review surface, so the
+// explicit "文書へ反映" action now happens in the main window instead of the
+// detached conversation window. `applyReviewedLocalAssistProposal` is the
+// single apply path: it revalidates the pinned target against the live tab,
+// rewrites the unsaved buffer through `applyAiEditTransaction`, and records one
+// `AiEditTransaction` for the existing Review Bar. It never calls the model
+// and never mutates the buffer unless the reviewed proposal still matches.
+export async function applyReviewedLocalAssistProposal(
+  input: ApplyReviewedProposalInput,
+): Promise<ApplyReviewedProposalResult> {
+  const { proposal, activeTab, setActiveTabContents, setStatus } = input;
 
-    void listen<AppleAssistApplyEvent>(APPLY_AI_EDIT_TRANSACTION_EVENT, (event) => {
-      if (disposed) return;
-      void applyAppleAssistRequest(event.payload);
-    })
-      .then((handle) => {
-        if (disposed) {
-          void handle();
-          return;
-        }
-        unlisten = handle;
-      })
-      .catch((err) => {
-        console.warn("Failed to listen for apply event", err);
-      });
-
-    return () => {
-      disposed = true;
-      if (unlisten) {
-        void unlisten();
-        unlisten = null;
-      }
+  const targetCheck = readTargetTextForGeneration(proposal.target, activeTab);
+  if (!targetCheck.ok) {
+    return {
+      ok: false,
+      error: `Hazakura Local Assist apply failed: ${targetCheck.error}`,
     };
-  }, []);
+  }
+  if (proposal.originalText !== targetCheck.before) {
+    return {
+      ok: false,
+      error:
+        "Hazakura Local Assist apply rejected: the pinned original no longer matches the active document.",
+    };
+  }
 
-  async function applyAppleAssistRequest(payload: AppleAssistApplyEvent): Promise<void> {
-    const tab = activeTabRef.current;
-    if (!tab) {
-      const message = "Hazakura Local Assist apply ignored: no active tab.";
-      setStatusRef.current?.(message);
-      void emitAppleAssistApplyStatus("failed", message, payload);
-      return;
-    }
+  const candidateText = sanitizeAppleAssistCandidateText(proposal.candidateText);
+  if (candidateText.trim().length === 0) {
+    return {
+      ok: false,
+      error: "Hazakura Local Assist apply rejected: the reviewed proposal is empty.",
+    };
+  }
 
-    if (payload.shouldApplyToDocument !== true) {
-      const message =
-        "Hazakura Local Assist apply rejected: only an explicit Diff review action may change the document.";
-      setStatusRef.current?.(message);
-      void emitAppleAssistApplyStatus("failed", message, payload);
-      return;
-    }
-
-    if (typeof payload.proposalText !== "string" || payload.proposalText.trim().length === 0) {
-      const message =
-        "Hazakura Local Assist apply rejected: no reviewed proposal was supplied.";
-      setStatusRef.current?.(message);
-      void emitAppleAssistApplyStatus("failed", message, payload);
-      return;
-    }
-
-    const target = payload.target;
-    const targetCheck = readTargetTextForGeneration(target, tab);
-    if (!targetCheck.ok) {
-      const message = `Hazakura Local Assist apply failed: ${targetCheck.error}`;
-      setStatusRef.current?.(message);
-      void emitAppleAssistApplyStatus("failed", message, payload);
-      return;
-    }
-    if (
-      payload.conversationOriginalText !== undefined &&
-      payload.conversationOriginalText !== targetCheck.before
-    ) {
-      const message =
-        "Hazakura Local Assist apply rejected: the pinned original no longer matches the active document.";
-      setStatusRef.current?.(message);
-      void emitAppleAssistApplyStatus("failed", message, payload);
-      return;
-    }
-
-    const candidateText = sanitizeAppleAssistCandidateText(payload.proposalText);
-    if (candidateText.trim().length === 0) {
-      const message = "Hazakura Local Assist apply rejected: the reviewed proposal is empty.";
-      setStatusRef.current?.(message);
-      void emitAppleAssistApplyStatus("failed", message, payload);
-      return;
-    }
-
-    try {
-      const startMessage = "Hazakura Local Assist is applying the reviewed proposal...";
-      setStatusRef.current?.(startMessage);
-      await emitAppleAssistApplyStatus("started", startMessage, payload);
-
-      const latestTab = activeTabRef.current;
-      if (!latestTab) {
-        const message = "Hazakura Local Assist apply ignored: no active tab.";
-        setStatusRef.current?.(message);
-        void emitAppleAssistApplyStatus("failed", message, payload);
-        return;
-      }
-      if (!isSameAppleAssistTargetTab(tab, latestTab)) {
-        const message =
-          "Hazakura Local Assist apply rejected: the active document changed before apply.";
-        setStatusRef.current?.(message);
-        void emitAppleAssistApplyStatus("failed", message, payload);
-        return;
-      }
-      const latestTargetCheck = readTargetTextForGeneration(payload.target, latestTab);
-      if (!latestTargetCheck.ok) {
-        const message = `Hazakura Local Assist apply failed: ${latestTargetCheck.error}`;
-        setStatusRef.current?.(message);
-        void emitAppleAssistApplyStatus("failed", message, payload);
-        return;
-      }
-      const result = applyAiEditTransaction({
-        tabId: latestTab.sessionId,
-        tabName: latestTab.name,
-        tabPath: latestTab.path,
-        request: payload.request,
-        target: latestTargetCheck.target,
-        buffer: latestTab.contents,
-        afterText: candidateText,
-      });
-      if (!result.ok) {
-        const message = `Hazakura Local Assist apply failed: ${result.error}`;
-        setStatusRef.current?.(message);
-        void emitAppleAssistApplyStatus("failed", message, payload);
-        return;
-      }
-
-      // Precompute the line diff so the escape hatch can
-      // render the comparison without recomputing it on
-      // every render. The diff is keyed on the transaction's
-      // `id` so the case lookup (`getCompareCaseByKey`) treats
-      // it as a standalone case rather than colliding with any
-      // existing compare slot.
-      const lineDiff = buildLineDiff(
-        result.transaction.before,
-        result.transaction.after,
-      );
-      const diff: CompareViewState = {
-        caseKey: result.transaction.id,
-        ...lineDiff,
+  try {
+    const result = applyAiEditTransaction({
+      tabId: activeTab.sessionId,
+      tabName: activeTab.name,
+      tabPath: activeTab.path,
+      request: proposal.request,
+      target: targetCheck.target,
+      buffer: activeTab.contents,
+      afterText: candidateText,
+    });
+    if (!result.ok) {
+      return {
+        ok: false,
+        error: `Hazakura Local Assist apply failed: ${result.error}`,
       };
-
-      const stored: AiEditTransaction = {
-        ...result.transaction,
-        diff,
-      };
-      aiEditTransactionStore.record(stored);
-      // Second arg is sessionId (Q-STR-3); path/id would miss after Save As.
-      setActiveTabContentsRef.current(result.nextBuffer, latestTab.sessionId);
-      const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
-      setStatusRef.current?.(successMessage);
-      void emitAppleAssistApplyStatus("completed", successMessage, payload, {
-        shouldApplyToDocument: true,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const errorMessage = `Hazakura Local Assist apply failed: ${message}`;
-      setStatusRef.current?.(errorMessage);
-      void emitAppleAssistApplyStatus("failed", errorMessage, payload);
     }
+
+    // Precompute the line diff so the Review Bar escape hatch can render it
+    // without recomputing on every render. The diff is keyed on the
+    // transaction id so `getCompareCaseByKey` treats it as a standalone case.
+    const lineDiff = buildLineDiff(
+      result.transaction.before,
+      result.transaction.after,
+    );
+    const diff: CompareViewState = {
+      caseKey: result.transaction.id,
+      ...lineDiff,
+    };
+    const stored: AiEditTransaction = {
+      ...result.transaction,
+      diff,
+    };
+    aiEditTransactionStore.record(stored);
+    // Second arg is sessionId (Q-STR-3); path/id would miss after Save As.
+    setActiveTabContents(result.nextBuffer, activeTab.sessionId);
+    const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
+    setStatus?.(successMessage);
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: `Hazakura Local Assist apply failed: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
+
+// v2.6 B2: report the apply result to the detached conversation window so it
+// can reset its conversation state after the main window applies or discards.
+export async function emitLocalAssistApplyStatus(
+  phase: AppleAssistApplyStatusEvent["phase"],
+  message: string,
+  requestId: string,
+  request: string,
+  options: Pick<AppleAssistApplyStatusEvent, "shouldApplyToDocument"> = {},
+): Promise<void> {
+  try {
+    await emitTo("apple-assist", APPLE_ASSIST_APPLY_STATUS_EVENT, {
+      phase,
+      message,
+      requestId,
+      request,
+      ...options,
+      emittedAtMs: Date.now(),
+    } satisfies AppleAssistApplyStatusEvent);
+  } catch (err) {
+    console.warn("Failed to emit Hazakura Local Assist apply status", err);
   }
 }
 
@@ -393,29 +299,6 @@ export function stripCandidatePreamble(text: string): string {
   }
 
   return text;
-}
-
-async function emitAppleAssistApplyStatus(
-  phase: AppleAssistApplyStatusEvent["phase"],
-  message: string,
-  payload: AppleAssistApplyEvent,
-  options: Pick<
-    AppleAssistApplyStatusEvent,
-    "partialText" | "shouldApplyToDocument"
-  > = {},
-): Promise<void> {
-  try {
-    await emitTo("apple-assist", APPLE_ASSIST_APPLY_STATUS_EVENT, {
-      phase,
-      message,
-      requestId: payload.requestId,
-      request: payload.request,
-      ...options,
-      emittedAtMs: Date.now(),
-    } satisfies AppleAssistApplyStatusEvent);
-  } catch (err) {
-    console.warn("Failed to emit Hazakura Local Assist apply status", err);
-  }
 }
 
 export function isSameAppleAssistTargetTab(

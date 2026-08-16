@@ -471,36 +471,17 @@ describe("isSameAppleAssistTargetTab", () => {
   });
 });
 
-// Integration coverage for the full apply path. The pure
-// helper tests above do not exercise the hook itself, which
-// is how the `id`-vs-`sessionId` regression slipped through:
-// the apply handler silently no-op'd the buffer write because
-// `setActiveTabContents` matches by `sessionId`. These tests
-// render the hook, fire the apply event, and assert that the
-// buffer write targets the tab by `sessionId` (not `id`).
-import { renderHook } from "@testing-library/react";
-import { emitTo, listen } from "@tauri-apps/api/event";
-import { useAppleAssistApplyHandler } from "./useAppleAssistApplyHandler";
+// v2.6 B2: the main-window apply path is `applyReviewedLocalAssistProposal`,
+// called directly by `LocalAssistProposalReview`. These tests exercise that
+// reusable function (the `id`-vs-`sessionId` regression slipped through the
+// old event-listener hook because the buffer write is keyed by `sessionId`).
+import { applyReviewedLocalAssistProposal } from "./useAppleAssistApplyHandler";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
-import type {
-  AppleAssistApplyEvent,
-  AppleAssistTargetSnapshot,
-} from "../../types";
-
-type ApplyListener = Parameters<typeof listen<AppleAssistApplyEvent>>[1];
-
-const applyListeners: ApplyListener[] = [];
+import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
+import type { AppleAssistTargetSnapshot } from "../../types";
 
 vi.mock("@tauri-apps/api/event", () => ({
   emitTo: vi.fn(async () => {}),
-  listen: vi.fn(async (_eventName: string, handler: ApplyListener) => {
-    applyListeners.push(handler);
-    return () => {};
-  }),
-}));
-
-vi.mock("../../lib/tauri/appleAssist", () => ({
-  APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000,
 }));
 
 function targetSnapshot(
@@ -521,60 +502,45 @@ function targetSnapshot(
   };
 }
 
-describe("useAppleAssistApplyHandler explicit proposal path", () => {
+function makeProposal(
+  contents: string,
+  candidateText: string,
+): LocalAssistProposal {
+  return {
+    requestId: "req-1",
+    request: "整えて",
+    actionId: "rewrite_natural",
+    originalText: contents,
+    candidateText,
+    target: targetSnapshot(contents, contents),
+    conversationId: "conv-1",
+    turnIndex: 0,
+  };
+}
+
+describe("applyReviewedLocalAssistProposal", () => {
   afterEach(() => {
-    applyListeners.length = 0;
-    vi.mocked(listen).mockClear();
-    vi.mocked(emitTo).mockClear();
     aiEditTransactionStore.clear("session:tab-1");
   });
 
   it("writes only the reviewed proposal back to the tab matched by sessionId", async () => {
     const contents = "hello world";
-    const target = targetSnapshot("hello world", contents);
     const setActiveTabContents = vi.fn();
 
-    renderHook(() =>
-      useAppleAssistApplyHandler({
-        activeTab: {
-          // `id` (path) and `sessionId` are deliberately
-          // distinct values. The buffer write must key off
-          // `sessionId`; passing `id` would never match.
-          id: "/workspace/note.md",
-          sessionId: "session:tab-1",
-          name: "note.md",
-          path: "/workspace/note.md",
-          contents,
-        },
-        setActiveTabContents,
-        setStatus: vi.fn(),
-      }),
-    );
+    const result = await applyReviewedLocalAssistProposal({
+      proposal: makeProposal(contents, "整えた本文"),
+      activeTab: {
+        id: "/workspace/note.md",
+        sessionId: "session:tab-1",
+        name: "note.md",
+        path: "/workspace/note.md",
+        contents,
+      },
+      setActiveTabContents,
+      setStatus: vi.fn(),
+    });
 
-    const payload: AppleAssistApplyEvent = {
-      requestId: "req-1",
-      request: "整えて",
-      target,
-      shouldApplyToDocument: true,
-      proposalText: "整えた本文",
-      requestedAtMs: 0,
-    };
-    applyListeners[0]?.({ payload } as never);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(setActiveTabContents).toHaveBeenCalledTimes(1);
-    // The write MUST be addressed by `sessionId`, not by `id`.
-    // If the handler passes `id` ("/workspace/note.md"),
-    // `replaceTabsBufferBySessionId` finds no tab and the buffer
-    // never updates (Q-STR-3).
-    expect(setActiveTabContents).toHaveBeenCalledWith(
-      expect.any(String),
-      "session:tab-1",
-    );
-    expect(setActiveTabContents).not.toHaveBeenCalledWith(
-      expect.any(String),
-      "/workspace/note.md",
-    );
+    expect(result.ok).toBe(true);
     expect(setActiveTabContents).toHaveBeenCalledWith(
       "整えた本文",
       "session:tab-1",
@@ -585,83 +551,51 @@ describe("useAppleAssistApplyHandler explicit proposal path", () => {
     });
   });
 
-  it("rejects a request that does not carry an explicit reviewed proposal", async () => {
+  it("rejects a proposal whose pinned original no longer matches the buffer", async () => {
     const contents = "hello world";
     const setActiveTabContents = vi.fn();
 
-    renderHook(() =>
-      useAppleAssistApplyHandler({
-        activeTab: {
-          id: "tab-1",
-          sessionId: "session:tab-1",
-          name: "note.md",
-          path: "/workspace/note.md",
-          contents,
-        },
-        setActiveTabContents,
-        setStatus: vi.fn(),
-      }),
-    );
-
-    applyListeners[0]?.({
-      payload: {
-        requestId: "req-missing-proposal",
-        request: "整えて",
-        target: targetSnapshot(contents, contents),
-        shouldApplyToDocument: true,
-        requestedAtMs: 0,
+    const result = await applyReviewedLocalAssistProposal({
+      proposal: {
+        ...makeProposal(contents, "整えた本文"),
+        originalText: "stale original",
       },
-    } as never);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+      activeTab: {
+        id: "tab-1",
+        sessionId: "session:tab-1",
+        name: "note.md",
+        path: "/workspace/note.md",
+        contents,
+      },
+      setActiveTabContents,
+    });
 
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("pinned original");
     expect(setActiveTabContents).not.toHaveBeenCalled();
     expect(aiEditTransactionStore.getLatest("session:tab-1")).toBeNull();
-    expect(vi.mocked(emitTo)).toHaveBeenCalledWith(
-      "apple-assist",
-      expect.any(String),
-      expect.objectContaining({ phase: "failed" }),
-    );
   });
 
-  it("rejects a reviewed proposal from a stale editor session before writing", async () => {
+  it("rejects a proposal from a stale editor session before writing", async () => {
     const contents = "hello world";
     const setActiveTabContents = vi.fn();
 
-    renderHook(() =>
-      useAppleAssistApplyHandler({
-        activeTab: {
-          id: "tab-1",
-          sessionId: "session:new",
-          name: "note.md",
-          path: "/workspace/note.md",
-          contents,
-        },
-        setActiveTabContents,
-        setStatus: vi.fn(),
-      }),
-    );
-
-    applyListeners[0]?.({
-      payload: {
-        requestId: "req-stale-session",
-        request: "整えて",
-        target: {
-          ...targetSnapshot(contents, contents),
-          activeDocumentSessionId: "session:old",
-        },
-        shouldApplyToDocument: true,
-        proposalText: "整えた本文",
-        requestedAtMs: 0,
+    const result = await applyReviewedLocalAssistProposal({
+      proposal: makeProposal(contents, "整えた本文"),
+      activeTab: {
+        id: "tab-1",
+        sessionId: "session:new",
+        name: "note.md",
+        path: "/workspace/note.md",
+        contents,
       },
-    } as never);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+      setActiveTabContents,
+    });
 
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("session");
     expect(setActiveTabContents).not.toHaveBeenCalled();
-    expect(aiEditTransactionStore.getLatest("session:new")).toBeNull();
-    expect(vi.mocked(emitTo)).toHaveBeenCalledWith(
-      "apple-assist",
-      expect.any(String),
-      expect.objectContaining({ phase: "failed", message: expect.stringContaining("session") }),
-    );
   });
 });

@@ -24,6 +24,8 @@ import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
+import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
+import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import { useCrtMouseTracking } from "../../hooks/app/useCrtMouseTracking";
 
@@ -46,6 +48,8 @@ export type AppShellProps = Omit<
       before: string,
       after: string,
     ) => void;
+    onApplyLocalAssistProposal: (proposal: LocalAssistProposal) => void;
+    onDiscardLocalAssistProposal: (proposal: LocalAssistProposal) => void;
     onConfirmPendingAssistDiscard: () => void;
     onCancelPendingAssistDiscard: () => void;
     pendingAssistDiscard: { sessionId: string; beforeBuffer: string } | null;
@@ -132,6 +136,12 @@ export function AppShell(props: AppShellProps) {
         diffInitiallyOpen={props.editorSettings.appleAssistDiffInitiallyOpen}
         menuLanguage={props.menuLanguage}
         onDiscard={props.onDiscardAppleAssistEdit}
+      />
+      <LocalAssistProposalReview
+        activeTab={props.activeTab}
+        menuLanguage={props.menuLanguage}
+        onApply={props.onApplyLocalAssistProposal}
+        onDiscard={props.onDiscardLocalAssistProposal}
       />
       {props.lModeEnabled ? (
         <>

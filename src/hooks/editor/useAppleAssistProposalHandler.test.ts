@@ -14,6 +14,7 @@ import {
   type AppleAssistApplyEvent,
   type AppleAssistTargetSnapshot,
 } from "../../types";
+import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 
 type ProposalListener = Parameters<typeof listen<AppleAssistApplyEvent>>[1];
 const proposalListeners: ProposalListener[] = [];
@@ -57,6 +58,8 @@ describe("useAppleAssistProposalHandler", () => {
     vi.mocked(listen).mockClear();
     vi.mocked(emitTo).mockClear();
     vi.mocked(generateAppleAssistCandidateStreaming).mockClear();
+    localAssistProposalStore.clear("session:note-1");
+    localAssistProposalStore.clear("session:note-2");
     window.requestAnimationFrame = ((callback: FrameRequestCallback) =>
       window.setTimeout(() => callback(0), 0)) as typeof window.requestAnimationFrame;
   });
@@ -118,6 +121,13 @@ describe("useAppleAssistProposalHandler", () => {
     expect(status).toHaveBeenLastCalledWith(
       "Hazakura Local Assist created an unapplied proposal for Diff review.",
     );
+    // v2.6 B2: the completed proposal is now owned by the main window's
+    // session-local store so the main-window review panel can render it.
+    expect(localAssistProposalStore.getLatest("session:note-1")).toMatchObject({
+      originalText: contents,
+      candidateText: "proposal text",
+      actionId: "proofread_only",
+    });
     // The only document value in this handler is the validated snapshot;
     // no setter or transaction path is available to mutate the editor.
     expect(contents).toBe("original text");

@@ -50,6 +50,20 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   is compile-verified only and takes effect after the live helper is rebuilt;
   the Rust suite still exercises the fixture helper.
 
+- **Local Assist review moved to the main window (B2).** The unapplied-proposal
+  Diff review and Apply/Discard now live in the MAIN window as a large
+  editor-font `LocalAssistProposalReview` panel (reusing `DiffBody`), while the
+  detached window keeps only the conversation, the raw growing-draft preview,
+  and Cancel. The proposal is held in a new session-local
+  `localAssistProposalStore` (keyed by tab session), separate from
+  `AiEditTransaction`; `applyReviewedLocalAssistProposal` is the single apply
+  path (revalidates target/session, rewrites the unsaved buffer, records one
+  transaction for the Review Bar, then clears the proposal). The detached
+  window resets its conversation on an apply `completed`/`discarded` status
+  from the main window. Legacy dead code (Rust `request_apply_ai_edit_transaction`
+  / `APPLY_AI_EDIT_TRANSACTION_EVENT`, TS `requestApplyAiEditTransaction` and
+  `buildProposalApplyEvent`) remains and is safe to remove in a follow-up slice.
+
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -440,6 +454,22 @@ retained as the earlier R-1-only checkpoint.
 - Built-app/manual Assist streaming, cancel, narrow-layout, and physical-device
   availability smoke remain external-review or human-gated evidence; they were
   not claimed here.
+
+## Verification (2026-08-16, Local Assist review moved to main window — B2)
+
+- `npm run typecheck` — pass.
+- `npm test` — 211 files / 1,782 tests pass.
+- `npm run build:vite` — pass (existing large-chunk warning only).
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `git diff --check` — pass.
+- Focused regressions pin: the proposal store / `useLocalAssistProposal`,
+  `applyReviewedLocalAssistProposal` (session-keyed write, stale original/session
+  rejection), the main-window `LocalAssistProposalReview` panel, and the
+  detached window's conversation-only rendering plus apply/discard reset.
+- Note: the Rust code is unchanged from the v2.6 source candidate; the Rust
+  suite (`cargo test`, 368 pass / 2 ignored) was last verified on that tree.
+  The live Swift helper still needs rebuilding before any live/package build.
 
 ## Verification (2026-08-16, Local Assist prompt + visibility polish)
 

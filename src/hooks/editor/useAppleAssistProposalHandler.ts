@@ -26,6 +26,7 @@ import {
   yieldBeforeAppleAssistGeneration,
   type ActiveTab,
 } from "./useAppleAssistApplyHandler";
+import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 
 type UseAppleAssistProposalHandlerOptions = {
   activeTab: ActiveTab | null;
@@ -272,6 +273,20 @@ export function useAppleAssistProposalHandler({
       if (candidateText.trim().length === 0) {
         throw new Error("Hazakura Local Assist returned an empty proposal.");
       }
+      // v2.6 B2: the main window owns the unapplied proposal review. Record
+      // the completed proposal in the session-local store so the main-window
+      // review panel can render the large Diff and the explicit Apply/Discard
+      // actions. The editor buffer is still untouched here.
+      localAssistProposalStore.record(latestTab.sessionId, {
+        requestId: payload.requestId,
+        request: payload.request,
+        actionId,
+        originalText: targetCheck.before,
+        candidateText,
+        target,
+        conversationId: payload.conversationId ?? null,
+        turnIndex: payload.conversationTurnIndex ?? 0,
+      });
       const successMessage =
         "Hazakura Local Assist created an unapplied proposal for Diff review.";
       setStatusRef.current?.(successMessage);

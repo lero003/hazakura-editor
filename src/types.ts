@@ -283,7 +283,9 @@ export type AppleAssistApplyStatusEvent = {
   // "cancelled" is emitted when the user stops an in-flight
   // generation (cancel UI or window/tab close). It clears the
   // busy state without applying any partial result.
-  phase: "started" | "partial" | "completed" | "failed" | "cancelled";
+  // "discarded" (v2.6 B2) is emitted when the main window discards an
+  // unapplied proposal; it resets the detached conversation.
+  phase: "started" | "partial" | "completed" | "failed" | "cancelled" | "discarded";
   requestId: string;
   message: string;
   request: string;
