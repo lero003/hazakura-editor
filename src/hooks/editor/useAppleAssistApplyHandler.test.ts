@@ -523,9 +523,23 @@ describe("applyReviewedLocalAssistProposal", () => {
     aiEditTransactionStore.clear("session:tab-1");
   });
 
-  it("writes only the reviewed proposal back to the tab matched by sessionId", async () => {
+  it("writes the reviewed proposal once and clears any older review state", async () => {
     const contents = "hello world";
     const setActiveTabContents = vi.fn();
+    aiEditTransactionStore.record({
+      id: "previous-transaction",
+      tabId: "session:tab-1",
+      tabName: "note.md",
+      tabPath: "/workspace/note.md",
+      request: "前の依頼",
+      target: targetSnapshot(contents, contents),
+      before: contents,
+      after: "前の案",
+      beforeBuffer: contents,
+      afterBuffer: "前の案",
+      appliedAtMs: 0,
+      diff: null,
+    });
 
     const result = await applyReviewedLocalAssistProposal({
       proposal: makeProposal(contents, "整えた本文"),
@@ -545,10 +559,10 @@ describe("applyReviewedLocalAssistProposal", () => {
       "整えた本文",
       "session:tab-1",
     );
-    expect(aiEditTransactionStore.getLatest("session:tab-1")).toMatchObject({
-      before: "hello world",
-      after: "整えた本文",
-    });
+    // The proposal Diff was already reviewed before this call. A second
+    // post-apply Review Bar (including a previous transaction's Diff) must
+    // not make the user confirm the same change again.
+    expect(aiEditTransactionStore.getLatest("session:tab-1")).toBeNull();
   });
 
   it("rejects a proposal whose pinned original no longer matches the buffer", async () => {

@@ -6,9 +6,9 @@ import type { CompareCase, MenuLanguage } from "../../types";
 import { SparklesIcon } from "./Icons";
 
 // v0.12+ Hazakura Local Assist Writing Companion (slice 5).
-// The diff / change review escape hatch. After the
-// detached Hazakura Local Assist window applies a transaction,
-// the main window renders this floating bar to surface
+// The legacy diff / change review escape hatch. When an older
+// direct-apply caller records a transaction, the main window renders this
+// floating bar to surface
 // a one-line summary (request + target kind + added /
 // removed counts) and three actions:
 //
@@ -23,8 +23,9 @@ import { SparklesIcon } from "./Icons";
 // pipeline by constructing a synthetic `changes` case
 // with the new `"ai-edit-vs-buffer"` scope. The case
 // is not registered in the right-pane `CompareCase`
-// store; it is a transient value scoped to this
-// component's render only.
+// store; it is a transient value scoped to this component's render only. The
+// v2.6 proposal-first apply path does not enqueue this bar after its explicit
+// Diff review.
 
 type AppleAssistReviewBarProps = {
   activeTabSessionId: string | null;

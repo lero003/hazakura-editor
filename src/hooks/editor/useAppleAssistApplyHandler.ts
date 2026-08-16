@@ -1,9 +1,7 @@
 import { emitTo } from "@tauri-apps/api/event";
-import { buildLineDiff } from "../../features/diff/diff";
 import {
   aiEditTransactionStore,
   applyAiEditTransaction,
-  type AiEditTransaction,
 } from "../../features/editor/aiEditTransactions";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import {
@@ -11,7 +9,6 @@ import {
   type AppleAssistApplyEvent,
   type AppleAssistApplyStatusEvent,
   type AppleAssistTargetSnapshot,
-  type CompareViewState,
 } from "../../types";
 import {
   isLocalAssistActionId,
@@ -72,9 +69,11 @@ export type ApplyReviewedProposalResult =
 // explicit "文書へ反映" action now happens in the main window instead of the
 // detached conversation window. `applyReviewedLocalAssistProposal` is the
 // single apply path: it revalidates the pinned target against the live tab,
-// rewrites the unsaved buffer through `applyAiEditTransaction`, and records one
-// `AiEditTransaction` for the existing Review Bar. It never calls the model
-// and never mutates the buffer unless the reviewed proposal still matches.
+// rewrites the unsaved buffer through `applyAiEditTransaction`. The proposal
+// Diff has already been reviewed before this action, so this path clears any
+// older post-apply Review Bar state instead of creating a second confirmation
+// for the same change. It never calls the model and never mutates the buffer
+// unless the reviewed proposal still matches.
 export async function applyReviewedLocalAssistProposal(
   input: ApplyReviewedProposalInput,
 ): Promise<ApplyReviewedProposalResult> {
@@ -120,22 +119,11 @@ export async function applyReviewedLocalAssistProposal(
       };
     }
 
-    // Precompute the line diff so the Review Bar escape hatch can render it
-    // without recomputing on every render. The diff is keyed on the
-    // transaction id so `getCompareCaseByKey` treats it as a standalone case.
-    const lineDiff = buildLineDiff(
-      result.transaction.before,
-      result.transaction.after,
-    );
-    const diff: CompareViewState = {
-      caseKey: result.transaction.id,
-      ...lineDiff,
-    };
-    const stored: AiEditTransaction = {
-      ...result.transaction,
-      diff,
-    };
-    aiEditTransactionStore.record(stored);
+    // The proposal panel is the authoritative review surface for this path.
+    // Clear a previous transaction so its stale Diff does not remain visible
+    // after the new reviewed proposal is applied, and do not enqueue this
+    // already-reviewed proposal in the post-apply Review Bar.
+    aiEditTransactionStore.clear(activeTab.sessionId);
     // Second arg is sessionId (Q-STR-3); path/id would miss after Save As.
     setActiveTabContents(result.nextBuffer, activeTab.sessionId);
     const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;

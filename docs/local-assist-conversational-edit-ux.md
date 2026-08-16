@@ -3,7 +3,7 @@
 Status: A-1–A-4 source candidate merged; physical validation pending
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
-Last reviewed: 2026-08-16
+Last reviewed: 2026-08-17
 
 ## Purpose
 
@@ -80,7 +80,7 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 対象候補 → 最初の依頼で対象固定
   → 会話領域で依頼・追加指示
   → proposal status → Diff 確認領域で現在案を表示・更新
-  → Diff の明示「文書へ反映」 → AiEditTransaction → Review Bar
+  → Diff の明示「文書へ反映」 → unsaved buffer（通常の Undo 対象）
 ```
 
 反映しない場合は、案を破棄するか会話を終了できる。どちらも保存は行わ
@@ -93,7 +93,7 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 対象候補 → 最初の依頼で対象固定
   → 会話領域で依頼・追加指示
   → Diff 確認領域で現在の未反映案を表示・更新
-  → 任意「文書へ反映」 → AiEditTransaction → Review Bar
+  → 任意「文書へ反映」 → unsaved buffer（通常の Undo 対象）
 ```
 
 **生成と本文変更を分離し、会話と変更確認も分離する**のが本質。
@@ -135,7 +135,7 @@ Editor buffer: 「文書へ反映」までは不変
 5. **Diff review** — 会話ターンではなく、固定した元文章と現在案の差分を一箇所で表示する。
 6. **文書へ反映** — Diff review の明示操作のみ。反映前に元文章との stale 再検証。
 7. **任意性** — 反映せずに案を破棄、コピー、または会話を終了できる。終了だけでは本文を変えない。
-8. **反映後** — 既存 `AiEditTransaction` + Review Bar で戻せる。保存はしない。
+8. **反映後** — 反映済み案を Review Bar で再確認させず、通常の Undo で戻せる。保存はしない。
 
 分離ウィンドウ / companion slot / L Mode 導線 / オンデバイス境界は維持する。
 
@@ -151,7 +151,7 @@ Editor buffer: 「文書へ反映」までは不変
 | `LocalAssistProposal` | 現在表示する未反映の変更案。生成開始時の bounded `actionId` も保持し、表示用の依頼文を編集しても Apply の provenance を変えない。新案は同じ Diff を置き換え、状態 enum を永続化しない |
 
 ```text
-LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransaction
+LocalAssistProposal  -- Diff review の「文書へ反映」-->  unsaved buffer
 ```
 
 生成しただけでは `AiEditTransactionStore` に書かない。
@@ -181,7 +181,7 @@ LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransacti
 |-------|--------|-----------|
 | **P1** | 生成と本文反映の分離 | 依頼・streaming・Diff review 表示。本文は不変。破棄可。プリセット維持 |
 | **P2** | 対象固定 + 複数ターン | 固定対象、追加指示、案基準の再生成、現在 Diff の置換、新会話 |
-| **P3** | Diff から明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save; locally reviewed |
+| **P3** | Diff から明示反映 | stale 拒否、reviewed candidate の一度だけの反映、二重 Review Bar なし、no auto-save |
 | **P4** | 二領域 UI 仕上げ | conversation / Diff のレスポンシブ配置、focus、a11y、i18n、stale / empty |
 
 **1 run = 1 phase またはそれ以下の検証可能スライス。**  
@@ -205,7 +205,7 @@ release evidenceではない。
 9. 「文書へ反映」まで本文不変
 10. 反映操作は会話メッセージではなく Diff review にあり、元文章変化時は適用拒否
 11. 別 tab / 異なる `sessionId` は stale または拒否
-12. 反映後 transaction 1 件 + Review Bar で戻せる
+12. 反映後に同じ案の二重確認を出さず、通常の Undo で戻せる
 13. 会話・案・処理ログは自動保存されない
 14. 内部プロンプト漏洩なし / 外部ネットワークなし
 15. availability・cancel・timeout・既存プリセットを壊さない

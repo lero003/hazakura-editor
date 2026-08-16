@@ -631,8 +631,9 @@ export function useAppShellController() {
   // v2.6 B2: the main window owns the unapplied-proposal review surface, so
   // Apply/Discard now happen here rather than through the detached window's
   // `APPLY_AI_EDIT_TRANSACTION_EVENT`. `applyReviewedLocalAssistProposal`
-  // revalidates the pinned target, rewrites the unsaved buffer, and records
-  // one `AiEditTransaction` for the existing Review Bar.
+  // revalidates the pinned target, rewrites the unsaved buffer once, and
+  // clears older post-apply review state so the reviewed proposal is not
+  // presented to the user a second time.
   const applyLocalAssistProposal = useCallback(
     async (proposal: LocalAssistProposal): Promise<ApplyReviewedProposalResult> => {
       if (!activeTab) {

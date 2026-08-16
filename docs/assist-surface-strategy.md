@@ -118,15 +118,18 @@ toward a **proposal-first multi-turn revision conversation**:
 2. Use a conversation area for requests and short turn state.
 3. Generate and refine an **unapplied proposal** in a separate Diff review area.
 4. Apply to the unsaved editor buffer **only** from explicit “文書へ反映”.
-5. Record an AI edit transaction and keep Diff / Review Bar discard.
+5. Treat that Diff decision as the single review gate; do not show a second
+   post-apply Review Bar for the same proposal. Normal editor Undo remains the
+   recovery path, and saving stays separate.
 
 Design SoT: `docs/local-assist-conversational-edit-ux.md`.
 Plan IDs A-1–A-4 are recorded in `docs/v2.6-plan.md`.
 
 A-1–A-4 source candidate is merged on `main`. The pinned target and explicit Diff apply send the
-already reviewed proposal through the existing transaction / Review Bar path,
-perform stale revalidation, and do not auto-save or invoke generation a second
-time. Do not document this locally reviewed source state as a released product
+already reviewed proposal through the existing apply helper, perform stale
+revalidation, clear any older post-apply review state, and do not auto-save or
+invoke generation a second time. The same proposal is not surfaced for a second
+Review Bar confirmation. Do not document this locally reviewed source state as a released product
 surface. The A-4 finishing slice also exposes Diff column headers to the
 accessibility tree, reports cancellation separately from failure, and shows a
 checking state while availability is probed. Source review is complete, but it
@@ -150,11 +153,12 @@ applied, cancelled, failed, unavailable) stays compact and must not be shown as 
 raw Foundation Models prompts, hidden instructions, provider transcripts,
 or model reasoning.
 
-Hazakura Local Assist may update the unsaved editor buffer **only** as an
-AI edit transaction after explicit apply (v2.6) or, until migration, the
-current single-shot path: before/after record, source label, no auto-save,
-and a path to Diff / change history. Manual Review Desk entry points remain
-retired from the primary Local Assist surface.
+Hazakura Local Assist may update the unsaved editor buffer **only** after an
+explicit apply from its reviewed Diff (v2.6). The proposal Diff is the review
+gate; no auto-save is performed, and normal editor Undo remains available.
+Legacy direct-apply callers may still use the before/after transaction record,
+but they are not the current proposal-first surface. Manual Review Desk entry
+points remain retired from the primary Local Assist surface.
 
 Hazakura Local Assist must not start as:
 
@@ -183,7 +187,7 @@ hazakura-local-assist-helper
 Hazakura Editor
   <- structured candidate / proposal -> unapplied Diff review
 explicit apply from Diff review
-  -> AI edit transaction on unsaved buffer -> post-apply Review Bar / history
+  -> one reviewed write to unsaved buffer -> normal editor Undo / history
 ```
 
 The helper must receive only the text needed for the selected task. It should not receive broad workspace context by default.

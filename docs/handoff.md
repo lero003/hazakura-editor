@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-17 (v2.6 reviewed-apply follow-up; physical validation pending; v2.5 release closed)
 
 ## Current State
 
@@ -19,8 +19,9 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   tab/session/range/original on the first request, keeps follow-ups on that
   target, and replaces the current proposal in the same Diff review. The Diff
   Apply action sends only that reviewed proposal, the main window revalidates
-  stale state, records one `AiEditTransaction` for the Review Bar, and does not
-  auto-save. The proposal keeps the generation-time bounded `actionId`, so
+  stale state, clears any older post-apply Review Bar state, and does not
+  enqueue a second confirmation for the already-reviewed proposal or auto-save.
+  The proposal keeps the generation-time bounded `actionId`, so
   edited request text cannot change Apply provenance. Partial helper output and
   `HAZAKURA_ORIGINAL` markers are
   sanitized before they reach Diff or the editor. The A-4 narrow-layout slice
@@ -57,8 +58,9 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   and Cancel. The proposal is held in a new session-local
   `localAssistProposalStore` (keyed by tab session), separate from
   `AiEditTransaction`; `applyReviewedLocalAssistProposal` is the single apply
-  path (revalidates target/session, rewrites the unsaved buffer, records one
-  transaction for the Review Bar, then clears the proposal). The detached
+  path (revalidates target/session, rewrites the unsaved buffer once, clears any
+  older post-apply Review Bar state, and does not enqueue a second review for
+  the already-reviewed proposal, then clears the proposal). The detached
   window resets its conversation on an apply `completed`/`discarded` status
   from the main window. Legacy dead code (Rust `request_apply_ai_edit_transaction`
   / `APPLY_AI_EDIT_TRANSACTION_EVENT`, TS `requestApplyAiEditTransaction` and
@@ -71,8 +73,9 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   carries `conversationId` and the detached window resets only the matching
   conversation. (3) A stale/no-op Apply surfaces `setStatus` + an inline error
   in the review panel. (4) The Diff now uses `editorSettings.editorFontSize`.
-  (5) The post-apply Review Bar is hidden while an unapplied proposal is
-  pending so the two floating panels never overlap.
+  (5) Any older post-apply Review Bar is hidden while an unapplied proposal is
+  pending; reviewed apply clears that state and does not enqueue another bar,
+  so the two floating panels never overlap or ask for a second confirmation.
 
 - **B2.2 terminal cleanup (merged).** A generation that never reaches a
   completed proposal now settles the streaming placeholder: cancel/helper

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 source candidate merged; v2.5 release closed)
+Last reviewed: 2026-08-17 (v2.6 reviewed-apply follow-up; v2.5 release closed)
 
 ## Purpose
 
@@ -13,8 +13,8 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 **v2.6 A-1–A-4 source implementation is merged on `main`.** The conversation pins the
 target, keeps generation and proposal state separate from the editor buffer, and
-allows only explicit Diff apply through stale revalidation, one
-`AiEditTransaction`, and the existing Review Bar. The A-4 finishing slice keeps
+allows only explicit Diff apply through stale revalidation and one reviewed
+buffer write; the same proposal is not surfaced in a second Review Bar. The A-4 finishing slice keeps
 the conversation and Diff regions distinct at narrow widths without changing
 that mutation boundary. It also exposes Diff column semantics, separates
 cancellation feedback from failure, and shows an honest availability-probe
@@ -40,7 +40,7 @@ state. Source review is complete; physical macOS validation is the next gate.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **A-1–A-4 source candidate merged** | Conversation + explicit Diff apply + stale revalidation + Review Bar; physical Assist gate remains |
+| **v2.6** | **A-1–A-4 source candidate merged** | Conversation + one explicit Diff apply + stale revalidation + no duplicate post-apply review; physical Assist gate remains |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |

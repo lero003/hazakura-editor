@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-17 (v2.6 reviewed-apply follow-up; physical validation pending; v2.5 release closed)
 
 Release candidate note: `docs/releases/2.6.0-source-tag.release.md`; physical
 validation and explicit source-tag / publication decisions remain pending.
@@ -22,8 +22,9 @@ validation and explicit source-tag / publication decisions remain pending.
   upload, TestFlight, tag, or publication gate. Plan: `docs/v2.5-plan.md`.
 - **v2.6 A-1–A-4 source work is merged on `main`.** Local Assist pins the
   tab/session/range/original, keeps follow-up instructions on that target, and
-  applies only the reviewed Diff proposal through one stale-checked
-  `AiEditTransaction` / Review Bar path. This is local source work, not a
+  applies only the reviewed Diff proposal through one stale-checked buffer
+  write. A previous post-apply Review Bar state is cleared and the same proposal
+  is not presented for a second confirmation. This is local source work, not a
   release claim. The merged A-4 source candidate tightens detached-window
   narrow Diff layout and makes Diff semantics, cancellation, and availability
   probe state explicit. Physical macOS interaction checks remain separate from

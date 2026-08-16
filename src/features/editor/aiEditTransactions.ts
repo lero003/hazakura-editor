@@ -4,13 +4,12 @@ import type { CompareViewState } from "../../types";
 // v0.12+ Hazakura Local Assist Writing Companion (slice 4+).
 // AI edit transaction data model + session-local store.
 //
-// An `AiEditTransaction` is the durable record of one
-// "AI wrote to the unsaved buffer" event. The Hazakura Local Assist
-// window fires `APPLY_AI_EDIT_TRANSACTION_EVENT` after the user has
-// reviewed a candidate in Diff; the main window's listener revalidates
-// that candidate, mutates the unsaved buffer in place, and records a
-// transaction here. The existing Review Bar reads `latest` to
-// render the "Open Diff" / "Discard" affordances.
+// An `AiEditTransaction` is the session-local record used by the legacy
+// post-apply Review Bar for an "AI wrote to the unsaved buffer" event. The
+// current v2.6 proposal-first path reviews the candidate before writing and
+// therefore does not enqueue a second transaction/Review Bar confirmation;
+// this store remains for compatibility with the existing escape hatch and
+// older callers.
 //
 // The store is session-local and in-memory: closing the
 // app drops the list. The data model is intentionally
