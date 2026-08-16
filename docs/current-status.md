@@ -3,7 +3,10 @@
 Status: Operational
 Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
+
+Release candidate note: `docs/releases/2.6.0-source-tag.release.md`; physical
+validation and explicit source-tag / publication decisions remain pending.
 
 ## Current State
 
@@ -17,19 +20,19 @@ Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
 - **v2.5 is released and closed** (user-confirmed). The workspace control and
   delivery-clarity evidence below is historical release evidence, not an open
   upload, TestFlight, tag, or publication gate. Plan: `docs/v2.5-plan.md`.
-- **v2.6 A-1–A-3 are complete locally.** Local Assist pins the
+- **v2.6 A-1–A-4 source work is merged on `main`.** Local Assist pins the
   tab/session/range/original, keeps follow-up instructions on that target, and
   applies only the reviewed Diff proposal through one stale-checked
   `AiEditTransaction` / Review Bar path. This is local source work, not a
-  release claim. The current A-4 finishing candidate tightens detached-window
+  release claim. The merged A-4 source candidate tightens detached-window
   narrow Diff layout and makes Diff semantics, cancellation, and availability
-  probe state explicit; non-blocking hardening and the remaining A-4 interaction
-  checks stay separate.
+  probe state explicit. Physical macOS interaction checks remain separate from
+  source, package, TestFlight, and publication claims.
   Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
-- **A-4 narrow-layout/finishing** is being prepared on a separate review branch;
-  it is not included in local `main` until external review is complete. The
-  older Draft PR #34 remains historical and is not the source of truth for this
-  candidate.
+- **v2.6 source candidate** is merged on local and remote `main` at
+  `b40bd217`. The review branch and its old Draft PR #34 are historical and
+  deleted; the source tag, package/upload, App Review, and physical-device
+  gates remain pending.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -195,11 +198,12 @@ Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
   saving or cancelling chapter selection restores focus to its trigger; About
   and diagnostics derive the visible version from package metadata instead of
   duplicating it.
-- **Dependency audits have no release-blocking finding.** `npm audit
-  --audit-level=high` reports 0 vulnerabilities. `cargo audit` exits 0 with 18
-  allowed warnings already represented by the existing Tauri Linux / GTK,
-  transitive unmaintained-crate, and `pdf-extract` exception set; it reports no
-  vulnerability or new macOS blocker.
+- **Dependency audits have no release-blocking finding (refreshed 2026-08-16).**
+  `npm audit --audit-level=high` reports 0 vulnerabilities. `cargo audit`
+  against the refreshed advisory database exits 0 with 18 allowed warnings
+  already represented by the existing Tauri Linux / GTK, transitive
+  unmaintained-crate, and `pdf-extract` exception set; it reports no high/
+  critical vulnerability or new macOS blocker.
 - **Structured Markdown / OKF readiness (claim boundary for v2 Alpha):** With
   single-document structure (v1.10), OKF review (v1.11), starter scaffold
   (v1.12), and Book Scope select/order/suggest/read/export + quieted presentation,
@@ -248,8 +252,8 @@ Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.0` package version from package metadata.
-- **Open main queue:** non-blocking A-3 hardening, followed by separate A-4
-  narrow-layout and physical Assist checks. v2.5 is released and closed; published
+- **Open main queue:** physical A-4 Assist checks and source-candidate release
+  preparation, with non-blocking A-3 hardening kept separate. v2.5 is released and closed; published
   `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
   parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
@@ -576,15 +580,17 @@ Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.0`**. A-1–A-3 are complete locally;
+- Current development-tree version: **`2.6.0`**. A-1–A-4 source work is merged;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
   explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
-- Latest GitHub source / local-app tag: `v2.3.0` (source archive only; see
-  `docs/releases/2.3.0-source-tag.release.md`). Prior checkpoint: `v2.0.0`.
+- Latest published GitHub source / local-app tag: `v2.3.0` (source archive only;
+  see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.0` source candidate
+  note is `docs/releases/2.6.0-source-tag.release.md`; no v2.6 tag exists yet.
+  Prior checkpoint: `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in
@@ -954,6 +960,8 @@ Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
 
 Use release notes for detailed historical evidence:
 
+- `docs/releases/2.6.0-source-tag.release.md` (current source-preview candidate;
+  physical validation and tag decision pending)
 - `docs/releases/0.36.0-app-store-release-notes.md`
 - `docs/releases/0.35.0-app-store-release-notes.md`
 - `docs/releases/0.32.0-app-store-submission-candidate.release.md`
@@ -997,6 +1005,8 @@ baseline, and smoke evidence are archived under
   `2.0.0` (user-reported 2026-07-21).
 - `docs/releases/2.3.0-app-store-release-notes.md`: local Book UX (recipe + resume) candidate
   notes; manual installed/TestFlight gate pending.
+- `docs/releases/2.6.0-source-tag.release.md`: current Local Assist conversation /
+  Diff source candidate and physical release gate.
 - `docs/releases/2.1.0-app-store-release-notes.md`: historical notes for the
   folded whole-book search + Preview image-hardening slice.
 - `docs/releases/2.0.0-source-tag.release.md`: `v2.0.0` source-tag boundary.
@@ -1021,10 +1031,13 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Consider the three non-blocking A-3 hardening items: completion-time target
-   text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
-2. Keep A-4's narrow-layout/finishing candidate and physical streaming/cancel
-   checks separate.
+1. Run the v2.6 physical Assist gate: narrow layout, keyboard/focus, VoiceOver,
+   streaming/cancel, and real availability.
+2. After that evidence is recorded, decide whether to tag the source candidate
+   and open the App Store/TestFlight lane; do not imply publication beforehand.
+3. Keep the three non-blocking A-3 hardening items separate: completion-time
+   target text revalidation, Diff failure/no-op Apply gating, and Apply status
+   watchdog.
 3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
 4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,

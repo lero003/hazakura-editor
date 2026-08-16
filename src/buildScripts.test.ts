@@ -660,7 +660,7 @@ describe("macOS build scripts", () => {
         "Hazakura Editor `2.4.0` is published",
         "Current development is on `2.6.0`",
         "The published App Store version is `2.4.0`",
-        "latest GitHub source / local-app tag is [v2.3.0]",
+        "latest published GitHub source / local-app tag remains [v2.3.0]",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `2.4.0`",
@@ -670,18 +670,18 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`2.6.0`",
         "Published Mac App Store version: **`2.4.0`",
-        "Latest GitHub source / local-app tag: `v2.3.0`",
+        "Latest published GitHub source / local-app tag: `v2.3.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.6 A-4 narrow-layout finishing — Local Assist two-region UX",
+        "Scope: v2.6 source-candidate release prep — Local Assist two-region UX",
         "Package/app version in tree: **`2.6.0`",
         "W-1 — persistent three-pane workspace",
-        "A-4 external review",
+        "v2.6 physical Assist gate",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.6 A-4 narrow-layout finishing.**",
+        "Phase: **v2.6 source-candidate release prep.**",
         "active spine is Local Assist",
         "separate Diff review",
       ],
@@ -694,7 +694,7 @@ describe("macOS build scripts", () => {
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.6.0`",
         "Published Mac App Store | **`2.4.0`",
-        "Active product phase | **v2.6 A-4 narrow-layout/finishing",
+        "Active product phase | **v2.6 source candidate merged",
         "R-1 text Reference follows Preview font size",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

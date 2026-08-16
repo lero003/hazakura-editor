@@ -1,20 +1,20 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 A-4 narrow-layout finishing — Local Assist two-region UX
+Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.0`** A-1–A-3 locally complete; A-4
-  narrow-layout and finishing fixes are the current review candidate.
+- Package/app version in tree: **`2.6.0`** A-1–A-4 source candidate is merged
+  on `main`; physical validation is the current gate.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
 - **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
   and the Q-13 measured no-op remain historical release evidence; do not reopen
   that line from v2.6. Plan: `docs/v2.5-plan.md`.
-- **A-1–A-3 are complete locally.** Local Assist
+- **A-1–A-4 source work is merged.** Local Assist
   sends a generation-only proposal event; the detached window pins
   tab/session/range/original on the first request, keeps follow-ups on that
   target, and replaces the current proposal in the same Diff review. The Diff
@@ -29,8 +29,9 @@ Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
   `520px`. The finishing slice also exposes Diff column headers to the
   accessibility tree, separates cancelled feedback from failure, and shows a
   probe-in-flight availability message. IPC, proposal state, apply, save, and
-  target validation are unchanged. The branch remains a GitHub compare review
-  candidate; no new PR is required by the current workflow.
+  target validation are unchanged. The review branch was merged and deleted;
+  source tagging, package/upload, publication, and physical validation remain
+  separate gates. No new PR is required by the current workflow.
   Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
@@ -425,7 +426,7 @@ retained as the earlier R-1-only checkpoint.
   availability smoke remain external-review or human-gated evidence; they were
   not claimed here.
 
-## Verification (2026-08-16, v2.6 A-4 finishing)
+## Verification (2026-08-16, v2.6 source candidate)
 
 - `npm run typecheck` passed.
 - `npm test -- --run` passed: 209 files / 1,766 tests.
@@ -437,6 +438,9 @@ retained as the earlier R-1-only checkpoint.
   large-chunk warning and expected local no-notarization warning only.
 - `SKIP_BUILD=1 npm run smoke:macos-window` passed: packaged 1280×820 native
   window opened and quit cleanly.
+- `npm audit --audit-level=high` passed: 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` passed with 18 allowed transitive
+  unmaintained/unsound warnings and no high/critical vulnerability report.
 - Focused Assist / CSS regressions passed: 4 files / 97 tests.
 - `git diff --check` passed before handoff.
 - Detached-window narrow-width interaction, keyboard/focus order, VoiceOver,
@@ -455,8 +459,8 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Review the A-4 narrow-layout/finishing candidate; keep detached-window
-   narrow-width interaction and physical streaming/cancel checks separate.
+1. Run and record the v2.6 detached-window physical gate: narrow width,
+   keyboard/focus, VoiceOver, locale, streaming/cancel, and real availability.
 2. Consider the three non-blocking A-3 hardening items: completion-time target
    text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static

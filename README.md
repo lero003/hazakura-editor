@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; external review pending)
+Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,13 +26,15 @@ Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; external review pe
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current development is on `2.6.0`: A-1/A-2 are merged locally and Hazakura
-Local Assist now pins a document target for bounded follow-up revision,
-replacing the current unapplied proposal in a separate Diff review surface.
-Only the Diff's explicit Apply proposal action sends the reviewed candidate to
-the existing transaction / Review Bar path; the editor is not auto-saved. This
-source state is an A-3 review candidate, not a submission pkg, upload, review,
-or publication claim. v2.5 is released and closed.
+Current development is on `2.6.0`: the A-1–A-4 source candidate is merged on
+`main`. Hazakura Local Assist pins a document target for bounded follow-up
+revision, replacing the current unapplied proposal in a separate Diff review
+surface. Only the Diff's explicit Apply proposal action sends the reviewed
+candidate to the existing transaction / Review Bar path; the editor is not
+auto-saved. Physical macOS validation, source tagging, package/upload, review,
+and publication remain separate gates. See
+[`docs/releases/2.6.0-source-tag.release.md`](docs/releases/2.6.0-source-tag.release.md).
+v2.5 is released and closed.
 
 ## Mac App Store
 
@@ -153,7 +155,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.6 A-3 review queue (Local Assist explicit Diff apply)
+- [Current Work](docs/current-work.md): v2.6 release-prep queue and physical Assist gate
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
@@ -169,6 +171,7 @@ For the full implementation inventory and release state, see
 - [v2.0 App Store Release Notes](docs/releases/2.0.0-app-store-release-notes.md): published Book Scope + Help line
 - [v2.3 App Store Release Notes](docs/releases/2.3.0-app-store-release-notes.md): published portable recipe + Reader resume + quality pack line
 - [v2.3 Source Tag Notes](docs/releases/2.3.0-source-tag.release.md): source-only `v2.3.0` checkpoint
+- [v2.6 Source Candidate Notes](docs/releases/2.6.0-source-tag.release.md): source-only candidate; tag pending
 - [v2.1 App Store Release Notes](docs/releases/2.1.0-app-store-release-notes.md): historical whole-book search candidate notes
 - [v2.0 Source Tag Notes](docs/releases/2.0.0-source-tag.release.md): source-only `v2.0.0` checkpoint
 - [v1.14 Source Tag Notes](docs/releases/1.14.0-source-tag.release.md): source-only `v1.14.0` checkpoint
@@ -263,9 +266,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.6.0` across npm, Tauri, and Cargo metadata. The latest GitHub source / local-app tag is [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `2.6.0` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). The `2.6.0` source candidate is merged on `main`; its tag is pending physical validation and explicit publication approval. Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.4.0` (user-reported 2026-08-07); do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
+- Release notes: [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-29 (book-like OKF starter shape)
+Last reviewed: 2026-08-16 (v2.6 physical Assist release gate)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -886,6 +886,48 @@ not present in Activity Monitor memory before opening the Local Assist
 window, and a simple request could be generated/applied and checked
 through the diff/update flow. Treat this as light local confidence, not
 as signed submit-lane, TestFlight, or App Review proof.
+
+## v2.6 Local Assist physical release gate
+
+Run this section on the latest `main` build before treating the v2.6 source
+candidate as ready for a tag or App Store/TestFlight decision. Use the detached
+Hazakura Local Assist window in the packaged macOS app; browser-only evidence is
+not enough.
+
+1. **Availability honesty:** open Local Assist and observe the initial probe. If
+   the probe is still running, the UI says it is checking availability rather
+   than claiming the Mac is unsupported. Once it settles, confirm the available,
+   unavailable, disabled, or unsupported reason is consistent with the device.
+2. **Narrow Diff containment:** inspect approximately 360px, 420px, and 520px
+   detached-window widths. Conversation and Diff remain separate, the two Diff
+   columns stay readable, the change summary wraps below the columns, and no
+   horizontal overflow or competing outer/inner scroll owner appears.
+3. **Pinned conversation:** select a paragraph, generate a proposal, move the
+   editor cursor elsewhere, and send a follow-up. Confirm the follow-up still
+   targets the first paragraph, uses the current proposal as input, and never
+   changes the editor buffer during generation.
+4. **VoiceOver Diff meaning:** enter the Diff review with VoiceOver. Confirm it
+   announces the Original and Proposal column headers, identifies each cell with
+   the correct side, and does not read visual line numbers as document text.
+5. **VoiceOver streaming summary:** while a proposal streams, check whether the
+   change summary's polite live updates are grouped sensibly. Repeated
+   "added/removed" announcements for every partial are a release note for a
+   follow-up adjustment, not a reason to claim the flow passed silently.
+6. **Cancel boundary:** cancel during streaming and during a slow request. The
+   latest complete proposal remains reviewable when applicable, internal marker
+   text never appears, the document is unchanged, and operation feedback says
+   cancelled rather than failed. Repeat in English, Japanese, and kana.
+7. **Explicit Apply:** Apply only from the Diff button. Confirm generation is
+   not run again, the target/session/range remains valid, one ordinary dirty
+   editor mutation and Review Bar transaction are created, and saving remains a
+   separate explicit action. Discard leaves the buffer unchanged.
+8. **Availability paths:** where practical, exercise both an available device
+   and an unavailable/unsupported configuration. Record OS, hardware, language,
+   and the exact user-visible reason without exposing raw helper diagnostics.
+9. **Evidence record:** record the device/OS, build commit, locale, widths,
+   VoiceOver result, streaming/cancel result, availability result, and any
+   skipped item in `docs/current-status.md`. Do not call the v2.6 candidate
+   release-ready until the skipped gate has an owner and next action.
 
 ## Release Packaging
 

@@ -1,6 +1,6 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: A-1–A-3 complete locally; A-4 finishing in review
+Status: A-1–A-4 source candidate merged; physical validation pending
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
 Last reviewed: 2026-08-16
@@ -185,13 +185,12 @@ LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransacti
 | **P4** | 二領域 UI 仕上げ | conversation / Diff のレスポンシブ配置、focus、a11y、i18n、stale / empty |
 
 **1 run = 1 phase またはそれ以下の検証可能スライス。**  
-A-1 / P1、A-2 / P2、A-3 / P3 はローカル `main` に統合済み。次の
-hardening と P4 / A-4 のレイアウト・アクセシビリティ仕上げは別の
-レビュー境界に残す。現在のA-4候補は、会話とDiffを狭幅でも区分けして
-表示するCSS preflight（Diffの可変高さ、横溢れ抑制、変更サマリーの折返し）
-に加えて、Diff列見出しのアクセシビリティ公開、cancelledの独立した
-operation feedback、probe中のavailability表示を含む。キーボード・
-VoiceOver・i18n・実機streaming/cancelはまだ外部確認の対象である。
+A-1 / P1、A-2 / P2、A-3 / P3、A-4のsource candidateはローカル `main`
+に統合済み。現在は、会話とDiffを狭幅でも区分けして表示するCSS、Diff列
+見出しのアクセシビリティ公開、cancelledの独立したoperation feedback、
+probe中のavailability表示までを含む候補を、実機で確認する段階である。
+キーボード・VoiceOver・i18n・実機streaming/cancel・実availabilityはまだ
+release evidenceではない。
 
 ## Test Pins (minimum)
 

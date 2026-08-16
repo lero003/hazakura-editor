@@ -3,15 +3,15 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-4 finishing in review; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **v2.5 is released
-and closed** while **v2.6 A-1–A-3 are complete locally** (Local Assist pinned
-multi-turn conversation + explicit Diff apply). The A-4 narrow-layout/finishing
-candidate is the current review candidate; remaining A-3 hardening and A-4
-interaction gates stay separate. Published `2.4.0` remains hotfix-only.
+and closed** while **v2.6 A-1–A-4 source work is merged on `main`** (Local Assist
+pinned multi-turn conversation + explicit Diff apply). The current gate is
+physical Assist validation before source-tag or App Store/TestFlight decisions.
+Published `2.4.0` remains hotfix-only.
 Start with `current-work.md` and `roadmap.md`.
 
 ## Current Canonical Docs
@@ -22,8 +22,8 @@ Start with `current-work.md` and `roadmap.md`.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `current-work.md`: **v2.6 active implementation queue**; v2.5 release closed.
-- `roadmap.md`: **v2.6 A-1–A-3 complete and A-4 narrow-layout/finishing**, v2.5 released/closed, and published `2.4.0` boundaries.
-- `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; A-1–A-3 complete, A-4 finishing in review).
+- `roadmap.md`: **v2.6 A-1–A-4 source candidate merged; physical gate pending**, v2.5 released/closed, and published `2.4.0` boundaries.
+- `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; source candidate merged, physical validation pending).
 - `v2.5-plan.md`: **v2.5 plan** (workspace control; Assist deferred; later Core AI).
 - `v2.4-plan.md`: **closed** Book depth plan (historical for `2.4.0`).
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
@@ -56,9 +56,10 @@ Start with `current-work.md` and `roadmap.md`.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.6 A-1–A-3 complete + A-4 narrow-layout/finishing** + v2.5 release closed
-- `current-work.md` — A-4 finishing review queue and separate hardening boundary
-- `v2.6-plan.md` — conversation / Diff review plan; A-4 finishing and remaining gates
+- `roadmap.md` — **v2.6 A-1–A-4 source candidate merged + physical gate** + v2.5 release closed
+- `current-work.md` — v2.6 release-prep queue and physical Assist gate
+- `v2.6-plan.md` — conversation / Diff review plan; source candidate and remaining gates
+- `releases/2.6.0-source-tag.release.md` — source-preview candidate note; tag pending
 - `v2.5-plan.md` — closed workspace-control release plan
 - `local-assist-conversational-edit-ux.md` — conversation / Diff design SoT
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent

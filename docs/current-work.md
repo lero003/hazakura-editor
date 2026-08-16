@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 A-4 narrow-layout finishing — Local Assist two-region UX
+Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 source candidate merged; v2.5 release closed)
 
 ## Purpose
 
@@ -11,21 +11,20 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.6 A-1–A-3 implementation is complete locally.** The conversation pins the
+**v2.6 A-1–A-4 source implementation is merged on `main`.** The conversation pins the
 target, keeps generation and proposal state separate from the editor buffer, and
 allows only explicit Diff apply through stale revalidation, one
-`AiEditTransaction`, and the existing Review Bar. The current A-4 finishing
-slice keeps the conversation and Diff regions distinct at narrow widths
-without changing that mutation boundary. It also exposes Diff column
-semantics, separates cancellation feedback from failure, and shows an honest
-availability-probe state.
+`AiEditTransaction`, and the existing Review Bar. The A-4 finishing slice keeps
+the conversation and Diff regions distinct at narrow widths without changing
+that mutation boundary. It also exposes Diff column semantics, separates
+cancellation feedback from failure, and shows an honest availability-probe
+state. Source review is complete; physical macOS validation is the next gate.
 
-- Package/app version in tree: **`2.6.0`**. A-1–A-3 are locally complete; this is
-  not a release or App Store claim.
+- Package/app version in tree: **`2.6.0`**. This is a merged source candidate,
+  not yet a source tag, package, upload, review, or publication claim.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
-  `c7ff442b`, and the A-4 narrow-layout/finishing candidate is on the separate
-  `codex/v2.6-a4-narrow-diff-review` branch. The pushed branch remains a
-  GitHub compare review candidate until the external checks are complete.
+  `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The review
+  branch was deleted after merge. Release note: `docs/releases/2.6.0-source-tag.release.md`.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
@@ -41,7 +40,7 @@ availability-probe state.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **A-1–A-3 complete; A-4 finishing** | Conversation + explicit Diff apply + stale revalidation + Review Bar; narrow Diff and state/a11y finishing candidate |
+| **v2.6** | **A-1–A-4 source candidate merged** | Conversation + explicit Diff apply + stale revalidation + Review Bar; physical Assist gate remains |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -50,10 +49,12 @@ availability-probe state.
 
 ### Immediate next
 
-1. **A-4 external review.** Review the narrow Diff containment and finishing
-   candidate, then separately verify keyboard/VoiceOver/locale, streaming/cancel,
-   and real model availability on the detached window.
-2. Keep the three non-blocking A-3 hardening items separate: completion-time
+1. **v2.6 physical Assist gate.** On the current merged build, verify narrow
+   Diff, keyboard/focus order, VoiceOver (including streaming summary), locale,
+   streaming/cancel, and real model availability on the detached window.
+2. Record the smoke evidence in `docs/current-status.md` and decide the source
+   tag / App Store-TestFlight lane only after the physical gate.
+3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and an Apply status
    watchdog. They do not change the A-3 mutation boundary.
 3. Keep Core AI as a later backend lane after A-4; do not combine model catalog
@@ -76,9 +77,9 @@ availability-probe state.
 ### Do not start yet
 
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
-- A-4 behavior beyond the narrow-layout finishing candidate (keyboard/VoiceOver/locale,
-  physical streaming/cancel, and availability) until the external review
-  confirms the next slice; do not mix it into the A-3 mutation history
+- v2.6 publication actions (tag, package/upload, App Review, GitHub Release) until
+  the physical gate and an explicit release decision; do not mix them into the
+  A-3 mutation history
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
@@ -107,9 +108,8 @@ availability-probe state.
 
 ## Next Human Gates
 
-1. Review the A-4 narrow-layout/finishing candidate; keep the detached
-   window and physical streaming/cancel checks separate.
-2. Decide and verify the three non-blocking A-3 hardening items without
-   expanding the apply boundary.
+1. Run and record the v2.6 detached-window physical gate.
+2. Decide on source tagging and the App Store/TestFlight lane only with fresh
+   evidence and an explicit publication approval.
 3. Keep v2.5 closed; any future package or publication work needs a new explicit
    release gate.
