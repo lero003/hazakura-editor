@@ -42,8 +42,14 @@ function takeAppleAssistChars(value: string, maxChars: number): string {
 
 /**
  * Build the bounded revision packet for A-2. The current proposal is passed
- * as selectedText; this packet keeps the pinned original, recent user turns,
- * and nearby document context available without persisting a conversation.
+ * as selectedText; this packet keeps the pinned original (follow-up turns
+ * only), recent user turns, and nearby document context available without
+ * persisting a conversation.
+ *
+ * On the first request `selectedText` already IS the original, so pinning the
+ * same text again under the reference context only duplicates the target and
+ * wastes the bounded context window. A follow-up turn needs the pinned
+ * original to anchor the revision against the current proposal.
  */
 export function buildAppleAssistRevisionContext(
   originalText: string,
@@ -55,24 +61,39 @@ export function buildAppleAssistRevisionContext(
     .slice(-APPLE_ASSIST_MAX_CONVERSATION_TURNS)
     .map((request) => `- ${takeAppleAssistChars(request, APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS)}`)
     .join("\n");
-  const header = [
-    "A-2 revision packet (reference only; the current proposal is the target text).",
-    "Pinned original:",
-    "<<<HAZAKURA_ORIGINAL_START>>>",
-    original,
-    "<<<HAZAKURA_ORIGINAL_END>>>",
-    history ? "Previous user requests:" : "Previous user requests: (none)",
-    history,
-  ].filter((line) => line.length > 0).join("\n");
-  const contextLabel = "Nearby document context (reference only):\n";
+
+  const isFollowUp = history.length > 0;
+
+  // The header is Japanese so the small on-device model reads the meta
+  // framing in the same language as the task. On a follow-up turn it must be
+  // told explicitly that the target text is the current proposal (not the
+  // original) and that only the latest request should be applied.
+  const header: string[] = [];
+  if (isFollowUp) {
+    header.push(
+      "対象本文は現在の変更案です。ここまでの変更を保ったまま、最新の依頼だけを適用してください。",
+      "固定した元文章（参考。書き換え対象ではありません）:",
+      "<<<HAZAKURA_ORIGINAL_START",
+      original,
+      "HAZAKURA_ORIGINAL_END>>>",
+      "これまでの依頼:",
+      history,
+    );
+  }
+
+  const contextLabel = "対象周辺の文脈（参考。書き換え対象ではありません）:\n";
   const availableContextChars = Math.max(
     0,
-    APPLE_ASSIST_MAX_CONTEXT_CHARS - Array.from(header).length - Array.from(contextLabel).length,
+    APPLE_ASSIST_MAX_CONTEXT_CHARS -
+      Array.from(header.join("\n")).length -
+      Array.from(contextLabel).length,
   );
-  return `${header}\n${contextLabel}${takeAppleAssistChars(
+  const headerPart = header.filter((line) => line.length > 0).join("\n");
+  const contextPart = `${contextLabel}${takeAppleAssistChars(
     surroundingContext,
     availableContextChars,
   )}`;
+  return [headerPart, contextPart].filter((part) => part.length > 0).join("\n");
 }
 
 function normalizeRevisionHistory(value: unknown): string[] {

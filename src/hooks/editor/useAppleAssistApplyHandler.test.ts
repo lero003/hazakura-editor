@@ -8,6 +8,7 @@ import {
   getAppleAssistContextWindow,
   isSameAppleAssistTargetTab,
   sanitizeAppleAssistCandidateText,
+  stripCandidatePreamble,
 } from "./useAppleAssistApplyHandler";
 import { APPLE_ASSIST_MAX_CONTEXT_CHARS } from "../../lib/tauri/appleAssist";
 
@@ -366,6 +367,37 @@ describe("sanitizeAppleAssistCandidateText", () => {
     const candidate = "# Heading\n\n- item\n";
 
     expect(sanitizeAppleAssistCandidateText(candidate)).toBe(candidate);
+  });
+
+  it("strips a conversational Japanese lead-in before the revised text", () => {
+    const candidate = "修正後の文章は以下の通りです。\n\n本文です。\n";
+
+    expect(sanitizeAppleAssistCandidateText(candidate)).toBe("本文です。");
+  });
+
+  it("strips an inline Japanese prefix and keeps the remainder", () => {
+    expect(sanitizeAppleAssistCandidateText("修正後：本文です。")).toBe("本文です。");
+  });
+
+  it("strips an English lead-in line", () => {
+    const candidate = "Here is the revised text:\n\nRevised body.";
+
+    expect(sanitizeAppleAssistCandidateText(candidate)).toBe("Revised body.");
+  });
+});
+
+describe("stripCandidatePreamble", () => {
+  it("returns the input unchanged when there is no recognized preamble", () => {
+    const text = "# Heading\n\n- item\n";
+    expect(stripCandidatePreamble(text)).toBe(text);
+  });
+
+  it("drops a standalone lead-in line but keeps following content", () => {
+    expect(stripCandidatePreamble("修正後の文章は以下の通りです。\n本文")).toBe("本文");
+  });
+
+  it("drops a prefix-only line", () => {
+    expect(stripCandidatePreamble("修正後\n本文")).toBe("本文");
   });
 });
 

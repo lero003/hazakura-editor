@@ -277,7 +277,7 @@ export function sanitizeAppleAssistCandidateText(candidateText: string): string 
   for (const pattern of boundaryPatterns) {
     const match = trimmed.match(pattern);
     if (match) {
-      return match[1]?.trim() ?? "";
+      return stripCandidatePreamble(match[1]?.trim() ?? "");
     }
   }
 
@@ -291,7 +291,89 @@ export function sanitizeAppleAssistCandidateText(candidateText: string): string 
   ) {
     return "";
   }
-  return withoutBoundaryStart === trimmed ? candidateText : withoutBoundaryStart;
+  const cleaned = withoutBoundaryStart === trimmed ? candidateText : withoutBoundaryStart;
+  return stripCandidatePreamble(cleaned);
+}
+
+// Conservative candidate preamble strip. Small on-device models sometimes
+// answer with a conversational lead-in ("修正後の文章は以下の通りです。",
+// "Here is the revised text:") before the actual revised text. The candidate
+// applied to the editor must be only the revised text, so strip a recognized
+// standalone lead-in line or a recognized inline prefix. The allowlists are
+// intentionally narrow so legitimate document content is not stripped.
+const CANDIDATE_LEADIN_SENTENCES: ReadonlyArray<string> = [
+  "修正後の文章は以下の通りです",
+  "修正後の文章は以下のとおりです",
+  "修正した文章は以下の通りです",
+  "校正後の文章は以下の通りです",
+  "翻訳後の文章は以下の通りです",
+  "以下は修正後の文章です",
+  "以下が修正後の文章です",
+  "以下、修正後の文章です",
+  "以下は修正した文章です",
+  "以下は校正後の文章です",
+  "Here is the revised text",
+  "Here is the corrected text",
+  "Here's the revised text",
+  "The revised text is",
+  "The corrected text is",
+  "The revised version is",
+];
+
+const CANDIDATE_INLINE_PREFIXES: ReadonlyArray<string> = [
+  "修正後",
+  "完成した本文",
+  "完成した文章",
+  "修正した本文",
+  "修正した文章",
+  "校正後",
+  "翻訳後",
+  "Revised text",
+  "Corrected text",
+  "Revised version",
+];
+
+/**
+ * Strip a recognized conversational lead-in from the front of a candidate.
+ * Returns the input unchanged when no preamble is recognized, so ordinary
+ * Markdown content (including a trailing newline) is preserved exactly.
+ */
+export function stripCandidatePreamble(text: string): string {
+  const lines = text.split("\n");
+  let first = 0;
+  while (first < lines.length && lines[first].trim() === "") {
+    first += 1;
+  }
+  if (first >= lines.length) {
+    return text;
+  }
+
+  const line = lines[first].trim();
+
+  // 1) A standalone lead-in line is dropped entirely; the real content
+  // starts on the next line.
+  const normalized = line.replace(/[：:。.!！…\s]+$/u, "");
+  if (
+    CANDIDATE_LEADIN_SENTENCES.some(
+      (sentence) => normalized === sentence || normalized === `${sentence}：`,
+    )
+  ) {
+    return lines.slice(first + 1).join("\n").trim();
+  }
+
+  // 2) An inline prefix such as "修正後：本文…" keeps the remainder.
+  for (const prefix of CANDIDATE_INLINE_PREFIXES) {
+    if (line.startsWith(prefix)) {
+      const rest = line.slice(prefix.length).replace(/^[：:。、\s]+/u, "");
+      if (rest.length > 0) {
+        lines[first] = rest;
+        return lines.slice(first).join("\n").trim();
+      }
+      return lines.slice(first + 1).join("\n").trim();
+    }
+  }
+
+  return text;
 }
 
 async function emitAppleAssistApplyStatus(

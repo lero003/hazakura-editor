@@ -35,6 +35,19 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
+- **Local Assist prompt + visibility polish is merged.** The A-2 revision
+  packet now uses Japanese meta labels, omits the pinned original on the first
+  turn (the target text already IS the original, so pinning it duplicated the
+  target and wasted the context window), and tells follow-up turns that the
+  target text is the current proposal to keep prior changes. Candidate
+  sanitization now strips recognized conversational lead-ins (「修正後の文章は
+  以下の通りです。」 etc.). The Swift helper prompt labels the target
+  「対象本文（これを書き換える）」 and asks for the completed text only. The
+  detached window now shows the raw growing draft while a proposal streams
+  instead of recomputing a line diff on every partial. The Swift prompt change
+  is compile-verified only and takes effect after the live helper is rebuilt;
+  the Rust suite still exercises the fixture helper.
+
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -426,6 +439,25 @@ retained as the earlier R-1-only checkpoint.
   availability smoke remain external-review or human-gated evidence; they were
   not claimed here.
 
+## Verification (2026-08-16, Local Assist prompt + visibility polish)
+
+- `npm run typecheck` — pass.
+- `npm test` — 209 files / 1,774 tests pass.
+- `npm run build:vite` — pass (existing large-chunk warning only).
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 368 pass / 2 host-dependent ignored.
+- `swift build -c release` (live helper, `src-helpers/apple-assist`) — pass,
+  confirming the edited live prompt strings compile.
+- `git diff --check` — pass.
+- Focused regressions pin: first-turn omission of the pinned original,
+  follow-up Japanese framing, preamble stripping, and the raw-draft streaming
+  presentation.
+- Note: this slice does not rebuild the live Swift helper for package/live
+  builds. A package build (or `scripts/build-apple-assist-helper-live.sh`) is
+  required before the Swift prompt change is observable in a live or App Store
+  build.
+
 ## Verification (2026-08-16, v2.6 source candidate)
 
 - `npm run typecheck` passed.
@@ -461,13 +493,16 @@ retained as the earlier R-1-only checkpoint.
 
 1. Run and record the v2.6 detached-window physical gate: narrow width,
    keyboard/focus, VoiceOver, locale, streaming/cancel, and real availability.
-2. Consider the three non-blocking A-3 hardening items: completion-time target
+2. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
+   or a package build) before any live/App Store build so the prompt + framing
+   change is observable, then re-verify real streaming/cancel.
+3. Consider the three non-blocking A-3 hardening items: completion-time target
    text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
-3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
+4. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
-4. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
+5. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
    separate explicit handoff.
-5. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
+6. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
    `docs/assist-surface-strategy.md`.
 
 ## Key Paths

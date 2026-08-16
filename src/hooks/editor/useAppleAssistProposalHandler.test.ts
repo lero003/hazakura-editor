@@ -181,7 +181,11 @@ describe("useAppleAssistProposalHandler", () => {
 
     const secondCall = vi.mocked(generateAppleAssistCandidateStreaming).mock.calls[1]?.[0];
     expect(secondCall).toMatchObject({ selectedText: "proposal v1" });
-    expect(secondCall?.documentContext).toContain("Pinned original:");
+    // A follow-up turn keeps the pinned original (in Japanese) and the
+    // previous request, and says explicitly that the target text is the
+    // current proposal so the small model revises it instead of the original.
+    expect(secondCall?.documentContext).toContain("固定した元文章");
+    expect(secondCall?.documentContext).toContain("対象本文は現在の変更案です");
     expect(secondCall?.documentContext).toContain(contents);
     expect(secondCall?.documentContext).toContain(firstPayload.request);
 
@@ -260,6 +264,19 @@ describe("useAppleAssistProposalHandler", () => {
     expect(packet).not.toContain("request-0-");
     expect(packet).not.toContain("request-1-");
     expect(packet).toContain(`request-${requests.length - 1}-`);
-    expect(packet).toContain("Pinned original:");
+    expect(packet).toContain("固定した元文章");
+    expect(packet).toContain("対象本文は現在の変更案です");
+  });
+
+  it("omits the pinned original on the first turn because the target already is the original", () => {
+    const packet = buildAppleAssistRevisionContext("original", "nearby context", []);
+
+    // The first request sends `original` as the selected text, so pinning
+    // it again under the reference context only duplicates it.
+    expect(packet).not.toContain("固定した元文章");
+    expect(packet).not.toContain("<<<HAZAKURA_ORIGINAL_START");
+    expect(packet).not.toContain("対象本文は現在の変更案です");
+    expect(packet).toContain("対象周辺の文脈");
+    expect(packet).toContain("nearby context");
   });
 });

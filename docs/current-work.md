@@ -52,6 +52,10 @@ state. Source review is complete; physical macOS validation is the next gate.
 1. **v2.6 physical Assist gate.** On the current merged build, verify narrow
    Diff, keyboard/focus order, VoiceOver (including streaming summary), locale,
    streaming/cancel, and real model availability on the detached window.
+   A Local Assist prompt + visibility polish is merged (revision-packet
+   de-duplication, Japanese framing, preamble stripping, and a raw growing-draft
+   stream preview); rebuild the live Swift helper before the physical gate so
+   the prompt change is observable.
 2. Record the smoke evidence in `docs/current-status.md` and decide the source
    tag / App Store-TestFlight lane only after the physical gate.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time

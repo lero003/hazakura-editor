@@ -507,4 +507,84 @@ describe("AppleAssistWindowApp render", () => {
     fireEvent.click(screen.getByRole("button", { name: "New conversation" }));
     expect(screen.queryByTestId("apple-assist-conversation-state")).toBeNull();
   });
+
+  it("shows the raw growing draft while streaming, then the line diff after completion", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: {},
+    });
+    render(<AppleAssistWindowApp />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "整えて" },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Send request" }));
+      await Promise.resolve();
+    });
+    const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
+      ?.requestId;
+
+    const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
+    await act(async () => {
+      proposalStatus?.({
+        payload: {
+          phase: "started",
+          requestId,
+          request: "整えて",
+          message: "started",
+          originalText: "original",
+          emittedAtMs: 0,
+        },
+      });
+      proposalStatus?.({
+        payload: {
+          phase: "partial",
+          requestId,
+          request: "整えて",
+          message: "partial",
+          partialText: "生成中の途中",
+          emittedAtMs: 0,
+        },
+      });
+    });
+
+    // While streaming, the growing draft is shown as raw readable text, not
+    // a recomputed line diff.
+    expect(
+      screen.getByTestId("apple-assist-stream-preview-body").textContent,
+    ).toBe("生成中の途中");
+    expect(screen.queryByRole("table", { name: "Diff review" })).toBeNull();
+
+    await act(async () => {
+      proposalStatus?.({
+        payload: {
+          phase: "completed",
+          requestId,
+          request: "整えて",
+          message: "ready",
+          target: {
+            kind: "paragraph",
+            start: 0,
+            end: 8,
+            text: "original",
+            label: "",
+            activeDocumentPath: "/workspace/note.md",
+            activeDocumentName: "note.md",
+            activeDocumentSessionId: "session:note-1",
+            capturedAtMs: 0,
+          },
+          originalText: "original",
+          candidateText: "完成した本文",
+          emittedAtMs: 0,
+        },
+      });
+    });
+
+    expect(screen.getByRole("table", { name: "Diff review" })).toBeTruthy();
+    expect(screen.queryByTestId("apple-assist-stream-preview-body")).toBeNull();
+  });
 });

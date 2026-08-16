@@ -1135,8 +1135,13 @@ function ProposalDiffReview({
   onApply,
   onDiscard,
 }: ProposalDiffReviewProps) {
+  // While a proposal is still streaming, the candidate text grows on every
+  // partial; recomputing a full line diff on each partial is both wasteful
+  // and visually jumpy. Skip the diff and render the raw growing draft
+  // instead. The authoritative line diff is computed only for a completed
+  // proposal.
   const comparison = useMemo(() => {
-    if (!proposal) {
+    if (!proposal || proposal.streaming) {
       return null;
     }
     try {
@@ -1185,8 +1190,17 @@ function ProposalDiffReview({
           </button>
         </div>
       </div>
-      {!proposal ? (
-        <p className="apple-assist-proposal-placeholder">{copy.proposalReviewPlaceholder}</p>
+      {proposal?.streaming ? (
+        <p
+          className="apple-assist-stream-preview-body"
+          data-testid="apple-assist-stream-preview-body"
+        >
+          {proposal.candidateText}
+        </p>
+      ) : !proposal ? (
+        <p className="apple-assist-proposal-placeholder">
+          {busy ? copy.streamPreviewWaiting : copy.proposalReviewPlaceholder}
+        </p>
       ) : comparison?.error ? (
         <p className="apple-assist-proposal-error" role="alert">
           {comparison.error}
@@ -1686,7 +1700,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "つくられた あんを もとの ぶんと くらべます。ふみは まだ かわりません。",
       proposalReviewPlaceholder:
         "おねがいすると、もとの ぶんと つくられた あんの さぶんが ここに でます。",
-      proposalStreamingStatus: "あんを つくっています。とちゅうの さぶんです。",
+      proposalStreamingStatus: "あんを つくっています。とちゅうの ぶんしょうを ひょうじ しています。",
       proposalOriginalLabel: "もとの ぶん",
       proposalCandidateLabel: "つくられた あん",
       proposalApplyButton: "ふみに はんえい",
@@ -1831,7 +1845,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "生成した案を元の文章と比較します。本文はまだ変更しません。",
       proposalReviewPlaceholder:
         "依頼すると、元の文章と生成した案の差分がここに表示されます。",
-      proposalStreamingStatus: "案を生成しています。途中の差分を表示しています。",
+      proposalStreamingStatus: "案を生成しています。途中の文章を表示しています。",
       proposalOriginalLabel: "元の文章",
       proposalCandidateLabel: "生成した案",
       proposalApplyButton: "文書へ反映",
@@ -1974,7 +1988,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Compare the generated proposal with the original. The document is unchanged.",
     proposalReviewPlaceholder:
       "Send a request to show the original and the generated proposal here.",
-    proposalStreamingStatus: "Generating a proposal. Showing the in-progress diff.",
+    proposalStreamingStatus: "Generating a proposal. Showing the in-progress draft.",
     proposalOriginalLabel: "Original",
     proposalCandidateLabel: "Proposal",
     proposalApplyButton: "Apply proposal",

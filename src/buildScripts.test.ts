@@ -249,8 +249,12 @@ describe("macOS build scripts", () => {
 
   it("keeps the live helper user prompt free of extra routing metadata", () => {
     expect(appleAssistGenerateCandidateSwift).toContain("依頼:");
-    expect(appleAssistGenerateCandidateSwift).toContain("対象本文:");
-    expect(appleAssistGenerateCandidateSwift).toContain("参考文脈:");
+    expect(appleAssistGenerateCandidateSwift).toContain(
+      "対象本文（これを書き換える）:",
+    );
+    expect(appleAssistGenerateCandidateSwift).toContain(
+      "参考文脈（書き換え対象ではありません）:",
+    );
     expect(appleAssistGenerateCandidateSwift).not.toContain("依頼種別:");
     expect(appleAssistGenerateCandidateSwift).not.toContain(
       "操作: \\(request.operation)",
