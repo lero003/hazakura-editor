@@ -212,6 +212,31 @@ export function useAppleAssistProposalHandler({
       return;
     }
 
+    const previousProposal = localAssistProposalStore.getLatest(tab.sessionId);
+
+    // v2.6 B2.2: when a generation never reaches a completed proposal, the
+    // streaming placeholder must be settled so it does not leave a "transparent
+    // pending state" (no visible Diff, no Apply/Discard, hidden Review Bar).
+    // Restore the previous completed proposal on a cancel/helper failure (the
+    // buffer is unchanged), but clear on a stale target or session change (the
+    // old proposal is also stale). Only settle when the current entry is OUR
+    // streaming placeholder, so a different request is never clobbered.
+    const settleStreamingPlaceholder = (restorePrevious: boolean) => {
+      const current = localAssistProposalStore.getLatest(tab.sessionId);
+      if (
+        !current ||
+        !current.streaming ||
+        current.requestId !== payload.requestId
+      ) {
+        return;
+      }
+      if (restorePrevious && previousProposal) {
+        localAssistProposalStore.record(tab.sessionId, previousProposal);
+      } else {
+        localAssistProposalStore.clear(tab.sessionId);
+      }
+    };
+
     try {
       const target = targetCheck.target;
       const actionId: LocalAssistActionId = resolveApplyActionId(payload);
@@ -283,6 +308,7 @@ export function useAppleAssistProposalHandler({
           target,
           originalText: targetCheck.before,
         });
+        settleStreamingPlaceholder(false);
         return;
       }
       // Defense-in-depth: re-read the target text at completion time so a
@@ -296,6 +322,7 @@ export function useAppleAssistProposalHandler({
           target,
           originalText: targetCheck.before,
         });
+        settleStreamingPlaceholder(false);
         return;
       }
 
@@ -327,6 +354,7 @@ export function useAppleAssistProposalHandler({
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      settleStreamingPlaceholder(true);
       if (message.includes("cancelled by user")) {
         setStatusRef.current?.(message);
         await emitAppleAssistProposalStatus("cancelled", message, payload, {

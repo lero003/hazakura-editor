@@ -74,6 +74,12 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   (5) The post-apply Review Bar is hidden while an unapplied proposal is
   pending so the two floating panels never overlap.
 
+- **B2.2 terminal cleanup (merged).** A generation that never reaches a
+  completed proposal now settles the streaming placeholder: cancel/helper
+  failure restores the previous completed proposal (or clears when there was
+  none), while a stale target or session change clears it. The settle is
+  guarded by the placeholder's own `requestId`.
+
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -468,7 +474,7 @@ retained as the earlier R-1-only checkpoint.
 ## Verification (2026-08-16, Local Assist review moved to main window — B2)
 
 - `npm run typecheck` — pass.
-- `npm test` — 211 files / 1,784 tests pass.
+- `npm test` — 211 files / 1,786 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.

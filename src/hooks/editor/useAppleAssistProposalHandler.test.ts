@@ -349,4 +349,95 @@ describe("useAppleAssistProposalHandler", () => {
       candidateText: "proposal text",
     });
   });
+
+  it("restores the previous proposal when a follow-up generation is cancelled", async () => {
+    const contents = "original text";
+    const target = targetSnapshot(contents, contents);
+    localAssistProposalStore.record("session:note-1", {
+      requestId: "req-prev",
+      request: "整えて",
+      actionId: "rewrite_natural",
+      originalText: contents,
+      candidateText: "previous proposal",
+      target,
+      conversationId: "conv-1",
+      turnIndex: 0,
+    });
+
+    vi.mocked(generateAppleAssistCandidateStreaming).mockRejectedValueOnce(
+      new Error("Hazakura Local Assist generation cancelled by user."),
+    );
+
+    renderHook(() =>
+      useAppleAssistProposalHandler({
+        activeTab: {
+          id: "/workspace/note.md",
+          sessionId: "session:note-1",
+          name: "note.md",
+          path: "/workspace/note.md",
+          contents,
+        },
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    proposalListeners[0]?.({
+      payload: {
+        requestId: "req-cancel",
+        actionId: "rewrite_natural",
+        request: "整えて",
+        target,
+        requestedAtMs: 0,
+        conversationId: "conv-1",
+      },
+    } as never);
+    for (let i = 0; i < 8; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    expect(localAssistProposalStore.getLatest("session:note-1")).toMatchObject({
+      requestId: "req-prev",
+      candidateText: "previous proposal",
+    });
+    expect(
+      localAssistProposalStore.getLatest("session:note-1")?.streaming,
+    ).not.toBe(true);
+  });
+
+  it("clears the streaming placeholder when a first generation fails with no previous proposal", async () => {
+    const contents = "original text";
+    const target = targetSnapshot(contents, contents);
+
+    vi.mocked(generateAppleAssistCandidateStreaming).mockRejectedValueOnce(
+      new Error("Hazakura Local Assist helper failed."),
+    );
+
+    renderHook(() =>
+      useAppleAssistProposalHandler({
+        activeTab: {
+          id: "/workspace/note.md",
+          sessionId: "session:note-1",
+          name: "note.md",
+          path: "/workspace/note.md",
+          contents,
+        },
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    proposalListeners[0]?.({
+      payload: {
+        requestId: "req-fail",
+        actionId: "rewrite_natural",
+        request: "整えて",
+        target,
+        requestedAtMs: 0,
+      },
+    } as never);
+    for (let i = 0; i < 8; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    expect(localAssistProposalStore.getLatest("session:note-1")).toBeNull();
+  });
 });
