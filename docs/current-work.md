@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 A-4 narrow-layout preflight — Local Assist two-region UX
+Scope: v2.6 A-4 narrow-layout finishing — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
 
 ## Purpose
 
@@ -14,16 +14,18 @@ Start here when choosing the next small `Hazakura Editor` slice.
 **v2.6 A-1–A-3 implementation is complete locally.** The conversation pins the
 target, keeps generation and proposal state separate from the editor buffer, and
 allows only explicit Diff apply through stale revalidation, one
-`AiEditTransaction`, and the existing Review Bar. The current A-4 preflight
-keeps the conversation and Diff regions distinct at narrow widths without
-changing that mutation boundary.
+`AiEditTransaction`, and the existing Review Bar. The current A-4 finishing
+slice keeps the conversation and Diff regions distinct at narrow widths
+without changing that mutation boundary. It also exposes Diff column
+semantics, separates cancellation feedback from failure, and shows an honest
+availability-probe state.
 
 - Package/app version in tree: **`2.6.0`**. A-1–A-3 are locally complete; this is
   not a release or App Store claim.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
-  `c7ff442b`, and the A-4 narrow-layout preflight is being reviewed on a
-  separate branch before push. The A-4 review candidate will remain a Draft PR
-  until the external checks are complete.
+  `c7ff442b`, and the A-4 narrow-layout/finishing candidate is on the separate
+  `codex/v2.6-a4-narrow-diff-review` branch. The pushed branch remains a
+  GitHub compare review candidate until the external checks are complete.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
@@ -39,7 +41,7 @@ changing that mutation boundary.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **A-1–A-3 complete; A-4 preflight** | Conversation + explicit Diff apply + stale revalidation + Review Bar; narrow Diff layout candidate |
+| **v2.6** | **A-1–A-3 complete; A-4 finishing** | Conversation + explicit Diff apply + stale revalidation + Review Bar; narrow Diff and state/a11y finishing candidate |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -48,9 +50,9 @@ changing that mutation boundary.
 
 ### Immediate next
 
-1. **A-4 external review.** Review the narrow Diff containment candidate, then
-   separately verify keyboard/VoiceOver/locale, streaming/cancel, and real model
-   availability on the detached window.
+1. **A-4 external review.** Review the narrow Diff containment and finishing
+   candidate, then separately verify keyboard/VoiceOver/locale, streaming/cancel,
+   and real model availability on the detached window.
 2. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and an Apply status
    watchdog. They do not change the A-3 mutation boundary.
@@ -74,7 +76,7 @@ changing that mutation boundary.
 ### Do not start yet
 
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
-- A-4 behavior beyond the narrow-layout preflight (keyboard/VoiceOver/locale,
+- A-4 behavior beyond the narrow-layout finishing candidate (keyboard/VoiceOver/locale,
   physical streaming/cancel, and availability) until the external review
   confirms the next slice; do not mix it into the A-3 mutation history
 - anydoc dependency or Import Assist expansion
@@ -105,7 +107,7 @@ changing that mutation boundary.
 
 ## Next Human Gates
 
-1. Review the A-4 narrow-layout preflight on its Draft PR; keep the detached
+1. Review the A-4 narrow-layout/finishing candidate; keep the detached
    window and physical streaming/cancel checks separate.
 2. Decide and verify the three non-blocking A-3 hardening items without
    expanding the apply boundary.

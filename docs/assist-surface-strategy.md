@@ -109,7 +109,7 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (v2.6 A-1–A-3 locally reviewed; A-4 preflight)
+### Conversational document edit (v2.6 A-1–A-3 locally reviewed; A-4 finishing)
 
 v2.6 moves Local Assist from **single-shot generate → immediate buffer apply**
 toward a **proposal-first multi-turn revision conversation**:
@@ -127,9 +127,10 @@ A-1–A-3 are complete locally. The pinned target and explicit Diff apply send t
 already reviewed proposal through the existing transaction / Review Bar path,
 perform stale revalidation, and do not auto-save or invoke generation a second
 time. Do not document this locally reviewed source state as a released product
-surface. The current A-4 preflight only makes the Diff region shrink and wrap
-cleanly in narrow detached windows; it does not claim keyboard, VoiceOver,
-locale, streaming/cancel, or physical-device verification.
+surface. The A-4 finishing slice also exposes Diff column headers to the
+accessibility tree, reports cancellation separately from failure, and shows a
+checking state while availability is probed. It still does not claim keyboard,
+VoiceOver, locale, streaming/cancel, or physical-device verification.
 
 Local Assist may keep a **bounded, document-scoped revision conversation**
 for the active editing session (in-memory only). It must not become a
@@ -144,7 +145,7 @@ area. Narrow windows may stack those regions, but must not merge their
 responsibilities.
 
 Operation feedback (target acquired, request sent, generation started,
-applied, failed) stays compact and must not be shown as chat turns or as
+applied, cancelled, failed, unavailable) stays compact and must not be shown as chat turns or as
 raw Foundation Models prompts, hidden instructions, provider transcripts,
 or model reasoning.
 

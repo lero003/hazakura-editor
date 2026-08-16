@@ -280,7 +280,11 @@ export function AppleAssistWindowApp() {
   // at the moment of apply is, so the trail stays
   // aligned with the IPC payload.
   const availabilityReportedRef = useRef<boolean>(false);
-  const availabilityMessage = renderAvailabilityMessage(availability, copy);
+  const availabilityMessage = renderAvailabilityMessage(
+    availability,
+    probed,
+    copy,
+  );
   const generationFallbackRef = useRef<number | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
@@ -1188,12 +1192,32 @@ function ProposalDiffReview({
           {comparison.error}
         </p>
       ) : (
-        <>
-          <div className="apple-assist-proposal-columns" aria-hidden="true">
-            <span>{copy.proposalOriginalLabel}</span>
-            <span>{copy.proposalCandidateLabel}</span>
+        <div
+          className="apple-assist-proposal-table"
+          role="table"
+          aria-label={copy.proposalHeading}
+        >
+          <div className="apple-assist-proposal-columns">
+            <div className="apple-assist-proposal-column-headers" role="row">
+              <span
+                id="apple-assist-proposal-original-heading"
+                role="columnheader"
+              >
+                {copy.proposalOriginalLabel}
+              </span>
+              <span
+                id="apple-assist-proposal-candidate-heading"
+                role="columnheader"
+              >
+                {copy.proposalCandidateLabel}
+              </span>
+            </div>
             {diff ? (
-              <span className="apple-assist-proposal-summary">
+              <span
+                className="apple-assist-proposal-summary"
+                role="status"
+                aria-live="polite"
+              >
                 {copy.proposalChangeSummary(
                   diff.additions,
                   diff.removals,
@@ -1201,21 +1225,35 @@ function ProposalDiffReview({
               </span>
             ) : null}
           </div>
-          <div className="apple-assist-proposal-body" role="table" aria-label={copy.proposalHeading}>
+          <div className="apple-assist-proposal-body" role="rowgroup">
             {diff?.lines.map((line, index) => (
               <div
                 className={`apple-assist-proposal-row apple-assist-proposal-row-${line.kind}`}
                 role="row"
                 key={`${proposal.requestId}-${index}`}
               >
-                <span className="apple-assist-proposal-cell apple-assist-proposal-cell-left" role="cell">
-                  <span className="apple-assist-proposal-line-number">
+                <span
+                  className="apple-assist-proposal-cell apple-assist-proposal-cell-left"
+                  role="cell"
+                  aria-labelledby="apple-assist-proposal-original-heading"
+                >
+                  <span
+                    className="apple-assist-proposal-line-number"
+                    aria-hidden="true"
+                  >
                     {line.leftLine ?? ""}
                   </span>
                   <span>{line.kind === "added" ? "" : line.text || " "}</span>
                 </span>
-                <span className="apple-assist-proposal-cell apple-assist-proposal-cell-right" role="cell">
-                  <span className="apple-assist-proposal-line-number">
+                <span
+                  className="apple-assist-proposal-cell apple-assist-proposal-cell-right"
+                  role="cell"
+                  aria-labelledby="apple-assist-proposal-candidate-heading"
+                >
+                  <span
+                    className="apple-assist-proposal-line-number"
+                    aria-hidden="true"
+                  >
                     {line.rightLine ?? ""}
                   </span>
                   <span>{line.kind === "removed" ? "" : line.text || " "}</span>
@@ -1223,7 +1261,7 @@ function ProposalDiffReview({
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
     </section>
   );
@@ -1292,7 +1330,7 @@ export type AppleAssistWindowCopy = {
   newConversationStatus: string;
   // v0.17 operation-feedback panel. The panel shows app-
   // known lifecycle events (target acquired, request sent,
-  // generation started, applied, failed, unavailable). It
+  // generation started, applied, cancelled, failed, unavailable). It
   // intentionally never receives raw Foundation Models
   // prompts, raw model responses, hidden instructions,
   // provider transcripts, model reasoning, broad document
@@ -1300,6 +1338,8 @@ export type AppleAssistWindowCopy = {
   // docs/archive/operations/app-store-v0.17/apple-local-assist-operation-feedback-request.md.
   feedbackHeading: string;
   feedbackEmpty: string;
+  checkingAvailabilityStatus: string;
+  cancelledFeedback: string;
   feedbackEntry: (
     kind: OperationFeedbackKind,
     payload?: OperationFeedbackPayload,
@@ -1317,6 +1357,7 @@ export type OperationFeedbackKind =
   | "generation-started"
   | "proposal-ready"
   | "applied"
+  | "cancelled"
   | "failed"
   | "unavailable";
 
@@ -1334,7 +1375,10 @@ export type OperationFeedbackPayload = {
 export type ApplyStatusPresentation = {
   status: string;
   error: string | null;
-  feedbackKind: Extract<OperationFeedbackKind, "applied" | "failed">;
+  feedbackKind: Extract<
+    OperationFeedbackKind,
+    "applied" | "cancelled" | "failed"
+  >;
 };
 
 export function getApplyStatusPresentation(
@@ -1353,7 +1397,7 @@ export function getApplyStatusPresentation(
     return {
       status: copy.cancelledStatus,
       error: null,
-      feedbackKind: "failed",
+      feedbackKind: "cancelled",
     };
   }
 
@@ -1367,7 +1411,10 @@ export function getApplyStatusPresentation(
 export type ProposalStatusPresentation = {
   status: string;
   error: string | null;
-  feedbackKind: Extract<OperationFeedbackKind, "proposal-ready" | "failed">;
+  feedbackKind: Extract<
+    OperationFeedbackKind,
+    "proposal-ready" | "cancelled" | "failed"
+  >;
 };
 
 export function getProposalStatusPresentation(
@@ -1386,7 +1433,7 @@ export function getProposalStatusPresentation(
     return {
       status: copy.cancelledStatus,
       error: null,
-      feedbackKind: "failed",
+      feedbackKind: "cancelled",
     };
   }
 
@@ -1448,10 +1495,14 @@ function sanitizeStreamPreviewText(rawPreview: string): string {
   return withoutBoundaryStart;
 }
 
-function renderAvailabilityMessage(
+export function renderAvailabilityMessage(
   availability: AppleAssistAvailability,
+  probed: boolean,
   copy: AppleAssistWindowCopy,
 ): string {
+  if (!probed) {
+    return copy.checkingAvailabilityStatus;
+  }
   if (availability.kind === "available") {
     return copy.availableDisclosure;
   }
@@ -1557,6 +1608,8 @@ export function classifyApplyError(
 
 export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
   if (lang === "kana") {
+    const cancelledFeedback =
+      "いらいを とりけしました。ふみは かわっていません。";
     return {
       activeDocument: (name) => `いまのふみ: ${name}`,
       appliedStatus: () =>
@@ -1620,6 +1673,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         `はざくら ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
       unsupportedStatus:
         "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
+      checkingAvailabilityStatus:
+        "この Mac で はざくら ろーかる あしす と が つかえるか かくにん しています...",
       workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
       streamPreviewHeading: "つくっている あん",
       streamPreviewIdle:
@@ -1650,6 +1705,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       feedbackHeading: "しんこうじょうきょう",
       feedbackEmpty:
         "まだ おねがいは ありません。たいしょうを えらび、おねがいの ないようを かいてください。",
+      cancelledFeedback,
       feedbackEntry: (kind, payload) => {
         if (kind === "ready") {
           return "じゅんび できました。";
@@ -1686,6 +1742,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         if (kind === "applied") {
           return "へんしゅう あんを はんえいしました。ほぞん まえに かくにん できます。";
         }
+        if (kind === "cancelled") {
+          return cancelledFeedback;
+        }
         if (kind === "failed") {
           return "うまく いきませんでした。下の すてーたす を みてください。";
         }
@@ -1695,6 +1754,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
   }
 
   if (lang === "ja") {
+    const cancelledFeedback = "依頼を取り消しました。本文は変更していません。";
     return {
       activeDocument: (name) => `対象: ${name}`,
       appliedStatus: () =>
@@ -1758,6 +1818,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         `Hazakura Local Assist の生成に失敗しました: ${raw}`,
       unsupportedStatus:
         "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
+      checkingAvailabilityStatus:
+        "このMacでHazakura Local Assistを利用できるか確認しています…",
       workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
       streamPreviewHeading: "作成中の案",
       streamPreviewIdle:
@@ -1788,6 +1850,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       feedbackHeading: "進行状況",
       feedbackEmpty:
         "まだ依頼はありません。対象を選び、依頼内容を入力してください。",
+      cancelledFeedback,
       feedbackEntry: (kind, payload) => {
         if (kind === "ready") {
           return "準備できました。";
@@ -1824,6 +1887,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         if (kind === "applied") {
           return "編集案を反映しました。保存前に確認できます。";
         }
+        if (kind === "cancelled") {
+          return cancelledFeedback;
+        }
         if (kind === "failed") {
           return "うまくいきませんでした。下のステータスを確認してください。";
         }
@@ -1832,6 +1898,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     };
   }
 
+  const cancelledFeedback = "Request cancelled. The document was not changed.";
   return {
     activeDocument: (name) => `Active: ${name}`,
     appliedStatus: () =>
@@ -1894,6 +1961,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       `Hazakura Local Assist generation failed: ${raw}`,
     unsupportedStatus:
       "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on for this Mac, and a supported language and region.",
+    checkingAvailabilityStatus:
+      "Checking whether Hazakura Local Assist is available on this Mac...",
     workingLocally: "Working locally on this Mac (no third-party AI service)",
     streamPreviewHeading: "Draft in progress",
     streamPreviewIdle:
@@ -1924,6 +1993,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     feedbackHeading: "Progress",
     feedbackEmpty:
       "No requests yet. Pick a target and describe what you want changed.",
+    cancelledFeedback,
     feedbackEntry: (kind, payload) => {
       if (kind === "ready") {
         return "Ready.";
@@ -1959,6 +2029,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       }
       if (kind === "applied") {
         return "Draft edit applied. Review before saving.";
+      }
+      if (kind === "cancelled") {
+        return cancelledFeedback;
       }
       if (kind === "failed") {
         return "That did not work. Check the status below.";

@@ -128,6 +128,20 @@ describe("AppleAssistWindowApp render", () => {
 
     expect(screen.getByTestId("apple-assist-proposal-review")).toBeTruthy();
     expect(screen.getByText("proposal")).toBeTruthy();
+    const diffTable = screen.getByRole("table", { name: "Diff review" });
+    expect(diffTable).toBeTruthy();
+    expect(screen.getByRole("columnheader", { name: "Original" })).toBeTruthy();
+    expect(screen.getByRole("columnheader", { name: "Proposal" })).toBeTruthy();
+    expect(
+      document.querySelector(".apple-assist-proposal-columns")?.getAttribute(
+        "aria-hidden",
+      ),
+    ).toBeNull();
+    for (const cell of screen.getAllByRole("cell")) {
+      expect(cell.getAttribute("aria-labelledby")).toMatch(
+        /apple-assist-proposal-(original|candidate)-heading/,
+      );
+    }
     const discard = screen.getByRole("button", {
       name: /Discard proposal|案を破棄/,
     });
@@ -238,6 +252,11 @@ describe("AppleAssistWindowApp render", () => {
       });
     });
     expect(screen.getByText("proposal")).toBeTruthy();
+    const feedbackEntries = screen.getAllByTestId("apple-assist-feedback-entry");
+    expect(feedbackEntries.at(-1)?.getAttribute("data-feedback-kind")).toBe(
+      "cancelled",
+    );
+    expect(feedbackEntries.at(-1)?.textContent).not.toMatch(/failed|失敗/i);
 
     const failedRequestId = await sendRequest();
     await act(async () => {

@@ -5,6 +5,7 @@ import {
   getAppleAssistWindowCopy,
   getProposalStatusPresentation,
   getStreamPreviewPresentation,
+  renderAvailabilityMessage,
   type AppleAssistWindowCopy,
   type OperationFeedbackKind,
 } from "./AppleAssistWindowApp";
@@ -35,6 +36,7 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "appliedStatus",
   "applyButton",
   "availableDisclosure",
+  "checkingAvailabilityStatus",
   "contextTooLongError",
   "disabledStatus",
   "emptyRequestError",
@@ -90,6 +92,7 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   // separate test below.
   "feedbackHeading",
   "feedbackEmpty",
+  "cancelledFeedback",
   "feedbackEntry",
 ];
 
@@ -108,6 +111,7 @@ const FEEDBACK_KINDS: ReadonlyArray<OperationFeedbackKind> = [
   "generation-started",
   "proposal-ready",
   "applied",
+  "cancelled",
   "failed",
   "unavailable",
 ];
@@ -196,6 +200,11 @@ describe("getAppleAssistWindowCopy", () => {
           const text = copy.feedbackEntry(kind, payload);
           expect(text, `${lang} kind ${kind}`).toMatch(/\S/);
         }
+      });
+
+      it("keeps cancellation feedback separate from failure feedback", () => {
+        expect(copy.feedbackEntry("cancelled")).toBe(copy.cancelledFeedback);
+        expect(copy.feedbackEntry("cancelled")).not.toMatch(/failed|失敗|しっぱい/i);
       });
 
       it("keeps progress copy compact and leaves detailed flow explanation out of the panel", () => {
@@ -353,6 +362,22 @@ describe("getStreamPreviewPresentation", () => {
   });
 });
 
+describe("renderAvailabilityMessage", () => {
+  const copy = getAppleAssistWindowCopy("ja");
+
+  it("shows a checking message until the availability probe settles", () => {
+    expect(
+      renderAvailabilityMessage({ kind: "unsupported" }, false, copy),
+    ).toBe(copy.checkingAvailabilityStatus);
+  });
+
+  it("shows the settled unsupported reason only after probing", () => {
+    expect(
+      renderAvailabilityMessage({ kind: "unsupported" }, true, copy),
+    ).toBe(copy.unsupportedStatus);
+  });
+});
+
 describe("getProposalStatusPresentation", () => {
   const copy = getAppleAssistWindowCopy("ja");
   const base: AppleAssistProposalStatusEvent = {
@@ -379,7 +404,7 @@ describe("getProposalStatusPresentation", () => {
       copy,
     );
 
-    expect(result.feedbackKind).toBe("failed");
+    expect(result.feedbackKind).toBe("cancelled");
     expect(result.status).toBe(copy.cancelledStatus);
     expect(result.error).toBeNull();
   });

@@ -176,7 +176,7 @@ Hazakura Local Assist may show bounded, user-visible operation feedback in
 the Assist Window to make the alpha behaviour understandable.  This
 feedback is UI state, not a provider transcript or diagnostics log.  It
 may describe the app-known lifecycle, such as target kind, approximate
-target length, sending / generating / applied / failed phases, and
+target length, sending / generating / applied / cancelled / failed phases, and
 whether the result is reviewable before save.  It must not show raw
 Foundation Models prompts, raw model responses, hidden system
 instructions, chain-of-thought-like "reasoning", broad document

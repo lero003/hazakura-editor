@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
 
 ## Purpose
 
@@ -17,12 +17,12 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6 A-4 narrow-layout preflight.** Mac App Store `2.4.0` is
+Phase: **v2.6 A-4 narrow-layout finishing.** Mac App Store `2.4.0` is
 published and closed for drive-by polish; v2.5 is released and closed. The
 active spine is Local Assist conversation + separate Diff review: A-1–A-3 are
 complete locally, and the current bounded work is the A-4 narrow Diff layout
-candidate. Remaining A-3 hardening and A-4 interaction/device checks stay
-separate.
+and accessibility/state finishing candidate. Remaining A-3 hardening and A-4
+interaction/device checks stay separate.
 Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
 `docs/roadmap.md`, `docs/v2.6-plan.md`, and
 `docs/local-assist-conversational-edit-ux.md`.

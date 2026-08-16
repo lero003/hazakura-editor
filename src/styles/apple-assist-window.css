@@ -251,10 +251,18 @@
   border-radius: var(--radius-sm);
   display: grid;
   gap: 6px;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
   overflow: hidden;
   padding: 8px 9px;
+}
+
+.apple-assist-proposal-table {
+  display: grid;
+  gap: 4px;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .apple-assist-proposal-header {
@@ -340,6 +348,10 @@
   gap: 8px;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   padding: 0 4px;
+}
+
+.apple-assist-proposal-column-headers {
+  display: contents;
 }
 
 .apple-assist-proposal-summary {
@@ -486,6 +498,10 @@
 
 .apple-assist-feedback-entry-kind-proposal-ready {
   color: var(--accent);
+}
+
+.apple-assist-feedback-entry-kind-cancelled {
+  color: var(--text-muted);
 }
 
 .apple-assist-feedback-entry-kind-failed,

@@ -94,7 +94,7 @@ describe("getApplyStatusPresentation", () => {
     );
     expect(presentation.status).toBe("cancelled-status");
     expect(presentation.error).toBeNull();
-    expect(presentation.feedbackKind).toBe("failed");
+    expect(presentation.feedbackKind).toBe("cancelled");
   });
 
   it("maps a failed phase to the failed status with the message as error", () => {
@@ -201,7 +201,7 @@ describe("useOperationFeedback", () => {
     expect(survivingChars.at(-1)).toBe(OPERATION_FEEDBACK_MAX_ENTRIES + 1);
   });
 
-  it("emits the same kinds the request doc lists (ready, target-acquired, request-sent, generation-started, applied, failed)", () => {
+  it("emits the same kinds the request doc lists, including cancellation", () => {
     // Structural safety: only the documented kinds are
     // accepted. A future refactor that adds a raw-prompt
     // or transcript kind would have to update the
@@ -212,13 +212,21 @@ describe("useOperationFeedback", () => {
     // lifecycle set together for a readable session log.
     const { result } = renderHook(() => useOperationFeedback());
     const expectedKinds: ReadonlyArray<
-      "ready" | "target-acquired" | "request-sent" | "generation-started" | "applied" | "failed" | "unavailable"
+      | "ready"
+      | "target-acquired"
+      | "request-sent"
+      | "generation-started"
+      | "applied"
+      | "cancelled"
+      | "failed"
+      | "unavailable"
     > = [
       "ready",
       "target-acquired",
       "request-sent",
       "generation-started",
       "applied",
+      "cancelled",
       "failed",
       "unavailable",
     ];

@@ -1,6 +1,6 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: A-1–A-3 complete locally; A-4 narrow-layout preflight in review
+Status: A-1–A-3 complete locally; A-4 finishing in review
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
 Last reviewed: 2026-08-16
@@ -189,8 +189,9 @@ A-1 / P1、A-2 / P2、A-3 / P3 はローカル `main` に統合済み。次の
 hardening と P4 / A-4 のレイアウト・アクセシビリティ仕上げは別の
 レビュー境界に残す。現在のA-4候補は、会話とDiffを狭幅でも区分けして
 表示するCSS preflight（Diffの可変高さ、横溢れ抑制、変更サマリーの折返し）
-だけを含み、キーボード・VoiceOver・i18n・実機streaming/cancelはまだ
-外部確認の対象である。
+に加えて、Diff列見出しのアクセシビリティ公開、cancelledの独立した
+operation feedback、probe中のavailability表示を含む。キーボード・
+VoiceOver・i18n・実機streaming/cancelはまだ外部確認の対象である。
 
 ## Test Pins (minimum)
 
@@ -211,6 +212,9 @@ hardening と P4 / A-4 のレイアウト・アクセシビリティ仕上げは
 15. availability・cancel・timeout・既存プリセットを壊さない
 16. 会話領域へ変更本文全文や operation feedback 生ログを重複表示しない
 17. 狭い幅でも conversation → Diff controls のフォーカス順と反映判断を保つ
+18. Diffの元文章 / 生成案の列見出しをVoiceOverへ公開し、各cellへ関連付ける
+19. cancelledをfailedと混同せず、本文不変のfeedbackとして表示する
+20. availability probe中はunsupportedと断定せず、確認中の状態を表示する
 
 ## File Touch Map (guidance)
 

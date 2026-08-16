@@ -1,14 +1,14 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 A-4 narrow-layout preflight — Local Assist two-region UX
+Scope: v2.6 A-4 narrow-layout finishing — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
 
 ## Current State
 
 - Package/app version in tree: **`2.6.0`** A-1–A-3 locally complete; A-4
-  narrow-layout preflight is the current review candidate.
+  narrow-layout and finishing fixes are the current review candidate.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
 - **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
@@ -23,11 +23,14 @@ Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
   auto-save. The proposal keeps the generation-time bounded `actionId`, so
   edited request text cannot change Apply provenance. Partial helper output and
   `HAZAKURA_ORIGINAL` markers are
-  sanitized before they reach Diff or the editor. The A-4 preflight only changes
-  detached-window CSS: the proposal owns the bounded height, Diff rows can
+  sanitized before they reach Diff or the editor. The A-4 narrow-layout slice
+  changes detached-window CSS: the proposal owns the bounded height, Diff rows can
   shrink below the old `32rem` minimum, and the change summary wraps below
-  `520px`. IPC, proposal state, apply, save, and target validation are unchanged.
-  The branch will be pushed as a Draft PR for external review.
+  `520px`. The finishing slice also exposes Diff column headers to the
+  accessibility tree, separates cancelled feedback from failure, and shows a
+  probe-in-flight availability message. IPC, proposal state, apply, save, and
+  target validation are unchanged. The branch remains a GitHub compare review
+  candidate; no new PR is required by the current workflow.
   Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
@@ -422,10 +425,10 @@ retained as the earlier R-1-only checkpoint.
   availability smoke remain external-review or human-gated evidence; they were
   not claimed here.
 
-## Verification (2026-08-16, v2.6 A-4 preflight)
+## Verification (2026-08-16, v2.6 A-4 finishing)
 
 - `npm run typecheck` passed.
-- `npm test -- --run` passed: 209 files / 1,760 tests.
+- `npm test -- --run` passed: 209 files / 1,766 tests.
 - `npm run build:vite` passed (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` passed: 10 files / 111 tests.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
@@ -434,7 +437,7 @@ retained as the earlier R-1-only checkpoint.
   large-chunk warning and expected local no-notarization warning only.
 - `SKIP_BUILD=1 npm run smoke:macos-window` passed: packaged 1280×820 native
   window opened and quit cleanly.
-- Focused `src/styles/appleAssistWindowCss.test.ts` passed: 1 file / 9 tests.
+- Focused Assist / CSS regressions passed: 4 files / 97 tests.
 - `git diff --check` passed before handoff.
 - Detached-window narrow-width interaction, keyboard/focus order, VoiceOver,
   locale, streaming/cancel, and physical-device availability remain external
@@ -452,7 +455,7 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Review the A-4 narrow-layout preflight Draft PR; keep detached-window
+1. Review the A-4 narrow-layout/finishing candidate; keep detached-window
    narrow-width interaction and physical streaming/cancel checks separate.
 2. Consider the three non-blocking A-3 hardening items: completion-time target
    text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.

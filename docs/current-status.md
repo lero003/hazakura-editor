@@ -1,9 +1,9 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-4 narrow-layout preflight)
+Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-4 finishing; v2.5 release closed)
 
 ## Current State
 
@@ -21,11 +21,12 @@ Last reviewed: 2026-08-16 (v2.6 A-4 preflight; v2.5 release closed)
   tab/session/range/original, keeps follow-up instructions on that target, and
   applies only the reviewed Diff proposal through one stale-checked
   `AiEditTransaction` / Review Bar path. This is local source work, not a
-  release claim. The current A-4 preflight only tightens detached-window
-  narrow Diff layout; non-blocking hardening and the remaining A-4 interaction
+  release claim. The current A-4 finishing candidate tightens detached-window
+  narrow Diff layout and makes Diff semantics, cancellation, and availability
+  probe state explicit; non-blocking hardening and the remaining A-4 interaction
   checks stay separate.
   Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
-- **A-4 narrow-layout preflight** is being prepared on a separate review branch;
+- **A-4 narrow-layout/finishing** is being prepared on a separate review branch;
   it is not included in local `main` until external review is complete. The
   older Draft PR #34 remains historical and is not the source of truth for this
   candidate.
@@ -1022,8 +1023,8 @@ baseline, and smoke evidence are archived under
 
 1. Consider the three non-blocking A-3 hardening items: completion-time target
    text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
-2. Keep A-4's narrow-layout Draft PR and physical streaming/cancel checks
-   separate.
+2. Keep A-4's narrow-layout/finishing candidate and physical streaming/cancel
+   checks separate.
 3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
 4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,

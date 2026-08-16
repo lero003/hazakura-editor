@@ -24,6 +24,7 @@ describe("apple-assist-window.css", () => {
   it("gives the proposal the remaining height while keeping feedback bounded", () => {
     const shell = ruleBody(css, ".apple-assist-window-shell");
     const proposal = ruleBody(css, ".apple-assist-window-proposal");
+    const proposalTable = ruleBody(css, ".apple-assist-proposal-table");
     const feedback = ruleBody(css, ".apple-assist-window-feedback");
 
     expect(shell).toMatch(
@@ -31,6 +32,7 @@ describe("apple-assist-window.css", () => {
     );
     expect(shell).toMatch(/min-height:\s*0/);
     expect(proposal).toMatch(/min-height:\s*0/);
+    expect(proposalTable).toMatch(/min-height:\s*0/);
     expect(feedback).toMatch(/height:\s*9\.5rem/);
     expect(feedback).toMatch(/min-height:\s*9\.5rem/);
   });
@@ -138,6 +140,15 @@ describe("apple-assist-window.css", () => {
     expect(body).toMatch(/overflow-y:\s*auto/);
     expect(body).toMatch(/scrollbar-width:\s*thin/);
     expect(list).toMatch(/gap:\s*4px/);
+  });
+
+  it("keeps cancellation feedback neutral instead of styling it as a failure", () => {
+    const cancelled = ruleBody(
+      css,
+      ".apple-assist-feedback-entry-kind-cancelled",
+    );
+
+    expect(cancelled).toMatch(/color:\s*var\(--text-muted\)/);
   });
 
   it("separates multiple request groups inside the feedback log", () => {
