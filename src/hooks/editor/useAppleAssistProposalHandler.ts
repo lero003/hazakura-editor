@@ -213,6 +213,26 @@ export function useAppleAssistProposalHandler({
     }
 
     try {
+      const target = targetCheck.target;
+      const actionId: LocalAssistActionId = resolveApplyActionId(payload);
+      const action = getLocalAssistAction(actionId);
+
+      // v2.6 B2.1: mark the pending proposal as streaming as soon as
+      // generation starts. This hides the main window's review panel and its
+      // Apply/Discard controls for the previous proposal during a follow-up
+      // turn, so a stale candidate cannot be applied mid-generation.
+      localAssistProposalStore.record(tab.sessionId, {
+        requestId: payload.requestId,
+        request: payload.request,
+        actionId,
+        originalText: targetCheck.before,
+        candidateText: "",
+        target,
+        conversationId: payload.conversationId ?? null,
+        turnIndex: payload.conversationTurnIndex ?? 0,
+        streaming: true,
+      });
+
       const startMessage = "Hazakura Local Assist is generating an unapplied proposal...";
       setStatusRef.current?.(startMessage);
       setGenerationLockRef.current?.({
@@ -227,10 +247,7 @@ export function useAppleAssistProposalHandler({
       });
       await yieldBeforeAppleAssistGeneration();
 
-      const target = targetCheck.target;
       const contextWindow = getAppleAssistContextWindow(target.kind);
-      const actionId: LocalAssistActionId = resolveApplyActionId(payload);
-      const action = getLocalAssistAction(actionId);
       const selectedText =
         payload.proposalText === undefined ? targetCheck.before : proposalCheck.text;
       const surroundingContext = buildSurroundingDocumentContext(
@@ -261,6 +278,19 @@ export function useAppleAssistProposalHandler({
       if (!latestTab || !isSameAppleAssistTargetTab(tab, latestTab)) {
         const message =
           "Hazakura Local Assist proposal discarded: the active document changed during generation.";
+        setStatusRef.current?.(message);
+        await emitAppleAssistProposalStatus("failed", message, payload, {
+          target,
+          originalText: targetCheck.before,
+        });
+        return;
+      }
+      // Defense-in-depth: re-read the target text at completion time so a
+      // stale candidate generated against an edited or rewritten buffer is
+      // never stored as a fresh proposal.
+      const completionTargetCheck = readTargetTextForGeneration(target, latestTab);
+      if (!completionTargetCheck.ok) {
+        const message = `Hazakura Local Assist proposal discarded: ${completionTargetCheck.error}`;
         setStatusRef.current?.(message);
         await emitAppleAssistProposalStatus("failed", message, payload, {
           target,

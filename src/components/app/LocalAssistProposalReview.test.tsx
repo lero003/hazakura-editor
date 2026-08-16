@@ -45,6 +45,7 @@ describe("LocalAssistProposalReview", () => {
     render(
       <LocalAssistProposalReview
         activeTab={activeTab}
+        fontSize={14}
         menuLanguage="en"
         onApply={vi.fn()}
         onDiscard={vi.fn()}
@@ -55,12 +56,13 @@ describe("LocalAssistProposalReview", () => {
 
   it("renders the original-vs-proposal Diff and forwards Apply/Discard", () => {
     seedProposal();
-    const onApply = vi.fn();
+    const onApply = vi.fn(async () => ({ ok: true as const }));
     const onDiscard = vi.fn();
 
     render(
       <LocalAssistProposalReview
         activeTab={activeTab}
+        fontSize={14}
         menuLanguage="en"
         onApply={onApply}
         onDiscard={onDiscard}
@@ -81,5 +83,29 @@ describe("LocalAssistProposalReview", () => {
     expect(onDiscard).toHaveBeenCalledWith(
       expect.objectContaining({ candidateText: "proposal" }),
     );
+  });
+
+  it("shows an inline error when apply is rejected", async () => {
+    seedProposal();
+    const onApply = vi.fn(async () => ({
+      ok: false,
+      error: "Hazakura Local Assist apply rejected: stale target.",
+    }));
+
+    render(
+      <LocalAssistProposalReview
+        activeTab={activeTab}
+        fontSize={14}
+        menuLanguage="en"
+        onApply={onApply}
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
+    await screen.findByTestId("local-assist-proposal-review-error");
+    expect(
+      screen.getByTestId("local-assist-proposal-review-error").textContent,
+    ).toContain("stale target");
   });
 });

@@ -186,7 +186,7 @@ describe("AppleAssistWindowApp render", () => {
     expect(feedbackEntries.at(-1)?.textContent).not.toMatch(/failed|失敗/i);
   });
 
-  it("resets the conversation when the main window reports apply completed or discarded", async () => {
+  it("resets the conversation only when the apply status matches the active conversation", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {},
@@ -203,9 +203,30 @@ describe("AppleAssistWindowApp render", () => {
       fireEvent.click(screen.getByRole("button", { name: "Send request" }));
       await Promise.resolve();
     });
+    const conversationId = vi
+      .mocked(requestAppleAssistProposal)
+      .mock.calls.at(-1)?.[0]?.conversationId;
+    expect(conversationId).toBeTruthy();
     expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
 
     const applyStatus = eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT);
+
+    // A discard from an unrelated conversation must not reset this one.
+    await act(async () => {
+      applyStatus?.({
+        payload: {
+          phase: "discarded",
+          requestId: "req-other",
+          request: "整えて",
+          message: "discarded",
+          conversationId: "unrelated-conversation",
+          emittedAtMs: 0,
+        },
+      });
+    });
+    expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+
+    // A discard for THIS conversation resets it.
     await act(async () => {
       applyStatus?.({
         payload: {
@@ -213,11 +234,11 @@ describe("AppleAssistWindowApp render", () => {
           requestId: "req-discard",
           request: "整えて",
           message: "discarded",
+          conversationId,
           emittedAtMs: 0,
         },
       });
     });
-
     expect(screen.queryByTestId("apple-assist-conversation-state")).toBeNull();
   });
 

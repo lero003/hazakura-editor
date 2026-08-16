@@ -312,3 +312,12 @@
 :root[data-l-mode="on"] .local-assist-proposal-review {
   bottom: 64px;
 }
+
+.local-assist-proposal-review-error {
+  border-top: 1px solid color-mix(in srgb, var(--danger, #c0392b) 40%, transparent);
+  color: var(--danger, #c0392b);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  padding-top: 6px;
+}

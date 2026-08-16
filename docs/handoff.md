@@ -64,6 +64,16 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   / `APPLY_AI_EDIT_TRANSACTION_EVENT`, TS `requestApplyAiEditTransaction` and
   `buildProposalApplyEvent`) remains and is safe to remove in a follow-up slice.
 
+- **B2.1 hardening (merged on top of B2).** (1) Generation start marks the
+  pending proposal `streaming: true` and the main window's Apply/Discard pass
+  through `rejectIfAppleAssistLocksTab`, so a stale candidate cannot be applied
+  mid-generation; completion also re-reads the target text. (2) Apply status
+  carries `conversationId` and the detached window resets only the matching
+  conversation. (3) A stale/no-op Apply surfaces `setStatus` + an inline error
+  in the review panel. (4) The Diff now uses `editorSettings.editorFontSize`.
+  (5) The post-apply Review Bar is hidden while an unapplied proposal is
+  pending so the two floating panels never overlap.
+
 - **OKF pin:** v0.2 at `3fcbb9f828c2f23d109c855ee403c3a4c81f3a96`.
   New optional trust/lifecycle/attestation fields are inert data. Legacy v0.1,
   `timestamp`, and `# Citations` stay readable without migration or execution.
@@ -458,15 +468,16 @@ retained as the earlier R-1-only checkpoint.
 ## Verification (2026-08-16, Local Assist review moved to main window — B2)
 
 - `npm run typecheck` — pass.
-- `npm test` — 211 files / 1,782 tests pass.
+- `npm test` — 211 files / 1,784 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
 - `git diff --check` — pass.
 - Focused regressions pin: the proposal store / `useLocalAssistProposal`,
   `applyReviewedLocalAssistProposal` (session-keyed write, stale original/session
-  rejection), the main-window `LocalAssistProposalReview` panel, and the
-  detached window's conversation-only rendering plus apply/discard reset.
+  rejection), the main-window `LocalAssistProposalReview` panel, the detached
+  window's conversation-only rendering plus conversation-id-matched reset, the
+  streaming placeholder at generation start, and the inline apply error.
 - Note: the Rust code is unchanged from the v2.6 source candidate; the Rust
   suite (`cargo test`, 368 pass / 2 ignored) was last verified on that tree.
   The live Swift helper still needs rebuilding before any live/package build.

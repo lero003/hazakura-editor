@@ -26,6 +26,7 @@ import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
 import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
+import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import { useCrtMouseTracking } from "../../hooks/app/useCrtMouseTracking";
 
@@ -48,7 +49,9 @@ export type AppShellProps = Omit<
       before: string,
       after: string,
     ) => void;
-    onApplyLocalAssistProposal: (proposal: LocalAssistProposal) => void;
+    onApplyLocalAssistProposal: (
+      proposal: LocalAssistProposal,
+    ) => Promise<{ ok: true } | { ok: false; error: string }>;
     onDiscardLocalAssistProposal: (proposal: LocalAssistProposal) => void;
     onConfirmPendingAssistDiscard: () => void;
     onCancelPendingAssistDiscard: () => void;
@@ -74,6 +77,12 @@ export function AppShell(props: AppShellProps) {
     () => getWorkspaceTabMarkerPaths(props.tabs, props.workspaceRootPath),
     [props.tabs, props.workspaceRootPath],
   );
+  // v2.6 B2.1: when an unapplied proposal is pending, prioritize the new
+  // proposal review over the post-apply Review Bar so the two floating
+  // panels never overlap at the same corner.
+  const pendingProposal = useLocalAssistProposal(
+    props.activeTab?.sessionId ?? null,
+  ).proposal;
 
   return (
     <main className="app-shell">
@@ -131,14 +140,17 @@ export function AppShell(props: AppShellProps) {
       />
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
-      <AppleAssistReviewBar
-        activeTabSessionId={props.activeTab?.sessionId ?? null}
-        diffInitiallyOpen={props.editorSettings.appleAssistDiffInitiallyOpen}
-        menuLanguage={props.menuLanguage}
-        onDiscard={props.onDiscardAppleAssistEdit}
-      />
+      {!pendingProposal ? (
+        <AppleAssistReviewBar
+          activeTabSessionId={props.activeTab?.sessionId ?? null}
+          diffInitiallyOpen={props.editorSettings.appleAssistDiffInitiallyOpen}
+          menuLanguage={props.menuLanguage}
+          onDiscard={props.onDiscardAppleAssistEdit}
+        />
+      ) : null}
       <LocalAssistProposalReview
         activeTab={props.activeTab}
+        fontSize={props.editorSettings.editorFontSize}
         menuLanguage={props.menuLanguage}
         onApply={props.onApplyLocalAssistProposal}
         onDiscard={props.onDiscardLocalAssistProposal}

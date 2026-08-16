@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buildLineDiff } from "../../features/diff/diff";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
@@ -15,10 +15,14 @@ import { SparklesIcon } from "./Icons";
 // *unapplied* proposal — it is distinct from `AppleAssistReviewBar`, which
 // reviews an already-applied `AiEditTransaction`.
 
+type ApplyResult = { ok: true } | { ok: false; error: string };
+
 type LocalAssistProposalReviewProps = {
   activeTab: EditorTab | null;
   menuLanguage: MenuLanguage;
-  onApply: (proposal: LocalAssistProposal) => void;
+  /** The editor's configured font size, so the Diff reads at the same size. */
+  fontSize: number;
+  onApply: (proposal: LocalAssistProposal) => Promise<ApplyResult>;
   onDiscard: (proposal: LocalAssistProposal) => void;
 };
 
@@ -56,11 +60,13 @@ function getProposalReviewCopy(lang: MenuLanguage) {
 export function LocalAssistProposalReview({
   activeTab,
   menuLanguage,
+  fontSize,
   onApply,
   onDiscard,
 }: LocalAssistProposalReviewProps) {
   const copy = getProposalReviewCopy(menuLanguage);
   const { proposal } = useLocalAssistProposal(activeTab?.sessionId ?? null);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const view: CompareViewState | null = useMemo(() => {
     if (!proposal || proposal.streaming) {
@@ -77,9 +83,23 @@ export function LocalAssistProposalReview({
     }
   }, [proposal]);
 
+  // A stale/no-op apply leaves the proposal on screen; clear any previous
+  // inline error when the reviewed proposal changes.
+  useEffect(() => {
+    setApplyError(null);
+  }, [proposal?.requestId]);
+
   if (!proposal || !view) {
     return null;
   }
+
+  const handleApply = async () => {
+    setApplyError(null);
+    const result = await onApply(proposal);
+    if (!result.ok) {
+      setApplyError(result.error);
+    }
+  };
 
   const compareCase: CompareCase = {
     kind: "changes",
@@ -91,10 +111,11 @@ export function LocalAssistProposalReview({
     rightColumnLabel: copy.proposalLabel,
   };
 
+  const safeFontSize = Math.min(Math.max(fontSize, 12), 22);
+
   return (
     <div
       aria-label={copy.regionLabel}
-      aria-live="polite"
       className="local-assist-proposal-review"
       data-testid="local-assist-proposal-review"
       role="region"
@@ -113,7 +134,7 @@ export function LocalAssistProposalReview({
           <button
             type="button"
             className="local-assist-proposal-review-button apply"
-            onClick={() => onApply(proposal)}
+            onClick={() => void handleApply()}
           >
             {copy.applyLabel}
           </button>
@@ -126,7 +147,11 @@ export function LocalAssistProposalReview({
           </button>
         </div>
       </div>
-      <div className="local-assist-proposal-review-diff" role="table">
+      <div
+        className="local-assist-proposal-review-diff"
+        role="table"
+        style={{ fontSize: `${safeFontSize}px` }}
+      >
         <div className="diff-split-row diff-row-header" role="row">
           <span className="diff-line-number" role="columnheader" />
           <span className="diff-text-column" role="columnheader">
@@ -143,6 +168,15 @@ export function LocalAssistProposalReview({
           view={view}
         />
       </div>
+      {applyError ? (
+        <p
+          className="local-assist-proposal-review-error"
+          data-testid="local-assist-proposal-review-error"
+          role="alert"
+        >
+          {applyError}
+        </p>
+      ) : null}
     </div>
   );
 }

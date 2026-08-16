@@ -63,6 +63,7 @@ import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import {
   applyReviewedLocalAssistProposal,
   emitLocalAssistApplyStatus,
+  type ApplyReviewedProposalResult,
 } from "../editor/useAppleAssistApplyHandler";
 import { useAppleAssistProposalHandler } from "../editor/useAppleAssistProposalHandler";
 import { stopAppleAssistGeneration } from "../../lib/tauri";
@@ -633,9 +634,17 @@ export function useAppShellController() {
   // revalidates the pinned target, rewrites the unsaved buffer, and records
   // one `AiEditTransaction` for the existing Review Bar.
   const applyLocalAssistProposal = useCallback(
-    async (proposal: LocalAssistProposal) => {
+    async (proposal: LocalAssistProposal): Promise<ApplyReviewedProposalResult> => {
       if (!activeTab) {
-        return;
+        return { ok: false, error: "Hazakura Local Assist apply failed: no active tab." };
+      }
+      // v2.6 B2.1: never apply/discard while a generation is in flight for
+      // this tab, otherwise a stale candidate could land mid-generation.
+      if (rejectIfAppleAssistLocksTab(activeTab)) {
+        return {
+          ok: false,
+          error: "Hazakura Local Assist apply rejected: a generation is in progress for this document.",
+        };
       }
       const result = await applyReviewedLocalAssistProposal({
         proposal,
@@ -660,33 +669,44 @@ export function useAppShellController() {
           "Hazakura Local Assist applied the reviewed proposal.",
           proposal.requestId,
           proposal.request,
+          proposal.conversationId,
           { shouldApplyToDocument: true },
         );
       } else {
+        // v2.6 B2.1: surface the stale/no-op rejection instead of leaving the
+        // user with a silently-unchanged Diff.
+        setStatus(result.error);
         await emitLocalAssistApplyStatus(
           "failed",
           result.error,
           proposal.requestId,
           proposal.request,
+          proposal.conversationId,
         );
       }
+      return result;
     },
-    [activeTab, setStatus, setTabs],
+    [activeTab, rejectIfAppleAssistLocksTab, setStatus, setTabs],
   );
 
   const discardLocalAssistProposal = useCallback(
     async (proposal: LocalAssistProposal) => {
-      if (activeTab) {
-        localAssistProposalStore.clear(activeTab.sessionId);
+      if (!activeTab) {
+        return;
       }
+      if (rejectIfAppleAssistLocksTab(activeTab)) {
+        return;
+      }
+      localAssistProposalStore.clear(activeTab.sessionId);
       await emitLocalAssistApplyStatus(
         "discarded",
         "Hazakura Local Assist proposal discarded.",
         proposal.requestId,
         proposal.request,
+        proposal.conversationId,
       );
     },
-    [activeTab],
+    [activeTab, rejectIfAppleAssistLocksTab],
   );
 
   // v2.6 A-1: generation-only Local Assist path. The proposal handler

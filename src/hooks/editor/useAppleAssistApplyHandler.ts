@@ -156,6 +156,7 @@ export async function emitLocalAssistApplyStatus(
   message: string,
   requestId: string,
   request: string,
+  conversationId?: string | null,
   options: Pick<AppleAssistApplyStatusEvent, "shouldApplyToDocument"> = {},
 ): Promise<void> {
   try {
@@ -164,6 +165,7 @@ export async function emitLocalAssistApplyStatus(
       message,
       requestId,
       request,
+      conversationId,
       ...options,
       emittedAtMs: Date.now(),
     } satisfies AppleAssistApplyStatusEvent);

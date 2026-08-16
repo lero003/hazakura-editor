@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { emitTo, listen } from "@tauri-apps/api/event";
-import { generateAppleAssistCandidateStreaming } from "../../lib/tauri/appleAssist";
+import { generateAppleAssistCandidateStreaming, type AppleAssistResponse } from "../../lib/tauri/appleAssist";
 import {
   APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS,
   APPLE_ASSIST_MAX_CONVERSATION_TURNS,
@@ -288,5 +288,65 @@ describe("useAppleAssistProposalHandler", () => {
     expect(packet).not.toContain("対象本文は現在の変更案です");
     expect(packet).toContain("対象周辺の文脈");
     expect(packet).toContain("nearby context");
+  });
+
+  it("marks the pending proposal as streaming at generation start", async () => {
+    const contents = "original text";
+    const target = targetSnapshot(contents, contents);
+    let resolveGeneration!: (value: AppleAssistResponse) => void;
+    vi.mocked(generateAppleAssistCandidateStreaming).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveGeneration = resolve;
+        }),
+    );
+
+    renderHook(() =>
+      useAppleAssistProposalHandler({
+        activeTab: {
+          id: "/workspace/note.md",
+          sessionId: "session:note-1",
+          name: "note.md",
+          path: "/workspace/note.md",
+          contents,
+        },
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    proposalListeners[0]?.({
+      payload: {
+        requestId: "streaming-req",
+        actionId: "rewrite_natural",
+        request: "整えて",
+        target,
+        requestedAtMs: 0,
+      },
+    } as never);
+    for (let i = 0; i < 8; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    // While generation is in flight the previous proposal is hidden by a
+    // streaming placeholder, so Apply/Discard cannot target a stale candidate.
+    expect(localAssistProposalStore.getLatest("session:note-1")).toMatchObject({
+      requestId: "streaming-req",
+      streaming: true,
+      candidateText: "",
+    });
+
+    resolveGeneration({
+      operation: "rephrase",
+      candidateText: "proposal text",
+      modelId: "test",
+      latencyMs: 0,
+    });
+    for (let i = 0; i < 8; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    expect(localAssistProposalStore.getLatest("session:note-1")).toMatchObject({
+      requestId: "streaming-req",
+      candidateText: "proposal text",
+    });
   });
 });

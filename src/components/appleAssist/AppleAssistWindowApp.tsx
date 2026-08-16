@@ -491,14 +491,23 @@ export function AppleAssistWindowApp() {
         }
         const payload = event.payload;
         if (payload.phase === "completed" || payload.phase === "discarded") {
-          conversationRef.current = null;
-          setConversation(null);
-          setStreamPreview("");
-          setStreamOriginalText("");
-          setError(null);
-          const presentation = getApplyStatusPresentation(payload, copy);
-          setStatus(presentation.status);
-          pushFeedback({ kind: presentation.feedbackKind });
+          // v2.6 B2.1: only reset the conversation this apply/discard belongs
+          // to. An unrelated tab's proposal must not clear this window's
+          // active conversation.
+          const activeConversationId = conversationRef.current?.id;
+          if (
+            activeConversationId != null &&
+            payload.conversationId === activeConversationId
+          ) {
+            conversationRef.current = null;
+            setConversation(null);
+            setStreamPreview("");
+            setStreamOriginalText("");
+            setError(null);
+            const presentation = getApplyStatusPresentation(payload, copy);
+            setStatus(presentation.status);
+            pushFeedback({ kind: presentation.feedbackKind });
+          }
         }
       },
     )
