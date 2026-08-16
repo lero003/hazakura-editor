@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 A-3 implementation review — Local Assist explicit Diff apply
+Scope: v2.6 A-4 preparation — Local Assist hardening and two-region UX
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
 
 ## Purpose
 
@@ -11,15 +11,17 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## Active Phase
 
-**v2.6 A-3 implementation is the active product lane.** A-1/A-2 are merged
-locally. The current slice adds explicit apply from the Diff review, stale
-revalidation, one `AiEditTransaction`, and the existing Review Bar while keeping
-generation and proposal state separate from the editor buffer until that action.
+**v2.6 A-1–A-3 implementation is complete locally.** The conversation pins the
+target, keeps generation and proposal state separate from the editor buffer, and
+allows only explicit Diff apply through stale revalidation, one
+`AiEditTransaction`, and the existing Review Bar. The next small slices are
+non-blocking A-3 hardening followed by A-4 two-region UX work.
 
-- Package/app version in tree: **`2.6.0`**. A-3 is a review candidate; it is not
-  a release or App Store claim.
+- Package/app version in tree: **`2.6.0`**. A-1–A-3 are locally complete; this is
+  not a release or App Store claim.
 - Local checkpoint: A-2 is committed as `9011d3a6` and the A-3 implementation
-  is now committed on local `main`. A GitHub PR is not required for this review.
+  is complete through `c7ff442b` on local `main`. A GitHub PR is not required
+  for this review.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
@@ -35,7 +37,7 @@ generation and proposal state separate from the editor buffer until that action.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **A-3 implementation candidate** | Explicit Diff apply + stale revalidation + Review Bar; external review pending |
+| **v2.6** | **A-1–A-3 complete locally** | Conversation + explicit Diff apply + stale revalidation + Review Bar; A-4 next |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -44,11 +46,11 @@ generation and proposal state separate from the editor buffer until that action.
 
 ### Immediate next
 
-1. **A-3 external review.** The Diff action sends only the reviewed proposal;
-   the main window revalidates the pinned session/path/range/original, records
-   one transaction, and leaves save as a separate action.
-2. After review, promote A-4 (two-region narrow-layout polish) as the next
-   implementation slice. A-4 remains separate from the A-3 boundary.
+1. **A-3 non-blocking hardening.** Before A-4, consider completion-time target
+   text revalidation, disabling Apply on Diff calculation failure/no-op, and an
+   Apply status watchdog. These do not change the A-3 mutation boundary.
+2. Promote A-4 (two-region narrow-layout polish) after that bounded hardening.
+   A-4 remains separate from the A-3 boundary.
 3. Keep Core AI as a later backend lane after A-3; do not combine model catalog
    work with the conversation/Diff migration.
 
@@ -70,7 +72,7 @@ generation and proposal state separate from the editor buffer until that action.
 
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
 - A-4 layout polish in a separate branch/PR (the separate Draft PR remains
-  isolated from local `main`)
+  isolated from local `main`); do not merge it into the A-3 history
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
@@ -99,8 +101,8 @@ generation and proposal state separate from the editor buffer until that action.
 
 ## Next Human Gates
 
-1. Complete external review of A-3 and confirm explicit-Diff apply, stale
-   rejection, transaction, Review Bar, and no-auto-save boundaries.
+1. Decide and verify the three non-blocking A-3 hardening items without
+   expanding the apply boundary.
 2. Keep A-4 narrow-layout and physical streaming/cancel checks separate.
 3. Keep v2.5 closed; any future package or publication work needs a new explicit
    release gate.

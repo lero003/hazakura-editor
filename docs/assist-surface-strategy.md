@@ -109,7 +109,7 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (v2.6 A-3 candidate)
+### Conversational document edit (v2.6 A-1–A-3 locally reviewed)
 
 v2.6 moves Local Assist from **single-shot generate → immediate buffer apply**
 toward a **proposal-first multi-turn revision conversation**:
@@ -123,11 +123,11 @@ toward a **proposal-first multi-turn revision conversation**:
 Design SoT: `docs/local-assist-conversational-edit-ux.md`.
 Plan IDs A-1–A-4 are recorded in `docs/v2.6-plan.md`.
 
-A-1/A-2 are merged locally and the current A-3 candidate keeps the target
-pinned while adding explicit apply from the Diff. Apply sends the already
-reviewed proposal through the existing transaction / Review Bar path, performs
-stale revalidation, and does not auto-save or invoke generation a second time.
-Do not document the v2.6 candidate as a released product surface.
+A-1–A-3 are complete locally. The pinned target and explicit Diff apply send the
+already reviewed proposal through the existing transaction / Review Bar path,
+perform stale revalidation, and do not auto-save or invoke generation a second
+time. Do not document this locally reviewed source state as a released product
+surface.
 
 Local Assist may keep a **bounded, document-scoped revision conversation**
 for the active editing session (in-memory only). It must not become a

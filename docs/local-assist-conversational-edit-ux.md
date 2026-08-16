@@ -1,6 +1,6 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: A-3 implementation candidate (external review pending)
+Status: A-1–A-3 complete locally; A-4 next
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
 Last reviewed: 2026-08-16
@@ -74,7 +74,7 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 いた。現在は生成を `REQUEST_AI_EDIT_PROPOSAL_EVENT` と proposal status
 へ分離し、反映時にモデルをもう一度呼ばない。
 
-### Current (A-3 implementation candidate)
+### Current (A-3 locally reviewed)
 
 ```text
 対象候補 → 最初の依頼で対象固定
@@ -84,8 +84,8 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 ```
 
 反映しない場合は、案を破棄するか会話を終了できる。どちらも保存は行わ
-ず、本文は変更しない。これは v2.6 A-3 のローカル実装候補であり、公開
-製品や実機 Assist の検証済み状態を意味しない。
+ず、本文は変更しない。これは v2.6 A-3 のローカル実装であり、公開製品や
+実機 Assist の検証済み状態を意味しない。
 
 ### Target (proposal-first conversation)
 
@@ -181,13 +181,13 @@ LocalAssistProposal  -- Diff review の「文書へ反映」-->  AiEditTransacti
 |-------|--------|-----------|
 | **P1** | 生成と本文反映の分離 | 依頼・streaming・Diff review 表示。本文は不変。破棄可。プリセット維持 |
 | **P2** | 対象固定 + 複数ターン | 固定対象、追加指示、案基準の再生成、現在 Diff の置換、新会話 |
-| **P3** | Diff から明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save; local implementation candidate |
+| **P3** | Diff から明示反映 | stale 拒否、transaction 記録、Review Bar、no auto-save; locally reviewed |
 | **P4** | 二領域 UI 仕上げ | conversation / Diff のレスポンシブ配置、focus、a11y、i18n、stale / empty |
 
 **1 run = 1 phase またはそれ以下の検証可能スライス。**  
-A-1 / P1 と A-2 / P2 はローカル `main` に統合済み。現在の実装候補は
-P3 / A-3 のみとし、P4 / A-4 のレイアウト・アクセシビリティ仕上げは
-別のレビュー境界に残す。
+A-1 / P1、A-2 / P2、A-3 / P3 はローカル `main` に統合済み。次の
+hardening と P4 / A-4 のレイアウト・アクセシビリティ仕上げは別の
+レビュー境界に残す。
 
 ## Test Pins (minimum)
 

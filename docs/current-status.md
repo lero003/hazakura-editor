@@ -1,9 +1,9 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-3 review)
+Scope: Current implementation state and next safe actions (v2.6 A-4 preparation)
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
 
 ## Current State
 
@@ -17,12 +17,12 @@ Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release close
 - **v2.5 is released and closed** (user-confirmed). The workspace control and
   delivery-clarity evidence below is historical release evidence, not an open
   upload, TestFlight, tag, or publication gate. Plan: `docs/v2.5-plan.md`.
-- **Active product work is v2.6 A-3.** A-1/A-2 are merged locally. Local Assist
-  pins the tab/session/range/original, keeps follow-up instructions on that
-  target, and now applies only the reviewed Diff proposal through one stale-
-  checked `AiEditTransaction` / Review Bar path. The A-3 candidate is local
-  source work, not a release claim. Plan: `docs/v2.6-plan.md`; queue:
-  `docs/current-work.md`.
+- **v2.6 A-1–A-3 are complete locally.** Local Assist pins the
+  tab/session/range/original, keeps follow-up instructions on that target, and
+  applies only the reviewed Diff proposal through one stale-checked
+  `AiEditTransaction` / Review Bar path. This is local source work, not a
+  release claim. Non-blocking hardening and A-4 remain separate next slices.
+  Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
 - **A-4 remains isolated** in Draft PR #34 for narrow Diff layout polish; it is
   not included in local `main`.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
@@ -243,8 +243,8 @@ Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release close
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.0` package version from package metadata.
-- **Open main queue:** external review of the v2.6 A-3 candidate, followed by
-  separate A-4 narrow-layout and physical Assist checks. v2.5 is released and closed; published
+- **Open main queue:** non-blocking A-3 hardening, followed by separate A-4
+  narrow-layout and physical Assist checks. v2.5 is released and closed; published
   `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
   parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
@@ -571,10 +571,10 @@ Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release close
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.0`**. A-1/A-2 are merged locally and
-  the A-3 review candidate adds a pinned target, bounded multi-turn revision, and
-  explicit Diff apply on the same Local Assist surface; the editor remains
-  unchanged until that explicit action and is never auto-saved.
+- Current development-tree version: **`2.6.0`**. A-1–A-3 are complete locally;
+  the pinned target, bounded multi-turn revision, and explicit Diff apply remain
+  on the same Local Assist surface. The editor remains unchanged until that
+  explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
@@ -1016,8 +1016,8 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Complete external review of **A-3**: explicit Diff apply, stale target
-   rejection, one transaction + Review Bar, and no-auto-save boundary.
+1. Consider the three non-blocking A-3 hardening items: completion-time target
+   text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
 2. Keep A-4's narrow-layout Draft PR and physical streaming/cancel checks
    separate.
 3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not

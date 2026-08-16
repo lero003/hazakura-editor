@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
 
 ## Purpose
 
@@ -17,11 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6 A-3 implementation review.** Mac App Store `2.4.0` is
+Phase: **v2.6 A-4 preparation.** Mac App Store `2.4.0` is
 published and closed for drive-by polish; v2.5 is released and closed. The
-active spine is Local Assist conversation + separate Diff review: A-1 is merged
-and A-2 now pins the target and revises the current proposal; A-3 now applies
-only a reviewed Diff candidate through the stale-checked transaction path.
+active spine is Local Assist conversation + separate Diff review: A-1–A-3 are
+complete locally, and the next bounded work is non-blocking A-3 hardening then
+A-4 two-region UX.
 Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
 `docs/roadmap.md`, `docs/v2.6-plan.md`, and
 `docs/local-assist-conversational-edit-ux.md`.
@@ -36,8 +36,9 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. The selected v2.6 A-3 slice: explicit Diff apply, stale revalidation, one
-   transaction + Review Bar, and no auto-save after bounded multi-turn revision.
+1. The selected v2.6 hardening/A-4 slice: preserve explicit Diff apply, stale
+   revalidation, one transaction + Review Bar, and no auto-save after bounded
+   multi-turn revision.
 2. Hotfix for a reproduced published `2.4.0` blocker.
 3. Verification or a reproduced defect in a separately reopened release lane.
 4. Stale or failing quality gates that block the selected slice.

@@ -1,19 +1,19 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 A-3 implementation candidate — Local Assist explicit Diff apply
+Scope: v2.6 A-4 preparation — Local Assist hardening and two-region UX
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release closed)
+Last reviewed: 2026-08-16 (v2.6 A-2/A-3 review approved; v2.5 release closed)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.0`** A-3 implementation candidate.
+- Package/app version in tree: **`2.6.0`** A-1–A-3 locally complete; A-4 next.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
 - **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
   and the Q-13 measured no-op remain historical release evidence; do not reopen
   that line from v2.6. Plan: `docs/v2.5-plan.md`.
-- **A-1/A-2 are merged locally and A-3 is the review candidate.** Local Assist
+- **A-1–A-3 are complete locally.** Local Assist
   sends a generation-only proposal event; the detached window pins
   tab/session/range/original on the first request, keeps follow-ups on that
   target, and replaces the current proposal in the same Diff review. The Diff
@@ -23,7 +23,7 @@ Last reviewed: 2026-08-16 (v2.6 A-3 implementation candidate; v2.5 release close
   edited request text cannot change Apply provenance. Partial helper output and
   `HAZAKURA_ORIGINAL` markers are
   sanitized before they reach Diff or the editor. A-4 narrow layout remains a
-  separate slice. A GitHub PR is not required for this local review checkpoint.
+  separate slice. A GitHub PR is not required for this local checkpoint.
   Plan: `docs/v2.6-plan.md`; design:
   `docs/local-assist-conversational-edit-ux.md`.
 
@@ -430,8 +430,8 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Complete external review of A-3: reviewed-proposal-only apply, stale target
-   rejection, one transaction + Review Bar, and no-auto-save boundary.
+1. Consider the three non-blocking A-3 hardening items: completion-time target
+   text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
 2. Keep A-4 narrow-layout polish and physical streaming/cancel checks separate;
    A-4 remains Draft PR #34.
 3. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
