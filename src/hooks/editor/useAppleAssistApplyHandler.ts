@@ -320,17 +320,24 @@ const CANDIDATE_LEADIN_SENTENCES: ReadonlyArray<string> = [
   "The revised version is",
 ];
 
+// Inline labels are stripped only when directly followed by a clear
+// separator (":" / "：" / "-" / "–" / "—" / "－"). A bare prefix match would
+// otherwise eat ordinary content such as "修正後の利用規約" or
+// "Translation memory", so the separator is required before any removal.
 const CANDIDATE_INLINE_PREFIXES: ReadonlyArray<string> = [
   "修正後",
+  "改善後",
+  "校正後",
+  "翻訳後",
   "完成した本文",
   "完成した文章",
   "修正した本文",
   "修正した文章",
-  "校正後",
-  "翻訳後",
   "Revised text",
   "Corrected text",
   "Revised version",
+  "Translation",
+  "Translated text",
 ];
 
 /**
@@ -350,8 +357,10 @@ export function stripCandidatePreamble(text: string): string {
 
   const line = lines[first].trim();
 
-  // 1) A standalone lead-in line is dropped entirely; the real content
-  // starts on the next line.
+  // 1) A standalone lead-in sentence (「修正後の文章は以下の通りです。」) is
+  // dropped entirely; the real content starts on the next line. This is an
+  // exact whole-line match, not a prefix match, so a heading or sentence that
+  // merely starts with the same words is left untouched.
   const normalized = line.replace(/[：:。.!！…\s]+$/u, "");
   if (
     CANDIDATE_LEADIN_SENTENCES.some(
@@ -361,16 +370,26 @@ export function stripCandidatePreamble(text: string): string {
     return lines.slice(first + 1).join("\n").trim();
   }
 
-  // 2) An inline prefix such as "修正後：本文…" keeps the remainder.
+  // 2) An inline label ("修正後：本文…" / "Translation: New text") keeps the
+  // remainder, but only when a clear separator follows the label. Without the
+  // separator the line is ordinary content and is left untouched.
   for (const prefix of CANDIDATE_INLINE_PREFIXES) {
-    if (line.startsWith(prefix)) {
-      const rest = line.slice(prefix.length).replace(/^[：:。、\s]+/u, "");
-      if (rest.length > 0) {
-        lines[first] = rest;
-        return lines.slice(first).join("\n").trim();
-      }
-      return lines.slice(first + 1).join("\n").trim();
+    if (!line.startsWith(prefix)) {
+      continue;
     }
+    const after = line.slice(prefix.length);
+    const separator = after.match(/^[：:\-–—－]+\s*/u);
+    if (!separator) {
+      break;
+    }
+    const rest = after.slice(separator[0].length).trim();
+    if (rest.length > 0) {
+      lines[first] = rest;
+      return lines.slice(first).join("\n").trim();
+    }
+    // The label consumed the whole line ("修正後："): drop it and keep what
+    // follows on the next lines.
+    return lines.slice(first + 1).join("\n").trim();
   }
 
   return text;

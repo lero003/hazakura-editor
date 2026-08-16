@@ -384,6 +384,14 @@ describe("sanitizeAppleAssistCandidateText", () => {
 
     expect(sanitizeAppleAssistCandidateText(candidate)).toBe("Revised body.");
   });
+
+  it("keeps ordinary content that merely starts with a label-like word", () => {
+    const japanese = "修正後の利用規約は、8月1日から適用されます。";
+    expect(sanitizeAppleAssistCandidateText(japanese)).toBe(japanese);
+
+    const english = "Translation memory is enabled.";
+    expect(sanitizeAppleAssistCandidateText(english)).toBe(english);
+  });
 });
 
 describe("stripCandidatePreamble", () => {
@@ -396,8 +404,25 @@ describe("stripCandidatePreamble", () => {
     expect(stripCandidatePreamble("修正後の文章は以下の通りです。\n本文")).toBe("本文");
   });
 
-  it("drops a prefix-only line", () => {
-    expect(stripCandidatePreamble("修正後\n本文")).toBe("本文");
+  it("drops a label-only line that ends in a separator", () => {
+    expect(stripCandidatePreamble("修正後：\n本文")).toBe("本文");
+  });
+
+  it("strips an inline label only when a separator follows it", () => {
+    expect(stripCandidatePreamble("修正後：新しい本文")).toBe("新しい本文");
+    expect(stripCandidatePreamble("Translation: New text")).toBe("New text");
+  });
+
+  it("keeps ordinary content that merely starts with a label-like word", () => {
+    expect(
+      stripCandidatePreamble("修正後の利用規約は、8月1日から適用されます。"),
+    ).toBe("修正後の利用規約は、8月1日から適用されます。");
+    expect(stripCandidatePreamble("翻訳後のファイルを開いてください。")).toBe(
+      "翻訳後のファイルを開いてください。",
+    );
+    expect(stripCandidatePreamble("Translation memory is enabled.")).toBe(
+      "Translation memory is enabled.",
+    );
   });
 });
 

@@ -40,8 +40,10 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
   turn (the target text already IS the original, so pinning it duplicated the
   target and wasted the context window), and tells follow-up turns that the
   target text is the current proposal to keep prior changes. Candidate
-  sanitization now strips recognized conversational lead-ins (「修正後の文章は
-  以下の通りです。」 etc.). The Swift helper prompt labels the target
+  sanitization now strips recognized conversational lead-ins (only a full
+  lead-in sentence or a label directly followed by a clear separator such as
+  「修正後：」/「Translation:」; bare prefix matches are kept so ordinary
+  content like 「修正後の利用規約」 or 「Translation memory」 is untouched). The Swift helper prompt labels the target
   「対象本文（これを書き換える）」 and asks for the completed text only. The
   detached window now shows the raw growing draft while a proposal streams
   instead of recomputing a line diff on every partial. The Swift prompt change
@@ -442,7 +444,7 @@ retained as the earlier R-1-only checkpoint.
 ## Verification (2026-08-16, Local Assist prompt + visibility polish)
 
 - `npm run typecheck` — pass.
-- `npm test` — 209 files / 1,774 tests pass.
+- `npm test` — 209 files / 1,777 tests pass.
 - `npm run build:vite` — pass (existing large-chunk warning only).
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
