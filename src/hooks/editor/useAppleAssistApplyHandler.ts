@@ -320,10 +320,12 @@ const CANDIDATE_LEADIN_SENTENCES: ReadonlyArray<string> = [
   "The revised version is",
 ];
 
-// Inline labels are stripped only when directly followed by a clear
-// separator (":" / "：" / "-" / "–" / "—" / "－"). A bare prefix match would
-// otherwise eat ordinary content such as "修正後の利用規約" or
-// "Translation memory", so the separator is required before any removal.
+// Inline labels are stripped only when a clear separator follows the label:
+// a colon (":" / "：") may follow directly, while a dash-family separator
+// ("-" / "–" / "—" / "－") must be surrounded by whitespace so compound
+// words like "Translation-based" are not eaten. A bare prefix match would
+// otherwise strip ordinary content such as "修正後の利用規約" or
+// "Translation memory".
 const CANDIDATE_INLINE_PREFIXES: ReadonlyArray<string> = [
   "修正後",
   "改善後",
@@ -362,23 +364,21 @@ export function stripCandidatePreamble(text: string): string {
   // exact whole-line match, not a prefix match, so a heading or sentence that
   // merely starts with the same words is left untouched.
   const normalized = line.replace(/[：:。.!！…\s]+$/u, "");
-  if (
-    CANDIDATE_LEADIN_SENTENCES.some(
-      (sentence) => normalized === sentence || normalized === `${sentence}：`,
-    )
-  ) {
+  if (CANDIDATE_LEADIN_SENTENCES.includes(normalized)) {
     return lines.slice(first + 1).join("\n").trim();
   }
 
   // 2) An inline label ("修正後：本文…" / "Translation: New text") keeps the
-  // remainder, but only when a clear separator follows the label. Without the
-  // separator the line is ordinary content and is left untouched.
+  // remainder, but only when a clear separator follows the label. A colon may
+  // follow directly; a dash-family separator must be surrounded by whitespace
+  // so "Translation-based" stays intact.
   for (const prefix of CANDIDATE_INLINE_PREFIXES) {
     if (!line.startsWith(prefix)) {
       continue;
     }
     const after = line.slice(prefix.length);
-    const separator = after.match(/^[：:\-–—－]+\s*/u);
+    const separator =
+      after.match(/^[：:]+\s*/u) ?? after.match(/^\s+[-–—－]+\s+/u);
     if (!separator) {
       break;
     }

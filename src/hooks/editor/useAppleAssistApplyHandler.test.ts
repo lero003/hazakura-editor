@@ -411,6 +411,7 @@ describe("stripCandidatePreamble", () => {
   it("strips an inline label only when a separator follows it", () => {
     expect(stripCandidatePreamble("修正後：新しい本文")).toBe("新しい本文");
     expect(stripCandidatePreamble("Translation: New text")).toBe("New text");
+    expect(stripCandidatePreamble("Translation - New text")).toBe("New text");
   });
 
   it("keeps ordinary content that merely starts with a label-like word", () => {
@@ -423,6 +424,9 @@ describe("stripCandidatePreamble", () => {
     expect(stripCandidatePreamble("Translation memory is enabled.")).toBe(
       "Translation memory is enabled.",
     );
+    expect(
+      stripCandidatePreamble("Translation-based workflows are useful."),
+    ).toBe("Translation-based workflows are useful.");
   });
 });
 
