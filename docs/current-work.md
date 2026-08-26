@@ -20,11 +20,14 @@ that mutation boundary. It also exposes Diff column semantics, separates
 cancellation feedback from failure, and shows an honest availability-probe
 state. Source review is complete; physical macOS validation is the next gate.
 
-- Package/app version in tree: **`2.6.0`**. This is a merged source candidate,
-  not yet a source tag, package, upload, review, or publication claim.
+- Package/app version in tree: **`2.6.1`**. This is the next local candidate
+  after merged `2.6.0` A-1–A-4 source work, plus theme and Preview polish. It
+  is not yet a source tag, upload, review, or publication claim.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
   `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The review
-  branch was deleted after merge. Release note: `docs/releases/2.6.0-source-tag.release.md`.
+  branch was deleted after merge. Release notes:
+  `docs/releases/2.6.1-source-tag.release.md`,
+  `docs/releases/2.6.0-source-tag.release.md`.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;

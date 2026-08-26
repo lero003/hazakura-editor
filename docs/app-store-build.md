@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-08-16 (2.6.0 A-1–A-4 source candidate merged; physical validation pending; v2.5 release closed; 2.4.0 remains published)
+Last reviewed: 2026-08-27 (2.6.1 local candidate; physical validation pending; v2.5 release closed; 2.4.0 remains published)
 
 ## Purpose
 
@@ -45,9 +45,10 @@ Agent Workbench behind its existing boundary.
   2026-08-07; OKF v0.2 + chapter Diff on the Safe Editor baseline). See
   `docs/releases/2.4.0-app-store-release-notes.md`. Prior store baselines
   `2.3.0` and `2.0.0` remain historical.
-- Current source / Developer version: `2.6.0` (v2.6 A-1–A-4 source candidate merged; not a released package; physical validation pending; v2.5 is closed).
+- Current source / Developer version: `2.6.1` (local candidate after v2.6 A-1–A-4 plus theme/Preview polish; not a released package; physical validation pending; v2.5 is closed).
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
-  See `docs/current-work.md`, `docs/releases/2.6.0-source-tag.release.md`,
+  See `docs/current-work.md`, `docs/releases/2.6.1-source-tag.release.md`,
+  `docs/releases/2.6.0-source-tag.release.md`,
   `docs/releases/2.4.0-app-store-release-notes.md`,
   and `docs/releases/2.3.0-source-tag.release.md`.
 - Latest local App Store package candidate metadata (version, build

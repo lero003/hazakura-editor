@@ -13,13 +13,14 @@ Latest GitHub source / local-app tag:
 
 Current source-preview candidate:
 
-- `2.6.0` — `2.6.0-source-tag.release.md` (merged on `main`; physical
-  validation and explicit tag/publication approval pending; no binary assets)
+- `2.6.1` — `2.6.1-source-tag.release.md` (local candidate on `main`; physical
+  validation and explicit tag/publication approval pending)
+- `2.6.0` — `2.6.0-source-tag.release.md` (prior A-1–A-4 source candidate)
 
 Latest stored source-tag note:
 
 - `2.3.0-source-tag.release.md`
-- `2.6.0-source-tag.release.md` is the current candidate note; it is not a tag
+- `2.6.1-source-tag.release.md` is the current candidate note; it is not a tag
   or publication record.
 
 Latest published GitHub Release body:

@@ -3,16 +3,18 @@
 Status: Operational
 Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
-Last reviewed: 2026-08-17 (v2.6 reviewed-apply follow-up; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-27 (2.6.1 local candidate; Preview/theme polish; physical validation pending; v2.5 release closed)
 
-Release candidate note: `docs/releases/2.6.0-source-tag.release.md`; physical
+Release candidate note: `docs/releases/2.6.1-source-tag.release.md`; physical
 validation and explicit source-tag / publication decisions remain pending.
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.6.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. **Published Mac App Store (user direction 2026-08-07):
+- Current package/app version: **`2.6.1`** across npm, Tauri, Cargo, and
+  lockfile metadata. This is the next local candidate after merged `2.6.0`
+  A-1–A-4 source work, plus theme/Preview polish. It is not a tag or store
+  publication. **Published Mac App Store (user direction 2026-08-07):
   `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
   include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance lives in ignored
@@ -252,7 +254,7 @@ validation and explicit source-tag / publication decisions remain pending.
 - **v2 Help expansion is in source.** The native Help menu and Command Palette
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
-  diagnostics derive the current `2.6.0` package version from package metadata.
+  diagnostics derive the current `2.6.1` package version from package metadata.
 - **Open main queue:** physical A-4 Assist checks and source-candidate release
   preparation, with non-blocking A-3 hardening kept separate. v2.5 is released and closed; published
   `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
@@ -581,7 +583,8 @@ validation and explicit source-tag / publication decisions remain pending.
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.0`**. A-1–A-4 source work is merged;
+- Current development-tree version: **`2.6.1`**. A-1–A-4 source work is merged
+  plus theme/Preview polish;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
   explicit action and is never auto-saved.
@@ -589,8 +592,8 @@ validation and explicit source-tag / publication decisions remain pending.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
 - Latest published GitHub source / local-app tag: `v2.3.0` (source archive only;
-  see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.0` source candidate
-  note is `docs/releases/2.6.0-source-tag.release.md`; no v2.6 tag exists yet.
+  see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.1` local candidate
+  note is `docs/releases/2.6.1-source-tag.release.md`; no v2.6 tag exists yet.
   Prior checkpoint: `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
@@ -961,7 +964,7 @@ validation and explicit source-tag / publication decisions remain pending.
 
 Use release notes for detailed historical evidence:
 
-- `docs/releases/2.6.0-source-tag.release.md` (current source-preview candidate;
+- `docs/releases/2.6.1-source-tag.release.md` (current source-preview candidate;
   physical validation and tag decision pending)
 - `docs/releases/0.36.0-app-store-release-notes.md`
 - `docs/releases/0.35.0-app-store-release-notes.md`
@@ -1006,7 +1009,7 @@ baseline, and smoke evidence are archived under
   `2.0.0` (user-reported 2026-07-21).
 - `docs/releases/2.3.0-app-store-release-notes.md`: local Book UX (recipe + resume) candidate
   notes; manual installed/TestFlight gate pending.
-- `docs/releases/2.6.0-source-tag.release.md`: current Local Assist conversation /
+- `docs/releases/2.6.1-source-tag.release.md`: current Local Assist conversation /
   Diff source candidate and physical release gate.
 - `docs/releases/2.1.0-app-store-release-notes.md`: historical notes for the
   folded whole-book search + Preview image-hardening slice.

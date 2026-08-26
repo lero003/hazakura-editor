@@ -59,7 +59,8 @@ Active planning surface (intentionally small):
 - `roadmap.md` — **v2.6 A-1–A-4 source candidate merged + physical gate** + v2.5 release closed
 - `current-work.md` — v2.6 release-prep queue and physical Assist gate
 - `v2.6-plan.md` — conversation / Diff review plan; source candidate and remaining gates
-- `releases/2.6.0-source-tag.release.md` — source-preview candidate note; tag pending
+- `releases/2.6.1-source-tag.release.md` — current local candidate note; tag pending
+- `releases/2.6.0-source-tag.release.md` — prior A-1–A-4 source-preview candidate note; tag pending
 - `v2.5-plan.md` — closed workspace-control release plan
 - `local-assist-conversational-edit-ux.md` — conversation / Diff design SoT
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent

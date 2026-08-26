@@ -7,8 +7,9 @@ Last reviewed: 2026-08-27 (Preview paint/selection stability; theme polish; phys
 
 ## Current State
 
-- Package/app version in tree: **`2.6.0`** A-1–A-4 source candidate is merged
-  on `main`; physical validation is the current gate.
+- Package/app version in tree: **`2.6.1`**. Local candidate after A-1–A-4 plus
+  theme/Preview polish; physical validation is the current gate. No tag or
+  store publication.
 - **Preview paint/selection stability (2026-08-27)** sits on `main` with the
   theme polish. Right Preview no longer copies image-resolved innerHTML
   back into React (that rebuilt the tree, killed selection, and collapsed
