@@ -3,6 +3,7 @@ import { buildBlockedImageElement } from "../../../features/editor/imagePolicy";
 const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
 const IMAGE_ORIGIN_ATTR = "data-hazakura-image-origin";
 const REMOTE_IMAGE_URL_ATTR = "data-hazakura-image-remote";
+const IMAGE_LOADING_ATTR = "data-hazakura-image-loading";
 const MAX_CONCURRENT_IMAGE_LOADS = 2;
 const INTERSECTION_FALLBACK_DELAY_MS = 1_200;
 
@@ -12,6 +13,8 @@ type PreviewImageLoaders = {
   loadWorkspaceImage: (absolutePath: string) => Promise<string>;
   /** Persist a resolved/replaced placeholder in the owning React state. */
   onDomChange?: () => void;
+  /** Remember a resolved data URL without rewriting the Preview tree. */
+  onImageResolved?: (cacheKey: string, dataUrl: string) => void;
 };
 
 /**
@@ -158,15 +161,27 @@ async function resolvePreviewImage(
     // Reading is already delayed and concurrency-bounded by this loader.
     // Keeping the transparent placeholder's native lazy flag can make WebKit
     // retain that completed placeholder after `src` changes in a nested
-    // Preview scroll surface.
+    // Preview scroll surface. Drop `loading` immediately, but keep the CSS
+    // reserved height until decode so the card does not collapse then grow.
+    const cacheKey = remoteUrl || path;
     image.removeAttribute("loading");
     image.setAttribute("src", dataUrl);
     image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
     image.removeAttribute(REMOTE_IMAGE_URL_ATTR);
     image.removeAttribute(IMAGE_ORIGIN_ATTR);
+    image.setAttribute(IMAGE_LOADING_ATTR, "");
+    loaders.onImageResolved?.(cacheKey, dataUrl);
     loaders.onDomChange?.();
+    const releaseReservedHeight = () => {
+      if (isCancelled() || !image.isConnected) {
+        return;
+      }
+      image.removeAttribute(IMAGE_LOADING_ATTR);
+    };
     if (typeof image.decode === "function") {
-      void image.decode().catch(() => undefined);
+      void image.decode().then(releaseReservedHeight, releaseReservedHeight);
+    } else {
+      releaseReservedHeight();
     }
   } catch {
     if (isCancelled() || !image.isConnected) {

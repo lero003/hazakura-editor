@@ -3,14 +3,27 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-27 (theme/reading-surface polish on top of Preview contrast; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-27 (Preview paint/selection stability; theme polish; physical validation pending; v2.5 release closed)
 
 ## Current State
 
 - Package/app version in tree: **`2.6.0`** A-1–A-4 source candidate is merged
   on `main`; physical validation is the current gate.
-- **Uncommitted theme polish (2026-08-27)** sits on `main` after
-  `01fade1c` (Preview selection/opaque paper). Reading surfaces stay
+- **Preview paint/selection stability (2026-08-27)** sits on `main` with the
+  theme polish. Right Preview no longer copies image-resolved innerHTML
+  back into React (that rebuilt the tree, killed selection, and collapsed
+  then grew the card). Markdown DOM is owned by a layout-effect paint;
+  resolved images are cached and reapplied before paint; reserved image
+  height stays until decode; HTML commits wait out an in-preview pointer
+  selection. Editor↔Preview scroll sync and view-state writes pause for
+  the whole pointer gesture, not only after a range exists. Dragging a
+  selection to the pane edge auto-scrolls the scroller (WebKit does not
+  do this for descendant content). A click that ends a text selection
+  does not follow Preview links. Debounce, lazy image reads, and
+  scroll-ratio restore on document change are unchanged. Manual check:
+  smoke-checklist item 15.
+- **Theme polish (2026-08-27)** is on `main` after
+  `01fade1c` (Preview selection/opaque paper) as `b27d3aca`. Reading surfaces stay
   readable: L Mode night palette now covers edohigan/crt/shinkai, joke-theme
   text glow/flicker is cleared from L Mode prose, and e-book / whole-book
   Reader pages use the same opaque paper as right Preview. Shell shaders,
@@ -463,6 +476,13 @@ retained as the earlier R-1-only checkpoint.
 - Earlier same-day Book Scope export/reader smoke remains the last direct
   interaction evidence for the multi-file spine. All automated, Rust, audit,
   package, signing, and launch gates above were re-run after the UX review.
+
+## Verification (2026-08-27, Preview paint / selection stability)
+
+- `npm run typecheck` and `npm test` (1814 passed). `git diff --check`
+  pending at report time.
+- Built-app visual smoke of Preview selection + image load was **not**
+  run. Use `docs/smoke-checklist.md` item 15 on a live window.
 
 ## Verification (2026-08-27, theme / reading-surface polish)
 

@@ -59,6 +59,11 @@
   --preview-selection-fg: #0a2430;
 }
 
+.preview-pane-preview .markdown-preview {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 .preview-pane-preview .markdown-preview::selection,
 .preview-pane-preview .markdown-preview ::selection {
   background: var(--preview-selection-bg);
@@ -298,11 +303,13 @@
 .markdown-preview img {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   display: block;
   height: auto;
   margin: 20px 0;
   max-width: 100%;
-  box-shadow: var(--shadow-sm);
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .markdown-preview img[data-hazakura-image-path],

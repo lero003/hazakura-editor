@@ -24,6 +24,14 @@ describe("preview.css", () => {
     );
   });
 
+  it("keeps Preview selection inside the reading card", () => {
+    expect(previewCss).toMatch(
+      /\.preview-pane-preview \.markdown-preview\s*{[^}]*user-select:\s*text/s,
+    );
+    expect(ruleBody(".markdown-preview img")).toMatch(/user-select:\s*none/);
+    expect(ruleBody(".markdown-preview img")).toMatch(/-webkit-user-drag:\s*none/);
+  });
+
   it("keeps Preview selection styling scoped to the right Preview pane", () => {
     expect(previewCss).toMatch(
       /\.preview-pane-preview \.markdown-preview::selection,\n\.preview-pane-preview \.markdown-preview ::selection\s*{[^}]*background:\s*var\(--preview-selection-bg\)[^}]*color:\s*var\(--preview-selection-fg\)/s,

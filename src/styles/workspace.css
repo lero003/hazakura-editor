@@ -2554,6 +2554,8 @@
 
 .preview-pane-preview {
   overflow: auto;
+  overflow-anchor: auto;
+  overscroll-behavior: contain;
 }
 
 .preview-pane-ebook {

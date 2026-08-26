@@ -612,6 +612,15 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
     whole-book Reader chapter: the page/paper stays opaque and the text does
     not flicker or glow, while shell shaders, scanlines, and boot sequences
     remain. Exported HTML is unchanged.
+15. With Preview open on a document that has nearby images and several
+    paragraphs, select a phrase with the mouse. Confirm the highlight stays
+    while a nearby image finishes loading and while the editor keeps receiving
+    keystrokes. Releasing the selection lets Preview catch up without jumping
+    the reading position. Drag-selecting across a scrolling Preview should not
+    snap the pane back to the editor's sync position mid-gesture.
+    On a document taller than the Preview, drag a selection to the bottom
+    (or top) edge and confirm the pane keeps scrolling so the selection can
+    extend. Ending that drag on a link must not open the link.
 
 ## Theme G Media Boundaries Smoke (v1.13+)
 

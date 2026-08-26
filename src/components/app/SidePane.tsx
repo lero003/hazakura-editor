@@ -24,6 +24,7 @@ import { DiffSetupPane } from "../diff/DiffSetupPane";
 import { OutlinePane } from "../editor/OutlinePane";
 import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane";
 import type { PreviewRenderCompleteKind } from "../editor/preview/PreviewPane";
+import { isPreviewSelectionGesture } from "../editor/preview/previewPaintStability";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
@@ -138,8 +139,11 @@ export function SidePane({
     };
   }, []);
   const handlePreviewScroll = useCallback(() => {
-    onPreviewScroll();
     const previewPane = previewPaneRef.current;
+    if (previewPane && isPreviewSelectionGesture(previewPane)) {
+      return;
+    }
+    onPreviewScroll();
     if (!previewPane) {
       return;
     }

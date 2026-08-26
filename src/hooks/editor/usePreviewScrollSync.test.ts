@@ -120,6 +120,102 @@ describe("usePreviewScrollSync", () => {
 
     requestAnimationFrameSpy.mockRestore();
   });
+
+  it("does not move Preview scroll while the user is selecting text in the pane", () => {
+    vi.useFakeTimers();
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 1500,
+      scrollTop: 120,
+    });
+    const paragraph = document.createElement("p");
+    paragraph.textContent = "Selectable preview text";
+    previewPane.append(paragraph);
+    document.body.append(previewPane);
+    const range = document.createRange();
+    range.selectNodeContents(paragraph);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio: vi.fn(() => true) } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+
+    act(() => {
+      result.current.syncPreviewScroll(0.5);
+    });
+    act(() => {
+      frameCallbacks.forEach((callback) => callback(0));
+    });
+
+    expect(previewPane.scrollTop).toBe(120);
+
+    window.getSelection()?.removeAllRanges();
+    previewPane.remove();
+    requestAnimationFrameSpy.mockRestore();
+  });
+
+  it("does not sync either direction during an in-progress Preview pointer gesture", () => {
+    vi.useFakeTimers();
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    const setScrollRatio = vi.fn(() => true);
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 1500,
+      scrollTop: 120,
+    });
+    previewPane.setAttribute("data-preview-selecting", "");
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+
+    act(() => {
+      result.current.syncPreviewScroll(0.5);
+    });
+    act(() => {
+      frameCallbacks.forEach((callback) => callback(0));
+    });
+    expect(previewPane.scrollTop).toBe(120);
+
+    frameCallbacks.length = 0;
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    act(() => {
+      frameCallbacks.forEach((callback) => callback(0));
+    });
+    expect(setScrollRatio).not.toHaveBeenCalled();
+
+    requestAnimationFrameSpy.mockRestore();
+  });
 });
 
 function createPreviewPane({

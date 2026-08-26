@@ -139,7 +139,7 @@ describe("loadPreviewImagesNearViewport", () => {
     host.remove();
   });
 
-  it("does not retain placeholder loading attributes while decode is pending", async () => {
+  it("clears the native lazy flag immediately but keeps reserved height until decode", async () => {
     const host = makeHost(["/large.png"]);
     const image = host.querySelector("img");
     let finishDecode: (() => void) | undefined;
@@ -163,11 +163,12 @@ describe("loadPreviewImagesNearViewport", () => {
       expect(decode).toHaveBeenCalledTimes(1);
     });
     expect(image?.getAttribute("src")).toBe("data:image/png;base64,LARGE");
-    expect(image?.hasAttribute("data-hazakura-image-loading")).toBe(false);
     expect(image?.hasAttribute("loading")).toBe(false);
+    expect(image?.hasAttribute("data-hazakura-image-loading")).toBe(true);
 
     finishDecode?.();
     await Promise.resolve();
+    expect(image?.hasAttribute("data-hazakura-image-loading")).toBe(false);
 
     cleanup();
     host.remove();

@@ -3,6 +3,7 @@ import {
   clampScrollRatio,
   useMarkdownHeadingContext,
 } from "../document/useDocumentOutline";
+import { isPreviewSelectionGesture } from "../../components/editor/preview/previewPaintStability";
 import { usePreviewCleanup } from "./usePreviewCleanup";
 import {
   SCROLL_SYNC_GUARD_RELEASE_MS,
@@ -102,7 +103,7 @@ export function usePreviewScrollSync({
 
       const previewPane = previewPaneRef.current;
 
-      if (!previewPane) {
+      if (!previewPane || isPreviewSelectionGesture(previewPane)) {
         return;
       }
 
@@ -145,7 +146,7 @@ export function usePreviewScrollSync({
       editorScrollFrameRef.current = null;
 
       const currentPreviewPane = previewPaneRef.current;
-      if (!currentPreviewPane) {
+      if (!currentPreviewPane || isPreviewSelectionGesture(currentPreviewPane)) {
         return;
       }
 

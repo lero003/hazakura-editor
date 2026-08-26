@@ -151,6 +151,66 @@ describe("PreviewPane local link routing", () => {
     ).toBe(false);
   });
 
+  it("does not rebuild surrounding Preview nodes when a nearby image resolves", async () => {
+    vi.mocked(openWorkspaceImage).mockResolvedValue({
+      dataUrl: "data:image/png;base64,NEAR",
+      name: "near.png",
+      path: "/workspace/near.png",
+      size: 4,
+    });
+    const { container } = render(
+      <PreviewPane
+        documentPath="/workspace/draft.md"
+        source={["Body paragraph.", "", "![near](near.png)"].join("\n")}
+        workspaceRoot="/workspace"
+      />,
+    );
+    await flushPreviewFrame();
+
+    const paragraph = screen.getByText("Body paragraph.");
+    const image = container.querySelector("img");
+    expect(image).not.toBeNull();
+    MockIntersectionObserver.instances[0]?.trigger(image as HTMLImageElement);
+
+    await waitFor(() => {
+      expect(image?.getAttribute("src")).toBe("data:image/png;base64,NEAR");
+    });
+    expect(screen.getByText("Body paragraph.")).toBe(paragraph);
+  });
+
+  it("holds the current Preview HTML while the user is selecting text", async () => {
+    const { rerender } = render(
+      <PreviewPane
+        documentKey="draft-1"
+        source={["# Hello", "", "Select me"].join("\n")}
+      />,
+    );
+    await flushPreviewFrame();
+
+    const paragraph = screen.getByText("Select me");
+    fireEvent.pointerDown(paragraph);
+
+    rerender(
+      <PreviewPane
+        documentKey="draft-1"
+        source={["# Hello", "", "Select me later"].join("\n")}
+      />,
+    );
+    await flushPreviewFrame();
+
+    expect(screen.getByText("Select me")).toBeTruthy();
+    expect(screen.queryByText("Select me later")).toBeNull();
+
+    fireEvent.pointerUp(document);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Select me later")).toBeTruthy();
+    });
+  });
+
   it("defers the initial markdown render until the next animation frame", async () => {
     const { container } = render(
       <PreviewPane source={["# Large Draft", "", "Body"].join("\n")} />,
@@ -322,6 +382,81 @@ describe("PreviewPane local link routing", () => {
     expect(onOpenLocalLink).toHaveBeenCalledWith(
       "https://hazakura.dev/hazakura-editor/support/",
     );
+  });
+
+  it("does not follow a Preview link when the click ends a text selection", async () => {
+    const onOpenLocalLink = vi.fn();
+    render(
+      <PreviewPane
+        onOpenLocalLink={onOpenLocalLink}
+        source="[Open note](../notes/memo.md)"
+      />,
+    );
+    await flushPreviewFrame();
+
+    const link = screen.getByRole("link", { name: "Open note" });
+    const range = document.createRange();
+    range.selectNodeContents(link);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+
+    const event = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+    });
+    const clickResult = link.dispatchEvent(event);
+
+    expect(clickResult).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onOpenLocalLink).not.toHaveBeenCalled();
+    window.getSelection()?.removeAllRanges();
+  });
+
+  it("scrolls the Preview scroller while a selection drag sits on the bottom edge", async () => {
+    const { container } = render(
+      <PreviewPane
+        source={["# Long", "", "First paragraph.", "", "Last paragraph."].join(
+          "\n",
+        )}
+      />,
+    );
+    await flushPreviewFrame();
+
+    const scroller = container;
+    Object.defineProperty(scroller, "clientHeight", {
+      configurable: true,
+      value: 200,
+    });
+    Object.defineProperty(scroller, "scrollHeight", {
+      configurable: true,
+      value: 1600,
+    });
+    scroller.scrollTop = 40;
+    scroller.getBoundingClientRect = () =>
+      ({
+        top: 0,
+        bottom: 200,
+        left: 0,
+        right: 400,
+        width: 400,
+        height: 200,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    const paragraph = screen.getByText("First paragraph.");
+    fireEvent.pointerDown(paragraph, { button: 0, clientY: 80 });
+    expect(scroller.hasAttribute("data-preview-selecting")).toBe(true);
+
+    fireEvent.pointerMove(document, { buttons: 1, clientY: 196 });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(scroller.scrollTop).toBeGreaterThan(40);
+    fireEvent.pointerUp(document);
+    expect(scroller.hasAttribute("data-preview-selecting")).toBe(false);
   });
 
   it("does not route clicks outside preview links", async () => {
