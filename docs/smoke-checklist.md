@@ -601,6 +601,15 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
     Search for a word present in the current and a later chapter, then press
     Enter and confirm both the active chapter label and manuscript viewport move
     to the next matching chapter. Confirm Shift+Enter moves backward.
+14. Open a throwaway Markdown document containing a paragraph, link, inline code,
+    blockquote, table, and fenced code block. In the right Preview, switch through
+    `light`, `dark`, `yakou`, `shokou`, `edohigan`, `crt`, and `shinkai`; select
+    ordinary text, inline code, fenced code, and a range spanning blocks. Confirm
+    the selected characters remain readable and the selection boundary is visible.
+    For `edohigan`, `crt`, and `shinkai`, confirm the Preview text is stable while
+    the surrounding theme effects remain present. Repeat with macOS Increase
+    Contrast enabled. This check is limited to the right Preview; e-book and
+    exported HTML remain unchanged.
 
 ## Theme G Media Boundaries Smoke (v1.13+)
 

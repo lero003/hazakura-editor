@@ -1,7 +1,7 @@
 /* === preview.css === */
 /* プレビューの洗練 / Markdown Preview Styling */
 .markdown-preview {
-  background: var(--surface-strong);
+  background: var(--preview-reading-surface, var(--surface-strong));
   border: 1px solid color-mix(in srgb, var(--border-strong) 58%, transparent);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -13,6 +13,55 @@
   max-width: 760px;
   padding: 30px 40px 80px;
   width: calc(100% - 28px);
+}
+
+/* Right Preview is a readable presentation surface. Keep selection opaque so
+   the foreground remains legible on both the paper card and fenced code's
+   status background; the editor's global selection palette stays unchanged. */
+.preview-pane-preview {
+  --preview-reading-surface: var(--surface-strong);
+  --preview-selection-bg: #2e6b4f;
+  --preview-selection-fg: #ffffff;
+}
+
+:root[data-theme="dark"] .preview-pane-preview {
+  --preview-selection-bg: #87cba8;
+  --preview-selection-fg: #0e1311;
+}
+
+:root[data-theme="yakou"] .preview-pane-preview {
+  --preview-selection-bg: #a090ff;
+  --preview-selection-fg: #0a0a14;
+}
+
+:root[data-theme="shokou"] .preview-pane-preview {
+  --preview-selection-bg: #3478ad;
+  --preview-selection-fg: #ffffff;
+}
+
+:root[data-theme="edohigan"] .preview-pane-preview {
+  --preview-reading-surface: #342230;
+  --preview-selection-bg: #e8a0b0;
+  --preview-selection-fg: #2a1824;
+}
+
+:root[data-theme="crt"] .preview-pane-preview {
+  --preview-reading-surface: #0d1a11;
+  --preview-selection-bg: #5fe06a;
+  --preview-selection-fg: #040a06;
+}
+
+:root[data-theme="shinkai"] .preview-pane-preview {
+  --preview-reading-surface: #14384a;
+  --preview-selection-bg: #7dd3e0;
+  --preview-selection-fg: #0a2430;
+}
+
+.preview-pane-preview .markdown-preview::selection,
+.preview-pane-preview .markdown-preview ::selection {
+  background: var(--preview-selection-bg);
+  color: var(--preview-selection-fg);
+  text-shadow: none;
 }
 
 .markdown-preview-loading {
@@ -266,6 +315,34 @@
   box-shadow:
     var(--shadow-md),
     0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+:root[data-theme="edohigan"] .preview-pane-preview .markdown-preview {
+  background: linear-gradient(
+    180deg,
+    #3a2838 0%,
+    var(--preview-reading-surface) 30%
+  );
+}
+
+:root[data-theme="crt"] .preview-pane-preview .markdown-preview,
+:root[data-theme="shinkai"] .preview-pane-preview .markdown-preview {
+  background: var(--preview-reading-surface);
+}
+
+:root[data-theme="edohigan"] .preview-pane-preview .markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
+:root[data-theme="shinkai"] .preview-pane-preview .markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
+  text-shadow: none;
+}
+
+:root[data-theme="crt"] .preview-pane-preview .markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
+:root[data-theme="crt"] .preview-pane-preview .markdown-preview:hover
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
+  animation: none;
+  text-shadow: none;
 }
 
 :root[data-theme="edohigan"] .markdown-preview h1,

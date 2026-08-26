@@ -24,6 +24,44 @@ describe("preview.css", () => {
     );
   });
 
+  it("keeps Preview selection styling scoped to the right Preview pane", () => {
+    expect(previewCss).toMatch(
+      /\.preview-pane-preview \.markdown-preview::selection,\n\.preview-pane-preview \.markdown-preview ::selection\s*{[^}]*background:\s*var\(--preview-selection-bg\)[^}]*color:\s*var\(--preview-selection-fg\)/s,
+    );
+    expect(previewCss).toMatch(
+      /\.preview-pane-preview \.markdown-preview::selection,\n\.preview-pane-preview \.markdown-preview ::selection\s*{[^}]*text-shadow:\s*none/s,
+    );
+    expect(previewCss).not.toMatch(
+      /(?:^|\n)\.markdown-preview\s*::selection\s*{/,
+    );
+  });
+
+  it("keeps edgy theme reading surfaces opaque inside the right Preview", () => {
+    expect(ruleBody(".markdown-preview")).toMatch(
+      /background:\s*var\(--preview-reading-surface,\s*var\(--surface-strong\)\)/,
+    );
+    for (const theme of ["edohigan", "crt", "shinkai"]) {
+      expect(previewCss).toMatch(
+        new RegExp(
+          `:root\\[data-theme="${theme}"\\] \\.preview-pane-preview\\s*{[^}]*--preview-reading-surface:\\s*#[0-9a-f]{6}`,
+          "s",
+        ),
+      );
+    }
+  });
+
+  it("removes text effects from edgy Preview content without touching the shell", () => {
+    expect(previewCss).toMatch(
+      /:root\[data-theme="edohigan"\] \.preview-pane-preview \.markdown-preview[^}]*text-shadow:\s*none/s,
+    );
+    expect(previewCss).toMatch(
+      /:root\[data-theme="shinkai"\] \.preview-pane-preview \.markdown-preview[^}]*text-shadow:\s*none/s,
+    );
+    expect(previewCss).toMatch(
+      /:root\[data-theme="crt"\] \.preview-pane-preview \.markdown-preview:hover[^}]*animation:\s*none/s,
+    );
+  });
+
   it("keeps the preview card outside gutter compact", () => {
     const body = ruleBody(".markdown-preview");
 
