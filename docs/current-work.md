@@ -40,10 +40,12 @@ state. Source review is complete; physical macOS validation is the next gate.
 - Conversational Assist design: `docs/local-assist-conversational-edit-ux.md`
 - Assist / Core AI strategy: `docs/assist-surface-strategy.md`
 - **C-0 design spike (complete, design only):** `docs/core-ai-c0-design.md`.
+  External review (advisory): `docs/core-ai-c0-external-review-2026-08-27.md`.
   Owner 2026-08-27: 本番モデル identity は未決（C-1 は選ぶまで始めない）。
   「整える」チップは U-5 後回し。App Store での allowlist オンデバイス DL は許可
   （C-1 で開示正本を同時更新）。大きい級はコード予約・UI 非表示。
-  U-\* UI polish は `SystemLanguageModel` だけで進められる。
+  U-\* UI polish は `SystemLanguageModel` だけで進められる。Goal に
+  「Notion AI 級」と書かない。
 
 ## Lane Timeline
 
