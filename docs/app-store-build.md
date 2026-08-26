@@ -48,6 +48,7 @@ Agent Workbench behind its existing boundary.
 - Current source / Developer version: `2.6.1` (local candidate after v2.6 A-1–A-4 plus theme/Preview polish; not a released package; physical validation pending; v2.5 is closed).
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
   See `docs/current-work.md`, `docs/releases/2.6.1-source-tag.release.md`,
+  `docs/releases/2.6.1-app-store-release-notes.md`,
   `docs/releases/2.6.0-source-tag.release.md`,
   `docs/releases/2.4.0-app-store-release-notes.md`,
   and `docs/releases/2.3.0-source-tag.release.md`.

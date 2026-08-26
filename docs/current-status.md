@@ -5,7 +5,8 @@ Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
 Last reviewed: 2026-08-27 (2.6.1 local candidate; Preview/theme polish; physical validation pending; v2.5 release closed)
 
-Release candidate note: `docs/releases/2.6.1-source-tag.release.md`; physical
+Release candidate note: `docs/releases/2.6.1-source-tag.release.md`; App Store
+What's New draft: `docs/releases/2.6.1-app-store-release-notes.md`. Physical
 validation and explicit source-tag / publication decisions remain pending.
 
 ## Current State
@@ -32,10 +33,12 @@ validation and explicit source-tag / publication decisions remain pending.
   probe state explicit. Physical macOS interaction checks remain separate from
   source, package, TestFlight, and publication claims.
   Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
-- **v2.6 source candidate** is merged on local and remote `main` at
-  `b40bd217`. The review branch and its old Draft PR #34 are historical and
-  deleted; the source tag, package/upload, App Review, and physical-device
-  gates remain pending.
+- **v2.6 source candidate** A-4 finishing is merged at `b40bd217`. The 2.6.1
+  local candidate HEAD is `6ff22dad` (theme/Preview polish plus App Store
+  `bundleVersion` 119). The review branch and its old Draft PR #34 are
+  historical and deleted; the source tag, upload, App Review, and
+  physical-device gates remain pending. A local TestFlight-shaped `.pkg` and
+  What's New draft exist; they are not publication.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -589,6 +592,8 @@ validation and explicit source-tag / publication decisions remain pending.
   on the same Local Assist surface. The editor remains unchanged until that
   explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
+  App Store What's New draft:
+  `docs/releases/2.6.1-app-store-release-notes.md`.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
 - Latest published GitHub source / local-app tag: `v2.3.0` (source archive only;
@@ -966,6 +971,8 @@ Use release notes for detailed historical evidence:
 
 - `docs/releases/2.6.1-source-tag.release.md` (current source-preview candidate;
   physical validation and tag decision pending)
+- `docs/releases/2.6.1-app-store-release-notes.md` (What's New draft for the
+  unpublished store delta since `2.4.0`; not a publication record)
 - `docs/releases/0.36.0-app-store-release-notes.md`
 - `docs/releases/0.35.0-app-store-release-notes.md`
 - `docs/releases/0.32.0-app-store-submission-candidate.release.md`
@@ -1033,19 +1040,39 @@ baseline, and smoke evidence are archived under
 - `docs/okf-spec-pin.md`: shared OKF pin for review + scaffold + v2 inputs.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
+## Local 2.6.1 Candidate Evidence (2026-08-27)
+
+Recorded against `main` at `6ff22dad` plus this notes pass. Details:
+`docs/releases/2.6.1-source-tag.release.md`. Not a tag, upload, or physical
+Assist UI claim.
+
+- TypeScript/Vitest **213 files / 1,819 tests**, App Store surface **10 files /
+  111 tests**, Vite, `cargo fmt --check`, and Rust **368 pass / 2 ignored**.
+- `npm audit` 0 vulnerabilities; `cargo audit` 18 allowed warnings, no
+  high/critical.
+- Fixture helper smoke ok; live helper probe `available` on this host.
+- Helper-enabled App Store preview app built as `2.6.1` /
+  `dev.hazakura.editor`; bundled notices present; native window `1280x820`
+  opened and quit cleanly. Ad-hoc `spctl` Insufficient Context is expected.
+- Release-pre-check hygiene on `v2.3.0..6ff22dad` found no blocking path or
+  secret. A local TestFlight-shaped `.pkg` already exists in ignored
+  provenance.
+
 ## Next Safe Actions
 
 1. Run the v2.6 physical Assist gate: narrow layout, keyboard/focus, VoiceOver,
-   streaming/cancel, and real availability.
-2. After that evidence is recorded, decide whether to tag the source candidate
-   and open the App Store/TestFlight lane; do not imply publication beforehand.
+   streaming/cancel, and real availability. The live helper on this host
+   already answered available; that is not the UI gate.
+2. Local source gates, a What's New draft, and a TestFlight-shaped `.pkg` are
+   prepared. Decide whether to tag and upload only with an explicit
+   publication approval; do not imply publication beforehand.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and Apply status
    watchdog.
-3. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
+4. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
-4. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
+5. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
    and bulk digestion of external review pools until promoted.
-5. Keep v2.5 released/closed and Local Assist on-device, explicit, and
+6. Keep v2.5 released/closed and Local Assist on-device, explicit, and
    diff-reviewable; keep Book order
    app-private and separate from OKF semantics.

@@ -109,6 +109,33 @@ Do not tag or attach a binary if any of the following are true:
 
 When a stop condition fires, fix the issue in the release-candidate worktree and re-run this entire checklist before tagging or publishing.
 
+## Last Run: 2.6.1 local candidate (2026-08-27)
+
+Range: `v2.3.0..6ff22dad` plus the current notes worktree.
+
+Result:
+
+- Section 1 (local paths in diff): the only added hit was a test fixture
+  path `/tmp/note.md`. No product code or public release prose gained a new
+  machine-specific author path.
+- Section 2 (inappropriate GitHub content in diff): hits were limited to
+  public `lero003/hazakura-editor` release-note / README links. No new
+  developer scratch note or private organization wording was added.
+- Section 3 (security concerns in diff): hits were a CSS `tokenValue`
+  helper and diagnostics / sanitizer tests that assert secret-looking
+  fields are not collected. No token, API key, password, private key,
+  internal IP, or internal hostname was added.
+- Section 4 (whole-repo audit): long-lived `/Users/...` examples remain
+  under archive / checklist history. Zero tracked files were found under
+  `src-helpers/apple-assist/.build/`, `src-tauri/target/`, or
+  `node_modules/`.
+- Section 5 (bundled notices): `npm run probe:macos-distribution -- "src-tauri/target/release/bundle/macos/Hazakura Editor.app"`
+  passed with both `LICENSE` and `THIRD_PARTY_NOTICES.md` present.
+
+This pass does not tag or attach a binary. The local App Store `.pkg` is
+an ignored build artifact; provenance lives in
+`docs/internal/app-store-candidates/latest.json`.
+
 ## Last Run: v0.18.0 (2026-06-12)
 
 Range: `v0.17.0..release-candidate worktree` before tagging.

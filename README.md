@@ -172,6 +172,7 @@ For the full implementation inventory and release state, see
 - [v2.3 App Store Release Notes](docs/releases/2.3.0-app-store-release-notes.md): published portable recipe + Reader resume + quality pack line
 - [v2.3 Source Tag Notes](docs/releases/2.3.0-source-tag.release.md): source-only `v2.3.0` checkpoint
 - [v2.6.1 Local Candidate Notes](docs/releases/2.6.1-source-tag.release.md): current local candidate; tag pending
+- [v2.6.1 App Store Release Notes](docs/releases/2.6.1-app-store-release-notes.md): local What's New draft covering the store delta since published `2.4.0`; not a publication record
 - [v2.6 Source Candidate Notes](docs/releases/2.6.0-source-tag.release.md): prior A-1–A-4 source candidate; tag pending
 - [v2.1 App Store Release Notes](docs/releases/2.1.0-app-store-release-notes.md): historical whole-book search candidate notes
 - [v2.0 Source Tag Notes](docs/releases/2.0.0-source-tag.release.md): source-only `v2.0.0` checkpoint
@@ -269,7 +270,7 @@ Developer preview release boundary:
 
 - Current package/app version in the development tree is `2.6.1` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). The `2.6.1` local candidate is on `main`; its tag is pending physical validation and explicit publication approval. Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.4.0` (user-reported 2026-08-07); do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
+- Release notes: [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.1 App Store What's New draft](docs/releases/2.6.1-app-store-release-notes.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-17 (v2.6 reviewed-apply follow-up; v2.5 release closed)
+Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; physical Assist pending; v2.5 release closed)
 
 ## Purpose
 
@@ -22,11 +22,15 @@ state. Source review is complete; physical macOS validation is the next gate.
 
 - Package/app version in tree: **`2.6.1`**. This is the next local candidate
   after merged `2.6.0` A-1–A-4 source work, plus theme and Preview polish. It
-  is not yet a source tag, upload, review, or publication claim.
+  is not yet a source tag, upload, review, or publication claim. Local
+  source gates, a What's New draft, and a TestFlight-shaped `.pkg` are
+  prepared; provenance is in ignored
+  `docs/internal/app-store-candidates/latest.json`.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
-  `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The review
-  branch was deleted after merge. Release notes:
-  `docs/releases/2.6.1-source-tag.release.md`,
+  `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The 2.6.1
+  code candidate is `6ff22dad`. The review branch was deleted after merge.
+  Release notes: `docs/releases/2.6.1-source-tag.release.md`,
+  `docs/releases/2.6.1-app-store-release-notes.md`,
   `docs/releases/2.6.0-source-tag.release.md`.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
@@ -64,12 +68,14 @@ state. Source review is complete; physical macOS validation is the next gate.
    keeps only the conversation, growing-draft preview, and Cancel. The proposal
    is held in a new session-local store separate from `AiEditTransaction`;
    `applyReviewedLocalAssistProposal` is the single apply path.
-2. Record the smoke evidence in `docs/current-status.md` and decide the source
-   tag / App Store-TestFlight lane only after the physical gate.
+2. Local source gates, App Store What's New draft, and a TestFlight-shaped
+   `.pkg` are recorded. Decide the source tag / App Store Connect upload only
+   with an explicit publication approval. Do not treat the local `.pkg` as
+   uploaded.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and an Apply status
    watchdog. They do not change the A-3 mutation boundary.
-3. Keep Core AI as a later backend lane after A-4; do not combine model catalog
+4. Keep Core AI as a later backend lane after A-4; do not combine model catalog
    work with the conversation/Diff migration.
 
 ### Completed in v2.5 development
@@ -89,13 +95,13 @@ state. Source review is complete; physical macOS validation is the next gate.
 ### Do not start yet
 
 - Core AI download / model catalog (needs **C-0** design spike after A-3)
-- v2.6 publication actions (tag, package/upload, App Review, GitHub Release) until
-  the physical gate and an explicit release decision; do not mix them into the
-  A-3 mutation history
+- v2.6 publication actions (source tag, App Store Connect upload, App Review,
+  GitHub Release) until an explicit release decision; do not mix them into
+  mutation-boundary work
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
-- A second package build, upload, or publication without a new human gate
+- A second package rebuild, upload, or publication without a new human gate
 
 ### Closed v2.5 line
 
@@ -120,8 +126,10 @@ state. Source review is complete; physical macOS validation is the next gate.
 
 ## Next Human Gates
 
-1. Run and record the v2.6 detached-window physical gate.
-2. Decide on source tagging and the App Store/TestFlight lane only with fresh
-   evidence and an explicit publication approval.
-3. Keep v2.5 closed; any future package or publication work needs a new explicit
-   release gate.
+1. Run and record the v2.6 detached-window physical gate. The live helper on
+   this host already answered available; that is not the UI gate.
+2. Decide on source tagging and App Store Connect upload only with an explicit
+   publication approval. Use `docs/releases/2.6.1-app-store-release-notes.md`
+   as the What's New draft.
+3. Keep v2.5 closed; any second package rebuild or publication needs a new
+   explicit release gate.

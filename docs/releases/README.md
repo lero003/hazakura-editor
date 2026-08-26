@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-08-16
+Last reviewed: 2026-08-27
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -33,11 +33,13 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- `2.6.1-app-store-release-notes.md` is the current App Store / TestFlight
+  What's New **draft** for package `2.6.1`. It covers the store delta since
+  published `2.4.0` (closed v2.5 workspace control, v2.6 Local Assist, 2.6.1
+  Preview/theme polish). It is not an upload, review, or publication record.
+  Physical Assist validation remains a separate gate.
 - `2.5.0-app-store-release-notes.md` is retained as the **closed v2.5 line's
   draft/evidence**; do not treat it as an active upload or release gate.
-- v2.6 App Store/TestFlight notes are intentionally not promoted yet. The
-  source candidate must pass physical Assist validation before that lane is
-  opened.
 - **`2.4.0` is published** on the Mac App Store (user-reported 2026-08-07):
   OKF v0.2, chapter Diff, Book toolbar and starter clarity. See
   `2.4.0-app-store-release-notes.md`.
@@ -96,6 +98,8 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
+- `2.6.1-app-store-release-notes.md` is the current local candidate draft for
+  the unpublished store delta since `2.4.0`.
 - `2.5.0-app-store-release-notes.md` is the retained draft for the released and
   closed v2.5 workspace-control line.
 - `2.4.0-app-store-release-notes.md` records the published v2.4 App Store copy

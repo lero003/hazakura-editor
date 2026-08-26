@@ -3,13 +3,16 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-27 (Preview paint/selection stability; theme polish; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; Preview/theme polish; physical validation pending; v2.5 release closed)
 
 ## Current State
 
 - Package/app version in tree: **`2.6.1`**. Local candidate after A-1–A-4 plus
-  theme/Preview polish; physical validation is the current gate. No tag or
-  store publication.
+  theme/Preview polish; physical validation is the current interaction gate.
+  No tag or store publication. Local source gates, App Store What's New draft
+  (`docs/releases/2.6.1-app-store-release-notes.md`), and a TestFlight-shaped
+  `.pkg` are prepared. Provenance is in ignored
+  `docs/internal/app-store-candidates/latest.json`.
 - **Preview paint/selection stability (2026-08-27)** sits on `main` with the
   theme polish. Right Preview no longer copies image-resolved innerHTML
   back into React (that rebuilt the tree, killed selection, and collapsed
@@ -222,6 +225,34 @@ Last reviewed: 2026-08-27 (Preview paint/selection stability; theme polish; phys
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+
+## Verification (2026-08-27, 2.6.1 local candidate)
+
+Evidence is from `main` at `6ff22dad` plus this notes pass. It does not
+claim a source tag, upload, App Review, or physical Assist UI gate.
+
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 368 passed / 2 ignored.
+- `npm test` — 213 files / 1,819 tests pass.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `npm audit` — 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` — no high/critical vulnerability;
+  18 allowed transitive GTK / parser / Unicode / GLib warnings.
+- `npm run build:apple-assist-helper:fixture` — ok. Live helper was rebuilt
+  afterward; probe `availability: { kind: "available" }`.
+- `npm run build` — helper-enabled App Store preview app `2.6.1` /
+  `dev.hazakura.editor`. Expected local no-notarization warning remains.
+- `npm run probe:macos-distribution` — bundled `LICENSE` and
+  `THIRD_PARTY_NOTICES.md` present; ad-hoc signature verifies; `spctl`
+  Insufficient Context (expected).
+- `SKIP_BUILD=1 npm run smoke:macos-window` on that preview app — `1280x820`
+  window opened and quit cleanly.
+- `git diff --check` and `docs/release-pre-check.md` hygiene on
+  `v2.3.0..6ff22dad` — no release-blocking path, secret, or tracked build
+  output. Hits were test fixtures, public repo links, and redaction tests.
+- Full smoke-checklist (IME, dirty close, save conflict) and detached-window
+  Assist physical UI were **not run**.
 
 ## Verification (2026-08-09, v2.5 workspace line)
 
