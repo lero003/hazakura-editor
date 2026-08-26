@@ -217,8 +217,10 @@ Hard rules:
 - Do not build a model marketplace UI or provider-add surface.
 
 Sequence: C-0 design spike → C-1 lifecycle → C-2 Assist selection
-(`docs/v2.6-plan.md`). Do not start C-1 until conversational apply (A-3) is
-stable enough that a second model backend will not fork two UX stories.
+(`docs/v2.6-plan.md`). C-0 is recorded in `docs/core-ai-c0-design.md`.
+Do not start C-1 until that document's Open Questions are answered.
+A-3 source apply is merged; a second model backend must still not fork two
+UX stories.
 
 Hazakura Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
 

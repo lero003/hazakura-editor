@@ -39,6 +39,11 @@ state. Source review is complete; physical macOS validation is the next gate.
 - Plan SoT: `docs/v2.6-plan.md`
 - Conversational Assist design: `docs/local-assist-conversational-edit-ux.md`
 - Assist / Core AI strategy: `docs/assist-surface-strategy.md`
+- **C-0 design spike (complete, design only):** `docs/core-ai-c0-design.md`.
+  Owner 2026-08-27: 本番モデル identity は未決（C-1 は選ぶまで始めない）。
+  「整える」チップは U-5 後回し。App Store での allowlist オンデバイス DL は許可
+  （C-1 で開示正本を同時更新）。大きい級はコード予約・UI 非表示。
+  U-\* UI polish は `SystemLanguageModel` だけで進められる。
 
 ## Lane Timeline
 
@@ -75,8 +80,9 @@ state. Source review is complete; physical macOS validation is the next gate.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and an Apply status
    watchdog. They do not change the A-3 mutation boundary.
-4. Keep Core AI as a later backend lane after A-4; do not combine model catalog
-   work with the conversation/Diff migration.
+4. C-0 is recorded. Do not start C-1 catalog download until the owner answers
+   in `docs/core-ai-c0-design.md` Open Questions, and do not mix it into the
+   v2.6 apply boundary. U-\* UI polish is a separate slice on the System path.
 
 ### Completed in v2.5 development
 
@@ -94,7 +100,7 @@ state. Source review is complete; physical macOS validation is the next gate.
 
 ### Do not start yet
 
-- Core AI download / model catalog (needs **C-0** design spike after A-3)
+- Core AI download / model catalog (**C-1**; C-0 design is `docs/core-ai-c0-design.md`. Needs owner Q1–Q4 and a later slice; not v2.6 apply work)
 - v2.6 publication actions (source tag, App Store Connect upload, App Review,
   GitHub Release) until an explicit release decision; do not mix them into
   mutation-boundary work

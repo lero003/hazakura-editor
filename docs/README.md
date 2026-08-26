@@ -65,6 +65,7 @@ Active planning surface (intentionally small):
 - `v2.5-plan.md` — closed workspace-control release plan
 - `local-assist-conversational-edit-ux.md` — conversation / Diff design SoT
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent
+- `core-ai-c0-design.md` — C-0 design spike (Foundation Models 次世代 / Core AI / Notion-級 UI). Design only; not implementation.
 - `v2.4-plan.md` — closed Book depth plan
 - `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 Book design SoT
 - `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
