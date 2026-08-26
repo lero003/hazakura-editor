@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; physical Assist pending; v2.5 release closed)
+Last reviewed: 2026-08-27 (C-0 pre-development lock; 2.6.1 local candidate; physical Assist pending)
 
 ## Purpose
 
@@ -39,13 +39,14 @@ state. Source review is complete; physical macOS validation is the next gate.
 - Plan SoT: `docs/v2.6-plan.md`
 - Conversational Assist design: `docs/local-assist-conversational-edit-ux.md`
 - Assist / Core AI strategy: `docs/assist-surface-strategy.md`
-- **C-0 design spike (complete, design only):** `docs/core-ai-c0-design.md`.
-  External review (advisory): `docs/core-ai-c0-external-review-2026-08-27.md`.
-  Owner 2026-08-27: 本番モデル identity は未決（C-1 は選ぶまで始めない）。
-  「整える」チップは U-5 後回し。App Store での allowlist オンデバイス DL は許可
-  （C-1 で開示正本を同時更新）。大きい級はコード予約・UI 非表示。
-  U-\* UI polish は `SystemLanguageModel` だけで進められる。Goal に
-  「Notion AI 級」と書かない。
+- **C-0 design spike (pre-development lock):** `docs/core-ai-c0-design.md`.
+  Advisory reviews: `docs/core-ai-c0-external-review-2026-08-27.md`.
+  Gate: **U-\* / H-1 / G-1 = GO.** **C-1 HOLD** until identity + expanded
+  `resourceManifest` + Background Assets/AOT delivery lock. **C-2 HOLD** until
+  backend-specific availability and Rust-owned `selectedId`. Do not touch Apply.
+  Owner 2026-08-27: 本番モデル identity は未決。「整える」は U-5 後回し。
+  App Store での allowlist オンデバイス DL は許可（開示正本を同時更新）。
+  大きい級はコード予約・UI 非表示。Goal に「Notion AI 級」と書かない。
 
 ## Lane Timeline
 
@@ -82,9 +83,9 @@ state. Source review is complete; physical macOS validation is the next gate.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and an Apply status
    watchdog. They do not change the A-3 mutation boundary.
-4. C-0 is recorded. Do not start C-1 catalog download until the owner answers
-   in `docs/core-ai-c0-design.md` Open Questions, and do not mix it into the
-   v2.6 apply boundary. U-\* UI polish is a separate slice on the System path.
+4. C-0 is locked. Do not start C-1 until identity + D25 manifest + D19
+   delivery. Do not start C-2 until D24/D20. Do not mix either into the v2.6
+   apply boundary. U-\* / H-1 / G-1 may proceed on the System path.
 
 ### Completed in v2.5 development
 
@@ -102,7 +103,9 @@ state. Source review is complete; physical macOS validation is the next gate.
 
 ### Do not start yet
 
-- Core AI download / model catalog (**C-1**; C-0 design is `docs/core-ai-c0-design.md`. Needs owner Q1–Q4 and a later slice; not v2.6 apply work)
+- Core AI download / model catalog (**C-1**; C-0 is locked in
+  `docs/core-ai-c0-design.md`. Needs a production identity plus D25/D19.
+  Not v2.6 apply work)
 - v2.6 publication actions (source tag, App Store Connect upload, App Review,
   GitHub Release) until an explicit release decision; do not mix them into
   mutation-boundary work

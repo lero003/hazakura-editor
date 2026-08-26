@@ -124,3 +124,22 @@ Treat as hints, not consensus.
 ## Suggested next slice (advisory)
 
 If the owner wants implementation next, **U-1** (composer-first + draft hero on SystemLanguageModel) is still the smallest slice. Fold P1–P7 into that PR’s acceptance, and do not wait for Core AI.
+
+---
+
+## Final pre-dev review (folded into C-0, 2026-08-27)
+
+A follow-up review judged C-0 **APPROVE WITH CHANGES**. Those changes are now
+in the design SoT as D10/D19/D20/D24–D29:
+
+| Pri | Item | Decision id |
+|---|---|---|
+| P1 | Composer disable must follow **selected backend**, not SystemLanguageModel alone | D24 |
+| P1 | TS generate must not send `backend` / catalog id. Rust `selectedId` is the only selector | D20 |
+| P1 | Catalog needs `archiveSha256` **and** expanded `resourceManifest`; verify before load | D25 |
+| P2 | Helper folds SDK errors into a Hazakura taxonomy | D26 |
+| P2 | `changeSummary` is auxiliary; Diff after sanitizer is canonical | D10 |
+| P2 | Compare Background Assets + AOT, then lock delivery | D19 + D28 |
+| P3 | Overall mermaid: partials go companion-only; finals go main store → Diff | D27 |
+
+**Gate now:** U-\* / H-1 / G-1 = GO. C-1 after identity + D25 + D19. C-2 after D24 + D20. Apply: do not touch.

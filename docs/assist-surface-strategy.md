@@ -217,8 +217,10 @@ Hard rules:
 - Do not build a model marketplace UI or provider-add surface.
 
 Sequence: C-0 design spike → C-1 lifecycle → C-2 Assist selection
-(`docs/v2.6-plan.md`). C-0 is recorded in `docs/core-ai-c0-design.md`.
-Do not start C-1 until that document's Open Questions are answered.
+(`docs/v2.6-plan.md`). C-0 is a pre-development lock in
+`docs/core-ai-c0-design.md`. Do not start C-1 until identity + expanded
+manifest + Background Assets/AOT delivery. Do not start C-2 until
+backend-specific availability and Rust-owned `selectedId`.
 A-3 source apply is merged; a second model backend must still not fork two
 UX stories.
 

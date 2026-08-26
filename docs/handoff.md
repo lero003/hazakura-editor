@@ -13,13 +13,12 @@ Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; Preview/theme
   (`docs/releases/2.6.1-app-store-release-notes.md`), and a TestFlight-shaped
   `.pkg` are prepared. Provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
-- **C-0 Core AI / next Foundation Models design** is recorded in
-  `docs/core-ai-c0-design.md` (design only). Four-lens external review:
-  `docs/core-ai-c0-external-review-2026-08-27.md` (advisory). Default brain
-  stays `SystemLanguageModel`. Do not start C-1 until a production model
-  identity is chosen. U-\* UI polish can ship on the System path. Do not
-  reopen the v2.6 apply boundary. Do not use “Notion AI 級” as a Goal or
-  release claim.
+- **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
+  Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
+  **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +
+  Background Assets/AOT. C-2 waits on backend-specific availability and
+  Rust-owned `selectedId`. TS generate must not send `backend`. Do not
+  reopen the v2.6 apply boundary. Do not use “Notion AI 級” as a Goal.
 - **Preview paint/selection stability (2026-08-27)** sits on `main` with the
   theme polish. Right Preview no longer copies image-resolved innerHTML
   back into React (that rebuilt the tree, killed selection, and collapsed
