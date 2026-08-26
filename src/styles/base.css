@@ -127,12 +127,19 @@
 }
 
 :root[data-theme="yakou"] .start-kicker,
-:root[data-theme="shokou"] .start-kicker {
+:root[data-theme="shokou"] .start-kicker,
+:root[data-theme="edohigan"] .start-kicker,
+:root[data-theme="shinkai"] .start-kicker {
   background: var(--accent-gradient);
   background-clip: text;
   color: var(--accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="crt"] .start-kicker {
+  color: var(--accent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 48%, transparent);
 }
 
 /* ダイアログ外周のテーマ味付け (light/dark は既定シャドウのまま) */
@@ -161,7 +168,8 @@
   border-color: color-mix(in srgb, var(--accent) 18%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 36px color-mix(in srgb, var(--accent) 7%, transparent);
+    0 0 36px color-mix(in srgb, var(--accent) 7%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent);
 }
 
 :root[data-theme="shokou"] .close-dialog,
@@ -169,7 +177,8 @@
   border-color: color-mix(in srgb, var(--accent-secondary) 16%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 32px color-mix(in srgb, var(--accent-secondary) 6%, transparent);
+    0 0 32px color-mix(in srgb, var(--accent-secondary) 6%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 46%, transparent);
 }
 
 :root[data-theme="crt"] .close-dialog,
@@ -177,7 +186,13 @@
   border-color: color-mix(in srgb, var(--accent) 22%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 24px color-mix(in srgb, var(--accent) 10%, transparent);
+    0 0 24px color-mix(in srgb, var(--accent) 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+:root[data-theme="crt"] .preferences-header h2 {
+  color: var(--accent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 36%, transparent);
 }
 
 

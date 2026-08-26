@@ -269,8 +269,37 @@
   min-height: 120px;
   padding: clamp(24px, 5vw, 52px);
   border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
-  background: var(--surface);
-  box-shadow: 0 18px 48px color-mix(in srgb, var(--text) 7%, transparent);
+  background: var(--preview-reading-surface, var(--surface));
+  box-shadow:
+    0 18px 48px color-mix(in srgb, var(--text) 7%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 14%, transparent);
+}
+
+:root[data-theme="edohigan"] .book-reader-chapter .markdown-preview {
+  background: #342230;
+}
+
+:root[data-theme="crt"] .book-reader-chapter .markdown-preview {
+  background: #0d1a11;
+}
+
+:root[data-theme="shinkai"] .book-reader-chapter .markdown-preview {
+  background: #14384a;
+}
+
+:root[data-theme="edohigan"] .book-reader-chapter .markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
+:root[data-theme="shinkai"] .book-reader-chapter .markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
+  text-shadow: none;
+}
+
+:root[data-theme="crt"] .book-reader-chapter .markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
+:root[data-theme="crt"] .book-reader-chapter .markdown-preview:hover
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
+  animation: none;
+  text-shadow: none;
 }
 
 .book-reader-empty {
@@ -1924,8 +1953,8 @@
 
 .start-logo {
   aspect-ratio: 1;
-  background: #ffffff;
-  border: 1px solid rgba(154, 64, 87, 0.2);
+  background: var(--surface-strong);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-sm);
   display: block;
@@ -2084,6 +2113,12 @@
   border: 0;
   padding: 7px 13px;
   color: var(--accent-contrast, #ffffff);
+}
+
+:root[data-theme="crt"] .start-actions:not(.start-actions-secondary) > button:first-child,
+:root[data-theme="crt"] .start-actions-primary button,
+:root[data-theme="crt"] .start-resume-button {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .image-preview-pane {

@@ -5,10 +5,13 @@
   position: absolute;
   top: 56px;
   right: 24px;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 14%, transparent);
+  backdrop-filter: blur(16px) saturate(1.06);
   padding: 12px 36px 12px 16px;
   z-index: var(--z-toast);
   display: flex;
@@ -25,7 +28,9 @@
 :root[data-theme="edohigan"] .find-panel,
 :root[data-theme="crt"] .find-panel,
 :root[data-theme="shinkai"] .find-panel {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 8%, transparent);
 }
 
 .find-panel__row {

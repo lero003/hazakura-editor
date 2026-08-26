@@ -108,6 +108,14 @@ describe("workspace.css", () => {
     expect(ruleBody(".reference-pdf-stage")).toMatch(/overflow:\s*auto/);
   });
 
+  it("keeps the Start Panel mark on theme tokens instead of a leftover sakura fill", () => {
+    const logo = ruleBody(".start-logo");
+
+    expect(logo).toMatch(/background:\s*var\(--surface-strong\)/);
+    expect(logo).toMatch(/border:\s*1px solid color-mix\(in srgb, var\(--accent\) 28%, var\(--border\)\)/);
+    expect(logo).not.toMatch(/#ffffff|rgba\(154, 64, 87/);
+  });
+
   it("lets text references follow the Preview font-size setting", () => {
     const textSurface = ruleBody(".reference-text-surface");
 

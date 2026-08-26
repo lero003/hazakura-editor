@@ -608,8 +608,10 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
     the selected characters remain readable and the selection boundary is visible.
     For `edohigan`, `crt`, and `shinkai`, confirm the Preview text is stable while
     the surrounding theme effects remain present. Repeat with macOS Increase
-    Contrast enabled. This check is limited to the right Preview; e-book and
-    exported HTML remain unchanged.
+    Contrast enabled. Repeat the same reading check in e-book pages and a
+    whole-book Reader chapter: the page/paper stays opaque and the text does
+    not flicker or glow, while shell shaders, scanlines, and boot sequences
+    remain. Exported HTML is unchanged.
 
 ## Theme G Media Boundaries Smoke (v1.13+)
 

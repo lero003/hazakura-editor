@@ -62,11 +62,11 @@
 
   /* CodeMirror 深海用配色 / CodeMirror Shinkai Colors
      --cm-bg / --cm-gutter-bg を半透明にし、背景の水中シェーダー (canvas) を
-     エディタ領域でも透かす。これによりファイルを開いていても水流・チリが見える。 */
-  --cm-bg: rgba(15, 53, 72, 0.55);
+     エディタ周辺でも透かす。本文は 0.72 まで濃くして読み、余白とガターで水流を残す。 */
+  --cm-bg: rgba(15, 53, 72, 0.72);
   --cm-fg: #d4ecf2;
   --cm-caret: #f2d8a0;
-  --cm-gutter-bg: rgba(8, 34, 46, 0.6);
+  --cm-gutter-bg: rgba(8, 34, 46, 0.78);
   --cm-gutter-border: #1d4a60;
   --cm-gutter-fg: #7ba8bc;
   --cm-active-line-bg: rgba(125, 211, 224, 0.07);
@@ -159,14 +159,19 @@
        光の柱が透けるよう、従来より薄く (0.09 → 0.05)。 */
     radial-gradient(
       ellipse 120% 60% at 50% 0%,
-      rgba(180, 230, 240, 0.05) 0%,
+      rgba(180, 230, 240, 0.08) 0%,
       transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 70% at 78% 18%,
+      rgba(125, 211, 224, 0.045) 0%,
+      transparent 62%
     ),
     /* 中心は透明、端へ静かに暗くなるビネット (視線を中央へ) */
     radial-gradient(
       ellipse at center,
       transparent 62%,
-      rgba(0, 16, 28, 0.32) 100%
+      rgba(0, 16, 28, 0.36) 100%
     );
   inset: 0;
   mix-blend-mode: screen;
@@ -269,8 +274,8 @@
    ゆっくり往復させ、水中の光が静かに流れるように見せる。
    縞ではなく滑らかな radial-gradient が動くのでデジタル感がない。 */
 @keyframes shinkaiFlow {
-  0%, 100% { background-position: 0% 0%, 0 0; }
-  50% { background-position: 8% 0%, 0 0; }
+  0%, 100% { background-position: 0% 0%, 0% 0%, 0 0; }
+  50% { background-position: 8% 0%, -4% 3%, 0 0; }
 }
 
 /* 背景シェーダー (.shinkai-canvas) の「水中の息吹」演出。

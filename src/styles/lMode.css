@@ -51,7 +51,7 @@
      spec in EditorPane.tsx reads these tokens (--cm-bg,
      --cm-fg, --cm-caret, --cm-selection-bg, ...). Without
      these overrides, the menu theme's values (light / dark /
-     edohigan / yakou / shokou) bleed into the writing surface
+     edohigan / yakou / shokou / crt / shinkai) bleed into the writing surface
      and break the cross-theme consistency the user expects.
      L Mode is a self-contained writing surface — the chrome
      here is a closed palette, not a theme overlay. The gutter
@@ -86,11 +86,13 @@
 }
 
 /* --- 0b. Night variant — for dark-base menu themes ---
-   When the menu theme is dark or yakou, L Mode shifts from
-   paper-warm cream to a warm dark surface. The trigger is
-   the existing `data-theme` attribute, not a new L Mode
-   setting — flipping the menu theme flips the writing
-   surface with it.
+   When the menu theme is a dark base (dark, yakou, edohigan,
+   crt, shinkai), L Mode shifts from paper-warm cream to a
+   warm dark surface. The trigger is the existing `data-theme`
+   attribute, not a new L Mode setting — flipping the menu
+   theme flips the writing surface with it. Joke-theme chrome
+   (shaders, scanlines, boot) can stay around the page; the
+   prose itself stays a closed writing palette.
 
    Design principles for the night palette:
    - Deep warm dark, never pure black. Pure black on LCD
@@ -109,7 +111,10 @@
      the floating chrome — tabs-row, status bar). They stay
      subtle because the goal is quiet, not lifted. */
 :root[data-l-mode="on"][data-theme="dark"],
-:root[data-l-mode="on"][data-theme="yakou"] {
+:root[data-l-mode="on"][data-theme="yakou"],
+:root[data-l-mode="on"][data-theme="edohigan"],
+:root[data-l-mode="on"][data-theme="crt"],
+:root[data-l-mode="on"][data-theme="shinkai"] {
   /* Surfaces — deep warm dark */
   --bg: #1a1612;
   --surface: #221d18;
@@ -786,21 +791,39 @@
 :root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-cell.added,
 :root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-line-number.added,
 :root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-cell.added,
-:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.added {
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.added,
+:root[data-l-mode="on"][data-theme="edohigan"] .l-mode-change-review-diff .diff-cell.added,
+:root[data-l-mode="on"][data-theme="edohigan"] .l-mode-change-review-diff .diff-line-number.added,
+:root[data-l-mode="on"][data-theme="crt"] .l-mode-change-review-diff .diff-cell.added,
+:root[data-l-mode="on"][data-theme="crt"] .l-mode-change-review-diff .diff-line-number.added,
+:root[data-l-mode="on"][data-theme="shinkai"] .l-mode-change-review-diff .diff-cell.added,
+:root[data-l-mode="on"][data-theme="shinkai"] .l-mode-change-review-diff .diff-line-number.added {
   background: color-mix(in srgb, var(--diff-added-fg) 24%, transparent);
 }
 
 :root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-cell.removed,
 :root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-line-number.removed,
 :root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-cell.removed,
-:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.removed {
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.removed,
+:root[data-l-mode="on"][data-theme="edohigan"] .l-mode-change-review-diff .diff-cell.removed,
+:root[data-l-mode="on"][data-theme="edohigan"] .l-mode-change-review-diff .diff-line-number.removed,
+:root[data-l-mode="on"][data-theme="crt"] .l-mode-change-review-diff .diff-cell.removed,
+:root[data-l-mode="on"][data-theme="crt"] .l-mode-change-review-diff .diff-line-number.removed,
+:root[data-l-mode="on"][data-theme="shinkai"] .l-mode-change-review-diff .diff-cell.removed,
+:root[data-l-mode="on"][data-theme="shinkai"] .l-mode-change-review-diff .diff-line-number.removed {
   background: color-mix(in srgb, var(--diff-removed-fg) 26%, transparent);
 }
 
 :root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-cell.blank,
 :root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-line-number.blank,
 :root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-cell.blank,
-:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.blank {
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.blank,
+:root[data-l-mode="on"][data-theme="edohigan"] .l-mode-change-review-diff .diff-cell.blank,
+:root[data-l-mode="on"][data-theme="edohigan"] .l-mode-change-review-diff .diff-line-number.blank,
+:root[data-l-mode="on"][data-theme="crt"] .l-mode-change-review-diff .diff-cell.blank,
+:root[data-l-mode="on"][data-theme="crt"] .l-mode-change-review-diff .diff-line-number.blank,
+:root[data-l-mode="on"][data-theme="shinkai"] .l-mode-change-review-diff .diff-cell.blank,
+:root[data-l-mode="on"][data-theme="shinkai"] .l-mode-change-review-diff .diff-line-number.blank {
   background: color-mix(in srgb, var(--text-muted) 12%, transparent);
 }
 
@@ -913,6 +936,17 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Joke-theme text effects stay on Normal-mode editor chrome.
+     L Mode is a quiet sheet of paper; chromatic aberration and
+     underwater glow would fight the serif measure. */
+  animation: none;
+  text-shadow: none;
+}
+
+:root[data-l-mode="on"] .cm-editor:focus-within .cm-content,
+:root[data-l-mode="on"] .cm-editor:hover .cm-content {
+  animation: none;
+  text-shadow: none;
 }
 
 :root[data-l-mode="on"] .cm-line {

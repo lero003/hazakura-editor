@@ -134,6 +134,11 @@
       rgba(0, 0, 0, 0) 4px
     ),
     radial-gradient(
+      ellipse 70% 48% at 50% 42%,
+      rgba(95, 224, 106, 0.06) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
       ellipse at center,
       transparent 52%,
       rgba(0, 0, 0, 0.46) 100%
@@ -200,6 +205,7 @@
 :root[data-theme="crt"] .crt-overlay {
   background-position:
     0 0,
+    calc((var(--crt-mx) - 0.5) * 24px) calc((var(--crt-my) - 0.5) * 24px),
     calc((var(--crt-mx) - 0.5) * 40px) calc((var(--crt-my) - 0.5) * 40px);
 }
 

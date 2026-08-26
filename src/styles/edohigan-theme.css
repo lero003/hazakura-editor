@@ -44,10 +44,10 @@
   --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 18%, transparent);
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
-  --cm-bg: rgba(38, 26, 38, 0.58);
+  --cm-bg: rgba(38, 26, 38, 0.74);
   --cm-fg: #f2e4e8;
   --cm-caret: #e8a0b0;
-  --cm-gutter-bg: rgba(28, 18, 30, 0.62);
+  --cm-gutter-bg: rgba(28, 18, 30, 0.78);
   --cm-gutter-border: #4a3548;
   --cm-gutter-fg: #b898a4;
   --cm-active-line-bg: rgba(232, 160, 176, 0.07);
@@ -122,18 +122,23 @@
   background:
     radial-gradient(
       ellipse 110% 48% at 50% 0%,
-      rgba(232, 160, 176, 0.07) 0%,
+      rgba(232, 160, 176, 0.11) 0%,
       transparent 58%
     ),
     radial-gradient(
+      ellipse 70% 36% at 18% 88%,
+      rgba(160, 112, 176, 0.05) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
       ellipse 80% 40% at 70% 100%,
-      rgba(200, 176, 112, 0.04) 0%,
+      rgba(200, 176, 112, 0.07) 0%,
       transparent 55%
     ),
     radial-gradient(
       ellipse at center,
       transparent 64%,
-      rgba(10, 6, 14, 0.38) 100%
+      rgba(10, 6, 14, 0.4) 100%
     );
   inset: 0;
   mix-blend-mode: normal;

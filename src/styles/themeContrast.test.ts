@@ -83,3 +83,23 @@ describe("Preview theme contrast", () => {
     expect(tokenValue(selector, "--preview-reading-surface")).toBe(surface);
   });
 });
+
+describe("solid accent control contrast", () => {
+  it("keeps light-theme accent buttons on a dark green with white-adjacent text", () => {
+    expect(
+      contrastRatio("#2e6b4f", "#ffffff"),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps dark-theme sage accent readable against the dark surface", () => {
+    expect(
+      contrastRatio("#87cba8", "#141a17"),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps CRT phosphor accent readable against the CRT surface", () => {
+    expect(
+      contrastRatio("#5fe06a", "#08120c"),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+});

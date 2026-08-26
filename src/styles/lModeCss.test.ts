@@ -112,10 +112,32 @@ describe("lMode.css", () => {
       /:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-cell\.removed,\s*:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-fg\) 18%/s,
     );
     expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\]\[data-theme="dark"\] \.l-mode-change-review-diff \.diff-cell\.added,[^}]*:root\[data-l-mode="on"\]\[data-theme="yakou"\] \.l-mode-change-review-diff \.diff-line-number\.added\s*{[^}]*var\(--diff-added-fg\) 24%/s,
+      /:root\[data-l-mode="on"\]\[data-theme="dark"\] \.l-mode-change-review-diff \.diff-cell\.added,[^}]*:root\[data-l-mode="on"\]\[data-theme="shinkai"\] \.l-mode-change-review-diff \.diff-line-number\.added\s*{[^}]*var\(--diff-added-fg\) 24%/s,
     );
     expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\]\[data-theme="dark"\] \.l-mode-change-review-diff \.diff-cell\.removed,[^}]*:root\[data-l-mode="on"\]\[data-theme="yakou"\] \.l-mode-change-review-diff \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-fg\) 26%/s,
+      /:root\[data-l-mode="on"\]\[data-theme="dark"\] \.l-mode-change-review-diff \.diff-cell\.removed,[^}]*:root\[data-l-mode="on"\]\[data-theme="shinkai"\] \.l-mode-change-review-diff \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-fg\) 26%/s,
+    );
+  });
+
+  it("uses the night writing palette for every dark-base theme", () => {
+    for (const theme of ["dark", "yakou", "edohigan", "crt", "shinkai"]) {
+      expect(lModeCss).toMatch(
+        new RegExp(
+          `:root\\[data-l-mode="on"\\]\\[data-theme="${theme}"\\]`,
+        ),
+      );
+    }
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\]\[data-theme="shinkai"\]\s*{[^}]*--bg:\s*#1a1612/s,
+    );
+  });
+
+  it("clears joke-theme text effects on the L Mode writing surface", () => {
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-content\s*{[^}]*text-shadow:\s*none/s,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-editor:hover \.cm-content\s*{[^}]*animation:\s*none/s,
     );
   });
 

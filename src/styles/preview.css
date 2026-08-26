@@ -4,7 +4,9 @@
   background: var(--preview-reading-surface, var(--surface-strong));
   border: 1px solid color-mix(in srgb, var(--border-strong) 58%, transparent);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 18%, transparent);
   box-sizing: border-box;
   color: var(--text);
   font-size: var(--preview-font-size, 15px);
@@ -216,6 +218,12 @@
   font-weight: 600;
   text-decoration-color: color-mix(in srgb, var(--accent), transparent 40%);
   text-underline-offset: 3px;
+  transition: text-decoration-color var(--dur-1) var(--ease-standard);
+}
+
+.markdown-preview a:hover,
+.markdown-preview a:focus-visible {
+  text-decoration-color: var(--accent);
 }
 
 .markdown-table-frame {
@@ -340,6 +348,36 @@
 :root[data-theme="crt"] .preview-pane-preview .markdown-preview
   :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
 :root[data-theme="crt"] .preview-pane-preview .markdown-preview:hover
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
+  animation: none;
+  text-shadow: none;
+}
+
+:root[data-theme="edohigan"] .ebook-pane {
+  --preview-reading-surface: #342230;
+  background: var(--preview-reading-surface);
+}
+
+:root[data-theme="crt"] .ebook-pane {
+  --preview-reading-surface: #0d1a11;
+  background: var(--preview-reading-surface);
+}
+
+:root[data-theme="shinkai"] .ebook-pane {
+  --preview-reading-surface: #14384a;
+  background: var(--preview-reading-surface);
+}
+
+:root[data-theme="edohigan"] .ebook-pane.markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
+:root[data-theme="shinkai"] .ebook-pane.markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
+  text-shadow: none;
+}
+
+:root[data-theme="crt"] .ebook-pane.markdown-preview
+  :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre),
+:root[data-theme="crt"] .ebook-pane.markdown-preview:hover
   :is(p, h1, h2, h3, h4, h5, h6, li, a, code, pre) {
   animation: none;
   text-shadow: none;

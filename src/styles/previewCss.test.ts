@@ -62,6 +62,32 @@ describe("preview.css", () => {
     );
   });
 
+  it("keeps e-book reading pages stable on edgy themes", () => {
+    expect(previewCss).toMatch(
+      /:root\[data-theme="edohigan"\] \.ebook-pane\.markdown-preview[^}]*text-shadow:\s*none/s,
+    );
+    expect(previewCss).toMatch(
+      /:root\[data-theme="shinkai"\] \.ebook-pane\.markdown-preview[^}]*text-shadow:\s*none/s,
+    );
+    expect(previewCss).toMatch(
+      /:root\[data-theme="crt"\] \.ebook-pane\.markdown-preview:hover[^}]*animation:\s*none/s,
+    );
+    for (const theme of ["edohigan", "crt", "shinkai"]) {
+      expect(previewCss).toMatch(
+        new RegExp(
+          `:root\\[data-theme="${theme}"\\] \\.ebook-pane\\s*{[^}]*--preview-reading-surface:\\s*#[0-9a-f]{6}`,
+          "s",
+        ),
+      );
+    }
+  });
+
+  it("makes Preview links show a stronger underline on hover", () => {
+    expect(previewCss).toMatch(
+      /\.markdown-preview a:hover,\n\.markdown-preview a:focus-visible\s*{[^}]*text-decoration-color:\s*var\(--accent\)/s,
+    );
+  });
+
   it("keeps the preview card outside gutter compact", () => {
     const body = ruleBody(".markdown-preview");
 

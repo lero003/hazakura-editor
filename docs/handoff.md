@@ -3,12 +3,22 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-17 (v2.6 reviewed-apply follow-up; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-27 (theme/reading-surface polish on top of Preview contrast; physical validation pending; v2.5 release closed)
 
 ## Current State
 
 - Package/app version in tree: **`2.6.0`** A-1–A-4 source candidate is merged
   on `main`; physical validation is the current gate.
+- **Uncommitted theme polish (2026-08-27)** sits on `main` after
+  `01fade1c` (Preview selection/opaque paper). Reading surfaces stay
+  readable: L Mode night palette now covers edohigan/crt/shinkai, joke-theme
+  text glow/flicker is cleared from L Mode prose, and e-book / whole-book
+  Reader pages use the same opaque paper as right Preview. Shell shaders,
+  scanlines, boot, and ambient particles were not removed; overlays, glass
+  chrome, save-affirmation, command palette, and CRT phosphor were
+  strengthened. Solid accent buttons use `--surface` (or gradient +
+  `--accent-contrast`) instead of white-on-sage. Do not revert these CSS
+  files as unrelated.
 - Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
   hotfix only. Prior tags remain immutable.
 - **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
@@ -453,6 +463,15 @@ retained as the earlier R-1-only checkpoint.
 - Earlier same-day Book Scope export/reader smoke remains the last direct
   interaction evidence for the multi-file spine. All automated, Rust, audit,
   package, signing, and launch gates above were re-run after the UX review.
+
+## Verification (2026-08-27, theme / reading-surface polish)
+
+- `npm run typecheck` and `npm test` (1807 passed) after CSS-only
+  usability and theme-effect polish. `git diff --check` clean.
+- Built-app / Vite visual smoke of every theme was **not** run in this
+  slice (no desktop launch, no browser MCP). Manual check remains
+  `docs/smoke-checklist.md` item 14, now also covering e-book pages and
+  whole-book Reader paper.
 
 ## Verification (2026-08-16, v2.6 A-3)
 

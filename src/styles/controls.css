@@ -412,6 +412,18 @@
   background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+:root[data-theme="edohigan"] .tab-item.active::before,
+:root[data-theme="shinkai"] .tab-item.active::before {
+  height: 2px;
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="crt"] .tab-item.active::before {
+  height: 2px;
+  background: color-mix(in srgb, var(--accent) 72%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
 .tab-item:not(.active):hover {
   background: rgba(0, 0, 0, 0.03);
 }

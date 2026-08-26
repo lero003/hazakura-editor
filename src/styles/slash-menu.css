@@ -23,10 +23,13 @@
 }
 
 .slash-menu-inner {
-  background: var(--surface-strong);
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent);
+  backdrop-filter: blur(16px) saturate(1.06);
   display: flex;
   flex-direction: column;
   max-height: inherit;

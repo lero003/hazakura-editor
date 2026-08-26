@@ -30,7 +30,9 @@
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: blur(18px) saturate(1.05);
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent);
   color: var(--text);
   font-family: var(--lmode-ui-font-family, inherit);
   font-size: 12px;
@@ -228,7 +230,9 @@
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 86%, transparent);
   backdrop-filter: blur(18px) saturate(1.05);
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent);
   color: var(--text);
   font-family: var(--app-font-family);
   font-size: 13px;
@@ -288,8 +292,17 @@
 .local-assist-proposal-review-button.apply {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--on-accent, #fff);
+  color: var(--surface);
   font-weight: 650;
+}
+
+:root[data-theme="yakou"] .local-assist-proposal-review-button.apply,
+:root[data-theme="shokou"] .local-assist-proposal-review-button.apply,
+:root[data-theme="edohigan"] .local-assist-proposal-review-button.apply,
+:root[data-theme="shinkai"] .local-assist-proposal-review-button.apply {
+  background: var(--accent-gradient);
+  border-color: transparent;
+  color: var(--accent-contrast);
 }
 
 .local-assist-proposal-review-button:hover {
@@ -298,6 +311,14 @@
 
 .local-assist-proposal-review-button.apply:hover {
   background: color-mix(in srgb, var(--accent) 88%, var(--text));
+}
+
+:root[data-theme="yakou"] .local-assist-proposal-review-button.apply:hover,
+:root[data-theme="shokou"] .local-assist-proposal-review-button.apply:hover,
+:root[data-theme="edohigan"] .local-assist-proposal-review-button.apply:hover,
+:root[data-theme="shinkai"] .local-assist-proposal-review-button.apply:hover {
+  background: var(--accent-gradient);
+  filter: brightness(1.06);
 }
 
 .local-assist-proposal-review-diff {

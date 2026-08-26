@@ -569,7 +569,7 @@
 .dialog-actions button:first-child {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--status-text);
+  color: var(--surface);
 }
 
 .dialog-actions button:first-child:hover {
@@ -604,6 +604,10 @@
   border: 0;
   padding: 7px 13px;
   color: var(--accent-contrast, #ffffff);
+}
+
+:root[data-theme="crt"] .dialog-actions button:first-child {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 @media (max-width: 1040px) {
