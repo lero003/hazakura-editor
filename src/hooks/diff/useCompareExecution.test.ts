@@ -151,4 +151,76 @@ describe("useCompareExecution", () => {
       rightPath: "/workspace/new.md",
     });
   });
+
+  it("opens the compare pane after a buffer-vs-disk review", async () => {
+    tauriApi.openTextFile.mockResolvedValueOnce({ contents: "disk" });
+    const setRightPaneMode = vi.fn();
+    const setSidePaneOpen = vi.fn();
+    const tab = makeTab();
+    const { result } = renderHook(() =>
+      useCompareExecution({
+        activeTab: tab,
+        clearCompareSource: vi.fn(),
+        closeWorkspaceContextMenu: vi.fn(),
+        compareAnchor: null,
+        compareTarget: null,
+        getCurrentTabById: () => tab,
+        menuLanguage: "en",
+        setCompareCaseEntry: vi.fn(),
+        setCompareSource: vi.fn(),
+        setCompareView: vi.fn(),
+        setGlobalError: vi.fn(),
+        setRightPaneMode,
+        setSidePaneOpen,
+        setStatus: vi.fn(),
+      }),
+    );
+
+    await act(async () => {
+      result.current.requestReviewTabAgainstDisk(tab);
+      await Promise.resolve();
+    });
+
+    expect(setRightPaneMode).toHaveBeenCalledWith("compare");
+    expect(setSidePaneOpen).toHaveBeenCalledWith(true);
+  });
+
+  it("opens the compare pane when a file compare completes", async () => {
+    tauriApi.openTextFile.mockResolvedValueOnce({ contents: "right" });
+    const setRightPaneMode = vi.fn();
+    const setSidePaneOpen = vi.fn();
+    const { result } = renderHook(() =>
+      useCompareExecution({
+        activeTab: makeTab({
+          contents: "left",
+          id: "/workspace/left.md",
+          name: "left.md",
+          path: "/workspace/left.md",
+        }),
+        clearCompareSource: vi.fn(),
+        closeWorkspaceContextMenu: vi.fn(),
+        compareAnchor: null,
+        compareTarget: null,
+        getCurrentTabById: vi.fn(),
+        menuLanguage: "en",
+        setCompareCaseEntry: vi.fn(),
+        setCompareSource: vi.fn(),
+        setCompareView: vi.fn(),
+        setGlobalError: vi.fn(),
+        setRightPaneMode,
+        setSidePaneOpen,
+        setStatus: vi.fn(),
+      }),
+    );
+
+    await act(async () => {
+      await result.current.compareWorkspaceFiles({
+        name: "right.md",
+        path: "/workspace/right.md",
+      });
+    });
+
+    expect(setRightPaneMode).toHaveBeenCalledWith("compare");
+    expect(setSidePaneOpen).toHaveBeenCalledWith(true);
+  });
 });

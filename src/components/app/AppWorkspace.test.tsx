@@ -1546,6 +1546,45 @@ describe("AppWorkspace reference compare layout", () => {
     expect(grid?.className).not.toContain("diff-workbench");
   });
 
+  it("does not hide the editor as a Diff workbench while Reference still owns the column", () => {
+    const tab = makeTab({ contents: "# draft" });
+    const { container } = renderWorkspace({
+      activeContents: tab.contents,
+      activeTab: tab,
+      compareView: {
+        additions: 1,
+        caseKey: "review",
+        lines: [],
+        removals: 0,
+      },
+      hasWorkspaceSelection: true,
+      referenceCompare: {
+        externalChangePending: false,
+        followMode: "off",
+        linkedEditorSessionId: null,
+        origin: "manual",
+        reference: {
+          contents: "# style guide",
+          encoding: "utf-8",
+          kind: "text",
+          name: "guide.md",
+          path: "/workspace/guide.md",
+        },
+        sourceFingerprint: null,
+      },
+      referencePaneVisible: true,
+      sidePaneMode: "compare",
+      sidePaneVisible: true,
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    });
+
+    const grid = container.querySelector(".editor-preview-grid");
+    expect(grid?.className).toContain("reference-compare");
+    expect(grid?.className).not.toContain("diff-workbench");
+    expect(container.querySelector(".reference-compare-pane")).not.toBeNull();
+  });
+
   it("keeps a loaded reference hidden while another right pane is selected", () => {
     const tab = makeTab({ contents: "# draft" });
     const { container } = renderWorkspace({

@@ -13,6 +13,7 @@ type UseSidePaneControllerOptions = {
   activeTab: EditorTab | null;
   compareView: CompareViewState | null;
   previewVisible: boolean;
+  referencePaneVisible?: boolean;
   rightPaneMode: RightPaneMode;
   selectedImage: ImagePreviewState | null;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
@@ -25,6 +26,7 @@ export function useSidePaneController({
   activeTab,
   compareView,
   previewVisible,
+  referencePaneVisible = false,
   rightPaneMode,
   selectedImage,
   setPreviewVisible,
@@ -40,6 +42,7 @@ export function useSidePaneController({
     activeTab,
     compareView,
     previewVisible,
+    referencePaneVisible,
     rightPaneMode,
     selectedImage,
     sidePaneOpen,

@@ -365,6 +365,7 @@ export function useCompareExecution({
           ...diff,
         });
         setRightPaneMode("compare");
+        setSidePaneOpen(true);
         setStatus("Compare ready");
       } catch (err) {
         if (requestSeq !== fileCompareRequestSeqRef.current) {
@@ -388,6 +389,7 @@ export function useCompareExecution({
       setCompareView,
       setGlobalError,
       setRightPaneMode,
+      setSidePaneOpen,
       setStatus,
     ],
   );

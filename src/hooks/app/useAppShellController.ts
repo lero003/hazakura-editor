@@ -45,6 +45,7 @@ import { useReferenceCompareActions } from "../referenceCompare/useReferenceComp
 import { useImportPageFollow } from "../referenceCompare/useImportPageFollow";
 import { useReferenceExternalChange } from "../referenceCompare/useReferenceExternalChange";
 import { buildLineDiff } from "../../features/diff/diff";
+import { bindExclusiveSidePaneOpen } from "../../features/workspace/rightPaneExclusive";
 import { compareColumnLabel } from "../../lib/locale/review";
 import { localizeCompareError } from "../../lib/utils";
 import type { CompareCase } from "../../types";
@@ -493,6 +494,16 @@ export function useAppShellController() {
     menuLanguage,
   });
 
+  // The right column is one surface. User actions that open Preview /
+  // e-book / Outline / Diff hide Reference (session stays loaded).
+  const setSidePaneOpenFromUserAction = useMemo(
+    () =>
+      bindExclusiveSidePaneOpen(setSidePaneOpen, () =>
+        setReferencePaneVisible(false),
+      ),
+    [setReferencePaneVisible, setSidePaneOpen],
+  );
+
   // section: editor surface (side pane + active document surface)
   const {
     activeDirtyLabel,
@@ -535,12 +546,13 @@ export function useAppShellController() {
     noFileOpenText: safeEditorCopy.noFileOpen,
     previewPaneRef,
     previewVisible,
+    referencePaneVisible,
     rightPaneMode,
     selectedImage,
     selectionInfo,
     setPreviewVisible,
     setRightPaneMode,
-    setSidePaneOpen,
+    setSidePaneOpen: setSidePaneOpenFromUserAction,
     sidePaneOpen,
   });
 
@@ -958,7 +970,7 @@ export function useAppShellController() {
     setCompareView,
     setGlobalError,
     setRightPaneMode,
-    setSidePaneOpen,
+    setSidePaneOpen: setSidePaneOpenFromUserAction,
     setStatus,
   });
 
@@ -1064,7 +1076,7 @@ export function useAppShellController() {
       // Text references hold no PDF handle; clear pair so Diff side pane can show.
       clearReferenceCompare();
       setRightPaneMode("compare");
-      setSidePaneOpen(true);
+      setSidePaneOpenFromUserAction(true);
       setStatus("Compare ready");
     } catch (err) {
       const message = String(err);
@@ -1084,7 +1096,7 @@ export function useAppShellController() {
     setCompareView,
     setGlobalError,
     setRightPaneMode,
-    setSidePaneOpen,
+    setSidePaneOpenFromUserAction,
     setStatus,
   ]);
 

@@ -785,7 +785,7 @@ export function AppWorkspace({
       ) : null}
       <div
         ref={editorPreviewGridRef}
-        className={`editor-preview-grid${sidePaneVisible && !visibleReferenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}${visibleReferenceCompare ? " reference-compare" : ""}${visibleReferenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${visibleReferenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
+        className={`editor-preview-grid${sidePaneVisible && !visibleReferenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" && !visibleReferenceCompare ? " diff-workbench" : ""}${visibleReferenceCompare ? " reference-compare" : ""}${visibleReferenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${visibleReferenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
         style={
           visibleReferenceCompare
             ? {

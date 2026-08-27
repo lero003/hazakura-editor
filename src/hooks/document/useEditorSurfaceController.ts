@@ -48,6 +48,7 @@ type UseEditorSurfaceControllerOptions = {
   noFileOpenText: string;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewVisible: boolean;
+  referencePaneVisible?: boolean;
   rightPaneMode: RightPaneMode;
   selectedImage: ImagePreviewState | null;
   selectionInfo: EditorSelectionInfo;
@@ -69,6 +70,7 @@ export function useEditorSurfaceController({
   noFileOpenText,
   previewPaneRef,
   previewVisible,
+  referencePaneVisible = false,
   rightPaneMode,
   selectedImage,
   selectionInfo,
@@ -81,6 +83,7 @@ export function useEditorSurfaceController({
     activeTab,
     compareView,
     previewVisible,
+    referencePaneVisible,
     rightPaneMode,
     selectedImage,
     setPreviewVisible,

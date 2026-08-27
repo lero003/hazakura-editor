@@ -1076,7 +1076,11 @@ recovered state separately where relevant.
     Confirm L Mode is visually separated from the right-pane controls and
     `参照` is selected while the reference is visible. Switch from `参照` to
     Preview, then back to `参照`; confirm the same reference returns without a
-    picker. Set Preview font size to its minimum and maximum values and confirm
+    picker. While a text Reference is visible and the center draft is dirty,
+    press `確認` and confirm Diff replaces the reference column (the loaded
+    reference stays retained, not discarded). From a visible Reference, switch
+    Preview / 電子書籍 / アウトライン / 差分 and confirm the chosen pane
+    appears instead of an empty right column. Set Preview font size to its minimum and maximum values and confirm
     text Reference follows both changes without reopening; PDF/image Reference
     sizing remains unchanged. Use the in-pane close action and confirm the
     reference session ends.
