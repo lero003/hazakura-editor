@@ -3,19 +3,18 @@
 Status: Operational
 Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
-Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane ownership fix; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store publication pending; v2.5 closed)
 
 Release candidate note: `docs/releases/2.6.2-source-tag.release.md`; App Store
-What's New draft: `docs/releases/2.6.2-app-store-release-notes.md`. Physical
-validation and explicit source-tag / publication decisions remain pending.
+What's New: `docs/releases/2.6.2-app-store-release-notes.md`. TestFlight is
+user-confirmed; App Review and store publication remain separate.
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.6.2`** across npm, Tauri, Cargo, and
-  lockfile metadata. This is the next local candidate after merged `2.6.0`
-  A-1–A-4 source work, 2.6.1 theme/Preview polish, and the right-pane
-  ownership fix. It is not a tag or store
+  lockfile metadata. User-confirmed **TestFlight internal distribution**
+  on 2026-08-28. This is not an App Review result or Mac App Store
   publication. **Published Mac App Store (user direction 2026-08-07):
   `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
   include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
@@ -39,8 +38,9 @@ validation and explicit source-tag / publication decisions remain pending.
   `bundleVersion` 119). `2.6.2` is the right-pane ownership candidate on this
   worktree. The review branch and its old Draft PR #34 are
   historical and deleted; the source tag, upload, App Review, and
-  physical-device gates remain pending. A local TestFlight-shaped `.pkg` and
-  What's New draft are candidate actions; they are not publication.
+  physical-device gates remain pending. TestFlight internal distribution of
+  `2.6.2` is user-confirmed (2026-08-28). App Review and store publication
+  remain separate; do not infer either from TestFlight.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -260,8 +260,9 @@ validation and explicit source-tag / publication decisions remain pending.
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.2` package version from package metadata.
-- **Open main queue:** physical A-4 Assist checks and source-candidate release
-  preparation, with non-blocking A-3 hardening kept separate. v2.5 is released and closed; published
+- **Open main queue:** writing-companion UI / System helper (U-\* / H-1 / G-1);
+  C-1 HOLD until a production Core AI identity. App Review / store publication
+  for `2.6.2` wait on Apple's result. v2.5 is released and closed; published
   `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
   parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
@@ -588,7 +589,8 @@ validation and explicit source-tag / publication decisions remain pending.
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.2`**. A-1–A-4 source work is merged
+- Current development-tree version: **`2.6.2`** (TestFlight user-confirmed
+  2026-08-28; App Review / store publication pending). A-1–A-4 source work is merged
   plus theme/Preview polish and the right-pane ownership fix;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
@@ -599,8 +601,9 @@ validation and explicit source-tag / publication decisions remain pending.
 - Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
   Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
 - Latest published GitHub source / local-app tag: `v2.3.0` (source archive only;
-  see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.2` local candidate
-  note is `docs/releases/2.6.2-source-tag.release.md`; no v2.6 tag exists yet.
+  see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.2` note is
+  `docs/releases/2.6.2-source-tag.release.md` (TestFlight user-confirmed; no
+  v2.6 GitHub tag yet).
   Prior checkpoint: `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
@@ -1079,19 +1082,19 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. Run the v2.6 physical Assist gate: narrow layout, keyboard/focus, VoiceOver,
-   streaming/cancel, and real availability. The live helper on this host
-   already answered available; that is not the UI gate.
-2. Local source gates, a What's New draft, and a TestFlight-shaped `.pkg` are
-   prepared. Decide whether to tag and upload only with an explicit
-   publication approval; do not imply publication beforehand.
+1. Record the App Review / store-publication result for `2.6.2` when Apple
+   returns it. TestFlight is user-confirmed; do not infer Review or store
+   publication.
+2. Writing-companion UI / System helper (U-\* / H-1 / G-1) may proceed.
+   **C-1 HOLD** until a production Core AI identity plus D25/D19. **C-2 HOLD**
+   until D24/D20. Do not reopen the v2.6 apply boundary.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and Apply status
    watchdog.
 4. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
-5. Park 縦書き, anydoc adoption, Core AI download UI, broad evidence matrices,
-   and bulk digestion of external review pools until promoted.
+5. Park 縦書き, anydoc adoption, and bulk digestion of external review pools
+   until promoted.
 6. Keep v2.5 released/closed and Local Assist on-device, explicit, and
    diff-reviewable; keep Book order
    app-private and separate from OKF semantics.

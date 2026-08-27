@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 source candidate + physical validation gate; Core AI intent)
+Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; Core AI / writing-companion next)
 
 ## Purpose
 
@@ -273,5 +273,7 @@ If a future proposal needs any of those behaviors, it must receive a fresh produ
 ## Active Lane Pointer
 
 For the current implementation queue, start at `docs/current-work.md` and
-`docs/v2.6-plan.md`. v2.5 is released and closed; do not treat older alpha ship
+`docs/core-ai-c0-design.md`. v2.6 TestFlight of `2.6.2` is user-confirmed.
+U-\* / H-1 / G-1 may proceed on `SystemLanguageModel`. C-1 stays HOLD until a
+production identity. v2.5 is released and closed; do not treat older alpha ship
 notes in this file as the active slice list.

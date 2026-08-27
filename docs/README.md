@@ -56,11 +56,11 @@ Start with `current-work.md` and `roadmap.md`.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.6 A-1–A-4 source candidate merged + physical gate** + v2.5 release closed
-- `current-work.md` — v2.6 release-prep queue and physical Assist gate
-- `v2.6-plan.md` — conversation / Diff review plan; source candidate and remaining gates
-- `releases/2.6.2-source-tag.release.md` — current local candidate note; tag pending
-- `releases/2.6.2-app-store-release-notes.md` — App Store What's New draft since published `2.4.0`; not a publication record
+- `roadmap.md` — **v2.6 TestFlight (user-confirmed)** + writing-companion / Core AI next
+- `current-work.md` — 2.6.2 TestFlight recorded; U-\* / H-1 / G-1 next; C-1 HOLD
+- `v2.6-plan.md` — conversation / Diff review plan; TestFlight recorded; remaining gates
+- `releases/2.6.2-source-tag.release.md` — 2.6.2 note; TestFlight user-confirmed; App Review / store publication pending
+- `releases/2.6.2-app-store-release-notes.md` — App Store What's New since published `2.4.0`; TestFlight user-confirmed; not store publication
 - `releases/2.6.1-source-tag.release.md` — prior local candidate note; tag pending
 - `releases/2.6.0-source-tag.release.md` — prior A-1–A-4 source-preview candidate note; tag pending
 - `v2.5-plan.md` — closed workspace-control release plan

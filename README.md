@@ -32,8 +32,9 @@ Diff while a text Reference is open. Hazakura Local Assist pins a
 document target for bounded follow-up revision, replacing the current
 unapplied proposal in a separate Diff review surface. Only the Diff's explicit
 Apply proposal action sends the reviewed candidate to the existing transaction
-/ Review Bar path; the editor is not auto-saved. Physical macOS validation,
-source tagging, package/upload, review, and publication remain separate gates.
+/ Review Bar path; the editor is not auto-saved. TestFlight internal
+distribution of `2.6.2` is user-confirmed (2026-08-28). App Review, Mac App
+Store publication, source tagging, and GitHub Release remain separate gates.
 See [`docs/releases/2.6.2-source-tag.release.md`](docs/releases/2.6.2-source-tag.release.md).
 v2.5 is released and closed.
 
@@ -270,7 +271,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.6.2` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). The `2.6.2` local candidate is on `main`; its tag is pending physical validation and explicit publication approval. Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `2.6.2` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). TestFlight internal distribution of `2.6.2` is user-confirmed (2026-08-28). App Review, store publication, and a GitHub `v2.6.2` source tag remain separate. Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.4.0` (user-reported 2026-08-07); do not reopen a published store lane without a reproduced hotfix.
 - Release notes: [2.6.2 local candidate](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New draft](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

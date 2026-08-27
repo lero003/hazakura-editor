@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 source-candidate release prep — Local Assist two-region UX
+Scope: v2.6 TestFlight (user-confirmed) — Core AI / writing-companion
 Authority: High
-Last reviewed: 2026-08-27 (C-0 pre-development lock; 2.6.2 local candidate; physical Assist pending)
+Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store publication pending; C-0 lock)
 
 ## Purpose
 
@@ -16,16 +16,12 @@ target, keeps generation and proposal state separate from the editor buffer, and
 allows only explicit Diff apply through stale revalidation and one reviewed
 buffer write; the same proposal is not surfaced in a second Review Bar. The A-4 finishing slice keeps
 the conversation and Diff regions distinct at narrow widths without changing
-that mutation boundary. It also exposes Diff column semantics, separates
-cancellation feedback from failure, and shows an honest availability-probe
-state. Source review is complete; physical macOS validation is the next gate.
+that mutation boundary.
 
-- Package/app version in tree: **`2.6.2`**. This is the next local candidate
-  after merged `2.6.0` A-1–A-4 source work, 2.6.1 theme/Preview polish, and
-  the right-pane ownership fix (参照中の「確認」で差分を出す). It is not yet
-  a source tag, upload, review, or publication claim. Local source gates
-  and a What's New draft are prepared with this pass; a TestFlight-shaped
-  `.pkg` is a separate local candidate action. Provenance is in ignored
+- Package/app version in tree: **`2.6.2`**. User-confirmed **TestFlight
+  internal distribution** on 2026-08-28. This is not an App Review result,
+  Mac App Store publication, source tag, or GitHub Release. Published store
+  remains **`2.4.0`**. Local pkg provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
   `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The 2.6.1
@@ -58,7 +54,7 @@ state. Source review is complete; physical macOS validation is the next gate.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **A-1–A-4 source candidate merged** | Conversation + one explicit Diff apply + stale revalidation + no duplicate post-apply review; physical Assist gate remains |
+| **v2.6** | **TestFlight (user-confirmed)** | Conversation + explicit Diff apply; 2.6.2 on TestFlight 2026-08-28; App Review / store publication pending |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -67,28 +63,17 @@ state. Source review is complete; physical macOS validation is the next gate.
 
 ### Immediate next
 
-1. **v2.6 physical Assist gate.** On the current merged build, verify narrow
-   Diff, keyboard/focus order, VoiceOver (including streaming summary), locale,
-   streaming/cancel, and real model availability on the detached window.
-   A Local Assist prompt + visibility polish is merged (revision-packet
-   de-duplication, Japanese framing, preamble stripping, and a raw growing-draft
-   stream preview); rebuild the live Swift helper before the physical gate so
-   the prompt change is observable. **B2 is also merged:** the unapplied-proposal
-   Diff review and Apply/Discard now live in the MAIN window (a large
-   editor-font `LocalAssistProposalReview` panel), while the detached window
-   keeps only the conversation, growing-draft preview, and Cancel. The proposal
-   is held in a new session-local store separate from `AiEditTransaction`;
-   `applyReviewedLocalAssistProposal` is the single apply path.
-2. Local source gates, App Store What's New draft, and a TestFlight-shaped
-   `.pkg` are recorded. Decide the source tag / App Store Connect upload only
-   with an explicit publication approval. Do not treat the local `.pkg` as
-   uploaded.
-3. Keep the three non-blocking A-3 hardening items separate: completion-time
-   target text revalidation, Diff failure/no-op Apply gating, and an Apply status
-   watchdog. They do not change the A-3 mutation boundary.
-4. C-0 is locked. Do not start C-1 until identity + D25 manifest + D19
-   delivery. Do not start C-2 until D24/D20. Do not mix either into the v2.6
-   apply boundary. U-\* / H-1 / G-1 may proceed on the System path.
+1. **Writing-companion UI / System helper (U-\* / H-1 / G-1 = GO).** Do not
+   wait for Core AI download. Keep the v2.6 apply boundary frozen.
+2. **C-1 HOLD** until the owner picks a production model identity plus D25
+   `resourceManifest` and D19 delivery (Background Assets / AOT). **C-2 HOLD**
+   until D24/D20. Do not start either as v2.6 apply work.
+3. **2.6.2 App Review / store publication** wait for Apple's result. Do not
+   write “審査通過” or store publication until confirmed. Source tag and
+   GitHub Release still need an explicit publication approval.
+4. Keep the three non-blocking A-3 hardening items separate: completion-time
+   target text revalidation, Diff failure/no-op Apply gating, and an Apply
+   status watchdog. They do not change the A-3 mutation boundary.
 
 ### Completed in v2.5 development
 
@@ -109,9 +94,9 @@ state. Source review is complete; physical macOS validation is the next gate.
 - Core AI download / model catalog (**C-1**; C-0 is locked in
   `docs/core-ai-c0-design.md`. Needs a production identity plus D25/D19.
   Not v2.6 apply work)
-- v2.6 publication actions (source tag, App Store Connect upload, App Review,
-  GitHub Release) until an explicit release decision; do not mix them into
-  mutation-boundary work
+- Claiming 2.6.2 App Review passed or Mac App Store publication until the
+  user confirms the Apple result
+- v2.6 source tag / GitHub Release until an explicit publication approval
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
@@ -139,10 +124,9 @@ state. Source review is complete; physical macOS validation is the next gate.
 
 ## Next Human Gates
 
-1. Run and record the v2.6 detached-window physical gate. The live helper on
-   this host already answered available; that is not the UI gate.
-2. Decide on source tagging and App Store Connect upload only with an explicit
-   publication approval. Use `docs/releases/2.6.2-app-store-release-notes.md`
-   as the What's New draft.
-3. Keep v2.5 closed; any second package rebuild or publication needs a new
-   explicit release gate.
+1. Record the App Review / store-publication result for `2.6.2` when Apple
+   returns it. TestFlight is already user-confirmed; do not infer Review.
+2. Pick the first Core AI production model identity before starting C-1.
+   Until then, U-\* / H-1 / G-1 may proceed on `SystemLanguageModel`.
+3. Source tag / GitHub Release only with an explicit publication approval.
+4. Keep v2.5 closed; published `2.4.0` remains hotfix-only.

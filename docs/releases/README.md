@@ -13,16 +13,17 @@ Latest GitHub source / local-app tag:
 
 Current source-preview candidate:
 
-- `2.6.2` — `2.6.2-source-tag.release.md` (local candidate on `main`; physical
-  validation and explicit tag/publication approval pending)
+- `2.6.2` — `2.6.2-source-tag.release.md` (TestFlight user-confirmed 2026-08-28;
+  App Review / store publication / source tag pending)
 - `2.6.1` — `2.6.1-source-tag.release.md` (prior local candidate)
 - `2.6.0` — `2.6.0-source-tag.release.md` (prior A-1–A-4 source candidate)
 
 Latest stored source-tag note:
 
 - `2.3.0-source-tag.release.md`
-- `2.6.2-source-tag.release.md` is the current candidate note; it is not a tag
-  or publication record.
+- `2.6.2-source-tag.release.md` is the current 2.6.2 note; TestFlight is
+  user-confirmed. It is not an App Review result, store publication, or
+  source-tag record.
 
 Latest published GitHub Release body:
 
@@ -34,12 +35,10 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `2.6.2-app-store-release-notes.md` is the current App Store / TestFlight
-  What's New **draft** for package `2.6.2`. It covers the store delta since
-  published `2.4.0` (closed v2.5 workspace control, v2.6 Local Assist, 2.6.1
-  Preview/theme polish, 2.6.2 right-pane ownership). It is not an upload,
-  review, or publication record. Physical Assist validation remains a
-  separate gate.
+- `2.6.2-app-store-release-notes.md` is the App Store / TestFlight What's New
+  for package `2.6.2`. TestFlight internal distribution is user-confirmed
+  (2026-08-28). It is not an App Review result or Mac App Store publication.
+  Published store remains `2.4.0`.
 - `2.5.0-app-store-release-notes.md` is retained as the **closed v2.5 line's
   draft/evidence**; do not treat it as an active upload or release gate.
 - **`2.4.0` is published** on the Mac App Store (user-reported 2026-08-07):

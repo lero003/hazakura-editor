@@ -17,14 +17,13 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6 source-candidate release prep.** Mac App Store `2.4.0` is
-published and closed for drive-by polish; v2.5 is released and closed. The
-active spine is Local Assist conversation + separate Diff review: A-1–A-4 source
-work is merged. Local 2.6.2 is the current candidate (right-pane ownership
-fix on top of 2.6.1). A What's New draft and a TestFlight-shaped `.pkg` are
-local candidate actions; the current bounded work is the physical Assist gate
-before source-tag or App Store Connect upload. Remaining A-3 hardening stays
-separate.
+Phase: **v2.6 TestFlight + Core AI / writing-companion.** Mac App Store
+`2.4.0` is published and closed for drive-by polish; v2.5 is released and
+closed. `2.6.2` TestFlight internal distribution is user-confirmed
+(2026-08-28). App Review / store publication remain pending. The next
+development spine is writing-companion UI and System helper (U-\* / H-1 /
+G-1); C-1 HOLD until a production model identity. Do not reopen the v2.6
+apply boundary. Remaining A-3 hardening stays separate.
 Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
 `docs/roadmap.md`, `docs/v2.6-plan.md`, and
 `docs/local-assist-conversational-edit-ux.md`.

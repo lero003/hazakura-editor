@@ -3,18 +3,18 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store publication pending; Core AI next)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.2`**. Local candidate after A-1–A-4 plus
-  theme/Preview polish, the right-pane ownership fix, Reference gutter polish,
-  and P1 (in-pane Diff retains Reference). Physical validation is the current
-  interaction gate. No tag or store publication. Local MAS pkg `2.6.2` /
-  build `122` was built from source commit `23d44fdf`. Provenance is in
-  ignored `docs/internal/app-store-candidates/latest.json`. Do not treat the
-  local `.pkg` as uploaded. App Store What's New draft:
-  `docs/releases/2.6.2-app-store-release-notes.md`.
+- Package/app version in tree: **`2.6.2`**. User-confirmed **TestFlight
+  internal distribution** on 2026-08-28. Not an App Review result or Mac App
+  Store publication. Published store remains **`2.4.0`**. Local MAS pkg
+  `2.6.2` / build `122` was built from source commit `23d44fdf`. Provenance
+  is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
+  `docs/releases/2.6.2-app-store-release-notes.md`. Next development lane is
+  writing-companion UI / System helper (U-\* / H-1 / G-1); C-1 HOLD until a
+  production Core AI identity.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +
@@ -647,25 +647,19 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Physical smoke of smoke-checklist item 20: dirty center draft + visible
-   text Reference → `確認` shows Diff; in-pane `差分` shows Diff then `参照`
-   restores the same load without a picker; Preview / 電子書籍 / アウトライン /
-   差分 switches from Reference do not leave an empty right column.
-2. Decide source tag / App Store Connect upload only with an explicit
-   publication approval. Do not treat local pkg `2.6.2` / 122 as uploaded.
-3. Run and record the v2.6 detached-window physical gate: narrow width,
-   keyboard/focus, VoiceOver, locale, streaming/cancel, and real availability.
-4. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
-   or a package build) before any live/App Store build so the prompt + framing
-   change is observable, then re-verify real streaming/cancel.
-5. Consider the three non-blocking A-3 hardening items: completion-time target
-   text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
-6. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
-   lint, and persistent indexing out of the active slice.
-7. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
-   separate explicit handoff.
-8. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
-   `docs/assist-surface-strategy.md`.
+1. Writing-companion UI / System helper (U-\* / H-1 / G-1). Do not wait for
+   Core AI download. Do not reopen `applyReviewedLocalAssistProposal`.
+2. **C-1 HOLD** until the owner picks a production `.aimodel` identity plus
+   D25/D19. **C-2 HOLD** until D24/D20.
+3. Record the App Review / store-publication result for `2.6.2` when Apple
+   returns it. TestFlight is user-confirmed; do not infer Review.
+4. Source tag / GitHub Release only with an explicit publication approval.
+5. Keep 縦書き, anydoc adoption, Compare Center, static lint, and persistent
+   indexing out of the active slice.
+6. Do not reopen the released v2.5 line, move published tags, or attach
+   release assets without a separate explicit handoff.
+7. On security/path/AI surfaces, re-read `docs/security-boundary.md`,
+   `docs/assist-surface-strategy.md`, and `docs/core-ai-c0-design.md`.
 
 ## Key Paths
 

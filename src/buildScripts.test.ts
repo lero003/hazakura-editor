@@ -679,15 +679,15 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.6 source-candidate release prep — Local Assist two-region UX",
+        "Scope: v2.6 TestFlight (user-confirmed) — Core AI / writing-companion",
         "Package/app version in tree: **`2.6.2`",
         "W-1 — persistent three-pane workspace",
-        "v2.6 physical Assist gate",
+        "C-1 HOLD",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.6 source-candidate release prep.**",
-        "active spine is Local Assist",
-        "separate Diff review",
+        "Phase: **v2.6 TestFlight + Core AI / writing-companion.**",
+        "writing-companion UI and System helper",
+        "C-1 HOLD",
       ],
       "docs/handoff.md": [
         "Package/app version in tree: **`2.6.2`",
@@ -698,7 +698,7 @@ describe("macOS build scripts", () => {
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.6.2`",
         "Published Mac App Store | **`2.4.0`",
-        "Active product phase | **v2.6 source candidate merged",
+        "Active product phase | **v2.6 TestFlight",
         "R-1 text Reference follows Preview font size",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

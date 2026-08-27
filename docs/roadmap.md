@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; Core AI / writing-companion next)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.6.2`**; local candidate after A-1–A-4 plus theme/Preview polish and the right-pane ownership fix, not a release claim |
+| Package / app version in tree | **`2.6.2`**; TestFlight user-confirmed 2026-08-28; App Review / store publication pending |
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.6 source candidate merged** — physical Assist gate before release decision |
+| Active product phase | **v2.6 TestFlight** — writing-companion / Core AI lane next; C-1 HOLD on identity |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -54,12 +54,9 @@ User direction:
    line; hotfix only for reproduced blockers. Do not reopen for polish trains.
 2. **v2.5 is released and closed.** Do not reopen its release gates from the
    v2.6 development line.
-3. **v2.6 A-1–A-4 source work is merged on `main`.** The reviewed implementation applies
-   only the Diff proposal after stale revalidation, records one transaction for
-   Review Bar, and keeps conversation and Diff review distinct. The current A-4
-   finishing candidate tightens narrow Diff layout and exposes the reviewed
-   state semantics. Source review is complete; physical A-4 interaction checks
-   and the release decision stay separate.
+3. **v2.6 A-1–A-4 source work is merged on `main`.** User-confirmed TestFlight
+   internal distribution of `2.6.2` on 2026-08-28. App Review and Mac App
+   Store publication remain separate; do not infer either from TestFlight.
 4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
 5. **Core AI** remains a later model backend after conversational apply is stable.
 6. **anydoc** stays evaluation-only until product demand is clear.
@@ -76,9 +73,9 @@ User direction:
 [done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
-[now]    v2.6 A-1–A-4 source candidate merged (physical Assist gate)
-[next]   v2.6 source-tag / App Store lane decision after physical evidence
-[later]  Core AI allowlisted writing models (C-0 design → C-1/C-2)
+[now]    v2.6 TestFlight (user-confirmed 2026-08-28); App Review / store pending
+[next]   writing-companion UI + System helper (U-* / H-1 / G-1); C-1 HOLD
+[later]  Core AI allowlisted writing models (C-1 lifecycle → C-2 select/use)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 
