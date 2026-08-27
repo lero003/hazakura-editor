@@ -661,44 +661,44 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `2.4.0` is published",
+        "Hazakura Editor `2.6.2` is published",
         "Current development is on `2.6.2`",
-        "The published App Store version is `2.4.0`",
+        "The published App Store version is `2.6.2`",
         "latest published GitHub source / local-app tag remains [v2.3.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `2.4.0`",
+        "Published App Store version: `2.6.2`",
         "Current source / Developer version: `2.6.2`",
         "GitHub source tag: immutable `v2.3.0`",
       ],
       "docs/current-status.md": [
         "Current package/app version: **`2.6.2`",
-        "Published Mac App Store version: **`2.4.0`",
+        "Published Mac App Store version: **`2.6.2`",
         "Latest published GitHub source / local-app tag: `v2.3.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "Scope: v2.6 TestFlight (user-confirmed) — Core AI / writing-companion",
+        "Scope: v2.6.2 App Store published — U-1 writing-companion",
         "Package/app version in tree: **`2.6.2`",
         "W-1 — persistent three-pane workspace",
         "C-1 HOLD",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.6 TestFlight + Core AI / writing-companion.**",
+        "Phase: **v2.6.2 published + U-1 writing-companion.**",
         "writing-companion UI and System helper",
         "C-1 HOLD",
       ],
       "docs/handoff.md": [
         "Package/app version in tree: **`2.6.2`",
-        "Published Mac App Store (user direction 2026-08-07): **`2.4.0`",
+        "Published Mac App Store (user-confirmed 2026-08-28): **`2.6.2`",
         "GitHub source / local-app tag **`v2.3.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
         "Package / app version in tree | **`2.6.2`",
-        "Published Mac App Store | **`2.4.0`",
-        "Active product phase | **v2.6 TestFlight",
+        "Published Mac App Store | **`2.6.2`",
+        "Active product phase | **v2.6.2 published",
         "R-1 text Reference follows Preview font size",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

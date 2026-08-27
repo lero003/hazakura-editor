@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 source-candidate release prep; v2.5 release closed)
+Last reviewed: 2026-08-28 (2.6.2 Mac App Store published; U-1 writing-companion next)
 
 ## Purpose
 
@@ -17,11 +17,10 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6 TestFlight + Core AI / writing-companion.** Mac App Store
-`2.4.0` is published and closed for drive-by polish; v2.5 is released and
-closed. `2.6.2` TestFlight internal distribution is user-confirmed
-(2026-08-28). App Review / store publication remain pending. The next
-development spine is writing-companion UI and System helper (U-\* / H-1 /
+Phase: **v2.6.2 published + U-1 writing-companion.** Mac App Store
+`2.6.2` is published (user-confirmed 2026-08-28; staged rollout) and closed
+for drive-by polish; v2.5 is released and closed. A GitHub `v2.6.2` source
+tag remains a separate gate. The next development spine is writing-companion UI and System helper (U-\* / H-1 /
 G-1); C-1 HOLD until a production model identity. Do not reopen the v2.6
 apply boundary. Remaining A-3 hardening stays separate.
 Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
@@ -41,7 +40,7 @@ Prefer work in this order:
 1. The selected v2.6 release-prep slice: preserve explicit Diff apply, stale
    revalidation, one transaction + Review Bar, and no auto-save after bounded
    multi-turn revision.
-2. Hotfix for a reproduced published `2.4.0` blocker.
+2. Hotfix for a reproduced published `2.6.2` blocker.
 3. Verification or a reproduced defect in a separately reopened release lane.
 4. Stale or failing quality gates that block the selected slice.
 5. Core Safe Editor quality risks around open, edit, save, close/quit,

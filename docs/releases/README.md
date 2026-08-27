@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-28
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -13,17 +13,16 @@ Latest GitHub source / local-app tag:
 
 Current source-preview candidate:
 
-- `2.6.2` — `2.6.2-source-tag.release.md` (TestFlight user-confirmed 2026-08-28;
-  App Review / store publication / source tag pending)
+- `2.6.2` — `2.6.2-source-tag.release.md` (Mac App Store published
+  2026-08-28, staged rollout; GitHub source tag pending)
 - `2.6.1` — `2.6.1-source-tag.release.md` (prior local candidate)
 - `2.6.0` — `2.6.0-source-tag.release.md` (prior A-1–A-4 source candidate)
 
 Latest stored source-tag note:
 
 - `2.3.0-source-tag.release.md`
-- `2.6.2-source-tag.release.md` is the current 2.6.2 note; TestFlight is
-  user-confirmed. It is not an App Review result, store publication, or
-  source-tag record.
+- `2.6.2-source-tag.release.md` is the current 2.6.2 note; Mac App Store
+  publication is user-confirmed. It is not a GitHub source-tag record.
 
 Latest published GitHub Release body:
 
@@ -35,14 +34,13 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `2.6.2-app-store-release-notes.md` is the App Store / TestFlight What's New
-  for package `2.6.2`. TestFlight internal distribution is user-confirmed
-  (2026-08-28). It is not an App Review result or Mac App Store publication.
-  Published store remains `2.4.0`.
+- **`2.6.2` is published** on the Mac App Store (user-confirmed 2026-08-28;
+  staged rollout to all users). See `2.6.2-app-store-release-notes.md`.
+  A GitHub `v2.6.2` source tag is not claimed.
 - `2.5.0-app-store-release-notes.md` is retained as the **closed v2.5 line's
   draft/evidence**; do not treat it as an active upload or release gate.
-- **`2.4.0` is published** on the Mac App Store (user-reported 2026-08-07):
-  OKF v0.2, chapter Diff, Book toolbar and starter clarity. See
+- **`2.4.0` is the prior published** Mac App Store baseline (user-reported
+  2026-08-07): OKF v0.2, chapter Diff, Book toolbar and starter clarity. See
   `2.4.0-app-store-release-notes.md`.
 - **`2.3.0` is approved and published** on the Mac App Store (user-reported
   2026-07-24): portable Book recipe, Reader resume, Preview image / EPUB cover
@@ -99,8 +97,8 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
-- `2.6.2-app-store-release-notes.md` is the current local candidate draft for
-  the unpublished store delta since `2.4.0`.
+- `2.6.2-app-store-release-notes.md` records the published `2.6.2` App Store
+  copy (user-confirmed 2026-08-28; staged rollout).
 - `2.6.1-app-store-release-notes.md` is the prior local candidate draft.
 - `2.5.0-app-store-release-notes.md` is the retained draft for the released and
   closed v2.5 workspace-control line.

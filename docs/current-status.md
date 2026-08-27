@@ -3,21 +3,22 @@
 Status: Operational
 Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store publication pending; v2.5 closed)
+Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; GitHub tag pending)
 
 Release candidate note: `docs/releases/2.6.2-source-tag.release.md`; App Store
-What's New: `docs/releases/2.6.2-app-store-release-notes.md`. TestFlight is
-user-confirmed; App Review and store publication remain separate.
+What's New: `docs/releases/2.6.2-app-store-release-notes.md`. Mac App Store
+`2.6.2` is user-confirmed published (2026-08-28); rollout to all users is
+staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.6.2`** across npm, Tauri, Cargo, and
-  lockfile metadata. User-confirmed **TestFlight internal distribution**
-  on 2026-08-28. This is not an App Review result or Mac App Store
-  publication. **Published Mac App Store (user direction 2026-08-07):
-  `2.4.0`.** Treat as closed store line; hotfix only. Prior published lines
-  include `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
+  lockfile metadata. User-confirmed **Mac App Store publication** on
+  2026-08-28; rollout to all users is staged over time. This is not a
+  GitHub source tag or a claim that every install already has `2.6.2`.
+  Treat as closed store line; hotfix only. Prior published lines include
+  `2.4.0`, `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - **v2.5 is released and closed** (user-confirmed). The workspace control and
@@ -37,10 +38,9 @@ user-confirmed; App Review and store publication remain separate.
   local candidate HEAD is `6ff22dad` (theme/Preview polish plus App Store
   `bundleVersion` 119). `2.6.2` is the right-pane ownership candidate on this
   worktree. The review branch and its old Draft PR #34 are
-  historical and deleted; the source tag, upload, App Review, and
-  physical-device gates remain pending. TestFlight internal distribution of
-  `2.6.2` is user-confirmed (2026-08-28). App Review and store publication
-  remain separate; do not infer either from TestFlight.
+  historical and deleted. Mac App Store publication of `2.6.2` is
+  user-confirmed (2026-08-28; staged rollout). A GitHub source tag and
+  physical-device Assist smoke remain separate gates.
 - **v2.4 Book depth is closed / shipped** in the `2.4.0` line: OKF v0.2 pin,
   compact Book toolbar, B-1 chapter Diff, book-like starter. Residual Book
   items (B-2 display TOC, …) are parked, not the v2.5 main queue.
@@ -262,9 +262,9 @@ user-confirmed; App Review and store publication remain separate.
   diagnostics derive the current `2.6.2` package version from package metadata.
 - **Open main queue:** U-1 conversational proofread on Apple Intelligence, then
   U-3 / U-4, then H-1 → G-1. C-1 HOLD until a production `.aimodel` identity.
-  App Review / store publication for `2.6.2` wait on Apple's result. v2.5 is
-  released and closed; published `2.4.0` remains closed without a reproduced
-  hotfix; other advisory items stay parked.
+  Mac App Store `2.6.2` is published (user-confirmed 2026-08-28; staged
+  rollout). v2.5 is released and closed; published `2.6.2` remains closed
+  without a reproduced hotfix; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -589,21 +589,22 @@ user-confirmed; App Review and store publication remain separate.
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.2`** (TestFlight user-confirmed
-  2026-08-28; App Review / store publication pending). A-1–A-4 source work is merged
+- Current development-tree version: **`2.6.2`** (Mac App Store published,
+  user-confirmed 2026-08-28; staged rollout; GitHub source tag pending). A-1–A-4 source work is merged
   plus theme/Preview polish and the right-pane ownership fix;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
   explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
-  App Store What's New draft:
+  App Store What's New:
   `docs/releases/2.6.2-app-store-release-notes.md`.
-- Published Mac App Store version: **`2.4.0`** (user-reported 2026-08-07).
-  Prior store baselines (`2.3.0`, `2.0.0`, `1.13.0`, …) remain historical.
+- Published Mac App Store version: **`2.6.2`** (user-confirmed 2026-08-28;
+  staged rollout to all users). Prior store baselines (`2.4.0`, `2.3.0`,
+  `2.0.0`, `1.13.0`, …) remain historical.
 - Latest published GitHub source / local-app tag: `v2.3.0` (source archive only;
   see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.2` note is
-  `docs/releases/2.6.2-source-tag.release.md` (TestFlight user-confirmed; no
-  v2.6 GitHub tag yet).
+  `docs/releases/2.6.2-source-tag.release.md` (Mac App Store published;
+  no v2.6 GitHub tag yet).
   Prior checkpoint: `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
@@ -974,10 +975,10 @@ user-confirmed; App Review and store publication remain separate.
 
 Use release notes for detailed historical evidence:
 
-- `docs/releases/2.6.2-source-tag.release.md` (current source-preview candidate;
-  physical validation and tag decision pending)
-- `docs/releases/2.6.2-app-store-release-notes.md` (What's New draft for the
-  unpublished store delta since `2.4.0`; not a publication record)
+- `docs/releases/2.6.2-source-tag.release.md` (Mac App Store published;
+  GitHub source tag still pending)
+- `docs/releases/2.6.2-app-store-release-notes.md` (What's New for published
+  `2.6.2`; user-confirmed 2026-08-28, staged rollout)
 - `docs/releases/2.6.1-source-tag.release.md` (prior local candidate)
 - `docs/releases/0.36.0-app-store-release-notes.md`
 - `docs/releases/0.35.0-app-store-release-notes.md`
@@ -1022,8 +1023,9 @@ baseline, and smoke evidence are archived under
   `2.0.0` (user-reported 2026-07-21).
 - `docs/releases/2.3.0-app-store-release-notes.md`: local Book UX (recipe + resume) candidate
   notes; manual installed/TestFlight gate pending.
-- `docs/releases/2.6.2-source-tag.release.md`: current Local Assist conversation /
-  Diff source candidate, right-pane ownership fix, and physical release gate.
+- `docs/releases/2.6.2-source-tag.release.md`: Local Assist conversation /
+  Diff candidate, right-pane ownership fix; Mac App Store published, GitHub
+  source tag still pending.
 - `docs/releases/2.6.1-source-tag.release.md`: prior 2.6.1 local candidate.
 - `docs/releases/2.1.0-app-store-release-notes.md`: historical notes for the
   folded whole-book search + Preview image-hardening slice.
@@ -1082,17 +1084,16 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. Record the App Review / store-publication result for `2.6.2` when Apple
-   returns it. TestFlight is user-confirmed; do not infer Review or store
-   publication.
-2. Next slice is **U-1** (composer-first conversational proofread on Apple
+1. Next slice is **U-1** (composer-first conversational proofread on Apple
    Intelligence). Then U-3 / U-4, then H-1 → G-1. **C-1 HOLD** until a
    production `.aimodel` identity plus D25/D19. Do not reopen the v2.6 apply
    boundary.
+2. Do not treat staged Mac App Store rollout as a 100% install-base claim.
+   A GitHub `v2.6.2` source tag still needs explicit publication approval.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and Apply status
    watchdog.
-4. Treat published **`2.4.0`** as immutable except reproduced hotfixes. Do not
+4. Treat published **`2.6.2`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
 5. Park 縦書き, anydoc adoption, and bulk digestion of external review pools
    until promoted.

@@ -3,15 +3,15 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; GitHub tag pending)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live at the repository root: `AGENTS.md`. **v2.5 is released
 and closed** while **v2.6 A-1–A-4 source work is merged on `main`** (Local Assist
-pinned multi-turn conversation + explicit Diff apply). The current gate is
-physical Assist validation before source-tag or App Store/TestFlight decisions.
-Published `2.4.0` remains hotfix-only.
+pinned multi-turn conversation + explicit Diff apply). Mac App Store `2.6.2`
+is user-confirmed published (2026-08-28; staged rollout). A GitHub source tag
+and physical Assist validation remain separate. Published `2.6.2` is hotfix-only.
 Start with `current-work.md` and `roadmap.md`.
 
 ## Current Canonical Docs
@@ -21,9 +21,9 @@ Start with `current-work.md` and `roadmap.md`.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
-- `current-work.md`: **v2.6 active implementation queue**; v2.5 release closed.
-- `roadmap.md`: **v2.6 A-1–A-4 source candidate merged; physical gate pending**, v2.5 released/closed, and published `2.4.0` boundaries.
-- `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; source candidate merged, physical validation pending).
+- `current-work.md`: **U-1 writing-companion queue**; v2.6.2 App Store published; v2.5 release closed.
+- `roadmap.md`: **v2.6.2 Mac App Store published (staged rollout)**; writing-companion next; v2.5 released/closed.
+- `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; store published, GitHub tag pending).
 - `v2.5-plan.md`: **v2.5 plan** (workspace control; Assist deferred; later Core AI).
 - `v2.4-plan.md`: **closed** Book depth plan (historical for `2.4.0`).
 - `v2-external-review-synthesis-2026-07-18.md`: four-agent review pool for v2 (advisory; not the active queue).
@@ -56,11 +56,11 @@ Start with `current-work.md` and `roadmap.md`.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.6 TestFlight (user-confirmed)** + writing-companion / Core AI next
-- `current-work.md` — 2.6.2 TestFlight recorded; U-\* / H-1 / G-1 next; C-1 HOLD
-- `v2.6-plan.md` — conversation / Diff review plan; TestFlight recorded; remaining gates
-- `releases/2.6.2-source-tag.release.md` — 2.6.2 note; TestFlight user-confirmed; App Review / store publication pending
-- `releases/2.6.2-app-store-release-notes.md` — App Store What's New since published `2.4.0`; TestFlight user-confirmed; not store publication
+- `roadmap.md` — **v2.6.2 Mac App Store published (staged rollout)** + U-1 writing-companion next
+- `current-work.md` — 2.6.2 App Store published; U-\* / H-1 / G-1 next; C-1 HOLD
+- `v2.6-plan.md` — conversation / Diff review plan; store published; GitHub tag pending
+- `releases/2.6.2-source-tag.release.md` — 2.6.2 note; Mac App Store published; GitHub source tag pending
+- `releases/2.6.2-app-store-release-notes.md` — App Store What's New for published `2.6.2` (user-confirmed 2026-08-28; staged rollout)
 - `releases/2.6.1-source-tag.release.md` — prior local candidate note; tag pending
 - `releases/2.6.0-source-tag.release.md` — prior A-1–A-4 source-preview candidate note; tag pending
 - `v2.5-plan.md` — closed workspace-control release plan

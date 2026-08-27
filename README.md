@@ -32,15 +32,14 @@ Diff while a text Reference is open. Hazakura Local Assist pins a
 document target for bounded follow-up revision, replacing the current
 unapplied proposal in a separate Diff review surface. Only the Diff's explicit
 Apply proposal action sends the reviewed candidate to the existing transaction
-/ Review Bar path; the editor is not auto-saved. TestFlight internal
-distribution of `2.6.2` is user-confirmed (2026-08-28). App Review, Mac App
-Store publication, source tagging, and GitHub Release remain separate gates.
+/ Review Bar path; the editor is not auto-saved. Mac App Store `2.6.2` is
+user-confirmed published (2026-08-28); rollout to all users is staged over
+time. A GitHub `v2.6.2` source tag remains a separate gate.
 See [`docs/releases/2.6.2-source-tag.release.md`](docs/releases/2.6.2-source-tag.release.md).
-v2.5 is released and closed.
 
 ## Mac App Store
 
-Hazakura Editor `2.4.0` is published on the Mac App Store:
+Hazakura Editor `2.6.2` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -271,9 +270,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.6.2` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). TestFlight internal distribution of `2.6.2` is user-confirmed (2026-08-28). App Review, store publication, and a GitHub `v2.6.2` source tag remain separate. Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.4.0` (user-reported 2026-08-07); do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [2.6.2 local candidate](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New draft](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
+- Current package/app version in the development tree is `2.6.2` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.6.2` (user-confirmed 2026-08-28; staged rollout to all users). Prior store baseline `2.4.0` remains historical. Do not reopen a published store lane without a reproduced hotfix.
+- Release notes: [2.6.2 source note](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

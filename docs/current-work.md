@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6 TestFlight (user-confirmed) — Core AI / writing-companion
+Scope: v2.6.2 App Store published — U-1 writing-companion
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 TestFlight; next is U-1 conversational proofread on Apple Intelligence)
+Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; next is U-1 conversational proofread on Apple Intelligence)
 
 ## Purpose
 
@@ -18,10 +18,10 @@ buffer write; the same proposal is not surfaced in a second Review Bar. The A-4 
 the conversation and Diff regions distinct at narrow widths without changing
 that mutation boundary.
 
-- Package/app version in tree: **`2.6.2`**. User-confirmed **TestFlight
-  internal distribution** on 2026-08-28. This is not an App Review result,
-  Mac App Store publication, source tag, or GitHub Release. Published store
-  remains **`2.4.0`**. Local pkg provenance is in ignored
+- Package/app version in tree: **`2.6.2`**. User-confirmed **Mac App Store
+  publication** on 2026-08-28; rollout to all users is staged over time.
+  This is not a GitHub source tag or a claim that every install already has
+  `2.6.2`. Local pkg provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
   `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The 2.6.1
@@ -33,8 +33,9 @@ that mutation boundary.
   `docs/releases/2.6.0-source-tag.release.md`.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
-- Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
-  hotfix only for reproduced blockers.
+- Published Mac App Store (user-confirmed 2026-08-28): **`2.6.2`** closed
+  line; hotfix only for reproduced blockers. Prior store baseline `2.4.0`
+  remains historical.
 - Plan SoT: `docs/v2.6-plan.md`
 - Conversational Assist design: `docs/local-assist-conversational-edit-ux.md`
 - Assist / Core AI strategy: `docs/assist-surface-strategy.md`
@@ -54,7 +55,7 @@ that mutation boundary.
 | **v2.0–v2.3** | **Shipped** | Book Scope → quality pack → recipe / resume |
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
-| **v2.6** | **TestFlight (user-confirmed)** | Conversation + explicit Diff apply; 2.6.2 on TestFlight 2026-08-28; App Review / store publication pending |
+| **v2.6** | **Mac App Store published** | Conversation + explicit Diff apply; `2.6.2` published 2026-08-28; staged rollout; GitHub source tag pending |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -83,8 +84,6 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 7. **C-1 HOLD** until a production `.aimodel` identity plus D25/D19.
    管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
    利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
-8. **2.6.2 App Review / store publication** wait for Apple's result. Do not
-   write “審査通過” until confirmed.
 
 ### Completed in v2.5 development
 
@@ -105,9 +104,8 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 - Core AI download / model catalog (**C-1**; C-0 is locked in
   `docs/core-ai-c0-design.md`. Needs a production identity plus D25/D19.
   Not v2.6 apply work)
-- Claiming 2.6.2 App Review passed or Mac App Store publication until the
-  user confirms the Apple result
 - v2.6 source tag / GitHub Release until an explicit publication approval
+- Claiming every Mac App Store user already has `2.6.2` while rollout is staged
 - anydoc dependency or Import Assist expansion
 - 縦書き
 - B-2 display TOC as a parallel main queue (residual only if daily friction)
@@ -118,10 +116,10 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 - v2.5 is released and closed. Do not rebuild, upload, or reopen it as part of
   v2.6 work; only a separately reproduced blocker can justify a hotfix lane.
 
-### Hotfix only (published `2.4.0`)
+### Hotfix only (published `2.6.2`)
 
 - Reproduced blocker from App Review, TestFlight, or daily use.
-- Do not reopen `2.4.0` for drive-by polish.
+- Do not reopen `2.6.2` for drive-by polish.
 
 ## Parked Queues (do not drive the main lane)
 
@@ -136,9 +134,8 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 
 ## Next Human Gates
 
-1. Record the App Review / store-publication result for `2.6.2` when Apple
-   returns it. TestFlight is already user-confirmed; do not infer Review.
-2. Pick the first Core AI production model identity before starting C-1.
+1. Pick the first Core AI production model identity before starting C-1.
    Until then, U-\* / H-1 / G-1 may proceed on `SystemLanguageModel`.
-3. Source tag / GitHub Release only with an explicit publication approval.
-4. Keep v2.5 closed; published `2.4.0` remains hotfix-only.
+2. Source tag / GitHub Release only with an explicit publication approval.
+   Do not treat staged Mac App Store rollout as a 100% install-base claim.
+3. Keep v2.5 closed; published `2.6.2` remains hotfix-only.

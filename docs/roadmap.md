@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; Core AI / writing-companion next)
+Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 writing-companion next)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.6.2`**; TestFlight user-confirmed 2026-08-28; App Review / store publication pending |
-| Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
-| Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
+| Package / app version in tree | **`2.6.2`**; Mac App Store published (user-confirmed 2026-08-28; staged rollout); GitHub source tag pending |
+| Published Mac App Store | **`2.6.2`** (user-confirmed 2026-08-28; staged rollout to all users) |
+| Prior store / source lines | `2.4.0`, `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.6 TestFlight** — writing-companion / Core AI lane next; C-1 HOLD on identity |
+| Active product phase | **v2.6.2 published** — U-1 writing-companion next; C-1 HOLD on identity |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -50,13 +50,15 @@ Local App Store candidate provenance: `docs/internal/app-store-candidates/latest
 
 User direction:
 
-1. **Mac App Store / product line `2.4.0` is shipped.** Treat as closed store
-   line; hotfix only for reproduced blockers. Do not reopen for polish trains.
+1. **Mac App Store / product line `2.6.2` is shipped** (user-confirmed
+   2026-08-28; staged rollout). Treat as closed store line; hotfix only for
+   reproduced blockers. Do not reopen for polish trains. Prior `2.4.0` remains
+   historical.
 2. **v2.5 is released and closed.** Do not reopen its release gates from the
    v2.6 development line.
-3. **v2.6 A-1–A-4 source work is merged on `main`.** User-confirmed TestFlight
-   internal distribution of `2.6.2` on 2026-08-28. App Review and Mac App
-   Store publication remain separate; do not infer either from TestFlight.
+3. **v2.6 A-1–A-4 source work is merged on `main`.** User-confirmed Mac App
+   Store publication of `2.6.2` on 2026-08-28; rollout to all users is staged
+   over time. A GitHub `v2.6.2` source tag remains a separate gate.
 4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
 5. **Core AI** remains a later model backend after conversational apply is stable.
 6. **anydoc** stays evaluation-only until product demand is clear.
@@ -66,14 +68,14 @@ User direction:
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
 [done]   v2.0 Book Scope Alpha + UX quieting + Help
-[done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 published (tags immutable)
+[done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 · 2.6.2 published (tags immutable)
 [done]   v2.4 OKF v0.2 · compact toolbar · B-1 chapter Diff
 [done]   v2.5 R-1 text Reference follows Preview font size
 [done]   v2.5 release (closed)
 [done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
-[now]    v2.6 TestFlight (user-confirmed 2026-08-28); App Review / store pending
+[now]    v2.6.2 published (user-confirmed 2026-08-28; staged rollout)
 [next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → H-1 → G-1
 [later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
@@ -82,8 +84,8 @@ User direction:
 ## Active Path — v2.6
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.4.0` remains hotfix-only. v2.5 is released and closed; v2.6 is a
-separate development line.
+Published `2.6.2` remains hotfix-only. v2.5 is released and closed; further
+v2.6 work is writing-companion / Core AI, not a store reopen.
 
 ### Active spine
 
@@ -121,7 +123,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | After A-3; start with C-0 design only |
-| Published 2.4.0 hotfix | App Review / daily-use blocker | Only when reproduced |
+| Published 2.6.2 hotfix | App Review / daily-use blocker | Only when reproduced |
 
 ### Hard rails (v2.x does not lift these)
 

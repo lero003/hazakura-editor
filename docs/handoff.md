@@ -3,13 +3,13 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store publication pending; Core AI next)
+Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 next)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.2`**. User-confirmed **TestFlight
-  internal distribution** on 2026-08-28. Not an App Review result or Mac App
-  Store publication. Published store remains **`2.4.0`**. Local MAS pkg
+- Package/app version in tree: **`2.6.2`**. User-confirmed **Mac App Store
+  publication** on 2026-08-28; rollout to all users is staged over time.
+  Not a GitHub source tag or a 100% install-base claim. Local MAS pkg
   `2.6.2` / build `122` was built from source commit `23d44fdf`. Provenance
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
   `docs/releases/2.6.2-app-store-release-notes.md`. Next development: **U-1**
@@ -53,8 +53,9 @@ Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store p
   strengthened. Solid accent buttons use `--surface` (or gradient +
   `--accent-contrast`) instead of white-on-sage. Do not revert these CSS
   files as unrelated.
-- Published Mac App Store (user direction 2026-08-07): **`2.4.0`** closed line;
-  hotfix only. Prior tags remain immutable.
+- Published Mac App Store (user-confirmed 2026-08-28): **`2.6.2`** closed
+  line; hotfix only. Prior store baseline `2.4.0` remains historical. Tags
+  remain immutable. A GitHub `v2.6.2` tag is not claimed.
 - **v2.5 is released and closed** (user-confirmed). W-1, R-1, Q-3/Q-4/Q-5,
   and the Q-13 measured no-op remain historical release evidence; do not reopen
   that line from v2.6. Plan: `docs/v2.5-plan.md`.
@@ -243,11 +244,17 @@ Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store p
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
+## Verification (2026-08-28, 2.6.2 App Store published)
+
+User-confirmed Mac App Store approval and distribution start for `2.6.2`.
+Rollout to all users is staged over time. This pass is docs-only. Not a
+GitHub source tag, GitHub Release, or 100% install-base claim.
+
 ## Verification (2026-08-27, 2.6.2 local candidate)
 
-Not a source tag, GitHub Release, upload, or App Review. Physical
-確認-with-Reference and in-pane 差分 → 参照 restore were not run in the
-live app.
+Not a source tag or GitHub Release. Physical 確認-with-Reference and in-pane
+差分 → 参照 restore were not run in the live app. Mac App Store publication
+was later user-confirmed on 2026-08-28.
 
 - Source for local MAS pkg `2.6.2` / build `122`: `23d44fdf`
   (P1 retain-Reference Diff). Build `120` was the first 2.6.2 pkg (HOLD:
@@ -655,14 +662,13 @@ retained as the earlier R-1-only checkpoint.
    helper, G-1 structured rewrite envelope.
 2. **C-1 HOLD** until the owner picks a production `.aimodel` identity plus
    D25/D19. **C-2 HOLD** until D24/D20. External models stay Apple `.aimodel`.
-3. Record the App Review / store-publication result for `2.6.2` when Apple
-   returns it. TestFlight is user-confirmed; do not infer Review.
-4. Source tag / GitHub Release only with an explicit publication approval.
-5. Keep 縦書き, anydoc adoption, Compare Center, static lint, and persistent
+3. Source tag / GitHub Release only with an explicit publication approval.
+   Do not treat staged Mac App Store rollout as a 100% install-base claim.
+4. Keep 縦書き, anydoc adoption, Compare Center, static lint, and persistent
    indexing out of the active slice.
-6. Do not reopen the released v2.5 line, move published tags, or attach
+5. Do not reopen the released v2.5 line, move published tags, or attach
    release assets without a separate explicit handoff.
-7. On security/path/AI surfaces, re-read `docs/security-boundary.md`,
+6. On security/path/AI surfaces, re-read `docs/security-boundary.md`,
    `docs/assist-surface-strategy.md`, and `docs/core-ai-c0-design.md`.
 
 ## Key Paths
