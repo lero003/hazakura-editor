@@ -1460,13 +1460,20 @@
 }
 
 .reference-text-gutter {
-  color: var(--muted);
-  padding: 0 8px 0 10px;
+  /* Undefined --muted inherited the body color, so numbers read as prose. */
+  align-self: stretch;
+  background: var(--cm-gutter-bg);
+  border-right: 1px solid var(--cm-gutter-border);
+  color: var(--cm-gutter-fg);
+  font-size: 0.75em;
+  font-variant-numeric: tabular-nums;
+  padding: 0.2em 8px 0 10px;
   text-align: right;
   user-select: none;
 }
 
 .reference-text-content {
+  padding-left: 10px;
   padding-right: 12px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

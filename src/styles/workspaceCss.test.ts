@@ -129,6 +129,17 @@ describe("workspace.css", () => {
     expect(textSurface).not.toMatch(/font-size:\s*12\.5px/);
   });
 
+  it("keeps reference line numbers as quieter gutter chrome than the body", () => {
+    const gutter = ruleBody(".reference-text-gutter");
+
+    expect(gutter).toMatch(/color:\s*var\(--cm-gutter-fg\)/);
+    expect(gutter).toMatch(/font-size:\s*0\.75em/);
+    expect(gutter).toMatch(/font-variant-numeric:\s*tabular-nums/);
+    expect(gutter).toMatch(/background:\s*var\(--cm-gutter-bg\)/);
+    expect(gutter).not.toMatch(/var\(--muted\)/);
+    expect(gutter).not.toMatch(/font-size:\s*var\(--preview-font-size/);
+  });
+
   it("keeps the Start Panel compact and scroll-safe", () => {
     expect(ruleBody(".start-panel")).toMatch(/overflow:\s*auto/);
     expect(ruleBody(".start-panel-main")).toMatch(/width:\s*100%/);
