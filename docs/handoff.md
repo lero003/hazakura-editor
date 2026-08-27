@@ -9,11 +9,12 @@ Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; ph
 
 - Package/app version in tree: **`2.6.2`**. Local candidate after A-1–A-4 plus
   theme/Preview polish and the right-pane ownership fix; physical validation
-  is the current interaction gate. No tag or store publication. Local source
-  gates and App Store What's New draft
-  (`docs/releases/2.6.2-app-store-release-notes.md`) are prepared with this
-  pass. Provenance is in ignored
-  `docs/internal/app-store-candidates/latest.json`.
+  is the current interaction gate. No tag or store publication. `main` is
+  pushed at `5d166353`. Local source gates, App Store What's New draft
+  (`docs/releases/2.6.2-app-store-release-notes.md`), and a TestFlight-shaped
+  `.pkg` (`2.6.2` / build `120`) are prepared. Provenance is in ignored
+  `docs/internal/app-store-candidates/latest.json`. Do not treat the local
+  `.pkg` as uploaded.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +
@@ -239,15 +240,22 @@ Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; ph
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
 
-## Verification (2026-08-27, Reference / 確認 exclusive pane)
+## Verification (2026-08-27, 2.6.2 local candidate)
 
-Uncommitted Safe Editor fix. Physical 確認-with-Reference was not run in
-the live app this slice.
+Pushed on `main` as `5d166353`. Not a source tag, GitHub Release, upload, or
+App Review. Physical 確認-with-Reference was not run in the live app.
 
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 368 passed / 2 ignored.
 - `npm test` — 216 files / 1,829 tests pass.
-- `npm run build:vite` — pass; existing large-chunk warning only.
-- `git diff --check` — pass.
-- Cargo / packaged app / smoke-checklist item 20 were **not** re-run.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `npm audit` — 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` — 18 allowed warnings, no
+  high/critical.
+- `npm run release:candidate -- --with-app-store-pkg` — local MAS pkg
+  `2.6.2` / build `120` signed; `spctl` Insufficient Context expected.
+- Full smoke-checklist (IME, dirty close, save conflict) and Assist physical
+  UI were **not** re-run.
 
 ## Verification (2026-08-27, 2.6.1 local candidate)
 
@@ -640,18 +648,20 @@ retained as the earlier R-1-only checkpoint.
 1. Physical smoke of smoke-checklist item 20: dirty center draft + visible
    text Reference → `確認` shows Diff; Preview / 電子書籍 / アウトライン /
    差分 switches from Reference do not leave an empty right column.
-2. Run and record the v2.6 detached-window physical gate: narrow width,
+2. Decide source tag / App Store Connect upload only with an explicit
+   publication approval. Do not treat local pkg `2.6.2` / 120 as uploaded.
+3. Run and record the v2.6 detached-window physical gate: narrow width,
    keyboard/focus, VoiceOver, locale, streaming/cancel, and real availability.
-3. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
+4. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
    or a package build) before any live/App Store build so the prompt + framing
    change is observable, then re-verify real streaming/cancel.
-4. Consider the three non-blocking A-3 hardening items: completion-time target
+5. Consider the three non-blocking A-3 hardening items: completion-time target
    text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
-5. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
+6. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
-6. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
+7. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
    separate explicit handoff.
-7. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
+8. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
    `docs/assist-surface-strategy.md`.
 
 ## Key Paths
