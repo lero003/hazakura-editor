@@ -73,14 +73,16 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
    集合は変えない。Core AI を待たない。
 2. **U-3 — メイン Diff を読みの確認面に**（U-1 と並列可）。変更の一文は
    当面行カウント。G-1 後に補助の `changeSummary` へ。
-3. **U-4 — モデル正体チップ。** いまは Apple Intelligence 表示。C-2 で
-   同じ場所から allowlist `.aimodel` を選ぶ（Rust `selectedId`）。
+3. **U-4 — モデル正体チップ。** いまは Apple Intelligence 表示。DL と
+   利用選択の正本はのちの管理ページ（C-1 / C-2）。ヘルパーからの切替は
+   C-2 の利便ショートカット。
 4. **H-1 — System helper 土台。** `SystemLanguageModel` のまま model 再利用。
    Core AI import なし。ユーザー向け DL ではない。
 5. **G-1 — 構造化校正出力**（Depends: H-1）。本文 + 変更の一文。Diff が正本。
 6. **U-5「整える」チップは後回し**（U-1 に混ぜない）。
 7. **C-1 HOLD** until a production `.aimodel` identity plus D25/D19.
-   **C-2 HOLD** until D24/D20. Apple 標準 `.aimodel` 管理はここで扱う。
+   管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
+   利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
 8. **2.6.2 App Review / store publication** wait for Apple's result. Do not
    write “審査通過” until confirmed.
 

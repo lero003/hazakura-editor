@@ -36,7 +36,7 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 - Foundation Models の `LanguageModelSession` 永続化
 - 外部 AI Provider / network fallback
 - クラウドモデル店（Claude / GPT / Gemini / PCC）と任意 URL のモデル選択
-- ローカル allowlist のモデル指定は companion 内（C-2）。U-4 は System 表示
+- ローカル allowlist の DL / 利用選択の正本は管理ページ（C-1 / C-2）。companion のモデルチップは C-2 の利便切替。U-4 は System 表示
 - **いまの** Web 検索。将来の任意レーン。現行前提はローカルのみ
 - RAG / ワークスペース索引
 - ツール呼び出し / コマンド実行 / 自動保存 / 連続自動編集
