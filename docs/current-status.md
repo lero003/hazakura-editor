@@ -1064,16 +1064,18 @@ Assist UI claim.
 
 ## Local 2.6.2 Candidate Evidence (2026-08-27)
 
-Recorded against this worktree before the App Store `.pkg` rebuild. Details:
-`docs/releases/2.6.2-source-tag.release.md`. Not a tag, upload, or physical
-Assist UI claim.
+Recorded against source `23d44fdf` (P1: in-pane Diff retains Reference).
+Details: `docs/releases/2.6.2-source-tag.release.md`. Not a tag, upload, or
+physical Assist UI claim.
 
-- TypeScript/Vitest **216 files / 1,829 tests**, App Store surface **10 files /
-  111 tests**, `cargo fmt --check`, and Rust **368 pass / 2 ignored**.
-- `npm audit` 0 vulnerabilities; `cargo audit` 18 allowed warnings, no
-  high/critical.
-- Right-pane exclusive owner tests cover 確認/参照 overlap and Diff-workbench
-  CSS. Physical 確認-with-Reference remains smoke-checklist item 20.
+- App Store surface **10 files / 111 tests**; `tsc --noEmit` pass.
+- P1 tests: in-pane Diff hides Reference without discarding the session;
+  参照 restores the same load without a picker.
+- Local MAS pkg `2.6.2` / build `122` signed from `23d44fdf`. Builds `120`
+  (HOLD: in-pane Diff discarded Reference) and `121` (gutter polish only)
+  are superseded. Do not treat the local pkg as uploaded.
+- Physical 確認-with-Reference and in-pane 差分 → 参照 restore remain
+  smoke-checklist item 20.
 
 ## Next Safe Actions
 

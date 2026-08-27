@@ -8,13 +8,13 @@ Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; ph
 ## Current State
 
 - Package/app version in tree: **`2.6.2`**. Local candidate after A-1–A-4 plus
-  theme/Preview polish and the right-pane ownership fix; physical validation
-  is the current interaction gate. No tag or store publication. `main` is
-  pushed at `5d166353`. Local source gates, App Store What's New draft
-  (`docs/releases/2.6.2-app-store-release-notes.md`), and a TestFlight-shaped
-  `.pkg` (`2.6.2` / build `120`) are prepared. Provenance is in ignored
-  `docs/internal/app-store-candidates/latest.json`. Do not treat the local
-  `.pkg` as uploaded.
+  theme/Preview polish, the right-pane ownership fix, Reference gutter polish,
+  and P1 (in-pane Diff retains Reference). Physical validation is the current
+  interaction gate. No tag or store publication. Local MAS pkg `2.6.2` /
+  build `122` was built from source commit `23d44fdf`. Provenance is in
+  ignored `docs/internal/app-store-candidates/latest.json`. Do not treat the
+  local `.pkg` as uploaded. App Store What's New draft:
+  `docs/releases/2.6.2-app-store-release-notes.md`.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +
@@ -23,10 +23,11 @@ Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; ph
   reopen the v2.6 apply boundary. Do not use “Notion AI 級” as a Goal.
 - **Right-pane exclusive owner (2026-08-27):** 参照中に「確認」を押しても
   Diff が出ない不具合を直した。右列は参照 XOR Preview / 電子書籍 /
-  アウトライン / 差分。確認やファイル比較がサイドペインを開くとき参照は
-  隠す（読み込みは retained）。参照が表示中は side pane を非表示扱いし、
-  Diff workbench CSS でエディタが消えないようにした。実機での参照→確認
-  は smoke-checklist item 20。未コミットのソース修正。
+  アウトライン / 差分。確認・ファイル比較・参照ペイン内「差分」が
+  サイドペインを開くとき参照は隠す（読み込みは retained）。参照が
+  表示中は side pane を非表示扱いし、Diff workbench CSS でエディタが
+  消えないようにした。実機での参照→確認 / 参照内差分→参照復帰は
+  smoke-checklist item 20。
 - **Preview paint/selection stability (2026-08-27)** sits on `main` with the
   theme polish. Right Preview no longer copies image-resolved innerHTML
   back into React (that rebuilt the tree, killed selection, and collapsed
@@ -242,18 +243,19 @@ Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; ph
 
 ## Verification (2026-08-27, 2.6.2 local candidate)
 
-Pushed on `main` as `5d166353`. Not a source tag, GitHub Release, upload, or
-App Review. Physical 確認-with-Reference was not run in the live app.
+Not a source tag, GitHub Release, upload, or App Review. Physical
+確認-with-Reference and in-pane 差分 → 参照 restore were not run in the
+live app.
 
-- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
-- `cargo test --manifest-path src-tauri/Cargo.toml` — 368 passed / 2 ignored.
-- `npm test` — 216 files / 1,829 tests pass.
+- Source for local MAS pkg `2.6.2` / build `122`: `23d44fdf`
+  (P1 retain-Reference Diff). Build `120` was the first 2.6.2 pkg (HOLD:
+  in-pane Diff discarded Reference). Build `121` added gutter polish only.
+- `tsc --noEmit` — pass.
 - `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
-- `npm audit` — 0 vulnerabilities.
-- `cargo audit --file src-tauri/Cargo.lock` — 18 allowed warnings, no
-  high/critical.
+- P1 tests in `revealReferenceTextDiff.test.ts` — pass.
 - `npm run release:candidate -- --with-app-store-pkg` — local MAS pkg
-  `2.6.2` / build `120` signed; `spctl` Insufficient Context expected.
+  `2.6.2` / build `122` signed from `23d44fdf`; `spctl` Insufficient Context
+  expected. Do not treat as uploaded.
 - Full smoke-checklist (IME, dirty close, save conflict) and Assist physical
   UI were **not** re-run.
 
@@ -646,10 +648,11 @@ retained as the earlier R-1-only checkpoint.
 ## Next For Agents
 
 1. Physical smoke of smoke-checklist item 20: dirty center draft + visible
-   text Reference → `確認` shows Diff; Preview / 電子書籍 / アウトライン /
+   text Reference → `確認` shows Diff; in-pane `差分` shows Diff then `参照`
+   restores the same load without a picker; Preview / 電子書籍 / アウトライン /
    差分 switches from Reference do not leave an empty right column.
 2. Decide source tag / App Store Connect upload only with an explicit
-   publication approval. Do not treat local pkg `2.6.2` / 120 as uploaded.
+   publication approval. Do not treat local pkg `2.6.2` / 122 as uploaded.
 3. Run and record the v2.6 detached-window physical gate: narrow width,
    keyboard/focus, VoiceOver, locale, streaming/cancel, and real availability.
 4. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
