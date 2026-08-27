@@ -13,7 +13,7 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.6.1`**; local candidate after A-1–A-4 plus theme/Preview polish, not a release claim |
+| Package / app version in tree | **`2.6.2`**; local candidate after A-1–A-4 plus theme/Preview polish and the right-pane ownership fix, not a release claim |
 | Published Mac App Store | **`2.4.0`** (user-reported shipped 2026-08; closed line) |
 | Prior store / source lines | `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |

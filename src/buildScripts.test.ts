@@ -662,17 +662,17 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `2.4.0` is published",
-        "Current development is on `2.6.1`",
+        "Current development is on `2.6.2`",
         "The published App Store version is `2.4.0`",
         "latest published GitHub source / local-app tag remains [v2.3.0]",
       ],
       "docs/app-store-build.md": [
         "Published App Store version: `2.4.0`",
-        "Current source / Developer version: `2.6.1`",
+        "Current source / Developer version: `2.6.2`",
         "GitHub source tag: immutable `v2.3.0`",
       ],
       "docs/current-status.md": [
-        "Current package/app version: **`2.6.1`",
+        "Current package/app version: **`2.6.2`",
         "Published Mac App Store version: **`2.4.0`",
         "Latest published GitHub source / local-app tag: `v2.3.0`",
         "v1.11 OKF Draft Compatibility Preview is locally candidate-ready",
@@ -680,7 +680,7 @@ describe("macOS build scripts", () => {
       ],
       "docs/current-work.md": [
         "Scope: v2.6 source-candidate release prep — Local Assist two-region UX",
-        "Package/app version in tree: **`2.6.1`",
+        "Package/app version in tree: **`2.6.2`",
         "W-1 — persistent three-pane workspace",
         "v2.6 physical Assist gate",
       ],
@@ -690,13 +690,13 @@ describe("macOS build scripts", () => {
         "separate Diff review",
       ],
       "docs/handoff.md": [
-        "Package/app version in tree: **`2.6.1`",
+        "Package/app version in tree: **`2.6.2`",
         "Published Mac App Store (user direction 2026-08-07): **`2.4.0`",
         "GitHub source / local-app tag **`v2.3.0`",
         "First Alpha spine is in source",
       ],
       "docs/roadmap.md": [
-        "Package / app version in tree | **`2.6.1`",
+        "Package / app version in tree | **`2.6.2`",
         "Published Mac App Store | **`2.4.0`",
         "Active product phase | **v2.6 source candidate merged",
         "R-1 text Reference follows Preview font size",

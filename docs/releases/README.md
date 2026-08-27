@@ -13,14 +13,15 @@ Latest GitHub source / local-app tag:
 
 Current source-preview candidate:
 
-- `2.6.1` — `2.6.1-source-tag.release.md` (local candidate on `main`; physical
+- `2.6.2` — `2.6.2-source-tag.release.md` (local candidate on `main`; physical
   validation and explicit tag/publication approval pending)
+- `2.6.1` — `2.6.1-source-tag.release.md` (prior local candidate)
 - `2.6.0` — `2.6.0-source-tag.release.md` (prior A-1–A-4 source candidate)
 
 Latest stored source-tag note:
 
 - `2.3.0-source-tag.release.md`
-- `2.6.1-source-tag.release.md` is the current candidate note; it is not a tag
+- `2.6.2-source-tag.release.md` is the current candidate note; it is not a tag
   or publication record.
 
 Latest published GitHub Release body:
@@ -33,11 +34,12 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `2.6.1-app-store-release-notes.md` is the current App Store / TestFlight
-  What's New **draft** for package `2.6.1`. It covers the store delta since
+- `2.6.2-app-store-release-notes.md` is the current App Store / TestFlight
+  What's New **draft** for package `2.6.2`. It covers the store delta since
   published `2.4.0` (closed v2.5 workspace control, v2.6 Local Assist, 2.6.1
-  Preview/theme polish). It is not an upload, review, or publication record.
-  Physical Assist validation remains a separate gate.
+  Preview/theme polish, 2.6.2 right-pane ownership). It is not an upload,
+  review, or publication record. Physical Assist validation remains a
+  separate gate.
 - `2.5.0-app-store-release-notes.md` is retained as the **closed v2.5 line's
   draft/evidence**; do not treat it as an active upload or release gate.
 - **`2.4.0` is published** on the Mac App Store (user-reported 2026-08-07):
@@ -98,8 +100,9 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
-- `2.6.1-app-store-release-notes.md` is the current local candidate draft for
+- `2.6.2-app-store-release-notes.md` is the current local candidate draft for
   the unpublished store delta since `2.4.0`.
+- `2.6.1-app-store-release-notes.md` is the prior local candidate draft.
 - `2.5.0-app-store-release-notes.md` is the retained draft for the released and
   closed v2.5 workspace-control line.
 - `2.4.0-app-store-release-notes.md` records the published v2.4 App Store copy

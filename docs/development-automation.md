@@ -20,8 +20,9 @@ Name: `hazakura-note-quality-loop`
 Phase: **v2.6 source-candidate release prep.** Mac App Store `2.4.0` is
 published and closed for drive-by polish; v2.5 is released and closed. The
 active spine is Local Assist conversation + separate Diff review: A-1–A-4 source
-work is merged. Local 2.6.1 gates, a What's New draft, and a TestFlight-shaped
-`.pkg` are prepared; the current bounded work is the physical Assist gate
+work is merged. Local 2.6.2 is the current candidate (right-pane ownership
+fix on top of 2.6.1). A What's New draft and a TestFlight-shaped `.pkg` are
+local candidate actions; the current bounded work is the physical Assist gate
 before source-tag or App Store Connect upload. Remaining A-3 hardening stays
 separate.
 Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,

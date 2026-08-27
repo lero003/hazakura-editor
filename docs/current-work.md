@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: High
-Last reviewed: 2026-08-27 (C-0 pre-development lock; 2.6.1 local candidate; physical Assist pending)
+Last reviewed: 2026-08-27 (C-0 pre-development lock; 2.6.2 local candidate; physical Assist pending)
 
 ## Purpose
 
@@ -20,17 +20,20 @@ that mutation boundary. It also exposes Diff column semantics, separates
 cancellation feedback from failure, and shows an honest availability-probe
 state. Source review is complete; physical macOS validation is the next gate.
 
-- Package/app version in tree: **`2.6.1`**. This is the next local candidate
-  after merged `2.6.0` A-1–A-4 source work, plus theme and Preview polish. It
-  is not yet a source tag, upload, review, or publication claim. Local
-  source gates, a What's New draft, and a TestFlight-shaped `.pkg` are
-  prepared; provenance is in ignored
+- Package/app version in tree: **`2.6.2`**. This is the next local candidate
+  after merged `2.6.0` A-1–A-4 source work, 2.6.1 theme/Preview polish, and
+  the right-pane ownership fix (参照中の「確認」で差分を出す). It is not yet
+  a source tag, upload, review, or publication claim. Local source gates
+  and a What's New draft are prepared with this pass; a TestFlight-shaped
+  `.pkg` is a separate local candidate action. Provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
   `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The 2.6.1
-  code candidate is `6ff22dad`. The review branch was deleted after merge.
-  Release notes: `docs/releases/2.6.1-source-tag.release.md`,
-  `docs/releases/2.6.1-app-store-release-notes.md`,
+  code candidate is `6ff22dad`. `2.6.2` is the pane-ownership candidate on
+  this worktree. The review branch was deleted after merge.
+  Release notes: `docs/releases/2.6.2-source-tag.release.md`,
+  `docs/releases/2.6.2-app-store-release-notes.md`,
+  `docs/releases/2.6.1-source-tag.release.md`,
   `docs/releases/2.6.0-source-tag.release.md`.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
   gates from this development lane.
@@ -140,7 +143,7 @@ state. Source review is complete; physical macOS validation is the next gate.
 1. Run and record the v2.6 detached-window physical gate. The live helper on
    this host already answered available; that is not the UI gate.
 2. Decide on source tagging and App Store Connect upload only with an explicit
-   publication approval. Use `docs/releases/2.6.1-app-store-release-notes.md`
+   publication approval. Use `docs/releases/2.6.2-app-store-release-notes.md`
    as the What's New draft.
 3. Keep v2.5 closed; any second package rebuild or publication needs a new
    explicit release gate.

@@ -3,15 +3,16 @@
 Status: Operational
 Scope: v2.6 source-candidate release prep — Local Assist two-region UX
 Authority: Medium
-Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; Preview/theme polish; physical validation pending; v2.5 release closed)
+Last reviewed: 2026-08-27 (2.6.2 local candidate; right-pane exclusive owner; physical validation pending; v2.5 release closed)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.1`**. Local candidate after A-1–A-4 plus
-  theme/Preview polish; physical validation is the current interaction gate.
-  No tag or store publication. Local source gates, App Store What's New draft
-  (`docs/releases/2.6.1-app-store-release-notes.md`), and a TestFlight-shaped
-  `.pkg` are prepared. Provenance is in ignored
+- Package/app version in tree: **`2.6.2`**. Local candidate after A-1–A-4 plus
+  theme/Preview polish and the right-pane ownership fix; physical validation
+  is the current interaction gate. No tag or store publication. Local source
+  gates and App Store What's New draft
+  (`docs/releases/2.6.2-app-store-release-notes.md`) are prepared with this
+  pass. Provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
@@ -19,6 +20,12 @@ Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; Preview/theme
   Background Assets/AOT. C-2 waits on backend-specific availability and
   Rust-owned `selectedId`. TS generate must not send `backend`. Do not
   reopen the v2.6 apply boundary. Do not use “Notion AI 級” as a Goal.
+- **Right-pane exclusive owner (2026-08-27):** 参照中に「確認」を押しても
+  Diff が出ない不具合を直した。右列は参照 XOR Preview / 電子書籍 /
+  アウトライン / 差分。確認やファイル比較がサイドペインを開くとき参照は
+  隠す（読み込みは retained）。参照が表示中は side pane を非表示扱いし、
+  Diff workbench CSS でエディタが消えないようにした。実機での参照→確認
+  は smoke-checklist item 20。未コミットのソース修正。
 - **Preview paint/selection stability (2026-08-27)** sits on `main` with the
   theme polish. Right Preview no longer copies image-resolved innerHTML
   back into React (that rebuilt the tree, killed selection, and collapsed
@@ -231,6 +238,16 @@ Last reviewed: 2026-08-27 (2.6.1 local gates and What's New draft; Preview/theme
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+
+## Verification (2026-08-27, Reference / 確認 exclusive pane)
+
+Uncommitted Safe Editor fix. Physical 確認-with-Reference was not run in
+the live app this slice.
+
+- `npm test` — 216 files / 1,829 tests pass.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `git diff --check` — pass.
+- Cargo / packaged app / smoke-checklist item 20 were **not** re-run.
 
 ## Verification (2026-08-27, 2.6.1 local candidate)
 
@@ -620,18 +637,21 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Run and record the v2.6 detached-window physical gate: narrow width,
+1. Physical smoke of smoke-checklist item 20: dirty center draft + visible
+   text Reference → `確認` shows Diff; Preview / 電子書籍 / アウトライン /
+   差分 switches from Reference do not leave an empty right column.
+2. Run and record the v2.6 detached-window physical gate: narrow width,
    keyboard/focus, VoiceOver, locale, streaming/cancel, and real availability.
-2. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
+3. Rebuild the live Swift helper (`scripts/build-apple-assist-helper-live.sh`
    or a package build) before any live/App Store build so the prompt + framing
    change is observable, then re-verify real streaming/cancel.
-3. Consider the three non-blocking A-3 hardening items: completion-time target
+4. Consider the three non-blocking A-3 hardening items: completion-time target
    text revalidation, Diff failure/no-op Apply gating, and Apply status watchdog.
-4. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
+5. Keep 縦書き, anydoc adoption, Core AI download UI, Compare Center, static
    lint, and persistent indexing out of the active slice.
-5. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
+6. Do not reopen the released v2.5 line, move published tags, upload, or attach release assets without a
    separate explicit handoff.
-6. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
+7. On security/path/AI surfaces, re-read `docs/security-boundary.md` and
    `docs/assist-surface-strategy.md`.
 
 ## Key Paths
