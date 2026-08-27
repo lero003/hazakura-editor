@@ -12,9 +12,9 @@ Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store p
   Store publication. Published store remains **`2.4.0`**. Local MAS pkg
   `2.6.2` / build `122` was built from source commit `23d44fdf`. Provenance
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
-  `docs/releases/2.6.2-app-store-release-notes.md`. Next development lane is
-  writing-companion UI / System helper (U-\* / H-1 / G-1); C-1 HOLD until a
-  production Core AI identity.
+  `docs/releases/2.6.2-app-store-release-notes.md`. Next development: **U-1**
+  conversational proofread on Apple Intelligence, then U-3 / U-4, then H-1 →
+  G-1. C-1 (`.aimodel` DL) HOLD until a production identity.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +
@@ -647,10 +647,12 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Writing-companion UI / System helper (U-\* / H-1 / G-1). Do not wait for
-   Core AI download. Do not reopen `applyReviewedLocalAssistProposal`.
+1. **U-1** composer-first Local Assist window (会話しながら校正). Do not
+   wait for Core AI download. Do not reopen `applyReviewedLocalAssistProposal`.
+   Then U-3 Diff reading surface, U-4 Apple Intelligence footer, H-1 System
+   helper, G-1 structured rewrite envelope.
 2. **C-1 HOLD** until the owner picks a production `.aimodel` identity plus
-   D25/D19. **C-2 HOLD** until D24/D20.
+   D25/D19. **C-2 HOLD** until D24/D20. External models stay Apple `.aimodel`.
 3. Record the App Review / store-publication result for `2.6.2` when Apple
    returns it. TestFlight is user-confirmed; do not infer Review.
 4. Source tag / GitHub Release only with an explicit publication approval.

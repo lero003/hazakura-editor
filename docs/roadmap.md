@@ -74,8 +74,8 @@ User direction:
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
 [now]    v2.6 TestFlight (user-confirmed 2026-08-28); App Review / store pending
-[next]   writing-companion UI + System helper (U-* / H-1 / G-1); C-1 HOLD
-[later]  Core AI allowlisted writing models (C-1 lifecycle → C-2 select/use)
+[next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → H-1 → G-1
+[later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
 [parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 

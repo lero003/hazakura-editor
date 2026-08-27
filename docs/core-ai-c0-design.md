@@ -11,7 +11,7 @@
 | **Scope** | Design only. No product source, no C-1/C-2 implementation. |
 | **Tree baseline** | Package `2.6.1`. Local Assist A-1–A-4 source merged. Physical Assist gate pending. HEAD observed `82e6d307`. |
 | **Does not reopen** | v2.6 apply boundary (`applyReviewedLocalAssistProposal` is the single apply path) |
-| **Last revised** | 2026-08-27 (final pre-dev review P1–P3 folded) |
+| **Last revised** | 2026-08-28 (rollout: U-1 conversational proofread first; `.aimodel` later) |
 
 ---
 
@@ -1079,11 +1079,15 @@ Alerting: なし（単機デスクトップ）。メンテナーは catalog の 
 ## Rollout Plan
 
 ```text
-物理 A-4 ゲート（現行キュー、本設計の外）
-  → U-1 / U-3 / U-4 / H-1 / G-1  = GO（SystemLanguageModel）
+2.6.2 TestFlight（user-confirmed）。Apply 境界は触らない。
+  → U-1  composer-first。会話しながら校正する窓（draft hero）
+  → U-3  メイン Diff を読みの確認面に（U-1 と並列可）
+  → U-4  「この Mac · Apple Intelligence · オンデバイス」
+  → H-1  System helper（model 再利用。Core AI import なし）
+  → G-1  @Generable 本文 + 変更の一文（Depends: H-1）
   → U-5 source チップ（U-1 に混ぜない。L Mode は U-5b）
   → 【停止】C-1: identity + D25 manifest + D19 配信（BA/origin）+ D28 AOT
-  → C-1 catalog DL / BA materialize（開示正本を同じ系列で書き換え）
+  → C-1 catalog DL / Apple .aimodel 管理（開示正本を同じ系列で書き換え）
   → bake-off（PR ではないゲート）
   → 【停止】C-2: D24 backend probe + D20 Rust selectedId 正本
   → H-1b（path 注入 + D26 error taxonomy）
@@ -1157,7 +1161,7 @@ Rollback:
 
 ## PR Plan
 
-C-0 はこの文書（docs only）。**U-\* / H-1 / G-1 = GO。C-1 は identity + expanded manifest + BA/AOT 後。C-2 は backend-specific availability + Rust が backend 正本になってから。** Apply 境界はどの PR も変えない。物理 A-4 完了後が望ましい。
+C-0 はこの文書（docs only）。**体験は U-1 から。** H-1 は System 経路の helper 土台、G-1 はその上の構造化校正出力。C-1（`.aimodel` DL）は identity + expanded manifest + BA/AOT 後。C-2 は backend-specific availability + Rust が backend 正本になってから。Apply 境界はどの PR も変えない。
 
 ### PR U-1 — composer-first + draft hero 面積
 

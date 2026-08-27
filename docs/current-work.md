@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6 TestFlight (user-confirmed) — Core AI / writing-companion
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store publication pending; C-0 lock)
+Last reviewed: 2026-08-28 (2.6.2 TestFlight; next is U-1 conversational proofread on Apple Intelligence)
 
 ## Purpose
 
@@ -63,17 +63,22 @@ that mutation boundary.
 
 ### Immediate next
 
-1. **Writing-companion UI / System helper (U-\* / H-1 / G-1 = GO).** Do not
-   wait for Core AI download. Keep the v2.6 apply boundary frozen.
-2. **C-1 HOLD** until the owner picks a production model identity plus D25
-   `resourceManifest` and D19 delivery (Background Assets / AOT). **C-2 HOLD**
-   until D24/D20. Do not start either as v2.6 apply work.
-3. **2.6.2 App Review / store publication** wait for Apple's result. Do not
-   write “審査通過” or store publication until confirmed. Source tag and
-   GitHub Release still need an explicit publication approval.
-4. Keep the three non-blocking A-3 hardening items separate: completion-time
-   target text revalidation, Diff failure/no-op Apply gating, and an Apply
-   status watchdog. They do not change the A-3 mutation boundary.
+Owner direction 2026-08-28: **Apple Intelligence で会話しながら校正する体験を
+先に厚くする。** `.aimodel` の外部 DL はその後。Apply 境界は凍結。
+
+1. **U-1 — composer-first の校正会話。** 分離窓を「対象 + 作成中の案 + 短い
+   追加指示」にする。プリセット集合は変えない。Core AI を待たない。
+2. **U-3 — メイン Diff を読みの確認面に**（U-1 と並列可）。変更の一文は
+   当面行カウント。G-1 後に補助の `changeSummary` へ。
+3. **U-4 — モデル正体。** 「この Mac · Apple Intelligence · オンデバイス」。
+4. **H-1 — System helper 土台。** `SystemLanguageModel` のまま model 再利用。
+   Core AI import なし。ユーザー向け DL ではない。
+5. **G-1 — 構造化校正出力**（Depends: H-1）。本文 + 変更の一文。Diff が正本。
+6. **U-5「整える」チップは後回し**（U-1 に混ぜない）。
+7. **C-1 HOLD** until a production `.aimodel` identity plus D25/D19.
+   **C-2 HOLD** until D24/D20. Apple 標準 `.aimodel` 管理はここで扱う。
+8. **2.6.2 App Review / store publication** wait for Apple's result. Do not
+   write “審査通過” until confirmed.
 
 ### Completed in v2.5 development
 

@@ -260,11 +260,11 @@ user-confirmed; App Review and store publication remain separate.
   open **Books and knowledge folders…** (English Help body). Local Data
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.2` package version from package metadata.
-- **Open main queue:** writing-companion UI / System helper (U-\* / H-1 / G-1);
-  C-1 HOLD until a production Core AI identity. App Review / store publication
-  for `2.6.2` wait on Apple's result. v2.5 is released and closed; published
-  `2.4.0` remains closed without a reproduced hotfix; other advisory items stay
-  parked.
+- **Open main queue:** U-1 conversational proofread on Apple Intelligence, then
+  U-3 / U-4, then H-1 → G-1. C-1 HOLD until a production `.aimodel` identity.
+  App Review / store publication for `2.6.2` wait on Apple's result. v2.5 is
+  released and closed; published `2.4.0` remains closed without a reproduced
+  hotfix; other advisory items stay parked.
 - **Parked / on-demand:** residual polish; broad TestFlight / VoiceOver /
   evidence matrix; bulk external-review backlog digestion.
 - **`1.8.0` build `89` remains a closed historical Mac App Store baseline**
@@ -1085,9 +1085,10 @@ physical Assist UI claim.
 1. Record the App Review / store-publication result for `2.6.2` when Apple
    returns it. TestFlight is user-confirmed; do not infer Review or store
    publication.
-2. Writing-companion UI / System helper (U-\* / H-1 / G-1) may proceed.
-   **C-1 HOLD** until a production Core AI identity plus D25/D19. **C-2 HOLD**
-   until D24/D20. Do not reopen the v2.6 apply boundary.
+2. Next slice is **U-1** (composer-first conversational proofread on Apple
+   Intelligence). Then U-3 / U-4, then H-1 → G-1. **C-1 HOLD** until a
+   production `.aimodel` identity plus D25/D19. Do not reopen the v2.6 apply
+   boundary.
 3. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and Apply status
    watchdog.
