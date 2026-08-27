@@ -44,11 +44,9 @@ import { useCompareController } from "../diff/useCompareController";
 import { useReferenceCompareActions } from "../referenceCompare/useReferenceCompareActions";
 import { useImportPageFollow } from "../referenceCompare/useImportPageFollow";
 import { useReferenceExternalChange } from "../referenceCompare/useReferenceExternalChange";
-import { buildLineDiff } from "../../features/diff/diff";
+import { revealReferenceTextDiff } from "../../features/referenceCompare/revealReferenceTextDiff";
 import { bindExclusiveSidePaneOpen } from "../../features/workspace/rightPaneExclusive";
-import { compareColumnLabel } from "../../lib/locale/review";
 import { localizeCompareError } from "../../lib/utils";
-import type { CompareCase } from "../../types";
 import {
   approveParentFolderForContext,
   effectiveApprovedRoots,
@@ -1038,43 +1036,26 @@ export function useAppShellController() {
 
   /**
    * Text reference → existing Diff workbench (left = reference snapshot,
-   * right = editor buffer). Closes the reference pair so the Diff side pane
-   * can show; visual side-by-side remains the default until this action.
+   * right = editor buffer). Hides the Reference column so Diff can show;
+   * the loaded session stays retained.
    */
   const showReferenceTextDiff = useCallback(() => {
     const reference = referenceCompare?.reference;
-    if (!reference || reference.kind !== "text" || !activeTab) {
+    if (!reference || !activeTab) {
       return;
     }
     setGlobalError(null);
     try {
-      const diff = buildLineDiff(reference.contents, activeTab.contents);
-      const caseKey = crypto.randomUUID();
-      const sourceLabel = compareColumnLabel(menuLanguage, "source");
-      const editorLabel = compareColumnLabel(menuLanguage, "editor");
-      const compareCase: CompareCase = {
-        kind: "file",
-        key: caseKey,
-        leftPath: reference.path,
-        rightPath: activeTab.path || `session:${activeTab.sessionId}`,
-        anchor: {
-          path: reference.path,
-          name: reference.name,
-          label: sourceLabel,
-        },
-        target: {
-          path: activeTab.path || "",
-          name: activeTab.name,
-          label: editorLabel,
-        },
-      };
-      setCompareCaseEntry(compareCase);
-      setCompareView({
-        caseKey,
-        ...diff,
+      const snapshot = revealReferenceTextDiff({
+        activeTab,
+        menuLanguage,
+        reference,
       });
-      // Text references hold no PDF handle; clear pair so Diff side pane can show.
-      clearReferenceCompare();
+      if (!snapshot) {
+        return;
+      }
+      setCompareCaseEntry(snapshot.compareCase);
+      setCompareView(snapshot.compareView);
       setRightPaneMode("compare");
       setSidePaneOpenFromUserAction(true);
       setStatus("Compare ready");
@@ -1089,7 +1070,6 @@ export function useAppShellController() {
     }
   }, [
     activeTab,
-    clearReferenceCompare,
     menuLanguage,
     referenceCompare,
     setCompareCaseEntry,

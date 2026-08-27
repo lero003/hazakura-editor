@@ -1078,7 +1078,9 @@ recovered state separately where relevant.
     Preview, then back to `参照`; confirm the same reference returns without a
     picker. While a text Reference is visible and the center draft is dirty,
     press `確認` and confirm Diff replaces the reference column (the loaded
-    reference stays retained, not discarded). From a visible Reference, switch
+    reference stays retained, not discarded). From a visible text Reference,
+    press in-pane `差分` / View diff; Diff shows; press `参照` and the same
+    loaded reference returns without a picker. From a visible Reference, switch
     Preview / 電子書籍 / アウトライン / 差分 and confirm the chosen pane
     appears instead of an empty right column. Set Preview font size to its minimum and maximum values and confirm
     text Reference follows both changes without reopening; PDF/image Reference
