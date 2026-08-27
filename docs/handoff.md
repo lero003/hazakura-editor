@@ -13,8 +13,10 @@ Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; App Review / store p
   `2.6.2` / build `122` was built from source commit `23d44fdf`. Provenance
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
   `docs/releases/2.6.2-app-store-release-notes.md`. Next development: **U-1**
-  conversational proofread on Apple Intelligence, then U-3 / U-4, then H-1 →
-  G-1. C-1 (`.aimodel` DL) HOLD until a production identity.
+  conversational proofread on Apple Intelligence (helper: target + local
+  model chip; main Diff before apply), then U-3 / U-4, then H-1 → G-1.
+  C-1 (`.aimodel` DL) HOLD until a production identity. Local-only for now;
+  web search is a later optional lane.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +

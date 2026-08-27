@@ -63,14 +63,18 @@ that mutation boundary.
 
 ### Immediate next
 
-Owner direction 2026-08-28: **Apple Intelligence で会話しながら校正する体験を
-先に厚くする。** `.aimodel` の外部 DL はその後。Apply 境界は凍結。
+Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカルモデルを指定し、
+確認してから反映する。** Apple Intelligence でその体験を先に厚くする。
+`.aimodel` DL はその後。ツールコールとクラウドモデル店はしない。
+いまはローカルのみ。Web 検索は将来の任意。Apply 境界は凍結。
 
-1. **U-1 — composer-first の校正会話。** 分離窓を「対象 + 作成中の案 + 短い
-   追加指示」にする。プリセット集合は変えない。Core AI を待たない。
+1. **U-1 — composer-first の校正会話。** 分離窓を「対象チップ（選択 /
+   ファイル / 見出し）+ 作成中の案 + 短い追加指示」にする。プリセット
+   集合は変えない。Core AI を待たない。
 2. **U-3 — メイン Diff を読みの確認面に**（U-1 と並列可）。変更の一文は
    当面行カウント。G-1 後に補助の `changeSummary` へ。
-3. **U-4 — モデル正体。** 「この Mac · Apple Intelligence · オンデバイス」。
+3. **U-4 — モデル正体チップ。** いまは Apple Intelligence 表示。C-2 で
+   同じ場所から allowlist `.aimodel` を選ぶ（Rust `selectedId`）。
 4. **H-1 — System helper 土台。** `SystemLanguageModel` のまま model 再利用。
    Core AI import なし。ユーザー向け DL ではない。
 5. **G-1 — 構造化校正出力**（Depends: H-1）。本文 + 変更の一文。Diff が正本。
@@ -124,6 +128,7 @@ Owner direction 2026-08-28: **Apple Intelligence で会話しながら校正す�
 - anydoc / broad Office import (investigation memo only until demand).
 - Editable display TOC (X-5); first-run coach (Q-2); tab overflow; full a11y matrix.
 - Compare Center; static lint; mode-pill rainbow.
+- Optional web search from Local Assist (future; local-only remains current).
 - Reference の行番号は本文より小さいガター扱い（`--cm-gutter-*`）にした。
   残る観察があれば将来の Reference 表示ポリッシュで再評価する。
 

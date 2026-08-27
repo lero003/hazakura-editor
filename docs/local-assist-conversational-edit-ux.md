@@ -3,7 +3,7 @@
 Status: A-1–A-4 source candidate merged; physical validation pending
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
-Last reviewed: 2026-08-17
+Last reviewed: 2026-08-28
 
 ## Purpose
 
@@ -11,7 +11,8 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 
 目標体験:
 
-> 対象となる文章を固定し、AI と会話しながら変更案を育て、
+> ヘルパーで対象（選択・いまのファイル / 見出し）とローカルモデルを
+> 指定しながら会話し、変更案を育てる。
 > 現在の変更案は会話とは別の Diff 確認領域で読み、
 > 最後にユーザーが任意で文書へ反映する。
 
@@ -34,8 +35,10 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 - 同時複数会話セッション
 - Foundation Models の `LanguageModelSession` 永続化
 - 外部 AI Provider / network fallback
-- 任意モデル選択 UI（Core AI ホワイトリスト経路は **別レーン**）
-- Web 検索 / RAG / ワークスペース索引
+- クラウドモデル店（Claude / GPT / Gemini / PCC）と任意 URL のモデル選択
+- ローカル allowlist のモデル指定は companion 内（C-2）。U-4 は System 表示
+- **いまの** Web 検索。将来の任意レーン。現行前提はローカルのみ
+- RAG / ワークスペース索引
 - ツール呼び出し / コマンド実行 / 自動保存 / 連続自動編集
 - 一般的な AI 質問チャット
 

@@ -11,7 +11,7 @@
 | **Scope** | Design only. No product source, no C-1/C-2 implementation. |
 | **Tree baseline** | Package `2.6.1`. Local Assist A-1–A-4 source merged. Physical Assist gate pending. HEAD observed `82e6d307`. |
 | **Does not reopen** | v2.6 apply boundary (`applyReviewedLocalAssistProposal` is the single apply path) |
-| **Last revised** | 2026-08-28 (rollout: U-1 conversational proofread first; `.aimodel` later) |
+| **Last revised** | 2026-08-28 (D30: helper conversation + target/model; review before apply) |
 
 ---
 
@@ -23,7 +23,7 @@ Hazakura Local Assist は、選択した Markdown に対してオンデバイス
 
 1. **macOS 27 の Foundation Models 次世代**（AFM 3 Core / Core Advanced。パラメータ数は公開報道であり API 契約ではない）を、既定の脳として受け取る。
 2. **Core AI の allowlist された文章モデル**（`.aimodel` バンドル）を、macOS 27+ の任意経路として同じ生成 UX に載せる。ネットワークはカタログ取得のみ。App Store レーンでも明示 DL を載せてよい（D12）。推論はオンデバイス。PCC / 第三者クラウドは使わない。第一の本番モデル identity は未決。**C-1 は identity 決定まで始めない。**
-3. **writing-companion の polish**（composer-first、対象チップ、ストリームを主役、紙と墨）。Notion Agent 形（永続チャット DB、workspace RAG、自律編集、メイン chrome の第三モード）にはしない。Goal やリリース文言に「Notion AI 級」と書かない。
+3. **writing-companion の polish**（composer-first、対象チップ、ローカルモデル指定、ストリームを主役、紙と墨）。Notion の「ヘルパーで話し、確認してから書く」には寄せる。Notion Agent 形（ツールコール、永続チャット DB、workspace RAG、自律編集、クラウドモデル店、メイン chrome の第三モード）にはしない。Goal やリリース文言に「Notion AI 級」と書かない。
 
 v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイン窓、エディタは明示反映まで不変。本設計は UI を磨き、任意で選択範囲からの静かな入口を足してよいが、会話 + Diff + エディタを一つのページエージェントにマージしない。
 
@@ -79,16 +79,17 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 2. **Core AI は任意の allowlist 経路。** macOS 27+ のみ。同じ会話 / Diff / Apply UX。モデルを選んでも proposal-first、Diff、no auto-save を弱めない。
 3. **生成 UX は一本。** System と Core AI で会話 / Diff / Apply を分岐しない。helper の型抽象は二段（D2）: macOS 26 では既存 `LanguageModelSession(model: SystemLanguageModel)`。`any LanguageModel` は macOS 27 SDK 段。
 4. **カタログはアプリが保守する。** 1〜3 個の文章向け候補。任意 URL、unsigned blob、汎用 GGUF、59 モデルの店は作らない。
-5. **UI を composer-first の writing companion に磨く。** 対象チップ、ストリーム主役、紙と墨。Apply はメイン窓の書き換えレビューのまま。成功条件は「案を日本語の文章として読める」ことであり、「Notion AI 級」ではない。
+5. **UI を composer-first の writing companion に磨く。** ヘルパーで会話し、対象（選択・現在のファイル / 見出し）と利用モデルを指定し、メイン窓の Diff で確認してから反映する。成功条件は「案を日本語の文章として読める」こと。Goal やリリースに「Notion AI 級」と書かない。ツールコール・自律編集・永続チャット DB はしない。
 6. **選択範囲からの静かな入口**を推奨する。バッファをゴースト書き換えしない。
 
 ### Non-Goals
 
 - PCC、Claude、Gemini、任意 `LanguageModel` プロバイダ、MLX のユーザー向け経路
 - Agent Workbench との統合、MCP、外部 Agents、スケジュール自動化
-- Spotlight RAG / workspace 索引 / 他ページの @-mention
+- Spotlight RAG / workspace 索引 / 他ページの意味検索
 - 永続チャット履歴、再起動後の transcript 復元、同時複数会話
 - 副作用ツール（ファイル書き込み、shell、Git、network fetch）
+- **いまの** Web 検索。将来の任意レーンとして駐車。Local Assist の現行前提はローカルのみ
 - OCR / Barcode / 画像入力（C-1 対象外。画像は後続で明示添付のみ）
 - メイン chrome への Local Assist ドッキング（第三モード化）
 - v2.6 Apply 境界の再開、物理 Assist ゲートの代替
@@ -140,6 +141,7 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 | **D27** | streaming partial 本文は **Rust → companion だけ**（現行 B2）。main の proposal store には載せない。完了 envelope だけ main → store → Diff。全体図もこの流れに合わせる。 | `Gen → Store → Draft` と読むと実装者が B2 を壊す。 |
 | **D28** | Core AI 配布物はメンテナーが **AOT 済み**（`coreai-build compile`、アーキテクチャ別）を正とする。ユーザー機でのフル specialize を既定体験にしない。AOT 後もデバイス固有 specialize は残るが、D23 の待ちを短くするのが目的。 | WWDC26 326。チャネル（BA / origin）とは独立。 |
 | **D29** | `maximumResponseTokens` は C-2 で明示する。stock Core AI executor は未指定だと 512（reasoning 時 2048）で切れる。長文 rewrite の既定にしない。 | 最終事前レビュー / stock adapter。System 経路の現行 helper はこの既定に依存していない。 |
+| **D30** | **体験ピン（オーナー 2026-08-28）。** Companion は会話面。そこで対象（選択範囲 / 現在ファイル / 見出し＝ページ相当）と **ローカルモデル** を指定しながら校正する。本文への反映はメイン Diff の明示確認のあと。Notion の「ヘルパーで話し、確認してから書く」には寄せる。Notion Agent（ツール、RAG、自律編集、クラウドモデル店）にはしない。モデル切替の正本は D20（Rust `selectedId`）。U-4 は System 表示。C-2 で allowlist `.aimodel` を同じチップから選ぶ。会話ごとに Claude / GPT を足さない。Web 検索は将来の任意。いまはローカルのみ。 | 添付の Notion 会話 UI。ツールコール以外の面。 |
 
 ---
 
@@ -617,11 +619,11 @@ Apply ロジックは移さない。
 
 ## UI Vision
 
-目標コピー: **大きな静かな入力と、読める草案。Agent の形にはしない。** Goal / リリースに「Notion AI 級」と書かない。
+目標コピー: **ヘルパーで会話し、対象とモデルを指定し、確認してから反映する。** Agent の形にはしない。Goal / リリースに「Notion AI 級」と書かない。
 
-取るもの: 大きな静かな入力、すぐ出るストリーム、対象が何か分かるチップ、短い助手ターン、長い草案はレビュー側、紙の余白。
+取るもの: 大きな静かな入力、すぐ出るストリーム、対象チップ（選択 / ファイル / 見出し）、ローカルモデルの表示（のち選択）、短い助手ターン、長い草案はメインの確認、紙の余白。
 
-捨てるもの: チャット履歴サイドバー、他ページ RAG、Custom Agents、Web 検索、メインにドッキングした第三モード、紫グロー。
+捨てるもの: チャット履歴サイドバー、workspace RAG、Custom Agents、メインにドッキングした第三モード、紫グロー、クラウドモデル店。Web 検索は将来の任意（いま捨てる）。
 
 ### Companion — 通常幅
 
@@ -647,9 +649,9 @@ Apply ロジックは移さない。
 │  │                                                    │    │
 │  └────────────────────────────────────────────────────┘    │
 │  [校正だけ] [要約] [翻訳] [続きの案] [短くする]            │
-│                          [取り消す]              [依頼する] │
+│  [Apple Intelligence ▾]              [取り消す] [依頼する] │
 │                                                             │
-│  この Mac · Apple Intelligence · オンデバイス               │
+│  この Mac · オンデバイス                                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -1168,7 +1170,7 @@ C-0 はこの文書（docs only）。**体験は U-1 から。** H-1 は System 
 - **Title:** Local Assist 分離窓を composer-first にし、作成中ドラフトを主役にする
 - **Files:** `src/components/appleAssist/AppleAssistWindowApp.tsx`（分割可: Composer / TargetChip / DraftHero / TurnList / ModelFooter）、`src/styles/apple-assist-window.css`、locale copy、既存 render tests、必要なら `src-tauri/src/commands/app_window.rs` の min height
 - **Depends:** none
-- **Changes:** グリッドを対象チップ / hero / 短い状態（最大 4 ターン） / composer / フッターへ。idle では hero を出さない。ストリーム中 hero が主面積、狭高では `minmax(8rem, 1fr)`。完了後は約 3–4rem の一手渡し行。presets は `LOCAL_ASSIST_VISIBLE_PRESET_IDS` のまま（校正 / 要約 / 翻訳 / 続きの案 / 短くする）。operation-feedback 48 件はデフォルト折りたたみ。死んだ `proposalApplyButton` 等の Apply コピーを削除。
+- **Changes:** グリッドを対象チップ（選択 / 現在ファイル / 見出し） / hero / 短い状態（最大 4 ターン） / composer / フッターへ。idle では hero を出さない。ストリーム中 hero が主面積、狭高では `minmax(8rem, 1fr)`。完了後は約 3–4rem の一手渡し行。presets は `LOCAL_ASSIST_VISIBLE_PRESET_IDS` のまま（校正 / 要約 / 翻訳 / 続きの案 / 短くする）。operation-feedback 48 件はデフォルト折りたたみ。死んだ `proposalApplyButton` 等の Apply コピーを削除。モデル店は足さない（U-4）。
 - **Tests:** A-4 ピン 17–20（狭幅フォーカス順、cancelled ≠ failed、probe 中に unsupported と断定しない）。IME・Escape。companion に Apply が無いこと。
 
 U-2（hero 視覚仕上げ）を分けるなら **U-1 の直後・同一レビュー単位**。グリッド契約を二度燃やす独立 PR にはしない。
@@ -1186,7 +1188,7 @@ U-2（hero 視覚仕上げ）を分けるなら **U-1 の直後・同一レビ�
 - **Title:** Local Assist のモデル名と可用性をフッターに出す
 - **Files:** companion footer、Preferences availability card、`src/lib/locale/appleAssist.ts`
 - **Depends:** none（H-1 前は System 表示名のみ）
-- **Changes:** 「この Mac · Apple Intelligence · オンデバイス」。生 `apple:foundation-models:system-default` を主表示にしない。marketplace にしない。**probe 四態 enum は変えない。**
+- **Changes:** companion のモデルチップ。「Apple Intelligence」（System）。生 `apple:foundation-models:system-default` を主表示にしない。C-2 まで選択肢は増やさない。marketplace / クラウドモデル店にしない。**probe 四態 enum は変えない。** D20 / D30。
 - **Tests:** A-4 ピン 20（probe 中コピー）。availability kind 分岐が壊れないこと。
 
 ### PR H-1 — macOS 26 の AssistBackend + System session + model 再利用
