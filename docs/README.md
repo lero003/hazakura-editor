@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-08-29 (M-0a locally verified; M-0b stopped)
+Last reviewed: 2026-08-29 (v2.7.0 local candidate; M-0a locally verified; M-0b stopped)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -13,7 +13,8 @@ pinned multi-turn conversation + explicit Diff apply). Mac App Store `2.6.2`
 is user-confirmed published (2026-08-28; staged rollout). A GitHub source tag
 and physical Assist validation remain separate. Published `2.6.2` is hotfix-only.
 MLX M-0a is a completed System-boundary preflight; it does not include an MLX
-runtime. M-0b remains parked after C-2 and an Xcode 27 build lane.
+runtime. The current `2.7.0` package is a local candidate only. M-0b remains
+parked after C-2 and an Xcode 27 build lane.
 Start with `current-work.md` and `roadmap.md`.
 
 ## Current Canonical Docs
@@ -24,8 +25,8 @@ Start with `current-work.md` and `roadmap.md`.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **U-1 writing-companion queue**; v2.6.2 App Store published; v2.5 release closed.
-- `roadmap.md`: **v2.6.2 Mac App Store published (staged rollout)**; writing-companion next; v2.5 released/closed.
+- `current-work.md`: **v2.7.0 local candidate / U-1 writing-companion queue**; published store remains 2.6.2; v2.5 release closed.
+- `roadmap.md`: **v2.7.0 local candidate**; published store remains 2.6.2; writing-companion next; v2.5 released/closed.
 - `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; store published, GitHub tag pending).
 - `v2.5-plan.md`: **v2.5 plan** (workspace control; Assist deferred; later Core AI).
 - `v2.4-plan.md`: **closed** Book depth plan (historical for `2.4.0`).
@@ -60,13 +61,15 @@ Start with `current-work.md` and `roadmap.md`.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.6.2 Mac App Store published (staged rollout)** + U-1 writing-companion next
-- `current-work.md` — 2.6.2 App Store published; M-0a complete; U-\* / G-1 next; C-1 / M-0b HOLD
+- `roadmap.md` — **v2.7.0 local candidate**; published store remains 2.6.2; U-1 writing-companion next
+- `current-work.md` — 2.7.0 local candidate; M-0a complete; U-\* / G-1 next; C-1 / M-0b HOLD
 - `v2.6-plan.md` — conversation / Diff review plan; store published; GitHub tag pending
 - `releases/2.6.2-source-tag.release.md` — 2.6.2 note; Mac App Store published; GitHub source tag pending
 - `releases/2.6.2-app-store-release-notes.md` — App Store What's New for published `2.6.2` (user-confirmed 2026-08-28; staged rollout)
 - `releases/2.6.1-source-tag.release.md` — prior local candidate note; tag pending
 - `releases/2.6.0-source-tag.release.md` — prior A-1–A-4 source-preview candidate note; tag pending
+- `releases/2.7.0-source-tag.release.md` — current local source/package candidate boundary
+- `releases/2.7.0-app-store-release-notes.md` — candidate App Store copy; not published
 - `v2.5-plan.md` — closed workspace-control release plan
 - `local-assist-conversational-edit-ux.md` — conversation / Diff design SoT
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent

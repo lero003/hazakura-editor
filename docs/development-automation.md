@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published; U-1 writing-companion next)
+Last reviewed: 2026-08-29 (2.7.0 local candidate; M-0a complete; U-1 next)
 
 ## Purpose
 
@@ -17,11 +17,13 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.6.2 published + U-1 writing-companion.** Mac App Store
+Phase: **v2.7.0 local candidate + U-1 writing-companion.** Mac App Store
 `2.6.2` is published (user-confirmed 2026-08-28; staged rollout) and closed
-for drive-by polish; v2.5 is released and closed. A GitHub `v2.6.2` source
-tag remains a separate gate. The next development spine is writing-companion UI and System helper (U-\* / H-1 /
-G-1); C-1 HOLD until a production model identity. Do not reopen the v2.6
+for drive-by polish; `2.7.0` is not uploaded or published; v2.5 is released
+and closed. A GitHub `v2.7.0` source tag remains a separate gate. The next
+development spine is writing-companion UI and System helper (U-\* / G-1);
+H-1 System reuse is complete in M-0a; C-1 HOLD until a production model
+identity. Do not reopen the v2.6
 apply boundary. Remaining A-3 hardening stays separate.
 Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
 `docs/roadmap.md`, `docs/v2.6-plan.md`, and

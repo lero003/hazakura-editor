@@ -1,25 +1,26 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 + MLX M-0a preflight)
+Scope: Current implementation state and next safe actions (v2.7.0 candidate + MLX M-0a preflight)
 Authority: High
-Last reviewed: 2026-08-29 (MLX M-0a preflight locally verified; no MLX runtime)
+Last reviewed: 2026-08-29 (v2.7.0 candidate lane; MLX M-0a locally verified; no MLX runtime)
 
-Release candidate note: `docs/releases/2.6.2-source-tag.release.md`; App Store
-What's New: `docs/releases/2.6.2-app-store-release-notes.md`. Mac App Store
-`2.6.2` is user-confirmed published (2026-08-28); rollout to all users is
-staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
+Release candidate note: `docs/releases/2.7.0-source-tag.release.md`; App Store
+What's New: `docs/releases/2.7.0-app-store-release-notes.md`. The `2.7.0`
+package is a local App Store/TestFlight candidate only. Mac App Store `2.6.2`
+is user-confirmed published (2026-08-28); rollout to all users is staged over
+time. A GitHub `v2.7.0` source tag remains a separate gate; the published
+`2.6.2` store line is not being rewritten.
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.6.2`** across npm, Tauri, Cargo, and
-  lockfile metadata. User-confirmed **Mac App Store publication** on
-  2026-08-28; rollout to all users is staged over time. This is not a
-  GitHub source tag or a claim that every install already has `2.6.2`.
-  Treat as closed store line; hotfix only. Prior published lines include
+- Current package/app version: **`2.7.0`** across npm, Tauri, Cargo, and
+  lockfile metadata. This is a local App Store/TestFlight candidate, not an
+  upload or publication claim. User-confirmed **Mac App Store publication** of
+  `2.6.2` remains the closed store line (2026-08-28; staged rollout). Prior published lines include
   `2.4.0`, `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
-  Do not rewrite tags. Local package provenance lives in ignored
+  Do not rewrite tags. Local package provenance for the `2.7.0` candidate lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - **v2.5 is released and closed** (user-confirmed). The workspace control and
   delivery-clarity evidence below is historical release evidence, not an open
@@ -47,6 +48,15 @@ staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
   feature exposure was added. Design: `docs/mlx-m0-preflight-design.md`.
   M-0b stays stopped until C-2 and an Xcode 27 / macOS 27 build lane exist;
   this is not `MLXLanguageModel` compile or runtime proof.
+- **v2.7.0 is the current local candidate lane.** It carries the completed
+  M-0a System-boundary maintenance slice without adding a user-facing MLX
+  feature. A local `2.7.0` / build `123` package exists and its SHA-256 is
+  recorded only in ignored `docs/internal/app-store-candidates/latest.json`.
+  The owner plans to send it to App Review; upload, TestFlight processing,
+  approval, publication, and full physical UI validation remain unconfirmed.
+  The package was produced before the v2.7 tree was committed, so the internal
+  note records dirty-source provenance rather than claiming a clean source
+  commit.
 - **v2.6 source candidate** A-4 finishing is merged at `b40bd217`. The 2.6.1
   local candidate HEAD is `6ff22dad` (theme/Preview polish plus App Store
   `bundleVersion` 119). `2.6.2` is the right-pane ownership candidate on this
@@ -603,15 +613,15 @@ staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.6.2`** (Mac App Store published,
-  user-confirmed 2026-08-28; staged rollout; GitHub source tag pending). A-1–A-4 source work is merged
+- Current development-tree version: **`2.7.0`** (local App Store/TestFlight
+  candidate; not uploaded or published). A-1–A-4 source work is merged
   plus theme/Preview polish and the right-pane ownership fix;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
   explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
   App Store What's New:
-  `docs/releases/2.6.2-app-store-release-notes.md`.
+  `docs/releases/2.7.0-app-store-release-notes.md`.
 - Published Mac App Store version: **`2.6.2`** (user-confirmed 2026-08-28;
   staged rollout to all users). Prior store baselines (`2.4.0`, `2.3.0`,
   `2.0.0`, `1.13.0`, …) remain historical.

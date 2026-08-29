@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6.2 App Store published — U-1 writing-companion + MLX M-0a preflight complete
+Scope: v2.7.0 local App Store candidate — U-1 writing-companion + MLX M-0a preflight complete
 Authority: High
-Last reviewed: 2026-08-29 (M-0a locally verified; M-0b stopped)
+Last reviewed: 2026-08-29 (v2.7.0 candidate lane; M-0a locally verified; M-0b stopped)
 
 ## Purpose
 
@@ -18,17 +18,17 @@ buffer write; the same proposal is not surfaced in a second Review Bar. The A-4 
 the conversation and Diff regions distinct at narrow widths without changing
 that mutation boundary.
 
-- Package/app version in tree: **`2.6.2`**. User-confirmed **Mac App Store
-  publication** on 2026-08-28; rollout to all users is staged over time.
-  This is not a GitHub source tag or a claim that every install already has
-  `2.6.2`. Local pkg provenance is in ignored
+- Package/app version in tree: **`2.7.0`**. This is a local App Store/TestFlight
+  candidate only; it is not uploaded or published. User-confirmed **Mac App
+  Store publication** of `2.6.2` on 2026-08-28 remains the closed store line;
+  rollout to all users is staged over time. Local pkg provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
   `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The 2.6.1
   code candidate is `6ff22dad`. `2.6.2` is the pane-ownership candidate on
   this worktree. The review branch was deleted after merge.
-  Release notes: `docs/releases/2.6.2-source-tag.release.md`,
-  `docs/releases/2.6.2-app-store-release-notes.md`,
+  Release notes: `docs/releases/2.7.0-source-tag.release.md`,
+  `docs/releases/2.7.0-app-store-release-notes.md`,
   `docs/releases/2.6.1-source-tag.release.md`,
   `docs/releases/2.6.0-source-tag.release.md`.
 - v2.5 is **released and closed** (user-confirmed). Do not reopen its release
@@ -90,6 +90,16 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 7. **C-1 HOLD** until a production `.aimodel` identity plus D25/D19.
    管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
    利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
+
+### Current candidate — v2.7.0
+
+The `2.7.0` lane packages the completed M-0a System-boundary maintenance
+slice. It does not add MLX runtime, model import, storage, settings UI, or
+network behavior. A local build `123` package exists; its SHA-256 and dirty
+source provenance are recorded in ignored
+`docs/internal/app-store-candidates/latest.json`. The owner plans to send it
+to App Review. Upload, TestFlight processing, approval, publication, and full
+physical UI validation remain separate.
 
 ### Completed parallel preflight — MLX M-0a
 

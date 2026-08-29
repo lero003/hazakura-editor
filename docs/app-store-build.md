@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; GitHub tag pending)
+Last reviewed: 2026-08-29 (2.7.0 local candidate; 2.6.2 Mac App Store published)
 
 ## Purpose
 
@@ -45,11 +45,12 @@ Agent Workbench behind its existing boundary.
   staged rollout to all users). See
   `docs/releases/2.6.2-app-store-release-notes.md`. Prior store baselines
   `2.4.0`, `2.3.0` and `2.0.0` remain historical.
-- Current source / Developer version: `2.6.2` (same as published store;
-  GitHub `v2.6.2` tag is not claimed; v2.5 is closed).
+- Current source / Developer version: `2.7.0` (local App Store/TestFlight
+  candidate; not uploaded or published; GitHub `v2.7.0` tag is not claimed;
+  v2.5 is closed).
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
-  See `docs/current-work.md`, `docs/releases/2.6.2-source-tag.release.md`,
-  `docs/releases/2.6.2-app-store-release-notes.md`,
+  See `docs/current-work.md`, `docs/releases/2.7.0-source-tag.release.md`,
+  `docs/releases/2.7.0-app-store-release-notes.md`,
   `docs/releases/2.6.1-source-tag.release.md`,
   `docs/releases/2.6.0-source-tag.release.md`,
   `docs/releases/2.4.0-app-store-release-notes.md`,

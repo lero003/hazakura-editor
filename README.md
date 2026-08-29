@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pending)
+Last reviewed: 2026-08-29 (v2.7.0 local App Store candidate; physical validation pending)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,7 +26,7 @@ Last reviewed: 2026-08-16 (v2.6 source candidate merged; physical validation pen
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current development is on `2.6.2`: the v2.6 A-1–A-4 source candidate plus
+Current development is on `2.7.0`: the v2.6 A-1–A-4 source candidate plus
 theme and Preview polish, and a right-pane ownership fix so 「確認」 shows
 Diff while a text Reference is open. Hazakura Local Assist pins a
 document target for bounded follow-up revision, replacing the current
@@ -34,12 +34,17 @@ unapplied proposal in a separate Diff review surface. Only the Diff's explicit
 Apply proposal action sends the reviewed candidate to the existing transaction
 / Review Bar path; the editor is not auto-saved. Mac App Store `2.6.2` is
 user-confirmed published (2026-08-28); rollout to all users is staged over
-time. A GitHub `v2.6.2` source tag remains a separate gate.
-See [`docs/releases/2.6.2-source-tag.release.md`](docs/releases/2.6.2-source-tag.release.md).
+time. A GitHub `v2.7.0` source tag remains a separate gate; the published
+`2.6.2` store line is not being rewritten.
+The v2.7.0 package is a local App Store/TestFlight candidate for this
+maintenance boundary; it is not published. See
+[`docs/releases/2.7.0-source-tag.release.md`](docs/releases/2.7.0-source-tag.release.md)
+and [`docs/releases/2.7.0-app-store-release-notes.md`](docs/releases/2.7.0-app-store-release-notes.md).
 
 ## Mac App Store
 
-Hazakura Editor `2.6.2` is published on the Mac App Store:
+Hazakura Editor `2.6.2` is published on the Mac App Store; the `2.7.0`
+package is a local candidate and has not been uploaded:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -156,7 +161,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.6 release-prep queue and physical Assist gate
+- [Current Work](docs/current-work.md): v2.7.0 candidate queue and physical Assist gate
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
@@ -270,9 +275,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.6.2` across npm, Tauri, and Cargo metadata. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `2.7.0` across npm, Tauri, and Cargo metadata. This is a local App Store/TestFlight candidate, not an upload or publication claim. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.6.2` (user-confirmed 2026-08-28; staged rollout to all users). Prior store baseline `2.4.0` remains historical. Do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [2.6.2 source note](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
+- Release notes: [2.7.0 source note](docs/releases/2.7.0-source-tag.release.md), [2.7.0 App Store candidate notes](docs/releases/2.7.0-app-store-release-notes.md), [2.6.2 source note](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

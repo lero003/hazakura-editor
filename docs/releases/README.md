@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-08-28
+Last reviewed: 2026-08-29
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -13,6 +13,8 @@ Latest GitHub source / local-app tag:
 
 Current source-preview candidate:
 
+- `2.7.0` — `2.7.0-source-tag.release.md` (local App Store/TestFlight
+  candidate; not uploaded or published)
 - `2.6.2` — `2.6.2-source-tag.release.md` (Mac App Store published
   2026-08-28, staged rollout; GitHub source tag pending)
 - `2.6.1` — `2.6.1-source-tag.release.md` (prior local candidate)
@@ -34,6 +36,8 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- **`2.7.0` is the current local App Store/TestFlight candidate**; it is not
+  uploaded or published. See `2.7.0-app-store-release-notes.md`.
 - **`2.6.2` is published** on the Mac App Store (user-confirmed 2026-08-28;
   staged rollout to all users). See `2.6.2-app-store-release-notes.md`.
   A GitHub `v2.6.2` source tag is not claimed.

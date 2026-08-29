@@ -1,23 +1,27 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 source line + MLX M-0a preflight handoff
+Scope: v2.7.0 local candidate + MLX M-0a preflight handoff
 Authority: Medium
-Last reviewed: 2026-08-29 (M-0a locally verified; M-0b stopped)
+Last reviewed: 2026-08-29 (v2.7.0 candidate lane; M-0a locally verified; M-0b stopped)
 
 ## Current State
 
-- Package/app version in tree: **`2.6.2`**. User-confirmed **Mac App Store
-  publication** on 2026-08-28; rollout to all users is staged over time.
-  Not a GitHub source tag or a 100% install-base claim. Local MAS pkg
-  `2.6.2` / build `122` was built from source commit `23d44fdf`. Provenance
+- Package/app version in tree: **`2.7.0`**. This is a local App Store/TestFlight
+  candidate only; it is not uploaded or published. User-confirmed **Mac App
+  Store publication** of `2.6.2` on 2026-08-28 remains the closed store line;
+  rollout to all users is staged over time. Provenance for the current package
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
-  `docs/releases/2.6.2-app-store-release-notes.md`. Next development: **U-1**
+  `docs/releases/2.7.0-app-store-release-notes.md`. Next development: **U-1**
   conversational proofread on Apple Intelligence (helper: target + local
   model chip; main Diff before apply), then U-3 / U-4 and G-1. H-1 System
   model reuse is complete in M-0a.
   C-1 (`.aimodel` DL) HOLD until a production identity. Local-only for now;
   web search is a later optional lane.
+  A local `2.7.0` / build `123` pkg exists. The owner plans to send it to App
+  Review, but no upload / processing / approval / publication result is
+  recorded. The pkg was built before the v2.7 transition was committed;
+  ignored candidate metadata therefore records `sourceDirty: true`.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +

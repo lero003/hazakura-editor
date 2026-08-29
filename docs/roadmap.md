@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-29 (M-0a locally verified; MLX runtime remains post-C-2)
+Last reviewed: 2026-08-29 (v2.7.0 local candidate; M-0a locally verified; MLX runtime remains post-C-2)
 
 ## Current Position
 
@@ -13,11 +13,11 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.6.2`**; Mac App Store published (user-confirmed 2026-08-28; staged rollout); GitHub source tag pending |
+| Package / app version in tree | **`2.7.0`** local App Store/TestFlight candidate; not uploaded or published |
 | Published Mac App Store | **`2.6.2`** (user-confirmed 2026-08-28; staged rollout to all users) |
 | Prior store / source lines | `2.4.0`, `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.6.2 published** — U-1 writing-companion next; C-1 HOLD on identity |
+| Active product phase | **v2.7.0 candidate** — U-1 writing-companion next; C-1 HOLD on identity |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | MLX M-0b runtime, 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -75,7 +75,7 @@ User direction:
 [done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
-[now]    v2.6.2 published (user-confirmed 2026-08-28; staged rollout)
+[now]    v2.7.0 local App Store/TestFlight candidate · published store remains 2.6.2
 [next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → G-1
 [later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
 [done]   M-0a / H-1 System boundary only (no MLX runtime)
@@ -85,7 +85,7 @@ User direction:
 ## Active Path — v2.6
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.6.2` remains hotfix-only. v2.5 is released and closed; further
+Published `2.6.2` remains hotfix-only. `2.7.0` is a local candidate only. v2.5 is released and closed; further
 v2.6 work is writing-companion / Core AI, not a store reopen.
 
 ### Active spine
