@@ -46,6 +46,7 @@ pub(crate) const PROBE_TIMEOUT: Duration = Duration::from_secs(10);
 /// `read_line` is still blocked after this duration; the kill is
 /// what unblocks the read.
 pub(crate) const GENERATE_TIMEOUT: Duration = Duration::from_secs(360);
+const SYSTEM_DEFAULT_BACKEND: &str = "system_default";
 
 /// The store is held by Tauri via `tauri::Builder::manage(...)`.
 pub(crate) struct AppleAssistHelperStore {
@@ -626,6 +627,7 @@ enum WireRequest<'a> {
     ProbeAvailability,
     #[serde(rename_all = "camelCase")]
     GenerateCandidate {
+        backend: &'a str,
         operation: &'a str,
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -639,6 +641,7 @@ enum WireRequest<'a> {
     },
     #[serde(rename_all = "camelCase")]
     GenerateCandidateStreaming {
+        backend: &'a str,
         operation: &'a str,
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -786,6 +789,7 @@ pub(crate) fn generate_candidate_via_helper(
         store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidate {
+            backend: SYSTEM_DEFAULT_BACKEND,
             operation,
             selected_text,
             document_context,
@@ -852,6 +856,7 @@ where
         store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidateStreaming {
+            backend: SYSTEM_DEFAULT_BACKEND,
             operation,
             selected_text,
             document_context,

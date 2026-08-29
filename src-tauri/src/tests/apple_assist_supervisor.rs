@@ -34,7 +34,8 @@
 // skips the shared re-exports.
 
 use crate::commands::apple_assist_supervisor::{
-    bundled_helper_filename, generate_candidate_via_helper as generate_candidate_via_helper_impl,
+    bundled_helper_filename, generate_candidate_stream_via_helper,
+    generate_candidate_via_helper as generate_candidate_via_helper_impl,
     probe_availability_via_helper, resolve_bundled_helper_path, rust_target_triple,
     store_with_helper_path, store_without_helper, AppleAssistHelperStore, HelperAvailability,
     HelperCandidate, HelperCandidatePartial, WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
@@ -419,6 +420,58 @@ fn supervisor_passes_document_context_to_helper() {
     )
     .expect("generate with context must succeed");
     assert!(matches!(envelope, WireEnvelope::Candidate(_)));
+}
+
+#[test]
+fn supervisor_injects_system_backend_for_generate_and_streaming() {
+    let script = std::env::temp_dir().join("hazakura-apple-assist-test-backend-wire.sh");
+    let body = r###"#!/bin/sh
+while IFS= read -r request; do
+    case "$request" in
+        *'"backend":"system_default"'*) ;;
+        *)
+            printf '%s\n' '{"kind":"error","value":{"error":"missing backend","kind":"backend_test_failure"}}'
+            continue
+            ;;
+    esac
+    case "$request" in
+        *'"action":"generate_candidate_streaming"'*)
+            printf '%s\n' '{"kind":"candidate_partial","value":{"candidateText":"partial"}}'
+            printf '%s\n' '{"kind":"candidate","value":{"operation":"summarize","candidateText":"streamed","modelId":"test:system","latencyMs":0}}'
+            ;;
+        *'"action":"generate_candidate"'*)
+            printf '%s\n' '{"kind":"candidate","value":{"operation":"summarize","candidateText":"generated","modelId":"test:system","latencyMs":0}}'
+            ;;
+    esac
+done
+"###;
+    std::fs::write(&script, body).expect("write backend wire helper script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod backend wire helper script");
+
+    {
+        let store = store_with_helper_path(script.clone());
+        let generated = generate_candidate_via_helper(&store, "summarize", "body", None, None)
+            .expect("generate must include system backend");
+        assert!(matches!(generated, WireEnvelope::Candidate(_)));
+
+        let mut partials = Vec::new();
+        let streamed = generate_candidate_stream_via_helper(
+            &store,
+            "summarize",
+            "body",
+            None,
+            None,
+            None,
+            None,
+            |partial| partials.push(partial.candidate_text),
+        )
+        .expect("streaming must include system backend");
+        assert!(matches!(streamed, WireEnvelope::Candidate(_)));
+        assert_eq!(partials, vec!["partial"]);
+    }
+
+    std::fs::remove_file(&script).ok();
 }
 
 // ----------------------------------------------------------------

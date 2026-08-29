@@ -19,7 +19,10 @@ enum GenerateCandidate {
         case error(AppleAssistErrorEnvelope)
     }
 
-    static func run(_ request: AppleAssistRequest) async -> RunResult {
+    static func run(
+        _ request: AppleAssistRequest,
+        backend: AssistBackend
+    ) async -> RunResult {
         guard IntentAllowlist.allOperations.contains(request.operation) else {
             return .error(
                 AppleAssistErrorEnvelope(
@@ -63,7 +66,7 @@ enum GenerateCandidate {
 
             let startedAt = Date()
             do {
-                let model = SystemAssistRuntime.model
+                let model = SystemAssistRuntime.model(for: backend)
                 guard model.supportsLocale() else {
                     return .error(
                         AppleAssistErrorEnvelope(
@@ -73,6 +76,7 @@ enum GenerateCandidate {
                     )
                 }
                 let session = SystemAssistRuntime.makeSession(
+                    for: backend,
                     instructions: Instructions(liveSystemInstructions)
                 )
                 let response = try await session.respond(
@@ -93,7 +97,7 @@ enum GenerateCandidate {
                     AppleAssistResponse(
                         operation: request.operation,
                         candidateText: candidate,
-                        modelId: AssistBackend.systemDefault.modelId,
+                        modelId: backend.modelId,
                         latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
                     )
                 )
@@ -112,6 +116,7 @@ enum GenerateCandidate {
 
     static func runStreaming(
         _ request: AppleAssistRequest,
+        backend: AssistBackend,
         onPartial: (AppleAssistPartialResponse) -> Void
     ) async -> RunResult {
         guard IntentAllowlist.allOperations.contains(request.operation) else {
@@ -158,7 +163,7 @@ enum GenerateCandidate {
 
             let startedAt = Date()
             do {
-                let model = SystemAssistRuntime.model
+                let model = SystemAssistRuntime.model(for: backend)
                 guard model.supportsLocale() else {
                     return .error(
                         AppleAssistErrorEnvelope(
@@ -168,6 +173,7 @@ enum GenerateCandidate {
                     )
                 }
                 let session = SystemAssistRuntime.makeSession(
+                    for: backend,
                     instructions: Instructions(liveSystemInstructions)
                 )
                 var latestCandidate = ""
@@ -195,7 +201,7 @@ enum GenerateCandidate {
                     AppleAssistResponse(
                         operation: request.operation,
                         candidateText: latestCandidate,
-                        modelId: AssistBackend.systemDefault.modelId,
+                        modelId: backend.modelId,
                         latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
                     )
                 )

@@ -51,13 +51,17 @@ cp "$BUILT" "$DEST"
 chmod +x "$DEST"
 echo "==> wrote $DEST"
 
-# Quick smoke: send one probe + one generate request, expect
-# JSON envelopes back. The script exits non-zero if either
-# response does not look right.
+# Quick smoke: preserve the old missing-field request, accept an
+# explicit System backend, and fail closed on every non-System
+# backend before any model path is reached.
 echo "==> smoke test"
-SMOKE_OUTPUT="$(printf '%s\n%s\n' \
+SMOKE_OUTPUT="$(printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
     '{"action":"probe_availability"}' \
     '{"action":"generate_candidate","operation":"summarize","selectedText":"hello"}' \
+    '{"action":"generate_candidate","operation":"summarize","selectedText":"hello","backend":"system_default"}' \
+    '{"action":"generate_candidate","operation":"summarize","selectedText":"hello","backend":"coreai"}' \
+    '{"action":"generate_candidate","operation":"summarize","selectedText":"hello","backend":"mlx"}' \
+    '{"action":"generate_candidate","operation":"summarize","selectedText":"hello","backend":"unknown"}' \
     | "$DEST")"
 
 if ! grep -q '"kind":"availability"' <<<"$SMOKE_OUTPUT"; then
@@ -66,14 +70,22 @@ if ! grep -q '"kind":"availability"' <<<"$SMOKE_OUTPUT"; then
     exit 1
 fi
 
-if ! grep -q '"kind":"candidate"' <<<"$SMOKE_OUTPUT"; then
-    echo "smoke test failed: no candidate envelope" >&2
+CANDIDATE_COUNT="$(grep -c '"kind":"candidate"' <<<"$SMOKE_OUTPUT" || true)"
+if [ "$CANDIDATE_COUNT" -ne 2 ]; then
+    echo "smoke test failed: expected two System candidate envelopes" >&2
     echo "got: $SMOKE_OUTPUT" >&2
     exit 1
 fi
 
 if ! grep -q '【要約案】' <<<"$SMOKE_OUTPUT"; then
     echo "smoke test failed: summarize prefix missing" >&2
+    echo "got: $SMOKE_OUTPUT" >&2
+    exit 1
+fi
+
+UNSUPPORTED_COUNT="$(grep -c '"kind":"unsupported_backend"' <<<"$SMOKE_OUTPUT" || true)"
+if [ "$UNSUPPORTED_COUNT" -ne 3 ]; then
+    echo "smoke test failed: expected three unsupported_backend envelopes" >&2
     echo "got: $SMOKE_OUTPUT" >&2
     exit 1
 fi

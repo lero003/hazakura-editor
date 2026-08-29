@@ -8,7 +8,8 @@ import Foundation
 //       { "action": "probe_availability" }
 //       { "action": "generate_candidate", "operation": "...",
 //         "actionId": "...", "selectedText": "...",
-//         "documentContext": "...", "additionalRequest": "..." }
+//         "documentContext": "...", "additionalRequest": "...",
+//         "backend": "system_default" }
 //   * Output: one JSON response per line on stdout. Each response
 //     also has a top-level discriminant `"kind"`:
 //       { "kind": "availability", "value": { ... } }
@@ -60,6 +61,7 @@ struct IncomingRequest: Decodable {
     let documentContext: String?
     let instruction: String?
     let additionalRequest: String?
+    let backend: String?
 }
 
 func emit(_ envelope: WireEnvelope) {
@@ -114,6 +116,15 @@ func dispatch(_ raw: String) async {
             ))
             return
         }
+        guard let backend = AssistBackend.resolve(wireValue: request.backend) else {
+            emit(.error(
+                AppleAssistErrorEnvelope(
+                    error: "Unsupported Local Assist backend.",
+                    kind: "unsupported_backend"
+                )
+            ))
+            return
+        }
         let req = AppleAssistRequest(
             operation: operation,
             actionId: request.actionId,
@@ -123,16 +134,20 @@ func dispatch(_ raw: String) async {
             additionalRequest: request.additionalRequest
         )
         if request.action == "generate_candidate_streaming" {
-            switch await GenerateCandidate.runStreaming(req, onPartial: { partial in
-                emit(.candidatePartial(partial))
-            }) {
+            switch await GenerateCandidate.runStreaming(
+                req,
+                backend: backend,
+                onPartial: { partial in
+                    emit(.candidatePartial(partial))
+                }
+            ) {
             case .ok(let response):
                 emit(.candidate(response))
             case .error(let envelope):
                 emit(.error(envelope))
             }
         } else {
-            switch await GenerateCandidate.run(req) {
+            switch await GenerateCandidate.run(req, backend: backend) {
             case .ok(let response):
                 emit(.candidate(response))
             case .error(let envelope):

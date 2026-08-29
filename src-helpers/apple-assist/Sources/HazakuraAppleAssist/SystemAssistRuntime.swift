@@ -5,8 +5,18 @@ import FoundationModels
 enum SystemAssistRuntime {
     static let model = SystemLanguageModel.default
 
-    static func makeSession(instructions: Instructions) -> LanguageModelSession {
-        LanguageModelSession(model: model, instructions: instructions)
+    static func model(for backend: AssistBackend) -> SystemLanguageModel {
+        switch backend {
+        case .systemDefault:
+            return model
+        }
+    }
+
+    static func makeSession(
+        for backend: AssistBackend,
+        instructions: Instructions
+    ) -> LanguageModelSession {
+        LanguageModelSession(model: model(for: backend), instructions: instructions)
     }
 }
 #endif
