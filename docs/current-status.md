@@ -1,9 +1,9 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.6 A-4 finishing)
+Scope: Current implementation state and next safe actions (v2.6 + MLX M-0a preflight)
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; GitHub tag pending)
+Last reviewed: 2026-08-29 (MLX M-0a preflight locally verified; no MLX runtime)
 
 Release candidate note: `docs/releases/2.6.2-source-tag.release.md`; App Store
 What's New: `docs/releases/2.6.2-app-store-release-notes.md`. Mac App Store
@@ -34,6 +34,19 @@ staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
   probe state explicit. Physical macOS interaction checks remain separate from
   source, package, TestFlight, and publication claims.
   Plan: `docs/v2.6-plan.md`; queue: `docs/current-work.md`.
+- **MLX M-0a preflight is implemented on `main`.** The helper keeps one
+  immutable, process-local `SystemLanguageModel.default` across availability,
+  streaming, and non-streaming calls, while creating a fresh
+  `LanguageModelSession` for every request. Generate / streaming stdin carries
+  a Rust-owned `backend: "system_default"`; a missing field remains compatible
+  with older Rust, while `coreai`, `mlx`, and unknown values return
+  `unsupported_backend` before model invocation. TypeScript / public Tauri APIs,
+  prompts, sanitizer, candidate JSON, explicit Diff Apply, and System-only
+  availability probe are unchanged. No MLX dependency, model load/download,
+  storage, path/URL field, settings UI, cloud fallback, remote code, or App Store
+  feature exposure was added. Design: `docs/mlx-m0-preflight-design.md`.
+  M-0b stays stopped until C-2 and an Xcode 27 / macOS 27 build lane exist;
+  this is not `MLXLanguageModel` compile or runtime proof.
 - **v2.6 source candidate** A-4 finishing is merged at `b40bd217`. The 2.6.1
   local candidate HEAD is `6ff22dad` (theme/Preview polish plus App Store
   `bundleVersion` 119). `2.6.2` is the right-pane ownership candidate on this
@@ -261,7 +274,8 @@ staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
   Disclosure mentions whole-book export and app-private book order. About /
   diagnostics derive the current `2.6.2` package version from package metadata.
 - **Open main queue:** U-1 conversational proofread on Apple Intelligence, then
-  U-3 / U-4, then H-1 → G-1. C-1 HOLD until a production `.aimodel` identity.
+  U-3 / U-4 and G-1. H-1 System model reuse is complete in M-0a. C-1 HOLD until
+  a production `.aimodel` identity.
   Mac App Store `2.6.2` is published (user-confirmed 2026-08-28; staged
   rollout). v2.5 is released and closed; published `2.6.2` remains closed
   without a reproduced hotfix; other advisory items stay parked.
@@ -971,6 +985,32 @@ staged over time. A GitHub `v2.6.2` source tag remains a separate gate.
   the existing CSP. Theme choice and ambient intensity are stored in
   `localStorage` alongside other display settings.
 
+## M-0a Local Verification (2026-08-29)
+
+Evidence covers local source and Xcode 26 builds on macOS 26.6.2. It does not
+claim Xcode 27, `MLXLanguageModel`, a downloaded model, physical-device UI,
+upload, tag, or release proof.
+
+- Review range prepared for external review: `00f179ab..HEAD`.
+- `npm run typecheck` — pass.
+- `npm test` — 217 files / 1,832 tests pass.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 369 passed / 2
+  host-dependent ignored.
+- Fixture-selected `cargo test apple_assist_supervisor` — 32 passed. Coverage
+  includes Rust System injection for generate + streaming and existing cancel
+  child teardown.
+- `npm run build:apple-assist-helper:fixture` — pass. Smoke accepts a missing
+  backend and explicit System, and rejects Core AI / MLX / unknown with
+  `unsupported_backend`.
+- `npm run build:apple-assist-helper:live` — Xcode 26 arm64 / x86_64 / universal
+  builds and System availability probe pass.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `npm run build` — helper-enabled local App Store preview bundle passes;
+  existing large-chunk and no-notarization warnings only.
+- `git diff --check` — pass after the evidence update.
+
 ## Release Evidence
 
 Use release notes for detailed historical evidence:
@@ -1084,19 +1124,22 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. Next slice is **U-1** (composer-first conversational proofread on Apple
-   Intelligence). Then U-3 / U-4, then H-1 → G-1. **C-1 HOLD** until a
-   production `.aimodel` identity plus D25/D19. Do not reopen the v2.6 apply
-   boundary.
+1. Continue **U-1** (composer-first conversational proofread on Apple
+   Intelligence) without reopening the v2.6 apply boundary. M-0a has completed
+   the H-1-adjacent System model lifetime preflight. Follow
+   `docs/current-work.md` for U-3 / U-4 / G-1 ordering. **C-1 HOLD** until a
+   production `.aimodel` identity plus D25/D19.
 2. Do not treat staged Mac App Store rollout as a 100% install-base claim.
    A GitHub `v2.6.2` source tag still needs explicit publication approval.
-3. Keep the three non-blocking A-3 hardening items separate: completion-time
+3. **M-0b HOLD** until C-2 and an Xcode 27 / macOS 27 build lane. Do not add an
+   MLX dependency, model import/storage, URL/path wire, or user-facing selector.
+4. Keep the three non-blocking A-3 hardening items separate: completion-time
    target text revalidation, Diff failure/no-op Apply gating, and Apply status
    watchdog.
-4. Treat published **`2.6.2`** as immutable except reproduced hotfixes. Do not
+5. Treat published **`2.6.2`** as immutable except reproduced hotfixes. Do not
    reopen Book-depth trains (B-2+) as the main queue.
-5. Park 縦書き, anydoc adoption, and bulk digestion of external review pools
+6. Park 縦書き, anydoc adoption, and bulk digestion of external review pools
    until promoted.
-6. Keep v2.5 released/closed and Local Assist on-device, explicit, and
+7. Keep v2.5 released/closed and Local Assist on-device, explicit, and
    diff-reviewable; keep Book order
    app-private and separate from OKF semantics.

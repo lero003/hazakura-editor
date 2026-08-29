@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6.2 App Store published — U-1 writing-companion + MLX M-0a preflight
+Scope: v2.6.2 App Store published — U-1 writing-companion + MLX M-0a preflight complete
 Authority: High
-Last reviewed: 2026-08-29 (M-0a System boundary preflight approved; no MLX runtime)
+Last reviewed: 2026-08-29 (M-0a locally verified; M-0b stopped)
 
 ## Purpose
 
@@ -60,7 +60,7 @@ that mutation boundary.
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
 | **v2.6** | **Mac App Store published** | Conversation + explicit Diff apply; `2.6.2` published 2026-08-28; staged rollout; GitHub source tag pending |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
-| **MLX M-0a** | Approved preflight | System model reuse + fail-closed internal wire only; no MLX runtime |
+| **MLX M-0a** | Completed preflight | System model reuse + fail-closed internal wire only; no MLX runtime |
 | **MLX M-0b** | Parked after C-2 | Xcode 27 / macOS 27 Developer-build runtime evaluation |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
@@ -82,24 +82,26 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 3. **U-4 — モデル正体チップ。** いまは Apple Intelligence 表示。DL と
    利用選択の正本はのちの管理ページ（C-1 / C-2）。ヘルパーからの切替は
    C-2 の利便ショートカット。
-4. **H-1 — System helper 土台。** `SystemLanguageModel` のまま model 再利用。
-   Core AI import なし。ユーザー向け DL ではない。
-5. **G-1 — 構造化校正出力**（Depends: H-1）。本文 + 変更の一文。Diff が正本。
+4. **H-1 — System helper 土台は M-0a で完了。**
+   `SystemLanguageModel` の model 再利用と request ごとの session 生成を
+   検証済み。Core AI import とユーザー向け DL はない。
+5. **G-1 — 構造化校正出力**（H-1 依存は充足）。本文 + 変更の一文。Diff が正本。
 6. **U-5「整える」チップは後回し**（U-1 に混ぜない）。
 7. **C-1 HOLD** until a production `.aimodel` identity plus D25/D19.
    管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
    利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
 
-### Approved parallel preflight — MLX M-0a
+### Completed parallel preflight — MLX M-0a
 
 この preflight は MLX のユーザー向け経路を v2.6 product queue へ昇格させない。
 
-1. Lock `docs/mlx-m0-preflight-design.md`.
-2. Complete H-1 with process-local `SystemLanguageModel` reuse and a fresh
+1. Locked `docs/mlx-m0-preflight-design.md`.
+2. Reused one process-local `SystemLanguageModel` and kept a fresh
    `LanguageModelSession` per request.
-3. Add a Rust-only `backend: system_default` helper field. Missing means System;
-   `coreai`, `mlx`, and unknown values fail before model invocation.
-4. Run the full local gate and external review, then stop. M-0b needs C-2 and
+3. Added a Rust-only `backend: system_default` helper field. Missing means
+   System; `coreai`, `mlx`, and unknown values fail before model invocation.
+4. Passed the full local gate and prepared
+   `docs/mlx-m0a-external-review-brief.md`. Stop here: M-0b needs C-2 and
    Xcode 27; no dependency, model, storage, download, or UI is part of M-0a.
 
 ### Completed in v2.5 development
@@ -155,7 +157,8 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 ## Next Human Gates
 
 1. Pick the first Core AI production model identity before starting C-1.
-   Until then, U-\* / H-1 / G-1 may proceed on `SystemLanguageModel`.
+   Until then, U-\* / G-1 may proceed on `SystemLanguageModel`; H-1 model
+   reuse is complete.
 2. Do not start MLX runtime work until C-2 and an Xcode 27 build lane exist.
 3. Source tag / GitHub Release only with an explicit publication approval.
    Do not treat staged Mac App Store rollout as a 100% install-base claim.

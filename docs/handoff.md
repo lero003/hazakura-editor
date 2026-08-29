@@ -1,9 +1,9 @@
 # Handoff
 
 Status: Operational
-Scope: v2.6 source-candidate release prep — Local Assist two-region UX
+Scope: v2.6 source line + MLX M-0a preflight handoff
 Authority: Medium
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 next)
+Last reviewed: 2026-08-29 (M-0a locally verified; M-0b stopped)
 
 ## Current State
 
@@ -14,7 +14,8 @@ Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 ne
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
   `docs/releases/2.6.2-app-store-release-notes.md`. Next development: **U-1**
   conversational proofread on Apple Intelligence (helper: target + local
-  model chip; main Diff before apply), then U-3 / U-4, then H-1 → G-1.
+  model chip; main Diff before apply), then U-3 / U-4 and G-1. H-1 System
+  model reuse is complete in M-0a.
   C-1 (`.aimodel` DL) HOLD until a production identity. Local-only for now;
   web search is a later optional lane.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
@@ -23,6 +24,16 @@ Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 ne
   Background Assets/AOT. C-2 waits on backend-specific availability and
   Rust-owned `selectedId`. TS generate must not send `backend`. Do not
   reopen the v2.6 apply boundary. Do not use “Notion AI 級” as a Goal.
+- **MLX M-0a preflight is complete locally:** commits `b7ca1a8e`, `2a1f63b6`,
+  and `965867ca` lock the design, reuse the immutable process-local System
+  model with a fresh session per request, and add the Rust-only fail-closed
+  `backend: "system_default"` wire. Missing backend stays compatible;
+  `coreai` / `mlx` / unknown fail with `unsupported_backend` before model use.
+  Renderer / companion / public Tauri requests still cannot select a backend.
+  No dependency, lockfile, model, network acquisition, storage, URL/path,
+  Preferences UI, or App Store exposure was added. Review
+  `docs/mlx-m0a-external-review-brief.md` over `00f179ab..HEAD`. Do not start
+  M-0b until C-2 plus an Xcode 27 / macOS 27 build lane are ready.
 - **Right-pane exclusive owner (2026-08-27):** 参照中に「確認」を押しても
   Diff が出ない不具合を直した。右列は参照 XOR Preview / 電子書籍 /
   アウトライン / 差分。確認・ファイル比較・参照ペイン内「差分」が
@@ -243,6 +254,23 @@ Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 ne
 - Tab overflow; nav history “back”; status TTL; dep cadence.
 - Full TestFlight / VoiceOver / narrow / long-doc evidence matrix.
 - Theme G signed export recheck breadth.
+
+## Verification (2026-08-29, MLX M-0a preflight)
+
+- `npm run typecheck` — pass.
+- `npm test` — 217 files / 1,832 tests pass.
+- `npm run build:vite` — pass; existing large-chunk warning only.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` — pass.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 369 passed / 2 ignored.
+- Fixture-selected `cargo test apple_assist_supervisor` — 32 passed.
+- Fixture helper smoke — missing backend + explicit System accepted;
+  Core AI / MLX / unknown rejected as `unsupported_backend`.
+- Live helper — Xcode 26 arm64 / x86_64 / universal builds and System probe pass.
+- `npm run smoke:app-store-surface` — 10 files / 111 tests pass.
+- `npm run build` — local helper-enabled App Store preview bundle passes;
+  expected large-chunk and no-notarization warnings remain.
+- Not run / not claimed: Xcode 27, `MLXLanguageModel`, an MLX model, model
+  download/storage/UI, physical Assist interaction, upload, tag, or release.
 
 ## Verification (2026-08-28, 2.6.2 App Store published)
 
@@ -656,19 +684,22 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. **U-1** composer-first Local Assist window (会話しながら校正). Do not
-   wait for Core AI download. Do not reopen `applyReviewedLocalAssistProposal`.
-   Then U-3 Diff reading surface, U-4 Apple Intelligence footer, H-1 System
-   helper, G-1 structured rewrite envelope.
+1. Continue the active **U-1** composer-first Local Assist queue without
+   reopening `applyReviewedLocalAssistProposal`. M-0a has already completed the
+   H-1-adjacent System model lifetime preflight; do not turn it into MLX runtime.
+   Then follow `docs/current-work.md` for U-3 / U-4 / G-1 ordering.
 2. **C-1 HOLD** until the owner picks a production `.aimodel` identity plus
    D25/D19. **C-2 HOLD** until D24/D20. External models stay Apple `.aimodel`.
-3. Source tag / GitHub Release only with an explicit publication approval.
+3. **M-0b HOLD** until C-2 and an Xcode 27 / macOS 27 build lane. No MLX
+   dependency, model import, storage, URL/path, or user-facing selector before
+   that product/security/distribution review.
+4. Source tag / GitHub Release only with an explicit publication approval.
    Do not treat staged Mac App Store rollout as a 100% install-base claim.
-4. Keep 縦書き, anydoc adoption, Compare Center, static lint, and persistent
+5. Keep 縦書き, anydoc adoption, Compare Center, static lint, and persistent
    indexing out of the active slice.
-5. Do not reopen the released v2.5 line, move published tags, or attach
+6. Do not reopen the released v2.5 line, move published tags, or attach
    release assets without a separate explicit handoff.
-6. On security/path/AI surfaces, re-read `docs/security-boundary.md`,
+7. On security/path/AI surfaces, re-read `docs/security-boundary.md`,
    `docs/assist-surface-strategy.md`, and `docs/core-ai-c0-design.md`.
 
 ## Key Paths
@@ -680,6 +711,8 @@ retained as the earlier R-1-only checkpoint.
 | v2.5 plan | `docs/v2.5-plan.md` |
 | Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |
 | Assist strategy | `docs/assist-surface-strategy.md` |
+| MLX M-0a boundary | `docs/mlx-m0-preflight-design.md` |
+| MLX external review | `docs/mlx-m0a-external-review-brief.md` |
 | Phase / path | `docs/roadmap.md` |
 | Closed v2.4 plan | `docs/v2.4-plan.md` |
 | v2 Book design | `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md` |

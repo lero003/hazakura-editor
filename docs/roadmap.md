@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-29 (M-0a boundary preflight approved; MLX runtime remains post-C-2)
+Last reviewed: 2026-08-29 (M-0a locally verified; MLX runtime remains post-C-2)
 
 ## Current Position
 
@@ -76,9 +76,9 @@ User direction:
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
 [now]    v2.6.2 published (user-confirmed 2026-08-28; staged rollout)
-[next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → H-1 → G-1
+[next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → G-1
 [later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
-[preflight] M-0a System boundary only (no MLX runtime)
+[done]   M-0a / H-1 System boundary only (no MLX runtime)
 [parked] MLX M-0b runtime · 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 
@@ -124,7 +124,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | After A-3; start with C-0 design only |
-| MLX Advanced Backend | M-0a は System 境界のみ。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接。M-0b runtime は C-2 後、v3.x / v4 目安 |
+| MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published 2.6.2 hotfix | App Review / daily-use blocker | Only when reproduced |
 
 ### Hard rails (v2.x does not lift these)

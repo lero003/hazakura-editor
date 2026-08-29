@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; GitHub tag pending)
+Last reviewed: 2026-08-29 (M-0a locally verified; M-0b stopped)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -12,6 +12,8 @@ and closed** while **v2.6 A-1–A-4 source work is merged on `main`** (Local Ass
 pinned multi-turn conversation + explicit Diff apply). Mac App Store `2.6.2`
 is user-confirmed published (2026-08-28; staged rollout). A GitHub source tag
 and physical Assist validation remain separate. Published `2.6.2` is hotfix-only.
+MLX M-0a is a completed System-boundary preflight; it does not include an MLX
+runtime. M-0b remains parked after C-2 and an Xcode 27 build lane.
 Start with `current-work.md` and `roadmap.md`.
 
 ## Current Canonical Docs
@@ -21,6 +23,7 @@ Start with `current-work.md` and `roadmap.md`.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
+- `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
 - `current-work.md`: **U-1 writing-companion queue**; v2.6.2 App Store published; v2.5 release closed.
 - `roadmap.md`: **v2.6.2 Mac App Store published (staged rollout)**; writing-companion next; v2.5 released/closed.
 - `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; store published, GitHub tag pending).
@@ -51,13 +54,14 @@ Start with `current-work.md` and `roadmap.md`.
 - `release-pre-check.md`: last-mile release hygiene.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
+- `mlx-m0a-external-review-brief.md`: `00f179ab..HEAD` review focus and local evidence.
 
 ## Current Planning Docs
 
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **v2.6.2 Mac App Store published (staged rollout)** + U-1 writing-companion next
-- `current-work.md` — 2.6.2 App Store published; U-\* / H-1 / G-1 next; C-1 HOLD
+- `current-work.md` — 2.6.2 App Store published; M-0a complete; U-\* / G-1 next; C-1 / M-0b HOLD
 - `v2.6-plan.md` — conversation / Diff review plan; store published; GitHub tag pending
 - `releases/2.6.2-source-tag.release.md` — 2.6.2 note; Mac App Store published; GitHub source tag pending
 - `releases/2.6.2-app-store-release-notes.md` — App Store What's New for published `2.6.2` (user-confirmed 2026-08-28; staged rollout)
@@ -68,6 +72,8 @@ Active planning surface (intentionally small):
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent
 - `core-ai-c0-design.md` — C-0 design spike (Foundation Models 次世代 / Core AI / writing-companion UI). Design only; not implementation.
 - `core-ai-c0-external-review-2026-08-27.md` — four-lens advisory review of that spike; does not override the queue.
+- `mlx-m0-preflight-design.md` — completed OS-27-before preflight; no MLX runtime
+- `mlx-m0a-external-review-brief.md` — external review packet for `00f179ab..HEAD`
 - `v2.4-plan.md` — closed Book depth plan
 - `superpowers/specs/2026-07-02-v2-book-scope-design.md` — v2 Book design SoT
 - `v2-external-review-synthesis-2026-07-18.md` — consolidated external review candidates
