@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-08-29 (2.7.0 local candidate; 2.6.2 Mac App Store published)
+Last reviewed: 2026-08-29 (2.8.0 development; frozen 2.7.0 build 123)
 
 ## Purpose
 
@@ -45,11 +45,12 @@ Agent Workbench behind its existing boundary.
   staged rollout to all users). See
   `docs/releases/2.6.2-app-store-release-notes.md`. Prior store baselines
   `2.4.0`, `2.3.0` and `2.0.0` remain historical.
-- Current source / Developer version: `2.7.0` (local App Store/TestFlight
-  candidate; not uploaded or published; GitHub `v2.7.0` tag is not claimed;
-  v2.5 is closed).
+- Current source / Developer version: `2.8.0` (development-only; no package,
+  upload, approval, publication, or GitHub tag claim). The frozen local
+  `2.7.0` / build `123` package remains owner-managed for App Review.
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
-  See `docs/current-work.md`, `docs/releases/2.7.0-source-tag.release.md`,
+  See `docs/current-work.md`, `docs/v2.8-plan.md`,
+  `docs/releases/2.7.0-source-tag.release.md`,
   `docs/releases/2.7.0-app-store-release-notes.md`,
   `docs/releases/2.6.1-source-tag.release.md`,
   `docs/releases/2.6.0-source-tag.release.md`,

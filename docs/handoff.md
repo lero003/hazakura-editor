@@ -1,18 +1,19 @@
 # Handoff
 
 Status: Operational
-Scope: v2.7.0 local candidate + MLX M-0a preflight handoff
+Scope: v2.8.0 development handoff + frozen v2.7 candidate
 Authority: Medium
-Last reviewed: 2026-08-29 (v2.7.0 candidate lane; M-0a locally verified; M-0b stopped)
+Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
 
 ## Current State
 
-- Package/app version in tree: **`2.7.0`**. This is a local App Store/TestFlight
-  candidate only; it is not uploaded or published. User-confirmed **Mac App
+- Package/app version in tree: **`2.8.0`**. This is a development version, not
+  a package, upload, approval, or publication. User-confirmed **Mac App
   Store publication** of `2.6.2` on 2026-08-28 remains the closed store line;
-  rollout to all users is staged over time. Provenance for the current package
+  rollout to all users is staged over time. Provenance for the frozen v2.7 package
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
-  `docs/releases/2.7.0-app-store-release-notes.md`. Next development: **U-1**
+  `docs/releases/2.7.0-app-store-release-notes.md`. Active plan:
+  `docs/v2.8-plan.md`. Next development: **U-1**
   conversational proofread on Apple Intelligence (helper: target + local
   model chip; main Diff before apply), then U-3 / U-4 and G-1. H-1 System
   model reuse is complete in M-0a.
@@ -22,6 +23,16 @@ Last reviewed: 2026-08-29 (v2.7.0 candidate lane; M-0a locally verified; M-0b st
   Review, but no upload / processing / approval / publication result is
   recorded. The pkg was built before the v2.7 transition was committed;
   ignored candidate metadata therefore records `sourceDirty: true`.
+  The v2.7 freeze checkpoint is `d1db159a`; it is a reproduction boundary,
+  not proof that build `123` came from a clean commit.
+- **v2.8 preparation verification:** `npm run typecheck`, `npm test` (217
+  files / 1,832 tests), `npm run build:vite`, Cargo metadata `2.8.0`,
+  `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, and
+  `git diff --check` passed. The version-sensitive diagnostics, About Help,
+  and living-doc tests now derive the development version from package
+  metadata instead of pinning `2.6.2`. Full Rust tests, full Tauri build,
+  signed v2.8 packaging, and physical v2.8 Assist smoke were not run because
+  this slice prepares development only.
 - **C-0 is a pre-development lock:** `docs/core-ai-c0-design.md`.
   Advisory: `docs/core-ai-c0-external-review-2026-08-27.md`.
   **U-\* / H-1 / G-1 = GO.** C-1 waits on identity + `resourceManifest` +
@@ -93,7 +104,8 @@ Last reviewed: 2026-08-29 (v2.7.0 candidate lane; M-0a locally verified; M-0b st
   target validation are unchanged. The review branch was merged and deleted;
   source tagging, package/upload, publication, and physical validation remain
   separate gates. No new PR is required by the current workflow.
-  Plan: `docs/v2.6-plan.md`; design:
+  Historical baseline: `docs/v2.6-plan.md`; active plan: `docs/v2.8-plan.md`;
+  design:
   `docs/local-assist-conversational-edit-ux.md`.
 
 - **Local Assist prompt + visibility polish is merged.** The A-2 revision
@@ -711,7 +723,8 @@ retained as the earlier R-1-only checkpoint.
 | Need | Path |
 |------|------|
 | Next slice | `docs/current-work.md` |
-| v2.6 plan | `docs/v2.6-plan.md` |
+| v2.8 plan | `docs/v2.8-plan.md` |
+| v2.6 implementation history | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |
 | Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |
 | Assist strategy | `docs/assist-surface-strategy.md` |

@@ -1,26 +1,26 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.7.0 candidate + MLX M-0a preflight)
+Scope: Current implementation state and next safe actions (v2.8.0 development + frozen v2.7 candidate)
 Authority: High
-Last reviewed: 2026-08-29 (v2.7.0 candidate lane; MLX M-0a locally verified; no MLX runtime)
+Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
 
-Release candidate note: `docs/releases/2.7.0-source-tag.release.md`; App Store
-What's New: `docs/releases/2.7.0-app-store-release-notes.md`. The `2.7.0`
-package is a local App Store/TestFlight candidate only. Mac App Store `2.6.2`
-is user-confirmed published (2026-08-28); rollout to all users is staged over
-time. A GitHub `v2.7.0` source tag remains a separate gate; the published
-`2.6.2` store line is not being rewritten.
+Development plan: `docs/v2.8-plan.md`. Frozen candidate note:
+`docs/releases/2.7.0-source-tag.release.md`; App Store What's New:
+`docs/releases/2.7.0-app-store-release-notes.md`. The owner plans to send the
+local `2.7.0` / build `123` package to App Review, but Apple-side state is not
+recorded yet. Mac App Store `2.6.2` remains user-confirmed published
+(2026-08-28; staged rollout).
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: **`2.7.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. This is a local App Store/TestFlight candidate, not an
-  upload or publication claim. User-confirmed **Mac App Store publication** of
-  `2.6.2` remains the closed store line (2026-08-28; staged rollout). Prior published lines include
+- Current package/app version: **`2.8.0`** across npm, Tauri, Cargo, and
+  lockfile metadata. This is a development version, not a package, upload,
+  approval, or publication claim. User-confirmed **Mac App Store publication**
+  of `2.6.2` remains the closed store line (2026-08-28; staged rollout). Prior published lines include
   `2.4.0`, `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
-  Do not rewrite tags. Local package provenance for the `2.7.0` candidate lives in ignored
+  Do not rewrite tags. Local package provenance for the frozen `2.7.0` candidate lives in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - **v2.5 is released and closed** (user-confirmed). The workspace control and
   delivery-clarity evidence below is historical release evidence, not an open
@@ -48,7 +48,7 @@ time. A GitHub `v2.7.0` source tag remains a separate gate; the published
   feature exposure was added. Design: `docs/mlx-m0-preflight-design.md`.
   M-0b stays stopped until C-2 and an Xcode 27 / macOS 27 build lane exist;
   this is not `MLXLanguageModel` compile or runtime proof.
-- **v2.7.0 is the current local candidate lane.** It carries the completed
+- **v2.7.0 is the frozen local candidate lane.** It carries the completed
   M-0a System-boundary maintenance slice without adding a user-facing MLX
   feature. A local `2.7.0` / build `123` package exists and its SHA-256 is
   recorded only in ignored `docs/internal/app-store-candidates/latest.json`.
@@ -57,6 +57,11 @@ time. A GitHub `v2.7.0` source tag remains a separate gate; the published
   The package was produced before the v2.7 tree was committed, so the internal
   note records dirty-source provenance rather than claiming a clean source
   commit.
+- **v2.8.0 development is prepared.** The first slice is U-1 composer-first
+  proofreading conversation on Apple Intelligence, followed by U-3 / U-4 and
+  optionally G-1 as independent reviewable slices. The existing Conversation /
+  Proposal / Diff / explicit Apply path remains authoritative. C-1, C-2, and
+  MLX M-0b stay HOLD. Plan: `docs/v2.8-plan.md`.
 - **v2.6 source candidate** A-4 finishing is merged at `b40bd217`. The 2.6.1
   local candidate HEAD is `6ff22dad` (theme/Preview polish plus App Store
   `bundleVersion` 119). `2.6.2` is the right-pane ownership candidate on this
@@ -613,14 +618,14 @@ time. A GitHub `v2.7.0` source tag remains a separate gate; the published
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.7.0`** (local App Store/TestFlight
-  candidate; not uploaded or published). A-1–A-4 source work is merged
+- Current development-tree version: **`2.8.0`** (development-only; not a
+  package, upload, approval, or publication). A-1–A-4 source work is merged
   plus theme/Preview polish and the right-pane ownership fix;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
   explicit action and is never auto-saved.
   Local package provenance is in `docs/internal/app-store-candidates/latest.json`.
-  App Store What's New:
+  Frozen v2.7 App Store What's New:
   `docs/releases/2.7.0-app-store-release-notes.md`.
 - Published Mac App Store version: **`2.6.2`** (user-confirmed 2026-08-28;
   staged rollout to all users). Prior store baselines (`2.4.0`, `2.3.0`,
@@ -1068,6 +1073,8 @@ baseline, and smoke evidence are archived under
 
 - `docs/roadmap.md`: **v2 development phase** (active); residual/evidence parked.
 - `docs/current-work.md`: **v2 slice queue**.
+- `docs/v2.8-plan.md`: **active U-1 writing-companion plan**; v2.7 candidate
+  review stays separate.
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
 - `docs/releases/2.0.0-app-store-release-notes.md`: published store notes for
   `2.0.0` (user-reported 2026-07-21).
@@ -1077,6 +1084,8 @@ baseline, and smoke evidence are archived under
   Diff candidate, right-pane ownership fix; Mac App Store published, GitHub
   source tag still pending.
 - `docs/releases/2.6.1-source-tag.release.md`: prior 2.6.1 local candidate.
+- `docs/releases/2.7.0-source-tag.release.md`: frozen build 123 boundary;
+  owner-managed App Review planned, Apple-side state unconfirmed.
 - `docs/releases/2.1.0-app-store-release-notes.md`: historical notes for the
   folded whole-book search + Preview image-hardening slice.
 - `docs/releases/2.0.0-source-tag.release.md`: `v2.0.0` source-tag boundary.
@@ -1135,12 +1144,14 @@ physical Assist UI claim.
 ## Next Safe Actions
 
 1. Continue **U-1** (composer-first conversational proofread on Apple
-   Intelligence) without reopening the v2.6 apply boundary. M-0a has completed
+   Intelligence) under `docs/v2.8-plan.md` without reopening the Apply
+   boundary. M-0a has completed
    the H-1-adjacent System model lifetime preflight. Follow
    `docs/current-work.md` for U-3 / U-4 / G-1 ordering. **C-1 HOLD** until a
    production `.aimodel` identity plus D25/D19.
-2. Do not treat staged Mac App Store rollout as a 100% install-base claim.
-   A GitHub `v2.6.2` source tag still needs explicit publication approval.
+2. Keep the frozen v2.7 candidate and v2.8 development separate. The owner
+   manages App Review; do not claim upload, processing, approval, or publication
+   until that state is confirmed.
 3. **M-0b HOLD** until C-2 and an Xcode 27 / macOS 27 build lane. Do not add an
    MLX dependency, model import/storage, URL/path wire, or user-facing selector.
 4. Keep the three non-blocking A-3 hardening items separate: completion-time

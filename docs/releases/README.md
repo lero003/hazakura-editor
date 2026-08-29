@@ -7,14 +7,17 @@ Last reviewed: 2026-08-29
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
+Development tree: `2.8.0` (no package or release note yet). Active plan:
+`../v2.8-plan.md`.
+
 Latest GitHub source / local-app tag:
 
 - `v2.3.0` — `2.3.0-source-tag.release.md` (no binary assets; prior `v2.0.0` immutable)
 
 Current source-preview candidate:
 
-- `2.7.0` — `2.7.0-source-tag.release.md` (local App Store/TestFlight
-  candidate; not uploaded or published)
+- `2.7.0` — `2.7.0-source-tag.release.md` (frozen local App Store/TestFlight
+  candidate; owner-managed App Review planned, Apple-side state unconfirmed)
 - `2.6.2` — `2.6.2-source-tag.release.md` (Mac App Store published
   2026-08-28, staged rollout; GitHub source tag pending)
 - `2.6.1` — `2.6.1-source-tag.release.md` (prior local candidate)

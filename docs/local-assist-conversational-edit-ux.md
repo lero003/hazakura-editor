@@ -1,9 +1,9 @@
 # Local Assist — Conversational Document Edit UX
 
-Status: A-1–A-4 source candidate merged; physical validation pending
+Status: A-1–A-4 baseline merged; v2.8 U-1 presentation slice next
 Scope: Separate Local Assist conversation from Diff-based proposal review and explicit apply
 Authority: Medium
-Last reviewed: 2026-08-28
+Last reviewed: 2026-08-29
 
 ## Purpose
 
@@ -22,9 +22,9 @@ Local Assist を、単発の文章修正から **文書対象を固定した編�
 
 本ドキュメントは、ユーザー作成の実装依頼書
 （`Local Assistを会話型文書編集UXへ移行する実装依頼書.md`）を repo 正本に
-取り込み、2026-08-16 に Diff 分離型へ具体化したものである。実装キューは
-`docs/v2.6-plan.md` と
-`docs/current-work.md` を優先する。
+取り込み、2026-08-16 に Diff 分離型へ具体化したものである。実装履歴は
+`docs/v2.6-plan.md`、現行キューは `docs/v2.8-plan.md` と
+`docs/current-work.md` を正本とする。
 
 ## Non-Goals (this migration)
 

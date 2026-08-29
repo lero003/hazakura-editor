@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.7.0 local App Store candidate — U-1 writing-companion + MLX M-0a preflight complete
+Scope: v2.8.0 development — U-1 writing-companion first; v2.7 candidate frozen
 Authority: High
-Last reviewed: 2026-08-29 (v2.7.0 candidate lane; M-0a locally verified; M-0b stopped)
+Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
 
 ## Purpose
 
@@ -18,16 +18,18 @@ buffer write; the same proposal is not surfaced in a second Review Bar. The A-4 
 the conversation and Diff regions distinct at narrow widths without changing
 that mutation boundary.
 
-- Package/app version in tree: **`2.7.0`**. This is a local App Store/TestFlight
-  candidate only; it is not uploaded or published. User-confirmed **Mac App
-  Store publication** of `2.6.2` on 2026-08-28 remains the closed store line;
-  rollout to all users is staged over time. Local pkg provenance is in ignored
+- Package/app version in tree: **`2.8.0`**. This is a development version, not
+  a package, upload, approval, or publication. The frozen `2.7.0` / build `123`
+  candidate is owner-managed for App Review. User-confirmed **Mac App Store
+  publication** of `2.6.2` on 2026-08-28 remains the published store line.
+  Local pkg provenance is in ignored
   `docs/internal/app-store-candidates/latest.json`.
 - Local checkpoint: A-2 is committed as `9011d3a6`, A-3 is complete through
   `c7ff442b`, and A-4 finishing is merged on `main` at `b40bd217`. The 2.6.1
   code candidate is `6ff22dad`. `2.6.2` is the pane-ownership candidate on
   this worktree. The review branch was deleted after merge.
-  Release notes: `docs/releases/2.7.0-source-tag.release.md`,
+  v2.8 plan: `docs/v2.8-plan.md`. Frozen release notes:
+  `docs/releases/2.7.0-source-tag.release.md`,
   `docs/releases/2.7.0-app-store-release-notes.md`,
   `docs/releases/2.6.1-source-tag.release.md`,
   `docs/releases/2.6.0-source-tag.release.md`.
@@ -36,7 +38,7 @@ that mutation boundary.
 - Published Mac App Store (user-confirmed 2026-08-28): **`2.6.2`** closed
   line; hotfix only for reproduced blockers. Prior store baseline `2.4.0`
   remains historical.
-- Plan SoT: `docs/v2.6-plan.md`
+- Plan SoT: `docs/v2.8-plan.md`
 - Conversational Assist design: `docs/local-assist-conversational-edit-ux.md`
 - Assist / Core AI strategy: `docs/assist-surface-strategy.md`
 - **MLX M-0a preflight:** `docs/mlx-m0-preflight-design.md`. H-1 の System
@@ -59,13 +61,15 @@ that mutation boundary.
 | **v2.4** | **Shipped** | OKF v0.2 + chapter Diff + Book depth baseline |
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
 | **v2.6** | **Mac App Store published** | Conversation + explicit Diff apply; `2.6.2` published 2026-08-28; staged rollout; GitHub source tag pending |
+| **v2.7** | **Frozen local candidate** | M-0a maintenance; build `123`; owner-managed App Review planned, Apple-side state unconfirmed |
+| **v2.8** | **Development** | U-1 composer-first Apple Intelligence writing companion; existing Diff Apply boundary |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **MLX M-0a** | Completed preflight | System model reuse + fail-closed internal wire only; no MLX runtime |
 | **MLX M-0b** | Parked after C-2 | Xcode 27 / macOS 27 Developer-build runtime evaluation |
-| **縦書き** | Parked | After AI milestone progress; not v2.6 |
-| **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
+| **縦書き** | Parked | After AI milestone progress; not v2.8 |
+| **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.8 |
 
-## Active Queue — v2.6
+## Active Queue — v2.8
 
 ### Immediate next
 
@@ -91,7 +95,7 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
    管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
    利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
 
-### Current candidate — v2.7.0
+### Frozen candidate — v2.7.0
 
 The `2.7.0` lane packages the completed M-0a System-boundary maintenance
 slice. It does not add MLX runtime, model import, storage, settings UI, or
@@ -100,6 +104,13 @@ source provenance are recorded in ignored
 `docs/internal/app-store-candidates/latest.json`. The owner plans to send it
 to App Review. Upload, TestFlight processing, approval, publication, and full
 physical UI validation remain separate.
+
+### Development entry — v2.8.0
+
+Follow `docs/v2.8-plan.md`. Start with U-1 composer-first + draft hero on the
+existing System model path. Keep the current presets, target pinning,
+streaming/cancel route, separate Diff review, explicit Apply, and no auto-save.
+Do not mix U-5, C-1/C-2, or MLX M-0b into this first slice.
 
 ### Completed parallel preflight — MLX M-0a
 
@@ -132,10 +143,10 @@ physical UI validation remain separate.
 
 - Core AI download / model catalog (**C-1**; C-0 is locked in
   `docs/core-ai-c0-design.md`. Needs a production identity plus D25/D19.
-  Not v2.6 apply work)
+  Not v2.8 U-1 work)
 - MLX package / runtime / model import / storage / selection UI (**M-0b**;
   requires C-2 + Xcode 27 and a separate review)
-- v2.6 source tag / GitHub Release until an explicit publication approval
+- v2.8 package / source tag / GitHub Release until an explicit release decision
 - Claiming every Mac App Store user already has `2.6.2` while rollout is staged
 - anydoc dependency or Import Assist expansion
 - 縦書き
@@ -145,7 +156,7 @@ physical UI validation remain separate.
 ### Closed v2.5 line
 
 - v2.5 is released and closed. Do not rebuild, upload, or reopen it as part of
-  v2.6 work; only a separately reproduced blocker can justify a hotfix lane.
+  v2.8 work; only a separately reproduced blocker can justify a hotfix lane.
 
 ### Hotfix only (published `2.6.2`)
 

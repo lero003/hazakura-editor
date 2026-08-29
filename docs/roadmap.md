@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-29 (v2.7.0 local candidate; M-0a locally verified; MLX runtime remains post-C-2)
+Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
 
 ## Current Position
 
@@ -13,12 +13,13 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.7.0`** local App Store/TestFlight candidate; not uploaded or published |
+| Package / app version in tree | **`2.8.0`** development-only; no package/upload/publication claim |
+| Frozen local candidate | **`2.7.0` / build `123`**; owner-managed App Review planned; Apple-side state unconfirmed |
 | Published Mac App Store | **`2.6.2`** (user-confirmed 2026-08-28; staged rollout to all users) |
 | Prior store / source lines | `2.4.0`, `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.7.0 candidate** — U-1 writing-companion next; C-1 HOLD on identity |
-| Next plan | **`docs/v2.6-plan.md`** |
+| Active product phase | **v2.8.0 development** — U-1 writing-companion first; C-1 HOLD on identity |
+| Next plan | **`docs/v2.8-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | MLX M-0b runtime, 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
 
@@ -41,12 +42,17 @@ v2.6 lens (Assist):
 > 対象文章について会話し、現在の未反映案は別の Diff 領域で確認する。
 > 本文への反映は Diff からの明示操作に限り、反映しない選択を保つ。
 
+v2.8 lens (Writing Companion):
+
+> Apple Intelligenceで、対象を見失わずに依頼し、育てた未反映案をDiffで
+> 読んでから必要な場合だけ本文へ反映する。モデル店や自動適用にはしない。
+
 Queue of record: `docs/current-work.md`.
 v2 Book design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 Assist strategy: `docs/assist-surface-strategy.md`.
 Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
 
-## Phase Decision (2026-08-16)
+## Phase Decision (updated 2026-08-29)
 
 User direction:
 
@@ -64,6 +70,9 @@ User direction:
 6. **anydoc** stays evaluation-only until product demand is clear.
 7. **R-1 and the accepted Q-3/Q-4/Q-5/Q-13 clarity set** belong to the v2.5
    workspace line. Verified existing or measured no-op outcomes are valid.
+8. **v2.7 build 123 is frozen for owner-managed App Review.** Start v2.8 on
+   U-1 without waiting for Apple-side review, and keep release-state updates in
+   the v2.7 candidate lane.
 
 ```text
 [done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
@@ -75,27 +84,30 @@ User direction:
 [done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
-[now]    v2.7.0 local App Store/TestFlight candidate · published store remains 2.6.2
-[next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → G-1
+[frozen] v2.7.0 / build 123 local candidate · owner-managed App Review planned
+[now]    v2.8.0 development · U-1 conversational proofread on Apple Intelligence
+[next]   U-3/U-4 → G-1 as separate reviewable slices
 [later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
 [done]   M-0a / H-1 System boundary only (no MLX runtime)
 [parked] MLX M-0b runtime · 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 
-## Active Path — v2.6
+## Active Path — v2.8
 
 Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.6.2` remains hotfix-only. `2.7.0` is a local candidate only. v2.5 is released and closed; further
-v2.6 work is writing-companion / Core AI, not a store reopen.
+Published `2.6.2` remains hotfix-only. `2.7.0` is a frozen local candidate
+managed by the owner for App Review. v2.8 development is writing-companion
+work, not a store-state claim or a reason to reopen the Apply boundary.
 
 ### Active spine
 
-1. **A-1** Proposal generation appears in a separate Diff review; no buffer apply
-2. **A-2** Pinned target + multi-turn updates the current Diff
-3. **A-3** Explicit apply only from Diff review + existing Review Bar
-4. **A-4** Two-region layout / i18n / keyboard / accessibility polish
+1. **U-1** Composer-first companion + draft hero on `SystemLanguageModel`
+2. **U-3** Main Diff as the authoritative reading/decision surface
+3. **U-4** Apple Intelligence identity disclosure only; no model selection
+4. **G-1** Structured proofreading envelope as a later independent slice
 
-Plan detail: `docs/v2.6-plan.md`.
+Plan detail: `docs/v2.8-plan.md`. Historical A-1–A-4 detail remains in
+`docs/v2.6-plan.md`.
 
 ### Shipped (v2.4 Book depth)
 

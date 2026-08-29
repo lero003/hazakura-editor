@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-08-28 (2.6.2 TestFlight user-confirmed; Core AI / writing-companion next)
+Last reviewed: 2026-08-29 (v2.8 U-1 writing-companion next; C-1/C-2 held)
 
 ## Purpose
 
@@ -109,7 +109,7 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (v2.6 A-1–A-4 source candidate; physical validation pending)
+### Conversational document edit (v2.6 baseline; v2.8 U-1 next)
 
 v2.6 moves Local Assist from **single-shot generate → immediate buffer apply**
 toward a **proposal-first multi-turn revision conversation**:
@@ -129,12 +129,13 @@ A-1–A-4 source candidate is merged on `main`. The pinned target and explicit D
 already reviewed proposal through the existing apply helper, perform stale
 revalidation, clear any older post-apply review state, and do not auto-save or
 invoke generation a second time. The same proposal is not surfaced for a second
-Review Bar confirmation. Do not document this locally reviewed source state as a released product
-surface. The A-4 finishing slice also exposes Diff column headers to the
+Review Bar confirmation. Do not document the v2.8 development state as a
+released product surface. The A-4 finishing slice also exposes Diff column headers to the
 accessibility tree, reports cancellation separately from failure, and shows a
-checking state while availability is probed. Source review is complete, but it
-still does not claim keyboard, VoiceOver, locale, streaming/cancel, or
-physical-device verification.
+checking state while availability is probed. Source review is complete and the
+owner reports the existing v2.7 Local Assist flow as broadly okay, but this
+still does not claim full keyboard, VoiceOver, locale, streaming/cancel, or
+physical-device verification. U-1 follows `docs/v2.8-plan.md`.
 
 Local Assist may keep a **bounded, document-scoped revision conversation**
 for the active editing session (in-memory only). It must not become a
