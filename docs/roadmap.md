@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 writing-companion next)
+Last reviewed: 2026-08-29 (M-0a boundary preflight approved; MLX runtime remains post-C-2)
 
 ## Current Position
 
@@ -20,7 +20,7 @@ automatic agent-apply system.
 | Active product phase | **v2.6.2 published** — U-1 writing-companion next; C-1 HOLD on identity |
 | Next plan | **`docs/v2.6-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
-| Parked (not the main queue) | 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
+| Parked (not the main queue) | MLX M-0b runtime, 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
 
 North star:
 
@@ -78,7 +78,8 @@ User direction:
 [now]    v2.6.2 published (user-confirmed 2026-08-28; staged rollout)
 [next]   U-1 conversational proofread (Apple Intelligence) → U-3/U-4 → H-1 → G-1
 [later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
-[parked] 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
+[preflight] M-0a System boundary only (no MLX runtime)
+[parked] MLX M-0b runtime · 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
 ```
 
 ## Active Path — v2.6
@@ -123,6 +124,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | After A-3; start with C-0 design only |
+| MLX Advanced Backend | M-0a は System 境界のみ。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published 2.6.2 hotfix | App Review / daily-use blocker | Only when reproduced |
 
 ### Hard rails (v2.x does not lift these)
@@ -237,6 +239,20 @@ Sequence: **C-0 design spike → C-1 catalog lifecycle → C-2 Assist selection*
 after conversational apply (A-3) is trustworthy. See
 `docs/assist-surface-strategy.md` and `docs/v2.6-plan.md`.
 
+MLX のユーザー向け経路は **C-0〜C-2 では Non-Goal** のままにする。
+H-1 隣接の **M-0a** では、Xcode 26 で検証できる System model 再利用と
+Rust-owned / fail-closed な内部 backend wire だけを先に固定してよい。
+MLX package、model load、保存、選択 UI は足さない。
+
+C-2 後の v3.x / v4 を目安に、**M-0b — MLX Advanced Backend runtime**
+として再評価する。最初の検討対象は Developer / GitHub build、
+macOS 27+ / Apple Silicon、上級者による明示 import。同じ Conversation / Proposal /
+Diff / Apply UX を再利用し、推論は local-only、cloud fallback と remote code /
+shell / Python 実行は不可とする。対応 architecture / model data、revision pin、
+app-managed storage、ロード前 memory check、取得経路、App Store 可否の詳細は
+M-0b の product / security / distribution review で固定する。M-0a の正本は
+`docs/mlx-m0-preflight-design.md`。
+
 ## anydoc (evaluation only)
 
 [firecrawl/anydoc](https://github.com/firecrawl/anydoc) (Office/PDF → Markdown)
@@ -292,4 +308,5 @@ Any broader WYSIWYG model, database-like workspace, collaboration feature,
 plugin system, **arbitrary** model runtime, local image-generation platform, or
 automated agent-apply flow needs a fresh product-boundary decision first.
 Allowlisted writing models under Core AI are the narrow exception path above,
-not a general model marketplace.
+not a general model marketplace. M-0a does not lift this rail; MLX runtime
+becomes actionable only after the separate M-0b boundary review.

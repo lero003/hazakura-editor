@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v2.6.2 App Store published — U-1 writing-companion
+Scope: v2.6.2 App Store published — U-1 writing-companion + MLX M-0a preflight
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; next is U-1 conversational proofread on Apple Intelligence)
+Last reviewed: 2026-08-29 (M-0a System boundary preflight approved; no MLX runtime)
 
 ## Purpose
 
@@ -39,6 +39,9 @@ that mutation boundary.
 - Plan SoT: `docs/v2.6-plan.md`
 - Conversational Assist design: `docs/local-assist-conversational-edit-ux.md`
 - Assist / Core AI strategy: `docs/assist-surface-strategy.md`
+- **MLX M-0a preflight:** `docs/mlx-m0-preflight-design.md`. H-1 の System
+  model 再利用と Rust-owned / fail-closed backend wire だけを前倒しする。
+  MLX dependency / model load / storage / UI は M-0b まで禁止。
 - **C-0 design spike (pre-development lock):** `docs/core-ai-c0-design.md`.
   Advisory reviews: `docs/core-ai-c0-external-review-2026-08-27.md`.
   Gate: **U-\* / H-1 / G-1 = GO.** **C-1 HOLD** until identity + expanded
@@ -57,6 +60,8 @@ that mutation boundary.
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
 | **v2.6** | **Mac App Store published** | Conversation + explicit Diff apply; `2.6.2` published 2026-08-28; staged rollout; GitHub source tag pending |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
+| **MLX M-0a** | Approved preflight | System model reuse + fail-closed internal wire only; no MLX runtime |
+| **MLX M-0b** | Parked after C-2 | Xcode 27 / macOS 27 Developer-build runtime evaluation |
 | **縦書き** | Parked | After AI milestone progress; not v2.6 |
 | **anydoc** | Evaluate only | Office→MD import; no product adoption in v2.6 |
 
@@ -85,6 +90,18 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
    管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
    利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
 
+### Approved parallel preflight — MLX M-0a
+
+この preflight は MLX のユーザー向け経路を v2.6 product queue へ昇格させない。
+
+1. Lock `docs/mlx-m0-preflight-design.md`.
+2. Complete H-1 with process-local `SystemLanguageModel` reuse and a fresh
+   `LanguageModelSession` per request.
+3. Add a Rust-only `backend: system_default` helper field. Missing means System;
+   `coreai`, `mlx`, and unknown values fail before model invocation.
+4. Run the full local gate and external review, then stop. M-0b needs C-2 and
+   Xcode 27; no dependency, model, storage, download, or UI is part of M-0a.
+
 ### Completed in v2.5 development
 
 - **R-1 — text reference uses `previewFontSize`**: text Reference now follows
@@ -104,6 +121,8 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 - Core AI download / model catalog (**C-1**; C-0 is locked in
   `docs/core-ai-c0-design.md`. Needs a production identity plus D25/D19.
   Not v2.6 apply work)
+- MLX package / runtime / model import / storage / selection UI (**M-0b**;
+  requires C-2 + Xcode 27 and a separate review)
 - v2.6 source tag / GitHub Release until an explicit publication approval
 - Claiming every Mac App Store user already has `2.6.2` while rollout is staged
 - anydoc dependency or Import Assist expansion
@@ -129,6 +148,7 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 - Editable display TOC (X-5); first-run coach (Q-2); tab overflow; full a11y matrix.
 - Compare Center; static lint; mode-pill rainbow.
 - Optional web search from Local Assist (future; local-only remains current).
+- MLX M-0b runtime (after C-2 + Xcode 27; M-0a boundary preflight only is active).
 - Reference の行番号は本文より小さいガター扱い（`--cm-gutter-*`）にした。
   残る観察があれば将来の Reference 表示ポリッシュで再評価する。
 
@@ -136,6 +156,7 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 
 1. Pick the first Core AI production model identity before starting C-1.
    Until then, U-\* / H-1 / G-1 may proceed on `SystemLanguageModel`.
-2. Source tag / GitHub Release only with an explicit publication approval.
+2. Do not start MLX runtime work until C-2 and an Xcode 27 build lane exist.
+3. Source tag / GitHub Release only with an explicit publication approval.
    Do not treat staged Mac App Store rollout as a 100% install-base claim.
-3. Keep v2.5 closed; published `2.6.2` remains hotfix-only.
+4. Keep v2.5 closed; published `2.6.2` remains hotfix-only.
