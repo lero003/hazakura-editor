@@ -63,7 +63,7 @@ enum GenerateCandidate {
 
             let startedAt = Date()
             do {
-                let model = SystemLanguageModel.default
+                let model = SystemAssistRuntime.model
                 guard model.supportsLocale() else {
                     return .error(
                         AppleAssistErrorEnvelope(
@@ -72,8 +72,7 @@ enum GenerateCandidate {
                         )
                     )
                 }
-                let session = LanguageModelSession(
-                    model: model,
+                let session = SystemAssistRuntime.makeSession(
                     instructions: Instructions(liveSystemInstructions)
                 )
                 let response = try await session.respond(
@@ -94,7 +93,7 @@ enum GenerateCandidate {
                     AppleAssistResponse(
                         operation: request.operation,
                         candidateText: candidate,
-                        modelId: "apple:foundation-models:system-default",
+                        modelId: AssistBackend.systemDefault.modelId,
                         latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
                     )
                 )
@@ -159,7 +158,7 @@ enum GenerateCandidate {
 
             let startedAt = Date()
             do {
-                let model = SystemLanguageModel.default
+                let model = SystemAssistRuntime.model
                 guard model.supportsLocale() else {
                     return .error(
                         AppleAssistErrorEnvelope(
@@ -168,8 +167,7 @@ enum GenerateCandidate {
                         )
                     )
                 }
-                let session = LanguageModelSession(
-                    model: model,
+                let session = SystemAssistRuntime.makeSession(
                     instructions: Instructions(liveSystemInstructions)
                 )
                 var latestCandidate = ""
@@ -197,7 +195,7 @@ enum GenerateCandidate {
                     AppleAssistResponse(
                         operation: request.operation,
                         candidateText: latestCandidate,
-                        modelId: "apple:foundation-models:system-default",
+                        modelId: AssistBackend.systemDefault.modelId,
                         latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
                     )
                 )

@@ -19,7 +19,7 @@ enum AvailabilityProbe {
         return AppleAssistAvailabilityResponse(kind: "available", reason: nil)
         #else
         if #available(macOS 26.0, *) {
-            let model = SystemLanguageModel.default
+            let model = SystemAssistRuntime.model
             guard model.supportsLocale() else {
                 return AppleAssistAvailabilityResponse(
                     kind: "unsupported",
