@@ -1,9 +1,31 @@
 # Preview / reading controls 改善 — 外部レビュー引き継ぎ
 
-Status: Draft PR / integration verification pending
+Status: Integration verified locally / physical smoke pending
 Scope: Preview paint lifecycle and existing reading chrome
 Base: `2e81d38a0c29664f9e3c6cdac7e3d2110f0466b3`
 Date: 2026-09-07
+
+## 統合レビュー結果（2026-09-07）
+
+PR #40 の `d698a936` を最新 main と比較してレビュー。製品境界を広げる変更はなく、
+追加の機能不具合は再現しなかった。旧ボタン順を期待して失敗した既存テスト2件を、
+「Preview → 電子書籍 → Outline → Reference → Diff → Review」の仕様へ更新した。
+配置の好みだけを理由に製品CSSを追加変更していない。
+
+- `npm run typecheck`: 成功。
+- `npm test`: 228 files / 1,937 tests 成功（追加18件を含む）。
+- `npm run build:vite`: 成功。500 kB超のchunk警告あり。
+- `npm run smoke:app-store-surface`: 10 files / 111 tests 成功。
+- `git diff --check`: 成功。
+- 全CSSと実Reactを使うVite画面で、日本語本文の描画、全削除→空表示→Undo復帰、
+  Review表示の有無によるモードボタン座標の不変をDOM/AXで確認。
+  900 / 1100 / 1280px幅で操作高30pxと配置を確認し、900 / 1100pxで横はみ出しなし。
+- ブラウザ画像取得は正常に動作せず、スクリーンショットによる外観確認は未実施。
+  全テーマの切替、macOS実機、VoiceOver、画像・長文の選択ドラッグは所有者の確認に残す。
+  Rust、ネイティブbuild、署名/pkgは今回のフロントエンドレビューでは再実行していない。
+
+以下の「この環境」はPR作成元の部分checkoutでの記録。上記が統合後の検証結果である。
+凍結済みbuild 124の再生成・公開を意味しない。
 
 ## 目的と境界
 
@@ -83,9 +105,9 @@ fixtureはReactの統合実行ではなく、純粋なコンポーネント出�
 **18件を追加したが、Vitest 18件成功とは扱わない。**
 既存のreal-renderer / image / selection / scroll / App Store surfaceテストも変更していない。
 
-## マージ前に必要な確認
+## PR作成時の確認依頼（ローカル自動検証は上記で完了）
 
-この環境では依存関係一式を取得できず、以下は未実行。Draftを解除する前に外部環境で実行する。
+PR作成元では依存関係一式を取得できず、以下を未実行として引き継いだ。統合レビューで実行済み。
 
 ```sh
 npm run typecheck
