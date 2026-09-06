@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.8.0 development + U-1 writing-companion.** Mac App Store
+Phase: **v2.8.0 release preparation.** Mac App Store
 `2.6.2` is published (user-confirmed 2026-08-28; staged rollout) and closed
 for drive-by polish; frozen `2.7.0` / build `123` is owner-managed for App
 Review and Apple-side state is unconfirmed; v2.5 is released and closed. The next

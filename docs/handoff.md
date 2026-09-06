@@ -7,6 +7,10 @@ Last reviewed: 2026-09-07 (v2.8 release preparation)
 
 ## Current State
 
+- **v2.8 release preparation:** 統合候補の検証・残項目は
+  `docs/releases/2.8.0-source-tag.release.md`。提出文案は
+  `docs/releases/2.8.0-app-store-release-notes.md`。公開・送信は未実施。
+
 - **v2.8統合候補 (2026-09-07):** ローカルmainの6コミットとPR #38/#39を統合。
   Local Assistはネイティブ別窓、縦長の会話と下部入力欄、説明は初期折りたたみ。
   生成停止・同一会話の案の復元・main Diffからの明示反映とUndoを維持する。

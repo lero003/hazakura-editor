@@ -13,12 +13,12 @@ automatic agent-apply system.
 
 | Fact | Value |
 |------|--------|
-| Package / app version in tree | **`2.8.0`** development-only; no package/upload/publication claim |
+| Package / app version in tree | **`2.8.0`** release candidate; no upload/publication claim |
 | Frozen local candidate | **`2.7.0` / build `123`**; owner-managed App Review planned; Apple-side state unconfirmed |
 | Published Mac App Store | **`2.6.2`** (user-confirmed 2026-08-28; staged rollout to all users) |
 | Prior store / source lines | `2.4.0`, `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
 | v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.8.0 development** — U-1 writing-companion first; C-1 HOLD on identity |
+| Active product phase | **v2.8.0 release preparation** — detached conversation candidate; C-1 HOLD on identity |
 | Next plan | **`docs/v2.8-plan.md`** |
 | Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
 | Parked (not the main queue) | MLX M-0b runtime, 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
@@ -85,7 +85,7 @@ User direction:
 [done]   v2.6 A-2: pinned target + multi-turn proposal revision
 [done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
 [frozen] v2.7.0 / build 123 local candidate · owner-managed App Review planned
-[now]    v2.8.0 development · U-1 conversational proofread on Apple Intelligence
+[now]    v2.8.0 release preparation · detached conversation-first Local Assist
 [next]   U-3/U-4 → G-1 as separate reviewable slices
 [later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
 [done]   M-0a / H-1 System boundary only (no MLX runtime)
@@ -101,10 +101,9 @@ work, not a store-state claim or a reason to reopen the Apply boundary.
 
 ### Active spine
 
-1. **U-1** Composer-first companion + draft hero on `SystemLanguageModel`
-2. **U-3** Main Diff as the authoritative reading/decision surface
-3. **U-4** Apple Intelligence identity disclosure only; no model selection
-4. **G-1** Structured proofreading envelope as a later independent slice
+1. Freeze and verify the integrated U-1 detached conversation and M-0a/H-1 candidate.
+2. Complete native Assist, IME, VoiceOver, save and recovery smoke before distribution.
+3. U-3/U-4/G-1 are later independent work; no feature expansion in this candidate.
 
 Plan detail: `docs/v2.8-plan.md`. Historical A-1–A-4 detail remains in
 `docs/v2.6-plan.md`.

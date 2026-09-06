@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions (v2.8.0 development + frozen v2.7 candidate)
 Authority: High
-Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
+Last reviewed: 2026-09-07 (v2.8 release preparation)
 
 Development plan: `docs/v2.8-plan.md`. Frozen candidate note:
 `docs/releases/2.7.0-source-tag.release.md`; App Store What's New:
@@ -13,6 +13,10 @@ recorded yet. Mac App Store `2.6.2` remains user-confirmed published
 (2026-08-28; staged rollout).
 
 ## Current State
+
+- **v2.8 release preparation:** 統合候補の検証・残項目は
+  `docs/releases/2.8.0-source-tag.release.md`。提出文案は
+  `docs/releases/2.8.0-app-store-release-notes.md`。公開・送信は未実施。
 
 - **2026-09-06 source follow-up:** Local Assistは別ウィンドウを標準入口に戻す。
   会話欄を縦に広げ、入力欄を下部へ固定。対象詳細・説明・定型依頼は初期状態で

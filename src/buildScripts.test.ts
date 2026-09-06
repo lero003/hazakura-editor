@@ -679,13 +679,13 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        `Scope: v${packageJson.version} development — U-1 writing-companion`,
+        `Scope: v${packageJson.version} release candidate`,
         `Package/app version in tree: **\`${packageJson.version}\``,
         "W-1 — persistent three-pane workspace",
         "C-1 HOLD",
       ],
       "docs/development-automation.md": [
-        `Phase: **v${packageJson.version} development + U-1 writing-companion.**`,
+        `Phase: **v${packageJson.version} release preparation.**`,
         "writing-companion UI and System helper",
         "C-1 HOLD",
       ],
@@ -698,7 +698,7 @@ describe("macOS build scripts", () => {
       "docs/roadmap.md": [
         `Package / app version in tree | **\`${packageJson.version}\``,
         "Published Mac App Store | **`2.6.2`",
-        `Active product phase | **v${packageJson.version} development`,
+        `Active product phase | **v${packageJson.version} release preparation`,
         "R-1 text Reference follows Preview font size",
       ],
       "docs/v1.11-okf-draft-preview-design.md": [

@@ -26,26 +26,24 @@ Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 review remains exte
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current development is on `2.8.0`: the v2.6 A-1–A-4 source baseline plus
-theme and Preview polish, and a right-pane ownership fix so 「確認」 shows
-Diff while a text Reference is open. Hazakura Local Assist pins a
-document target for bounded follow-up revision, replacing the current
-unapplied proposal in a separate Diff review surface. Only the Diff's explicit
-Apply proposal action sends the reviewed candidate to the existing transaction
-/ Review Bar path; the editor is not auto-saved. Mac App Store `2.6.2` is
-user-confirmed published (2026-08-28); rollout to all users is staged over
-time. The local v2.7.0 / build 123 package is frozen separately; the owner
-plans to send it to App Review, but upload, approval, and publication are not
-recorded here. v2.8 starts with the Apple Intelligence U-1 writing-companion
-slice and does not reopen Apply or add MLX runtime. See
-[`docs/v2.8-plan.md`](docs/v2.8-plan.md),
-[`docs/releases/2.7.0-source-tag.release.md`](docs/releases/2.7.0-source-tag.release.md)
-and [`docs/releases/2.7.0-app-store-release-notes.md`](docs/releases/2.7.0-app-store-release-notes.md).
+Current development is on `2.8.0`, now in release preparation. Local Assist
+opens in a separate native window with a tall conversation, a bottom composer,
+and collapsed target details, help, and presets. Request progress appears in
+the conversation. The current proposal remains in the main Diff review area;
+only explicit Apply changes the editor buffer, and it does not auto-save.
+Generation cancellation and same-conversation proposal recovery are hardened.
+System model reuse and the Rust-owned backend validation from the v2.7 work
+are included; MLX runtime and model download/selection are not included.
+
+The frozen v2.7 candidate is preserved separately. Upload, approval, and
+publication of v2.8 have not occurred in this preparation. See
+[`v2.8 release candidate`](docs/releases/2.8.0-source-tag.release.md) and
+[`v2.8 plan`](docs/v2.8-plan.md).
 
 ## Mac App Store
 
 Hazakura Editor `2.6.2` is published on the Mac App Store. The `2.7.0`
-package is frozen for owner-managed review, while `2.8.0` is development-only:
+package is frozen for owner-managed review, while `2.8.0` is in release preparation:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -162,7 +160,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.8.0 U-1 development queue
+- [Current Work](docs/current-work.md): v2.8.0 release preparation queue
 - [v2.8 Plan](docs/v2.8-plan.md): writing-companion entry boundary and held work
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
