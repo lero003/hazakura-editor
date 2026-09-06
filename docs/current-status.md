@@ -25,8 +25,8 @@ recorded yet. Mac App Store `2.6.2` remains user-confirmed published
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.8.0`** across npm, Tauri, Cargo, and
-  lockfile metadata. This is a development version, not a package, upload,
-  approval, or publication claim. User-confirmed **Mac App Store publication**
+  lockfile metadata. A signed local universal package is prepared; upload,
+  approval and publication remain unverified. User-confirmed **Mac App Store publication**
   of `2.6.2` remains the closed store line (2026-08-28; staged rollout). Prior published lines include
   `2.4.0`, `2.3.0` (recipe/resume quality pack) and `2.0.0` (Book Scope Alpha).
   Do not rewrite tags. Local package provenance for the frozen `2.7.0` candidate lives in ignored
@@ -66,11 +66,10 @@ recorded yet. Mac App Store `2.6.2` remains user-confirmed published
   The package was produced before the v2.7 tree was committed, so the internal
   note records dirty-source provenance rather than claiming a clean source
   commit.
-- **v2.8.0 development is prepared.** The first slice is U-1 composer-first
-  proofreading conversation on Apple Intelligence, followed by U-3 / U-4 and
-  optionally G-1 as independent reviewable slices. The existing Conversation /
-  Proposal / Diff / explicit Apply path remains authoritative. C-1, C-2, and
-  MLX M-0b stay HOLD. Plan: `docs/v2.8-plan.md`.
+- **v2.8.0 local release candidate is prepared.** Detached conversation-first
+  Local Assist and M-0a/H-1 are integrated. Signed universal package, source
+  gates and remaining native smoke: `docs/releases/2.8.0-source-tag.release.md`.
+  U-3/U-4/G-1 are deferred; C-1/C-2/M-0b remain HOLD.
 - **v2.6 source candidate** A-4 finishing is merged at `b40bd217`. The 2.6.1
   local candidate HEAD is `6ff22dad` (theme/Preview polish plus App Store
   `bundleVersion` 119). `2.6.2` is the right-pane ownership candidate on this
@@ -627,8 +626,8 @@ recorded yet. Mac App Store `2.6.2` remains user-confirmed published
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Current development-tree version: **`2.8.0`** (development-only; not a
-  package, upload, approval, or publication). A-1–A-4 source work is merged
+- Current development-tree version: **`2.8.0`** (signed local package prepared;
+  upload, approval and publication pending). A-1–A-4 source work is merged
   plus theme/Preview polish and the right-pane ownership fix;
   the pinned target, bounded multi-turn revision, and explicit Diff apply remain
   on the same Local Assist surface. The editor remains unchanged until that
@@ -1152,12 +1151,8 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. Continue **U-1** (composer-first conversational proofread on Apple
-   Intelligence) under `docs/v2.8-plan.md` without reopening the Apply
-   boundary. M-0a has completed
-   the H-1-adjacent System model lifetime preflight. Follow
-   `docs/current-work.md` for U-3 / U-4 / G-1 ordering. **C-1 HOLD** until a
-   production `.aimodel` identity plus D25/D19.
+1. Complete the native v2.8 release smoke in `docs/releases/2.8.0-source-tag.release.md`.
+   Hold further U-3/U-4/G-1 implementation during candidate validation.
 2. Keep the frozen v2.7 candidate and v2.8 development separate. The owner
    manages App Review; do not claim upload, processing, approval, or publication
    until that state is confirmed.

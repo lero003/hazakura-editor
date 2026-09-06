@@ -32,8 +32,8 @@ buffer write; the same proposal is not surfaced in a second Review Bar. The A-4 
 the conversation and Diff regions distinct at narrow widths without changing
 that mutation boundary.
 
-- Package/app version in tree: **`2.8.0`**. This is a development version, not
-  a package, upload, approval, or publication. The frozen `2.7.0` / build `123`
+- Package/app version in tree: **`2.8.0`**. A signed local universal package is prepared;
+  upload, approval and publication remain pending. The frozen `2.7.0` / build `123`
   candidate is owner-managed for App Review. User-confirmed **Mac App Store
   publication** of `2.6.2` on 2026-08-28 remains the published store line.
   Local pkg provenance is in ignored

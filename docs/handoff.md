@@ -20,10 +20,8 @@ Last reviewed: 2026-09-07 (v2.8 release preparation)
 
   is in ignored `docs/internal/app-store-candidates/latest.json`. What's New:
   `docs/releases/2.7.0-app-store-release-notes.md`. Active plan:
-  `docs/v2.8-plan.md`. Next development: **U-1**
-  conversational proofread on Apple Intelligence (helper: target + local
-  model chip; main Diff before apply), then U-3 / U-4 and G-1. H-1 System
-  model reuse is complete in M-0a.
+  `docs/v2.8-plan.md`. U-1 and H-1/M-0a are integrated. Validate the
+  detached companion and main Diff before further U-3/U-4/G-1 work.
   C-1 (`.aimodel` DL) HOLD until a production identity. Local-only for now;
   web search is a later optional lane.
   A local `2.7.0` / build `123` pkg exists. The owner plans to send it to App
@@ -702,10 +700,9 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Continue the active **U-1** composer-first Local Assist queue without
-   reopening `applyReviewedLocalAssistProposal`. M-0a has already completed the
-   H-1-adjacent System model lifetime preflight; do not turn it into MLX runtime.
-   Then follow `docs/current-work.md` for U-3 / U-4 / G-1 ordering.
+1. Complete the native v2.8 release smoke; the signed local package is prepared.
+   See `docs/releases/2.8.0-source-tag.release.md`. Further U-3/U-4/G-1 changes
+   stay outside this candidate. Do not upload or publish implicitly.
 2. **C-1 HOLD** until the owner picks a production `.aimodel` identity plus
    D25/D19. **C-2 HOLD** until D24/D20. External models stay Apple `.aimodel`.
 3. **M-0b HOLD** until C-2 and an Xcode 27 / macOS 27 build lane. No MLX
