@@ -136,18 +136,18 @@ describe("RightPaneToggleControls", () => {
     expect(onToggleOutline).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps review separated to the left of stable mode controls", () => {
+  it("keeps review separated after the stable reading and comparison controls", () => {
     renderControls({ reviewChangesAvailable: true });
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
     ).toEqual([
-      "Review",
       "Preview",
-      "Reference",
       "e-book",
       "Outline",
+      "Reference",
       "Diff",
+      "Review",
     ]);
   });
 
@@ -156,7 +156,7 @@ describe("RightPaneToggleControls", () => {
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["Preview", "Reference", "e-book", "Outline", "Diff"]);
+    ).toEqual(["Preview", "e-book", "Outline", "Reference", "Diff"]);
   });
 
   it("marks Reference as the active right pane", () => {

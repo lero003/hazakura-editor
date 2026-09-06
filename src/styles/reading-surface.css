@@ -1,0 +1,215 @@
+/* Reading chrome uses existing theme tokens; no new theme or Reader geometry. */
+.reading-controls.pane-control-cluster {
+  gap: 8px;
+}
+
+.reading-controls .pane-toggles {
+  padding: 0;
+  gap: 2px;
+  border-radius: var(--radius-sm);
+  border-color: var(--border);
+  background: var(--surface-muted);
+  box-shadow: none;
+}
+
+.reading-controls .pane-toggle {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: 30px;
+  min-height: 30px;
+  min-width: 30px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.2;
+  text-shadow: none;
+  /* Theme swaps are immediate: avoid light paper behind dark-theme text. */
+  transition: border-color var(--dur-1) var(--ease-standard);
+}
+
+.reading-controls .pane-toggle:not(:disabled):hover {
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+}
+
+.reading-controls .pane-toggle[aria-pressed="true"] {
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+  box-shadow: inset 0 -2px 0 var(--accent);
+  color: var(--text);
+}
+
+.reading-controls .pane-toggle:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Preserve the localized action's width without a dead keyboard stop. */
+.reading-controls .pane-toggle[data-concealed="true"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.reading-controls .pane-review-action {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--text);
+}
+
+.reading-controls .pane-mode-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 3px;
+  background: var(--border-strong);
+  flex: 0 0 auto;
+}
+
+.reading-controls .pane-toggle:focus-visible,
+.right-pane-header .right-pane-header-close:focus-visible,
+.preview-feedback .preview-retry-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.right-pane-header .right-pane-header-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+}
+
+.right-pane-header .right-pane-header-close:hover {
+  background: var(--surface-muted);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.preview-pane-preview > .right-pane-header {
+  background: var(--surface-strong);
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-pane-preview > .markdown-preview {
+  line-height: 1.8;
+  margin: 16px auto;
+  padding: 30px 32px 64px;
+  width: calc(100% - 32px);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.preview-pane-preview > .markdown-preview[hidden] {
+  display: none;
+}
+
+/* Keep the prose opaque in all themes, including the animated joke themes. */
+.preview-pane-preview > .markdown-preview,
+.preview-feedback {
+  text-shadow: none;
+}
+
+.preview-feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-sizing: border-box;
+  width: calc(100% - 32px);
+  max-width: 760px;
+  margin: 16px auto;
+  padding: 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--preview-reading-surface, var(--surface-strong));
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.preview-feedback-copy {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.preview-feedback-copy strong {
+  font-weight: 650;
+}
+
+.preview-feedback-copy p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+}
+
+.preview-feedback-empty {
+  min-height: 190px;
+  border-style: dashed;
+  align-items: center;
+}
+
+.preview-feedback-error {
+  border-inline-start: 3px solid var(--accent);
+}
+
+.preview-feedback .preview-retry-button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  white-space: normal;
+  max-width: 100%;
+  box-shadow: none;
+}
+
+.preview-feedback .preview-retry-button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+@container reading-preview (max-width: 480px) {
+  .preview-pane-preview > .markdown-preview {
+    padding: 22px 18px 48px;
+    width: calc(100% - 16px);
+    margin: 8px auto;
+  }
+  .preview-feedback {
+    width: calc(100% - 16px);
+    margin: 8px auto;
+    padding: 16px;
+  }
+}
+
+/* Captions yield before the native traffic-light area gets crowded.
+   aria-label keeps every icon-only mode and the retained Reference named. */
+@media (max-width: 1100px) {
+  .reading-controls .pane-toggle-caption { display: none; }
+  .reading-controls .pane-toggle { padding-inline: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-controls .pane-toggle { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .reading-controls .pane-toggle[aria-pressed="true"] {
+    border: 2px solid Highlight;
+  }
+}

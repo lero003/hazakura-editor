@@ -7,6 +7,12 @@ Last reviewed: 2026-09-07 (v2.8 release preparation)
 
 ## Current State
 
+- **PR #40 Preview follow-up (2026-09-07):** 空表示・描画失敗からの再試行・選択終了を
+  安定化し、読むモードを隣接配置。統合レビューで旧配置のテスト2件を更新し、
+  型検査・1,937 tests・Vite build・App Store surface 111 testsが成功。
+  全テーマの外観・実機・VoiceOverは所有者確認。凍結済みbuild 124には未反映。
+  詳細: `docs/reviews/2026-09-07-preview-reading-polish.md`。
+
 - **v2.8 release preparation:** 統合候補の検証・残項目は
   `docs/releases/2.8.0-source-tag.release.md`。提出文案は
   `docs/releases/2.8.0-app-store-release-notes.md`。公開・送信は未実施。

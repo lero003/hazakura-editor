@@ -300,6 +300,7 @@ export function SidePane({
             documentKey={activeTab.id}
             documentPath={activeTab.path}
             mediaAccess={mediaAccess}
+            menuLanguage={menuLanguage}
             onApproveLocalImageParent={onApproveLocalImageParent}
             onOpenLocalLink={onOpenPreviewLocalLink}
             onRenderComplete={restorePreviewScroll}

@@ -47,6 +47,7 @@ type PaneToggleProps = {
   caption: string;
   className?: string;
   disabled?: boolean;
+  concealed?: boolean;
   icon: ReactNode;
   onClick: () => void;
   /** Loaded-but-hidden affordance (Reference session retained). */
@@ -60,6 +61,7 @@ function PaneToggle({
   caption,
   className,
   disabled,
+  concealed = false,
   icon,
   onClick,
   retained = false,
@@ -76,11 +78,14 @@ function PaneToggle({
 
   return (
     <button
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? caption}
+      aria-hidden={concealed || undefined}
+      tabIndex={concealed ? -1 : undefined}
+      data-concealed={concealed ? "true" : undefined}
       aria-pressed={active}
       className={classes}
       data-retained={retained ? "true" : undefined}
-      disabled={disabled}
+      disabled={disabled || concealed}
       onClick={onClick}
       title={title}
       type="button"
@@ -157,16 +162,11 @@ export function RightPaneToggleControls({
   );
 
   return (
-    <div className="pane-control-cluster" aria-label={copy.sidePaneMode}>
-      {reviewChangesAvailable ? (
-        <PaneToggle
-          caption={copy.reviewMenu}
-          className="pane-review-action"
-          icon={<ReviewDeskIcon />}
-          onClick={onReviewChanges}
-          title={reviewChangesLabel || copy.reviewMenuTitle}
-        />
-      ) : null}
+    <div
+      className="pane-control-cluster reading-controls"
+      role="group"
+      aria-label={copy.sidePaneMode}
+    >
       <div className="pane-toggles">
         <PaneToggle
           active={previewActive}
@@ -174,19 +174,6 @@ export function RightPaneToggleControls({
           icon={<PreviewIcon />}
           onClick={onTogglePreview}
           title={titles.preview}
-        />
-        <PaneToggle
-          active={referenceActive}
-          ariaLabel={
-            referenceLoaded && !referenceActive
-              ? titles.reference
-              : undefined
-          }
-          caption={copy.referenceTab}
-          icon={<ReferenceIcon />}
-          onClick={onToggleReference}
-          retained={referenceLoaded && !referenceActive}
-          title={titles.reference}
         />
         <PaneToggle
           active={ebookAvailable && ebookActive}
@@ -204,6 +191,20 @@ export function RightPaneToggleControls({
           onClick={onToggleOutline}
           title={titles.outline}
         />
+        <span className="pane-mode-divider" aria-hidden="true" />
+        <PaneToggle
+          active={referenceActive}
+          ariaLabel={
+            referenceLoaded && !referenceActive
+              ? titles.reference
+              : undefined
+          }
+          caption={copy.referenceTab}
+          icon={<ReferenceIcon />}
+          onClick={onToggleReference}
+          retained={referenceLoaded && !referenceActive}
+          title={titles.reference}
+        />
         <PaneToggle
           active={diffActive}
           caption={copy.diffTab}
@@ -213,6 +214,14 @@ export function RightPaneToggleControls({
           title={titles.diff}
         />
       </div>
+      <PaneToggle
+        caption={copy.reviewMenu}
+        className="pane-review-action"
+        concealed={!reviewChangesAvailable}
+        icon={<ReviewDeskIcon />}
+        onClick={onReviewChanges}
+        title={reviewChangesLabel || copy.reviewMenuTitle}
+      />
     </div>
   );
 }

@@ -8,6 +8,13 @@ import {
   useRef,
   useState,
 } from "react";
+import type { MenuLanguage } from "../../../types";
+import { PreviewFeedback } from "./PreviewFeedback";
+import {
+  interceptPreviewLink,
+  paintPreviewHtml,
+  subscribePreviewGestureEnd,
+} from "./previewDomSafety";
 import { renderMarkdown } from "../../../features/editor/markdown";
 import type { MediaImageAccessOptions } from "../../../features/editor/imagePolicy";
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
@@ -33,6 +40,7 @@ type PreviewPaneProps = {
   documentKey?: string | null;
   documentPath?: string | null;
   mediaAccess?: MediaImageAccessOptions | null;
+  menuLanguage?: MenuLanguage;
   onApproveLocalImageParent?: (resolvedPath: string) => void;
   onOpenLocalLink?: (href: string) => void;
   /**
@@ -49,6 +57,7 @@ type PreviewState = {
   html: string;
   identity: string;
   pending: boolean;
+  failed: boolean;
 };
 
 // v1.1 position-continuity observation: PreviewPane does not own scroll
@@ -66,6 +75,7 @@ export default function PreviewPane({
   documentKey,
   documentPath,
   mediaAccess = null,
+  menuLanguage = "ja",
   onApproveLocalImageParent,
   onOpenLocalLink,
   onRenderComplete,
@@ -90,7 +100,9 @@ export default function PreviewPane({
     html: "",
     identity: previewIdentity,
     pending: true,
+    failed: false,
   }));
+  const [retryRevision, setRetryRevision] = useState(0);
   // First settled paint per document identity is `initial`; later paints
   // (typing debounce, workspace image inlining) are `update` so the parent
   // can avoid re-applying scroll-ratio after content height changes.
@@ -103,29 +115,38 @@ export default function PreviewPane({
   const pointerDownRef = useRef(false);
   const lastPointerYRef = useRef<number | null>(null);
   const selectionScrollFrameRef = useRef<number | null>(null);
-  const scrollTopBeforePaintRef = useRef<number | null>(null);
   const paintedHtmlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    // A queued selection paint belongs to the superseded source, not this render.
+    pendingHtmlRef.current = null;
     const isSameDocumentPaint =
       paintedIdentityRef.current === previewIdentity;
 
     setPreview((current) => {
-      if (current.identity === previewIdentity && current.html.length > 0) {
+      if (
+        current.identity === previewIdentity &&
+        !current.pending &&
+        !current.failed
+      ) {
         // Same document: keep showing the last good HTML. Flipping
         // `pending` here forces an extra React commit on every keystroke
         // burst without changing visible content.
         return current;
       }
 
-      return { html: "", identity: previewIdentity, pending: true };
+      return {
+        html: current.identity === previewIdentity ? current.html : "",
+        identity: previewIdentity,
+        pending: true,
+        failed: false,
+      };
     });
 
     if (!isSameDocumentPaint) {
       resolvedImagesRef.current.clear();
       pendingHtmlRef.current = null;
-      scrollTopBeforePaintRef.current = null;
       paintedHtmlRef.current = null;
     }
 
@@ -134,11 +155,28 @@ export default function PreviewPane({
         return;
       }
 
-      const renderedHtml = renderMarkdown(source, {
-        documentPath,
-        workspaceRoot,
-        mediaAccess,
-      });
+      let renderedHtml: string;
+      try {
+        renderedHtml = renderMarkdown(source, {
+          documentPath,
+          workspaceRoot,
+          mediaAccess,
+        });
+      } catch {
+        // Scheduled callbacks are outside React error boundaries. Keep only
+        // this document's last good paint, never another tab's contents.
+        pendingHtmlRef.current = null;
+        setPreview((current) => {
+          if (cancelled) return current;
+          return {
+            html: current.identity === previewIdentity ? current.html : "",
+            identity: previewIdentity,
+            pending: false,
+            failed: true,
+          };
+        });
+        return;
+      }
 
       const commitHtml = (html: string) => {
         if (cancelled) {
@@ -156,20 +194,13 @@ export default function PreviewPane({
         }
 
         pendingHtmlRef.current = null;
-        if (isSameDocumentPaint) {
-          const scroller = host?.parentElement;
-          if (scroller) {
-            scrollTopBeforePaintRef.current = scroller.scrollTop;
-          }
-        } else {
-          scrollTopBeforePaintRef.current = null;
-        }
-
         setPreview((current) => {
+          if (cancelled) return current;
           if (
             current.identity === previewIdentity &&
             current.html === html &&
-            !current.pending
+            !current.pending &&
+            !current.failed
           ) {
             return current;
           }
@@ -178,6 +209,7 @@ export default function PreviewPane({
             html,
             identity: previewIdentity,
             pending: false,
+            failed: false,
           };
         });
       };
@@ -207,7 +239,9 @@ export default function PreviewPane({
       cancelled = true;
       cancelRender();
     };
-  }, [documentPath, mediaAccess, previewIdentity, source, workspaceRoot]);
+  }, [
+    documentPath, mediaAccess, previewIdentity, retryRevision, source, workspaceRoot,
+  ]);
 
   useEffect(() => {
     if (
@@ -261,32 +295,20 @@ export default function PreviewPane({
       return;
     }
 
-    if (preview.pending && preview.html.length === 0) {
-      host.innerHTML = "";
-      paintedHtmlRef.current = "";
-      return;
-    }
-
-    if (preview.html.length === 0) {
-      return;
-    }
-
-    if (paintedHtmlRef.current !== preview.html) {
-      const scroller = host.parentElement;
-      const savedTop = scrollTopBeforePaintRef.current ?? scroller?.scrollTop;
-      host.innerHTML = preview.html;
-      paintedHtmlRef.current = preview.html;
-      applyCachedPreviewImages(host, resolvedImagesRef.current);
-      if (scroller && savedTop !== undefined) {
-        scroller.scrollTop = savedTop;
-      }
-      return;
-    }
-
-    applyCachedPreviewImages(host, resolvedImagesRef.current);
-  }, [preview.html, preview.pending]);
+    // Empty HTML is a valid completed render. Identity changes must clear
+    // the previous document before the browser can paint or follow its links.
+    const html = preview.identity === previewIdentity ? preview.html : "";
+    paintedHtmlRef.current = paintPreviewHtml(
+      host,
+      html,
+      paintedHtmlRef.current,
+      () => applyCachedPreviewImages(host, resolvedImagesRef.current),
+    );
+  }, [preview.html, preview.identity, preview.pending, previewIdentity]);
 
   useEffect(() => {
+    // Retain the scroller for cleanup: React clears the host ref on unmount.
+    const gestureScroller = previewHostRef.current?.parentElement ?? null;
     const flushPendingHtml = () => {
       const host = previewHostRef.current;
       const pendingHtml = pendingHtmlRef.current;
@@ -299,18 +321,18 @@ export default function PreviewPane({
       }
 
       pendingHtmlRef.current = null;
-      const scroller = host?.parentElement;
-      if (scroller) {
-        scrollTopBeforePaintRef.current = scroller.scrollTop;
-      }
       setPreview((current) => {
-        if (current.identity !== previewIdentity || current.html === pendingHtml) {
+        if (
+          current.identity !== previewIdentity ||
+          (current.html === pendingHtml && !current.pending && !current.failed)
+        ) {
           return current;
         }
         return {
           html: pendingHtml,
           identity: previewIdentity,
           pending: false,
+          failed: false,
         };
       });
     };
@@ -340,7 +362,9 @@ export default function PreviewPane({
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (!pointerDownRef.current || event.buttons !== 1) {
+      if (!pointerDownRef.current) return;
+      if ((event.buttons & 1) === 0) {
+        endPointer();
         return;
       }
       lastPointerYRef.current = event.clientY;
@@ -356,6 +380,7 @@ export default function PreviewPane({
     };
 
     const endPointer = () => {
+      if (!pointerDownRef.current) return;
       const host = previewHostRef.current;
       const scroller = host?.parentElement;
       pointerDownRef.current = false;
@@ -369,14 +394,15 @@ export default function PreviewPane({
     };
 
     document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("pointerup", endPointer);
-    document.addEventListener("pointercancel", endPointer);
+    const removeGestureEnd = subscribePreviewGestureEnd(document, endPointer);
     document.addEventListener("selectionchange", flushPendingHtml);
     return () => {
       stopSelectionScrollLoop();
       document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerup", endPointer);
-      document.removeEventListener("pointercancel", endPointer);
+      removeGestureEnd();
+      pointerDownRef.current = false;
+      lastPointerYRef.current = null;
+      setPreviewSelecting(gestureScroller, false);
       document.removeEventListener("selectionchange", flushPendingHtml);
     };
   }, [previewIdentity]);
@@ -385,7 +411,7 @@ export default function PreviewPane({
     if (
       preview.pending ||
       preview.identity !== previewIdentity ||
-      preview.html.length === 0
+      preview.failed
     ) {
       return;
     }
@@ -396,6 +422,7 @@ export default function PreviewPane({
     onRenderComplete?.(kind);
   }, [
     onRenderComplete,
+    preview.failed,
     preview.html,
     preview.identity,
     preview.pending,
@@ -424,23 +451,9 @@ export default function PreviewPane({
       return;
     }
 
-    if (!onOpenLocalLink) {
-      return;
-    }
-
-    const link = target.closest("a[href]");
-
-    if (!link || !event.currentTarget.contains(link)) {
-      return;
-    }
-
-    const href = link.getAttribute("href")?.trim() ?? "";
-
-    event.preventDefault();
-    if (isPreviewUserSelecting(event.currentTarget)) {
-      return;
-    }
-    onOpenLocalLink(href);
+    const href = interceptPreviewLink(event);
+    if (href === null || isPreviewUserSelecting(event.currentTarget)) return;
+    onOpenLocalLink?.(href);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
@@ -459,25 +472,43 @@ export default function PreviewPane({
     handleMediaAction(actionHost);
   };
 
+  const current = preview.identity === previewIdentity;
+  const pending = !current || preview.pending;
+  const empty = current && !pending && preview.html.trim().length === 0;
+
   return (
-    <article
-      aria-busy={preview.pending ? "true" : undefined}
-      className={
-        preview.pending && preview.html.length === 0
-          ? "markdown-preview markdown-preview-loading"
-          : "markdown-preview"
-      }
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      onPointerDown={(event) => {
-        if (event.button !== 0) {
-          return;
+    <>
+      {current && preview.failed ? (
+        <PreviewFeedback
+          kind="error"
+          retained={preview.html.length > 0}
+          menuLanguage={menuLanguage}
+          onRetry={() => setRetryRevision((revision) => revision + 1)}
+        />
+      ) : empty ? (
+        <PreviewFeedback kind="empty" menuLanguage={menuLanguage} />
+      ) : null}
+      <article
+        aria-busy={pending ? "true" : undefined}
+        hidden={empty}
+        className={
+          pending && (!current || preview.html.length === 0)
+            ? "markdown-preview markdown-preview-loading"
+            : "markdown-preview"
         }
-        pointerDownRef.current = true;
-        lastPointerYRef.current = event.clientY;
-        setPreviewSelecting(event.currentTarget.parentElement, true);
-      }}
-      ref={previewHostRef}
-    />
+        onAuxClick={(event) => {
+          interceptPreviewLink(event);
+        }}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          pointerDownRef.current = true;
+          lastPointerYRef.current = event.clientY;
+          setPreviewSelecting(event.currentTarget.parentElement, true);
+        }}
+        ref={previewHostRef}
+      />
+    </>
   );
 }
