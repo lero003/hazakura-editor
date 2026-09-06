@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.6.2 App Store published — U-1 writing-companion
 Authority: High
-Last reviewed: 2026-09-06 (PR #38 source-only sidebar candidate; published 2.6.2 remains closed)
+Last reviewed: 2026-09-06 (PR #38 follow-up detached conversation; published 2.6.2 remains closed)
 
 ## Purpose
 
@@ -11,17 +11,17 @@ Start here when choosing the next small `Hazakura Editor` slice.
 
 ## PR #38 — source-only U-1 update
 
-Owner direction 2026-09-06: **ページ選択＋行選択＋推敲の会話＋差分確認**。
-このブランチでは同一ウィンドウの任意サイドパネルを標準入口とし、従来の
-分離窓経路は互換性のため残す。既存の生成hook、proposal store、明示Applyを
-共用し、ネイティブ権限・保存契約・モデルは変えない。
-ページ選択は開いている文書と既存の明示ファイル選択に限定する。
-レビュー修正後の typecheck / Vitest（1,918件）/ Vite・macOS app build /
-App Store surface smoke（111件）は成功。Rustは368件成功・2件ignore。
-ブラウザーで1,200pxの上下配置・1,600pxの横配置とL Modeを確認した。
-実モデル・IME・VoiceOver・native保存の一連の実機操作は未確認。配布完了とは扱わない。
-最新レビュー: `docs/reviews/2026-09-06-pr38-integration-review.md`。
-自己レビュー・検証範囲: `docs/reviews/2026-09-06-local-assist-sidebar-self-review.md`。
+Owner follow-up 2026-09-06: **Local Assistは別ウィンドウにし、縦長の会話欄を主役にする**。
+PR #38のサイドパネル入口は撤回し、既存のネイティブ分離窓へ戻した。
+対象の詳細・使い方と利用条件・定型依頼は初期状態で折りたたむ。
+依頼と生成中・完成・失敗の状態を同じ会話欄に置き、入力欄は下部に固定する。
+本文16px・補助表示14pxを基本とし、薄すぎる補助文字を調整した。
+生成hook、proposal store、mainのDiffと明示Apply、Undoの境界は維持する。
+PR #38時点のレビュー記録は履歴: `docs/reviews/2026-09-06-pr38-integration-review.md`。
+実モデル・native窓の往復・IME・VoiceOverは未確認。
+検証: typecheckを含むmacOS app build、Vitest 1,919件、App Store surface smoke 111件が成功。
+ブラウザーでlight/darkと420×540・480×720の配置を確認。
+公開版の更新ではない。
 
 ## Active Phase
 

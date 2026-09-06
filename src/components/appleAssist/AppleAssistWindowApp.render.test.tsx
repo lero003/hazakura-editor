@@ -67,6 +67,16 @@ describe("AppleAssistWindowApp render", () => {
     ).toBeNull();
   });
 
+  it("starts with explanations collapsed and a single conversation log", () => {
+    const { container } = render(<AppleAssistWindowApp />);
+    expect(screen.getByRole("log", { name: "Conversation" })).toBeTruthy();
+    const details = [...container.querySelectorAll("details")];
+    expect(details).toHaveLength(3);
+    expect(details.every((element) => !element.open)).toBe(true);
+    expect(screen.queryByTestId("apple-assist-stream-preview")).toBeNull();
+    expect(screen.getByRole("textbox")).toBeTruthy();
+  });
+
   it("keeps the detached window conversation-focused after a proposal completes", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
@@ -86,6 +96,10 @@ describe("AppleAssistWindowApp render", () => {
     });
     const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
       ?.requestId;
+
+    const log = screen.getByRole("log", { name: "Conversation" });
+    expect(log.textContent).toContain("整えて");
+    expect(log.contains(screen.getByRole("status"))).toBe(true);
 
     const proposalStatus = eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT);
     await act(async () => {
@@ -110,6 +124,8 @@ describe("AppleAssistWindowApp render", () => {
       screen.queryByRole("button", { name: /Apply proposal|文書へ反映/ }),
     ).toBeNull();
     expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(log.querySelector('[data-feedback-kind="proposal-ready"]')).toBeTruthy();
   });
 
   it("sanitizes partial prompt markers in the stream preview", async () => {
