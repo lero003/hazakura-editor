@@ -1,33 +1,16 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render } from "@testing-library/react";
 import { createRef, type RefObject } from "react";
 import { useModalKeyboardGuard } from "./useModalKeyboardGuard";
 
-// `trapFocusInElement` filters focusable candidates with
-// `element.offsetParent !== null`. jsdom does not run a layout
-// engine, so `offsetParent` is `null` for every element. Stub it
-// out so the test mirrors a rendered browser environment where
-// buttons in the DOM are considered visible.
-if (!("offsetParent" in HTMLElement.prototype) ||
-  // Older jsdom does not define a configurable getter.
-  Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetParent") ===
-    undefined) {
-  Object.defineProperty(HTMLElement.prototype, "offsetParent", {
-    configurable: true,
-    get() {
-      return this.parentElement;
-    },
-  });
-} else {
-  // jsdom ships a getter that returns null; override it for the
-  // duration of these tests.
-  Object.defineProperty(HTMLElement.prototype, "offsetParent", {
-    configurable: true,
-    get() {
-      return this.parentElement;
-    },
-  });
-}
+// jsdom has no layout engine. Model rendered controls for the real focus
+// trap, which uses client rectangles (including fixed-position controls).
+beforeEach(() => {
+  vi.spyOn(HTMLElement.prototype, "getClientRects").mockReturnValue(
+    [{ width: 40, height: 32 }] as unknown as DOMRectList,
+  );
+});
+afterEach(() => { vi.restoreAllMocks(); });
 
 type RefValue<T> = { current: T | null };
 

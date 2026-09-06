@@ -4,6 +4,7 @@ import {
   APPLE_ASSIST_MAX_CONTEXT_CHARS,
   APPLE_ASSIST_MAX_SELECTED_CHARS,
   generateAppleAssistCandidateStreaming,
+  stopAppleAssistGeneration,
 } from "../../lib/tauri/appleAssist";
 import {
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
@@ -12,10 +13,12 @@ import {
   type AppleAssistGenerationLock,
   type AppleAssistProposalStatusEvent,
 } from "../../types";
+import { getLocalAssistAction } from "../../lib/appleAssist/instruction";
 import {
-  getLocalAssistAction,
-  type LocalAssistActionId,
-} from "../../lib/appleAssist/instruction";
+  buildAppleAssistRevisionContext,
+  normalizeRevisionHistory,
+  takeAppleAssistChars,
+} from "../../lib/appleAssist/revisionContext";
 import {
   buildSurroundingDocumentContext,
   getAppleAssistContextWindow,
@@ -28,376 +31,262 @@ import {
 } from "./useAppleAssistApplyHandler";
 import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 
+import {
+  registerLocalAssistController,
+  notifyLocalAssistActivity,
+  publishSidebarProposalStatus,
+} from "../../lib/appleAssist/sidebarBridge";
+
+// Preserve the public imports used by existing callers/tests after extraction.
+export {
+  APPLE_ASSIST_MAX_CONVERSATION_TURNS,
+  APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS,
+  buildAppleAssistRevisionContext,
+} from "../../lib/appleAssist/revisionContext";
+
 type UseAppleAssistProposalHandlerOptions = {
   activeTab: ActiveTab | null;
   setStatus?: (message: string) => void;
   setGenerationLock?: Dispatch<SetStateAction<AppleAssistGenerationLock | null>>;
 };
+type GenerationJob = {
+  owner: symbol; sessionId: string; requestId: string;
+  tab: ActiveTab; payload: AppleAssistApplyEvent; nativeStarted: boolean;
+};
 
-export const APPLE_ASSIST_MAX_CONVERSATION_TURNS = 4;
-export const APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS = 500;
-
-function takeAppleAssistChars(value: string, maxChars: number): string {
-  return Array.from(value).slice(0, maxChars).join("");
-}
-
-/**
- * Build the bounded revision packet for A-2. The current proposal is passed
- * as selectedText; this packet keeps the pinned original (follow-up turns
- * only), recent user turns, and nearby document context available without
- * persisting a conversation.
- *
- * On the first request `selectedText` already IS the original, so pinning the
- * same text again under the reference context only duplicates the target and
- * wastes the bounded context window. A follow-up turn needs the pinned
- * original to anchor the revision against the current proposal.
- */
-export function buildAppleAssistRevisionContext(
-  originalText: string,
-  surroundingContext: string,
-  revisionHistory: ReadonlyArray<string> = [],
-): string {
-  const original = takeAppleAssistChars(originalText, APPLE_ASSIST_MAX_SELECTED_CHARS);
-  const history = revisionHistory
-    .slice(-APPLE_ASSIST_MAX_CONVERSATION_TURNS)
-    .map((request) => `- ${takeAppleAssistChars(request, APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS)}`)
-    .join("\n");
-
-  const isFollowUp = history.length > 0;
-
-  // The header is Japanese so the small on-device model reads the meta
-  // framing in the same language as the task. On a follow-up turn it must be
-  // told explicitly that the target text is the current proposal (not the
-  // original) and that only the latest request should be applied.
-  const header: string[] = [];
-  if (isFollowUp) {
-    header.push(
-      "対象本文は現在の変更案です。ここまでの変更を保ったまま、最新の依頼だけを適用してください。",
-      "固定した元文章（参考。書き換え対象ではありません）:",
-      "<<<HAZAKURA_ORIGINAL_START",
-      original,
-      "HAZAKURA_ORIGINAL_END>>>",
-      "これまでの依頼:",
-      history,
-    );
-  }
-
-  const contextLabel = "対象周辺の文脈（参考。書き換え対象ではありません）:\n";
-  const availableContextChars = Math.max(
-    0,
-    APPLE_ASSIST_MAX_CONTEXT_CHARS -
-      Array.from(header.join("\n")).length -
-      Array.from(contextLabel).length,
-  );
-  const headerPart = header.filter((line) => line.length > 0).join("\n");
-  const contextPart = `${contextLabel}${takeAppleAssistChars(
-    surroundingContext,
-    availableContextChars,
-  )}`;
-  return [headerPart, contextPart].filter((part) => part.length > 0).join("\n");
-}
-
-function normalizeRevisionHistory(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  return value
-    .filter((entry): entry is string => typeof entry === "string")
-    .slice(-APPLE_ASSIST_MAX_CONVERSATION_TURNS)
-    .map((entry) => takeAppleAssistChars(entry, APPLE_ASSIST_MAX_CONVERSATION_TURN_CHARS));
-}
-
-function validateProposalText(
-  proposalText: string | undefined,
-): { ok: true; text: string } | { ok: false; error: string } {
-  if (proposalText === undefined) {
-    return { ok: true, text: "" };
-  }
-  if (proposalText.trim().length === 0) {
+function validateProposalText(proposalText: unknown):
+  { ok: true; text: string } | { ok: false; error: string } {
+  if (proposalText === undefined) return { ok: true, text: "" };
+  if (typeof proposalText !== "string" || !proposalText.trim()) {
     return { ok: false, error: "Hazakura Local Assist current proposal is empty." };
   }
-  if (Array.from(proposalText).length > APPLE_ASSIST_MAX_SELECTED_CHARS) {
-    return {
-      ok: false,
-      error: `Hazakura Local Assist current proposal exceeds the maximum length of ${APPLE_ASSIST_MAX_SELECTED_CHARS} characters.`,
-    };
+  if (Array.from(takeAppleAssistChars(proposalText, APPLE_ASSIST_MAX_SELECTED_CHARS + 1)).length > APPLE_ASSIST_MAX_SELECTED_CHARS) {
+    return { ok: false, error: `Hazakura Local Assist current proposal exceeds the maximum length of ${APPLE_ASSIST_MAX_SELECTED_CHARS} characters.` };
   }
   return { ok: true, text: proposalText };
 }
 
-// v2.6 A-1/A-2: generation-only Local Assist path. This handler deliberately
-// does not receive a buffer setter and never calls `applyAiEditTransaction`.
-// It validates the target, streams the bounded candidate, and sends the
-// unapplied proposal to the detached window's Diff review surface.
-export function useAppleAssistProposalHandler({
-  activeTab,
-  setStatus,
-  setGenerationLock,
-}: UseAppleAssistProposalHandlerOptions): void {
-  const activeTabRef = useRef<ActiveTab | null>(activeTab);
+/** Generation only. No buffer setter or transaction-apply capability. */
+export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerationLock }: UseAppleAssistProposalHandlerOptions): void {
+  const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
   const setStatusRef = useRef(setStatus);
   setStatusRef.current = setStatus;
   const setGenerationLockRef = useRef(setGenerationLock);
   setGenerationLockRef.current = setGenerationLock;
+  const ownerRef = useRef<symbol | null>(null);
+  const jobsRef = useRef(new Set<GenerationJob>());
 
   useEffect(() => {
-    let disposed = false;
+    const owner = Symbol("local-assist-handler");
+    ownerRef.current = owner;
+    const unregister = registerLocalAssistController({
+      request: (payload) => { if (ownerRef.current === owner) void generateAppleAssistProposal(payload, owner); },
+      cancel: async (requestId) => {
+        const job = [...jobsRef.current].find((entry) => entry.owner === owner && entry.requestId === requestId);
+        return job ? cancelJob(job, true, "cancelled", "Hazakura Local Assist generation cancelled by user.") : false;
+      },
+      isBusy: () => jobsRef.current.size > 0,
+    });
     let unlisten: UnlistenFn | null = null;
-
     void listen<AppleAssistApplyEvent>(REQUEST_AI_EDIT_PROPOSAL_EVENT, (event) => {
-      if (!disposed) {
-        void generateAppleAssistProposal(event.payload);
-      }
-    })
-      .then((handle) => {
-        if (disposed) {
-          void handle();
-          return;
-        }
-        unlisten = handle;
-      })
-      .catch((err) => {
-        console.warn("Failed to listen for Local Assist proposal event", err);
-      });
-
+      if (ownerRef.current === owner) void generateAppleAssistProposal(event.payload, owner);
+    }).then((handle) => {
+      if (ownerRef.current !== owner) { void handle(); return; }
+      unlisten = handle;
+    }).catch((err) => console.warn("Failed to listen for Local Assist proposal event", err));
     return () => {
-      disposed = true;
-      if (unlisten) {
-        void unlisten();
-        unlisten = null;
+      unregister();
+      if (ownerRef.current === owner) ownerRef.current = null;
+      if (unlisten) void unlisten();
+      for (const job of jobsRef.current) {
+        if (job.owner !== owner) continue;
+        void cancelJob(job, false, "cancelled", "Hazakura Local Assist generation cancelled: the editor closed.");
       }
     };
   }, []);
 
-  async function generateAppleAssistProposal(
-    payload: AppleAssistApplyEvent,
-  ): Promise<void> {
+  // Invalidate on a real document switch/edit, not only when native output
+  // finishes. Switching away and back cannot revive an earlier generation.
+  useEffect(() => {
+    for (const job of jobsRef.current) {
+      if (job.owner !== ownerRef.current || !localAssistProposalStore.ownsGeneration(job.sessionId, job.requestId)) continue;
+      if (activeTab && isSameAppleAssistTargetTab(job.tab, activeTab) && job.tab.contents === activeTab.contents) continue;
+      void cancelJob(job, false, "failed",
+        "Hazakura Local Assist proposal discarded: the active document changed during generation.");
+    }
+  }, [activeTab?.id, activeTab?.path, activeTab?.sessionId, activeTab?.contents]);
+
+  async function cancelJob(job: GenerationJob, restorePrevious: boolean,
+    phase: "failed" | "cancelled", message: string): Promise<boolean> {
+    // Revoke ownership before requesting native cancellation: a late success
+    // can no longer publish or replace the last completed, reviewed draft.
+    const settled = localAssistProposalStore.settleGeneration(job.sessionId, job.requestId, restorePrevious,
+      (previous) => {
+        const latest = activeTabRef.current;
+        return !!latest && isSameAppleAssistTargetTab(job.tab, latest) && latest.contents === job.tab.contents &&
+          readTargetTextForGeneration(previous.target, latest).ok && previous.originalText === previous.target.text;
+      });
+    if (!settled) return false;
+    void emitAppleAssistProposalStatus(phase, message, job.payload);
+    if (job.nativeStarted) {
+      try { await stopAppleAssistGeneration(); }
+      catch (error) { console.warn("Failed to stop Local Assist generation", error); }
+    }
+    // Keep the native lock and busy state until the generation's finally.
+    return true;
+  }
+
+  async function generateAppleAssistProposal(payload: AppleAssistApplyEvent, owner: symbol): Promise<void> {
     const tab = activeTabRef.current;
-    if (!tab) {
-      const message = "Hazakura Local Assist proposal ignored: no active tab.";
+    const reject = async (message: string) => {
+      if (ownerRef.current !== owner) return;
       setStatusRef.current?.(message);
       await emitAppleAssistProposalStatus("failed", message, payload);
+    };
+    // The native helper is a singleton. An invalidated job remains busy until
+    // its promise settles; never overlap another request with its shutdown.
+    if ([...jobsRef.current].some((job) => job.requestId === payload.requestId)) return;
+    if (jobsRef.current.size > 0) {
+      await reject("Hazakura Local Assist is still finishing another generation. Please try again after it stops.");
       return;
     }
-
+    if (!tab) {
+      await reject("Hazakura Local Assist proposal ignored: no active tab.");
+      return;
+    }
     const targetCheck = readTargetTextForGeneration(payload.target, tab);
     if (!targetCheck.ok) {
-      const message = `Hazakura Local Assist proposal failed: ${targetCheck.error}`;
-      setStatusRef.current?.(message);
-      await emitAppleAssistProposalStatus("failed", message, payload);
+      await reject(`Hazakura Local Assist proposal failed: ${targetCheck.error}`);
       return;
     }
-
     const proposalCheck = validateProposalText(payload.proposalText);
-    if (!proposalCheck.ok) {
-      setStatusRef.current?.(proposalCheck.error);
-      await emitAppleAssistProposalStatus("failed", proposalCheck.error, payload, {
-        target: targetCheck.target,
-        originalText: targetCheck.before,
-      });
+    const originalCheck = validateProposalText(targetCheck.before);
+    if (!proposalCheck.ok || !originalCheck.ok) {
+      await reject(!proposalCheck.ok ? proposalCheck.error : !originalCheck.ok ? originalCheck.error : "Invalid target.");
       return;
     }
-    if (
-      payload.conversationOriginalText !== undefined &&
-      payload.conversationOriginalText !== targetCheck.before
-    ) {
-      const message =
-        "Hazakura Local Assist proposal failed: the pinned original no longer matches the active document.";
-      setStatusRef.current?.(message);
-      await emitAppleAssistProposalStatus("failed", message, payload, {
-        target: targetCheck.target,
-        originalText: targetCheck.before,
-      });
+    if (payload.conversationOriginalText !== undefined && payload.conversationOriginalText !== targetCheck.before) {
+      await reject("Hazakura Local Assist proposal failed: the pinned original no longer matches the active document.");
       return;
     }
 
-    const previousProposal = localAssistProposalStore.getLatest(tab.sessionId);
-
-    // v2.6 B2.2: when a generation never reaches a completed proposal, the
-    // streaming placeholder must be settled so it does not leave a "transparent
-    // pending state" (no visible Diff, no Apply/Discard, hidden Review Bar).
-    // Restore the previous completed proposal on a cancel/helper failure (the
-    // buffer is unchanged), but clear on a stale target or session change (the
-    // old proposal is also stale). Only settle when the current entry is OUR
-    // streaming placeholder, so a different request is never clobbered.
-    const settleStreamingPlaceholder = (restorePrevious: boolean) => {
-      const current = localAssistProposalStore.getLatest(tab.sessionId);
-      if (
-        !current ||
-        !current.streaming ||
-        current.requestId !== payload.requestId
-      ) {
-        return;
-      }
-      if (restorePrevious && previousProposal) {
-        localAssistProposalStore.record(tab.sessionId, previousProposal);
-      } else {
-        localAssistProposalStore.clear(tab.sessionId);
-      }
+    const target = targetCheck.target;
+    const actionId = resolveApplyActionId(payload);
+    const proposalBase = {
+      requestId: payload.requestId, request: payload.request, actionId,
+      originalText: targetCheck.before, candidateText: "", target,
+      conversationId: payload.conversationId ?? null,
+      turnIndex: payload.conversationTurnIndex ?? 0,
+    };
+    const job: GenerationJob = { owner, sessionId: tab.sessionId, requestId: payload.requestId, tab, payload, nativeStarted: false };
+    // Reserve before store notification; observers can synchronously re-enter.
+    jobsRef.current.add(job);
+    if (!localAssistProposalStore.beginGeneration(tab.sessionId, proposalBase)) {
+      jobsRef.current.delete(job);
+      await reject("Hazakura Local Assist proposal is currently being reviewed or applied. Please try again.");
+      return;
+    }
+    notifyLocalAssistActivity();
+    const ownsRequest = () => ownerRef.current === owner &&
+      localAssistProposalStore.ownsGeneration(tab.sessionId, payload.requestId);
+    const targetIsCurrent = () => {
+      const latest = activeTabRef.current;
+      return !!latest && isSameAppleAssistTargetTab(tab, latest) &&
+        latest.contents === tab.contents && readTargetTextForGeneration(target, latest).ok;
     };
 
     try {
-      const target = targetCheck.target;
-      const actionId: LocalAssistActionId = resolveApplyActionId(payload);
+      if (!ownsRequest()) return;
       const action = getLocalAssistAction(actionId);
-
-      // v2.6 B2.1: mark the pending proposal as streaming as soon as
-      // generation starts. This hides the main window's review panel and its
-      // Apply/Discard controls for the previous proposal during a follow-up
-      // turn, so a stale candidate cannot be applied mid-generation.
-      localAssistProposalStore.record(tab.sessionId, {
-        requestId: payload.requestId,
-        request: payload.request,
-        actionId,
-        originalText: targetCheck.before,
-        candidateText: "",
-        target,
-        conversationId: payload.conversationId ?? null,
-        turnIndex: payload.conversationTurnIndex ?? 0,
-        streaming: true,
-      });
-
       const startMessage = "Hazakura Local Assist is generating an unapplied proposal...";
       setStatusRef.current?.(startMessage);
-      setGenerationLockRef.current?.({
-        requestId: payload.requestId,
-        tabId: tab.id,
-        tabPath: tab.path,
-        request: payload.request,
-      });
-      await emitAppleAssistProposalStatus("started", startMessage, payload, {
-        target: targetCheck.target,
-        originalText: targetCheck.before,
-      });
+      setGenerationLockRef.current?.({ requestId: payload.requestId, tabId: tab.id, tabPath: tab.path, request: payload.request });
+      await emitAppleAssistProposalStatus("started", startMessage, payload, { target, originalText: targetCheck.before });
       await yieldBeforeAppleAssistGeneration();
+      if (!ownsRequest()) return;
+      if (!targetIsCurrent()) throw new Error("Hazakura Local Assist target changed before generation.");
 
       const contextWindow = getAppleAssistContextWindow(target.kind);
-      const selectedText =
-        payload.proposalText === undefined ? targetCheck.before : proposalCheck.text;
-      const surroundingContext = buildSurroundingDocumentContext(
-        tab.contents,
-        target.start,
-        target.end,
-        contextWindow.preChars,
-        contextWindow.postChars,
-        APPLE_ASSIST_MAX_CONTEXT_CHARS,
-      );
-      const response = await generateAppleAssistCandidateStreaming(
-        {
-          operation: action.operation,
-          actionId,
-          selectedText,
-          documentContext: buildAppleAssistRevisionContext(
-            targetCheck.before,
-            surroundingContext,
-            normalizeRevisionHistory(payload.revisionHistory),
-          ),
-          additionalRequest: payload.additionalRequest,
-        },
-        payload.requestId,
-        payload.request,
-      );
-
-      const latestTab = activeTabRef.current;
-      if (!latestTab || !isSameAppleAssistTargetTab(tab, latestTab)) {
-        const message =
-          "Hazakura Local Assist proposal discarded: the active document changed during generation.";
-        setStatusRef.current?.(message);
-        await emitAppleAssistProposalStatus("failed", message, payload, {
-          target,
-          originalText: targetCheck.before,
-        });
-        settleStreamingPlaceholder(false);
-        return;
-      }
-      // Defense-in-depth: re-read the target text at completion time so a
-      // stale candidate generated against an edited or rewritten buffer is
-      // never stored as a fresh proposal.
-      const completionTargetCheck = readTargetTextForGeneration(target, latestTab);
-      if (!completionTargetCheck.ok) {
-        const message = `Hazakura Local Assist proposal discarded: ${completionTargetCheck.error}`;
-        setStatusRef.current?.(message);
-        await emitAppleAssistProposalStatus("failed", message, payload, {
-          target,
-          originalText: targetCheck.before,
-        });
-        settleStreamingPlaceholder(false);
-        return;
-      }
-
-      const candidateText = sanitizeAppleAssistCandidateText(response.candidateText);
-      if (candidateText.trim().length === 0) {
-        throw new Error("Hazakura Local Assist returned an empty proposal.");
-      }
-      // v2.6 B2: the main window owns the unapplied proposal review. Record
-      // the completed proposal in the session-local store so the main-window
-      // review panel can render the large Diff and the explicit Apply/Discard
-      // actions. The editor buffer is still untouched here.
-      localAssistProposalStore.record(latestTab.sessionId, {
-        requestId: payload.requestId,
-        request: payload.request,
+      // The target is already selectedText (and, on refinement, the pinned
+      // original). Include only adjacent source, not a duplicate target.
+      const before = buildSurroundingDocumentContext(tab.contents, target.start, target.start,
+        contextWindow.preChars, 0, APPLE_ASSIST_MAX_CONTEXT_CHARS);
+      const after = buildSurroundingDocumentContext(tab.contents, target.end, target.end,
+        0, contextWindow.postChars, APPLE_ASSIST_MAX_CONTEXT_CHARS);
+      const surroundingContext = `対象より前:\n${before}\n対象より後:\n${after}`;
+      job.nativeStarted = true;
+      const response = await generateAppleAssistCandidateStreaming({
+        operation: action.operation,
         actionId,
-        originalText: targetCheck.before,
-        candidateText,
-        target,
-        conversationId: payload.conversationId ?? null,
-        turnIndex: payload.conversationTurnIndex ?? 0,
-      });
-      const successMessage =
-        "Hazakura Local Assist created an unapplied proposal for Diff review.";
-      setStatusRef.current?.(successMessage);
-      await emitAppleAssistProposalStatus("completed", successMessage, payload, {
-        target,
-        originalText: targetCheck.before,
-        candidateText,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      settleStreamingPlaceholder(true);
-      if (message.includes("cancelled by user")) {
-        setStatusRef.current?.(message);
-        await emitAppleAssistProposalStatus("cancelled", message, payload, {
-          target: targetCheck.target,
-          originalText: targetCheck.before,
-        });
-      } else {
-        const errorMessage = `Hazakura Local Assist proposal generation failed: ${message}`;
-        setStatusRef.current?.(errorMessage);
-        await emitAppleAssistProposalStatus("failed", errorMessage, payload, {
-          target: targetCheck.target,
-          originalText: targetCheck.before,
-        });
+        selectedText: payload.proposalText === undefined ? targetCheck.before : proposalCheck.text,
+        documentContext: buildAppleAssistRevisionContext(targetCheck.before, surroundingContext,
+          normalizeRevisionHistory(payload.revisionHistory), payload.proposalText !== undefined),
+        additionalRequest: payload.additionalRequest,
+      }, payload.requestId, payload.request);
+
+      // Every asynchronous continuation must still own the streaming slot.
+      if (!ownsRequest()) return;
+      if (!targetIsCurrent()) {
+        localAssistProposalStore.settleGeneration(tab.sessionId, payload.requestId, false);
+        await reject("Hazakura Local Assist proposal discarded: the active document changed during generation.");
+        return;
       }
+      if (typeof response?.candidateText !== "string") throw new Error("Hazakura Local Assist returned a malformed proposal.");
+      // A malformed/unbounded helper response must not allocate a huge diff.
+      // Reject rather than silently truncate the text the writer would review.
+      if (response.candidateText.length > 64_000) throw new Error("Hazakura Local Assist returned an oversized proposal. Please use a smaller target.");
+      if (/HAZAKURA_(?:CONTEXT|ORIGINAL)_(?:START|END)/u.test(response.candidateText)) {
+        throw new Error("Hazakura Local Assist returned reference metadata instead of a proposal. Please try again.");
+      }
+      const candidateText = sanitizeAppleAssistCandidateText(response.candidateText);
+      if (!candidateText.trim()) throw new Error("Hazakura Local Assist returned an empty proposal.");
+      // Apply must never perform a second, different cleanup after review.
+      if (sanitizeAppleAssistCandidateText(candidateText) !== candidateText) {
+        throw new Error("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.");
+      }
+      if (!localAssistProposalStore.completeGeneration(tab.sessionId, { ...proposalBase, candidateText })) return;
+      const message = "Hazakura Local Assist created an unapplied proposal for Diff review.";
+      setStatusRef.current?.(message);
+      await emitAppleAssistProposalStatus("completed", message, payload, { target, originalText: targetCheck.before, candidateText });
+    } catch (err) {
+      if (!ownsRequest()) return;
+      // A failed refinement can restore only an intact prior target; never a
+      // streaming placeholder, a stale draft, or another request's proposal.
+      localAssistProposalStore.settleGeneration(tab.sessionId, payload.requestId, targetIsCurrent(),
+        (previous) => {
+          const latest = activeTabRef.current;
+          return !!latest && readTargetTextForGeneration(previous.target, latest).ok &&
+            previous.originalText === previous.target.text;
+        });
+      const message = err instanceof Error ? err.message : String(err);
+      const cancelled = /cancelled by user|canceled by user/iu.test(message) ||
+        (err instanceof Error && err.name === "AbortError");
+      const statusMessage = cancelled ? message : `Hazakura Local Assist proposal generation failed: ${message}`;
+      setStatusRef.current?.(statusMessage);
+      await emitAppleAssistProposalStatus(cancelled ? "cancelled" : "failed", statusMessage, payload,
+        { target, originalText: targetCheck.before });
     } finally {
-      setGenerationLockRef.current?.((current) =>
-        current?.requestId === payload.requestId ? null : current,
-      );
+      jobsRef.current.delete(job);
+      if (ownerRef.current !== null) {
+        setGenerationLockRef.current?.((current) => current?.requestId === payload.requestId ? null : current);
+      }
+      notifyLocalAssistActivity();
     }
   }
 }
 
 async function emitAppleAssistProposalStatus(
-  phase: AppleAssistProposalStatusEvent["phase"],
-  message: string,
-  payload: AppleAssistApplyEvent,
-  options: Partial<
-    Pick<AppleAssistProposalStatusEvent, "target" | "originalText" | "candidateText">
-  > = {},
+  phase: AppleAssistProposalStatusEvent["phase"], message: string, payload: AppleAssistApplyEvent,
+  options: Partial<Pick<AppleAssistProposalStatusEvent, "target" | "originalText" | "candidateText">> = {},
 ): Promise<void> {
+  const status: AppleAssistProposalStatusEvent = {
+    phase, message, requestId: payload.requestId, request: payload.request,
+    actionId: payload.actionId, conversationId: payload.conversationId,
+    conversationTurnIndex: payload.conversationTurnIndex, ...options, emittedAtMs: Date.now(),
+  };
+  publishSidebarProposalStatus(status);
   try {
-    await emitTo("apple-assist", APPLE_ASSIST_PROPOSAL_STATUS_EVENT, {
-      phase,
-      message,
-      requestId: payload.requestId,
-      request: payload.request,
-      actionId: payload.actionId,
-      conversationId: payload.conversationId,
-      conversationTurnIndex: payload.conversationTurnIndex,
-      ...options,
-      emittedAtMs: Date.now(),
-    } satisfies AppleAssistProposalStatusEvent);
-  } catch (err) {
-    console.warn("Failed to emit Hazakura Local Assist proposal status", err);
-  }
+    await emitTo("apple-assist", APPLE_ASSIST_PROPOSAL_STATUS_EVENT, status);
+  } catch (err) { console.warn("Failed to emit Hazakura Local Assist proposal status", err); }
 }

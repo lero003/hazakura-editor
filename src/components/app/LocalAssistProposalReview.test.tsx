@@ -1,111 +1,105 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
-import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
+import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import type { EditorTab } from "../../types";
 
-const activeTab = {
-  id: "/workspace/note.md",
-  sessionId: "session:note-1",
-  name: "note.md",
-  path: "/workspace/note.md",
-  contents: "original",
-} as unknown as EditorTab;
-
-function seedProposal() {
-  localAssistProposalStore.record("session:note-1", {
-    requestId: "req-1",
-    request: "整えて",
-    actionId: "rewrite_natural",
-    originalText: "original",
-    candidateText: "proposal",
-    target: {
-      kind: "paragraph",
-      start: 0,
-      end: "original".length,
-      text: "original",
-      label: "",
-      activeDocumentPath: "/workspace/note.md",
-      activeDocumentName: "note.md",
-      activeDocumentSessionId: "session:note-1",
-      capturedAtMs: 0,
-    },
-    conversationId: "conv-1",
-    turnIndex: 0,
-  });
+const activeTab = { id: "/workspace/note.md", sessionId: "session:note-1", name: "note.md", path: "/workspace/note.md", contents: "original" } as EditorTab;
+function seedProposal(overrides: Partial<LocalAssistProposal> = {}): LocalAssistProposal {
+  const proposal: LocalAssistProposal = { requestId: "req-1", request: "整えて", actionId: "rewrite_natural",
+    originalText: "original", candidateText: "proposal", conversationId: "conv-1", turnIndex: 0,
+    target: { kind: "paragraph", start: 0, end: 8, text: "original", label: "", activeDocumentPath: activeTab.path,
+      activeDocumentName: "note.md", activeDocumentSessionId: activeTab.sessionId, capturedAtMs: 0 }, ...overrides };
+  localAssistProposalStore.record(activeTab.sessionId, proposal);
+  return proposal;
 }
-
-afterEach(() => {
-  cleanup();
-  localAssistProposalStore.clear("session:note-1");
-});
+function props() { return { activeTab, fontSize: 14, menuLanguage: "en" as const, onApply: vi.fn(async () => ({ ok: true as const })), onDiscard: vi.fn() }; }
+afterEach(() => { cleanup(); localAssistProposalStore.clear(activeTab.sessionId); });
 
 describe("LocalAssistProposalReview", () => {
   it("renders nothing when there is no unapplied proposal", () => {
-    render(
-      <LocalAssistProposalReview
-        activeTab={activeTab}
-        fontSize={14}
-        menuLanguage="en"
-        onApply={vi.fn()}
-        onDiscard={vi.fn()}
-      />,
-    );
+    render(<LocalAssistProposalReview {...props()} />);
     expect(screen.queryByRole("region", { name: "Proposal review" })).toBeNull();
   });
-
-  it("renders the original-vs-proposal Diff and forwards Apply/Discard", () => {
-    seedProposal();
-    const onApply = vi.fn(async () => ({ ok: true as const }));
-    const onDiscard = vi.fn();
-
-    render(
-      <LocalAssistProposalReview
-        activeTab={activeTab}
-        fontSize={14}
-        menuLanguage="en"
-        onApply={onApply}
-        onDiscard={onDiscard}
-      />,
-    );
-
+  it("renders the original-vs-proposal Diff and forwards exactly the reviewed proposal", async () => {
+    const proposal = seedProposal(); const input = props();
+    render(<LocalAssistProposalReview {...input} />);
     expect(screen.getByTestId("local-assist-proposal-review")).toBeTruthy();
     expect(screen.getByRole("table")).toBeTruthy();
     expect(screen.getByRole("columnheader", { name: "Original" })).toBeTruthy();
     expect(screen.getByRole("columnheader", { name: "Proposal" })).toBeTruthy();
-
     fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
-    expect(onApply).toHaveBeenCalledWith(
-      expect.objectContaining({ candidateText: "proposal" }),
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Discard proposal" }));
-    expect(onDiscard).toHaveBeenCalledWith(
-      expect.objectContaining({ candidateText: "proposal" }),
-    );
+    await waitFor(() => expect(input.onApply).toHaveBeenCalledWith(proposal));
+    await screen.findByRole("button", { name: "Applied" });
   });
-
+  it("forwards Discard separately without writing the document", () => {
+    const proposal = seedProposal(); const input = props(); render(<LocalAssistProposalReview {...input} />);
+    fireEvent.click(screen.getByRole("button", { name: "Discard proposal" }));
+    expect(input.onDiscard).toHaveBeenCalledWith(proposal); expect(input.onApply).not.toHaveBeenCalled();
+  });
   it("shows an inline error when apply is rejected", async () => {
-    seedProposal();
-    const onApply = vi.fn(async () => ({
-      ok: false,
-      error: "Hazakura Local Assist apply rejected: stale target.",
-    }));
-
-    render(
-      <LocalAssistProposalReview
-        activeTab={activeTab}
-        fontSize={14}
-        menuLanguage="en"
-        onApply={onApply}
-        onDiscard={vi.fn()}
-      />,
-    );
-
+    seedProposal(); const onApply = vi.fn(async () => ({ ok: false as const, error: "Hazakura Local Assist apply rejected: stale target." }));
+    render(<LocalAssistProposalReview {...props()} onApply={onApply} />);
     fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
-    await screen.findByTestId("local-assist-proposal-review-error");
-    expect(
-      screen.getByTestId("local-assist-proposal-review-error").textContent,
-    ).toContain("stale target");
+    expect((await screen.findByTestId("local-assist-proposal-review-error")).textContent).toContain("stale target");
+  });
+  it("blocks double-click and discard while an application is pending", async () => {
+    seedProposal(); let resolve!: (result: { ok: true }) => void;
+    const onApply = vi.fn(() => new Promise<{ ok: true }>((done) => { resolve = done; }));
+    const input = props(); render(<LocalAssistProposalReview {...input} onApply={onApply} />);
+    const button = screen.getByRole("button", { name: "Apply proposal" });
+    fireEvent.click(button); fireEvent.click(button);
+    fireEvent.click(screen.getByRole("button", { name: "Discard proposal" }));
+    expect(onApply).toHaveBeenCalledTimes(1); expect(input.onDiscard).not.toHaveBeenCalled();
+    expect((screen.getByRole("button", { name: "Applying…" }) as HTMLButtonElement).disabled).toBe(true);
+    await act(async () => resolve({ ok: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Applied" }));
+    expect(onApply).toHaveBeenCalledTimes(1);
+  });
+  it("catches thrown apply failures and retains the proposal", async () => {
+    const proposal = seedProposal(); const onApply = vi.fn(async () => { throw new Error("unexpected"); });
+    render(<LocalAssistProposalReview {...props()} onApply={onApply} />);
+    fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
+    expect((await screen.findByRole("alert")).textContent).toContain("kept");
+    expect(localAssistProposalStore.getLatest(activeTab.sessionId)).toBe(proposal);
+    expect((screen.getByRole("button", { name: "Apply proposal" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+  it("does not put a late failure under a newer proposal", async () => {
+    seedProposal(); let reject!: (error: Error) => void;
+    const onApply = vi.fn(() => new Promise<{ ok: true }>((_resolve, fail) => { reject = fail; }));
+    render(<LocalAssistProposalReview {...props()} onApply={onApply} />);
+    fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
+    act(() => { seedProposal({ requestId: "req-2", candidateText: "second proposal" }); });
+    await act(async () => reject(new Error("old failure")));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect((screen.getByRole("button", { name: "Apply proposal" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+  it("disables stale targets and hides the previous tab's proposal on switch", () => {
+    seedProposal(); const input = props();
+    const { rerender } = render(<LocalAssistProposalReview {...input} activeTab={{ ...activeTab, contents: "different" }} />);
+    expect((screen.getByRole("button", { name: "Apply proposal" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("status").textContent).toContain("target has changed");
+    rerender(<LocalAssistProposalReview {...input} activeTab={{ ...activeTab, sessionId: "reopened" }} />);
+    expect(screen.queryByTestId("local-assist-proposal-review")).toBeNull();
+  });
+  it("offers exact Before/After text even when a line diff exceeds its budget", () => {
+    const text = "長い本文\n".repeat(650) + "末尾  \n";
+    seedProposal({ candidateText: text }); render(<LocalAssistProposalReview {...props()} fontSize={32} />);
+    expect(screen.getByRole("region", { name: "After" }).textContent).toBe(text);
+    expect((screen.getByRole("button", { name: "Diff" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Before" }));
+    expect(screen.getByRole("region", { name: "Before" }).textContent).toBe("original");
+    expect(screen.getByRole("region", { name: "Before" }).style.fontSize).toBe("32px");
+  });
+  it("explains no-op proposals instead of inviting a failed apply", () => {
+    seedProposal({ candidateText: "original" }); render(<LocalAssistProposalReview {...props()} />);
+    expect((screen.getByRole("button", { name: "Apply proposal" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("status").textContent).toContain("identical");
+  });
+  it("shows a generation status without making the previous proposal actionable", () => {
+    seedProposal({ streaming: true, candidateText: "" }); render(<LocalAssistProposalReview {...props()} />);
+    expect(screen.getByRole("status").textContent).toContain("Generating");
+    expect(screen.queryByRole("button", { name: "Apply proposal" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Discard proposal" })).toBeNull();
   });
 });

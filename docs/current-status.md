@@ -14,6 +14,11 @@ recorded yet. Mac App Store `2.6.2` remains user-confirmed published
 
 ## Current State
 
+- **2026-09-06 source follow-up:** Local Assistは別ウィンドウを標準入口に戻す。
+  会話欄を縦に広げ、入力欄を下部へ固定。対象詳細・説明・定型依頼は初期状態で
+  折りたたみ、進行状態は会話欄へ集約。mainのDiff確認と明示反映は維持する。
+  実モデル・native窓の往復・IME・VoiceOverの検証は残る。公開版更新ではない。
+
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: **`2.8.0`** across npm, Tauri, Cargo, and
   lockfile metadata. This is a development version, not a package, upload,

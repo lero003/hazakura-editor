@@ -1,13 +1,27 @@
 # Current Work
 
 Status: Operational
-Scope: v2.8.0 development — U-1 writing-companion first; v2.7 candidate frozen
+Scope: v2.8.0 release candidate; v2.7 candidate preserved
 Authority: High
-Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
+Last reviewed: 2026-09-07 (v2.8 release preparation)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
+
+## PR #38 — source-only U-1 update
+
+Owner follow-up 2026-09-06: **Local Assistは別ウィンドウにし、縦長の会話欄を主役にする**。
+PR #38のサイドパネル入口は撤回し、既存のネイティブ分離窓へ戻した。
+対象の詳細・使い方と利用条件・定型依頼は初期状態で折りたたむ。
+依頼と生成中・完成・失敗の状態を同じ会話欄に置き、入力欄は下部に固定する。
+本文16px・補助表示14pxを基本とし、薄すぎる補助文字を調整した。
+生成hook、proposal store、mainのDiffと明示Apply、Undoの境界は維持する。
+PR #38時点のレビュー記録は履歴: `docs/reviews/2026-09-06-pr38-integration-review.md`。
+実モデル・native窓の往復・IME・VoiceOverは未確認。
+検証: typecheckを含むmacOS app build、Vitest 1,919件、App Store surface smoke 111件が成功。
+ブラウザーでlight/darkと420×540・480×720の配置を確認。
+公開版の更新ではない。
 
 ## Active Phase
 
@@ -62,7 +76,7 @@ that mutation boundary.
 | **v2.5** | **Released / closed** | Resizable workspace + bounded clarity polish; no active release gate |
 | **v2.6** | **Mac App Store published** | Conversation + explicit Diff apply; `2.6.2` published 2026-08-28; staged rollout; GitHub source tag pending |
 | **v2.7** | **Frozen local candidate** | M-0a maintenance; build `123`; owner-managed App Review planned, Apple-side state unconfirmed |
-| **v2.8** | **Development** | U-1 composer-first Apple Intelligence writing companion; existing Diff Apply boundary |
+| **v2.8** | **Release preparation** | Detached conversation-first Apple Intelligence writing companion; existing Diff Apply boundary |
 | **Core AI models** | Later in v2.x / v3 | Allowlisted writing `.aimodel` DL / manage / use |
 | **MLX M-0a** | Completed preflight | System model reuse + fail-closed internal wire only; no MLX runtime |
 | **MLX M-0b** | Parked after C-2 | Xcode 27 / macOS 27 Developer-build runtime evaluation |
@@ -73,63 +87,19 @@ that mutation boundary.
 
 ### Immediate next
 
-Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカルモデルを指定し、
-確認してから反映する。** Apple Intelligence でその体験を先に厚くする。
-`.aimodel` DL はその後。ツールコールとクラウドモデル店はしない。
-いまはローカルのみ。Web 検索は将来の任意。Apply 境界は凍結。
+v2.8は実装追加を止め、別窓Local AssistとM-0a/H-1を統合した候補を検証する。
+リリース記録: `docs/releases/2.8.0-source-tag.release.md`。
 
-1. **U-1 — composer-first の校正会話。** 分離窓を「対象チップ（選択 /
-   ファイル / 見出し）+ 作成中の案 + 短い追加指示」にする。プリセット
-   集合は変えない。Core AI を待たない。
-2. **U-3 — メイン Diff を読みの確認面に**（U-1 と並列可）。変更の一文は
-   当面行カウント。G-1 後に補助の `changeSummary` へ。
-3. **U-4 — モデル正体チップ。** いまは Apple Intelligence 表示。DL と
-   利用選択の正本はのちの管理ページ（C-1 / C-2）。ヘルパーからの切替は
-   C-2 の利便ショートカット。
-4. **H-1 — System helper 土台は M-0a で完了。**
-   `SystemLanguageModel` の model 再利用と request ごとの session 生成を
-   検証済み。Core AI import とユーザー向け DL はない。
-5. **G-1 — 構造化校正出力**（H-1 依存は充足）。本文 + 変更の一文。Diff が正本。
-6. **U-5「整える」チップは後回し**（U-1 に混ぜない）。
-7. **C-1 HOLD** until a production `.aimodel` identity plus D25/D19.
-   管理ページで DL / 容量 / 削除。**C-2 HOLD** until D24/D20。そこで
-   利用選択（`selectedId`）とヘルパーからの利便切替を載せる。
-
-### Frozen candidate — v2.7.0
-
-The `2.7.0` lane packages the completed M-0a System-boundary maintenance
-slice. It does not add MLX runtime, model import, storage, settings UI, or
-network behavior. A local build `123` package exists; its SHA-256 and dirty
-source provenance are recorded in ignored
-`docs/internal/app-store-candidates/latest.json`. The owner plans to send it
-to App Review. Upload, TestFlight processing, approval, publication, and full
-physical UI validation remain separate.
-
-### Development entry — v2.8.0
-
-Follow `docs/v2.8-plan.md`. Start with U-1 composer-first + draft hero on the
-existing System model path. Keep the current presets, target pinning,
-streaming/cancel route, separate Diff review, explicit Apply, and no auto-save.
-Do not mix U-5, C-1/C-2, or MLX M-0b into this first slice.
-
-### Completed parallel preflight — MLX M-0a
-
-この preflight は MLX のユーザー向け経路を v2.6 product queue へ昇格させない。
-
-1. Locked `docs/mlx-m0-preflight-design.md`.
-2. Reused one process-local `SystemLanguageModel` and kept a fresh
-   `LanguageModelSession` per request.
-3. Added a Rust-only `backend: system_default` helper field. Missing means
-   System; `coreai`, `mlx`, and unknown values fail before model invocation.
-4. Passed the full local gate and prepared
-   `docs/mlx-m0a-external-review-brief.md`. Stop here: M-0b needs C-2 and
-   Xcode 27; no dependency, model, storage, download, or UI is part of M-0a.
+1. 統合ツリーの型・テスト・helper fixture・Rust・macOS build・依存監査。
+2. 実機で別窓→依頼→追加指示→main Diff→明示反映→Undo、取消と再依頼を確認。
+3. IME、VoiceOver、dirty close、保存衝突の手動確認。
+4. 提出用パッケージと公開は別工程。U-3/U-4/G-1の追加実装、C-1/C-2/M-0bはこの候補に混ぜない。
 
 ### Completed in v2.5 development
 
 - **R-1 — text reference uses `previewFontSize`**: text Reference now follows
-  the existing Preview font-size setting through `--preview-font-size`. No new
-  preference control; PDF/image Reference is unchanged.
+  the existing Preview font-size setting through `--preview-font-size`.
+  No new preference control; PDF/image Reference is unchanged.
 - **W-1 — persistent three-pane workspace**: left Workspace width is newly
   adjustable; normal right pane and Reference widths now persist separately.
 - **Q-4 — exact tree cap notice**: backend reports the number hidden by each

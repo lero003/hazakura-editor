@@ -21,20 +21,13 @@ function ruleBody(css: string, selector: string): string {
 describe("apple-assist-window.css", () => {
   const css = stripCssComments(appleAssistWindowCss);
 
-  it("gives the proposal the remaining height while keeping feedback bounded", () => {
+  it("anchors the composer around one flexible scrolling conversation", () => {
     const shell = ruleBody(css, ".apple-assist-window-shell");
-    const proposal = ruleBody(css, ".apple-assist-window-proposal");
-    const proposalTable = ruleBody(css, ".apple-assist-proposal-table");
-    const feedback = ruleBody(css, ".apple-assist-window-feedback");
-
-    expect(shell).toMatch(
-      /grid-template-rows:\s*auto auto auto minmax\(11rem,\s*1fr\) minmax\(9\.5rem,\s*auto\) auto/,
-    );
-    expect(shell).toMatch(/min-height:\s*0/);
-    expect(proposal).toMatch(/min-height:\s*0/);
-    expect(proposalTable).toMatch(/min-height:\s*0/);
-    expect(feedback).toMatch(/height:\s*9\.5rem/);
-    expect(feedback).toMatch(/min-height:\s*9\.5rem/);
+    expect(shell).toMatch(/grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
+    expect(shell).toMatch(/overflow:\s*hidden/);
+    const chat = ruleBody(css, ".apple-assist-chat");
+    expect(chat).toMatch(/min-height:\s*0/);
+    expect(chat).toMatch(/overflow-y:\s*auto/);
   });
 
   it("contains proposal rows and wraps the change summary at narrow widths", () => {
@@ -57,27 +50,13 @@ describe("apple-assist-window.css", () => {
     );
   });
 
-  it("keeps the companion vertically compact for the smaller tool-window height", () => {
-    const shell = ruleBody(css, ".apple-assist-window-shell");
-    const header = ruleBody(css, ".apple-assist-window-header");
-    const subtitle = ruleBody(css, ".apple-assist-window-subtitle");
-    const disclosure = ruleBody(css, ".apple-assist-window-disclosure");
-    const form = ruleBody(css, ".apple-assist-window-form");
+  it("uses readable label sizes and a multiline resizable request field", () => {
+    const sizes = [...css.matchAll(/font-size:\s*([\d.]+)px/g)].map((match) => Number(match[1]));
+    expect(sizes.length).toBeGreaterThan(0);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(14);
     const textarea = ruleBody(css, ".apple-assist-window-textarea");
-    const feedback = ruleBody(css, ".apple-assist-window-feedback");
-    const feedbackHeader = ruleBody(css, ".apple-assist-feedback-header");
-
-    expect(shell).toMatch(/padding:\s*10px/);
-    expect(shell).toMatch(/gap:\s*8px/);
-    expect(shell).toMatch(/align-content:\s*start/);
-    expect(header).toMatch(/padding-bottom:\s*8px/);
-    expect(subtitle).toMatch(/font-size:\s*11\.5px/);
-    expect(disclosure).toMatch(/font-size:\s*11\.5px/);
-    expect(form).toMatch(/gap:\s*6px/);
-    expect(textarea).toMatch(/min-height:\s*3\.4rem/);
-    expect(textarea).toMatch(/max-height:\s*4\.6rem/);
-    expect(feedback).toMatch(/height:\s*9\.5rem/);
-    expect(feedbackHeader).toMatch(/border-bottom:\s*1px solid/);
+    expect(textarea).toMatch(/min-height:\s*5rem/);
+    expect(textarea).toMatch(/resize:\s*vertical/);
   });
 
   it("does not reserve a duplicate in-window product title", () => {
