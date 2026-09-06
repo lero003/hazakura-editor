@@ -622,6 +622,17 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
     (or top) edge and confirm the pane keeps scrolling so the selection can
     extend. Ending that drag on a link must not open the link.
 
+16. PR #40: delete all text and wait for the empty-preview message; Undo must
+    restore the document and preview. Switch documents rapidly and confirm no
+    previous document remains visible. Drag-select outside the window, release,
+    return and clear the selection; editing must resume preview updates.
+17. PR #40: confirm Preview → e-book → Outline | Reference → Diff order. Making
+    the document dirty and undoing to clean must not move these controls when
+    Review appears/disappears. At narrow widths, icon-only controls must retain
+    accessible names, keyboard focus and working actions. Check all seven themes
+    listed above, large Preview text, and Preview/e-book/Reference round trips.
+    These physical checks remain open after the browser DOM/AX verification.
+
 ## Theme G Media Boundaries Smoke (v1.13+)
 
 Run after Theme G media work (M0–M4) or before treating media consent as

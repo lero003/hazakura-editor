@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-08-29
+Last reviewed: 2026-09-07
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -17,7 +17,7 @@ Latest GitHub source / local-app tag:
 
 Current source-preview candidate:
 
-- `2.8.0` — `2.8.0-source-tag.release.md` (integrated Local Assist candidate; physical validation pending)
+- `2.8.0` — `2.8.0-source-tag.release.md` (Local Assist + merged PR #40 Preview polish; build 124 predates PR #40; physical validation pending)
 
 - `2.7.0` — `2.7.0-source-tag.release.md` (frozen local App Store/TestFlight
   candidate; owner-managed App Review planned, Apple-side state unconfirmed)

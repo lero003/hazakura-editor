@@ -35,6 +35,11 @@ Generation cancellation and same-conversation proposal recovery are hardened.
 System model reuse and the Rust-owned backend validation from the v2.7 work
 are included; MLX runtime and model download/selection are not included.
 
+Main also includes Preview empty-state/retry and selection recovery improvements,
+with grouped reading controls and theme-based spacing. This PR #40 follow-up is
+not included in the earlier build `124` package; physical appearance and
+interaction checks remain pending.
+
 The frozen v2.7 candidate is preserved separately. Upload, approval, and
 publication of v2.8 have not occurred in this preparation. See
 [`v2.8 release candidate`](docs/releases/2.8.0-source-tag.release.md) and

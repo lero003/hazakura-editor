@@ -1,13 +1,13 @@
 # Preview / reading controls 改善 — 外部レビュー引き継ぎ
 
-Status: Integration verified locally / physical smoke pending
+Status: Merged on main / integration verified locally / physical smoke pending
 Scope: Preview paint lifecycle and existing reading chrome
 Base: `2e81d38a0c29664f9e3c6cdac7e3d2110f0466b3`
 Date: 2026-09-07
 
 ## 統合レビュー結果（2026-09-07）
 
-PR #40 の `d698a936` を最新 main と比較してレビュー。製品境界を広げる変更はなく、
+PR #40 は `c462e846` でmainへマージ済み。`d698a936` を最新 main と比較してレビュー。製品境界を広げる変更はなく、
 追加の機能不具合は再現しなかった。旧ボタン順を期待して失敗した既存テスト2件を、
 「Preview → 電子書籍 → Outline → Reference → Diff → Review」の仕様へ更新した。
 配置の好みだけを理由に製品CSSを追加変更していない。

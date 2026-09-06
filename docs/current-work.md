@@ -9,6 +9,14 @@ Last reviewed: 2026-09-07 (v2.8 release preparation)
 
 Start here when choosing the next small `Hazakura Editor` slice.
 
+## PR #40 — merged Preview follow-up
+
+`c462e846`でmainへマージ。空表示・再試行・選択終了と読むモードの配置を改善。
+型検査、Vitest 1,937件、Vite build、App Store surface 111件が成功。
+既存build 124には含まれない。提出文案は更新済みだが、パッケージとの一致確認、
+全テーマの外観・実機操作・VoiceOverは残る。
+詳細: `docs/reviews/2026-09-07-preview-reading-polish.md`。
+
 ## PR #38 — source-only U-1 update
 
 Owner follow-up 2026-09-06: **Local Assistは別ウィンドウにし、縦長の会話欄を主役にする**。
@@ -87,12 +95,14 @@ that mutation boundary.
 
 ### Immediate next
 
-v2.8は実装追加を止め、別窓Local AssistとM-0a/H-1を統合した候補を検証する。
+v2.8は実装追加を止め、別窓Local Assist・M-0a/H-1・PR #40のPreview改善を含む候補を検証する。
 リリース記録: `docs/releases/2.8.0-source-tag.release.md`。
 
-1. 統合ツリーの型・テスト・helper fixture・Rust・macOS build・依存監査。
+1. PR #40の型・テスト・Vite・App Store surfaceは成功済み。提出対象ソースを固定し、
+   再生成するパッケージのhelper・Rust・macOS build・依存監査をリリース手順に従って確認。
 2. 実機で別窓→依頼→追加指示→main Diff→明示反映→Undo、取消と再依頼を確認。
-3. IME、VoiceOver、dirty close、保存衝突の手動確認。
+3. IME、VoiceOver、dirty close、保存衝突に加え、Previewの全削除→Undo、文書切替、
+   ペイン外での選択終了、全テーマ・狭幅を実機確認（`docs/smoke-checklist.md`）。
 4. 提出用パッケージと公開は別工程。U-3/U-4/G-1の追加実装、C-1/C-2/M-0bはこの候補に混ぜない。
 
 ### Completed in v2.5 development

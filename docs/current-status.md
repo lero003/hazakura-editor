@@ -14,7 +14,7 @@ recorded yet. Mac App Store `2.6.2` remains user-confirmed published
 
 ## Current State
 
-- **PR #40 Preview follow-up (2026-09-07):** 空表示・描画失敗からの再試行・選択終了を
+- **PR #40 Preview follow-up (2026-09-07, main `c462e846`):** 空表示・描画失敗からの再試行・選択終了を
   安定化し、読むモードを隣接配置。統合レビューで旧配置のテスト2件を更新し、
   型検査・1,937 tests・Vite build・App Store surface 111 testsが成功。
   全テーマの外観・実機・VoiceOverは所有者確認。凍結済みbuild 124には未反映。
