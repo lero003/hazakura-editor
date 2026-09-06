@@ -1,41 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import {
   localAssistProposalStore,
   type LocalAssistProposal,
 } from "../../features/editor/localAssistProposal";
 
-// v2.6 B2: thin re-rendering wrapper over the module-level
-// `localAssistProposalStore`, mirroring `useAiEditTransaction`. The main
-// window's proposal review panel reads the active tab's latest unapplied
-// proposal and clears it after the user applies or discards it.
+const subscribe = (listener: () => void) => localAssistProposalStore.subscribe(listener);
+const getServerSnapshot = () => null;
 
-export function useLocalAssistProposal(
-  tabId: string | null,
-): {
+/** Read the active session synchronously: never render the previous tab's draft. */
+export function useLocalAssistProposal(tabId: string | null): {
   proposal: LocalAssistProposal | null;
   clearProposal: () => void;
 } {
-  const [proposal, setProposal] = useState<LocalAssistProposal | null>(
-    tabId ? localAssistProposalStore.getLatest(tabId) : null,
+  const getSnapshot = useCallback(
+    () => tabId ? localAssistProposalStore.getLatest(tabId) : null,
+    [tabId],
   );
-
-  useEffect(() => {
-    if (!tabId) {
-      setProposal(null);
-      return;
-    }
-    setProposal(localAssistProposalStore.getLatest(tabId));
-    const unsubscribe = localAssistProposalStore.subscribe(() => {
-      setProposal(localAssistProposalStore.getLatest(tabId));
-    });
-    return unsubscribe;
-  }, [tabId]);
-
-  const clearProposal = () => {
-    if (tabId) {
+  const proposal = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const clearProposal = useCallback(() => {
+    if (tabId && localAssistProposalStore.getLatest(tabId) === proposal) {
       localAssistProposalStore.clear(tabId);
     }
-  };
-
+  }, [tabId, proposal]);
   return { proposal, clearProposal };
 }

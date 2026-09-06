@@ -1,0 +1,124 @@
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useAppleAssistProposalHandler } from "./useAppleAssistProposalHandler";
+import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
+import type { ActiveTab } from "./useAppleAssistApplyHandler";
+import type { AppleAssistApplyEvent, AppleAssistProposalStatusEvent } from "../../types";
+
+const harness = vi.hoisted(() => ({
+  receive: null as null | ((event: { payload: AppleAssistApplyEvent }) => void),
+  generate: vi.fn(), emit: vi.fn(), unlisten: vi.fn(),
+}));
+vi.mock("@tauri-apps/api/event", () => ({
+  emitTo: (...args: unknown[]) => harness.emit(...args),
+  listen: vi.fn(async (_name: string, callback: typeof harness.receive) => { harness.receive = callback; return harness.unlisten; }),
+}));
+vi.mock("../../lib/tauri/appleAssist", () => ({
+  APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000, APPLE_ASSIST_MAX_SELECTED_CHARS: 4000,
+  generateAppleAssistCandidateStreaming: (...args: unknown[]) => harness.generate(...args),
+}));
+const tab: ActiveTab = { id: "tab", sessionId: "lifecycle", name: "note.md", path: "/workspace/note.md", contents: "before\nTARGET\nafter" };
+function request(requestId = "one"): AppleAssistApplyEvent {
+  return { requestId, request: "整えて", actionId: "rewrite_natural", requestedAtMs: 0, conversationId: "conversation", conversationOriginalText: "TARGET",
+    target: { kind: "selection", start: 7, end: 13, text: "TARGET", label: "選択範囲", activeDocumentPath: tab.path,
+      activeDocumentName: tab.name, activeDocumentSessionId: tab.sessionId, capturedAtMs: 0 } };
+}
+function deferred() {
+  let resolve!: (value: { candidateText: unknown }) => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<{ candidateText: unknown }>((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
+}
+async function send(payload: AppleAssistApplyEvent): Promise<void> {
+  await act(async () => { harness.receive!({ payload }); });
+}
+function phases(): AppleAssistProposalStatusEvent[] { return harness.emit.mock.calls.map((call) => call[2]); }
+let restoreRaf: typeof window.requestAnimationFrame;
+beforeEach(() => {
+  harness.receive = null; harness.generate.mockReset(); harness.emit.mockReset(); harness.unlisten.mockReset();
+  harness.emit.mockResolvedValue(undefined);
+  localAssistProposalStore.clear(tab.sessionId);
+  restoreRaf = window.requestAnimationFrame;
+  window.requestAnimationFrame = (callback) => window.setTimeout(() => callback(0), 0);
+});
+afterEach(() => { cleanup(); localAssistProposalStore.clear(tab.sessionId); window.requestAnimationFrame = restoreRaf; });
+
+describe("Local Assist asynchronous lifecycle", () => {
+  it("does not allow an older native completion to replace the newest proposal", async () => {
+    const old = deferred(); const latest = deferred();
+    harness.generate.mockReturnValueOnce(old.promise).mockReturnValueOnce(latest.promise);
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request("old")); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    await send(request("latest")); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(2));
+    await act(async () => latest.resolve({ candidateText: "LATEST" }));
+    await act(async () => old.resolve({ candidateText: "OLD" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("LATEST");
+    expect(phases().filter((event) => event.phase === "completed").map((event) => event.requestId)).toEqual(["latest"]);
+  });
+  it("starts only one native call for duplicate delivery", async () => {
+    const pending = deferred(); harness.generate.mockReturnValue(pending.promise);
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request()); await send(request());
+    await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    await act(async () => pending.resolve({ candidateText: "result" }));
+  });
+  it("invalidates a generation on switch-away, even when the user switches back", async () => {
+    const pending = deferred(); harness.generate.mockReturnValue(pending.promise);
+    const { rerender } = renderHook(({ activeTab }) => useAppleAssistProposalHandler({ activeTab }), { initialProps: { activeTab: tab } });
+    await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    rerender({ activeTab: { ...tab, sessionId: "other", path: "/other.md" } });
+    rerender({ activeTab: tab });
+    await act(async () => pending.resolve({ candidateText: "late" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+    expect(phases().some((event) => event.phase === "completed")).toBe(false);
+  });
+  it("invalidates external edits outside the target while generating", async () => {
+    const pending = deferred(); harness.generate.mockReturnValue(pending.promise);
+    const { rerender } = renderHook(({ activeTab }) => useAppleAssistProposalHandler({ activeTab }), { initialProps: { activeTab: tab } });
+    await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    rerender({ activeTab: { ...tab, contents: tab.contents + "\nexternal" } });
+    await act(async () => pending.resolve({ candidateText: "late" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+  });
+  it("ignores completion after unmount and unregisters the listener", async () => {
+    const pending = deferred(); harness.generate.mockReturnValue(pending.promise);
+    const { unmount } = renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    unmount(); await act(async () => pending.resolve({ candidateText: "late" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+    expect(harness.unlisten).toHaveBeenCalledTimes(1);
+    expect(phases().some((event) => event.phase === "completed")).toBe(false);
+  });
+  it.each(["", null, "<<<HAZAKURA_CONTEXT_START\nreference\nHAZAKURA_CONTEXT_END>>>", "x".repeat(64001)])("rejects empty, malformed, leaked or oversized output (%#)", async (candidateText) => {
+    harness.generate.mockResolvedValue({ candidateText });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(phases().some((event) => event.phase === "failed")).toBe(true));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+  });
+  it("passes adjacent source once, and refines the current candidate with the pinned original", async () => {
+    harness.generate.mockResolvedValue({ candidateText: "first candidate" });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.streaming).toBe(false));
+    const firstPacket = harness.generate.mock.calls[0][0];
+    expect(firstPacket.selectedText).toBe("TARGET");
+    expect(firstPacket.documentContext).not.toContain("TARGET");
+    expect(firstPacket.documentContext).toContain("before"); expect(firstPacket.documentContext).toContain("after");
+    await send({ ...request("two"), proposalText: "first candidate", revisionHistory: ["整えて"], additionalRequest: "常体で", conversationTurnIndex: 1 });
+    await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(2));
+    const secondPacket = harness.generate.mock.calls[1][0];
+    expect(secondPacket.selectedText).toBe("first candidate");
+    expect(secondPacket.additionalRequest).toBe("常体で");
+    expect(secondPacket.documentContext.match(/TARGET/gu)).toHaveLength(1);
+  });
+  it("keeps the previous completed proposal after cancelled refinement", async () => {
+    harness.generate.mockResolvedValueOnce({ candidateText: "previous" }).mockRejectedValueOnce(new Error("cancelled by user"));
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request()); await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous"));
+    await send({ ...request("two"), proposalText: "previous" });
+    await waitFor(() => expect(phases().some((event) => event.phase === "cancelled")).toBe(true));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous");
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.streaming).toBe(false);
+  });
+});
