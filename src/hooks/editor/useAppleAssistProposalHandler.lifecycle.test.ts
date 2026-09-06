@@ -1,13 +1,14 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAppleAssistProposalHandler } from "./useAppleAssistProposalHandler";
+import { cancelSidebarProposal, isLocalAssistBusy } from "../../lib/appleAssist/sidebarBridge";
 import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 import type { ActiveTab } from "./useAppleAssistApplyHandler";
 import type { AppleAssistApplyEvent, AppleAssistProposalStatusEvent } from "../../types";
 
 const harness = vi.hoisted(() => ({
   receive: null as null | ((event: { payload: AppleAssistApplyEvent }) => void),
-  generate: vi.fn(), emit: vi.fn(), unlisten: vi.fn(),
+  generate: vi.fn(), stop: vi.fn(), emit: vi.fn(), unlisten: vi.fn(),
 }));
 vi.mock("@tauri-apps/api/event", () => ({
   emitTo: (...args: unknown[]) => harness.emit(...args),
@@ -15,6 +16,7 @@ vi.mock("@tauri-apps/api/event", () => ({
 }));
 vi.mock("../../lib/tauri/appleAssist", () => ({
   APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000, APPLE_ASSIST_MAX_SELECTED_CHARS: 4000,
+  stopAppleAssistGeneration: (...args: unknown[]) => harness.stop(...args),
   generateAppleAssistCandidateStreaming: (...args: unknown[]) => harness.generate(...args),
 }));
 const tab: ActiveTab = { id: "tab", sessionId: "lifecycle", name: "note.md", path: "/workspace/note.md", contents: "before\nTARGET\nafter" };
@@ -37,6 +39,7 @@ let restoreRaf: typeof window.requestAnimationFrame;
 beforeEach(() => {
   harness.receive = null; harness.generate.mockReset(); harness.emit.mockReset(); harness.unlisten.mockReset();
   harness.emit.mockResolvedValue(undefined);
+  harness.stop.mockReset(); harness.stop.mockResolvedValue(true);
   localAssistProposalStore.clear(tab.sessionId);
   restoreRaf = window.requestAnimationFrame;
   window.requestAnimationFrame = (callback) => window.setTimeout(() => callback(0), 0);
@@ -44,16 +47,35 @@ beforeEach(() => {
 afterEach(() => { cleanup(); localAssistProposalStore.clear(tab.sessionId); window.requestAnimationFrame = restoreRaf; });
 
 describe("Local Assist asynchronous lifecycle", () => {
-  it("does not allow an older native completion to replace the newest proposal", async () => {
-    const old = deferred(); const latest = deferred();
-    harness.generate.mockReturnValueOnce(old.promise).mockReturnValueOnce(latest.promise);
+  it("rejects overlapping requests until the singleton native helper settles", async () => {
+    const old = deferred();
+    harness.generate.mockReturnValueOnce(old.promise).mockResolvedValueOnce({ candidateText: "LATEST" });
     renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
     await send(request("old")); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
-    await send(request("latest")); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(2));
-    await act(async () => latest.resolve({ candidateText: "LATEST" }));
+    await send(request("overlap"));
+    expect(harness.generate).toHaveBeenCalledTimes(1);
+    expect(phases().some((event) => event.requestId === "overlap" && event.phase === "failed")).toBe(true);
     await act(async () => old.resolve({ candidateText: "OLD" }));
-    expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("LATEST");
-    expect(phases().filter((event) => event.phase === "completed").map((event) => event.requestId)).toEqual(["latest"]);
+    await waitFor(() => expect(isLocalAssistBusy()).toBe(false));
+    await send(request("latest"));
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("LATEST"));
+    expect(harness.generate).toHaveBeenCalledTimes(2);
+  });
+  it("retains the native lock while cancellation is settling and rejects late output", async () => {
+    const pending = deferred(); harness.generate.mockReturnValue(pending.promise);
+    let lock: import("../../types").AppleAssistGenerationLock | null = null;
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab,
+      setGenerationLock: (next) => { lock = typeof next === "function" ? next(lock) : next; } }));
+    await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    await act(async () => { await cancelSidebarProposal("one"); });
+    expect(harness.stop).toHaveBeenCalledTimes(1);
+    expect(lock).toMatchObject({ requestId: "one" });
+    expect(isLocalAssistBusy()).toBe(true);
+    await act(async () => pending.resolve({ candidateText: "LATE" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+    expect(lock).toBeNull();
+    expect(isLocalAssistBusy()).toBe(false);
+    expect(phases().some((event) => event.phase === "completed")).toBe(false);
   });
   it("starts only one native call for duplicate delivery", async () => {
     const pending = deferred(); harness.generate.mockReturnValue(pending.promise);
@@ -67,6 +89,8 @@ describe("Local Assist asynchronous lifecycle", () => {
     const { rerender } = renderHook(({ activeTab }) => useAppleAssistProposalHandler({ activeTab }), { initialProps: { activeTab: tab } });
     await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
     rerender({ activeTab: { ...tab, sessionId: "other", path: "/other.md" } });
+    expect(harness.stop).toHaveBeenCalledTimes(1);
+    expect(isLocalAssistBusy()).toBe(true);
     rerender({ activeTab: tab });
     await act(async () => pending.resolve({ candidateText: "late" }));
     expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();

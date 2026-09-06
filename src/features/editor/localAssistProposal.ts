@@ -38,7 +38,9 @@ export class LocalAssistProposalStore {
     const current = this.getLatest(tabId);
     // Duplicate delivery must not start a second native invocation.
     if (current?.requestId === proposal.requestId) return false;
-    if (current && !current.streaming) this.previousByTab.set(tabId, current);
+    const previous = current?.streaming ? this.previousByTab.get(tabId) : current;
+    if (previous && isSameProposalScope(previous, proposal)) this.previousByTab.set(tabId, previous);
+    else this.previousByTab.delete(tabId);
     this.byTab.set(tabId, { ...proposal, streaming: true });
     this.emit();
     return true;
@@ -96,6 +98,14 @@ export class LocalAssistProposalStore {
       catch (error) { console.warn("Local Assist proposal listener failed", error); }
     }
   }
+}
+
+function isSameProposalScope(left: LocalAssistProposal, right: LocalAssistProposal): boolean {
+  return left.conversationId === right.conversationId && left.originalText === right.originalText &&
+    left.target.activeDocumentPath === right.target.activeDocumentPath &&
+    left.target.activeDocumentSessionId === right.target.activeDocumentSessionId &&
+    left.target.start === right.target.start && left.target.end === right.target.end &&
+    left.target.text === right.target.text;
 }
 
 export const localAssistProposalStore = new LocalAssistProposalStore();

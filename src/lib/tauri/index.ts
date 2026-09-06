@@ -20,3 +20,5 @@ export * from "./menu";
 export * from "./theme";
 export * from "./window";
 export * from "./workspace";
+
+export { openAppleAssistWindow, toggleAppleAssistWindow } from "./localAssistSurface";

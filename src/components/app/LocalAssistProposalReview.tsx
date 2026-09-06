@@ -15,6 +15,8 @@ type LocalAssistProposalReviewProps = {
   activeTab: EditorTab | null;
   menuLanguage: MenuLanguage;
   fontSize: number;
+  /** A cancelled native request may still be shutting down. */
+  blocked?: boolean;
   onApply: (proposal: LocalAssistProposal) => Promise<ApplyResult>;
   onDiscard: (proposal: LocalAssistProposal) => void;
 };
@@ -31,7 +33,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     undo: "はんえいは 1かい。もどすときは ⌘Z。ほぞんは いつもどおりです。",
   };
   if (isJapaneseMenuLanguage(lang)) return {
-    regionLabel: "提案の確認", subtitle: "本文はまだ変更されていません。追加指示は Local Assist ウィンドウで続けられます。",
+    regionLabel: "提案の確認", subtitle: "本文はまだ変更されていません。追加指示は Local Assist で続けられます。",
     applyLabel: "文書へ反映", discardLabel: "案を破棄", originalLabel: "元の文章", proposalLabel: "生成案",
     diff: "差分", after: "変更後", before: "元の文章", views: "表示方法", chars: "文字", target: "対象", turn: "回目の提案",
     busy: "提案を生成しています。本文は変更されません。", applying: "反映中…", applied: "反映済み",
@@ -41,7 +43,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     undo: "反映は1回だけ。元に戻すには ⌘Z。保存は通常の編集と同じです。",
   };
   return {
-    regionLabel: "Proposal review", subtitle: "The document is unchanged. Continue refining in the Local Assist window.",
+    regionLabel: "Proposal review", subtitle: "The document is unchanged. Continue refining in Local Assist.",
     applyLabel: "Apply proposal", discardLabel: "Discard proposal", originalLabel: "Original", proposalLabel: "Proposal",
     diff: "Diff", after: "After", before: "Before", views: "Review view", chars: "characters", target: "Target", turn: "revision",
     busy: "Generating a proposal. The document is unchanged.", applying: "Applying…", applied: "Applied",
@@ -52,7 +54,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
   };
 }
 
-export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, onApply, onDiscard }: LocalAssistProposalReviewProps) {
+export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, blocked = false, onApply, onDiscard }: LocalAssistProposalReviewProps) {
   const copy = getProposalReviewCopy(menuLanguage);
   const { proposal } = useLocalAssistProposal(activeTab?.sessionId ?? null);
   const [mode, setMode] = useState<Mode>("diff");
@@ -91,7 +93,7 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, o
   const stillReviewing = () => mounted.current && latestRef.current.proposal === proposal;
 
   const handleApply = async () => {
-    if (pendingRef.current === proposal || appliedRef.current === proposal) return;
+    if (blocked || pendingRef.current === proposal || appliedRef.current === proposal) return;
     const latest = latestRef.current;
     if (!latest.activeTab || latest.proposal !== proposal ||
       localAssistProposalStore.getLatest(latest.activeTab.sessionId) !== proposal ||
@@ -113,7 +115,7 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, o
   };
   const handleDiscard = () => {
     const tab = latestRef.current.activeTab;
-    if (pendingRef.current === proposal || appliedRef.current === proposal || !tab ||
+    if (blocked || pendingRef.current === proposal || appliedRef.current === proposal || !tab ||
       localAssistProposalStore.getLatest(tab.sessionId) !== proposal) return;
     onDiscard(proposal);
   };
@@ -144,9 +146,9 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, o
           </div>
           <div className="local-assist-proposal-review-actions">
             <button type="button" className="local-assist-proposal-review-button apply"
-              disabled={applying || wasApplied || !current || unchanged || !safeCandidate}
+              disabled={blocked || applying || wasApplied || !current || unchanged || !safeCandidate}
               onClick={() => void handleApply()}>{applying ? copy.applying : wasApplied ? copy.applied : copy.applyLabel}</button>
-            <button type="button" className="local-assist-proposal-review-button" disabled={applying || wasApplied}
+            <button type="button" className="local-assist-proposal-review-button" disabled={blocked || applying || wasApplied}
               onClick={handleDiscard}>{copy.discardLabel}</button>
           </div>
         </div>

@@ -3,11 +3,22 @@
 Status: Operational
 Scope: v2.6.2 App Store published — U-1 writing-companion
 Authority: High
-Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; next is U-1 conversational proofread on Apple Intelligence)
+Last reviewed: 2026-09-06 (PR #38 source-only sidebar candidate; published 2.6.2 remains closed)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
+
+## PR #38 — source-only U-1 update
+
+Owner direction 2026-09-06: **ページ選択＋行選択＋推敲の会話＋差分確認**。
+このブランチでは同一ウィンドウの任意サイドパネルを標準入口とし、従来の
+分離窓経路は互換性のため残す。既存の生成hook、proposal store、明示Applyを
+共用し、ネイティブ権限・保存契約・モデルは変えない。
+ページ選択は開いている文書と既存の明示ファイル選択に限定する。
+ソース候補であり、フルtypecheck / Vitest / build / App Store surface smokeと
+macOS実機・IME・VoiceOverは未確認。マージや配布完了として扱わない。
+自己レビュー・検証範囲: `docs/reviews/2026-09-06-local-assist-sidebar-self-review.md`。
 
 ## Active Phase
 
@@ -69,9 +80,10 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 `.aimodel` DL はその後。ツールコールとクラウドモデル店はしない。
 いまはローカルのみ。Web 検索は将来の任意。Apply 境界は凍結。
 
-1. **U-1 — composer-first の校正会話。** 分離窓を「対象チップ（選択 /
-   ファイル / 見出し）+ 作成中の案 + 短い追加指示」にする。プリセット
-   集合は変えない。Core AI を待たない。
+1. **U-1 — composer-first の校正会話。** PR #38では任意サイドパネルに
+   ページ / 本文の選択・行番号・文書全体 / 会話 / 共通レビューを配置。
+   既存プリセット集合と明示Apply境界を保つ。Core AIを待たない。
+   次はフル検証と実機確認。見出し単位の対象選択は今回追加していない。
 2. **U-3 — メイン Diff を読みの確認面に**（U-1 と並列可）。変更の一文は
    当面行カウント。G-1 後に補助の `changeSummary` へ。
 3. **U-4 — モデル正体チップ。** いまは Apple Intelligence 表示。DL と
@@ -88,8 +100,8 @@ Owner direction 2026-08-28: **ヘルパーで会話し、対象とローカル�
 ### Completed in v2.5 development
 
 - **R-1 — text reference uses `previewFontSize`**: text Reference now follows
-  the existing Preview font-size setting through `--preview-font-size`. No new
-  preference control; PDF/image Reference is unchanged.
+  the existing Preview font-size setting through `--preview-font-size`.
+  No new preference control; PDF/image Reference is unchanged.
 - **W-1 — persistent three-pane workspace**: left Workspace width is newly
   adjustable; normal right pane and Reference widths now persist separately.
 - **Q-4 — exact tree cap notice**: backend reports the number hidden by each

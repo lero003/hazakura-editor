@@ -1,3 +1,4 @@
+import { publishSidebarApplyStatus } from "../../lib/appleAssist/sidebarBridge";
 import { emitTo } from "@tauri-apps/api/event";
 import { aiEditTransactionStore, applyAiEditTransaction } from "../../features/editor/aiEditTransactions";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
@@ -67,10 +68,12 @@ export async function emitLocalAssistApplyStatus(
   conversationId?: string | null,
   options: Pick<AppleAssistApplyStatusEvent, "shouldApplyToDocument"> = {},
 ): Promise<void> {
+  const status: AppleAssistApplyStatusEvent = {
+    phase, message, requestId, request, conversationId, ...options, emittedAtMs: Date.now(),
+  };
+  publishSidebarApplyStatus(status);
   try {
-    await emitTo("apple-assist", APPLE_ASSIST_APPLY_STATUS_EVENT, {
-      phase, message, requestId, request, conversationId, ...options, emittedAtMs: Date.now(),
-    } satisfies AppleAssistApplyStatusEvent);
+    await emitTo("apple-assist", APPLE_ASSIST_APPLY_STATUS_EVENT, status);
   } catch (err) { console.warn("Failed to emit Hazakura Local Assist apply status", err); }
 }
 
