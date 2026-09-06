@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { useMemo, useRef, useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
   EditorSettings,
@@ -24,9 +24,6 @@ import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
-import { LocalAssistSidebar } from "./LocalAssistSidebar";
-import { registerLocalAssistSurface } from "../../lib/appleAssist/sidebarBridge";
-import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
@@ -74,17 +71,6 @@ export function AppShell(props: AppShellProps) {
   useCrtMouseTracking(crtMode);
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
-  const [localAssistOpen, setLocalAssistOpen] = useState(false);
-  const localAssistEnabled = props.assistSurfaceActive === "apple-local" && isAppleLocalAssistSurfaceAllowed();
-  const localAssistVisible = localAssistEnabled && localAssistOpen;
-  useEffect(() => {
-    if (!localAssistEnabled) { setLocalAssistOpen(false); return; }
-    return registerLocalAssistSurface((mode) => setLocalAssistOpen((current) => mode === "open" || !current));
-  }, [localAssistEnabled]);
-  const closeLocalAssist = () => {
-    setLocalAssistOpen(false);
-    props.editorPaneRef.current?.focus();
-  };
   const chapterReviewRequestRef = useRef(0);
   const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
   const workspaceTabMarkers = useMemo(
@@ -147,22 +133,11 @@ export function AppShell(props: AppShellProps) {
         onEditorSettingsChange={props.setEditorSettings}
       />
       <AppDocumentFeedback {...props} />
-      <div className={`local-assist-workspace-layout${localAssistVisible ? " is-open" : ""}`}>
-        <AppWorkspace
-          {...props}
-          onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
-          workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
-        />
-        {localAssistEnabled ? <LocalAssistSidebar
-          open={localAssistVisible} activeTab={props.activeTab} tabs={props.tabs}
-          editorPaneRef={props.editorPaneRef} menuLanguage={props.menuLanguage}
-          fontSize={props.editorSettings.editorFontSize}
-          availability={props.appleAssistAvailability} availabilityProbed={props.appleAssistAvailabilityProbed}
-          textEditorVisible={props.selectedImage === null}
-          onSelectTab={props.onSelectTab} onOpenFile={props.openFile} onClose={closeLocalAssist}
-          onApply={props.onApplyLocalAssistProposal} onDiscard={props.onDiscardLocalAssistProposal}
-        /> : null}
-      </div>
+      <AppWorkspace
+        {...props}
+        onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
+        workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
+      />
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
       {!pendingProposal ? (
@@ -174,7 +149,7 @@ export function AppShell(props: AppShellProps) {
         />
       ) : null}
       <LocalAssistProposalReview
-        activeTab={localAssistVisible ? null : props.activeTab}
+        activeTab={props.activeTab}
         fontSize={props.editorSettings.editorFontSize}
         menuLanguage={props.menuLanguage}
         onApply={props.onApplyLocalAssistProposal}

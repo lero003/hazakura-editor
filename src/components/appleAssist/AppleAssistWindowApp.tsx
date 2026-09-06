@@ -253,7 +253,12 @@ export function AppleAssistWindowApp() {
   const [cancelling, setCancelling] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const { availability, available, probed } = useAppleAssistAvailability();
-  const { feedback, pushFeedback } = useOperationFeedback();
+  const { feedback, pushFeedback, clearFeedback } = useOperationFeedback();
+  const [sentRequests, setSentRequests] = useState<Array<{ id: string; at: number; text: string }>>([]);
+  const followChatRef = useRef(true);
+  const ui = menuLanguage === "en"
+    ? { chat: "Conversation", details: "Usage and requirements", target: "Target", noDocument: "No document selected", empty: "Select some text, then write your request below.", composer: "Request" }
+    : { chat: "会話", details: "使い方・利用条件", target: "対象", noDocument: "文書未選択", empty: "文章を選び、下の欄から依頼してください。", composer: "依頼" };
   const feedbackSectionRef = useRef<HTMLDivElement | null>(null);
   // Track whether the availability probe has been reported
   // to the feedback panel so we only push one "ready" /
@@ -303,8 +308,8 @@ export function AppleAssistWindowApp() {
   }, [clearGenerationFallback, copy.longRunningStatus]);
 
   useEffect(() => {
-    scrollOperationFeedbackToEnd(feedbackSectionRef.current);
-  }, [feedback.length]);
+    if (followChatRef.current) scrollOperationFeedbackToEnd(feedbackSectionRef.current);
+  }, [feedback.length, sentRequests.length, streamPreview, status]);
 
   // Apply theme to the Hazakura Local Assist window's document so the
   // CSS variable surface matches the main window. Mirrors the
@@ -618,6 +623,8 @@ export function AppleAssistWindowApp() {
     setStatus(copy.sendingRequest);
     scheduleGenerationFallback();
     const requestId = createAppleAssistRequestId();
+    followChatRef.current = true;
+    setSentRequests((current) => [...current, { id: requestId, at: Date.now(), text: request }].slice(-20));
     const actionId =
       selectedActionId ?? resolveLocalAssistActionId(request, copy.presets);
     activeActionIdRef.current = actionId;
@@ -757,207 +764,81 @@ export function AppleAssistWindowApp() {
     }
   }, [busy, cancelling, copy.cancellingStatus]);
 
+  const chatItems = [
+    ...sentRequests.map((entry) => ({ ...entry, role: "user" as const, kind: undefined })),
+    ...feedback.filter((entry) => !["ready", "target-acquired", "request-sent", "generation-started"].includes(entry.kind))
+      .map((entry) => ({ id: entry.id, at: entry.at, role: "assistant" as const, kind: entry.kind,
+        text: copy.feedbackEntry(entry.kind, entry.payload) })),
+  ].sort((left, right) => left.at - right.at).slice(-48);
+
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        <div className="apple-assist-window-subtitle">
-          {copy.subtitle}
-          <span className="apple-assist-window-mode">{copy.modeLabel}</span>
-        </div>
-        <div className="apple-assist-window-disclosure">
-          {available ? copy.availableDisclosure : availabilityMessage}
-        </div>
-        <div className="apple-assist-window-doc">
-          {displayedTarget?.activeDocumentName
-            ? copy.activeDocument(displayedTarget.activeDocumentName)
-            : copy.noActiveDocument}
-        </div>
-        <div className="apple-assist-window-target" data-testid="apple-assist-target">
-          {renderTargetSummary(displayedTarget, copy)}
-        </div>
-        {conversation ? (
-          <div
-            className="apple-assist-conversation-state"
-            data-testid="apple-assist-conversation-state"
-          >
-            <span>{copy.conversationPinned}</span>
-            <button
-              type="button"
-              className="apple-assist-window-new-conversation"
-              onClick={() => {
-                setConversation(null);
-                conversationRef.current = null;
-                setStreamPreview("");
-                setStreamOriginalText("");
-                setError(null);
-                setStatus(copy.newConversationStatus);
-              }}
-              disabled={busy}
-            >
-              {copy.newConversationButton}
-            </button>
+        <details className="apple-assist-target-details">
+          <summary>{ui.target}: {displayedTarget?.activeDocumentName || ui.noDocument}</summary>
+          <div className="apple-assist-window-target" data-testid="apple-assist-target">
+            {renderTargetSummary(displayedTarget, copy)}
           </div>
-        ) : null}
+          {conversation ? <div className="apple-assist-conversation-state" data-testid="apple-assist-conversation-state">
+            <span>{copy.conversationPinned}</span>
+            <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
+              onClick={() => {
+                setConversation(null); conversationRef.current = null;
+                setStreamPreview(""); setStreamOriginalText(""); setError(null);
+                setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
+              }}>{copy.newConversationButton}</button>
+          </div> : null}
+        </details>
+        <details className="apple-assist-help">
+          <summary>{ui.details}</summary>
+          <p>{copy.subtitle} · {copy.modeLabel}</p>
+          <p>{available ? copy.availableDisclosure : availabilityMessage}</p>
+          <p>{copy.streamPreviewIdle}</p>
+        </details>
       </header>
 
+      <div className="apple-assist-chat" ref={feedbackSectionRef} role="log" aria-label={ui.chat}
+        aria-live="polite" aria-relevant="additions text" data-testid="apple-assist-feedback-section"
+        onScroll={(event) => {
+          const element = event.currentTarget;
+          followChatRef.current = element.scrollHeight - element.scrollTop - element.clientHeight < 40;
+        }}>
+        <div data-testid="apple-assist-conversation-history" className="apple-assist-chat-messages">
+          {chatItems.length ? chatItems.map((item) => <p key={item.id}
+            data-testid={item.role === "assistant" ? "apple-assist-feedback-entry" : undefined}
+            data-feedback-kind={item.kind} className={`apple-assist-chat-message apple-assist-chat-message-${item.role}`}>{item.text}</p>)
+            : <p className="apple-assist-chat-empty">{ui.empty}</p>}
+        </div>
+        {busy || streamPreview ? <StreamPreview busy={busy} copy={copy} streamPreview={streamPreview} /> : null}
+        {busy ? <div className="apple-assist-window-progress" role="status"><span className="apple-assist-window-spinner" aria-hidden="true" />{status}</div> : null}
+        {error ? <div className="apple-assist-window-error" role="alert">{error}</div> : null}
+      </div>
+
       <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
-        {conversation?.turns.length ? (
-          <div
-            className="apple-assist-conversation-history"
-            data-testid="apple-assist-conversation-history"
-          >
-            <p className="apple-assist-conversation-heading">
-              {copy.conversationHeading}
-            </p>
-            <ol>
-              {conversation.turns.map((turn, index) => (
-                <li key={`${conversation.id}-${index}`}>{turn}</li>
-              ))}
-            </ol>
-          </div>
-        ) : null}
-        <label
-          htmlFor="apple-assist-rough-request"
-          className="apple-assist-window-label"
-        >
-          {copy.roughRequestLabel}
-        </label>
-        <textarea
-          id="apple-assist-rough-request"
-          className="apple-assist-window-textarea"
-          value={requestText}
-          onChange={(event) => {
-            setRequestText(event.target.value);
-            setError(null);
-          }}
-          rows={3}
-          placeholder={copy.placeholder}
-          disabled={busy || !available}
-        />
-        <button
-          type="button"
-          className="apple-assist-window-apply"
-          onClick={() => void applyRoughRequest()}
-          disabled={busy || !available || requestText.trim().length === 0}
-        >
-          {busy ? copy.generatingButton : copy.applyButton}
-        </button>
-        <button
-          type="button"
-          className="apple-assist-window-cancel"
-          onClick={() => void cancelGeneration()}
-          disabled={!busy || cancelling}
-        >
-          {cancelling ? copy.cancellingStatus : copy.cancelButton}
-        </button>
-      </section>
-
-      <section className="apple-assist-window-presets" aria-label={copy.presetsLabel}>
-        <p className="apple-assist-presets-heading">{copy.presetsLabel}</p>
-        <div className="apple-assist-presets-list">
-          {copy.presets.map((preset) => (
-            <button
-              key={preset.actionId}
-              type="button"
-              className={
-                preset.actionId === selectedActionId
-                  && preset.requestText === requestText
-                  ? "apple-assist-preset apple-assist-preset-active"
-                  : "apple-assist-preset"
-              }
-              onClick={() => onPickPreset(preset)}
-              disabled={busy || !available}
-            >
-              {preset.label}
-            </button>
-          ))}
+        <details className="apple-assist-window-presets">
+          <summary>{copy.presetsLabel}</summary>
+          <div className="apple-assist-presets-list">{copy.presets.map((preset) =>
+            <button key={preset.actionId} type="button" className="apple-assist-preset"
+              onClick={() => onPickPreset(preset)} disabled={busy || !available}>{preset.label}</button>
+          )}</div>
+        </details>
+        <label htmlFor="apple-assist-rough-request" className="apple-assist-window-label">{ui.composer}</label>
+        <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
+          value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
+          rows={3} placeholder={copy.placeholder} disabled={busy || !available}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+              event.preventDefault(); if (!busy) void applyRoughRequest();
+            }
+          }} />
+        <div className="apple-assist-window-actions">
+          {busy ? <button type="button" className="apple-assist-window-cancel" onClick={() => void cancelGeneration()} disabled={cancelling}>
+            {cancelling ? copy.cancellingStatus : copy.cancelButton}</button> : null}
+          <button type="button" className="apple-assist-window-apply" onClick={() => void applyRoughRequest()}
+            disabled={busy || !available || requestText.trim().length === 0}>
+            {busy ? copy.generatingButton : copy.applyButton}</button>
         </div>
       </section>
-
-      <StreamPreview
-        busy={busy}
-        copy={copy}
-        streamPreview={streamPreview}
-      />
-
-      <section
-        className="apple-assist-window-feedback"
-        aria-label={copy.feedbackHeading}
-        data-testid="apple-assist-feedback-section"
-      >
-        <div className="apple-assist-feedback-header">
-          <p
-            className="apple-assist-feedback-heading"
-            data-testid="apple-assist-feedback-heading"
-            id="apple-assist-feedback-heading-id"
-          >
-            {copy.feedbackHeading}
-          </p>
-        </div>
-        <div
-          ref={feedbackSectionRef}
-          className="apple-assist-feedback-body"
-          aria-labelledby="apple-assist-feedback-heading-id"
-          aria-live="polite"
-          role="log"
-        >
-          {feedback.length === 0 ? (
-            <p
-              className="apple-assist-feedback-empty"
-              data-testid="apple-assist-feedback-empty"
-            >
-              {copy.feedbackEmpty}
-            </p>
-          ) : (
-            <ul
-              className="apple-assist-feedback-list"
-              data-testid="apple-assist-feedback-list"
-            >
-              {feedback.map((entry, index) => {
-                const startsRequestGroup =
-                  index > 0 &&
-                  (entry.kind === "target-acquired" ||
-                    (entry.kind === "request-sent" &&
-                      feedback[index - 1]?.kind !== "target-acquired"));
-                const className = [
-                  "apple-assist-feedback-entry",
-                  `apple-assist-feedback-entry-kind-${entry.kind}`,
-                  startsRequestGroup
-                    ? "apple-assist-feedback-entry-group-start"
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" ");
-                return (
-                  <li
-                    className={className}
-                    data-feedback-kind={entry.kind}
-                    data-testid="apple-assist-feedback-entry"
-                    key={entry.id}
-                  >
-                    {copy.feedbackEntry(entry.kind, entry.payload)}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </section>
-
-      <footer className="apple-assist-window-footer">
-        {busy ? (
-          <div className="apple-assist-window-progress" aria-hidden="true">
-            <span className="apple-assist-window-spinner" />
-            <span>{copy.workingLocally}</span>
-          </div>
-        ) : null}
-        <div className="apple-assist-window-status">{status}</div>
-        {error ? (
-          <div className="apple-assist-window-error" role="alert">
-            {error}
-          </div>
-        ) : null}
-      </footer>
     </div>
   );
 }

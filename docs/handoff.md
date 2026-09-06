@@ -7,11 +7,13 @@ Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 ne
 
 ## Current State
 
-- **PR #38 integration review (2026-09-06):** 同一ウィンドウのLocal Assistを
-  source候補として検証。1,200pxでPreviewの閉じるボタンが欠ける配置を修正し、
-  focus trapの既存テストを現行の可視性判定へ合わせた。実CodeMirrorへの
-  明示反映→1 Undo→原文復帰を結合テストで固定。検証結果と実機の残項目は
-  `docs/reviews/2026-09-06-pr38-integration-review.md`。公開版更新ではない。
+- **PR #38 owner follow-up (2026-09-06):** サイドパネル方針を撤回し、
+  Local Assistの標準入口を既存ネイティブ別窓へ戻した。縦長の会話と下部入力欄、
+  初期状態で閉じた対象詳細・説明・定型依頼に整理。生成状態も会話内へ統合。
+  mainでのDiff確認・明示反映・Undoを維持。次は実モデルでの別窓→依頼→
+  mainのDiff→反映→Undo、IME、VoiceOverを確認する。
+  検証: macOS app build（typecheck含む）、Vitest 1,919件、App Store surface smoke 111件が成功。
+公開版の更新ではない。
 
 - Package/app version in tree: **`2.6.2`**. User-confirmed **Mac App Store
   publication** on 2026-08-28; rollout to all users is staged over time.

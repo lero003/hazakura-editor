@@ -5,12 +5,12 @@ import { openAppleAssistWindow as detachedOpen, toggleAppleAssistWindow as detac
 vi.mock("./agent", () => ({ openAppleAssistWindow: vi.fn(async () => {}), toggleAppleAssistWindow: vi.fn(async () => {}) }));
 afterEach(() => { vi.clearAllMocks(); });
 describe("Local Assist entry routing", () => {
-  it("routes existing main-window entry points to the registered sidebar", async () => {
+  it("keeps native detached windows even if an old sidebar is registered", async () => {
     const open = vi.fn(); const unregister = registerLocalAssistSurface(open);
     try {
       await openAppleAssistWindow("dark"); await toggleAppleAssistWindow("dark");
-      expect(open.mock.calls).toEqual([["open"], ["toggle"]]);
-      expect(detachedOpen).not.toHaveBeenCalled(); expect(detachedToggle).not.toHaveBeenCalled();
+      expect(open).not.toHaveBeenCalled();
+      expect(detachedOpen).toHaveBeenCalledWith("dark"); expect(detachedToggle).toHaveBeenCalledWith("dark");
     } finally { unregister(); }
   });
   it("preserves native callers when no main sidebar is registered", async () => {
