@@ -16,8 +16,11 @@ Owner direction 2026-09-06: **ページ選択＋行選択＋推敲の会話＋�
 分離窓経路は互換性のため残す。既存の生成hook、proposal store、明示Applyを
 共用し、ネイティブ権限・保存契約・モデルは変えない。
 ページ選択は開いている文書と既存の明示ファイル選択に限定する。
-ソース候補であり、フルtypecheck / Vitest / build / App Store surface smokeと
-macOS実機・IME・VoiceOverは未確認。マージや配布完了として扱わない。
+レビュー修正後の typecheck / Vitest（1,918件）/ Vite・macOS app build /
+App Store surface smoke（111件）は成功。Rustは368件成功・2件ignore。
+ブラウザーで1,200pxの上下配置・1,600pxの横配置とL Modeを確認した。
+実モデル・IME・VoiceOver・native保存の一連の実機操作は未確認。配布完了とは扱わない。
+最新レビュー: `docs/reviews/2026-09-06-pr38-integration-review.md`。
 自己レビュー・検証範囲: `docs/reviews/2026-09-06-local-assist-sidebar-self-review.md`。
 
 ## Active Phase

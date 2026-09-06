@@ -7,7 +7,9 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { createRef } from "react";
+import { createRef, useState } from "react";
+import { applyReviewedLocalAssistProposal } from "../../hooks/editor/useAppleAssistApplyHandler";
+import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditorView } from "@codemirror/view";
 import {
@@ -210,6 +212,40 @@ describe("EditorPane", () => {
       expect(editorRef.current?.getActiveDocument()?.text).toBe(source);
     });
     expect(onChange).toHaveBeenLastCalledWith(source);
+  });
+
+  it("applies a reviewed Local Assist proposal and restores the source with one Undo", async () => {
+    const source = "before\nTARGET\nafter";
+    const sessionId = "assist-undo";
+    const editorRef = createRef<EditorPaneHandle>();
+    const proposal: LocalAssistProposal = {
+      requestId: "assist-undo-request", request: "短くして", actionId: "rewrite_natural",
+      originalText: "TARGET", candidateText: "REVISED", conversationId: "assist-undo-chat", turnIndex: 0,
+      target: { kind: "selection", start: 7, end: 13, text: "TARGET", label: "selection",
+        activeDocumentPath: "/workspace/note.md", activeDocumentName: "note.md",
+        activeDocumentSessionId: sessionId, capturedAtMs: 0 },
+    };
+    localAssistProposalStore.record(sessionId, proposal);
+    function Host() {
+      const [value, setValue] = useState(source);
+      return <>
+        <button onClick={() => void applyReviewedLocalAssistProposal({ proposal,
+          activeTab: { id: "note", sessionId, path: "/workspace/note.md", name: "note.md", contents: value },
+          setActiveTabContents: setValue,
+        })}>Apply reviewed proposal</button>
+        <output data-testid="assist-dirty">{String(value !== source)}</output>
+        {renderEditorPane({ value, onChange: setValue, ref: editorRef, editorSessionKey: sessionId })}
+      </>;
+    }
+    const { container } = render(<Host />);
+    fireEvent.click(screen.getByRole("button", { name: "Apply reviewed proposal" }));
+    await waitFor(() => expect(editorRef.current?.getActiveDocument()?.text).toBe("before\nREVISED\nafter"));
+    expect(screen.getByTestId("assist-dirty").textContent).toBe("true");
+    expect(localAssistProposalStore.getLatest(sessionId)).toBeNull();
+    fireEvent.keyDown(container.querySelector(".cm-content") as Element, { ctrlKey: true, key: "z" });
+    await waitFor(() => expect(editorRef.current?.getActiveDocument()?.text).toBe(source));
+    expect(screen.getByTestId("assist-dirty").textContent).toBe("false");
+    expect(localAssistProposalStore.getLatest(sessionId)).toBeNull();
   });
 
   it("does not change heading structure while IME composition is active", () => {

@@ -81,7 +81,9 @@
 .local-assist-sidebar .local-assist-proposal-review-subtitle { flex-basis: 100%; }
 .local-assist-sidebar .local-assist-proposal-review-diff { max-height: 400px; }
 .local-assist-sidebar .local-assist-proposal-review-text { max-height: 400px; }
-@media (max-width: 1000px) {
+/* Keep room for Workspace + Editor + Preview beside the Assist panel.
+   At 1200px the previous 1000px breakpoint clipped Preview controls. */
+@media (max-width: 1400px) {
   .local-assist-workspace-layout.is-open {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(140px, 1fr) minmax(220px, 1fr);

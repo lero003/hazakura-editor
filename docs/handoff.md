@@ -7,6 +7,12 @@ Last reviewed: 2026-08-28 (2.6.2 Mac App Store published, staged rollout; U-1 ne
 
 ## Current State
 
+- **PR #38 integration review (2026-09-06):** 同一ウィンドウのLocal Assistを
+  source候補として検証。1,200pxでPreviewの閉じるボタンが欠ける配置を修正し、
+  focus trapの既存テストを現行の可視性判定へ合わせた。実CodeMirrorへの
+  明示反映→1 Undo→原文復帰を結合テストで固定。検証結果と実機の残項目は
+  `docs/reviews/2026-09-06-pr38-integration-review.md`。公開版更新ではない。
+
 - Package/app version in tree: **`2.6.2`**. User-confirmed **Mac App Store
   publication** on 2026-08-28; rollout to all users is staged over time.
   Not a GitHub source tag or a 100% install-base claim. Local MAS pkg
