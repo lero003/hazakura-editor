@@ -18,6 +18,10 @@ const storage = vi.hoisted(() => ({
 }));
 
 vi.mock("../../lib/storage", () => ({
+  readStoredDrafts: () => [],
+  draftRecordFromTab: (tab: EditorTab) => tab,
+  upsertDraftRecord: (_records: unknown[], draft: unknown) => [draft],
+  writeStoredDrafts: () => ({ ok: true }),
   removeStoredDraft: storage.removeStoredDraft,
   removeStoredDraftRecord: storage.removeStoredDraftRecord,
 }));
@@ -104,6 +108,37 @@ describe("useRecoveryActions", () => {
     storage.removeStoredDraftRecord.mockReset();
     storage.removeStoredDraft.mockReturnValue({ ok: true });
     storage.removeStoredDraftRecord.mockReturnValue({ ok: true });
+  });
+
+  it("reopens using an explicit encoding and refuses to discard dirty edits", async () => {
+    const tab = makeTab({ contents: "saved", lastSavedContents: "saved" });
+    const { options, getTabs } = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+    tauriApi.openTextFile.mockResolvedValue(makeTextFileDocument({ contents: "あいうえお", encoding: "euc-jp" }));
+    await act(async () => { await result.current.reopenTabFromDisk(tab.id, "euc-jp"); });
+    expect(tauriApi.openTextFile).toHaveBeenCalledWith(tab.path, "euc-jp");
+    expect(getTabs()[0].contents).toBe("あいうえお");
+    options.tabsRef.current[0].contents = "unsaved writing";
+    await act(async () => { await result.current.reopenTabFromDisk(tab.id, "shift-jis"); });
+    expect(tauriApi.openTextFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("extracts detached recovery into a new tab without touching the original", () => {
+    const tab = makeTab();
+    const { options, getTabs } = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+    act(() => result.current.restoreDraft({ path: tab.path, detached: true, recoveryId: "snapshot", contents: "lost writing", savedFingerprint: "old", line_ending: "lf", updatedAt: Date.now() }));
+    expect(getTabs()[0]).toEqual(tab);
+    expect(getTabs()[1]).toMatchObject({ path: "", contents: "lost writing", lastSavedContents: "" });
+  });
+
+  it.each(["", "x".repeat(1_500_001)])("keeps the original record when an extracted draft cannot be checkpointed", contents => {
+    const { options, getTabs } = makeOptions([]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+    act(() => result.current.restoreDraft({ path: "/work/a.md", detached: true, recoveryId: "snapshot", contents, savedFingerprint: "old", line_ending: "lf", updatedAt: Date.now() }));
+    expect(getTabs()[0].contents).toBe(contents);
+    expect(storage.removeStoredDraftRecord).not.toHaveBeenCalled();
+    expect(options.setPendingDrafts).not.toHaveBeenCalled();
   });
 
   it("reopens from disk when the tab still points at the same path", async () => {

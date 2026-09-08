@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
   draftRecordFromTab,
+  readStoredDrafts,
   upsertDraftRecord,
   writeStoredDrafts,
 } from "../../lib/storage";
@@ -71,7 +72,9 @@ export function useDraftPersistence({
       );
 
       const result = writeStoredDrafts(
-        [...pendingDrafts, ...writableDirty].reduce<DraftRecord[]>(
+        [...pendingDrafts, ...readStoredDrafts().filter(stored =>
+          dirtyDrafts.some(draft => isPathlessDraftOversized(draft) && draft.recoveryId === stored.recoveryId)
+        ), ...writableDirty].reduce<DraftRecord[]>(
           (records, draft) => upsertDraftRecord(records, draft),
           [],
         ),

@@ -132,21 +132,21 @@ export async function renameWorkspaceEntry(
   src: string,
   dst: string,
   workspaceRoot: string,
-): Promise<void> {
-  await invoke<void>("rename_workspace_entry", { src, dst, workspaceRoot });
+): Promise<{ backupWarning: string | null }> {
+  return invoke<{ backupWarning: string | null }>("rename_workspace_entry", { src, dst, workspaceRoot });
 }
 
 export async function moveWorkspaceEntry(
   src: string,
   dst: string,
   workspaceRoot: string,
-): Promise<void> {
-  await invoke<void>("move_workspace_entry", { src, dst, workspaceRoot });
+): Promise<{ backupWarning: string | null }> {
+  return invoke<{ backupWarning: string | null }>("move_workspace_entry", { src, dst, workspaceRoot });
 }
 
 export async function moveWorkspaceEntryToTrash(
   path: string,
   workspaceRoot: string,
-): Promise<void> {
-  await invoke<void>("move_workspace_entry_to_trash", { path, workspaceRoot });
+): Promise<{ backupWarning: string | null }> {
+  return invoke<{ backupWarning: string | null }>("move_workspace_entry_to_trash", { path, workspaceRoot });
 }

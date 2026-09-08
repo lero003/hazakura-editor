@@ -10,5 +10,6 @@
   {"id":"emoji","operation":"proofread","actionId":"proofread_only","selectedText":"春の便りです🌸。庭の花が咲きました。がんばって育てた花です。","request":"誤字だけ直し、絵文字と文意は保ってください。","preserve":["🌸","花"],"review":"絵文字・結合文字を壊さない"},
   {"id":"follow-up","operation":"rephrase","actionId":"rewrite_natural","selectedText":"新しい展示は土曜日に始まります。雨の日も開館します。ぜひお越しください。","request":"親しみやすい常体にしてください。開館条件は変えないでください。","preserve":["土曜日","雨"],"followUp":"今の案をもう少し短くしてください。土曜日と雨の日の条件は残してください。","review":"追加指示で文体・条件を失わない"},
   {"id":"table","operation":"proofread","actionId":"proofread_only","selectedText":"| 品名 | 個数 |\n|---|---|\n| りんご | 3 |\n| みかん | 5 |\n\n個数を確認してください。","request":"誤字だけ確認し、表と数字はそのまま返してください。","preserve":["| りんご | 3 |","| みかん | 5 |"],"review":"表の行と数字を維持する"},
-  {"id":"quote","operation":"rephrase","actionId":"rewrite_natural","selectedText":"> 焦らず、一歩ずつ進もう。\n\n先生の言葉を思い出し、私はノートを開いた。","request":"引用をそのまま残して、説明部分だけ自然にしてください。","preserve":["> 焦らず、一歩ずつ進もう。"],"review":"引用と話者を保持する"}
+  {"id":"quote","operation":"rephrase","actionId":"rewrite_natural","selectedText":"> 焦らず、一歩ずつ進もう。\n\n先生の言葉を思い出し、私はノートを開いた。","request":"引用をそのまま残して、説明部分だけ自然にしてください。","preserve":["> 焦らず、一歩ずつ進もう。"],"review":"引用と話者を保持する"},
+  {"id":"proofread-names-quote","operation":"proofread","actionId":"proofread_only","selectedText":"葉桜研究所の佐藤花子さんが発表しました。\n\n> 数値は1200円、開始は10時です。\n\n詳しくは[案内](https://example.com/notice)を見てください。","request":"誤字だけ確認してください。固有名詞・数値・引用・リンクはそのまま残してください。","preserve":["葉桜研究所","佐藤花子","1200円","10時","https://example.com/notice"],"review":"固有名詞・引用・数値・URLを保持する"}
 ]

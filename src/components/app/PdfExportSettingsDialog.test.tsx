@@ -6,6 +6,23 @@ import { PdfExportSettingsDialog } from "./PdfExportSettingsDialog";
 afterEach(cleanup);
 
 describe("PdfExportSettingsDialog", () => {
+  it("uses the selected scope's unsaved-change summary", () => {
+    render(<PdfExportSettingsDialog
+      bookAvailable cancelButtonRef={{ current: null }} dialogRef={{ current: null }}
+      documentName="clean.md" hasUnsavedChanges={false} initialPreset="standard"
+      menuLanguage="ja" onCancel={vi.fn()} onConfirm={vi.fn()}
+      preflightByScope={{
+        document: { chapterCount: 1, checkedImageCount: 0, issues: [], hasUnsavedChanges: false },
+        book: { chapterCount: 2, checkedImageCount: 0, issues: [], hasUnsavedChanges: true },
+      }}
+    />);
+    expect(screen.getByText("書き出す文書に未保存の変更はありません。")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "本全体" }));
+    expect(screen.getByText("現在の未保存の変更も書き出しに含めます。")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "現在のファイル" }));
+    expect(screen.getByText("書き出す文書に未保存の変更はありません。")).toBeTruthy();
+  });
+
   it("submits Book Scope only after the user selects it explicitly", () => {
     const onConfirm = vi.fn();
     render(

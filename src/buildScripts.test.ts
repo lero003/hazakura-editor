@@ -683,7 +683,7 @@ describe("macOS build scripts", () => {
         "C-1/C-2のHOLD",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.9 Local Assist System-only改善**",
+        "Phase: **v2.9品質強化・System-only改善**",
         "C-1/C-2のHOLD",
       ],
       "docs/handoff.md": [

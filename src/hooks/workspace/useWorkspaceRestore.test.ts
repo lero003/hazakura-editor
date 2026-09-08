@@ -35,6 +35,7 @@ vi.mock("../../lib/storage", () => ({
   readPersistedWorkspaceState: (...args: unknown[]) =>
     readPersistedWorkspaceState(...args),
   readStoredDrafts: (...args: unknown[]) => readStoredDrafts(...args),
+  writeStoredDrafts: () => ({ ok: true }),
   writePersistedFileBookmark: (...args: unknown[]) =>
     writePersistedFileBookmark(...args),
 }));
@@ -63,6 +64,18 @@ describe("useWorkspaceRestore", () => {
     readPersistedWorkspaceState.mockReset();
     readStoredDrafts.mockReset();
     writePersistedFileBookmark.mockReset();
+  });
+
+  it.each(["changed", "missing", "no-session"])("retains recovery when the original is %s", async (scenario) => {
+    const draft = { path: "/a.md", contents: "irreplaceable draft", savedFingerprint: "old", line_ending: "lf", updatedAt: 1 };
+    readStoredDrafts.mockReturnValue([draft]);
+    readPersistedWorkspaceState.mockReturnValue(scenario === "no-session" ? null : { workspaceRootPath: null, tabPaths: ["/a.md"], activeTabPath: "/a.md" });
+    if (scenario === "missing") openTextFile.mockRejectedValue(new Error("unavailable"));
+    else openTextFile.mockResolvedValue({ path: "/a.md", contents: "external edit", fingerprint: "new", line_ending: "lf", encoding: "utf-8" });
+    const args = buildArgs();
+    renderHook(() => useWorkspaceRestore(args));
+    await waitFor(() => expect(args.setRestoreComplete).toHaveBeenCalledWith(true));
+    expect(args.setPendingDrafts).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ contents: draft.contents })]));
   });
 
   it("finishes immediately with restore complete when no state was persisted", async () => {

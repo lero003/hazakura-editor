@@ -6,11 +6,12 @@ import {
   type TextFileDocument,
   type WorkspaceTreeEntry,
 } from "../../lib/tauri";
-import { createEditorTab } from "../../features/editor/editorTabs";
+import { createEditorTab, createPathlessRecoveryId } from "../../features/editor/editorTabs";
 import {
   readPersistedWorkspaceState,
   readStoredDrafts,
   writePersistedFileBookmark,
+  writeStoredDrafts,
 } from "../../lib/storage";
 import {
   MAX_RESTORED_TABS,
@@ -80,17 +81,19 @@ export function useWorkspaceRestore({
     async function restoreWorkspaceState() {
       const persistedState = readPersistedWorkspaceState();
 
+      // Startup snapshots never share a storage key with new edits to a path.
+      const storedDrafts = readStoredDrafts().map(draft => draft.path.length > 0
+        ? { ...draft, detached: true, recoveryId: draft.recoveryId ?? createPathlessRecoveryId(), name: draft.name ?? draft.path.split(/[\\/]/).pop() }
+        : draft);
+
+      if (storedDrafts.some(draft => draft.detached)) {
+        const stored = writeStoredDrafts(storedDrafts);
+        if (!stored.ok) onError("復旧用の下書きを保護できませんでした。下書きを復元し、別名で保存してください。");
+      }
+
       if (!persistedState) {
-        // Still surface pathless recovery when no workspace session exists.
-        const pathlessOnly = readStoredDrafts().filter(
-          (candidate) =>
-            candidate.path.length === 0 &&
-            typeof candidate.recoveryId === "string" &&
-            candidate.recoveryId.length > 0 &&
-            candidate.contents.length > 0,
-        );
-        if (pathlessOnly.length > 0) {
-          setPendingDrafts(pathlessOnly);
+        if (storedDrafts.length > 0) {
+          setPendingDrafts(storedDrafts);
           onStatus("Unsaved draft recovery available");
         }
         setRestoreComplete(true);
@@ -185,31 +188,10 @@ export function useWorkspaceRestore({
           openResults.length -
           restoredTabs.length +
           (skippedWorkspaceRootRestore ? 1 : 0);
-        const storedDrafts = readStoredDrafts();
-        const pathRecoverableDrafts = restoredTabs.flatMap((tab) => {
-          const draft = storedDrafts.find(
-            (candidate) =>
-              candidate.path.length > 0 &&
-              candidate.path === tab.path &&
-              candidate.savedFingerprint === tab.fingerprint &&
-              candidate.contents !== tab.contents,
-          );
-
-          return draft ? [draft] : [];
+        const recoverableDrafts = storedDrafts.filter(draft => {
+          const tab = restoredTabs.find(tab => tab.path === draft.path);
+          return !tab || tab.contents !== draft.contents || tab.line_ending !== draft.line_ending;
         });
-        // Pathless new / Import Assist drafts: explicit startup candidates.
-        // Never auto-open as tabs; user must restore or discard.
-        const pathlessRecoverableDrafts = storedDrafts.filter(
-          (candidate) =>
-            candidate.path.length === 0 &&
-            typeof candidate.recoveryId === "string" &&
-            candidate.recoveryId.length > 0 &&
-            candidate.contents.length > 0,
-        );
-        const recoverableDrafts = [
-          ...pathRecoverableDrafts,
-          ...pathlessRecoverableDrafts,
-        ];
 
         if (!cancelled) {
           setTabs(restoredTabs);
@@ -233,6 +215,7 @@ export function useWorkspaceRestore({
         }
       } catch (err) {
         if (!cancelled) {
+          setPendingDrafts(storedDrafts);
           onError(String(err));
           onStatus("Workspace restore skipped");
         }

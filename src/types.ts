@@ -469,6 +469,8 @@ export type DraftOrigin = "file" | "untitled" | "import-assist";
  * (typically the tab sessionId) and never write a source file on their own.
  */
 export type DraftRecord = {
+  /** Startup snapshot kept separately from new edits to its original path. */
+  detached?: boolean;
   path: string;
   contents: string;
   line_ending: EditableLineEnding;

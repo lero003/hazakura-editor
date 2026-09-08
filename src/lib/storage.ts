@@ -601,6 +601,9 @@ function isDraftRecord(value: unknown): value is DraftRecord {
     return false;
   }
 
+  if (candidate.detached !== undefined && typeof candidate.detached !== "boolean") return false;
+  if (candidate.detached && (typeof candidate.recoveryId !== "string" || candidate.recoveryId.length === 0)) return false;
+
   // Pathless recovery requires a stable recoveryId.
   if (candidate.path.length === 0) {
     return typeof candidate.recoveryId === "string" && candidate.recoveryId.length > 0;

@@ -278,7 +278,7 @@ pub(crate) fn rename_workspace_entry_util(
     src: &Path,
     dst: &Path,
     root: &Path,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     if !src.exists() {
         return Err("Source path does not exist.".to_string());
     }
@@ -329,10 +329,8 @@ pub(crate) fn rename_workspace_entry_util(
     // rekey only moves the one file's backup dir; folder
     // rekey fans out to every descendant so the backup tree
     // mirrors the new workspace layout. Any error here is
-    // surfaced to the caller — the file or folder has already
-    // moved, so the failure mode is a stale backup dir that
-    // the retention prune will clean up over time, not a
-    // lost user file.
+    // returned as a warning alongside primary-operation success. The UI
+    // must follow the new path even when backup maintenance fails.
     let relative_paths = if src_was_file || src_was_dir {
         match (
             src_canon.strip_prefix(&canonical_root),
@@ -348,19 +346,18 @@ pub(crate) fn rename_workspace_entry_util(
         None
     };
 
-    if let Some((old_rel, new_rel)) = relative_paths {
+    let backup_result = if let Some((old_rel, new_rel)) = relative_paths {
         if src_was_file {
-            crate::auto_backup::rekey_auto_backup_dir(&root.to_string_lossy(), &old_rel, &new_rel)?;
-        } else if src_was_dir {
-            crate::auto_backup::rekey_auto_backup_tree(
-                &root.to_string_lossy(),
-                &old_rel,
-                &new_rel,
-            )?;
+            crate::auto_backup::rekey_auto_backup_dir(&root.to_string_lossy(), &old_rel, &new_rel)
+        } else {
+            crate::auto_backup::rekey_auto_backup_tree(&root.to_string_lossy(), &old_rel, &new_rel)
         }
-    }
-
-    Ok(())
+    } else {
+        Ok(())
+    };
+    Ok(WorkspaceOperationResult {
+        backup_warning: backup_result.err(),
+    })
 }
 
 pub(crate) fn find_allowlisted_agent_provider_in_path_env(
@@ -785,6 +782,43 @@ pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     atomic_write_inner(path, bytes).map_err(|err| err.message)
 }
 
+fn copy_existing_file_metadata(path: &Path, destination: &File) -> std::io::Result<()> {
+    let source = match File::open(path) {
+        Ok(source) => source,
+        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(()),
+        Err(err) => return Err(err),
+    };
+    #[cfg(target_os = "macos")]
+    {
+        use std::os::fd::AsRawFd;
+        unsafe extern "C" {
+            fn fcopyfile(
+                from_fd: std::ffi::c_int,
+                to_fd: std::ffi::c_int,
+                state: *mut std::ffi::c_void,
+                flags: u32,
+            ) -> std::ffi::c_int;
+        }
+        // macOS copyfile.h: COPYFILE_METADATA = ACL | STAT | XATTR.
+        // Copy to our open temporary file before writing new data. No paths,
+        // ownership handles or pointers come from the frontend.
+        let result = unsafe {
+            fcopyfile(
+                source.as_raw_fd(),
+                destination.as_raw_fd(),
+                std::ptr::null_mut(),
+                7,
+            )
+        };
+        if result != 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    destination.set_permissions(source.metadata()?.permissions())?;
+    Ok(())
+}
+
 fn atomic_write_inner(path: &Path, bytes: &[u8]) -> Result<(), AtomicWriteFailure> {
     let parent = path.parent().ok_or_else(|| AtomicWriteFailure {
         kind: AtomicWriteFailureKind::Other,
@@ -802,6 +836,10 @@ fn atomic_write_inner(path: &Path, bytes: &[u8]) -> Result<(), AtomicWriteFailur
     let write_result = (|| -> Result<(), AtomicWriteFailure> {
         let (candidate_path, mut temp_file) = create_atomic_temp_file(parent, file_name)?;
         temp_path = Some(candidate_path.clone());
+        copy_existing_file_metadata(path, &temp_file).map_err(|err| AtomicWriteFailure {
+            kind: AtomicWriteFailureKind::Other,
+            message: format!("Cannot preserve existing file metadata: {err}"),
+        })?;
         temp_file
             .write_all(bytes)
             .map_err(|err| AtomicWriteFailure {
@@ -932,9 +970,9 @@ pub(crate) fn write_new_file(path: &Path, bytes: &[u8]) -> Result<(), String> {
         .map_err(|err| format!("Cannot create file: {err}"))?;
 
     file.write_all(bytes)
-        .map_err(|err| format!("Cannot write file: {err}"))?;
+        .map_err(|err| format!("新規ファイルの書き込みに失敗しました: {err}。途中までのファイルが残っている可能性があります。内容を確認し、別の名前で保存してください。"))?;
     file.sync_all()
-        .map_err(|err| format!("Cannot sync file: {err}"))?;
+        .map_err(|err| format!("新規ファイルの同期に失敗しました: {err}。作成されたファイルを確認し、別の名前で保存してください。"))?;
 
     Ok(())
 }

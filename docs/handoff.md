@@ -7,24 +7,27 @@ Last reviewed: 2026-09-08
 
 ## Current State
 
-- **v2.8公開:** 2026-09-08オーナー報告。公開build・PR #40包含・公開成果物の構成は別途の証跡とする。
-- **v2.9ソースレビュー:** 上限整合、System責務/エラー整理、生成元表示、日本語評価CLI、
-  コードフェンス保持、予約区切り文字が残る案の拒否を実装。実装・検証の範囲と残課題は
-  [v2.9レビュー](reviews/2026-09-08-v2.9-local-assist.md)。
-- **再レビュー対応:** R1/R3とR2-a/bは維持。R2-cはnative完了時に物理停止ハンドルを外し、
-  遅い取消によるhelper再利用の失敗を修正。完了/取消を同じmutexで確定し、取消が先ならキャッシュを破棄。
-  永続helperで両順序と次回の初回成功を確認。全Vitest 2,010件、型検査/Vite/nativeローカルbuild、
-  Rust fmt/374件（2 ignored）が成功。App Store surface単独111件はd2eff499時点の記録。
-  今回の実モデル・別窓のnative実操作は未実施。過去の実機記録とは区別する。
-- **前回の検証:** 全Vitest 1,985件、型検査/Vite/nativeローカルbuild、App Store surface 111件、
-  Rust fmt/369件（2 ignored）、Swift 5件、評価判定Node 3件が成功。
-  live日本語評価は初回35/40、フェンス修正後13/14で完成案。品質の全合格ではない。
-  修正版nativeで生成→追加指示→Diff→反映→Undoを確認。IME/VoiceOver/旧OSは未確認。
-- **次:** R2-c修正差分の再レビュー、日本語/Markdownの品質判断、残る実機smokeとRC証跡。
-  ソース版数は2.8.0を維持し、v2.9候補凍結時に版数と配布証跡を揃える。公開・提出は未実施。
-- **版別境界:** v3.0はAFM活用とSystemで検証する共通基盤、v3.1はC-1/C-2のDL・管理・切り替え。
-  C-1/C-2とMLXのHOLDを維持。詳細は `docs/v2.9-v3-local-assist-plan.md`。
-- Habitat 1.1.1は警告なし。既存のApp Store bundleVersion変更は今回のコミット対象外。
+- **v2.8公開:** 2026-09-08オーナー報告。公開buildとsourceの対応は過去候補から推定しない。
+- **v2.9品質候補:** ソース版数は **2.9.0**。外部の日常利用レビューQ-01–Q-07を修正。
+  Save As中の編集、独立した下書き復旧、保存して閉じる、Unicode検索、文字コード再読込、
+  workspace操作の部分成功、PDF/HTML画像警告を回帰試験へ固定した。
+- **外部再レビュー対応:** N1の空CRLF復旧記録の消失とN2の改行なしSave Asのdirty残りを修正。
+  空/一行/複数行×LF/CRLF、取り出し後の永続化/再起動を回帰検証した。
+  A1は画像・CSS込みHTMLの10 MiB上限を事前案内する。上限自体は残る。
+- **追加の原稿保全:** 10 MiB超の保存を元ファイル変更前に拒否。atomic保存時の権限・Finderタグ保持、
+  新規作成途中失敗の案内、Save Asの単独ファイルbookmark記録を追加。
+- **Local Assist:** 既存R1/R2-a/b/c/R3を維持。校正のみで数字・リンク・Markdown構造が変わる案を拒否。
+  自作13原稿のhelper評価は15試行中13完成、2エラー。意味・固有名詞・文章品質の全合格ではない。
+- **検証・候補:** [品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)と
+  [2.9.0候補](releases/2.9.0-source-tag.release.md)に現行証跡と残項目を集約。
+  7テーマの代表画面と本全体PDFはローカル追試済み。IME・VoiceOver・旧OS・
+  Apple署名候補の実操作と外部再レビューは未確認として残す。
+- **配布:** 署名済みローカルpkg **2.9.0 / build 125** を2026-09-09のPDF末尾空白・本全体の未保存表示修正を含むクリーンソースから再作成・署名検証済み。旧pkgは別保存し、現行SHAは候補記録を参照。Appleへのupload・処理・配布・公開は未実施。
+  既存のApp Store bundleVersion変更を含むユーザー作業は保持する。
+- **次:** 外部再レビュー→同一候補で実機smoke→承認後にupload。コード修正が入れば候補を再構築する。
+- **版別境界:** System-only改善。v3.0はAFMと共通基盤、v3.1はC-1/C-2。
+  C-1/C-2のHOLDとMLX停止を維持。`docs/v2.9-v3-local-assist-plan.md` を参照。
+- Habitat 1.1.1は警告なし。公開済みのタグ・アセットは変更しない。
 
 ## Implementation / Candidate History（2026-09-07以前）
 

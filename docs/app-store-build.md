@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-08-29 (2.8.0 development; frozen 2.7.0 build 123)
+Last reviewed: 2026-09-08 (2.9.0 quality candidate preparation)
 
 ## Purpose
 
@@ -44,8 +44,9 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `2.8.0` (owner-reported 2026-09-08).
   Exact released-build provenance, PR #40 inclusion and rollout coverage remain
   unverified here. See `docs/releases/2.8.0-source-tag.release.md`.
-- Current source / Developer version: `2.8.0`. Next development is the v2.9
-  System-only Local Assist slice in `docs/v2.9-v3-local-assist-plan.md`.
+- Current source / Developer version: `2.9.0`. Quality candidate evidence is in
+  `docs/releases/2.9.0-source-tag.release.md`. System-only boundaries remain in
+  `docs/v2.9-v3-local-assist-plan.md`.
   Earlier v2.7 packages remain historical candidates, not an active submission queue.
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
   This update does not claim a new GitHub publication.

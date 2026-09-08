@@ -646,6 +646,35 @@ fn move_workspace_entry_to_trash_clears_auto_backup_dir() {
     let _ = fs::remove_dir_all(root);
 }
 
+#[cfg(unix)]
+#[test]
+fn trash_primary_success_survives_rejected_backup_symlink() {
+    let root = unique_test_dir("trash_backup_warning");
+    fs::create_dir_all(&root).unwrap();
+    let path = root.join("doomed.md");
+    fs::write(&path, "writing").unwrap();
+    let outside = root.join("untouched");
+    fs::create_dir_all(&outside).unwrap();
+    fs::write(outside.join("keep.md"), "backup").unwrap();
+    std::os::unix::fs::symlink(&outside, root.join(".hazakura")).unwrap();
+    let result = move_workspace_entry_to_trash_with_operation(
+        &path,
+        &root.to_string_lossy(),
+        true,
+        Some(fs::canonicalize(&path).unwrap()),
+        Some(fs::canonicalize(&root).unwrap()),
+        |entry| fs::remove_file(entry).map_err(|err| err.to_string()),
+    )
+    .unwrap();
+    assert!(result.backup_warning.is_some());
+    assert!(!path.exists());
+    assert_eq!(
+        fs::read_to_string(outside.join("keep.md")).unwrap(),
+        "backup"
+    );
+    fs::remove_dir_all(root).unwrap();
+}
+
 #[test]
 fn rename_workspace_entry_rekeys_descendant_auto_backup_tree() {
     let root = unique_test_dir("rename_folder_rekey_backup");
@@ -949,4 +978,26 @@ fn move_workspace_entry_to_trash_removes_file_on_macos() {
     );
 
     let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn rename_reports_backup_warning_after_primary_operation_succeeds() {
+    let root = unique_test_dir("rename_backup_collision");
+    fs::create_dir_all(&root).unwrap();
+    let src = root.join("a.md");
+    let dst = root.join("b.md");
+    fs::write(&src, "current").unwrap();
+    auto_backup::save_auto_backup(&root.to_string_lossy(), "a.md", "old a").unwrap();
+    auto_backup::save_auto_backup(&root.to_string_lossy(), "b.md", "old b").unwrap();
+    let result = rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    );
+    assert!(result.is_ok(), "primary rename succeeded: {result:?}");
+    assert!(result.unwrap().backup_warning.is_some());
+    assert_eq!(fs::read_to_string(dst).unwrap(), "current");
+    assert!(!src.exists());
+    fs::remove_dir_all(root).unwrap();
 }

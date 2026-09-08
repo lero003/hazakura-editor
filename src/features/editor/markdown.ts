@@ -107,15 +107,22 @@ export async function inlineWorkspaceAssetImages(
   });
 }
 
+export async function inlineMarkdownImages(html: string, loaders: InlineMarkdownImageLoaders): Promise<string> {
+  return (await inlineMarkdownImagesWithResult(html, loaders)).html;
+}
+
 /** Inline workspace, approved-local, and optional remote image placeholders. */
-export async function inlineMarkdownImages(
+export async function inlineMarkdownImagesWithResult(
   html: string,
   loaders: InlineMarkdownImageLoaders,
-): Promise<string> {
+): Promise<{ html: string; embeddedCount: number; failures: string[]; intentionallySkipped: string[] }> {
+  const failures: string[] = [];
+  const intentionallySkipped: string[] = [];
+  let embeddedCount = 0;
   const hasLocal = html.includes(WORKSPACE_IMAGE_PATH_ATTR);
   const hasRemote = html.includes(REMOTE_IMAGE_URL_ATTR);
   if (!hasLocal && !hasRemote) {
-    return html;
+    return { html, embeddedCount, failures, intentionallySkipped };
   }
 
   const template = document.createElement("template");
@@ -140,11 +147,13 @@ export async function inlineMarkdownImages(
       // loading is both redundant and unreliable inside nested WKWebView
       // scroll/pagination surfaces: WebKit can keep showing the already-loaded
       // transparent placeholder instead of fetching the replacement source.
+      embeddedCount += 1;
       image.removeAttribute("loading");
       image.setAttribute("src", dataUrl);
       image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
       image.removeAttribute(IMAGE_ORIGIN_ATTR);
     } catch {
+      failures.push(path);
       const basename = path.split("/").filter(Boolean).pop() ?? path;
       image.replaceWith(
         buildBlockedImageElement({
@@ -165,6 +174,7 @@ export async function inlineMarkdownImages(
       continue;
     }
     if (!loaders.loadRemoteImage) {
+      intentionallySkipped.push(url);
       image.replaceWith(
         buildBlockedImageElement({
           reason: "remote",
@@ -176,11 +186,13 @@ export async function inlineMarkdownImages(
     }
     try {
       const dataUrl = await loaders.loadRemoteImage(url);
+      embeddedCount += 1;
       image.removeAttribute("loading");
       image.setAttribute("src", dataUrl);
       image.removeAttribute(REMOTE_IMAGE_URL_ATTR);
       image.removeAttribute(IMAGE_ORIGIN_ATTR);
     } catch {
+      failures.push(url);
       image.replaceWith(
         buildBlockedImageElement({
           reason: "load-failed",
@@ -191,7 +203,7 @@ export async function inlineMarkdownImages(
     }
   }
 
-  return template.innerHTML;
+  return { html: template.innerHTML, embeddedCount, failures, intentionallySkipped };
 }
 
 function applyImagePreviewPolicyToFragment(

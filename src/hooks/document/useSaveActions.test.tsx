@@ -7,12 +7,14 @@ import type { EditorTab } from "../../types";
 import { useSaveActions } from "./useSaveActions";
 
 const fileApi = vi.hoisted(() => ({
+  createSecurityScopedBookmark: vi.fn(async () => [1, 2]),
   pickSaveAsTextFilePath: vi.fn(),
   saveTextFile: vi.fn(),
   saveTextFileAs: vi.fn(),
 }));
 
 vi.mock("../../lib/tauri", () => ({
+  createSecurityScopedBookmark: fileApi.createSecurityScopedBookmark,
   pickSaveAsTextFilePath: fileApi.pickSaveAsTextFilePath,
   saveTextFile: fileApi.saveTextFile,
   saveTextFileAs: fileApi.saveTextFileAs,
@@ -24,6 +26,7 @@ const storage = vi.hoisted(() => ({
 
 vi.mock("../../lib/storage", () => ({
   removeStoredDraft: storage.removeStoredDraft,
+  writePersistedFileBookmark: vi.fn(),
 }));
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
@@ -189,6 +192,25 @@ describe("useSaveActions", () => {
     expect(removeStoredDraft).not.toHaveBeenCalled();
   });
 
+  it("preserves edits and format changes while Save As writes, without stealing focus", async () => {
+    const tab = makeTab();
+    fileApi.pickSaveAsTextFilePath.mockResolvedValue("/tmp/copy.md");
+    let resolveWrite!: (file: TextFileDocument) => void;
+    fileApi.saveTextFileAs.mockImplementation(() => new Promise<TextFileDocument>(resolve => { resolveWrite = resolve; }));
+    const { result, getTabs, replaceTabs, options } = setup([tab]);
+    let saving!: Promise<void>;
+    await act(async () => { saving = result.current.saveActiveTabAs(); });
+    replaceTabs([{ ...tab, contents: "new writing", encoding: "euc-jp", line_ending: "crlf" }]);
+    await act(async () => { resolveWrite(makeTextFileDocument()); await saving; });
+    expect(getTabs()[0]).toMatchObject({ contents: "new writing", encoding: "euc-jp", line_ending: "crlf", lastSavedContents: "draft", lastSavedEncoding: "utf-8", path: "/tmp/copy.md", sessionId: tab.sessionId });
+    expect(isDirty(getTabs()[0])).toBe(true);
+    expect(removeStoredDraft).not.toHaveBeenCalled();
+    const updateActive = vi.mocked(options.setActiveTabId).mock.calls[0]?.[0];
+    expect(typeof updateActive).toBe("function");
+    expect((updateActive as (id: string) => string)("other-tab")).toBe("other-tab");
+    expect((updateActive as (id: string) => string)(tab.id)).toBe("/tmp/copy.md");
+  });
+
   it("saveActiveTabAs uses the latest buffer after the path picker completes", async () => {
     const tab = makeTab({ contents: "before dialog" });
     let resolvePath: (value: string) => void = () => {};
@@ -312,7 +334,7 @@ describe("useSaveActions", () => {
     // through sessionId, while id follows the new path so id === path stays
     // intact for rename / move / external refresh.
     expect(getTabs()[0].sessionId).toBe("session:a");
-    expect(options.setActiveTabId).toHaveBeenCalledWith("/tmp/untitled.md");
+    expect(vi.mocked(options.setActiveTabId).mock.calls[0]?.[0]).toBeTypeOf("function");
     expect(removeStoredDraft).not.toHaveBeenCalledWith("");
     expect(removeStoredDraft).toHaveBeenCalledWith(
       "pathless:550e8400-e29b-41d4-a716-446655440099",
@@ -330,7 +352,7 @@ describe("useSaveActions", () => {
     });
     fileApi.pickSaveAsTextFilePath.mockResolvedValueOnce("/tmp/untitled.md");
     fileApi.saveTextFileAs.mockResolvedValue(
-      makeTextFileDocument({ path: "/tmp/untitled.md" }),
+      makeTextFileDocument({ path: "/tmp/untitled.md", contents: "# Unsaved draft" }),
     );
     storage.removeStoredDraft.mockReturnValue({
       ok: false,

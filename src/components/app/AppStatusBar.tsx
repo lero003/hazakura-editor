@@ -21,6 +21,7 @@ type AppStatusBarProps = {
   lModeEnabled: boolean;
   menuLanguage: MenuLanguage;
   onConvertEncoding: (encoding: TextEncoding) => void;
+  onReopenEncoding?: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
   saveAffirmation: boolean;
   saveAffirmationKey: number | null;
@@ -43,6 +44,7 @@ export function AppStatusBar({
   lModeEnabled,
   menuLanguage,
   onConvertEncoding,
+  onReopenEncoding,
   onConvertLineEnding,
   saveAffirmation,
   saveAffirmationKey,
@@ -65,6 +67,7 @@ export function AppStatusBar({
       lineEndingLabel={lineEndingLabel}
       lModeEnabled={lModeEnabled}
       onConvertEncoding={onConvertEncoding}
+      onReopenEncoding={onReopenEncoding}
       onConvertLineEnding={onConvertLineEnding}
       saveAffirmation={saveAffirmation}
       saveAffirmationKey={saveAffirmationKey}

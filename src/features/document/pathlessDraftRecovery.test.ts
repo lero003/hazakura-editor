@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { DraftRecord, EditorTab } from "../../types";
 import {
   draftMatchesTab,
+  removeDraftMatching,
   draftRecordFromTab,
   draftStorageKey,
   isPathlessDraft,
@@ -38,6 +39,11 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("pathlessDraftRecovery", () => {
+  it("deletes an independent recovery only by its explicit key", () => {
+    const draft: DraftRecord = { path: "/work/a.md", detached: true, recoveryId: "snapshot", contents: "lost", line_ending: "lf", savedFingerprint: "old", updatedAt: Date.now() };
+    expect(removeDraftMatching([draft], draft.path)).toEqual([draft]);
+    expect(removeDraftMatching([draft], draftStorageKey(draft))).toEqual([]);
+  });
   it("keys pathless drafts by recovery UUID, not session counters", () => {
     const draft: DraftRecord = {
       path: "",

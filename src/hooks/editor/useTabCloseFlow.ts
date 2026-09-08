@@ -97,6 +97,7 @@ export function useTabCloseFlow({
       if (closingTab) {
         setPendingDrafts((currentDrafts) =>
           currentDrafts.filter((draft) => {
+            if (draft.detached) return true;
             if (closingTab.path.length > 0) {
               return draft.path !== closingTab.path;
             }
@@ -112,10 +113,10 @@ export function useTabCloseFlow({
         const closingIndex = currentTabs.findIndex((tab) => tab.id === tabId);
         const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
 
-        if (activeTabId === tabId) {
+        {
           const nextActive =
             nextTabs[Math.min(closingIndex, nextTabs.length - 1)] ?? null;
-          setActiveTabId(nextActive?.id ?? null);
+          setActiveTabId(currentId => currentId === tabId ? nextActive?.id ?? null : currentId);
         }
 
         return nextTabs;
@@ -157,27 +158,26 @@ export function useTabCloseFlow({
   );
 
   const findDirtyTargetAfterSave = useCallback(() => {
-    const targetTabIds = new Set(dirtyTabs.map((tab) => tab.id));
-    return (
-      tabsRef.current.find(
-        (tab) => targetTabIds.has(tab.id) && isDirty(tab),
-      ) ?? null
-    );
-  }, [dirtyTabs, tabsRef]);
+    // Every live dirty tab matters, including newly edited tabs and Save As IDs.
+    return tabsRef.current.find(isDirty) ?? null;
+  }, [tabsRef]);
 
   const saveAndClosePendingTab = useCallback(async () => {
     if (!pendingCloseTabId) {
       return;
     }
 
+    const target = tabsRef.current.find(tab => tab.id === pendingCloseTabId);
+    if (!target) return;
     const saved = await saveTabById(pendingCloseTabId);
+    const current = tabsRef.current.find(tab => tab.sessionId === target.sessionId);
 
-    if (saved) {
-      closeTabNow(pendingCloseTabId);
+    if (saved && current && !isDirty(current)) {
+      closeTabNow(current.id);
       return;
     }
 
-    setActiveTabId(pendingCloseTabId);
+    if (current) setActiveTabId(current.id);
     setPendingCloseTabId(null);
     setStatus("Close stopped");
     focusEditorSoon();
@@ -185,6 +185,7 @@ export function useTabCloseFlow({
     closeTabNow,
     focusEditorSoon,
     pendingCloseTabId,
+    tabsRef,
     saveTabById,
     setActiveTabId,
     setPendingCloseTabId,
@@ -312,6 +313,7 @@ export function useTabCloseFlow({
     }
     setPendingDrafts((currentDrafts) =>
       currentDrafts.filter((draft) => {
+        if (draft.detached) return true;
         if (draft.path.length > 0) {
           return !discardedPaths.has(draft.path);
         }

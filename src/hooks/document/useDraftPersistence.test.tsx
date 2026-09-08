@@ -5,7 +5,7 @@ import {
   type DraftRecord,
   type EditorTab,
 } from "../../types";
-import { readStoredDrafts } from "../../lib/storage";
+import { readStoredDrafts, writeStoredDrafts } from "../../lib/storage";
 import { useDraftPersistence } from "./useDraftPersistence";
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
@@ -56,6 +56,14 @@ describe("useDraftPersistence", () => {
 
   afterEach(() => {
     window.localStorage.clear();
+  });
+
+  it("keeps the previous valid checkpoint when a pathless draft grows past the cap", async () => {
+    const recoveryId = "oversized-checkpoint";
+    writeStoredDrafts([{ path: "", recoveryId, contents: "last valid checkpoint", line_ending: "lf", savedFingerprint: "", updatedAt: Date.now() }]);
+    renderDraftPersistence({ tabs: [makeTab({ path: "", recoveryId, contents: "x".repeat(1_500_001) })] });
+    await new Promise(resolve => setTimeout(resolve, 450));
+    expect(readStoredDrafts()[0]?.contents).toBe("last valid checkpoint");
   });
 
   it("persists dirty pathless untitled tabs as recovery candidates", async () => {

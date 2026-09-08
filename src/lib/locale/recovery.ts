@@ -45,7 +45,7 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
         pathlessDraftAvailable: (name: string) =>
           `「${name}」の保存前メモを復旧できます。`,
         pathlessDraftDetail:
-          "まだファイルには書き込まれていません。復元するか破棄してください。",
+          "別の未保存タブに取り出せます。元のファイルは変更しません。",
         pathlessDraftFallbackName: "新規下書き",
         reopenFromDisk: "ディスクから再読み込み",
         reviewChanges: "変更を確認",
@@ -75,7 +75,7 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
         pathlessDraftAvailable: (name: string) =>
           `Recoverable pre-save note “${name}” is available.`,
         pathlessDraftDetail:
-          "Nothing has been written to a file yet. Restore it or discard it.",
+          "Restore into a separate unsaved tab. The original file will not change.",
         pathlessDraftFallbackName: "Untitled draft",
         reopenFromDisk: "Reopen from disk",
         reviewChanges: "Review changes",

@@ -27,10 +27,10 @@ export function resolveStartPanelReturningContext(options: {
 }): StartPanelReturningContext {
   const pathlessDrafts = options.pathlessDrafts.filter(
     (draft) =>
-      draft.path.length === 0 &&
+      (draft.detached || draft.path.length === 0) &&
       typeof draft.recoveryId === "string" &&
       draft.recoveryId.length > 0 &&
-      draft.contents.length > 0,
+      (draft.detached || draft.contents.length > 0),
   );
 
   const persisted =

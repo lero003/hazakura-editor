@@ -34,7 +34,7 @@ import {
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import {
-  inlineMarkdownImages,
+  inlineMarkdownImagesWithResult,
   renderMarkdown,
 } from "../../features/editor/markdown";
 import { DEFAULT_MEDIA_IMAGE_SETTINGS } from "../../features/editor/mediaImageSettings";
@@ -167,6 +167,7 @@ export function useDocumentExport({
     const currentChapters = bookScopeChaptersRef.current;
     const document: ExportPreflightResult = {
       chapterCount: activeTabRef.current ? 1 : 0,
+      hasUnsavedChanges: activeTabRef.current ? isDirty(activeTabRef.current) : false,
       checkedImageCount: 0,
       issues: [],
     };
@@ -175,14 +176,15 @@ export function useDocumentExport({
       bookScopeUnavailableRef.current.length === 0
     ) {
       return {
-        book: { chapterCount: 0, checkedImageCount: 0, issues: [] },
+        book: { chapterCount: 0, checkedImageCount: 0, issues: [], hasUnsavedChanges: false },
         document,
       };
     }
     const loaders = createExportImageLoaders();
+    const preflightTabs = tabsRef.current;
     const loadResult = await loadBookScopeReaderDocuments({
       chapters: currentChapters,
-      tabs: tabsRef.current,
+      tabs: preflightTabs,
       openTextFile,
       workspaceRoot: workspaceRootPath,
     });
@@ -200,6 +202,18 @@ export function useDocumentExport({
       ],
       workspaceRoot: workspaceRootPath,
     });
+    // Match the reader's NFC absolute-path / workspace-relative lookup. Use
+    // the same tab snapshot as loading so image checks cannot mix buffer states.
+    const dirtyByPath = new Map(preflightTabs.filter((tab) => tab.path).map(
+      (tab) => [tab.path!.normalize("NFC"), isDirty(tab)] as const,
+    ));
+    const root = workspaceRootPath?.replace(/\/+$/, "").normalize("NFC");
+    book.hasUnsavedChanges = loadResult.documents.some((chapter) =>
+      chapter.usesLiveBuffer && (
+        dirtyByPath.get(chapter.path.normalize("NFC")) ??
+        (root ? dirtyByPath.get(`${root}/${chapter.relativePath.normalize("NFC")}`) : false)
+      ),
+    );
     return { book, document };
   }, [createExportImageLoaders, workspaceRootPath]);
 
@@ -308,11 +322,11 @@ export function useDocumentExport({
           mediaAccess: exportMedia,
         });
       // Theme G M3: materialize resolvable placeholders before PDF embed.
-      rendered = await inlineMarkdownImages(
+      const inlined = await inlineMarkdownImagesWithResult(
         rendered,
         createExportImageLoaders(),
       );
-      rendered = preparePdfExportTables(rendered);
+      rendered = preparePdfExportTables(inlined.html);
 
       const pdfLayout = pdfScreenPageLayout(preset);
       const pdfPoint = formatPdfPointValue;
@@ -343,6 +357,7 @@ export function useDocumentExport({
         // override the body CSS safety limit.
         { bodyMaxHeightPx: imageMaxHeightPx },
       );
+      embedResult.failedPaths = [...new Set([...inlined.failures, ...embedResult.failedPaths])];
       rendered = embedResult.html;
       rendered = preparePdfImagesForCapture(rendered);
       if (embedResult.failedPaths.length > 0) {
@@ -732,12 +747,12 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
         workspaceRoot: workspaceRootPath,
         mediaAccess: buildExportMediaAccess(),
       });
-      bodyHtml = await inlineMarkdownImages(
+      const inlined = await inlineMarkdownImagesWithResult(
         bodyHtml,
         createExportImageLoaders(),
       );
       const htmlEmbed = await embedAndStampPdfImages(
-        bodyHtml,
+        inlined.html,
         async (path) => {
           if (!workspaceRootPath) {
             throw new Error("Workspace image access requires an open workspace");
@@ -747,6 +762,7 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
         },
         { bodyMaxHeightPx: 1200 },
       );
+      htmlEmbed.failedPaths = [...new Set([...inlined.failures, ...htmlEmbed.failedPaths])];
       bodyHtml = htmlEmbed.html;
 
       const root = document.documentElement;
@@ -859,6 +875,12 @@ ${bodyHtml}
 </body>
 </html>`;
 
+      // HTML currently uses the editable-text writer. Check the completed
+      // artifact, including base64 images and CSS, before requesting any write.
+      const htmlBytes = new TextEncoder().encode(standaloneHtml).byteLength;
+      if (htmlBytes > 10 * 1024 * 1024) {
+        throw new Error(`画像・CSSを含むHTML全体が10 MiBの上限を超えています（${(htmlBytes / 1024 / 1024).toFixed(1)} MiB）。画像を縮小するか枚数を減らして、もう一度書き出してください。`);
+      }
       await saveTextFileAs(destPath, standaloneHtml, "lf", "utf-8", null);
       try {
         await revealPathInFileManager(destPath);

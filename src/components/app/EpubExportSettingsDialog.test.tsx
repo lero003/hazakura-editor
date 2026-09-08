@@ -14,6 +14,23 @@ vi.mock("../../lib/tauri/dialog", () => ({
 afterEach(cleanup);
 
 describe("EpubExportSettingsDialog", () => {
+  it("uses the selected scope's unsaved-change summary", () => {
+    render(<EpubExportSettingsDialog
+      bookAvailable cancelButtonRef={{ current: null }} dialogRef={{ current: null }}
+      documentName="clean.md" hasUnsavedChanges={false} initialSettings={{ author: "", language: "ja", title: "Book" }}
+      menuLanguage="ja" onCancel={vi.fn()} onConfirm={vi.fn()}
+      preflightByScope={{
+        document: { chapterCount: 1, checkedImageCount: 0, issues: [], hasUnsavedChanges: false },
+        book: { chapterCount: 2, checkedImageCount: 0, issues: [], hasUnsavedChanges: true },
+      }}
+    />);
+    expect(screen.getByText("書き出す文書に未保存の変更はありません。")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "本全体" }));
+    expect(screen.getByText("現在の未保存の変更も書き出しに含めます。")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "現在のファイル" }));
+    expect(screen.getByText("書き出す文書に未保存の変更はありません。")).toBeTruthy();
+  });
+
   it("adds an optional explicitly selected cover image", async () => {
     const onConfirm = vi.fn();
     dialogApi.pickEpubCoverImage.mockResolvedValue(

@@ -431,3 +431,22 @@ fn search_skips_symlinks_pointing_outside_the_workspace() {
     let _ = fs::remove_dir_all(dir);
     let _ = fs::remove_dir_all(outside);
 }
+
+#[test]
+fn workspace_search_preserves_columns_after_unicode_lowercase_expansion() {
+    let root = unique_test_dir("search_unicode_expansion");
+    fs::create_dir_all(&root).unwrap();
+    fs::write(root.join("unicode.md"), "İあ\nẞあ\nKあ\n😀İあ").unwrap();
+    let result =
+        search_workspace_files_with_label("main", root.to_string_lossy().into_owned(), "あ".into())
+            .unwrap();
+    assert_eq!(
+        result.files[0]
+            .matches
+            .iter()
+            .map(|m| (m.line, m.column))
+            .collect::<Vec<_>>(),
+        vec![(1, 2), (2, 2), (3, 2), (4, 3)]
+    );
+    fs::remove_dir_all(root).unwrap();
+}

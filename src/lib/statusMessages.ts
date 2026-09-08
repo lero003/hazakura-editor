@@ -52,6 +52,10 @@ export function localizeStatusMessage(
       : "案を作成しています。本文はまだ変更していません。";
   }
 
+  if (message.includes("proofreading changed protected")) {
+    return "校正案で数値やMarkdownの構造が変わったため、受け付けませんでした。本文は変更していません。対象を小さく選び直すか、もう一度依頼してください。";
+  }
+
   if (/ambiguous proposal formatting|reference metadata instead of a proposal/.test(message)) {
     return isKanaStyle(menuLanguage)
       ? "あんの かたちを かくにんできませんでした。ふみは かわっていません。もういちど たのんでください。"

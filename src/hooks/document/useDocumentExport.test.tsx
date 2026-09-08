@@ -79,11 +79,18 @@ vi.mock("../../features/document/markdownExportCss", () => ({
 const markdownApi = vi.hoisted(() => ({
   renderMarkdown: vi.fn((contents: string) => `<p>${contents}</p>`),
   inlineMarkdownImages: vi.fn(async (html: string) => html),
+  useRealInlining: false,
 }));
 
 vi.mock("../../features/editor/markdown", () => ({
   renderMarkdown: markdownApi.renderMarkdown,
-  inlineMarkdownImages: markdownApi.inlineMarkdownImages,
+  inlineMarkdownImagesWithResult: async (html: string, loaders: import("../../features/editor/markdown").InlineMarkdownImageLoaders) => {
+    if (markdownApi.useRealInlining) {
+      const actual = await vi.importActual<typeof import("../../features/editor/markdown")>("../../features/editor/markdown");
+      return actual.inlineMarkdownImagesWithResult(html, loaders);
+    }
+    return { html: await markdownApi.inlineMarkdownImages(html), failures: [], embeddedCount: 0, intentionallySkipped: [] };
+  },
 }));
 
 const useDocumentExportSource = readFileSync(
@@ -116,6 +123,24 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("useDocumentExport", () => {
+  it.each([false, true])("reports only the selected book's unsaved buffers (dirty=%s)", async (dirty) => {
+    const active = makeTab({ contents: "# Active\n", lastSavedContents: "# Active\n" });
+    const chapter = { name: "章.md", path: "/canonical/章.md", relativePath: "章.md" };
+    const included = makeTab({ path: "/workspace/章.md", contents: dirty ? "# Edited\n" : "# Saved\n", lastSavedContents: "# Saved\n" });
+    const unrelated = makeTab({ path: "/workspace/other.md", contents: "# Unsaved\n" });
+    const { result } = renderHook(() => useDocumentExport({
+      activeContents: active.contents, activeTab: active,
+      bookScopeChapters: [chapter], tabs: [active, included, unrelated],
+      setGlobalError: vi.fn(), setStatus: vi.fn(), workspaceRootPath: "/workspace",
+    }));
+    await act(async () => result.current.exportPdf());
+    await act(async () => result.current.exportEpubBeta());
+    for (const request of [result.current.pdfExportRequest, result.current.epubExportRequest]) {
+      expect(request?.preflightByScope.document.hasUnsavedChanges).toBe(false);
+      expect(request?.preflightByScope.book.hasUnsavedChanges).toBe(dirty);
+    }
+  });
+
   it("keeps the Markdown renderer statically imported", () => {
     expect(useDocumentExportSource).not.toContain(
       'import("../../features/editor/markdown")',
@@ -126,6 +151,7 @@ describe("useDocumentExport", () => {
     vi.useRealTimers();
     dialogApi.save.mockReset();
     markdownApi.renderMarkdown.mockClear();
+    markdownApi.useRealInlining = false;
     markdownApi.inlineMarkdownImages.mockClear();
     markdownApi.inlineMarkdownImages.mockImplementation(async (html: string) => html);
     epubApi.buildEpubBetaArchive.mockClear();
@@ -281,6 +307,20 @@ describe("useDocumentExport", () => {
     expect(exportedHtml).toContain("  --status-text: #f6f1e8;");
     expect(exportedHtml).toContain("background: var(--status-bg)");
     expect(exportedHtml).toContain("color: var(--status-text)");
+  });
+
+  it("explains the completed HTML byte limit before attempting to write embedded images", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/large.html");
+    markdownApi.inlineMarkdownImages.mockResolvedValueOnce('<img src="data:image/png;base64,' + "A".repeat(11_184_812) + '">');
+    const setGlobalError = vi.fn();
+    const { result } = renderHook(() => useDocumentExport({
+      activeContents: "Short text with image", activeTab: makeTab(),
+      setGlobalError, setStatus: vi.fn(), workspaceRootPath: "/workspace",
+    }));
+    await act(async () => result.current.exportHtml());
+    expect(tauriApi.saveTextFileAs).not.toHaveBeenCalled();
+    expect(setGlobalError).toHaveBeenCalledWith(expect.stringContaining("画像・CSSを含むHTML全体"));
+    expect(setGlobalError).toHaveBeenCalledWith(expect.stringContaining("画像を縮小"));
   });
 
   it("opens PDF settings before exporting with the selected margin", async () => {
@@ -461,7 +501,8 @@ describe("useDocumentExport", () => {
     expect(result.current.epubExportRequest?.hasUnsavedChanges).toBe(true);
   });
 
-  it("preserves PDF image warnings in the final success status", async () => {
+  it.each([false, true])("preserves PDF image warnings through real first-stage inlining: %s", async (realInlining) => {
+    markdownApi.useRealInlining = realInlining;
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/image-warning.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);
