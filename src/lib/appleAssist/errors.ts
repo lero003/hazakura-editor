@@ -1,5 +1,5 @@
 /** Internal categories over the existing string-only Tauri error wire. */
-export type LocalAssistErrorKind = "format" | "context" | "selection" | "proposal" | "unavailable" | "language" |
+export type LocalAssistErrorKind = "format" | "model-context" | "context" | "selection" | "proposal" | "unavailable" | "language" |
   "throttled" | "timeout" | "cancelled" | "stale" | "guardrail" | "unknown";
 
 export function classifyLocalAssistError(error: unknown): LocalAssistErrorKind {
@@ -9,7 +9,8 @@ export function classifyLocalAssistError(error: unknown): LocalAssistErrorKind {
   if (/proposal exceeds (?:the continuation limit|the maximum length)/.test(raw)) return "proposal";
   if (/ambiguous proposal formatting|reference metadata instead of a proposal/.test(raw)) return "format";
   if (raw.includes("selected text exceeds")) return "selection";
-  if (/document context exceeds|exceededcontextwindowsize|input is too large for this request/.test(raw)) return "context";
+  if (raw.includes("document context exceeds")) return "context";
+  if (/exceededcontextwindowsize|input is too large for this request/.test(raw)) return "model-context";
   if (/stale|no longer matches/.test(raw)) return "stale";
   if (/unsupportedlanguageorlocale|does not support.*(?:language|locale)/.test(raw)) return "language";
   if (/guardrail|refus/.test(raw)) return "guardrail";

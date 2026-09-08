@@ -11,6 +11,7 @@ import {
 import {
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
   REQUEST_AI_EDIT_PROPOSAL_EVENT,
+  CANCEL_AI_EDIT_PROPOSAL_EVENT,
   type AppleAssistApplyEvent,
   type AppleAssistGenerationLock,
   type AppleAssistProposalStatusEvent,
@@ -53,7 +54,7 @@ type UseAppleAssistProposalHandlerOptions = {
 };
 type GenerationJob = {
   owner: symbol; sessionId: string; requestId: string;
-  tab: ActiveTab; payload: AppleAssistApplyEvent; nativeStarted: boolean;
+  tab: ActiveTab; payload: AppleAssistApplyEvent; nativeStarted: boolean; stopPromise?: Promise<void>;
 };
 
 function validateProposalText(proposalText: unknown):
@@ -82,14 +83,22 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
   useEffect(() => {
     const owner = Symbol("local-assist-handler");
     ownerRef.current = owner;
+    const cancelRequest = async (requestId: string) => {
+      if (ownerRef.current !== owner || typeof requestId !== "string") return false;
+      const job = [...jobsRef.current].find((entry) => entry.owner === owner && entry.requestId === requestId);
+      return job ? cancelJob(job, true, "cancelled", "Hazakura Local Assist generation cancelled by user.") : false;
+    };
     const unregister = registerLocalAssistController({
       request: (payload) => { if (ownerRef.current === owner) void generateAppleAssistProposal(payload, owner); },
-      cancel: async (requestId) => {
-        const job = [...jobsRef.current].find((entry) => entry.owner === owner && entry.requestId === requestId);
-        return job ? cancelJob(job, true, "cancelled", "Hazakura Local Assist generation cancelled by user.") : false;
-      },
+      cancel: cancelRequest,
       isBusy: () => jobsRef.current.size > 0,
     });
+    let unlistenCancel: UnlistenFn | null = null;
+    void listen<string>(CANCEL_AI_EDIT_PROPOSAL_EVENT, (event) => { void cancelRequest(event.payload); })
+      .then((handle) => {
+        if (ownerRef.current !== owner) { void handle(); return; }
+        unlistenCancel = handle;
+      }).catch((err) => console.warn("Failed to listen for Local Assist cancellation", err));
     let unlisten: UnlistenFn | null = null;
     void listen<AppleAssistApplyEvent>(REQUEST_AI_EDIT_PROPOSAL_EVENT, (event) => {
       if (ownerRef.current === owner) void generateAppleAssistProposal(event.payload, owner);
@@ -101,6 +110,7 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       unregister();
       if (ownerRef.current === owner) ownerRef.current = null;
       if (unlisten) void unlisten();
+      if (unlistenCancel) void unlistenCancel();
       for (const job of jobsRef.current) {
         if (job.owner !== owner) continue;
         void cancelJob(job, false, "cancelled", "Hazakura Local Assist generation cancelled: the editor closed.");
@@ -130,10 +140,13 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
           readTargetTextForGeneration(previous.target, latest).ok && previous.originalText === previous.target.text;
       });
     if (!settled) return false;
+    setStatusRef.current?.(message);
     void emitAppleAssistProposalStatus(phase, message, job.payload);
     if (job.nativeStarted) {
-      try { await stopAppleAssistGeneration(); }
-      catch (error) { console.warn("Failed to stop Local Assist generation", error); }
+      job.stopPromise = stopAppleAssistGeneration().then(() => undefined).catch((error) => {
+        console.warn("Failed to stop Local Assist generation", error);
+      });
+      await job.stopPromise;
     }
     // Keep the native lock and busy state until the generation's finally.
     return true;
@@ -278,6 +291,8 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       await emitAppleAssistProposalStatus(cancelled ? "cancelled" : "failed", statusMessage, payload,
         { target, originalText: targetCheck.before });
     } finally {
+      // A delayed stop command must settle before another native request starts.
+      await job.stopPromise;
       jobsRef.current.delete(job);
       if (ownerRef.current !== null) {
         setGenerationLockRef.current?.((current) => current?.requestId === payload.requestId ? null : current);

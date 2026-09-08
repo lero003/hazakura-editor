@@ -233,6 +233,7 @@ pub fn run() {
             set_apple_assist_window_theme,
             request_apply_ai_edit_transaction,
             request_apple_assist_proposal,
+            cancel_apple_assist_proposal,
             open_main_agent_pane,
             get_main_active_workspace,
             set_main_active_workspace,

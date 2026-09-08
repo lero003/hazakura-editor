@@ -378,3 +378,8 @@ describe("Local Assist over-limit draft status", () => {
     expect(localizeStatusMessage(raw, "en")).toBe(raw);
   });
 });
+
+ it.each(["ja", "kana"] as const)("localizes detached generation and cancellation status in %s", (lang) => {
+   expect(localizeStatusMessage("Hazakura Local Assist generation cancelled by user.", lang)).toMatch(/取り消|とりけ/);
+   expect(localizeStatusMessage("Hazakura Local Assist is generating an unapplied proposal...", lang)).toMatch(/作成|つく/);
+ });

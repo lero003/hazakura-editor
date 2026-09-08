@@ -439,6 +439,32 @@ pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
     Ok(())
 }
 
+// The detached window cannot emit arbitrary events. Forward only a bounded
+// request id to main, which revokes ownership before stopping its native job.
+#[tauri::command]
+pub(crate) fn cancel_apple_assist_proposal<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    request_id: String,
+) -> Result<(), String> {
+    validate_apple_assist_cancel(window.label(), Some(distribution_lane()), &request_id)?;
+    app.emit_to(MAIN_WINDOW_LABEL, CANCEL_AI_EDIT_PROPOSAL_EVENT, request_id)
+        .map_err(|err| format!("Cannot cancel Hazakura Local Assist proposal: {err}"))
+}
+
+pub(crate) fn validate_apple_assist_cancel(
+    label: &str,
+    lane: Option<&str>,
+    request_id: &str,
+) -> Result<(), String> {
+    ensure_label_is_apple_assist(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)?;
+    if request_id.trim().is_empty() || request_id.len() > 200 {
+        return Err("Invalid Local Assist cancellation request id".into());
+    }
+    Ok(())
+}
+
 // v2.6 A-1/A-2: request generation of an unapplied Local Assist proposal.
 // Keep this command separate from the legacy apply transaction request so
 // the event name itself documents the buffer-mutation boundary. The main

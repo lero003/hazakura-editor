@@ -1,5 +1,6 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cancelAppleAssistProposal } from "../../lib/tauri/agent";
 import { useAppleAssistProposalHandler } from "./useAppleAssistProposalHandler";
 import { cancelSidebarProposal, isLocalAssistBusy } from "../../lib/appleAssist/sidebarBridge";
 import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
@@ -7,12 +8,19 @@ import type { ActiveTab } from "./useAppleAssistApplyHandler";
 import type { AppleAssistApplyEvent, AppleAssistProposalStatusEvent } from "../../types";
 
 const harness = vi.hoisted(() => ({
+  cancel: null as null | ((event: { payload: string }) => void),
   receive: null as null | ((event: { payload: AppleAssistApplyEvent }) => void),
   generate: vi.fn(), stop: vi.fn(), emit: vi.fn(), unlisten: vi.fn(),
 }));
+vi.mock("../../lib/tauri/_runtime", () => ({ isTauriRuntime: () => true }));
+vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn(async (command: string, args: { requestId: string }) => {
+  if (command !== "cancel_apple_assist_proposal") throw new Error(`Unexpected command: ${command}`);
+  harness.cancel!({ payload: args.requestId });
+}) }));
 vi.mock("@tauri-apps/api/event", () => ({
   emitTo: (...args: unknown[]) => harness.emit(...args),
-  listen: vi.fn(async (_name: string, callback: typeof harness.receive) => { harness.receive = callback; return harness.unlisten; }),
+  listen: vi.fn(async (_name: string, callback: typeof harness.receive) => { if (_name.endsWith("cancel-ai-edit-proposal")) harness.cancel = callback as unknown as typeof harness.cancel;
+    else harness.receive = callback; return harness.unlisten; }),
 }));
 vi.mock("../../lib/tauri/appleAssist", () => ({
   APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000, APPLE_ASSIST_MAX_SELECTED_CHARS: 4000,
@@ -37,7 +45,7 @@ async function send(payload: AppleAssistApplyEvent): Promise<void> {
 function phases(): AppleAssistProposalStatusEvent[] { return harness.emit.mock.calls.map((call) => call[2]); }
 let restoreRaf: typeof window.requestAnimationFrame;
 beforeEach(() => {
-  harness.receive = null; harness.generate.mockReset(); harness.emit.mockReset(); harness.unlisten.mockReset();
+  harness.cancel = null; harness.receive = null; harness.generate.mockReset(); harness.emit.mockReset(); harness.unlisten.mockReset();
   harness.emit.mockResolvedValue(undefined);
   harness.stop.mockReset(); harness.stop.mockResolvedValue(true);
   localAssistProposalStore.clear(tab.sessionId);
@@ -47,6 +55,64 @@ beforeEach(() => {
 afterEach(() => { cleanup(); localAssistProposalStore.clear(tab.sessionId); window.requestAnimationFrame = restoreRaf; });
 
 describe("Local Assist asynchronous lifecycle", () => {
+  it("cancels a detached request before native startup and preserves the previous proposal", async () => {
+    harness.generate.mockResolvedValue({ candidateText: "previous" });
+    const setStatus = vi.fn();
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab, setStatus }));
+    await send(request("previous"));
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous"));
+    let release!: FrameRequestCallback;
+    window.requestAnimationFrame = (callback) => { release = callback; return 1; };
+    await send({ ...request("cancel-before-start"), proposalText: "previous" });
+    await waitFor(() => expect(release).toBeDefined());
+    expect(harness.cancel).toBeTypeOf("function");
+    await act(async () => { await cancelAppleAssistProposal("cancel-before-start"); });
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous");
+    expect(setStatus).toHaveBeenLastCalledWith("Hazakura Local Assist generation cancelled by user.");
+    expect(isLocalAssistBusy()).toBe(true);
+    await act(async () => { release(0); });
+    await waitFor(() => expect(isLocalAssistBusy()).toBe(false));
+    expect(harness.generate).toHaveBeenCalledTimes(1);
+    expect(harness.stop).not.toHaveBeenCalled();
+  });
+  it("keeps the lock until the pending native stop also settles", async () => {
+    const generation = deferred();
+    let finishStop!: (value: boolean) => void;
+    harness.stop.mockReturnValue(new Promise<boolean>((resolve) => { finishStop = resolve; }));
+    harness.generate.mockReturnValueOnce(generation.promise);
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request("stopping"));
+    await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    await act(async () => { await cancelAppleAssistProposal("stopping"); });
+    await act(async () => generation.resolve({ candidateText: "LATE" }));
+    expect(isLocalAssistBusy()).toBe(true);
+    await send(request("too-early"));
+    expect(harness.generate).toHaveBeenCalledTimes(1);
+    await act(async () => finishStop(true));
+    await waitFor(() => expect(isLocalAssistBusy()).toBe(false));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+  });
+  it("rejects late completion after detached cancel and ignores an old cancel during a new request", async () => {
+    const old = deferred(); const fresh = deferred();
+    harness.generate.mockReturnValueOnce(old.promise).mockReturnValueOnce(fresh.promise);
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request("old")); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
+    expect(harness.cancel).toBeTypeOf("function");
+    await act(async () => { await cancelAppleAssistProposal("old"); });
+    expect(isLocalAssistBusy()).toBe(true);
+    await send(request("overlap"));
+    expect(harness.generate).toHaveBeenCalledTimes(1);
+    await act(async () => old.resolve({ candidateText: "LATE" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+    await send(request("new")); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(2));
+    await act(async () => { await cancelAppleAssistProposal("old"); });
+    expect(harness.stop).toHaveBeenCalledTimes(1);
+    await act(async () => fresh.resolve({ candidateText: "NEW" }));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("NEW");
+    await act(async () => { await cancelAppleAssistProposal("new"); });
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("NEW");
+    expect(harness.stop).toHaveBeenCalledTimes(1);
+  });
   it.each(["案\n\nHAZAKURA_TEXT_END", "案\n<<<HAZAKURA_TEXT_END", "HAZAKURA_TEXT_START\n案"])("rejects residual delimiters and restores the previous draft (%#)", async (candidateText) => {
     harness.generate.mockResolvedValueOnce({ candidateText: "previous" }).mockResolvedValueOnce({ candidateText });
     renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
@@ -121,7 +187,7 @@ describe("Local Assist asynchronous lifecycle", () => {
     await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
     unmount(); await act(async () => pending.resolve({ candidateText: "late" }));
     expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
-    expect(harness.unlisten).toHaveBeenCalledTimes(1);
+    expect(harness.unlisten).toHaveBeenCalledTimes(2);
     expect(phases().some((event) => event.phase === "completed")).toBe(false);
   });
   it.each(["", null, "<<<HAZAKURA_CONTEXT_START\nreference\nHAZAKURA_CONTEXT_END>>>", "x".repeat(64001)])("rejects empty, malformed, leaked or oversized output (%#)", async (candidateText) => {

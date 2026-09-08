@@ -3,8 +3,8 @@ import { classifyLocalAssistError } from "./errors";
 
 describe("Local Assist legacy error classification", () => {
   it.each([
-    ["Foundation Models input is too large for this request. Try a smaller selection.", "context"],
-    ["Foundation Models generation failed: exceededContextWindowSize", "context"],
+    ["Foundation Models input is too large for this request. Try a smaller selection.", "model-context"],
+    ["Foundation Models generation failed: exceededContextWindowSize", "model-context"],
     ["Document context exceeds the maximum length of 8000 characters.", "context"],
     ["Selected text exceeds the maximum length of 4000 characters.", "selection"],
     ["Hazakura Local Assist current proposal exceeds the maximum length of 4000 characters.", "proposal"],

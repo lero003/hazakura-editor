@@ -395,7 +395,7 @@ describe("getProposalStatusPresentation", () => {
     const copy = getAppleAssistWindowCopy(lang);
     const event: AppleAssistProposalStatusEvent = { phase: "failed", requestId: "failed", request: "整えて", target: null, emittedAtMs: 0,
       message: "Hazakura Local Assist proposal generation failed: Foundation Models input is too large for this request." };
-    expect(getProposalStatusPresentation(event, copy).error).toBe(copy.contextTooLongError);
+    expect(getProposalStatusPresentation(event, copy).error).toBe(copy.modelContextTooLongError);
   });
   const copy = getAppleAssistWindowCopy("ja");
   const base: AppleAssistProposalStatusEvent = {
@@ -429,6 +429,14 @@ describe("getProposalStatusPresentation", () => {
 });
 
 describe("classifyApplyError", () => {
+  it.each(["ja", "kana", "en"] as const)("distinguishes model capacity from the application character cap in %s", (lang) => {
+    const copy = getAppleAssistWindowCopy(lang);
+    const model = classifyApplyError("Foundation Models input is too large for this request. Try a smaller selection.", copy);
+    expect(model).not.toContain("8000");
+    expect(model).not.toBe(copy.contextTooLongError);
+    expect(classifyApplyError("Document context exceeds the maximum length of 8000 characters.", copy)).toBe(copy.contextTooLongError);
+  });
+
   it.each(["ja", "kana", "en"] as const)("explains rejected residual delimiters in %s", (lang) => {
     const copy = getAppleAssistWindowCopy(lang);
     expect(classifyApplyError("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.", copy)).toBe(copy.proposalFormatError);
@@ -438,7 +446,7 @@ describe("classifyApplyError", () => {
     expect(classifyApplyError("helper request timed out", copy)).toBe(copy.generationTimeoutError);
     expect(classifyApplyError("Apple Intelligence is not enabled on this Mac.", copy)).toBe(copy.modelUnavailableError);
     expect(classifyApplyError("Apple Foundation Models does not support the current app language or locale", copy)).toBe(copy.modelLanguageError);
-    expect(classifyApplyError("Foundation Models input is too large for this request.", copy)).toBe(copy.contextTooLongError);
+    expect(classifyApplyError("Foundation Models input is too large for this request.", copy)).toBe(copy.modelContextTooLongError);
   });
   it.each(["ja", "kana", "en"] as const)("explains an over-limit generated draft in %s", (lang) => {
     const copy = getAppleAssistWindowCopy(lang);
@@ -472,14 +480,14 @@ describe("classifyApplyError", () => {
     expect(message).toMatch(/8000/);
   });
 
-  it("routes the Foundation Models 'exceededContextWindowSize' to contextTooLongError", () => {
+  it("routes the Foundation Models 'exceededContextWindowSize' to modelContextTooLongError", () => {
     const message = classifyApplyError(
       new Error(
         "Foundation Models input is too large for this request. exceededContextWindowSize(...)",
       ),
       copy,
     );
-    expect(message).toBe(copy.contextTooLongError);
+    expect(message).toBe(copy.modelContextTooLongError);
   });
 
   it("routes a stale-target message to targetStaleError", () => {
@@ -554,7 +562,7 @@ describe("getApplyStatusPresentation", () => {
 
     expect(presentation.status).toBe(copy.failedStatus);
     expect(presentation.status).not.toBe(raw);
-    expect(presentation.error).toBe(copy.contextTooLongError);
+    expect(presentation.error).toBe(copy.modelContextTooLongError);
     expect(presentation.feedbackKind).toBe("failed");
   });
 

@@ -539,3 +539,5 @@ impl<'a> RealAgentRuntimeAdapter<'a> {
         }
     }
 }
+
+pub(crate) const CANCEL_AI_EDIT_PROPOSAL_EVENT: &str = "hazakura-note://cancel-ai-edit-proposal";

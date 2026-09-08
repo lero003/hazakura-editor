@@ -287,6 +287,12 @@ export async function requestAppleAssistProposal(
   await invoke("request_apple_assist_proposal", { payload });
 }
 
+/** Request-scoped logical cancellation; only main may stop its owned native job. */
+export async function cancelAppleAssistProposal(requestId: string): Promise<void> {
+  if (!isTauriRuntime()) throw new Error("Tauri runtime is not available.");
+  await invoke("cancel_apple_assist_proposal", { requestId });
+}
+
 // v0.12+ Hazakura Local Assist Writing Companion (slice 3+).
 // `getMainAppleAssistTarget` reads the latest inferred
 // target snapshot from the Rust-side cache. The main window

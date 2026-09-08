@@ -1,13 +1,16 @@
 import { act, fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { AppleAssistWindowApp } from "./AppleAssistWindowApp";
+import { AppleAssistWindowApp, getAppleAssistWindowCopy } from "./AppleAssistWindowApp";
 import {
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
+  MENU_LANGUAGE_STORAGE_KEY,
 } from "../../types";
 import {
   requestAppleAssistProposal,
+  cancelAppleAssistProposal,
+  getMainAppleAssistTarget,
 } from "../../lib/tauri";
 
 const eventListeners = new Map<string, (event: { payload: unknown }) => void>();
@@ -38,6 +41,7 @@ vi.mock("../../lib/tauri", async () => {
     })),
     requestApplyAiEditTransaction: vi.fn(async () => undefined),
     requestAppleAssistProposal: vi.fn(async () => undefined),
+    cancelAppleAssistProposal: vi.fn(async () => undefined),
     setAppleAssistWindowTheme: vi.fn(async () => undefined),
   };
 });
@@ -52,12 +56,80 @@ vi.mock("../../hooks/agent/useAppleAssistAvailability", () => ({
 
 afterEach(() => {
   cleanup();
+  localStorage.removeItem(MENU_LANGUAGE_STORAGE_KEY);
   vi.clearAllMocks();
   eventListeners.clear();
   delete (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 });
 
 describe("AppleAssistWindowApp render", () => {
+  it("shows a matching Japanese Apply failure and keeps the conversation and prior draft", async () => {
+    localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "依頼する" })); });
+    const first = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+    await act(async () => {
+      eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...first, phase: "completed", candidateText: "前の案", emittedAtMs: 0 } });
+    });
+    const failure = { ...first, phase: "failed", message: "Hazakura Local Assist apply failed: target text no longer matches the active buffer", emittedAtMs: 1 };
+    for (const conversationId of ["other-conversation", undefined]) {
+      await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: { ...failure, conversationId } }); });
+      expect(screen.queryByRole("alert")).toBeNull();
+    }
+    await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: failure }); });
+    expect(screen.getByRole("alert").textContent).toBe(getAppleAssistWindowCopy("ja").targetStaleError);
+    expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+    expect(screen.getAllByTestId("apple-assist-feedback-entry").at(-1)?.getAttribute("data-feedback-kind")).toBe("failed");
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "もう少し短く" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "依頼する" })); });
+    expect(vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0]).toMatchObject({ conversationId: first.conversationId, proposalText: "前の案" });
+  });
+
+  it("cancels target acquisition before submitting a request", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    let finish!: (value: null) => void;
+    vi.mocked(getMainAppleAssistTarget).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+    await act(async () => { finish(null); });
+    expect(requestAppleAssistProposal).not.toHaveBeenCalled();
+    expect(cancelAppleAssistProposal).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(false);
+  });
+
+  it("orders cancellation after the request IPC has been forwarded", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    let forwarded!: () => void;
+    vi.mocked(requestAppleAssistProposal).mockImplementationOnce(() => new Promise<void>((resolve) => { forwarded = resolve; }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0].requestId;
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+    expect(cancelAppleAssistProposal).not.toHaveBeenCalled();
+    await act(async () => { forwarded(); });
+    expect(cancelAppleAssistProposal).toHaveBeenCalledWith(requestId);
+  });
+
+  it("routes the cancel button to main with the active request id", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    const payload = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+    expect(cancelAppleAssistProposal).toHaveBeenCalledWith(payload.requestId);
+    expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
+  });
+
   it("does not repeat the Hazakura Local Assist title inside the window body", () => {
     render(<AppleAssistWindowApp />);
 

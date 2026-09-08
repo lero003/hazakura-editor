@@ -1086,3 +1086,16 @@ fn move_workspace_entry_rejects_agent_window_label() {
 
     let _ = fs::remove_dir_all(root);
 }
+
+#[test]
+fn detached_cancel_is_window_lane_and_request_scoped() {
+    for lane in [Some("app-store"), Some("developer")] {
+        validate_apple_assist_cancel(APPLE_ASSIST_WINDOW_LABEL, lane, "request-1").unwrap();
+        for label in [MAIN_WINDOW_LABEL, AGENT_WINDOW_LABEL, UNKNOWN_WINDOW_LABEL] {
+            assert!(validate_apple_assist_cancel(label, lane, "request-1").is_err());
+        }
+        for id in ["", "   ", &"a".repeat(201)] {
+            assert!(validate_apple_assist_cancel(APPLE_ASSIST_WINDOW_LABEL, lane, id).is_err());
+        }
+    }
+}

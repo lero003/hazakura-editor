@@ -198,6 +198,7 @@ export const APPLE_ASSIST_APPLY_STATUS_EVENT =
 // the detached Local Assist Diff review area.
 export const REQUEST_AI_EDIT_PROPOSAL_EVENT =
   "hazakura-note://request-ai-edit-proposal";
+export const CANCEL_AI_EDIT_PROPOSAL_EVENT = "hazakura-note://cancel-ai-edit-proposal";
 export const APPLE_ASSIST_PROPOSAL_STATUS_EVENT =
   "hazakura-note://apple-assist-proposal-status";
 export const REQUEST_AI_EDIT_TARGET_EVENT =

@@ -5,7 +5,7 @@ import {
   getMainAppleAssistTarget,
   requestAppleAssistProposal,
   setAppleAssistWindowTheme,
-  stopAppleAssistGeneration,
+  cancelAppleAssistProposal,
 } from "../../lib/tauri";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
@@ -278,6 +278,7 @@ export function AppleAssistWindowApp() {
   const generationFallbackRef = useRef<number | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
+  const submissionRef = useRef<{ requestId: string; promise: Promise<void> } | null>(null);
   const activeActionIdRef = useRef<LocalAssistActionId | null>(null);
   const [streamPreview, setStreamPreview] = useState<string>("");
   const [streamOriginalText, setStreamOriginalText] = useState<string>("");
@@ -493,25 +494,20 @@ export function AppleAssistWindowApp() {
           return;
         }
         const payload = event.payload;
+        const activeConversationId = conversationRef.current?.id;
+        if (activeConversationId == null || payload.conversationId !== activeConversationId) return;
+        if (payload.phase !== "completed" && payload.phase !== "discarded" && payload.phase !== "failed") return;
         if (payload.phase === "completed" || payload.phase === "discarded") {
-          // v2.6 B2.1: only reset the conversation this apply/discard belongs
-          // to. An unrelated tab's proposal must not clear this window's
-          // active conversation.
-          const activeConversationId = conversationRef.current?.id;
-          if (
-            activeConversationId != null &&
-            payload.conversationId === activeConversationId
-          ) {
-            conversationRef.current = null;
-            setConversation(null);
-            setStreamPreview("");
-            setStreamOriginalText("");
-            setError(null);
-            const presentation = getApplyStatusPresentation(payload, copy);
-            setStatus(presentation.status);
-            pushFeedback({ kind: presentation.feedbackKind });
-          }
+          conversationRef.current = null;
+          setConversation(null);
+          setStreamPreview("");
+          setStreamOriginalText("");
         }
+        // Failure is feedback only: keep the pinned conversation and draft.
+        const presentation = getApplyStatusPresentation(payload, copy);
+        setStatus(presentation.status);
+        setError(presentation.error);
+        pushFeedback({ kind: presentation.feedbackKind });
       },
     )
       .then((handle) => {
@@ -639,6 +635,7 @@ export function AppleAssistWindowApp() {
         // not silently redirect the conversation.
         const latestTarget =
           (await getMainAppleAssistTarget().catch(() => null)) ?? target;
+        if (activeRequestIdRef.current !== requestId) return;
         if (!latestTarget) {
           throw new Error("No Hazakura Local Assist target is available.");
         }
@@ -698,9 +695,13 @@ export function AppleAssistWindowApp() {
           revisionHistory: requestConversation.revisionHistory,
         } satisfies LocalAssistConversationRequest,
       });
-      await requestAppleAssistProposal(payload);
+      const submission = { requestId, promise: requestAppleAssistProposal(payload) };
+      submissionRef.current = submission;
+      await submission.promise;
+      if (activeRequestIdRef.current !== requestId) return;
       setStatus(copy.generatingInMain(payload.request));
     } catch (err: unknown) {
+      if (activeRequestIdRef.current !== requestId) return;
       clearGenerationFallback();
       setBusy(false);
       setActiveRequestId(null);
@@ -743,24 +744,35 @@ export function AppleAssistWindowApp() {
     setError(null);
   }, []);
 
-  // Cancel an in-flight generation. The Rust stop command kills the
-  // helper child; the main window's apply handler then emits a
-  // "cancelled" status that clears busy and the active request.
-  // Until that status arrives, show a cancelling state so the user
-  // sees the click registered.
+  // Cancel by request id through main's ownership guard, never by killing
+  // whichever native helper happens to be running when this click arrives.
   const cancelGeneration = useCallback(async () => {
-    if (!busy || cancelling) {
-      return;
-    }
+    const requestId = activeRequestIdRef.current;
+    if (!busy || cancelling || !requestId) return;
     setCancelling(true);
     setStatus(copy.cancellingStatus);
-    try {
-      await stopAppleAssistGeneration();
-    } catch {
-      // Best-effort: the status listener still clears busy when
-      // the in-flight generation settles.
+    const submission = submissionRef.current;
+    if (submission?.requestId !== requestId) {
+      // Still acquiring the initial target: no request has reached main.
+      activeRequestIdRef.current = null;
+      setActiveRequestId(null);
+      setBusy(false);
+      setCancelling(false);
+      clearGenerationFallback();
+      setStatus(copy.cancelledStatus);
+      pushFeedback({ kind: "cancelled" });
+      return;
     }
-  }, [busy, cancelling, copy.cancellingStatus]);
+    try {
+      // Ensure the request was forwarded before its cancellation event.
+      await submission.promise;
+      if (activeRequestIdRef.current === requestId) await cancelAppleAssistProposal(requestId);
+    } catch (err) {
+      if (activeRequestIdRef.current !== requestId) return;
+      setCancelling(false);
+      setError(classifyApplyError(err, copy));
+    }
+  }, [busy, cancelling, copy, clearGenerationFallback, pushFeedback]);
 
   const chatItems = [
     ...sentRequests.map((entry) => ({ ...entry, role: "user" as const, kind: undefined })),
@@ -886,6 +898,7 @@ export type AppleAssistWindowCopy = {
   cancelledStatus: string;
   cancellingStatus: string;
   contextTooLongError: string;
+  modelContextTooLongError: string;
   disabledStatus: string;
   emptyRequestError: string;
   generatingButton: string;
@@ -1185,6 +1198,7 @@ export function classifyApplyError(
     case "format": return copy.proposalFormatError;
     case "selection": return copy.selectionTooLongError;
     case "context": return copy.contextTooLongError;
+    case "model-context": return copy.modelContextTooLongError;
     case "stale": return copy.targetStaleError;
     case "guardrail": return copy.guardrailError;
     case "throttled": return copy.throttledError;
@@ -1211,6 +1225,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       cancellingStatus: "とりけし ちゅう...",
       availableDisclosure:
         "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは みはんえいの まま さぶんで かくにんできます。そとの AI さーびすには おくりません。",
+      modelContextTooLongError: "モデルが いちどに あつかえる りょうを こえました。たいしょうを みじかくするか、つづけて たのんでいたら あたらしい かいわから たのんでください。ふみは かわっていません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
@@ -1362,6 +1377,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       cancellingStatus: "取り消し中...",
       availableDisclosure:
         "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未反映のまま差分で確認でき、明示操作まで本文は変更しません。外部 AI サービスには情報を送りません。",
+      modelContextTooLongError: "モデルが一度に扱える量を超えました。対象を短くするか、追加指示が続いている場合は新しい会話から依頼してください。本文は変更していません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
@@ -1512,6 +1528,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     cancellingStatus: "Cancelling...",
     availableDisclosure:
       "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Proposals stay unapplied while you review the Diff; the document is unchanged until an explicit action. Nothing is sent to an external AI service.",
+    modelContextTooLongError: "The model cannot handle this much input at once. Select a shorter target, or start a new conversation after repeated follow-ups. Your document is unchanged.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:

@@ -22,7 +22,7 @@ const proposalListeners: ProposalListener[] = [];
 vi.mock("@tauri-apps/api/event", () => ({
   emitTo: vi.fn(async () => undefined),
   listen: vi.fn(async (_eventName: string, handler: ProposalListener) => {
-    proposalListeners.push(handler);
+    if (_eventName.endsWith("request-ai-edit-proposal")) proposalListeners.push(handler);
     return () => undefined;
   }),
 }));

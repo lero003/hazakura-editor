@@ -36,6 +36,18 @@ export function localizeStatusMessage(
       : "案を差分レビューに表示しました。本文はまだ変更していません。";
   }
 
+  if (message === "Hazakura Local Assist generation cancelled by user.") {
+    return isKanaStyle(menuLanguage)
+      ? "いらいを とりけしました。ふみは かわっていません。"
+      : "依頼を取り消しました。本文は変更していません。";
+  }
+
+  if (message === "Hazakura Local Assist is generating an unapplied proposal...") {
+    return isKanaStyle(menuLanguage)
+      ? "あんを つくっています。ふみは まだ かわっていません。"
+      : "案を作成しています。本文はまだ変更していません。";
+  }
+
   if (/ambiguous proposal formatting|reference metadata instead of a proposal/.test(message)) {
     return isKanaStyle(menuLanguage)
       ? "あんの かたちを かくにんできませんでした。ふみは かわっていません。もういちど たのんでください。"
