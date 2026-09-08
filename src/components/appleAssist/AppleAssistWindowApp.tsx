@@ -125,7 +125,7 @@ export function createAppleAssistConversationId(): string {
 
 export function isApplyStatusForActiveRequest(
   activeRequestId: string | null,
-  payload: AppleAssistApplyStatusEvent,
+  payload: Pick<AppleAssistApplyStatusEvent, "requestId">,
 ): boolean {
   return activeRequestId !== null && payload.requestId === activeRequestId;
 }
@@ -278,6 +278,7 @@ export function AppleAssistWindowApp() {
   const generationFallbackRef = useRef<number | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
+  const cancellingRequestIdRef = useRef<string | null>(null);
   const submissionRef = useRef<{ requestId: string; promise: Promise<void> } | null>(null);
   const activeActionIdRef = useRef<LocalAssistActionId | null>(null);
   const [streamPreview, setStreamPreview] = useState<string>("");
@@ -392,6 +393,18 @@ export function AppleAssistWindowApp() {
         if (!isApplyStatusForActiveRequest(activeRequestIdRef.current, payload)) {
           return;
         }
+        if (payload.phase === "cancelling") {
+          cancellingRequestIdRef.current = payload.requestId;
+          clearGenerationFallback();
+          setBusy(true);
+          setCancelling(true);
+          setStreamPreview("");
+          setError(null);
+          setStatus(copy.cancellingStatus);
+          return;
+        }
+        if ((payload.phase === "partial" || payload.phase === "started") &&
+            cancellingRequestIdRef.current === payload.requestId) return;
         if (payload.phase === "started") {
           if (isLocalAssistActionId(payload.actionId)) {
             activeActionIdRef.current = payload.actionId;
@@ -418,6 +431,7 @@ export function AppleAssistWindowApp() {
         }
         clearGenerationFallback();
         setBusy(false);
+        cancellingRequestIdRef.current = null;
         setCancelling(false);
         setActiveRequestId(null);
         activeRequestIdRef.current = null;
@@ -749,7 +763,9 @@ export function AppleAssistWindowApp() {
   const cancelGeneration = useCallback(async () => {
     const requestId = activeRequestIdRef.current;
     if (!busy || cancelling || !requestId) return;
+    cancellingRequestIdRef.current = requestId;
     setCancelling(true);
+    setStreamPreview("");
     setStatus(copy.cancellingStatus);
     const submission = submissionRef.current;
     if (submission?.requestId !== requestId) {
@@ -757,6 +773,7 @@ export function AppleAssistWindowApp() {
       activeRequestIdRef.current = null;
       setActiveRequestId(null);
       setBusy(false);
+      cancellingRequestIdRef.current = null;
       setCancelling(false);
       clearGenerationFallback();
       setStatus(copy.cancelledStatus);
@@ -769,6 +786,7 @@ export function AppleAssistWindowApp() {
       if (activeRequestIdRef.current === requestId) await cancelAppleAssistProposal(requestId);
     } catch (err) {
       if (activeRequestIdRef.current !== requestId) return;
+      cancellingRequestIdRef.current = null;
       setCancelling(false);
       setError(classifyApplyError(err, copy));
     }
@@ -819,7 +837,7 @@ export function AppleAssistWindowApp() {
             data-feedback-kind={item.kind} className={`apple-assist-chat-message apple-assist-chat-message-${item.role}`}>{item.text}</p>)
             : <p className="apple-assist-chat-empty">{ui.empty}</p>}
         </div>
-        {busy || streamPreview ? <StreamPreview busy={busy} copy={copy} streamPreview={streamPreview} /> : null}
+        {!cancelling && (busy || streamPreview) ? <StreamPreview busy={busy} copy={copy} streamPreview={streamPreview} /> : null}
         {busy ? <div className="apple-assist-window-progress" role="status"><span className="apple-assist-window-spinner" aria-hidden="true" />{status}</div> : null}
         {error ? <div className="apple-assist-window-error" role="alert">{error}</div> : null}
       </div>

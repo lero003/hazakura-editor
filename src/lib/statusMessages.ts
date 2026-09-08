@@ -36,6 +36,10 @@ export function localizeStatusMessage(
       : "案を差分レビューに表示しました。本文はまだ変更していません。";
   }
 
+  if (message === "Hazakura Local Assist is cancelling the generation...") {
+    return isKanaStyle(menuLanguage) ? "とりけし ちゅう..." : "取り消し中...";
+  }
+
   if (message === "Hazakura Local Assist generation cancelled by user.") {
     return isKanaStyle(menuLanguage)
       ? "いらいを とりけしました。ふみは かわっていません。"

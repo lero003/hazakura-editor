@@ -465,6 +465,7 @@ done
             None,
             None,
             |partial| partials.push(partial.candidate_text),
+            None,
         )
         .expect("streaming must include system backend");
         assert!(matches!(streamed, WireEnvelope::Candidate(_)));
@@ -991,4 +992,73 @@ fn resolver_test_only_helper_path_override_still_works() {
         err.contains(&bogus.display().to_string()),
         "missing fixture error must still include the path, got: {err}"
     );
+}
+
+#[test]
+fn scoped_cancel_survives_worker_start_and_pre_arm_gap() {
+    let Some(slow) = sleep_helper_script_or_skip("scoped-pre-arm") else {
+        return;
+    };
+    let entered = std::sync::Arc::new(std::sync::Barrier::new(2));
+    let resume = std::sync::Arc::new(std::sync::Barrier::new(2));
+    let a = entered.clone();
+    let b = resume.clone();
+    let store = std::sync::Arc::new(store_with_helper_path(slow).with_before_stream_arm(
+        std::sync::Arc::new(move || {
+            a.wait();
+            b.wait();
+        }),
+    ));
+    store.prepare_stream_request("old").unwrap();
+    let worker_store = store.clone();
+    let worker = tauri::async_runtime::spawn_blocking(move || {
+        generate_candidate_stream_via_helper(
+            &worker_store,
+            "summarize",
+            "body",
+            None,
+            None,
+            None,
+            None,
+            |_| {},
+            Some("old"),
+        )
+    });
+    entered.wait(); // Helper spawned, but the stop handle is not armed yet.
+    assert!(!store.stream_is_armed_for_test());
+    assert!(store.cancel_stream_request("old"));
+    resume.wait();
+    let err = tauri::async_runtime::block_on(worker).unwrap().unwrap_err();
+    assert!(err.contains("cancelled by user"), "{err}");
+    assert!(store.inner_is_empty());
+    assert_eq!(store.consecutive_failures_for_test(), 0);
+    store.finish_stream_request("old");
+    store.prepare_stream_request("new").unwrap();
+    assert!(!store.cancel_stream_request("old"));
+    store.finish_stream_request("old"); // Stale cleanup must not remove new.
+    assert!(store.cancel_stream_request("new"));
+    store.finish_stream_request("new");
+}
+
+#[test]
+fn scoped_cancel_before_worker_dispatch_never_spawns_helper() {
+    let store = store_without_helper();
+    store.prepare_stream_request("pending").unwrap();
+    assert!(store.cancel_stream_request("pending"));
+    let err = generate_candidate_stream_via_helper(
+        &store,
+        "summarize",
+        "body",
+        None,
+        None,
+        None,
+        None,
+        |_| {},
+        Some("pending"),
+    )
+    .unwrap_err();
+    assert!(err.contains("cancelled by user"));
+    assert!(store.inner_is_empty());
+    store.finish_stream_request("pending");
+    assert!(!store.cancel_stream_request("pending"));
 }

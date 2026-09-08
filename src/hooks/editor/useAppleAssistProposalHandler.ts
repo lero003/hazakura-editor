@@ -7,6 +7,8 @@ import {
   APPLE_ASSIST_MAX_SELECTED_CHARS,
   generateAppleAssistCandidateStreaming,
   stopAppleAssistGeneration,
+  prepareAppleAssistGeneration,
+  finishAppleAssistGeneration,
 } from "../../lib/tauri/appleAssist";
 import {
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
@@ -54,7 +56,9 @@ type UseAppleAssistProposalHandlerOptions = {
 };
 type GenerationJob = {
   owner: symbol; sessionId: string; requestId: string;
-  tab: ActiveTab; payload: AppleAssistApplyEvent; nativeStarted: boolean; stopPromise?: Promise<void>;
+  tab: ActiveTab; payload: AppleAssistApplyEvent; stopPromise?: Promise<void>;
+  preparePromise?: Promise<void>; nativePrepared?: boolean;
+  terminal?: { phase: "completed" | "failed" | "cancelled"; message: string; options?: Partial<Pick<AppleAssistProposalStatusEvent, "target" | "originalText" | "candidateText">> };
 };
 
 function validateProposalText(proposalText: unknown):
@@ -140,10 +144,11 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
           readTargetTextForGeneration(previous.target, latest).ok && previous.originalText === previous.target.text;
       });
     if (!settled) return false;
-    setStatusRef.current?.(message);
-    void emitAppleAssistProposalStatus(phase, message, job.payload);
-    if (job.nativeStarted) {
-      job.stopPromise = stopAppleAssistGeneration().then(() => undefined).catch((error) => {
+    job.terminal = { phase, message };
+    setStatusRef.current?.("Hazakura Local Assist is cancelling the generation...");
+    void emitAppleAssistProposalStatus("cancelling", message, job.payload);
+    if (job.preparePromise) {
+      job.stopPromise = job.preparePromise.then(() => stopAppleAssistGeneration(job.requestId)).then(() => undefined).catch((error) => {
         console.warn("Failed to stop Local Assist generation", error);
       });
       await job.stopPromise;
@@ -194,7 +199,7 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       conversationId: payload.conversationId ?? null,
       turnIndex: payload.conversationTurnIndex ?? 0,
     };
-    const job: GenerationJob = { owner, sessionId: tab.sessionId, requestId: payload.requestId, tab, payload, nativeStarted: false };
+    const job: GenerationJob = { owner, sessionId: tab.sessionId, requestId: payload.requestId, tab, payload };
     // Reserve before store notification; observers can synchronously re-enter.
     jobsRef.current.add(job);
     if (!localAssistProposalStore.beginGeneration(tab.sessionId, proposalBase)) {
@@ -230,7 +235,10 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       const after = buildSurroundingDocumentContext(tab.contents, target.end, target.end,
         0, contextWindow.postChars, APPLE_ASSIST_MAX_CONTEXT_CHARS);
       const surroundingContext = `対象より前:\n${before}\n対象より後:\n${after}`;
-      job.nativeStarted = true;
+      job.preparePromise = prepareAppleAssistGeneration(payload.requestId);
+      await job.preparePromise;
+      job.nativePrepared = true;
+      if (!ownsRequest()) return;
       const response = await generateAppleAssistCandidateStreaming({
         operation: action.operation,
         actionId,
@@ -273,7 +281,7 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       if (!localAssistProposalStore.completeGeneration(tab.sessionId, { ...proposalBase, candidateText, generation })) return;
       const message = "Hazakura Local Assist created an unapplied proposal for Diff review.";
       setStatusRef.current?.(message);
-      await emitAppleAssistProposalStatus("completed", message, payload, { target, originalText: targetCheck.before, candidateText });
+      job.terminal = { phase: "completed", message, options: { target, originalText: targetCheck.before, candidateText } };
     } catch (err) {
       if (!ownsRequest()) return;
       // A failed refinement can restore only an intact prior target; never a
@@ -288,16 +296,23 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       const cancelled = classifyLocalAssistError(err) === "cancelled";
       const statusMessage = cancelled ? message : `Hazakura Local Assist proposal generation failed: ${message}`;
       setStatusRef.current?.(statusMessage);
-      await emitAppleAssistProposalStatus(cancelled ? "cancelled" : "failed", statusMessage, payload,
-        { target, originalText: targetCheck.before });
+      job.terminal = { phase: cancelled ? "cancelled" : "failed", message: statusMessage,
+        options: { target, originalText: targetCheck.before } };
     } finally {
       // A delayed stop command must settle before another native request starts.
       await job.stopPromise;
+      if (job.nativePrepared) {
+        await finishAppleAssistGeneration(job.requestId).catch((error) => console.warn("Failed to finish Local Assist request", error));
+      }
       jobsRef.current.delete(job);
       if (ownerRef.current !== null) {
         setGenerationLockRef.current?.((current) => current?.requestId === payload.requestId ? null : current);
       }
       notifyLocalAssistActivity();
+      if (job.terminal) {
+        setStatusRef.current?.(job.terminal.message);
+        await emitAppleAssistProposalStatus(job.terminal.phase, job.terminal.message, job.payload, job.terminal.options);
+      }
     }
   }
 }

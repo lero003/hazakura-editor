@@ -22,7 +22,7 @@ export function beginSidebarTurn(session: SidebarSession, payload: AppleAssistAp
 }
 export function settleSidebarTurn(session: SidebarSession, status: AppleAssistProposalStatusEvent): SidebarSession {
   if (status.requestId !== session.pendingRequestId || (status.conversationId && status.conversationId !== session.conversationId) ||
-      status.phase === "partial" || status.phase === "started") return session;
+      status.phase === "partial" || status.phase === "started" || status.phase === "cancelling") return session;
   const turn = session.turns.find((entry) => entry.id === status.requestId);
   if (!turn) return session;
   const completed = status.phase === "completed";

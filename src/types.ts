@@ -304,7 +304,7 @@ export type AppleAssistApplyStatusEvent = {
 // This payload is delivered only to the detached Local Assist window
 // so the full candidate has one authoritative Diff review surface.
 export type AppleAssistProposalStatusEvent = {
-  phase: "started" | "partial" | "completed" | "failed" | "cancelled";
+  phase: "started" | "partial" | "completed" | "failed" | "cancelling" | "cancelled";
   requestId: string;
   message: string;
   request: string;

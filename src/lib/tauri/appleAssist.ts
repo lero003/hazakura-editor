@@ -105,13 +105,21 @@ export async function generateAppleAssistCandidateStreaming(
   });
 }
 
+export async function prepareAppleAssistGeneration(requestId: string): Promise<void> {
+  await invoke("prepare_apple_assist_generation", { requestId });
+}
+
+export async function finishAppleAssistGeneration(requestId: string): Promise<void> {
+  await invoke("finish_apple_assist_generation", { requestId });
+}
+
 // Stop any in-flight Hazakura Local Assist generation. Returns
 // `true` when a generation was active and cancelled, `false` when
 // nothing was in flight (idempotent no-op). The in-flight streaming
 // Promise resolves with a cancel error shortly after this resolves.
-export async function stopAppleAssistGeneration(): Promise<boolean> {
+export async function stopAppleAssistGeneration(requestId?: string): Promise<boolean> {
   if (!isTauriRuntime()) {
     return false;
   }
-  return invoke<boolean>("stop_apple_assist_candidate");
+  return invoke<boolean>("stop_apple_assist_candidate", requestId ? { requestId } : undefined);
 }

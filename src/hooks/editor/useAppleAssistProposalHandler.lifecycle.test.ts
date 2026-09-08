@@ -1,5 +1,6 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { prepareAppleAssistGeneration, finishAppleAssistGeneration } from "../../lib/tauri/appleAssist";
 import { cancelAppleAssistProposal } from "../../lib/tauri/agent";
 import { useAppleAssistProposalHandler } from "./useAppleAssistProposalHandler";
 import { cancelSidebarProposal, isLocalAssistBusy } from "../../lib/appleAssist/sidebarBridge";
@@ -23,6 +24,8 @@ vi.mock("@tauri-apps/api/event", () => ({
     else harness.receive = callback; return harness.unlisten; }),
 }));
 vi.mock("../../lib/tauri/appleAssist", () => ({
+  prepareAppleAssistGeneration: vi.fn(async () => undefined),
+  finishAppleAssistGeneration: vi.fn(async () => undefined),
   APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000, APPLE_ASSIST_MAX_SELECTED_CHARS: 4000,
   stopAppleAssistGeneration: (...args: unknown[]) => harness.stop(...args),
   generateAppleAssistCandidateStreaming: (...args: unknown[]) => harness.generate(...args),
@@ -68,12 +71,28 @@ describe("Local Assist asynchronous lifecycle", () => {
     expect(harness.cancel).toBeTypeOf("function");
     await act(async () => { await cancelAppleAssistProposal("cancel-before-start"); });
     expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous");
-    expect(setStatus).toHaveBeenLastCalledWith("Hazakura Local Assist generation cancelled by user.");
+    expect(setStatus).toHaveBeenLastCalledWith("Hazakura Local Assist is cancelling the generation...");
     expect(isLocalAssistBusy()).toBe(true);
     await act(async () => { release(0); });
     await waitFor(() => expect(isLocalAssistBusy()).toBe(false));
     expect(harness.generate).toHaveBeenCalledTimes(1);
     expect(harness.stop).not.toHaveBeenCalled();
+  });
+  it("retains cancellation while native preparation is pending and never starts that generation", async () => {
+    let prepared!: () => void;
+    vi.mocked(prepareAppleAssistGeneration).mockImplementationOnce(() => new Promise<void>((resolve) => { prepared = resolve; }));
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request("preparing"));
+    await waitFor(() => expect(prepared).toBeDefined());
+    await act(async () => { await cancelAppleAssistProposal("preparing"); });
+    expect(isLocalAssistBusy()).toBe(true);
+    expect(harness.stop).not.toHaveBeenCalled();
+    await act(async () => prepared());
+    await waitFor(() => expect(isLocalAssistBusy()).toBe(false));
+    expect(harness.stop).toHaveBeenCalledWith("preparing");
+    expect(harness.generate).not.toHaveBeenCalled();
+    expect(finishAppleAssistGeneration).toHaveBeenCalledWith("preparing");
+    expect(phases().at(-1)?.phase).toBe("cancelled");
   });
   it("keeps the lock until the pending native stop also settles", async () => {
     const generation = deferred();
@@ -84,12 +103,15 @@ describe("Local Assist asynchronous lifecycle", () => {
     await send(request("stopping"));
     await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
     await act(async () => { await cancelAppleAssistProposal("stopping"); });
+    expect(phases().at(-1)?.phase).toBe("cancelling");
+    expect(phases().some((event) => event.phase === "cancelled")).toBe(false);
     await act(async () => generation.resolve({ candidateText: "LATE" }));
     expect(isLocalAssistBusy()).toBe(true);
     await send(request("too-early"));
     expect(harness.generate).toHaveBeenCalledTimes(1);
     await act(async () => finishStop(true));
     await waitFor(() => expect(isLocalAssistBusy()).toBe(false));
+    expect(phases().at(-1)?.phase).toBe("cancelled");
     expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
   });
   it("rejects late completion after detached cancel and ignores an old cancel during a new request", async () => {
@@ -166,7 +188,7 @@ describe("Local Assist asynchronous lifecycle", () => {
     const { rerender } = renderHook(({ activeTab }) => useAppleAssistProposalHandler({ activeTab }), { initialProps: { activeTab: tab } });
     await send(request()); await waitFor(() => expect(harness.generate).toHaveBeenCalledTimes(1));
     rerender({ activeTab: { ...tab, sessionId: "other", path: "/other.md" } });
-    expect(harness.stop).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(harness.stop).toHaveBeenCalledTimes(1));
     expect(isLocalAssistBusy()).toBe(true);
     rerender({ activeTab: tab });
     await act(async () => pending.resolve({ candidateText: "late" }));

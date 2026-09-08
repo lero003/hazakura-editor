@@ -28,6 +28,8 @@ vi.mock("@tauri-apps/api/event", () => ({
 }));
 
 vi.mock("../../lib/tauri/appleAssist", () => ({
+  prepareAppleAssistGeneration: vi.fn(async () => undefined),
+  finishAppleAssistGeneration: vi.fn(async () => undefined),
   APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000,
   APPLE_ASSIST_MAX_SELECTED_CHARS: 4000,
   generateAppleAssistCandidateStreaming: vi.fn(async () => ({

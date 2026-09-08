@@ -11,16 +11,16 @@ Last reviewed: 2026-09-08
 - **v2.9ソースレビュー:** 上限整合、System責務/エラー整理、生成元表示、日本語評価CLI、
   コードフェンス保持、予約区切り文字が残る案の拒否を実装。実装・検証の範囲と残課題は
   [v2.9レビュー](reviews/2026-09-08-v2.9-local-assist.md)。
-- **再レビュー対応:** 別窓のApply失敗通知、requestId付き論理取消、モデル容量不足の案内を修正。
-  生成とnative停止の完了までロックを保持。全Vitest 2,007件、App Store surface 111件、
-  型検査/Vite/nativeローカルbuild、Rust fmt/370件（2 ignored）が成功。
-  nativeで取消・前案/生成元保持・再生成、最終版の両窓の取消表示と本文不変を確認。
-  R1/R3のnative失敗再現と、起動前の厳密な取消競合は未実施（自動テストで検証）。
+- **再レビュー対応:** R1のApply失敗通知とR3の容量案内は維持。R2-a/bはnativeのrequestId予約から
+  取消フラグを保持し、生成/停止/予約解放後に両窓の操作を再開する。停止待ちのpartialは表示しない。
+  全Vitest 2,010件、App Store surface 111件、型検査/Vite/nativeローカルbuild、
+  Rust fmt/372件（2 ignored）が成功。workerのハンドル登録前と両窓の停止待ちを自動検証。
+  今回のnative実操作は未実施。6a5c15b5の取消・前案保持・再生成の実機記録とは区別する。
 - **前回の検証:** 全Vitest 1,985件、型検査/Vite/nativeローカルbuild、App Store surface 111件、
   Rust fmt/369件（2 ignored）、Swift 5件、評価判定Node 3件が成功。
   live日本語評価は初回35/40、フェンス修正後13/14で完成案。品質の全合格ではない。
   修正版nativeで生成→追加指示→Diff→反映→Undoを確認。IME/VoiceOver/旧OSは未確認。
-- **次:** R1/R2/R3修正差分の再レビュー、日本語/Markdownの品質判断、残る実機smokeとRC証跡。
+- **次:** R2-a/b修正差分の再レビュー、日本語/Markdownの品質判断、残る実機smokeとRC証跡。
   ソース版数は2.8.0を維持し、v2.9候補凍結時に版数と配布証跡を揃える。公開・提出は未実施。
 - **版別境界:** v3.0はAFM活用とSystemで検証する共通基盤、v3.1はC-1/C-2のDL・管理・切り替え。
   C-1/C-2とMLXのHOLDを維持。詳細は `docs/v2.9-v3-local-assist-plan.md`。

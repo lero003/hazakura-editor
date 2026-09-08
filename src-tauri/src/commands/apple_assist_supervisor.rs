@@ -59,6 +59,9 @@ pub(crate) struct AppleAssistHelperStore {
     // the in-flight blocking read. Only one generation runs at a time
     // (the `inner` mutex serializes them), so a single slot suffices.
     active_cancel: Mutex<Option<ActiveCancelHandle>>,
+    stream_request: Mutex<Option<StreamRequestCancel>>,
+    #[cfg(test)]
+    before_stream_arm: Option<Arc<dyn Fn() + Send + Sync>>,
     // Test-only override slot. Production `Default` never reads
     // the environment. It resolves only the bundled helper next
     // to the app executable. Tests use
@@ -104,6 +107,12 @@ struct ActiveCancelHandle {
     child: Arc<Mutex<Child>>,
 }
 
+struct StreamRequestCancel {
+    request_id: String,
+    flag: Arc<AtomicBool>,
+    child: Option<Arc<Mutex<Child>>>,
+}
+
 impl Default for AppleAssistHelperStore {
     fn default() -> Self {
         Self {
@@ -111,6 +120,9 @@ impl Default for AppleAssistHelperStore {
             consecutive_failures: AtomicU32::new(0),
             cooldown_started_at: Mutex::new(None),
             active_cancel: Mutex::new(None),
+            stream_request: Mutex::new(None),
+            #[cfg(test)]
+            before_stream_arm: None,
             #[cfg(test)]
             helper_path_override: None,
             #[cfg(test)]
@@ -132,6 +144,91 @@ impl Drop for AppleAssistHelperStore {
 }
 
 impl AppleAssistHelperStore {
+    // Reserve before dispatching generation. Cancellation never needs the
+    // blocking helper mutex and is retained while the worker starts/spawns.
+    pub(crate) fn prepare_stream_request(&self, request_id: &str) -> Result<(), String> {
+        if request_id.trim().is_empty() || request_id.len() > 200 {
+            return Err("Invalid Local Assist generation request id".into());
+        }
+        let mut slot = self.stream_request.lock().expect("stream request lock");
+        if slot.is_some() {
+            return Err("Local Assist is still finishing another generation.".into());
+        }
+        *slot = Some(StreamRequestCancel {
+            request_id: request_id.into(),
+            flag: Arc::new(AtomicBool::new(false)),
+            child: None,
+        });
+        Ok(())
+    }
+
+    pub(crate) fn finish_stream_request(&self, request_id: &str) {
+        let mut slot = self.stream_request.lock().expect("stream request lock");
+        if slot
+            .as_ref()
+            .is_some_and(|state| state.request_id == request_id)
+        {
+            *slot = None;
+        }
+    }
+
+    pub(crate) fn cancel_stream_request(&self, request_id: &str) -> bool {
+        let slot = self.stream_request.lock().expect("stream request lock");
+        let Some(state) = slot.as_ref().filter(|state| state.request_id == request_id) else {
+            return false;
+        };
+        state.flag.store(true, Ordering::SeqCst);
+        if let Some(child) = &state.child {
+            Self::kill_child(child);
+        }
+        true
+    }
+
+    fn stream_request_flag(&self, request_id: &str) -> Result<Arc<AtomicBool>, String> {
+        let slot = self.stream_request.lock().expect("stream request lock");
+        let state = slot
+            .as_ref()
+            .filter(|state| state.request_id == request_id)
+            .ok_or("Local Assist generation request was not prepared.")?;
+        if state.flag.load(Ordering::SeqCst) {
+            return Err("Hazakura Local Assist generation cancelled by user.".into());
+        }
+        Ok(Arc::clone(&state.flag))
+    }
+
+    fn arm_stream_request(
+        &self,
+        request_id: &str,
+        child: Arc<Mutex<Child>>,
+    ) -> Result<Arc<AtomicBool>, String> {
+        let mut slot = self.stream_request.lock().expect("stream request lock");
+        let state = slot
+            .as_mut()
+            .filter(|state| state.request_id == request_id)
+            .ok_or("Local Assist generation request was not prepared.")?;
+        state.child = Some(Arc::clone(&child));
+        if state.flag.load(Ordering::SeqCst) {
+            Self::kill_child(&child);
+            return Err("Hazakura Local Assist generation cancelled by user.".into());
+        }
+        Ok(Arc::clone(&state.flag))
+    }
+
+    #[cfg(test)]
+    pub(crate) fn stream_is_armed_for_test(&self) -> bool {
+        self.stream_request
+            .lock()
+            .unwrap()
+            .as_ref()
+            .is_some_and(|state| state.child.is_some())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_before_stream_arm(mut self, hook: Arc<dyn Fn() + Send + Sync>) -> Self {
+        self.before_stream_arm = Some(hook);
+        self
+    }
+
     /// Kill the child process via the shared `Arc<Mutex<Child>>`
     /// and reap it. Best-effort: kill/wait errors are swallowed
     /// because the caller is already on the failure path.
@@ -473,47 +570,58 @@ impl AppleAssistHelperStore {
         request: &WireRequest<'_>,
         timeout: Duration,
         mut on_partial: F,
+        request_id: Option<&str>,
     ) -> Result<WireEnvelope, String>
     where
         F: FnMut(HelperCandidatePartial),
     {
-        let serialized = serde_json::to_string(request)
-            .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
-        inner
-            .stdin
-            .write_all(serialized.as_bytes())
-            .map_err(|e| format!("Failed to write to helper stdin: {e}"))?;
-        inner
-            .stdin
-            .write_all(b"\n")
-            .map_err(|e| format!("Failed to write newline to helper stdin: {e}"))?;
-        inner
-            .stdin
-            .flush()
-            .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
-
-        // Arm once for the whole streaming round-trip. Each envelope
-        // read checks the shared flag so a cancel between partials or
-        // during the final read surfaces as the cancel error.
-        let cancel_flag = store.arm_cancel_locked(Arc::clone(&inner.child));
-
-        let result = loop {
-            let envelope_result = Self::read_envelope_locked(inner, timeout, &cancel_flag);
-            let envelope = match envelope_result {
-                Ok(envelope) => envelope,
-                Err(err) => break Err(err),
-            };
-            match envelope {
-                WireEnvelope::CandidatePartial(partial) => on_partial(partial),
-                other => break Ok(other),
-            }
+        #[cfg(test)]
+        if let Some(hook) = &store.before_stream_arm {
+            hook();
+        }
+        let cancel_flag = match request_id {
+            Some(id) => store.arm_stream_request(id, Arc::clone(&inner.child))?,
+            None => store.arm_cancel_locked(Arc::clone(&inner.child)),
         };
+        let result = (|| {
+            let serialized = serde_json::to_string(request)
+                .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
+            inner
+                .stdin
+                .write_all(serialized.as_bytes())
+                .map_err(|e| format!("Failed to write to helper stdin: {e}"))?;
+            inner
+                .stdin
+                .write_all(b"\n")
+                .map_err(|e| format!("Failed to write newline to helper stdin: {e}"))?;
+            inner
+                .stdin
+                .flush()
+                .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
+
+            loop {
+                let envelope_result = Self::read_envelope_locked(inner, timeout, &cancel_flag);
+                let envelope = match envelope_result {
+                    Ok(envelope) => envelope,
+                    Err(err) => break Err(err),
+                };
+                match envelope {
+                    WireEnvelope::CandidatePartial(partial) => on_partial(partial),
+                    other => break Ok(other),
+                }
+            }
+        })();
 
         // Always disarm so the cancel slot is cleared whether the loop
         // exited via success, a read error, or a cancel. Without this,
         // an early `?` return would leave the slot set and the next
         // generation's arm would race with a stale handle.
-        let _ = store.disarm_cancel_locked();
+        if request_id.is_none() {
+            let _ = store.disarm_cancel_locked();
+        }
+        if cancel_flag.load(Ordering::SeqCst) {
+            return Err("Hazakura Local Assist generation cancelled by user.".into());
+        }
         result
     }
 
@@ -568,6 +676,16 @@ impl AppleAssistHelperStore {
     /// was signalled to cancel, `false` if no generation was in
     /// flight (idempotent no-op).
     pub(crate) fn cancel_active(&self) -> bool {
+        // App shutdown also cancels a reserved worker that has not armed yet.
+        if let Ok(slot) = self.stream_request.lock() {
+            if let Some(state) = slot.as_ref() {
+                state.flag.store(true, Ordering::SeqCst);
+                if let Some(child) = &state.child {
+                    Self::kill_child(child);
+                }
+                return true;
+            }
+        }
         let cancelled = match self.active_cancel.lock() {
             Ok(guard) => match guard.as_ref() {
                 Some(handle) => {
@@ -836,10 +954,14 @@ pub(crate) fn generate_candidate_stream_via_helper<F>(
     action_id: Option<&str>,
     additional_request: Option<&str>,
     on_partial: F,
+    request_id: Option<&str>,
 ) -> Result<WireEnvelope, String>
 where
     F: FnMut(HelperCandidatePartial),
 {
+    if let Some(id) = request_id {
+        store.stream_request_flag(id)?;
+    }
     if store.is_in_cooldown() {
         return Err(
             "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
@@ -866,6 +988,7 @@ where
         },
         timeout,
         on_partial,
+        request_id,
     );
 
     match &result {
@@ -902,6 +1025,8 @@ pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHel
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
         active_cancel: Mutex::new(None),
+        stream_request: Mutex::new(None),
+        before_stream_arm: None,
         helper_path_override: Some(path),
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),
@@ -919,6 +1044,8 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
         active_cancel: Mutex::new(None),
+        stream_request: Mutex::new(None),
+        before_stream_arm: None,
         helper_path_override: None,
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),

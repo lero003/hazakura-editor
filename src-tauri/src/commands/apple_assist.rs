@@ -183,6 +183,29 @@ pub(crate) fn generate_apple_assist_candidate_with_label(
 }
 
 #[tauri::command]
+pub(crate) fn prepare_apple_assist_generation<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+    request_id: String,
+) -> Result<(), String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    helper_store.prepare_stream_request(&request_id)
+}
+
+#[tauri::command]
+pub(crate) fn finish_apple_assist_generation<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+    request_id: String,
+) -> Result<(), String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    helper_store.finish_stream_request(&request_id);
+    Ok(())
+}
+
+#[tauri::command]
 pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
@@ -200,6 +223,7 @@ pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>
         generate_apple_assist_candidate_with_helper_streaming(
             helper_store.as_ref(),
             &request,
+            Some(&request_id),
             |partial| {
                 emit_partial_status(&app, &request_id, &request_label, partial);
             },
@@ -209,7 +233,9 @@ pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>
     .map_err(|e| format!("Hazakura Local Assist streaming task failed: {e}"))?
 }
 
-/// Stop any in-flight Hazakura Local Assist generation. Kills the
+/// With request_id, cancel only the main window's reserved request, including
+/// worker startup. Without it, retain the app-shutdown stop-all path.
+/// Kills the
 /// helper child through the shared cancel handle so the blocking
 /// `spawn_blocking` generation unblocks and resolves with a cancel
 /// error. Idempotent: a no-op when no generation is active.
@@ -223,10 +249,15 @@ pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>
 #[tauri::command]
 pub(crate) fn stop_apple_assist_candidate<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
+    request_id: Option<String>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
 ) -> Result<bool, String> {
     ensure_label_is_main_or_apple_assist(window.label())?;
     ensure_apple_assist_allowed_by_distribution()?;
+    if let Some(id) = request_id {
+        ensure_label_is_main(window.label())?;
+        return Ok(helper_store.cancel_stream_request(&id));
+    }
     Ok(helper_store.inner().cancel_active())
 }
 
@@ -327,6 +358,7 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
 pub(crate) fn generate_apple_assist_candidate_with_helper_streaming<F>(
     helper_store: &AppleAssistHelperStore,
     request: &AppleAssistRequest,
+    request_id: Option<&str>,
     on_partial: F,
 ) -> Result<AppleAssistResponse, String>
 where
@@ -343,6 +375,7 @@ where
             request.action_id.as_deref(),
             request.additional_request.as_deref(),
             on_partial,
+            request_id,
         )? {
             WireEnvelope::Candidate(value) => map_helper_candidate(value),
             WireEnvelope::Error(error) => Err(error.error),
@@ -357,6 +390,7 @@ where
         let _ = helper_store;
         let _ = request;
         let _ = on_partial;
+        let _ = request_id;
         Err("Hazakura Local Assist is supported on macOS only.".to_string())
     }
 }

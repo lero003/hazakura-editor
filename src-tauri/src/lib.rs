@@ -215,6 +215,8 @@ pub fn run() {
             list_agent_provider_availability,
             probe_apple_assist_availability,
             generate_apple_assist_candidate,
+            prepare_apple_assist_generation,
+            finish_apple_assist_generation,
             generate_apple_assist_candidate_streaming,
             stop_apple_assist_candidate,
             drain_opened_files,
