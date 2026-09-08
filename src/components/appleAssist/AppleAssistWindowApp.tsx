@@ -908,6 +908,7 @@ export type AppleAssistWindowCopy = {
   roughRequestLabel: string;
   selectionTooLongError: string;
   proposalTooLongError: string;
+  proposalFormatError: string;
   modelUnavailableError: string;
   modelLanguageError: string;
   generationTimeoutError: string;
@@ -1064,7 +1065,7 @@ export function getProposalStatusPresentation(
 
   return {
     status: copy.failedStatus,
-    error: payload.message,
+    error: classifyApplyError(payload.message, copy),
     feedbackKind: "failed",
   };
 }
@@ -1208,6 +1209,7 @@ export function classifyApplyError(
 
   switch (classifyLocalAssistError(err)) {
     case "proposal": return copy.proposalTooLongError;
+    case "format": return copy.proposalFormatError;
     case "selection": return copy.selectionTooLongError;
     case "context": return copy.contextTooLongError;
     case "stale": return copy.targetStaleError;
@@ -1268,6 +1270,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "じゅんび できました。よくつかう おねがいを えらぶか、おねがいの ないようを かいてください。",
       roughRequestLabel: "おねがいの ないよう",
       modelUnavailableError: "この Mac では いま モデルを つかえません。Apple Intelligence の せっていと じゅんびを かくにんしてください。ふみは かわっていません。",
+      proposalFormatError: "あんの かたちを かくにんできませんでした。ふみは かわっていません。もういちど たのんでください。",
       modelLanguageError: "モデルが いまの げんごに たいおうしていません。Apple Intelligence の げんごせっていを かくにんしてください。",
       generationTimeoutError: "じかんないに あんを つくれませんでした。たいしょうを ちいさくするか、あとで もういちど たのんでください。",
       proposalTooLongError:
@@ -1418,6 +1421,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "準備できました。よく使う依頼を選ぶか、依頼内容を入力してください。",
       roughRequestLabel: "依頼内容",
       modelUnavailableError: "このMacでは現在モデルを利用できません。Apple Intelligenceの設定とモデルの準備状況を確認してください。本文は変更されていません。",
+      proposalFormatError: "案の形式を確認できませんでした。本文は変更していません。もう一度依頼してください。",
       modelLanguageError: "モデルが現在の言語に対応していません。Apple Intelligenceの言語設定を確認してください。",
       generationTimeoutError: "制限時間内に生成を完了できませんでした。対象範囲を小さくするか、時間を置いて再依頼してください。",
       proposalTooLongError:
@@ -1566,6 +1570,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Ready. Pick a preset or type a request.",
     roughRequestLabel: "Request",
     modelUnavailableError: "The model is currently unavailable on this Mac. Check Apple Intelligence settings and model readiness. Your document is unchanged.",
+    proposalFormatError: "The proposal format could not be verified. The document is unchanged. Please try again.",
     modelLanguageError: "The model does not support the current language. Check the Apple Intelligence language settings.",
     generationTimeoutError: "Generation did not finish in time. Select a smaller target or try again later.",
     proposalTooLongError:

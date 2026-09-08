@@ -3,7 +3,7 @@ import { buildLineDiff } from "../../features/diff/diff";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { canBuildProposalLineDiff, countProposalCharacters, isProposalCurrentForDocument } from "../../features/editor/proposalReview";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
-import { sanitizeAppleAssistCandidateText } from "../../features/editor/appleAssistText";
+import { isAppleAssistCandidateReadyForReview } from "../../features/editor/appleAssistText";
 import { DiffBody } from "../diff/DiffBody";
 import { isJapaneseMenuLanguage, type CompareCase, type CompareViewState, type EditorTab, type MenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
@@ -82,7 +82,7 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, b
     before: countProposalCharacters(proposal.originalText), after: countProposalCharacters(proposal.candidateText),
   } : { before: 0, after: 0 }, [proposal]);
   const safeCandidate = useMemo(() => !proposal || proposal.streaming ||
-    (proposal.candidateText.trim().length > 0 && sanitizeAppleAssistCandidateText(proposal.candidateText) === proposal.candidateText), [proposal]);
+    isAppleAssistCandidateReadyForReview(proposal.candidateText), [proposal]);
   if (!proposal) return null;
 
   const applying = pending === proposal;

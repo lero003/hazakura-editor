@@ -30,6 +30,18 @@ export function localizeStatusMessage(
     return message;
   }
 
+  if (message === "Hazakura Local Assist created an unapplied proposal for Diff review.") {
+    return isKanaStyle(menuLanguage)
+      ? "あんを ちがひの かくにんに だしました。ふみは まだ かわっていません。"
+      : "案を差分レビューに表示しました。本文はまだ変更していません。";
+  }
+
+  if (/ambiguous proposal formatting|reference metadata instead of a proposal/.test(message)) {
+    return isKanaStyle(menuLanguage)
+      ? "あんの かたちを かくにんできませんでした。ふみは かわっていません。もういちど たのんでください。"
+      : "案の形式を確認できませんでした。本文は変更していません。もう一度依頼してください。";
+  }
+
   if (message.includes("proposal exceeds the continuation limit")) {
     return isKanaStyle(menuLanguage)
       ? "あんが 4000 もじを こえたため、うけとれませんでした。みじかい あんを たのむか、たいしょうを ちいさく えらびなおしてください。"

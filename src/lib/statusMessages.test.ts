@@ -365,6 +365,12 @@ describe("localizeStatusMessage: workspace restore reauth hint (v0.16)", () => {
 
 
 describe("Local Assist over-limit draft status", () => {
+  it("explains that a completed proposal remains unapplied in the main editor", () => {
+    const raw = "Hazakura Local Assist created an unapplied proposal for Diff review.";
+    expect(localizeStatusMessage(raw, "ja")).toBe("案を差分レビューに表示しました。本文はまだ変更していません。");
+    expect(localizeStatusMessage(raw, "kana")).toBe("あんを ちがひの かくにんに だしました。ふみは まだ かわっていません。");
+    expect(localizeStatusMessage(raw, "en")).toBe(raw);
+  });
   it("explains the continuation limit in the main editor", () => {
     const raw = "Hazakura Local Assist proposal generation failed: Hazakura Local Assist proposal exceeds the continuation limit of 4000 characters.";
     expect(localizeStatusMessage(raw, "ja")).toMatch(/4000.*短い案/);

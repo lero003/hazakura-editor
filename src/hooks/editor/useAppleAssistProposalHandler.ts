@@ -1,4 +1,5 @@
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
+import { isAppleAssistCandidateReadyForReview } from "../../features/editor/appleAssistText";
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -248,7 +249,7 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
         throw new Error(`Hazakura Local Assist proposal exceeds the continuation limit of ${APPLE_ASSIST_MAX_SELECTED_CHARS} characters.`);
       }
       // Apply must never perform a second, different cleanup after review.
-      if (sanitizeAppleAssistCandidateText(candidateText) !== candidateText) {
+      if (!isAppleAssistCandidateReadyForReview(candidateText)) {
         throw new Error("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.");
       }
       const generation = {

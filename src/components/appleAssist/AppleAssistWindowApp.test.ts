@@ -379,6 +379,12 @@ describe("renderAvailabilityMessage", () => {
 });
 
 describe("getProposalStatusPresentation", () => {
+  it.each(["ja", "kana", "en"] as const)("localizes asynchronous generation failures in %s", (lang) => {
+    const copy = getAppleAssistWindowCopy(lang);
+    const event: AppleAssistProposalStatusEvent = { phase: "failed", requestId: "failed", request: "整えて", target: null, emittedAtMs: 0,
+      message: "Hazakura Local Assist proposal generation failed: Foundation Models input is too large for this request." };
+    expect(getProposalStatusPresentation(event, copy).error).toBe(copy.contextTooLongError);
+  });
   const copy = getAppleAssistWindowCopy("ja");
   const base: AppleAssistProposalStatusEvent = {
     phase: "completed",
@@ -411,6 +417,10 @@ describe("getProposalStatusPresentation", () => {
 });
 
 describe("classifyApplyError", () => {
+  it.each(["ja", "kana", "en"] as const)("explains rejected residual delimiters in %s", (lang) => {
+    const copy = getAppleAssistWindowCopy(lang);
+    expect(classifyApplyError("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.", copy)).toBe(copy.proposalFormatError);
+  });
   it.each(["ja", "kana", "en"] as const)("distinguishes timeout, unavailability and unsupported language in %s", (lang) => {
     const copy = getAppleAssistWindowCopy(lang);
     expect(classifyApplyError("helper request timed out", copy)).toBe(copy.generationTimeoutError);

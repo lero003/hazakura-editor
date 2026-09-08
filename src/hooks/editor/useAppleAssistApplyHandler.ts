@@ -2,7 +2,7 @@ import { publishSidebarApplyStatus } from "../../lib/appleAssist/sidebarBridge";
 import { emitTo } from "@tauri-apps/api/event";
 import { aiEditTransactionStore, applyAiEditTransaction } from "../../features/editor/aiEditTransactions";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
-import { readTargetTextForGeneration, sanitizeAppleAssistCandidateText, type ActiveTab } from "../../features/editor/appleAssistText";
+import { readTargetTextForGeneration, isAppleAssistCandidateReadyForReview, type ActiveTab } from "../../features/editor/appleAssistText";
 import { APPLE_ASSIST_APPLY_STATUS_EVENT, type AppleAssistApplyEvent, type AppleAssistApplyStatusEvent } from "../../types";
 import { isLocalAssistActionId, type LocalAssistActionId } from "../../lib/appleAssist/instruction";
 
@@ -32,7 +32,7 @@ export async function applyReviewedLocalAssistProposal(input: ApplyReviewedPropo
   const candidateText = proposal.candidateText;
   if (!candidateText.trim()) return { ok: false, error: "Hazakura Local Assist apply rejected: the reviewed proposal is empty." };
   // Cleanup belongs to generation. Do not change what the user just reviewed.
-  if (sanitizeAppleAssistCandidateText(candidateText) !== candidateText) return { ok: false, error: "Hazakura Local Assist apply rejected: the reviewed proposal needs regeneration, not additional cleanup." };
+  if (!isAppleAssistCandidateReadyForReview(candidateText)) return { ok: false, error: "Hazakura Local Assist apply rejected: the reviewed proposal needs regeneration, not additional cleanup." };
   if (!localAssistProposalStore.claimApply(activeTab.sessionId, proposal)) return { ok: false, error: "Hazakura Local Assist apply rejected: this proposal is no longer available for application." };
 
   let successMessage: string;

@@ -149,6 +149,13 @@ describe("isSameAppleAssistTargetTab", () => {
 });
 
 describe("applyReviewedLocalAssistProposal", () => {
+  it("rejects a residual delimiter even when the UI is bypassed", async () => {
+    const proposal = makeProposal(activeTab.contents, "案\nHAZAKURA_TEXT_END");
+    const write = vi.fn();
+    expect((await applyReviewedLocalAssistProposal({ proposal, activeTab, setActiveTabContents: write })).ok).toBe(false);
+    expect(write).not.toHaveBeenCalled();
+    expect(localAssistProposalStore.getLatest(activeTab.sessionId)).toBe(proposal);
+  });
   it("writes the reviewed proposal once and clears any older review state", async () => {
     seedOldReview(); const proposal = makeProposal(); const write = vi.fn();
     expect(await applyReviewedLocalAssistProposal({ proposal, activeTab, setActiveTabContents: write })).toEqual({ ok: true });

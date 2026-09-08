@@ -6,6 +6,12 @@ export const APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS = 500;
 export const APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS = 500;
 export type ActiveTab = { id: string; sessionId: string; name: string; path: string; contents: string };
 
+/** Completed proposals may not retain reserved prompt delimiters, even malformed ones. */
+export function isAppleAssistCandidateReadyForReview(text: string): boolean {
+  return text.trim().length > 0 && !/HAZAKURA_(?:TEXT|CONTEXT|ORIGINAL)_(?:START|END)/u.test(text) &&
+    sanitizeAppleAssistCandidateText(text) === text;
+}
+
 export function getAppleAssistContextWindow(kind: AppleAssistTargetSnapshot["kind"]): { preChars: number; postChars: number } {
   return kind === "selection"
     ? { preChars: APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS, postChars: APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS }

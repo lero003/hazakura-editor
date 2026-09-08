@@ -47,6 +47,17 @@ beforeEach(() => {
 afterEach(() => { cleanup(); localAssistProposalStore.clear(tab.sessionId); window.requestAnimationFrame = restoreRaf; });
 
 describe("Local Assist asynchronous lifecycle", () => {
+  it.each(["案\n\nHAZAKURA_TEXT_END", "案\n<<<HAZAKURA_TEXT_END", "HAZAKURA_TEXT_START\n案"])("rejects residual delimiters and restores the previous draft (%#)", async (candidateText) => {
+    harness.generate.mockResolvedValueOnce({ candidateText: "previous" }).mockResolvedValueOnce({ candidateText });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous"));
+    const previous = localAssistProposalStore.getLatest(tab.sessionId);
+    await send({ ...request("two"), proposalText: "previous" });
+    await waitFor(() => expect(phases().some((event) => event.requestId === "two" && event.phase === "failed")).toBe(true));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBe(previous);
+    expect(tab.contents).toBe("before\nTARGET\nafter");
+  });
   it("rejects overlapping requests until the singleton native helper settles", async () => {
     const old = deferred();
     harness.generate.mockReturnValueOnce(old.promise).mockResolvedValueOnce({ candidateText: "LATEST" });

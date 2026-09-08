@@ -17,6 +17,14 @@ function props() { return { activeTab, fontSize: 14, menuLanguage: "en" as const
 afterEach(() => { cleanup(); localAssistProposalStore.clear(activeTab.sessionId); });
 
 describe("LocalAssistProposalReview", () => {
+  it("blocks a legacy proposal with a residual prompt delimiter", () => {
+    seedProposal({ candidateText: "proposal\n\nHAZAKURA_TEXT_END" });
+    const input = props();
+    render(<LocalAssistProposalReview {...input} />);
+    fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
+    expect(input.onApply).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain("format");
+  });
   it("renders nothing when there is no unapplied proposal", () => {
     render(<LocalAssistProposalReview {...props()} />);
     expect(screen.queryByRole("region", { name: "Proposal review" })).toBeNull();
