@@ -1225,3 +1225,79 @@ fn utf8_bom_save_does_not_double_write_marker() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+#[test]
+fn oversized_text_save_never_changes_or_creates_a_file() {
+    let root = unique_test_dir("oversized_save");
+    fs::create_dir_all(&root).unwrap();
+    let path = root.join("existing.md");
+    fs::write(&path, "original").unwrap();
+    let file =
+        open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().into_owned()).unwrap();
+    let oversized = "x".repeat(MAX_EDITABLE_BYTES as usize + 1);
+    assert!(save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        file.path.clone(),
+        oversized.clone(),
+        file.fingerprint,
+        "lf".into(),
+        "utf-8".into()
+    )
+    .is_err());
+    assert_eq!(fs::read_to_string(path).unwrap(), "original");
+    let new_path = root.join("new.md");
+    assert!(save_text_file_as_with_label(
+        MAIN_WINDOW_LABEL,
+        new_path.to_string_lossy().into_owned(),
+        oversized,
+        "lf".into(),
+        "utf-8".into(),
+        None
+    )
+    .is_err());
+    assert!(!new_path.exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn atomic_save_preserves_private_permissions() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = unique_test_dir("save_private_mode");
+    fs::create_dir_all(&root).unwrap();
+    let path = root.join("private.md");
+    fs::write(&path, "original").unwrap();
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+    atomic_write(&path, b"updated").unwrap();
+    assert_eq!(
+        fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+        0o600
+    );
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn atomic_save_preserves_extended_attributes() {
+    let root = unique_test_dir("save_xattr");
+    fs::create_dir_all(&root).unwrap();
+    let path = root.join("tagged.md");
+    fs::write(&path, "original").unwrap();
+    let attribute = "com.apple.metadata:_kMDItemUserTags";
+    let value = "<?xml version=\"1.0\"?><plist version=\"1.0\"><array><string>Writing</string></array></plist>";
+    assert!(std::process::Command::new("/usr/bin/xattr")
+        .args(["-w", attribute, value])
+        .arg(&path)
+        .status()
+        .unwrap()
+        .success());
+    atomic_write(&path, b"updated").unwrap();
+    let read = std::process::Command::new("/usr/bin/xattr")
+        .args(["-p", attribute])
+        .arg(&path)
+        .output()
+        .unwrap();
+    assert!(read.status.success());
+    assert_eq!(String::from_utf8(read.stdout).unwrap().trim(), value);
+    fs::remove_dir_all(root).unwrap();
+}

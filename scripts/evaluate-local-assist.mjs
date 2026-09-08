@@ -20,7 +20,7 @@ const report = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 
   sourceDirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
   os: execFileSync('sw_vers', ['-productVersion'], { encoding: 'utf8' }).trim(),
   sdk: execFileSync('xcrun', ['--show-sdk-version'], { encoding: 'utf8' }).trim(),
-  helperSha256: createHash('sha256').update(await readFile(helper)).digest('hex'), fixtureVersion: 1, repeats, results: [], qualityReview: 'pending human review; checks inspect raw helper text, before app sanitization',
+  helperSha256: createHash('sha256').update(await readFile(helper)).digest('hex'), fixtureVersion: 2, repeats, results: [], qualityReview: 'pending human review; checks inspect raw helper text, before app sanitization',
   note: 'Candidate text is from authored fixtures only. Token observations do not enforce a budget. Cold means fresh helper, not cleared OS cache.' };
 let child, lines, pending;
 function start() {
@@ -52,7 +52,7 @@ function record(fixture, result, cycle, phase) {
   const { envelope, elapsedMs, firstTokenMs } = result;
   const candidate = envelope.kind === 'candidate' ? envelope.value.candidateText : null;
   const modelId = envelope.value?.modelId ?? null;
-  const checks = checkEvaluationCandidate(envelope, fixture.preserve);
+  const checks = checkEvaluationCandidate(envelope, fixture.preserve, fixture);
   report.results.push({ id: fixture.id, cycle, phase, elapsedMs, firstTokenMs, modelId,
     selectedCodePoints: [...fixture.selectedText].length, outputCodePoints: candidate == null ? null : [...candidate].length,
     usage: envelope.value?.usage ?? null, checks, errorKind: envelope.kind === 'error' ? envelope.value.kind : null,

@@ -379,7 +379,8 @@ export function useWorkspaceFileOps({
       setStatus("Renaming...");
 
       try {
-        await renameWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        const operation = await renameWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        if (operation?.backupWarning) setGlobalError("改名は完了しましたが、自動バックアップの移動に失敗しました。以前の履歴は元の場所に残っている可能性があります。");
         // File-level rekey is a no-op when the entry was a
         // folder (no tab/draft/recent has the folder path
         // itself), and the prefix rekey is a no-op when the
@@ -519,7 +520,8 @@ export function useWorkspaceFileOps({
       setStatus("Moving...");
 
       try {
-        await moveWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        const operation = await moveWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        if (operation?.backupWarning) setGlobalError("移動は完了しましたが、自動バックアップの移動に失敗しました。以前の履歴は元の場所に残っている可能性があります。");
         rekeyPath(srcPath, newPath);
         rekeyPathPrefix(srcPath, newPath);
         onWorkspaceEntryRekey?.(srcPath, newPath);
@@ -582,7 +584,8 @@ export function useWorkspaceFileOps({
     setStatus("Moving to Trash...");
 
     try {
-      await moveWorkspaceEntryToTrash(pending.srcPath, workspaceRootPath);
+      const operation = await moveWorkspaceEntryToTrash(pending.srcPath, workspaceRootPath);
+      if (operation?.backupWarning) setGlobalError("ゴミ箱への移動は完了しましたが、自動バックアップを削除できませんでした。");
       onWorkspaceEntryRemoved?.(pending.srcPath, pending.isDirectory);
       // The trashed path is gone, so the editor fan-out closes
       // the affected tab / draft / recent / compare slot. This
@@ -602,7 +605,7 @@ export function useWorkspaceFileOps({
         current && matchesTrashedPath(current) ? null : current,
       );
       setPendingDrafts((currentDrafts) =>
-        currentDrafts.filter((draft) => !matchesTrashedPath(draft.path)),
+        currentDrafts.filter((draft) => draft.detached || !matchesTrashedPath(draft.path)),
       );
       setRecentFiles((currentEntries) =>
         currentEntries.filter((entry) => !matchesTrashedPath(entry.path)),

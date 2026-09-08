@@ -26,12 +26,12 @@ Last reviewed: 2026-09-08
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current source version is `2.8.0`. Local Assist opens in a separate native
+Current source version is `2.9.0`. Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. Model download/selection and MLX runtime
 are not implemented.
 
-Next: **v2.9 improves System-based Local Assist; v3.0 adopts the strengthened
+Next: **v2.9 strengthens save/recovery, daily editing and System-based Local Assist; v3.0 adopts the strengthened
 on-device AFM with shared backend foundations; v3.1 adds optional curated-model
 download, management and switching.** See the
 [Local Assist plan](docs/v2.9-v3-local-assist-plan.md). These are planned milestones.
@@ -157,7 +157,7 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.9 Local Assist improvement queue
+- [Current Work](docs/current-work.md): v2.9 quality and TestFlight candidate queue
 - [Local Assist Plan](docs/v2.9-v3-local-assist-plan.md): v2.9–v3.1 scope and acceptance
 - [v2.8 Plan](docs/v2.8-plan.md): historical writing-companion plan
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
@@ -275,7 +275,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.8.0` across npm, Tauri, and Cargo metadata. Mac App Store v2.8 publication is owner-reported on 2026-09-08; exact released-build provenance remains separate. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `2.9.0` across npm, Tauri, and Cargo metadata. Mac App Store v2.8 publication is owner-reported on 2026-09-08; exact released-build provenance remains separate. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.8.0` (owner-reported 2026-09-08; rollout coverage unverified). Prior store baseline `2.4.0` remains historical. Do not reopen a published store lane without a reproduced hotfix.
 - Release notes: [2.7.0 source note](docs/releases/2.7.0-source-tag.release.md), [2.7.0 App Store candidate notes](docs/releases/2.7.0-app-store-release-notes.md), [2.6.2 source note](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

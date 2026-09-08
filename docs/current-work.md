@@ -1,79 +1,41 @@
 # Current Work
 
 Status: Operational
-Scope: v2.8公開後のv2.9 Local Assist改善キュー
+Scope: v2.9日常品質強化とTestFlight候補
 Authority: High
 Last reviewed: 2026-09-08
 
 ## Current Phase
 
-v2.8は2026-09-08にオーナーが公開を報告。公開済み版を再提出するキューは閉じる。
-ソース版は2.8.0のまま。公開build、PR #40の包含、実機smokeの詳細、GitHub tagは
-今回未確認であり、公開報告から補完しない。過去の候補証跡は
-`docs/releases/2.8.0-source-tag.release.md` に残す。
+v2.8は2026-09-08オーナー報告で公開済み。追加依頼により、v3前の日常品質強化を
+**v2.9 / 2.9.0** でまとめる。外部レビュー `hazakura-v3-daily-use-audit.md` を参考に、
+現行ソースで再現・修正・回帰検証し、TestFlight候補を準備する。
 
-**次はv2.9のSystem-only改善。v3.0でAFM活用と共通基盤、v3.1でCore AIの
-DL・管理・切り替え。** 版別の受け入れ条件・添付案との差分は
-`docs/v2.9-v3-local-assist-plan.md` を正本とする。
+## Active Queue — v2.9品質レビュー
 
-## Active Queue — v2.9レビュー
+1. **実装済み:** Q-01–Q-07と隣接する保存・復旧・Local Assistの保全。
+   [品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)に対応表・試験・限界を集約。
+2. **外部再レビュー:** 保存完了後のlive session、detached復旧記録の寿命と容量、
+   部分成功のUI追従、校正の機械検査を重点確認する。
+3. **実機:** 同一候補でIME、VoiceOver、旧OS、全テーマ、Sandbox再起動、
+   Local Assist別窓→生成→追加依頼→停止→Diff→反映→Undo、最終PDF/HTMLを確認。
+4. **配布:** [2.9.0候補](releases/2.9.0-source-tag.release.md)の署名・版数・source・SHAを照合。
+   外部レビューでコード変更があれば再構築。AppleへのuploadとTestFlight配布は承認後。
 
-1. **2.9-01 / 02:** 安全契約の既存回帰、完成案4,000 / 4,001コードポイント境界、
-   超過後の前案復帰と再依頼を自動検証済み。
-2. **2.9-03 / 04:** System共通検査とエラー分類、実応答に基づく生成元保持/表示を実装。
-   生成/Apply両方の非同期失敗通知を分類し、別窓のApply失敗listenerまで接続済み。
-   モデル容量不足はアプリの8,000文字制限と分けて案内する。
-3. **2.9-05:** 自作12原稿の評価CLI、明示token観測を実装。実モデルで54回を評価し48回で
-   完成案を取得。helper取消後の再生成も確認。モデル品質の未達は残り、全合格ではない。
-4. **2.9-06 / U-3:** 元/案/未反映/反映/破棄の既存UIを維持して確認。
-   nativeで見つかった英語の完了表示と区切り文字混入を修正。外部レビューを受け、
-   内部区切り文字を含むpartial全体の非表示も追加。詳細・実機確認範囲は
-   [v2.9レビュー](reviews/2026-09-08-v2.9-local-assist.md)を参照。
-5. **R2-a/b:** native生成前のrequestId予約に取消を保持し、生成/停止/予約解放まで
-   別窓を「取り消し中」に保つ。workerのハンドル登録前と両窓の操作再開を自動検証済み。
-   **R2-c:** native完了時のハンドル切り離しと取消を同じmutexで確定。永続helperで
-   完了→取消→再利用と、取消→キャッシュ破棄→再生成を検証済み。今回のnative実操作は未実施。
-6. **次:** R2-c修正差分の再レビュー、残る日本語/Markdown品質と実機smoke。G-1は任意比較評価、
-   27 SDK・依存更新は独立レーン。通常レーンへ未評価のruntime/schemaを追加しない。
+System-only改善とC-1/C-2のHOLDを維持する。v3.0はAFM活用と共通基盤、v3.1は
+任意モデルのDL・管理・切り替え。正本は `docs/v2.9-v3-local-assist-plan.md`。
+既存Apply・Undo・no auto-saveとR2-cの完了/取消mutex境界を広げない。
 
-各変更を検証可能なスライスとしてコミットする。生成と本文反映を分離し、既存Apply・Undo・
-保存境界を維持する。実装済み/自動検証済みを、未実施の実機・品質合格と同一視しない。
-C-1/C-2のHOLDは今回のSystem改善では解除しない。
+## Held / Outside this candidate
 
-## Completed / Held
-
-| 対象 | 扱い |
-|---|---|
-| v2.0–v2.6 | 既存のBook・執筆・会話/Diff基盤。公開/候補の個別証跡はrelease文書の履歴 |
-| v2.7候補 | 過去の凍結候補。別途公開されたとは推定せず、再提出を現行キューにしない |
-| v2.8 | 公開報告済み。U-1別窓会話とM-0a/H-1の実装を維持 |
-| M-0a / H-1 | Systemモデル再利用・Rust-owned fail-closed wireは完了。MLX実行ではない |
-| C-1 / C-2 | v3.1へ配置。identity・manifest・配信/AOT・比較評価・D24/D20が揃うまでHOLD |
-| v3.0基盤 | Systemで共通契約を実装・検証してよい。Core AI資産解決・selectedIdの非System書き込みはC-2 |
-| D17 | tokenCountは観測用。強制予算制限は実測と別途の契約改訂後 |
-| MLX M-0b | C-2と27 SDKレーン後、別の製品/安全/配布レビューまでHOLD |
-
-## Parked
-
-U-5「整える」入口、文体/用語ルール、明示章参照、縦書き、anydoc、残余Book改善、
-広範なa11y監査は主キューに混ぜない。再現した保存・復元等の重大問題は優先する。
-Web検索、背景index、永続チャットDB、任意URLモデル、auto-applyは採用しない。
-
-## Next Gates
-
-- 2.9-02は長い完成案を切り捨てず拒否し、有効な前案を保持する仕様に固定済み。
-  次は評価の品質課題と外部レビューを確認する。
-- v3.0はSystemの実生成・日本語品質・旧OS起動を確認。モデル未選定で停止しない。
-- v3.1開始前に本番identity・revision・ライセンス・配信/AOT・manifestを確定し、
-  C-1実装と同じ系列で配布/通信の開示を更新する。
-- 公開済み版は再現blockerのhotfixのみ。タグ・公開アセットはimmutable。
-  新しい提出・公開・GitHub Releaseは今回のソース開発には含めない。
+- C-1/C-2、MLX M-0b、任意URLモデル、provider追加、tool calling、network fallbackは対象外。
+- 長文の性能測定は解析・sanitizeの基準値のみ。実際のWebKit入力・Reader・全テーマ性能は未確認。
+- 固有名詞・意味保持は自動検査だけで合格にしない。全テーマ・IME・VoiceOverをjsdomで代替しない。
+- v2.8の公開build/source対応と過去pkgの実機結果は今回の候補証跡へ転用しない。
 
 ## Sources
 
-- `docs/current-status.md`: 実装・公開状態
-- `docs/roadmap.md`: 版別の一覧
-- `docs/v2.9-v3-local-assist-plan.md`: 次期計画と受け入れ条件
-- `docs/assist-surface-strategy.md` / `docs/core-ai-c0-design.md`: Assist境界・C-0契約
-- `docs/local-assist-conversational-edit-ux.md`: 会話・対象・Diff契約
-- `docs/security-boundary.md` / `docs/smoke-checklist.md`: 守る境界・実機確認
+- `docs/current-status.md` / `docs/handoff.md`: 現状と引き継ぎ
+- `docs/roadmap.md` / `docs/v2.9-v3-local-assist-plan.md`: 版別方向
+- `docs/security-boundary.md` / `docs/assist-surface-strategy.md`: 安全境界
+- `docs/smoke-checklist.md` / `docs/release-pre-check.md`: 実機・配布前の確認

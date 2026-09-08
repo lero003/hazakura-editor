@@ -6,6 +6,7 @@ import {
 import { openTextFile } from "../../lib/tauri";
 import {
   createEditorTab,
+  isDirty,
   createUntitledEditorTab,
   updateTabsById,
   updateTabsByPath,
@@ -13,12 +14,17 @@ import {
 import {
   draftStorageKey,
   isPathlessDraft,
+  isPathlessDraftOversized,
 } from "../../features/document/pathlessDraftRecovery";
 import {
+  draftRecordFromTab,
+  readStoredDrafts,
+  upsertDraftRecord,
+  writeStoredDrafts,
   removeStoredDraft,
   removeStoredDraftRecord,
 } from "../../lib/storage";
-import type { DraftRecord, EditorTab } from "../../types";
+import type { DraftRecord, EditorTab, TextEncoding } from "../../types";
 
 type UseRecoveryActionsOptions = {
   focusEditorSoon: () => void;
@@ -39,21 +45,25 @@ export function useRecoveryActions({
   tabsRef,
 }: UseRecoveryActionsOptions) {
   const reopenTabFromDisk = useCallback(
-    async (tabId: string) => {
+    async (tabId: string, encoding?: TextEncoding) => {
       const tab = tabsRef.current.find((candidate) => candidate.id === tabId);
 
       if (!tab) {
         return;
       }
 
+      if (encoding && (!tab.path || isDirty(tab))) {
+        setStatus("文字コードを指定して開き直す前に、未保存の編集を別名で保存してください");
+        return;
+      }
       setStatus("Reopening from disk...");
 
       try {
-        const file = await openTextFile(tab.path);
+        const file = encoding ? await openTextFile(tab.path, encoding) : await openTextFile(tab.path);
         const latestTab = tabsRef.current.find(
           (candidate) => candidate.id === tabId,
         );
-        if (!latestTab || latestTab.path !== tab.path) {
+        if (!latestTab || latestTab.sessionId !== tab.sessionId || latestTab.path !== tab.path || latestTab.contents !== tab.contents || latestTab.encoding !== tab.encoding || latestTab.line_ending !== tab.line_ending) {
           setStatus("Reopen skipped; document changed");
           return;
         }
@@ -68,7 +78,7 @@ export function useRecoveryActions({
         const latestTab = tabsRef.current.find(
           (candidate) => candidate.id === tabId,
         );
-        if (!latestTab || latestTab.path !== tab.path) {
+        if (!latestTab || latestTab.sessionId !== tab.sessionId || latestTab.path !== tab.path || latestTab.contents !== tab.contents || latestTab.encoding !== tab.encoding || latestTab.line_ending !== tab.line_ending) {
           setStatus("Reopen skipped; document changed");
           return;
         }
@@ -117,7 +127,8 @@ export function useRecoveryActions({
 
   const restoreDraft = useCallback(
     (draft: DraftRecord) => {
-      if (isPathlessDraft(draft)) {
+      const target = tabsRef.current.find(tab => tab.path === draft.path);
+      if (draft.detached || isPathlessDraft(draft) || !target || target.fingerprint !== draft.savedFingerprint || isDirty(target)) {
         // Always open a fresh pathless tab. Never apply into an existing
         // path-backed or pathless buffer — recoveryId must not collide
         // with process-local session counters after relaunch.
@@ -125,12 +136,21 @@ export function useRecoveryActions({
         const restored: EditorTab = {
           ...created,
           // New UUID on the open tab; stored candidate is discarded below.
-          name: draft.name ?? created.name,
+          name: draft.name ?? draft.path.split(/[\\/]/).pop() ?? created.name,
           contents: draft.contents,
           line_ending: draft.line_ending,
         };
         setTabs((currentTabs) => [...currentTabs, restored]);
         setActiveTabId(restored.id);
+        const restoredDraft = draftRecordFromTab(restored);
+        const persisted = !isDirty(restored) || isPathlessDraftOversized(restoredDraft)
+          ? { ok: false }
+          : writeStoredDrafts(upsertDraftRecord(readStoredDrafts(), restoredDraft));
+        if (!persisted.ok) {
+          setStatus("下書きを取り出しました。復旧記録は元のまま残しています。別名で保存してください。");
+          focusEditorSoon();
+          return;
+        }
         setPendingDrafts((currentDrafts) =>
           currentDrafts.filter(
             (candidate) => draftStorageKey(candidate) !== draftStorageKey(draft),
@@ -185,7 +205,7 @@ export function useRecoveryActions({
           if (draftStorageKey(candidate) === draftPathOrKey) {
             return false;
           }
-          if (candidate.path.length > 0 && candidate.path === draftPathOrKey) {
+          if (!candidate.detached && candidate.path.length > 0 && candidate.path === draftPathOrKey) {
             return false;
           }
           return true;

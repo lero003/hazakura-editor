@@ -47,7 +47,7 @@ export function useEditorTabState({
     () =>
       pendingDrafts.filter(
         (draft) =>
-          isPathlessDraft(draft) &&
+          (draft.detached || isPathlessDraft(draft)) &&
           !tabs.some((tab) => draftMatchesTab(draft, tab)),
       ),
     [pendingDrafts, tabs],

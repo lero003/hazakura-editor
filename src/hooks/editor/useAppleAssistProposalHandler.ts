@@ -1,3 +1,4 @@
+import { preservesProofreadStructure } from "../../features/editor/proofreadPreservation";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import { isAppleAssistCandidateReadyForReview } from "../../features/editor/appleAssistText";
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
@@ -272,6 +273,10 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       // Apply must never perform a second, different cleanup after review.
       if (!isAppleAssistCandidateReadyForReview(candidateText)) {
         throw new Error("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.");
+      }
+      const generationInput = payload.proposalText === undefined ? targetCheck.before : proposalCheck.text;
+      if (actionId === "proofread_only" && !preservesProofreadStructure(generationInput, candidateText)) {
+        throw new Error("Hazakura Local Assist proofreading changed protected Markdown or numbers. Please try again.");
       }
       const generation = {
         modelId: typeof response.modelId === "string" && response.modelId.trim() && response.modelId.length <= 200

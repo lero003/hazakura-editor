@@ -13,9 +13,9 @@ Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v2.8（2026-09-08オーナー報告） |
-| ソース版 | 2.8.0。v2.9向け実装をレビュー中。候補凍結時に版数を揃える |
+| ソース版 | 2.9.0。日常品質の外部再レビューとTestFlight候補準備 |
 | 配布証跡 | 公開build・PR #40包含・実機確認の詳細は未確認。過去の候補と区別する |
-| 現行キュー | v2.9 System-only改善 — `docs/current-work.md` |
+| 現行キュー | v2.9 日常品質強化・System-only改善 — `docs/current-work.md` |
 | 計画正本 | `docs/v2.9-v3-local-assist-plan.md` |
 
 ローカル候補の詳細は `docs/internal/app-store-candidates/latest.json`。
@@ -26,7 +26,7 @@ Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを
 | 版 | 主題 | 完了の目安 |
 |---|---|---|
 | v2.8 | 公開済みの別窓Writing Companion | 次期改善の基準。公開済み版へ機能追加を混ぜない |
-| **v2.9** | **現行Local Assistの確実さ** | 上限整合、エラー案内、生成元表示、日本語評価、別窓とDiff動線 |
+| **v2.9** | **日常利用と現行Local Assistの確実さ** | 保存・復旧・検索・文字コード・書き出し、上限整合、エラー案内、日本語評価 |
 | **v3.0** | **強化AFMの活用と共通基盤** | 対応Systemの実生成・品質・停止/復旧、backend共通契約、旧OS互換 |
 | **v3.1** | **任意モデルのDL・管理・切り替え** | allowlistモデルを明示入手・検証・利用・削除できるC-1/C-2 |
 | v3.2以降 | 文章品質の追加機能、明示章参照、読む・届ける改善 | 需要で選ぶ候補。版ごとの機能確約ではない |
@@ -35,7 +35,11 @@ Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを
 共通基盤を完成させる。AFMの新機能をすべて採用する意味ではなく、PCC、クラウド推論、
 ツール実行、背景indexは対象外。モデルの本番identity未決はAFM改善の停止理由にしない。
 
-## Active Path — v2.9ソースレビュー
+## Active Path — v2.9品質レビュー
+
+2026-09-08の追加依頼で、v3前の品質強化をv2.9へ集約。日常利用レビューQ-01–Q-07と
+隣接する原稿保全を修正し、署名済み候補の準備まで行う。再レビュー・実機確認・Apple処理は
+別ゲート。[品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)を参照。
 
 上限整合、System責務/エラー分類、生成元表示、日本語評価と予算観測を実装。
 native確認で見つかったコードフェンス/予約区切り文字の扱いと案内を修正した。

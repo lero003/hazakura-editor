@@ -27,6 +27,15 @@ const activeTab: EditorTab = {
 };
 
 describe("StatusBar", () => {
+  it("keeps explicit re-decoding separate from save encoding", () => {
+    const reopen = vi.fn();
+    const convert = vi.fn();
+    render(<StatusBar activeTab={activeTab} agentLabel={null} detail="" secondaryDetail="" dirtyLabel="" encodingAriaLabel="Encoding" encodingLabel="Encoding" lineEndingAriaLabel="Line endings" lineEndingLabel="Line endings" lModeEnabled={false} onConvertEncoding={convert} onReopenEncoding={reopen} onConvertLineEnding={vi.fn()} saveAffirmation={false} saveAffirmationKey={null} statusText="Ready" />);
+    fireEvent.change(screen.getByRole("combobox", { name: "指定した文字コードで開き直す" }), { target: { value: "euc-jp" } });
+    expect(reopen).toHaveBeenCalledWith("euc-jp");
+    expect(convert).not.toHaveBeenCalled();
+  });
+
   it("keeps detail and format controls in the same trailing row", () => {
     const onConvertEncoding = vi.fn();
     const onConvertLineEnding = vi.fn();

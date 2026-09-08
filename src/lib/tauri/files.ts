@@ -46,8 +46,8 @@ export type ImagePreviewDocument = {
 // place.
 export const OPENED_FILES_EVENT = "hazakura-note://opened-files";
 
-export async function openTextFile(path: string): Promise<TextFileDocument> {
-  return invoke<TextFileDocument>("open_text_file", { path });
+export async function openTextFile(path: string, encoding?: import("../../types").TextEncoding): Promise<TextFileDocument> {
+  return invoke<TextFileDocument>("open_text_file", encoding ? { path, encoding } : { path });
 }
 
 export async function openImageFile(path: string): Promise<ImagePreviewDocument> {

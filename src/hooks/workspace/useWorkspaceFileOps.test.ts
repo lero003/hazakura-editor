@@ -86,6 +86,18 @@ describe("useWorkspaceFileOps", () => {
     vi.clearAllMocks();
   });
 
+  it("rekeys a dirty tab after rename even when backup maintenance warns", async () => {
+    workspaceApi.renameWorkspaceEntry.mockResolvedValue({ backupWarning: "backup occupied" });
+    let tabs = [{ ...makeTab("/work/a.md"), contents: "unsaved writing" }];
+    const options = makeOptions({ workspaceRootPath: "/work", tabs, setTabs: vi.fn(next => { tabs = typeof next === "function" ? next(tabs) : next; }) });
+    const { result } = renderHook(() => useWorkspaceFileOps(options));
+    await act(async () => { await result.current.renameWorkspacePath("/work/a.md", "b.md"); });
+    await act(async () => { await result.current.confirmPendingRename(); });
+    expect(tabs[0]).toMatchObject({ path: "/work/b.md", contents: "unsaved writing" });
+    expect(options.setGlobalError).toHaveBeenCalledWith(expect.stringContaining("改名は完了"));
+    expect(options.setStatus).not.toHaveBeenCalledWith("Rename failed");
+  });
+
   it("trashing a folder clears descendant editor state", async () => {
     workspaceApi.moveWorkspaceEntryToTrash.mockResolvedValue(undefined);
     const onWorkspaceEntryRemoved = vi.fn();

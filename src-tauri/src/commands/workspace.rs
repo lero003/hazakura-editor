@@ -64,7 +64,7 @@ pub(crate) fn rename_workspace_entry<R: tauri::Runtime>(
     src: String,
     dst: String,
     workspace_root: String,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     rename_workspace_entry_with_label(window.label(), &src, &dst, &workspace_root)
 }
 
@@ -73,7 +73,7 @@ pub(crate) fn rename_workspace_entry_with_label(
     src: &str,
     dst: &str,
     workspace_root: &str,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     ensure_label_is_main(label)?;
     let root_path = PathBuf::from(workspace_root);
     crate::util::rename_workspace_entry_util(&PathBuf::from(src), &PathBuf::from(dst), &root_path)
@@ -85,7 +85,7 @@ pub(crate) fn move_workspace_entry<R: tauri::Runtime>(
     src: String,
     dst: String,
     workspace_root: String,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     move_workspace_entry_with_label(window.label(), &src, &dst, &workspace_root)
 }
 
@@ -94,7 +94,7 @@ pub(crate) fn move_workspace_entry_with_label(
     src: &str,
     dst: &str,
     workspace_root: &str,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     ensure_label_is_main(label)?;
     let dst_path = PathBuf::from(dst);
     if let Some(parent) = dst_path.parent() {
@@ -110,7 +110,7 @@ pub(crate) fn move_workspace_entry_to_trash<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     path: String,
     workspace_root: String,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     move_workspace_entry_to_trash_with_label(window.label(), &path, &workspace_root)
 }
 
@@ -118,7 +118,7 @@ pub(crate) fn move_workspace_entry_to_trash_with_label(
     label: &str,
     path: &str,
     workspace_root: &str,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     ensure_label_is_main(label)?;
     let root_path = PathBuf::from(workspace_root);
     let src_path = PathBuf::from(path);
@@ -163,22 +163,27 @@ pub(crate) fn move_workspace_entry_to_trash_with_operation(
     src_canon: Option<std::path::PathBuf>,
     canonical_root: Option<std::path::PathBuf>,
     trash_operation: impl FnOnce(&std::path::Path) -> Result<(), String>,
-) -> Result<(), String> {
+) -> Result<WorkspaceOperationResult, String> {
     trash_operation(src_path)?;
 
     // For a single-file trash, drop the auto-backup dir so the
     // entry doesn't linger in `.hazakura/backups/` after the
     // file is gone. Folder descendants are out of scope here;
     // the folder rekey lane would walk the whole subtree.
+    let mut backup_warning = None;
     if was_file {
         if let (Some(root), Some(canon)) = (canonical_root, src_canon) {
             if let Ok(rel) = canon.strip_prefix(&root) {
-                crate::auto_backup::remove_auto_backup_dir(workspace_root, &rel.to_string_lossy())?;
+                backup_warning = crate::auto_backup::remove_auto_backup_dir(
+                    workspace_root,
+                    &rel.to_string_lossy(),
+                )
+                .err();
             }
         }
     }
 
-    Ok(())
+    Ok(WorkspaceOperationResult { backup_warning })
 }
 
 #[cfg(target_os = "macos")]

@@ -70,6 +70,13 @@ describe("resolveStartPanelReturningContext", () => {
     expect(context.pathlessDrafts).toEqual(drafts);
   });
 
+  it("shows detached recovery even when the original file could not reopen", () => {
+    const draft = { ...pathlessDraft("snapshot"), path: "/lost.md", detached: true };
+    const context = resolveStartPanelReturningContext({ persistedWorkspaceRootPath: null, liveWorkspaceRootPath: null, pathlessDrafts: [draft] });
+    expect(context.showRecovery).toBe(true);
+    expect(context.pathlessDrafts).toEqual([draft]);
+  });
+
   it("ignores empty or path-backed draft records for start recovery", () => {
     const context = resolveStartPanelReturningContext({
       persistedWorkspaceRootPath: null,

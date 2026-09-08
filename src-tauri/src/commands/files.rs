@@ -10,21 +10,37 @@ use std::path::PathBuf;
 pub(crate) fn open_text_file<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     path: String,
+    encoding: Option<String>,
 ) -> Result<TextFileDocument, String> {
-    open_text_file_with_label(window.label(), path)
+    open_text_file_with_encoding(window.label(), path, encoding.as_deref())
 }
 
 pub(crate) fn open_text_file_with_label(
     label: &str,
     path: String,
 ) -> Result<TextFileDocument, String> {
+    open_text_file_with_encoding(label, path, None)
+}
+
+pub(crate) fn open_text_file_with_encoding(
+    label: &str,
+    path: String,
+    requested_encoding: Option<&str>,
+) -> Result<TextFileDocument, String> {
     ensure_label_is_main(label)?;
+    if let Some(encoding) = requested_encoding {
+        if !matches!(encoding, "utf-8" | "utf-8-bom" | "shift-jis" | "euc-jp") {
+            return Err("Unsupported text encoding".into());
+        }
+    }
     let path_buf = PathBuf::from(&path);
     let metadata = readable_text_metadata(&path_buf)?;
 
     let bytes = fs::read(&path_buf).map_err(|err| format!("Cannot read file: {err}"))?;
     let line_ending = detect_line_ending(&bytes);
-    let encoding = detect_text_encoding(&bytes).to_string();
+    let encoding = requested_encoding
+        .unwrap_or_else(|| detect_text_encoding(&bytes))
+        .to_string();
     let contents = decode_text_bytes(&bytes, &encoding)?.into_owned();
     let name = path_buf
         .file_name()
@@ -213,6 +229,9 @@ pub(crate) fn save_text_file_with_label(
 
     let normalized_contents = normalize_line_endings(&contents, &line_ending);
     let encoded_bytes = encode_text(&normalized_contents, &encoding)?;
+    if encoded_bytes.len() as u64 > MAX_EDITABLE_BYTES {
+        return Err("保存後に開けなくなるため、10 MiBを超える本文は保存できません。本文を分割するか短くしてください。".into());
+    }
     write_existing_file_with_atomic_fallback(&path_buf, &encoded_bytes)?;
 
     let metadata =
@@ -281,9 +300,12 @@ pub(crate) fn save_text_file_as_with_label(
 
     let normalized_contents = normalize_line_endings(&contents, &line_ending);
     let encoded_bytes = encode_text(&normalized_contents, &encoding)?;
+    if encoded_bytes.len() as u64 > MAX_EDITABLE_BYTES {
+        return Err("保存後に開けなくなるため、10 MiBを超える本文は保存できません。本文を分割するか短くしてください。".into());
+    }
     write_new_file(&path_buf, &encoded_bytes)?;
 
-    open_text_file_with_label(label, path)
+    open_text_file_with_encoding(label, path, Some(encoding_for_save(&encoding)))
 }
 
 #[tauri::command]

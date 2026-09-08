@@ -1,16 +1,19 @@
+import { flushSync } from "react-dom";
 import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useRef,
 } from "react";
 import {
+  createSecurityScopedBookmark,
   pickSaveAsTextFilePath,
   saveTextFile,
   saveTextFileAs,
   type SavedFileState,
 } from "../../lib/tauri";
 import { createEditorTab, isDirty } from "../../features/editor/editorTabs";
-import { removeStoredDraft } from "../../lib/storage";
+import { removeStoredDraft, writePersistedFileBookmark } from "../../lib/storage";
 import { suggestedSaveAsPath } from "../../lib/utils";
 import type { EditorTab } from "../../types";
 
@@ -44,6 +47,7 @@ export function useSaveActions({
   tabsRef,
   workspaceRootPath,
 }: UseSaveActionsOptions) {
+  const savingSessions = useRef(new Set<string>());
   const saveTabAsById = useCallback(
     async (tabId: string): Promise<boolean> => {
       const tabToSave = tabsRef.current.find((tab) => tab.id === tabId) ?? null;
@@ -53,6 +57,8 @@ export function useSaveActions({
         return false;
       }
 
+      if (savingSessions.current.has(tabToSave.sessionId)) return false;
+      savingSessions.current.add(tabToSave.sessionId);
       setGlobalError(null);
       setStatus("Choosing Save As path...");
 
@@ -68,7 +74,7 @@ export function useSaveActions({
         }
 
         const latestTab =
-          tabsRef.current.find((tab) => tab.id === tabToSave.id) ?? null;
+          tabsRef.current.find((tab) => tab.id === tabToSave.id && tab.sessionId === tabToSave.sessionId) ?? null;
         if (!latestTab) {
           setStatus("Save As stopped");
           return false;
@@ -93,25 +99,42 @@ export function useSaveActions({
           latestTab.encoding,
           workspaceRootPath,
         );
+        const liveTab = tabsRef.current.find(tab => tab.sessionId === latestTab.sessionId && tab.id === latestTab.id);
+        if (!liveTab || tabsRef.current.some(tab => tab.path === savedFile.path && tab.sessionId !== latestTab.sessionId)) {
+          setStatus("保存しました。編集タブの状態が変わったため切り替えませんでした");
+          return true;
+        }
         const nextTab: EditorTab = {
+          ...liveTab,
           ...createEditorTab(savedFile),
-          // Save As changes the document path, not the open editing session.
-          // `id` follows the new path so rename / move / external refresh
-          // keep their `id === path` invariant, while `sessionId` carries
-          // the original CodeMirror history and selection forward.
-          sessionId: latestTab.sessionId,
+          sessionId: liveTab.sessionId,
+          recoveryId: undefined,
+          contents: liveTab.contents,
+          encoding: liveTab.encoding,
+          line_ending: liveTab.line_ending,
         };
-
-        setTabs((currentTabs) =>
-          currentTabs.map((tab) => (tab.id === latestTab.id ? nextTab : tab)),
-        );
-        setActiveTabId(nextTab.id);
+        // Commit before the caller decides whether this session can close.
+        flushSync(() => {
+          setTabs(currentTabs => currentTabs.map(tab =>
+            tab.sessionId === liveTab.sessionId ? nextTab : tab));
+          setActiveTabId(currentId => currentId === liveTab.id ? nextTab.id : currentId);
+        });
         rememberRecentFile(nextTab.path);
-        const recoveryCleanup = latestTab.path
-          ? removeStoredDraft(latestTab.path)
-          : latestTab.recoveryId
-            ? removeStoredDraft(`pathless:${latestTab.recoveryId}`)
-            : { ok: true as const };
+        const recoveryCleanup = !isDirty(nextTab)
+          ? latestTab.path
+            ? removeStoredDraft(latestTab.path)
+            : latestTab.recoveryId
+              ? removeStoredDraft(`pathless:${latestTab.recoveryId}`)
+              : { ok: true as const }
+          : { ok: true as const };
+
+        let bookmarkAvailable = true;
+        try {
+          const bookmark = await createSecurityScopedBookmark(nextTab.path);
+          if (bookmark?.length) writePersistedFileBookmark(nextTab.path, bookmark);
+          else bookmarkAvailable = false;
+        } catch { bookmarkAvailable = false; }
+        if (!bookmarkAvailable) setGlobalError("保存は完了しましたが、次回起動用のアクセス許可を記録できませんでした。次回は「開く」から選び直してください。");
 
         if (workspaceRootPath) {
           try {
@@ -145,6 +168,8 @@ export function useSaveActions({
         );
         setStatus("Save As failed");
         return false;
+      } finally {
+        savingSessions.current.delete(tabToSave.sessionId);
       }
     },
     [
@@ -175,6 +200,8 @@ export function useSaveActions({
         return true;
       }
 
+      if (savingSessions.current.has(tab.sessionId)) return false;
+      savingSessions.current.add(tab.sessionId);
       setTabs((currentTabs) =>
         currentTabs.map((candidate) =>
           candidate.id === tabId
@@ -194,14 +221,14 @@ export function useSaveActions({
         );
 
         let savedTabIsClean = false;
-        setTabs((currentTabs) =>
+        flushSync(() => setTabs((currentTabs) =>
           currentTabs.map((candidate) =>
-            candidate.id === tabId
+            candidate.id === tabId && candidate.sessionId === tab.sessionId
               ? (() => {
                   const nextTab: EditorTab = {
                     ...candidate,
-                    line_ending: saved.line_ending,
-                    encoding: saved.encoding,
+                    line_ending: candidate.line_ending,
+                    encoding: candidate.encoding,
                     size: saved.size,
                     modified_ms: saved.modified_ms,
                     fingerprint: saved.fingerprint,
@@ -222,7 +249,7 @@ export function useSaveActions({
                 })()
               : candidate,
           ),
-        );
+        ));
         let recoveryCleanupOk = true;
         if (savedTabIsClean) {
           recoveryCleanupOk = removeStoredDraft(tab.path).ok;
@@ -253,6 +280,8 @@ export function useSaveActions({
           message.includes("Save conflict") ? "Save stopped" : "Save failed",
         );
         return false;
+      } finally {
+        savingSessions.current.delete(tab.sessionId);
       }
     },
     [saveTabAsById, setStatus, setTabs, tabsRef],

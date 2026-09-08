@@ -51,3 +51,49 @@ fn encode_text_round_trips_euc_jp() {
     assert!(!malformed, "encoded euc-jp must decode losslessly");
     assert_eq!(decoded, original);
 }
+
+#[test]
+fn explicit_encoding_reopen_and_save_as_preserve_ambiguous_euc_jp() {
+    let root = unique_test_dir("explicit_encoding");
+    fs::create_dir_all(&root).unwrap();
+    for (index, text) in ["あいうえお", "漢字の文章", "ASCII 123 と日本語"]
+        .iter()
+        .enumerate()
+    {
+        let path = root
+            .join(format!("{index}.md"))
+            .to_string_lossy()
+            .into_owned();
+        let saved = save_text_file_as_with_label(
+            MAIN_WINDOW_LABEL,
+            path.clone(),
+            text.to_string(),
+            "lf".into(),
+            "euc-jp".into(),
+            None,
+        )
+        .unwrap();
+        assert_eq!(saved.contents, *text);
+        assert_eq!(saved.encoding, "euc-jp");
+        let reopened = crate::commands::files::open_text_file_with_encoding(
+            MAIN_WINDOW_LABEL,
+            path.clone(),
+            Some("euc-jp"),
+        )
+        .unwrap();
+        assert_eq!(reopened.contents, *text);
+        assert!(crate::commands::files::open_text_file_with_encoding(
+            "agent",
+            path.clone(),
+            Some("euc-jp")
+        )
+        .is_err());
+        assert!(crate::commands::files::open_text_file_with_encoding(
+            MAIN_WINDOW_LABEL,
+            path,
+            Some("unknown")
+        )
+        .is_err());
+    }
+    fs::remove_dir_all(root).unwrap();
+}

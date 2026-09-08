@@ -38,6 +38,7 @@ export type DraftWriteResult =
     };
 
 export function draftStorageKey(draft: DraftRecord): string {
+  if (draft.detached && draft.recoveryId) return `recovery:${draft.recoveryId}`;
   if (draft.path.length > 0) {
     return `path:${draft.path}`;
   }
@@ -58,6 +59,7 @@ export function isPathlessTab(tab: EditorTab): boolean {
  * Never match pathless recoveryId against sessionId of path-backed tabs.
  */
 export function draftMatchesTab(draft: DraftRecord, tab: EditorTab): boolean {
+  if (draft.detached) return false;
   if (draft.path.length > 0) {
     return draft.path === tab.path && tab.path.length > 0;
   }
@@ -224,10 +226,10 @@ export function removeDraftMatching(
   match: DraftRecord | string,
 ): DraftRecord[] {
   if (typeof match === "string") {
-    if (match.startsWith("path:") || match.startsWith("pathless:")) {
+    if (match.startsWith("path:") || match.startsWith("pathless:") || match.startsWith("recovery:")) {
       return removeDraftByKey(drafts, match);
     }
-    return drafts.filter((draft) => draft.path !== match);
+    return drafts.filter((draft) => draft.detached || draft.path !== match);
   }
   return removeDraftByKey(drafts, draftStorageKey(match));
 }

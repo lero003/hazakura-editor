@@ -34,7 +34,7 @@ import {
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import {
-  inlineMarkdownImages,
+  inlineMarkdownImagesWithResult,
   renderMarkdown,
 } from "../../features/editor/markdown";
 import { DEFAULT_MEDIA_IMAGE_SETTINGS } from "../../features/editor/mediaImageSettings";
@@ -308,11 +308,11 @@ export function useDocumentExport({
           mediaAccess: exportMedia,
         });
       // Theme G M3: materialize resolvable placeholders before PDF embed.
-      rendered = await inlineMarkdownImages(
+      const inlined = await inlineMarkdownImagesWithResult(
         rendered,
         createExportImageLoaders(),
       );
-      rendered = preparePdfExportTables(rendered);
+      rendered = preparePdfExportTables(inlined.html);
 
       const pdfLayout = pdfScreenPageLayout(preset);
       const pdfPoint = formatPdfPointValue;
@@ -343,6 +343,7 @@ export function useDocumentExport({
         // override the body CSS safety limit.
         { bodyMaxHeightPx: imageMaxHeightPx },
       );
+      embedResult.failedPaths = [...new Set([...inlined.failures, ...embedResult.failedPaths])];
       rendered = embedResult.html;
       rendered = preparePdfImagesForCapture(rendered);
       if (embedResult.failedPaths.length > 0) {
@@ -732,12 +733,12 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
         workspaceRoot: workspaceRootPath,
         mediaAccess: buildExportMediaAccess(),
       });
-      bodyHtml = await inlineMarkdownImages(
+      const inlined = await inlineMarkdownImagesWithResult(
         bodyHtml,
         createExportImageLoaders(),
       );
       const htmlEmbed = await embedAndStampPdfImages(
-        bodyHtml,
+        inlined.html,
         async (path) => {
           if (!workspaceRootPath) {
             throw new Error("Workspace image access requires an open workspace");
@@ -747,6 +748,7 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
         },
         { bodyMaxHeightPx: 1200 },
       );
+      htmlEmbed.failedPaths = [...new Set([...inlined.failures, ...htmlEmbed.failedPaths])];
       bodyHtml = htmlEmbed.html;
 
       const root = document.documentElement;

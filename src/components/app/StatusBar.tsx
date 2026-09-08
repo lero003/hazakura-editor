@@ -17,6 +17,7 @@ type StatusBarProps = {
   lineEndingLabel: string;
   lModeEnabled: boolean;
   onConvertEncoding: (encoding: TextEncoding) => void;
+  onReopenEncoding?: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
   saveAffirmation: boolean;
   saveAffirmationKey: number | null;
@@ -35,6 +36,7 @@ export function StatusBar({
   lineEndingLabel,
   lModeEnabled,
   onConvertEncoding,
+  onReopenEncoding,
   onConvertLineEnding,
   saveAffirmation,
   saveAffirmationKey,
@@ -101,6 +103,7 @@ export function StatusBar({
               {formatTextEncoding(activeTab.encoding, "en")}
             </span>
             <select
+              title="保存時の文字コードを変更します。表示の読み直しは「開き直す」を使用してください。"
               aria-label={encodingAriaLabel}
               className="status-bar-format-select"
               value={activeTab.encoding}
@@ -114,6 +117,18 @@ export function StatusBar({
               <option value="euc-jp">EUC-JP</option>
             </select>
           </label>
+          {activeTab.path && onReopenEncoding ? (
+            <label className="status-bar-segment status-bar-format-chip" title="自動判定で文字化けしたときに使用します。未保存の編集がある場合は開き直せません。">
+              <span className="status-bar-format-label">開き直す</span>
+              <select aria-label="指定した文字コードで開き直す" className="status-bar-format-select" value="" onChange={event => onReopenEncoding(event.target.value as TextEncoding)}>
+                <option value="" disabled>文字コードを選択</option>
+                <option value="utf-8">UTF-8</option>
+                <option value="utf-8-bom">UTF-8 BOM</option>
+                <option value="shift-jis">Shift-JIS</option>
+                <option value="euc-jp">EUC-JP</option>
+              </select>
+            </label>
+          ) : null}
         </span>
       ) : (
         <span className="status-bar-segment status-bar-detail" title={fullDetail}>

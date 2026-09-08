@@ -174,7 +174,15 @@ pub(crate) fn search_workspace_files_with_label(
                 // without re-counting. The `chars().take(...)` is
                 // bounded by `line.len()` so it cannot allocate
                 // unboundedly.
-                let column = line[..byte_offset].chars().count() + 1;
+                let mut folded_bytes = 0;
+                let column = line
+                    .chars()
+                    .position(|ch| {
+                        folded_bytes += ch.to_lowercase().map(char::len_utf8).sum::<usize>();
+                        folded_bytes > byte_offset
+                    })
+                    .unwrap_or(0)
+                    + 1;
                 let trimmed_text = truncate_text(line, MAX_WORKSPACE_SEARCH_LINE_BYTES);
 
                 matches.push(WorkspaceSearchMatch {

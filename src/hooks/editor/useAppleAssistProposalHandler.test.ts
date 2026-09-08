@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { generateAppleAssistCandidateStreaming, type AppleAssistResponse } from "../../lib/tauri/appleAssist";
 import {
@@ -68,6 +68,16 @@ describe("useAppleAssistProposalHandler", () => {
 
   afterEach(() => {
     window.requestAnimationFrame = originalRAF;
+  });
+
+  it("rejects a proofreading proposal that flattens the source table", async () => {
+    const contents = "| 数 |\n|---|\n| 3 |";
+    vi.mocked(generateAppleAssistCandidateStreaming).mockResolvedValueOnce({ candidateText: "数は3です。" } as AppleAssistResponse);
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: { id: "/workspace/note.md", sessionId: "session:note-1", name: "note.md", path: "/workspace/note.md", contents }, setStatus: vi.fn() }));
+    await waitFor(() => expect(proposalListeners).toHaveLength(1));
+    proposalListeners[0]({ payload: { requestId: "table-proofread", actionId: "proofread_only", request: "校正してください", target: targetSnapshot(contents, contents), requestedAtMs: 0 } } as never);
+    await waitFor(() => expect(vi.mocked(emitTo).mock.calls.some(([, , event]) => (event as { phase?: string }).phase === "failed")).toBe(true));
+    expect(localAssistProposalStore.getLatest("session:note-1")).toBeNull();
   });
 
   it("streams an unapplied proposal without receiving or mutating a buffer setter", async () => {

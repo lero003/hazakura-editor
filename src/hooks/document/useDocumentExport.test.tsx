@@ -79,11 +79,18 @@ vi.mock("../../features/document/markdownExportCss", () => ({
 const markdownApi = vi.hoisted(() => ({
   renderMarkdown: vi.fn((contents: string) => `<p>${contents}</p>`),
   inlineMarkdownImages: vi.fn(async (html: string) => html),
+  useRealInlining: false,
 }));
 
 vi.mock("../../features/editor/markdown", () => ({
   renderMarkdown: markdownApi.renderMarkdown,
-  inlineMarkdownImages: markdownApi.inlineMarkdownImages,
+  inlineMarkdownImagesWithResult: async (html: string, loaders: import("../../features/editor/markdown").InlineMarkdownImageLoaders) => {
+    if (markdownApi.useRealInlining) {
+      const actual = await vi.importActual<typeof import("../../features/editor/markdown")>("../../features/editor/markdown");
+      return actual.inlineMarkdownImagesWithResult(html, loaders);
+    }
+    return { html: await markdownApi.inlineMarkdownImages(html), failures: [], embeddedCount: 0, intentionallySkipped: [] };
+  },
 }));
 
 const useDocumentExportSource = readFileSync(
@@ -126,6 +133,7 @@ describe("useDocumentExport", () => {
     vi.useRealTimers();
     dialogApi.save.mockReset();
     markdownApi.renderMarkdown.mockClear();
+    markdownApi.useRealInlining = false;
     markdownApi.inlineMarkdownImages.mockClear();
     markdownApi.inlineMarkdownImages.mockImplementation(async (html: string) => html);
     epubApi.buildEpubBetaArchive.mockClear();
@@ -461,7 +469,8 @@ describe("useDocumentExport", () => {
     expect(result.current.epubExportRequest?.hasUnsavedChanges).toBe(true);
   });
 
-  it("preserves PDF image warnings in the final success status", async () => {
+  it.each([false, true])("preserves PDF image warnings through real first-stage inlining: %s", async (realInlining) => {
+    markdownApi.useRealInlining = realInlining;
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/image-warning.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);

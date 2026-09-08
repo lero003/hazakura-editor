@@ -7,7 +7,7 @@ export function classifyLocalAssistError(error: unknown): LocalAssistErrorKind {
   const raw = (error instanceof Error ? error.message : String(error)).toLowerCase();
   if (/cancelled by user|canceled by user/.test(raw)) return "cancelled";
   if (/proposal exceeds (?:the continuation limit|the maximum length)/.test(raw)) return "proposal";
-  if (/ambiguous proposal formatting|reference metadata instead of a proposal/.test(raw)) return "format";
+  if (/proofreading changed protected|ambiguous proposal formatting|reference metadata instead of a proposal/.test(raw)) return "format";
   if (raw.includes("selected text exceeds")) return "selection";
   if (raw.includes("document context exceeds")) return "context";
   if (/exceededcontextwindowsize|input is too large for this request/.test(raw)) return "model-context";

@@ -1541,6 +1541,11 @@ export function useAppShellController() {
     [activeTab, convertActiveEncoding, rejectIfAppleAssistLocksTab],
   );
 
+  const onReopenEncoding = useCallback((encoding: Parameters<typeof convertActiveEncoding>[0]) => {
+    if (!activeTab || rejectIfAppleAssistLocksTab(activeTab)) return;
+    void reopenTabFromDisk(activeTab.id, encoding);
+  }, [activeTab, rejectIfAppleAssistLocksTab, reopenTabFromDisk]);
+
   // section: command palette + global search
   const appleLocalAssistActive =
     appleLocalAssistAllowed && assistSurfaceActive === "apple-local";
@@ -2094,6 +2099,7 @@ export function useAppShellController() {
     onCloseSelectedImagePreview: closeSelectedImagePreview,
     onCloseTab: requestCloseTab,
     onConvertEncoding: onConvertEncoding,
+    onReopenEncoding,
     onConvertLineEnding: onConvertLineEnding,
     onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,

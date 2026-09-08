@@ -541,3 +541,10 @@ impl<'a> RealAgentRuntimeAdapter<'a> {
 }
 
 pub(crate) const CANCEL_AI_EDIT_PROPOSAL_EVENT: &str = "hazakura-note://cancel-ai-edit-proposal";
+
+/// The primary file operation committed; backup maintenance can warn separately.
+#[derive(Debug, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WorkspaceOperationResult {
+    pub(crate) backup_warning: Option<String>,
+}
