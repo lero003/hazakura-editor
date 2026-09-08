@@ -13,6 +13,7 @@ struct AppleAssistResponse: Codable {
     let candidateText: String
     let modelId: String
     let latencyMs: Int
+    var usage: AppleAssistUsage? = nil
 }
 
 struct AppleAssistPartialResponse: Codable {
@@ -35,4 +36,12 @@ struct AppleAssistAvailabilityResponse: Codable {
 struct AppleAssistErrorEnvelope: Codable {
     let error: String
     let kind: String  // "deferred" | "validation" | "unavailable" | "guardrail" | "throttled" | "internal"
+}
+
+// Opt-in observations; no budget enforcement or manuscript logging.
+struct AppleAssistUsage: Codable {
+    let instructionTokens: Int?
+    let promptTokens: Int?
+    let contextSize: Int?
+    let status: String
 }

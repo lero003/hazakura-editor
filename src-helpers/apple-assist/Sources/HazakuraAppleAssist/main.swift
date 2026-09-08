@@ -62,6 +62,7 @@ struct IncomingRequest: Decodable {
     let instruction: String?
     let additionalRequest: String?
     let backend: String?
+    let measureUsage: Bool?
 }
 
 func emit(_ envelope: WireEnvelope) {
@@ -131,7 +132,8 @@ func dispatch(_ raw: String) async {
             selectedText: selectedText,
             documentContext: request.documentContext,
             instruction: request.instruction,
-            additionalRequest: request.additionalRequest
+            additionalRequest: request.additionalRequest,
+            measureUsage: request.measureUsage
         )
         if request.action == "generate_candidate_streaming" {
             switch await GenerateCandidate.runStreaming(

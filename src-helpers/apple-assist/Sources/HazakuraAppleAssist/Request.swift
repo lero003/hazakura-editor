@@ -16,6 +16,8 @@ struct AppleAssistRequest: Codable {
     let documentContext: String?
     let instruction: String?
     let additionalRequest: String?
+    // Maintainer evaluation only; Rust product requests leave this absent.
+    var measureUsage: Bool? = nil
 }
 
 // `IntentAllowlist` mirrors the v0.12 implemented-operations set

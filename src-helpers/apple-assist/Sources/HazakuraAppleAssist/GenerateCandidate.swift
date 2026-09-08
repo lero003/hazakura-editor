@@ -54,6 +54,7 @@ enum GenerateCandidate {
                 return .error(error)
             }
 
+            let usage = await measureUsage(for: request, backend: backend)
             let startedAt = Date()
             do {
                 let session = SystemAssistRuntime.makeSession(
@@ -63,9 +64,7 @@ enum GenerateCandidate {
                 let response = try await session.respond(
                     to: Prompt(buildLivePrompt(for: request))
                 )
-                let candidate = stripOuterMarkdownFence(
-                    response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-                )
+                let candidate = CandidateFormatting.reviewText(response.content, original: request.selectedText)
                 guard !candidate.isEmpty else {
                     return .error(
                         AppleAssistErrorEnvelope(
@@ -79,7 +78,8 @@ enum GenerateCandidate {
                         operation: request.operation,
                         candidateText: candidate,
                         modelId: backend.modelId,
-                        latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                        latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
+                        usage: usage
                     )
                 )
             } catch {
@@ -122,6 +122,7 @@ enum GenerateCandidate {
                 return .error(error)
             }
 
+            let usage = await measureUsage(for: request, backend: backend)
             let startedAt = Date()
             do {
                 let session = SystemAssistRuntime.makeSession(
@@ -133,9 +134,7 @@ enum GenerateCandidate {
                     to: Prompt(buildLivePrompt(for: request))
                 )
                 for try await snapshot in stream {
-                    let candidate = stripOuterMarkdownFence(
-                        snapshot.content.trimmingCharacters(in: .whitespacesAndNewlines)
-                    )
+                    let candidate = CandidateFormatting.reviewText(snapshot.content, original: request.selectedText)
                     if !candidate.isEmpty && candidate != latestCandidate {
                         latestCandidate = candidate
                         onPartial(AppleAssistPartialResponse(candidateText: candidate))
@@ -154,7 +153,8 @@ enum GenerateCandidate {
                         operation: request.operation,
                         candidateText: latestCandidate,
                         modelId: backend.modelId,
-                        latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                        latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
+                        usage: usage
                     )
                 )
             } catch {
@@ -178,6 +178,22 @@ enum GenerateCandidate {
     Markdown構造、リンク、コード、固有名詞はできるだけ保ってください。
     返答は完成した本文だけにしてください。説明や前置き、あいさつは書かないでください。
     """
+
+    @available(macOS 26.0, *)
+    private static func measureUsage(for request: AppleAssistRequest, backend: AssistBackend) async -> AppleAssistUsage? {
+        guard request.measureUsage == true else { return nil }
+        if #available(macOS 26.4, *) {
+            let model = SystemAssistRuntime.model(for: backend)
+            do {
+                let instructions = try await model.tokenCount(for: Instructions(liveSystemInstructions))
+                let prompt = try await model.tokenCount(for: Prompt(buildLivePrompt(for: request)))
+                return AppleAssistUsage(instructionTokens: instructions, promptTokens: prompt, contextSize: model.contextSize, status: "measured")
+            } catch {
+                return AppleAssistUsage(instructionTokens: nil, promptTokens: nil, contextSize: model.contextSize, status: "measurement_failed")
+            }
+        }
+        return AppleAssistUsage(instructionTokens: nil, promptTokens: nil, contextSize: nil, status: "unsupported_os")
+    }
 
     private static func buildLivePrompt(for request: AppleAssistRequest) -> String {
         let actionId = sanitized(request.actionId, fallback: fallbackActionId(for: request.operation))
@@ -265,20 +281,6 @@ enum GenerateCandidate {
             }
             return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         } ?? nil
-    }
-
-    private static func stripOuterMarkdownFence(_ value: String) -> String {
-        var lines = value.split(separator: "\n", omittingEmptySubsequences: false)
-        guard lines.first?.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") == true else {
-            return value
-        }
-        lines.removeFirst()
-        if lines.last?.trimmingCharacters(in: .whitespacesAndNewlines) == "```" {
-            lines.removeLast()
-        }
-        return lines
-            .joined(separator: "\n")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     @available(macOS 26.0, *)

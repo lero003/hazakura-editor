@@ -33,6 +33,10 @@ let package = Package(
             swiftSettings: [
                 .define("FIXTURE_MODE", .when(configuration: .debug))
             ]
+        ),
+        .testTarget(
+            name: "HazakuraAppleAssistTests",
+            dependencies: ["HazakuraAppleAssist"]
         )
     ]
 )
