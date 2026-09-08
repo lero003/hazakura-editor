@@ -18,7 +18,7 @@ Last reviewed: 2026-09-08
 - **検証・候補:** [品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)と
   [2.9.0候補](releases/2.9.0-source-tag.release.md)に現行証跡と残項目を集約。
   外部再レビュー、IME・VoiceOver・旧OS・全テーマ・署名済み候補の実操作は別ゲート。
-- **配布:** TestFlight用の署名済みローカルpkgを準備する。Appleへのupload・処理・配布・公開は未実施。
+- **配布:** TestFlight用の署名済みローカルpkg **2.9.0 / build 125** を作成・署名検証済み。Appleへのupload・処理・配布・公開は未実施。
   既存のApp Store bundleVersion変更を含むユーザー作業は保持する。
 - **次:** 外部再レビュー→同一候補で実機smoke→承認後にupload。コード修正が入れば候補を再構築する。
 - **版別境界:** System-only改善。v3.0はAFMと共通基盤、v3.1はC-1/C-2。

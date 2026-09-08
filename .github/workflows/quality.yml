@@ -2,7 +2,7 @@ name: Quality
 on:
   pull_request:
   push:
-    branches: [main, 'codex/v2.9-quality-hardening']
+    branches: [main]
 permissions:
   contents: read
 concurrency:
