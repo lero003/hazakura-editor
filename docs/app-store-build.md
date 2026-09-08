@@ -41,21 +41,14 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `2.6.2` (user-confirmed published 2026-08-28;
-  staged rollout to all users). See
-  `docs/releases/2.6.2-app-store-release-notes.md`. Prior store baselines
-  `2.4.0`, `2.3.0` and `2.0.0` remain historical.
-- Current source / Developer version: `2.8.0` (development-only; no package,
-  upload, approval, publication, or GitHub tag claim). The frozen local
-  `2.7.0` / build `123` package remains owner-managed for App Review.
+- Published App Store version: `2.8.0` (owner-reported 2026-09-08).
+  Exact released-build provenance, PR #40 inclusion and rollout coverage remain
+  unverified here. See `docs/releases/2.8.0-source-tag.release.md`.
+- Current source / Developer version: `2.8.0`. Next development is the v2.9
+  System-only Local Assist slice in `docs/v2.9-v3-local-assist-plan.md`.
+  Earlier v2.7 packages remain historical candidates, not an active submission queue.
   GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
-  See `docs/current-work.md`, `docs/v2.8-plan.md`,
-  `docs/releases/2.7.0-source-tag.release.md`,
-  `docs/releases/2.7.0-app-store-release-notes.md`,
-  `docs/releases/2.6.1-source-tag.release.md`,
-  `docs/releases/2.6.0-source-tag.release.md`,
-  `docs/releases/2.4.0-app-store-release-notes.md`,
-  and `docs/releases/2.3.0-source-tag.release.md`.
+  This update does not claim a new GitHub publication.
 - Latest local App Store package candidate metadata (version, build
   counter, pkg path, SHA-256, generated time, base source commit, and
   pre-build worktree state): see
