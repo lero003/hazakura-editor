@@ -229,6 +229,10 @@ mod tests {
     use std::io::Write;
     use std::path::PathBuf;
 
+    // These tests share ACTIVE; resetting it must not interrupt another test
+    // between open, render and close. Keep unrelated pure tests parallel.
+    static ACTIVE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     #[test]
     fn validates_pdf_only_absolute_paths() {
         assert!(validate_pdf_reference_path(Path::new("rel.pdf")).is_err());
@@ -261,6 +265,9 @@ mod tests {
 
     #[test]
     fn rejects_stale_and_empty_reference_ids() {
+        let _active_guard = ACTIVE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         clear_pdf_reference_for_tests();
         assert!(render_pdf_reference_page("", 0, None).is_err());
         assert!(render_pdf_reference_page("missing", 0, None).is_err());
@@ -299,6 +306,9 @@ mod tests {
     /// Helper open → render page 0 → close. Skips when no helper binary exists.
     #[test]
     fn fixture_helper_open_render_close_round_trip() {
+        let _active_guard = ACTIVE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         clear_pdf_reference_for_tests();
         let Some(helper) = pin_test_helper_binary() else {
             eprintln!("skip: import assist helper not available");
