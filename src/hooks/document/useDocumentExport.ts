@@ -167,6 +167,7 @@ export function useDocumentExport({
     const currentChapters = bookScopeChaptersRef.current;
     const document: ExportPreflightResult = {
       chapterCount: activeTabRef.current ? 1 : 0,
+      hasUnsavedChanges: activeTabRef.current ? isDirty(activeTabRef.current) : false,
       checkedImageCount: 0,
       issues: [],
     };
@@ -175,14 +176,15 @@ export function useDocumentExport({
       bookScopeUnavailableRef.current.length === 0
     ) {
       return {
-        book: { chapterCount: 0, checkedImageCount: 0, issues: [] },
+        book: { chapterCount: 0, checkedImageCount: 0, issues: [], hasUnsavedChanges: false },
         document,
       };
     }
     const loaders = createExportImageLoaders();
+    const preflightTabs = tabsRef.current;
     const loadResult = await loadBookScopeReaderDocuments({
       chapters: currentChapters,
-      tabs: tabsRef.current,
+      tabs: preflightTabs,
       openTextFile,
       workspaceRoot: workspaceRootPath,
     });
@@ -200,6 +202,18 @@ export function useDocumentExport({
       ],
       workspaceRoot: workspaceRootPath,
     });
+    // Match the reader's NFC absolute-path / workspace-relative lookup. Use
+    // the same tab snapshot as loading so image checks cannot mix buffer states.
+    const dirtyByPath = new Map(preflightTabs.filter((tab) => tab.path).map(
+      (tab) => [tab.path!.normalize("NFC"), isDirty(tab)] as const,
+    ));
+    const root = workspaceRootPath?.replace(/\/+$/, "").normalize("NFC");
+    book.hasUnsavedChanges = loadResult.documents.some((chapter) =>
+      chapter.usesLiveBuffer && (
+        dirtyByPath.get(chapter.path.normalize("NFC")) ??
+        (root ? dirtyByPath.get(`${root}/${chapter.relativePath.normalize("NFC")}`) : false)
+      ),
+    );
     return { book, document };
   }, [createExportImageLoaders, workspaceRootPath]);
 

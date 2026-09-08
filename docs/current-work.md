@@ -19,7 +19,9 @@ v2.8は2026-09-08オーナー報告で公開済み。追加依頼により、v3�
 2. **外部再レビュー:** 保存完了後のlive session、detached復旧記録の寿命と容量、
    部分成功のUI追従、校正の機械検査を重点確認する。
 3. **実機:** 同一候補でIME、VoiceOver、旧OS、Apple署名候補の再起動、
-   Local Assistの追加受け入れ、長文/Book Scopeの最終PDF/HTMLを確認。
+   Local Assistの追加受け入れ、HTML全体の目視を確認。
+   本全体PDFは未保存章を含む8ページで全章・画像・末尾を追試済み。
+   出力前の未保存表示も修正したため、署名候補を再構築する。
    短文のLocal Assist別窓・生成・取消・前案保持・明示反映・Undoはローカルpreviewで追試済み。
    ad-hoc App Sandbox診断でも単独Save As→再起動→復元→再保存を実byteまで確認済み。
 4. **配布:** [2.9.0候補](releases/2.9.0-source-tag.release.md)の署名・版数・source・SHAを照合。

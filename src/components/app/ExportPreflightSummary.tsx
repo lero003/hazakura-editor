@@ -23,7 +23,8 @@ export function ExportPreflightSummary({
       <div>
         <dt>{copy.sourceLabel}</dt>
         <dd>
-          {hasUnsavedChanges ? copy.unsavedSource : copy.savedSource}
+          {(preflight?.hasUnsavedChanges ?? hasUnsavedChanges)
+            ? copy.unsavedSource : copy.savedSource}
         </dd>
       </div>
       {preflight ? (
@@ -85,7 +86,7 @@ function getExportPreflightCopy(
       issue: issueCopyKana,
       metadataLabel: "しょしじょうほう",
       metadataMissing: (fields: readonly string[]) => `${fields.join("・")}が まだ ありません。`,
-      savedSource: "いまの ふみと おなじです。",
+      savedSource: "かきだす ふみに みほぞんの かきかえは ありません。",
       sourceLabel: "もとの ふみ",
       structureLabel: "こうせい",
       unsavedSource: "まだ ほぞんしていない かきかえも ふくみます。",
@@ -103,7 +104,7 @@ function getExportPreflightCopy(
       issue: issueCopyJa,
       metadataLabel: "書誌情報",
       metadataMissing: (fields: readonly string[]) => `${fields.join("・")}が未入力です。`,
-      savedSource: "現在の文書に未保存の変更はありません。",
+      savedSource: "書き出す文書に未保存の変更はありません。",
       sourceLabel: "元の文書",
       structureLabel: "構成",
       unsavedSource: "現在の未保存の変更も書き出しに含めます。",

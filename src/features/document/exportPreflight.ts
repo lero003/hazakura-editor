@@ -14,6 +14,8 @@ export type ExportPreflightIssue = {
 };
 
 export type ExportPreflightResult = {
+  /** Unsaved buffers within this export scope, when checked by the caller. */
+  hasUnsavedChanges?: boolean;
   chapterCount: number;
   checkedImageCount: number;
   issues: ExportPreflightIssue[];

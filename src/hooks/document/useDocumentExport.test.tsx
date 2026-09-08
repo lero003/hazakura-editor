@@ -123,6 +123,24 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("useDocumentExport", () => {
+  it.each([false, true])("reports only the selected book's unsaved buffers (dirty=%s)", async (dirty) => {
+    const active = makeTab({ contents: "# Active\n", lastSavedContents: "# Active\n" });
+    const chapter = { name: "章.md", path: "/canonical/章.md", relativePath: "章.md" };
+    const included = makeTab({ path: "/workspace/章.md", contents: dirty ? "# Edited\n" : "# Saved\n", lastSavedContents: "# Saved\n" });
+    const unrelated = makeTab({ path: "/workspace/other.md", contents: "# Unsaved\n" });
+    const { result } = renderHook(() => useDocumentExport({
+      activeContents: active.contents, activeTab: active,
+      bookScopeChapters: [chapter], tabs: [active, included, unrelated],
+      setGlobalError: vi.fn(), setStatus: vi.fn(), workspaceRootPath: "/workspace",
+    }));
+    await act(async () => result.current.exportPdf());
+    await act(async () => result.current.exportEpubBeta());
+    for (const request of [result.current.pdfExportRequest, result.current.epubExportRequest]) {
+      expect(request?.preflightByScope.document.hasUnsavedChanges).toBe(false);
+      expect(request?.preflightByScope.book.hasUnsavedChanges).toBe(dirty);
+    }
+  });
+
   it("keeps the Markdown renderer statically imported", () => {
     expect(useDocumentExportSource).not.toContain(
       'import("../../features/editor/markdown")',
