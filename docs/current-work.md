@@ -18,7 +18,7 @@ v2.8は2026-09-08オーナー報告で公開済み。追加依頼により、v3�
    [品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)に対応表・試験・限界を集約。
 2. **外部再レビュー:** 保存完了後のlive session、detached復旧記録の寿命と容量、
    部分成功のUI追従、校正の機械検査を重点確認する。
-3. **実機:** 同一候補でIME、VoiceOver、旧OS、全テーマ、Apple署名候補の再起動、
+3. **実機:** 同一候補でIME、VoiceOver、旧OS、Apple署名候補の再起動、
    Local Assistの追加受け入れ、長文/Book Scopeの最終PDF/HTMLを確認。
    短文のLocal Assist別窓・生成・取消・前案保持・明示反映・Undoはローカルpreviewで追試済み。
    ad-hoc App Sandbox診断でも単独Save As→再起動→復元→再保存を実byteまで確認済み。
@@ -32,7 +32,8 @@ System-only改善とC-1/C-2のHOLDを維持する。v3.0はAFM活用と共通基
 ## Held / Outside this candidate
 
 - C-1/C-2、MLX M-0b、任意URLモデル、provider追加、tool calling、network fallbackは対象外。
-- 長文の性能測定は解析・sanitizeの基準値のみ。実際のWebKit入力・Reader・全テーマ性能は未確認。
+- 長文の性能測定は解析・sanitizeの基準値のみ。105k文字のWebKit追記・Undo・スクロールと
+  7テーマの代表画面は追試済みだが、入力遅延・Reader・全テーマの性能計測は未確認。
 - 固有名詞・意味保持は自動検査だけで合格にしない。全テーマ・IME・VoiceOverをjsdomで代替しない。
 - v2.8の公開build/source対応と過去pkgの実機結果は今回の候補証跡へ転用しない。
 
