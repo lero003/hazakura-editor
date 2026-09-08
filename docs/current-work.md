@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v2.9日常品質強化とTestFlight候補
 Authority: High
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 ## Current Phase
 
@@ -14,6 +14,7 @@ v2.8は2026-09-08オーナー報告で公開済み。追加依頼により、v3�
 ## Active Queue — v2.9品質レビュー
 
 1. **実装済み:** Q-01–Q-07と隣接する保存・復旧・Local Assistの保全。
+   2026-09-09のローカル実機追試でPDF末尾空白を追加修正し、署名候補を再作成。
    [品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)に対応表・試験・限界を集約。
 2. **外部再レビュー:** 保存完了後のlive session、detached復旧記録の寿命と容量、
    部分成功のUI追従、校正の機械検査を重点確認する。
