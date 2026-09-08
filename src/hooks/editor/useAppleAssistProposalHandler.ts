@@ -1,3 +1,4 @@
+import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -270,8 +271,7 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
             previous.originalText === previous.target.text;
         });
       const message = err instanceof Error ? err.message : String(err);
-      const cancelled = /cancelled by user|canceled by user/iu.test(message) ||
-        (err instanceof Error && err.name === "AbortError");
+      const cancelled = classifyLocalAssistError(err) === "cancelled";
       const statusMessage = cancelled ? message : `Hazakura Local Assist proposal generation failed: ${message}`;
       setStatusRef.current?.(statusMessage);
       await emitAppleAssistProposalStatus(cancelled ? "cancelled" : "failed", statusMessage, payload,

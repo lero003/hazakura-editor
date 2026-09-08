@@ -411,6 +411,13 @@ describe("getProposalStatusPresentation", () => {
 });
 
 describe("classifyApplyError", () => {
+  it.each(["ja", "kana", "en"] as const)("distinguishes timeout, unavailability and unsupported language in %s", (lang) => {
+    const copy = getAppleAssistWindowCopy(lang);
+    expect(classifyApplyError("helper request timed out", copy)).toBe(copy.generationTimeoutError);
+    expect(classifyApplyError("Apple Intelligence is not enabled on this Mac.", copy)).toBe(copy.modelUnavailableError);
+    expect(classifyApplyError("Apple Foundation Models does not support the current app language or locale", copy)).toBe(copy.modelLanguageError);
+    expect(classifyApplyError("Foundation Models input is too large for this request.", copy)).toBe(copy.contextTooLongError);
+  });
   it.each(["ja", "kana", "en"] as const)("explains an over-limit generated draft in %s", (lang) => {
     const copy = getAppleAssistWindowCopy(lang);
     const message = classifyApplyError(new Error("Hazakura Local Assist proposal generation failed: Hazakura Local Assist proposal exceeds the continuation limit of 4000 characters."), copy);

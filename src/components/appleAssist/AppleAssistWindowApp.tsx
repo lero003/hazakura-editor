@@ -1,3 +1,4 @@
+import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -907,6 +908,9 @@ export type AppleAssistWindowCopy = {
   roughRequestLabel: string;
   selectionTooLongError: string;
   proposalTooLongError: string;
+  modelUnavailableError: string;
+  modelLanguageError: string;
+  generationTimeoutError: string;
   sendingRequest: string;
   subtitle: string;
   targetReadFailed: string;
@@ -1202,30 +1206,18 @@ export function classifyApplyError(
 ): string {
   const raw = err instanceof Error ? err.message : String(err);
 
-  if (raw.includes("proposal exceeds the continuation limit")) {
-    return copy.proposalTooLongError;
-  }
-  if (
-    raw.includes("Selected text exceeds") ||
-    raw.includes("selected text exceeds")
-  ) {
-    return copy.selectionTooLongError;
-  }
-  if (
-    raw.includes("Document context exceeds") ||
-    raw.includes("document context exceeds") ||
-    raw.includes("exceededContextWindowSize")
-  ) {
-    return copy.contextTooLongError;
-  }
-  if (raw.includes("stale") || raw.includes("no longer matches")) {
-    return copy.targetStaleError;
-  }
-  if (raw.includes("guardrail") || raw.includes("refus")) {
-    return copy.guardrailError;
-  }
-  if (raw.includes("rate") || raw.includes("concurrent")) {
-    return copy.throttledError;
+  switch (classifyLocalAssistError(err)) {
+    case "proposal": return copy.proposalTooLongError;
+    case "selection": return copy.selectionTooLongError;
+    case "context": return copy.contextTooLongError;
+    case "stale": return copy.targetStaleError;
+    case "guardrail": return copy.guardrailError;
+    case "throttled": return copy.throttledError;
+    case "unavailable": return copy.modelUnavailableError;
+    case "language": return copy.modelLanguageError;
+    case "timeout": return copy.generationTimeoutError;
+    case "cancelled": return copy.cancelledStatus;
+    case "unknown": break;
   }
   return copy.unknownError(raw);
 }
@@ -1275,6 +1267,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       readyStatus:
         "じゅんび できました。よくつかう おねがいを えらぶか、おねがいの ないようを かいてください。",
       roughRequestLabel: "おねがいの ないよう",
+      modelUnavailableError: "この Mac では いま モデルを つかえません。Apple Intelligence の せっていと じゅんびを かくにんしてください。ふみは かわっていません。",
+      modelLanguageError: "モデルが いまの げんごに たいおうしていません。Apple Intelligence の げんごせっていを かくにんしてください。",
+      generationTimeoutError: "じかんないに あんを つくれませんでした。たいしょうを ちいさくするか、あとで もういちど たのんでください。",
       proposalTooLongError:
         "できた あんが、つづけて たのめる じょうげん（4000 もじ）を こえたため、うけとれませんでした。まえの あんが あれば のこしています。みじかい あんを たのむか、たいしょうを ちいさく えらびなおしてください。",
       selectionTooLongError:
@@ -1422,6 +1417,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       readyStatus:
         "準備できました。よく使う依頼を選ぶか、依頼内容を入力してください。",
       roughRequestLabel: "依頼内容",
+      modelUnavailableError: "このMacでは現在モデルを利用できません。Apple Intelligenceの設定とモデルの準備状況を確認してください。本文は変更されていません。",
+      modelLanguageError: "モデルが現在の言語に対応していません。Apple Intelligenceの言語設定を確認してください。",
+      generationTimeoutError: "制限時間内に生成を完了できませんでした。対象範囲を小さくするか、時間を置いて再依頼してください。",
       proposalTooLongError:
         "生成された案が追加指示の上限（4000文字）を超えたため、受け付けませんでした。前の完成案があれば保持しています。短い案を依頼するか、対象範囲を小さく選び直してください。",
       selectionTooLongError:
@@ -1567,6 +1565,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     readyStatus:
       "Ready. Pick a preset or type a request.",
     roughRequestLabel: "Request",
+    modelUnavailableError: "The model is currently unavailable on this Mac. Check Apple Intelligence settings and model readiness. Your document is unchanged.",
+    modelLanguageError: "The model does not support the current language. Check the Apple Intelligence language settings.",
+    generationTimeoutError: "Generation did not finish in time. Select a smaller target or try again later.",
     proposalTooLongError:
       "The generated draft exceeds the 4000-character follow-up limit and was not accepted. Any previous completed draft is kept. Ask for a shorter draft or select a smaller target.",
     selectionTooLongError:

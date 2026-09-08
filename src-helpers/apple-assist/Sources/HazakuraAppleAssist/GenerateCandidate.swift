@@ -19,26 +19,22 @@ enum GenerateCandidate {
         case error(AppleAssistErrorEnvelope)
     }
 
+    private static func operationError(for request: AppleAssistRequest) -> AppleAssistErrorEnvelope? {
+        guard IntentAllowlist.allOperations.contains(request.operation) else {
+            return AppleAssistErrorEnvelope(error: "Unknown operation: \(request.operation)", kind: "validation")
+        }
+        guard IntentAllowlist.implementedInV0_12.contains(request.operation) else {
+            return AppleAssistErrorEnvelope(error: "Operation '\(request.operation)' is deferred in v0.12.", kind: "deferred")
+        }
+        return nil
+    }
+
     static func run(
         _ request: AppleAssistRequest,
         backend: AssistBackend
     ) async -> RunResult {
-        guard IntentAllowlist.allOperations.contains(request.operation) else {
-            return .error(
-                AppleAssistErrorEnvelope(
-                    error: "Unknown operation: \(request.operation)",
-                    kind: "validation"
-                )
-            )
-        }
-
-        guard IntentAllowlist.implementedInV0_12.contains(request.operation) else {
-            return .error(
-                AppleAssistErrorEnvelope(
-                    error: "Operation '\(request.operation)' is deferred in v0.12.",
-                    kind: "deferred"
-                )
-            )
+        if let error = operationError(for: request) {
+            return .error(error)
         }
 
         #if FIXTURE_MODE
@@ -54,27 +50,12 @@ enum GenerateCandidate {
         )
         #else
         if #available(macOS 26.0, *) {
-            let availability = AvailabilityProbe.probe()
-            guard availability.kind == "available" else {
-                return .error(
-                    AppleAssistErrorEnvelope(
-                        error: availability.reason ?? "Foundation Models is not available.",
-                        kind: "unavailable"
-                    )
-                )
+            if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
+                return .error(error)
             }
 
             let startedAt = Date()
             do {
-                let model = SystemAssistRuntime.model(for: backend)
-                guard model.supportsLocale() else {
-                    return .error(
-                        AppleAssistErrorEnvelope(
-                            error: "Apple Foundation Models does not support the current app language or locale for generation yet: \(Locale.current.identifier)",
-                            kind: "unsupported_language"
-                        )
-                    )
-                }
                 let session = SystemAssistRuntime.makeSession(
                     for: backend,
                     instructions: Instructions(liveSystemInstructions)
@@ -119,22 +100,8 @@ enum GenerateCandidate {
         backend: AssistBackend,
         onPartial: (AppleAssistPartialResponse) -> Void
     ) async -> RunResult {
-        guard IntentAllowlist.allOperations.contains(request.operation) else {
-            return .error(
-                AppleAssistErrorEnvelope(
-                    error: "Unknown operation: \(request.operation)",
-                    kind: "validation"
-                )
-            )
-        }
-
-        guard IntentAllowlist.implementedInV0_12.contains(request.operation) else {
-            return .error(
-                AppleAssistErrorEnvelope(
-                    error: "Operation '\(request.operation)' is deferred in v0.12.",
-                    kind: "deferred"
-                )
-            )
+        if let error = operationError(for: request) {
+            return .error(error)
         }
 
         #if FIXTURE_MODE
@@ -151,27 +118,12 @@ enum GenerateCandidate {
         )
         #else
         if #available(macOS 26.0, *) {
-            let availability = AvailabilityProbe.probe()
-            guard availability.kind == "available" else {
-                return .error(
-                    AppleAssistErrorEnvelope(
-                        error: availability.reason ?? "Foundation Models is not available.",
-                        kind: "unavailable"
-                    )
-                )
+            if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
+                return .error(error)
             }
 
             let startedAt = Date()
             do {
-                let model = SystemAssistRuntime.model(for: backend)
-                guard model.supportsLocale() else {
-                    return .error(
-                        AppleAssistErrorEnvelope(
-                            error: "Apple Foundation Models does not support the current app language or locale for generation yet: \(Locale.current.identifier)",
-                            kind: "unsupported_language"
-                        )
-                    )
-                }
                 let session = SystemAssistRuntime.makeSession(
                     for: backend,
                     instructions: Instructions(liveSystemInstructions)
