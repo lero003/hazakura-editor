@@ -145,4 +145,40 @@ describe("Local Assist asynchronous lifecycle", () => {
     expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous");
     expect(localAssistProposalStore.getLatest(tab.sessionId)?.streaming).toBe(false);
   });
+  it.each(["文".repeat(4000), "🌸".repeat(4000), "か\u3099".repeat(2000)])("keeps a 4000-code-point candidate intact and allows refinement (%#)", async (candidateText) => {
+    harness.generate.mockResolvedValueOnce({ candidateText }).mockResolvedValueOnce({ candidateText: "revised" });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe(candidateText));
+    await send({ ...request("two"), proposalText: candidateText });
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("revised"));
+    expect(harness.generate.mock.calls[1][0].selectedText).toBe(candidateText);
+    expect(tab.contents).toBe("before\nTARGET\nafter");
+  });
+  it.each(["文".repeat(4001), "🌸".repeat(4001), "か\u3099".repeat(2000) + "文"])("rejects a 4001-code-point candidate without truncation or completion (%#)", async (candidateText) => {
+    harness.generate.mockResolvedValue({ candidateText });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(phases().some((event) => event.phase === "failed")).toBe(true));
+    expect(phases().some((event) => event.phase === "completed")).toBe(false);
+    expect(phases().at(-1)?.message).toContain("proposal exceeds the continuation limit");
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBeNull();
+    expect(isLocalAssistBusy()).toBe(false);
+    expect(tab.contents).toBe("before\nTARGET\nafter");
+  });
+  it("restores the previous complete draft after an over-limit refinement and can retry", async () => {
+    harness.generate.mockResolvedValueOnce({ candidateText: "previous" })
+      .mockResolvedValueOnce({ candidateText: "文".repeat(4001) })
+      .mockResolvedValueOnce({ candidateText: "shorter" });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("previous"));
+    const previous = localAssistProposalStore.getLatest(tab.sessionId);
+    await send({ ...request("two"), proposalText: "previous" });
+    await waitFor(() => expect(phases().some((event) => event.requestId === "two" && event.phase === "failed")).toBe(true));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)).toBe(previous);
+    await send({ ...request("three"), proposalText: "previous" });
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("shorter"));
+  });
+
 });

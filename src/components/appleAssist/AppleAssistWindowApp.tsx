@@ -906,6 +906,7 @@ export type AppleAssistWindowCopy = {
   readyStatus: string;
   roughRequestLabel: string;
   selectionTooLongError: string;
+  proposalTooLongError: string;
   sendingRequest: string;
   subtitle: string;
   targetReadFailed: string;
@@ -1201,6 +1202,9 @@ export function classifyApplyError(
 ): string {
   const raw = err instanceof Error ? err.message : String(err);
 
+  if (raw.includes("proposal exceeds the continuation limit")) {
+    return copy.proposalTooLongError;
+  }
   if (
     raw.includes("Selected text exceeds") ||
     raw.includes("selected text exceeds")
@@ -1271,6 +1275,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       readyStatus:
         "じゅんび できました。よくつかう おねがいを えらぶか、おねがいの ないようを かいてください。",
       roughRequestLabel: "おねがいの ないよう",
+      proposalTooLongError:
+        "できた あんが、つづけて たのめる じょうげん（4000 もじ）を こえたため、うけとれませんでした。まえの あんが あれば のこしています。みじかい あんを たのむか、たいしょうを ちいさく えらびなおしてください。",
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
       sendingRequest: "おねがいを うけつけました...",
@@ -1416,6 +1422,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       readyStatus:
         "準備できました。よく使う依頼を選ぶか、依頼内容を入力してください。",
       roughRequestLabel: "依頼内容",
+      proposalTooLongError:
+        "生成された案が追加指示の上限（4000文字）を超えたため、受け付けませんでした。前の完成案があれば保持しています。短い案を依頼するか、対象範囲を小さく選び直してください。",
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
       sendingRequest: "依頼を受け付けました...",
@@ -1559,6 +1567,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     readyStatus:
       "Ready. Pick a preset or type a request.",
     roughRequestLabel: "Request",
+    proposalTooLongError:
+      "The generated draft exceeds the 4000-character follow-up limit and was not accepted. Any previous completed draft is kept. Ask for a shorter draft or select a smaller target.",
     selectionTooLongError:
       "Selection is too long (max 4000 characters). Apple Foundation Models has a bounded context window; pick a smaller selection, or split the change into multiple requests.",
     sendingRequest: "Request accepted...",

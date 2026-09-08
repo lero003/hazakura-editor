@@ -918,6 +918,15 @@ window, and a simple request could be generated/applied and checked
 through the diff/update flow. Treat this as light local confidence, not
 as signed submit-lane, TestFlight, or App Review proof.
 
+## v2.9 Local Assist上限整合（実機確認待ち）
+
+対応Macのローカルappで、短い対象からの依頼→追加指示→main Diff→反映→Undoを確認する。
+生成案が4,000コードポイントを超えた場合、切り捨てた完成案を表示せず、理由と再依頼の
+案内が出ること。前の完成案がある追加指示では、その案が保持されて再依頼できること。
+本文・保存内容は変わらないこと。日本語/kana/英語の案内とIME/VoiceOverを確認する。
+実モデルで超過が起きなかった場合、未再現と記録しfixture結果で実機合格を代用しない。
+自動テストでは日本語・絵文字・結合文字の4,000/4,001境界と前案復帰を確認済み。
+
 ## v2.6 Local Assist physical release gate
 
 Run this section on the latest `main` build before treating the v2.6 source

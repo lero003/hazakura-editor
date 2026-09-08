@@ -11,9 +11,11 @@ Last reviewed: 2026-09-08
   下記の候補時点の検証記録から公開成果物の構成を推定しない。GitHub公開も別証跡。
 - **次期方針:** v2.9はSystem-onlyの上限/エラー/生成元/評価、v3.0はAFM活用と共通基盤、
   v3.1はC-1/C-2のモデルDL・管理・切り替え。計画: `docs/v2.9-v3-local-assist-plan.md`。
-- **次の一手:** `docs/current-work.md` の2.9-01/02。C-1/C-2は既存ゲートまでHOLD。
+- **次の一手:** `docs/current-work.md` の2.9-03/04。C-1/C-2は既存ゲートまでHOLD。
   M-0a/H-1は完了済み。v3.0の基盤はSystemで検証し、Core AIの利用解禁と分ける。
-- **今回の範囲:** 文書整理と静的照合のみ。ソース版2.8.0、製品コード・依存は変更なし。
+- **v2.9最初の実装:** 完成案も追加指示と同じ4,000コードポイント上限へ。
+  超過時は案内して非採用、有効な前案を保持。本文/Apply/Undo/保存は変更しない。
+  ソース版は2.8.0のまま。次期開発のローカル変更で、配布・公開は未実施。
   公開済みv2.8の再パッケージ/提出は次の作業にしない。
 
 ## Implementation / Candidate History（2026-09-07以前）
@@ -1164,7 +1166,7 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. `docs/current-work.md` の2.9-01/02（安全契約と上限整合）から一つの検証可能スライス。
+1. `docs/current-work.md` の2.9-03/04（System責務・生成元保持）から一つの検証可能スライス。
 2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。

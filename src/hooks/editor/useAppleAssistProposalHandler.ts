@@ -241,6 +241,11 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       }
       const candidateText = sanitizeAppleAssistCandidateText(response.candidateText);
       if (!candidateText.trim()) throw new Error("Hazakura Local Assist returned an empty proposal.");
+      // Completed drafts must fit the next turn's selectedText budget too.
+      // Check the reviewed text in Unicode code points; never truncate a draft.
+      if (!validateProposalText(candidateText).ok) {
+        throw new Error(`Hazakura Local Assist proposal exceeds the continuation limit of ${APPLE_ASSIST_MAX_SELECTED_CHARS} characters.`);
+      }
       // Apply must never perform a second, different cleanup after review.
       if (sanitizeAppleAssistCandidateText(candidateText) !== candidateText) {
         throw new Error("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.");

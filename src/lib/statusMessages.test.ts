@@ -362,3 +362,13 @@ describe("localizeStatusMessage: workspace restore reauth hint (v0.16)", () => {
     expect(exact).toBe("ワークスペースを復元しました");
   });
 });
+
+
+describe("Local Assist over-limit draft status", () => {
+  it("explains the continuation limit in the main editor", () => {
+    const raw = "Hazakura Local Assist proposal generation failed: Hazakura Local Assist proposal exceeds the continuation limit of 4000 characters.";
+    expect(localizeStatusMessage(raw, "ja")).toMatch(/4000.*短い案/);
+    expect(localizeStatusMessage(raw, "kana")).toMatch(/4000.*みじかい/);
+    expect(localizeStatusMessage(raw, "en")).toBe(raw);
+  });
+});

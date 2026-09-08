@@ -411,6 +411,14 @@ describe("getProposalStatusPresentation", () => {
 });
 
 describe("classifyApplyError", () => {
+  it.each(["ja", "kana", "en"] as const)("explains an over-limit generated draft in %s", (lang) => {
+    const copy = getAppleAssistWindowCopy(lang);
+    const message = classifyApplyError(new Error("Hazakura Local Assist proposal generation failed: Hazakura Local Assist proposal exceeds the continuation limit of 4000 characters."), copy);
+    expect(message).toBe(copy.proposalTooLongError);
+    expect(message).toContain("4000");
+    expect(message).not.toContain("generation failed:");
+  });
+
   const copy = getAppleAssistWindowCopy("ja");
 
   it("routes the Rust 'Selected text exceeds' message to selectionTooLongError", () => {

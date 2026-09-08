@@ -30,6 +30,12 @@ export function localizeStatusMessage(
     return message;
   }
 
+  if (message.includes("proposal exceeds the continuation limit")) {
+    return isKanaStyle(menuLanguage)
+      ? "あんが 4000 もじを こえたため、うけとれませんでした。みじかい あんを たのむか、たいしょうを ちいさく えらびなおしてください。"
+      : "案が追加指示の上限（4000文字）を超えたため、受け付けませんでした。短い案を依頼するか、対象範囲を小さく選び直してください。";
+  }
+
   const exact: Record<string, string> = {
     "A tab is already open at the selected Save As path.":
       "選択した別名保存先には既にタブが開かれています。",
