@@ -7,24 +7,18 @@ Last reviewed: 2026-09-08
 
 ## Current State
 
-- **v2.8公開:** 2026-09-08オーナー報告。公開build・PR #40包含・実機smokeの詳細は未確認。
-  下記の候補時点の検証記録から公開成果物の構成を推定しない。GitHub公開も別証跡。
-- **次期方針:** v2.9はSystem-onlyの上限/エラー/生成元/評価、v3.0はAFM活用と共通基盤、
-  v3.1はC-1/C-2のモデルDL・管理・切り替え。計画: `docs/v2.9-v3-local-assist-plan.md`。
-- **次の一手:** `docs/current-work.md` の2.9-03/04。C-1/C-2は既存ゲートまでHOLD。
-  M-0a/H-1は完了済み。v3.0の基盤はSystemで検証し、Core AIの利用解禁と分ける。
-- **v2.9最初の実装:** 完成案も追加指示と同じ4,000コードポイント上限へ。
-  超過時は案内して非採用、有効な前案を保持。本文/Apply/Undo/保存は変更しない。
-  ソース版は2.8.0のまま。次期開発のローカル変更で、配布・公開は未実施。
-  公開済みv2.8の再パッケージ/提出は次の作業にしない。
-
-## 今回の確認（2026-09-08、v2.9-02）
-
-- Red: 上限超過と前案復帰の4ケースで失敗を確認。修正後はVitest 228ファイル/1,948件成功。
-- typecheck、App Store surface 111件、Rust fmt、Rust 369件（2 ignored）が成功。
-- `npm run build` 成功（live helper、Vite、macOSローカルapp）。最初のSwiftキャッシュ権限制約は
-  同一コマンドのホスト実行で解消。Viteの既存500 kB chunk警告は残る。
-- `git diff --check` 成功。実モデルの長さ超過、native窓、IME/VoiceOverは未実施。
+- **v2.8公開:** 2026-09-08オーナー報告。公開build・PR #40包含・公開成果物の構成は別途の証跡とする。
+- **v2.9ソースレビュー:** 上限整合、System責務/エラー整理、生成元表示、日本語評価CLI、
+  コードフェンス保持、予約区切り文字が残る案の拒否を実装。実装・検証の範囲と残課題は
+  [v2.9レビュー](reviews/2026-09-08-v2.9-local-assist.md)。
+- **検証:** 全Vitest 1,985件、型検査/Vite/nativeローカルbuild、App Store surface 111件、
+  Rust fmt/369件（2 ignored）、Swift 5件、評価判定Node 3件が成功。
+  live日本語評価は初回35/40、フェンス修正後13/14で完成案。品質の全合格ではない。
+  修正版nativeで生成→追加指示→Diff→反映→Undoを確認。IME/VoiceOver/旧OSは未確認。
+- **次:** 外部コードレビューと日本語/Markdownの品質判断、残る実機smoke。
+  ソース版数は2.8.0を維持し、v2.9候補凍結時に版数と配布証跡を揃える。公開・提出は未実施。
+- **版別境界:** v3.0はAFM活用とSystemで検証する共通基盤、v3.1はC-1/C-2のDL・管理・切り替え。
+  C-1/C-2とMLXのHOLDを維持。詳細は `docs/v2.9-v3-local-assist-plan.md`。
 - Habitat 1.1.1は警告なし。既存のApp Store bundleVersion変更は今回のコミット対象外。
 
 ## Implementation / Candidate History（2026-09-07以前）
@@ -731,7 +725,7 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. `docs/current-work.md` の2.9-03/04（System責務・生成元保持）から一つの検証可能スライス。
+1. `docs/current-work.md` とv2.9レビュー記録を読み、外部レビューの指摘か未確認の実機/品質項目を一つ選ぶ。
 2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。

@@ -31,7 +31,7 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. v2.9の選択済みスライス。安全契約確認と上限整合から始め、生成と本文反映を分離する。
+1. v2.9の外部レビュー指摘または未確認の実機/品質項目。完了した上限整合等を再実装せず、生成と本文反映を分離する。
    反映はmain Diffから一度だけ。反映後に同じ案をReview Barで再確認させない。
 2. 公開済みv2.8の再現blocker。保存・復元などの重大問題は通常改善より優先。
 

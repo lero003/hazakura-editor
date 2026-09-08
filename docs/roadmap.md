@@ -35,15 +35,14 @@ Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを
 共通基盤を完成させる。AFMの新機能をすべて採用する意味ではなく、PCC、クラウド推論、
 ツール実行、背景indexは対象外。モデルの本番identity未決はAFM改善の停止理由にしない。
 
-## Active Path — v2.9
+## Active Path — v2.9ソースレビュー
 
-1 run = 1検証可能スライス。最初は安全契約の回帰確認と、完成案から追加指示へ進む際の
-上限整合。次にSystem責務/エラー/生成元、評価とU-3の最小改善へ進む。
-G-1は任意評価、27 SDK調査と依存更新は独立レーン。
-
-版別の詳細、C-0との対応、受け入れ条件は
-[Local Assist plan](v2.9-v3-local-assist-plan.md)。v2.8の計画は履歴として
-[v2.8 plan](v2.8-plan.md)に保持する。
+上限整合、System責務/エラー分類、生成元表示、日本語評価と予算観測を実装。
+native確認で見つかったコードフェンス/予約区切り文字の扱いと案内を修正した。
+次は外部レビューと日本語/Markdown品質・残る実機smoke。
+検証範囲: [v2.9レビュー](reviews/2026-09-08-v2.9-local-assist.md)。
+G-1は任意評価、27 SDKと依存更新は独立レーン。v2.8計画は公開済み版の履歴として残す。
+版別受け入れ条件は[Local Assist plan](v2.9-v3-local-assist-plan.md)。
 
 ## Established Foundation
 

@@ -59,7 +59,7 @@ Agent entry rules live in `AGENTS.md`。v2.8は2026-09-08にオーナーが公�
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **v2.9–v3.1の版別方針**
-- `current-work.md` — v2.9上限整合から; M-0a完了; C-1/C-2はv3.1のゲート待ち
+- `current-work.md` — v2.9ソースレビューと残る実機/品質確認; M-0a完了; C-1/C-2はv3.1のゲート待ち
 - `v2.9-v3-local-assist-plan.md` — active plan, attachment reconciliation and acceptance
 - `v2.8-plan.md` — historical writing-companion plan
 - `v2.6-plan.md` — historical A-1–A-4 conversation / Diff review plan
