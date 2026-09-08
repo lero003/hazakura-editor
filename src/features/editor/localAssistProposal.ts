@@ -12,6 +12,9 @@ export type LocalAssistProposal = {
   conversationId: string | null;
   turnIndex: number;
   streaming?: boolean;
+  /** Actual response metadata, never the currently selected model. Legacy drafts may omit it. */
+  generation?: { modelId: string | null; latencyMs: number | null };
+
 };
 
 type Listener = () => void;

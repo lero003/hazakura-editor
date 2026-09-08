@@ -102,4 +102,13 @@ describe("LocalAssistProposalReview", () => {
     expect(screen.queryByRole("button", { name: "Apply proposal" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Discard proposal" })).toBeNull();
   });
+  it("discloses the model that produced the draft and never guesses legacy metadata", () => {
+    seedProposal({ generation: { modelId: "apple:foundation-models:system-default", latencyMs: 123 } });
+    render(<LocalAssistProposalReview {...props()} menuLanguage="ja" />);
+    expect(screen.getByText(/生成元: Apple Intelligence/)).toBeTruthy();
+    act(() => { seedProposal({ requestId: "legacy" }); });
+    expect(screen.getByText(/生成元: 不明/)).toBeTruthy();
+    expect(screen.queryByText(/生成元: Apple Intelligence/)).toBeNull();
+  });
+
 });

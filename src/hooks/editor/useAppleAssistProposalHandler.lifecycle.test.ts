@@ -181,4 +181,23 @@ describe("Local Assist asynchronous lifecycle", () => {
     await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.candidateText).toBe("shorter"));
   });
 
+  it("pins the actual generation metadata and restores it with the prior draft", async () => {
+    harness.generate.mockResolvedValueOnce({ candidateText: "previous", modelId: "apple:foundation-models:system-default", latencyMs: 123 })
+      .mockRejectedValueOnce(new Error("cancelled by user"));
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.streaming).toBe(false));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.generation).toEqual({ modelId: "apple:foundation-models:system-default", latencyMs: 123 });
+    await send({ ...request("two"), proposalText: "previous" });
+    await waitFor(() => expect(phases().some((event) => event.phase === "cancelled")).toBe(true));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.generation).toEqual({ modelId: "apple:foundation-models:system-default", latencyMs: 123 });
+  });
+  it.each([{}, { modelId: 123, latencyMs: -1 }])("keeps missing or malformed generation metadata unknown (%#)", async (metadata) => {
+    harness.generate.mockResolvedValue({ candidateText: "draft", ...metadata });
+    renderHook(() => useAppleAssistProposalHandler({ activeTab: tab }));
+    await send(request());
+    await waitFor(() => expect(localAssistProposalStore.getLatest(tab.sessionId)?.streaming).toBe(false));
+    expect(localAssistProposalStore.getLatest(tab.sessionId)?.generation).toEqual({ modelId: null, latencyMs: null });
+  });
+
 });

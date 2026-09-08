@@ -250,7 +250,12 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       if (sanitizeAppleAssistCandidateText(candidateText) !== candidateText) {
         throw new Error("Hazakura Local Assist returned ambiguous proposal formatting. Please try again.");
       }
-      if (!localAssistProposalStore.completeGeneration(tab.sessionId, { ...proposalBase, candidateText })) return;
+      const generation = {
+        modelId: typeof response.modelId === "string" && response.modelId.trim() && response.modelId.length <= 200
+          ? response.modelId : null,
+        latencyMs: Number.isFinite(response.latencyMs) && response.latencyMs >= 0 ? response.latencyMs : null,
+      };
+      if (!localAssistProposalStore.completeGeneration(tab.sessionId, { ...proposalBase, candidateText, generation })) return;
       const message = "Hazakura Local Assist created an unapplied proposal for Diff review.";
       setStatusRef.current?.(message);
       await emitAppleAssistProposalStatus("completed", message, payload, { target, originalText: targetCheck.before, candidateText });
