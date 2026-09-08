@@ -305,7 +305,12 @@ pub(crate) fn save_text_file_as_with_label(
     }
     write_new_file(&path_buf, &encoded_bytes)?;
 
-    open_text_file_with_encoding(label, path, Some(encoding_for_save(&encoding)))
+    let mut document =
+        open_text_file_with_encoding(label, path, Some(encoding_for_save(&encoding)))?;
+    // A newline-free file cannot reveal the requested save format on reread.
+    // Return the written snapshot's format, as regular Save does.
+    document.line_ending = line_ending_for_save(&line_ending).to_string();
+    Ok(document)
 }
 
 #[tauri::command]

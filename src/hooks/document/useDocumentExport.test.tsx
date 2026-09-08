@@ -309,6 +309,20 @@ describe("useDocumentExport", () => {
     expect(exportedHtml).toContain("color: var(--status-text)");
   });
 
+  it("explains the completed HTML byte limit before attempting to write embedded images", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/large.html");
+    markdownApi.inlineMarkdownImages.mockResolvedValueOnce('<img src="data:image/png;base64,' + "A".repeat(11_184_812) + '">');
+    const setGlobalError = vi.fn();
+    const { result } = renderHook(() => useDocumentExport({
+      activeContents: "Short text with image", activeTab: makeTab(),
+      setGlobalError, setStatus: vi.fn(), workspaceRootPath: "/workspace",
+    }));
+    await act(async () => result.current.exportHtml());
+    expect(tauriApi.saveTextFileAs).not.toHaveBeenCalled();
+    expect(setGlobalError).toHaveBeenCalledWith(expect.stringContaining("画像・CSSを含むHTML全体"));
+    expect(setGlobalError).toHaveBeenCalledWith(expect.stringContaining("画像を縮小"));
+  });
+
   it("opens PDF settings before exporting with the selected margin", async () => {
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");

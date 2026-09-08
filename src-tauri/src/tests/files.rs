@@ -1301,3 +1301,32 @@ fn atomic_save_preserves_extended_attributes() {
     assert_eq!(String::from_utf8(read.stdout).unwrap().trim(), value);
     fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn save_as_preserves_requested_format_even_without_newline_bytes() {
+    let dir = unique_test_dir("save_as_format_matrix");
+    fs::create_dir_all(&dir).unwrap();
+    for (index, contents) in ["", "Single line", "First\nSecond\n"].iter().enumerate() {
+        for ending in ["lf", "crlf"] {
+            let path = dir.join(format!("{index}-{ending}.md"));
+            let saved = save_text_file_as_with_label(
+                MAIN_WINDOW_LABEL,
+                path.to_string_lossy().into_owned(),
+                contents.to_string(),
+                ending.into(),
+                "utf-8".into(),
+                None,
+            )
+            .unwrap();
+            assert_eq!(saved.line_ending, ending, "contents={contents:?}");
+            let expected = if ending == "crlf" {
+                contents.replace('\n', "\r\n")
+            } else {
+                contents.to_string()
+            };
+            assert_eq!(saved.contents, expected);
+            assert_eq!(fs::read(&path).unwrap(), expected.as_bytes());
+        }
+    }
+    fs::remove_dir_all(dir).unwrap();
+}

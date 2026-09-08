@@ -875,6 +875,12 @@ ${bodyHtml}
 </body>
 </html>`;
 
+      // HTML currently uses the editable-text writer. Check the completed
+      // artifact, including base64 images and CSS, before requesting any write.
+      const htmlBytes = new TextEncoder().encode(standaloneHtml).byteLength;
+      if (htmlBytes > 10 * 1024 * 1024) {
+        throw new Error(`画像・CSSを含むHTML全体が10 MiBの上限を超えています（${(htmlBytes / 1024 / 1024).toFixed(1)} MiB）。画像を縮小するか枚数を減らして、もう一度書き出してください。`);
+      }
       await saveTextFileAs(destPath, standaloneHtml, "lf", "utf-8", null);
       try {
         await revealPathInFileManager(destPath);

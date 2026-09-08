@@ -30,7 +30,21 @@ function useHarness() {
 }
 
 describe("real save and close integration", () => {
-  beforeEach(() => { localStorage.clear(); });
+  beforeEach(() => { localStorage.clear(); vi.clearAllMocks(); });
+  it.each(["", "One line", "First\nSecond\n"].flatMap(contents =>
+    (["lf", "crlf"] as const).map(line_ending => ({ contents, line_ending }))))(
+    "closes $line_ending saved contents $contents in one operation", async ({ contents, line_ending }) => {
+      api.saveTextFileAs.mockImplementation(async (path, text, ending, encoding) => ({
+        path, name: "saved.md", contents: text, line_ending: ending, encoding,
+        fingerprint: "saved", size: text.length, modified_ms: 1, large_file_warning: false,
+      }));
+      const { result } = renderHook(useHarness);
+      act(() => result.current.setTabs(tabs => tabs.map(tab => ({ ...tab, contents, line_ending }))));
+      await act(async () => result.current.saveAndClosePendingTab());
+      expect(result.current.tabs).toEqual([]);
+      expect(api.saveTextFileAs).toHaveBeenCalledTimes(1);
+    },
+  );
   it.each([false, true])("closes the saved session only when no edits arrived during I/O: %s", async (editDuringWrite) => {
     let resolveWrite!: (file: TextFileDocument) => void;
     api.saveTextFileAs.mockImplementation(() => new Promise<TextFileDocument>(resolve => { resolveWrite = resolve; }));

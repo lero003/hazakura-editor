@@ -15,6 +15,7 @@ import {
   draftStorageKey,
   isPathlessDraft,
   isPathlessDraftOversized,
+  tabsEligibleForDraftPersistence,
 } from "../../features/document/pathlessDraftRecovery";
 import {
   draftRecordFromTab,
@@ -143,7 +144,7 @@ export function useRecoveryActions({
         setTabs((currentTabs) => [...currentTabs, restored]);
         setActiveTabId(restored.id);
         const restoredDraft = draftRecordFromTab(restored);
-        const persisted = !isDirty(restored) || isPathlessDraftOversized(restoredDraft)
+        const persisted = tabsEligibleForDraftPersistence([restored]).length === 0 || isPathlessDraftOversized(restoredDraft)
           ? { ok: false }
           : writeStoredDrafts(upsertDraftRecord(readStoredDrafts(), restoredDraft));
         if (!persisted.ok) {
