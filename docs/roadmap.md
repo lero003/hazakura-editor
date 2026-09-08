@@ -13,7 +13,7 @@ Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v2.8（2026-09-08オーナー報告） |
-| ソース版 | 2.8.0。今回のdocs整理で版数・実装は変更しない |
+| ソース版 | 2.8.0。v2.9向け実装をレビュー中。候補凍結時に版数を揃える |
 | 配布証跡 | 公開build・PR #40包含・実機確認の詳細は未確認。過去の候補と区別する |
 | 現行キュー | v2.9 System-only改善 — `docs/current-work.md` |
 | 計画正本 | `docs/v2.9-v3-local-assist-plan.md` |

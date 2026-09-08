@@ -184,6 +184,18 @@ describe("AppleAssistWindowApp render", () => {
     expect(screen.queryByText("HAZAKURA_TEXT_START")).toBeNull();
     expect(screen.queryByText("HAZAKURA_ORIGINAL_START")).toBeNull();
 
+    for (const partialText of ["案\n\nHAZAKURA_TEXT_END", "案 HAZAKURA_CONTEXT_END", "<<<HAZAKURA_ORIGINAL_START\n案"]) {
+      await act(async () => {
+        proposalStatus?.({ payload: { phase: "partial", requestId, request: "整えて", message: "partial", partialText, emittedAtMs: 1 } });
+      });
+      expect(document.body.textContent).not.toMatch(/HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_(START|END)/);
+      expect(screen.queryByText("案")).toBeNull();
+    }
+    await act(async () => {
+      proposalStatus?.({ payload: { phase: "partial", requestId, request: "整えて", message: "partial", partialText: "通常の途中案🌸", emittedAtMs: 2 } });
+    });
+    expect(screen.getByText("通常の途中案🌸")).toBeTruthy();
+
     await act(async () => {
       proposalStatus?.({
         payload: {

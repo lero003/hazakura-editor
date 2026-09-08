@@ -330,7 +330,7 @@ describe("getStreamPreviewPresentation", () => {
     });
   });
 
-  it("strips leaked Hazakura prompt boundary markers from streaming previews", () => {
+  it("hides the entire partial when it contains prompt boundary markers", () => {
     const presentation = getStreamPreviewPresentation(
       [
         "<<<HAZAKURA_TEXT_START",
@@ -342,9 +342,21 @@ describe("getStreamPreviewPresentation", () => {
     );
 
     expect(presentation).toEqual({
-      kind: "content",
-      text: "翻訳案です。",
+      kind: "placeholder",
+      text: copy.streamPreviewWaiting,
     });
+  });
+
+  it.each(["TEXT", "CONTEXT", "ORIGINAL"].flatMap((scope) => ["START", "END"].map((edge) => `HAZAKURA_${scope}_${edge}`)))("hides bare and malformed %s partials without revealing their body", (marker) => {
+    for (const raw of [`案\n\n${marker}`, `<<<${marker}\n案`, `案 ${marker}>>> 続き`]) {
+      expect(getStreamPreviewPresentation(raw, true, copy)).toEqual({ kind: "placeholder", text: copy.streamPreviewWaiting });
+    }
+  });
+
+  it("resumes ordinary Markdown preview after a suppressed partial", () => {
+    expect(getStreamPreviewPresentation("案\nHAZAKURA_TEXT_END", true, copy).kind).toBe("placeholder");
+    const text = "## 案\n\n> 引用🌸\n\n```js\nconst count = 3;\n```";
+    expect(getStreamPreviewPresentation(text, true, copy)).toEqual({ kind: "content", text });
   });
 
   it("falls back to waiting copy when the partial contains only a boundary marker", () => {
@@ -542,8 +554,18 @@ describe("getApplyStatusPresentation", () => {
 
     expect(presentation.status).toBe(copy.failedStatus);
     expect(presentation.status).not.toBe(raw);
-    expect(presentation.error).toBe(raw);
+    expect(presentation.error).toBe(copy.contextTooLongError);
     expect(presentation.feedbackKind).toBe("failed");
+  });
+
+  it.each(["ja", "kana", "en"] as const)("classifies asynchronous stale-target Apply failures in %s", (lang) => {
+    const copy = getAppleAssistWindowCopy(lang);
+    const result = getApplyStatusPresentation({ phase: "failed", requestId: "apply-failed",
+      request: "整えて", emittedAtMs: 0,
+      message: "Hazakura Local Assist apply failed: Hazakura Local Assist target text no longer matches the active buffer." }, copy);
+    expect(result.error).toBe(copy.targetStaleError);
+    expect(result.status).toBe(copy.failedStatus);
+    expect(result.feedbackKind).toBe("failed");
   });
 
   it("keeps completed events as a short success status without an error", () => {

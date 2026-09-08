@@ -410,11 +410,8 @@ export function AppleAssistWindowApp() {
         if (payload.phase === "partial") {
           setBusy(true);
           setError(null);
-          // Helper output is streamed before the final candidate sanitizer
-          // runs. Keep prompt boundary markers out of the Diff surface too;
-          // a marker-only partial returns an empty string so the last
-          // completed proposal remains visible while the helper is warming
-          // up its response.
+          // Partial text is presentation only. Hide snapshots containing
+          // internal delimiters; only final candidates reach Diff/Apply.
           setStreamPreview(sanitizeStreamPreviewText(payload.partialText ?? ""));
           return;
         }
@@ -1029,7 +1026,7 @@ export function getApplyStatusPresentation(
 
   return {
     status: copy.failedStatus,
-    error: payload.message,
+    error: classifyApplyError(payload.message, copy),
     feedbackKind: "failed",
   };
 }
@@ -1091,34 +1088,10 @@ export function getStreamPreviewPresentation(
 }
 
 function sanitizeStreamPreviewText(rawPreview: string): string {
-  const trimmed = rawPreview.trim();
-  if (!trimmed) {
-    return "";
-  }
-  const boundaryPatterns = [
-    /<<<HAZAKURA_TEXT_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_TEXT_END>>>/,
-    /<<<HAZAKURA_CONTEXT_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_CONTEXT_END>>>/,
-    /<<<HAZAKURA_ORIGINAL_START(?:>>>)?\s*\n([\s\S]*?)\n?(?:<<<)?HAZAKURA_ORIGINAL_END>>>/,
-  ];
-
-  for (const pattern of boundaryPatterns) {
-    const match = trimmed.match(pattern);
-    if (match) {
-      return match[1]?.trim() ?? "";
-    }
-  }
-
-  const withoutBoundaryStart = trimmed
-    .replace(/^<<<HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_START(?:>>>)?\s*/u, "")
-    .replace(/\s*(?:<<<)?HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_END>>>$/u, "")
-    .trim();
-  if (
-    !withoutBoundaryStart ||
-    /^<<<HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_START(?:>>>)?$/u.test(trimmed)
-  ) {
-    return "";
-  }
-  return withoutBoundaryStart;
+  // Suppress the entire partial instead of trying to reconstruct model text.
+  // Final candidate validation and exact Diff review remain separate.
+  if (/HAZAKURA_(?:TEXT|CONTEXT|ORIGINAL)_(?:START|END)/u.test(rawPreview)) return "";
+  return rawPreview.trim();
 }
 
 export function renderAvailabilityMessage(

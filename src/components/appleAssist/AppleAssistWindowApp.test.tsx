@@ -68,6 +68,7 @@ describe("getApplyStatusPresentation", () => {
     appliedStatus: (request: string) => `applied: ${request}`,
     cancelledStatus: "cancelled-status",
     failedStatus: "failed-status",
+    unknownError: (raw: string) => `unknown-error: ${raw}`,
   } as unknown as Parameters<typeof getApplyStatusPresentation>[1];
 
   const basePayload = {
@@ -97,13 +98,13 @@ describe("getApplyStatusPresentation", () => {
     expect(presentation.feedbackKind).toBe("cancelled");
   });
 
-  it("maps a failed phase to the failed status with the message as error", () => {
+  it("maps an unknown failure through the localized error fallback", () => {
     const presentation = getApplyStatusPresentation(
       { ...basePayload, phase: "failed", message: "boom" },
       copy,
     );
     expect(presentation.status).toBe("failed-status");
-    expect(presentation.error).toBe("boom");
+    expect(presentation.error).toBe("unknown-error: boom");
     expect(presentation.feedbackKind).toBe("failed");
   });
 });
