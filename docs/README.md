@@ -3,20 +3,14 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
+Last reviewed: 2026-09-08
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Agent entry rules live at the repository root: `AGENTS.md`. **v2.5 is released
-and closed** while **v2.6 A-1–A-4 source work is merged on `main`** (Local Assist
-pinned multi-turn conversation + explicit Diff apply). Mac App Store `2.6.2`
-is user-confirmed published (2026-08-28; staged rollout). A GitHub source tag
-and physical Assist validation remain separate. Published `2.6.2` is hotfix-only.
-MLX M-0a is a completed System-boundary preflight; it does not include an MLX
-runtime. The frozen `2.7.0` / build `123` package is owner-managed for App
-Review; Apple-side state is unconfirmed here. `2.8.0` is development-only.
-M-0b remains parked after C-2 and an Xcode 27 build lane.
-Start with `current-work.md` and `roadmap.md`.
+Agent entry rules live in `AGENTS.md`。v2.8は2026-09-08にオーナーが公開を報告。
+次の開発はv2.9 Local Assist改善、v3.0 AFM活用と基盤、v3.1モデル管理。
+`current-work.md` → `v2.9-v3-local-assist-plan.md` の順に読む。
+過去の候補・実機未確認・GitHub公開は別証跡として保持する。
 
 ## Current Canonical Docs
 
@@ -26,9 +20,10 @@ Start with `current-work.md` and `roadmap.md`.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **v2.8.0 / U-1 writing-companion queue**; frozen v2.7 candidate stays separate.
-- `roadmap.md`: **v2.8.0 development**; published store remains 2.6.2; v2.7 owner review planned.
-- `v2.8-plan.md`: **current plan** for composer-first Apple Intelligence writing companion.
+- `current-work.md`: **v2.9 Local Assist queue**.
+- `roadmap.md`: **v2.9–v3.1の版別方針**.
+- `v2.9-v3-local-assist-plan.md`: **current plan** for Local Assist / AFM / Core AI.
+- `v2.8-plan.md`: published-line planning history; unshipped U-3/U-4/G-1 moved to the next plan.
 - `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; store published, GitHub tag pending).
 - `v2.5-plan.md`: **v2.5 plan** (workspace control; Assist deferred; later Core AI).
 - `v2.4-plan.md`: **closed** Book depth plan (historical for `2.4.0`).
@@ -63,15 +58,17 @@ Start with `current-work.md` and `roadmap.md`.
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.8.0 development**; frozen v2.7 candidate remains owner-managed
-- `current-work.md` — 2.8.0 U-1 first; M-0a complete; C-1 / C-2 / M-0b HOLD
-- `v2.8-plan.md` — active writing-companion plan and acceptance boundary
+- `roadmap.md` — **v2.9–v3.1の版別方針**
+- `current-work.md` — v2.9上限整合から; M-0a完了; C-1/C-2はv3.1のゲート待ち
+- `v2.9-v3-local-assist-plan.md` — active plan, attachment reconciliation and acceptance
+- `v2.8-plan.md` — historical writing-companion plan
 - `v2.6-plan.md` — historical A-1–A-4 conversation / Diff review plan
 - `releases/2.6.2-source-tag.release.md` — 2.6.2 note; Mac App Store published; GitHub source tag pending
 - `releases/2.6.2-app-store-release-notes.md` — App Store What's New for published `2.6.2` (user-confirmed 2026-08-28; staged rollout)
 - `releases/2.6.1-source-tag.release.md` — prior local candidate note; tag pending
 - `releases/2.6.0-source-tag.release.md` — prior A-1–A-4 source-preview candidate note; tag pending
-- `releases/2.7.0-source-tag.release.md` — current local source/package candidate boundary
+- `releases/2.8.0-source-tag.release.md` — v2.8公開報告と過去の候補証跡
+- `releases/2.7.0-source-tag.release.md` — historical local source/package candidate boundary
 - `releases/2.7.0-app-store-release-notes.md` — candidate App Store copy; not published
 - `v2.5-plan.md` — closed workspace-control release plan
 - `local-assist-conversational-edit-ux.md` — conversation / Diff design SoT

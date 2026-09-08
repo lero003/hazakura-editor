@@ -3,110 +3,46 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 owner review planned)
+Last reviewed: 2026-09-08
 
 ## Current Position
 
-`Hazakura Editor` is a Markdown-first safe editor. It is not an IDE,
-Git client, general terminal, plugin platform, project analyzer, or
-automatic agent-apply system.
+Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを主軸に、
+「Markdownで書き、本として読み、ローカルAIで整える。」を深める。
 
-| Fact | Value |
-|------|--------|
-| Package / app version in tree | **`2.8.0`** release candidate; no upload/publication claim |
-| Frozen local candidate | **`2.7.0` / build `123`**; owner-managed App Review planned; Apple-side state unconfirmed |
-| Published Mac App Store | **`2.6.2`** (user-confirmed 2026-08-28; staged rollout to all users) |
-| Prior store / source lines | `2.4.0`, `2.3.0`, `2.0.0`, `1.13.0` historical; tags immutable |
-| v2.5 release | **Released / closed** (user-confirmed); no active release gate |
-| Active product phase | **v2.8.0 release preparation** — detached conversation candidate; C-1 HOLD on identity |
-| Next plan | **`docs/v2.8-plan.md`** |
-| Design SoT (Assist UX) | **`docs/local-assist-conversational-edit-ux.md`** |
-| Parked (not the main queue) | MLX M-0b runtime, 縦書き, anydoc adoption, residual Book depth, broad evidence matrix |
+| 対象 | 状態 |
+|---|---|
+| 公開版 | v2.8（2026-09-08オーナー報告） |
+| ソース版 | 2.8.0。今回のdocs整理で版数・実装は変更しない |
+| 配布証跡 | 公開build・PR #40包含・実機確認の詳細は未確認。過去の候補と区別する |
+| 現行キュー | v2.9 System-only改善 — `docs/current-work.md` |
+| 計画正本 | `docs/v2.9-v3-local-assist-plan.md` |
 
-North star:
+## Phase Decision — 2026-09-08
 
-> Markdownで書き、本として読み、ローカルAIで整える。
+| 版 | 主題 | 完了の目安 |
+|---|---|---|
+| v2.8 | 公開済みの別窓Writing Companion | 次期改善の基準。公開済み版へ機能追加を混ぜない |
+| **v2.9** | **現行Local Assistの確実さ** | 上限整合、エラー案内、生成元表示、日本語評価、別窓とDiff動線 |
+| **v3.0** | **強化AFMの活用と共通基盤** | 対応Systemの実生成・品質・停止/復旧、backend共通契約、旧OS互換 |
+| **v3.1** | **任意モデルのDL・管理・切り替え** | allowlistモデルを明示入手・検証・利用・削除できるC-1/C-2 |
+| v3.2以降 | 文章品質の追加機能、明示章参照、読む・届ける改善 | 需要で選ぶ候補。版ごとの機能確約ではない |
 
-v2 lens (Book):
+添付案の「v3.0でモデル入手/削除」はv3.1へ移す。v3.0ではSystem経路を使って
+共通基盤を完成させる。AFMの新機能をすべて採用する意味ではなく、PCC、クラウド推論、
+ツール実行、背景indexは対象外。モデルの本番identity未決はAFM改善の停止理由にしない。
 
-> 明示的に選んだ Markdown 群を一冊として読み・整え・書き出す。
-> source は個々の Markdown。indexing / auto-apply / IDE 化はしない。
+## Active Path — v2.9
 
-v2.5 lens (Workspace):
+1 run = 1検証可能スライス。最初は安全契約の回帰確認と、完成案から追加指示へ進む際の
+上限整合。次にSystem責務/エラー/生成元、評価とU-3の最小改善へ進む。
+G-1は任意評価、27 SDK調査と依存更新は独立レーン。
 
-> Workspace・Editor・Preview／Reference の幅を用途に合わせ、上限や完了を
-> 分かる形にする。source と Safe Editor の境界は変えない。
+版別の詳細、C-0との対応、受け入れ条件は
+[Local Assist plan](v2.9-v3-local-assist-plan.md)。v2.8の計画は履歴として
+[v2.8 plan](v2.8-plan.md)に保持する。
 
-v2.6 lens (Assist):
-
-> 対象文章について会話し、現在の未反映案は別の Diff 領域で確認する。
-> 本文への反映は Diff からの明示操作に限り、反映しない選択を保つ。
-
-v2.8 lens (Writing Companion):
-
-> Apple Intelligenceで、対象を見失わずに依頼し、育てた未反映案をDiffで
-> 読んでから必要な場合だけ本文へ反映する。モデル店や自動適用にはしない。
-
-Queue of record: `docs/current-work.md`.
-v2 Book design SoT: `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-Assist strategy: `docs/assist-surface-strategy.md`.
-Local App Store candidate provenance: `docs/internal/app-store-candidates/latest.json`.
-
-## Phase Decision (updated 2026-08-29)
-
-User direction:
-
-1. **Mac App Store / product line `2.6.2` is shipped** (user-confirmed
-   2026-08-28; staged rollout). Treat as closed store line; hotfix only for
-   reproduced blockers. Do not reopen for polish trains. Prior `2.4.0` remains
-   historical.
-2. **v2.5 is released and closed.** Do not reopen its release gates from the
-   v2.6 development line.
-3. **v2.6 A-1–A-4 source work is merged on `main`.** User-confirmed Mac App
-   Store publication of `2.6.2` on 2026-08-28; rollout to all users is staged
-   over time. A GitHub `v2.6.2` source tag remains a separate gate.
-4. **縦書き is deprioritized** behind AI progress. Keep parked, not deleted.
-5. **Core AI** remains a later model backend after conversational apply is stable.
-6. **anydoc** stays evaluation-only until product demand is clear.
-7. **R-1 and the accepted Q-3/Q-4/Q-5/Q-13 clarity set** belong to the v2.5
-   workspace line. Verified existing or measured no-op outcomes are valid.
-8. **v2.7 build 123 is frozen for owner-managed App Review.** Start v2.8 on
-   U-1 without waiting for Apple-side review, and keep release-state updates in
-   the v2.7 candidate lane.
-
-```text
-[done]   v1.8 ──► v1.12 bridge  ·  v1.13–v1.14 refinement boxes
-[done]   v2.0 Book Scope Alpha + UX quieting + Help
-[done]   Mac App Store 2.0.0 · 2.3.0 · 2.4.0 · 2.6.2 published (tags immutable)
-[done]   v2.4 OKF v0.2 · compact toolbar · B-1 chapter Diff
-[done]   v2.5 R-1 text Reference follows Preview font size
-[done]   v2.5 release (closed)
-[done]   v2.6 A-1: proposal generation → Diff review; editor unchanged
-[done]   v2.6 A-2: pinned target + multi-turn proposal revision
-[done]   v2.6 A-3: explicit Diff apply + stale revalidation (locally reviewed)
-[frozen] v2.7.0 / build 123 local candidate · owner-managed App Review planned
-[now]    v2.8.0 release preparation · detached conversation-first Local Assist
-[next]   U-3/U-4 → G-1 as separate reviewable slices
-[later]  Core AI allowlisted `.aimodel` (C-1 lifecycle → C-2 select/use)
-[done]   M-0a / H-1 System boundary only (no MLX runtime)
-[parked] MLX M-0b runtime · 縦書き · anydoc · residual Book (B-2+) · broad evidence matrix
-```
-
-## Active Path — v2.8
-
-Operating rule: **1 run = 1 verifiable slice.** Keep Safe Editor rails.
-Published `2.6.2` remains hotfix-only. `2.7.0` is a frozen local candidate
-managed by the owner for App Review. v2.8 development is writing-companion
-work, not a store-state claim or a reason to reopen the Apply boundary.
-
-### Active spine
-
-1. Freeze and verify the integrated U-1 detached conversation and M-0a/H-1 candidate.
-2. Complete native Assist, IME, VoiceOver, save and recovery smoke before distribution.
-3. U-3/U-4/G-1 are later independent work; no feature expansion in this candidate.
-
-Plan detail: `docs/v2.8-plan.md`. Historical A-1–A-4 detail remains in
-`docs/v2.6-plan.md`.
+## Established Foundation
 
 ### Shipped (v2.4 Book depth)
 
@@ -134,11 +70,11 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
-| Core AI models | Allowlisted `.aimodel` catalog | After A-3; start with C-0 design only |
+| Core AI models | Allowlisted `.aimodel` catalog | v3.1のC-1/C-2。identityと既存ゲート確定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
-| Published 2.6.2 hotfix | App Review / daily-use blocker | Only when reproduced |
+| Published v2.8 hotfix | App Review / daily-use blocker | Only when reproduced |
 
-### Hard rails (v2.x does not lift these)
+### Hard rails（v3以降も維持）
 
 - Safe Editor primary; Markdown/text source canonical per file.
 - No Git / LSP / general terminal / plugins / arbitrary command execution.
@@ -191,7 +127,7 @@ These boundaries stay active across roadmap changes:
 | **v2.6** | Local Assist conversation + Diff review | **A-1–A-4 source candidate merged; physical gate pending** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
-| v3.x | Broader local-AI re-evaluation if still needed | Speculative |
+| v2.8 | 別窓Writing Companion | 公開報告済み（2026-09-08）。詳細な配布証跡は別 |
 
 Bridge rationale: `docs/v1.8-plus-product-review-roadmap.md`.
 Historical phase prose:
@@ -204,18 +140,18 @@ behavior. Design SoT remains
 `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
 **縦書き** was listed as a later Book pillar; it is now **explicitly behind**
-the Local Assist milestone (see Phase Decision 2026-08-16).
+the Local Assist milestone （今回の版別方針でも維持）。
 
 Residual Book practicalization (display TOC clarity, suggestion
 explainability, …) may return as a dedicated line after v2.5 workspace work,
 or as single residual slices if daily friction demands it. It is not part of
-the active v2.6 Local Assist queue.
+the active v2.9 Local Assist queue.
 
-## v2.5 Workspace Control and Clarity (candidate prepared)
+## v2.5 Workspace Control and Clarity (closed)
 
 Goal: a persistent, keyboard-operable three-pane workspace plus honest bounded
-tree and completion feedback. This source line is complete at `6067fbec`; Apple
-upload, processing, TestFlight, tag, and publication remain separate gates.
+tree and completion feedback. This source line is complete at `6067fbec`; v2.5 is owner-confirmed released/closed.
+The source checkpoint remains historical evidence, not a new release queue.
 
 - Plan: `docs/v2.5-plan.md`
 
@@ -233,7 +169,7 @@ The editor buffer stays unchanged until the Diff action is accepted.
 Not: general chat, provider marketplace, auto multi-file rewrite, or
 docked IDE-like agent panel (docking is a separate future UX decision).
 
-## Core AI — Allowlisted Writing Models (later)
+## Core AI — v3.0 foundation / v3.1 models
 
 Product intent (not an implementation green light):
 
@@ -246,9 +182,9 @@ Product intent (not an implementation green light):
   not a hidden cloud chat path.
 - No arbitrary URL, no user-supplied unsigned blobs, no auto-apply.
 
-Sequence: **C-0 design spike → C-1 catalog lifecycle → C-2 Assist selection**,
-after conversational apply (A-3) is trustworthy. See
-`docs/assist-surface-strategy.md` and `docs/v2.6-plan.md`.
+Sequence: **C-0 → v3.0 System共通基盤 → v3.1 C-1 → 比較評価 → C-2**。
+C-1/C-2のHOLD条件は維持。基盤の前倒し範囲は
+`docs/v2.9-v3-local-assist-plan.md` と `docs/core-ai-c0-design.md` に固定する。
 
 MLX のユーザー向け経路は **C-0〜C-2 では Non-Goal** のままにする。
 H-1 隣接の **M-0a** では、Xcode 26 で検証できる System model 再利用と
@@ -293,6 +229,7 @@ Operational checklists:
 |------|------|
 | Next slice | `docs/current-work.md` |
 | Implementation truth | `docs/current-status.md` |
+| v2.9–v3.1 plan | `docs/v2.9-v3-local-assist-plan.md` |
 | v2.6 plan | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |
 | Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |

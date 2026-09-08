@@ -11,9 +11,26 @@
 | **Scope** | Design only. No product source, no C-1/C-2 implementation. |
 | **Tree baseline** | Package `2.6.1`. Local Assist A-1–A-4 source merged. Physical Assist gate pending. HEAD observed `82e6d307`. |
 | **Does not reopen** | v2.6 apply boundary (`applyReviewedLocalAssistProposal` is the single apply path) |
-| **Last revised** | 2026-08-28 (D30: helper conversation + target/model; review before apply) |
+| **Last revised** | 2026-09-08 (版別配置とH-1b前倒し範囲) |
 
 ---
+
+## 版別配置の更新 — 2026-09-08
+
+オーナー方針により **v2.9はSystem改善、v3.0はAFM活用と共通基盤、v3.1はC-1/C-2**。
+詳細は `docs/v2.9-v3-local-assist-plan.md`。以下のTree baselineとPR順序は設計当時の記録。
+
+D2のH-1bを分け、Systemで検証できる生成・能力・予算観測・エラー・生成元の共通契約は
+v3.0へ前倒しする。**Core AI import/本番ロード、manifestからのpath解決、非Systemの
+selectedId書き込み、D24の選択backend probeの製品接続はC-2に残す。**
+v3.0はSystemのみ動作し、未対応backendは拒否。C-1/C-2のHOLDを解除する変更ではない。
+
+D17のtokenCount観測専用を維持。強制予算制限への変更は実測後の別改訂とする。
+D21/D30の管理ページとCompanion切替の責務はv3.1に適用。
+G-1は品質評価で採否を決める。下記C-2のG-1依存は採用時の接続条件とし、
+非採用時は既存の本文生成と最終Diff由来の説明を検証して進める。構造化出力自体を出荷必須にしない。
+D1の新AFMによる品質向上は期待であり、Hazakuraでの日本語品質は実機評価を必要とする。
+SDK署名、adapter既定値、対応OS/architectureは実装時に固定版で再確認する。
 
 ## Overview
 

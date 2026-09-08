@@ -1,11 +1,31 @@
 # Handoff
 
 Status: Operational
-Scope: v2.8.0 development handoff + frozen v2.7 candidate
+Scope: v2.8公開後のv2.9–v3.1引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-07 (v2.8 release preparation)
+Last reviewed: 2026-09-08
 
 ## Current State
+
+- **v2.8公開:** 2026-09-08オーナー報告。公開build・PR #40包含・実機smokeの詳細は未確認。
+  下記の候補時点の検証記録から公開成果物の構成を推定しない。GitHub公開も別証跡。
+- **次期方針:** v2.9はSystem-onlyの上限/エラー/生成元/評価、v3.0はAFM活用と共通基盤、
+  v3.1はC-1/C-2のモデルDL・管理・切り替え。計画: `docs/v2.9-v3-local-assist-plan.md`。
+- **次の一手:** `docs/current-work.md` の2.9-01/02。C-1/C-2は既存ゲートまでHOLD。
+  M-0a/H-1は完了済み。v3.0の基盤はSystemで検証し、Core AIの利用解禁と分ける。
+- **今回の範囲:** 文書整理と静的照合のみ。ソース版2.8.0、製品コード・依存は変更なし。
+  公開済みv2.8の再パッケージ/提出は次の作業にしない。
+
+## 今回の確認（2026-09-08）
+
+文書差分の `git diff --check`、変更対象Markdownの相対ファイルリンク67件、追加文の
+ローカルパス・秘密情報パターンを確認し、問題なし。Habitat 1.1.1は警告なし。
+コード・実行コマンド・依存の変更はないため、テスト/ビルド/実機smokeは今回未実施。
+
+## Implementation / Candidate History（2026-09-07以前）
+
+以下は各時点の実装・候補・検証履歴。文中の「未公開」「次」は当時の記録であり、
+現行キューは上記と `docs/current-work.md` を使う。過去の実機未確認を今回合格へ変更しない。
 
 - **PR #40 Preview follow-up (2026-09-07, main `c462e846`):** 空表示・描画失敗からの再試行・選択終了を
   安定化し、読むモードを隣接配置。統合レビューで旧配置のテスト2件を更新し、
@@ -706,29 +726,19 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. Complete the native v2.8 release smoke; the signed local package is prepared.
-   See `docs/releases/2.8.0-source-tag.release.md`. Further U-3/U-4/G-1 changes
-   stay outside this candidate. Do not upload or publish implicitly.
-2. **C-1 HOLD** until the owner picks a production `.aimodel` identity plus
-   D25/D19. **C-2 HOLD** until D24/D20. External models stay Apple `.aimodel`.
-3. **M-0b HOLD** until C-2 and an Xcode 27 / macOS 27 build lane. No MLX
-   dependency, model import, storage, URL/path, or user-facing selector before
-   that product/security/distribution review.
-4. Source tag / GitHub Release only with an explicit publication approval.
-   Do not treat staged Mac App Store rollout as a 100% install-base claim.
-5. Keep 縦書き, anydoc adoption, Compare Center, static lint, and persistent
-   indexing out of the active slice.
-6. Do not reopen the released v2.5 line, move published tags, or attach
-   release assets without a separate explicit handoff.
-7. On security/path/AI surfaces, re-read `docs/security-boundary.md`,
-   `docs/assist-surface-strategy.md`, and `docs/core-ai-c0-design.md`.
+1. `docs/current-work.md` の2.9-01/02（安全契約と上限整合）から一つの検証可能スライス。
+2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
+3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
+4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
+5. 公開済み版やタグを変更せず、新しい提出・公開は別工程とする。
 
 ## Key Paths
 
 | Need | Path |
 |------|------|
 | Next slice | `docs/current-work.md` |
-| v2.8 plan | `docs/v2.8-plan.md` |
+| 次期plan | `docs/v2.9-v3-local-assist-plan.md` |
+| v2.8履歴 | `docs/v2.8-plan.md` |
 | v2.6 implementation history | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |
 | Conversational Assist UX | `docs/local-assist-conversational-edit-ux.md` |

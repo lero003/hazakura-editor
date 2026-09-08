@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 review remains external)
+Last reviewed: 2026-09-08
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,29 +26,21 @@ Last reviewed: 2026-08-29 (v2.8.0 development prepared; v2.7 review remains exte
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current development is on `2.8.0`, now in release preparation. Local Assist
-opens in a separate native window with a tall conversation, a bottom composer,
-and collapsed target details, help, and presets. Request progress appears in
-the conversation. The current proposal remains in the main Diff review area;
-only explicit Apply changes the editor buffer, and it does not auto-save.
-Generation cancellation and same-conversation proposal recovery are hardened.
-System model reuse and the Rust-owned backend validation from the v2.7 work
-are included; MLX runtime and model download/selection are not included.
+Current source version is `2.8.0`. Local Assist opens in a separate native
+window; the proposal is reviewed in the main Diff and applied only by an
+explicit action, without auto-save. Model download/selection and MLX runtime
+are not implemented.
 
-Main also includes Preview empty-state/retry and selection recovery improvements,
-with grouped reading controls and theme-based spacing. This PR #40 follow-up is
-not included in the earlier build `124` package; physical appearance and
-interaction checks remain pending.
-
-The frozen v2.7 candidate is preserved separately. Upload, approval, and
-publication of v2.8 have not occurred in this preparation. See
-[`v2.8 release candidate`](docs/releases/2.8.0-source-tag.release.md) and
-[`v2.8 plan`](docs/v2.8-plan.md).
+Next: **v2.9 improves System-based Local Assist; v3.0 adopts the strengthened
+on-device AFM with shared backend foundations; v3.1 adds optional curated-model
+download, management and switching.** See the
+[Local Assist plan](docs/v2.9-v3-local-assist-plan.md). These are planned milestones.
 
 ## Mac App Store
 
-Hazakura Editor `2.6.2` is published on the Mac App Store. The `2.7.0`
-package is frozen for owner-managed review, while `2.8.0` is in release preparation:
+Hazakura Editor `2.8.0` is published on the Mac App Store (owner-reported
+2026-09-08). Exact released-build provenance and rollout coverage were not
+independently checked in this documentation update:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -165,8 +157,9 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.8.0 release preparation queue
-- [v2.8 Plan](docs/v2.8-plan.md): writing-companion entry boundary and held work
+- [Current Work](docs/current-work.md): v2.9 Local Assist improvement queue
+- [Local Assist Plan](docs/v2.9-v3-local-assist-plan.md): v2.9–v3.1 scope and acceptance
+- [v2.8 Plan](docs/v2.8-plan.md): historical writing-companion plan
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, v1.11, and v2 sequencing
@@ -282,8 +275,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `2.8.0` across npm, Tauri, and Cargo metadata. A signed local v2.8 package is prepared; upload and publication are pending. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.6.2` (user-confirmed 2026-08-28; staged rollout to all users). Prior store baseline `2.4.0` remains historical. Do not reopen a published store lane without a reproduced hotfix.
+- Current package/app version in the development tree is `2.8.0` across npm, Tauri, and Cargo metadata. Mac App Store v2.8 publication is owner-reported on 2026-09-08; exact released-build provenance remains separate. The latest published GitHub source / local-app tag remains [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0) (no binary assets on the tag). Prior checkpoint: [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `2.8.0` (owner-reported 2026-09-08; rollout coverage unverified). Prior store baseline `2.4.0` remains historical. Do not reopen a published store lane without a reproduced hotfix.
 - Release notes: [2.7.0 source note](docs/releases/2.7.0-source-tag.release.md), [2.7.0 App Store candidate notes](docs/releases/2.7.0-app-store-release-notes.md), [2.6.2 source note](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
@@ -300,12 +293,12 @@ Developer preview release boundary:
 - The standalone Review Desk screen is retired from the current App Store-oriented surface. Diff, recovery review, and Hazakura Local Assist review remain explicit and do not replace Git/merge workflows.
 - The default local smoke app is not signed or notarized with an Apple Developer ID. GitHub Release DMG previews can be Developer ID signed, but are still not notarized unless a separate notarization pass is completed.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
-- Hazakura Local Assist is a preview surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
+- Hazakura Local Assist is a preview writing-assistance surface and the focus of the next development milestones. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
 - Hazakura Local Assist is intended for lightweight local writing assistance only: proofreading, natural rewriting, shortening, summaries, translation, next-writing ideas, and section review. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, factual verification, or advanced reasoning.
 - Hazakura Local Assist presets insert visible, editable request text. Generated results remain explicit, unsaved, and diff-reviewable before the user saves.
 - Hazakura Local Assist has no network fallback, background rewriting, auto-save, tool calling, or workspace-wide indexing. In the App Store lane it remains a narrow on-device writing companion and must fail gracefully when Apple Foundation Models is unavailable.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
-- Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
+- Outside the explicit Local Assist and Agent Workbench surfaces, there is no AI assistance. Safe Editor has no Git integration, LSP, general terminal, plugin system, arbitrary command execution, or project-wide analysis.
 - Workspace-internal drag/drop Move exists as an experimental file-tree affordance, but it is not the recommended release workflow yet; use New File, New Folder, Rename, and Move to Trash as the dependable bounded workspace operations.
 - The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies; planned chunk-splitting belongs to a future product-preview hardening lane.

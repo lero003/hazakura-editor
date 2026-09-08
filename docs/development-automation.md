@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-08-29 (2.8.0 development; v2.7 owner review planned)
+Last reviewed: 2026-09-08
 
 ## Purpose
 
@@ -17,18 +17,10 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.8.0 release preparation.** Mac App Store
-`2.6.2` is published (user-confirmed 2026-08-28; staged rollout) and closed
-for drive-by polish; frozen `2.7.0` / build `123` is owner-managed for App
-Review and Apple-side state is unconfirmed; v2.5 is released and closed. The next
-development spine is writing-companion UI and System helper (U-\* / G-1);
-H-1 System reuse is complete in M-0a; C-1 HOLD until a production model
-identity. Do not reopen the v2.6
-apply boundary. Remaining A-3 hardening stays separate.
-Promote one slice at a time. Do not bulk-digest review pools. Direction: `docs/current-work.md`,
-`docs/roadmap.md`, `docs/v2.8-plan.md`, and
-`docs/local-assist-conversational-edit-ux.md`.
-
+Phase: **v2.9 Local Assist System-only改善**。v2.8公開は2026-09-08オーナー報告。
+公開済み版の再提出をキューにしない。次の一手は `docs/current-work.md`、版別の条件は
+`docs/v2.9-v3-local-assist-plan.md`。v3.0はAFMと共通基盤、v3.1はC-1/C-2。
+C-1/C-2のHOLD、既存Apply/Undo/no auto-saveは維持する。1 run = 1検証可能スライス。
 
 For recurring automation, use the Active Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -39,10 +31,10 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. The selected v2.6 release-prep slice: preserve explicit Diff apply, stale
-   revalidation, one transaction + Review Bar, and no auto-save after bounded
-   multi-turn revision.
-2. Hotfix for a reproduced published `2.6.2` blocker.
+1. v2.9の選択済みスライス。安全契約確認と上限整合から始め、生成と本文反映を分離する。
+   反映はmain Diffから一度だけ。反映後に同じ案をReview Barで再確認させない。
+2. 公開済みv2.8の再現blocker。保存・復元などの重大問題は通常改善より優先。
+
 3. Verification or a reproduced defect in a separately reopened release lane.
 4. Stale or failing quality gates that block the selected slice.
 5. Core Safe Editor quality risks around open, edit, save, close/quit,

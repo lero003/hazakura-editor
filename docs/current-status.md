@@ -1,18 +1,25 @@
 # Current Status
 
 Status: Operational
-Scope: Current implementation state and next safe actions (v2.8.0 development + frozen v2.7 candidate)
+Scope: v2.8公開状態とv2.9以降の計画、実装証跡
 Authority: High
-Last reviewed: 2026-09-07 (v2.8 release preparation)
-
-Development plan: `docs/v2.8-plan.md`. Frozen candidate note:
-`docs/releases/2.7.0-source-tag.release.md`; App Store What's New:
-`docs/releases/2.7.0-app-store-release-notes.md`. The owner plans to send the
-local `2.7.0` / build `123` package to App Review, but Apple-side state is not
-recorded yet. Mac App Store `2.6.2` remains user-confirmed published
-(2026-08-28; staged rollout).
+Last reviewed: 2026-09-08
 
 ## Current State
+
+- **v2.8公開:** 2026-09-08オーナー報告。公開build・PR #40包含・実機smokeの詳細は未確認。
+  下記の候補時点の検証記録から公開成果物の構成を推定しない。GitHub公開も別証跡。
+- **次期方針:** v2.9はSystem-onlyの上限/エラー/生成元/評価、v3.0はAFM活用と共通基盤、
+  v3.1はC-1/C-2のモデルDL・管理・切り替え。計画: `docs/v2.9-v3-local-assist-plan.md`。
+- **次の一手:** `docs/current-work.md` の2.9-01/02。C-1/C-2は既存ゲートまでHOLD。
+  M-0a/H-1は完了済み。v3.0の基盤はSystemで検証し、Core AIの利用解禁と分ける。
+- **今回の範囲:** 文書整理と静的照合のみ。ソース版2.8.0、製品コード・依存は変更なし。
+  公開済みv2.8の再パッケージ/提出は次の作業にしない。
+
+## Implementation / Candidate History（2026-09-07以前）
+
+以下は各時点の実装・候補・検証履歴。文中の「未公開」「次」は当時の記録であり、
+現行キューは上記と `docs/current-work.md` を使う。過去の実機未確認を今回合格へ変更しない。
 
 - **PR #40 Preview follow-up (2026-09-07, main `c462e846`):** 空表示・描画失敗からの再試行・選択終了を
   安定化し、読むモードを隣接配置。統合レビューで旧配置のテスト2件を更新し、
@@ -1083,12 +1090,12 @@ The detailed v0.17 App Store-quality queue, closeout, performance
 baseline, and smoke evidence are archived under
 `docs/archive/operations/app-store-v0.17/`.
 
-## Active Planning Sources
+## Planning Sources
 
 - `docs/roadmap.md`: **v2 development phase** (active); residual/evidence parked.
 - `docs/current-work.md`: **v2 slice queue**.
-- `docs/v2.8-plan.md`: **active U-1 writing-companion plan**; v2.7 candidate
-  review stays separate.
+- `docs/v2.9-v3-local-assist-plan.md`: **現行の版別計画**。
+- `docs/v2.8-plan.md`: 公開済み版の計画履歴。
 - `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`: v2 design SoT.
 - `docs/releases/2.0.0-app-store-release-notes.md`: published store notes for
   `2.0.0` (user-reported 2026-07-21).
@@ -1157,20 +1164,8 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. Complete the native v2.8 release smoke in `docs/releases/2.8.0-source-tag.release.md`.
-   Hold further U-3/U-4/G-1 implementation during candidate validation.
-2. Keep the frozen v2.7 candidate and v2.8 development separate. The owner
-   manages App Review; do not claim upload, processing, approval, or publication
-   until that state is confirmed.
-3. **M-0b HOLD** until C-2 and an Xcode 27 / macOS 27 build lane. Do not add an
-   MLX dependency, model import/storage, URL/path wire, or user-facing selector.
-4. Keep the three non-blocking A-3 hardening items separate: completion-time
-   target text revalidation, Diff failure/no-op Apply gating, and Apply status
-   watchdog.
-5. Treat published **`2.6.2`** as immutable except reproduced hotfixes. Do not
-   reopen Book-depth trains (B-2+) as the main queue.
-6. Park 縦書き, anydoc adoption, and bulk digestion of external review pools
-   until promoted.
-7. Keep v2.5 released/closed and Local Assist on-device, explicit, and
-   diff-reviewable; keep Book order
-   app-private and separate from OKF semantics.
+1. `docs/current-work.md` の2.9-01/02（安全契約と上限整合）から一つの検証可能スライス。
+2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
+3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
+4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
+5. 公開済み版やタグを変更せず、新しい提出・公開は別工程とする。

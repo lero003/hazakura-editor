@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-08-29 (v2.8 U-1 writing-companion next; C-1/C-2 held)
+Last reviewed: 2026-09-08
 
 ## Purpose
 
@@ -14,6 +14,15 @@ The goal is not to build a general AI platform in `Hazakura Editor`. The goal is
 - the current External Agent Workbench model
 - a future Hazakura Local Assist model based on Apple's Foundation Models framework
 - future OS-provided assist surfaces, if they can fit the same boundary
+
+## Release Sequence — 2026-09-08
+
+Local Assistを次期開発の主軸にする。Safe Editorが主面で、Assistは明示的に開く補助面を維持。
+v2.8公開はオーナー報告。**v2.9: System改善 → v3.0: 強化AFM＋共通基盤 →
+v3.1: allowlistモデルのDL・管理・切り替え**。受け入れ条件は
+`docs/v2.9-v3-local-assist-plan.md`。
+「任意」は検証済みカタログから利用者が選ぶ意味。任意URL/provider追加ではない。
+AFMの強化を理由にPCC・クラウド推論・ツール・背景indexは有効にしない。
 
 ## Decision
 
@@ -109,7 +118,7 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-### Conversational document edit (v2.6 baseline; v2.8 U-1 next)
+### Conversational document edit (v2.6 baseline; v2.8 detached conversation implemented)
 
 v2.6 moves Local Assist from **single-shot generate → immediate buffer apply**
 toward a **proposal-first multi-turn revision conversation**:
@@ -129,13 +138,12 @@ A-1–A-4 source candidate is merged on `main`. The pinned target and explicit D
 already reviewed proposal through the existing apply helper, perform stale
 revalidation, clear any older post-apply review state, and do not auto-save or
 invoke generation a second time. The same proposal is not surfaced for a second
-Review Bar confirmation. Do not document the v2.8 development state as a
-released product surface. The A-4 finishing slice also exposes Diff column headers to the
+Review Bar confirmation. v2.8 publication is owner-reported on 2026-09-08; detailed physical checks remain separate. The A-4 finishing slice also exposes Diff column headers to the
 accessibility tree, reports cancellation separately from failure, and shows a
 checking state while availability is probed. Source review is complete and the
 owner reports the existing v2.7 Local Assist flow as broadly okay, but this
 still does not claim full keyboard, VoiceOver, locale, streaming/cancel, or
-physical-device verification. U-1 follows `docs/v2.8-plan.md`.
+physical-device verification. Next work follows `docs/v2.9-v3-local-assist-plan.md`.
 
 Local Assist may keep a **bounded, document-scoped revision conversation**
 for the active editing session (in-memory only). It must not become a
@@ -150,9 +158,9 @@ area. Narrow windows may stack those regions, but must not merge their
 responsibilities.
 
 Operation feedback (target acquired, request sent, generation started,
-applied, cancelled, failed, unavailable) stays compact and must not be shown as chat turns or as
-raw Foundation Models prompts, hidden instructions, provider transcripts,
-or model reasoning.
+applied, cancelled, failed, unavailable) stays compact. v2.8 places app-known state
+in the conversation log; it must not pretend to be model-authored text or reveal
+raw Foundation Models prompts, hidden instructions, provider transcripts, or model reasoning.
 
 Hazakura Local Assist may update the unsaved editor buffer **only** after an
 explicit apply from its reviewed Diff (v2.6). The proposal Diff is the review
@@ -217,8 +225,8 @@ Hard rules:
   on-device-only claims.
 - Do not build a model marketplace UI or provider-add surface.
 
-Sequence: C-0 design spike → C-1 lifecycle → C-2 Assist selection
-(`docs/v2.6-plan.md`). C-0 is a pre-development lock in
+Sequence: C-0 → v3.0 System共通基盤 → v3.1 C-1 lifecycle → 比較評価 → C-2 Assist selection
+(`docs/v2.9-v3-local-assist-plan.md`). C-0 is a pre-development lock in
 `docs/core-ai-c0-design.md`. Do not start C-1 until identity + expanded
 manifest + Background Assets/AOT delivery. Do not start C-2 until
 backend-specific availability and Rust-owned `selectedId`.
