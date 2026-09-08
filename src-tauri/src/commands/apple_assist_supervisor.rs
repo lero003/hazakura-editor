@@ -62,6 +62,8 @@ pub(crate) struct AppleAssistHelperStore {
     stream_request: Mutex<Option<StreamRequestCancel>>,
     #[cfg(test)]
     before_stream_arm: Option<Arc<dyn Fn() + Send + Sync>>,
+    #[cfg(test)]
+    before_stream_complete: Option<Arc<dyn Fn() + Send + Sync>>,
     // Test-only override slot. Production `Default` never reads
     // the environment. It resolves only the bundled helper next
     // to the app executable. Tests use
@@ -109,6 +111,7 @@ struct ActiveCancelHandle {
 
 struct StreamRequestCancel {
     request_id: String,
+    native_finished: bool,
     flag: Arc<AtomicBool>,
     child: Option<Arc<Mutex<Child>>>,
 }
@@ -123,6 +126,8 @@ impl Default for AppleAssistHelperStore {
             stream_request: Mutex::new(None),
             #[cfg(test)]
             before_stream_arm: None,
+            #[cfg(test)]
+            before_stream_complete: None,
             #[cfg(test)]
             helper_path_override: None,
             #[cfg(test)]
@@ -156,6 +161,7 @@ impl AppleAssistHelperStore {
         }
         *slot = Some(StreamRequestCancel {
             request_id: request_id.into(),
+            native_finished: false,
             flag: Arc::new(AtomicBool::new(false)),
             child: None,
         });
@@ -177,6 +183,9 @@ impl AppleAssistHelperStore {
         let Some(state) = slot.as_ref().filter(|state| state.request_id == request_id) else {
             return false;
         };
+        if state.native_finished {
+            return false;
+        }
         state.flag.store(true, Ordering::SeqCst);
         if let Some(child) = &state.child {
             Self::kill_child(child);
@@ -190,6 +199,9 @@ impl AppleAssistHelperStore {
             .as_ref()
             .filter(|state| state.request_id == request_id)
             .ok_or("Local Assist generation request was not prepared.")?;
+        if state.native_finished {
+            return Err("Local Assist native request already finished.".into());
+        }
         if state.flag.load(Ordering::SeqCst) {
             return Err("Hazakura Local Assist generation cancelled by user.".into());
         }
@@ -206,12 +218,35 @@ impl AppleAssistHelperStore {
             .as_mut()
             .filter(|state| state.request_id == request_id)
             .ok_or("Local Assist generation request was not prepared.")?;
+        if state.native_finished {
+            return Err("Local Assist native request already finished.".into());
+        }
         state.child = Some(Arc::clone(&child));
         if state.flag.load(Ordering::SeqCst) {
             Self::kill_child(&child);
             return Err("Hazakura Local Assist generation cancelled by user.".into());
         }
         Ok(Arc::clone(&state.flag))
+    }
+
+    // Called by the worker while it still owns `inner`. Use the same mutex
+    // as cancellation: either cancel wins and the worker resets the cache,
+    // or completion detaches the stop handle before anyone can kill it.
+    // Keep the reservation until frontend cleanup releases this request id.
+    fn complete_native_stream_request(&self, request_id: &str) -> bool {
+        let mut slot = self.stream_request.lock().expect("stream request lock");
+        let Some(state) = slot.as_mut().filter(|state| state.request_id == request_id) else {
+            return false;
+        };
+        state.native_finished = true;
+        state.child = None;
+        state.flag.load(Ordering::SeqCst)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_before_stream_complete(mut self, hook: Arc<dyn Fn() + Send + Sync>) -> Self {
+        self.before_stream_complete = Some(hook);
+        self
     }
 
     #[cfg(test)]
@@ -678,7 +713,7 @@ impl AppleAssistHelperStore {
     pub(crate) fn cancel_active(&self) -> bool {
         // App shutdown also cancels a reserved worker that has not armed yet.
         if let Ok(slot) = self.stream_request.lock() {
-            if let Some(state) = slot.as_ref() {
+            if let Some(state) = slot.as_ref().filter(|state| !state.native_finished) {
                 state.flag.store(true, Ordering::SeqCst);
                 if let Some(child) = &state.child {
                     Self::kill_child(child);
@@ -974,7 +1009,7 @@ where
     }
 
     let timeout = store.effective_generate_timeout();
-    let result = AppleAssistHelperStore::round_trip_stream_locked(
+    let mut result = AppleAssistHelperStore::round_trip_stream_locked(
         store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidateStreaming {
@@ -990,6 +1025,14 @@ where
         on_partial,
         request_id,
     );
+
+    #[cfg(test)]
+    if let Some(hook) = &store.before_stream_complete {
+        hook();
+    }
+    if request_id.is_some_and(|id| store.complete_native_stream_request(id)) {
+        result = Err("Hazakura Local Assist generation cancelled by user.".into());
+    }
 
     match &result {
         Ok(WireEnvelope::Candidate(_)) => store.record_success(),
@@ -1027,6 +1070,7 @@ pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHel
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
         before_stream_arm: None,
+        before_stream_complete: None,
         helper_path_override: Some(path),
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),
@@ -1046,6 +1090,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
         before_stream_arm: None,
+        before_stream_complete: None,
         helper_path_override: None,
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),

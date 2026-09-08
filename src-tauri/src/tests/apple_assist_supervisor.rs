@@ -1062,3 +1062,135 @@ fn scoped_cancel_before_worker_dispatch_never_spawns_helper() {
     store.finish_stream_request("pending");
     assert!(!store.cancel_stream_request("pending"));
 }
+
+// A persistent process reports its per-process sequence number so a successful
+// second request also proves reuse, rather than a hidden restart/retry.
+fn persistent_stream_helper(name: &str) -> std::path::PathBuf {
+    let script = std::env::temp_dir().join(format!(
+        "hazakura-stream-reuse-{name}-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(&script, r###"#!/bin/sh
+count=0
+while IFS= read -r request; do
+    count=$((count + 1))
+    printf '{"kind":"candidate","value":{"operation":"summarize","candidateText":"%s","modelId":"test:%s","latencyMs":0}}\n' "$count" "$$"
+done
+"###).unwrap();
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+    script
+}
+
+fn generate_reserved_stream(
+    store: &AppleAssistHelperStore,
+    id: &str,
+) -> Result<WireEnvelope, String> {
+    generate_candidate_stream_via_helper(
+        store,
+        "summarize",
+        "body",
+        None,
+        None,
+        None,
+        None,
+        |_| {},
+        Some(id),
+    )
+}
+
+#[test]
+fn scoped_late_cancel_after_native_completion_preserves_reusable_helper() {
+    let script = persistent_stream_helper("late-cancel");
+    {
+        let store = store_with_helper_path(script.clone());
+        store.prepare_stream_request("A").unwrap();
+        let WireEnvelope::Candidate(a) = generate_reserved_stream(&store, "A").unwrap() else {
+            panic!("expected candidate A");
+        };
+        let stopped = store.cancel_stream_request("A");
+        store.finish_stream_request("A");
+        store.prepare_stream_request("B").unwrap();
+        let WireEnvelope::Candidate(b) =
+            generate_reserved_stream(&store, "B").expect("B must succeed on its first attempt")
+        else {
+            panic!("expected candidate B");
+        };
+        assert_eq!(a.candidate_text, "1");
+        assert_eq!(b.candidate_text, "2");
+        assert_eq!(a.model_id, b.model_id);
+        assert!(
+            !stopped,
+            "native-completed A is no longer a physical stop target"
+        );
+        assert_eq!(store.consecutive_failures_for_test(), 0);
+        store.finish_stream_request("B");
+    }
+    std::fs::remove_file(script).unwrap();
+}
+
+#[test]
+fn scoped_cancel_winning_native_completion_resets_cache_before_next_request() {
+    let script = persistent_stream_helper("completion-race");
+    {
+        let store = store_with_helper_path(script.clone());
+        store.prepare_stream_request("warm").unwrap();
+        let WireEnvelope::Candidate(warm) = generate_reserved_stream(&store, "warm").unwrap()
+        else {
+            panic!("expected warm candidate");
+        };
+        store.finish_stream_request("warm");
+        let (entered_tx, entered_rx) = std::sync::mpsc::sync_channel(0);
+        let (resume_tx, resume_rx) = std::sync::mpsc::sync_channel(0);
+        let resume_rx = std::sync::Mutex::new(resume_rx);
+        let once = std::sync::atomic::AtomicBool::new(false);
+        let store = std::sync::Arc::new(store.with_before_stream_complete(std::sync::Arc::new(
+            move || {
+                if !once.swap(true, std::sync::atomic::Ordering::SeqCst) {
+                    entered_tx.send(()).unwrap();
+                    resume_rx
+                        .lock()
+                        .unwrap()
+                        .recv_timeout(std::time::Duration::from_secs(10))
+                        .unwrap();
+                }
+            },
+        )));
+        store.prepare_stream_request("A").unwrap();
+        let worker_store = store.clone();
+        let worker = tauri::async_runtime::spawn_blocking(move || {
+            generate_reserved_stream(&worker_store, "A")
+        });
+        // A's final response is read; pause before the completion/cancel boundary.
+        entered_rx
+            .recv_timeout(std::time::Duration::from_secs(10))
+            .unwrap();
+        assert!(store.cancel_stream_request("A"));
+        resume_tx.send(()).unwrap();
+        let err = tauri::async_runtime::block_on(worker).unwrap().unwrap_err();
+        assert!(err.contains("cancelled by user"), "{err}");
+        assert!(store.inner_is_empty());
+        store.finish_stream_request("A");
+        store.prepare_stream_request("B").unwrap();
+        let WireEnvelope::Candidate(b) =
+            generate_reserved_stream(&store, "B").expect("B must succeed without retry")
+        else {
+            panic!("expected candidate B");
+        };
+        assert_eq!(b.candidate_text, "1", "killed helper must be replaced");
+        assert_ne!(warm.model_id, b.model_id);
+        assert_eq!(store.consecutive_failures_for_test(), 0);
+        assert!(
+            !store.cancel_active(),
+            "shutdown must not kill a native-completed request's cached helper"
+        );
+        store.finish_stream_request("B");
+        store.prepare_stream_request("C").unwrap();
+        let WireEnvelope::Candidate(c) = generate_reserved_stream(&store, "C").unwrap() else {
+            panic!("expected candidate C");
+        };
+        assert_eq!(c.candidate_text, "2");
+        assert_eq!(b.model_id, c.model_id);
+        store.finish_stream_request("C");
+    }
+    std::fs::remove_file(script).unwrap();
+}
