@@ -95,7 +95,10 @@ JSON.stringify((() => {
     const range = document.createRange();
     let textNode = walker.nextNode();
     while (textNode) {
-      if (textNode.textContent.trim()) {
+      // The tail guard contains a zero-width character to protect WebKit's
+      // last line. It participates in layout but is not printable content.
+      if (textNode.textContent.trim() &&
+          !textNode.parentElement?.closest(".pdf-export-tail-guard, .book-scope-pdf-runtime-spacer")) {
         range.selectNodeContents(textNode);
         includeRects(range.getClientRects());
       }
@@ -104,17 +107,16 @@ JSON.stringify((() => {
     for (const element of preview.querySelectorAll("img, svg, canvas, video, hr")) {
       includeRects(element.getClientRects());
     }
-    const fromRects = Math.max(1, occupiedColumnCount);
-    const fromRight = Math.max(1, Math.ceil(maxRight / 595));
-    const fromScroll = Math.max(1, Math.ceil(preview.scrollWidth / 595));
-    const previewColumns = Math.max(fromRects, fromRight, fromScroll);
-    const coverPages = cover ? 1 : 0;
-    // Cover is a separate flex item at x=0; multicol starts after it.
-    // Absolute left-edge column index already includes the cover offset,
-    // so fromRects/fromRight count total pages. Prefer the max of that
-    // and coverPages + preview-local columns.
-    const fromPreviewLocal = coverPages + Math.max(1, Math.ceil(preview.scrollWidth / 595));
-    width = Math.max(width, fromRects * 595, fromRight * 595, fromScroll * 595, fromPreviewLocal * 595, previewColumns * 595);
+    // Scroll bounds include invisible tail guards and WebKit's trailing
+    // multicol overflow. They are a fallback only: capturing their maximum
+    // adds blank pages even when all visible text/media ends earlier.
+    // Fragment coordinates are absolute, so a cover offset is already counted.
+    if (occupiedColumnCount > 0) {
+      width = Math.max(occupiedColumnCount, Math.ceil(maxRight / 595)) * 595;
+    } else {
+      const coverPages = cover ? 1 : 0;
+      width = Math.max(width, (coverPages + Math.max(1, Math.ceil(preview.scrollWidth / 595))) * 595);
+    }
   }
   width = Math.ceil(width / 595) * 595;
   const height = 842;
