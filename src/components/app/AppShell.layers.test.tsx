@@ -2,7 +2,10 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { AppShell, type AppShellProps } from "./AppShell";
-vi.mock("./AppTopChrome", () => ({ AppTopChrome: () => <div className="tabs-row"><button>Document tab</button></div> }));
+vi.mock("./AppTopChrome", () => ({
+  AppTopChrome: ({ onTogglePreview }: { onTogglePreview: () => void }) =>
+    <div className="tabs-row"><button>Document tab</button><button onClick={onTogglePreview}>Toggle Preview</button></div>,
+}));
 vi.mock("./AppPrimaryToolbar", () => ({
   AppPrimaryToolbar: ({ navigation }: { navigation: { onWrite: () => void } }) =>
     <button onClick={navigation.onWrite}>Write</button>,
@@ -49,6 +52,21 @@ const base = {
 } as unknown as AppShellProps;
 
 describe("AppShell chrome layers", () => {
+  it.each([null, "ebook"] as const)("selects Preview through the existing chrome entry from %s", (sidePaneMode) => {
+    const onTogglePreview = vi.fn();
+    const { container } = render(<AppShell {...base} sidePaneMode={sidePaneMode} onTogglePreview={onTogglePreview} />);
+    fireEvent.click(screen.getByRole("button", { name: "Toggle Preview" }));
+    expect(container.querySelector("[data-compact-preview='preview']")).toBeTruthy();
+    expect(onTogglePreview).toHaveBeenCalledOnce();
+  });
+  it("keeps the existing close action when Preview is already open", () => {
+    const onTogglePreview = vi.fn();
+    const { container } = render(<AppShell {...base} sidePaneMode="preview" onTogglePreview={onTogglePreview} />);
+    fireEvent.click(screen.getByRole("button", { name: "Toggle Preview" }));
+    expect(container.querySelector("[data-compact-preview='editor']")).toBeTruthy();
+    expect(onTogglePreview).toHaveBeenCalledOnce();
+  });
+
   it("reveals the editor from compact Preview through the primary Write action", () => {
     const hideSidePane = vi.fn();
     const { container } = render(<AppShell {...base}

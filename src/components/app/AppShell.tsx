@@ -109,7 +109,12 @@ export function AppShell(props: AppShellProps) {
     if (props.sidePaneMode === "ebook" || props.sidePaneMode === "compare") props.hideSidePane();
     requestAnimationFrame(() => props.editorPaneRef.current?.focus());
   };
+  const togglePreviewFromChrome = () => {
+    if (props.sidePaneMode !== "preview") setCompactPreviewFocus("preview");
+    props.onTogglePreview();
+  };
   const topChrome = <AppTopChrome {...props} primaryToolbarPresent={!props.lModeEnabled}
+    onTogglePreview={togglePreviewFromChrome}
     onEditorSettingsChange={props.setEditorSettings} />;
 
   return (

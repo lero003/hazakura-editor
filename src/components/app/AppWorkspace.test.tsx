@@ -730,7 +730,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
   it("does not add a compact Preview switch to other reading surfaces", () => {
     renderWorkspace({ activeTab: bookTab, sidePaneMode: "ebook", sidePaneVisible: true });
-    expect(screen.queryByRole("toolbar", { name: "Document view" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "Document view" })).toBeNull();
   });
 
   it("hides and inerts document chrome behind the whole-book Reader without replacing the editor", async () => {

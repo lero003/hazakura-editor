@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { getCompactViewCopy } from "../../lib/locale/compactView";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { EditorPaneHandle, EditorSelectionInfo } from "../editor/EditorPane";
 import { EditorMainPane } from "../editor/EditorMainPane";
@@ -666,6 +667,7 @@ export function AppWorkspace({
       : null;
 
   // Both independent readers own the workspace; keep the editor mounted but inert.
+  const compactViewCopy = getCompactViewCopy(menuLanguage);
   const readingOverlayActive = ebookReadingFocusActive || !!bookReaderResult;
   const compactPreviewAvailable = !!activeTab && !selectedImage &&
     sidePaneVisible && sidePaneMode === "preview" && !visibleReferenceCompare &&
@@ -818,15 +820,15 @@ export function AppWorkspace({
         }
       >
         {compactPreviewAvailable ? (
-          <div className="compact-preview-switch" role="toolbar"
-            aria-label={menuLanguage === "en" ? "Document view" : "文書の表示"}>
+          <div className="compact-preview-switch" role="group"
+            aria-label={compactViewCopy.label}>
             <button type="button" aria-pressed={compactPreviewFocus === "editor"}
               onClick={() => onCompactPreviewFocusChange?.("editor")}>
-              {menuLanguage === "en" ? "Edit" : "編集"}
+              {compactViewCopy.edit}
             </button>
             <button type="button" aria-pressed={compactPreviewFocus === "preview"}
               onClick={() => onCompactPreviewFocusChange?.("preview")}>
-              {menuLanguage === "en" ? "Preview" : "プレビュー"}
+              {compactViewCopy.preview}
             </button>
           </div>
         ) : null}
