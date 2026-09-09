@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: Save As通知の帰属修正とUI-E2検索面の合評
+Scope: UI-E2検索修正とUI-E3本全体Readerの合評
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,28 +12,23 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — Save As通知修正・UI-E2
+## 現在の区切り — 検索修正・UI-E3
 
-外部レビューで前回D2b指摘4点CLOSED、UI-E1 GO。
-追加P2（Save As失敗がglobalError経由で別文書へ漏れる）を1f0158a5で修正。
-失敗はglobalErrorへ残さず、対象文書名/理由付きstatusへ通知する。
-実表示hookまで通し、別タブと衝突解除後の双方で古いactiveErrorが出ないことを検証。
+Save As通知P2は外部CLOSED。検索P2×3は15ce3a7fで修正し、3dfb10c5で本全体Reader→章編集を整理。
+query/Close/workspaceで旧検索を失効し、open成功時だけ対象sessionへfocusなしで移動する。
+Readerは現在章/path/未保存情報を常設。章open失敗ではReaderを残し、成功時だけ対象文書先頭へ戻る。
+[最新資料](reviews/2026-09-10-v3-ui-e3/README.md)でまとめて再レビューする。
 
-7da932abでUI-E2の検索面を整理。対象フォルダ・範囲説明・Closeを常設し、
-既存query/rows/summary/結果移動は維持。Close時は既存focus経路でEditorへ戻す。
-[最新資料](reviews/2026-09-10-v3-ui-e2/README.md)で合評する。
-
-ローカル全2,159件・表示境界111件、typecheck/Vite/native preview/署名整合成功。
-960×640のfixture、Tab→Close→Escapeを確認。native実検索/Reader往復、IME/VoiceOver、200%は未受入。
+ローカル全2,170件・表示境界113件、typecheck/Vite/native preview/署名整合成功。
+960×640/1280×800のReader表示を確認。native実操作・IME/VoiceOver/200%とは区別。
 
 ## 次のまとまった区切り
 
-1. Save As通知修正/E2合評。別文書へエラーが残らず、検索対象/結果/上限が正確なこと。
-2. UI-E3: 読む→章編集の既存導線を整理。既存findMatches→searchSourceLineを維持し、別検索stateを増やさない。
-3. nativeの検索結果→編集/Reader、Save As取消/成功、IME/VoiceOver、構造変更→Undoを受入。
-4. 出力/取り込み、UI-F設定、UI-G横断受入とLA-1以降は後続。C2実System受入も別途残る。
+1. 検索修正/E3合評。native検索→連続結果操作→Close→読む→章編集→入力/Undoの通し確認。
+2. UI-E出力/取り込みの既存操作をまとめて整理。新たな確定前Importステージは追加しない。
+3. UI-F設定、UI-G横断受入とLA-1以降へ。C2実System、native Save As取消/成功も別途残る。
 
-UI-Eは04/05/09/10/11/12、設定はUI-F。画像倍率・復元比較一体化・UI-B/UI-C通し受入も未完了。
+UI-Eは04/05/09/10/11/12、設定はUI-F。本の構成一覧・見開きの全面刷新、画像倍率、200%は未完了。
 
 ## Held / Separate Work
 
