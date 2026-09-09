@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: C2-R1修正とUI-D1から次の安全な確認面へ
+Scope: D1-R1修正とD2a比較面から保存衝突の安全な戻り方へ
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,29 +12,29 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — C2-R1・UI-D1
+## 現在の区切り — D1-R1・UI-D2a
 
-オーナー提供レビューでC1追修正CLOSED、C2は条件付きGO。移動要求の寿命管理を
-5f6c1588で修正し、navigationIdで結果/invoke失敗/期限を照合する。
-mainはタブ切替とnative focusを合わせて4秒、別窓は5秒。会話変更・提案置換・反映/破棄で古い待機を失効する。
+オーナー提供レビューでC2-R1 CLOSED、D1画像/候補一覧GO。
+バックアップDiffがstaleでも復元できるP1を3de6b926で修正した。
+read完了時とApply直前にsnapshot/session・実Editor本文を確認し、
+既存のCodeMirror置換APIで1回のUndoへ載せる。ディスクへ自動保存しない。
 
-独立したUI-D1を798e45bcで実装。画像の読み取り専用・実寸・読込/失敗表示、
-バックアップ一覧の比較案内とキーボード境界を整えた。
-[まとめ資料・原寸画像](reviews/2026-09-10-v3-ui-d1/README.md)が現行の入口。
-
-ローカル全2,122件・表示境界111件・Rust 383件成功（2件ignored）。
-typecheck/Vite/native preview・署名整合成功。ブラウザーfixtureで画像と候補一覧を確認。
-C2のnative窓間focus、実System通し操作、IME/VoiceOver/200%は未受入。
-独立UI-Dはオーナー指示により並行進行し、UI-Cの受入済みとは扱わない。
+独立コミットaeb697f7でD2aの比較対象表示・初回focus・保存衝突比較のsession検証を追加。
+[まとめ資料・原寸画像](reviews/2026-09-10-v3-ui-d2/README.md)が現行の入口。
+ローカル全2,144件・表示境界111件、typecheck/Vite/native preview成功。
+960×640のブラウザーfixture確認。CI・native実操作・IME/VoiceOver受入とは区別する。
 
 ## 次のまとまった区切り
 
-1. UI-D2: 参照比較と保存衝突の対象表示・安全な戻り方。実データと既存再検証を維持する。
-2. 復元候補一覧と比較の統合は別区切り。現在のUI-D1は候補選択→既存比較を保つ。
-3. C2修正/UI-D1を合評し、native実Systemで別タブ→該当提案→Diff→反映→Undo、停止待ちを受入。
+1. D1-R1/D2aを合評。stale復元拒否と実Editor Undo、比較focusの境界を確認する。
+2. UI-D2b: 保存衝突ダイアログの対象表示と安全な戻り方。閉じる/Escapeは表示だけを閉じ、
+   衝突情報を保持する。既存keepEditingAfterConflictは衝突を消すので、そのまま流用しない。
+   Save As・比較へ接続し、背景の入力境界をAppShell経由で確認する。
+3. nativeでバックアップ比較→編集→復元拒否、再比較→復元→Undoと、
+   C2別タブ→該当提案→Diff→反映→Undo・停止待ちを受入。
 
-各実装は独立コミットと検証を維持。画像倍率、比較一体化、保存衝突ダイアログ、
-UI-B/UI-Cの通し受入、UI-D全体〜G、LA-1以降は未完了。
+各実装は独立コミットと検証を維持。D2全体、画像倍率、復元比較の一体化、
+UI-B/UI-Cの通し受入、UI-D後半〜G、LA-1以降は未完了。
 
 ## Held / Separate Work
 

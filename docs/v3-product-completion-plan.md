@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: C1 follow-up closed; C2-R1 fixed and UI-D1 implemented
+Status: C2-R1 closed; D1-R1 fixed and UI-D2a implemented
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-10
@@ -134,7 +134,8 @@ AFM評価のSDK/OS条件は実装時に一次資料と実環境で再確認す�
 
 UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 [第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に集約する。
-UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正CLOSED、C2は条件付きGO。
-移動試行管理C2-R1を修正し、オーナー指示で独立したUI-D1（画像/バックアップ選択）まで進行。
-[最新資料](reviews/2026-09-10-v3-ui-d1/README.md)で合評する。画像倍率、復元比較統合、参照/衝突の刷新、UI-B/UI-Cの通し受入、LA-1以降は未完了。
-次の担当は[current-work.md](current-work.md)からレビュー反映へ進む。
+UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正/C2-R1は外部CLOSED。
+D1画像/候補一覧は外部GO。D1-R1のstale復元を二重検証で修正し、D2aの比較対象表示・focusまで進行。
+[最新資料](reviews/2026-09-10-v3-ui-d2/README.md)で合評する。保存衝突ダイアログはD2bに残す。
+画像倍率、復元比較統合、UI-B/UI-Cの通し受入、LA-1以降は未完了。
+次の担当は[current-work.md](current-work.md)から進む。

@@ -11,15 +11,16 @@ Last reviewed: 2026-09-10
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
 - **UI-A1:** オーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
 - **UI-B / LA-0:** オーナー提供レビューでR3〜R5 CLOSED、LA-0 GO。
-- **UI-C1 / C2:** C1追修正は外部CLOSED、C2は条件付きGO。移動試行の寿命管理P2を
-  5f6c1588で修正。navigationIdで古い応答/失敗/期限を拒否し、mainにも全体期限を持つ。
-- **UI-D1:** 798e45bcで画像の読み取り専用・実寸・失敗表示と、バックアップ選択の
-  比較案内・Tab循環・focus復帰を実装。[まとめ資料](reviews/2026-09-10-v3-ui-d1/README.md)。
-  次はUI-D2の参照比較/保存衝突。画像倍率・復元比較の一体化は未実装。
-- **確認:** ローカル全2,122件・表示境界111件・Rust 383件成功（2件ignored）、
-  typecheck/Vite/native preview・署名整合成功。画像/候補一覧のブラウザーfixtureを確認。
-  C2 native窓間focus、実System通し操作、実IME/VoiceOver、200%・全テーマは未受入。
-  CI証跡とは区別する。独立UI-D進行はUI-C受入完了を意味しない。
+- **UI-C1 / C2:** オーナー提供レビューでC1追修正・C2-R1 CLOSED。native通し受入は別途残る。
+- **UI-D1 / D2a:** D1画像・候補一覧は外部GO。バックアップstale復元P1を3de6b926で修正。
+  read完了時とApply直前にsession・本文等を再検証し、実Editorの1回のUndoで戻せる置換を使う。
+  aeb697f7で比較対象表示・開いた直後のfocus・保存衝突比較のsession再検証を整えた。
+  [最新レビュー資料](reviews/2026-09-10-v3-ui-d2/README.md)。D2全体完了ではない。
+- **確認:** ローカル全2,144件・表示境界111件、typecheck/Vite/native preview成功。
+  ブラウザーfixtureの960×640、比較focus・stale復元無効化を確認。Rustは今回変更/再実行なし。
+  C2 native窓間focus、実System、実IME/VoiceOver、200%・全テーマは未受入。CI証跡とは区別する。
+- **次:** D2b保存衝突ダイアログ。閉じる操作で衝突を消さず、比較・Save Asへ接続する。
+  画像倍率・復元比較統合・UI-C通し受入は別に残す。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
