@@ -3,7 +3,7 @@
 Status: Adopted for v3 implementation
 Scope: 現行System経路の所有者、C2の確認導線、次の抽出単位
 Authority: Medium
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-10
 
 ## 所有者
 
@@ -40,11 +40,15 @@ C1のブラウザーfixtureは描画・既存イベント処理の証拠であ�
 
 別窓は最後に完了した提案の3つのIDを保持する。追加生成の失敗/取消では前案のIDを残す。
 「この提案を見る」は生成/停止待ち中に無効。本文・path・window labelは渡さない。
+提案の3 IDとは別に、操作ごとのnavigationIdを採番して結果まで往復する。
 `request_apple_assist_review`はapple-assist caller限定、IDの空/制御文字/200 bytes超過を拒否。
 mainは開いたsessionの最新proposalと元文章を照合し、既存タブ選択を使用する。
 Reader/モーダル/画像表示中は移動を拒否。切替後にも照合し、main限定の
 `focus_main_apple_assist_review`で固定の本体窓を前面にし、proposal regionへfocusする。
-結果は同じ3 IDで別窓へ返す。応答待ち5秒は確認導線だけの失敗表示であり、生成の完了判定には使わない。
+結果は3 IDとnavigationIdで別窓へ返す。結果・invoke失敗・5秒のタイマーは現在の試行だけを終了する。
+新しい会話、完了提案の置換、反映/破棄で待機を失効。mainは受信から4秒の期限を持ち、
+タブ切替や再renderで延長せず、native応答が遅れてもregion focus/成功通知を行わない。
+この期限は確認導線だけの失敗表示であり、生成/取消の完了判定には使わない。
 
 mainのApply/Discard結果にもdocumentSessionIdを付加する。別窓は3 IDすべて一致し、
 新しい生成要求がない場合のみ結果を受領する。欠けたID、以前のrequest、別sessionは無視する。

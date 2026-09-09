@@ -1,9 +1,9 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-C1 review accepted; C1 follow-up and UI-C2 implemented
+Status: C1 follow-up closed; C2-R1 fixed and UI-D1 implemented
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-10
 
 ## 今回の決定
 
@@ -134,6 +134,7 @@ AFM評価のSDK/OS条件は実装時に一次資料と実環境で再確認す�
 
 UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 [第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に集約する。
-UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正とUI-C2を実装。
-[最新資料](reviews/2026-09-09-v3-ui-c2/README.md)で識別子照合とnative通し確認を合評する。UI-B/UI-Cの通し受入、残りの画面、LA-1以降は未完了。
+UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正CLOSED、C2は条件付きGO。
+移動試行管理C2-R1を修正し、オーナー指示で独立したUI-D1（画像/バックアップ選択）まで進行。
+[最新資料](reviews/2026-09-10-v3-ui-d1/README.md)で合評する。画像倍率、復元比較統合、参照/衝突の刷新、UI-B/UI-Cの通し受入、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)からレビュー反映へ進む。

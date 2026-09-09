@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: UI-C1追修正とUI-C2実装後の通し確認
+Scope: C2-R1修正とUI-D1から次の安全な確認面へ
 Authority: High
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-10
 
 ## Current Phase
 
@@ -12,28 +12,29 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI-C1追修正・UI-C2
+## 現在の区切り — C2-R1・UI-D1
 
-オーナー提供レビューでUI-B R3〜R5 CLOSED、LA-0 GO、UI-C1 GO。
-C1の反映/破棄ロック説明、disabled表示、停止待ちの受入記録を修正。
-UI-C2は16e438ebで実装し、別窓から本体の該当提案へ移る導線と
-Apply/Discard通知をconversation/request/document sessionで照合する。
-[まとめ資料](reviews/2026-09-09-v3-ui-c2/README.md)が現行の入口。
+オーナー提供レビューでC1追修正CLOSED、C2は条件付きGO。移動要求の寿命管理を
+5f6c1588で修正し、navigationIdで結果/invoke失敗/期限を照合する。
+mainはタブ切替とnative focusを合わせて4秒、別窓は5秒。会話変更・提案置換・反映/破棄で古い待機を失効する。
 
-ローカル全2,109件・表示境界111件・Rust 383件成功（2件ignored）。
-typecheck/Vite/native preview成功。最終配置変更後の関連20件も成功。
-960×640のブラウザーfixtureでblocked文言・無効表示・操作列を確認。
+独立したUI-D1を798e45bcで実装。画像の読み取り専用・実寸・読込/失敗表示、
+バックアップ一覧の比較案内とキーボード境界を整えた。
+[まとめ資料・原寸画像](reviews/2026-09-10-v3-ui-d1/README.md)が現行の入口。
+
+ローカル全2,122件・表示境界111件・Rust 383件成功（2件ignored）。
+typecheck/Vite/native preview・署名整合成功。ブラウザーfixtureで画像と候補一覧を確認。
 C2のnative窓間focus、実System通し操作、IME/VoiceOver/200%は未受入。
+独立UI-Dはオーナー指示により並行進行し、UI-Cの受入済みとは扱わない。
 
 ## 次のまとまった区切り
 
-1. native実Systemで生成→別タブ→「この提案を見る」→Diff→反映→Undoを確認。
-   停止待ちの前案・反映/破棄不可、閉じた文書/新session/古い通知の拒否も見る。
-2. UI-C本体の表示領域、小さい別窓、IME/VoiceOverを確認し、C1追修正/C2を合評へ。
-3. UI-Cの受入後、既定計画のUI-D（参照・復元・保存衝突）へ進む。
+1. UI-D2: 参照比較と保存衝突の対象表示・安全な戻り方。実データと既存再検証を維持する。
+2. 復元候補一覧と比較の統合は別区切り。現在のUI-D1は候補選択→既存比較を保つ。
+3. C2修正/UI-D1を合評し、native実Systemで別タブ→該当提案→Diff→反映→Undo、停止待ちを受入。
 
-各実装は独立コミットと検証を維持。実System・IME/VoiceOver・200%・全テーマなどの
-受入を表示fixtureで代替しない。UI-B全体/UI-C全体・UI-D〜G・LA-1以降は未完了。
+各実装は独立コミットと検証を維持。画像倍率、比較一体化、保存衝突ダイアログ、
+UI-B/UI-Cの通し受入、UI-D全体〜G、LA-1以降は未完了。
 
 ## Held / Separate Work
 
