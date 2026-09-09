@@ -1,3 +1,4 @@
+import { useLocalAssistReviewNavigation } from "../../hooks/editor/useLocalAssistReviewNavigation";
 import { useMemo, useRef, useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
@@ -76,6 +77,9 @@ export function AppShell(props: AppShellProps) {
     useState(false);
   const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
   const proposalReviewRef = useRef<HTMLDivElement>(null);
+  useLocalAssistReviewNavigation({ tabs: props.tabs, activeTab: props.activeTab,
+    blocked: readingOverlayOpen || !!props.selectedImage,
+    onSelectTab: props.onSelectTab, hostRef: proposalReviewRef });
   const chapterReviewRequestRef = useRef(0);
   const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
   const workspaceTabMarkers = useMemo(

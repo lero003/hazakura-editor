@@ -1,3 +1,6 @@
+import { requestLocalAssistReview } from "../../lib/tauri/localAssistReview";
+import { LOCAL_ASSIST_REVIEW_RESULT_EVENT } from "../../features/editor/localAssistReviewIdentity";
+vi.mock("../../lib/tauri/localAssistReview", () => ({ requestLocalAssistReview: vi.fn(async () => undefined) }));
 import { act, fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppleAssistWindowApp, getAppleAssistWindowCopy } from "./AppleAssistWindowApp";
@@ -74,7 +77,7 @@ describe("AppleAssistWindowApp render", () => {
     await act(async () => {
       eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...first, phase: "completed", candidateText: "前の案", emittedAtMs: 0 } });
     });
-    const failure = { ...first, phase: "failed", message: "Hazakura Local Assist apply failed: target text no longer matches the active buffer", emittedAtMs: 1 };
+    const failure = { ...first, documentSessionId: first.target?.activeDocumentSessionId, phase: "failed", message: "Hazakura Local Assist apply failed: target text no longer matches the active buffer", emittedAtMs: 1 };
     for (const conversationId of ["other-conversation", undefined]) {
       await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: { ...failure, conversationId } }); });
       expect(screen.queryByRole("alert")).toBeNull();
@@ -309,6 +312,12 @@ describe("AppleAssistWindowApp render", () => {
     expect(conversationId).toBeTruthy();
     expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
 
+    const generated = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+    await act(async () => {
+      eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: {
+        ...generated, phase: "completed", candidateText: "proposal", emittedAtMs: 0,
+      } });
+    });
     const applyStatus = eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT);
 
     // A discard from an unrelated conversation must not reset this one.
@@ -331,7 +340,8 @@ describe("AppleAssistWindowApp render", () => {
       applyStatus?.({
         payload: {
           phase: "discarded",
-          requestId: "req-discard",
+          requestId: generated.requestId,
+          documentSessionId: generated.target?.activeDocumentSessionId,
           request: "整えて",
           message: "discarded",
           conversationId,
@@ -538,4 +548,65 @@ describe("AppleAssistWindowApp render", () => {
     expect(screen.queryByTestId("apple-assist-stream-preview-body")).toBeNull();
     expect(screen.queryByRole("table", { name: "Diff review" })).toBeNull();
   });
+});
+
+it("reviews the current request and ignores delayed outcomes for older turns or sessions", async () => {
+  Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+  render(<AppleAssistWindowApp />);
+  await act(async () => { await Promise.resolve(); });
+  const submit = async () => {
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    return vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+  };
+  const complete = async (request: Awaited<ReturnType<typeof submit>>) => {
+    await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: {
+      ...request, phase: "completed", candidateText: "proposal", emittedAtMs: 0,
+    } }); });
+  };
+  const first = await submit(); await complete(first);
+  const second = await submit();
+  expect(screen.getByRole("button", { name: "Review this proposal" }).hasAttribute("disabled")).toBe(true);
+  await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: {
+    ...first, documentSessionId: first.target?.activeDocumentSessionId, phase: "completed",
+  } }); });
+  expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+  await complete(second);
+  const identity = { requestId: second.requestId, conversationId: second.conversationId,
+    documentSessionId: second.target?.activeDocumentSessionId };
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
+  expect(requestLocalAssistReview).toHaveBeenLastCalledWith(identity);
+  await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...identity, requestId: first.requestId, accepted: true } }); });
+  expect(screen.getByRole("button", { name: "Opening in main…" }).hasAttribute("disabled")).toBe(true);
+  await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...identity, accepted: false } }); });
+  expect(screen.getByText(/Could not open this proposal/)).toBeTruthy();
+  for (const mismatch of [{ requestId: first.requestId }, { documentSessionId: "reopened-session" }, { documentSessionId: undefined }]) {
+    await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: {
+      ...identity, ...mismatch, phase: "discarded",
+    } }); });
+    expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+  }
+  await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: { ...identity, phase: "discarded" } }); });
+  expect(screen.queryByTestId("apple-assist-conversation-state")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Review this proposal" })).toBeNull();
+});
+
+it("retains the prior review identity after cancellation finishes", async () => {
+  Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+  render(<AppleAssistWindowApp />);
+  await act(async () => { await Promise.resolve(); });
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+  const first = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+  await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: {
+    ...first, phase: "completed", candidateText: "prior proposal", emittedAtMs: 0,
+  } }); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+  const second = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+  expect(screen.getByRole("button", { name: "Review this proposal" }).hasAttribute("disabled")).toBe(true);
+  await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...second, phase: "cancelled", emittedAtMs: 1 } }); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
+  expect(requestLocalAssistReview).toHaveBeenLastCalledWith({ requestId: first.requestId,
+    conversationId: first.conversationId, documentSessionId: first.target?.activeDocumentSessionId });
 });

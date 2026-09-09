@@ -1,3 +1,6 @@
+import { requestLocalAssistReview } from "../../lib/tauri/localAssistReview";
+import { acceptsReviewOutcome, matchesReviewIdentity, LOCAL_ASSIST_REVIEW_RESULT_EVENT,
+  type LocalAssistReviewIdentity, type LocalAssistReviewResult } from "../../features/editor/localAssistReviewIdentity";
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { AssistConversationMessages } from "./AssistConversationMessages";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
@@ -266,6 +269,13 @@ export function AppleAssistWindowApp() {
   const [conversation, setConversation] =
     useState<LocalAssistConversationSession | null>(null);
   const targetRef = useRef<AppleAssistTargetSnapshot | null>(target);
+  // Keep the last completed identity through failed/cancelled follow-up generation.
+  // The main store decides whether its restored proposal is still reviewable.
+  const [reviewIdentity, setReviewIdentity] = useState<LocalAssistReviewIdentity | null>(null);
+  const reviewIdentityRef = useRef<LocalAssistReviewIdentity | null>(null);
+  const [reviewPending, setReviewPending] = useState(false);
+  const reviewNavigationRef = useRef<LocalAssistReviewIdentity | null>(null);
+  const [reviewUnavailable, setReviewUnavailable] = useState(false);
   const conversationRef = useRef<LocalAssistConversationSession | null>(null);
   conversationRef.current = conversation;
   targetRef.current = target;
@@ -421,6 +431,14 @@ export function AppleAssistWindowApp() {
           // window only keeps the current-proposal text so a follow-up turn
           // revises the right candidate.
           const conversationId = payload.conversationId;
+          const sessionId = payload.target?.activeDocumentSessionId;
+          if (conversationId && sessionId && conversationRef.current?.id === conversationId &&
+              conversationRef.current.pinnedTarget.activeDocumentSessionId === sessionId) {
+            const identity = { requestId: payload.requestId, conversationId, documentSessionId: sessionId };
+            reviewIdentityRef.current = identity;
+            setReviewIdentity(identity);
+            setReviewUnavailable(false);
+          }
           if (conversationId) {
             setConversation((current) => {
               if (!current || current.id !== conversationId) {
@@ -488,11 +506,12 @@ export function AppleAssistWindowApp() {
           return;
         }
         const payload = event.payload;
-        const activeConversationId = conversationRef.current?.id;
-        if (activeConversationId == null || payload.conversationId !== activeConversationId) return;
+        if (!acceptsReviewOutcome(reviewIdentityRef.current, payload, conversationRef.current?.id,
+          conversationRef.current?.pinnedTarget.activeDocumentSessionId, activeRequestIdRef.current)) return;
         if (payload.phase !== "completed" && payload.phase !== "discarded" && payload.phase !== "failed") return;
         if (payload.phase === "completed" || payload.phase === "discarded") {
           conversationRef.current = null;
+          reviewIdentityRef.current = null; setReviewIdentity(null);
           setConversation(null);
           setStreamPreview("");
           setStreamOriginalText("");
@@ -772,6 +791,37 @@ export function AppleAssistWindowApp() {
     }
   }, [busy, cancelling, copy, clearGenerationFallback, pushFeedback]);
 
+  useEffect(() => {
+    if (!isTauriEventAvailable()) return;
+    let disposed = false;
+    const subscription = listen<LocalAssistReviewResult>(LOCAL_ASSIST_REVIEW_RESULT_EVENT, ({ payload }) => {
+      if (disposed || !matchesReviewIdentity(reviewNavigationRef.current, payload)) return;
+      reviewNavigationRef.current = null;
+      setReviewPending(false);
+      if (matchesReviewIdentity(reviewIdentityRef.current, payload) &&
+          conversationRef.current?.id === payload.conversationId) setReviewUnavailable(!payload.accepted);
+    }).catch(() => null);
+    return () => { disposed = true; void subscription.then((unlisten) => unlisten?.()); };
+  }, []);
+  useEffect(() => {
+    if (!reviewPending) return;
+    const timer = setTimeout(() => {
+      reviewNavigationRef.current = null; setReviewPending(false); setReviewUnavailable(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [reviewPending]);
+  const openReview = async () => {
+    const identity = reviewIdentityRef.current;
+    if (busy || reviewPending || !identity || conversationRef.current?.id !== identity.conversationId) return;
+    reviewNavigationRef.current = identity;
+    setReviewPending(true); setReviewUnavailable(false);
+    try { await requestLocalAssistReview(identity); }
+    catch {
+      if (reviewNavigationRef.current !== identity) return;
+      reviewNavigationRef.current = null; setReviewPending(false); setReviewUnavailable(true);
+    }
+  };
+
   const chatItems = [
     ...sentRequests.map((entry) => ({ ...entry, role: "user" as const, kind: undefined })),
     ...feedback.filter((entry) => !["ready", "target-acquired", "request-sent", "generation-started"].includes(entry.kind))
@@ -783,6 +833,12 @@ export function AppleAssistWindowApp() {
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
         <div className="apple-assist-intro"><h1>{ui.title}</h1><p>{ui.boundary}</p></div>
+        {reviewIdentity && conversation?.id === reviewIdentity.conversationId ?
+          <div className="apple-assist-review-link">
+            <button type="button" className="apple-assist-window-new-conversation" disabled={busy || reviewPending}
+              onClick={() => void openReview()}>{reviewPending ? ui.reviewOpening : ui.review}</button>
+            {reviewUnavailable ? <p role="status">{ui.reviewUnavailable}</p> : null}
+          </div> : null}
         <details className="apple-assist-target-details" open>
           <summary>{ui.target}: {displayedTarget?.activeDocumentName || ui.noDocument}</summary>
           <div className="apple-assist-window-target" data-testid="apple-assist-target">
@@ -793,6 +849,7 @@ export function AppleAssistWindowApp() {
             <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
               onClick={() => {
                 setConversation(null); conversationRef.current = null;
+                reviewIdentityRef.current = null; setReviewIdentity(null); setReviewUnavailable(false);
                 setStreamPreview(""); setStreamOriginalText(""); setError(null);
                 setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
               }}>{copy.newConversationButton}</button>

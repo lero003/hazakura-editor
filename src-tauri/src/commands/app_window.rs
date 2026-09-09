@@ -662,3 +662,51 @@ pub(crate) fn raise_main_window_on_opened_files<R: tauri::Runtime>(
         let _ = window.set_focus();
     }
 }
+
+// UI-C2: only bounded proposal identity crosses from companion to main.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct LocalAssistReviewIdentity {
+    pub request_id: String,
+    pub conversation_id: String,
+    pub document_session_id: String,
+}
+
+pub(crate) fn validate_local_assist_review_identity(
+    payload: &LocalAssistReviewIdentity,
+) -> Result<(), String> {
+    for value in [
+        &payload.request_id,
+        &payload.conversation_id,
+        &payload.document_session_id,
+    ] {
+        if value.trim().is_empty() || value.len() > 200 || value.chars().any(char::is_control) {
+            return Err("Invalid Local Assist review identity".into());
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) fn request_apple_assist_review<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    payload: LocalAssistReviewIdentity,
+) -> Result<(), String> {
+    ensure_apple_assist_window(&window)?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    validate_local_assist_review_identity(&payload)?;
+    app.emit_to(MAIN_WINDOW_LABEL, "local-assist-review-request", payload)
+        .map_err(|err| format!("Cannot request Local Assist review: {err}"))
+}
+
+#[tauri::command]
+pub(crate) fn focus_main_apple_assist_review<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+) -> Result<(), String> {
+    ensure_main_window(&window)?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    window.show().map_err(|err| err.to_string())?;
+    window.unminimize().map_err(|err| err.to_string())?;
+    window.set_focus().map_err(|err| err.to_string())
+}

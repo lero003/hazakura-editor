@@ -684,7 +684,7 @@ export function useAppShellController() {
           proposal.requestId,
           proposal.request,
           proposal.conversationId,
-          { shouldApplyToDocument: true },
+          { shouldApplyToDocument: true, documentSessionId: proposal.target.activeDocumentSessionId },
         );
       } else {
         // v2.6 B2.1: surface the stale/no-op rejection instead of leaving the
@@ -696,6 +696,7 @@ export function useAppShellController() {
           proposal.requestId,
           proposal.request,
           proposal.conversationId,
+          { documentSessionId: proposal.target.activeDocumentSessionId },
         );
       }
       return result;
@@ -718,6 +719,7 @@ export function useAppShellController() {
         proposal.requestId,
         proposal.request,
         proposal.conversationId,
+        { documentSessionId: proposal.target.activeDocumentSessionId },
       );
     },
     [activeTab, rejectIfAppleAssistLocksTab],

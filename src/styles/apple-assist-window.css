@@ -708,3 +708,7 @@
 @media (prefers-reduced-motion: reduce) {
   .apple-assist-window-spinner { animation: none; }
 }
+
+/* The proposal link precedes expandable target details in short windows. */
+.apple-assist-review-link button { min-height: 32px; white-space: normal; text-align: start; }
+.apple-assist-review-link p { margin: 6px 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }

@@ -132,7 +132,7 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, b
   };
 
   return (
-    <div aria-label={copy.regionLabel} aria-busy={applying || !!proposal.streaming}
+    <div data-review-request-id={proposal.requestId} aria-label={copy.regionLabel} aria-busy={applying || !!proposal.streaming}
       className="local-assist-proposal-review" data-testid="local-assist-proposal-review" role="region" tabIndex={-1}>
       <div className="local-assist-proposal-review-header">
         <span className="local-assist-proposal-review-icon" aria-hidden="true"><SparklesIcon /></span>

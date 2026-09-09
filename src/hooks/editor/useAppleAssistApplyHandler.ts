@@ -66,7 +66,7 @@ export async function applyReviewedLocalAssistProposal(input: ApplyReviewedPropo
 export async function emitLocalAssistApplyStatus(
   phase: AppleAssistApplyStatusEvent["phase"], message: string, requestId: string, request: string,
   conversationId?: string | null,
-  options: Pick<AppleAssistApplyStatusEvent, "shouldApplyToDocument"> = {},
+  options: Pick<AppleAssistApplyStatusEvent, "shouldApplyToDocument" | "documentSessionId"> = {},
 ): Promise<void> {
   const status: AppleAssistApplyStatusEvent = {
     phase, message, requestId, request, conversationId, ...options, emittedAtMs: Date.now(),

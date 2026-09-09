@@ -293,6 +293,7 @@ export type AppleAssistApplyStatusEvent = {
   /** v2.6 B2.1: the conversation this apply/discard belongs to, so the
    * detached window resets only the matching conversation. */
   conversationId?: string | null;
+  documentSessionId?: string | null;
   partialText?: string;
   shouldApplyToDocument?: boolean;
   emittedAtMs: number;
