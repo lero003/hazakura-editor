@@ -741,6 +741,53 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(screen.queryByRole("group", { name: "Document view" })).toBeNull();
   });
 
+  it.each([true, false])("whole-book edit returns to the retained editor only on open success: %s", async (success) => {
+    const onReadingOverlayChange = vi.fn();
+    const openWorkspaceFile = vi.fn(async () => success ? bookTab : null);
+    const goToLine = vi.fn();
+    const { container } = renderWorkspace({
+      openWorkspaceFile,
+      editorPaneRef: { current: { goToLine } as unknown as EditorPaneHandle },
+      documentChrome: <button>Document tab</button>,
+      onReadingOverlayChange,
+      activeTab: bookTab,
+      activeContents: bookTab.contents,
+      tabs: [bookTab],
+      bookScopeChapterRelativePaths: ["book.md"],
+      bookScopeNodes: [{ kind: "document", relativePath: "book.md", children: [] }],
+      bookScopeChapters: [{ name: "book.md", path: bookTab.path, relativePath: "book.md" }],
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory", [
+        workspaceEntry("book.md", bookTab.path, "file"),
+      ]),
+    });
+    const editor = screen.getByTestId("editor-main-pane");
+    const column = editor.closest(".workspace-document-column")!;
+    fireEvent.click(screen.getByRole("tab", { name: "Book" }));
+    fireEvent.click(screen.getByRole("button", { name: "Read all" }));
+    const reader = await screen.findByRole("dialog", { name: "Read whole book" });
+    expect(column.hasAttribute("hidden")).toBe(true);
+    expect(column.hasAttribute("inert")).toBe(true);
+    expect(screen.queryByRole("button", { name: "Document tab" })).toBeNull();
+    expect(reader.closest("[hidden], [inert]")).toBeNull();
+    expect(container.querySelector(".workspace-reading-focus")).toBeTruthy();
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
+    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(true);
+    fireEvent.click(screen.getByRole("button", { name: "Edit this chapter" }));
+    await waitFor(() => expect(openWorkspaceFile).toHaveBeenCalledWith(bookTab.path));
+    if (success) {
+      await waitFor(() => expect(screen.queryByRole("dialog", { name: "Read whole book" })).toBeNull());
+      await waitFor(() => expect(goToLine).toHaveBeenCalledWith(1, { focus: true }));
+      expect(column.hasAttribute("hidden")).toBe(false);
+    } else {
+      expect(await screen.findByRole("alert")).toBeTruthy();
+      expect(screen.getByRole("dialog", { name: "Read whole book" })).toBe(reader);
+      expect(goToLine).not.toHaveBeenCalled();
+      expect(column.hasAttribute("hidden")).toBe(true);
+    }
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
+  });
+
   it("hides and inerts document chrome behind the whole-book Reader without replacing the editor", async () => {
     const onReadingOverlayChange = vi.fn();
     const { container } = renderWorkspace({

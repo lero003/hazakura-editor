@@ -15,6 +15,7 @@ import {
 } from "../../features/bookScope";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import { stripYamlFrontmatter } from "../../features/editor/markdownFrontmatter";
+import { isImeComposing } from "../../lib/keyboard";
 import type { MenuLanguage } from "../../types";
 
 const PreviewPane = lazy(() => import("../editor/preview/PreviewPane"));
@@ -31,7 +32,7 @@ type Props = Pick<
   menuLanguage: MenuLanguage;
   onApproveLocalImageParent?: (resolvedPath: string) => void;
   onClose: () => void;
-  onEditChapter: (path: string) => void;
+  onEditChapter: (path: string) => void | Promise<boolean>;
   onOpenLink: (documentPath: string, href: string) => void;
   /** Persist current chapter + scroll ratio (app-private; never writes Markdown). */
   onReadingPositionChange?: (
@@ -57,6 +58,20 @@ export function BookScopeReader({
   workspaceRoot,
 }: Props) {
   const copy = readerCopy(menuLanguage);
+  const [openingChapter, setOpeningChapter] = useState(false);
+  const [chapterOpenFailed, setChapterOpenFailed] = useState(false);
+  const editChapter = async (path: string) => {
+    if (openingChapter) return;
+    setOpeningChapter(true);
+    setChapterOpenFailed(false);
+    try {
+      if (await onEditChapter(path) === false) setChapterOpenFailed(true);
+    } catch {
+      setChapterOpenFailed(true);
+    } finally {
+      setOpeningChapter(false);
+    }
+  };
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const manuscriptRef = useRef<HTMLElement | null>(null);
@@ -232,6 +247,7 @@ export function BookScopeReader({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (isImeComposing(event.nativeEvent)) return;
     if (event.key === "Escape") {
       if (
         searchQuery &&
@@ -279,13 +295,14 @@ export function BookScopeReader({
         <div>
           <span>{copy.kicker}</span>
           <h1>{copy.title}</h1>
-          <p>{copy.count(documents.length)}</p>
+          <p>{copy.count(documents.length)} · {copy.readOnly}</p>
         </div>
         <button onClick={onClose} ref={closeButtonRef} type="button">
           {copy.close}
         </button>
       </header>
 
+      {chapterOpenFailed ? <p className="book-reader-notice" role="alert">{copy.openFailed}</p> : null}
       {failures.length > 0 || skippedForBudget.length > 0 ? (
         <aside className="book-reader-notice" role="status">
           <strong>{copy.partial}</strong>
@@ -310,7 +327,7 @@ export function BookScopeReader({
               data-book-reader-search="true"
               onChange={(event) => setSearchQuery(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
+                if (event.key !== "Enter" || isImeComposing(event.nativeEvent)) return;
                 const match = event.shiftKey
                   ? [...searchMatches]
                       .reverse()
@@ -379,6 +396,9 @@ export function BookScopeReader({
                 <strong>
                   {clampedActiveIndex + 1}. {activeDocument.name}
                 </strong>
+                <small className="book-reader-source" title={activeDocument.relativePath}>
+                  {activeDocument.relativePath}{activeDocument.usesLiveBuffer ? ` · ${copy.liveBuffer}` : ""}
+                </small>
                 {showResumeNote ? (
                   <small className="book-reader-resume-note">{copy.resumed}</small>
                 ) : null}
@@ -390,6 +410,11 @@ export function BookScopeReader({
                 type="button"
               >
                 {copy.next}
+              </button>
+              <button className="book-reader-edit-current" disabled={openingChapter}
+                onClick={() => void editChapter(activeDocument.path)} type="button"
+                title={copy.editLabel(activeDocument.name)}>
+                {openingChapter ? copy.opening : copy.editCurrent}
               </button>
             </div>
           ) : null}
@@ -411,7 +436,8 @@ export function BookScopeReader({
                   </h2>
                   <button
                     aria-label={copy.editLabel(document.name)}
-                    onClick={() => onEditChapter(document.path)}
+                    disabled={openingChapter}
+                    onClick={() => void editChapter(document.path)}
                     type="button"
                   >
                     {copy.edit}
@@ -444,6 +470,9 @@ function bookReaderChapterId(index: number): string {
 function readerCopy(language: MenuLanguage) {
   if (language === "en") {
     return {
+      readOnly: "Reading only · files are not changed",
+      editCurrent: "Edit this chapter", opening: "Opening…",
+      openFailed: "Could not open the chapter. The reader remains available; try again or close it.",
       close: "Close", contents: "Contents", edit: "Edit Markdown",
       editLabel: (name: string) => `Edit ${name}`,
       goToLabel: (name: string, count: number) => count > 0
@@ -467,7 +496,9 @@ function readerCopy(language: MenuLanguage) {
       resumed: "Resumed",
     };
   }
-  return {
+  const japanese = {
+    readOnly: "読書中 · ファイルは変更しません", editCurrent: "この章を編集",
+    opening: "開いています…", openFailed: "章を開けませんでした。読書は続けられます。再試行するか閉じてください。",
     close: "閉じる", contents: "目次", edit: "このMarkdownを編集",
     editLabel: (name: string) => `${name}を編集`,
     goToLabel: (name: string, count: number) => count > 0
@@ -490,4 +521,20 @@ function readerCopy(language: MenuLanguage) {
     nextChapter: "次の章へ",
     resumed: "続きから",
   };
+  if (language === "kana") return {
+    ...japanese,
+    readOnly: "よむだけ · ふみは かへません", editCurrent: "このしょうを へんしゅう",
+    opening: "ひらいてゐます…", openFailed: "しょうを ひらけませんでした。もういちど ためすか、とぢてください。",
+    close: "とぢる", contents: "もくじ", edit: "このMarkdownを へんしゅう",
+    editLabel: (name: string) => `${name}を へんしゅう`,
+    goToLabel: (name: string, count: number) => count > 0 ? `${name}へ うつる、${count}けん` : `${name}へ うつる`,
+    empty: "よめるMarkdownが ありません。", kicker: "ほん", title: "ほんぜんたいを よむ",
+    liveBuffer: "みほぞんの へんしゅうを ふくむ", loading: "Markdownを うつしてゐます…",
+    matchCount: (count: number) => `${count}けん`, overBudget: "よめる じょうげんに たっしました",
+    partial: "うつしてゐない こうもくが あります", search: "ほんの なかを さがす", searchPlaceholder: "よみこんだ しょうの ことば",
+    searchSummary: (chapters: number, occurrences: number) => `${chapters}しょう・${occurrences}けん`,
+    count: (count: number) => `${count}けんを よみこみ`, chapterNav: "しょうの いどう", nowReading: "いま よんでゐる しょう",
+    previous: "まえの しょう", next: "つぎの しょう", previousChapter: "まえの しょうへ", nextChapter: "つぎの しょうへ", resumed: "つづきから",
+  };
+  return japanese;
 }

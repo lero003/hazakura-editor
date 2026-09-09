@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BookScopeReader } from "./BookScopeReader";
 
@@ -225,4 +225,24 @@ describe("BookScopeReader", () => {
       screen.getByRole("button", { name: "two.mdへ移動" }).getAttribute("aria-current"),
     ).toBe("true");
   });
+});
+
+it("keeps IME Enter in search and edits the selected chapter from the persistent bar", async () => {
+  const edit = vi.fn(async () => false);
+  render(<BookScopeReader documents={[
+    { name: "one.md", path: "/book/one.md", relativePath: "one.md", source: "first", usesLiveBuffer: false },
+    { name: "two.md", path: "/book/two.md", relativePath: "chapters/two.md", source: "second", usesLiveBuffer: true },
+  ]} failures={[]} skippedForBudget={[]} menuLanguage="en" workspaceRoot="/book"
+    onClose={vi.fn()} onEditChapter={edit} onOpenLink={vi.fn()} />);
+  const input = screen.getByRole("searchbox");
+  fireEvent.change(input, { target: { value: "second" } });
+  fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+  const bar = screen.getByRole("navigation", { name: "Chapter navigation" });
+  expect(within(bar).getByText("1. one.md")).toBeTruthy();
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(within(bar).getByText("2. two.md")).toBeTruthy();
+  expect(within(bar).getByText(/chapters\/two.md/)).toBeTruthy();
+  fireEvent.click(within(bar).getByRole("button", { name: "Edit this chapter" }));
+  expect(edit).toHaveBeenCalledWith("/book/two.md");
+  expect(await screen.findByRole("alert")).toBeTruthy();
 });

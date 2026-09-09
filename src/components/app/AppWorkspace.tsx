@@ -225,7 +225,7 @@ type AppWorkspaceProps = {
     kind: "file" | "directory" | "root",
   ) => void;
   openRootWorkspaceContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
-  openWorkspaceFile: (path: string) => unknown;
+  openWorkspaceFile: (path: string) => Promise<EditorTab | null | void>;
   orphanPathlessDrafts?: DraftRecord[];
   recoveryCopy: RecoveryCopy;
   revalidateBookScope?: () => void;
@@ -432,6 +432,9 @@ export function AppWorkspace({
     scrollRatio: number;
   } | null>(null);
   const bookReaderRequestRef = useRef(0);
+  const readerEditTabRef = useRef(activeTab);
+  readerEditTabRef.current = activeTab;
+  useEffect(() => () => { ++bookReaderRequestRef.current; }, []);
   // v1.1 position-continuity: AppWorkspace owns the per-document view state
   // shared by Editor, e-book, and (when real-layout evidence requires it)
   // Preview. Individual panes report patches without owning a parallel map.
@@ -1113,9 +1116,19 @@ export function AppWorkspace({
           menuLanguage={menuLanguage}
           onApproveLocalImageParent={onApproveLocalImageParent}
           onClose={closeBookScopeReader}
-          onEditChapter={(path) => {
+          onEditChapter={async (path) => {
+            const request = ++bookReaderRequestRef.current;
+            const opened = await openWorkspaceFile(path);
+            if (!opened || opened.path !== path || request !== bookReaderRequestRef.current) return false;
             closeBookScopeReader();
-            void openWorkspaceFile(path);
+            const closingRequest = bookReaderRequestRef.current;
+            requestAnimationFrame(() => {
+              if (closingRequest !== bookReaderRequestRef.current ||
+                  readerEditTabRef.current?.sessionId !== opened.sessionId ||
+                  document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+              editorPaneRef.current?.goToLine(1, { focus: true });
+            });
+            return true;
           }}
           onOpenLink={openBookReaderLink}
           onReadingPositionChange={persistBookReaderPosition}

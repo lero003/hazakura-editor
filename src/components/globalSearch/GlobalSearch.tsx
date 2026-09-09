@@ -283,7 +283,10 @@ export function GlobalSearch({
                     }`}
                     id={`global-search-option-${index}`}
                     onMouseEnter={() => onSetActiveIndex(index)}
-                    onPointerDown={() => onRun(row)}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      onRun(row);
+                    }}
                     role="option"
                     tabIndex={-1}
                     type="button"
