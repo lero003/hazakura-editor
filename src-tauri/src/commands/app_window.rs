@@ -666,19 +666,21 @@ pub(crate) fn raise_main_window_on_opened_files<R: tauri::Runtime>(
 // UI-C2: only bounded proposal identity crosses from companion to main.
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub(crate) struct LocalAssistReviewIdentity {
+pub(crate) struct LocalAssistReviewRequest {
     pub request_id: String,
     pub conversation_id: String,
     pub document_session_id: String,
+    pub navigation_id: String,
 }
 
 pub(crate) fn validate_local_assist_review_identity(
-    payload: &LocalAssistReviewIdentity,
+    payload: &LocalAssistReviewRequest,
 ) -> Result<(), String> {
     for value in [
         &payload.request_id,
         &payload.conversation_id,
         &payload.document_session_id,
+        &payload.navigation_id,
     ] {
         if value.trim().is_empty() || value.len() > 200 || value.chars().any(char::is_control) {
             return Err("Invalid Local Assist review identity".into());
@@ -691,7 +693,7 @@ pub(crate) fn validate_local_assist_review_identity(
 pub(crate) fn request_apple_assist_review<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
-    payload: LocalAssistReviewIdentity,
+    payload: LocalAssistReviewRequest,
 ) -> Result<(), String> {
     ensure_apple_assist_window(&window)?;
     ensure_apple_assist_allowed_by_distribution()?;

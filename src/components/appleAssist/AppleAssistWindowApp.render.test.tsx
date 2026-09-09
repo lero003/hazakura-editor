@@ -575,10 +575,11 @@ it("reviews the current request and ignores delayed outcomes for older turns or 
   const identity = { requestId: second.requestId, conversationId: second.conversationId,
     documentSessionId: second.target?.activeDocumentSessionId };
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
-  expect(requestLocalAssistReview).toHaveBeenLastCalledWith(identity);
-  await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...identity, requestId: first.requestId, accepted: true } }); });
+  expect(requestLocalAssistReview).toHaveBeenLastCalledWith({ ...identity, navigationId: expect.any(String) });
+  const navigationId = vi.mocked(requestLocalAssistReview).mock.calls.at(-1)![0].navigationId;
+  await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...identity, navigationId, requestId: first.requestId, accepted: true } }); });
   expect(screen.getByRole("button", { name: "Opening in main…" }).hasAttribute("disabled")).toBe(true);
-  await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...identity, accepted: false } }); });
+  await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...identity, navigationId, accepted: false } }); });
   expect(screen.getByText(/Could not open this proposal/)).toBeTruthy();
   for (const mismatch of [{ requestId: first.requestId }, { documentSessionId: "reopened-session" }, { documentSessionId: undefined }]) {
     await act(async () => { eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)!({ payload: {
@@ -607,6 +608,61 @@ it("retains the prior review identity after cancellation finishes", async () => 
   expect(screen.getByRole("button", { name: "Review this proposal" }).hasAttribute("disabled")).toBe(true);
   await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...second, phase: "cancelled", emittedAtMs: 1 } }); });
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
-  expect(requestLocalAssistReview).toHaveBeenLastCalledWith({ requestId: first.requestId,
+  expect(requestLocalAssistReview).toHaveBeenLastCalledWith({ navigationId: expect.any(String), requestId: first.requestId,
     conversationId: first.conversationId, documentSessionId: first.target?.activeDocumentSessionId });
+});
+
+it.each(["old-result", "old-invoke-failure"])("isolates repeated navigation attempts from %s", async (late) => {
+  vi.useFakeTimers();
+  try {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => {});
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    const generation = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+    await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: {
+      ...generation, phase: "completed", candidateText: "proposal", emittedAtMs: 0,
+    } }); });
+    let fail!: (error: Error) => void;
+    vi.mocked(requestLocalAssistReview).mockImplementationOnce(() => new Promise<void>((_resolve, reject) => { fail = reject; }));
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
+    const first = vi.mocked(requestLocalAssistReview).mock.calls.at(-1)![0];
+    await act(async () => { vi.advanceTimersByTime(5000); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
+    const second = vi.mocked(requestLocalAssistReview).mock.calls.at(-1)![0];
+    expect(second.navigationId).not.toBe(first.navigationId);
+    await act(async () => {
+      if (late === "old-result") eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...first, accepted: false } });
+      else fail(new Error("late invoke failure"));
+    });
+    expect(screen.getByRole("button", { name: "Opening in main…" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.queryByText(/Could not open this proposal/)).toBeNull();
+    await act(async () => { eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...second, accepted: true } }); });
+    expect(screen.getByRole("button", { name: "Review this proposal" }).hasAttribute("disabled")).toBe(false);
+  } finally { vi.useRealTimers(); }
+});
+
+it("invalidates navigation when a new conversation replaces the proposal", async () => {
+  vi.useFakeTimers();
+  try {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />); await act(async () => {});
+    const generate = async () => {
+      fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
+      await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+      const request = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+      await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: {
+        ...request, phase: "completed", candidateText: "proposal", emittedAtMs: 0,
+      } }); });
+    };
+    await generate();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });
+    const old = vi.mocked(requestLocalAssistReview).mock.calls.at(-1)![0];
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: getAppleAssistWindowCopy("en").newConversationButton })); });
+    await generate();
+    await act(async () => { vi.advanceTimersByTime(5000); eventListeners.get(LOCAL_ASSIST_REVIEW_RESULT_EVENT)!({ payload: { ...old, accepted: false } }); });
+    expect(screen.getByRole("button", { name: "Review this proposal" }).hasAttribute("disabled")).toBe(false);
+    expect(screen.queryByText(/Could not open this proposal/)).toBeNull();
+  } finally { vi.useRealTimers(); }
 });

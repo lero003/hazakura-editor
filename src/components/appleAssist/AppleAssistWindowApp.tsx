@@ -1,6 +1,6 @@
 import { requestLocalAssistReview } from "../../lib/tauri/localAssistReview";
-import { acceptsReviewOutcome, matchesReviewIdentity, LOCAL_ASSIST_REVIEW_RESULT_EVENT,
-  type LocalAssistReviewIdentity, type LocalAssistReviewResult } from "../../features/editor/localAssistReviewIdentity";
+import { acceptsReviewOutcome, matchesReviewIdentity, matchesReviewNavigation, LOCAL_ASSIST_REVIEW_RESULT_EVENT,
+  type LocalAssistReviewIdentity, type LocalAssistReviewRequest, type LocalAssistReviewResult } from "../../features/editor/localAssistReviewIdentity";
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { AssistConversationMessages } from "./AssistConversationMessages";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
@@ -273,9 +273,15 @@ export function AppleAssistWindowApp() {
   // The main store decides whether its restored proposal is still reviewable.
   const [reviewIdentity, setReviewIdentity] = useState<LocalAssistReviewIdentity | null>(null);
   const reviewIdentityRef = useRef<LocalAssistReviewIdentity | null>(null);
-  const [reviewPending, setReviewPending] = useState(false);
-  const reviewNavigationRef = useRef<LocalAssistReviewIdentity | null>(null);
+  const [reviewNavigation, setReviewNavigation] = useState<LocalAssistReviewRequest | null>(null);
+  const reviewPending = reviewNavigation !== null;
+  const reviewNavigationRef = useRef<LocalAssistReviewRequest | null>(null);
   const [reviewUnavailable, setReviewUnavailable] = useState(false);
+  const clearReviewNavigation = useCallback(() => {
+    reviewNavigationRef.current = null;
+    setReviewNavigation(null);
+    setReviewUnavailable(false);
+  }, []);
   const conversationRef = useRef<LocalAssistConversationSession | null>(null);
   conversationRef.current = conversation;
   targetRef.current = target;
@@ -435,6 +441,7 @@ export function AppleAssistWindowApp() {
           if (conversationId && sessionId && conversationRef.current?.id === conversationId &&
               conversationRef.current.pinnedTarget.activeDocumentSessionId === sessionId) {
             const identity = { requestId: payload.requestId, conversationId, documentSessionId: sessionId };
+            clearReviewNavigation();
             reviewIdentityRef.current = identity;
             setReviewIdentity(identity);
             setReviewUnavailable(false);
@@ -511,6 +518,7 @@ export function AppleAssistWindowApp() {
         if (payload.phase !== "completed" && payload.phase !== "discarded" && payload.phase !== "failed") return;
         if (payload.phase === "completed" || payload.phase === "discarded") {
           conversationRef.current = null;
+          clearReviewNavigation();
           reviewIdentityRef.current = null; setReviewIdentity(null);
           setConversation(null);
           setStreamPreview("");
@@ -795,30 +803,34 @@ export function AppleAssistWindowApp() {
     if (!isTauriEventAvailable()) return;
     let disposed = false;
     const subscription = listen<LocalAssistReviewResult>(LOCAL_ASSIST_REVIEW_RESULT_EVENT, ({ payload }) => {
-      if (disposed || !matchesReviewIdentity(reviewNavigationRef.current, payload)) return;
+      if (disposed || !matchesReviewNavigation(reviewNavigationRef.current, payload)) return;
       reviewNavigationRef.current = null;
-      setReviewPending(false);
+      setReviewNavigation(null);
       if (matchesReviewIdentity(reviewIdentityRef.current, payload) &&
           conversationRef.current?.id === payload.conversationId) setReviewUnavailable(!payload.accepted);
     }).catch(() => null);
     return () => { disposed = true; void subscription.then((unlisten) => unlisten?.()); };
   }, []);
   useEffect(() => {
-    if (!reviewPending) return;
+    if (!reviewNavigation) return;
     const timer = setTimeout(() => {
-      reviewNavigationRef.current = null; setReviewPending(false); setReviewUnavailable(true);
+      if (reviewNavigationRef.current !== reviewNavigation) return;
+      reviewNavigationRef.current = null;
+      setReviewNavigation(null);
+      setReviewUnavailable(true);
     }, 5000);
     return () => clearTimeout(timer);
-  }, [reviewPending]);
+  }, [reviewNavigation]);
   const openReview = async () => {
     const identity = reviewIdentityRef.current;
-    if (busy || reviewPending || !identity || conversationRef.current?.id !== identity.conversationId) return;
-    reviewNavigationRef.current = identity;
-    setReviewPending(true); setReviewUnavailable(false);
-    try { await requestLocalAssistReview(identity); }
+    if (busy || reviewNavigationRef.current || !identity || conversationRef.current?.id !== identity.conversationId) return;
+    const attempt = { ...identity, navigationId: crypto.randomUUID() };
+    reviewNavigationRef.current = attempt;
+    setReviewNavigation(attempt); setReviewUnavailable(false);
+    try { await requestLocalAssistReview(attempt); }
     catch {
-      if (reviewNavigationRef.current !== identity) return;
-      reviewNavigationRef.current = null; setReviewPending(false); setReviewUnavailable(true);
+      if (reviewNavigationRef.current !== attempt) return;
+      reviewNavigationRef.current = null; setReviewNavigation(null); setReviewUnavailable(true);
     }
   };
 
@@ -849,7 +861,8 @@ export function AppleAssistWindowApp() {
             <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
               onClick={() => {
                 setConversation(null); conversationRef.current = null;
-                reviewIdentityRef.current = null; setReviewIdentity(null); setReviewUnavailable(false);
+                clearReviewNavigation();
+          reviewIdentityRef.current = null; setReviewIdentity(null); clearReviewNavigation();
                 setStreamPreview(""); setStreamOriginalText(""); setError(null);
                 setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
               }}>{copy.newConversationButton}</button>

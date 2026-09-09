@@ -4,8 +4,8 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useLocalAssistReviewNavigation, resolveReviewTab } from "./useLocalAssistReviewNavigation";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import type { EditorTab } from "../../types";
-import type { LocalAssistReviewIdentity } from "../../features/editor/localAssistReviewIdentity";
-const h = vi.hoisted(() => ({ receive: null as null | ((event: { payload: LocalAssistReviewIdentity }) => void),
+import type { LocalAssistReviewRequest } from "../../features/editor/localAssistReviewIdentity";
+const h = vi.hoisted(() => ({ receive: null as null | ((event: { payload: LocalAssistReviewRequest }) => void),
   focus: vi.fn(async (): Promise<void> => undefined), emit: vi.fn(async () => undefined), select: vi.fn() }));
 vi.mock("@tauri-apps/api/event", () => ({
   listen: vi.fn(async (_name, handler) => { h.receive = handler; return () => { h.receive = null; }; }),
@@ -14,7 +14,7 @@ vi.mock("@tauri-apps/api/event", () => ({
 vi.mock("../../lib/tauri/localAssistReview", () => ({ focusMainLocalAssistReview: () => h.focus() }));
 const tab = { id: "tab2", sessionId: "session2", path: "/workspace/same.md", contents: "original" } as EditorTab;
 const other = { ...tab, id: "tab1", sessionId: "session1" };
-const identity = { requestId: "request2", conversationId: "conversation", documentSessionId: tab.sessionId };
+const identity = { navigationId: "navigation1", requestId: "request2", conversationId: "conversation", documentSessionId: tab.sessionId };
 const proposal: LocalAssistProposal = { ...identity, request: "revise", actionId: "rewrite_natural", originalText: "original", candidateText: "proposal", turnIndex: 1,
   target: { kind: "paragraph", text: "original", start: 0, end: 8, label: "", activeDocumentPath: tab.path, activeDocumentName: "same.md",
     activeDocumentSessionId: tab.sessionId, capturedAtMs: 0 } };
@@ -70,4 +70,27 @@ it("leaves an open modal and the active tab untouched", async () => {
   await act(async () => h.receive!({ payload: identity }));
   expect(h.select).not.toHaveBeenCalled();
   expect(h.focus).not.toHaveBeenCalled();
+});
+
+it("expires the whole attempt while native focus is pending and ignores its late completion", async () => {
+  vi.useFakeTimers();
+  try {
+    let finishOld!: () => void;
+    h.focus.mockImplementationOnce(() => new Promise<void>(resolve => { finishOld = resolve; }));
+    render(<Main />);
+    await act(async () => h.receive!({ payload: identity }));
+    await act(async () => { vi.advanceTimersByTime(4000); });
+    expect(h.emit).toHaveBeenLastCalledWith("apple-assist", "local-assist-review-result", { ...identity, accepted: false });
+    let finishNew!: () => void;
+    h.focus.mockImplementationOnce(() => new Promise<void>(resolve => { finishNew = resolve; }));
+    const retry = { ...identity, navigationId: "retry" };
+    await act(async () => h.receive!({ payload: retry }));
+    const count = h.emit.mock.calls.length;
+    await act(async () => finishOld());
+    expect(h.emit.mock.calls.length).toBe(count);
+    expect(document.activeElement).not.toBe(screen.getByRole("region"));
+    await act(async () => finishNew());
+    expect(document.activeElement).toBe(screen.getByRole("region"));
+    expect(h.emit).toHaveBeenLastCalledWith("apple-assist", "local-assist-review-result", { ...retry, accepted: true });
+  } finally { vi.useRealTimers(); }
 });

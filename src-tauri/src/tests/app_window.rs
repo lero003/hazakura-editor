@@ -84,10 +84,11 @@ fn file_open_event_without_paths_should_not_raise_main_window() {
 
 #[test]
 fn local_assist_review_rejects_unbounded_or_incomplete_identity() {
-    let valid = || LocalAssistReviewIdentity {
+    let valid = || LocalAssistReviewRequest {
         request_id: "request-1".into(),
         conversation_id: "conversation-1".into(),
         document_session_id: "session-1".into(),
+        navigation_id: "navigation-1".into(),
     };
     assert!(validate_local_assist_review_identity(&valid()).is_ok());
     for invalid in [
@@ -103,12 +104,15 @@ fn local_assist_review_rejects_unbounded_or_incomplete_identity() {
         payload.conversation_id = invalid.clone();
         assert!(validate_local_assist_review_identity(&payload).is_err());
         let mut payload = valid();
-        payload.document_session_id = invalid;
+        payload.document_session_id = invalid.clone();
+        assert!(validate_local_assist_review_identity(&payload).is_err());
+        let mut payload = valid();
+        payload.navigation_id = invalid;
         assert!(validate_local_assist_review_identity(&payload).is_err());
     }
     assert!(
-        serde_json::from_value::<LocalAssistReviewIdentity>(serde_json::json!({
-            "requestId":"r", "conversationId":"c", "documentSessionId":"s", "windowLabel":"agent"
+        serde_json::from_value::<LocalAssistReviewRequest>(serde_json::json!({
+            "requestId":"r", "conversationId":"c", "documentSessionId":"s", "navigationId":"n", "windowLabel":"agent"
         }))
         .is_err()
     );

@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { LocalAssistReviewIdentity } from "../../features/editor/localAssistReviewIdentity";
+import type { LocalAssistReviewRequest } from "../../features/editor/localAssistReviewIdentity";
 
-export async function requestLocalAssistReview(payload: LocalAssistReviewIdentity): Promise<void> {
+export async function requestLocalAssistReview(payload: LocalAssistReviewRequest): Promise<void> {
   await invoke("request_apple_assist_review", { payload });
 }
 /** Main validates the exact proposal before bringing its fixed native window forward. */

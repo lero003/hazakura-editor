@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchesReviewIdentity, acceptsReviewOutcome } from "./localAssistReviewIdentity";
+import { matchesReviewIdentity, matchesReviewNavigation, acceptsReviewOutcome } from "./localAssistReviewIdentity";
 
 const identity = { requestId: "r2", conversationId: "c1", documentSessionId: "s1" };
 describe("exact Local Assist review identity", () => {
@@ -18,4 +18,12 @@ describe("exact Local Assist review identity", () => {
     expect(acceptsReviewOutcome(identity, identity, "c1", "s2", null)).toBe(false);
     expect(acceptsReviewOutcome(identity, { ...identity, requestId: "r1" }, "c1", "s1", null)).toBe(false);
   });
+});
+
+it("separates navigation attempts without changing proposal identity", () => {
+  const first = { ...identity, navigationId: "first" };
+  const retry = { ...identity, navigationId: "retry" };
+  expect(matchesReviewIdentity(first, retry)).toBe(true);
+  expect(matchesReviewNavigation(first, retry)).toBe(false);
+  expect(matchesReviewNavigation(first, { ...first })).toBe(true);
 });

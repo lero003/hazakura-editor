@@ -7,7 +7,11 @@ export type LocalAssistReviewIdentity = {
 type MaybeIdentity = { [K in keyof LocalAssistReviewIdentity]?: string | null } | null | undefined;
 export const LOCAL_ASSIST_REVIEW_REQUEST_EVENT = "local-assist-review-request";
 export const LOCAL_ASSIST_REVIEW_RESULT_EVENT = "local-assist-review-result";
-export type LocalAssistReviewResult = LocalAssistReviewIdentity & { accepted: boolean };
+export type LocalAssistReviewRequest = LocalAssistReviewIdentity & { navigationId: string };
+export type LocalAssistReviewResult = LocalAssistReviewRequest & { accepted: boolean };
+export function matchesReviewNavigation(left: LocalAssistReviewRequest | null, right: LocalAssistReviewRequest): boolean {
+  return !!left?.navigationId && left.navigationId === right.navigationId && matchesReviewIdentity(left, right);
+}
 
 export function matchesReviewIdentity(left: MaybeIdentity, right: MaybeIdentity): boolean {
   return !!left?.requestId && !!left.conversationId && !!left.documentSessionId &&
