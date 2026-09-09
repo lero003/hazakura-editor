@@ -11,13 +11,16 @@ Last reviewed: 2026-09-09
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
 - **v3 UI-A1実装:** `codex/v3` で文書ナビ/保存、タブ、表示ツールを分離。
   [レビュー依頼書](reviews/2026-09-09-v3-ui-a1/README.md)に画像・確認結果・残る受入を整理。
-- **次:** 外部レビューで配置/確認対象選択を確認し、UI-Bの通常編集/Preview紙面へ進む。
+- **レビュー修正:** 浮動タブをshell直下へ戻し、本全体Reader中は文書列を非表示・inert化。
+  [R1/R2追試記録](reviews/2026-09-09-v3-ui-a1/r1-r2-followup.md)。Editorは再マウントしない。
+- **次:** R1/R2の差分を再確認してからUI-Bの通常編集/Preview紙面へ進む。
   Local Assist内部再編・依存・版数は未変更、ソース版数は2.9.0。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   C-1/C-2のゲート、MLX停止、明示Diff/Apply、Undo、no auto-save、取消のmutex境界を維持。
-- **確認:** frontend全2,075件・App Store surface111件・typecheck・ローカルpreview build成功。
+- **確認:** frontend全2,078件・App Store surface111件・typecheck・ローカルpreview build成功。
   light/darkと960幅、編集/読書往復後のUndo、L Modeをブラウザー確認。
-  native titlebar/drag、実機IME/VoiceOver、実AI、旧OS/全テーマは未確認。
+  今回は再ビルドしたnativeアプリで浮動タブの選択/閉じる/並替え、Book Readerの閉じる/Tab循環/Undoを確認。
+  余白dragの移動量、実機IME/VoiceOver、実AI、旧OS/全テーマは未確認。
 - **作業保全:** App Store設定の既存未コミット変更を保持。公開タグ・アセットは変更しない。
 
 ## v2.9候補時点の記録（2026-09-09公開報告前）

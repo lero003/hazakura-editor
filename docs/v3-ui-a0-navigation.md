@@ -40,6 +40,15 @@ L Modeの浮動操作、本全体Reader/集中Readerの独立操作面は今回�
 一時的なpopover以外のモードstateは追加せず、表示選択は既存sidePaneMode/reference状態から導出する。
 変更中に選択肢が変わった場合は古いpopoverを閉じる。EscapeはIME変換中に消費しない。
 
+## 既存モードとの表示境界
+
+- 通常タブはworkspace内の文書列に置く。L Modeの浮動タブはAppShell直下で、
+  ウィンドウ移動領域と同じstacking contextを使う。子のz-indexの増加で代用しない。
+- 集中ReaderとBook Scopeの本全体Readerはいずれも独立面。背後の文書列を
+  hidden/inertにし、タブ・表示ツール・Editorへのクリック/フォーカスを止める。
+  workspace自身とその子のReaderは隠さず、Editor DOM・選択・Undoは保持する。
+- 上段「確認」は対象を選ぶ入口、下段「Diff」は比較面の表示切替として説明する。
+
 ## 保全と検証
 
 通常編集・保存・キャレット・Undo、右列の排他、タブと画像切替、dirty/no target、
