@@ -1,3 +1,5 @@
+import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
+import { AssistConversationMessages } from "./AssistConversationMessages";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
@@ -257,9 +259,7 @@ export function AppleAssistWindowApp() {
   const { feedback, pushFeedback, clearFeedback } = useOperationFeedback();
   const [sentRequests, setSentRequests] = useState<Array<{ id: string; at: number; text: string }>>([]);
   const followChatRef = useRef(true);
-  const ui = menuLanguage === "en"
-    ? { chat: "Conversation", details: "Usage and requirements", target: "Target", noDocument: "No document selected", empty: "Select some text, then write your request below.", composer: "Request" }
-    : { chat: "会話", details: "使い方・利用条件", target: "対象", noDocument: "文書未選択", empty: "文章を選び、下の欄から依頼してください。", composer: "依頼" };
+  const ui = getAssistConversationCopy(menuLanguage);
   const feedbackSectionRef = useRef<HTMLDivElement | null>(null);
   // Track whether the availability probe has been reported
   // to the feedback panel so we only push one "ready" /
@@ -802,7 +802,8 @@ export function AppleAssistWindowApp() {
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        <details className="apple-assist-target-details">
+        <div className="apple-assist-intro"><h1>{ui.title}</h1><p>{ui.boundary}</p></div>
+        <details className="apple-assist-target-details" open>
           <summary>{ui.target}: {displayedTarget?.activeDocumentName || ui.noDocument}</summary>
           <div className="apple-assist-window-target" data-testid="apple-assist-target">
             {renderTargetSummary(displayedTarget, copy)}
@@ -831,12 +832,7 @@ export function AppleAssistWindowApp() {
           const element = event.currentTarget;
           followChatRef.current = element.scrollHeight - element.scrollTop - element.clientHeight < 40;
         }}>
-        <div data-testid="apple-assist-conversation-history" className="apple-assist-chat-messages">
-          {chatItems.length ? chatItems.map((item) => <p key={item.id}
-            data-testid={item.role === "assistant" ? "apple-assist-feedback-entry" : undefined}
-            data-feedback-kind={item.kind} className={`apple-assist-chat-message apple-assist-chat-message-${item.role}`}>{item.text}</p>)
-            : <p className="apple-assist-chat-empty">{ui.empty}</p>}
-        </div>
+        <AssistConversationMessages items={chatItems} emptyText={ui.empty} />
         {!cancelling && (busy || streamPreview) ? <StreamPreview busy={busy} copy={copy} streamPreview={streamPreview} /> : null}
         {busy ? <div className="apple-assist-window-progress" role="status"><span className="apple-assist-window-spinner" aria-hidden="true" />{status}</div> : null}
         {error ? <div className="apple-assist-window-error" role="alert">{error}</div> : null}

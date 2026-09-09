@@ -38,7 +38,7 @@ vi.mock("./AppStatusBar", () => ({AppStatusBar: () => null}));
 vi.mock("./AppOverlays", () => ({AppOverlays: () => null}));
 vi.mock("./LModeActionRail", () => ({LModeActionRail: () => null}));
 vi.mock("./LModeExitPill", () => ({LModeExitPill: () => null}));
-vi.mock("./LocalAssistProposalReview", () => ({LocalAssistProposalReview: () => null}));
+vi.mock("./LocalAssistProposalReview", () => ({LocalAssistProposalReview: ({blocked}: {blocked: boolean}) => <div data-testid="proposal-lock" data-blocked={blocked} />}));
 vi.mock("../../hooks/editor/useLocalAssistProposal", () => ({useLocalAssistProposal: () => ({proposal: null})}));
 
 afterEach(cleanup);
@@ -60,6 +60,11 @@ function ConnectedShell(props: AppShellProps) {
 }
 
 describe("AppShell chrome layers", () => {
+  it("passes the generation or cancellation lock into proposal review", () => {
+    render(<ConnectedShell {...base} appleAssistGenerationLock={{ requestId: "pending" } as AppShellProps["appleAssistGenerationLock"]} />);
+    expect(screen.getByTestId("proposal-lock").getAttribute("data-blocked")).toBe("true");
+  });
+
   it.each([null, "ebook"] as const)("selects Preview through the existing chrome entry from %s", (sidePaneMode) => {
     const onTogglePreview = vi.fn();
     const { container } = render(<ConnectedShell {...base} sidePaneMode={sidePaneMode} onTogglePreview={onTogglePreview} />);

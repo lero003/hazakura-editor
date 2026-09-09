@@ -686,3 +686,25 @@
 .apple-assist-window-presets { padding: 0; border: 0; display: block; }
 .apple-assist-window-presets summary { cursor: pointer; font-size: 14px; }
 .apple-assist-presets-list { margin-top: 8px; }
+
+/* UI-C1: distinct target, conversation and composer; no second request state. */
+.apple-assist-window-shell { padding: 22px; gap: 18px; }
+.apple-assist-window-header { max-height: 36vh; }
+.apple-assist-intro h1 { margin: 0; font-size: 24px; line-height: 1.5; font-weight: 650; }
+.apple-assist-intro p { margin: 4px 0 14px; font-size: 14px; color: var(--text-muted); }
+.apple-assist-target-details { padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-elev); }
+.apple-assist-chat-message-user { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); border-color: transparent; padding: 14px 16px; }
+.apple-assist-chat-message-assistant { padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
+.apple-assist-window-error { padding: 12px 14px; margin-block: 12px; border: 1px solid var(--error); border-radius: 8px; overflow-wrap: anywhere; }
+.apple-assist-window-form { padding-top: 14px; }
+.apple-assist-window-textarea { min-height: 88px; border-radius: 8px; }
+.apple-assist-window-progress { display: flex; padding-block: 12px; }
+@media (max-height: 640px) {
+  .apple-assist-window-shell { padding: 12px 16px; gap: 10px; }
+  .apple-assist-intro h1 { font-size: 20px; }
+  .apple-assist-intro p { margin-bottom: 8px; }
+  .apple-assist-window-header { max-height: 30vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .apple-assist-window-spinner { animation: none; }
+}

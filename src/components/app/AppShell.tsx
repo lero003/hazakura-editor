@@ -215,6 +215,7 @@ export function AppShell(props: AppShellProps) {
       ) : null}
       <div className="proposal-review-host" ref={proposalReviewRef}>
       <LocalAssistProposalReview
+        blocked={!!props.appleAssistGenerationLock}
         activeTab={props.activeTab}
         fontSize={props.editorSettings.editorFontSize}
         menuLanguage={props.menuLanguage}

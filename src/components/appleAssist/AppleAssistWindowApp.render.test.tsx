@@ -139,12 +139,12 @@ describe("AppleAssistWindowApp render", () => {
     ).toBeNull();
   });
 
-  it("starts with explanations collapsed and a single conversation log", () => {
+  it("shows the target while keeping help and presets collapsed beside one conversation log", () => {
     const { container } = render(<AppleAssistWindowApp />);
     expect(screen.getByRole("log", { name: "Conversation" })).toBeTruthy();
     const details = [...container.querySelectorAll("details")];
     expect(details).toHaveLength(3);
-    expect(details.every((element) => !element.open)).toBe(true);
+    expect(details.filter((element) => element.open).map(element => element.className)).toEqual(["apple-assist-target-details"]);
     expect(screen.queryByTestId("apple-assist-stream-preview")).toBeNull();
     expect(screen.getByRole("textbox")).toBeTruthy();
   });

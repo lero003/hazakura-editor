@@ -17,6 +17,21 @@ function props() { return { activeTab, fontSize: 14, menuLanguage: "en" as const
 afterEach(() => { cleanup(); localAssistProposalStore.clear(activeTab.sessionId); });
 
 describe("LocalAssistProposalReview", () => {
+  it("keeps a previous proposal readable but blocks apply and discard until cancellation settles", () => {
+    seedProposal(); const input = props();
+    const view = render(<LocalAssistProposalReview {...input} blocked />);
+    const apply = screen.getByRole("button", { name: "Apply proposal" });
+    const discard = screen.getByRole("button", { name: "Discard proposal" });
+    expect((apply as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(apply); fireEvent.click(discard);
+    expect(input.onApply).not.toHaveBeenCalled(); expect(input.onDiscard).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "After" }));
+    expect(screen.getByRole("region", { name: "After" })).toBeTruthy();
+    view.rerender(<LocalAssistProposalReview {...input} blocked={false} />);
+    expect((apply as HTMLButtonElement).disabled).toBe(false);
+    expect(apply.closest("footer")).toBe(discard.closest("footer"));
+  });
+
   it("blocks a legacy proposal with a residual prompt delimiter", () => {
     seedProposal({ candidateText: "proposal\n\nHAZAKURA_TEXT_END" });
     const input = props();
