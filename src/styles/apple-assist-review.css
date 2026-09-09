@@ -342,5 +342,3 @@
   margin: 0;
   padding-top: 6px;
 }
-
-.local-assist-proposal-review-button:disabled { cursor: not-allowed; opacity: 0.5; }
