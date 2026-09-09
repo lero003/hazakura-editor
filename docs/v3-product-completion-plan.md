@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-A1 implemented; first review pending
+Status: UI-A1 review accepted; UI-B1 implemented for review
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-09
@@ -94,7 +94,8 @@ UIとruntimeの大きな変更を同時に入れず、各行も一回に扱え�
 | 10 | UI-G / v3受入 | 24画面と画像外機能、全テーマ・実最小幅・200%文字、実機と配布レーンの横断受け入れ |
 
 最初の実装はUI-A1の通常編集外枠。前段UI-A0はその着手準備として行う。
-UI-A0の通常編集契約とUI-A1外枠を実装済み。A–Gの完了とはしない。
+UI-A0の通常編集契約とUI-A1外枠は再レビュー通過。UI-B1の通常紙面・狭幅表示を実装し、
+[UI-B1レビュー](reviews/2026-09-09-v3-ui-b1/README.md)へ進んだ。開始画面/えるモード再設計とA–Gの完了とはしない。
 
 ## Local Assistの整理方針
 
@@ -133,5 +134,5 @@ AFM評価のSDK/OS条件は実装時に一次資料と実環境で再確認す�
 
 UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 [第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に集約する。
-通常編集の外枠が最初のレビュー対象。本文紙面・残りの画面・LA-0以降は未着手。
+UI-A1はR1/R2の再レビュー通過。現在はUI-B1紙面がレビュー対象。UI-B1は実装済み。開始画面/えるモード再設計、残りの画面、LA-0以降は未着手。
 次の担当は[current-work.md](current-work.md)からレビュー反映へ進む。

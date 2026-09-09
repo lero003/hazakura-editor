@@ -1,6 +1,6 @@
 # UI-A1 — R1/R2表示境界の修正
 
-Status: Fixed locally; ready for focused rereview
+Status: R1/R2 CLOSED by external rereview
 Scope: `codex/v3`、レビュー対象`3420fa8b`からの操作回帰修正のみ
 Authority: Review evidence
 Last reviewed: 2026-09-09
@@ -53,6 +53,12 @@ macOSアプリを使用した。nativeは既存プロセスを終了後、生成
 GitHub Actionsの成功証跡を追加したものではなく、上記はローカルの結果。
 
 ## 再レビューと次
+
+オーナー提供の再レビュー（対象68d05f85）でR1/R2 CLOSED、UI-B進行GO。
+R3は非ブロッカー。workspace.cssには既にsidebar/railのdisplay:noneがある。
+UI-B1で集中Readerのcomputed displayとAX非露出を確認したが、VoiceOver受入はUI-Gに残す。
+現在の入口は[UI-B1レビュー](../2026-09-09-v3-ui-b1/README.md)。
+
 
 `3420fa8b..codex/v3`でR1/R2の表示境界と回帰テストを確認する。
 通常編集の二層構造と高さは維持する。「確認」は対象選択、「Diff」は比較面の表示切替。
