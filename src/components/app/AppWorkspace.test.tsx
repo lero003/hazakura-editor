@@ -705,6 +705,42 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(screen.getByLabelText("Workspace file tree")).toBeTruthy();
   });
 
+  it("hides and inerts document chrome behind the whole-book Reader without replacing the editor", async () => {
+    const onReadingOverlayChange = vi.fn();
+    const { container } = renderWorkspace({
+      documentChrome: <button>Document tab</button>,
+      onReadingOverlayChange,
+      activeTab: bookTab,
+      activeContents: bookTab.contents,
+      tabs: [bookTab],
+      bookScopeChapterRelativePaths: ["book.md"],
+      bookScopeNodes: [{ kind: "document", relativePath: "book.md", children: [] }],
+      bookScopeChapters: [{ name: "book.md", path: bookTab.path, relativePath: "book.md" }],
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory", [
+        workspaceEntry("book.md", bookTab.path, "file"),
+      ]),
+    });
+    const editor = screen.getByTestId("editor-main-pane");
+    const column = editor.closest(".workspace-document-column")!;
+    fireEvent.click(screen.getByRole("tab", { name: "Book" }));
+    fireEvent.click(screen.getByRole("button", { name: "Read all" }));
+    const reader = await screen.findByRole("dialog", { name: "Read whole book" });
+    expect(column.hasAttribute("hidden")).toBe(true);
+    expect(column.hasAttribute("inert")).toBe(true);
+    expect(screen.queryByRole("button", { name: "Document tab" })).toBeNull();
+    expect(reader.closest("[hidden], [inert]")).toBeNull();
+    expect(container.querySelector(".workspace-reading-focus")).toBeTruthy();
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
+    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(true);
+    fireEvent.keyDown(reader, { key: "Escape" });
+    expect(column.hasAttribute("hidden")).toBe(false);
+    expect(column.hasAttribute("inert")).toBe(false);
+    expect(screen.getByRole("button", { name: "Document tab" })).toBeTruthy();
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
+    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(false);
+  });
+
   it("enters and exits same-window Reading Focus from the e-book pane", async () => {
     const onReadingOverlayChange = vi.fn();
     const { container } = renderWorkspace({

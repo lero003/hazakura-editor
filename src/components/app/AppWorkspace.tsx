@@ -661,18 +661,20 @@ export function AppWorkspace({
       ? referenceCompare
       : null;
 
+  // Both independent readers own the workspace; keep the editor mounted but inert.
+  const readingOverlayActive = ebookReadingFocusActive || !!bookReaderResult;
   useEffect(() => {
-    onReadingOverlayChange?.(ebookReadingFocusActive || !!bookReaderResult);
-  }, [ebookReadingFocusActive, bookReaderResult, onReadingOverlayChange]);
+    onReadingOverlayChange?.(readingOverlayActive);
+  }, [readingOverlayActive, onReadingOverlayChange]);
 
   return (
     <section
-      className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${ebookReadingFocusActive ? " workspace-reading-focus" : ""}`}
+      className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${readingOverlayActive ? " workspace-reading-focus" : ""}`}
       ref={workspaceRef}
       style={
         !isWorkspaceSidebarCollapsed &&
         !editorSettings.lModeEnabled &&
-        !ebookReadingFocusActive
+        !readingOverlayActive
           ? workspaceGridStyle
           : undefined
       }
@@ -780,7 +782,7 @@ export function AppWorkspace({
       )}
       {!isWorkspaceSidebarCollapsed &&
       !editorSettings.lModeEnabled &&
-      !ebookReadingFocusActive ? (
+      !readingOverlayActive ? (
         <PaneResizer
           label={safeEditorCopy.resizeWorkspaceSidebar}
           max={MAX_WORKSPACE_SIDEBAR_WIDTH}
@@ -792,7 +794,7 @@ export function AppWorkspace({
           value={workspaceSidebarWidth}
         />
       ) : null}
-      <div className="workspace-document-column">
+      <div className="workspace-document-column" hidden={readingOverlayActive} inert={readingOverlayActive}>
       {documentChrome}
       <div
         ref={editorPreviewGridRef}

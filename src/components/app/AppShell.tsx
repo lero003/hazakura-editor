@@ -191,9 +191,11 @@ export function AppShell(props: AppShellProps) {
         />}
       </div>
       <AppDocumentFeedback {...props} />
+      {/* Floating tabs must share the shell stacking context with the drag band. */}
+      {props.lModeEnabled && !readingOverlayOpen ? topChrome : null}
       <AppWorkspace
         {...props}
-        documentChrome={topChrome}
+        documentChrome={props.lModeEnabled ? null : topChrome}
         onReadingOverlayChange={setReadingOverlayOpen}
         onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
         workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
