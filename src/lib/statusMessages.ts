@@ -322,6 +322,11 @@ export function localizeStatusMessage(
     return `閉じる操作に失敗しました: ${message.slice("Close failed: ".length)}`;
   }
 
+  if (message.startsWith("Save As failed: ")) {
+    const detail = message.slice("Save As failed: ".length);
+    return isKanaStyle(menuLanguage) ? `べつの なまへで ほぞんできませんでした: ${detail}` : `別名保存に失敗しました: ${detail}`;
+  }
+
   if (message.startsWith("Restore from backup failed: ")) {
     return `バックアップ復元に失敗しました: ${message.slice(
       "Restore from backup failed: ".length,

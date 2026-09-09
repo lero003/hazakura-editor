@@ -166,8 +166,8 @@ export function useSaveActions({
               : tab,
           ),
         );
-        setGlobalError(message);
-        setStatus("Save As failed");
+        // Failure belongs to this attempt, never to another tab via globalError.
+        setStatus(`Save As failed: ${tabToSave.name}: ${message}`);
         return false;
       } finally {
         savingSessions.current.delete(tabToSave.sessionId);

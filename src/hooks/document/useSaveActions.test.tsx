@@ -1,3 +1,4 @@
+import { useEditorTabState } from "../editor/useEditorTabState";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isDirty } from "../../features/editor/editorTabs";
@@ -381,5 +382,20 @@ it("keeps the unresolved source conflict when Save As fails", async () => {
   const { getTabs, result, options } = setup([tab]);
   await act(async () => { await result.current.saveActiveTabAs(); });
   expect(getTabs()[0]).toEqual(tab);
-  expect(options.setGlobalError).toHaveBeenCalledWith("Error: write failed");
+  expect(options.setGlobalError).not.toHaveBeenCalledWith("Error: write failed");
+});
+
+it.each(["other-tab", "acknowledged"])("does not leak a Save As error after %s", async (next) => {
+  const a = makeTab({ saveStatus: "conflict", error: "Save conflict", externalFingerprint: "changed" });
+  const b = makeTab({ id: "b", sessionId: "b", path: "/tmp/b.md" });
+  fileApi.pickSaveAsTextFilePath.mockResolvedValue("/tmp/copy.md");
+  fileApi.saveTextFileAs.mockRejectedValue(new Error("write failed"));
+  const { result, getTabs, options } = setup([a, b]);
+  await act(async () => { await result.current.saveActiveTabAs(); });
+  const globalError = vi.mocked(options.setGlobalError).mock.calls.at(-1)?.[0] as string | null;
+  const tabs = next === "acknowledged" ? getTabs().map(tab => tab.id === a.id ? { ...tab, saveStatus: "idle" as const, error: null, ignoredExternalFingerprint: tab.externalFingerprint } : tab) : getTabs();
+  const displayed = renderHook(() => useEditorTabState({ activeTabId: next === "other-tab" ? b.id : a.id,
+    globalError, pendingCloseTabId: null, pendingDrafts: [], menuLanguage: "en", tabs }));
+  expect(displayed.result.current.activeError).toBeNull();
+  expect(options.setStatus).toHaveBeenCalledWith(expect.stringContaining("write failed"));
 });
