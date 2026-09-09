@@ -182,8 +182,8 @@ export function applyLiveEditorContentsById(
   return updateTabsById(tabs, tabId, (tab) => ({
     ...tab,
     contents,
-    saveStatus: tab.saveStatus === "saving" ? "saving" : "idle",
-    error: null,
+    saveStatus: tab.saveStatus === "saving" || tab.saveStatus === "conflict" ? tab.saveStatus : "idle",
+    error: tab.saveStatus === "conflict" ? tab.error : null,
   }));
 }
 

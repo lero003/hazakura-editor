@@ -106,7 +106,7 @@ export function ChangeReviewView({
           <span>{staleDetail}</span>
         </div>
       ) : null}
-      <ComparisonTargets left={{ name: compareCase.scope === "backup-vs-buffer" ? compareCase.backupApplyAction?.backupName ?? compareCase.documentLabel : compareCase.documentLabel, path: compareCase.documentPath, label: compareCase.leftColumnLabel }} right={{ name: compareCase.documentLabel, path: compareCase.documentPath, label: compareCase.rightColumnLabel }} menuLanguage={menuLanguage} restorable={showApplyBackup} />
+      <ComparisonTargets left={{ name: compareCase.scope === "backup-vs-buffer" ? compareCase.backupApplyAction?.backupName ?? compareCase.documentLabel : compareCase.documentLabel, path: compareCase.scope === "backup-vs-buffer" ? undefined : compareCase.documentPath, label: compareCase.leftColumnLabel }} right={{ name: compareCase.documentLabel, path: compareCase.documentPath, label: compareCase.rightColumnLabel }} menuLanguage={menuLanguage} restorable={showApplyBackup} />
       <div className="diff-table" role="table" aria-label={labels.table}>
         <div className="diff-split-row diff-row-header" role="row">
           <span className="diff-line-number" role="columnheader" />

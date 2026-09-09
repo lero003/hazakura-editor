@@ -157,7 +157,7 @@ export function useSaveActions({
 
         setTabs((currentTabs) =>
           currentTabs.map((tab) =>
-            tab.id === tabId
+            tab.id === tabId && tab.sessionId === tabToSave.sessionId && tab.saveStatus !== "conflict"
               ? {
                   ...tab,
                   saveStatus: "error",
@@ -166,6 +166,7 @@ export function useSaveActions({
               : tab,
           ),
         );
+        setGlobalError(message);
         setStatus("Save As failed");
         return false;
       } finally {

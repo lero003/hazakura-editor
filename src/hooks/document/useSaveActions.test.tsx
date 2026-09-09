@@ -373,3 +373,13 @@ describe("useSaveActions", () => {
     );
   });
 });
+
+it("keeps the unresolved source conflict when Save As fails", async () => {
+  const tab = makeTab({ saveStatus: "conflict", error: "Save conflict", externalFingerprint: "external" });
+  fileApi.pickSaveAsTextFilePath.mockResolvedValue("/tmp/copy.md");
+  fileApi.saveTextFileAs.mockRejectedValue(new Error("write failed"));
+  const { getTabs, result, options } = setup([tab]);
+  await act(async () => { await result.current.saveActiveTabAs(); });
+  expect(getTabs()[0]).toEqual(tab);
+  expect(options.setGlobalError).toHaveBeenCalledWith("Error: write failed");
+});

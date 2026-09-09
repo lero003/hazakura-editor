@@ -1,3 +1,5 @@
+import { applyLiveEditorContentsById } from "../../features/editor/editorTabs";
+import { useSaveConflictSurface } from "../../hooks/document/useSaveConflictSurface";
 import { useWindowDialogActions } from "../../hooks/app/useWindowDialogActions";
 import { useBackupReviewActions } from "../../hooks/workspace/useBackupReviewActions";
 import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
@@ -1073,5 +1075,26 @@ it("restores a reviewed backup through the real editor with one Undo and preserv
   expect(screen.getByTestId("backup-dirty").textContent).toBe("false");
   expect(container.querySelector(".cm-content")).toBe(content);
 });
+
+  it("keeps a dismissed conflict through real CodeMirror input", async () => {
+    const initial = { id: "conflict", sessionId: "conflict-input", path: "/note.md", name: "note.md", contents: "text",
+      lastSavedContents: "saved", saveStatus: "conflict", error: "Save conflict", externalFingerprint: "disk", encoding: "utf-8", line_ending: "lf" } as EditorTab;
+    function Host() {
+      const [tab, setTab] = useState(initial);
+      const surface = useSaveConflictSurface(tab, tab.saveStatus === "conflict");
+      return <>{surface.tab && <button onClick={surface.dismiss}>Return to editor</button>}
+        <output data-testid="conflict-state">{tab.saveStatus}:{tab.error}</output>
+        {renderEditorPane({ value: tab.contents, editorSessionKey: tab.sessionId,
+          onChange: value => setTab(current => applyLiveEditorContentsById([current], current.id, value)[0]) })}</>;
+    }
+    const { container } = render(<Host />);
+    fireEvent.click(screen.getByRole("button", { name: "Return to editor" }));
+    const content = container.querySelector(".cm-content")!;
+    act(() => { EditorView.findFromDOM(content as HTMLElement)!.dispatch({ changes: { from: 4, insert: "!" } }); });
+    expect(content.textContent).toBe("text!");
+    expect(screen.getByTestId("conflict-state").textContent).toBe("conflict:Save conflict");
+    expect(screen.queryByRole("button", { name: "Return to editor" })).toBeNull();
+    expect(container.querySelector(".cm-content")).toBe(content);
+  });
 
 });
