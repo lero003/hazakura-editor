@@ -18,6 +18,8 @@ import { ShinkaiShaderOverlay } from "./ShinkaiShaderOverlay";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
 import { AppOverlays } from "./AppOverlays";
 import { AppStatusBar } from "./AppStatusBar";
+import { AppPrimaryToolbar } from "./AppPrimaryToolbar";
+import { resolveWorkspaceNavigation } from "../../features/workspace/workspaceNavigation";
 import { AppTopChrome } from "./AppTopChrome";
 import { AppWorkspace } from "./AppWorkspace";
 import { LModeActionRail } from "./LModeActionRail";
@@ -39,6 +41,7 @@ export type AppShellProps = Omit<
   ComponentProps<typeof AppStatusBar> &
   ComponentProps<typeof AppOverlays> & {
     activeTab: EditorTab | null;
+    onSaveDocument: () => Promise<void>;
     ambientIntensity: AmbientIntensity;
     editorSettings: EditorSettings;
     lModeCopy: LModeCopy;
@@ -71,6 +74,8 @@ export function AppShell(props: AppShellProps) {
   useCrtMouseTracking(crtMode);
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
+  const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
+  const proposalReviewRef = useRef<HTMLDivElement>(null);
   const chapterReviewRequestRef = useRef(0);
   const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
   const workspaceTabMarkers = useMemo(
@@ -84,8 +89,24 @@ export function AppShell(props: AppShellProps) {
     props.activeTab?.sessionId ?? null,
   ).proposal;
 
+  const navigation = resolveWorkspaceNavigation({
+    hasDocument: !!props.activeTab, imageVisible: !!props.selectedImage,
+    sidePaneMode: props.sidePaneMode, referenceVisible: props.referencePaneVisible,
+    referenceLoaded: !!props.referenceLoaded, hasProposal: !!pendingProposal && !pendingProposal.streaming,
+    canReviewDisk: !!props.activeTab?.path && props.activeDirty,
+    hasComparison: !!props.compareView,
+  });
+  const navigateToEditor = () => {
+    if (!navigation.canNavigate || readingOverlayOpen) return;
+    if (props.referencePaneVisible) props.onToggleReference();
+    if (props.sidePaneMode === "ebook" || props.sidePaneMode === "compare") props.hideSidePane();
+    requestAnimationFrame(() => props.editorPaneRef.current?.focus());
+  };
+  const topChrome = <AppTopChrome {...props} primaryToolbarPresent={!props.lModeEnabled}
+    onEditorSettingsChange={props.setEditorSettings} />;
+
   return (
-    <main className="app-shell">
+    <main className="app-shell v3-shell">
       {ambientMode ? (
         <AmbientBackground
           intensity={props.ambientIntensity}
@@ -128,13 +149,46 @@ export function AppShell(props: AppShellProps) {
           />
         </>
       ) : null}
-      <AppTopChrome
-        {...props}
-        onEditorSettingsChange={props.setEditorSettings}
-      />
+      <div className="primary-toolbar-slot">
+        {!props.lModeEnabled && <AppPrimaryToolbar
+          documentName={props.selectedImage?.name ?? props.activeTab?.name ?? "Hazakura Editor"}
+          workspaceName={props.workspaceRootPath?.split(/[\\/]/).filter(Boolean).at(-1) ?? ""}
+          menuLanguage={props.menuLanguage}
+          sidebarCollapsed={workspaceSidebarCollapsed}
+          onToggleSidebar={() => setWorkspaceSidebarCollapsed((value) => !value)}
+          canSave={navigation.canNavigate && !readingOverlayOpen && !props.appleAssistGenerationLock && props.activeTab?.saveStatus !== "saving"}
+          saving={props.activeTab?.saveStatus === "saving"}
+          onSave={() => { void props.onSaveDocument(); }}
+          assistSurfaceActive={props.assistSurfaceActive}
+          agentWorkbenchAvailable={props.agentWorkbenchAvailable}
+          appleAssistAvailability={props.appleAssistAvailability}
+          appleAssistAvailabilityProbed={props.appleAssistAvailabilityProbed}
+          sidePaneCopy={props.sidePaneCopy}
+          onOpenAppleAssistWindow={props.onOpenAppleAssistWindow}
+          onOpenAgentWindow={props.onOpenAgentWindow}
+          navigation={{ ...navigation, canNavigate: navigation.canNavigate && !readingOverlayOpen,
+            mode: readingOverlayOpen ? "read" : navigation.mode,
+            documentName: props.activeTab?.name ?? "", menuLanguage: props.menuLanguage,
+            contextKey: `${props.activeTab?.sessionId}:${pendingProposal?.requestId}:${props.compareView?.caseKey}`,
+            onWrite: navigateToEditor,
+            onRead: () => {
+              if (navigation.canNavigate && !readingOverlayOpen && props.sidePaneMode !== "ebook") props.onToggleEbook();
+            },
+            onReview: (target) => {
+              if (!navigation.canNavigate || readingOverlayOpen) return;
+              if (target === "proposal") proposalReviewRef.current?.querySelector<HTMLElement>("[role=region]")?.focus();
+              if (target === "disk" && props.activeTab) props.onReviewChanges(props.activeTab);
+              if (target === "reference" && !props.referencePaneVisible) props.onToggleReference();
+              if (target === "comparison" && props.sidePaneMode !== "compare") props.onToggleDiff();
+            },
+          }}
+        />}
+      </div>
       <AppDocumentFeedback {...props} />
       <AppWorkspace
         {...props}
+        documentChrome={topChrome}
+        onReadingOverlayChange={setReadingOverlayOpen}
         onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
         workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
       />
@@ -148,6 +202,7 @@ export function AppShell(props: AppShellProps) {
           onDiscard={props.onDiscardAppleAssistEdit}
         />
       ) : null}
+      <div className="proposal-review-host" ref={proposalReviewRef}>
       <LocalAssistProposalReview
         activeTab={props.activeTab}
         fontSize={props.editorSettings.editorFontSize}
@@ -155,6 +210,7 @@ export function AppShell(props: AppShellProps) {
         onApply={props.onApplyLocalAssistProposal}
         onDiscard={props.onDiscardLocalAssistProposal}
       />
+      </div>
       {props.lModeEnabled ? (
         <>
           <LModeWindowDragBand />

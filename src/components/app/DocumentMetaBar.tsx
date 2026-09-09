@@ -9,6 +9,7 @@ import type { LModeCopy } from "../../lib/locale";
 import type { AppleAssistAvailability } from "../../lib/tauri";
 
 type DocumentMetaBarProps = {
+  showCompanion?: boolean;
   activeDirty: boolean;
   activeTab: EditorTab | null;
   agentWorkbenchAvailable: boolean;
@@ -41,6 +42,7 @@ type DocumentMetaBarProps = {
 };
 
 export function DocumentMetaBar({
+  showCompanion = true,
   activeDirty,
   activeTab,
   agentWorkbenchAvailable,
@@ -69,7 +71,7 @@ export function DocumentMetaBar({
   sidePaneCopy,
 }: DocumentMetaBarProps) {
   const showCompanionSection =
-    !lModeEnabled &&
+    showCompanion && !lModeEnabled &&
     (assistSurfaceActive === "apple-local" ||
       (assistSurfaceActive === "external-cli" && agentWorkbenchAvailable));
   const appleAssistTitle = appleAssistAvailabilityProbed

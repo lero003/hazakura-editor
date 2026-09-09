@@ -2121,6 +2121,7 @@ export function useAppShellController() {
     onPointerEnter: suspendAgentUiRefresh,
     onResizeAgentTerminal: resizeAgentTerminal,
     onResumeAgentUiRefresh: resumeAgentUiRefresh,
+    onSaveDocument: saveActiveTab,
     onReviewChanges: requestReviewTabAgainstDisk,
     onReviewChangesFromLMode: reviewChangesFromLMode,
     onSelectTab: selectTabFromBar,

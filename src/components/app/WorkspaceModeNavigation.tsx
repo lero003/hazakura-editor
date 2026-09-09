@@ -36,6 +36,9 @@ export function WorkspaceModeNavigation({ mode, canNavigate, documentName, conte
   const [openFor, setOpenFor] = useState<string | null>(null);
   const open = openFor === signature;
   useEffect(() => {
+    setOpenFor((previous) => previous === signature ? previous : null);
+  }, [signature]);
+  useEffect(() => {
     if (!open) return;
     firstChoiceRef.current?.focus();
     const dismiss = (event: PointerEvent) => {

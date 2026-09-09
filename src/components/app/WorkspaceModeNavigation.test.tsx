@@ -29,6 +29,8 @@ describe("WorkspaceModeNavigation", () => {
     fireEvent.click(screen.getByRole("button", { name: "確認" }));
     view.rerender(<WorkspaceModeNavigation {...base} documentName="次の原稿.md" reviewTargets={["disk"]} />);
     expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
+    view.rerender(<WorkspaceModeNavigation {...base} reviewTargets={["proposal", "disk"]} />);
+    expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
   });
   it("keeps IME Escape for composition and returns focus on ordinary Escape", () => {
     render(<WorkspaceModeNavigation {...base} reviewTargets={["disk", "reference"]} />);

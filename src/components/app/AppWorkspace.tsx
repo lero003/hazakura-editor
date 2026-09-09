@@ -1,5 +1,6 @@
 import type {
   CSSProperties,
+  ReactNode,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
@@ -108,6 +109,8 @@ import {
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
 type AppWorkspaceProps = {
+  documentChrome?: ReactNode;
+  onReadingOverlayChange?: (open: boolean) => void;
   activeContents: string;
   activeDocumentLineCount: number;
   activeMatchIndex: number;
@@ -267,6 +270,8 @@ type AppWorkspaceProps = {
 };
 
 export function AppWorkspace({
+  documentChrome,
+  onReadingOverlayChange,
   activeContents,
   activeDocumentLineCount,
   activeMatchIndex,
@@ -656,6 +661,10 @@ export function AppWorkspace({
       ? referenceCompare
       : null;
 
+  useEffect(() => {
+    onReadingOverlayChange?.(ebookReadingFocusActive || !!bookReaderResult);
+  }, [ebookReadingFocusActive, bookReaderResult, onReadingOverlayChange]);
+
   return (
     <section
       className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${ebookReadingFocusActive ? " workspace-reading-focus" : ""}`}
@@ -783,6 +792,8 @@ export function AppWorkspace({
           value={workspaceSidebarWidth}
         />
       ) : null}
+      <div className="workspace-document-column">
+      {documentChrome}
       <div
         ref={editorPreviewGridRef}
         className={`editor-preview-grid${sidePaneVisible && !visibleReferenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" && !visibleReferenceCompare ? " diff-workbench" : ""}${visibleReferenceCompare ? " reference-compare" : ""}${visibleReferenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${visibleReferenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
@@ -1025,6 +1036,7 @@ export function AppWorkspace({
             workspaceRootPath={workspaceRootPath}
           />
         ) : null}
+      </div>
       </div>
       {ebookReadingFocusActive && activeTab ? (
         <div

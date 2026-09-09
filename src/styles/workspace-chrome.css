@@ -1,0 +1,92 @@
+/* v3 UI-A1: app actions, document tabs and display tools have distinct rows.
+   Values are chrome geometry, never persisted editor/font settings. */
+.v3-shell {
+  grid-template-rows: auto min-content minmax(0, 1fr) auto;
+  --workspace-chrome-surface: var(--surface-muted);
+  --workspace-chrome-paper: var(--surface);
+}
+:root[data-theme="light"] .v3-shell {
+  --workspace-chrome-surface: #eef2ec;
+  --workspace-chrome-paper: #fffefb;
+}
+.primary-toolbar-slot { min-width: 0; position: relative; z-index: var(--z-sticky); }
+.app-primary-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 66px;
+  padding: 8px 20px 8px 84px;
+  box-sizing: border-box;
+  background: var(--workspace-chrome-surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font: 13px/1.45 var(--font-sans);
+  -webkit-app-region: drag;
+}
+.app-primary-toolbar button, .workspace-mode-navigation { -webkit-app-region: no-drag; }
+.primary-document-identity, .primary-document-actions { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.primary-document-actions { justify-content: flex-end; flex-wrap: wrap; }
+.primary-document-name { display: grid; gap: 1px; min-width: 0; }
+.primary-document-name strong, .primary-document-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.primary-document-name strong { font-size: 13px; font-weight: 650; }
+.primary-document-name small { font-size: 12px; color: var(--text-muted); }
+.app-primary-toolbar button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 35px; padding: 6px 12px; border: 1px solid transparent; border-radius: 7px;
+  background: transparent; color: var(--text-muted); font: inherit; box-shadow: none;
+  white-space: nowrap;
+}
+.app-primary-toolbar button:hover:not(:disabled) { background: var(--accent-soft); color: var(--text); }
+.app-primary-toolbar button:disabled { opacity: .55; cursor: default; }
+.app-primary-toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app-primary-toolbar button.primary-sidebar-toggle { padding: 7px; flex: 0 0 35px; }
+.app-primary-toolbar .primary-save { background: var(--surface); border-color: var(--border-strong, var(--border)); color: var(--text); }
+.workspace-mode-navigation { position: relative; display: flex; padding: 3px; gap: 2px; border: 1px solid var(--border); border-radius: 9px; }
+.app-primary-toolbar .workspace-mode-navigation > button { min-width: 78px; }
+.app-primary-toolbar .workspace-mode-navigation > button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 650; }
+.workspace-review-choices {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: var(--z-popover, 100);
+  display: grid; gap: 4px; width: min(300px, 75vw); max-height: min(420px, 60vh); overflow: auto;
+  padding: 12px; border: 1px solid var(--border-strong, var(--border)); border-radius: 9px;
+  background: var(--surface); color: var(--text); box-shadow: 0 12px 32px #0002;
+}
+.workspace-review-choices > strong { font-size: 12px; padding: 4px 8px; color: var(--text-muted); }
+.app-primary-toolbar .workspace-review-choices button { display: grid; text-align: left; justify-content: stretch; white-space: normal; overflow-wrap: anywhere; }
+.workspace-review-choices small { color: var(--text-muted); font-size: 12px; font-weight: 400; }
+.workspace-document-column { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; }
+.workspace-document-column > .editor-preview-grid { min-height: 0; }
+.workspace-reading-focus .workspace-document-column { display: none; }
+.proposal-review-host { display: contents; }
+:root:not([data-l-mode="on"]) .v3-shell .tabs-row {
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-rows: minmax(43px, auto) minmax(48px, auto);
+  height: auto; padding: 0 14px; gap: 0 8px;
+  background: var(--workspace-chrome-paper); border-bottom: 1px solid var(--border);
+  -webkit-app-region: no-drag;
+}
+:root:not([data-l-mode="on"]) .v3-shell .window-drag-strip { display: none; }
+:root:not([data-l-mode="on"]) .v3-shell .tab-list { grid-column: 1 / -1; grid-row: 1; padding: 0; gap: 0; border-bottom: 1px solid var(--border); }
+:root:not([data-l-mode="on"]) .v3-shell .tab-item { border-radius: 0; box-shadow: none; border: 0; background: transparent; min-height: 42px; }
+:root:not([data-l-mode="on"]) .v3-shell .tab-item.active { background: var(--surface); box-shadow: inset 0 -2px 0 var(--accent); }
+:root:not([data-l-mode="on"]) .v3-shell .editor-quick-settings { grid-column: 1; grid-row: 2; justify-self: start; }
+:root:not([data-l-mode="on"]) .v3-shell .document-meta { grid-column: 2; grid-row: 2; justify-self: stretch; max-width: none; margin: 0; flex-wrap: wrap; padding: 5px 0; }
+:root:not([data-l-mode="on"]) .v3-shell .document-meta .chrome-section { flex-shrink: 1; }
+:root:not([data-l-mode="on"]) .v3-shell .pane-control-cluster { flex-wrap: wrap; }
+:root:not([data-l-mode="on"]) .v3-shell .pane-toggles { flex-wrap: wrap; }
+:root:not([data-l-mode="on"]) .v3-shell .file-tree-pane { background: var(--workspace-chrome-surface); border-right: 1px solid var(--border); }
+:root:not([data-l-mode="on"]) .v3-shell .status-bar { min-height: 35px; height: auto; box-sizing: border-box; background: var(--workspace-chrome-surface); color: var(--text-muted); border-top: 1px solid var(--border); }
+:root[data-l-mode="on"] .primary-toolbar-slot { display: none; }
+:root[data-l-mode="on"] .workspace-document-column { grid-template-rows: minmax(0, 1fr); }
+@media (max-width: 1100px) {
+  .app-primary-toolbar { gap: 10px; padding-right: 14px; }
+  .primary-document-identity { gap: 7px; }
+  .primary-document-identity .distribution-badge { display: none; }
+  .app-primary-toolbar .workspace-mode-navigation > button { min-width: 65px; padding-inline: 8px; }
+  .app-primary-toolbar .primary-companion > span:last-child { display: none; }
+}
+@media (max-width: 700px) {
+  .app-primary-toolbar { grid-template-columns: minmax(0, 1fr) auto; padding-left: 84px; }
+  .workspace-mode-navigation { grid-row: 2; grid-column: 1 / -1; justify-self: center; }
+  .primary-document-actions { grid-column: 2; grid-row: 1; }
+}

@@ -23,6 +23,7 @@ import type { AppleAssistAvailability } from "../../lib/tauri";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type AppTopChromeProps = {
+  primaryToolbarPresent?: boolean;
   activeDirty: boolean;
   activeTab: EditorTab | null;
   activeTabId: string | null;
@@ -77,6 +78,7 @@ type AppTopChromeProps = {
 };
 
 export function AppTopChrome({
+  primaryToolbarPresent = false,
   activeDirty,
   activeTab,
   activeTabId,
@@ -122,7 +124,7 @@ export function AppTopChrome({
   tabs,
   unsavedFileStateLabel,
 }: AppTopChromeProps) {
-  const showDevBadge = !lModeEnabled && isDeveloperDistributionLane();
+  const showDevBadge = !primaryToolbarPresent && !lModeEnabled && isDeveloperDistributionLane();
 
   return (
     <TabBar
@@ -164,6 +166,7 @@ export function AppTopChrome({
         </span>
       ) : null}
       <DocumentMetaBar
+        showCompanion={!primaryToolbarPresent}
         activeDirty={activeDirty}
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
