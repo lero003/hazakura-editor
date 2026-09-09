@@ -12,16 +12,15 @@ Last reviewed: 2026-09-10
 - **UI-A1:** オーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
 - **UI-B / LA-0:** オーナー提供レビューでR3〜R5 CLOSED、LA-0 GO。
 - **UI-C1 / C2:** オーナー提供レビューでC1追修正・C2-R1 CLOSED。native通し受入は別途残る。
-- **UI-D2b追修正:** 外部レビューの通常入力/Save As失敗で衝突が消える指摘を11e33fb7で修正。
-  実入力でもconflict/errorを保持し、Save As失敗はglobalError/statusへ通知。dismissはsession別に保持。
-  backup tooltipも修正。外部CLOSED判定は再レビュー待ち。
-- **UI-E1:** 938f92e8で既存Outlineの見出し一覧/構造確認を切替表示。既存解析・移動・手動レベル変更を維持。
-  [最新合評資料](reviews/2026-09-10-v3-ui-e1/README.md)。UI-E全体完了ではない。
-- **確認:** ローカル全2,155件・表示境界111件、typecheck/Vite/native preview/署名整合成功。
-  実CodeMirror入力→conflict維持、Save As失敗、タブ往復dismissを追加検証。960×640の構造fixtureを確認。
-  Rustは変更/再実行なし。native Save As/IME/VoiceOver/200%は未受入。CI証跡とは区別する。
-- **次:** D2b追修正/E1合評とnative受入、UI-Eの検索/読む導線へ。設定は正本どおりUI-F。
-  以前の引き継ぎの「UI-E設定」は誤記だったため訂正。
+- **UI-D2b / E1:** 前回4指摘は外部CLOSED、UI-E1 GO。追加P2のSave As失敗通知を1f0158a5で修正。
+  globalErrorへ残さず、文書名/理由付きstatusへ通知。別タブと衝突解除後のactiveErrorまで検証。
+- **UI-E2:** 7da932abで検索対象フォルダとCloseを常設。既存query/rows/結果移動を維持し、
+  comboboxのTab循環と検索Close後のEditor focusを整理。[最新合評資料](reviews/2026-09-10-v3-ui-e2/README.md)。
+- **確認:** ローカル全2,159件・表示境界111件、typecheck/Vite/native preview/署名整合成功。
+  960×640の検索fixtureで入力→CloseのTabとEscape終了を確認。実ファイル検索/Readerへのnative往復とは別。
+  Rustは変更/再実行なし。native Save As/IME/VoiceOver/200%は未受入。CI成功とは扱わない。
+- **次:** 追加P2/E2合評。UI-Eの読む→章編集・出力/取り込み、検索からのnative通し操作へ。
+  設定はUI-F。UI-E全体は未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
