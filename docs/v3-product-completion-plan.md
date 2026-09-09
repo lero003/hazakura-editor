@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: D1-R1 closed and D2a GO; UI-D2b implemented
+Status: D2b follow-up fixed; UI-E1 structure surface implemented
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-10
@@ -136,7 +136,8 @@ UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 [第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に集約する。
 UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正/C2-R1は外部CLOSED。
 D1画像/候補一覧・D2aは外部GO、D1-R1 CLOSED。
-バックアップ名表示・比較後focusを調整し、D2bの保存衝突面を実装。
-[最新資料](reviews/2026-09-10-v3-ui-d2b/README.md)で合評する。
-画像倍率、復元比較統合、UI-B/UI-C/native通し受入、UI-E〜G、LA-1以降は未完了。
+D2bの通常入力/Save As失敗による衝突解除を追修正し、UI-E1構造案内まで実装。
+[最新資料](reviews/2026-09-10-v3-ui-e1/README.md)で合評する。
+UI-Eは読む/検索/構成/出力の導線、設定はUI-F。以前の引き継ぎの誤記を訂正した。
+画像倍率、復元比較統合、UI-B/UI-C/native通し受入、UI-E残り〜G、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)から進む。

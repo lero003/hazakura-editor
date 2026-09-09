@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: D2b保存衝突面の合評と次のUI区切りへ
+Scope: D2b衝突保持修正とUI-E1構造案内の合評
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,28 +12,30 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI-D2b
+## 現在の区切り — D2b追修正・UI-E1
 
-オーナー提供レビューでD1-R1 CLOSED、D2a GO。非ブロッカーのバックアップ名表示と
-比較Close/復元後のfocusを調整し、eb12766eでD2b保存衝突面まで実装した。
-[まとめ資料](reviews/2026-09-10-v3-ui-d2b/README.md)が現行の入口。
+D2bの外部指摘を11e33fb7で修正。通常入力はconflict/errorを保持する。
+Save As失敗は元sessionの未解決衝突を維持してglobalError/statusへ通知する。
+dismissはsession別Map、別タブ往復でも同じ衝突の再表示を抑え、明示reopenは当該sessionだけ解除。
+バックアップ左対象のtooltipは実バックアップ名へ戻した。
 
-衝突ダイアログを閉じても本文/衝突は変えない。既存の比較・Save Asへ明示操作で接続。
-本文をアンマウントせず、portal外をinertにする。global keyboard/nativeメニューの
-文書操作も停止する（通常の終了確認は許可）。既存keepEditingAfterConflictとは別の表示state。
+938f92e8でUI-E1の構造案内を実装。既存Outlineデータを見出し/構造確認で切り替える。
+移動/手動レベル変更/上限案内を維持し、独自解析・自動変更を追加しない。
+[最新合評資料](reviews/2026-09-10-v3-ui-e1/README.md)が現行入口。
 
-ローカル全2,150件・表示境界111件、typecheck/Vite/native preview成功。
-実Editorのfocus先へUndo、AppShellのportal境界とDOM維持を確認。
-ブラウザーfixtureの960×640確認。CI/native実操作/実IME/VoiceOver受入とは区別する。
+ローカル全2,155件・表示境界111件、typecheck/Vite/native preview/署名整合成功。
+実Editor入力経路を検証。960×640のブラウザーfixture確認。native操作受入/CIとは別。
 
 ## 次のまとまった区切り
 
-1. D2b合評。戻る/Escapeで衝突保持、比較しても書かない、Save As取消、focus復帰を確認する。
-2. nativeで保存衝突→戻る/比較/Save As、バックアップ再比較→復元→直後の⌘Zを受入する。
-3. UI-Eの既存設定再配置へ進む。新しい設定/既定値は増やさない。
-4. C2 nativeの別タブ→該当提案→Diff→反映→Undo・停止待ちは引き続き別受入。
+1. D2b追修正・UI-E1を合評。Return→入力の衝突保持、Save As失敗、A→B→Aを確認。
+2. native Save As取消/成功、IME/VoiceOver、構造移動→手動変更→Undoを受入。
+3. UI-Eの残り: 検索・読む→章編集・出力/取り込みを機能別に整理する。
+4. C2の実System通し受入は別に継続。
 
-画像倍率、復元比較一体化、UI-B/UI-Cの通し受入、UI-E〜G、LA-1以降は未完了。
+**順序訂正:** 正本のUI-Eは04/05/09/10/11/12、設定はUI-F。
+前回の引き継ぎで「UI-E設定」と書いたのは誤り。正本計画の順序を変更したわけではない。
+画像倍率・復元比較一体化・UI-B/UI-C通し受入・UI-E残り〜G・LA-1以降は未完了。
 
 ## Held / Separate Work
 

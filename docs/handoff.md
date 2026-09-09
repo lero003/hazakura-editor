@@ -12,17 +12,16 @@ Last reviewed: 2026-09-10
 - **UI-A1:** オーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
 - **UI-B / LA-0:** オーナー提供レビューでR3〜R5 CLOSED、LA-0 GO。
 - **UI-C1 / C2:** オーナー提供レビューでC1追修正・C2-R1 CLOSED。native通し受入は別途残る。
-- **UI-D1 / D2:** オーナー提供レビューでD1-R1 CLOSED、D2a GO。
-  eb12766eでバックアップ名表示・比較Close/復元後のEditor focusを調整し、D2b保存衝突面を実装。
-  戻る/Escapeは表示だけを閉じる。衝突を保持して比較/既存Save Asへ接続する。
-  背景はinert、global keyboard/nativeメニューの文書操作も停止。
-  [最新レビュー資料](reviews/2026-09-10-v3-ui-d2b/README.md)。外部・native受入は未完了。
-- **確認:** ローカル全2,150件・表示境界111件、typecheck/Vite/native preview成功。
-  実Editor focus先のUndo、AppShell経由のportal/DOM保持/操作振分けをテスト。
-  960×640のブラウザーfixtureで日本語light/かなdark・戻る後のfocusと衝突保持を確認。
-  Rustは今回変更/再実行なし。native Save As/衝突往復、実System、実IME/VoiceOver、200%は未受入。
-- **次:** D2b合評とnativeの衝突→戻る/比較/Save As往復を受入。UI-Eへ進む前に導線を確認する。
-  画像倍率・復元比較統合・UI-C通し受入は別に残す。
+- **UI-D2b追修正:** 外部レビューの通常入力/Save As失敗で衝突が消える指摘を11e33fb7で修正。
+  実入力でもconflict/errorを保持し、Save As失敗はglobalError/statusへ通知。dismissはsession別に保持。
+  backup tooltipも修正。外部CLOSED判定は再レビュー待ち。
+- **UI-E1:** 938f92e8で既存Outlineの見出し一覧/構造確認を切替表示。既存解析・移動・手動レベル変更を維持。
+  [最新合評資料](reviews/2026-09-10-v3-ui-e1/README.md)。UI-E全体完了ではない。
+- **確認:** ローカル全2,155件・表示境界111件、typecheck/Vite/native preview/署名整合成功。
+  実CodeMirror入力→conflict維持、Save As失敗、タブ往復dismissを追加検証。960×640の構造fixtureを確認。
+  Rustは変更/再実行なし。native Save As/IME/VoiceOver/200%は未受入。CI証跡とは区別する。
+- **次:** D2b追修正/E1合評とnative受入、UI-Eの検索/読む導線へ。設定は正本どおりUI-F。
+  以前の引き継ぎの「UI-E設定」は誤記だったため訂正。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
