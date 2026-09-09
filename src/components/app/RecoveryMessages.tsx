@@ -3,6 +3,7 @@ import type { RecoveryCopy } from "../../lib/locale";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type RecoveryMessagesProps = {
+  onReviewConflict?: () => void;
   activeConflict: boolean;
   activeDraft: DraftRecord | null;
   activeError: string | null;
@@ -25,6 +26,7 @@ type RecoveryMessagesProps = {
 };
 
 export function RecoveryMessages({
+  onReviewConflict,
   activeConflict,
   activeDraft,
   activeError,
@@ -139,6 +141,7 @@ export function RecoveryMessages({
           </span>
           {activeConflict && activeTab ? (
             <div className="message-actions" aria-label={copy.conflictActions}>
+              {onReviewConflict ? <button onClick={onReviewConflict}>{copy.conflictHeading}</button> : null}
               <button
                 type="button"
                 onClick={() => onReviewTabAgainstDisk(activeTab)}

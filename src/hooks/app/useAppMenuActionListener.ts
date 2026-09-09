@@ -84,6 +84,8 @@ export function useAppMenuActionListener({
     void listen<string>(APP_MENU_ACTION_EVENT, (event) => {
       const actions = actionsRef.current;
       const action = event.payload;
+      // The conflict portal owns input; native menu events bypass DOM inert.
+      if (document.querySelector('[data-save-conflict="true"]') && action !== MENU_QUIT_APP) return;
       const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
 
       if (action.startsWith("recent-file-")) {

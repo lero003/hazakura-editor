@@ -1,0 +1,23 @@
+import { act, renderHook } from "@testing-library/react";
+import { expect, it } from "vitest";
+import type { EditorTab } from "../../types";
+import { useSaveConflictSurface } from "./useSaveConflictSurface";
+it("dismisses presentation only and reopens for a new conflict or session", () => {
+  const tab = { id: "doc", sessionId: "one", path: "/doc.md", contents: "unsaved", externalFingerprint: "disk-one", error: "conflict", saveStatus: "conflict" } as EditorTab;
+  const before = { ...tab };
+  const { result, rerender } = renderHook(({ value }) => useSaveConflictSurface(value, true), { initialProps: { value: tab } });
+  expect(result.current.tab).toBe(tab);
+  act(() => result.current.dismiss());
+  expect(result.current.tab).toBeNull();
+  expect(tab).toEqual(before);
+  rerender({ value: { ...tab, contents: "still editing" } });
+  expect(result.current.tab).toBeNull();
+  act(() => result.current.reopen());
+  expect(result.current.tab).not.toBeNull();
+  act(() => result.current.dismiss());
+  rerender({ value: { ...tab, sessionId: "two" } });
+  expect(result.current.tab).not.toBeNull();
+  act(() => result.current.dismiss());
+  rerender({ value: { ...tab, sessionId: "two", externalFingerprint: "disk-two" } });
+  expect(result.current.tab).not.toBeNull();
+});

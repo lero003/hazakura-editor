@@ -29,7 +29,7 @@ export function useWindowDialogActions({
 }: UseWindowDialogActionsOptions) {
   const focusEditorSoon = useCallback(() => {
     window.requestAnimationFrame(() => {
-      editorPaneRef.current?.focus();
+      if (!document.querySelector('[role="dialog"][aria-modal="true"]')) editorPaneRef.current?.focus();
     });
   }, [editorPaneRef]);
 

@@ -138,3 +138,19 @@ describe("useAppMenuActionListener", () => {
     expect(setThemePreference).toHaveBeenCalledWith("shinkai");
   });
 });
+
+it("blocks native document/menu mutations while the conflict surface owns input", () => {
+  const { actions, togglePreviewSurface } = setup();
+  const dialog = document.createElement("section");
+  dialog.dataset.saveConflict = "true"; document.body.append(dialog);
+  try {
+    for (const payload of ["new-file", "save", "save-as", "toggle-preview", "open-file"]) {
+      void menuListeners.at(-1)?.({ payload } as never);
+    }
+    expect(actions.createNewFile).not.toHaveBeenCalled();
+    expect(actions.saveActiveTab).not.toHaveBeenCalled();
+    expect(actions.saveActiveTabAs).not.toHaveBeenCalled();
+    expect(actions.openFile).not.toHaveBeenCalled();
+    expect(togglePreviewSurface).not.toHaveBeenCalled();
+  } finally { dialog.remove(); }
+});

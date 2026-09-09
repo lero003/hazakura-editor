@@ -1,3 +1,4 @@
+import { useWindowDialogActions } from "../../hooks/app/useWindowDialogActions";
 import { useBackupReviewActions } from "../../hooks/workspace/useBackupReviewActions";
 import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
 import type { EditorTab } from "../../types";
@@ -1049,9 +1050,12 @@ it("restores a reviewed backup through the real editor with one Undo and preserv
   const close = vi.fn();
   function Host() {
     const [value, setValue] = useState(source);
+    const { focusEditorSoon } = useWindowDialogActions({ editorPaneRef: editorRef,
+      setGlobalError: () => {}, setPendingAppClose: () => {}, setPendingCloseTabId: () => {},
+      setPreferencesDialogMode: () => {}, setStatus: () => {} });
     const actions = useBackupReviewActions({ activeTab: { ...tab, contents: value }, workspaceRootPath: "/workspace", menuLanguage: "en",
       imageVisible: false, editorPaneRef: editorRef, readBackup: async () => "", closePicker: () => {}, leaveLMode: () => {},
-      review: () => {}, closeComparison: close, setStatus: () => {}, rejectIfLocked: () => false });
+      review: () => {}, closeComparison: () => { close(); focusEditorSoon(); }, setStatus: () => {}, rejectIfLocked: () => false });
     return <><button onClick={() => actions.apply(claim)}>Restore reviewed backup</button>
       <output data-testid="backup-dirty">{String(value !== source)}</output>
       {renderEditorPane({ value, onChange: setValue, ref: editorRef, editorSessionKey: tab.sessionId })}</>;
@@ -1063,7 +1067,8 @@ it("restores a reviewed backup through the real editor with one Undo and preserv
   expect(screen.getByTestId("backup-dirty").textContent).toBe("true");
   fireEvent.click(screen.getByRole("button", { name: "Restore reviewed backup" }));
   expect(close).toHaveBeenCalledOnce();
-  fireEvent.keyDown(content, { ctrlKey: true, key: "z" });
+  await waitFor(() => expect(document.activeElement).toBe(content));
+  fireEvent.keyDown(document.activeElement!, { ctrlKey: true, key: "z" });
   await waitFor(() => expect(editorRef.current?.getActiveDocument()?.text).toBe(source));
   expect(screen.getByTestId("backup-dirty").textContent).toBe("false");
   expect(container.querySelector(".cm-content")).toBe(content);

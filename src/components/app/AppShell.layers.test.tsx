@@ -113,3 +113,53 @@ describe("AppShell chrome layers", () => {
     expect(screen.queryByRole("button", {name: "Document tab"})).toBeNull();
   });
 });
+
+it("keeps the editor mounted behind the conflict portal and dismisses only presentation", () => {
+  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md", contents: "unsaved" } as NonNullable<AppShellProps["activeTab"]>;
+  const dismiss = vi.fn();
+  const focus = vi.fn();
+  const compare = vi.fn();
+  const saveAs = vi.fn(async () => {});
+  const props = { ...base, activeTab: tab, menuLanguage: "en" as const, conflictDialogTab: tab,
+    dismissConflictDialog: dismiss, focusAfterTransientSurface: focus, reviewTabAgainstDisk: compare, saveConflictAs: saveAs };
+  const { container, rerender } = render(<ConnectedShell {...props} />);
+  const editor = screen.getByRole("textbox", { name: "Editor", hidden: true });
+  expect(container.inert).toBe(true);
+  expect(document.activeElement?.textContent).toBe("Return to editor");
+  fireEvent.keyDown(window, { key: "Escape", isComposing: true });
+  expect(dismiss).not.toHaveBeenCalled();
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(dismiss).toHaveBeenCalledOnce();
+  expect(compare).not.toHaveBeenCalled();
+  expect(saveAs).not.toHaveBeenCalled();
+  rerender(<ConnectedShell {...props} conflictDialogTab={null} />);
+  expect(container.inert).not.toBe(true);
+  expect(screen.getByRole("textbox", { name: "Editor" })).toBe(editor);
+  expect((editor as HTMLInputElement).value).toBe("unsaved");
+  expect(focus).toHaveBeenCalledOnce();
+});
+
+it.each(["Compare changes", "Save As…"])("routes the conflict action %s without destructive callbacks", action => {
+  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md" } as NonNullable<AppShellProps["activeTab"]>;
+  const compare = vi.fn(); const saveAs = vi.fn(async () => {}); const dismiss = vi.fn();
+  render(<ConnectedShell {...base} menuLanguage="en" activeTab={tab} conflictDialogTab={tab}
+    reviewTabAgainstDisk={compare} saveConflictAs={saveAs} dismissConflictDialog={dismiss} />);
+  fireEvent.click(screen.getByRole("button", { name: action }));
+  expect(dismiss).toHaveBeenCalledOnce();
+  if (action === "Compare changes") { expect(compare).toHaveBeenCalledWith(tab); expect(saveAs).not.toHaveBeenCalled(); }
+  else { expect(saveAs).toHaveBeenCalledOnce(); expect(compare).not.toHaveBeenCalled(); }
+});
+
+it("cycles Tab within the conflict surface and ignores IME Escape", () => {
+  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md" } as NonNullable<AppShellProps["activeTab"]>;
+  render(<ConnectedShell {...base} menuLanguage="en" conflictDialogTab={tab} />);
+  const first = screen.getByRole("button", { name: "Return to editor" });
+  const last = screen.getByRole("button", { name: "Compare changes" });
+  for (const button of screen.getByRole("dialog").querySelectorAll("button")) {
+    vi.spyOn(button, "getClientRects").mockReturnValue([{} as DOMRect] as unknown as DOMRectList);
+  }
+  first.focus(); fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+  expect(document.activeElement).toBe(last);
+  fireEvent.keyDown(window, { key: "Tab" });
+  expect(document.activeElement).toBe(first);
+});

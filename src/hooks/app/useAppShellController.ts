@@ -1,3 +1,4 @@
+import { useSaveConflictSurface } from "../document/useSaveConflictSurface";
 import { useBackupReviewActions } from "../workspace/useBackupReviewActions";
 import { usePreviewSurface } from "../editor/usePreviewSurface";
 // `useAppShellController` is the Phase 3 single orchestrator hook
@@ -947,7 +948,7 @@ export function useAppShellController() {
   const {
     clearCompareSource,
     clearCompareTarget,
-    closeCompareView,
+    closeCompareView: closeCompareViewWithoutFocus,
     compareWorkspaceFiles,
     copyWorkspaceFullPath,
     prepareReviewTabAgainstDisk,
@@ -976,6 +977,11 @@ export function useAppShellController() {
     setSidePaneOpen: setSidePaneOpenFromUserAction,
     setStatus,
   });
+
+  const closeCompareView = useCallback((options?: { returnToEditor?: boolean }) => {
+    closeCompareViewWithoutFocus(options);
+    focusEditorSoon();
+  }, [closeCompareViewWithoutFocus, focusEditorSoon]);
 
   const {
     closeReferenceCompare,
@@ -1207,7 +1213,8 @@ export function useAppShellController() {
   );
   const epubExportSettingsOpen = epubExportRequest !== null;
   const pdfExportSettingsOpen = pdfExportRequest !== null;
-  const modalOpenWithBlockingDialogs =
+  const conflictSurface = useSaveConflictSurface(activeTab, activeConflict);
+  const otherBlockingDialog =
     modalOpen ||
     pendingTrashOpen ||
     pendingAssistDiscardOpen ||
@@ -1693,6 +1700,10 @@ export function useAppShellController() {
   }, [confirmDiscardAppleAssistEdit, pendingAssistDiscard]);
 
   // section: app side effects (menu integration + runtime effects)
+  const conflictDialogTab = !otherBlockingDialog && !commandPaletteVisible && !globalSearchVisible && !okfReviewVisible && !quickOpenVisible && !restoreBackupDialogOpen
+    ? conflictSurface.tab : null;
+  const modalOpenWithBlockingDialogs = otherBlockingDialog || conflictDialogTab !== null;
+
   useAppShellSideEffectsController({
     actions: {
       ...sharedShellDocumentActions,
@@ -1850,6 +1861,11 @@ export function useAppShellController() {
   // was edited.
 
   return {
+    conflictDialogTab,
+    dismissConflictDialog: conflictSurface.dismiss,
+    reopenConflictDialog: conflictSurface.reopen,
+    saveConflictAs: saveActiveTabAs,
+    focusAfterTransientSurface: focusEditorSoon,
     activeAgentSession,
     activeConflict,
     activeContents,

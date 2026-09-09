@@ -10,6 +10,7 @@ import type { EditorChromeCopy, RecoveryCopy } from "../../lib/locale";
 import type { DraftRecord, EditorTab, SearchOptions } from "../../types";
 
 type AppDocumentFeedbackProps = {
+  reopenConflictDialog?: () => void;
   activeConflict: boolean;
   activeDraft: DraftRecord | null;
   activeError: string | null;
@@ -56,6 +57,7 @@ type AppDocumentFeedbackProps = {
 };
 
 export function AppDocumentFeedback({
+  reopenConflictDialog,
   activeConflict,
   activeDraft,
   activeError,
@@ -133,6 +135,7 @@ export function AppDocumentFeedback({
       ) : null}
 
       <RecoveryMessages
+        onReviewConflict={reopenConflictDialog}
         activeConflict={activeConflict}
         activeDraft={activeDraft}
         activeError={activeError}

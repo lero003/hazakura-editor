@@ -1,3 +1,4 @@
+import { SaveConflictDialog } from "./SaveConflictDialog";
 import { useLocalAssistReviewNavigation } from "../../hooks/editor/useLocalAssistReviewNavigation";
 import { useMemo, useRef, useState, type ComponentProps } from "react";
 import type {
@@ -41,6 +42,10 @@ export type AppShellProps = Omit<
   ComponentProps<typeof AppWorkspace> &
   ComponentProps<typeof AppStatusBar> &
   ComponentProps<typeof AppOverlays> & {
+    conflictDialogTab?: EditorTab | null;
+    dismissConflictDialog?: () => void;
+    saveConflictAs?: () => Promise<void>;
+    focusAfterTransientSurface?: () => void;
     activeTab: EditorTab | null;
     onSaveDocument: () => Promise<void>;
     ambientIntensity: AmbientIntensity;
@@ -209,6 +214,20 @@ export function AppShell(props: AppShellProps) {
       />
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
+      {props.conflictDialogTab ? <SaveConflictDialog
+        key={props.conflictDialogTab.sessionId}
+        tab={props.conflictDialogTab} menuLanguage={props.menuLanguage}
+        onBack={() => { props.dismissConflictDialog?.(); props.focusAfterTransientSurface?.(); }}
+        onCompare={() => {
+          props.dismissConflictDialog?.();
+          props.focusAfterTransientSurface?.();
+          props.reviewTabAgainstDisk(props.conflictDialogTab!);
+        }}
+        onSaveAs={() => {
+          props.dismissConflictDialog?.();
+          void props.saveConflictAs?.().finally(() => props.focusAfterTransientSurface?.());
+        }}
+      /> : null}
       {!pendingProposal ? (
         <AppleAssistReviewBar
           activeTabSessionId={props.activeTab?.sessionId ?? null}

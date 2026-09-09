@@ -64,6 +64,7 @@ describe("ChangeReviewView", () => {
       />,
     );
 
+    expect(screen.getByText("20260604_120000_note.md.bak")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Restore this backup" }));
 
     expect(onApplyBackup).toHaveBeenCalledWith({ documentPath: "/workspace/note.md",
