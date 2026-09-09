@@ -1,0 +1,53 @@
+/* UI-B2: reuse StartPanel's real resume/recovery actions and content. */
+.workspace.workspace-start { grid-template-columns: minmax(0, 1fr); }
+.workspace-start > :is(.file-tree-pane, .workspace-sidebar-rail, .pane-resizer) {
+  display: none;
+}
+.workspace-start .workspace-document-column { grid-template-rows: minmax(0, 1fr); }
+.workspace-start .tabs-row,
+.workspace-start .editor-preview-grid > :not(.reference-editor-host) { display: none; }
+.workspace-start .editor-preview-grid { grid-template-columns: minmax(0, 1fr) !important; }
+.v3-shell:has(.workspace-start) .primary-sidebar-toggle { visibility: hidden; }
+
+.v3-shell .start-panel {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: clamp(24px, 4vw, 64px);
+  padding: clamp(24px, 5vh, 56px) clamp(24px, 5vw, 64px);
+  background: var(--workspace-chrome-paper);
+}
+.v3-shell .start-panel-intro {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--workspace-chrome-surface);
+  min-width: 0;
+}
+.v3-shell .start-panel-intro .start-brand { flex-wrap: wrap; }
+.v3-shell .start-panel-intro .start-value-pitch {
+  margin: 26px 0 4px;
+  font: 500 clamp(24px, 2.4vw, 36px)/1.8 var(--lmode-prose-font-family);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.v3-shell .start-panel-main { max-width: 620px; gap: 24px; }
+.v3-shell .start-panel h1 { font-size: 24px; line-height: 1.5; font-weight: 650; }
+.v3-shell .start-actions button { min-height: 38px; }
+.v3-shell .start-recent-list { gap: 0; }
+.v3-shell .start-recent-list li { border-bottom: 1px solid var(--border); padding-block: 6px; }
+.v3-shell .start-recent-button { min-height: 38px; text-align: start; }
+.v3-shell .start-recovery-section { border-top: 1px solid var(--border); padding-top: 16px; }
+.v3-shell .start-recovery-item { flex-wrap: wrap; }
+
+@container document-workspace (max-width: 1050px) {
+  .v3-shell .start-panel { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .v3-shell .start-panel-intro { padding: 16px 20px; }
+  .v3-shell .start-panel-intro .start-value-pitch { font-size: 24px; margin-top: 10px; }
+  .v3-shell .start-panel-main { max-width: none; gap: 16px; }
+}
+
+@media (max-height: 680px) {
+  .v3-shell .start-panel { padding-block: 20px; }
+  .v3-shell .start-panel-intro { padding: 16px 20px; }
+}

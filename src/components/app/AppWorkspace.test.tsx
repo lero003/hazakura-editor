@@ -683,7 +683,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       JSON.stringify({ workspaceSidebarWidth: 336 }),
     );
 
-    const { container } = renderWorkspace();
+    const { container } = renderWorkspace({ activeTab: bookTab });
 
     expect(
       (container.querySelector(".workspace") as HTMLElement).style
@@ -703,6 +703,14 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     expect(onWorkspaceSidebarCollapsedChange).toHaveBeenCalledWith(true);
     expect(screen.getByLabelText("Workspace file tree")).toBeTruthy();
+  });
+
+  it("uses the start surface only before a document or live workspace is selected", () => {
+    const view = renderWorkspace({ activeTab: null, workspaceRootPath: null });
+    expect(view.container.querySelector(".workspace-start")).toBeTruthy();
+    view.unmount();
+    const live = renderWorkspace({ activeTab: null, workspaceRootPath: "/workspace" });
+    expect(live.container.querySelector(".workspace-start")).toBeNull();
   });
 
   it("switches compact Preview presentation without replacing either document surface", () => {

@@ -86,13 +86,15 @@ export function StartPanel({
       data-start-mode={returning.mode}
       data-testid="start-panel"
     >
-      <div className="start-panel-main">
+      <div className="start-panel-intro">
         <div className="start-brand">
           <img className="start-logo" src={hazakuraMark} alt="" />
           <span className="start-kicker">Hazakura Editor</span>
         </div>
-        <h1>{heading}</h1>
         <p className="start-value-pitch">{copy.startValuePitch}</p>
+      </div>
+      <div className="start-panel-main">
+        <h1>{heading}</h1>
 
         {returning.showResumeWorkspace &&
         returning.resumeWorkspaceLabel &&
@@ -105,6 +107,7 @@ export function StartPanel({
               <button
                 type="button"
                 className="start-resume-button"
+                autoFocus
                 aria-label={copy.startResumeWorkspace(
                   returning.resumeWorkspaceLabel,
                 )}
@@ -126,14 +129,16 @@ export function StartPanel({
           }`}
           aria-label={copy.startActions}
         >
-          <button type="button" onClick={() => void onOpenFile()}>
-            {copy.openFile}
-          </button>
-          <button type="button" onClick={() => void onOpenFolder()}>
+          <button type="button"
+            autoFocus={!(returning.showResumeWorkspace && returning.resumeWorkspaceLabel && onReopenPersistedWorkspace)}
+            onClick={() => void onOpenFolder()}>
             {copy.openFolder}
           </button>
           <button type="button" onClick={() => void onNewFile()}>
             {copy.newFile}
+          </button>
+          <button type="button" onClick={() => void onOpenFile()}>
+            {copy.openFile}
           </button>
         </div>
 

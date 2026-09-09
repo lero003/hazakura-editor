@@ -925,12 +925,12 @@
   margin: 0 auto;
   font-family: var(--lmode-prose-font-family);
   font-size: var(--lmode-font-size, 15px);
-  line-height: 1.78;
+  line-height: 2.05;
   letter-spacing: 0.005em;
   /* Left/right padding is widened vs. v0.10 so the active-line
      structural tag chips ("H1", "H2", ">", " ``` ", etc.) have
      room to sit in the left margin without crowding the prose. */
-  padding: 104px clamp(40px, 5vw, 60px) 156px;
+  padding: clamp(64px, 9vh, 88px) clamp(40px, 5vw, 60px) 96px;
   text-align: start;
   hyphens: auto;
   text-rendering: optimizeLegibility;
@@ -1081,29 +1081,29 @@
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-1-first {
-  font-size: 2.5em;
-  font-weight: 800;
+  font-size: 1.95em;
+  font-weight: 650;
   letter-spacing: -0.024em;
-  line-height: 1.16;
-  text-align: center;
-  padding-top: 0.5em;
-  padding-bottom: 0.6em;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  line-height: 1.5;
+  text-align: start;
+  padding-top: 0;
+  padding-bottom: 0.4em;
+  border-bottom: 0;
   color: var(--text);
   text-wrap: balance;
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-2 {
   font-family: var(--lmode-prose-font-family);
-  font-size: 1.65em;
+  font-size: 1.35em;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.012em;
-  text-align: center;
+  text-align: start;
   color: var(--text);
   padding-top: 1.2em;
   padding-bottom: 0.32em;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  border-bottom: 0;
   text-wrap: balance;
 }
 

@@ -669,6 +669,8 @@ export function AppWorkspace({
   // Both independent readers own the workspace; keep the editor mounted but inert.
   const compactViewCopy = getCompactViewCopy(menuLanguage);
   const readingOverlayActive = ebookReadingFocusActive || !!bookReaderResult;
+  const startSurfaceActive = !activeTab && !selectedImage && !workspaceRootPath &&
+    !visibleReferenceCompare && !readingOverlayActive && !editorSettings.lModeEnabled;
   const compactPreviewAvailable = !!activeTab && !selectedImage &&
     sidePaneVisible && sidePaneMode === "preview" && !visibleReferenceCompare &&
     !editorSettings.lModeEnabled && !readingOverlayActive;
@@ -678,12 +680,12 @@ export function AppWorkspace({
 
   return (
     <section
-      className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${readingOverlayActive ? " workspace-reading-focus" : ""}`}
+      className={`workspace${startSurfaceActive ? " workspace-start" : ""}${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${readingOverlayActive ? " workspace-reading-focus" : ""}`}
       ref={workspaceRef}
       style={
         !isWorkspaceSidebarCollapsed &&
         !editorSettings.lModeEnabled &&
-        !readingOverlayActive
+        !readingOverlayActive && !startSurfaceActive
           ? workspaceGridStyle
           : undefined
       }

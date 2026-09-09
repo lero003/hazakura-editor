@@ -31,6 +31,19 @@ function pathlessDraft(
 }
 
 describe("StartPanel recent file surface", () => {
+  it("keeps folder, new document and file actions connected in the new start layout", () => {
+    const onOpenFolder = vi.fn(), onNewFile = vi.fn(), onOpenFile = vi.fn();
+    render(<StartPanel copy={getSafeEditorCopy("en")} persistedWorkspaceRootPath={null}
+      onOpenFolder={onOpenFolder} onNewFile={onNewFile} onOpenFile={onOpenFile} />);
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Open Folder" }));
+    for (const name of ["Open Folder", "New File", "Open File"]) {
+      fireEvent.click(screen.getByRole("button", { name }));
+    }
+    expect(onOpenFolder).toHaveBeenCalledOnce();
+    expect(onNewFile).toHaveBeenCalledOnce();
+    expect(onOpenFile).toHaveBeenCalledOnce();
+  });
+
   it("does not render legacy file recents or pin controls", () => {
     render(
       <StartPanel

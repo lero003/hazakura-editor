@@ -210,7 +210,7 @@ describe("lMode.css", () => {
     expect(lModeCss).not.toMatch(/\.cm-lmode-blockquote\s*{[^}]*margin/s);
   });
 
-  it("keeps L Mode headings centered as expressive display text", () => {
+  it("aligns section headings to the prose while retaining smaller display headings", () => {
     for (const level of [1, 2, 3, 4, 5, 6]) {
       const headingRule =
         lModeCss.match(
@@ -220,7 +220,7 @@ describe("lMode.css", () => {
           ),
         )?.groups?.body ?? "";
 
-      expect(headingRule).toMatch(/text-align:\s*center/);
+      expect(headingRule).toMatch(level === 2 ? /text-align:\s*start/ : /text-align:\s*center/);
     }
   });
 

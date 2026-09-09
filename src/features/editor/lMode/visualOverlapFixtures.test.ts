@@ -57,7 +57,7 @@ describe("v0.14 L Mode visual-overlap fixtures", () => {
       /:root\[data-l-mode="on"\] \.cm-content/,
     );
     expect(body).toMatch(
-      /padding:\s*104px clamp\(40px,\s*5vw,\s*60px\)\s+156px/,
+      /padding:\s*clamp\(64px,\s*9vh,\s*88px\) clamp\(40px,\s*5vw,\s*60px\)\s+96px/,
     );
   });
 
