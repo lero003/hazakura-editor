@@ -13,9 +13,9 @@ v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じ�
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告） |
-| ソース版 | 2.9.0。codex/v3でUI-B1修正/UI-B2実装、版数は未更新 |
+| ソース版 | 2.9.0。codex/v3でUI-B追修正/LA-0/UI-C1実装、版数は未更新 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | UI-B1修正 + UI-B2開始画面/えるモードのまとめレビュー — `docs/current-work.md` |
+| 現行キュー | UI-C2の提案focus導線 → まとまった通し確認・合評 — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 

@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-A1 review accepted; UI-B1 fixes and UI-B2 implemented for review
+Status: UI-A1 review accepted; UI-B follow-up, LA-0 and UI-C1 implemented
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-09
@@ -134,5 +134,6 @@ AFM評価のSDK/OS条件は実装時に一次資料と実環境で再確認す�
 
 UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 [第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に集約する。
-UI-A1はR1/R2の再レビュー通過。現在はUI-B1修正とUI-B2開始画面/えるモードがまとめレビュー対象。UI-Bのnative等受入、残りの画面、LA-0以降は未完了。
+UI-A1はR1/R2の再レビュー通過。UI-B前回R1/R2はCLOSED、UI-B2大筋GO。追加R3〜R5を修正し、LA-0とUI-C1まで実装。
+[最新資料](reviews/2026-09-09-v3-ui-c1/README.md)からUI-C2へ進む。UI-B/UI-Cの通し受入、残りの画面、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)からレビュー反映へ進む。

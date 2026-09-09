@@ -10,14 +10,14 @@ Last reviewed: 2026-09-09
 - **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
 - **UI-A1:** オーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
-- **UI-B1修正 + UI-B2:** 狭幅Preview入口・かなふみコピーを修正し、開始画面とえるモード紙面を調整。
-  修正01e9290e、UI-B2実装9b3cffcc。[まとめレビュー資料](reviews/2026-09-09-v3-ui-b2/README.md)へ。
-  Editor/Preview DOM、Undo、保存済みペイン幅と実際の再開/復旧操作を保持。外部再レビュー待ち。
-- **確認:** frontend全2,089件・App Store surface111件・typecheck/Vite/ローカルpreview build成功。
-  ブラウザーで既存Preview入口、かなふみ、960×640、L Mode往復後Undoを確認。
-  今回のnative実操作、IME/VoiceOver、200%・全テーマは未確認。UI-B全体の完了ではない。
-- **R3:** 既存のReader背景sidebar非表示CSSを確認し、集中Readerでcomputed display/AX非露出を追試。
-  VoiceOver仮想カーソルはUI-Gで確認する。
+- **UI-B:** 前回R1/R2は外部CLOSED、UI-B2大筋GO。追加R3〜R5を45fbc027で修正。
+  Previewの4入口を共通化し、live workspaceのフォーカスを保つ。
+- **LA-0 / UI-C1:** 所有者を62dc5f42で整理、会話部品・locale分離と提案の下端操作をb2dda7f1で実装。
+  [まとめ資料](reviews/2026-09-09-v3-ui-c1/README.md)。次はUI-C2の該当提案へのfocus導線。
+- **確認:** ローカル全2,100件・表示境界111件・typecheck/Vite/native preview成功。
+  狭幅shortcut/Paletteとnative Previewメニューを確認。Assist画像は表示fixture。
+  実System通し確認、IME/VoiceOver、200%・全テーマは未完了。CIは今回未確認。
+- **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
 - **作業保全:** App Store設定の既存未コミット変更を保持。公開タグ・アセットは変更しない。
