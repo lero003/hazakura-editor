@@ -120,3 +120,34 @@
   text-underline-offset: 3px;
   border-radius: 2px;
 }
+
+/* UI-D1: read-only image stage and compare-before-restore picker. */
+.image-preview-pane { grid-template-rows: auto minmax(0, 1fr) auto; }
+.image-preview-header { flex-wrap: wrap; padding: 14px 18px; gap: 8px 12px; }
+.image-preview-header strong { flex: 1 1 160px; font-size: 15px; overflow-wrap: anywhere; white-space: normal; }
+.image-preview-header .image-preview-readonly { font-size: 12px; font-weight: 500; text-transform: none; }
+.image-preview-stage {
+  position: relative;
+  background-color: var(--bg);
+  background-image: conic-gradient(var(--bg-elev) 25%, transparent 0 50%, var(--bg-elev) 0 75%, transparent 0);
+  background-size: 24px 24px;
+  padding: clamp(12px, 3vh, 28px);
+}
+.image-preview-stage p { max-width: 36em; padding: 14px; background: var(--surface); border-radius: 8px; line-height: 1.7; }
+.image-preview-info { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 18px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
+.image-preview-info span:first-child { flex: 1 1 160px; overflow-wrap: anywhere; }
+.restore-backup-dialog { display: flex; flex-direction: column; width: min(680px, calc(100vw - 32px)); max-width: 680px; max-height: calc(100dvh - 32px); padding: clamp(18px, 3vh, 30px); }
+.restore-backup-hint { margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: var(--text-muted); }
+.restore-backup-dialog .restore-backup-file { white-space: normal; overflow-wrap: anywhere; font-size: 15px; }
+.restore-backup-list { min-height: 0; max-height: none; overflow: auto; }
+.restore-backup-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: 14px; gap: 8px 12px; }
+.restore-backup-row-name { white-space: normal; overflow-wrap: anywhere; font-size: 14px; }
+.restore-backup-row-meta { grid-column: 1 / -1; font-size: 13px; }
+.restore-backup-row-action { color: var(--accent); font-size: 13px; }
+.restore-backup-dialog .dialog-actions { flex-shrink: 0; margin-top: auto; }
+@media (max-width: 600px) {
+  .restore-backup-row { grid-template-columns: minmax(0, 1fr); }
+  .restore-backup-row-action { grid-row: 3; }
+}
+.restore-backup-dialog > :not(.restore-backup-list) { flex-shrink: 0; }
+.restore-backup-dialog .restore-backup-list { flex: 1 1 auto; }

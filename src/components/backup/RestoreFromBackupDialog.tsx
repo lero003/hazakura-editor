@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { trapFocusInElement } from "../../lib/focusTrap";
+import { useEffect, useId, useRef } from "react";
 import type { AutoBackupEntry } from "../../lib/tauri/autoBackup";
 import type { AutoBackupRestoreCopy } from "../../lib/locale/autoBackup";
 import { formatTimestamp } from "./formatBackupTimestamp";
@@ -26,6 +27,12 @@ export function RestoreFromBackupDialog({
   // (Close when the list is empty / loading / errored, the first
   // row otherwise) so screen reader and keyboard users land in a
   // sensible place without needing a second tab.
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const hintId = useId();
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    return () => { if (previous?.isConnected) previous.focus(); };
+  }, []);
   const firstEntryRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
@@ -42,6 +49,8 @@ export function RestoreFromBackupDialog({
   // the wiring local.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229) return;
+      trapFocusInElement(dialogRef.current, event);
       if (event.key === "Escape") {
         event.preventDefault();
         onClose();
@@ -56,6 +65,8 @@ export function RestoreFromBackupDialog({
   return (
     <div className="modal-backdrop" role="presentation">
       <section
+        ref={dialogRef}
+        aria-describedby={hintId}
         className="close-dialog restore-backup-dialog"
         role="dialog"
         aria-modal="true"
@@ -67,31 +78,31 @@ export function RestoreFromBackupDialog({
           {fileLabel}
         </p>
 
+        <p id={hintId} className="restore-backup-hint">{copy.selectionHint}</p>
+
         {error ? (
           <p className="restore-backup-message" role="alert">
             {copy.loadErrorPrefix} {error}
           </p>
         ) : loading ? (
-          <p className="restore-backup-message">…</p>
+          <p className="restore-backup-message" role="status">{copy.loadingMessage}</p>
         ) : entries.length === 0 ? (
           <p className="restore-backup-message">{copy.emptyMessage}</p>
         ) : (
           <ul
             className="restore-backup-list"
-            role="listbox"
             aria-label={copy.title}
           >
             {entries.map((entry, index) => (
-              <li key={entry.path} role="presentation">
+              <li key={entry.path}>
                 <button
                   ref={index === 0 ? firstEntryRef : null}
                   type="button"
-                  role="option"
-                  aria-selected={false}
                   className="restore-backup-row"
                   onClick={() => onSelect(entry)}
                 >
                   <span className="restore-backup-row-name">{entry.name}</span>
+                  <span className="restore-backup-row-action">{copy.compareButton}</span>
                   <span className="restore-backup-row-meta">
                     {formatTimestamp(entry.modifiedAtMs)} · {formatBytes(entry.size)}
                   </span>
