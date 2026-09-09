@@ -12,14 +12,16 @@ Last reviewed: 2026-09-10
 - **UI-A1:** オーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
 - **UI-B / LA-0:** オーナー提供レビューでR3〜R5 CLOSED、LA-0 GO。
 - **UI-C1 / C2:** オーナー提供レビューでC1追修正・C2-R1 CLOSED。native通し受入は別途残る。
-- **UI-D1 / D2a:** D1画像・候補一覧は外部GO。バックアップstale復元P1を3de6b926で修正。
-  read完了時とApply直前にsession・本文等を再検証し、実Editorの1回のUndoで戻せる置換を使う。
-  aeb697f7で比較対象表示・開いた直後のfocus・保存衝突比較のsession再検証を整えた。
-  [最新レビュー資料](reviews/2026-09-10-v3-ui-d2/README.md)。D2全体完了ではない。
-- **確認:** ローカル全2,144件・表示境界111件、typecheck/Vite/native preview成功。
-  ブラウザーfixtureの960×640、比較focus・stale復元無効化を確認。Rustは今回変更/再実行なし。
-  C2 native窓間focus、実System、実IME/VoiceOver、200%・全テーマは未受入。CI証跡とは区別する。
-- **次:** D2b保存衝突ダイアログ。閉じる操作で衝突を消さず、比較・Save Asへ接続する。
+- **UI-D1 / D2:** オーナー提供レビューでD1-R1 CLOSED、D2a GO。
+  eb12766eでバックアップ名表示・比較Close/復元後のEditor focusを調整し、D2b保存衝突面を実装。
+  戻る/Escapeは表示だけを閉じる。衝突を保持して比較/既存Save Asへ接続する。
+  背景はinert、global keyboard/nativeメニューの文書操作も停止。
+  [最新レビュー資料](reviews/2026-09-10-v3-ui-d2b/README.md)。外部・native受入は未完了。
+- **確認:** ローカル全2,150件・表示境界111件、typecheck/Vite/native preview成功。
+  実Editor focus先のUndo、AppShell経由のportal/DOM保持/操作振分けをテスト。
+  960×640のブラウザーfixtureで日本語light/かなdark・戻る後のfocusと衝突保持を確認。
+  Rustは今回変更/再実行なし。native Save As/衝突往復、実System、実IME/VoiceOver、200%は未受入。
+- **次:** D2b合評とnativeの衝突→戻る/比較/Save As往復を受入。UI-Eへ進む前に導線を確認する。
   画像倍率・復元比較統合・UI-C通し受入は別に残す。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。

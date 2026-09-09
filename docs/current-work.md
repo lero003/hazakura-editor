@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: D1-R1修正とD2a比較面から保存衝突の安全な戻り方へ
+Scope: D2b保存衝突面の合評と次のUI区切りへ
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,29 +12,28 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — D1-R1・UI-D2a
+## 現在の区切り — UI-D2b
 
-オーナー提供レビューでC2-R1 CLOSED、D1画像/候補一覧GO。
-バックアップDiffがstaleでも復元できるP1を3de6b926で修正した。
-read完了時とApply直前にsnapshot/session・実Editor本文を確認し、
-既存のCodeMirror置換APIで1回のUndoへ載せる。ディスクへ自動保存しない。
+オーナー提供レビューでD1-R1 CLOSED、D2a GO。非ブロッカーのバックアップ名表示と
+比較Close/復元後のfocusを調整し、eb12766eでD2b保存衝突面まで実装した。
+[まとめ資料](reviews/2026-09-10-v3-ui-d2b/README.md)が現行の入口。
 
-独立コミットaeb697f7でD2aの比較対象表示・初回focus・保存衝突比較のsession検証を追加。
-[まとめ資料・原寸画像](reviews/2026-09-10-v3-ui-d2/README.md)が現行の入口。
-ローカル全2,144件・表示境界111件、typecheck/Vite/native preview成功。
-960×640のブラウザーfixture確認。CI・native実操作・IME/VoiceOver受入とは区別する。
+衝突ダイアログを閉じても本文/衝突は変えない。既存の比較・Save Asへ明示操作で接続。
+本文をアンマウントせず、portal外をinertにする。global keyboard/nativeメニューの
+文書操作も停止する（通常の終了確認は許可）。既存keepEditingAfterConflictとは別の表示state。
+
+ローカル全2,150件・表示境界111件、typecheck/Vite/native preview成功。
+実Editorのfocus先へUndo、AppShellのportal境界とDOM維持を確認。
+ブラウザーfixtureの960×640確認。CI/native実操作/実IME/VoiceOver受入とは区別する。
 
 ## 次のまとまった区切り
 
-1. D1-R1/D2aを合評。stale復元拒否と実Editor Undo、比較focusの境界を確認する。
-2. UI-D2b: 保存衝突ダイアログの対象表示と安全な戻り方。閉じる/Escapeは表示だけを閉じ、
-   衝突情報を保持する。既存keepEditingAfterConflictは衝突を消すので、そのまま流用しない。
-   Save As・比較へ接続し、背景の入力境界をAppShell経由で確認する。
-3. nativeでバックアップ比較→編集→復元拒否、再比較→復元→Undoと、
-   C2別タブ→該当提案→Diff→反映→Undo・停止待ちを受入。
+1. D2b合評。戻る/Escapeで衝突保持、比較しても書かない、Save As取消、focus復帰を確認する。
+2. nativeで保存衝突→戻る/比較/Save As、バックアップ再比較→復元→直後の⌘Zを受入する。
+3. UI-Eの既存設定再配置へ進む。新しい設定/既定値は増やさない。
+4. C2 nativeの別タブ→該当提案→Diff→反映→Undo・停止待ちは引き続き別受入。
 
-各実装は独立コミットと検証を維持。D2全体、画像倍率、復元比較の一体化、
-UI-B/UI-Cの通し受入、UI-D後半〜G、LA-1以降は未完了。
+画像倍率、復元比較一体化、UI-B/UI-Cの通し受入、UI-E〜G、LA-1以降は未完了。
 
 ## Held / Separate Work
 
