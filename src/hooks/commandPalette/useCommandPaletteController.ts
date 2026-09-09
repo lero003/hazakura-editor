@@ -81,7 +81,7 @@ type UseCommandPaletteControllerActions = {
   setPreferencesDialogMode: Dispatch<
     SetStateAction<PreferencesDialogMode | null>
   >;
-  setPreviewVisible: Dispatch<SetStateAction<boolean>>;
+  togglePreviewSurface: () => void;
   toggleDiffPane: () => void;
   toggleLMode: () => void;
   toggleOutlinePane: () => void;
@@ -626,7 +626,7 @@ export function useCommandPaletteController({
           "render",
         ]),
         run: () => {
-          actions.setPreviewVisible((current) => !current);
+          actions.togglePreviewSurface();
         },
         shortcut: "⌥⌘P",
       },

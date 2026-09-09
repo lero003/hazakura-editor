@@ -56,7 +56,7 @@ type UseAppMenuActionListenerOptions = {
   setPreferencesDialogMode: Dispatch<
     SetStateAction<PreferencesDialogMode | null>
   >;
-  setPreviewVisible: Dispatch<SetStateAction<boolean>>;
+  togglePreviewSurface: () => void;
   setThemePreference: Dispatch<SetStateAction<ThemePreference>>;
   /** Markdown-only L Mode gate; preferred over flipping settings directly. */
   onToggleLMode?: () => void;
@@ -69,7 +69,7 @@ export function useAppMenuActionListener({
   recentFoldersRef,
   setEditorSettings,
   setPreferencesDialogMode,
-  setPreviewVisible,
+  togglePreviewSurface,
   setThemePreference,
   onToggleLMode,
 }: UseAppMenuActionListenerOptions) {
@@ -155,7 +155,7 @@ export function useAppMenuActionListener({
           void actions.exportPdf();
           break;
         case "toggle-preview":
-          setPreviewVisible((current) => !current);
+          togglePreviewSurface();
           break;
         case "toggle-wrap":
           setEditorSettings((current) => ({
@@ -264,7 +264,7 @@ export function useAppMenuActionListener({
     recentFoldersRef,
     setEditorSettings,
     setPreferencesDialogMode,
-    setPreviewVisible,
+    togglePreviewSurface,
     setThemePreference,
   ]);
 }

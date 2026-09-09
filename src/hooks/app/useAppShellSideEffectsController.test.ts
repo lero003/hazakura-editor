@@ -30,7 +30,7 @@ describe("useAppShellSideEffectsController", () => {
           recentFoldersRef: { current: [] },
           setEditorSettings: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           setThemePreference: vi.fn(),
         },
         activity: {
@@ -164,7 +164,7 @@ describe("useAppShellSideEffectsController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           setStatus: vi.fn(),
         },
       }),

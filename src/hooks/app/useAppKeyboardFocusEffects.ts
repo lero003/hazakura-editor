@@ -94,7 +94,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   setEditorSettings: Dispatch<SetStateAction<EditorSettings>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
   setPreferencesDialogMode: Dispatch<SetStateAction<PreferencesDialogMode | null>>;
-  setPreviewVisible: Dispatch<SetStateAction<boolean>>;
+  togglePreviewSurface: () => void;
   setStatus: Dispatch<SetStateAction<string>>;
 };
 
@@ -162,7 +162,7 @@ export function useAppKeyboardFocusEffects({
   setEditorSettings,
   setFindVisible,
   setPreferencesDialogMode,
-  setPreviewVisible,
+  togglePreviewSurface,
   setStatus,
 }: UseAppKeyboardFocusEffectsOptions) {
   // The command palette and global search are modal-shaped
@@ -251,7 +251,7 @@ export function useAppKeyboardFocusEffects({
     setEditorSettings,
     setFindVisible,
     setPreferencesDialogMode,
-    setPreviewVisible,
+    togglePreviewSurface,
     setStatus,
   });
 

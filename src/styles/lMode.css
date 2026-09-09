@@ -1058,14 +1058,9 @@
   pointer-events: none;
 }
 
-/* Heading rhythm — strong jump rate, editorial treatments.
-   The FIRST H1 is the document's title: large, centered, with
-   a thin rule below. Subsequent H1s are treated like H2s
-   (left-aligned, smaller, with their own rule) — multi-section
-   documents almost never have multiple H1s, and when they do
-   the later ones read more like section titles than titles.
-   H2 is the section heading. H3 is the subsection. H4-6
-   progressively shrink into the body voice. */
+/* Heading rhythm: the first H1 is a restrained, start-aligned title.
+   H2 follows the prose alignment; neither adds an underline.
+   Later H1s and H3–H6 retain their existing display treatments. */
 :root[data-l-mode="on"] .cm-lmode-heading-1 {
   font-family: var(--lmode-prose-font-family);
   font-size: 1.7em;

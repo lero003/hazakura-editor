@@ -130,7 +130,7 @@ export function StartPanel({
           aria-label={copy.startActions}
         >
           <button type="button"
-            autoFocus={!(returning.showResumeWorkspace && returning.resumeWorkspaceLabel && onReopenPersistedWorkspace)}
+            autoFocus={!liveWorkspaceRootPath && !(returning.showResumeWorkspace && returning.resumeWorkspaceLabel && onReopenPersistedWorkspace)}
             onClick={() => void onOpenFolder()}>
             {copy.openFolder}
           </button>

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { cleanup, renderHook } from "@testing-library/react";
 import { useGlobalKeyboardShortcuts } from "./useGlobalKeyboardShortcuts";
 
 function setup(
@@ -30,7 +30,7 @@ function setup(
     setEditorSettings: vi.fn(),
     setFindVisible: vi.fn(),
     setPreferencesDialogMode: vi.fn(),
-    setPreviewVisible: vi.fn(),
+    togglePreviewSurface: vi.fn(),
     setStatus: vi.fn(),
     ...overrides,
   };
@@ -42,8 +42,15 @@ function setup(
 
 describe("useGlobalKeyboardShortcuts", () => {
   afterEach(() => {
+    cleanup();
     document.body.replaceChildren();
     vi.restoreAllMocks();
+  });
+
+  it("routes Alt+Cmd+P through the shared Preview surface operation", () => {
+    const props = setup();
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "p", metaKey: true, altKey: true, bubbles: true }));
+    expect(props.togglePreviewSurface).toHaveBeenCalledOnce();
   });
 
   it("routes Cmd+F to the open whole-book Reader instead of the hidden editor", () => {

@@ -12,6 +12,7 @@ afterEach(() => {
 
 describe("useCommandPaletteController", () => {
   it("returns the command palette + global search surface", () => {
+    const togglePreviewSurface = vi.fn();
     const openOkfReview = vi.fn();
     const createOkfScaffold = vi.fn();
     const { result } = renderHook(() =>
@@ -44,7 +45,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface,
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -62,6 +63,14 @@ describe("useCommandPaletteController", () => {
         workspaceRootPath: null,
       }),
     );
+
+    act(() => { result.current.openCommandPalette(); });
+    act(() => { result.current.setCommandPaletteQuery("preview"); });
+    const preview = result.current.filteredCommands.find(command => command.id === "view.preview");
+    expect(preview).toBeDefined();
+    act(() => { result.current.runCommand(preview!); });
+    expect(togglePreviewSurface).toHaveBeenCalledOnce();
+    act(() => { result.current.setCommandPaletteQuery(""); });
 
     // command palette (9)
     expect(result.current).toHaveProperty("closeCommandPalette");
@@ -151,7 +160,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -233,7 +242,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -320,7 +329,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -405,7 +414,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -485,7 +494,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -553,7 +562,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -620,7 +629,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -685,7 +694,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -766,7 +775,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -831,7 +840,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode,
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -921,7 +930,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode,
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -1015,7 +1024,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode,
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
@@ -1145,7 +1154,7 @@ describe("useCommandPaletteController", () => {
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
           setPreferencesDialogMode: vi.fn(),
-          setPreviewVisible: vi.fn(),
+          togglePreviewSurface: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),

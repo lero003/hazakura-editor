@@ -75,8 +75,6 @@ export function AppShell(props: AppShellProps) {
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
   const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
-  // Narrow Preview is presentation only; wider windows retain their saved split.
-  const [compactPreviewFocus, setCompactPreviewFocus] = useState<"editor" | "preview">("editor");
   const proposalReviewRef = useRef<HTMLDivElement>(null);
   const chapterReviewRequestRef = useRef(0);
   const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -104,17 +102,12 @@ export function AppShell(props: AppShellProps) {
   });
   const navigateToEditor = () => {
     if (!navigation.canNavigate || readingOverlayOpen) return;
-    setCompactPreviewFocus("editor");
+    props.onCompactPreviewFocusChange?.("editor");
     if (props.referencePaneVisible) props.onToggleReference();
     if (props.sidePaneMode === "ebook" || props.sidePaneMode === "compare") props.hideSidePane();
     requestAnimationFrame(() => props.editorPaneRef.current?.focus());
   };
-  const togglePreviewFromChrome = () => {
-    if (props.sidePaneMode !== "preview") setCompactPreviewFocus("preview");
-    props.onTogglePreview();
-  };
   const topChrome = <AppTopChrome {...props} primaryToolbarPresent={!props.lModeEnabled}
-    onTogglePreview={togglePreviewFromChrome}
     onEditorSettingsChange={props.setEditorSettings} />;
 
   return (
@@ -205,8 +198,8 @@ export function AppShell(props: AppShellProps) {
         {...props}
         documentChrome={props.lModeEnabled ? null : topChrome}
         onReadingOverlayChange={setReadingOverlayOpen}
-        compactPreviewFocus={compactPreviewFocus}
-        onCompactPreviewFocusChange={setCompactPreviewFocus}
+        compactPreviewFocus={props.compactPreviewFocus}
+        onCompactPreviewFocusChange={props.onCompactPreviewFocusChange}
         onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
         workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
       />

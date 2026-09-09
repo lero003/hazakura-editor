@@ -43,7 +43,7 @@ type UseGlobalKeyboardShortcutsOptions = {
   setEditorSettings: Dispatch<SetStateAction<EditorSettings>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
   setPreferencesDialogMode: Dispatch<SetStateAction<PreferencesDialogMode | null>>;
-  setPreviewVisible: Dispatch<SetStateAction<boolean>>;
+  togglePreviewSurface: () => void;
   setStatus: Dispatch<SetStateAction<string>>;
 };
 
@@ -73,7 +73,7 @@ export function useGlobalKeyboardShortcuts({
   setEditorSettings,
   setFindVisible,
   setPreferencesDialogMode,
-  setPreviewVisible,
+  togglePreviewSurface,
   setStatus,
 }: UseGlobalKeyboardShortcutsOptions) {
   useEffect(() => {
@@ -141,7 +141,7 @@ export function useGlobalKeyboardShortcuts({
 
       if (isCommandAltShortcut(event, "p")) {
         event.preventDefault();
-        setPreviewVisible((current) => !current);
+        togglePreviewSurface();
         return;
       }
 
@@ -327,7 +327,7 @@ export function useGlobalKeyboardShortcuts({
     setEditorSettings,
     setFindVisible,
     setPreferencesDialogMode,
-    setPreviewVisible,
+    togglePreviewSurface,
     setStatus,
   ]);
 }

@@ -1,3 +1,4 @@
+import { usePreviewSurface } from "../editor/usePreviewSurface";
 // `useAppShellController` is the Phase 3 single orchestrator hook
 // that bundles the ~40 leaf hooks App.tsx used to call individually
 // into one place. It returns a flat object that satisfies
@@ -573,10 +574,12 @@ export function useAppShellController() {
     () => switchFromReference(toggleOutlinePaneBase),
     [switchFromReference, toggleOutlinePaneBase],
   );
-  const togglePreviewPane = useCallback(
-    () => switchFromReference(togglePreviewPaneBase),
-    [switchFromReference, togglePreviewPaneBase],
-  );
+  const leaveReferenceForPreview = useCallback(() => setReferencePaneVisible(false), [setReferencePaneVisible]);
+  const { compactPreviewFocus, setCompactPreviewFocus, togglePreviewSurface } = usePreviewSurface({
+    sidePaneMode,
+    togglePreviewPane: togglePreviewPaneBase,
+    leaveReference: leaveReferenceForPreview,
+  });
 
   useEffect(() => {
     if (referencePaneVisible) {
@@ -1685,7 +1688,7 @@ export function useAppShellController() {
       setEditorSettings,
       setFindVisible,
       setPreferencesDialogMode,
-      setPreviewVisible,
+      togglePreviewSurface,
       toggleDiffPane,
       toggleLMode,
       toggleOutlinePane,
@@ -1784,7 +1787,7 @@ export function useAppShellController() {
       recentFoldersRef,
       setEditorSettings,
       setPreferencesDialogMode,
-      setPreviewVisible,
+      togglePreviewSurface,
       setThemePreference,
       onToggleLMode: toggleLMode,
     },
@@ -1905,7 +1908,7 @@ export function useAppShellController() {
       setEditorSettings,
       setFindVisible,
       setPreferencesDialogMode,
-      setPreviewVisible,
+      togglePreviewSurface,
       setStatus,
     },
   });
@@ -2137,7 +2140,9 @@ export function useAppShellController() {
     onToggleLMode: toggleLMode,
     hideSidePane,
     onToggleOutline: toggleOutlinePane,
-    onTogglePreview: togglePreviewPane,
+    onTogglePreview: togglePreviewSurface,
+    compactPreviewFocus,
+    onCompactPreviewFocusChange: setCompactPreviewFocus,
     onToggleReference: toggleReferencePane,
     onCloseGlobalSearch: closeGlobalSearch,
     onOpenGlobalSearch: openGlobalSearch,

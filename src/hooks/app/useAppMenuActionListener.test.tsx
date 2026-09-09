@@ -43,6 +43,7 @@ function setup() {
     saveActiveTab: vi.fn(),
     saveActiveTabAs: vi.fn(),
   };
+  const togglePreviewSurface = vi.fn();
   const setThemePreference = vi.fn();
   const setPreferencesDialogMode = vi.fn();
 
@@ -54,18 +55,24 @@ function setup() {
       recentFoldersRef: { current: [] },
       setEditorSettings: vi.fn(),
       setPreferencesDialogMode,
-      setPreviewVisible: vi.fn(),
+      togglePreviewSurface,
       setThemePreference,
     }),
   );
 
-  return { actions, setPreferencesDialogMode, setThemePreference };
+  return { actions, setPreferencesDialogMode, setThemePreference, togglePreviewSurface };
 }
 
 describe("useAppMenuActionListener", () => {
   afterEach(() => {
     menuListeners.length = 0;
     vi.mocked(listen).mockClear();
+  });
+
+  it("routes native toggle-preview through the shared Preview surface operation", () => {
+    const { togglePreviewSurface } = setup();
+    void menuListeners[0]?.({ payload: "toggle-preview" } as never);
+    expect(togglePreviewSurface).toHaveBeenCalledOnce();
   });
 
   it("routes the custom quit menu action through the app quit confirmation flow", () => {

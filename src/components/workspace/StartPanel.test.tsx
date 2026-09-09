@@ -31,6 +31,16 @@ function pathlessDraft(
 }
 
 describe("StartPanel recent file surface", () => {
+  it("does not steal focus to Open Folder when a live workspace remains", () => {
+    const view = render(<button>Existing workspace action</button>);
+    const previous = screen.getByRole("button", { name: "Existing workspace action" });
+    previous.focus();
+    render(<StartPanel copy={getSafeEditorCopy("en")} liveWorkspaceRootPath="/workspace"
+      persistedWorkspaceRootPath="/workspace" onOpenFolder={vi.fn()} onNewFile={vi.fn()} onOpenFile={vi.fn()} />);
+    expect(document.activeElement).toBe(previous);
+    view.unmount();
+  });
+
   it("keeps folder, new document and file actions connected in the new start layout", () => {
     const onOpenFolder = vi.fn(), onNewFile = vi.fn(), onOpenFile = vi.fn();
     render(<StartPanel copy={getSafeEditorCopy("en")} persistedWorkspaceRootPath={null}

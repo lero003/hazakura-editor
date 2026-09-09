@@ -1,3 +1,4 @@
+import { usePreviewSurface } from "../../hooks/editor/usePreviewSurface";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
@@ -51,17 +52,24 @@ const base = {
   lModeEnabled: false,
 } as unknown as AppShellProps;
 
+function ConnectedShell(props: AppShellProps) {
+  const surface = usePreviewSurface({ sidePaneMode: props.sidePaneMode,
+    togglePreviewPane: props.onTogglePreview ?? (() => {}), leaveReference: () => {} });
+  return <AppShell {...props} compactPreviewFocus={surface.compactPreviewFocus}
+    onCompactPreviewFocusChange={surface.setCompactPreviewFocus} onTogglePreview={surface.togglePreviewSurface} />;
+}
+
 describe("AppShell chrome layers", () => {
   it.each([null, "ebook"] as const)("selects Preview through the existing chrome entry from %s", (sidePaneMode) => {
     const onTogglePreview = vi.fn();
-    const { container } = render(<AppShell {...base} sidePaneMode={sidePaneMode} onTogglePreview={onTogglePreview} />);
+    const { container } = render(<ConnectedShell {...base} sidePaneMode={sidePaneMode} onTogglePreview={onTogglePreview} />);
     fireEvent.click(screen.getByRole("button", { name: "Toggle Preview" }));
     expect(container.querySelector("[data-compact-preview='preview']")).toBeTruthy();
     expect(onTogglePreview).toHaveBeenCalledOnce();
   });
   it("keeps the existing close action when Preview is already open", () => {
     const onTogglePreview = vi.fn();
-    const { container } = render(<AppShell {...base} sidePaneMode="preview" onTogglePreview={onTogglePreview} />);
+    const { container } = render(<ConnectedShell {...base} sidePaneMode="preview" onTogglePreview={onTogglePreview} />);
     fireEvent.click(screen.getByRole("button", { name: "Toggle Preview" }));
     expect(container.querySelector("[data-compact-preview='editor']")).toBeTruthy();
     expect(onTogglePreview).toHaveBeenCalledOnce();
@@ -69,7 +77,7 @@ describe("AppShell chrome layers", () => {
 
   it("reveals the editor from compact Preview through the primary Write action", () => {
     const hideSidePane = vi.fn();
-    const { container } = render(<AppShell {...base}
+    const { container } = render(<ConnectedShell {...base}
       activeTab={{ name: "draft.md", path: "", sessionId: "draft" } as AppShellProps["activeTab"]}
       sidePaneMode="preview" hideSidePane={hideSidePane}
       editorPaneRef={{ current: null }} />);
@@ -83,19 +91,19 @@ describe("AppShell chrome layers", () => {
   });
 
   it("keeps floating L Mode tabs outside the workspace stacking context while retaining the editor", () => {
-    const view = render(<AppShell {...base} />);
+    const view = render(<ConnectedShell {...base} />);
     const editor = screen.getByRole("textbox", {name: "Editor"});
     expect(screen.getByRole("button", {name: "Document tab"}).closest(".workspace")).toBeTruthy();
-    view.rerender(<AppShell {...base} lModeEnabled />);
+    view.rerender(<ConnectedShell {...base} lModeEnabled />);
     const chrome = screen.getByRole("button", {name: "Document tab"}).closest(".tabs-row")!;
     expect(chrome.parentElement).toBe(view.container.querySelector(".app-shell"));
     expect(chrome.parentElement).toBe(view.container.querySelector(".lmode-window-drag-band")?.parentElement);
     expect(screen.getByRole("textbox", {name: "Editor"})).toBe(editor);
-    view.rerender(<AppShell {...base} />);
+    view.rerender(<ConnectedShell {...base} />);
     expect(screen.getByRole("textbox", {name: "Editor"})).toBe(editor);
   });
   it("does not leave floated L Mode tabs above an independent Reader", () => {
-    render(<AppShell {...base} lModeEnabled />);
+    render(<ConnectedShell {...base} lModeEnabled />);
     fireEvent.click(screen.getByRole("button", {name: "Open Reader"}));
     expect(screen.queryByRole("button", {name: "Document tab"})).toBeNull();
   });
