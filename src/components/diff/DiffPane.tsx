@@ -35,6 +35,7 @@ export function DiffPane({
   if (compareCase.kind === "file") {
     return (
       <FileCompareView
+        focusOnOpen
         compareCase={compareCase}
         menuLanguage={menuLanguage}
         onClose={onClose}
@@ -45,6 +46,7 @@ export function DiffPane({
 
   return (
     <ChangeReviewView
+      focusOnOpen
       compareCase={compareCase}
       documentTab={documentTab}
       menuLanguage={menuLanguage}

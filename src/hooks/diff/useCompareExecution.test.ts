@@ -54,6 +54,13 @@ describe("buildTabAgainstDiskChangeReview", () => {
     expect(snapshot).toBeNull();
   });
 
+  it("rejects a reopened session at the same path after the disk read", async () => {
+    const tab = makeTab();
+    tauriApi.openTextFile.mockResolvedValueOnce({ contents: "disk" });
+    expect(await buildTabAgainstDiskChangeReview(tab, "en", () =>
+      makeTab({ sessionId: "reopened" }))).toBeNull();
+  });
+
   it("uses the latest tab buffer after disk read completes", async () => {
     const tab = makeTab({ contents: "old draft" });
     const latestTab = makeTab({ contents: "latest draft" });

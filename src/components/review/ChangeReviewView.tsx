@@ -1,3 +1,5 @@
+import { useComparisonFocus } from "../diff/useComparisonFocus";
+import { ComparisonTargets } from "../diff/ComparisonTargets";
 import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
   CompareCase,
@@ -15,6 +17,7 @@ import { DiffBody } from "../diff/DiffBody";
 type ChangeReviewCase = Extract<CompareCase, { kind: "changes" }>;
 
 type ChangeReviewViewProps = {
+  focusOnOpen?: boolean;
   compareCase: ChangeReviewCase;
   documentTab?: EditorTab | null;
   menuLanguage: MenuLanguage;
@@ -24,6 +27,7 @@ type ChangeReviewViewProps = {
 };
 
 export function ChangeReviewView({
+  focusOnOpen = false,
   compareCase,
   documentTab = null,
   menuLanguage,
@@ -31,6 +35,7 @@ export function ChangeReviewView({
   onClose,
   view,
 }: ChangeReviewViewProps) {
+  const closeRef = useComparisonFocus(view.caseKey, focusOnOpen);
   const labels = getReviewCopy(menuLanguage);
 
   // Stale detection only applies to buffer-backed scopes whose right
@@ -63,15 +68,6 @@ export function ChangeReviewView({
       <div className="diff-header">
         <div className="diff-title">
           <span>{labels.changesTitle}</span>
-          <strong>
-            <span title={compareCase.documentPath}>
-              {compareCase.documentLabel} ({compareCase.leftColumnLabel})
-            </span>
-            <span aria-hidden="true">{labels.to}</span>
-            <span title={compareCase.documentPath}>
-              {compareCase.documentLabel} ({compareCase.rightColumnLabel})
-            </span>
-          </strong>
         </div>
         <div className="diff-summary" aria-label={labels.summary}>
           <span className="diff-added" title={labels.additions}>
@@ -95,7 +91,7 @@ export function ChangeReviewView({
               {labels.applyBackup}
             </button>
           ) : null}
-          <button type="button" onClick={onClose}>
+          <button ref={closeRef} type="button" onClick={onClose}>
             {labels.close}
           </button>
         </div>
@@ -110,6 +106,7 @@ export function ChangeReviewView({
           <span>{staleDetail}</span>
         </div>
       ) : null}
+      <ComparisonTargets left={{ name: compareCase.documentLabel, path: compareCase.documentPath, label: compareCase.leftColumnLabel }} right={{ name: compareCase.documentLabel, path: compareCase.documentPath, label: compareCase.rightColumnLabel }} menuLanguage={menuLanguage} restorable={showApplyBackup} />
       <div className="diff-table" role="table" aria-label={labels.table}>
         <div className="diff-split-row diff-row-header" role="row">
           <span className="diff-line-number" role="columnheader" />

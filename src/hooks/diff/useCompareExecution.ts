@@ -52,7 +52,7 @@ export async function buildTabAgainstDiskChangeReview(
 ): Promise<ChangeReviewSnapshot | null> {
   const diskDocument = await openTextFile(tab.path);
   const latestTab = getCurrentTabById(tab.id);
-  if (!latestTab || latestTab.path !== tab.path) {
+  if (!latestTab || latestTab.path !== tab.path || latestTab.sessionId !== tab.sessionId) {
     return null;
   }
   const diff = buildLineDiff(diskDocument.contents, latestTab.contents);

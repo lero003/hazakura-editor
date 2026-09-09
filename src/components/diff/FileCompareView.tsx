@@ -1,3 +1,5 @@
+import { useComparisonFocus } from "./useComparisonFocus";
+import { ComparisonTargets } from "./ComparisonTargets";
 import type {
   CompareCase,
   CompareViewState,
@@ -10,16 +12,19 @@ import { DiffBody } from "./DiffBody";
 type FileCompareCase = Extract<CompareCase, { kind: "file" }>;
 
 export function FileCompareView({
+  focusOnOpen = false,
   compareCase,
   menuLanguage,
   onClose,
   view,
 }: {
+  focusOnOpen?: boolean;
   compareCase: FileCompareCase;
   menuLanguage: MenuLanguage;
   onClose: () => void;
   view: CompareViewState;
 }) {
+  const closeRef = useComparisonFocus(view.caseKey, focusOnOpen);
   const labels = isKanaStyle(menuLanguage)
     ? {
         additions: "ついかぎょう",
@@ -55,15 +60,6 @@ export function FileCompareView({
       <div className="diff-header">
         <div className="diff-title">
           <span>{labels.fileTitle}</span>
-          <strong>
-            <span title={compareCase.anchor.path}>
-              {compareCase.anchor.name}
-            </span>
-            <span aria-hidden="true">{labels.to}</span>
-            <span title={compareCase.target.path}>
-              {compareCase.target.name}
-            </span>
-          </strong>
         </div>
         <div className="diff-summary" aria-label={labels.summary}>
           <span className="diff-added" title={labels.additions}>
@@ -72,11 +68,12 @@ export function FileCompareView({
           <span className="diff-removed" title={labels.removed}>
             -{view.removals}
           </span>
-          <button type="button" onClick={onClose}>
+          <button ref={closeRef} type="button" onClick={onClose}>
             {labels.close}
           </button>
         </div>
       </div>
+      <ComparisonTargets left={compareCase.anchor} right={compareCase.target} menuLanguage={menuLanguage} />
       <div className="diff-table" role="table" aria-label={labels.table}>
         <div className="diff-split-row diff-row-header" role="row">
           <span className="diff-line-number" role="columnheader" />
