@@ -1,13 +1,14 @@
 # UI-B追修正・LA-0・UI-C1のまとめレビュー
 
-Status: Implemented; ready for later external review
+Status: External review GO; C1 follow-up recorded in UI-C2
 Scope: Preview入口、開始フォーカス、Local Assistの責務と表示面
 Authority: Review evidence
 Last reviewed: 2026-09-09
 
 比較基点 `48233e1c`、ブランチ `codex/v3`。
 オーナー提供レビューにより前回R1/R2はCLOSED、UI-B2は大筋GO。
-今回のR3〜R5は作成者側で修正・確認済み。外部再判定はまだ受けていない。
+その後のオーナー提供レビューでR3〜R5 CLOSED、LA-0 GO、UI-C1 GO。
+C1の小修正と次の導線は[UI-C2資料](../2026-09-09-v3-ui-c2/README.md)へ。以下の検証値は当時の記録。
 
 | コミット | 区切り |
 | --- | --- |

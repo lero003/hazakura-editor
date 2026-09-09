@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: UI-B追修正、LA-0、UI-C1から次の導線へ
+Scope: UI-C1追修正とUI-C2実装後の通し確認
 Authority: High
 Last reviewed: 2026-09-09
 
@@ -12,22 +12,25 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI-B追修正・LA-0・UI-C1
+## 現在の区切り — UI-C1追修正・UI-C2
 
-前回R1/R2は外部CLOSED、UI-B2大筋GO。R3〜R5を45fbc027で修正。
-[LA-0所有者](v3-local-assist-ownership.md)を62dc5f42で確定し、
-会話表示と提案の操作列をb2dda7f1で実装した。
-[まとめ資料・原寸画像](reviews/2026-09-09-v3-ui-c1/README.md)が現行の入口。
+オーナー提供レビューでUI-B R3〜R5 CLOSED、LA-0 GO、UI-C1 GO。
+C1の反映/破棄ロック説明、disabled表示、停止待ちの受入記録を修正。
+UI-C2は16e438ebで実装し、別窓から本体の該当提案へ移る導線と
+Apply/Discard通知をconversation/request/document sessionで照合する。
+[まとめ資料](reviews/2026-09-09-v3-ui-c2/README.md)が現行の入口。
 
-全2,100件・表示境界111件・typecheck/Vite/native previewはローカル成功。
-ブラウザーで狭幅shortcut/Palette、nativeでPreviewメニュー開閉を確認。
-Assistは表示fixtureと既存回帰試験。実System通し確認・IME/VoiceOver/200%は未受入。
+ローカル全2,109件・表示境界111件・Rust 383件成功（2件ignored）。
+typecheck/Vite/native preview成功。最終配置変更後の関連20件も成功。
+960×640のブラウザーfixtureでblocked文言・無効表示・操作列を確認。
+C2のnative窓間focus、実System通し操作、IME/VoiceOver/200%は未受入。
 
 ## 次のまとまった区切り
 
-1. UI-C2: 別窓からsession/requestを検証して本体の該当提案を確認する導線。
-2. UI-C本体の表示領域と、生成→停止待ち→前案→Diff→反映→Undoを通し確認。
-3. UI-B追修正、LA-0、UI-Cをまとめて外部合評へ。小修正ごとにレビュー待ちで止めない。
+1. native実Systemで生成→別タブ→「この提案を見る」→Diff→反映→Undoを確認。
+   停止待ちの前案・反映/破棄不可、閉じた文書/新session/古い通知の拒否も見る。
+2. UI-C本体の表示領域、小さい別窓、IME/VoiceOverを確認し、C1追修正/C2を合評へ。
+3. UI-Cの受入後、既定計画のUI-D（参照・復元・保存衝突）へ進む。
 
 各実装は独立コミットと検証を維持。実System・IME/VoiceOver・200%・全テーマなどの
 受入を表示fixtureで代替しない。UI-B全体/UI-C全体・UI-D〜G・LA-1以降は未完了。

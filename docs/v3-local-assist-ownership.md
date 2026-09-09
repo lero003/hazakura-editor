@@ -1,7 +1,7 @@
 # LA-0 — Local Assistの責務とUI-Cの変更境界
 
 Status: Adopted for v3 implementation
-Scope: 現行System経路の所有者、変えないwire、次の抽出単位
+Scope: 現行System経路の所有者、C2の確認導線、次の抽出単位
 Authority: Medium
 Last reviewed: 2026-09-09
 
@@ -23,14 +23,29 @@ UI-Cでは会話の描画を純粋な部品に分け、言語コピーをlocale�
 要求ID・会話対象・取消のstate/refは元のwindow controllerに残す。
 本体レビューでは既存generation lockをblockedへ渡し、停止待ちも反映/破棄を無効にする。
 
-UIの配置変更でnative要求やprotocol、System選択、型の意味を変更しない。
+C1の配置変更では生成/取消protocol、System選択、型の意味を変更しない。
+C2の確認専用wireとApply/Discard通知のsession追加は下記の範囲に限定する。
 新SDK/AFMの可用性、runtime抽出、モデル資産/DL/切替は別のLA-1以降・v3.1ゲート。
 
 ## UI-Cの区切り
 
 - C1: 別窓の対象・会話・入力、生成/失敗表示、提案面の可読性と下端操作列。
-- C2: request/sessionを検証した別窓から本体の提案focus導線。
-  現行wireの読み取り・破棄/適用後の挙動を固定してから追加する。
+- C2: conversation/request/document sessionを検証した別窓から本体の提案focus導線。
+  16e438ebで実装。閉じた文書・stale・streaming・別提案は拒否し、タブ切替後も再検証。
 - 受入: 実Systemで生成→停止待ち→前案保持→Diff→明示反映→Undo、native小窓/IME/VoiceOver。
 
 C1のブラウザーfixtureは描画・既存イベント処理の証拠であり、System実生成やnative受入に読み替えない。
+
+## C2の確認専用連携
+
+別窓は最後に完了した提案の3つのIDを保持する。追加生成の失敗/取消では前案のIDを残す。
+「この提案を見る」は生成/停止待ち中に無効。本文・path・window labelは渡さない。
+`request_apple_assist_review`はapple-assist caller限定、IDの空/制御文字/200 bytes超過を拒否。
+mainは開いたsessionの最新proposalと元文章を照合し、既存タブ選択を使用する。
+Reader/モーダル/画像表示中は移動を拒否。切替後にも照合し、main限定の
+`focus_main_apple_assist_review`で固定の本体窓を前面にし、proposal regionへfocusする。
+結果は同じ3 IDで別窓へ返す。応答待ち5秒は確認導線だけの失敗表示であり、生成の完了判定には使わない。
+
+mainのApply/Discard結果にもdocumentSessionIdを付加する。別窓は3 IDすべて一致し、
+新しい生成要求がない場合のみ結果を受領する。欠けたID、以前のrequest、別sessionは無視する。
+生成・Apply・Undoの所有者、helperの終了/取消mutex、no auto-saveは変更しない。
