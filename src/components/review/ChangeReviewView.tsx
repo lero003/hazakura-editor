@@ -1,3 +1,4 @@
+import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
   CompareCase,
   CompareViewState,
@@ -17,7 +18,7 @@ type ChangeReviewViewProps = {
   compareCase: ChangeReviewCase;
   documentTab?: EditorTab | null;
   menuLanguage: MenuLanguage;
-  onApplyBackup?: (documentPath: string, backupContents: string) => void;
+  onApplyBackup?: (request: BackupRestoreRequest) => void;
   onClose: () => void;
   view: CompareViewState;
 };
@@ -82,12 +83,12 @@ export function ChangeReviewView({
           {showApplyBackup ? (
             <button
               type="button"
+              disabled={staleReason !== null || !compareCase.capturedSnapshot}
               onClick={() => {
-                if (compareCase.backupApplyAction && onApplyBackup) {
-                  onApplyBackup(
-                    compareCase.documentPath,
-                    compareCase.backupApplyAction.backupContents,
-                  );
+                if (!staleReason && compareCase.capturedSnapshot && compareCase.backupApplyAction && onApplyBackup) {
+                  onApplyBackup({ documentPath: compareCase.documentPath,
+                    backupContents: compareCase.backupApplyAction.backupContents,
+                    capturedSnapshot: compareCase.capturedSnapshot });
                 }
               }}
             >

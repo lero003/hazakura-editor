@@ -1,3 +1,6 @@
+import { useBackupReviewActions } from "../../hooks/workspace/useBackupReviewActions";
+import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
+import type { EditorTab } from "../../types";
 import {
   act,
   cleanup,
@@ -1036,4 +1039,34 @@ describe("EditorPane", () => {
       globalThis.ResizeObserver = OriginalResizeObserver;
     }
   });
+
+it("restores a reviewed backup through the real editor with one Undo and preserved DOM", async () => {
+  const source = "current unsaved work";
+  const tab = { id: "doc", sessionId: "backup-undo", path: "/workspace/doc.md", name: "doc.md", contents: source,
+    encoding: "utf-8", line_ending: "lf", lastSavedContents: source } as EditorTab;
+  const editorRef = createRef<EditorPaneHandle>();
+  const claim = { documentPath: tab.path, backupContents: "backup contents", capturedSnapshot: captureChangeReviewSnapshot(tab) };
+  const close = vi.fn();
+  function Host() {
+    const [value, setValue] = useState(source);
+    const actions = useBackupReviewActions({ activeTab: { ...tab, contents: value }, workspaceRootPath: "/workspace", menuLanguage: "en",
+      imageVisible: false, editorPaneRef: editorRef, readBackup: async () => "", closePicker: () => {}, leaveLMode: () => {},
+      review: () => {}, closeComparison: close, setStatus: () => {}, rejectIfLocked: () => false });
+    return <><button onClick={() => actions.apply(claim)}>Restore reviewed backup</button>
+      <output data-testid="backup-dirty">{String(value !== source)}</output>
+      {renderEditorPane({ value, onChange: setValue, ref: editorRef, editorSessionKey: tab.sessionId })}</>;
+  }
+  const { container } = render(<Host />);
+  const content = container.querySelector(".cm-content")!;
+  fireEvent.click(screen.getByRole("button", { name: "Restore reviewed backup" }));
+  expect(editorRef.current?.getActiveDocument()?.text).toBe("backup contents");
+  expect(screen.getByTestId("backup-dirty").textContent).toBe("true");
+  fireEvent.click(screen.getByRole("button", { name: "Restore reviewed backup" }));
+  expect(close).toHaveBeenCalledOnce();
+  fireEvent.keyDown(content, { ctrlKey: true, key: "z" });
+  await waitFor(() => expect(editorRef.current?.getActiveDocument()?.text).toBe(source));
+  expect(screen.getByTestId("backup-dirty").textContent).toBe("false");
+  expect(container.querySelector(".cm-content")).toBe(content);
+});
+
 });

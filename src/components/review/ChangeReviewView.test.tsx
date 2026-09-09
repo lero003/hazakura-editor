@@ -66,10 +66,8 @@ describe("ChangeReviewView", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Restore this backup" }));
 
-    expect(onApplyBackup).toHaveBeenCalledWith(
-      "/workspace/note.md",
-      "# Restored\n",
-    );
+    expect(onApplyBackup).toHaveBeenCalledWith({ documentPath: "/workspace/note.md",
+      backupContents: "# Restored\n", capturedSnapshot: backupCompareCase.capturedSnapshot });
   });
 
   it("shows no stale banner when the buffer matches the captured snapshot", () => {
@@ -139,4 +137,15 @@ describe("ChangeReviewView", () => {
 
     expect(screen.queryByText("This diff is stale")).toBeNull();
   });
+});
+
+it.each(["edited", "switched", "closed", "missing-snapshot"])("blocks backup restore when %s", (state) => {
+  const onApplyBackup = vi.fn();
+  render(<ChangeReviewView compareCase={state === "missing-snapshot" ? { ...backupCompareCase, capturedSnapshot: undefined } : backupCompareCase}
+    documentTab={state === "closed" ? null : state === "switched" ? { ...comparedTab, sessionId: "another" } : state === "edited" ? { ...comparedTab, contents: "new work" } : comparedTab}
+    menuLanguage="en" onApplyBackup={onApplyBackup} onClose={vi.fn()} view={emptyView} />);
+  const restore = screen.getByRole("button", { name: "Restore this backup" });
+  expect(restore.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(restore);
+  expect(onApplyBackup).not.toHaveBeenCalled();
 });

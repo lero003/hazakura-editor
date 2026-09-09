@@ -1,3 +1,4 @@
+import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
   CompareCase,
   CompareViewState,
@@ -18,7 +19,7 @@ type DiffPaneProps = {
   compareCase: RightPaneCompareCase;
   documentTab?: EditorTab | null;
   menuLanguage: MenuLanguage;
-  onApplyBackup?: (documentPath: string, backupContents: string) => void;
+  onApplyBackup?: (request: BackupRestoreRequest) => void;
   onClose: () => void;
   view: CompareViewState;
 };

@@ -1,3 +1,4 @@
+import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
   CSSProperties,
   ReactNode,
@@ -199,7 +200,7 @@ type AppWorkspaceProps = {
     heading: Extract<MarkdownStructureItem, { kind: "heading" }>,
     direction: HeadingLevelChangeDirection,
   ) => void;
-  onApplyBackup?: (documentPath: string, backupContents: string) => void;
+  onApplyBackup?: (request: BackupRestoreRequest) => void;
   onApproveLocalImageParent: (resolvedPath: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   lModeCopy: LModeCopy;

@@ -1,3 +1,4 @@
+import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import {
   lazy,
   Suspense,
@@ -60,7 +61,7 @@ type SidePaneProps = {
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
   onClearCompareTarget: () => void;
-  onApplyBackup?: (documentPath: string, backupContents: string) => void;
+  onApplyBackup?: (request: BackupRestoreRequest) => void;
   onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
   onEbookLocationChange: (location: EBookReaderLocation) => void;
   onOpenEbookReadingFocus: (location: EBookReaderLocation) => void;

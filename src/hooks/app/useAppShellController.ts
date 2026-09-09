@@ -1,3 +1,4 @@
+import { useBackupReviewActions } from "../workspace/useBackupReviewActions";
 import { usePreviewSurface } from "../editor/usePreviewSurface";
 // `useAppShellController` is the Phase 3 single orchestrator hook
 // that bundles the ~40 leaf hooks App.tsx used to call individually
@@ -73,7 +74,6 @@ import {
   type LocalAssistProposal,
 } from "../../features/editor/localAssistProposal";
 import {
-  replaceTabsBufferByPath,
   replaceTabsBufferBySessionId,
   updateTabsById,
 } from "../../features/editor/editorTabs";
@@ -1137,88 +1137,13 @@ export function useAppShellController() {
     workspaceRootPath,
   ]);
 
-  // User picked a backup entry. Read its content, then open
-  // the right-pane comparison (`backup-vs-buffer`). The diff
-  // is what shows the user exactly what would change before
-  // they commit — the apply step is a second, explicit click
-  // inside the compare view.
-  const selectAutoBackupEntry = useCallback(
-    async (entry: { name: string; path: string }) => {
-      if (!activeTab || !workspaceRootPath) {
-        return;
-      }
-      closeRestoreBackupDialog();
-      try {
-        const contents = await autoBackupRestore.readBackup(
-          { workspaceRoot: workspaceRootPath, filePath: activeTab.path },
-          entry.name,
-        );
-        if (editorSettings.lModeEnabled) {
-          setEditorSettings((current) => ({
-            ...current,
-            lModeEnabled: false,
-          }));
-        }
-        await requestReviewBackupAgainstBuffer(
-          activeTab,
-          entry.name,
-          contents,
-        );
-      } catch (err) {
-        setGlobalError(`Restore from backup failed: ${String(err)}`);
-        setStatus("Restore from backup failed");
-      }
-    },
-    [
-      activeTab,
-      autoBackupRestore,
-      closeRestoreBackupDialog,
-      editorSettings.lModeEnabled,
-      requestReviewBackupAgainstBuffer,
-      setEditorSettings,
-      setGlobalError,
-      setStatus,
-      workspaceRootPath,
-    ],
-  );
-
-  // Apply a previously-selected backup to its original target tab. The
-  // `compareCase` comes from the diff view's state (the
-  // `backupApplyAction` payload is set when the case is built,
-  // not when the apply button is clicked), so the right-pane
-  // view is the source of truth for "which backup am I
-  // applying". We use the compare case's document path rather
-  // than the current active tab so a tab switch between review
-  // and Apply cannot write the backup into the wrong document.
-  // The buffer is marked dirty so the user still has to save to
-  // persist; this avoids a silent disk write when the user just
-  // wanted to peek at a backup.
-  const applyBackupToActiveTab = useCallback(
-    (documentPath: string, backupContents: string) => {
-      const targetTab = tabs.find((tab) => tab.path === documentPath);
-      if (!targetTab) {
-        setStatus("Backup apply failed");
-        return;
-      }
-      if (rejectIfAppleAssistLocksTab(targetTab)) {
-        return;
-      }
-      setTabs((currentTabs) =>
-        replaceTabsBufferByPath(currentTabs, documentPath, backupContents),
-      );
-      setActiveTabId(targetTab.id);
-      closeCompareView();
-      setStatus("Backup applied — save to keep changes");
-    },
-    [
-      closeCompareView,
-      rejectIfAppleAssistLocksTab,
-      setActiveTabId,
-      setStatus,
-      setTabs,
-      tabs,
-    ],
-  );
+  const { select: selectAutoBackupEntry, apply: applyBackupToActiveTab } = useBackupReviewActions({
+    activeTab, workspaceRootPath, menuLanguage, imageVisible: !!selectedImage, editorPaneRef,
+    readBackup: autoBackupRestore.readBackup, closePicker: closeRestoreBackupDialog,
+    leaveLMode: () => { if (editorSettings.lModeEnabled) setEditorSettings(current => ({ ...current, lModeEnabled: false })); },
+    review: requestReviewBackupAgainstBuffer, closeComparison: closeCompareView,
+    setStatus, rejectIfLocked: rejectIfAppleAssistLocksTab,
+  });
 
   // section: document IO controller
   const {

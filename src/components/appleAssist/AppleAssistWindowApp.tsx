@@ -862,7 +862,7 @@ export function AppleAssistWindowApp() {
               onClick={() => {
                 setConversation(null); conversationRef.current = null;
                 clearReviewNavigation();
-          reviewIdentityRef.current = null; setReviewIdentity(null); clearReviewNavigation();
+                reviewIdentityRef.current = null; setReviewIdentity(null);
                 setStreamPreview(""); setStreamOriginalText(""); setError(null);
                 setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
               }}>{copy.newConversationButton}</button>
