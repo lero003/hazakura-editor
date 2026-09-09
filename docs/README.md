@@ -3,13 +3,13 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Agent entry rules live in `AGENTS.md`。v2.8は2026-09-08にオーナーが公開を報告。
-次の開発はv2.9 Local Assist改善、v3.0 AFM活用と基盤、v3.1モデル管理。
-`current-work.md` → `v2.9-v3-local-assist-plan.md` の順に読む。
+Agent entry rules live in `AGENTS.md`。v2.9は2026-09-09にオーナーが審査通過・公開を報告。
+次はv3.0のUI/UX刷新・アプリの完成度・Local Assist architecture整理、v3.1はモデル管理。
+`current-work.md` → `v3-product-completion-plan.md` → `v2.9-v3-local-assist-plan.md` の順に読む。
 過去の候補・実機未確認・GitHub公開は別証跡として保持する。
 
 ## Current Canonical Docs
@@ -20,9 +20,10 @@ Agent entry rules live in `AGENTS.md`。v2.8は2026-09-08にオーナーが公�
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **v2.9 Local Assist queue**.
+- `current-work.md`: **v3 implementation preparation queue**.
 - `roadmap.md`: **v2.9–v3.1の版別方針**.
-- `v2.9-v3-local-assist-plan.md`: **current plan** for Local Assist / AFM / Core AI.
+- `v3-product-completion-plan.md`: **v3全体計画**。添付UI資料の採否・着手順・完成判定。
+- `v2.9-v3-local-assist-plan.md`: **current technical plan** for Local Assist / AFM / Core AI.
 - `v2.8-plan.md`: published-line planning history; unshipped U-3/U-4/G-1 moved to the next plan.
 - `v2.6-plan.md`: **v2.6 plan** (conversation + separate Diff review; store published, GitHub tag pending).
 - `v2.5-plan.md`: **v2.5 plan** (workspace control; Assist deferred; later Core AI).
@@ -59,8 +60,9 @@ Agent entry rules live in `AGENTS.md`。v2.8は2026-09-08にオーナーが公�
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **v2.9–v3.1の版別方針**
-- `current-work.md` — v2.9ソースレビューと残る実機/品質確認; M-0a完了; C-1/C-2はv3.1のゲート待ち
-- `v2.9-v3-local-assist-plan.md` — active plan, attachment reconciliation and acceptance
+- `current-work.md` — v3 UI-A0→UI-A1の着手準備; C-1/C-2はv3.1のゲート待ち
+- `v3-product-completion-plan.md` — v3全体とUI刷新の計画
+- `v2.9-v3-local-assist-plan.md` — active technical plan, attachment reconciliation and acceptance
 - `v2.8-plan.md` — historical writing-companion plan
 - `v2.6-plan.md` — historical A-1–A-4 conversation / Diff review plan
 - `releases/2.6.2-source-tag.release.md` — 2.6.2 note; Mac App Store published; GitHub source tag pending

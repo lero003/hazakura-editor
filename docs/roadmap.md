@@ -3,50 +3,35 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 ## Current Position
 
-Hazakura EditorはMarkdown-first Safe Editor。今後の開発はLocal Assistを主軸に、
-「Markdownで書き、本として読み、ローカルAIで整える。」を深める。
+Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
+v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
 
 | 対象 | 状態 |
 |---|---|
-| 公開版 | v2.8（2026-09-08オーナー報告） |
-| ソース版 | 2.9.0。日常品質の外部再レビューとTestFlight候補準備 |
-| 配布証跡 | 公開build・PR #40包含・実機確認の詳細は未確認。過去の候補と区別する |
-| 現行キュー | v2.9 日常品質強化・System-only改善 — `docs/current-work.md` |
-| 計画正本 | `docs/v2.9-v3-local-assist-plan.md` |
+| 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告） |
+| ソース版 | 2.9.0。v3準備段階で版数は未更新 |
+| 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
+| 現行キュー | UI-A0の配置/遷移棚卸し → UI-A1の通常編集外枠 — `docs/current-work.md` |
+| 全体計画 | `docs/v3-product-completion-plan.md` |
+| Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
-ローカル候補の詳細は `docs/internal/app-store-candidates/latest.json`。
-公開成果物との一致は別途確認する。
-
-## Phase Decision — 2026-09-08
+## Phase Decision — 2026-09-09
 
 | 版 | 主題 | 完了の目安 |
 |---|---|---|
-| v2.8 | 公開済みの別窓Writing Companion | 次期改善の基準。公開済み版へ機能追加を混ぜない |
-| **v2.9** | **日常利用と現行Local Assistの確実さ** | 保存・復旧・検索・文字コード・書き出し、上限整合、エラー案内、日本語評価 |
-| **v3.0** | **強化AFMの活用と共通基盤** | 対応Systemの実生成・品質・停止/復旧、backend共通契約、旧OS互換 |
-| **v3.1** | **任意モデルのDL・管理・切り替え** | allowlistモデルを明示入手・検証・利用・削除できるC-1/C-2 |
-| v3.2以降 | 文章品質の追加機能、明示章参照、読む・届ける改善 | 需要で選ぶ候補。版ごとの機能確約ではない |
+| v2.9 | 公開済みの日常品質とSystem-only改善 | 保存・復旧等の修正履歴を維持。公開報告から未記録の個別試験を合格にしない |
+| **v3.0** | **UI/UX刷新・アプリの完成度・Local Assist architecture整理** | 編集→読書→提案確認→出力と失敗/復旧の一貫性、全テーマ/狭幅/実機、System共通契約とAFM評価 |
+| **v3.1** | **検証済みモデルのDL・管理・切り替え** | allowlistモデルを明示入手・検証・利用・削除できるC-1/C-2 |
+| v3.2以降 | 文章品質の追加機能、明示章参照、読む・届ける追加機能 | 需要で選ぶ候補。v3.0の既存画面整理と区別 |
 
-添付案の「v3.0でモデル入手/削除」はv3.1へ移す。v3.0ではSystem経路を使って
-共通基盤を完成させる。AFMの新機能をすべて採用する意味ではなく、PCC、クラウド推論、
-ツール実行、背景indexは対象外。モデルの本番identity未決はAFM改善の停止理由にしない。
-
-## Active Path — v2.9品質レビュー
-
-2026-09-08の追加依頼で、v3前の品質強化をv2.9へ集約。日常利用レビューQ-01–Q-07と
-隣接する原稿保全を修正し、署名済み候補の準備まで行う。再レビュー・実機確認・Apple処理は
-別ゲート。[品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)を参照。
-
-上限整合、System責務/エラー分類、生成元表示、日本語評価と予算観測を実装。
-native確認で見つかったコードフェンス/予約区切り文字の扱いと案内を修正した。
-次は外部レビューと日本語/Markdown品質・残る実機smoke。
-検証範囲: [v2.9レビュー](reviews/2026-09-08-v2.9-local-assist.md)。
-G-1は任意評価、27 SDKと依存更新は独立レーン。v2.8計画は公開済み版の履歴として残す。
-版別受け入れ条件は[Local Assist plan](v2.9-v3-local-assist-plan.md)。
+添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。
+モデル管理はv3.1に維持し、v3.0ではSystem経路で共通基盤を検証する。
+PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
+AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
 
 ## Established Foundation
 

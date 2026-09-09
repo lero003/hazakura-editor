@@ -1,51 +1,44 @@
 # Current Work
 
 Status: Operational
-Scope: v2.9日常品質強化とTestFlight候補
+Scope: v2.9公開後のv3実装準備
 Authority: High
 Last reviewed: 2026-09-09
 
 ## Current Phase
 
-v2.8は2026-09-08オーナー報告で公開済み。追加依頼により、v3前の日常品質強化を
-**v2.9 / 2.9.0** でまとめる。外部レビュー `hazakura-v3-daily-use-audit.md` を参考に、
-現行ソースで再現・修正・回帰検証し、TestFlight候補の準備を完了した。
-2026-09-09に外部再レビュー通過をオーナーが確認し、PR #45をmainへマージ。
-今回の品質強化目標は完了。次は固定した候補のTestFlight実機受け入れ確認へ進む。
+v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0の
+**UI/UX刷新・アプリとしての完成度・Local Assist architecture整理**を進める。
+全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
+[Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 完了した品質強化と次の実機確認
+## 次の1スライス — UI-A0 → UI-A1
 
-1. **実装済み:** Q-01–Q-07と隣接する保存・復旧・Local Assistの保全。
-   2026-09-09のローカル実機追試でPDF末尾空白を追加修正し、署名候補を再作成。
-   [品質レビュー](reviews/2026-09-08-v2.9-quality-hardening.md)に対応表・試験・限界を集約。
-2. **外部再レビュー受領・修正:** N1（空CRLF復旧）・N2（改行なしSave As）を再現修正。
-   A1は完成HTMLの容量案内を追加し、10 MiB上限は維持。署名候補を190e854dから再作成済み。
-   外部再レビューでN1/N2解消、A1の対応範囲も妥当と判定。
-   head 21c431e5のfrontend/native CI成功後、マージ1a97a697で統合した。
-3. **実機:** 同一候補でIME、VoiceOver、旧OS、Apple署名候補の再起動、
-   Local Assistの追加受け入れ、HTML全体の目視を確認。
-   本全体PDFは未保存章を含む8ページで全章・画像・末尾を追試済み。
-   出力前の未保存表示も修正したため、その後N1/N2修正を含む190e854dから再構築済み。
-   短文のLocal Assist別窓・生成・取消・前案保持・明示反映・Undoはローカルpreviewで追試済み。
-   ad-hoc App Sandbox診断でも単独Save As→再起動→復元→再保存を実byteまで確認済み。
-4. **配布:** [2.9.0候補](releases/2.9.0-source-tag.release.md)の署名・版数・source・SHAを照合。
-   外部レビューでコード変更があれば再構築。AppleへのuploadとTestFlight配布は承認後。
+1. 添付 `20260909_hazakura-ui-implementation` の共通ルール、画面02、対応原寸PNGとHTMLを確認。
+   資料基準a94623b7と今回HEADは一致。実装着手時に再照合する。
+2. AppTopChrome / DocumentMetaBar / AppWorkspaceの既存操作・メニュー・設定の移行先を表にする。
+   書く/読む/確認と既存sidePaneMode・参照・画像・Book Scopeの遷移を固定する。
+   確認対象が複数/0件の扱い、未保存編集・選択・Undo保持を受け入れにする。
+3. UI-A1で共通トークン・タブと文書操作の分離・通常編集02の外枠を実装。
+   既存保存/編集処理に接続し、利用者設定とCodeMirrorを維持する。
+4. 02の同条件画像比較、frontendの検証、配布面の確認を行う。
+   native titlebar、IME、VoiceOverの未実施を分けて記録する。
 
-System-only改善とC-1/C-2のHOLDを維持する。v3.0はAFM活用と共通基盤、v3.1は
-任意モデルのDL・管理・切り替え。正本は `docs/v2.9-v3-local-assist-plan.md`。
-既存Apply・Undo・no auto-saveとR2-cの完了/取消mutex境界を広げない。
+今回完了したのは資料受入と計画。UI-A0の全機能棚卸し、UI-A1の実装は未着手。
+1ランで24画面を作り直さず、以後のUI-B〜GとLA-0以降は全体計画に従う。
 
-## Held / Outside this candidate
+## Held / Separate Work
 
-- C-1/C-2、MLX M-0b、任意URLモデル、provider追加、tool calling、network fallbackは対象外。
-- 長文の性能測定は解析・sanitizeの基準値のみ。105k文字のWebKit追記・Undo・スクロールと
-  7テーマの代表画面は追試済みだが、入力遅延・Reader・全テーマの性能計測は未確認。
-- 固有名詞・意味保持は自動検査だけで合格にしない。全テーマ・IME・VoiceOverをjsdomで代替しない。
-- v2.8の公開build/source対応と過去pkgの実機結果は今回の候補証跡へ転用しない。
+- モデルDL・管理・切り替えはv3.1のC-1/C-2ゲート待ち。MLX M-0bも停止を維持。
+- 新しい書体/行間/永続設定、native別窓、Importの確定前ステージ、画像倍率は別仕様。
+- UI刷新とnative runtime再編・新SDK採用を同じ変更へ混ぜない。
+- 保存済み原稿、既存Apply/Undo/no auto-save、R2-cの完了/取消mutex境界を広げない。
+- App Store設定の既存未コミット変更を保持。署名・公開タグ・アセットを変更しない。
 
 ## Sources
 
-- `docs/current-status.md` / `docs/handoff.md`: 現状と引き継ぎ
-- `docs/roadmap.md` / `docs/v2.9-v3-local-assist-plan.md`: 版別方向
-- `docs/security-boundary.md` / `docs/assist-surface-strategy.md`: 安全境界
-- `docs/smoke-checklist.md` / `docs/release-pre-check.md`: 実機・配布前の確認
+- [現状](current-status.md) / [引き継ぎ](handoff.md)
+- [v3製品計画](v3-product-completion-plan.md) / [版別方向](roadmap.md)
+- [安全境界](security-boundary.md) / [Assist境界](assist-surface-strategy.md)
+- [実機確認](smoke-checklist.md) / [公開前確認](release-pre-check.md)
+- [v2.9品質履歴](reviews/2026-09-08-v2.9-quality-hardening.md) / [候補証跡](releases/2.9.0-source-tag.release.md)

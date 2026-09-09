@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -31,15 +31,16 @@ window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. Model download/selection and MLX runtime
 are not implemented.
 
-Next: **v2.9 strengthens save/recovery, daily editing and System-based Local Assist; v3.0 adopts the strengthened
-on-device AFM with shared backend foundations; v3.1 adds optional curated-model
-download, management and switching.** See the
+Next: **v3.0 refreshes UI/UX, improves complete daily workflows, and organizes
+Local Assist architecture and System backend foundations. v3.1 adds optional
+curated-model download, management and switching.** See the
+[v3 product plan](docs/v3-product-completion-plan.md) and
 [Local Assist plan](docs/v2.9-v3-local-assist-plan.md). These are planned milestones.
 
 ## Mac App Store
 
-Hazakura Editor `2.8.0` is published on the Mac App Store (owner-reported
-2026-09-08). Exact released-build provenance and rollout coverage were not
+Hazakura Editor `2.9.0` is published on the Mac App Store (owner-reported
+2026-09-09). Exact released-build provenance and rollout coverage were not
 independently checked in this documentation update:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
@@ -157,7 +158,8 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v2.9 quality and TestFlight candidate queue
+- [Current Work](docs/current-work.md): v3 implementation preparation queue
+- [v3 Product Plan](docs/v3-product-completion-plan.md): UI/UX, daily workflows and architecture preparation
 - [Local Assist Plan](docs/v2.9-v3-local-assist-plan.md): v2.9–v3.1 scope and acceptance
 - [v2.8 Plan](docs/v2.8-plan.md): historical writing-companion plan
 - [v2.6 Plan](docs/v2.6-plan.md): conversation / Diff review implementation sequence

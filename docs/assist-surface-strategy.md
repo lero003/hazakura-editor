@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 ## Purpose
 
@@ -15,12 +15,12 @@ The goal is not to build a general AI platform in `Hazakura Editor`. The goal is
 - a future Hazakura Local Assist model based on Apple's Foundation Models framework
 - future OS-provided assist surfaces, if they can fit the same boundary
 
-## Release Sequence — 2026-09-08
+## Release Sequence — 2026-09-09
 
-Local Assistを次期開発の主軸にする。Safe Editorが主面で、Assistは明示的に開く補助面を維持。
-v2.8公開はオーナー報告。**v2.9: System改善 → v3.0: 強化AFM＋共通基盤 →
-v3.1: allowlistモデルのDL・管理・切り替え**。受け入れ条件は
-`docs/v2.9-v3-local-assist-plan.md`。
+v2.9はオーナーが審査通過・公開を報告。v3.0はUI/UX刷新・アプリの完成度・
+Local Assist architecture整理の3本柱。Safe Editorが主面、Assistは明示的に開く補助面を維持する。
+全体計画は `docs/v3-product-completion-plan.md`、AFM/System共通基盤の受け入れは
+`docs/v2.9-v3-local-assist-plan.md`。v3.1はallowlistモデルのDL・管理・切り替え。
 「任意」は検証済みカタログから利用者が選ぶ意味。任意URL/provider追加ではない。
 AFMの強化を理由にPCC・クラウド推論・ツール・背景indexは有効にしない。
 

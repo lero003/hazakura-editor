@@ -1,11 +1,28 @@
 # Handoff
 
 Status: Operational
-Scope: v2.8公開後のv2.9–v3.1引き継ぎ
+Scope: v2.9公開後のv3準備と引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 ## Current State
+
+- **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
+  TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
+- **v3.0準備:** UI/UX刷新、アプリとしての完成度、Local Assist architecture整理の3本柱。
+  [v3製品計画](v3-product-completion-plan.md)に添付24画面の採否・順序・受け入れを整理。
+- **次:** UI-A0で既存機能の移行先と表示遷移を固定し、UI-A1で通常編集画面02の外枠を実装。
+  今回はdocsのみ。UI・runtime・依存・版数は未変更、ソース版数は2.9.0。
+- **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
+  C-1/C-2のゲート、MLX停止、明示Diff/Apply、Undo、no auto-save、取消のmutex境界を維持。
+- **準備の確認:** 添付基準とHEAD a94623b7が一致。4枚の一覧PNG、主要コード入口を確認。
+  原寸照合・HTML操作・実アプリ撮影・実装試験・native smokeは未実施。
+- **作業保全:** App Store設定の既存未コミット変更を保持。公開タグ・アセットは変更しない。
+
+## v2.9候補時点の記録（2026-09-09公開報告前）
+
+以下は候補準備時点の証跡。配布前の「未実施」「次」は当時の記録であり、現行キューではない。
+公開報告から個別試験の合格や公開buildの同一性を補完しない。
 
 - **品質強化完了・実機へ:** 2026-09-09、オーナーが外部再レビュー通過を確認。
   PR #45をmainへマージ（1a97a697）。候補source 190e854dとの製品コード差分はなく、
