@@ -3,21 +3,29 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { AppShell, type AppShellProps } from "./AppShell";
 vi.mock("./AppTopChrome", () => ({ AppTopChrome: () => <div className="tabs-row"><button>Document tab</button></div> }));
-vi.mock("./AppPrimaryToolbar", () => ({ AppPrimaryToolbar: () => null }));
+vi.mock("./AppPrimaryToolbar", () => ({
+  AppPrimaryToolbar: ({ navigation }: { navigation: { onWrite: () => void } }) =>
+    <button onClick={navigation.onWrite}>Write</button>,
+}));
 vi.mock("./AppWorkspace", () => ({
   AppWorkspace: ({
     documentChrome,
     onReadingOverlayChange,
+    compactPreviewFocus,
+    onCompactPreviewFocusChange,
   }: {
     documentChrome?: ReactNode;
+    compactPreviewFocus: "editor" | "preview";
+    onCompactPreviewFocusChange: (focus: "editor" | "preview") => void;
     onReadingOverlayChange: (open: boolean) => void;
   }) => (
-    <section className="workspace">
+    <section className="workspace" data-compact-preview={compactPreviewFocus}>
       <div className="workspace-document-column">
         {documentChrome}
         <input aria-label="Editor" defaultValue="unsaved" />
       </div>
       <button onClick={() => onReadingOverlayChange(true)}>Open Reader</button>
+      <button onClick={() => onCompactPreviewFocusChange("preview")}>Compact Preview</button>
     </section>
   ),
 }));
@@ -41,6 +49,21 @@ const base = {
 } as unknown as AppShellProps;
 
 describe("AppShell chrome layers", () => {
+  it("reveals the editor from compact Preview through the primary Write action", () => {
+    const hideSidePane = vi.fn();
+    const { container } = render(<AppShell {...base}
+      activeTab={{ name: "draft.md", path: "", sessionId: "draft" } as AppShellProps["activeTab"]}
+      sidePaneMode="preview" hideSidePane={hideSidePane}
+      editorPaneRef={{ current: null }} />);
+    const editor = screen.getByRole("textbox", { name: "Editor" });
+    fireEvent.click(screen.getByRole("button", { name: "Compact Preview" }));
+    expect(container.querySelector("[data-compact-preview='preview']")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Write" }));
+    expect(container.querySelector("[data-compact-preview='editor']")).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: "Editor" })).toBe(editor);
+    expect(hideSidePane).not.toHaveBeenCalled();
+  });
+
   it("keeps floating L Mode tabs outside the workspace stacking context while retaining the editor", () => {
     const view = render(<AppShell {...base} />);
     const editor = screen.getByRole("textbox", {name: "Editor"});

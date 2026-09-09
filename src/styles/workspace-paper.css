@@ -1,0 +1,114 @@
+/* UI-B: continuous writing/Preview surfaces. Scope to the main workspace;
+   paginated Reader, reference documents, exports and L Mode keep their geometry. */
+:root:not([data-l-mode="on"]) .v3-shell .reference-editor-host > .editor-pane {
+  flex: 1 1 auto;
+}
+
+:root:not([data-l-mode="on"]) .v3-shell .editor-pane .cm-content {
+  padding-block: clamp(12px, 2.4vh, 24px);
+}
+
+:root:not([data-l-mode="on"]) .v3-shell .editor-pane .cm-scroller {
+  line-height: 1.85;
+}
+
+:root:not([data-l-mode="on"]) .v3-shell .editor-pane .cm-line {
+  padding-inline: clamp(14px, 1.8vw, 26px);
+}
+
+.v3-shell .preview-pane-preview {
+  background: var(--preview-reading-surface);
+}
+
+.v3-shell .preview-pane-preview > .right-pane-header {
+  background: var(--preview-reading-surface);
+}
+
+.v3-shell .preview-pane-preview > .markdown-preview {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--lmode-prose-font-family);
+  line-height: 2;
+  width: 100%;
+  max-width: 46em;
+  margin: 0 auto;
+  padding: clamp(14px, 2.4vh, 24px) clamp(18px, 5cqi, 40px) 40px;
+}
+
+.v3-shell .preview-pane-preview > .markdown-preview :is(h1, h2) {
+  border: 0;
+  padding-bottom: 0;
+  letter-spacing: 0.02em;
+}
+
+.v3-shell .preview-pane-preview > .markdown-preview h1 {
+  font-size: 1.82em;
+  margin-bottom: 1.1em;
+}
+
+.v3-shell .preview-pane-preview > .markdown-preview h2 {
+  font-size: 1.35em;
+  margin-top: 1.6em;
+  margin-bottom: 0.8em;
+}
+
+.v3-shell .preview-pane-preview > .markdown-preview blockquote {
+  border-left-width: 2px;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0.65em 1em;
+}
+
+@media (max-height: 680px) {
+  .v3-shell .preview-pane-preview > .markdown-preview {
+    padding-block: 12px 28px;
+  }
+}
+
+/* Use available document width, including the user's sidebar width. Both
+   surfaces remain mounted; wide windows resume the saved split immediately. */
+.v3-shell .workspace-document-column {
+  container: document-workspace / inline-size;
+}
+
+.compact-preview-switch { display: none; }
+
+@container document-workspace (max-width: 780px) {
+  .editor-preview-grid[data-compact-preview] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .editor-preview-grid[data-compact-preview] > .compact-preview-switch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: var(--workspace-chrome-paper);
+    border-bottom: 1px solid var(--border);
+  }
+  .compact-preview-switch button {
+    font: 13px/1.4 var(--font-ui);
+    min-height: 30px;
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    box-shadow: none;
+  }
+  .compact-preview-switch button[aria-pressed="true"] {
+    background: var(--accent-soft);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .compact-preview-switch button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .editor-preview-grid[data-compact-preview] > .pane-resizer,
+  .editor-preview-grid[data-compact-preview="editor"] > .preview-pane-preview,
+  .editor-preview-grid[data-compact-preview="preview"] > .reference-editor-host {
+    display: none;
+  }
+}

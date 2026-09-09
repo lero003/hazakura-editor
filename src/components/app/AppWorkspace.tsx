@@ -111,6 +111,8 @@ const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 type AppWorkspaceProps = {
   documentChrome?: ReactNode;
   onReadingOverlayChange?: (open: boolean) => void;
+  compactPreviewFocus?: "editor" | "preview";
+  onCompactPreviewFocusChange?: (focus: "editor" | "preview") => void;
   activeContents: string;
   activeDocumentLineCount: number;
   activeMatchIndex: number;
@@ -272,6 +274,8 @@ type AppWorkspaceProps = {
 export function AppWorkspace({
   documentChrome,
   onReadingOverlayChange,
+  compactPreviewFocus = "editor",
+  onCompactPreviewFocusChange,
   activeContents,
   activeDocumentLineCount,
   activeMatchIndex,
@@ -663,6 +667,9 @@ export function AppWorkspace({
 
   // Both independent readers own the workspace; keep the editor mounted but inert.
   const readingOverlayActive = ebookReadingFocusActive || !!bookReaderResult;
+  const compactPreviewAvailable = !!activeTab && !selectedImage &&
+    sidePaneVisible && sidePaneMode === "preview" && !visibleReferenceCompare &&
+    !editorSettings.lModeEnabled && !readingOverlayActive;
   useEffect(() => {
     onReadingOverlayChange?.(readingOverlayActive);
   }, [readingOverlayActive, onReadingOverlayChange]);
@@ -798,6 +805,7 @@ export function AppWorkspace({
       {documentChrome}
       <div
         ref={editorPreviewGridRef}
+        data-compact-preview={compactPreviewAvailable ? compactPreviewFocus : undefined}
         className={`editor-preview-grid${sidePaneVisible && !visibleReferenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" && !visibleReferenceCompare ? " diff-workbench" : ""}${visibleReferenceCompare ? " reference-compare" : ""}${visibleReferenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${visibleReferenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
         style={
           visibleReferenceCompare
@@ -809,6 +817,19 @@ export function AppWorkspace({
             : editorPreviewGridStyle
         }
       >
+        {compactPreviewAvailable ? (
+          <div className="compact-preview-switch" role="toolbar"
+            aria-label={menuLanguage === "en" ? "Document view" : "文書の表示"}>
+            <button type="button" aria-pressed={compactPreviewFocus === "editor"}
+              onClick={() => onCompactPreviewFocusChange?.("editor")}>
+              {menuLanguage === "en" ? "Edit" : "編集"}
+            </button>
+            <button type="button" aria-pressed={compactPreviewFocus === "preview"}
+              onClick={() => onCompactPreviewFocusChange?.("preview")}>
+              {menuLanguage === "en" ? "Preview" : "プレビュー"}
+            </button>
+          </div>
+        ) : null}
         {visibleReferenceCompare?.origin === "import-assist" ? (
           <p
             className="reference-import-workflow-hint"

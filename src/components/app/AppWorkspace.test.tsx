@@ -705,6 +705,34 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(screen.getByLabelText("Workspace file tree")).toBeTruthy();
   });
 
+  it("switches compact Preview presentation without replacing either document surface", () => {
+    const hideSidePane = vi.fn();
+    const onCompactPreviewFocusChange = vi.fn();
+    const { container } = renderWorkspace({
+      activeTab: bookTab,
+      activeContents: bookTab.contents,
+      sidePaneMode: "preview",
+      sidePaneVisible: true,
+      hideSidePane,
+      compactPreviewFocus: "preview",
+      onCompactPreviewFocusChange,
+    });
+    const editor = screen.getByTestId("editor-main-pane");
+    const preview = screen.getByTestId("side-pane");
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(container.querySelector("[data-compact-preview='preview']")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    expect(onCompactPreviewFocusChange.mock.calls).toEqual([["preview"], ["editor"]]);
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
+    expect(screen.getByTestId("side-pane")).toBe(preview);
+    expect(hideSidePane).not.toHaveBeenCalled();
+  });
+
+  it("does not add a compact Preview switch to other reading surfaces", () => {
+    renderWorkspace({ activeTab: bookTab, sidePaneMode: "ebook", sidePaneVisible: true });
+    expect(screen.queryByRole("toolbar", { name: "Document view" })).toBeNull();
+  });
+
   it("hides and inerts document chrome behind the whole-book Reader without replacing the editor", async () => {
     const onReadingOverlayChange = vi.fn();
     const { container } = renderWorkspace({
