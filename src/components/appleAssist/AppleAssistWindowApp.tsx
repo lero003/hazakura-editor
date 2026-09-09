@@ -51,34 +51,14 @@ import {
 //     block → section) via `REQUEST_AI_EDIT_TARGET_EVENT` round
 //     trip (slice 3),
 //   - asking the bundled helper for a bounded result,
-//   - streaming an unapplied candidate back to this window's dedicated Diff
-//     review area. The editor buffer remains unchanged until the user presses
-//     the Diff "Apply proposal" action; A-2 keeps a pinned target and revises
-//     the current proposal in the same Diff surface, while A-3 sends only that
-//     reviewed candidate across the apply boundary.
+//   - owning the current proposal, Diff review, and explicit Apply to the
+//     unsaved buffer. This window renders conversation and progress only.
 //
-// The window only renders a thin shell with:
-//   - a header that shows the local-assist disclosure and current
-//     active document title (mirrored from the main window),
-//   - a request textarea + preset chips for the supported
-//     local writing actions.
-//
-// Status / error feedback is shown inline so the mock is
-// usable end-to-end without depending on the agent
-// workbench / provider surfaces.
-//
-// Companion-slot mutual exclusion is enforced server-side in
-// `open_apple_assist_window` / `open_agent_window`: opening
-// the Hazakura Local Assist window closes the Agent window, and vice
-// versa. The mock itself does not need to coordinate the
-// exclusion.
-//
-// v2.6 A-2 keeps the conversation in this window's bounded
-// React state only. A-3 keeps the reviewed proposal there until
-// the Diff Apply action succeeds, then the main window owns the
-// unsaved buffer transaction. Starting a new conversation or
-// discarding a proposal drops the companion state; no prompt,
-// proposal, or turn is persisted to disk.
+// Conversation/pinned target live here in memory. The proposal store and
+// Apply handler live in main; this window retains candidate text solely for
+// bounded follow-up requests. No conversation is persisted to disk.
+// Companion-slot mutual exclusion is enforced by the native window commands.
+// See docs/v3-local-assist-ownership.md for the current ownership contract.
 //
 // v0.12.x copy enrichment: the original 3-language copy
 // blocks were lean and most strings collapsed nuance into

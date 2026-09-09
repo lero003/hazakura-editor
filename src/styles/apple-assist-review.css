@@ -305,18 +305,18 @@
   color: var(--accent-contrast);
 }
 
-.local-assist-proposal-review-button:hover {
+.local-assist-proposal-review-button:hover:not(:disabled) {
   background: var(--bg-elev-hover);
 }
 
-.local-assist-proposal-review-button.apply:hover {
+.local-assist-proposal-review-button.apply:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent) 88%, var(--text));
 }
 
-:root[data-theme="yakou"] .local-assist-proposal-review-button.apply:hover,
-:root[data-theme="shokou"] .local-assist-proposal-review-button.apply:hover,
-:root[data-theme="edohigan"] .local-assist-proposal-review-button.apply:hover,
-:root[data-theme="shinkai"] .local-assist-proposal-review-button.apply:hover {
+:root[data-theme="yakou"] .local-assist-proposal-review-button.apply:hover:not(:disabled),
+:root[data-theme="shokou"] .local-assist-proposal-review-button.apply:hover:not(:disabled),
+:root[data-theme="edohigan"] .local-assist-proposal-review-button.apply:hover:not(:disabled),
+:root[data-theme="shinkai"] .local-assist-proposal-review-button.apply:hover:not(:disabled) {
   background: var(--accent-gradient);
   filter: brightness(1.06);
 }
@@ -342,3 +342,5 @@
   margin: 0;
   padding-top: 6px;
 }
+
+.local-assist-proposal-review-button:disabled { cursor: not-allowed; opacity: 0.5; }
