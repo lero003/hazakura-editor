@@ -115,3 +115,32 @@ describe("OutlinePane", () => {
     expect(screen.getByRole("button", { name: "2: Scene" })).toBeTruthy();
   });
 });
+
+it("separates structure notes from navigation without inventing notes or editing source", () => {
+  const items = markdownStructureItems(parseMarkdownStructure("# Start\n\n### Scene\n"));
+  const select = vi.fn(); const change = vi.fn();
+  render(<OutlinePane copy={getSidePaneCopy("en")} currentHeadingLine={1} items={items}
+    advisories={[]} onSelect={select} onChangeHeadingLevel={change} truncated={false} />);
+  fireEvent.click(screen.getByRole("button", { name: "Structure notes" }));
+  expect(screen.getByText("No structure notes for this document.")).toBeTruthy();
+  expect(select).not.toHaveBeenCalled(); expect(change).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Headings" }));
+  fireEvent.click(screen.getByRole("button", { name: "3: Scene" }));
+  expect(select).toHaveBeenCalledWith(items[1]);
+});
+
+it("keeps current source targets and the analysis limit in the notes surface", () => {
+  const items = markdownStructureItems(parseMarkdownStructure("# Start\n\n### Scene\n"));
+  const select = vi.fn(); const change = vi.fn();
+  render(<OutlinePane copy={getSidePaneCopy("en")} currentHeadingLine={3} items={items}
+    advisories={[{ kind: "skipped-level", line: 3, previousLevel: 1, level: 3 }]}
+    onSelect={select} onChangeHeadingLevel={change} truncated />);
+  fireEvent.click(screen.getByRole("button", { name: "Structure notes" }));
+  expect(screen.queryByRole("button", { name: "1: Start" })).toBeNull();
+  const target = screen.getByRole("button", { name: "3: Scene" });
+  expect(target.getAttribute("aria-current")).toBe("location");
+  fireEvent.click(target); expect(select).toHaveBeenCalledWith(items[1]);
+  fireEvent.click(screen.getByRole("button", { name: /Promote.*Scene/ }));
+  expect(change).toHaveBeenCalledWith(items[1], "promote");
+  expect(screen.getByText(getSidePaneCopy("en").outlineTruncated)).toBeTruthy();
+});

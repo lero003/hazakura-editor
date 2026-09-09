@@ -1,9 +1,14 @@
+import { useState } from "react";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
 import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
 
 export interface OutlinePaneCopy {
   documentOutline: string;
+  outlineHeadings: string;
+  outlineNotes: string;
+  outlineNotesEmpty: string;
+  outlineNotesHint: string;
   outlineEmpty: string;
   outlineEmptyHeading: string;
   outlineAdvisorySummary: (count: number) => string;
@@ -43,6 +48,8 @@ export function OutlinePane({
   showLocalHeader?: boolean;
   truncated: boolean;
 }) {
+  const [surface, setSurface] = useState<"headings" | "notes">("headings");
+  const visibleItems = surface === "headings" ? items : items.filter(item => advisories.some(note => note.line === item.line));
   return (
     <div className="outline-pane">
       {showLocalHeader ? (
@@ -55,10 +62,15 @@ export function OutlinePane({
           ) : null}
         </div>
       ) : null}
-      {items.length > 0 ? (
+      <div className="outline-surface-switch" role="group" aria-label={copy.documentOutline}>
+        <button type="button" aria-pressed={surface === "headings"} onClick={() => setSurface("headings")}>{copy.outlineHeadings}</button>
+        <button type="button" aria-pressed={surface === "notes"} onClick={() => setSurface("notes")}>{copy.outlineNotes}</button>
+      </div>
+      {surface === "notes" && <p className="outline-notes-hint">{copy.outlineNotesHint}</p>}
+      {visibleItems.length > 0 ? (
         <>
           <div className="outline-list">
-            {items.map((item) => {
+            {visibleItems.map((item) => {
               const isHeading = item.kind === "heading";
               const label = isHeading
                 ? item.text || copy.outlineEmptyHeading
@@ -131,15 +143,16 @@ export function OutlinePane({
               );
             })}
           </div>
+
+        </>
+      ) : (
+        <div className="outline-empty">{surface === "notes" ? copy.outlineNotesEmpty : copy.outlineEmpty}</div>
+      )}
           {truncated ? (
             <div className="outline-truncated" role="note">
               {copy.outlineTruncated}
             </div>
           ) : null}
-        </>
-      ) : (
-        <div className="outline-empty">{copy.outlineEmpty}</div>
-      )}
     </div>
   );
 }

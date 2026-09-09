@@ -33,6 +33,10 @@ export type SidePaneCopy = {
   outlineTabTitle: string;
   outlineTabTitleHide: string;
   outlineTruncated: string;
+  outlineHeadings: string;
+  outlineNotes: string;
+  outlineNotesEmpty: string;
+  outlineNotesHint: string;
   documentOutline: string;
   openTextFileToPreview: string;
   openTextFileToEbook: string;
@@ -104,6 +108,10 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       outlineTabTitle: "みだしから もくてきの ばしょへ うつる",
       outlineTabTitleHide: "みだしを かくす",
       outlineTruncated: "みだしがおほいため、はじめの200件までしめします。",
+      outlineHeadings: "みだし",
+      outlineNotes: "くみたての かくにん",
+      outlineNotesEmpty: "かくにんする ことは ありません。",
+      outlineNotesHint: "くみたてを みなほす てがかりです。じどうでは かへません。",
       documentOutline: "ふみのみだし",
       openTextFileToPreview:
         "みた目を たしかめる したみです。てきすとのふみを ひらいてください。",
@@ -177,6 +185,10 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         outlineTabTitle: "見出しから目的の場所へ移動",
         outlineTabTitleHide: "アウトラインを隠す",
         outlineTruncated: "見出しが多いため、最初の200件まで表示しています。",
+        outlineHeadings: "見出し",
+        outlineNotes: "構造の確認",
+        outlineNotesEmpty: "構造の確認事項はありません。",
+        outlineNotesHint: "構成を見直す手がかりです。自動では変更しません。",
         documentOutline: "文書アウトライン",
         openTextFileToPreview:
           "見た目確認用のプレビューです。テキストファイルを開いてください。",
@@ -247,6 +259,10 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         outlineTabTitleHide: "Hide outline",
         outlineTruncated:
           "Showing the first 200 headings because this file has more.",
+        outlineHeadings: "Headings",
+        outlineNotes: "Structure notes",
+        outlineNotesEmpty: "No structure notes for this document.",
+        outlineNotesHint: "Suggestions for reviewing structure. Nothing changes automatically.",
         documentOutline: "Document outline",
         openTextFileToPreview:
           "Preview is for continuous scroll layout checks. Open a text file.",

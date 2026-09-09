@@ -2764,8 +2764,8 @@
 
 .outline-pane {
   background: var(--surface-strong);
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-width: 0;
 }
@@ -3027,3 +3027,11 @@
 .save-conflict-dialog p { line-height: 1.7; }
 .save-conflict-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 @media (max-height: 700px) { .save-conflict-actions { margin-top: 12px; } }
+
+.outline-surface-switch { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.outline-surface-switch button { flex: 1; min-width: max-content; }
+.outline-surface-switch button[aria-pressed="true"] { background: var(--surface-strong); box-shadow: inset 0 -2px var(--accent); }
+.outline-notes-hint { margin: 0; padding: 10px 14px; color: var(--text-muted); font-size: 12px; line-height: 1.65; }
+
+.outline-pane > .outline-list, .outline-pane > .outline-empty { flex: 1 1 0; min-height: 0; }
+.outline-pane > .outline-pane-header, .outline-pane > .outline-surface-switch, .outline-pane > .outline-notes-hint, .outline-pane > .outline-truncated { flex: 0 0 auto; }
