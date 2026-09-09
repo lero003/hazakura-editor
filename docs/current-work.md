@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: v3 UI-B1実装レビューと次のスライス
+Scope: UI-B1修正とUI-B2のまとめレビュー
 Authority: High
 Last reviewed: 2026-09-09
 
@@ -12,28 +12,26 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI-B1紙面と狭幅のレビュー
+## 現在の区切り — UI-B1修正とUI-B2のまとめレビュー
 
 UI-A1はオーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
-UI-B1では通常ソースの連続した紙面と行間、Previewの明朝・枠・余白を調整した。
-文書領域780px以下では「編集/プレビュー」を一面ずつ表示し、広幅では保存済み分割幅へ戻る。
-[UI-B1レビュー資料と画像](reviews/2026-09-09-v3-ui-b1/README.md)が今回の入口。
+UI-B1の外部指摘R1（既存Preview入口）/R2（かなふみ）を01e9290eで修正。
+UI-B2の開始画面・えるモードを9b3cffccで実装した。
+[まとめレビュー資料・画像・依頼文](reviews/2026-09-09-v3-ui-b2/README.md)が今回の入口。
 
-- 自動: frontend全2,081件、App Store surface111件、typecheck/Vite build成功。
-- ビルド: ローカルApp Store preview成功。今回のnative実操作・署名配布候補の受入は未実施。
-- ブラウザー: light/dark、960×640、編集22px/Preview24px、表示切替/広幅復帰/Undo、
-  長い表・コード・URL・画像未許可、集中ReaderとL Modeへの隣接経路を確認。
-- R3: 既存CSSにsidebar/railの非表示ルールあり。集中Readerでcomputed displayとAX非露出を確認。
-  VoiceOver仮想カーソルはUI-Gの未完了受入として残す。
+- ローカル自動: 全2,089件、App Store surface111件、typecheck/Vite/preview build成功。
+- ブラウザー: 既存Preview入口→「書く」→広幅復帰、かなふみ、開始画面の下書き復元、
+  えるモード960×640/1440×850とモード往復後Undoを確認。
+- native実操作・IME/VoiceOver・200%表示・全テーマは今回未確認。
+  Reader背景sidebarのVoiceOver仮想カーソルもUI-Gへ残す。
 
 ## 次の1スライス
 
-1. UI-B1の紙面、狭幅切替の位置・文書幅780pxの閾値をレビューする。
-2. UI-B2で開始画面01・えるモード03を個別に整える。今回の本文設定・Readerの表示境界を保持する。
-3. 選択/スクロール継続、native IME/VoiceOver、200%表示を追加確認する。
-   22px/24pxの最大設定テストを200%試験やnative合格の代わりにしない。
+1. オーナーからまとめレビューを依頼し、R1/R2再判定と開始画面/えるモードの合評を受ける。
+2. 指摘反映とUI-Bの残る受入を進める。文字最大設定を200%やnative試験の代わりにしない。
+3. 製品計画の次段LA-0は責務棚卸しから別スライスで進める。
 
-[UI-A0の配置・遷移契約](v3-ui-a0-navigation.md)と[v3製品計画](v3-product-completion-plan.md)に従う。
+必須修正を独立コミット→隣接UIを1スライス→共通レビュー資料とpush、の区切りを継続する。
 UI-B全体、UI-C〜G、LA-0以降は未完了。SDK/runtime再編はUI外枠と分ける。
 
 ## Held / Separate Work

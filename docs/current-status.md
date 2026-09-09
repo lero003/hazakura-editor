@@ -10,11 +10,11 @@ Last reviewed: 2026-09-09
 - **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
 - **UI-A1:** オーナー提供の再レビューでR1/R2 CLOSED、UI-B進行GO。
-- **UI-B1:** 通常ソース/Preview紙面、狭幅の編集/Preview切替を実装。
-  [レビュー資料](reviews/2026-09-09-v3-ui-b1/README.md)に画像・確認結果・残る受入を整理。
-  Editor/Preview DOM、Undo、保存済みペイン幅を保持。次はレビュー後にUI-B2（開始画面/えるモード）。
-- **確認:** frontend全2,081件・App Store surface111件・typecheck/Vite/ローカルpreview build成功。
-  ブラウザーでlight/dark、960×640、文字22px/24px、広幅復帰とUndoを確認。
+- **UI-B1修正 + UI-B2:** 狭幅Preview入口・かなふみコピーを修正し、開始画面とえるモード紙面を調整。
+  修正01e9290e、UI-B2実装9b3cffcc。[まとめレビュー資料](reviews/2026-09-09-v3-ui-b2/README.md)へ。
+  Editor/Preview DOM、Undo、保存済みペイン幅と実際の再開/復旧操作を保持。外部再レビュー待ち。
+- **確認:** frontend全2,089件・App Store surface111件・typecheck/Vite/ローカルpreview build成功。
+  ブラウザーで既存Preview入口、かなふみ、960×640、L Mode往復後Undoを確認。
   今回のnative実操作、IME/VoiceOver、200%・全テーマは未確認。UI-B全体の完了ではない。
 - **R3:** 既存のReader背景sidebar非表示CSSを確認し、集中Readerでcomputed display/AX非露出を追試。
   VoiceOver仮想カーソルはUI-Gで確認する。
