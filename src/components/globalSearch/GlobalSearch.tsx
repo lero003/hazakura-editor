@@ -1,3 +1,4 @@
+import { trapFocusInElement } from "../../lib/focusTrap";
 import { useEffect, useRef } from "react";
 import { isImeComposing } from "../../lib/keyboard";
 import { useLatestValueRef } from "../../hooks/app/useLatestValueRef";
@@ -31,6 +32,7 @@ type GlobalSearchProps = {
   searching: boolean;
   summary: GlobalSearchSummary | null;
   workspaceOpen: boolean;
+  workspaceName?: string;
 };
 
 const MAX_VISIBLE_LINE_CHARS = 240;
@@ -126,8 +128,15 @@ export function GlobalSearch({
   searching,
   summary,
   workspaceOpen,
+  workspaceName = "",
 }: GlobalSearchProps) {
   const dialogLabel = dialogLabelText(menuLanguage);
+  const surfaceCopy = menuLanguage === "en"
+    ? { title: "Search this folder", scope: "Search within this folder. Files are not changed.", close: "Close search" }
+    : menuLanguage === "kana"
+      ? { title: "フォルダの なかを さがす", scope: "このフォルダの なかだけを さがします。ふみは かへません。", close: "けんさくを とぢる" }
+      : { title: "フォルダ内を検索", scope: "このフォルダ内を検索します。ファイルは変更しません。", close: "検索を閉じる" };
+  const dialogRef = useRef<HTMLDivElement>(null);
   const canShowSearchResults = Boolean(
     query.trim() && workspaceOpen && !searchError,
   );
@@ -187,12 +196,23 @@ export function GlobalSearch({
   return (
     <div className="global-search-overlay" onPointerDown={onClose}>
       <div
+        ref={dialogRef}
+        onKeyDown={event => {
+          if (isImeComposing(event.nativeEvent)) return;
+          trapFocusInElement(dialogRef.current, event.nativeEvent);
+          if (event.key === "Escape" && event.target !== inputRef.current) { event.preventDefault(); onClose(); }
+        }}
         aria-label={dialogLabel}
         aria-modal="true"
         className="global-search-dialog"
         onPointerDown={(event) => event.stopPropagation()}
         role="dialog"
       >
+        <header className="global-search-heading">
+          <div><h2>{surfaceCopy.title}</h2><strong title={workspaceName}>{workspaceOpen ? workspaceName : workspaceHintText(menuLanguage)}</strong></div>
+          <button type="button" onClick={onClose}>{surfaceCopy.close}</button>
+        </header>
+        {workspaceOpen && <p className="global-search-scope">{surfaceCopy.scope}</p>}
         <input
           ref={inputRef}
           aria-activedescendant={activeOptionId}
@@ -265,6 +285,7 @@ export function GlobalSearch({
                     onMouseEnter={() => onSetActiveIndex(index)}
                     onPointerDown={() => onRun(row)}
                     role="option"
+                    tabIndex={-1}
                     type="button"
                   >
                     <span className="global-search-line-number">

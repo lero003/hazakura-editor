@@ -1577,7 +1577,7 @@ export function useAppShellController() {
 
   const {
     closeCommandPalette,
-    closeGlobalSearch,
+    closeGlobalSearch: closeGlobalSearchWithoutFocus,
     commandPaletteActiveIndex,
     commandPaletteQuery,
     commandPaletteVisible,
@@ -1640,6 +1640,11 @@ export function useAppShellController() {
     themePreference,
     workspaceRootPath,
   });
+
+  const closeGlobalSearch = useCallback(() => {
+    closeGlobalSearchWithoutFocus();
+    focusEditorSoon();
+  }, [closeGlobalSearchWithoutFocus, focusEditorSoon]);
 
   // v1.3 Hazakura Local Assist discard handling is defined here,
   // ahead of the `useAppShellSideEffectsController` call below, so

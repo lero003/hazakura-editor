@@ -154,3 +154,13 @@ button.global-search-item.active {
   border-top: 1px solid var(--border);
   background: var(--surface-muted);
 }
+
+.global-search-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px 8px; flex: 0 0 auto; }
+.global-search-heading > div { min-width: 0; }
+.global-search-heading h2 { margin: 0 0 6px; font-size: 18px; }
+.global-search-heading strong { display: block; overflow-wrap: anywhere; font-size: 13px; }
+.global-search-heading button { flex: 0 0 auto; }
+.global-search-scope { margin: 0; padding: 0 18px 12px; color: var(--text-muted); font-size: 12px; line-height: 1.6; flex: 0 0 auto; }
+.global-search-input { padding: 13px 15px; font-size: 16px; flex: 0 0 auto; }
+.global-search-dialog { max-height: calc(100vh - 64px); }
+.global-search-overlay { padding-top: 32px; }

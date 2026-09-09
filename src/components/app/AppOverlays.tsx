@@ -451,6 +451,7 @@ export function AppOverlays({
 
       {globalSearchVisible ? (
         <GlobalSearch
+          workspaceName={workspaceRootPath?.split(/[\\/]/).filter(Boolean).at(-1) ?? ""}
           activeIndex={globalSearchActiveIndex}
           menuLanguage={menuLanguage}
           onClose={onCloseGlobalSearch}
