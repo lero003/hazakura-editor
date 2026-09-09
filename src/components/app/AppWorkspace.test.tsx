@@ -706,7 +706,10 @@ describe("AppWorkspace workspace sidebar collapse", () => {
   });
 
   it("enters and exits same-window Reading Focus from the e-book pane", async () => {
+    const onReadingOverlayChange = vi.fn();
     const { container } = renderWorkspace({
+      onReadingOverlayChange,
+      documentChrome: <div data-testid="document-chrome">Document tools</div>,
       activeContents: bookTab.contents,
       activeTab: bookTab,
       hasWorkspaceSelection: true,
@@ -714,6 +717,9 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       sidePaneVisible: true,
       workspaceRootPath: "/workspace",
     });
+    const editor = screen.getByTestId("editor-main-pane");
+    expect(screen.getByTestId("document-chrome").parentElement).toBe(editor.closest(".workspace-document-column"));
+    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(false);
     const workspace = container.querySelector(".workspace");
 
     expect(workspace?.classList.contains("workspace-reading-focus")).toBe(false);
@@ -721,6 +727,8 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mock enter reading focus" }));
 
     expect(workspace?.classList.contains("workspace-reading-focus")).toBe(true);
+    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(true);
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
     expect((await screen.findByTestId("ebook-focus-pane")).textContent).toContain(
       "focus 1:2",
     );
@@ -728,6 +736,8 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mock exit reading focus" }));
 
     expect(workspace?.classList.contains("workspace-reading-focus")).toBe(false);
+    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(false);
+    expect(screen.getByTestId("editor-main-pane")).toBe(editor);
   });
 
   it("opens the e-book pane near the current editor heading when no reader location exists", () => {

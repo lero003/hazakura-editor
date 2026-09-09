@@ -24,13 +24,20 @@ describe("WorkspaceModeNavigation", () => {
     fireEvent.click(screen.getByRole("button", { name: /保存前の変更.*朝の余白/ }));
     expect(onReview).toHaveBeenCalledWith("disk");
   });
-  it("closes a stale choice when the document changes", () => {
+  it("closes a stale choice when a same-named document or target context changes", () => {
     const view = render(<WorkspaceModeNavigation {...base} reviewTargets={["proposal", "disk"]} />);
     fireEvent.click(screen.getByRole("button", { name: "確認" }));
-    view.rerender(<WorkspaceModeNavigation {...base} documentName="次の原稿.md" reviewTargets={["disk"]} />);
+    view.rerender(<WorkspaceModeNavigation {...base} contextKey="new-session" reviewTargets={["proposal", "disk"]} />);
     expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
     view.rerender(<WorkspaceModeNavigation {...base} reviewTargets={["proposal", "disk"]} />);
     expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
+  });
+  it("identifies the actual reference and retained comparison instead of relabeling them as the active document", () => {
+    render(<WorkspaceModeNavigation {...base} reviewTargets={["reference", "comparison"]}
+      referenceName="参考資料.txt" comparisonName="別の原稿.md" />);
+    fireEvent.click(screen.getByRole("button", { name: "確認" }));
+    expect(screen.getByRole("button", { name: /参照ファイル.*朝の余白.md.*参考資料.txt/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /開いている比較.*別の原稿.md/ })).toBeTruthy();
   });
   it("keeps IME Escape for composition and returns focus on ordinary Escape", () => {
     render(<WorkspaceModeNavigation {...base} reviewTargets={["disk", "reference"]} />);

@@ -4,13 +4,15 @@ import type { WorkspaceMode, WorkspaceReviewTarget } from "../../features/worksp
 import { BookIcon, LModeIcon, ReferenceIcon } from "./Icons";
 
 export function WorkspaceModeNavigation({ mode, canNavigate, documentName, contextKey = documentName,
-  menuLanguage, reviewTargets, onWrite, onRead, onReview }: {
+  menuLanguage, reviewTargets, referenceName, comparisonName, onWrite, onRead, onReview }: {
   mode: WorkspaceMode;
   canNavigate: boolean;
   documentName: string;
   contextKey?: string;
   menuLanguage: MenuLanguage;
   reviewTargets: WorkspaceReviewTarget[];
+  referenceName?: string;
+  comparisonName?: string;
   onWrite: () => void;
   onRead: () => void;
   onReview: (target: WorkspaceReviewTarget) => void;
@@ -74,7 +76,7 @@ export function WorkspaceModeNavigation({ mode, canNavigate, documentName, conte
       <strong>{copy.targets}</strong>
       {reviewTargets.map((target, index) => <button type="button" key={target} ref={index === 0 ? firstChoiceRef : undefined}
         onClick={() => { triggerRef.current?.focus(); setOpenFor(null); onReview(target); }}>
-        <span>{copy[target]}</span><small>{documentName}</small>
+        <span>{copy[target]}</span><small>{target === "reference" && referenceName ? `${documentName} ↔ ${referenceName}` : target === "comparison" && comparisonName ? comparisonName : documentName}</small>
       </button>)}
     </div>}
   </div>;

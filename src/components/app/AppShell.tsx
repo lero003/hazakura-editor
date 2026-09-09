@@ -89,12 +89,16 @@ export function AppShell(props: AppShellProps) {
     props.activeTab?.sessionId ?? null,
   ).proposal;
 
+  const openComparison = props.compareView ? props.getCompareCaseByKey(props.compareView.caseKey) : undefined;
+  const comparisonName = openComparison?.kind === "file"
+    ? `${openComparison.anchor.name} ↔ ${openComparison.target.name}`
+    : openComparison?.documentLabel;
   const navigation = resolveWorkspaceNavigation({
     hasDocument: !!props.activeTab, imageVisible: !!props.selectedImage,
     sidePaneMode: props.sidePaneMode, referenceVisible: props.referencePaneVisible,
     referenceLoaded: !!props.referenceLoaded, hasProposal: !!pendingProposal && !pendingProposal.streaming,
     canReviewDisk: !!props.activeTab?.path && props.activeDirty,
-    hasComparison: !!props.compareView,
+    hasComparison: !!openComparison && openComparison.kind !== "candidate",
   });
   const navigateToEditor = () => {
     if (!navigation.canNavigate || readingOverlayOpen) return;
@@ -169,7 +173,9 @@ export function AppShell(props: AppShellProps) {
           navigation={{ ...navigation, canNavigate: navigation.canNavigate && !readingOverlayOpen,
             mode: readingOverlayOpen ? "read" : navigation.mode,
             documentName: props.activeTab?.name ?? "", menuLanguage: props.menuLanguage,
-            contextKey: `${props.activeTab?.sessionId}:${pendingProposal?.requestId}:${props.compareView?.caseKey}`,
+            referenceName: props.referenceCompare?.reference.name, comparisonName,
+            contextKey: JSON.stringify([props.activeTab?.sessionId, pendingProposal?.requestId,
+              props.compareView?.caseKey, props.referenceCompare?.reference.path, props.referenceCompare?.sourceFingerprint]),
             onWrite: navigateToEditor,
             onRead: () => {
               if (navigation.canNavigate && !readingOverlayOpen && props.sidePaneMode !== "ebook") props.onToggleEbook();
