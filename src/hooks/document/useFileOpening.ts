@@ -177,7 +177,7 @@ export function useFileOpening({
         return;
       }
 
-      await openFilePath(path);
+      return await openFilePath(path);
     },
     [openFilePath, openImagePreview],
   );

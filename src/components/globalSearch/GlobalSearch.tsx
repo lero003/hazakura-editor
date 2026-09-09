@@ -138,11 +138,11 @@ export function GlobalSearch({
       : { title: "フォルダ内を検索", scope: "このフォルダ内を検索します。ファイルは変更しません。", close: "検索を閉じる" };
   const dialogRef = useRef<HTMLDivElement>(null);
   const canShowSearchResults = Boolean(
-    query.trim() && workspaceOpen && !searchError,
+    query.trim() && workspaceOpen && !searchError && !searching,
   );
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const rowsRef = useLatestValueRef(rows);
+  const rowsRef = useLatestValueRef(canShowSearchResults ? rows : []);
   const activeIndexRef = useRef(activeIndex);
   activeIndexRef.current = activeIndex;
   const activeOptionId = canShowSearchResults && rows[activeIndex]
@@ -176,7 +176,7 @@ export function GlobalSearch({
     if (event.key === "ArrowDown") {
       event.preventDefault();
       onSetActiveIndex(
-        Math.min(activeIndexRef.current + 1, rowsRef.current.length - 1),
+        Math.max(0, Math.min(activeIndexRef.current + 1, rowsRef.current.length - 1)),
       );
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
@@ -300,7 +300,7 @@ export function GlobalSearch({
             })
           )}
         </div>
-        {summary?.truncated ? (
+        {canShowSearchResults && summary?.truncated ? (
           <div className="global-search-truncated-hint">
             {truncatedHintText(menuLanguage)}
           </div>

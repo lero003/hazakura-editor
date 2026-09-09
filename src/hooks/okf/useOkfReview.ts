@@ -37,7 +37,7 @@ export function offsetToOneBasedLine(text: string, offset: number): number {
 export type UseOkfReviewOptions = {
   editorPaneRef?: RefObject<EditorPaneHandle | null>;
   menuLanguage: MenuLanguage;
-  openWorkspaceFile: (path: string) => Promise<void>;
+  openWorkspaceFile: (path: string) => Promise<unknown>;
   setStatus: (status: string) => void;
   tabs: readonly EditorTab[];
   workspaceRootPath: string | null;

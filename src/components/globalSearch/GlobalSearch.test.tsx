@@ -30,3 +30,18 @@ it("uses the selected match for Enter and keeps truncation distinct from complet
     expect(screen.getByRole("option").tabIndex).toBe(-1);
   } finally { HTMLElement.prototype.scrollIntoView = original; }
 });
+
+it("does not activate or announce old results while the replacement query searches", () => {
+  const run = vi.fn();
+  const match = { line: 1, column: 1, text: "apple" };
+  render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={() => {}} onRun={run}
+    onSetActiveIndex={() => {}} onSetQuery={() => {}} query="banana"
+    rows={[{ fileIndex: 0, matchIndex: 0, file: { path: "/book/a.md", relativePath: "a.md", matches: [match], truncated: true }, match }]}
+    searching summary={{ totalFilesScanned: 1, totalMatches: 1, truncated: true }} searchError={null} workspaceOpen />);
+  const input = screen.getByRole("combobox");
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(run).not.toHaveBeenCalled();
+  expect(screen.queryByRole("option")).toBeNull();
+  expect(screen.queryByText(/Results were truncated/)).toBeNull();
+  expect(document.activeElement).toBe(input);
+});

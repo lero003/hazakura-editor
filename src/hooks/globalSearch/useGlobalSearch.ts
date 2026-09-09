@@ -66,25 +66,32 @@ function summarize(result: WorkspaceSearchResult): GlobalSearchSummary {
 
 export function useGlobalSearch({
   workspaceRoot,
-  onOpenMatch,
 }: UseGlobalSearchOptions): UseGlobalSearchResult {
   const [globalSearchVisible, setGlobalSearchVisible] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQueryState] = useState("");
   const [rows, setRows] = useState<GlobalSearchRow[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [summary, setSummary] = useState<GlobalSearchSummary | null>(null);
 
-  // `requestSeq` is bumped on every query change / open. Each
-  // search response carries the seq it was kicked off with; if
-  // the seq no longer matches the latest, the response is stale
-  // and we drop it. This avoids the classic "fast typing → old
-  // result wins" race that a plain setTimeout cannot prevent.
   const requestSeqRef = useRef(0);
-  const latestSeqRef = useRef(0);
+  const resetSearch = useCallback(() => {
+    ++requestSeqRef.current;
+    setRows([]);
+    setSummary(null);
+    setActiveIndex(0);
+    setSearching(false);
+    setSearchError(null);
+  }, []);
+  const setQuery = useCallback((value: string) => {
+    if (value === query) return;
+    resetSearch();
+    setQueryState(value);
+  }, [query, resetSearch]);
 
   useEffect(() => {
+    resetSearch();
     if (!globalSearchVisible) {
       return;
     }
@@ -101,8 +108,7 @@ export function useGlobalSearch({
       return;
     }
 
-    const seq = ++latestSeqRef.current;
-    requestSeqRef.current = seq;
+    const seq = ++requestSeqRef.current;
     setSearching(true);
     setSearchError(null);
 
@@ -133,26 +139,20 @@ export function useGlobalSearch({
 
     return () => {
       window.clearTimeout(handle);
+      ++requestSeqRef.current;
     };
-  }, [globalSearchVisible, query, workspaceRoot]);
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [rows.length, globalSearchVisible]);
+  }, [globalSearchVisible, query, workspaceRoot, resetSearch]);
 
   const openGlobalSearch = useCallback(() => {
+    resetSearch();
     setGlobalSearchVisible(true);
-    setQuery("");
-    setActiveIndex(0);
-    setRows([]);
-    setSummary(null);
-    setSearchError(null);
-  }, []);
+    setQueryState("");
+  }, [resetSearch]);
 
   const closeGlobalSearch = useCallback(() => {
+    resetSearch();
     setGlobalSearchVisible(false);
-    setSearchError(null);
-  }, []);
+  }, [resetSearch]);
 
   return {
     activeIndex,

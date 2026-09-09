@@ -4,6 +4,7 @@ import { useCommandPaletteController } from "./useCommandPaletteController";
 import type { GlobalSearchRow } from "../globalSearch/useGlobalSearch";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { getLModeCopy } from "../../lib/locale";
+import { createUntitledEditorTab } from "../../features/editor/editorTabs";
 import { useEditorCommands } from "../editor/useEditorCommands";
 
 afterEach(() => {
@@ -293,9 +294,10 @@ describe("useCommandPaletteController", () => {
     expect(saveActiveTab).toHaveBeenCalledTimes(1);
   });
 
-  it("opens the selected global search match and jumps to its line", async () => {
+  it.each(["success", "failure", "changed session"])("search match navigation: %s", async (outcome) => {
     vi.useFakeTimers();
-    const openWorkspaceFile = vi.fn(async () => {});
+    const openedTab = { ...createUntitledEditorTab(), path: "/workspace/docs/note.md" };
+    const openWorkspaceFile = vi.fn(async () => outcome === "failure" ? null : openedTab);
     const goToLine = vi.fn();
     const editorPane = { goToLine } as unknown as EditorPaneHandle;
     const setStatus = vi.fn();
@@ -335,7 +337,7 @@ describe("useCommandPaletteController", () => {
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
         },
-        activeTab: null,
+        activeTab: outcome === "changed session" ? { ...openedTab, sessionId: "replacement" } : openedTab,
         activeTabId: null,
         appleLocalAssistAllowed: true,
         assistSurfaceActive: "none",
@@ -373,15 +375,21 @@ describe("useCommandPaletteController", () => {
     });
 
     expect(openWorkspaceFile).toHaveBeenCalledWith("/workspace/docs/note.md");
-    expect(goToLine).toHaveBeenCalledWith(12);
-    expect(setStatus).toHaveBeenCalledWith("Opened docs/note.md:12");
+    if (outcome === "success") {
+      expect(goToLine).toHaveBeenCalledWith(12, { focus: false });
+      expect(setStatus).toHaveBeenCalledWith("Opened docs/note.md:12");
+    } else {
+      expect(goToLine).not.toHaveBeenCalled();
+      expect(setStatus).not.toHaveBeenCalled();
+    }
     vi.useRealTimers();
   });
 
   it("localizes search-open status for Japanese", async () => {
     vi.useFakeTimers();
     const setStatus = vi.fn();
-    const openWorkspaceFile = vi.fn(async () => undefined);
+    const openedTab = { ...createUntitledEditorTab(), path: "/workspace/docs/note.md" };
+    const openWorkspaceFile = vi.fn(async () => openedTab);
     const goToLine = vi.fn();
     const editorPane = { goToLine } as unknown as EditorPaneHandle;
     const { result } = renderHook(() =>
@@ -420,7 +428,7 @@ describe("useCommandPaletteController", () => {
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
         },
-        activeTab: null,
+        activeTab: openedTab,
         activeTabId: null,
         appleLocalAssistAllowed: true,
         assistSurfaceActive: "none",

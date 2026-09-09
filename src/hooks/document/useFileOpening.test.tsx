@@ -350,3 +350,13 @@ describe("useFileOpening", () => {
     );
   });
 });
+
+ it("returns null to workspace callers on a failed text open", async () => {
+   vi.mocked(openTextFile).mockRejectedValueOnce("file removed");
+   const { result, options } = setup();
+   let opened;
+   await act(async () => { opened = await result.current.openWorkspaceFile("/workspace/removed.md"); });
+   expect(opened).toBeNull();
+   expect(options.setStatus).toHaveBeenCalledWith("Open failed");
+   expect(options.setActiveTabId).not.toHaveBeenCalled();
+ });

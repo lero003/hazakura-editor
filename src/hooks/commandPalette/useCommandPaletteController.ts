@@ -1,29 +1,5 @@
-// `useCommandPaletteController` is the v0.9
-// `useAppShellController` Slice E-1 domain composer. It bundles
-// `useCommandPalette` (9 fields), `useGlobalSearch` (11
-// fields), and a search-result runner into a single typed
-// surface (~21 fields), and moves
-// the inline command list and the `handleOpenSearchMatch`
-// callback out of the orchestrator into the new hook.
-//
-// The composition is real (not a rename) because the search
-// hook's `onOpenMatch` callback is what the orchestrator used
-// to call `openWorkspaceFile` + `editorPaneRef.current.goToLine`
-// + `setStatus` — folding that callback into the new controller
-// removes a chunk of cross-section glue from the orchestrator.
-// The two bundled hooks are independent state machines
-// (palette owns its own query/visible/activeIndex, search owns
-// its own rows/summary/searching), so the new section is a
-// pure bundler plus the command-list local.
-//
-// The hook owns no new state of its own — the command list is
-// pure derived memo over the `actions` object. The
-// `actions`-namespaced arg shape keeps the call site readable
-// (the orchestrator builds a single `actions` object from the
-// many leaf callbacks it already plumbs, instead of passing 25
-// flat args).
-
-import { useCallback, useMemo } from "react";
+// Command palette and folder search share existing editor operations.
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type {
   EditorPaneHandle,
@@ -67,7 +43,7 @@ type UseCommandPaletteControllerActions = {
   openFile: () => Promise<void>;
   openReferenceFile: () => Promise<void>;
   openWorkspace: () => Promise<void>;
-  openWorkspaceFile: (path: string) => Promise<void>;
+  openWorkspaceFile: (path: string) => Promise<EditorTab | null | void>;
   openOkfReview: (bundleRoot?: string | null) => void;
   createOkfScaffold: (templateId: "minimal" | "book-like") => void;
   requestCloseTab: (id: string) => void;
@@ -319,19 +295,27 @@ export function useCommandPaletteController({
     () => getCommandPaletteCopy(menuLanguage),
     [menuLanguage],
   );
+  const searchNavigationRef = useRef(0);
+  const activeSearchTabRef = useRef(activeTab);
+  activeSearchTabRef.current = activeTab;
   const handleOpenSearchMatch = useCallback(
     (row: GlobalSearchRow) => {
-      void actions.openWorkspaceFile(row.file.path).then(() => {
+      const attempt = ++searchNavigationRef.current;
+      void actions.openWorkspaceFile(row.file.path).then((opened) => {
+        if (!opened) return;
         setTimeout(() => {
-          editorPaneRef.current?.goToLine(row.match.line);
+          const current = activeSearchTabRef.current;
+          if (attempt !== searchNavigationRef.current ||
+              current?.sessionId !== opened.sessionId || current?.path !== row.file.path) return;
+          editorPaneRef.current?.goToLine(row.match.line, { focus: false });
+          setStatus(
+            openedSearchMatchStatus(
+              row.file.relativePath,
+              row.match.line,
+              menuLanguage,
+            ),
+          );
         }, 50);
-        setStatus(
-          openedSearchMatchStatus(
-            row.file.relativePath,
-            row.match.line,
-            menuLanguage,
-          ),
-        );
       });
     },
     [actions, editorPaneRef, menuLanguage, setStatus],
@@ -1038,6 +1022,11 @@ export function useCommandPaletteController({
     onOpenMatch: handleOpenSearchMatch,
     workspaceRoot: workspaceRootPath,
   });
+
+  useEffect(() => {
+    ++searchNavigationRef.current;
+    return () => { ++searchNavigationRef.current; };
+  }, [globalSearchVisible, globalSearchQuery, workspaceRootPath]);
 
   return {
     closeCommandPalette,

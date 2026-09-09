@@ -162,7 +162,7 @@ type AppOverlaysProps = {
   ) => void | Promise<void>;
   onOpenCommandPalette: () => void;
   onRunCommand: (command: Command) => void;
-  openWorkspaceFile: (path: string) => void | Promise<void>;
+  openWorkspaceFile: (path: string) => unknown;
   importSourcePathAsMarkdownDraft: (path: string) => void | Promise<void>;
   openTextPathAsReference: (path: string) => void | Promise<void | boolean>;
   referenceCopy: import("../../lib/locale/referenceCompare").ReferenceCompareCopy;
