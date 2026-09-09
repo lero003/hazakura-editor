@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v2.9品質強化・System-only改善**。v2.8公開は2026-09-08オーナー報告。
+Phase: **v3 UI/UX刷新・完成度・Local Assist基盤整理**。v2.9公開は2026-09-09オーナー報告。
 公開済み版の再提出をキューにしない。次の一手は `docs/current-work.md`、版別の条件は
 `docs/v2.9-v3-local-assist-plan.md`。v3.0はAFMと共通基盤、v3.1はC-1/C-2。
 C-1/C-2のHOLD、既存Apply/Undo/no auto-saveは維持する。1 run = 1検証可能スライス。
@@ -31,9 +31,9 @@ environment is available and close it as `implemented` (Keep),
 
 Prefer work in this order:
 
-1. v2.9の日常品質レビューQ-01–Q-07の再レビュー、または未確認の実機/品質項目。完了した上限整合等を再実装せず、生成と本文反映を分離する。
+1. `docs/current-work.md` のv3スライスに限定した回帰確認。UIとnative runtime再編を同じ変更へ混ぜない。
    反映はmain Diffから一度だけ。反映後に同じ案をReview Barで再確認させない。
-2. 公開済みv2.8の再現blocker。保存・復元などの重大問題は通常改善より優先。
+2. 公開済みv2.9の再現blocker。保存・復元などの重大問題は通常改善より優先。
 
 3. Verification or a reproduced defect in a separately reopened release lane.
 4. Stale or failing quality gates that block the selected slice.

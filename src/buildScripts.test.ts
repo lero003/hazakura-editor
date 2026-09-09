@@ -661,13 +661,13 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `2.8.0` is published",
+        "Hazakura Editor `2.9.0` is published",
         `Current source version is \`${packageJson.version}\``,
-        "The published App Store version is `2.8.0`",
+        "The published App Store version is `2.9.0`",
         "latest published GitHub source / local-app tag remains [v2.3.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `2.8.0`",
+        "Published App Store version: `2.9.0`",
         `Current source / Developer version: \`${packageJson.version}\``,
         "GitHub source tag: immutable `v2.3.0`",
       ],
@@ -678,12 +678,12 @@ describe("macOS build scripts", () => {
         "v1.12 OKF Starter Scaffold is closed and published as `1.12.0`",
       ],
       "docs/current-work.md": [
-        "## Active Queue — v2.9",
-        "System-only改善",
-        "C-1/C-2のHOLD",
+        "v3.0",
+        "v3-product-completion-plan.md",
+        "C-1/C-2ゲート待ち",
       ],
       "docs/development-automation.md": [
-        "Phase: **v2.9品質強化・System-only改善**",
+        "Phase: **v3 UI/UX刷新・完成度・Local Assist基盤整理**",
         "C-1/C-2のHOLD",
       ],
       "docs/handoff.md": [
@@ -693,8 +693,8 @@ describe("macOS build scripts", () => {
       ],
       "docs/roadmap.md": [
         `| ソース版 | ${packageJson.version}`,
-        "| 公開版 | v2.8（2026-09-08オーナー報告）",
-        "## Active Path — v2.9",
+        "| 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告）",
+        "## Phase Decision — 2026-09-09",
         "**v3.0**",
         "**v3.1**",
       ],

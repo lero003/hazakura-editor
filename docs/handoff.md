@@ -9,14 +9,15 @@ Last reviewed: 2026-09-09
 
 - **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
-- **v3.0準備:** UI/UX刷新、アプリとしての完成度、Local Assist architecture整理の3本柱。
-  [v3製品計画](v3-product-completion-plan.md)に添付24画面の採否・順序・受け入れを整理。
-- **次:** UI-A0で既存機能の移行先と表示遷移を固定し、UI-A1で通常編集画面02の外枠を実装。
-  今回はdocsのみ。UI・runtime・依存・版数は未変更、ソース版数は2.9.0。
+- **v3 UI-A1実装:** `codex/v3` で文書ナビ/保存、タブ、表示ツールを分離。
+  [レビュー依頼書](reviews/2026-09-09-v3-ui-a1/README.md)に画像・確認結果・残る受入を整理。
+- **次:** 外部レビューで配置/確認対象選択を確認し、UI-Bの通常編集/Preview紙面へ進む。
+  Local Assist内部再編・依存・版数は未変更、ソース版数は2.9.0。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   C-1/C-2のゲート、MLX停止、明示Diff/Apply、Undo、no auto-save、取消のmutex境界を維持。
-- **準備の確認:** 添付基準とHEAD a94623b7が一致。4枚の一覧PNG、主要コード入口を確認。
-  原寸照合・HTML操作・実アプリ撮影・実装試験・native smokeは未実施。
+- **確認:** frontend全2,075件・App Store surface111件・typecheck・ローカルpreview build成功。
+  light/darkと960幅、編集/読書往復後のUndo、L Modeをブラウザー確認。
+  native titlebar/drag、実機IME/VoiceOver、実AI、旧OS/全テーマは未確認。
 - **作業保全:** App Store設定の既存未コミット変更を保持。公開タグ・アセットは変更しない。
 
 ## v2.9候補時点の記録（2026-09-09公開報告前）
@@ -754,7 +755,7 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. `docs/current-work.md` とv2.9レビュー記録を読み、外部レビューの指摘か未確認の実機/品質項目を一つ選ぶ。
+1. `docs/current-work.md` と `docs/reviews/2026-09-09-v3-ui-a1/README.md` を読み、v3レビュー指摘かnative受入を一つ選ぶ。
 2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。

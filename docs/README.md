@@ -117,3 +117,5 @@ git-ignored and should not be referenced from public-facing docs.
 - `archive/planning/`: older planning memos, including commercial-quality baseline, authoring-feature readiness, and product-copy drafts.
 - `archive/planning/v0.27-refinement-slice-plan.md`: completed v0.27 execution memo.
 - `archive/reviews/import-assist-boundary-review-v1.6.md`: shipped v1.6 Import Assist boundary review.
+
+- [v3 UI-A1レビュー](reviews/2026-09-09-v3-ui-a1/README.md): 共通外枠・文書ナビの実装、画像、残る受入。

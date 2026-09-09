@@ -13,11 +13,14 @@ v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じ�
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告） |
-| ソース版 | 2.9.0。v3準備段階で版数は未更新 |
+| ソース版 | 2.9.0。codex/v3でUI-A1実装、版数は未更新 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | UI-A0の配置/遷移棚卸し → UI-A1の通常編集外枠 — `docs/current-work.md` |
+| 現行キュー | UI-A1外部レビュー → UI-Bの通常編集/Preview紙面 — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
+
+候補ごとのbuild情報は `docs/internal/app-store-candidates/latest.json` を参照する。
+公開版との同一性は候補記録だけから推定しない。
 
 ## Phase Decision — 2026-09-09
 
@@ -63,7 +66,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | v3.1のC-1/C-2。identityと既存ゲート確定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
-| Published v2.8 hotfix | App Review / daily-use blocker | Only when reproduced |
+| Published v2.9 hotfix | App Review / daily-use blocker | Only when reproduced |
 
 ### Hard rails（v3以降も維持）
 
@@ -136,7 +139,7 @@ the Local Assist milestone （今回の版別方針でも維持）。
 Residual Book practicalization (display TOC clarity, suggestion
 explainability, …) may return as a dedicated line after v2.5 workspace work,
 or as single residual slices if daily friction demands it. It is not part of
-the active v2.9 Local Assist queue.
+the active v3 product completion queue.
 
 ## v2.5 Workspace Control and Clarity (closed)
 

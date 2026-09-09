@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: v2.9公開後のv3実装準備
+Scope: v3 UI-A1実装レビューと次のスライス
 Authority: High
 Last reviewed: 2026-09-09
 
@@ -12,20 +12,25 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 次の1スライス — UI-A0 → UI-A1
+## 現在の区切り — UI-A1外部レビュー
 
-1. 添付 `20260909_hazakura-ui-implementation` の共通ルール、画面02、対応原寸PNGとHTMLを確認。
-   資料基準a94623b7と今回HEADは一致。実装着手時に再照合する。
-2. AppTopChrome / DocumentMetaBar / AppWorkspaceの既存操作・メニュー・設定の移行先を表にする。
-   書く/読む/確認と既存sidePaneMode・参照・画像・Book Scopeの遷移を固定する。
-   確認対象が複数/0件の扱い、未保存編集・選択・Undo保持を受け入れにする。
-3. UI-A1で共通トークン・タブと文書操作の分離・通常編集02の外枠を実装。
-   既存保存/編集処理に接続し、利用者設定とCodeMirrorを維持する。
-4. 02の同条件画像比較、frontendの検証、配布面の確認を行う。
-   native titlebar、IME、VoiceOverの未実施を分けて記録する。
+`codex/v3` を基点 `a94623b7` から作成し、計画→遷移契約→共通外枠→回帰確認をコミット済み。
+上段の書く/読む/確認・保存、専用タブ行、文書表示ツールを既存の状態/保存処理に接続した。
+[レビュー依頼書と画像](reviews/2026-09-09-v3-ui-a1/README.md)を入口に、配置・遷移を先に確認する。
 
-今回完了したのは資料受入と計画。UI-A0の全機能棚卸し、UI-A1の実装は未着手。
-1ランで24画面を作り直さず、以後のUI-B〜GとLA-0以降は全体計画に従う。
+- 自動: frontend全2,075件、App Store surface111件、typecheck成功。
+- ビルド: ローカルApp Store preview成功。公開/提出の候補ではない。
+- ブラウザー: light/dark、960幅、読む再選択、編集へ戻る、Undo、L Modeの出入りを確認。
+- 残る受入: native titlebar/drag、IME/VoiceOver、実AI、旧OS、全テーマ、実ファイル保存のnative smoke。
+
+## 次の1スライス
+
+1. 外部レビューで上段3モードと下段表示ツールの併存、確認対象選択、ヘッダー高さを評価する。
+2. 指摘を小さく修正し、UI-Bの通常編集/Preview紙面へ進む。
+3. native受入を別記録で実施。ブラウザー画像をnative検証の代わりにしない。
+
+[UI-A0の配置・遷移契約](v3-ui-a0-navigation.md)と[v3製品計画](v3-product-completion-plan.md)に従う。
+UI-B〜GとLA-0以降は未着手。新SDK/runtime再編はUI外枠と分ける。
 
 ## Held / Separate Work
 

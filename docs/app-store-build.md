@@ -41,9 +41,9 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `2.8.0` (owner-reported 2026-09-08).
-  Exact released-build provenance, PR #40 inclusion and rollout coverage remain
-  unverified here. See `docs/releases/2.8.0-source-tag.release.md`.
+- Published App Store version: `2.9.0` (owner-reported 2026-09-09).
+  Exact released-build provenance and rollout coverage remain unverified here.
+  See `docs/releases/2.9.0-source-tag.release.md`.
 - Current source / Developer version: `2.9.0`. Quality candidate evidence is in
   `docs/releases/2.9.0-source-tag.release.md`. System-only boundaries remain in
   `docs/v2.9-v3-local-assist-plan.md`.
