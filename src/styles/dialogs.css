@@ -43,9 +43,12 @@
   overflow: hidden;
 }
 
+/* 設定の外枠はモックの基準寸法 1100×752 を参考にする（C02）。
+   低いウィンドウ・200%文字では縮む／伸びることを許す固定切りではない。 */
 .preferences-dialog.settings-dialog {
-  max-width: 920px;
-  width: min(920px, calc(100vw - 48px));
+  max-width: 1100px;
+  max-height: min(752px, calc(100dvh - 48px));
+  width: min(1100px, calc(100vw - 48px));
 }
 
 .preferences-dialog.agent-workbench-dialog {
@@ -1078,8 +1081,8 @@
   .settings-category-nav {
     flex-direction: column;
     flex-wrap: nowrap;
-    width: 180px;
-    padding: 20px 12px;
+    width: 200px;
+    padding: 23px 14px;
     border-bottom: 0;
     border-right: 1px solid var(--border);
     background: var(--nav-surface);
@@ -1087,6 +1090,7 @@
   }
   .settings-category-nav button {
     flex: 0 0 auto;
+    min-height: 40px;
     text-align: start;
     padding: 10px 12px;
     border-color: transparent;
