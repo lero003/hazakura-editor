@@ -374,7 +374,7 @@ describe("useCommandPaletteController", () => {
       vi.runAllTimers();
     });
 
-    expect(openWorkspaceFile).toHaveBeenCalledWith("/workspace/docs/note.md");
+    expect(openWorkspaceFile).toHaveBeenCalledWith("/workspace/docs/note.md", { isCurrent: expect.any(Function) });
     if (outcome === "success") {
       expect(goToLine).toHaveBeenCalledWith(12, { focus: false });
       expect(setStatus).toHaveBeenCalledWith("Opened docs/note.md:12");

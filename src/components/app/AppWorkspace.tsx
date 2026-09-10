@@ -1,3 +1,4 @@
+import type { OpenTextFileOptions } from "../../hooks/document/useFileOpening";
 import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
   CSSProperties,
@@ -225,7 +226,7 @@ type AppWorkspaceProps = {
     kind: "file" | "directory" | "root",
   ) => void;
   openRootWorkspaceContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
-  openWorkspaceFile: (path: string) => Promise<EditorTab | null | void>;
+  openWorkspaceFile: (path: string, options?: OpenTextFileOptions) => Promise<EditorTab | null | void>;
   orphanPathlessDrafts?: DraftRecord[];
   recoveryCopy: RecoveryCopy;
   revalidateBookScope?: () => void;
@@ -1118,7 +1119,7 @@ export function AppWorkspace({
           onClose={closeBookScopeReader}
           onEditChapter={async (path) => {
             const request = ++bookReaderRequestRef.current;
-            const opened = await openWorkspaceFile(path);
+            const opened = await openWorkspaceFile(path, { isCurrent: () => request === bookReaderRequestRef.current });
             if (!opened || opened.path !== path || request !== bookReaderRequestRef.current) return false;
             closeBookScopeReader();
             const closingRequest = bookReaderRequestRef.current;

@@ -1,3 +1,4 @@
+import type { OpenTextFileOptions } from "../document/useFileOpening";
 // Command palette and folder search share existing editor operations.
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
@@ -43,7 +44,7 @@ type UseCommandPaletteControllerActions = {
   openFile: () => Promise<void>;
   openReferenceFile: () => Promise<void>;
   openWorkspace: () => Promise<void>;
-  openWorkspaceFile: (path: string) => Promise<EditorTab | null | void>;
+  openWorkspaceFile: (path: string, options?: OpenTextFileOptions) => Promise<EditorTab | null | void>;
   openOkfReview: (bundleRoot?: string | null) => void;
   createOkfScaffold: (templateId: "minimal" | "book-like") => void;
   requestCloseTab: (id: string) => void;
@@ -301,7 +302,7 @@ export function useCommandPaletteController({
   const handleOpenSearchMatch = useCallback(
     (row: GlobalSearchRow) => {
       const attempt = ++searchNavigationRef.current;
-      void actions.openWorkspaceFile(row.file.path).then((opened) => {
+      void actions.openWorkspaceFile(row.file.path, { isCurrent: () => attempt === searchNavigationRef.current }).then((opened) => {
         if (!opened) return;
         setTimeout(() => {
           const current = activeSearchTabRef.current;

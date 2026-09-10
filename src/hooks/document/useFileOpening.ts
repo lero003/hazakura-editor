@@ -2,6 +2,8 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useLayoutEffect,
+  useRef,
 } from "react";
 import {
   confirmImportMarkdownDraft,
@@ -45,6 +47,12 @@ import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import { importAssistConfirmCopy } from "../../lib/locale/importAssist";
 
+export type OpenTextFileOptions = {
+  persistFileBookmark?: boolean;
+  /** Checked before publishing any result of asynchronous text I/O. */
+  isCurrent?: () => boolean;
+};
+
 type UseFileOpeningOptions = {
   activeTab: EditorTab | null;
   clearImagePreview: () => void;
@@ -84,11 +92,22 @@ export function useFileOpening({
   tabs,
   workspaceRootPath,
 }: UseFileOpeningOptions) {
+  const tabsRef = useRef(tabs);
+  const mountedRef = useRef(true);
+  const pendingReadsRef = useRef(new Map<string, ReturnType<typeof openTextFile>>());
+  useLayoutEffect(() => { tabsRef.current = tabs; }, [tabs]);
+  useLayoutEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const openFilePath = useCallback(
-    async (path: string, options: { persistFileBookmark?: boolean } = {}) => {
+    async (path: string, options: OpenTextFileOptions = {}) => {
+      const isCurrent = () => mountedRef.current && (options.isCurrent?.() ?? true);
+      if (!isCurrent()) return null;
       setGlobalError(null);
 
-      const existingTab = tabs.find((tab) => tab.path === path);
+      const existingTab = tabsRef.current.find((tab) => tab.path === path);
       if (existingTab) {
         setActiveTabId(existingTab.id);
         clearImagePreview();
@@ -100,27 +119,40 @@ export function useFileOpening({
 
       setStatus("Opening file...");
 
+      let read = pendingReadsRef.current.get(path);
       try {
-        const file = await openTextFile(path);
-        const nextTab = createEditorTab(file);
+        if (!read) {
+          read = openTextFile(path);
+          pendingReadsRef.current.set(path, read);
+        }
+        const file = await read;
+        if (!isCurrent()) return null;
         if (options.persistFileBookmark) {
           const bookmark = await createSecurityScopedBookmark(path).catch(
             () => null,
           );
+          if (!isCurrent()) return null;
           writePersistedFileBookmark(path, bookmark);
         }
-        const draft = readStoredDrafts().find(
+        // Reuse the registered session, including a sibling open committed in
+        // this event batch before React has rendered the new tabs prop.
+        const registered = tabsRef.current.find((tab) => tab.path === path);
+        const nextTab = registered ?? createEditorTab(file);
+        const draft = !registered && readStoredDrafts().find(
           (candidate) =>
             candidate.path === path &&
             candidate.savedFingerprint === file.fingerprint &&
             candidate.contents !== nextTab.contents,
         );
 
-        setTabs((currentTabs) =>
-          currentTabs.some((tab) => tab.path === path)
-            ? currentTabs
-            : [...currentTabs, nextTab],
-        );
+        if (!registered) {
+          tabsRef.current = [...tabsRef.current, nextTab];
+          setTabs((currentTabs) =>
+            currentTabs.some((tab) => tab.path === path)
+              ? currentTabs
+              : [...currentTabs, nextTab],
+          );
+        }
         if (draft) {
           setPendingDrafts((currentDrafts) =>
             upsertDraftRecord(currentDrafts, draft),
@@ -139,9 +171,13 @@ export function useFileOpening({
         );
         return nextTab;
       } catch (err) {
-        setGlobalError(String(err));
-        setStatus("Open failed");
+        if (isCurrent()) {
+          setGlobalError(String(err));
+          setStatus("Open failed");
+        }
         return null;
+      } finally {
+        if (pendingReadsRef.current.get(path) === read) pendingReadsRef.current.delete(path);
       }
     },
     [
@@ -171,13 +207,15 @@ export function useFileOpening({
   );
 
   const openWorkspaceFile = useCallback(
-    async (path: string) => {
+    async (path: string, options: OpenTextFileOptions = {}) => {
       if (isSupportedImageFile(path)) {
+        // Guarded navigation is a text/session contract (search and Reader).
+        if (options.isCurrent) return null;
         await openImagePreview(path);
         return;
       }
 
-      return await openFilePath(path);
+      return await openFilePath(path, options);
     },
     [openFilePath, openImagePreview],
   );
@@ -263,7 +301,7 @@ export function useFileOpening({
         return;
       }
 
-      const existingTab = tabs.find((tab) => tab.path === path);
+      const existingTab = tabsRef.current.find((tab) => tab.path === path);
 
       if (existingTab) {
         setActiveTabId(existingTab.id);
