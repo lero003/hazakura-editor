@@ -392,8 +392,15 @@ fn search_keeps_a_match_beyond_the_byte_cap_in_the_snippet() {
     assert_eq!(result.files.len(), 1);
     let hit = &result.files[0].matches[0];
     // 一致が snippet の中に入っている（ここが以前は落ちていた）。
-    assert!(hit.text.contains("余白"), "snippet lost the match: {}", hit.text);
-    assert!(hit.snippet_start > 1, "late match must not be shown from the head");
+    assert!(
+        hit.text.contains("余白"),
+        "snippet lost the match: {}",
+        hit.text
+    );
+    assert!(
+        hit.snippet_start > 1,
+        "late match must not be shown from the head"
+    );
     assert_eq!(hit.column, 1401);
     assert_eq!(hit.match_length, 2);
     assert_eq!(hit.line_length, line.chars().count());

@@ -175,11 +175,8 @@ pub(crate) fn search_workspace_files_with_label(
                 // that span back to character offsets in the original line so
                 // the front-end can render it without re-counting (Unicode
                 // scalar values, which is what JS `Array.from` yields too).
-                let (match_start_char, match_end_char) = char_span_for_folded_bytes(
-                    line,
-                    byte_offset,
-                    byte_offset + needle.len(),
-                );
+                let (match_start_char, match_end_char) =
+                    char_span_for_folded_bytes(line, byte_offset, byte_offset + needle.len());
                 let column = match_start_char + 1;
                 let match_length = match_end_char.saturating_sub(match_start_char);
                 let line_length = line.chars().count();
@@ -295,4 +292,3 @@ fn build_match_snippet(
         start -= 1;
     }
 }
-
