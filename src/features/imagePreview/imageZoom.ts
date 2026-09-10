@@ -18,18 +18,28 @@ export const IMAGE_FIT_PADDING = 24;
 
 export type ImageSize = { width: number; height: number };
 
-/** 段階的な倍率。方向は -1（縮小）/ 1（拡大）。 */
+/**
+ * 段階的な倍率。方向は -1（縮小）/ 1（拡大）。
+ *
+ * **縮小は現在の倍率を絶対に上げない**。fit で 25% 未満（例: 14.4%）になっている
+ * ときに段の下限 25% を返すと、「縮小」で画像が大きくなってしまうため、
+ * 下の段が無いときは `IMAGE_ZOOM_MIN` ではなく**現在値を維持**する。
+ */
 export function nextImageZoom(current: number, direction: -1 | 1): number {
   if (direction > 0) {
     return IMAGE_ZOOM_STEPS.find((step) => step > current + 1e-6) ?? IMAGE_ZOOM_MAX;
   }
   const lower = [...IMAGE_ZOOM_STEPS].reverse().find((step) => step < current - 1e-6);
-  return lower ?? IMAGE_ZOOM_MIN;
+  return lower ?? Math.min(current, IMAGE_ZOOM_MIN);
 }
 
 /**
  * 表示領域に合わせた倍率。100%（1）を上限にするので、小さい画像は拡大しない。
  * 表示領域が未計測（0）のときは 100% を返す。
+ *
+ * **手動倍率の下限（25%）をここへ持ち込まない**。fit は「全体を表示」の意味なので、
+ * 縦長・横長の画像では 25% を大きく下回ることがある（例: 1000×20000 を 800×600 の
+ * 領域へ収めると 2.9%）。下限で持ち上げると fit 中なのに全体が入らない。
  */
 export function fitImageZoom(stage: ImageSize, natural: ImageSize, max = 1): number {
   if (stage.width <= 0 || stage.height <= 0 || natural.width <= 0 || natural.height <= 0) {
@@ -37,7 +47,9 @@ export function fitImageZoom(stage: ImageSize, natural: ImageSize, max = 1): num
   }
   const byWidth = (stage.width - IMAGE_FIT_PADDING) / natural.width;
   const byHeight = (stage.height - IMAGE_FIT_PADDING) / natural.height;
-  return Math.max(0.05, Math.min(max, byWidth, byHeight));
+  const fitted = Math.min(max, byWidth, byHeight);
+  // 余白ぶんが表示領域より大きい極端な場合だけ 0 で止める（負の倍率を作らない）。
+  return fitted > 0 ? fitted : 0;
 }
 
 export function formatImageZoom(zoom: number): string {

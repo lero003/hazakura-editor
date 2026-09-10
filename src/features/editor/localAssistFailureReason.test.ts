@@ -2,9 +2,19 @@ import { describe, expect, it } from "vitest";
 import { localAssistReasonKey } from "./localAssistFailureReason";
 
 describe("localAssistReasonKey", () => {
-  it("maps the app-side character limits to the target-size reason", () => {
-    expect(localAssistReasonKey("Selected text exceeds the maximum length")).toBe("reasonTooLong");
-    expect(localAssistReasonKey("Proposal exceeds the maximum length")).toBe("reasonTooLong");
+  it("separates the input target limit from the proposal limit (R5)", () => {
+    // 入力対象の超過 → 範囲を短くする案内。
+    expect(localAssistReasonKey("Selected text exceeds the maximum length")).toBe(
+      "reasonSelectionTooLong",
+    );
+    // 生成案の超過 → 入力対象が長いとは言えないので、別の案内。
+    expect(localAssistReasonKey("Proposal exceeds the maximum length")).toBe(
+      "reasonProposalTooLong",
+    );
+    // 継続の上限 → やり直しの案内。
+    expect(localAssistReasonKey("Proposal exceeds the continuation limit")).toBe(
+      "reasonContinuationLimit",
+    );
   });
 
   it("separates the model context window from the app limit", () => {

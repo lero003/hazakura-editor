@@ -11,7 +11,9 @@ const en = {
   chat: "Revision conversation", empty: "Describe how to revise this text. Each proposal can be refined before applying it.",
   composer: "Revision request", placeholder: "For example: shorten this without changing the meaning", send: "Create proposal", refine: "Refine proposal", stop: "Stop generation",
   pending: "Generating a proposal…", completed: "Proposal ready below. The document is unchanged.", failed: "No new proposal was created. Check the target or try again.",
-  retry: "Try again", reasonTooLong: "The target is over 4,000 characters. Shorten the range.",
+  retry: "Try again", reasonSelectionTooLong: "The selected text is over 4,000 characters. Shorten the range.",
+  reasonProposalTooLong: "The generated proposal was too long to keep. Shorten the range and create it again.",
+  reasonContinuationLimit: "Continuing would exceed the proposal limit. Start again from a shorter range.",
   reasonContext: "The model could not handle this much text at once. Shorten the target.", reasonUnavailable: "Local Assist is not available on this Mac.",
   reasonThrottled: "Another generation is in progress. Try again shortly.", reasonTimeout: "Generation did not finish in time. Try again.",
   reasonFormat: "The proposal format could not be verified. Create it again.",
@@ -40,7 +42,9 @@ const ja: Copy = {
   chat: "推敲の会話", empty: "この文章をどう直したいか、短く伝えてください。生成した案には追加の依頼ができます。",
   composer: "文章への依頼", placeholder: "例：意味を変えず、もう少し短くして", send: "案を作る", refine: "案をさらに直す", stop: "生成を停止",
   pending: "案を作っています…", completed: "下に案ができました。本文はまだ変わっていません。", failed: "新しい案は作れませんでした。対象を確認するか、もう一度依頼してください。",
-  retry: "もう一度試す", reasonTooLong: "対象が4,000文字を超えています。範囲を短くしてください。",
+  retry: "もう一度試す", reasonSelectionTooLong: "対象が4,000文字を超えています。範囲を短くしてください。",
+  reasonProposalTooLong: "生成した案が長すぎます。範囲を短くして、もう一度つくってください。",
+  reasonContinuationLimit: "続けて作ると案の上限を超えます。範囲を短くしてから、やり直してください。",
   reasonContext: "モデルが一度に扱える量を超えました。対象を短くしてください。", reasonUnavailable: "このMacではLocal Assistを利用できません。",
   reasonThrottled: "別の生成が動いています。少し待ってから、もう一度。", reasonTimeout: "時間内に生成が終わりませんでした。もう一度。",
   reasonFormat: "案の形式を確認できませんでした。もう一度作ってください。",
@@ -60,6 +64,6 @@ const ja: Copy = {
 // Kana mode retains its existing gentle Japanese register without leaking English UI copy.
 export function getLocalAssistSidebarCopy(language: MenuLanguage): Copy {
   if (language === "en") return en;
-  if (language === "kana") return { ...ja, page: "ページ（ひらいている ふみ）", scope: "なおす はんい", selection: "ほんぶんの せんたく", lines: "ぎょうを えらぶ", document: "ふみ ぜんたい", send: "あんを つくる", refine: "あんを さらに なおす", stop: "つくるのを とめる", chat: "すいこうの かいわ", retry: "もういちど ためす", reasonTooLong: "たいしょうが 4,000もじを こえています。", reasonContext: "いちどに あつかえる りょうを こえました。", reasonUnavailable: "この Mac では つかえません。", reasonThrottled: "べつの せいせいが うごいています。", reasonTimeout: "じかんないに おわりませんでした。", reasonFormat: "あんの かたちを かくにんできませんでした。" };
+  if (language === "kana") return { ...ja, page: "ページ（ひらいている ふみ）", scope: "なおす はんい", selection: "ほんぶんの せんたく", lines: "ぎょうを えらぶ", document: "ふみ ぜんたい", send: "あんを つくる", refine: "あんを さらに なおす", stop: "つくるのを とめる", chat: "すいこうの かいわ", retry: "もういちど ためす", reasonSelectionTooLong: "たいしょうが 4,000もじを こえています。", reasonProposalTooLong: "できた あんが ながすぎます。", reasonContinuationLimit: "つづけて つくると あんの じょうげんを こえます。", reasonContext: "いちどに あつかえる りょうを こえました。", reasonUnavailable: "この Mac では つかえません。", reasonThrottled: "べつの せいせいが うごいています。", reasonTimeout: "じかんないに おわりませんでした。", reasonFormat: "あんの かたちを かくにんできませんでした。" };
   return ja;
 }

@@ -1782,3 +1782,32 @@ describe("EBookPane link routing", () => {
     expect(onOpenLocalLink).not.toHaveBeenCalled();
   });
 });
+
+describe("EBookPane reading progress (R4)", () => {
+  it("does not claim a value until the page count is measured", async () => {
+    await renderEBookPane(<EBookPane menuLanguage="en" source={"# One\n\nbody one"} />);
+
+    const bar = screen.getByRole("progressbar", { name: "Page" });
+    // 計測前は値を主張せず、「数えています」だけを出す（不定の進捗）。
+    expect(bar.getAttribute("aria-valuenow")).toBeNull();
+    expect(bar.getAttribute("aria-valuemin")).toBeNull();
+    expect(bar.getAttribute("aria-valuemax")).toBeNull();
+    expect(bar.getAttribute("aria-valuetext")).toBe("Counting pages\u2026");
+  });
+
+  it("keeps the visual fill and the ARIA range on the same percentage", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(4);
+    await renderEBookPane(<EBookPane menuLanguage="en" source={"# One\n\nbody one"} />);
+
+    const bar = await waitFor(() => {
+      const found = screen.getByRole("progressbar", { name: "Page" });
+      expect(found.getAttribute("aria-valuenow")).toBe("1");
+      return found;
+    });
+    expect(bar.getAttribute("aria-valuemin")).toBe("0");
+    expect(bar.getAttribute("aria-valuemax")).toBe("4");
+    // 視覚の割合 = ARIA の割合 = 25%（min=0 なので now/max と一致する）。
+    const fill = bar.firstElementChild as HTMLElement;
+    expect(fill.style.width).toBe("25%");
+  });
+});

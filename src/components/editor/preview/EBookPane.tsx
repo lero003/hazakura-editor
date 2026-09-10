@@ -118,6 +118,8 @@ type EBookReaderCopy = {
   frontMatter: string;
   nextPage: string;
   pageProgress: string;
+  /** ページ数をまだ計測できていないときの読み上げ（R4）。 */
+  pageProgressUnknown: string;
   previousPage: string;
   readerLabel: string;
   tableOfContents: string;
@@ -333,6 +335,11 @@ export default function EBookPane({
   // chapter change (where it must not, so a short new chapter is not padded
   // to the previous chapter's page count).
   const measuredChapterIndexRef = useRef<number | null>(null);
+  // この章のページ数を計測できたか（R4）。`measuredPageCount` の初期値は1なので、
+  // 数だけでは「未計測」と「1ページの章」を区別できない。計測済みの章番号を持つ
+  // 上の ref と比べる（新しい state を足して計測経路の再描画を増やさない）。
+  const pageCountMeasured =
+    measuredChapterIndexRef.current === activeChapterIndexSafe;
   // Active chapter index mirrored into a ref so the rAF remeasure callback
   // reads the chapter at callback time, not at schedule time. Pair it with
   // `activeChapterHtmlRef` so both reflect the same render.
@@ -1153,18 +1160,26 @@ export default function EBookPane({
             {copy.pageProgress} {activePageIndexSafe + 1} / {measuredPageCount}
           </div>
           {/* 章のどこにいるかを一目で分かるようにする（モック04の進捗バー）。
-              ページ数が未計測の間は 0% と valuemax=1 で「不明」を正直に出す。 */}
+              未計測の間は進捗を推測せず、`aria-valuenow` も出さない（R4）。
+              計測済みは min=0 / max=総ページ / now=現在ページ＋1 にして、
+              視覚の割合（(現在+1)/総）と ARIA の割合を一致させる。 */}
           <div
             aria-label={copy.pageProgress}
-            aria-valuemax={Math.max(1, measuredPageCount)}
-            aria-valuemin={1}
-            aria-valuenow={activePageIndexSafe + 1}
             className="ebook-reader-progress-bar"
             role="progressbar"
+            {...(pageCountMeasured
+              ? {
+                  "aria-valuemin": 0,
+                  "aria-valuemax": measuredPageCount,
+                  "aria-valuenow": activePageIndexSafe + 1,
+                }
+              : { "aria-valuetext": copy.pageProgressUnknown })}
           >
             <span
               style={{
-                width: `${measuredPageCount > 0 ? Math.min(100, ((activePageIndexSafe + 1) / measuredPageCount) * 100) : 0}%`,
+                width: pageCountMeasured
+                  ? `${Math.min(100, ((activePageIndexSafe + 1) / Math.max(1, measuredPageCount)) * 100)}%`
+                  : "0%",
               }}
             />
           </div>
@@ -1666,6 +1681,7 @@ function getEBookReaderCopy(
       frontMatter: "前付",
       nextPage: "つぎのページ",
       pageProgress: "ページ",
+      pageProgressUnknown: "ページすうを しらべています",
       previousPage: "まへのページ",
       readerLabel: "本のやうに読む",
       tableOfContents: "もくじ",
@@ -1687,6 +1703,7 @@ function getEBookReaderCopy(
       frontMatter: "前付",
       nextPage: "次のページ",
       pageProgress: "ページ",
+      pageProgressUnknown: "ページ数を数えています",
       previousPage: "前のページ",
       readerLabel: "本のように読む",
       tableOfContents: "目次",
@@ -1707,6 +1724,7 @@ function getEBookReaderCopy(
     frontMatter: "Front matter",
     nextPage: "Next page",
     pageProgress: "Page",
+    pageProgressUnknown: "Counting pages…",
     previousPage: "Previous page",
     readerLabel: "Book reader",
     tableOfContents: "Contents",

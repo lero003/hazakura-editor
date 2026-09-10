@@ -1260,7 +1260,11 @@ export function classifyApplyError(
   const raw = err instanceof Error ? err.message : String(err);
 
   switch (classifyLocalAssistError(err)) {
-    case "proposal": return copy.proposalTooLongError;
+    // 生成案そのものの長さ超過と、追加依頼で継続した結果の上限超過（R5）。
+    // どちらも利用者が次に取る操作は同じ（短い案を依頼する／対象を小さくする）ので、
+    // 既存の文言（継続上限の説明を含む）へ寄せる。
+    case "proposal":
+    case "continuation": return copy.proposalTooLongError;
     case "format": return copy.proposalFormatError;
     case "selection": return copy.selectionTooLongError;
     case "context": return copy.contextTooLongError;

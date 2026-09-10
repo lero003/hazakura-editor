@@ -73,3 +73,31 @@ it("does not activate or announce old results while the replacement query search
   expect(screen.queryByText(/Results were truncated/)).toBeNull();
   expect(document.activeElement).toBe(input);
 });
+
+it("keeps emoji and supplementary-plane characters intact around the match (R1)", () => {
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+  // Rust の column はコードポイント数（chars()）。UTF-16 の slice だと
+  // 絵文字の途中から切り出してしまう。
+  const emoji = { line: 1, column: 2, text: "😀余白のはなし" };
+  const kanji = { line: 2, column: 5, text: "𠮷野家の余白の話" };
+  const file = { path: "/work/b.md", relativePath: "chapters/b.md", matches: [emoji, kanji], truncated: false };
+  render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={() => {}} onRun={() => {}}
+    onSetActiveIndex={() => {}} onSetQuery={() => {}} query="余白"
+    rows={[
+      { fileIndex: 0, matchIndex: 0, file, match: emoji },
+      { fileIndex: 0, matchIndex: 1, file, match: kanji },
+    ]}
+    searching={false}
+    summary={{ totalFilesScanned: 4, totalMatches: 2, totalFilesMatched: 1, truncated: false }} searchError={null}
+    workspaceOpen workspaceName="Book" />);
+
+  const marks = [...document.querySelectorAll("mark.global-search-match")];
+  // 一致した2文字だけが mark になり、絵文字・補助面漢字は分断されない。
+  expect(marks.map((mark) => mark.textContent)).toEqual(["余白", "余白"]);
+  expect(marks[0].parentElement?.textContent).toBe("😀余白のはなし");
+  expect(marks[1].parentElement?.textContent).toBe("𠮷野家の余白の話");
+  // サロゲート片（壊れた文字）が混ざっていないこと。
+  for (const mark of marks) {
+    expect(mark.textContent).not.toMatch(/[\uD800-\uDFFF]/u);
+  }
+});

@@ -8,7 +8,12 @@ import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
  * 既存の一般文言（failed / targetChanged など）へ委ねる。
  */
 export type LocalAssistReasonKey =
-  | "reasonTooLong"
+  /** 選択・指定した入力対象が上限を超えた。 */
+  | "reasonSelectionTooLong"
+  /** 生成された案が上限を超えた（入力対象は長くない可能性がある）。 */
+  | "reasonProposalTooLong"
+  /** 追加依頼で継続した結果、案の上限に達した。 */
+  | "reasonContinuationLimit"
   | "reasonContext"
   | "reasonUnavailable"
   | "reasonThrottled"
@@ -21,8 +26,11 @@ export function localAssistReasonKey(
   if (!message) return null;
   switch (classifyLocalAssistError(message)) {
     case "selection":
+      return "reasonSelectionTooLong";
     case "proposal":
-      return "reasonTooLong";
+      return "reasonProposalTooLong";
+    case "continuation":
+      return "reasonContinuationLimit";
     case "model-context":
     case "context":
       return "reasonContext";

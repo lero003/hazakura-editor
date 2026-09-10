@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { LModeActionRail } from "./LModeActionRail";
 import { getLModeCopy } from "../../lib/locale/lMode";
 import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
@@ -420,7 +420,14 @@ describe("LModeActionRail", () => {
     expect(
       screen.queryByRole("dialog", { name: "Change review" }),
     ).toBeNull();
-    expect(document.activeElement).toBe(reviewButton);
+    // 閉じたあとの再描画でボタンの DOM ノードが入れ替わることがあるため、
+    // 事前に掴んだ参照ではなく、その時点のボタンを role/name で引き直して確かめる
+    // （参照固定だと React の再調整のタイミングでフレーキーになる）。
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByRole("button", { name: /Review changes/ }),
+      ),
+    );
   });
 
   it("opens and closes the L Mode file tree drawer", () => {

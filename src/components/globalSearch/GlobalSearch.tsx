@@ -37,11 +37,21 @@ type GlobalSearchProps = {
 
 const MAX_VISIBLE_LINE_CHARS = 240;
 
+/**
+ * 行をコードポイント単位で切り詰める。UTF-16 の `length`/`slice` を使うと
+ * サロゲートペア（絵文字など）の途中で切れてしまうため、`Array.from` で
+ * 1文字＝1要素に開いてから数える（backend の column と同じ単位）。
+ */
+function toCodePoints(text: string): string[] {
+  return Array.from(text);
+}
+
 function clipLineText(text: string): string {
-  if (text.length <= MAX_VISIBLE_LINE_CHARS) {
+  const codePoints = toCodePoints(text);
+  if (codePoints.length <= MAX_VISIBLE_LINE_CHARS) {
     return text;
   }
-  return `${text.slice(0, MAX_VISIBLE_LINE_CHARS)}…`;
+  return `${codePoints.slice(0, MAX_VISIBLE_LINE_CHARS).join("")}…`;
 }
 
 function fileGroupKey(row: GlobalSearchRow): string {
@@ -55,19 +65,22 @@ function fileCountUnit(menuLanguage: MenuLanguage): string {
 }
 
 /**
- * 一致した範囲だけを着色する。`column` は backend が返す1始まりの文字位置。
+ * 一致した範囲だけを着色する。`column` は backend が返す1始まりの**コードポイント**
+ * 位置（Rust の `chars()`）なので、ここでも同じ単位で切り出す。UTF-16 の
+ * `slice()` をそのまま使うと絵文字の途中で切れて、絵文字自体も分断される。
  * 色に頼りきらないよう `<mark>` で意味も持たせる（モック09）。
  */
 function renderMatchedLine(text: string, column: number, needle: string) {
   const clipped = clipLineText(text);
+  const codePoints = toCodePoints(clipped);
   const start = column - 1;
-  if (!needle || start < 0 || start >= clipped.length) return clipped;
-  const end = Math.min(start + needle.length, clipped.length);
+  if (!needle || start < 0 || start >= codePoints.length) return clipped;
+  const end = Math.min(start + toCodePoints(needle).length, codePoints.length);
   return (
     <>
-      {clipped.slice(0, start)}
-      <mark className="global-search-match">{clipped.slice(start, end)}</mark>
-      {clipped.slice(end)}
+      {codePoints.slice(0, start).join("")}
+      <mark className="global-search-match">{codePoints.slice(start, end).join("")}</mark>
+      {codePoints.slice(end).join("")}
     </>
   );
 }

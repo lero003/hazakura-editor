@@ -8,7 +8,8 @@ describe("Local Assist legacy error classification", () => {
     ["Document context exceeds the maximum length of 8000 characters.", "context"],
     ["Selected text exceeds the maximum length of 4000 characters.", "selection"],
     ["Hazakura Local Assist current proposal exceeds the maximum length of 4000 characters.", "proposal"],
-    ["proposal exceeds the continuation limit of 4000 characters.", "proposal"],
+    // 生成案の長さ超過と、追加依頼で継続した結果の上限超過は分ける（R5）。
+    ["proposal exceeds the continuation limit of 4000 characters.", "continuation"],
     ["Apple Foundation Models assets are unavailable.", "unavailable"],
     ["Foundation Models requires macOS 26 or later.", "unavailable"],
     ["Apple Foundation Models does not support this language or current locale for generation yet.", "language"],

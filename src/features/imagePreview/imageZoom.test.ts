@@ -50,6 +50,28 @@ describe("fit zoom", () => {
     expect(nextImageZoom(fit, 1)).toBeGreaterThan(fit);
     expect(nextImageZoom(1, -1)).toBeLessThan(1);
   });
+
+  // R2: 段の下限を返すと「縮小」で画像が大きくなる逆転が起きる。
+  it("never enlarges the image when zooming out below the ladder (R2)", () => {
+    const fit = fitImageZoom({ width: 1200, height: 600 }, { width: 6000, height: 4000 });
+    expect(fit).toBeLessThan(IMAGE_ZOOM_MIN);
+    const afterMinus = nextImageZoom(fit, -1);
+    expect(afterMinus).toBeLessThanOrEqual(fit);
+    // 段の中にいる間は従来どおり1段下がる。
+    expect(nextImageZoom(0.33, -1)).toBe(0.25);
+    expect(nextImageZoom(IMAGE_ZOOM_MIN, -1)).toBe(IMAGE_ZOOM_MIN);
+  });
+
+  // R3: fit は「全体を表示」。手動倍率の下限を持ち込むと縦長画像が入らない。
+  it("fits a very tall image without the manual lower limit (R3)", () => {
+    const stage = { width: 800, height: 600 };
+    const image = { width: 1000, height: 20000 };
+    const fit = fitImageZoom(stage, image);
+    expect(fit).toBeCloseTo((stage.height - 24) / image.height, 6); // 0.0288
+    expect(fit * image.height).toBeLessThanOrEqual(stage.height - 24 + 1);
+    expect(fit * image.width).toBeLessThanOrEqual(stage.width - 24 + 1);
+    expect(formatImageZoom(fit)).toBe("3%");
+  });
 });
 
 describe("image metadata from real data", () => {
