@@ -41,6 +41,7 @@ import {
   ebookProgressAria,
   ebookProgressPercent,
   ebookProgressText,
+  resolveMeasurement,
 } from "./ebookProgress";
 import {
   fetchRemoteImage,
@@ -181,10 +182,10 @@ export default function EBookPane({
   // 再描画を省くため計測済みが画面へ出ない（R4）。オブジェクトは毎回新しいので
   // 更新は必ず1回の再描画になり、計測経路の更新回数は変えていない。
   const [measurement, setMeasurement] = useState<{
+    documentLocationKey: string;
     chapterIndex: number;
     count: number;
   } | null>(null);
-  const measuredPageCount = measurement?.count ?? 1;
   const [pageOffset, setPageOffset] = useState(0);
   const [pageViewportHeight, setPageViewportHeight] = useState(0);
   const [visiblePageStep, setVisiblePageStep] = useState(1);
@@ -271,6 +272,17 @@ export default function EBookPane({
     activeChapterIndex,
     chapters.length,
   );
+  // 有効な計測だけを使う（R4＋文書identity）。文書が切り替わった最初の render から
+  // 前の文書の計測を無効にするため、`setMeasurement(null)` のリセットに頼らず
+  // **文書キーと章番号の両方**が一致するときだけ採用する。これを見ないと、
+  // 「文書A の chapter 0 = 12ページ」のまま「文書B の chapter 0」を計測済みと
+  // 誤認し、前後移動の disabled 判定や読み位置の通知にも古い値が流れる。
+  const activeMeasurement = resolveMeasurement(
+    measurement,
+    documentLocationKey,
+    activeChapterIndexSafe,
+  );
+  const measuredPageCount = activeMeasurement?.count ?? 1;
   const activePageIndexSafe = clampPageIndex(
     activePageIndex,
     measuredPageCount,
@@ -349,7 +361,7 @@ export default function EBookPane({
   // to the previous chapter's page count).
   const measuredChapterIndexRef = useRef<number | null>(null);
   // この章のページ数を計測できたか（R4）。表示と ARIA の契約は ebookProgress.ts。
-  const pageCountMeasured = measurement?.chapterIndex === activeChapterIndexSafe;
+  const pageCountMeasured = activeMeasurement !== null;
   const progressInput = {
     measured: pageCountMeasured,
     pageIndex: activePageIndexSafe,
@@ -550,7 +562,11 @@ export default function EBookPane({
     const nextVisiblePageStep = getVisiblePageStep(viewportRef.current, flow);
     setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
     setVisiblePageStep(nextVisiblePageStep);
-    setMeasurement({ chapterIndex: activeChapterIndexSafe, count: nextPageCount });
+    setMeasurement({
+      documentLocationKey,
+      chapterIndex: activeChapterIndexSafe,
+      count: nextPageCount,
+    });
     setActivePageIndex((current) => {
       const pendingSearchSourceLine = pendingSearchSourceLineRef.current;
       if (pendingSearchSourceLine !== null && activeChapter) {
@@ -628,7 +644,7 @@ export default function EBookPane({
       );
       setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
       setVisiblePageStep(getVisiblePageStep(viewportRef.current, flow));
-      setMeasurement({ chapterIndex, count: nextPageCount });
+      setMeasurement({ documentLocationKey, chapterIndex, count: nextPageCount });
     });
   }, []);
 

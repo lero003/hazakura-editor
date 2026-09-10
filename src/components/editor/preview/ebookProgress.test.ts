@@ -3,6 +3,7 @@ import {
   ebookProgressAria,
   ebookProgressPercent,
   ebookProgressText,
+  resolveMeasurement,
   type EBookProgressCopy,
 } from "./ebookProgress";
 
@@ -46,6 +47,22 @@ describe("ebook progress display (R4)", () => {
     const max = Number(aria["aria-valuemax"]);
     const now = Number(aria["aria-valuenow"]);
     expect(((now - min) / (max - min)) * 100).toBe(percent);
+  });
+
+  it("invalidates the measurement when the document changes (P2-low)", () => {
+    // 文書A の chapter 0 = 12ページ。文書B の chapter 0 は**別物**。
+    const fromDocumentA = {
+      documentLocationKey: "/workspace/a.md",
+      chapterIndex: 0,
+      count: 12,
+    };
+    expect(resolveMeasurement(fromDocumentA, "/workspace/a.md", 0)).toEqual(fromDocumentA);
+    // 文書が変わった最初の render から無効（章番号だけでは足りない）。
+    expect(resolveMeasurement(fromDocumentA, "/workspace/b.md", 0)).toBeNull();
+    // 章が変わったときも無効。
+    expect(resolveMeasurement(fromDocumentA, "/workspace/a.md", 1)).toBeNull();
+    // 未計測はそのまま未計測。
+    expect(resolveMeasurement(null, "/workspace/a.md", 0)).toBeNull();
   });
 
   it("never reports a page beyond the measured total", () => {

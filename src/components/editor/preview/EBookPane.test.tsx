@@ -1833,3 +1833,32 @@ describe("EBookPane progress text (R4)", () => {
     expect((bar.firstElementChild as HTMLElement).style.width).toBe("100%");
   });
 });
+
+it("does not reuse the previous document's page count (document identity, P2-low)", async () => {
+  vi.mocked(measureEBookPageCount).mockReturnValue(12);
+  const { rerender } = await renderEBookPane(
+    <EBookPane
+      documentPath="/workspace/a.md"
+      menuLanguage="en"
+      source={"# Chapter One\n\nbody one"}
+    />,
+  );
+  await waitFor(() => expect(screen.getByText("Page 1 / 12")).toBeTruthy());
+
+  // 1ページの別文書へ切り替える。文書キーを見ていないと、章番号が同じ(0)なので
+  // 前の文書の12ページが「計測済み」として残る。
+  vi.mocked(measureEBookPageCount).mockReturnValue(1);
+  rerender(
+    <EBookPane
+      documentPath="/workspace/b.md"
+      menuLanguage="en"
+      source={"# Chapter One\n\nbody one"}
+    />,
+  );
+
+  const footerPage = () =>
+    document.querySelector(".ebook-reader-footer-page")?.textContent ?? "";
+  expect(footerPage()).not.toContain("/ 12");
+  await waitFor(() => expect(screen.getByText("Page 1 / 1")).toBeTruthy());
+  expect(footerPage()).toBe("Chapter page 1 / 1");
+});

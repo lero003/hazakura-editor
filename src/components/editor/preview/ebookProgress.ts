@@ -6,6 +6,31 @@
  * しまう。ここで表示と ARIA の契約を1箇所にまとめ、未計測の間は
  * **値を主張しない**（`aria-valuenow` を出さない）ことを保証する。
  */
+/** 計測結果は「どの文書の、どの章を、何ページと」計測したか。 */
+export type EBookMeasurement = {
+  documentLocationKey: string;
+  chapterIndex: number;
+  count: number;
+};
+
+/**
+ * いま表示している文書・章に対して**有効な計測**だけを返す。
+ *
+ * 文書が切り替わったとき、リセット処理が `measurement` を消すのを待つと、
+ * 最初の render では「文書A の chapter 0 = 12ページ」が「文書B の chapter 0」に
+ * 対しても成立してしまう（章番号しか見ていないため）。文書キーと章番号の
+ * 両方で照合して、切り替わった瞬間から無効にする。
+ */
+export function resolveMeasurement(
+  measurement: EBookMeasurement | null,
+  documentLocationKey: string,
+  chapterIndex: number,
+): EBookMeasurement | null {
+  if (!measurement) return null;
+  if (measurement.documentLocationKey !== documentLocationKey) return null;
+  return measurement.chapterIndex === chapterIndex ? measurement : null;
+}
+
 export type EBookProgressInput = {
   /** この章のページ数を計測できたか。 */
   measured: boolean;

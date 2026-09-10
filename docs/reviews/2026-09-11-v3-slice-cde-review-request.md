@@ -148,11 +148,11 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 検索の wire 形式を変�
 | 種別 | 結果 |
 | --- | --- |
 | `npm run typecheck` | 成功 |
-| `npm test` | **272ファイル / 2,382件** 成功 |
+| `npm test` | **272ファイル / 2,384件** 成功 |
 | `cargo test` | **385 passed, 2 ignored**（検索の snippet 契約を変更） |
 | `npm run smoke:app-store-surface` | 117件 成功 |
 | `npm run build:vite` | 成功（chunk サイズ警告は既存） |
-| `cargo fmt --check` / `cargo test` | OK / **383 passed, 2 ignored** |
+| `cargo fmt --check` / `cargo test` | OK / **385 passed, 2 ignored**（検索の snippet 契約を変更したため） |
 
 **テスト件数の成功は「モック適合」の主張ではない**（レビュー V2）。件数は実装が壊れていないことの証跡であり、
 モックとの差は「未受入・残り」に分けて記録している。また「実機受入」と「ローカル検証」も別物として扱う。
