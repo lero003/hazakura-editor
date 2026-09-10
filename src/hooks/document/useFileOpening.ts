@@ -117,7 +117,7 @@ export function useFileOpening({
         return existingTab;
       }
 
-      setStatus("Opening file...");
+      if (!options.isCurrent) setStatus("Opening file...");
 
       let read = pendingReadsRef.current.get(path);
       try {

@@ -105,7 +105,7 @@ it("returns the registered session to both unguarded concurrent opens", async ()
 });
 it.each(["close", "query"])("does not publish a pending open after search %s", async (ending) => {
  const read = deferred(); vi.mocked(openTextFile).mockReturnValue(read.promise);
- const { result, clearImagePreview, goToLine } = setup();
+ const { result, clearImagePreview, goToLine, setStatus } = setup();
  act(() => result.current.controller.openGlobalSearch());
  act(() => result.current.controller.runGlobalSearchMatch(row("/book/a.md", 10)));
  act(() => {
@@ -113,6 +113,7 @@ it.each(["close", "query"])("does not publish a pending open after search %s", a
    else result.current.controller.setGlobalSearchQuery("different");
  });
  await act(async () => read.resolve(file("/book/a.md")));
+ expect(setStatus).not.toHaveBeenCalledWith("Opening file...");
  expect(result.current.activeTab).toBeNull();
  expect(result.current.tabs).toHaveLength(0);
  expect(clearImagePreview).not.toHaveBeenCalled();
