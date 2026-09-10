@@ -8,6 +8,35 @@ const previewCss = readFileSync(
   "utf8",
 );
 
+// 紙面トークンはテーマ側が唯一の定義元。preview は var(--surface-paper) を参照するだけ。
+const themeCss = [
+  "tokens.css",
+  "themes.css",
+  "edohigan-theme.css",
+  "shinkai-theme.css",
+  "crt-theme.css",
+]
+  .map((file) => readFileSync(`${process.cwd()}/src/styles/${file}`, "utf8"))
+  .join("\n");
+
+function ruleBodyIn(css: string, selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    css.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))?.groups
+      ?.body ?? ""
+  );
+}
+
+function tokenDeclarationIn(css: string, selector: string, token: string): string {
+  return (
+    ruleBodyIn(css, selector).match(
+      new RegExp(
+        `${token}:\\s*(?:var\\(--[a-z-]+\\)|#[0-9a-fA-F]{6}|rgba?\\([^)]*\\))`,
+      ),
+    )?.[0] ?? ""
+  );
+}
+
 const selectionPalette = {
   light: { background: "#2e6b4f", foreground: "#ffffff" },
   dark: { background: "#87cba8", foreground: "#0e1311" },
@@ -78,9 +107,67 @@ describe("Preview theme contrast", () => {
     ["edohigan", "#342230"],
     ["crt", "#0d1a11"],
     ["shinkai", "#14384a"],
-  ] as const)("%s uses a stable opaque reading surface", (theme, surface) => {
-    const selector = `:root[data-theme="${theme}"] .preview-pane-preview`;
-    expect(tokenValue(selector, "--preview-reading-surface")).toBe(surface);
+  ] as const)("%s keeps an opaque paper for reading", (theme, surface) => {
+    expect(
+      tokenDeclarationIn(themeCss, `:root[data-theme="${theme}"]`, "--surface-paper"),
+    ).toBe(`--surface-paper: ${surface}`);
+    expect(
+      tokenDeclarationIn(previewCss, `:root[data-theme="${theme}"] .preview-pane-preview`, "--preview-reading-surface"),
+    ).toBe("--preview-reading-surface: var(--surface-paper)");
+  });
+});
+
+describe("paper token", () => {
+  const paper = {
+    light: { surface: "#fffefb", text: "#1a1f1d" },
+    dark: { surface: "#1d2a23", text: "#e8ede5" },
+    yakou: { surface: "#1c1d31", text: "#e8e8f4" },
+    shokou: { surface: "#f5f8fc", text: "#1c3554" },
+    edohigan: { surface: "#342230", text: "#f2e4e8" },
+    crt: { surface: "#0d1a11", text: "#9be0a4" },
+    shinkai: { surface: "#14384a", text: "#d4ecf2" },
+  } as const;
+
+  it.each(Object.entries(paper))(
+    "%s defines one paper token in the theme",
+    (theme, expected) => {
+      const selector = theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
+      expect(tokenDeclarationIn(themeCss, selector, "--surface-paper")).toBe(
+        `--surface-paper: ${expected.surface}`,
+      );
+      expect(tokenDeclarationIn(themeCss, selector, "--nav-surface")).not.toBe("");
+    },
+  );
+
+  it.each(Object.entries(paper))(
+    "%s keeps body text readable on the paper",
+    (_theme, expected) => {
+      expect(
+        contrastRatio(expected.surface, expected.text),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it.each(Object.entries(paper))(
+    "%s keeps muted text readable on the paper",
+    (theme, expected) => {
+      const selector = theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
+      const muted = tokenDeclarationIn(themeCss, selector, "--text-muted").replace(
+        "--text-muted: ",
+        "",
+      );
+      expect(muted).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(contrastRatio(expected.surface, muted)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("keeps the editor surface on the paper token for every theme", () => {
+    for (const theme of ["light", "dark", "yakou", "shokou", "edohigan", "crt", "shinkai"]) {
+      const selector = theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
+      expect(tokenDeclarationIn(themeCss, selector, "--cm-bg")).toBe(
+        "--cm-bg: var(--surface-paper)",
+      );
+    }
   });
 });
 

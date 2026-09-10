@@ -15,8 +15,11 @@
 /* 1. パレット */
 :root[data-theme="edohigan"] {
   --bg: #2a2030;
-  /* 背景シェーダーを透かす (深海級の透過思想) */
+  /* 背景シェーダーを透かすのは surface / nav-surface（操作面）。
+     読む・書く面は不透明な紙面 --surface-paper を使う。 */
   --surface: rgba(42, 28, 40, 0.68);
+  --surface-paper: #342230;
+  --nav-surface: rgba(46, 29, 44, 0.78);
   --surface-rgb: 42, 28, 40;
   --surface-strong: rgba(52, 34, 48, 0.72);
   --surface-strong-rgb: 52, 34, 48;
@@ -44,7 +47,7 @@
   --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 18%, transparent);
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
-  --cm-bg: rgba(38, 26, 38, 0.74);
+  --cm-bg: var(--surface-paper);
   --cm-fg: #f2e4e8;
   --cm-caret: #e8a0b0;
   --cm-gutter-bg: rgba(28, 18, 30, 0.78);

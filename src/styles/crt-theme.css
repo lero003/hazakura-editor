@@ -21,6 +21,8 @@
 :root[data-theme="crt"] {
   --bg: #040a06;
   --surface: #08120c;
+  --surface-paper: #0d1a11;
+  --nav-surface: #101d13;
   --surface-rgb: 8, 18, 12;
   --surface-strong: #0d1a11;
   --surface-strong-rgb: 13, 26, 17;
@@ -28,7 +30,7 @@
   --border: #143020;
   --border-strong: #1f4a32;
   --text: #9be0a4;
-  --text-muted: #5a8a64;
+  --text-muted: #61916b;
   --accent: #5fe06a;
   --accent-soft: #0e2417;
   --accent-glass: rgba(95, 224, 106, 0.1);
@@ -47,7 +49,7 @@
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror CRT 用配色 / CodeMirror CRT Colors */
-  --cm-bg: #08120c;
+  --cm-bg: var(--surface-paper);
   --cm-fg: #9be0a4;
   --cm-caret: #5fe06a;
   --cm-gutter-bg: #050d08;

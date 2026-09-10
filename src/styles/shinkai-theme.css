@@ -27,8 +27,11 @@
 :root[data-theme="shinkai"] {
   --bg: #0a2a38;
   /* surface 系を半透明にし、背景の水中シェーダー (canvas) を各所で透かす。
-     エディタ (CodeMirror)・プレビュー・サイドバー等で水流・チリが見える。 */
+     ただし読む・書く面 (エディタ / プレビュー) は不透明な紙面 --surface-paper を使い、
+     水流はサイドバーなど操作面で残す。 */
   --surface: rgba(15, 53, 72, 0.72);
+  --surface-paper: #14384a;
+  --nav-surface: rgba(9, 36, 49, 0.78);
   --surface-rgb: 15, 53, 72;
   --surface-strong: rgba(20, 64, 86, 0.72);
   --surface-strong-rgb: 20, 64, 86;
@@ -61,9 +64,9 @@
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror 深海用配色 / CodeMirror Shinkai Colors
-     --cm-bg / --cm-gutter-bg を半透明にし、背景の水中シェーダー (canvas) を
-     エディタ周辺でも透かす。本文は 0.72 まで濃くして読み、余白とガターで水流を残す。 */
-  --cm-bg: rgba(15, 53, 72, 0.72);
+     本文面は不透明な紙面 (--surface-paper) に統一し、水流・チリは
+     半透明のまま残るガター (--cm-gutter-bg) と操作面で見せる。 */
+  --cm-bg: var(--surface-paper);
   --cm-fg: #d4ecf2;
   --cm-caret: #f2d8a0;
   --cm-gutter-bg: rgba(8, 34, 46, 0.78);

@@ -51,7 +51,7 @@ describe("preview.css", () => {
     for (const theme of ["edohigan", "crt", "shinkai"]) {
       expect(previewCss).toMatch(
         new RegExp(
-          `:root\\[data-theme="${theme}"\\] \\.preview-pane-preview\\s*{[^}]*--preview-reading-surface:\\s*#[0-9a-f]{6}`,
+          `:root\\[data-theme="${theme}"\\] \\.preview-pane-preview\\s*{[^}]*--preview-reading-surface:\\s*var\\(--surface-paper\\)`,
           "s",
         ),
       );
@@ -83,7 +83,7 @@ describe("preview.css", () => {
     for (const theme of ["edohigan", "crt", "shinkai"]) {
       expect(previewCss).toMatch(
         new RegExp(
-          `:root\\[data-theme="${theme}"\\] \\.ebook-pane\\s*{[^}]*--preview-reading-surface:\\s*#[0-9a-f]{6}`,
+          `:root\\[data-theme="${theme}"\\] \\.ebook-pane\\s*{[^}]*--preview-reading-surface:\\s*var\\(--surface-paper\\)`,
           "s",
         ),
       );

@@ -28,6 +28,8 @@ html, body, #root, .app-shell,
 :root[data-theme="dark"] {
   --bg: #0e1311;
   --surface: #141a17;
+  --surface-paper: #1d2a23;
+  --nav-surface: #142019;
   --surface-rgb: 20, 26, 23;
   --surface-strong: #1a211d;
   --surface-strong-rgb: 26, 33, 29;
@@ -57,7 +59,7 @@ html, body, #root, .app-shell,
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror ダーク用配色 / CodeMirror Dark Colors */
-  --cm-bg: #141a17;
+  --cm-bg: var(--surface-paper);
   --cm-fg: #e8ede5;
   --cm-caret: #87cba8;
   --cm-gutter-bg: #101613;
@@ -117,6 +119,8 @@ html, body, #root, .app-shell,
   --bg: linear-gradient(135deg, #0a0a14 0%, #14122c 48%, #0c0e18 100%);
   --bg-gradient: true;
   --surface: #15151f;
+  --surface-paper: #1c1d31;
+  --nav-surface: #141426;
   --surface-rgb: 21, 21, 31;
   --surface-strong: #1c1c2c;
   --surface-strong-rgb: 28, 28, 44;
@@ -147,7 +151,7 @@ html, body, #root, .app-shell,
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror 夜光用配色 / CodeMirror Yakou Colors */
-  --cm-bg: #15151f;
+  --cm-bg: var(--surface-paper);
   --cm-fg: #e8e8f4;
   --cm-caret: #a090ff;
   --cm-gutter-bg: #11111a;
@@ -208,6 +212,8 @@ html, body, #root, .app-shell,
 :root[data-theme="shokou"] {
   --bg: linear-gradient(135deg, #e4f1ff 0%, #f6faff 36%, #ffe6c4 72%, #f8cbb8 100%);
   --surface: #f6f9fd;
+  --surface-paper: #f5f8fc;
+  --nav-surface: #e2ecf5;
   --surface-rgb: 246, 249, 253;
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
@@ -215,7 +221,7 @@ html, body, #root, .app-shell,
   --border: #cfdceb;
   --border-strong: #a8c0d4;
   --text: #1c3554;
-  --text-muted: #567084;
+  --text-muted: #526b7f;
   --accent: #3478ad;
   --accent-secondary: #ef9a4a;
   --accent-gradient: linear-gradient(135deg, #3478ad 0%, #6fb0d2 40%, #ef9a4a 76%, #d67886 100%);
@@ -234,7 +240,7 @@ html, body, #root, .app-shell,
      v0.33: 前景色を濃紺へ引き上げ、active-line と mark 系にメリハリを
      付け、gutter の視認性も少し強めた。曙色の薄明背景でも本文がくっ
      きり読めるようにする。 */
-  --cm-bg: #f6f9fd;
+  --cm-bg: var(--surface-paper);
   --cm-fg: #13263c;
   --cm-caret: #3478ad;
   --cm-gutter-bg: #e2ecf5;

@@ -6,6 +6,10 @@
 :root {
   --bg: #fafbfa;
   --surface: #ffffff;
+  /* 本文の紙面: 読む・書く面の下地。汎用 surface(白)とは別の意味を持つ。 */
+  --surface-paper: #fffefb;
+  /* ナビ面: サイドバーや操作部の下地。全 surface を一括着色しないための意味トークン。 */
+  --nav-surface: #eef2ec;
   --surface-rgb: 255, 255, 255;
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
@@ -13,7 +17,7 @@
   --border: #e4e7e5;
   --border-strong: #c8cfc9;
   --text: #1a1f1d;
-  --text-muted: #6b7670;
+  --text-muted: #606f64;
   --accent: #2e6b4f;
   --accent-soft: #eef3f0;
   --accent-glass: rgba(46, 107, 79, 0.08);
@@ -42,7 +46,7 @@
   --diff-blank-row-bg: rgba(127, 127, 127, 0.04);
 
   /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
-  --cm-bg: #ffffff;
+  --cm-bg: var(--surface-paper);
   --cm-fg: #1a1f1d;
   --cm-caret: #2e6b4f;
   --cm-gutter-bg: #f4f6f5;
