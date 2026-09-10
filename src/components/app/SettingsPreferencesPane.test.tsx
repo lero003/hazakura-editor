@@ -151,7 +151,7 @@ describe("SettingsPreferencesPane", () => {
     expect(toggle.checked).toBe(true);
   });
 
-  it("renders theme select with visible hint for the selected theme", () => {
+  it("renders theme cards with visible hint for the selected theme", () => {
     const copy = getPreferencesCopy("en");
     render(
       <SettingsPreferencesPane
@@ -174,7 +174,7 @@ describe("SettingsPreferencesPane", () => {
     expect(hint.textContent).toBe(copy.themeHint("edohigan"));
   });
 
-  it("renders theme select for all three languages", () => {
+  it("renders theme cards for all three languages", () => {
     for (const lang of ["en", "ja", "kana"] as const) {
       const copy = getPreferencesCopy(lang);
       render(
@@ -262,4 +262,24 @@ describe("SettingsPreferencesPane", () => {
     expect(toggle.checked).toBe(false);
   });
 
+});
+
+it.each([
+  ["editorFontSize", 12, 22],
+  ["previewFontSize", 12, 24],
+  ["workspaceFontSize", 10, 18],
+  ["lModeFontSize", 12, 24],
+] as const)("changes only %s and retains its existing range", (key, min, max) => {
+  const copy = getPreferencesCopy("en");
+  renderWithState(defaultEditorSettings());
+  const keys = ["editorFontSize", "previewFontSize", "workspaceFontSize", "lModeFontSize"] as const;
+  const originals = Object.fromEntries(keys.map((name) => [name, (screen.getByRole("spinbutton", { name: copy[name] }) as HTMLInputElement).value]));
+  const input = screen.getByRole("spinbutton", { name: copy[key] }) as HTMLInputElement;
+  fireEvent.change(input, { target: { value: "999" } });
+  expect(input.value).toBe(String(max));
+  fireEvent.change(input, { target: { value: "1" } });
+  expect(input.value).toBe(String(min));
+  for (const other of keys.filter((name) => name !== key)) {
+    expect((screen.getByRole("spinbutton", { name: copy[other] }) as HTMLInputElement).value).toBe(originals[other]);
+  }
 });

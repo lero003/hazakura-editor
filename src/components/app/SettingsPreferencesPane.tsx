@@ -1,5 +1,5 @@
 import { ThemePreferenceCards } from "./ThemePreferenceCards";
-import type { Dispatch, SetStateAction } from "react";
+import { useId, useRef, type Dispatch, type SetStateAction } from "react";
 import type { OutsideImagePolicy } from "../../features/editor/mediaImageSettings";
 import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
 import type {
@@ -57,6 +57,14 @@ export function SettingsPreferencesPane({
   previewVisible,
   themePreference,
 }: SettingsPreferencesPaneProps) {
+  const categoryPrefix = useId();
+  const settingsScrollRef = useRef<HTMLDivElement>(null);
+  const categoryHeadings = useRef<(HTMLHeadingElement | null)[]>([]);
+  const categoryLabels = [copy.editor, copy.mediaAndDisplay, copy.application, copy.appearanceAndWriting];
+  const navigationLabel = menuLanguage === "en" ? "Settings categories" : menuLanguage === "kana" ? "せっていの もくじ" : "設定の目次";
+  const sizeCopy = menuLanguage === "en" ? { title: "Text sizes", sample: "A quiet page" } :
+    menuLanguage === "kana" ? { title: "もじの おほきさ", sample: "しづかな いちページ" } :
+    { title: "文字サイズ", sample: "静かな一ページ" };
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
   const appleAssistStatus = appleAssistStatusText(
     copy,
@@ -64,9 +72,21 @@ export function SettingsPreferencesPane({
   );
 
   return (
-    <div className="preferences-sections settings-preferences">
+    <div className="settings-layout">
+      <nav className="settings-category-nav" aria-label={navigationLabel}>
+        {categoryLabels.map((label, index) => <button key={index} type="button"
+          aria-controls={categoryPrefix + index} onClick={() => {
+            const heading = categoryHeadings.current[index];
+            const scroller = settingsScrollRef.current;
+            if (heading && scroller) {
+              scroller.scrollTop += heading.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 16;
+            }
+            heading?.focus({ preventScroll: true });
+          }}>{label}</button>)}
+      </nav>
+      <div className="preferences-sections settings-preferences" ref={settingsScrollRef}>
       <section className="preference-section" aria-label={copy.editorDisplay}>
-        <h3>{copy.editor}</h3>
+        <h3 id={categoryPrefix + 0} tabIndex={-1} ref={(node) => { categoryHeadings.current[0] = node; }}>{copy.editor}</h3>
         <ToggleSwitch
           checked={editorSettings.wrapLines}
           label={copy.wrapLines}
@@ -94,6 +114,7 @@ export function SettingsPreferencesPane({
             }))
           }
         />
+        <fieldset className="settings-text-sizes"><legend>{sizeCopy.title}</legend>
         <label className="field-control">
           <span>{copy.editorFontSize}</span>
           <input
@@ -115,6 +136,7 @@ export function SettingsPreferencesPane({
               }))
             }
           />
+          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.editorFontSize }}>{sizeCopy.sample}</span>
         </label>
         <label className="field-control">
           <span>{copy.previewFontSize}</span>
@@ -137,6 +159,7 @@ export function SettingsPreferencesPane({
               }))
             }
           />
+          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.previewFontSize }}>{sizeCopy.sample}</span>
         </label>
         <label className="field-control">
           <span>{copy.workspaceFontSize}</span>
@@ -159,6 +182,7 @@ export function SettingsPreferencesPane({
               }))
             }
           />
+          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.workspaceFontSize }}>{sizeCopy.sample}</span>
         </label>
         <label className="field-control">
           <span>{copy.lModeFontSize}</span>
@@ -181,7 +205,9 @@ export function SettingsPreferencesPane({
               }))
             }
           />
+          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.lModeFontSize }}>{sizeCopy.sample}</span>
         </label>
+        </fieldset>
         <label className="field-control">
           <span>{copy.tabSize}</span>
           <select
@@ -201,7 +227,7 @@ export function SettingsPreferencesPane({
         </label>
       </section>
       <section className="preference-section" aria-label={copy.mediaAndDisplay}>
-        <h3>{copy.mediaAndDisplay}</h3>
+        <h3 id={categoryPrefix + 1} tabIndex={-1} ref={(node) => { categoryHeadings.current[1] = node; }}>{copy.mediaAndDisplay}</h3>
         <label className="field-control">
           <span>{copy.outsideImages}</span>
           <select
@@ -243,7 +269,7 @@ export function SettingsPreferencesPane({
         />
       </section>
       <section className="preference-section" aria-label={copy.application}>
-        <h3>{copy.application}</h3>
+        <h3 id={categoryPrefix + 2} tabIndex={-1} ref={(node) => { categoryHeadings.current[2] = node; }}>{copy.application}</h3>
         <ToggleSwitch
           checked={previewVisible}
           label={copy.previewPane}
@@ -310,7 +336,7 @@ export function SettingsPreferencesPane({
         className="preference-section"
         aria-label={copy.appearanceAndWriting}
       >
-        <h3>{copy.appearanceAndWriting}</h3>
+        <h3 id={categoryPrefix + 3} tabIndex={-1} ref={(node) => { categoryHeadings.current[3] = node; }}>{copy.appearanceAndWriting}</h3>
         <ThemePreferenceCards copy={copy} language={menuLanguage}
           value={themePreference} onChange={onThemePreferenceChange} />
         <label className="field-control">
@@ -368,6 +394,7 @@ export function SettingsPreferencesPane({
           />
         </div>
       </section>
+      </div>
     </div>
   );
 }
