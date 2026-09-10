@@ -35,8 +35,8 @@ html, body, #root, .app-shell,
   --surface-strong: #1a211d;
   --surface-strong-rgb: 26, 33, 29;
   --surface-muted: #213128;
-  --border: #35463a;
-  --border-strong: #4a5f4d;
+  --border: #38493c;
+  --border-strong: #4b614e;
   --text: #e5eddf;
   --text-muted: #a6b5a5;
   --accent: #aad0ac;
@@ -66,7 +66,7 @@ html, body, #root, .app-shell,
   --cm-fg: #e5eddf;
   --cm-caret: #aad0ac;
   --cm-gutter-bg: #213128;
-  --cm-gutter-border: #35463a;
+  --cm-gutter-border: #38493c;
   --cm-gutter-fg: #a6b5a5;
   --cm-active-line-bg: rgba(170, 208, 172, 0.08);
   --cm-active-gutter-bg: rgba(170, 208, 172, 0.08);
@@ -130,8 +130,8 @@ html, body, #root, .app-shell,
   --surface-strong: #1c1c2c;
   --surface-strong-rgb: 28, 28, 44;
   --surface-muted: #11111a;
-  --border: #2a2a50;
-  --border-strong: #3c3c6c;
+  --border: #393870;
+  --border-strong: #4e4d8d;
   --text: #e8e8f4;
   --text-muted: #9292b4;
   --accent: #a090ff;
@@ -226,8 +226,8 @@ html, body, #root, .app-shell,
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
   --surface-muted: #e2ecf5;
-  --border: #cfdceb;
-  --border-strong: #a8c0d4;
+  --border: #b9cce1;
+  --border-strong: #8eadc7;
   --text: #1c3554;
   --text-muted: #526b7f;
   --accent: #3478ad;

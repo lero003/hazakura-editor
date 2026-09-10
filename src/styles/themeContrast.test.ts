@@ -216,6 +216,71 @@ describe("paper token", () => {
   });
 });
 
+describe("border hierarchy", () => {
+  // --border = 通常の区切り（輪郭を少し立てる）、--border-strong = 入力欄・重要な輪郭。
+  // 2段階の差が潰れないことを見る。単なるペイン間の1px線は3:1を目標にしない（C08の3:1は
+  // focus と重要な輪郭の話で、全罫線を濃くすると静かな紙面が壊れる）。
+  it.each(themeNames)("%s keeps the two border steps distinct", (theme) => {
+    const paper = themeToken(theme, "--surface-paper");
+    const border = themeToken(theme, "--border");
+    const strong = themeToken(theme, "--border-strong");
+    expect(border).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(strong).toMatch(/^#[0-9a-fA-F]{6}$/);
+
+    const onPaper = contrastRatio(paper, border);
+    expect(onPaper).toBeGreaterThanOrEqual(1.45);
+    expect(onPaper).toBeLessThanOrEqual(1.7);
+
+    const strongOnPaper = contrastRatio(paper, strong);
+    expect(strongOnPaper).toBeGreaterThanOrEqual(2.1);
+    expect(strongOnPaper - onPaper).toBeGreaterThanOrEqual(0.4);
+  });
+
+  it.each(themeNames)("%s keeps the border visible on the surfaces it separates", (theme) => {
+    const border = themeToken(theme, "--border");
+    expect(contrastRatio(themeToken(theme, "--chrome-surface"), border)).toBeGreaterThanOrEqual(1.4);
+    const nav = themeToken(theme, "--nav-surface");
+    // 半透明のナビ面は合成後でしか測れないので実描画の経路（下のテスト）に任せる。
+    if (nav.startsWith("#")) {
+      expect(contrastRatio(nav, border)).toBeGreaterThanOrEqual(1.3);
+    }
+  });
+
+  it.each(themeNames)("%s keeps the strong border clear of its surface", (theme) => {
+    const surface = themeToken(theme, "--surface");
+    const strong = themeToken(theme, "--border-strong");
+    // edohigan / shinkai の surface は半透明。
+    if (surface.startsWith("#")) {
+      expect(contrastRatio(surface, strong)).toBeGreaterThanOrEqual(1.9);
+    }
+  });
+
+  it.each(themeNames)("%s keeps the focus ring above 3:1", (theme) => {
+    // focus は `outline: 2px solid var(--accent)`。載り得る面すべてで 3:1 以上。
+    const accent = themeToken(theme, "--accent");
+    for (const token of ["--surface-paper", "--nav-surface", "--chrome-surface"]) {
+      const surface = themeToken(theme, token);
+      if (!surface.startsWith("#")) continue;
+      expect(
+        contrastRatio(surface, accent),
+        `${theme} ${token}`,
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+});
+
+describe("native window background", () => {
+  // 透明タイトルバーの色は theme-palette.json（Rust が include_str! で共有）が
+  // chrome 面と同色であることを契約にする。CSS だけ変えて JSON を忘れる事故を防ぐ。
+  const palette = JSON.parse(
+    readFileSync(`${process.cwd()}/src/lib/theme-palette.json`, "utf8"),
+  ) as Record<string, string>;
+
+  it.each(themeNames)("%s keeps the native palette on the chrome surface", (theme) => {
+    expect(palette[theme]).toBe(themeToken(theme, "--chrome-surface"));
+  });
+});
+
 describe("solid accent control contrast", () => {
   // accent 面に載る文字は --accent-contrast。CSSから実値を読む。
   it.each(themeNames)("%s keeps text on the accent surface readable", (theme) => {

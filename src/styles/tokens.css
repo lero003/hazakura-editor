@@ -18,8 +18,8 @@
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
   --surface-muted: #f2f4ef;
-  --border: #dce2d9;
-  --border-strong: #b9c6b8;
+  --border: #c7d2c5;
+  --border-strong: #a1b3a1;
   --text: #24362d;
   --text-muted: #606f64;
   --accent: #356b50;
@@ -54,7 +54,7 @@
   --cm-fg: #24362d;
   --cm-caret: #356b50;
   --cm-gutter-bg: #f7f8f5;
-  --cm-gutter-border: #dce2d9;
+  --cm-gutter-border: #c7d2c5;
   --cm-gutter-fg: #6b7670;
   --cm-active-line-bg: rgba(53, 107, 80, 0.05);
   --cm-active-gutter-bg: rgba(53, 107, 80, 0.05);
