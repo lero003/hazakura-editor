@@ -13,9 +13,9 @@ v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じ�
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告） |
-| ソース版 | 2.9.0。codex/v3でUI-G1状態表示・Help整合・reflow調整、UI-G2設定レール/現在地を実装。版数は未更新 |
+| ソース版 | 2.9.0。codex/v3でUI-G1状態表示・Help整合・reflow、UI-G2設定レール/現在地、UI-G3紙面/ナビ面トークンを実装。版数は未更新 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | G2合評、UI-G native/VoiceOver/200%/再起動受入 — `docs/current-work.md` |
+| 現行キュー | G3合評、01開始画面の2ペイン構造、設定外枠寸法、UI-G native/VoiceOver/200%受入 — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 

@@ -22,10 +22,13 @@ Last reviewed: 2026-09-10
 - **UI-G2:** 未コミットで残っていた設定の左レール化を引き取り、カテゴリの現在地を
   本文スクロールから導出する処理を追加（c937e036のassert補強、1cb1e564）。
   [実装と証跡](reviews/2026-09-10-v3-ui-g2/README.md)。
-- **確認:** ローカル258ファイル・2,220件、表示境界117件。typecheck/Vite成功。
-  7テーマの実描画測定で現在地の左バーが最小4.16:1、本文の文字は全て10:1以上。
-  Rust無変更・cargo test未実行。G1の近接46件・Help21件は再実行していない。
-- **次:** G2合評と、native/VoiceOver/200%/再起動/実Systemの受入表を埋める。UI-Gは未完了。
+- **UI-G3:** モックの紙面／ナビ面を意味トークン（`--surface-paper` / `--nav-surface`）として新設し
+  全7テーマへ適用。エディタ面を紙面トークンへ統一し、補助文字を全テーマ4.5:1以上に調整。
+  [実装と証跡](reviews/2026-09-10-v3-theme-paper/README.md)／[差の棚卸し](v3-mock-gap-inventory.md)。
+- **確認:** ローカル258ファイル・2,242件、型検査・Vite・App Store surfaceが成功。
+  7テーマの実測で本文/紙面10.08〜16.56、補助/紙面4.82〜5.69、補助/ナビ4.66〜6.24。
+  edohigan/shinkai のエディタ面は不透明化（C08）。Rust無変更・cargo test未実行。
+- **次:** G3合評、01開始画面の2ペイン構造、設定外枠寸法、native/VoiceOver/200%受入。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
