@@ -162,7 +162,6 @@ GitHub の HEAD に combined status が付いていないため、**「CI 合格
 
 ### 実機でないと確認できないもの
 
-- **native 受入と横断シナリオ T01〜T10**（停止→停止処理中、外部変更からの衝突到達、画像の巨大/破損/権限 等）
 - **native 受入と横断シナリオ T01〜T10**（実機。停止→停止処理中、外部変更からの衝突到達、画像の巨大/破損/権限 等）
 - **`src-tauri/tauri.conf.appstore.json` は App Store 別作業の未コミット変更**（bundleVersion 126）。
   このレビューの対象外であり、触っていない。
