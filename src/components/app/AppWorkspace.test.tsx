@@ -40,6 +40,20 @@ vi.mock("../editor/EditorMainPane", () => ({
   },
 }));
 
+// 07: 案のレビューは主編集領域に置く。どこに・どのpropsで入るかをここで固定する。
+const proposalReviewMock: { props: Record<string, unknown> | null } = { props: null };
+vi.mock("./LocalAssistProposalReview", () => ({
+  LocalAssistProposalReview: (props: Record<string, unknown>) => {
+    proposalReviewMock.props = props;
+    return (
+      <div
+        data-blocked={props.blocked ? "true" : "false"}
+        data-testid="proposal-review"
+      />
+    );
+  },
+}));
+
 vi.mock("../editor/PaneResizer", () => ({
   PaneResizer: (props: { label: string }) => (
     <div aria-label={props.label} data-testid="pane-resizer" />
@@ -278,6 +292,10 @@ function makeWorkspaceProps(
     agentOutput: [],
     agentSession: null,
     agentStopPending: false,
+    // 07: 案のレビューは主編集領域に置く（フローティングにしない）。
+    onApplyLocalAssistProposal: async () => ({ ok: true }) as const,
+    onDiscardLocalAssistProposal: () => {},
+    proposalReviewRef: { current: null },
     agentWorkbenchProvider: "codex",
     appleAssistCopy: getAppleAssistCopy("en"),
     clearCompareSource: vi.fn(),
@@ -1816,5 +1834,44 @@ describe("AppWorkspace reference compare layout", () => {
     expect(container.querySelector(".editor-preview-grid")?.className).toContain(
       "reference-compare",
     );
+  });
+});
+
+describe("proposal review placement (07)", () => {
+  afterEach(() => {
+    proposalReviewMock.props = null;
+  });
+
+  it("reads the proposal inside the main editing region, not a floating panel", () => {
+    const onApply = vi.fn(async () => ({ ok: true }) as const);
+    const onDiscard = vi.fn();
+    const { container } = render(
+      <AppWorkspace
+        {...makeWorkspaceProps({
+          activeTab: {
+            contents: "original",
+            id: "a",
+            name: "note.md",
+            path: "/workspace/note.md",
+            sessionId: "s1",
+          } as EditorTab,
+          appleAssistGenerationLock: { requestId: "pending" } as never,
+          onApplyLocalAssistProposal: onApply,
+          onDiscardLocalAssistProposal: onDiscard,
+        })}
+      />,
+    );
+
+    const review = container.querySelector("[data-testid='proposal-review']");
+    expect(review).toBeTruthy();
+    // 主編集領域（本文の箱）の中にいて、フローティングのホストではない。
+    expect(review?.closest(".reference-editor-host")).not.toBeNull();
+    expect(review?.closest(".proposal-review-host")).not.toBeNull();
+    // 生成/停止のロックがそのまま届く。
+    expect(review?.getAttribute("data-blocked")).toBe("true");
+    // 適用・破棄は既存の経路をそのまま受け取る（新しい生成経路は作らない）。
+    expect(proposalReviewMock.props?.onApply).toBe(onApply);
+    expect(proposalReviewMock.props?.onDiscard).toBe(onDiscard);
+    expect(proposalReviewMock.props?.activeTab).toMatchObject({ sessionId: "s1" });
   });
 });

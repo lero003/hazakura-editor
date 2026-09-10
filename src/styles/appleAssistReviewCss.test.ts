@@ -33,4 +33,27 @@ describe("apple-assist-review.css", () => {
     expect(rowRule).toMatch(/grid-template-columns:\s*40px minmax\(0,\s*1fr\) 40px minmax\(0,\s*1fr\)/);
     expect(sectionRowRule).toMatch(/min-width:\s*0/);
   });
+
+  it("reads the proposal in the main editing region instead of floating (07)", () => {
+    const reviewRule =
+      css.match(/\.local-assist-proposal-review\s*{(?<body>[^}]*)}/s)?.groups
+        ?.body ?? "";
+    // 右下のフローティングではない（主編集領域いっぱいを占める）。
+    expect(reviewRule).toMatch(/position:\s*absolute/);
+    expect(reviewRule).toMatch(/inset:\s*0/);
+    expect(reviewRule).not.toMatch(/position:\s*fixed/);
+    expect(reviewRule).not.toMatch(/bottom:\s*\d+px/);
+    expect(reviewRule).toMatch(/background:\s*var\(--surface-paper\)/);
+    // 長い差分は面の内側でスクロールする。
+    expect(reviewRule).toMatch(/overflow:\s*hidden/);
+    expect(
+      css.match(/\.local-assist-proposal-review-diff\s*{(?<body>[^}]*)}/s)
+        ?.groups?.body ?? "",
+    ).toMatch(/overflow:\s*auto/);
+    // 操作は下端に固定する。
+    expect(
+      css.match(/\.local-assist-proposal-review-footer\s*{(?<body>[^}]*)}/s)
+        ?.groups?.body ?? "",
+    ).toMatch(/margin-top:\s*auto/);
+  });
 });

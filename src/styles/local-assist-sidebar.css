@@ -84,6 +84,9 @@
 .local-assist-sidebar .local-assist-proposal-review {
   position: static; inset: auto; width: 100%; max-width: none; max-height: none;
   transform: none; box-sizing: border-box; margin-top: 16px; box-shadow: none;
+  /* サイドバー内は「差し込んだ紙」として枠を持つ（本文領域の面とは別）。 */
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 .local-assist-sidebar .local-assist-proposal-review-header { flex-wrap: wrap; }
 .local-assist-sidebar .local-assist-proposal-review-toolbar { flex-wrap: wrap; }

@@ -13,17 +13,23 @@ vi.mock("./AppPrimaryToolbar", () => ({
 }));
 vi.mock("./AppWorkspace", () => ({
   AppWorkspace: ({
+    appleAssistGenerationLock,
     documentChrome,
     onReadingOverlayChange,
     compactPreviewFocus,
     onCompactPreviewFocusChange,
   }: {
+    appleAssistGenerationLock?: { requestId: string } | null;
     documentChrome?: ReactNode;
     compactPreviewFocus: "editor" | "preview";
     onCompactPreviewFocusChange: (focus: "editor" | "preview") => void;
     onReadingOverlayChange: (open: boolean) => void;
   }) => (
-    <section className="workspace" data-compact-preview={compactPreviewFocus}>
+    <section
+      className="workspace"
+      data-compact-preview={compactPreviewFocus}
+      data-generation-lock={appleAssistGenerationLock ? "set" : "none"}
+    >
       <div className="workspace-document-column">
         {documentChrome}
         <input aria-label="Editor" defaultValue="unsaved" />
@@ -60,9 +66,14 @@ function ConnectedShell(props: AppShellProps) {
 }
 
 describe("AppShell chrome layers", () => {
-  it("passes the generation or cancellation lock into proposal review", () => {
+  it("passes the generation or cancellation lock down to the workspace", () => {
+    // 07: 案のレビューは主編集領域（AppWorkspace の中）へ移したので、
+    // ロックはシェルからワークスペースへ渡るところまでを確かめる。
+    // 実際に `blocked` になることは AppWorkspace 側のテストで固定している。
     render(<ConnectedShell {...base} appleAssistGenerationLock={{ requestId: "pending" } as AppShellProps["appleAssistGenerationLock"]} />);
-    expect(screen.getByTestId("proposal-lock").getAttribute("data-blocked")).toBe("true");
+    expect(
+      document.querySelector(".workspace")?.getAttribute("data-generation-lock"),
+    ).toBe("set");
   });
 
   it.each([null, "ebook"] as const)("selects Preview through the existing chrome entry from %s", (sidePaneMode) => {

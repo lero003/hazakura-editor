@@ -211,6 +211,7 @@ export function AppShell(props: AppShellProps) {
       <AppWorkspace
         {...props}
         documentChrome={props.lModeEnabled ? null : topChrome}
+        proposalReviewRef={proposalReviewRef}
         onReadingOverlayChange={setReadingOverlayOpen}
         compactPreviewFocus={props.compactPreviewFocus}
         onCompactPreviewFocusChange={props.onCompactPreviewFocusChange}
@@ -241,16 +242,6 @@ export function AppShell(props: AppShellProps) {
           onDiscard={props.onDiscardAppleAssistEdit}
         />
       ) : null}
-      <div className="proposal-review-host" ref={proposalReviewRef}>
-      <LocalAssistProposalReview
-        blocked={!!props.appleAssistGenerationLock}
-        activeTab={props.activeTab}
-        fontSize={props.editorSettings.editorFontSize}
-        menuLanguage={props.menuLanguage}
-        onApply={props.onApplyLocalAssistProposal}
-        onDiscard={props.onDiscardLocalAssistProposal}
-      />
-      </div>
       {props.lModeEnabled ? (
         <>
           <LModeWindowDragBand />

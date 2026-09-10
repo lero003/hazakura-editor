@@ -1,9 +1,11 @@
 /* UI-C1: a readable review sheet with actions outside the scrolling comparison. */
+/* 07: 主編集領域いっぱいに置くので、浮遊パネル前提の高さ制限は外す
+   （面の高さは本文領域が決める。内側の差分だけがスクロールする）。 */
 .local-assist-proposal-review {
   gap: 12px;
   padding: 20px 24px;
-  max-height: min(80vh, 800px);
-  background: var(--surface);
+  max-height: none;
+  background: var(--surface-paper);
   backdrop-filter: none;
   font-size: 14px;
 }

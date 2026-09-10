@@ -1,4 +1,6 @@
 import { importDraftContextCopy } from "../../lib/locale/importAssist";
+import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
+import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import type { OpenTextFileOptions } from "../../hooks/document/useFileOpening";
 import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
@@ -136,6 +138,12 @@ type AppWorkspaceProps = {
   agentWorkbenchProvider: AgentWorkbenchProvider;
   appleAssistCopy: AppleAssistCopy;
   appleAssistGenerationLock?: AppleAssistGenerationLock | null;
+  /** 生成された案を読む面。主編集領域に置く（モック07）。 */
+  onApplyLocalAssistProposal: (
+    proposal: LocalAssistProposal,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
+  onDiscardLocalAssistProposal: (proposal: LocalAssistProposal) => void;
+  proposalReviewRef?: RefObject<HTMLDivElement | null>;
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
@@ -299,6 +307,9 @@ export function AppWorkspace({
   agentWorkbenchProvider,
   appleAssistCopy,
   appleAssistGenerationLock = null,
+  onApplyLocalAssistProposal,
+  onDiscardLocalAssistProposal,
+  proposalReviewRef,
   clearCompareSource,
   clearCompareTarget,
   closeCompareView,
@@ -939,6 +950,19 @@ export function AppWorkspace({
               {referenceCopy.emptyEditorHint}
             </p>
           ) : null}
+          {/* 生成された案は**主編集領域**で読む（モック07）。右下のフローティングでは
+              なく、この面が本文幅と高さを使い、長文は面の内側でスクロールする。
+              生成や適用の経路は増やさず、既存の単一ライタへそのまま渡す。 */}
+          <div className="proposal-review-host" ref={proposalReviewRef}>
+            <LocalAssistProposalReview
+              activeTab={activeTab}
+              blocked={!!appleAssistGenerationLock}
+              fontSize={editorSettings.editorFontSize}
+              menuLanguage={menuLanguage}
+              onApply={onApplyLocalAssistProposal}
+              onDiscard={onDiscardLocalAssistProposal}
+            />
+          </div>
         </div>
         {visibleReferenceCompare ? (
           <>

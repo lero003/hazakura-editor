@@ -211,33 +211,46 @@
   bottom: 64px;
 }
 
-/* === v2.6 B2: unapplied proposal review (main window) === */
-/* The main window now owns the original-vs-proposal Diff, rendered at the
-   editor font size. It is a larger floating panel than the post-apply review
-   bar because it is the primary review surface, not an inline escape hatch. */
+/* === 07: unapplied proposal review (main editing region) === */
+/* 生成された案は**主編集領域**で読む。右下のフローティングではなく、本文の幅と
+   高さを使い、長い差分はこの面の内側でスクロールする。適用と破棄は下端に固定し、
+   反映後はこの面が消えて編集面へ戻る（生成・適用の経路は増やさない）。 */
 .local-assist-proposal-review {
-  position: fixed;
-  right: 18px;
-  bottom: 64px;
-  z-index: var(--z-sticky);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: min(960px, calc(100vw - 36px));
-  max-height: min(72vh, 720px);
-  padding: 10px 12px 12px;
-  border: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  backdrop-filter: blur(18px) saturate(1.05);
-  box-shadow:
-    var(--shadow-md),
-    inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent);
+  gap: 8px;
+  width: auto;
+  max-height: none;
+  padding: 16px 18px 14px;
+  border: 0;
+  border-radius: 0;
+  /* 読む面として紙を使う（操作面・chromeと混ぜない）。 */
+  background: var(--surface-paper);
+  backdrop-filter: none;
+  box-shadow: none;
   color: var(--text);
   font-family: var(--app-font-family);
   font-size: 13px;
   line-height: 1.5;
   overflow: hidden;
+}
+
+/* 本文（差分／前後の全文）が伸びる唯一の領域。 */
+.local-assist-proposal-review-diff,
+.local-assist-proposal-review-text {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* 操作は下端に固定する（読みながらでも手が届く）。 */
+.local-assist-proposal-review-footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
 }
 
 .local-assist-proposal-review-header {
@@ -328,11 +341,7 @@
   min-height: 0;
 }
 
-/* In L Mode, lift the panel so it does not collide with the floating
-   status pill, mirroring the post-apply review bar. */
-:root[data-l-mode="on"] .local-assist-proposal-review {
-  bottom: 64px;
-}
+/* 07: L Mode でも同じく本文領域の中で読む（面の位置はホストに従う）。 */
 
 .local-assist-proposal-review-error {
   border-top: 1px solid color-mix(in srgb, var(--danger, #c0392b) 40%, transparent);

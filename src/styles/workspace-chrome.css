@@ -55,8 +55,20 @@
 .workspace-review-choices small { color: var(--text-muted); font-size: 12px; font-weight: 400; }
 .workspace-document-column { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; }
 .workspace-document-column > .editor-preview-grid { min-height: 0; }
+/* レビュー面の絶対配置の基準（本文領域の箱）。 */
+.reference-editor-host { position: relative; }
 .workspace-reading-focus .workspace-document-column { display: none; }
-.proposal-review-host { display: contents; }
+/* 07: 案のレビューは主編集領域（`.reference-editor-host`）の中に置く。
+   右下のフローティングではないので、ホストは本文領域いっぱいを占める。
+   案が無いときは空なので、面とクリックを塞がない。 */
+.proposal-review-host {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-sticky);
+  pointer-events: none;
+}
+.proposal-review-host:empty { display: none; }
+.proposal-review-host > .local-assist-proposal-review { pointer-events: auto; }
 :root:not([data-l-mode="on"]) .v3-shell .tabs-row {
   grid-template-columns: 42px minmax(0, 1fr);
   grid-template-rows: minmax(43px, auto) minmax(48px, auto);

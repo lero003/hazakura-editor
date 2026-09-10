@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>画面07 fixture — レビュー面は本文領域</title>
+    <style>
+      /* fixture の外枠だけ。アプリでは `.editor-preview-grid` が本文領域の大きさを決める。 */
+      html, body, #root { height: 100%; margin: 0; }
+      .v3-shell { height: 100%; padding: 0; }
+      .reference-editor-host {
+        /* アプリの本文領域に相当する大きさ（1440×850 のときの実測に近い値）。 */
+        height: 100%;
+        min-height: 0;
+        background: var(--surface, #f7f8f5);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./fixture.tsx"></script>
+  </body>
+</html>
