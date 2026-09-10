@@ -14,15 +14,16 @@ Last reviewed: 2026-09-10
 - **UI-C1 / C2:** オーナー提供レビューでC1追修正・C2-R1 CLOSED。native通し受入は別途残る。
 - **UI-D2b / E1:** Save As通知の追加P2も外部CLOSED。UI-E1 GO。
 - **UI-E2/E3・E4a:** オーナー提供の外部レビューでR1〜R3 CLOSED、EPUB/PDF外枠GO。
-- **UI-E4b:** 外部レビューでHTML writer/確認・取り込み表示GO、export modal排他P2によりHOLD。
-  0e371fbcで3形式の共通attempt所有権を導入。preflightは最新操作だけpublish、modal中は別開始を拒否。
-  nativeメニューもblocking modal中はQuit以外を遮断。外部再レビュー待ち。
-- **UI-F1:** 35b15362で既存7テーマを2群の静的カードに整理。既存ID・callback・演出強度・設定値域を維持。
-  [最新合評資料](reviews/2026-09-10-v3-ui-f1/README.md)。
-- **確認:** ローカル253ファイル・2,198件、表示境界113件、typecheck/Vite/native preview/署名整合成功。
-  960×640のテーマ選択とTab＋Spaceをブラウザーfixtureで確認。Rustは無変更・今回再実行なし。
-  native窓間操作・再起動後テーマ同期・IME/VoiceOver/200%は未受入。CI成功とは扱わない。
-- **次:** 排他修正/F1合評、UI-F2の設定カテゴリ・文字設定・Help導線整理。UI-E/F全体は未完了。
+- **UI-E4b / F1:** オーナー提供の外部レビューで書き出し排他・nativeメニューP2 CLOSED、7テーマGO。
+- **UI-F2:** cb7353cdで各テーマの説明をaria-describedbyへ接続。
+  fe9e1d4aで設定カテゴリへ本文内スクロール＋見出しfocus、4文字サイズの見本を追加。
+  f3ea3605で設定/既存Helpを同じダイアログ内で往復。既存設定・値域・配布レーン境界は維持。
+  [最新合評資料](reviews/2026-09-10-v3-ui-f2/README.md)。
+- **確認:** ローカル255ファイル・2,206件、表示境界113件。スクロール修正後の近接17件も成功。
+  最終コードのtypecheck/Vite/native preview/署名整合成功。960×640でカテゴリ移動とHelp往復を確認。
+  Rust無変更・再実行なし。
+  native操作・再起動・VoiceOver/IME/200%は未受入。CI成功とは扱わない。
+- **次:** F2合評、UI-Gの横断受入とAssist状態/Help文言の整合確認。UI-F全体のnative受入は未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
