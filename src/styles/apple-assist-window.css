@@ -682,7 +682,10 @@
 .apple-assist-chat .apple-assist-window-stream-preview { margin: 14px 0; max-height: none; overflow: visible; }
 .apple-assist-chat .apple-assist-stream-preview-body { overflow: visible; }
 .apple-assist-chat .apple-assist-window-status { margin-top: 12px; color: var(--text-muted); }
-.apple-assist-window-form { border-top: 1px solid var(--border); padding-top: 12px; max-height: 45vh; overflow-y: auto; }
+/* 入力は下端に固定し、スクロールするのは会話だけ（モック06の指示6）。
+   フォーム自体を max-height + overflow でスクロールさせない。 */
+.apple-assist-window-form { border-top: 1px solid var(--border); padding-top: 12px; overflow: visible; }
+.apple-assist-window-target-excerpt { margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
 .apple-assist-window-presets { padding: 0; border: 0; display: block; }
 .apple-assist-window-presets summary { cursor: pointer; font-size: 14px; }
 .apple-assist-presets-list { margin-top: 8px; }
@@ -695,7 +698,15 @@
 .apple-assist-target-details { padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-elev); }
 .apple-assist-chat-message-user { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); border-color: transparent; padding: 14px 16px; }
 .apple-assist-chat-message-assistant { padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
-.apple-assist-window-error { padding: 12px 14px; margin-block: 12px; border: 1px solid var(--error); border-radius: 8px; overflow-wrap: anywhere; }
+/* 失敗の面。`--error`(=--danger) ではなく注意のトークン（--conflict）から作る。
+   赤一色の危機演出にせず、会話の一部に収まる淡い注意面にする。 */
+.apple-assist-window-error {
+  padding: 12px 14px; margin-block: 12px; border-radius: 8px; overflow-wrap: anywhere;
+  border: 1px solid color-mix(in srgb, var(--conflict) 34%, transparent);
+  background: color-mix(in srgb, var(--conflict) 10%, transparent);
+  /* この画面の他の文言と同じ下限（14px）に合わせる。 */
+  color: var(--text); font-size: 14px; line-height: 1.7;
+}
 .apple-assist-window-form { padding-top: 14px; }
 .apple-assist-window-textarea { min-height: 88px; border-radius: 8px; }
 .apple-assist-window-progress { display: flex; padding-block: 12px; }

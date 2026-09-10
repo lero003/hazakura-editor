@@ -8,6 +8,7 @@ import { cancelSidebarProposal, isLocalAssistBusy, requestSidebarProposal, subsc
   subscribeSidebarApplyStatus, subscribeSidebarProposalStatus } from "../../lib/appleAssist/sidebarBridge";
 import { buildSidebarTarget, countLocalAssistCharacters, type SidebarScope } from "../../features/editor/localAssistSidebarTarget";
 import { beginSidebarTurn, createSidebarId, createSidebarSession, settleSidebarTurn, type SidebarSession } from "../../features/editor/localAssistSidebarSession";
+import { localAssistReasonKey } from "../../features/editor/localAssistFailureReason";
 import { readTargetTextForGeneration } from "../../features/editor/appleAssistText";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
@@ -156,6 +157,7 @@ export function LocalAssistSidebar(props: Props) {
     finally { applyingRef.current = false; setApplying(false); }
   }
   const controlsDisabled = busy || applying || !props.activeTab || !props.textEditorVisible;
+  const lastTurnFailed = session.turns.length > 0 && session.turns[session.turns.length - 1].phase === "failed";
   const requestCharacters = countLocalAssistCharacters(session.draft);
   return (
     <aside hidden={!props.open} className="local-assist-sidebar" aria-label={copy.title}
@@ -199,8 +201,12 @@ export function LocalAssistSidebar(props: Props) {
         <section aria-label={copy.chat}>
           <h3>{copy.chat}</h3>
           {session.turns.length ? <ol ref={conversationRef} className="local-assist-sidebar-conversation" aria-live="polite" aria-relevant="additions text"
-            onScroll={(event) => { const log = event.currentTarget; followConversationRef.current = log.scrollHeight - log.scrollTop - log.clientHeight < 32; }}>{session.turns.map((turn) => <li key={turn.id}>
-            <p>{turn.request}</p><small>{copy[turn.phase]}</small></li>)}</ol> : <p>{copy.empty}</p>}
+            onScroll={(event) => { const log = event.currentTarget; followConversationRef.current = log.scrollHeight - log.scrollTop - log.clientHeight < 32; }}>{session.turns.map((turn) => {
+            // 失敗は理由ごとに短い案内へ写す（生の内部文字列は出さない）。
+            const reason = turn.phase === "failed" ? localAssistReasonKey(turn.message) : null;
+            return <li key={turn.id}>
+            <p>{turn.request}</p><small>{copy[turn.phase]}</small>
+            {reason ? <p role="status" className="local-assist-sidebar-reason">{copy[reason]}</p> : null}</li>; })}</ol> : <p>{copy.empty}</p>}
           {session.notice ? <p role="status">{copy[session.notice]}</p> : null}
           {foreignProposal ? <p role="status">{copy.foreign}</p> : null}
           {missingProposal ? <p role="status">{copy.missingProposal}</p> : null}
@@ -228,6 +234,9 @@ export function LocalAssistSidebar(props: Props) {
             <button type="submit" disabled={controlsDisabled || !available || !session.draft.trim() || requestCharacters > 1000 || foreignProposal || missingProposal || longProposal || (!!session.target && !currentTarget)}>
               {proposal && !proposal.streaming ? copy.refine : copy.send}</button>
             {session.pendingRequestId ? <button type="button" onClick={() => void cancelSidebarProposal(session.pendingRequestId!)}>{copy.stop}</button> : null}
+            {lastTurnFailed ? <button type="button" className="local-assist-sidebar-retry"
+              disabled={controlsDisabled || !available || !session.draft.trim() || requestCharacters > 1000 || foreignProposal}
+              onClick={() => submit()}>{copy.retry}</button> : null}
           </div>
           {busy ? <p role="status">{session.pendingRequestId ? copy.pending : copy.shuttingDown}</p> : null}
         </form>

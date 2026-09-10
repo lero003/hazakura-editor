@@ -59,6 +59,20 @@ describe("apple-assist-window.css", () => {
     expect(textarea).toMatch(/resize:\s*vertical/);
   });
 
+  it("keeps the request field pinned while only the conversation scrolls", () => {
+    // モック06の指示6: 入力は下端固定・会話のみスクロール。
+    // フォーム自体を max-height + overflow でスクロールさせない。
+    // 同じセレクタが複数あるので、フォームの全ルールを対象にする。
+    const formRules = [...css.matchAll(/\.apple-assist-window-form\s*{[^}]*}/g)].map((match) => match[0]);
+    expect(formRules.length).toBeGreaterThan(0);
+    for (const rule of formRules) {
+      expect(rule).not.toMatch(/max-height/);
+      expect(rule).not.toMatch(/45vh/);
+    }
+    expect(formRules.some((rule) => /overflow:\s*visible/.test(rule))).toBe(true);
+    expect(ruleBody(css, ".apple-assist-chat")).toMatch(/overflow-y:\s*auto/);
+  });
+
   it("does not reserve a duplicate in-window product title", () => {
     expect(css).not.toContain(".apple-assist-window-title");
   });

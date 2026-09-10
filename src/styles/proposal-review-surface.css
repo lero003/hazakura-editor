@@ -16,6 +16,14 @@
 .local-assist-proposal-review-footer p { margin: 0; flex: 1 1 240px; }
 .local-assist-proposal-review-actions { margin-left: auto; }
 .local-assist-proposal-review-button { min-height: 38px; font-size: 14px; }
+/* 追加・削除は色だけに頼らない（記号は DiffBody と同じ - / +）。 */
+.local-assist-proposal-review-legend { margin-left: auto; font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+/* 反映後は「未保存」であることを残す（ボタンは消えている）。 */
+.local-assist-proposal-review-applied {
+  margin: 8px 0 0; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; line-height: 1.7;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
 .local-assist-proposal-review-text { min-height: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 .local-assist-proposal-review-diff { flex: 1 1 auto; }
 @media (max-height: 680px) {

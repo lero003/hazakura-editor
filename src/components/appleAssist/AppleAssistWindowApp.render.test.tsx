@@ -99,7 +99,7 @@ describe("AppleAssistWindowApp render", () => {
     vi.mocked(getMainAppleAssistTarget).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
     await act(async () => { finish(null); });
     expect(requestAppleAssistProposal).not.toHaveBeenCalled();
     expect(cancelAppleAssistProposal).not.toHaveBeenCalled();
@@ -115,7 +115,7 @@ describe("AppleAssistWindowApp render", () => {
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
     const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0].requestId;
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
     expect(cancelAppleAssistProposal).not.toHaveBeenCalled();
     await act(async () => { forwarded(); });
     expect(cancelAppleAssistProposal).toHaveBeenCalledWith(requestId);
@@ -128,7 +128,7 @@ describe("AppleAssistWindowApp render", () => {
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
     const payload = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
     expect(cancelAppleAssistProposal).toHaveBeenCalledWith(payload.requestId);
     expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
   });
@@ -437,6 +437,10 @@ describe("AppleAssistWindowApp render", () => {
     expect(screen.getByTestId("apple-assist-target").textContent).toContain(
       "Paragraph (8 chars)",
     );
+    // 対象枠には種別と文字数だけでなく、実際の文の抜粋も出す（モック06の指示2）。
+    expect(
+      screen.getByTestId("apple-assist-target").querySelector(".apple-assist-window-target-excerpt")?.textContent,
+    ).toBeTruthy();
 
     fireEvent.change(screen.getByRole("textbox"), {
       target: { value: "もう少し短く" },
@@ -604,7 +608,7 @@ it("retains the prior review identity after cancellation finishes", async () => 
   } }); });
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
   const second = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
-  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
   expect(screen.getByRole("button", { name: "Review this proposal" }).hasAttribute("disabled")).toBe(true);
   await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...second, phase: "cancelled", emittedAtMs: 1 } }); });
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Review this proposal" })); });

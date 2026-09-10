@@ -59,7 +59,7 @@ it.each(["generation-first", "stop-first"])("keeps both windows locked until gen
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
   await waitFor(() => expect(h.generate).toHaveBeenCalledTimes(1));
   const payload = h.request.mock.calls[0][0];
-  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Cancel" })); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
   expect(h.emit.mock.calls.some(([, event]) => event.phase === "cancelling")).toBe(true);
   expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
   expect(screen.getByRole("button", { name: "Sending..." }).hasAttribute("disabled")).toBe(true);

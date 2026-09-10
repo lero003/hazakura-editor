@@ -70,7 +70,16 @@
 .local-assist-sidebar-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 .local-assist-sidebar-presets button { font-size: .78rem; }
 .local-assist-sidebar-send { display: flex; flex-wrap: wrap; gap: 8px; }
-.local-assist-sidebar [role="alert"] { color: var(--danger, var(--text)); }
+.local-assist-sidebar [role="alert"] {
+  color: var(--danger, var(--text));
+  padding: 10px 12px; border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--conflict) 30%, transparent);
+  background: color-mix(in srgb, var(--conflict) 9%, transparent);
+  font-size: 13px; line-height: 1.7;
+}
+/* 失敗の理由（分類済みの短い案内）と、同じ依頼をやり直す入口。 */
+.local-assist-sidebar-reason { margin: 4px 0 0; font-size: 12.5px; color: var(--text-muted); }
+.local-assist-sidebar-retry { min-height: 34px; font-size: 13px; }
 /* Reuse the authoritative review; there is never a second visible Apply panel. */
 .local-assist-sidebar .local-assist-proposal-review {
   position: static; inset: auto; width: 100%; max-width: none; max-height: none;

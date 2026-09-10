@@ -51,9 +51,14 @@ describe("LocalAssistProposalReview", () => {
     expect(screen.getByRole("table")).toBeTruthy();
     expect(screen.getByRole("columnheader", { name: "Original" })).toBeTruthy();
     expect(screen.getByRole("columnheader", { name: "Proposal" })).toBeTruthy();
+    // 追加・削除は色だけに頼らない（凡例は DiffBody と同じ - / + 記号）。
+    expect(screen.getByText("- Removed / + Added")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Apply proposal" }));
     await waitFor(() => expect(input.onApply).toHaveBeenCalledWith(proposal));
-    await screen.findByRole("button", { name: "Applied" });
+    // 反映後は同じ案の反映ボタンを残さず、未保存の案内に置き換える。
+    await screen.findByText("Applied to the document (unsaved). Use ⌘Z to undo.");
+    expect(screen.queryByRole("button", { name: "Applied" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Apply proposal" })).toBeNull();
   });
   it("forwards Discard separately without writing the document", () => {
     const proposal = seedProposal(); const input = props(); render(<LocalAssistProposalReview {...input} />);
@@ -76,7 +81,7 @@ describe("LocalAssistProposalReview", () => {
     expect(onApply).toHaveBeenCalledTimes(1); expect(input.onDiscard).not.toHaveBeenCalled();
     expect((screen.getByRole("button", { name: "Applying…" }) as HTMLButtonElement).disabled).toBe(true);
     await act(async () => resolve({ ok: true }));
-    fireEvent.click(screen.getByRole("button", { name: "Applied" }));
+    expect(screen.queryByRole("button", { name: "Applied" })).toBeNull();
     expect(onApply).toHaveBeenCalledTimes(1);
   });
   it("catches thrown apply failures and retains the proposal", async () => {

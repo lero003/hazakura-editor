@@ -514,13 +514,16 @@ describe("classifyApplyError", () => {
     expect(message).toBe(copy.throttledError);
   });
 
-  it("falls back to unknownError with the raw message preserved", () => {
+  it("falls back to unknownError without surfacing the internal message", () => {
+    // モック22: 内部エラー全文の無差別表示は追加しない。分類できない失敗は
+    // 短い一般の案内だけを出し、生の文字列は画面へ出さない。
     const message = classifyApplyError(
       new Error("Some unexpected future error: xyz"),
       copy,
     );
     expect(message).toBe(copy.unknownError("Some unexpected future error: xyz"));
-    expect(message).toMatch(/Some unexpected future error: xyz/);
+    expect(message).not.toMatch(/Some unexpected future error|xyz/);
+    expect(message.length).toBeGreaterThan(0);
   });
 
   it("accepts non-Error values (string, undefined, object) without throwing", () => {

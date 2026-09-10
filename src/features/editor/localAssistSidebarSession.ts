@@ -3,7 +3,11 @@ import type { LocalAssistActionId } from "../../lib/appleAssist/instruction";
 import { normalizeRevisionHistory } from "../../lib/appleAssist/revisionContext";
 import type { SidebarScope } from "./localAssistSidebarTarget";
 
-export type SidebarTurn = { id: string; request: string; phase: "pending" | "completed" | "failed" | "cancelled" };
+export type SidebarTurn = {
+  id: string; request: string; phase: "pending" | "completed" | "failed" | "cancelled";
+  /** 失敗・取消の理由（内部文字列）。表示は分類して短い案内へ写す。 */
+  message?: string;
+};
 export type SidebarSession = {
   draft: string; scope: SidebarScope; firstLine: string; lastLine: string;
   actionId: LocalAssistActionId; target: AppleAssistTargetSnapshot | null;
@@ -31,7 +35,9 @@ export function settleSidebarTurn(session: SidebarSession, status: AppleAssistPr
     history: completed ? normalizeRevisionHistory([...session.history, turn.request]) : session.history,
     draft: completed ? session.draft : session.draft || turn.request,
     notice: status.phase === "completed" ? null : status.phase,
-    turns: session.turns.map((entry) => entry.id === status.requestId ? { ...entry, phase: status.phase } as SidebarTurn : entry) };
+    turns: session.turns.map((entry) => entry.id === status.requestId
+      ? { ...entry, phase: status.phase, message: completed ? undefined : status.message } as SidebarTurn
+      : entry) };
 }
 
 let sidebarIdSequence = 0;

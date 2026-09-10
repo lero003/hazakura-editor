@@ -4,6 +4,7 @@ import { acceptsReviewOutcome, matchesReviewIdentity, matchesReviewNavigation, L
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { AssistConversationMessages } from "./AssistConversationMessages";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
+import { appleAssistTargetExcerpt } from "../../features/editor/appleAssistText";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -854,7 +855,8 @@ export function AppleAssistWindowApp() {
         <details className="apple-assist-target-details" open>
           <summary>{ui.target}: {displayedTarget?.activeDocumentName || ui.noDocument}</summary>
           <div className="apple-assist-window-target" data-testid="apple-assist-target">
-            {renderTargetSummary(displayedTarget, copy)}
+            <p className="apple-assist-window-target-summary">{renderTargetSummary(displayedTarget, copy)}</p>
+            {displayedTarget?.text ? <p className="apple-assist-window-target-excerpt">{appleAssistTargetExcerpt(displayedTarget.text)}</p> : null}
           </div>
           {conversation ? <div className="apple-assist-conversation-state" data-testid="apple-assist-conversation-state">
             <span>{copy.conversationPinned}</span>
@@ -1284,9 +1286,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       appliedStatus: () =>
         "へんしゅう あんを はんえいしました。ほぞん まえに さぶんで かくにん できます。",
       applyButton: "おねがいする",
-      cancelButton: "とりけす",
-      cancelledStatus: "いらいを とりけしました。",
-      cancellingStatus: "とりけし ちゅう...",
+      cancelButton: "つくるのを とめる",
+      cancelledStatus: "つくるのを とめました。",
+      cancellingStatus: "とめて います…",
       availableDisclosure:
         "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは みはんえいの まま さぶんで かくにんできます。そとの AI さーびすには おくりません。",
       modelContextTooLongError: "モデルが いちどに あつかえる りょうを こえました。たいしょうを みじかくするか、つづけて たのんでいたら あたらしい かいわから たのんでください。ふみは かわっていません。",
@@ -1345,8 +1347,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       targetSelection: (chars) => `えらんだ ところ (${chars} もじ)`,
       throttledError:
         "あっぷる ふぁうんでーしょん もでるず が れーと せいげん ちゅう です。すこし まって から さいしこう してください。",
-      unknownError: (raw) =>
-        `はざくら ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
+      // 内部エラーの全文は出さない（利用者には短い一般の案内だけ）。
+      unknownError: (_raw) =>
+        "つくるのに しっぱい しました。たいしょうを かくにんするか、もういちど おねがい してください。",
       unsupportedStatus:
         "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
       checkingAvailabilityStatus:
@@ -1436,9 +1439,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       appliedStatus: () =>
         "編集案を反映しました。保存前に差分で確認できます。",
       applyButton: "依頼する",
-      cancelButton: "取り消す",
-      cancelledStatus: "依頼を取り消しました。",
-      cancellingStatus: "取り消し中...",
+      cancelButton: "生成を停止",
+      cancelledStatus: "生成を停止しました。",
+      cancellingStatus: "停止処理中…",
       availableDisclosure:
         "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未反映のまま差分で確認でき、明示操作まで本文は変更しません。外部 AI サービスには情報を送りません。",
       modelContextTooLongError: "モデルが一度に扱える量を超えました。対象を短くするか、追加指示が続いている場合は新しい会話から依頼してください。本文は変更していません。",
@@ -1497,8 +1500,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       targetSelection: (chars) => `選択範囲 (${chars} 文字)`,
       throttledError:
         "Apple Foundation Models がレート制限中です。少し待ってから再試行してください。",
-      unknownError: (raw) =>
-        `Hazakura Local Assist の生成に失敗しました: ${raw}`,
+      // 内部エラーの全文は出さない（利用者には短い一般の案内だけ）。
+      unknownError: (_raw) =>
+        "Hazakura Local Assist の生成に失敗しました。対象を確認するか、もう一度依頼してください。",
       unsupportedStatus:
         "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
       checkingAvailabilityStatus:
@@ -1587,9 +1591,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     appliedStatus: () =>
       "Draft edit applied. Review the diff before saving.",
     applyButton: "Send request",
-    cancelButton: "Cancel",
-    cancelledStatus: "Request cancelled.",
-    cancellingStatus: "Cancelling...",
+    cancelButton: "Stop generating",
+    cancelledStatus: "Generation stopped.",
+    cancellingStatus: "Stopping…",
     availableDisclosure:
       "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Proposals stay unapplied while you review the Diff; the document is unchanged until an explicit action. Nothing is sent to an external AI service.",
     modelContextTooLongError: "The model cannot handle this much input at once. Select a shorter target, or start a new conversation after repeated follow-ups. Your document is unchanged.",
@@ -1647,8 +1651,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     targetSelection: (chars) => `Selection (${chars} chars)`,
     throttledError:
       "Apple Foundation Models is rate limited or busy with another request. Try again shortly.",
-    unknownError: (raw) =>
-      `Hazakura Local Assist generation failed: ${raw}`,
+    // 内部エラーの全文は出さない（利用者には短い一般の案内だけ）。
+    unknownError: (_raw) =>
+      "Hazakura Local Assist could not generate a proposal. Check the target or try again.",
     unsupportedStatus:
       "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on for this Mac, and a supported language and region.",
     checkingAvailabilityStatus:

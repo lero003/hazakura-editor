@@ -29,6 +29,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     applyLabel: "ふみに はんえい", discardLabel: "あんを すてる", originalLabel: "もとの ぶん", proposalLabel: "せいせい あん",
     diff: "ちがひ", after: "かえた あと", before: "もとの ぶん", views: "みかた", chars: "もじ", target: "たいしょう", turn: "かいめの あん",
     busy: "あんを つくっています。ふみは かわりません。", applying: "はんえいちゅう…", applied: "はんえいずみ",
+    appliedNotice: "ふみに はんえいしました（みほぞん）。⌘Zで もどせます。", removedLegend: "さくじょ", addedLegend: "ついか",
     stale: "たいしょうが かわりました。あらためて あんを つくってください。", unchanged: "もとの ぶんと おなじです。はんえいは いりません。",
     whitespace: "くうはく・かいぎょうだけの へんこうです。", unavailable: "ちがひの かわりに ぶんそのものを かくにんできます。",
     failed: "はんえいできませんでした。あんは のこっています。", unsafe: "あんの かたちを かくにんできません。もういちど つくってください。",
@@ -41,6 +42,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     applyLabel: "文書へ反映", discardLabel: "案を破棄", originalLabel: "元の文章", proposalLabel: "生成案",
     diff: "差分", after: "変更後", before: "元の文章", views: "表示方法", chars: "文字", target: "対象", turn: "回目の提案",
     busy: "提案を生成しています。本文は変更されません。", applying: "反映中…", applied: "反映済み",
+    appliedNotice: "文書へ反映しました（未保存）。⌘Zで戻せます。", removedLegend: "削除", addedLegend: "追加",
     stale: "対象の文章が変わりました。対象を確認し、新しい提案を作ってください。", unchanged: "元の文章と同じです。反映する必要はありません。",
     whitespace: "空白・改行のみの変更です。", unavailable: "差分の代わりに「変更後」と「元の文章」で全文を確認できます。",
     failed: "反映できませんでした。提案は残っています。", unsafe: "提案の形式を確認できません。もう一度生成してください。",
@@ -53,6 +55,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     applyLabel: "Apply proposal", discardLabel: "Discard proposal", originalLabel: "Original", proposalLabel: "Proposal",
     diff: "Diff", after: "After", before: "Before", views: "Review view", chars: "characters", target: "Target", turn: "revision",
     busy: "Generating a proposal. The document is unchanged.", applying: "Applying…", applied: "Applied",
+    appliedNotice: "Applied to the document (unsaved). Use ⌘Z to undo.", removedLegend: "Removed", addedLegend: "Added",
     stale: "The target has changed. Check the target and create a new proposal.", unchanged: "This is identical to the original. No application is needed.",
     whitespace: "Only whitespace or line breaks have changed.", unavailable: "Review the complete text in After and Before instead of a line diff.",
     failed: "The proposal could not be applied. It has been kept.", unsafe: "The proposal format could not be verified. Please generate it again.",
@@ -152,7 +155,8 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, b
               className="local-assist-proposal-review-button" aria-pressed={actualMode === item}
               disabled={item === "diff" && !diffAllowed} onClick={() => setMode(item)}>{copy[item]}</button>)}
           </div>
-
+          {/* 追加・削除は色だけに頼らない（記号は DiffBody と同じ - / +）。 */}
+          <span className="local-assist-proposal-review-legend">{`- ${copy.removedLegend} / + ${copy.addedLegend}`}</span>
         </div>
         {blocked ? <p role="status" className="local-assist-proposal-review-notice">{copy.blocked}</p> : null}
         {!current ? <p role="status" className="local-assist-proposal-review-notice">{copy.stale}</p> : null}
@@ -178,12 +182,14 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, b
           <div className="local-assist-proposal-review-actions">
             <button type="button" className="local-assist-proposal-review-button" disabled={blocked || applying || wasApplied}
               onClick={handleDiscard}>{copy.discardLabel}</button>
-            <button type="button" className="local-assist-proposal-review-button apply"
-              disabled={blocked || applying || wasApplied || !current || unchanged || !safeCandidate}
-              onClick={() => void handleApply()}>{applying ? copy.applying : wasApplied ? copy.applied : copy.applyLabel}</button>
+            {/* 反映済みの案は反映ボタンを残さない（同じ案をもう一度「採用」させない）。 */}
+            {wasApplied ? null : <button type="button" className="local-assist-proposal-review-button apply"
+              disabled={blocked || applying || !current || unchanged || !safeCandidate}
+              onClick={() => void handleApply()}>{applying ? copy.applying : copy.applyLabel}</button>}
           </div>
         </footer>
       </>}
+      {wasApplied ? <p role="status" className="local-assist-proposal-review-applied">{copy.appliedNotice}</p> : null}
       {applyError ? <p className="local-assist-proposal-review-error" data-testid="local-assist-proposal-review-error" role="alert">{applyError}</p> : null}
     </div>
   );

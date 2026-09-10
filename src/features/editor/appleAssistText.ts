@@ -7,6 +7,15 @@ export const APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS = 500;
 export type ActiveTab = { id: string; sessionId: string; name: string; path: string; contents: string };
 
 /** Completed proposals may not retain reserved prompt delimiters, even malformed ones. */
+/**
+ * 対象枠に出す短い抜粋。改行・連続空白は1つに畳み、上限を超えたら末尾を省く。
+ * ここで返す文字列は表示だけに使い、送信内容は変えない。
+ */
+export function appleAssistTargetExcerpt(text: string, limit = 60): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  return flat.length > limit ? `${flat.slice(0, limit)}…` : flat;
+}
+
 export function isAppleAssistCandidateReadyForReview(text: string): boolean {
   return text.trim().length > 0 && !/HAZAKURA_(?:TEXT|CONTEXT|ORIGINAL)_(?:START|END)/u.test(text) &&
     sanitizeAppleAssistCandidateText(text) === text;

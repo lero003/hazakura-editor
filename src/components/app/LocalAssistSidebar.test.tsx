@@ -25,6 +25,28 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); unregister(); localAssistProposalStore.clear(tab.sessionId); });
 describe("Local Assist sidebar", () => {
+  it("names the stop action and shows a classified reason with a retry after a failure", () => {
+    render(<LocalAssistSidebar {...props()} />);
+    fireEvent.change(screen.getByLabelText("文章への依頼"), { target: { value: "短くして" } });
+    fireEvent.click(screen.getByRole("button", { name: "案を作る" }));
+    // 生成中はモックの文言で停止できる。
+    expect(screen.getByRole("button", { name: "生成を停止" })).toBeTruthy();
+    const request = requests[0];
+    act(() => {
+      publishSidebarProposalStatus({
+        phase: "failed", message: "Selected text exceeds the maximum length",
+        requestId: request.requestId, request: request.request,
+        conversationId: request.conversationId, emittedAtMs: Date.now(),
+      });
+    });
+    // 生の内部文字列ではなく、分類した短い案内を出す。
+    expect(screen.getByText("対象が4,000文字を超えています。範囲を短くしてください。")).toBeTruthy();
+    expect(screen.queryByText(/Selected text exceeds/)).toBeNull();
+    // 同じ依頼をやり直す入口（送信と同じ経路）。
+    fireEvent.click(screen.getByRole("button", { name: "もう一度試す" }));
+    expect(requests).toHaveLength(2);
+  });
+
   it("sends the selected source as a proposal, never applies automatically", () => {
     render(<LocalAssistSidebar {...props()} />);
     fireEvent.change(screen.getByLabelText("文章への依頼"), { target: { value: "短くして" } });
