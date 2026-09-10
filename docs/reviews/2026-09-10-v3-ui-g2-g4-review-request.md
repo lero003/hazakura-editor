@@ -1,8 +1,8 @@
-# 外部レビュー依頼 — UI-G2〜G4（設定レール・紙面トークン・開始画面）
+# 外部レビュー依頼 — UI-G2〜G4 と 段階2（設定レール・紙面トークン・開始画面・配色/chrome面）
 
-Status: Review request（2回目）
-Implementation scope: `fa6c9ba0..2a118313`（8コミット）
-Review packet HEAD: `14609e2f`（docs-only、ブランチ全体では9コミット）
+Status: Review request（3回目）
+Implementation scope: `fa6c9ba0..c83bbad3`（G2〜G4と段階2の実装、10コミット）
+Review packet HEAD: `9ddd64d5`（docs、ブランチ全体では11コミット）
 Authority: Request
 Date: 2026-09-10
 
@@ -22,9 +22,11 @@ Date: 2026-09-10
 | `43ef5276` | 開始画面（画面01）を左ブランド・右続きの2ペインへ再配置 | [G4](2026-09-10-v3-ui-g4/README.md) |
 | `b5d85668` | G4の証跡とレビュー依頼資料 | 同上 |
 | `2a118313` | 1回目のレビュー対応：末尾clamp・テーマ整合テストの実CSS参照化 | G2/G3の各資料 |
+| `c83bbad3` | 段階2：モック配色をlight/darkへ反映し、chrome面トークン（`--chrome-surface`）を全7テーマへ新設 | [段階2](2026-09-10-v3-theme-stage2/README.md) |
+| `9ddd64d5` | 段階2の証跡とP3指摘3件 | 同上 |
 
-前回の依頼文で「4コミット」と書いていたのは誤り（`c937e036` が抜けていた）。現在は8コミットで、
-対象面は設定ダイアログ、テーマ／面のトークン定義、開始画面の表示のみ。
+前回の依頼文で「4コミット」と書いていたのは誤り（`c937e036` が抜けていた）。現在は10コミット（うち段階2が2件）で、
+対象面は設定ダイアログ、テーマ／面のトークン定義、開始画面の表示、chrome面の配線のみ。
 保存・反映・パス・実行・AIの各契約には触れていない。
 
 ## 1回目のレビュー指摘への対応
@@ -38,6 +40,25 @@ Date: 2026-09-10
 | `chrome` をナビ面に固定するのは早い | **未決として記録**。現状は「ツールバー・ステータス・サイドバー＝nav、`.tabs-row`＝paper」で一貫していない。推奨案（Editor=paper / Sidebar=nav / Toolbar・tabs・status=bg、将来 `--chrome-surface`）を G3資料に残し、段階2で決める |
 | [P3] `ResizeObserver` の方が堅い | 今回は `window.resize`。本文内 reflow は次の scroll で追従する旨を G2資料の残リスクに記載 |
 
+## 段階2（`c83bbad3`）の追加スコープ
+
+前回の判定「段階2へ進んでOK、モック値そのままで一周」に沿って実装した。
+
+| 変更 | 内容 | 出典 |
+| --- | --- | --- |
+| light | 本文 `#24362d` / accent `#356b50` / 境界 `#dce2d9` / `--bg` `#f7f8f5` / `--accent-soft` `#e1ecdf` 等 | モック `design-spec.md` §5 と C04 |
+| dark | `--bg` `#18241e` / surface `#25332a` / 境界 `#35463a` / 本文 `#e5eddf` / accent `#aad0ac` / `--accent-contrast` `#15251a` 等 | モック `mock-styles.css` の `.dark` ブロック |
+| chrome面 | `--chrome-surface` を新設。ツールバー・タブ・ステータスが参照、サイドバーは `--nav-surface` | モック `.chrome`/`.doc-tabs`/status = `--bg`、`.sidebar` = `--side` |
+| 透明タイトルバー | `theme-palette.json` の light/dark を追従（Rustは同JSONを `include_str!`、pinのみ更新） | 前回指摘の役割分担 |
+
+**前回指摘を踏まえた意図的な追加**：`--accent-contrast` を全テーマで自動検査したところ、
+**yakou 2.40:1 / crt 1.70:1**（dark も 2.05:1）と基準未満だったため、モックの `.dark` が
+`--accent-ink` を使う関係に合わせて濃色インクへ修正した。範囲外に見えるかもしれないので明示する。
+
+**実測で見つけた未決**：モック値では面の分離が **chrome vs 紙面 1.06:1（light）/1.07:1（dark）**、
+境界線が **1.31:1 / 1.48:1** で、モック自身のC08（重要な境界は3:1目安）と衝突する。
+「A=モック値のまま／B=境界線を強める／C=面で分ける」を判断待ちとして資料に残した（実装は未決定のまま）。
+
 ## 特に見てほしい点
 
 1. **末尾clampの判定**：`scrollHeight - clientHeight` の 1px 遊びで最下部とみなす実装と、
@@ -49,12 +70,19 @@ Date: 2026-09-10
 4. **`--surface-paper` / `--nav-surface` の適用範囲**：edohigan / shinkai のエディタ面を不透明化した点、
    `.tabs-row` が紙面・ツールバーがナビ面という現状の一貫性。
 5. **docs の主張が実装を超えていないか**：特に「4.5:1」の範囲表現と、native受入の未実施の書き方。
+6. **段階2の面の意味づけ**：`--chrome-surface` を `--bg` ではなく独立トークンにしたこと、
+   サイドバーを `--nav-surface` のまま残した配線（`workspace-chrome.css` の使用箇所はchrome3・nav1）。
+7. **accent面の文字の修正**（yakou / crt / dark）が範囲として妥当か。モックが出典の dark 以外は
+   同型の関係を適用した推論である。
+8. **面の分離をモック値のまま残した判断**（未決として提示）が、レビュー観点で妥当か。
 
 ## 主張と根拠
 
-- ローカル：`npm run typecheck` 成功、`npm test` **259ファイル / 2,250件**、`smoke:app-store-surface` 117件、
-  `vite build` 成功、`cargo fmt --check` 成功。Rust は無変更で `cargo test` は未実行。
-- **言っていないこと**：native 200% / VoiceOver / 実機 / CI の合格。半透明ナビの合成は紙面上での測定であること。
+- ローカル：`npm run typecheck` 成功、`npm test` **259ファイル / 2,269件**、`smoke:app-store-surface` 117件、
+  `vite build` 成功、`cargo fmt --check` 成功、`cargo test` **383件成功**（段階2でRustのpinを更新したため実行）。
+- 実測の数値はすべて実描画のスクリーンショットから画素を採取したもの（[段階2](2026-09-10-v3-theme-stage2/README.md)）。
+- **言っていないこと**：native 200% / VoiceOver / 実機 / CI の合格。半透明ナビの合成は紙面・ダイアログ上での測定であること。
+  edohigan / shinkai のアプリ画面はヘッドレスでキャンバスが写らないため、設定ダイアログの実描画で代替している。
 - `src-tauri/tauri.conf.appstore.json` の未コミット変更は別作業として保持（触っていない）。
 
 ## 再現手順
