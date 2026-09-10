@@ -93,8 +93,16 @@ export async function importImageFromPath(
 // `openWorkspaceFile` once the user picks a row.
 export type WorkspaceSearchMatch = {
   line: number;
+  /** 原文の行での一致開始位置（1始まり・**文字**＝コードポイント単位）。 */
   column: number;
+  /** 一致位置を中心に切り出した行の一部。 */
   text: string;
+  /** `text` の先頭が原文の何文字目か（1始まり）。1 なら行頭から。 */
+  snippetStart: number;
+  /** 一致そのものの文字数（原文上）。 */
+  matchLength: number;
+  /** 原文の行の全文字数（末尾を切ったかの表示に使う）。 */
+  lineLength: number;
 };
 
 export type WorkspaceSearchFileResult = {

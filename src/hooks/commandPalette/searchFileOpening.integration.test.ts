@@ -11,7 +11,12 @@ vi.mock("../../lib/tauri", () => ({ openTextFile: vi.fn() }));
 vi.mock("../../lib/storage", () => ({ readStoredDrafts: () => [], upsertDraftRecord: vi.fn() }));
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
 const file = (path: string): TextFileDocument => ({ path, name: path.split("/").at(-1)!, contents: "line\n".repeat(30), encoding: "utf-8", line_ending: "lf", size: 150, modified_ms: null, fingerprint: path, large_file_warning: false });
-const row = (path: string, line: number) => ({ fileIndex: 0, matchIndex: 0, file: { path, relativePath: path.slice(6), matches: [], truncated: false }, match: { line, column: 1, text: "line" } });
+const row = (path: string, line: number) => ({
+  fileIndex: 0,
+  matchIndex: 0,
+  file: { path, relativePath: path.slice(6), matches: [], truncated: false },
+  match: { line, column: 1, text: "line", snippetStart: 1, matchLength: 4, lineLength: 4 },
+});
 function deferred() {
  let resolve!: (file: TextFileDocument) => void;
  const promise = new Promise<TextFileDocument>(r => { resolve = r; });

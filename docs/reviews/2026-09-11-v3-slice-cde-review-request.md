@@ -130,6 +130,8 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 検索の wire 形式を変�
 | R4 | 進捗の未計測と ARIA の不一致 | 章番号で計測済みを判定。未計測は `aria-valuenow` を**出さない**／計測済みは `min=0,max=総,now=現在+1` | 計測前は値を主張しない／視覚25%＝ARIA25% |
 | R5 | 生成案の上限を「入力対象が4,000文字超」と誤案内 | 分類と文言を**3つに分離**（入力対象／生成案／継続上限）し3言語 | 誤ったまとめを固定していたテストを反転 |
 | 09 | 長い行の後方一致が見えない（行頭240文字で切る） | **一致位置を中心**に窓を作る（前60文字・切った側に `…`） | 400文字目の一致で `mark` が見え、表示が240文字以内 |
+| 09 / P2 | **4096バイトより後ろ**の一致は payload から落ちていた | backend が**一致を含む snippet** と `column`/`snippet_start`/`match_length`/`line_length` を返す契約へ。frontend はその契約だけで着色と `…` を描く | Rust: 4096バイト超の一致が snippet に入る／絵文字後の `column` が文字単位。UI: 行頭と行末が切れた長い行で一致だけが `mark` |
+| R4 / P3 | 未計測でも文字が `1 / 1` を主張 | 表示と ARIA の契約を `ebookProgress.ts` に集約（未計測は値を出さない） | **実測1ページの章**が `1 / 1`・`aria-valuenow=1/max=1`・塗り100%／未計測側は純関数テスト |
 
 - **受入範囲**: `onApply` が成功を返すだけの fixture では本番の提案消費を証明できないため、
   **本番の単一ライタとストアを通す統合テスト**を追加した（`LocalAssistApply.integration.test.tsx`:
@@ -146,7 +148,8 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 検索の wire 形式を変�
 | 種別 | 結果 |
 | --- | --- |
 | `npm run typecheck` | 成功 |
-| `npm test` | **271ファイル / 2,377件** 成功 |
+| `npm test` | **272ファイル / 2,382件** 成功 |
+| `cargo test` | **385 passed, 2 ignored**（検索の snippet 契約を変更） |
 | `npm run smoke:app-store-surface` | 117件 成功 |
 | `npm run build:vite` | 成功（chunk サイズ警告は既存） |
 | `cargo fmt --check` / `cargo test` | OK / **383 passed, 2 ignored** |

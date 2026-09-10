@@ -1,7 +1,29 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { GlobalSearch } from "./GlobalSearch";
+import type { WorkspaceSearchMatch } from "../../lib/tauri/workspace";
+
 afterEach(cleanup);
+
+/**
+ * テスト用の一致。backend は「一致位置を中心に切った snippet」を返す契約なので、
+ * 短い行では `snippetStart = 1`（行頭から）・`lineLength` は行の文字数になる。
+ */
+function hit(
+  line: number,
+  column: number,
+  text: string,
+  matchLength: number,
+): WorkspaceSearchMatch {
+  return {
+    line,
+    column,
+    text,
+    snippetStart: 1,
+    matchLength,
+    lineLength: Array.from(text).length,
+  };
+}
 it("keeps the selected folder visible and exposes a close action without running a match", () => {
   const close = vi.fn(); const run = vi.fn();
   render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={close} onRun={run}
@@ -16,7 +38,7 @@ it("keeps the selected folder visible and exposes a close action without running
 it("uses the selected match for Enter and keeps truncation distinct from completion", () => {
   const original = HTMLElement.prototype.scrollIntoView;
   HTMLElement.prototype.scrollIntoView = vi.fn();
-  const match = { line: 7, column: 2, text: "a needle in this file" };
+  const match = hit(7, 2, "a needle in this file", 6);
   const row = { fileIndex: 0, matchIndex: 0, file: { path: "/work/b.md", relativePath: "chapters/b.md", matches: [match], truncated: true }, match };
   const run = vi.fn();
   try {
@@ -35,8 +57,8 @@ it("marks only the matched text and separates per-file counts from the scan coun
   // jsdom には scrollIntoView が無い（選択項目の追従で呼ばれる）。
   const original = HTMLElement.prototype.scrollIntoView;
   HTMLElement.prototype.scrollIntoView = vi.fn();
-  const first = { line: 3, column: 5, text: "the needle is here" };
-  const second = { line: 9, column: 1, text: "needle again" };
+  const first = hit(3, 5, "the needle is here", 6);
+  const second = hit(9, 1, "needle again", 6);
   const file = { path: "/work/a.md", relativePath: "chapters/a.md", matches: [first, second], truncated: false };
   const rows = [
     { fileIndex: 0, matchIndex: 0, file, match: first },
@@ -61,7 +83,7 @@ it("marks only the matched text and separates per-file counts from the scan coun
 
 it("does not activate or announce old results while the replacement query searches", () => {
   const run = vi.fn();
-  const match = { line: 1, column: 1, text: "apple" };
+  const match = hit(1, 1, "apple", 6);
   render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={() => {}} onRun={run}
     onSetActiveIndex={() => {}} onSetQuery={() => {}} query="banana"
     rows={[{ fileIndex: 0, matchIndex: 0, file: { path: "/book/a.md", relativePath: "a.md", matches: [match], truncated: true }, match }]}
@@ -78,8 +100,8 @@ it("keeps emoji and supplementary-plane characters intact around the match (R1)"
   HTMLElement.prototype.scrollIntoView = vi.fn();
   // Rust の column はコードポイント数（chars()）。UTF-16 の slice だと
   // 絵文字の途中から切り出してしまう。
-  const emoji = { line: 1, column: 2, text: "😀余白のはなし" };
-  const kanji = { line: 2, column: 5, text: "𠮷野家の余白の話" };
+  const emoji = hit(1, 2, "😀余白のはなし", 2);
+  const kanji = hit(2, 5, "𠮷野家の余白の話", 2);
   const file = { path: "/work/b.md", relativePath: "chapters/b.md", matches: [emoji, kanji], truncated: false };
   render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={() => {}} onRun={() => {}}
     onSetActiveIndex={() => {}} onSetQuery={() => {}} query="余白"
@@ -102,11 +124,22 @@ it("keeps emoji and supplementary-plane characters intact around the match (R1)"
   }
 });
 
-it("keeps a late match visible by windowing the line around it", () => {
+it("shows a late match that the backend snippet kept", () => {
   HTMLElement.prototype.scrollIntoView = vi.fn();
-  // 行頭固定の切り詰めだと、行の後方で一致したときに着色が窓の外へ出る。
-  const long = "あ".repeat(400) + "余白" + "い".repeat(40);
-  const late = { line: 1, column: 401, text: long };
+  // backend は 4096 バイトの行でも「一致位置を中心に切った snippet」を返すので、
+  // 行の後方の一致も payload に入っている（レビューP2）。
+  const long = "あ".repeat(600) + "余白" + "い".repeat(600);
+  const chars = Array.from(long);
+  const snippetStart = 541; // 一致(601文字目)の手前60文字から
+  const snippet = chars.slice(snippetStart - 1, snippetStart - 1 + 240).join("");
+  const late: WorkspaceSearchMatch = {
+    line: 1,
+    column: 601,
+    text: snippet,
+    snippetStart,
+    matchLength: 2,
+    lineLength: chars.length,
+  };
   const file = { path: "/work/c.md", relativePath: "chapters/c.md", matches: [late], truncated: false };
   render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={() => {}} onRun={() => {}}
     onSetActiveIndex={() => {}} onSetQuery={() => {}} query="余白"
@@ -118,9 +151,10 @@ it("keeps a late match visible by windowing the line around it", () => {
   const mark = document.querySelector("mark.global-search-match");
   expect(mark?.textContent).toBe("余白");
   const line = mark?.parentElement?.textContent ?? "";
-  // 一致が見えており、行頭を切った印が付いている。
+  // 一致が見えており、行頭と行末の両方を切った印が付いている。
   expect(line).toContain("余白");
   expect(line.startsWith("…")).toBe(true);
+  expect(line.endsWith("…")).toBe(true);
   // 表示は 240 文字ぶんに収まる（＋省略記号）。
   expect(Array.from(line.replace(/…/gu, "")).length).toBeLessThanOrEqual(240);
 });

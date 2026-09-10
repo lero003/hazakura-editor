@@ -171,26 +171,34 @@ pub(crate) fn search_workspace_files_with_label(
                     continue;
                 };
 
-                // `find` returns a byte index; convert to a 1-based
-                // character column so the front-end can render it
-                // without re-counting. The `chars().take(...)` is
-                // bounded by `line.len()` so it cannot allocate
-                // unboundedly.
-                let mut folded_bytes = 0;
-                let column = line
-                    .chars()
-                    .position(|ch| {
-                        folded_bytes += ch.to_lowercase().map(char::len_utf8).sum::<usize>();
-                        folded_bytes > byte_offset
-                    })
-                    .unwrap_or(0)
-                    + 1;
-                let trimmed_text = truncate_text(line, MAX_WORKSPACE_SEARCH_LINE_BYTES);
+                // `find` returns a byte index into the **folded** line. Map
+                // that span back to character offsets in the original line so
+                // the front-end can render it without re-counting (Unicode
+                // scalar values, which is what JS `Array.from` yields too).
+                let (match_start_char, match_end_char) = char_span_for_folded_bytes(
+                    line,
+                    byte_offset,
+                    byte_offset + needle.len(),
+                );
+                let column = match_start_char + 1;
+                let match_length = match_end_char.saturating_sub(match_start_char);
+                let line_length = line.chars().count();
+                // 一致位置を中心に切り出す。行頭から切ると、長い行の後方で
+                // 一致したときに一致箇所が payload から落ちる（レビューP2）。
+                let (snippet, snippet_start, _) = build_match_snippet(
+                    line,
+                    match_start_char,
+                    match_end_char,
+                    MAX_WORKSPACE_SEARCH_LINE_BYTES,
+                );
 
                 matches.push(WorkspaceSearchMatch {
                     line: line_index + 1,
                     column,
-                    text: trimmed_text,
+                    text: snippet,
+                    snippet_start: snippet_start + 1,
+                    match_length,
+                    line_length,
                 });
                 total_matches += 1;
             }
@@ -229,18 +237,62 @@ pub(crate) fn search_workspace_files_with_label(
     })
 }
 
-fn truncate_text(text: &str, max_bytes: usize) -> String {
-    if text.len() <= max_bytes {
-        return text.to_string();
+/// 折り畳んだ（小文字化した）バイト範囲が覆う、原文上の文字範囲を返す。
+/// 終端は排他。大文字小文字変換で長さが変わる文字があっても、原文の文字数を
+/// 数えて返すので front-end のコードポイント位置と一致する。
+fn char_span_for_folded_bytes(line: &str, start_byte: usize, end_byte: usize) -> (usize, usize) {
+    let mut folded = 0usize;
+    let mut span_start: Option<usize> = None;
+    let mut span_end = 0usize;
+    for (index, ch) in line.chars().enumerate() {
+        folded += ch.to_lowercase().map(char::len_utf8).sum::<usize>();
+        if span_start.is_none() && folded > start_byte {
+            span_start = Some(index);
+        }
+        if folded >= end_byte {
+            span_end = index + 1;
+            break;
+        }
     }
-    // Walk back to the nearest char boundary so we never slice in
-    // the middle of a multi-byte UTF-8 sequence. `floor_char_boundary`
-    // is not stable yet, so we hand-roll the equivalent.
-    let mut end = max_bytes;
-    while end > 0 && !text.is_char_boundary(end) {
-        end -= 1;
-    }
-    let mut out = text[..end].to_string();
-    out.push('…');
-    out
+    let start = span_start.unwrap_or(0);
+    (start, span_end.max(start))
 }
+
+/// 一致位置を中心にした snippet を作る。
+///
+/// 戻り値は (snippet, snippet の開始文字位置（0-based）, 行末を切ったか)。
+/// 一致の終端が予算内に入るまで、開始位置を1文字ずつ手前へ広げるので、
+/// **一致箇所が payload から落ちることはない**。
+fn build_match_snippet(
+    line: &str,
+    match_start_char: usize,
+    match_end_char: usize,
+    max_bytes: usize,
+) -> (String, usize, bool) {
+    if line.len() <= max_bytes {
+        return (line.to_string(), 0, false);
+    }
+    let chars: Vec<char> = line.chars().collect();
+    let total = chars.len();
+    const CONTEXT_CHARS_BEFORE: usize = 60;
+    let mut start = match_start_char.saturating_sub(CONTEXT_CHARS_BEFORE);
+    loop {
+        let mut bytes = 0usize;
+        let mut end = start;
+        while end < total {
+            let next = chars[end].len_utf8();
+            if bytes + next > max_bytes {
+                break;
+            }
+            bytes += next;
+            end += 1;
+        }
+        let covers_match = end >= match_end_char.min(total);
+        if covers_match || start == 0 {
+            let snippet: String = chars[start..end].iter().collect();
+            return (snippet, start, end < total);
+        }
+        start -= 1;
+    }
+}
+

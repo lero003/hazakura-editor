@@ -200,7 +200,14 @@ describe("search surface accessibility semantics", () => {
               matches: [],
               truncated: false,
             },
-            match: { line: 4, column: 2, text: "hazakura" },
+            match: {
+              line: 4,
+              column: 2,
+              text: "hazakura",
+              snippetStart: 1,
+              matchLength: 8,
+              lineLength: 8,
+            },
           },
         ]}
         searchError={null}
@@ -265,7 +272,14 @@ describe("search surface accessibility semantics", () => {
               matches: [],
               truncated: false,
             },
-            match: { line: 1, column: 1, text: "stale result" },
+            match: {
+              line: 1,
+              column: 1,
+              text: "stale result",
+              snippetStart: 1,
+              matchLength: 6,
+              lineLength: 12,
+            },
           },
         ]}
         searchError="Workspace folder is unavailable."

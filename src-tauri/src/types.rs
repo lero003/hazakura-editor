@@ -417,8 +417,17 @@ pub(crate) enum WorkspaceEntryKind {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct WorkspaceSearchMatch {
     pub(crate) line: usize,
+    /// 1-based character column of the match in the original line.
     pub(crate) column: usize,
+    /// 一致位置を中心に切り出した行の一部（`snippet_start` から始まる）。
     pub(crate) text: String,
+    /// `text` の先頭が原文の何文字目か（1-based）。1 なら行頭から。
+    pub(crate) snippet_start: usize,
+    /// 一致そのものの文字数（大文字小文字変換で長さが変わる場合に備え、
+    /// front-end の検索語長ではなく原文上の長さを返す）。
+    pub(crate) match_length: usize,
+    /// 原文の行の全文字数（末尾を切ったかどうかの表示に使う）。
+    pub(crate) line_length: usize,
 }
 
 #[derive(Debug, Serialize)]

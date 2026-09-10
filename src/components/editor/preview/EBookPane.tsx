@@ -38,6 +38,11 @@ import {
 } from "../../../features/editor/markdown";
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
 import {
+  ebookProgressAria,
+  ebookProgressPercent,
+  ebookProgressText,
+} from "./ebookProgress";
+import {
   fetchRemoteImage,
   openLocalImageUnderRoots,
   openWorkspaceImage,
@@ -171,7 +176,15 @@ export default function EBookPane({
   const [activePageIndex, setActivePageIndex] = useState(
     () => initialLocation?.pageIndex ?? 0,
   );
-  const [measuredPageCount, setMeasuredPageCount] = useState(1);
+  // 計測結果は「どの章を何ページと計測したか」を1つの state で持つ。件数だけを
+  // 持つと、初期値1と「1ページの章」を区別できず、さらに値が同じときに React が
+  // 再描画を省くため計測済みが画面へ出ない（R4）。オブジェクトは毎回新しいので
+  // 更新は必ず1回の再描画になり、計測経路の更新回数は変えていない。
+  const [measurement, setMeasurement] = useState<{
+    chapterIndex: number;
+    count: number;
+  } | null>(null);
+  const measuredPageCount = measurement?.count ?? 1;
   const [pageOffset, setPageOffset] = useState(0);
   const [pageViewportHeight, setPageViewportHeight] = useState(0);
   const [visiblePageStep, setVisiblePageStep] = useState(1);
@@ -335,11 +348,13 @@ export default function EBookPane({
   // chapter change (where it must not, so a short new chapter is not padded
   // to the previous chapter's page count).
   const measuredChapterIndexRef = useRef<number | null>(null);
-  // この章のページ数を計測できたか（R4）。`measuredPageCount` の初期値は1なので、
-  // 数だけでは「未計測」と「1ページの章」を区別できない。計測済みの章番号を持つ
-  // 上の ref と比べる（新しい state を足して計測経路の再描画を増やさない）。
-  const pageCountMeasured =
-    measuredChapterIndexRef.current === activeChapterIndexSafe;
+  // この章のページ数を計測できたか（R4）。表示と ARIA の契約は ebookProgress.ts。
+  const pageCountMeasured = measurement?.chapterIndex === activeChapterIndexSafe;
+  const progressInput = {
+    measured: pageCountMeasured,
+    pageIndex: activePageIndexSafe,
+    pageCount: measuredPageCount,
+  };
   // Active chapter index mirrored into a ref so the rAF remeasure callback
   // reads the chapter at callback time, not at schedule time. Pair it with
   // `activeChapterHtmlRef` so both reflect the same render.
@@ -535,7 +550,7 @@ export default function EBookPane({
     const nextVisiblePageStep = getVisiblePageStep(viewportRef.current, flow);
     setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
     setVisiblePageStep(nextVisiblePageStep);
-    setMeasuredPageCount(nextPageCount);
+    setMeasurement({ chapterIndex: activeChapterIndexSafe, count: nextPageCount });
     setActivePageIndex((current) => {
       const pendingSearchSourceLine = pendingSearchSourceLineRef.current;
       if (pendingSearchSourceLine !== null && activeChapter) {
@@ -613,7 +628,7 @@ export default function EBookPane({
       );
       setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
       setVisiblePageStep(getVisiblePageStep(viewportRef.current, flow));
-      setMeasuredPageCount(nextPageCount);
+      setMeasurement({ chapterIndex, count: nextPageCount });
     });
   }, []);
 
@@ -1156,8 +1171,9 @@ export default function EBookPane({
             {copy.chapterProgress} {activeChapterIndexSafe + 1} /{" "}
             {totalChapters}
           </div>
+          {/* 未計測の間は「1 / 1」と言い切らない（R4）。バーの ARIA と同じ契約に揃える。 */}
           <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
-            {copy.pageProgress} {activePageIndexSafe + 1} / {measuredPageCount}
+            {ebookProgressText(progressInput, copy, "header")}
           </div>
           {/* 章のどこにいるかを一目で分かるようにする（モック04の進捗バー）。
               未計測の間は進捗を推測せず、`aria-valuenow` も出さない（R4）。
@@ -1167,19 +1183,11 @@ export default function EBookPane({
             aria-label={copy.pageProgress}
             className="ebook-reader-progress-bar"
             role="progressbar"
-            {...(pageCountMeasured
-              ? {
-                  "aria-valuemin": 0,
-                  "aria-valuemax": measuredPageCount,
-                  "aria-valuenow": activePageIndexSafe + 1,
-                }
-              : { "aria-valuetext": copy.pageProgressUnknown })}
+            {...ebookProgressAria(progressInput, copy)}
           >
             <span
               style={{
-                width: pageCountMeasured
-                  ? `${Math.min(100, ((activePageIndexSafe + 1) / Math.max(1, measuredPageCount)) * 100)}%`
-                  : "0%",
+                width: `${ebookProgressPercent(progressInput)}%`,
               }}
             />
           </div>
@@ -1359,8 +1367,7 @@ export default function EBookPane({
                   {copy.footerChapter}: {chapterLabel}
                 </span>
                 <span className="ebook-reader-footer-page">
-                  {copy.footerPageProgress} {activePageIndexSafe + 1} /{" "}
-                  {Math.max(1, measuredPageCount)}
+                  {ebookProgressText(progressInput, copy, "footer")}
                 </span>
               </span>
               <div className="ebook-reader-footer-nav ebook-reader-footer-nav-end">

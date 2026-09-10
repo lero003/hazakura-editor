@@ -353,12 +353,12 @@ describe("useCommandPaletteController", () => {
       fileIndex: 0,
       matchIndex: 0,
       file: {
-        matches: [{ column: 4, line: 12, text: "hello match" }],
+        matches: [{ column: 4, line: 12, text: "hello match", snippetStart: 1, matchLength: 11, lineLength: 11 }],
         path: "/workspace/docs/note.md",
         relativePath: "docs/note.md",
         truncated: false,
       },
-      match: { column: 4, line: 12, text: "hello match" },
+      match: { column: 4, line: 12, text: "hello match", snippetStart: 1, matchLength: 11, lineLength: 11 },
     };
     const surface = result.current as typeof result.current & {
       runGlobalSearchMatch: (match: GlobalSearchRow) => void;
@@ -444,12 +444,12 @@ describe("useCommandPaletteController", () => {
       fileIndex: 0,
       matchIndex: 0,
       file: {
-        matches: [{ column: 1, line: 3, text: "hit" }],
+        matches: [{ column: 1, line: 3, text: "hit", snippetStart: 1, matchLength: 3, lineLength: 3 }],
         path: "/workspace/docs/note.md",
         relativePath: "docs/note.md",
         truncated: false,
       },
-      match: { column: 1, line: 3, text: "hit" },
+      match: { column: 1, line: 3, text: "hit", snippetStart: 1, matchLength: 3, lineLength: 3 },
     };
 
     act(() => {

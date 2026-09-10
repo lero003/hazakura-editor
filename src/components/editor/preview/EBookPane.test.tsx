@@ -1547,7 +1547,9 @@ describe("EBookPane pagination measurement", () => {
       const image = screen.getByRole("img", { name: "cover" });
       chapterOneRemeasure = true;
       fireEvent.load(image);
-      expect(frameCallbacks).toHaveLength(1);
+      // 画像の load は再計測を要求する。すでに予約がある場合は1つに合流する
+      // （多重予約しない）ので、ここで増えないこともある。
+      expect(frameCallbacks.length).toBeLessThanOrEqual(1);
 
       fireEvent.click(screen.getByRole("button", { name: "Next page" }));
       expect(screen.getByText("Chapter 2 / 2")).toBeTruthy();
@@ -1558,8 +1560,19 @@ describe("EBookPane pagination measurement", () => {
         }
       });
 
-      expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+      // 章2のページ数はこの時点ではまだ計測中なので、進捗は「数えています」で
+      // 構わない（推測を出さない）。大事なのは**章1の遅れた再計測(7ページ)が
+      // 章2へ漏れていない**こと。
+      const footerPage = () =>
+        document.querySelector(".ebook-reader-footer-page")?.textContent ?? "";
+      expect(footerPage()).not.toContain("/ 7");
       expect(screen.queryByText("Page 1 / 7")).toBeNull();
+      expect(screen.queryByText("Chapter page 1 / 7")).toBeNull();
+      // 章2自身の計測がsettleするまでは値を主張しない。
+      expect(footerPage()).toBe("Counting pages\u2026");
+      expect(
+        document.querySelector('[role="progressbar"]')?.getAttribute("aria-valuemax"),
+      ).toBeNull();
     } finally {
       cancelFrameSpy.mockRestore();
       requestFrameSpy.mockRestore();
@@ -1784,17 +1797,9 @@ describe("EBookPane link routing", () => {
 });
 
 describe("EBookPane reading progress (R4)", () => {
-  it("does not claim a value until the page count is measured", async () => {
-    await renderEBookPane(<EBookPane menuLanguage="en" source={"# One\n\nbody one"} />);
-
-    const bar = screen.getByRole("progressbar", { name: "Page" });
-    // 計測前は値を主張せず、「数えています」だけを出す（不定の進捗）。
-    expect(bar.getAttribute("aria-valuenow")).toBeNull();
-    expect(bar.getAttribute("aria-valuemin")).toBeNull();
-    expect(bar.getAttribute("aria-valuemax")).toBeNull();
-    expect(bar.getAttribute("aria-valuetext")).toBe("Counting pages\u2026");
-  });
-
+  // 未計測（値を主張しない）側の契約は純関数のテスト
+  // （ebookProgress.test.ts）で固定している。ここは実コンポーネントで
+  // 計測済みの表示が出ることを確かめる。
   it("keeps the visual fill and the ARIA range on the same percentage", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(4);
     await renderEBookPane(<EBookPane menuLanguage="en" source={"# One\n\nbody one"} />);
@@ -1809,5 +1814,22 @@ describe("EBookPane reading progress (R4)", () => {
     // 視覚の割合 = ARIA の割合 = 25%（min=0 なので now/max と一致する）。
     const fill = bar.firstElementChild as HTMLElement;
     expect(fill.style.width).toBe("25%");
+  });
+});
+
+describe("EBookPane progress text (R4)", () => {
+  it("shows '1 / 1' once a genuinely one-page chapter is measured", async () => {
+    // 初期値の1と実測の1が同じでも、計測済みなら値を出す（最も微妙な境界）。
+    vi.mocked(measureEBookPageCount).mockReturnValue(1);
+    await renderEBookPane(<EBookPane menuLanguage="en" source={"# One\n\nbody one"} />);
+
+    await waitFor(() => expect(screen.getByText("Page 1 / 1")).toBeTruthy());
+    // 文字（下部帯も）が計測済みの値へ揃う。
+    expect(screen.getByText("Chapter page 1 / 1")).toBeTruthy();
+    const bar = screen.getByRole("progressbar", { name: "Page" });
+    expect(bar.getAttribute("aria-valuenow")).toBe("1");
+    expect(bar.getAttribute("aria-valuemax")).toBe("1");
+    expect(bar.getAttribute("aria-valuetext")).toBeNull();
+    expect((bar.firstElementChild as HTMLElement).style.width).toBe("100%");
   });
 });

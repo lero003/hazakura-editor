@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { isImeComposing } from "../../lib/keyboard";
 import { useLatestValueRef } from "../../hooks/app/useLatestValueRef";
 import type { MenuLanguage } from "../../types";
+import type { WorkspaceSearchMatch } from "../../lib/tauri/workspace";
 import type {
   GlobalSearchRow,
   GlobalSearchSummary,
@@ -82,37 +83,46 @@ function fileCountUnit(menuLanguage: MenuLanguage): string {
 }
 
 /**
- * 一致した範囲だけを着色する。`column` は backend が返す1始まりの**コードポイント**
- * 位置（Rust の `chars()`）なので、ここでも同じ単位で切り出す。UTF-16 の
- * `slice()` をそのまま使うと絵文字の途中で切れて、絵文字自体も分断される。
- * 色に頼りきらないよう `<mark>` で意味も持たせる（モック09）。
+ * 一致した範囲だけを着色する（モック09）。
+ *
+ * 契約は backend 側が持つ: `column` は**原文の行**での1始まりの文字（コードポイント）
+ * 位置、`text` は**一致位置を中心に切り出した snippet**、`snippetStart` は
+ * snippet の先頭が原文の何文字目か。UTF-16 の `slice()` を使うと絵文字の途中で
+ * 切れて絵文字自体も分断されるため、ここでもコードポイント単位で扱う。
  */
-function renderMatchedLine(text: string, column: number, needle: string) {
-  const start = column - 1;
-  const needleLength = toCodePoints(needle).length;
-  // 一致が行の後方でも見えるよう、一致位置を中心に窓を作る。
-  const source = toCodePoints(text);
-  const windowed =
-    needle && start >= 0 && start < source.length
-      ? windowAroundMatch(source, start)
-      : { ...windowAroundMatch(source, 0), offset: 0 };
+function renderMatchedLine(match: WorkspaceSearchMatch, needle: string) {
+  const snippetStart =
+    Number.isFinite(match.snippetStart) && match.snippetStart > 0
+      ? match.snippetStart
+      : 1;
+  const source = toCodePoints(match.text);
+  const lineLength =
+    match.lineLength > 0 ? match.lineLength : snippetStart - 1 + source.length;
+  // snippet 内の相対位置（backend が原文上の文字位置を返す）。
+  const start = match.column - snippetStart;
+  const matchLength =
+    match.matchLength > 0 ? match.matchLength : toCodePoints(needle).length;
+  const windowed = windowAroundMatch(source, Math.max(0, start));
   const points = windowed.points;
   const localStart = start - windowed.offset;
+  const headClipped = snippetStart > 1 || windowed.headClipped;
+  const tailClipped =
+    snippetStart - 1 + source.length < lineLength || windowed.tailClipped;
   const inWindow =
-    !!needle && localStart >= 0 && localStart < points.length && needleLength > 0;
+    !!needle && localStart >= 0 && localStart < points.length && matchLength > 0;
   if (!inWindow) {
-    return `${windowed.headClipped ? "…" : ""}${points.join("")}${windowed.tailClipped ? "…" : ""}`;
+    return `${headClipped ? "…" : ""}${points.join("")}${tailClipped ? "…" : ""}`;
   }
-  const localEnd = Math.min(localStart + needleLength, points.length);
+  const localEnd = Math.min(localStart + matchLength, points.length);
   return (
     <>
-      {windowed.headClipped ? "…" : null}
+      {headClipped ? "…" : null}
       {points.slice(0, localStart).join("")}
       <mark className="global-search-match">
         {points.slice(localStart, localEnd).join("")}
       </mark>
       {points.slice(localEnd).join("")}
-      {windowed.tailClipped ? "…" : null}
+      {tailClipped ? "…" : null}
     </>
   );
 }
@@ -381,7 +391,7 @@ export function GlobalSearch({
                       {row.match.line}
                     </span>
                     <span className="global-search-line-text">
-                      {renderMatchedLine(row.match.text, row.match.column, needle)}
+                      {renderMatchedLine(row.match, needle)}
                     </span>
                   </button>
                 </div>

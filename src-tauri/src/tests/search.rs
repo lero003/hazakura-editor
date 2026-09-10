@@ -354,15 +354,75 @@ fn search_truncates_long_line_text() {
     assert_eq!(result.files.len(), 1);
     let file = &result.files[0];
     assert_eq!(file.matches.len(), 1);
-    // The trim keeps the prefix through the cap and appends `…`
-    // (3 bytes) so the payload is exactly `cap + 3` bytes when
-    // represented as UTF-8.
-    let match_text_bytes = file.matches[0].text.len();
+    let hit = &file.matches[0];
+    // The snippet is capped by bytes and always keeps the match. The
+    // ellipsis is the front-end's job (it knows `snippetStart` /
+    // `lineLength`), so the payload does not carry one.
     assert!(
-        match_text_bytes <= MAX_WORKSPACE_SEARCH_LINE_BYTES + "…".len(),
-        "match text should be capped (got {match_text_bytes} bytes)",
+        hit.text.len() <= MAX_WORKSPACE_SEARCH_LINE_BYTES,
+        "snippet should be capped (got {} bytes)",
+        hit.text.len(),
     );
-    assert!(file.matches[0].text.contains('…'));
+    assert!(hit.text.contains("hazakura"));
+    assert_eq!(hit.snippet_start, 1, "a head match starts at the line head");
+    assert_eq!(hit.match_length, "hazakura".chars().count());
+    assert!(!hit.text.contains('…'));
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn search_keeps_a_match_beyond_the_byte_cap_in_the_snippet() {
+    // レビューP2: 行頭から4096バイトで切っていたため、その先で一致した行は
+    // 「結果は出るのに一致箇所が payload に無い」状態になっていた。
+    let dir = unique_test_dir("search_late_match");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let prefix = "あ".repeat(1400); // 4200 bytes > 4096
+    let suffix = "い".repeat(30);
+    let line = format!("{prefix}余白{suffix}");
+    fs::write(dir.join("note.md"), format!("{line}\n")).expect("write note");
+
+    let result = search_workspace_files_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        "余白".to_string(),
+    )
+    .expect("search workspace");
+
+    assert_eq!(result.files.len(), 1);
+    let hit = &result.files[0].matches[0];
+    // 一致が snippet の中に入っている（ここが以前は落ちていた）。
+    assert!(hit.text.contains("余白"), "snippet lost the match: {}", hit.text);
+    assert!(hit.snippet_start > 1, "late match must not be shown from the head");
+    assert_eq!(hit.column, 1401);
+    assert_eq!(hit.match_length, 2);
+    assert_eq!(hit.line_length, line.chars().count());
+    assert!(hit.text.len() <= MAX_WORKSPACE_SEARCH_LINE_BYTES);
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn search_reports_character_columns_for_a_match_after_an_emoji() {
+    // 絵文字は UTF-8 で4バイト・JS ではサロゲートペア2単位。column は
+    // 「原文の文字（コードポイント）」で数える契約。
+    let dir = unique_test_dir("search_emoji_column");
+    fs::create_dir_all(&dir).expect("create test dir");
+    fs::write(dir.join("note.md"), "😀余白のはなし\n").expect("write note");
+
+    let result = search_workspace_files_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        "余白".to_string(),
+    )
+    .expect("search workspace");
+
+    let hit = &result.files[0].matches[0];
+    assert_eq!(hit.column, 2);
+    assert_eq!(hit.match_length, 2);
+    assert_eq!(hit.snippet_start, 1);
+    assert_eq!(hit.line_length, 7); // 😀 + 余白のはなし(6文字)
+    assert_eq!(hit.text, "😀余白のはなし");
 
     let _ = fs::remove_dir_all(dir);
 }

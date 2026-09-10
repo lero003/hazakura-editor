@@ -87,6 +87,43 @@ MEDIA:reader-bottom-bar-1440.png
 **意図的に更新した既存テスト**: 目次ボタンと「編集に戻る」の所属（`.ebook-reader-toolbar` → `.ebook-reader-footer`）は
 モック04の下部帯に合わせて**移動**したため、所在を確かめる2件の期待値を更新した（機能は変えていない）。
 
+## 追加レビュー対応 — 09の4096バイト境界（P2）と R4 の文字表示（P3）
+
+### 09 / backend — 一致位置を中心に切る契約へ（`src-tauri`）
+
+- 原因: Rust が**全文で一致を探して column を計算したあと**、返す `text` を
+  行頭から `MAX_WORKSPACE_SEARCH_LINE_BYTES = 4096` で切っていた。日本語で約1400文字より
+  後ろの一致は、**結果は出るのに一致箇所が payload に無い**（400文字目のテストでは届いていなかった）。
+- 修正: 一致位置を中心に切る `build_match_snippet()` を追加し、`WorkspaceSearchMatch` の契約を
+  **`column`（原文上の文字位置）／`text`（一致を含む snippet）／`snippet_start`（snippet の開始位置）／
+  `match_length`（一致の文字数）／`line_length`（行全体の文字数）** にした。
+  一致の終端が予算内に入るまで開始位置を手前へ広げるので、**一致が落ちることはない**。
+  小文字化で長さが変わる文字も、原文の文字数へ写してから返す。
+- 前側の `truncate_text()` は使わなくなり削除（`…` は frontend が `snippet_start`/`line_length` から描く）。
+- Rust の回帰テスト3件:
+  - 4096バイトを超える位置の一致が **snippet に入る**（`snippet_start > 1`・`column=1401`・`match_length=2`・`line_length` 一致）
+  - 絵文字の後ろの一致で `column=2`（**文字＝コードポイント単位**）
+  - 既存の長い行テストを新しい契約（`…` は payload に含めない）へ更新
+
+### frontend — snippet 契約で着色する
+
+- `renderMatchedLine` は `column` と `snippet_start` の差で snippet 内の相対位置を出し、
+  行頭・行末を切った印（`…`）も `snippet_start` / `line_length` から決める（推測しない）。
+- テスト: 240文字の UI 窓は残しつつ、**行頭と行末の両方が切れた**長い行で、一致だけが `mark` になること。
+- `npm test` の fixture は新しい契約（`snippetStart` / `matchLength` / `lineLength`）へ更新した。
+
+### R4 / 文字表示 — 未計測は「1 / 1」と言い切らない
+
+- 見出しの `Page 1 / 1` と下部帯の `Chapter page 1 / 1` は**無条件**だったため、未計測でも値を主張していた。
+- 表示と ARIA の契約を `src/components/editor/preview/ebookProgress.ts` に切り出した:
+  未計測は **文字も ARIA も出さず**（`aria-valuenow` 無し・`aria-valuetext` のみ・塗り0%）、
+  計測済みは `min=0 / max=総 / now=現在+1` で**視覚の割合と ARIA の割合が一致**する。
+- 計測結果は「どの章を何ページと計測したか」を1つの state で持つ。件数だけだと初期値1と
+  「1ページの章」が区別できず、さらに**値が同じときに React が再描画を省く**ため計測済みが画面に出なかった
+  （実測で確認）。更新は従来どおり1回のまま。
+- 回帰テスト: **実際に1ページの章**が「Page 1 / 1」「Chapter page 1 / 1」・`aria-valuenow=1/max=1`・塗り100% になること、
+  および未計測側の契約は純関数テストで固定。
+
 ## 09 — 後方一致が見えない（レビュー全文の追加指摘）
 
 - 行頭240文字で切っていたため、**行の後方で一致したときは着色が窓の外**だった。
@@ -106,7 +143,8 @@ MEDIA:reader-bottom-bar-1440.png
 | 種別 | 結果 |
 | --- | --- |
 | `npm run typecheck` | 成功 |
-| `npm test` | **271ファイル / 2,377件** 成功（+7件） |
+| `npm test` | **272ファイル / 2,382件** 成功 |
+| `cargo test --manifest-path src-tauri/Cargo.toml` | **385 passed, 2 ignored**（検索の契約変更のため必須） |
 
 ## 残り（次スライス）
 
