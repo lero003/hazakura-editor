@@ -2,6 +2,7 @@ import {
   lazy,
   Suspense,
   useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -76,6 +77,11 @@ export function BookScopeReader({
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const manuscriptRef = useRef<HTMLElement | null>(null);
   const suppressObserverUntilRef = useRef(0);
+  const initialResumeRef = useRef<{ timers: number[] } | null>(null);
+  const cancelInitialResume = useCallback(() => {
+    for (const timer of initialResumeRef.current?.timers ?? []) window.clearTimeout(timer);
+    initialResumeRef.current = null;
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [showResumeNote, setShowResumeNote] = useState(
     () => Boolean(initialRelativePath),
@@ -127,7 +133,10 @@ export function BookScopeReader({
     const root = manuscriptRef.current;
     if (!root || documents.length === 0) return;
 
+    const attempt = { timers: [] as number[] };
+    initialResumeRef.current = attempt;
     const applyResume = (behavior: ScrollBehavior) => {
+      if (initialResumeRef.current !== attempt) return;
       suppressObserverUntilRef.current = performance.now() + 700;
       const chapter = globalThis.document.getElementById(
         bookReaderChapterId(index),
@@ -144,17 +153,17 @@ export function BookScopeReader({
 
     applyResume("auto");
     // Preview panes load asynchronously; re-apply after layout settles.
-    const retryIds = [120, 400, 900, 1600].map((delay) =>
+    attempt.timers = [120, 400, 900, 1600].map((delay) =>
       window.setTimeout(() => applyResume("auto"), delay),
     );
     const hide = initialRelativePath
       ? window.setTimeout(() => setShowResumeNote(false), 4000)
       : null;
     return () => {
-      for (const id of retryIds) window.clearTimeout(id);
+      if (initialResumeRef.current === attempt) cancelInitialResume();
       if (hide !== null) window.clearTimeout(hide);
     };
-  }, [documents, initialRelativePath, initialScrollRatio]);
+  }, [documents, initialRelativePath, initialScrollRatio, cancelInitialResume]);
 
   useEffect(() => {
     const root = manuscriptRef.current;
@@ -232,6 +241,8 @@ export function BookScopeReader({
 
   const scrollToChapter = (index: number) => {
     if (index < 0 || index >= documents.length) return;
+    cancelInitialResume();
+    setShowResumeNote(false);
     suppressObserverUntilRef.current = performance.now() + 500;
     setActiveChapterIndex(index);
     const target = globalThis.document.getElementById(
@@ -418,7 +429,17 @@ export function BookScopeReader({
               </button>
             </div>
           ) : null}
-          <main className="book-reader-manuscript" ref={manuscriptRef}>
+          <main className="book-reader-manuscript" ref={manuscriptRef}
+            onWheel={() => { cancelInitialResume(); suppressObserverUntilRef.current = 0; }}
+            onTouchStart={() => { cancelInitialResume(); suppressObserverUntilRef.current = 0; }}
+            onPointerDown={() => { cancelInitialResume(); suppressObserverUntilRef.current = 0; }}
+            onKeyDown={(event) => {
+              if (!isImeComposing(event.nativeEvent) && ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) {
+                cancelInitialResume();
+                suppressObserverUntilRef.current = 0;
+              }
+            }}>
+
             {documents.length === 0 ? (
               <p className="book-reader-empty">{copy.empty}</p>
             ) : null}
