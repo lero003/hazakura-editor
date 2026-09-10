@@ -145,7 +145,7 @@ UI-G4で開始画面（画面01）を2ペイン化し、[G4の実装と証跡](r
 （[段階2の実装と証跡](reviews/2026-09-10-v3-theme-stage2/README.md)）。
 面の分離は実測1.06〜1.13:1で、強めるかは第二調整の判断として残している。
 第二調整で罫線の階層（`--border` 紙面比1.5〜1.7／`--border-strong` 2.1以上）を全7テーマへ入れ、
-focus 3:1と native chrome 契約を自動検査に固定した（[境界線の実装と証跡](reviews/2026-09-11-v3-border-hierarchy/README.md)）。
+focus 3:1と native chrome 契約を自動検査に固定した（[境界線の実装と証跡](reviews/2026-09-10-v3-border-hierarchy/README.md)）。
 [G1の資料](reviews/2026-09-10-v3-ui-g1/README.md)と合わせて合評する。
 UI-EのReader実機受入/本構成一覧/出力/取り込み、UI-F設定、UI-G/native受入、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)から進む。

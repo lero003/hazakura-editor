@@ -2,7 +2,7 @@
 
 Status: Implementation + evidence（段階2の第二調整・B案）
 Authority: Evidence
-Date: 2026-09-11
+Date: 2026-09-10
 Branch: `codex/v3`
 
 ## 何をしたか
