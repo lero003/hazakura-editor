@@ -1076,3 +1076,17 @@
 
 .preferences-help-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; flex: 0 0 auto; padding: 10px 20px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
 .preferences-help-navigation select { min-width: 0; flex: 1 1 220px; max-width: 100%; }
+
+/* Reflow at short effective viewports; keep all controls and Help text reachable. */
+@media (max-height: 480px) {
+  .preferences-dialog { max-height: calc(100dvh - 16px); width: min(640px, calc(100vw - 16px)); }
+  .preferences-dialog.settings-dialog { width: min(920px, calc(100vw - 16px)); }
+  .preferences-header { padding: 8px 12px; }
+  .preferences-help-navigation { padding: 6px 12px; flex-wrap: nowrap; }
+  .preferences-help-navigation select { flex-basis: 0; }
+  .settings-category-nav { padding: 6px 12px; flex-wrap: nowrap; overflow-x: auto; }
+  .settings-category-nav button { flex: 0 0 auto; }
+  .settings-layout .preference-section { padding: 12px; }
+  .privacy-preferences { display: block; overflow-y: auto; }
+  .privacy-tab-panel-scroll { overflow: visible; }
+}
