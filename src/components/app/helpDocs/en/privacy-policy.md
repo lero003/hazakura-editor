@@ -16,13 +16,13 @@ Hazakura Editor stores local preferences such as theme, tab state, editor settin
 
 ## Hazakura Local Assist
 
-The App Store version of Hazakura Editor may include Hazakura Local Assist as an on-device writing companion. It uses Apple's Foundation Models framework through a bundled helper only after an explicit user action. The app does not send Hazakura Local Assist requests to external AI services, and generated text is not saved unless you review and save it.
+The App Store version of Hazakura Editor may include Hazakura Local Assist as an on-device writing companion. It uses Apple's Foundation Models framework through a bundled helper only after an explicit user action. The app does not send Hazakura Local Assist requests to external AI services, and proposals are not applied automatically. You review the proposal and explicitly apply it in the main window; applied text remains unsaved until you save it.
 
 ## Network, analytics, and cloud services
 
 The App Store version of Hazakura Editor does not include external AI calls, analytics, telemetry, third-party crash reporting, or cloud sync.
 
-The Markdown preview does not load external images.
+Remote images in Markdown preview are off by default. If you explicitly enable remote images, the app may make bounded HTTPS requests to image hosts. Local images outside the workspace follow a separate local-image permission setting. These image permissions do not enable external AI calls or an AI network fallback.
 
 Explicit user actions, such as printing, showing a file in Finder, or moving a file to Trash, may hand selected paths or temporary files to macOS system services.
 

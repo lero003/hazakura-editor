@@ -317,12 +317,10 @@ describe("PrivacyPreferencesPane", () => {
   it("describes the network / analytics section without an overclaim", () => {
     renderPane();
     const text = getSectionBodyText("help-doc-section-network");
-    // The body lists specific implementation-verified
-    // surfaces (fetch, XHR, analytics, telemetry, crash
-    // reporting) rather than a broad "we collect nothing"
-    // claim, so a future copy edit that drifts into
-    // overclaim is caught.
-    expect(text).toContain("fetch");
+    // Image permission is separate from the absence of AI fallback and telemetry.
+    expect(text).toContain("bounded HTTPS image requests");
+    expect(text).toContain("does not enable an AI network fallback");
+    expect(text).not.toContain("does not include fetch");
     expect(text).toContain("analytics");
     expect(text).toContain("telemetry");
     expect(text).not.toContain("collect nothing");
@@ -331,7 +329,9 @@ describe("PrivacyPreferencesPane", () => {
   it("describes the preview / export link policy without WebView-navigation overclaim", () => {
     renderPane();
     const text = getSectionBodyText("help-doc-section-preview");
-    expect(text).toContain("external images");
+    expect(text).toContain("Remote images are off by default");
+    expect(text).toContain("image-embedding setting");
+    expect(text).toContain("10 MiB");
     expect(text).toContain("script, iframe, object, and embed");
     expect(text).toContain("Workspace-relative text links open");
     expect(text).toContain("OS default browser or app");
