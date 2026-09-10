@@ -1037,3 +1037,30 @@
   .export-settings-body { padding: 12px 20px; gap: 12px; }
   .export-settings-footer { padding: 10px 20px; }
 }
+
+/* Static theme samples: no ambient engines or document renderers per card. */
+.theme-preference-cards { display: grid; gap: 16px; }
+.theme-preference-cards h4 { margin: 0 0 8px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.theme-preference-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.theme-preference-card {
+  --sample-bg: #f6f8f2; --sample-text: #283a30;
+  display: flex; flex-direction: column; gap: 0; min-width: 0;
+  padding: 3px; text-align: start; border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); background: var(--surface);
+}
+.theme-preference-card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.theme-preference-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.theme-preference-paper {
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  min-height: 76px; padding: 12px; border-radius: 5px;
+  color: var(--sample-text); background: var(--sample-bg); font-size: 11px;
+}
+.theme-preference-paper i { display: block; width: 80%; height: 2px; background: currentColor; opacity: .35; }
+.theme-preference-paper i:last-child { width: 55%; }
+.theme-preference-name { display: flex; justify-content: space-between; gap: 8px; padding: 7px 5px; overflow-wrap: anywhere; }
+.theme-preference-card[data-theme-preview="dark"] { --sample-bg: #0e1311; --sample-text: #e8ede5; }
+.theme-preference-card[data-theme-preview="yakou"] { --sample-bg: #14122c; --sample-text: #e8e8f4; }
+.theme-preference-card[data-theme-preview="shokou"] { --sample-bg: #e4f1ff; --sample-text: #1c3554; }
+.theme-preference-card[data-theme-preview="edohigan"] { --sample-bg: #f6e6e4; --sample-text: #593f48; }
+.theme-preference-card[data-theme-preview="shinkai"] { --sample-bg: #071b2b; --sample-text: #cde7f0; }
+.theme-preference-card[data-theme-preview="crt"] { --sample-bg: #081308; --sample-text: #8fef92; }

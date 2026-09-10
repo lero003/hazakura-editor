@@ -1,3 +1,4 @@
+import { ThemePreferenceCards } from "./ThemePreferenceCards";
 import type { Dispatch, SetStateAction } from "react";
 import type { OutsideImagePolicy } from "../../features/editor/mediaImageSettings";
 import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
@@ -310,41 +311,8 @@ export function SettingsPreferencesPane({
         aria-label={copy.appearanceAndWriting}
       >
         <h3>{copy.appearanceAndWriting}</h3>
-        <label className="field-control">
-          <span>{copy.theme}</span>
-          <select
-            aria-label={copy.theme}
-            value={themePreference}
-            onChange={(event) =>
-              onThemePreferenceChange(event.target.value as ThemePreference)
-            }
-          >
-            <option value="light" title={copy.themeHint("light")}>
-              {copy.light}
-            </option>
-            <option value="dark" title={copy.themeHint("dark")}>
-              {copy.dark}
-            </option>
-            <option value="yakou" title={copy.themeHint("yakou")}>
-              {copy.yakou}
-            </option>
-            <option value="shokou" title={copy.themeHint("shokou")}>
-              {copy.shokou}
-            </option>
-            <option value="crt" title={copy.themeHint("crt")}>
-              {copy.crt}
-            </option>
-            <option value="shinkai" title={copy.themeHint("shinkai")}>
-              {copy.shinkai}
-            </option>
-            <option value="edohigan" title={copy.themeHint("edohigan")}>
-              {copy.edohigan}
-            </option>
-          </select>
-          <span className="field-hint" data-testid="theme-hint">
-            {copy.themeHint(themePreference)}
-          </span>
-        </label>
+        <ThemePreferenceCards copy={copy} language={menuLanguage}
+          value={themePreference} onChange={onThemePreferenceChange} />
         <label className="field-control">
           <span>{copy.ambientIntensity}</span>
           <select
