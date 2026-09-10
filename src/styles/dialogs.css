@@ -1069,7 +1069,52 @@
 .settings-category-nav { display: flex; flex-wrap: wrap; gap: 6px; flex: 0 0 auto; padding: 10px 20px; border-bottom: 1px solid var(--border); }
 .settings-category-nav button { padding: 6px 10px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
 .settings-category-nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.settings-category-nav button[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--text); font-weight: 600; }
 .settings-layout .preference-section h3 { scroll-margin-top: 16px; }
+
+/* Keep every settings section mounted. The rail only moves the existing body. */
+@media (min-width: 800px) and (min-height: 481px) {
+  .settings-layout { flex-direction: row; }
+  .settings-category-nav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: 180px;
+    padding: 20px 12px;
+    border-bottom: 0;
+    border-right: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 94%, var(--accent));
+    overflow-y: auto;
+  }
+  .settings-category-nav button {
+    flex: 0 0 auto;
+    text-align: start;
+    padding: 10px 12px;
+    border-color: transparent;
+    background: transparent;
+    overflow-wrap: anywhere;
+    box-shadow: none;
+  }
+  .settings-category-nav button:hover { background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); }
+  .settings-category-nav button[aria-current="true"] {
+    border-color: transparent;
+    background: var(--accent-soft);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  .settings-layout .settings-preferences {
+    flex: 1 1 0;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    background: var(--surface);
+  }
+  .settings-layout .settings-preferences .preference-section {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 24px 28px;
+  }
+  .settings-layout .settings-preferences .preference-section:first-child { border-top: 0; }
+  .settings-layout .theme-preference-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .settings-layout .theme-preference-paper { min-height: 88px; }
+}
 .settings-text-sizes { display: grid; gap: 14px; min-width: 0; padding: 0; margin: 0; border: 0; }
 .settings-text-sizes legend { padding: 0 0 10px; font-size: 12px; color: var(--text-muted); }
 .settings-font-sample { display: block; overflow-wrap: anywhere; color: var(--text); background: var(--surface); padding: 10px; border: 1px solid var(--border); border-radius: 5px; }

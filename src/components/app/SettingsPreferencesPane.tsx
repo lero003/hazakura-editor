@@ -1,5 +1,6 @@
 import { ThemePreferenceCards } from "./ThemePreferenceCards";
-import { useId, useRef, type Dispatch, type SetStateAction } from "react";
+import { settingsCategoryOffsets, resolveSettingsCategoryIndex } from "./settingsCategoryRail";
+import { useEffect, useId, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { OutsideImagePolicy } from "../../features/editor/mediaImageSettings";
 import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
 import type {
@@ -62,6 +63,7 @@ export function SettingsPreferencesPane({
   const categoryPrefix = useId();
   const settingsScrollRef = useRef<HTMLDivElement>(null);
   const categoryHeadings = useRef<(HTMLHeadingElement | null)[]>([]);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const categoryLabels = [copy.editor, copy.mediaAndDisplay, copy.application, copy.appearanceAndWriting];
   const navigationLabel = menuLanguage === "en" ? "Settings categories" : menuLanguage === "kana" ? "せっていの もくじ" : "設定の目次";
   const sizeCopy = menuLanguage === "en" ? { title: "Text sizes", sample: "A quiet page" } :
@@ -74,16 +76,47 @@ export function SettingsPreferencesPane({
     appleAssistAvailabilityProbed,
   );
 
+  // 現在地は本文スクロールから導出する。マウント時は先頭カテゴリのままとし、
+  // 実際に本文が動いたときだけ更新する（測定できない環境で先頭以外を主張しない）。
+  useEffect(() => {
+    const scroller = settingsScrollRef.current;
+    if (!scroller) return;
+    let frame = 0;
+    const syncActiveCategory = () => {
+      cancelAnimationFrame(frame);
+      // scroll 直後の rect は位置が確定していないことがあるため、次のフレームで測る。
+      // 押下時の移動は見出しを16px手前に置くので、下の threshold の内側に収まる。
+      frame = requestAnimationFrame(() => {
+        setActiveCategoryIndex(
+          resolveSettingsCategoryIndex(
+            settingsCategoryOffsets(scroller, categoryHeadings.current),
+            scroller.scrollTop,
+          ),
+        );
+      });
+    };
+    scroller.addEventListener("scroll", syncActiveCategory, { passive: true });
+    window.addEventListener("resize", syncActiveCategory);
+    return () => {
+      cancelAnimationFrame(frame);
+      scroller.removeEventListener("scroll", syncActiveCategory);
+      window.removeEventListener("resize", syncActiveCategory);
+    };
+  }, []);
+
   return (
     <div className="settings-layout">
       <nav className="settings-category-nav" aria-label={navigationLabel}>
         {categoryLabels.map((label, index) => <button key={index} type="button"
-          aria-controls={categoryPrefix + index} onClick={() => {
+          aria-controls={categoryPrefix + index}
+          aria-current={index === activeCategoryIndex ? "true" : undefined}
+          onClick={() => {
             const heading = categoryHeadings.current[index];
             const scroller = settingsScrollRef.current;
             if (heading && scroller) {
               scroller.scrollTop += heading.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 16;
             }
+            setActiveCategoryIndex(index);
             heading?.focus({ preventScroll: true });
           }}>{label}</button>)}
       </nav>
