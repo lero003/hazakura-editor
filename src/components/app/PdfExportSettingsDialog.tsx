@@ -102,7 +102,7 @@ function getPdfExportSettingsCopy(menuLanguage: MenuLanguage) {
   if (menuLanguage === "kana") {
     return {
       cancel: "やめる",
-      export: "かきだす",
+      export: "かきだしさきを えらぶ",
       marginDescription: (blockMm: number, inlineMm: number) =>
         `うえした ${blockMm} mm・ひだりみぎ ${inlineMm} mm`,
       marginLabel: "A4の よはく",
@@ -119,7 +119,7 @@ function getPdfExportSettingsCopy(menuLanguage: MenuLanguage) {
   if (menuLanguage === "ja") {
     return {
       cancel: "キャンセル",
-      export: "書き出す",
+      export: "書き出し先を選ぶ",
       marginDescription: (blockMm: number, inlineMm: number) =>
         `上下 ${blockMm} mm・左右 ${inlineMm} mm`,
       marginLabel: "A4余白",
@@ -135,7 +135,7 @@ function getPdfExportSettingsCopy(menuLanguage: MenuLanguage) {
 
   return {
     cancel: "Cancel",
-    export: "Export",
+    export: "Choose destination…",
     marginDescription: (blockMm: number, inlineMm: number) =>
       `Top/bottom ${blockMm} mm · Left/right ${inlineMm} mm`,
     marginLabel: "A4 margins",

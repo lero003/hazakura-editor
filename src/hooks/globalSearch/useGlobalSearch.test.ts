@@ -4,7 +4,7 @@ import { useGlobalSearch } from "./useGlobalSearch";
 import { searchWorkspaceFiles } from "../../lib/tauri/workspace";
 vi.mock("../../lib/tauri/workspace", () => ({ searchWorkspaceFiles: vi.fn() }));
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
-const response = (text: string) => ({ files: [{ path: "/book/a.md", relativePath: "a.md", truncated: false, matches: [{ line: 1, column: 1, text }] }], totalMatches: 1, totalFilesScanned: 1, truncated: true });
+const response = (text: string) => ({ files: [{ path: "/book/a.md", relativePath: "a.md", truncated: false, matches: [{ line: 1, column: 1, text }] }], totalMatches: 1, totalFilesScanned: 3, totalFilesMatched: 1, truncated: true });
 it("invalidates rows and summary immediately, including equal-sized successive results", async () => {
   vi.useFakeTimers();
   vi.mocked(searchWorkspaceFiles).mockResolvedValue(response("apple"));

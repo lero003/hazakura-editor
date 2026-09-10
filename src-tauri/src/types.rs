@@ -436,6 +436,8 @@ pub(crate) struct WorkspaceSearchResult {
     pub(crate) files: Vec<WorkspaceSearchFileResult>,
     pub(crate) total_matches: usize,
     pub(crate) total_files_scanned: usize,
+    /// 一致が1件以上あったファイルの数（「N ファイルに一致」の表示用）。
+    pub(crate) total_files_matched: usize,
     pub(crate) truncated: bool,
 }
 

@@ -2863,6 +2863,19 @@
   margin: 0 10px 4px 52px;
   padding: 2px 8px 4px 8px;
 }
+/* 何が起きているか → なぜ → 該当箇所へ、の3要素。 */
+.outline-advisory p { margin: 0; }
+.outline-advisory-what { color: var(--text); }
+.outline-advisory-why { margin-top: 2px; }
+.outline-advisory-go {
+  margin-top: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
 
 .outline-item:hover,
 .outline-item:focus-visible {

@@ -1,5 +1,5 @@
 import { trapFocusInElement } from "../../lib/focusTrap";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { isImeComposing } from "../../lib/keyboard";
 import { useLatestValueRef } from "../../hooks/app/useLatestValueRef";
 import type { MenuLanguage } from "../../types";
@@ -46,6 +46,30 @@ function clipLineText(text: string): string {
 
 function fileGroupKey(row: GlobalSearchRow): string {
   return row.file.path;
+}
+
+function fileCountUnit(menuLanguage: MenuLanguage): string {
+  if (menuLanguage === "kana") return "けん";
+  if (menuLanguage === "ja") return "件";
+  return "matches";
+}
+
+/**
+ * 一致した範囲だけを着色する。`column` は backend が返す1始まりの文字位置。
+ * 色に頼りきらないよう `<mark>` で意味も持たせる（モック09）。
+ */
+function renderMatchedLine(text: string, column: number, needle: string) {
+  const clipped = clipLineText(text);
+  const start = column - 1;
+  if (!needle || start < 0 || start >= clipped.length) return clipped;
+  const end = Math.min(start + needle.length, clipped.length);
+  return (
+    <>
+      {clipped.slice(0, start)}
+      <mark className="global-search-match">{clipped.slice(start, end)}</mark>
+      {clipped.slice(end)}
+    </>
+  );
 }
 
 function placeholderText(menuLanguage: MenuLanguage): string {
@@ -106,13 +130,15 @@ function summaryText(
   menuLanguage: MenuLanguage,
 ): string {
   if (menuLanguage === "kana") {
-    return `${summary.totalMatches} けん ${summary.totalFilesScanned} ふみのなかにあり`;
+    return `${summary.totalFilesMatched} ふみに いっち · ${summary.totalMatches} けん（${summary.totalFilesScanned} ふみを さがした）`;
   }
   if (menuLanguage === "ja") {
-    return `${summary.totalFilesScanned} ファイル 中 ${summary.totalMatches} 件の一致`;
+    // 走査したファイル数と「一致したファイル数」は別物。主役は後者。
+    return `${summary.totalFilesMatched} ファイルに一致 · ${summary.totalMatches} 件（走査 ${summary.totalFilesScanned} ファイル）`;
   }
   const matchLabel = summary.totalMatches === 1 ? "match" : "matches";
-  return `${summary.totalMatches} ${matchLabel} in ${summary.totalFilesScanned} files`;
+  const fileLabel = summary.totalFilesMatched === 1 ? "file" : "files";
+  return `${summary.totalFilesMatched} ${fileLabel} · ${summary.totalMatches} ${matchLabel} (scanned ${summary.totalFilesScanned})`;
 }
 
 export function GlobalSearch({
@@ -137,6 +163,15 @@ export function GlobalSearch({
       ? { title: "フォルダの なかを さがす", scope: "このフォルダの なかだけを さがします。ふみは かへません。", close: "けんさくを とぢる" }
       : { title: "フォルダ内を検索", scope: "このフォルダ内を検索します。ファイルは変更しません。", close: "検索を閉じる" };
   const dialogRef = useRef<HTMLDivElement>(null);
+  // backend は query を trim して検索する。着色の長さも同じ基準にする。
+  const needle = query.trim();
+  const fileMatchCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      counts.set(row.file.path, (counts.get(row.file.path) ?? 0) + 1);
+    }
+    return counts;
+  }, [rows]);
   const canShowSearchResults = Boolean(
     query.trim() && workspaceOpen && !searchError && !searching,
   );
@@ -272,8 +307,14 @@ export function GlobalSearch({
                 >
                   {showFileHeader ? (
                     <div className="global-search-file-header">
-                      {row.file.relativePath}
-                      {row.file.truncated ? "…" : null}
+                      <span className="global-search-file-name">
+                        {row.file.relativePath}
+                        {row.file.truncated ? "…" : null}
+                      </span>
+                      {/* ファイルごとの一致件数（全体の走査数とは別）。 */}
+                      <span className="global-search-file-count" aria-label={`${fileMatchCounts.get(row.file.path) ?? 0} ${fileCountUnit(menuLanguage)}`}>
+                        {fileMatchCounts.get(row.file.path) ?? 0}
+                      </span>
                     </div>
                   ) : null}
                   <button
@@ -295,7 +336,7 @@ export function GlobalSearch({
                       {row.match.line}
                     </span>
                     <span className="global-search-line-text">
-                      {clipLineText(row.match.text)}
+                      {renderMatchedLine(row.match.text, row.match.column, needle)}
                     </span>
                   </button>
                 </div>

@@ -108,6 +108,8 @@ export type WorkspaceSearchResult = {
   files: WorkspaceSearchFileResult[];
   totalMatches: number;
   totalFilesScanned: number;
+  /** 一致が1件以上あったファイル数（走査数とは別）。 */
+  totalFilesMatched: number;
   truncated: boolean;
 };
 

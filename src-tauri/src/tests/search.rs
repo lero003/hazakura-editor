@@ -31,6 +31,8 @@ fn search_finds_substring_matches_across_files() {
 
     assert_eq!(result.total_files_scanned, 3);
     assert_eq!(result.total_matches, 2);
+    // 走査した3ファイルのうち、一致があったのは2ファイル（表示「2 ファイルに一致」）。
+    assert_eq!(result.total_files_matched, 2);
     assert_eq!(result.files.len(), 2);
     assert!(!result.truncated);
 
@@ -157,6 +159,7 @@ fn search_empty_query_returns_no_results() {
     assert_eq!(result.total_matches, 0);
     assert_eq!(result.files.len(), 0);
     assert_eq!(result.total_files_scanned, 0);
+    assert_eq!(result.total_files_matched, 0);
     assert!(!result.truncated);
 
     let _ = fs::remove_dir_all(dir);

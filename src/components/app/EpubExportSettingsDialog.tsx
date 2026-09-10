@@ -133,7 +133,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       chooseCoverImage: "ひょうしがぞうを えらぶ",
       clearCoverImage: "ひょうしがぞうを はずす",
       coverImageField: "ひょうしがぞう（なくてもよい）",
-      export: "かきだす",
+      export: "かきだしさきを えらぶ",
       languageField: "ことば",
       scopeNote:
         "でんししょせきもーどは よむための ぷれびゅーです。いまのファイルか 本全体を えらんで かきだします。",
@@ -150,7 +150,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       chooseCoverImage: "表紙画像を選ぶ",
       clearCoverImage: "表紙画像を外す",
       coverImageField: "表紙画像（任意）",
-      export: "書き出す",
+      export: "書き出し先を選ぶ",
       languageField: "言語",
       scopeNote:
         "電子書籍モードは読むためのプレビューです。現在のファイルまたは本全体を選んで書き出します。",
@@ -166,7 +166,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
     chooseCoverImage: "Choose cover image",
     clearCoverImage: "Remove cover image",
     coverImageField: "Cover image (optional)",
-    export: "Export",
+    export: "Choose destination…",
     languageField: "Language",
     scopeNote:
       "E-book Mode is a reading preview. Export either the current file or the whole book.",

@@ -41,7 +41,7 @@ describe("PdfExportSettingsDialog", () => {
     );
 
     fireEvent.click(screen.getByRole("radio", { name: "Whole book" }));
-    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choose destination…" }));
     expect(onConfirm).toHaveBeenCalledWith("standard", "book");
   });
 
@@ -69,7 +69,7 @@ describe("PdfExportSettingsDialog", () => {
     ).toBeTruthy();
 
     fireEvent.click(screen.getByLabelText(/広い/));
-    fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
+    fireEvent.click(screen.getByRole("button", { name: "書き出し先を選ぶ" }));
     expect(onConfirm).toHaveBeenCalledWith("wide", "document");
   });
 
@@ -118,7 +118,7 @@ describe("PdfExportSettingsDialog", () => {
     expect(screen.getByRole("dialog", { name: "PDFかきだし" })).toBeTruthy();
     expect(screen.getByRole("group", { name: "A4の よはく" })).toBeTruthy();
     expect(screen.getByLabelText(/ふつう/)).toHaveProperty("checked", true);
-    expect(screen.getByRole("button", { name: "かきだす" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "かきだしさきを えらぶ" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "やめる" })).toBeTruthy();
   });
 });

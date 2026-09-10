@@ -15,6 +15,9 @@ export interface OutlinePaneCopy {
   outlineSkippedLevel: (previousLevel: number, level: number) => string;
   outlineDuplicateLabel: (firstLine: number) => string;
   outlineLongSection: (lineCount: number) => string;
+  /** なぜ見直すとよいかの短い説明（指摘カードの2行目）。 */
+  outlineAdvisoryWhy: (kind: MarkdownStructureAdvisory["kind"]) => string;
+  outlineGoToHeading: string;
   outlinePromoteHeading: (label: string) => string;
   outlineDemoteHeading: (label: string) => string;
   outlinePageBreak: string;
@@ -136,7 +139,12 @@ export function OutlinePane({
                       key={`${advisory.kind}-${advisory.line}`}
                       role="note"
                     >
-                      {formatAdvisory(advisory, copy)}
+                      {/* 何が起きているか → なぜ確認するとよいか → 該当箇所へ。 */}
+                      <p className="outline-advisory-what">{formatAdvisory(advisory, copy)}</p>
+                      <p className="outline-advisory-why">{copy.outlineAdvisoryWhy(advisory.kind)}</p>
+                      <button type="button" className="outline-advisory-go" onClick={() => onSelect(item)}>
+                        {copy.outlineGoToHeading}
+                      </button>
                     </div>
                   ))}
                 </div>

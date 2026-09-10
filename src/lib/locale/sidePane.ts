@@ -37,6 +37,8 @@ export type SidePaneCopy = {
   outlineNotes: string;
   outlineNotesEmpty: string;
   outlineNotesHint: string;
+  outlineAdvisoryWhy: (kind: "skipped-level" | "empty-heading" | "duplicate-navigation-label" | "long-section") => string;
+  outlineGoToHeading: string;
   documentOutline: string;
   openTextFileToPreview: string;
   openTextFileToEbook: string;
@@ -112,6 +114,14 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       outlineNotes: "くみたての かくにん",
       outlineNotesEmpty: "かくにんする ことは ありません。",
       outlineNotesHint: "くみたてを みなほす てがかりです。じどうでは かへません。",
+      outlineAdvisoryWhy: (kind) => kind === "skipped-level"
+        ? "みだしの ふかさが とぶと、もくじの ならびと ほんぶんの くみたてが ずれます。"
+        : kind === "duplicate-navigation-label"
+          ? "おなじ なまへの みだしが あると、めじから えらびわけにくく なります。"
+          : kind === "long-section"
+            ? "ながい せつは、よむ ひとの いちが わからなく なりやすいです。"
+            : "なまえの ない みだしは、めじで みわけられません。",
+      outlineGoToHeading: "そのばしょへ",
       documentOutline: "ふみのみだし",
       openTextFileToPreview:
         "みた目を たしかめる したみです。てきすとのふみを ひらいてください。",
@@ -189,6 +199,14 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         outlineNotes: "構造の確認",
         outlineNotesEmpty: "構造の確認事項はありません。",
         outlineNotesHint: "構成を見直す手がかりです。自動では変更しません。",
+        outlineAdvisoryWhy: (kind) => kind === "skipped-level"
+          ? "見出しの深さが飛ぶと、目次の並びと本文の組み立てがずれます。"
+          : kind === "duplicate-navigation-label"
+            ? "同じ名前の見出しがあると、目次から選び分けにくくなります。"
+            : kind === "long-section"
+              ? "長いセクションは、読む人が現在地を見失いやすくなります。"
+              : "名前のない見出しは、目次で見分けられません。",
+        outlineGoToHeading: "該当箇所へ",
         documentOutline: "文書アウトライン",
         openTextFileToPreview:
           "見た目確認用のプレビューです。テキストファイルを開いてください。",
@@ -263,6 +281,14 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         outlineNotes: "Structure notes",
         outlineNotesEmpty: "No structure notes for this document.",
         outlineNotesHint: "Suggestions for reviewing structure. Nothing changes automatically.",
+        outlineAdvisoryWhy: (kind) => kind === "skipped-level"
+          ? "A skipped heading depth makes the table of contents drift from the document's structure."
+          : kind === "duplicate-navigation-label"
+            ? "Duplicate heading names are hard to tell apart from the table of contents."
+            : kind === "long-section"
+              ? "Long sections make it easy to lose your place."
+              : "An unnamed heading cannot be identified in the table of contents.",
+        outlineGoToHeading: "Go to heading",
         documentOutline: "Document outline",
         openTextFileToPreview:
           "Preview is for continuous scroll layout checks. Open a text file.",

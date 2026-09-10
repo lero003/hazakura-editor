@@ -58,6 +58,7 @@ pub(crate) fn search_workspace_files_with_label(
             files: Vec::new(),
             total_matches: 0,
             total_files_scanned: 0,
+            total_files_matched: 0,
             truncated: false,
         });
     }
@@ -69,6 +70,7 @@ pub(crate) fn search_workspace_files_with_label(
     let mut files: Vec<WorkspaceSearchFileResult> = Vec::new();
     let mut total_matches: usize = 0;
     let mut total_files_scanned: usize = 0;
+    let mut total_files_matched: usize = 0;
     let mut truncated = false;
 
     let mut stack: Vec<PathBuf> = vec![canonical_root.clone()];
@@ -207,6 +209,7 @@ pub(crate) fn search_workspace_files_with_label(
                         .unwrap_or_default()
                 });
 
+            total_files_matched += 1;
             let file_truncated = matches.len() >= MAX_WORKSPACE_SEARCH_MATCHES_PER_FILE;
             files.push(WorkspaceSearchFileResult {
                 path: child_path.to_string_lossy().to_string(),
@@ -221,6 +224,7 @@ pub(crate) fn search_workspace_files_with_label(
         files,
         total_matches,
         total_files_scanned,
+        total_files_matched,
         truncated,
     })
 }

@@ -205,7 +205,7 @@ describe("search surface accessibility semantics", () => {
         ]}
         searchError={null}
         searching={false}
-        summary={{ totalFilesScanned: 1, totalMatches: 1, truncated: false }}
+        summary={{ totalFilesScanned: 1, totalMatches: 1, totalFilesMatched: 1, truncated: false }}
         workspaceOpen
       />,
     );

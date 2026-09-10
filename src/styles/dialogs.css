@@ -562,6 +562,9 @@
   font-size: 11px;
 }
 
+/* 本全体を選べない理由など、スコープの補足。 */
+.export-scope-note { color: var(--text-muted); font-size: 12px; }
+
 .dialog-actions {
   display: flex;
   flex-wrap: wrap;

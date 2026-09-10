@@ -54,7 +54,7 @@ describe("EpubExportSettingsDialog", () => {
     expect(dialogApi.pickEpubCoverImage).toHaveBeenCalledTimes(1);
     expect(await screen.findByText("title-cover.png")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
+    fireEvent.click(screen.getByRole("button", { name: "書き出し先を選ぶ" }));
     expect(onConfirm).toHaveBeenCalledWith(
       {
         author: "",
@@ -117,7 +117,7 @@ describe("EpubExportSettingsDialog", () => {
     );
 
     fireEvent.click(screen.getByRole("radio", { name: "本全体" }));
-    fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
+    fireEvent.click(screen.getByRole("button", { name: "書き出し先を選ぶ" }));
     expect(onConfirm).toHaveBeenCalledWith(
       { author: "", language: "ja", title: "Book" },
       "book",
@@ -154,7 +154,7 @@ describe("EpubExportSettingsDialog", () => {
     fireEvent.change(screen.getByLabelText("Language"), {
       target: { value: "en" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choose destination…" }));
 
     expect(onConfirm).toHaveBeenCalledWith(
       {
@@ -195,7 +195,7 @@ describe("EpubExportSettingsDialog", () => {
       target: { value: "   " },
     });
 
-    expect(screen.getByRole("button", { name: "Export" })).toHaveProperty(
+    expect(screen.getByRole("button", { name: "Choose destination…" })).toHaveProperty(
       "disabled",
       true,
     );
@@ -221,7 +221,7 @@ describe("EpubExportSettingsDialog", () => {
 
     expect(screen.getByRole("dialog", { name: "EPUBかきだし" })).toBeTruthy();
     expect(screen.getByLabelText("しょめい")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "かきだす" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "かきだしさきを えらぶ" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "やめる" })).toBeTruthy();
   });
 

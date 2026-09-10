@@ -88,7 +88,17 @@
   font-size: 13px;
 }
 
+/* 一致した範囲。色だけに頼らず <mark> の意味も持たせる。 */
+.global-search-match { background: var(--accent-soft); color: var(--text); border-radius: 2px; padding: 0 1px; }
+.global-search-file-name { min-width: 0; flex: 1 1 auto; overflow-wrap: anywhere; }
+.global-search-file-count {
+  flex: 0 0 auto; min-width: 1.6em; padding: 1px 6px; border-radius: 999px; text-align: center;
+  background: var(--surface-strong); color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums;
+}
 .global-search-file-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   padding: 6px 14px 2px;
   font-size: 10.5px;
   text-transform: uppercase;

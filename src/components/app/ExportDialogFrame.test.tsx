@@ -15,7 +15,7 @@ it.each(["EPUB", "PDF"])("%s keeps cancel reachable and refuses submission after
   expect(container.querySelector(".export-settings-header p")?.textContent).toBe("Whole book");
   expect(screen.queryByText("single.md")).toBeNull();
   rerender(view(false));
-  expect(screen.getByRole("button", { name: "Export" })).toHaveProperty("disabled", true);
+  expect(screen.getByRole("button", { name: "Choose destination…" })).toHaveProperty("disabled", true);
   fireEvent.submit(container.querySelector("form")!);
   expect(confirm).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Cancel" }));

@@ -22,6 +22,7 @@ export type GlobalSearchRow = {
 export type GlobalSearchSummary = {
   totalMatches: number;
   totalFilesScanned: number;
+  totalFilesMatched: number;
   truncated: boolean;
 };
 
@@ -60,6 +61,7 @@ function summarize(result: WorkspaceSearchResult): GlobalSearchSummary {
   return {
     totalMatches: result.totalMatches,
     totalFilesScanned: result.totalFilesScanned,
+    totalFilesMatched: result.totalFilesMatched,
     truncated: result.truncated,
   };
 }
