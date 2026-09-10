@@ -538,6 +538,7 @@ export function AppOverlays({
           closeLabel={preferencesCopy.closeDialog}
           dialogRef={preferencesDialogRef}
           mode={preferencesDialogMode}
+          onChangeMode={setPreferencesDialogMode}
           onClose={closePreferencesFromKeyboard}
           title={
             preferencesDialogMode === "agent"
@@ -580,7 +581,7 @@ export function AppOverlays({
               wrapLines={editorSettings.wrapLines}
             />
           ) : activeHelpDoc ? (
-            <PrivacyPreferencesPane doc={activeHelpDoc} />
+            <PrivacyPreferencesPane key={activeHelpDoc.id} doc={activeHelpDoc} />
           ) : (
             <SettingsPreferencesPane
               appleAssistAvailability={appleAssistAvailability}

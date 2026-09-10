@@ -1,3 +1,4 @@
+import { helpDocsByMode, isHelpDocumentDialogMode } from "./helpDocs";
 import type { ReactNode, RefObject } from "react";
 import type { PreferencesDialogMode } from "../../types";
 
@@ -8,6 +9,7 @@ type PreferencesDialogProps = {
   dialogRef: RefObject<HTMLElement | null>;
   mode: PreferencesDialogMode;
   onClose: () => void;
+  onChangeMode?: (mode: PreferencesDialogMode) => void;
   title: string;
 };
 
@@ -18,6 +20,7 @@ export function PreferencesDialog({
   dialogRef,
   mode,
   onClose,
+  onChangeMode,
   title,
 }: PreferencesDialogProps) {
   const isHelpMode = mode !== "settings" && mode !== "agent";
@@ -67,6 +70,19 @@ export function PreferencesDialog({
             </svg>
           </button>
         </div>
+        {onChangeMode && mode !== "agent" ? (
+          <label className="preferences-help-navigation">
+            <span>Settings / Help</span>
+            <select aria-label="Settings / Help" value={mode} onChange={(event) => {
+              const next = event.target.value;
+              if (next === "settings" || isHelpDocumentDialogMode(next)) onChangeMode(next);
+            }}>
+              <option value="settings">Settings</option>
+              {Object.entries(helpDocsByMode).map(([key, doc]) =>
+                <option key={key} value={key}>{doc.title}</option>)}
+            </select>
+          </label>
+        ) : null}
         {children}
       </section>
     </div>
