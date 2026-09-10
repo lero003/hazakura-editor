@@ -123,11 +123,25 @@
 
 /* UI-D1: read-only image stage and compare-before-restore picker. */
 .image-preview-pane { grid-template-rows: auto minmax(0, 1fr) auto; }
-.image-preview-header { flex-wrap: wrap; padding: 14px 18px; gap: 8px 12px; }
+.image-preview-header { flex-wrap: wrap; align-items: center; padding: 14px 18px; gap: 8px 12px; }
+/* 表示は変換だけ（拡大・縮小）。保存や再圧縮の操作は置かない。 */
+.image-preview-controls { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.image-preview-controls button { min-width: 32px; padding: 4px 9px; font-size: 13px; }
+.image-preview-controls .image-preview-fit[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.image-preview-zoom { min-width: 4.2em; text-align: center; font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .image-preview-header strong { flex: 1 1 160px; font-size: 15px; overflow-wrap: anywhere; white-space: normal; }
 .image-preview-header .image-preview-readonly { font-size: 12px; font-weight: 500; text-transform: none; }
 .image-preview-stage {
   position: relative;
+  /* 小さい画像は中央、拡大した画像は端まで到達できる（safe center）。
+     overflow:hidden で端を切り捨てない。 */
+  display: grid;
+  overflow: auto;
+  place-items: safe center;
   background-color: var(--bg);
   background-image: conic-gradient(var(--bg-elev) 25%, transparent 0 50%, var(--bg-elev) 0 75%, transparent 0);
   background-size: 24px 24px;

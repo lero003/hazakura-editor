@@ -200,7 +200,7 @@ export function EditorMainPane({
           ) : null}
         </>
       ) : selectedImage ? (
-        <ImagePreviewPane image={selectedImage} title={imagePreviewTitle} menuLanguage={menuLanguage} />
+        <ImagePreviewPane image={selectedImage} title={imagePreviewTitle} menuLanguage={menuLanguage} workspaceRootPath={workspaceRootPath} />
       ) : !restoreComplete ? (
         <div className="editor-restore-loading" aria-hidden="true">
           <span className="editor-restore-loading-line" />

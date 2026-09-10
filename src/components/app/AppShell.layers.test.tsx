@@ -140,7 +140,7 @@ it("keeps the editor mounted behind the conflict portal and dismisses only prese
 });
 
 it.each(["Compare changes", "Save As…"])("routes the conflict action %s without destructive callbacks", action => {
-  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md" } as NonNullable<AppShellProps["activeTab"]>;
+  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md", contents: "unsaved" } as NonNullable<AppShellProps["activeTab"]>;
   const compare = vi.fn(); const saveAs = vi.fn(async () => {}); const dismiss = vi.fn();
   render(<ConnectedShell {...base} menuLanguage="en" activeTab={tab} conflictDialogTab={tab}
     reviewTabAgainstDisk={compare} saveConflictAs={saveAs} dismissConflictDialog={dismiss} />);
@@ -151,7 +151,7 @@ it.each(["Compare changes", "Save As…"])("routes the conflict action %s withou
 });
 
 it("cycles Tab within the conflict surface and ignores IME Escape", () => {
-  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md" } as NonNullable<AppShellProps["activeTab"]>;
+  const tab = { id: "doc", sessionId: "conflict", name: "note.md", path: "/note.md", contents: "unsaved" } as NonNullable<AppShellProps["activeTab"]>;
   render(<ConnectedShell {...base} menuLanguage="en" conflictDialogTab={tab} />);
   const first = screen.getByRole("button", { name: "Return to editor" });
   const last = screen.getByRole("button", { name: "Compare changes" });
