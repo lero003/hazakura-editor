@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-F2 externally accepted; UI-G1〜G4 implemented; native acceptance pending
+Status: UI-F2 externally accepted; UI-G1〜G4 implemented; stage 2 (mock palette + chrome surface) implemented; native acceptance pending
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-10
@@ -141,6 +141,9 @@ UI-G2で設定の左レールとカテゴリの現在地を実装し、[G2の実
 UI-G3でモックの紙面／ナビ面を意味トークンとして新設し全7テーマへ適用、[G3の実装と証跡](reviews/2026-09-10-v3-theme-paper/README.md)と
 [モックとの差の棚卸し](v3-mock-gap-inventory.md)へまとめた。
 UI-G4で開始画面（画面01）を2ペイン化し、[G4の実装と証跡](reviews/2026-09-10-v3-ui-g4/README.md)へまとめた。
+段階2でlight/darkへモック配色を通し、chrome面を `--chrome-surface` として全7テーマへ新設した
+（[段階2の実装と証跡](reviews/2026-09-10-v3-theme-stage2/README.md)）。
+面の分離は実測1.06〜1.13:1で、強めるかは第二調整の判断として残している。
 [G1の資料](reviews/2026-09-10-v3-ui-g1/README.md)と合わせて合評する。
 UI-EのReader実機受入/本構成一覧/出力/取り込み、UI-F設定、UI-G/native受入、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)から進む。

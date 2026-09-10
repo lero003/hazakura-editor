@@ -30,7 +30,10 @@ Last reviewed: 2026-09-10
   [実装と証跡](reviews/2026-09-10-v3-ui-g4/README.md)。
 - **確認:** ローカル259ファイル・2,248件、型検査・Vite・App Store surfaceが成功。
   1440×850で左右720pxずつ、1024×748で縦積み。Rust無変更・cargo test未実行。
-- **次:** G4合評、段階2（文字色・アクセント・境界線の全テーマ調整）、設定外枠寸法、native受入。UI-Gは未完了。
+- **UI 段階2:** light/darkへモック配色を反映し、`--chrome-surface` を全7テーマへ新設（chrome＝ツールバー・タブ・ステータス、
+  サイドバーは nav のまま）。透明タイトルバー色も追従。実測の面の分離は1.06〜1.13:1、accent面の文字はyakou/crtの不足を修正。
+  ローカル259ファイル・2,269件、cargo test 383件が成功。[証跡](reviews/2026-09-10-v3-theme-stage2/README.md)。
+- **次:** 第二調整（面の分離の強さA/B/C）、5テーマの文字色/境界線、設定外枠寸法、native受入。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
