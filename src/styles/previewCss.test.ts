@@ -324,7 +324,7 @@ describe("preview.css", () => {
       /var\(--accent-soft\)/,
     );
     expect(ruleBody(".ebook-pane .ebook-reader-button:focus-visible")).toMatch(
-      /var\(--accent\)/,
+      /var\(--focus-ring\)/,
     );
   });
 

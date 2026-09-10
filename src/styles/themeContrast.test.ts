@@ -256,13 +256,21 @@ describe("border hierarchy", () => {
   });
 
   it.each(themeNames)("%s keeps the focus ring above 3:1", (theme) => {
-    // focus は `outline: 2px solid var(--accent)`。載り得る面すべてで 3:1 以上。
-    const accent = themeToken(theme, "--accent");
+    // 実際のリングは `outline: 2px solid var(--focus-ring)`。薄めた色ではなく
+    // その実値が、載り得る面すべてで 3:1 以上であることを見る。
+    // トークンの定義は :root の単一ソース（各テーマは accent を差し替える）。
+    const ring = tokenDeclarationIn(themeCss, ":root", "--focus-ring").replace(
+      "--focus-ring: ",
+      "",
+    );
+    expect(ring).toBe("var(--accent)");
+    const ringColor = themeToken(theme, "--accent");
+    expect(ringColor).toMatch(/^#[0-9a-fA-F]{6}$/);
     for (const token of ["--surface-paper", "--nav-surface", "--chrome-surface"]) {
       const surface = themeToken(theme, token);
       if (!surface.startsWith("#")) continue;
       expect(
-        contrastRatio(surface, accent),
+        contrastRatio(surface, ringColor),
         `${theme} ${token}`,
       ).toBeGreaterThanOrEqual(3);
     }

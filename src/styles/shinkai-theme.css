@@ -72,7 +72,7 @@
   --cm-fg: #d4ecf2;
   --cm-caret: #f2d8a0;
   --cm-gutter-bg: rgba(8, 34, 46, 0.78);
-  --cm-gutter-border: #1d4a60;
+  --cm-gutter-border: var(--border);
   --cm-gutter-fg: #7ba8bc;
   --cm-active-line-bg: rgba(125, 211, 224, 0.07);
   --cm-active-gutter-bg: rgba(125, 211, 224, 0.09);

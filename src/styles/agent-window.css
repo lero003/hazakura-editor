@@ -335,7 +335,7 @@
 }
 
 .agent-window-stop:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--danger) 70%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -434,7 +434,7 @@
 }
 
 .agent-window-start-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 

@@ -29,6 +29,25 @@ describe("workspace-chrome.css", () => {
     ).toMatch(/margin-left:\s*auto/);
   });
 
+  it("keeps the CodeMirror gutter border on the border token for every theme", () => {
+    // ガターだけ以前の弱い線が残らないよう、テーマ側の上書きも含めて var(--border) に一本化する。
+    const declarations = ["tokens.css", "themes.css", "edohigan-theme.css", "shinkai-theme.css", "crt-theme.css", "lMode.css"]
+      .flatMap((file) => readFileSync(`${process.cwd()}/src/styles/${file}`, "utf8").match(/--cm-gutter-border:\s*[^;]+;/g) ?? []);
+    expect(declarations.length).toBeGreaterThan(0);
+    for (const declaration of declarations) {
+      expect(declaration.replace(/\s+/g, " ").trim()).toBe("--cm-gutter-border: var(--border);");
+    }
+  });
+
+  it("keeps only the region boundaries on the strong border", () => {
+    const strong = 'border-bottom: 1px solid var(--border-strong);';
+    expect(ruleBody(':root:not([data-l-mode="on"]) .v3-shell .tabs-row')).toContain(strong);
+    expect(ruleBody(':root:not([data-l-mode="on"]) .v3-shell .status-bar')).toMatch(/border-top: 1px solid var\(--border-strong\)/);
+    // ツールバー下・サイドバー右・ガター右は通常の border のまま（画面全体をグリッド化しない）。
+    expect(ruleBody(".app-primary-toolbar")).toMatch(/border-bottom: 1px solid var\(--border\)/);
+    expect(ruleBody(':root:not([data-l-mode="on"]) .v3-shell .file-tree-pane')).toMatch(/border-right: 1px solid var\(--border\)/);
+  });
+
   it("keeps the chrome bars on the chrome surface and the sidebar on the nav surface", () => {
     expect(chromeCss).toContain("--workspace-chrome-bar: var(--chrome-surface)");
     expect(chromeCss).toContain(".v3-shell .file-tree-pane { background: var(--workspace-chrome-surface)");

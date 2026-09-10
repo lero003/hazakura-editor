@@ -25,6 +25,10 @@
   --accent: #356b50;
   --accent-soft: #e1ecdf;
   --accent-glass: rgba(53, 107, 80, 0.08);
+  /* キーボードフォーカスのリング色。accent と同じ色を使い、**薄めない**
+     （color-mix で透明側へ寄せると chrome 面で 3:1 を割る）。
+     全テーマ共通の意味トークン。個別の focus 宣言はこの変数を参照する。 */
+  --focus-ring: var(--accent);
   --danger: #9e3f43;
   --conflict: #997838;
   --status-bg: #1c2420;
@@ -54,7 +58,7 @@
   --cm-fg: #24362d;
   --cm-caret: #356b50;
   --cm-gutter-bg: #f7f8f5;
-  --cm-gutter-border: #c7d2c5;
+  --cm-gutter-border: var(--border);
   --cm-gutter-fg: #6b7670;
   --cm-active-line-bg: rgba(53, 107, 80, 0.05);
   --cm-active-gutter-bg: rgba(53, 107, 80, 0.05);

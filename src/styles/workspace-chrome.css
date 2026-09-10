@@ -61,7 +61,8 @@
   grid-template-columns: 42px minmax(0, 1fr);
   grid-template-rows: minmax(43px, auto) minmax(48px, auto);
   height: auto; padding: 0 14px; gap: 0 8px;
-  background: var(--workspace-chrome-bar); border-bottom: 1px solid var(--border);
+  /* タブ群 → 文書本文の境界。大きな領域が切り替わる場所だけ一段強くする。 */
+  background: var(--workspace-chrome-bar); border-bottom: 1px solid var(--border-strong);
   -webkit-app-region: no-drag;
 }
 :root:not([data-l-mode="on"]) .v3-shell .window-drag-strip { display: none; }
@@ -79,7 +80,7 @@
 :root:not([data-l-mode="on"]) .v3-shell .pane-control-cluster { flex-wrap: wrap; }
 :root:not([data-l-mode="on"]) .v3-shell .pane-toggles { flex-wrap: wrap; }
 :root:not([data-l-mode="on"]) .v3-shell .file-tree-pane { background: var(--workspace-chrome-surface); border-right: 1px solid var(--border); }
-:root:not([data-l-mode="on"]) .v3-shell .status-bar { min-height: 35px; height: auto; box-sizing: border-box; background: var(--workspace-chrome-bar); color: var(--text-muted); border-top: 1px solid var(--border); }
+:root:not([data-l-mode="on"]) .v3-shell .status-bar { min-height: 35px; height: auto; box-sizing: border-box; background: var(--workspace-chrome-bar); color: var(--text-muted); border-top: 1px solid var(--border-strong); }
 :root[data-l-mode="on"] .primary-toolbar-slot { display: none; }
 :root[data-l-mode="on"] .workspace-document-column { grid-template-rows: minmax(0, 1fr); }
 @media (max-width: 1100px) {

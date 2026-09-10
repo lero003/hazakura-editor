@@ -568,7 +568,7 @@
 .blocked-image-action:hover,
 .blocked-image-action:focus-visible {
   background: color-mix(in srgb, var(--accent) 22%, var(--surface-muted));
-  outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -859,7 +859,7 @@
 }
 
 .ebook-pane .ebook-reader-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 

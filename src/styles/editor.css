@@ -112,7 +112,7 @@
   background: color-mix(in srgb, var(--text) 14%, transparent);
   color: color-mix(in srgb, var(--text) 78%, transparent);
   opacity: 1;
-  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -329,7 +329,7 @@
 
 .open-agent-window-button:focus-visible {
   border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
-  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 

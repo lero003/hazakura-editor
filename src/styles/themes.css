@@ -66,7 +66,7 @@ html, body, #root, .app-shell,
   --cm-fg: #e5eddf;
   --cm-caret: #aad0ac;
   --cm-gutter-bg: #213128;
-  --cm-gutter-border: #38493c;
+  --cm-gutter-border: var(--border);
   --cm-gutter-fg: #a6b5a5;
   --cm-active-line-bg: rgba(170, 208, 172, 0.08);
   --cm-active-gutter-bg: rgba(170, 208, 172, 0.08);
@@ -161,7 +161,7 @@ html, body, #root, .app-shell,
   --cm-fg: #e8e8f4;
   --cm-caret: #a090ff;
   --cm-gutter-bg: #11111a;
-  --cm-gutter-border: #2a2a50;
+  --cm-gutter-border: var(--border);
   --cm-gutter-fg: #9292b4;
   --cm-active-line-bg: rgba(160, 144, 255, 0.08);
   --cm-active-gutter-bg: rgba(160, 144, 255, 0.08);
@@ -252,7 +252,7 @@ html, body, #root, .app-shell,
   --cm-fg: #13263c;
   --cm-caret: #3478ad;
   --cm-gutter-bg: #e2ecf5;
-  --cm-gutter-border: #cfdceb;
+  --cm-gutter-border: var(--border);
   --cm-gutter-fg: #426078;
   --cm-active-line-bg: rgba(52, 120, 173, 0.09);
   --cm-active-gutter-bg: rgba(52, 120, 173, 0.09);

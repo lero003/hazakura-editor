@@ -168,7 +168,7 @@
 }
 
 .chrome-icon-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 56%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -285,7 +285,7 @@
 }
 
 .editor-quick-settings-toggle input:focus-visible + .editor-quick-settings-switch {
-  outline: 2px solid color-mix(in srgb, var(--accent) 56%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
