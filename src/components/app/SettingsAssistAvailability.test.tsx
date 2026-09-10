@@ -21,6 +21,7 @@ it.each(["en", "ja", "kana"] as const)("does not call an unprobed environment un
   }
   render(<Host />);
   expect(screen.getByRole("status", { name: copy.appleAssistStatusLabel }).textContent).not.toContain(copy.appleAssistStatusUnsupported);
+  expect(screen.getByRole("status", { name: copy.appleAssistStatusLabel }).textContent).toContain(copy.appleAssistStatusUnprobed);
   await act(async () => resolve({ kind: "unsupported" }));
   expect(screen.getByRole("status", { name: copy.appleAssistStatusLabel }).textContent).toContain(copy.appleAssistStatusUnsupported);
 });
