@@ -91,6 +91,11 @@ export function SettingsPreferencesPane({
           resolveSettingsCategoryIndex(
             settingsCategoryOffsets(scroller, categoryHeadings.current),
             scroller.scrollTop,
+            undefined,
+            {
+              clientHeight: scroller.clientHeight,
+              scrollHeight: scroller.scrollHeight,
+            },
           ),
         );
       });

@@ -16,6 +16,23 @@ it("keeps the last category active at the bottom of the body", () => {
   expect(resolveSettingsCategoryIndex(offsets, 9000)).toBe(3);
 });
 
+it("returns the last measurable category when scrollTop is clamped at the bottom", () => {
+  // 実ブラウザ: scrollTop の上限は scrollHeight - clientHeight。
+  const viewport = { clientHeight: 800, scrollHeight: 2100 }; // 上限 1300
+  expect(resolveSettingsCategoryIndex(offsets, 1300, 80, viewport)).toBe(3);
+  // 途中では読み位置のまま（末尾判定は最下部だけ）
+  expect(resolveSettingsCategoryIndex(offsets, 900, 80, viewport)).toBe(1);
+  expect(resolveSettingsCategoryIndex(offsets, 1200, 80, viewport)).toBe(2);
+  expect(resolveSettingsCategoryIndex(offsets, 1299, 80, viewport)).toBe(3);
+});
+
+it("skips unmeasurable headings at the bottom too", () => {
+  const viewport = { clientHeight: 500, scrollHeight: 1000 };
+  expect(
+    resolveSettingsCategoryIndex([0, 500, 1000, Number.NaN], 500, 80, viewport),
+  ).toBe(2);
+});
+
 it("uses the threshold as a reading line in front of the heading top", () => {
   expect(resolveSettingsCategoryIndex(offsets, 500 - 1, 24)).toBe(1);
   expect(resolveSettingsCategoryIndex(offsets, 500 - 24, 24)).toBe(1);

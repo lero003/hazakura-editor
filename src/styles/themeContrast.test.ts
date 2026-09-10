@@ -119,47 +119,64 @@ describe("Preview theme contrast", () => {
 
 describe("paper token", () => {
   const paper = {
-    light: { surface: "#fffefb", text: "#1a1f1d" },
-    dark: { surface: "#1d2a23", text: "#e8ede5" },
-    yakou: { surface: "#1c1d31", text: "#e8e8f4" },
-    shokou: { surface: "#f5f8fc", text: "#1c3554" },
-    edohigan: { surface: "#342230", text: "#f2e4e8" },
-    crt: { surface: "#0d1a11", text: "#9be0a4" },
-    shinkai: { surface: "#14384a", text: "#d4ecf2" },
+    light: "#fffefb",
+    dark: "#1d2a23",
+    yakou: "#1c1d31",
+    shokou: "#f5f8fc",
+    edohigan: "#342230",
+    crt: "#0d1a11",
+    shinkai: "#14384a",
   } as const;
 
-  it.each(Object.entries(paper))(
+  // ナビ面が半透明のテーマは背景シェーダーを透かすため、合成後の色は実描画でしか測れない。
+  // この2テーマは tests ではなく、資料の実描画ピクセル測定で確認する。
+  const translucentNav = new Set(["edohigan", "shinkai"]);
+
+  const selectorFor = (theme: string) =>
+    theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
+
+  const themes = Object.keys(paper) as (keyof typeof paper)[];
+  const opaqueThemes = themes.filter((theme) => !translucentNav.has(theme));
+
+  /** CSSから実際の宣言値を読む（テスト内に色を書き写さない）。 */
+  const tokenHex = (theme: string, token: string) =>
+    tokenDeclarationIn(themeCss, selectorFor(theme), token).replace(`${token}: `, "");
+
+  it.each(themes)(
     "%s defines one paper token in the theme",
-    (theme, expected) => {
-      const selector = theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
-      expect(tokenDeclarationIn(themeCss, selector, "--surface-paper")).toBe(
-        `--surface-paper: ${expected.surface}`,
-      );
-      expect(tokenDeclarationIn(themeCss, selector, "--nav-surface")).not.toBe("");
+    (theme) => {
+      expect(tokenHex(theme, "--surface-paper")).toBe(paper[theme]);
+      expect(tokenDeclarationIn(themeCss, selectorFor(theme), "--nav-surface")).not.toBe("");
     },
   );
 
-  it.each(Object.entries(paper))(
-    "%s keeps body text readable on the paper",
-    (_theme, expected) => {
+  it.each(themes)(
+    "%s keeps body and muted text readable on the paper",
+    (theme) => {
       expect(
-        contrastRatio(expected.surface, expected.text),
+        contrastRatio(paper[theme], tokenHex(theme, "--text")),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(paper[theme], tokenHex(theme, "--text-muted")),
       ).toBeGreaterThanOrEqual(4.5);
     },
   );
 
-  it.each(Object.entries(paper))(
-    "%s keeps muted text readable on the paper",
-    (theme, expected) => {
-      const selector = theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
-      const muted = tokenDeclarationIn(themeCss, selector, "--text-muted").replace(
-        "--text-muted: ",
-        "",
-      );
-      expect(muted).toMatch(/^#[0-9a-fA-F]{6}$/);
-      expect(contrastRatio(expected.surface, muted)).toBeGreaterThanOrEqual(4.5);
+  it.each(opaqueThemes)(
+    "%s keeps text readable on the opaque nav surface",
+    (theme) => {
+      const nav = tokenHex(theme, "--nav-surface");
+      expect(nav).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(contrastRatio(nav, tokenHex(theme, "--text"))).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(nav, tokenHex(theme, "--text-muted"))).toBeGreaterThanOrEqual(4.5);
     },
   );
+
+  it("keeps the translucent nav themes on the rendered-measurement path", () => {
+    for (const theme of translucentNav) {
+      expect(tokenHex(theme, "--nav-surface")).toMatch(/^rgba\(/);
+    }
+  });
 
   it("keeps the editor surface on the paper token for every theme", () => {
     for (const theme of ["light", "dark", "yakou", "shokou", "edohigan", "crt", "shinkai"]) {
