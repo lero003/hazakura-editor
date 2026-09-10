@@ -1,5 +1,5 @@
 import { ExportDialogFrame } from "./ExportDialogFrame";
-import { useState, type RefObject } from "react";
+import { useState, type ReactNode, type RefObject } from "react";
 import { pickEpubCoverImage } from "../../lib/tauri/dialog";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { MenuLanguage } from "../../types";
@@ -16,6 +16,8 @@ type EpubExportSettingsDialogProps = {
   initialSettings: EpubExportSettings;
   hasUnsavedChanges: boolean;
   initialScope?: DocumentExportScope;
+  /** 形式を選ぶ入口（画面11）。 */
+  formatNav?: ReactNode;
   menuLanguage: MenuLanguage;
   preflightByScope?: Record<DocumentExportScope, ExportPreflightResult>;
   onCancel: () => void;
@@ -30,6 +32,7 @@ export function EpubExportSettingsDialog({
   initialSettings,
   hasUnsavedChanges,
   initialScope = "document",
+  formatNav,
   menuLanguage,
   preflightByScope,
   onCancel,
@@ -50,7 +53,7 @@ export function EpubExportSettingsDialog({
 
   return (
     <ExportDialogFrame format="EPUB" title={copy.title} documentName={documentName}
-      scope={scope} menuLanguage={menuLanguage} dialogRef={dialogRef} cancelButtonRef={cancelButtonRef}
+      scope={scope} formatNav={formatNav} menuLanguage={menuLanguage} dialogRef={dialogRef} cancelButtonRef={cancelButtonRef}
       canConfirm={titleValid && !hasBlockingIssue && (scope === "document" || bookAvailable)}
       confirmLabel={copy.export} cancelLabel={copy.cancel} onCancel={onCancel}
       onConfirm={() => onConfirm({ author, ...(coverImagePath ? { coverImagePath } : {}), language, title }, scope)}>

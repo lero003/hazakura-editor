@@ -13,6 +13,8 @@ type Props = {
   canConfirm: boolean;
   confirmLabel: string;
   cancelLabel: string;
+  /** 形式を選ぶ入口（画面11）。無い場合は従来どおり単一形式のダイアログ。 */
+  formatNav?: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
   children: ReactNode;
@@ -40,6 +42,8 @@ export function ExportDialogFrame(props: Props) {
           <div><h2 id={`${prefix}-title`}>{props.title}</h2>
             <p id={`${prefix}-description`} title={targetName}>{targetName}</p></div>
         </header>
+        {/* 形式ナビは枠が持つ（同じ画面で形式を選べる）。 */}
+        {props.formatNav}
         <div className="export-settings-body">{props.children}</div>
         <footer className="export-settings-footer">
           <p>{copy.note}</p>

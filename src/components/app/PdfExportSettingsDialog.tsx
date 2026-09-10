@@ -1,5 +1,5 @@
 import { ExportDialogFrame } from "./ExportDialogFrame";
-import { useState, type RefObject } from "react";
+import { useState, type ReactNode, type RefObject } from "react";
 import {
   PDF_MARGIN_PRESETS,
   type PdfMarginPreset,
@@ -18,6 +18,8 @@ type PdfExportSettingsDialogProps = {
   initialPreset: PdfMarginPreset;
   hasUnsavedChanges: boolean;
   initialScope?: DocumentExportScope;
+  /** 形式を選ぶ入口（画面11）。 */
+  formatNav?: ReactNode;
   menuLanguage: MenuLanguage;
   preflightByScope?: Record<DocumentExportScope, ExportPreflightResult>;
   onCancel: () => void;
@@ -32,6 +34,7 @@ export function PdfExportSettingsDialog({
   initialPreset,
   hasUnsavedChanges,
   initialScope = "document",
+  formatNav,
   menuLanguage,
   preflightByScope,
   onCancel,
@@ -46,7 +49,7 @@ export function PdfExportSettingsDialog({
 
   return (
     <ExportDialogFrame format="PDF" title={copy.title} documentName={documentName}
-      scope={scope} menuLanguage={menuLanguage} dialogRef={dialogRef} cancelButtonRef={cancelButtonRef}
+      scope={scope} formatNav={formatNav} menuLanguage={menuLanguage} dialogRef={dialogRef} cancelButtonRef={cancelButtonRef}
       canConfirm={!hasBlockingIssue && (scope === "document" || bookAvailable)}
       confirmLabel={copy.export} cancelLabel={copy.cancel} onCancel={onCancel}
       onConfirm={() => onConfirm(preset, scope)}>

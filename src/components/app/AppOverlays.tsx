@@ -1,4 +1,6 @@
 import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";
+import { ExportFormatNav, type ExportFormatId } from "./ExportFormatNav";
+import { exportFormatSwitchPlan } from "./exportFormatSwitch";
 import type {
   Dispatch,
   RefObject,
@@ -160,6 +162,10 @@ type AppOverlaysProps = {
   menuLanguage: MenuLanguage;
   onCancelEpubBetaExport: () => void;
   onCancelPdfExport: () => void;
+  /** 書き出しの準備（各形式の既存の入口。形式ナビの切替もここを呼ぶ）。 */
+  exportEpubBeta: () => void | Promise<void>;
+  exportHtml: () => void | Promise<void>;
+  exportPdf: () => void | Promise<void>;
   onConfirmEpubBetaExport: (
     settings: EpubExportSettings,
     scope?: DocumentExportScope,
@@ -320,6 +326,9 @@ export function AppOverlays({
   onCancelPdfExport,
   onConfirmEpubBetaExport,
   onConfirmPdfExport,
+  exportEpubBeta,
+  exportHtml,
+  exportPdf,
   onOpenCommandPalette,
   onRunCommand,
   openWorkspaceFile,
@@ -382,6 +391,29 @@ export function AppOverlays({
     preferencesDialogMode && isHelpDocumentDialogMode(preferencesDialogMode)
       ? helpDocsByMode[preferencesDialogMode]
       : null;
+
+  /**
+   * 形式ナビ（画面11）。3つのコマンドはそのまま残し、開いているダイアログの枠に
+   * 形式の入口を出す。切替は「いまのダイアログを閉じる → 選んだ形式の**既存の**
+   * 準備処理を呼ぶ」だけで、新しい書き出し経路は作らない。
+   */
+  const renderExportFormatNav = (current: ExportFormatId) => (
+    <ExportFormatNav
+      format={current}
+      menuLanguage={menuLanguage}
+      onSelectFormat={(next) => {
+        // 「閉じてから、選ばれた形式の既存の準備を呼ぶ」だけ（判断は純関数）。
+        const plan = exportFormatSwitchPlan(current, next);
+        if (!plan) return;
+        if (plan.cancel === "epub") onCancelEpubBetaExport();
+        else if (plan.cancel === "pdf") onCancelPdfExport();
+        else onCancelHtmlExport?.();
+        if (plan.start === "epub") void exportEpubBeta();
+        else if (plan.start === "pdf") void exportPdf();
+        else void exportHtml();
+      }}
+    />
+  );
 
   return (
     <>
@@ -501,6 +533,7 @@ export function AppOverlays({
 
       {epubExportRequest ? (
         <EpubExportSettingsDialog
+          formatNav={renderExportFormatNav("epub")}
           bookAvailable={epubExportRequest.bookAvailable}
           cancelButtonRef={epubExportCancelButtonRef}
           dialogRef={epubExportDialogRef}
@@ -515,12 +548,13 @@ export function AppOverlays({
       ) : null}
 
       {htmlExportRequest && htmlExportDialogRef && htmlExportCancelButtonRef && onCancelHtmlExport && onConfirmHtmlExport ? (
-        <HtmlExportSettingsDialog request={htmlExportRequest} menuLanguage={menuLanguage}
+        <HtmlExportSettingsDialog request={htmlExportRequest} formatNav={renderExportFormatNav("html")} menuLanguage={menuLanguage}
           dialogRef={htmlExportDialogRef} cancelButtonRef={htmlExportCancelButtonRef}
           onCancel={onCancelHtmlExport} onConfirm={onConfirmHtmlExport} />
       ) : null}
       {pdfExportRequest ? (
         <PdfExportSettingsDialog
+          formatNav={renderExportFormatNav("pdf")}
           bookAvailable={pdfExportRequest.bookAvailable}
           cancelButtonRef={pdfExportCancelButtonRef}
           dialogRef={pdfExportDialogRef}

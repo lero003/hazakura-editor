@@ -1,10 +1,12 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect, type ReactNode, type RefObject } from "react";
 import type { HtmlExportRequest } from "../../hooks/document/useDocumentExport";
 import type { MenuLanguage } from "../../types";
 import { ExportDialogFrame } from "./ExportDialogFrame";
 
 type Props = {
   request: HtmlExportRequest;
+  /** 形式を選ぶ入口（画面11）。 */
+  formatNav?: ReactNode;
   menuLanguage: MenuLanguage;
   dialogRef: RefObject<HTMLElement | null>;
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
@@ -34,7 +36,7 @@ export function HtmlExportSettingsDialog(props: Props) {
   };
   useEffect(() => { props.cancelButtonRef.current?.focus(); }, [props.cancelButtonRef]);
   return <ExportDialogFrame format="HTML" title={copy.title} documentName={props.request.documentName}
-    scope="document" menuLanguage={props.menuLanguage} dialogRef={props.dialogRef}
+    scope="document" formatNav={props.formatNav} menuLanguage={props.menuLanguage} dialogRef={props.dialogRef}
     cancelButtonRef={props.cancelButtonRef} canConfirm confirmLabel={copy.confirm} cancelLabel={copy.cancel}
     onConfirm={props.onConfirm} onCancel={props.onCancel}>
     <p>{copy.scope}</p>
