@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: UI-F2 設定カテゴリ・文字設定・Help導線の合評
+Scope: UI-G1 状態/文言/reflowの合評とnative受入
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,23 +12,23 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI-F2
+## 現在の区切り — UI-G1
 
-外部レビューで書き出し排他/nativeメニューP2 CLOSED、UI-F1 GO。
-cb7353cdでテーマ説明の読み上げ関連付け、fe9e1d4aでカテゴリ移動と4文字サイズ見本、
-f3ea3605で設定/既存Helpの往復を追加。[最新資料](reviews/2026-09-10-v3-ui-f2/README.md)で合評する。
+F2は外部GO、テーマ説明P3 CLOSED。
+Settings未probeの断定を修正し、Local AssistがactiveならSettingsを開いた際にも既存probeを使用。
+Helpのremote image/明示Apply説明を揃え、低い有効領域でSettings/Help本文の到達性を調整。
+[最新資料とUI-G受入表](reviews/2026-09-10-v3-ui-g1/README.md)で合評する。
 
-設定カテゴリは全項目を保持して本文内だけをスクロールし、見出しへfocusする。
-Helpは既存文書・診断へ移り、Agent設定への新しい入口や永続stateを追加しない。
-ローカル全2,206件・表示境界113件、スクロール修正後の近接17件が成功。
-960×640でカテゴリ移動とHelp往復を確認。native/VoiceOver/IME/200%受入とは区別。
+ローカル全2,209件・表示境界117件、近接46件・最終Help21件が成功。
+960×640と480×320のreflow予備確認はnative 200%やVoiceOver合格を意味しない。
+Rust無変更・再実行なし。原稿/生成/保存の所有権は維持。
 
 ## 次のまとまった区切り
 
-1. F2合評。設定項目の欠落/配布レーン、カテゴリ移動、Help往復とキーボードを確認。
-2. UI-G: 低い画面・200%・VoiceOverと、設定変更後の本文/Reader/Undo/再起動を通し確認。
-3. Assist実可用性・Helpの現行文言を棚卸し。既存誤説明があれば小修正し、生成/Apply所有権は変えない。
-4. 出力成果物・取り込み・C2実Systemの残受入も継続する。
+1. G1合評。未確認→probe済状態と、Helpの画像許可/AI通信禁止の区別を確認。
+2. UI-G受入表のnative操作を埋める。VoiceOverのテーマ説明/Reader背景、200%、再起動後設定を優先。
+3. 実IME→Reader→章編集→Undo、出力成果物、取り込み→編集→保存、C2実Systemを継続。
+4. 受入前にv3完成や配布候補合格としない。未受入を実行記録に基づいて閉じる。
 
 UI-Eは04/05/09/10/11/12、設定はUI-F。本の構成一覧・見開きの全面刷新、画像倍率、200%は未完了。
 

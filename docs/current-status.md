@@ -15,15 +15,14 @@ Last reviewed: 2026-09-10
 - **UI-D2b / E1:** Save As通知の追加P2も外部CLOSED。UI-E1 GO。
 - **UI-E2/E3・E4a:** オーナー提供の外部レビューでR1〜R3 CLOSED、EPUB/PDF外枠GO。
 - **UI-E4b / F1:** オーナー提供の外部レビューで書き出し排他・nativeメニューP2 CLOSED、7テーマGO。
-- **UI-F2:** cb7353cdで各テーマの説明をaria-describedbyへ接続。
-  fe9e1d4aで設定カテゴリへ本文内スクロール＋見出しfocus、4文字サイズの見本を追加。
-  f3ea3605で設定/既存Helpを同じダイアログ内で往復。既存設定・値域・配布レーン境界は維持。
-  [最新合評資料](reviews/2026-09-10-v3-ui-f2/README.md)。
-- **確認:** ローカル255ファイル・2,206件、表示境界113件。スクロール修正後の近接17件も成功。
-  最終コードのtypecheck/Vite/native preview/署名整合成功。960×640でカテゴリ移動とHelp往復を確認。
-  Rust無変更・再実行なし。
-  native操作・再起動・VoiceOver/IME/200%は未受入。CI成功とは扱わない。
-- **次:** F2合評、UI-Gの横断受入とAssist状態/Help文言の整合確認。UI-F全体のnative受入は未完了。
+- **UI-F2:** オーナー提供の外部レビューでGO、テーマ説明P3 CLOSED。
+- **UI-G1:** Settingsの未probeを非対応と断定するP2-lowを138e0cc3で修正。
+  56d80817でHelpの画像通信/明示Apply説明、799f649aで低い有効領域の到達性を調整。
+  [最新合評・受入表](reviews/2026-09-10-v3-ui-g1/README.md)。
+- **確認:** ローカル256ファイル・2,209件、表示境界117件。近接46件と最終Help21件も成功。
+  最終コードのtypecheck/Vite/native preview/署名整合成功。
+  960×640と480×320のreflow予備確認。nativeの200%実行とは区別。Rust無変更・再実行なし。
+- **次:** G1合評、native/VoiceOver/200%/再起動/実Systemの受入表を埋める。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
