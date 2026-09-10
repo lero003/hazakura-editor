@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: UI-E2検索修正とUI-E3本全体Readerの合評
+Scope: E2/E3競合修正とUI-E4a書き出し外枠の合評
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,21 +12,21 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — 検索修正・UI-E3
+## 現在の区切り — 非同期競合修正・UI-E4a
 
-Save As通知P2は外部CLOSED。検索P2×3は15ce3a7fで修正し、3dfb10c5で本全体Reader→章編集を整理。
-query/Close/workspaceで旧検索を失効し、open成功時だけ対象sessionへfocusなしで移動する。
-Readerは現在章/path/未保存情報を常設。章open失敗ではReaderを残し、成功時だけ対象文書先頭へ戻る。
-[最新資料](reviews/2026-09-10-v3-ui-e3/README.md)でまとめて再レビューする。
+88b8613bでR1/R2を修正。openが副作用を出す前に要求を検査し、並行openの登録sessionを揃える。
+5e897c21でReaderの初期復元を明示移動時に終了。R1〜R3はローカル回帰確認済み、外部再レビュー待ち。
+d52e7f9dでEPUB/PDF外枠を共通化し、対象表示・設定スクロール・固定フッターを整理。
+[最新資料](reviews/2026-09-10-v3-ui-e4/README.md)で3単位をまとめて合評する。
 
-ローカル全2,170件・表示境界113件、typecheck/Vite/native preview/署名整合成功。
-960×640/1280×800のReader表示を確認。native実操作・IME/VoiceOver/200%とは区別。
+ローカル全2,180件・表示境界113件、typecheck/Vite/native preview/署名整合成功。
+Rust fmt/383件成功（2件ignored）。960×640のEPUB/PDF表示を確認。native/IME/VoiceOver/200%とは区別。
 
 ## 次のまとまった区切り
 
-1. 検索修正/E3合評。native検索→連続結果操作→Close→読む→章編集→入力/Undoの通し確認。
-2. UI-E出力/取り込みの既存操作をまとめて整理。新たな確定前Importステージは追加しない。
-3. UI-F設定、UI-G横断受入とLA-1以降へ。C2実System、native Save As取消/成功も別途残る。
+1. 競合修正/E4a合評。native検索→連続結果操作→Close→読む→章編集→入力/Undoを通し確認。
+2. UI-E4b: HTML/取り込みの既存操作を整理。形式内切替や確定前Importステージは現状未実装。
+3. 書き出したEPUB/PDF成果物、保存先取消/失敗、UI-F設定、UI-G横断受入へ。C2実Systemも別途残る。
 
 UI-Eは04/05/09/10/11/12、設定はUI-F。本の構成一覧・見開きの全面刷新、画像倍率、200%は未完了。
 

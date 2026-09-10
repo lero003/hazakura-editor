@@ -13,15 +13,15 @@ Last reviewed: 2026-09-10
 - **UI-B / LA-0:** オーナー提供レビューでR3〜R5 CLOSED、LA-0 GO。
 - **UI-C1 / C2:** オーナー提供レビューでC1追修正・C2-R1 CLOSED。native通し受入は別途残る。
 - **UI-D2b / E1:** Save As通知の追加P2も外部CLOSED。UI-E1 GO。
-- **UI-E2:** 検索P2×3を15ce3a7fで修正。query/Close/workspaceで旧要求と結果を失効。
-  open成功後だけsession/pathを確認しfocusを奪わず移動する。外部再レビュー待ち。
-- **UI-E3:** 3dfb10c5で本全体Readerの現在章/path/未保存表示と「この章を編集」を常設。
-  open失敗ならReaderを保持、成功時はEditorの表示復帰後に対象文書先頭へfocus。
-  [最新合評資料](reviews/2026-09-10-v3-ui-e3/README.md)。
-- **確認:** ローカル250ファイル・2,170件、表示境界113件、typecheck/Vite/native preview/署名整合成功。
-  960×640/1280×800のReader fixtureを目視。AppWorkspace経由の成功/失敗テストはEditor mock。
-  Rust変更/再実行なし。native検索/章編集/Undo、IME/VoiceOver/200%は未受入。CI成功とは扱わない。
-- **次:** 検索修正/E3合評、UI-E出力/取り込みをまとめて整理。設定はUI-F。UI-E全体は未完了。
+- **UI-E2/E3追修正:** 88b8613bでopen前の要求失効と並行openの返却sessionを修正。
+  検索controller＋実useFileOpening＋React stateで完了順逆転/同一path/Close/query変更を検証。
+  5e897c21でReader初期復元を手動移動時に終了。R1〜R3の外部再レビュー待ち。
+- **UI-E4a:** d52e7f9dでEPUB/PDFの共通外枠・固定フッター・確定ガードを整理。
+  [最新合評資料](reviews/2026-09-10-v3-ui-e4/README.md)。形式別writer/設定所有者は維持。
+- **確認:** ローカル252ファイル・2,180件、表示境界113件、typecheck/Vite/native preview/署名整合成功。
+  Rust fmt/383件成功（2件ignored）。960×640のEPUB/PDFを目視。CI成功とは扱わない。
+  native検索/章編集/Undo、出力成果物の再確認、IME/VoiceOver/200%は未受入。
+- **次:** R1〜R3/E4a合評、UI-E4bのHTML/取り込み。設定はUI-F。UI-E全体は未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。

@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-E1 GO; UI-E2 search fixes and UI-E3 Reader ready for review
+Status: UI-E1 GO; E2/E3 race fixes and UI-E4a export shell ready for review
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-10
@@ -136,7 +136,7 @@ UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 [第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に集約する。
 UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正/C2-R1は外部CLOSED。
 D1画像/候補一覧・D2aは外部GO、D1-R1 CLOSED。
-D2b/Save As通知は外部CLOSED、UI-E1 GO。UI-E2検索P2×3を修正し、UI-E3本全体Reader→章編集まで整理。
-[最新資料](reviews/2026-09-10-v3-ui-e3/README.md)で合評する。
+D2b/Save As通知は外部CLOSED、UI-E1 GO。E2/E3のopen/復元競合R1〜R3を修正し、UI-E4aでEPUB/PDFの共通外枠まで整理。
+[最新資料](reviews/2026-09-10-v3-ui-e4/README.md)で合評する。
 UI-EのReader実機受入/本構成一覧/出力/取り込み、UI-F設定、UI-G/native受入、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)から進む。
