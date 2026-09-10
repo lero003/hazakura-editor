@@ -1487,6 +1487,28 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 });
 
 describe("AppWorkspace reference compare layout", () => {
+  it.each([true, false])("shows import source and draft names only for the paired session (%s)", (paired) => {
+    const tab = makeTab({ name: "extracted.md", contents: "Draft text" });
+    renderWorkspace({
+      activeTab: tab, activeContents: tab.contents, tabs: [tab],
+      referencePaneVisible: true,
+      referenceCompare: {
+        externalChangePending: false, followMode: "off", origin: "import-assist",
+        linkedEditorSessionId: paired ? tab.sessionId : "other-session",
+        sourceFingerprint: null,
+        reference: { kind: "text", name: "original.txt", path: "/workspace/original.txt",
+          contents: "Source text", encoding: "utf-8" },
+      },
+    });
+    const context = screen.queryByTestId("reference-import-workflow-hint");
+    if (paired) {
+      expect(context?.textContent).toContain("extracted.md");
+      expect(context?.textContent).toContain("original.txt");
+      expect(context?.textContent).toContain("read-only");
+    } else expect(context).toBeNull();
+    expect(editorMainPaneMock.props?.activeContents).toBe("Draft text");
+  });
+
   it("keeps the editor buffer untouched when closing or replacing a reference", () => {
     const tab = makeTab({
       contents: "EDITOR-BUFFER-MARKER",
@@ -1601,7 +1623,7 @@ describe("AppWorkspace reference compare layout", () => {
     } as const;
     const { rerender } = renderWorkspace(sharedProps);
 
-    expect(screen.getByRole("toolbar", { name: "Reference focus" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Reference focus" })).toBeTruthy();
     expect(
       screen
         .getByRole("button", { name: "Draft (editable)" })

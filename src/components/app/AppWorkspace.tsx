@@ -1,3 +1,4 @@
+import { importDraftContextCopy } from "../../lib/locale/importAssist";
 import type { OpenTextFileOptions } from "../../hooks/document/useFileOpening";
 import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import type {
@@ -672,6 +673,7 @@ export function AppWorkspace({
       : null;
 
   // Both independent readers own the workspace; keep the editor mounted but inert.
+  const importContext = importDraftContextCopy(menuLanguage);
   const compactViewCopy = getCompactViewCopy(menuLanguage);
   const readingOverlayActive = ebookReadingFocusActive || !!bookReaderResult;
   const startSurfaceActive = !activeTab && !selectedImage && !workspaceRootPath &&
@@ -839,20 +841,30 @@ export function AppWorkspace({
             </button>
           </div>
         ) : null}
-        {visibleReferenceCompare?.origin === "import-assist" ? (
-          <p
+        {visibleReferenceCompare?.origin === "import-assist" && activeTab &&
+          visibleReferenceCompare.linkedEditorSessionId === activeTab.sessionId ? (
+          <div
             className="reference-import-workflow-hint"
             role="note"
             data-testid="reference-import-workflow-hint"
           >
-            {referenceCopy.importWorkflowHint}
-          </p>
+            <div className="comparison-targets">
+              <div className="comparison-target">
+                <span>{importContext.draft}</span><strong title={activeTab.name}>{activeTab.name}</strong>
+              </div>
+              <div className="comparison-target">
+                <span>{importContext.source}</span>
+                <strong title={visibleReferenceCompare.reference.path}>{visibleReferenceCompare.reference.name}</strong>
+              </div>
+            </div>
+            <p>{referenceCopy.importWorkflowHint}</p>
+          </div>
         ) : null}
         {visibleReferenceCompare ? (
           <div
             aria-label={referenceCopy.narrowFocusLabel}
             className="reference-narrow-switch"
-            role="toolbar"
+            role="group"
           >
             <button
               type="button"

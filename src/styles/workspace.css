@@ -3062,3 +3062,5 @@
   }
   .book-reader-chapter-bar { grid-template-columns: auto minmax(0, 1fr) auto; }
 }
+
+.reference-import-workflow-hint > p { margin: 6px 0 0; }

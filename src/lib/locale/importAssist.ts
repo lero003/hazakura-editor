@@ -52,3 +52,10 @@ export function importAssistConfirmCopy(
     ].join("\n"),
   };
 }
+
+/** Describe the existing paired session without inventing extraction confidence. */
+export function importDraftContextCopy(language: MenuLanguage) {
+  if (isKanaStyle(language)) return { draft: "したがき — へんしゅう", source: "もとの しりょう — よみとりせんよう" };
+  if (isJapaneseMenuLanguage(language)) return { draft: "下書き — 編集", source: "元資料 — 読み取り専用" };
+  return { draft: "Draft — editable", source: "Source — read-only" };
+}
