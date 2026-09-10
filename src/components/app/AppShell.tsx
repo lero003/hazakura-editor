@@ -32,6 +32,7 @@ import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
+import { useCompactSidebarCollapse } from "../../hooks/app/useCompactSidebarCollapse";
 import { useCrtMouseTracking } from "../../hooks/app/useCrtMouseTracking";
 
 export type AppShellProps = Omit<
@@ -78,8 +79,12 @@ export function AppShell(props: AppShellProps) {
   const shinkaiMode = props.resolvedTheme === "shinkai";
   const edohiganMode = props.resolvedTheme === "edohigan";
   useCrtMouseTracking(crtMode);
-  const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
-    useState(false);
+  // 狭い窓ではサイドバーを一時的に畳む（保存設定は持たない・モック23）。
+  const {
+    collapsed: workspaceSidebarCollapsed,
+    toggle: toggleWorkspaceSidebar,
+    setCollapsed: setWorkspaceSidebarCollapsed,
+  } = useCompactSidebarCollapse();
   const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
   const proposalReviewRef = useRef<HTMLDivElement>(null);
   useLocalAssistReviewNavigation({ tabs: props.tabs, activeTab: props.activeTab,
@@ -169,7 +174,7 @@ export function AppShell(props: AppShellProps) {
           workspaceName={props.workspaceRootPath?.split(/[\\/]/).filter(Boolean).at(-1) ?? ""}
           menuLanguage={props.menuLanguage}
           sidebarCollapsed={workspaceSidebarCollapsed}
-          onToggleSidebar={() => setWorkspaceSidebarCollapsed((value) => !value)}
+          onToggleSidebar={toggleWorkspaceSidebar}
           canSave={navigation.canNavigate && !readingOverlayOpen && !props.appleAssistGenerationLock && props.activeTab?.saveStatus !== "saving"}
           saving={props.activeTab?.saveStatus === "saving"}
           onSave={() => { void props.onSaveDocument(); }}
