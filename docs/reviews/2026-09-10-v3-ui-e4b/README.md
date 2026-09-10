@@ -21,7 +21,8 @@ pickerの前後でtab ID・session・workspaceを検証し、保存先決定時�
 画像の既存許可、inline処理、画像/CSS込み10 MiB拒否は維持する。元Markdownの保存はしない。
 
 HTMLのEscape/Tabは既存modal keyboard guardに接続。最初のfocusはCancel。
-nativeメニューのmodal遮断にもHTMLを含める。書き出し処理自体の全面的な非同期再設計ではない。
+訂正（追レビュー）: 当時nativeメニュー側はSave Conflictのみを遮断しており、HTMLの一般modal遮断は未実装だった。
+この記録の過大な主張を訂正し、0e371fbcで一般modal遮断を追加した。書き出し処理自体の全面的な非同期再設計ではない。
 
 取り込みは既存の事前確認→ローカル抽出→新規未保存タブ→元資料の参照という流れを維持。
 確定前の抽出ステージ、新しいOCR精度state、元資料の上書き経路は追加していない。
