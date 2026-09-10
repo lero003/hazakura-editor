@@ -12,6 +12,7 @@ import { AUTO_BACKUP_USER_CHOICE_STORAGE_KEY as AUTO_BACKUP_CHOICE_KEY } from ".
 import type { AppleAssistAvailability } from "../../lib/tauri";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { ToggleSwitch } from "../common/ToggleSwitch";
+import { SparklesIcon } from "./Icons";
 
 type SettingsPreferencesPaneProps = {
   appleAssistAvailability?: AppleAssistAvailability;
@@ -249,6 +250,19 @@ export function SettingsPreferencesPane({
           <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.lModeFontSize }}>{sizeCopy.sample}</span>
         </label>
         </fieldset>
+        {/* 4つの設定の結果を1箇所で確かめられる面（モック16のLIVE PREVIEW）。
+            保存済みの値だけを使い、ここから本文を書き換えない。 */}
+        <div className="settings-type-preview">
+          <span className="settings-type-preview-caption">{copy.typePreviewCaption}</span>
+          <p style={{
+            fontSize: editorSettings.previewFontSize,
+            // 行間はまだ独立した設定が無い（D06）。プレビュー既定の1.9を使う。
+            lineHeight: 1.9,
+          }}>{copy.typePreviewSample}</p>
+          <span className="field-hint" style={{ fontSize: editorSettings.workspaceFontSize }}>
+            {editorSettings.previewFontSize}px
+          </span>
+        </div>
         <label className="field-control">
           <span>{copy.tabSize}</span>
           <select
@@ -334,14 +348,6 @@ export function SettingsPreferencesPane({
         />
         {appleLocalAssistAllowed ? (
           <>
-            <div
-              className="field-control"
-              role="status"
-              aria-label={copy.appleAssistStatusLabel}
-            >
-              <span>{copy.appleAssistStatusLabel}</span>
-              <span className="field-hint">{appleAssistStatus}</span>
-            </div>
             <ToggleSwitch
               checked={editorSettings.appleAssistDiffInitiallyOpen}
               hint={copy.appleAssistDiffInitiallyOpenHint}
@@ -353,6 +359,26 @@ export function SettingsPreferencesPane({
                 }))
               }
             />
+            {/* 生成元と「しないこと」を設定の中に置く（モック17）。
+                可用性は既存の appleAssistStatus をそのまま読み、新しい状態機械は作らない。 */}
+            <div className="assist-capability" data-availability={appleAssistAvailability.kind}>
+              <span className="assist-capability-icon" aria-hidden="true"><SparklesIcon /></span>
+              <div className="assist-capability-body">
+                {/* 見出しタグは設定のカテゴリ見出し（h3）だけにする。ここは本文の一部。 */}
+                <p className="assist-capability-title">{copy.appleAssistStatusLabel}</p>
+                <p className="field-hint" role="status" aria-label={copy.appleAssistStatusLabel}>{appleAssistStatus}</p>
+                <p className="field-hint">{copy.assistCapabilityDevice}</p>
+              </div>
+            </div>
+            <div className="assist-boundary-grid">
+              {copy.assistBoundaries.map((boundary) => (
+                <div className="assist-boundary" key={boundary.title}>
+                  <p className="assist-boundary-title">{boundary.title}</p>
+                  <p className="field-hint">{boundary.body}</p>
+                </div>
+              ))}
+            </div>
+            <p className="field-hint">{copy.assistNotice}</p>
           </>
         ) : null}
         <label className="field-control">

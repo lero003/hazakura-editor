@@ -1077,10 +1077,26 @@
   margin-top: 2px;
 }
 
+/* 進捗バー（モック04）。ページ数が未計測の間は幅0%のまま「不明」を出す。 */
+.ebook-reader-progress-bar {
+  width: min(180px, 45%);
+  height: 3px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 24%, transparent);
+  overflow: hidden;
+}
+.ebook-reader-progress-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
 .ebook-chapter {
   --ebook-page-bottom-safe-area: clamp(18px, 2.4vw, 26px);
   --ebook-page-footer-height: 34px;
-  --ebook-page-gap: clamp(28px, 5vw, 44px);
+  --ebook-page-gap: 6px;
   --ebook-page-height-max: 700px;
   --ebook-page-width: min(420px, calc(100vw - 56px));
   --ebook-spread-width: calc((var(--ebook-page-width) * 2) + var(--ebook-page-gap));
@@ -1105,6 +1121,12 @@
   max-width: var(--ebook-page-width);
   min-height: 0;
   width: 100%;
+  /* 紙面そのものを見せる（モック04）。不透明な紙 + 1px罫線 + 控えめな影。 */
+  background: var(--surface-paper);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: var(--shadow-sm);
+  padding: 0 clamp(14px, 2vw, 22px);
 }
 
 .ebook-page-viewport {

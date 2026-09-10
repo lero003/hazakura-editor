@@ -261,10 +261,14 @@ describe("preview.css", () => {
     expect(chapterBody).toMatch(
       /--ebook-page-width:\s*min\(420px,\s*calc\(100vw - 56px\)\)/,
     );
-    expect(chapterBody).toMatch(
-      /--ebook-page-gap:\s*clamp\(28px,\s*5vw,\s*44px\)/,
-    );
+    // 見開き中央のガターは本のようにほぼ密着させる（モック04: 4〜6px）。
+    expect(chapterBody).toMatch(/--ebook-page-gap:\s*6px/);
     expect(chapterBody).toMatch(/--ebook-page-footer-height:\s*34px/);
+    // 紙面そのものを見せる（モック04: 不透明な紙 + 罫線 + 控えめな影）。
+    const sheet = ruleBody(".ebook-page-sheet");
+    expect(sheet).toMatch(/background:\s*var\(--surface-paper\)/);
+    expect(sheet).toMatch(/border:\s*1px solid var\(--border\)/);
+    expect(sheet).toMatch(/box-shadow:\s*var\(--shadow-sm\)/);
     expect(chapterBody).toMatch(
       /--ebook-page-bottom-safe-area:\s*clamp\(18px,\s*2\.4vw,\s*26px\)/,
     );

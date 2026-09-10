@@ -565,6 +565,54 @@
 /* 本全体を選べない理由など、スコープの補足。 */
 .export-scope-note { color: var(--text-muted); font-size: 12px; }
 
+/* 生成元と利用可否、そして「しないこと」の境界（モック17）。 */
+.assist-capability {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-paper);
+}
+.assist-capability-icon { display: inline-flex; flex: 0 0 auto; color: var(--accent); }
+.assist-capability-body { min-width: 0; }
+.assist-capability-title { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.assist-capability-body p { margin: 0 0 2px; }
+.assist-boundary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.assist-boundary {
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+}
+.assist-boundary-title { margin: 0 0 3px; font-size: 12.5px; font-weight: 600; }
+.assist-boundary p { margin: 0; }
+@media (max-width: 560px) { .assist-boundary-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* 文字サイズ設定の結果を1箇所で確かめる面（モック16のLIVE PREVIEW）。 */
+.settings-type-preview {
+  margin: 12px 0 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-paper);
+}
+.settings-type-preview-caption {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.settings-type-preview p { margin: 0 0 8px; color: var(--text); overflow-wrap: anywhere; }
+
 .dialog-actions {
   display: flex;
   flex-wrap: wrap;

@@ -1152,6 +1152,22 @@ export default function EBookPane({
           <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
             {copy.pageProgress} {activePageIndexSafe + 1} / {measuredPageCount}
           </div>
+          {/* 章のどこにいるかを一目で分かるようにする（モック04の進捗バー）。
+              ページ数が未計測の間は 0% と valuemax=1 で「不明」を正直に出す。 */}
+          <div
+            aria-label={copy.pageProgress}
+            aria-valuemax={Math.max(1, measuredPageCount)}
+            aria-valuemin={1}
+            aria-valuenow={activePageIndexSafe + 1}
+            className="ebook-reader-progress-bar"
+            role="progressbar"
+          >
+            <span
+              style={{
+                width: `${measuredPageCount > 0 ? Math.min(100, ((activePageIndexSafe + 1) / measuredPageCount) * 100) : 0}%`,
+              }}
+            />
+          </div>
           {/* Always-visible: e-book → editor discovery (not hover-only). */}
           {readingFocusActive && onExitReadingFocus ? (
             <button
