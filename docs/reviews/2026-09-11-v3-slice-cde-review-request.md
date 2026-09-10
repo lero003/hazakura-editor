@@ -1,11 +1,12 @@
 # v3 UI 外部レビュー依頼 — 江戸彼岸の明色化 / スライスC・D・E-1
 
 Status: Ready for external review
-Scope: `5d2962fc..9c18b5b6`（7コミット）
-Review packet HEAD: `9c18b5b6`（ブランチ全体では `fa6c9ba0..9c18b5b6` = 30コミット）
+Implementation scope: `5d2962fc..9c18b5b6`（実装とその資料の7コミット）
+Review packet: `9c18b5b6` 以降の docs-only コミット（本文書 `6cce851b` と、このブックキーピング修正）
+Branch: `codex/v3`（`fa6c9ba0..HEAD` = 32コミット）
 Authority: Evidence（ローカル検証・実描画・DOM実測。CIの主張はしない）
 Date: 2026-09-11
-Branch: `codex/v3`
+
 
 ## 0. この依頼の前提（モック起点の再点検）
 
