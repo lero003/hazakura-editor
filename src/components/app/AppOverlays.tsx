@@ -77,6 +77,7 @@ type AppOverlaysProps = {
   agentWorkbenchProvider: AgentWorkbenchProvider;
   agentWorkbenchRestartRequired: boolean;
   appleAssistAvailability: AppleAssistAvailability;
+  appleAssistAvailabilityProbed?: boolean;
   assistSurfaceActive: AssistSurfacePreference;
   assistSurfacePreference: AssistSurfacePreference;
   appCloseCancelButtonRef: RefObject<HTMLButtonElement | null>;
@@ -241,6 +242,7 @@ export function AppOverlays({
   agentWorkbenchProvider,
   agentWorkbenchRestartRequired,
   appleAssistAvailability,
+  appleAssistAvailabilityProbed,
   assistSurfaceActive,
   assistSurfacePreference,
   appCloseCancelButtonRef,
@@ -585,6 +587,7 @@ export function AppOverlays({
           ) : (
             <SettingsPreferencesPane
               appleAssistAvailability={appleAssistAvailability}
+              appleAssistAvailabilityProbed={appleAssistAvailabilityProbed}
               copy={preferencesCopy}
               editorSettings={editorSettings}
               lModeCopy={lModeCopy}

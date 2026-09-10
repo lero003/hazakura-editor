@@ -1496,7 +1496,7 @@ export function useAppShellController() {
     availability: appleAssistAvailability,
     probed: appleAssistAvailabilityProbed,
   } = useAppleAssistAvailability(
-    appleLocalAssistActive && preferencesDialogMode === "agent",
+    appleLocalAssistActive && (preferencesDialogMode === "agent" || preferencesDialogMode === "settings"),
   );
 
   // Q-STR-4: shared open/save/export/import actions for menu + palette.

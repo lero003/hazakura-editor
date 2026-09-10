@@ -14,6 +14,7 @@ import { ToggleSwitch } from "../common/ToggleSwitch";
 
 type SettingsPreferencesPaneProps = {
   appleAssistAvailability?: AppleAssistAvailability;
+  appleAssistAvailabilityProbed?: boolean;
   copy: PreferencesCopy;
   editorSettings: EditorSettings;
   lModeCopy: LModeCopy;
@@ -46,6 +47,7 @@ const AMBIENT_OPTIONS: {
 
 export function SettingsPreferencesPane({
   appleAssistAvailability = { kind: "unsupported" },
+  appleAssistAvailabilityProbed = false,
   copy,
   editorSettings,
   lModeCopy,
@@ -69,6 +71,7 @@ export function SettingsPreferencesPane({
   const appleAssistStatus = appleAssistStatusText(
     copy,
     appleAssistAvailability,
+    appleAssistAvailabilityProbed,
   );
 
   return (
@@ -402,7 +405,9 @@ export function SettingsPreferencesPane({
 function appleAssistStatusText(
   copy: PreferencesCopy,
   availability: AppleAssistAvailability,
+  probed: boolean,
 ): string {
+  if (!probed) return copy.appleAssistStatusUnprobed;
   if (availability.kind === "available") {
     return copy.appleAssistStatusAvailable;
   }

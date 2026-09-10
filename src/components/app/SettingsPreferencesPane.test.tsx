@@ -107,6 +107,7 @@ describe("SettingsPreferencesPane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
     render(
       <SettingsPreferencesPane
+        appleAssistAvailabilityProbed={true}
         appleAssistAvailability={{
           kind: "unavailable",
           reason: "Foundation Models unavailable",

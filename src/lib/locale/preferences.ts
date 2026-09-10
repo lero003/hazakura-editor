@@ -21,6 +21,7 @@ export type PreferencesCopy = {
   appleAssistStatusUnavailable: (reason: string) => string;
   appleAssistStatusDisabled: string;
   appleAssistStatusUnsupported: string;
+  appleAssistStatusUnprobed: string;
   autoBackup: string;
   autoBackupHint: string;
   dark: string;
@@ -81,13 +82,14 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       appearanceAndWriting: "みため と かくこと",
       appleAssistDiffInitiallyOpen: "Hazakura Local Assist の さぶんを ひらく",
       appleAssistDiffInitiallyOpenHint:
-        "Hazakura Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
+        "ていあんを はんえいしたあと、へんこうりれきの さぶんを はじめから ひらきます。",
       appleAssistStatusLabel: "Hazakura Local Assist の じょうたい",
       appleAssistStatusAvailable: "この Mac で つかえます。さぶんを みてから てきよう します。",
       appleAssistStatusUnavailable: (reason) =>
         `いま つかえません: ${reason}`,
       appleAssistStatusDisabled: "この せっしょんでは むこうです。",
       appleAssistStatusUnsupported: "この かんきょうでは つかえません。",
+      appleAssistStatusUnprobed: "じょうたいは まだ かくにんできてゐません。",
       autoBackup: "うつしのこし",
       autoBackupHint:
         "じぶんで ON にした ときだけ、ほぞんしていない へんこうを 30びょう ごとに .bak として のこします。",
@@ -162,7 +164,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         appearanceAndWriting: "見た目と書き心地",
         appleAssistDiffInitiallyOpen: "Hazakura Local Assist の差分を自動で開く",
         appleAssistDiffInitiallyOpenHint:
-          "Hazakura Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
+          "提案を反映した後、変更履歴の差分を最初から開きます。提案の反映には明示操作が必要です。",
         appleAssistStatusLabel: "Hazakura Local Assist の状態",
         appleAssistStatusAvailable:
           "この Mac で利用できます。提案は差分で確認してから明示的に適用します。",
@@ -170,6 +172,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           `現在は利用できません: ${reason}`,
         appleAssistStatusDisabled: "このアプリセッションでは無効です。",
         appleAssistStatusUnsupported: "この環境では利用できません。",
+        appleAssistStatusUnprobed: "状態はまだ確認できていません。",
         autoBackup: "自動バックアップ",
         autoBackupHint:
           "自分で有効化した場合だけ、未保存の変更を30秒ごとに .bak として残します。",
@@ -241,7 +244,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         appearanceAndWriting: "Appearance & Writing",
         appleAssistDiffInitiallyOpen: "Open Hazakura Local Assist diff automatically",
         appleAssistDiffInitiallyOpenHint:
-          "Show the compact diff immediately after Hazakura Local Assist changes the text.",
+          "Open the change-history diff after you apply a proposal. Applying a proposal still requires an explicit action.",
         appleAssistStatusLabel: "Hazakura Local Assist status",
         appleAssistStatusAvailable:
           "Available on this Mac. Review the diff, then apply explicitly.",
@@ -249,6 +252,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           `Currently unavailable: ${reason}`,
         appleAssistStatusDisabled: "Disabled in this app session.",
         appleAssistStatusUnsupported: "Not supported in this environment.",
+        appleAssistStatusUnprobed: "Availability has not been confirmed yet.",
         autoBackup: "Auto-backup",
         autoBackupHint:
           "When you enable it, unsaved changes are written as .bak snapshots every 30 seconds.",
