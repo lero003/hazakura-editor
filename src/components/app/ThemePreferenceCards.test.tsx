@@ -17,6 +17,7 @@ it.each(["en", "ja", "kana"] as MenuLanguage[])("preserves all seven theme IDs a
   expect(screen.getAllByRole("button")).toHaveLength(7);
   for (const id of ["light", "dark", "yakou", "shokou", "edohigan", "shinkai", "crt"] as const) {
     const button = screen.getByRole("button", { name: copy[id] });
+    expect(document.getElementById(button.getAttribute("aria-describedby")!)?.textContent).toBe(copy.themeHint(id));
     fireEvent.click(button);
     expect(changed).toHaveBeenLastCalledWith(id);
     expect(button.getAttribute("aria-pressed")).toBe("true");

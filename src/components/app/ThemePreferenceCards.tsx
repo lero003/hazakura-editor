@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { MenuLanguage, ThemePreference } from "../../types";
 import type { PreferencesCopy } from "../../lib/locale";
 
@@ -7,6 +8,7 @@ export function ThemePreferenceCards({ copy, language, value, onChange }: {
   value: ThemePreference;
   onChange: (theme: ThemePreference) => void;
 }) {
+  const descriptionId = useId();
   const labels = language === "en"
     ? { daily: "Everyday themes", ambient: "Atmospheric themes", sample: "A quiet page" }
     : language === "kana"
@@ -23,7 +25,9 @@ export function ThemePreferenceCards({ copy, language, value, onChange }: {
         {group.themes.map((theme) => <button type="button" key={theme}
           className="theme-preference-card" data-theme-preview={theme}
           aria-label={copy[theme]} aria-pressed={theme === value}
+          aria-describedby={descriptionId + theme}
           title={copy.themeHint(theme)} onClick={() => onChange(theme)}>
+          <span id={descriptionId + theme} className="sr-only">{copy.themeHint(theme)}</span>
           <span className="theme-preference-paper" aria-hidden="true">
             <span>{labels.sample}</span><i /><i /><i />
           </span>
