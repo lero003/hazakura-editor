@@ -254,14 +254,31 @@ export function SettingsPreferencesPane({
             保存済みの値だけを使い、ここから本文を書き換えない。 */}
         <div className="settings-type-preview">
           <span className="settings-type-preview-caption">{copy.typePreviewCaption}</span>
-          <p style={{
-            fontSize: editorSettings.previewFontSize,
-            // 行間はまだ独立した設定が無い（D06）。プレビュー既定の1.9を使う。
-            lineHeight: 1.9,
-          }}>{copy.typePreviewSample}</p>
-          <span className="field-hint" style={{ fontSize: editorSettings.workspaceFontSize }}>
-            {editorSettings.previewFontSize}px
-          </span>
+          {/* 4つの文字サイズ設定の結果を、それぞれの大きさで1箇所に並べる（モック16）。
+              本文に写すのは previewFontSize だけでは足りない（エディタ・ワークスペース・
+              えるモードの設定が反映されないため）。ここは各行が実データから描く。 */}
+          {[
+            { key: "editor", label: copy.editorFontSize, size: editorSettings.editorFontSize },
+            { key: "preview", label: copy.previewFontSize, size: editorSettings.previewFontSize },
+            { key: "workspace", label: copy.workspaceFontSize, size: editorSettings.workspaceFontSize },
+            { key: "lmode", label: copy.lModeFontSize, size: editorSettings.lModeFontSize },
+          ].map((row) => (
+            <div className="settings-type-preview-row" key={row.key}>
+              <span className="settings-type-preview-row-label">
+                {row.label} · {row.size}px
+              </span>
+              <span
+                className="settings-type-preview-row-sample"
+                style={{
+                  fontSize: row.size,
+                  // 行間はまだ独立した設定が無い（D06）。プレビュー既定の1.9を使う。
+                  lineHeight: 1.9,
+                }}
+              >
+                {copy.typePreviewSample}
+              </span>
+            </div>
+          ))}
         </div>
         <label className="field-control">
           <span>{copy.tabSize}</span>

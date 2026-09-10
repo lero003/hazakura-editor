@@ -256,10 +256,10 @@ describe("EBookPane chapter reader", () => {
     fireEvent.click(exitButton);
 
     expect(onExitReadingFocus).toHaveBeenCalledTimes(1);
-    // Always visible in status chrome (not hover-only toolbar).
+    // 集中中の「編集に戻る」は下部のページ操作帯へ移した（モック04）。
     expect(exitButton.classList.contains("ebook-reader-edit-here")).toBe(true);
-    expect(exitButton.closest(".ebook-reader-status")).not.toBeNull();
-    expect(exitButton.closest(".ebook-reader-chrome")).not.toBeNull();
+    expect(exitButton.closest(".ebook-reader-footer")).not.toBeNull();
+    expect(exitButton.closest(".ebook-pane")).not.toBeNull();
   });
 
   it("exposes an always-visible edit-this-place control in the side pane", async () => {
@@ -330,9 +330,9 @@ describe("EBookPane chapter reader", () => {
 
     const tocButton = screen.getByRole("button", { name: "目次" });
     expect(tocButton.classList.contains("ebook-reader-toc-toggle")).toBe(true);
-    // v0.33: 目次ボタンも右上の浮遊ツール群
-    expect(tocButton.closest(".ebook-reader-toolbar")).not.toBeNull();
-    expect(tocButton.closest(".ebook-reader-chrome")).not.toBeNull();
+    // 目次は下部のページ操作帯へ移した（モック04）。
+    expect(tocButton.closest(".ebook-reader-footer")).not.toBeNull();
+    expect(tocButton.closest(".ebook-pane")).not.toBeNull();
 
     fireEvent.click(tocButton);
 

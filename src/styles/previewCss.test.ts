@@ -314,7 +314,10 @@ describe("preview.css", () => {
     expect(sheetBody).toMatch(/min-height:\s*0/);
     expect(ruleBody(".ebook-page-viewport")).toMatch(/min-height:\s*0/);
     expect(footerBody).toMatch(/display:\s*grid/);
-    expect(footerBody).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\) auto/);
+    // 下部のページ操作帯（モック04）: 前 / 現在位置 / 次・目次・編集の3列。
+    expect(footerBody).toMatch(
+      /grid-template-columns:\s*auto minmax\(0,\s*1fr\) auto/,
+    );
     expect(footerBody).toMatch(/height:\s*100%/);
     expect(footerBody).toMatch(/padding:\s*0 1px/);
     expect(footerBody).not.toMatch(/position:\s*sticky/);

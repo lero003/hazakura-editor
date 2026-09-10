@@ -1183,17 +1183,8 @@ export default function EBookPane({
               }}
             />
           </div>
-          {/* Always-visible: e-book → editor discovery (not hover-only). */}
-          {readingFocusActive && onExitReadingFocus ? (
-            <button
-              className="ebook-reader-button ebook-reader-edit-here"
-              onClick={() => onExitReadingFocus(activeReaderLocation)}
-              title={copy.editCurrentLocationTitle}
-              type="button"
-            >
-              {copy.exitReadingFocus}
-            </button>
-          ) : null}
+          {/* Always-visible: e-book → editor discovery (not hover-only).
+              集中中の「編集に戻る」は下部の操作帯へ移した（モック04）。 */}
           {!readingFocusActive && onEditCurrentLocation ? (
             <button
               className="ebook-reader-button ebook-reader-edit-here"
@@ -1205,32 +1196,9 @@ export default function EBookPane({
             </button>
           ) : null}
         </div>
-        {/* 進捗テキストの下の操作帯。e-book エリアにホバー（または子の
-            キーボードフォーカス）でふわっと出る。前/次/目次/集中をまとめる。 */}
+        {/* 集中の入口だけを上に残す。前／次／目次／編集は読書面の下端へ移した
+            （モック04: 下部のページ操作帯にまとめる）。 */}
         <div className="ebook-reader-toolbar">
-          <button
-            className="ebook-reader-button"
-            disabled={previousDisabled}
-            onClick={goToPreviousPage}
-            type="button"
-          >
-            {copy.previousPage}
-          </button>
-          {readingFocusActive && tableOfContentsEntries.length > 1 ? (
-            <button
-              aria-controls={
-                tableOfContentsOpen
-                  ? "ebook-reader-table-of-contents"
-                  : undefined
-              }
-              aria-expanded={tableOfContentsOpen}
-              className="ebook-reader-button ebook-reader-toc-toggle"
-              onClick={() => setTableOfContentsOpen((open) => !open)}
-              type="button"
-            >
-              {copy.tableOfContents}
-            </button>
-          ) : null}
           {focusAction && !readingFocusActive ? (
             <button
               className="ebook-reader-button ebook-reader-floating-action"
@@ -1242,14 +1210,6 @@ export default function EBookPane({
               {focusActionLabel}
             </button>
           ) : null}
-          <button
-            className="ebook-reader-button"
-            disabled={nextDisabled}
-            onClick={goToNextPage}
-            type="button"
-          >
-            {copy.nextPage}
-          </button>
         </div>
       </header>
       {readingFocusActive && tableOfContentsOpen ? (
@@ -1378,17 +1338,66 @@ export default function EBookPane({
                 </div>
               ) : null}
             </div>
+            {/* 下部のページ操作帯（モック04）。前後ページ・現在位置・目次・
+                編集への入口を読書面の下端へまとめる。 */}
             <footer
               className="ebook-reader-footer"
               aria-label={copy.pageProgress}
             >
-              <span className="ebook-reader-footer-title" title={chapterLabel}>
-                {copy.footerChapter}: {chapterLabel}
+              <div className="ebook-reader-footer-nav">
+                <button
+                  className="ebook-reader-button"
+                  disabled={previousDisabled}
+                  onClick={goToPreviousPage}
+                  type="button"
+                >
+                  {copy.previousPage}
+                </button>
+              </div>
+              <span className="ebook-reader-footer-position">
+                <span className="ebook-reader-footer-title" title={chapterLabel}>
+                  {copy.footerChapter}: {chapterLabel}
+                </span>
+                <span className="ebook-reader-footer-page">
+                  {copy.footerPageProgress} {activePageIndexSafe + 1} /{" "}
+                  {Math.max(1, measuredPageCount)}
+                </span>
               </span>
-              <span className="ebook-reader-footer-page">
-                {copy.footerPageProgress} {activePageIndexSafe + 1} /{" "}
-                {measuredPageCount}
-              </span>
+              <div className="ebook-reader-footer-nav ebook-reader-footer-nav-end">
+                {readingFocusActive && onExitReadingFocus ? (
+                  <button
+                    className="ebook-reader-button ebook-reader-edit-here"
+                    onClick={() => onExitReadingFocus(activeReaderLocation)}
+                    title={copy.editCurrentLocationTitle}
+                    type="button"
+                  >
+                    {copy.exitReadingFocus}
+                  </button>
+                ) : null}
+                {readingFocusActive && tableOfContentsEntries.length > 1 ? (
+                  <button
+                    aria-controls={
+                      tableOfContentsOpen
+                        ? "ebook-reader-table-of-contents"
+                        : undefined
+                    }
+                    aria-expanded={tableOfContentsOpen}
+                    className="ebook-reader-button ebook-reader-toc-toggle"
+                    onClick={() => setTableOfContentsOpen((open) => !open)}
+                    type="button"
+                  >
+                    {copy.tableOfContents}
+                  </button>
+                ) : null}
+                <button
+                  className="ebook-reader-button"
+                  disabled={nextDisabled}
+                  onClick={goToNextPage}
+                  type="button"
+                >
+                  {copy.nextPage}
+                </button>
+              </div>
             </footer>
           </div>
         </section>

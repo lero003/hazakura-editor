@@ -52,5 +52,24 @@ it("shows one preview surface for the type-size settings (モック16)", () => {
     onMenuLanguageChange={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
 
   expect(screen.getByText(copy.typePreviewCaption)).toBeTruthy();
-  expect(screen.getByText(copy.typePreviewSample)).toBeTruthy();
+  // 4つの文字サイズ設定すべてが、それぞれの大きさで1箇所に並ぶ（FB: 中央面が
+  // エディタ・えるモードの設定を映していなかった）。
+  const settings = defaultEditorSettings();
+  const labels = [...document.querySelectorAll(".settings-type-preview-row-label")].map(
+    (node) => node.textContent ?? "",
+  );
+  expect(labels).toHaveLength(4);
+  expect(labels[0]).toContain(copy.editorFontSize);
+  expect(labels[1]).toContain(copy.previewFontSize);
+  expect(labels[2]).toContain(copy.workspaceFontSize);
+  expect(labels[3]).toContain(copy.lModeFontSize);
+  // 行ごとに実際の設定値が入る（見本と設定値が食い違わない）。
+  expect(labels[1]).toContain(String(settings.previewFontSize));
+  const rows = [...document.querySelectorAll<HTMLElement>(".settings-type-preview-row-sample")];
+  expect(rows.map((row) => row.style.fontSize)).toEqual([
+    `${settings.editorFontSize}px`,
+    `${settings.previewFontSize}px`,
+    `${settings.workspaceFontSize}px`,
+    `${settings.lModeFontSize}px`,
+  ]);
 });

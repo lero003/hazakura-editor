@@ -611,7 +611,28 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.settings-type-preview p { margin: 0 0 8px; color: var(--text); overflow-wrap: anywhere; }
+.settings-type-preview-row {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.settings-type-preview-row-label {
+  flex: 0 0 auto;
+  min-width: 132px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.settings-type-preview-row-sample {
+  min-width: 0;
+  color: var(--text);
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 620px) {
+  .settings-type-preview-row { display: block; }
+  .settings-type-preview-row-label { display: block; }
+}
 
 .dialog-actions {
   display: flex;
