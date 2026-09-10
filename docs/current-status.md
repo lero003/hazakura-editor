@@ -38,6 +38,8 @@ Last reviewed: 2026-09-10
 - **UI 第二調整:** 罫線の階層を全7テーマで調整（`--border` 紙面比1.54〜1.55、`--border-strong` 2.18〜2.22・差0.63以上）。
   focus（`--accent` outline）3:1以上と `theme-palette.json`＝CSS `--chrome-surface` を自動検査に固定。
   実描画の罫線画素 `#dce2d9`→`#c7d2c5` を同座標で確認。[証跡](reviews/2026-09-10-v3-border-hierarchy/README.md)。
+- **設定の外枠:** モック基準へ（1100×752、左レール200px、パディング23×14、項目min-height40px、アイコンなし）。
+  1440×850で1100×752・960×640で912×592を実測。[証跡](reviews/2026-09-10-v3-settings-frame/README.md)。
 - **UI focus/境界:** focusリングの薄め9箇所を `--focus-ring` へ（light 2.40→5.85:1、shokou 2.11→4.30:1）、
   `--cm-gutter-border` を全テーマ `var(--border)` へ、タブ下・ステータス上の2境界だけ `--border-strong`（約2.2:1）へ。
   全CSSで `outline` に color-mix を使わないことを自動検査に固定。証跡の日付をJSTへ是正。
@@ -47,7 +49,7 @@ Last reviewed: 2026-09-10
   プレビュー上端の空白（表示ツールバー行の右半分が98.8%単色）を修正。閲覧系の節を行の右端へ寄せ、
   空状態の案内を一本化。ローカル260ファイル・2,309件、App Store surface 117件が成功。
   [証跡](reviews/2026-09-10-v3-rough-edges/README.md)。
-- **次:** 設定外枠寸法（1100px参考・レール200px）とHelp導線、画面16/05/23/24、native受入。UI-Gは未完了。
+- **次:** 画面23（狭い窓のサイドバー一時折畳み）、画面16（書体・行間の独立設定は別タスク）、画面24（寸法差の計測）、Help導線の採否、native受入。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
