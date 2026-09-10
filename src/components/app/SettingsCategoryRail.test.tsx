@@ -48,6 +48,16 @@ function stubSettingsBody(
   return { scroller, relayout: layout, maxScrollTop };
 }
 
+it("keeps the settings rail text-only like the mock", () => {
+  const copy = renderSettings();
+  const rail = screen.getByRole("button", { name: copy.editor }).closest("nav")!;
+  // モック15の左ナビは文字だけ。アイコンを足すなら、ここを更新する判断が要る。
+  expect(rail.querySelectorAll("svg, img")).toHaveLength(0);
+  for (const button of rail.querySelectorAll("button")) {
+    expect((button.textContent ?? "").trim().length).toBeGreaterThan(0);
+  }
+});
+
 it("marks the category whose section is on screen as the current one", () => {
   const copy = renderSettings();
   expect(screen.getByRole("button", { name: copy.editor }).getAttribute("aria-current")).toBe("true");

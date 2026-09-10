@@ -35,7 +35,8 @@ describe("settings dialog frame", () => {
     expect(desktopLayout).toMatch(
       /\.settings-category-nav\s*{[^}]*width:\s*200px/s,
     );
-    // レールの項目にアイコンは置かない（モック 15 の左ナビ）。
-    expect(desktopLayout).not.toMatch(/\.settings-category-nav button\s*{[^}]*svg/s);
+    // 「アイコンを置かない」は DOM 側で検査する（SettingsCategoryRail.test.tsx）。
+    // ここはレールの幅と横並びレイアウトの契約だけを見る。
+    expect(desktopLayout).toMatch(/\.settings-category-nav button\s*{[^}]*min-height:\s*40px/s);
   });
 });
