@@ -1,9 +1,9 @@
 # 外部レビュー依頼 — UI-G2〜G4 と 段階2（設定レール・紙面トークン・開始画面・配色/chrome面）
 
-Status: Review request（4回目）
-Implementation scope: `fa6c9ba0..8561178b`（13コミット: G2〜G4・段階2・第二調整）
-Review packet: この依頼文を含む docs-only コミット（`8561178b` の直後1コミット。`fa6c9ba0..` はブランチ全体で14コミット）
-再現: `git log --oneline -14`
+Status: Review request（5回目）
+Implementation scope: `fa6c9ba0..67b0c989`（15コミット: G2〜G4・段階2・第二調整・手直し3点）
+Review packet: この依頼文を含む docs-only コミット（`67b0c989` の直後1コミット。`fa6c9ba0..` はブランチ全体で16コミット）
+再現: `git log --oneline -16`
 Authority: Request
 Date: 2026-09-10
 
@@ -27,10 +27,11 @@ Date: 2026-09-10
 | `9ddd64d5` | 段階2の証跡とP3指摘3件 | 同上 |
 | `8efce875` | レビュー依頼を段階2まで拡張（docs） | — |
 | `8561178b` | 第二調整：境界線の階層を全7テーマで調整、focus 3:1とnative chrome契約を自動検査 | [境界線](2026-09-11-v3-border-hierarchy/README.md) |
+| `67b0c989` | 「実装途中感」3点：空状態と副題の重複を解消、表示ツールバー行の右端を埋める | [手直し](2026-09-11-v3-rough-edges/README.md) |
 
-前回の依頼文で「4コミット」と書いていたのは誤り（`c937e036` が抜けていた）。現在は13コミットで、
-対象面は設定ダイアログ、テーマ／面のトークン定義、開始画面の表示、chrome面の配線と罫線の階層のみ。
-保存・反映・パス・実行・AIの各契約には触れていない。
+前回の依頼文で「4コミット」と書いていたのは誤り（`c937e036` が抜けていた）。現在は15コミットで、
+対象面は設定ダイアログ、テーマ／面のトークン定義、開始画面の表示、chrome面の配線、罫線の階層、
+サイドバー・ツールバー・表示ツールバー行の表示のみ。保存・反映・パス・実行・AIの各契約には触れていない。
 
 ## 1回目のレビュー指摘への対応
 
@@ -82,6 +83,19 @@ CSSだけ変更してJSON側を忘れる事故を、片方ずつのpin更新で�
 **残る未決**：chrome と紙面の境目（ステータス上端 y≈836・タブ下 y≈118）は面差1.06:1のため相対的に薄い。
 ここだけ `--border-strong` を使う案を今回は採らず、記録に留めた。
 
+## 手直し（`67b0c989`）の追加スコープ
+
+前回の判定で最後に挙がった「実装途中感」の3点。実測で正体を特定してから直した。
+
+| # | 実測した正体 | 直し方 |
+| --- | --- | --- |
+| 1 | サイドバーのヘッダー（`.workspace-title`）と空状態（`.workspace-empty`）が同じ `noFolderOpen` を描いていた（y≈98 と y≈449） | フォルダ未選択では**ヘッダーの見出しを出さない**（案内と操作は空状態に一本化） |
+| 2 | `AppPrimaryToolbar` の `<small>{workspaceName \|\| "Hazakura Editor"}</small>` が、フォルダ未選択で上段と同じ製品名を出していた | 副題は**フォルダ名がある時だけ**（モックの副題も「散文集」＝フォルダ名） |
+| 3 | `.document-meta` は文書カラム全幅だが閲覧系が左に寄り、右半分 475×85px が**単色98.8%**だった | 閲覧系の節を `:has()` で名指しし `margin-left: auto` で**行の右端へ**（モックの「並べて表示」の位置） |
+
+前 → 後：上帯右半分の最頻色占有率 **98.8% → 69.0%**、クラスタ右端 **x=959 → x=1426（行の右端）**、
+`noFolderOpen` の出現 **2 → 1**、ツールバーの製品名 **2 → 1**。960×640 / 1024×748 でも右寄せが成立し横スクロールなし。
+
 ## 特に見てほしい点
 
 1. **末尾clampの判定**：`scrollHeight - clientHeight` の 1px 遊びで最下部とみなす実装と、
@@ -102,10 +116,12 @@ CSSだけ変更してJSON側を忘れる事故を、片方ずつのpin更新で�
    `--border-strong` を 2.1以上（差 0.4以上）へ揃えた点。全罫線を3:1にしない役割分担の妥当性。
 10. **focus と native 契約の自動検査**：`--accent` の outline を紙面・ナビ面・chrome面で3:1検査、
     `theme-palette.json` と CSS `--chrome-surface` の同値を7テーマで直接assert（P3-testの対応）。
+11. **手直し3点の直し方**：空状態の案内を本文側に一本化した判断、副題をフォルダ名に限定した判断、
+    表示ツールバーの右寄せ（`:has()` で節を名指し）が妥当か。ヘッダー見出しが空く状態の見え方も含めて。
 
 ## 主張と根拠
 
-- ローカル：`npm run typecheck` 成功、`npm test` **259ファイル / 2,304件**、`smoke:app-store-surface` 117件、
+- ローカル：`npm run typecheck` 成功、`npm test` **260ファイル / 2,309件**、`smoke:app-store-surface` 117件、
   `vite build` 成功、`cargo fmt --check` 成功、`cargo test` **383件成功**（段階2でRustのpinを更新したため実行）。
 - 実測の数値はすべて実描画のスクリーンショットから画素を採取したもの（[段階2](2026-09-10-v3-theme-stage2/README.md)）。
 - **言っていないこと**：native 200% / VoiceOver / 実機 / CI の合格。半透明ナビの合成は紙面・ダイアログ上での測定であること。
@@ -115,7 +131,7 @@ CSSだけ変更してJSON側を忘れる事故を、片方ずつのpin更新で�
 ## 再現手順
 
 ```bash
-git checkout codex/v3 && git log --oneline -14
+git checkout codex/v3 && git log --oneline -16
 npm run typecheck && npm test
 npm run dev:vite
 # 実アプリ: http://127.0.0.1:1420/（localStorage の hazakura-note-theme / -menu-language / -recent-folders で状態を作れる）
@@ -126,7 +142,7 @@ npm run dev:vite
 
 - ~~段階2：文字色・アクセント・境界線の全テーマ調整＋chrome/tabs/status の面の決定~~
   → **実施済み**（`c83bbad3` 段階2、`8561178b` 第二調整の境界線）
-- 「実装途中感」の3点：サイドバーの「No folder open」二重表示、プレビュー上端の空白、開始画面ヘッダーの二重表示
+- ~~「実装途中感」の3点~~ → **実施済み**（`67b0c989`）
 - 設定の外枠寸法（1100px参考・レール200px）、画面16/05/23/24
 - native 受入（VoiceOver / 200% / 再起動後設定 / 実System）
 - 継続未決：chrome と紙面の境目（ステータス上端・タブ下）だけ `--border-strong` を使うか

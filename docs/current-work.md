@@ -12,7 +12,15 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI 第二調整（境界線の階層）
+## 現在の区切り — 「実装途中感」3点の手直し
+
+サイドバーの「No folder open」二重表示、上部ツールバーの「Hazakura Editor」二重表示、
+プレビュー上端の空白（表示ツールバー行の右半分が単色98.8%で空いていた）を直した。
+[実装と証跡](reviews/2026-09-11-v3-rough-edges/README.md)。
+
+ローカル260ファイル・2,309件、typecheck・Vite・App Store surface 117件が成功。
+
+## 直前の区切り — UI 第二調整（境界線の階層）
 
 段階2（light/darkへモック配色、chrome面トークン新設）を外部レビューでAPPROVE。面の分離は実測1.06〜1.13:1で
 「1pxの罫線が分離を担う」状態だったため、オーナー判断で **B案＝面の構造は変えず罫線だけ一段強める** を実施。
@@ -25,7 +33,7 @@ focus（`--accent` のoutline）3:1以上と `theme-palette.json` ＝ CSS `--chr
 
 ## 次のまとまった区切り
 
-1. 「実装途中感」の3点：サイドバーの「No folder open」二重表示、プレビュー上端の空白、開始画面ヘッダーの二重表示。
+1. ~~「実装途中感」の3点~~ **完了**（上記）。
 2. chrome と紙面の境目（ステータス上端・タブ下）だけ `--border-strong` を使うか（面差1.06:1の補い方）。
 3. 設定の外枠寸法（1100px参考）・レール幅200px・Help導線。画面16/05/23/24。
 4. UI-G受入表のnative操作（VoiceOver／200%／再起動後設定／別窓同期）、実IME→Reader→章編集→Undo。
