@@ -1,3 +1,4 @@
+import { ExportDialogFrame } from "./ExportDialogFrame";
 import { useState, type RefObject } from "react";
 import { pickEpubCoverImage } from "../../lib/tauri/dialog";
 import type { EpubExportSettings } from "../../features/document/epubExport";
@@ -48,22 +49,12 @@ export function EpubExportSettingsDialog({
   ) ?? false;
 
   return (
-    <div className="modal-backdrop" role="presentation">
-      <section
-        aria-describedby="epub-export-settings-description"
-        aria-labelledby="epub-export-settings-title"
-        aria-modal="true"
-        className="close-dialog epub-export-settings-dialog"
-        ref={dialogRef}
-        role="dialog"
-      >
-        <h2 id="epub-export-settings-title">{copy.title}</h2>
-        <p id="epub-export-settings-description" title={documentName}>
-          {documentName}
-        </p>
-        <p className="epub-export-settings-note">
-          {copy.scopeNote}
-        </p>
+    <ExportDialogFrame format="EPUB" title={copy.title} documentName={documentName}
+      scope={scope} menuLanguage={menuLanguage} dialogRef={dialogRef} cancelButtonRef={cancelButtonRef}
+      canConfirm={titleValid && !hasBlockingIssue && (scope === "document" || bookAvailable)}
+      confirmLabel={copy.export} cancelLabel={copy.cancel} onCancel={onCancel}
+      onConfirm={() => onConfirm({ author, ...(coverImagePath ? { coverImagePath } : {}), language, title }, scope)}>
+        <p className="epub-export-settings-note">{copy.scopeNote}</p>
         {bookAvailable ? (
           <ExportScopeSelector
             menuLanguage={menuLanguage}
@@ -71,32 +62,7 @@ export function EpubExportSettingsDialog({
             value={scope}
           />
         ) : null}
-        <ExportPreflightSummary
-          format="EPUB"
-          hasUnsavedChanges={hasUnsavedChanges}
-          menuLanguage={menuLanguage}
-          metadataMissing={[
-            ...(title.trim() ? [] : [copy.titleField]),
-            ...(author.trim() ? [] : [copy.authorField]),
-            ...(language.trim() ? [] : [copy.languageField]),
-          ]}
-          preflight={preflightByScope?.[scope]}
-        />
-        <form
-          className="epub-export-settings-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!titleValid) {
-              return;
-            }
-            onConfirm({
-              author,
-              ...(coverImagePath ? { coverImagePath } : {}),
-              language,
-              title,
-            }, scope);
-          }}
-        >
+
           <label className="field-control">
             <span>{copy.titleField}</span>
             <input
@@ -144,17 +110,18 @@ export function EpubExportSettingsDialog({
               onChange={(event) => setLanguage(event.currentTarget.value)}
             />
           </label>
-          <div className="dialog-actions">
-            <button type="submit" disabled={!titleValid || hasBlockingIssue}>
-              {copy.export}
-            </button>
-            <button ref={cancelButtonRef} type="button" onClick={onCancel}>
-              {copy.cancel}
-            </button>
-          </div>
-        </form>
-      </section>
-    </div>
+        <ExportPreflightSummary
+          format="EPUB"
+          hasUnsavedChanges={hasUnsavedChanges}
+          menuLanguage={menuLanguage}
+          metadataMissing={[
+            ...(title.trim() ? [] : [copy.titleField]),
+            ...(author.trim() ? [] : [copy.authorField]),
+            ...(language.trim() ? [] : [copy.languageField]),
+          ]}
+          preflight={preflightByScope?.[scope]}
+        />
+    </ExportDialogFrame>
   );
 }
 

@@ -1,3 +1,4 @@
+import { ExportDialogFrame } from "./ExportDialogFrame";
 import { useState, type RefObject } from "react";
 import {
   PDF_MARGIN_PRESETS,
@@ -44,19 +45,11 @@ export function PdfExportSettingsDialog({
   ) ?? false;
 
   return (
-    <div className="modal-backdrop" role="presentation">
-      <section
-        aria-describedby="pdf-export-settings-description"
-        aria-labelledby="pdf-export-settings-title"
-        aria-modal="true"
-        className="close-dialog pdf-export-settings-dialog"
-        ref={dialogRef}
-        role="dialog"
-      >
-        <h2 id="pdf-export-settings-title">{copy.title}</h2>
-        <p id="pdf-export-settings-description" title={documentName}>
-          {documentName}
-        </p>
+    <ExportDialogFrame format="PDF" title={copy.title} documentName={documentName}
+      scope={scope} menuLanguage={menuLanguage} dialogRef={dialogRef} cancelButtonRef={cancelButtonRef}
+      canConfirm={!hasBlockingIssue && (scope === "document" || bookAvailable)}
+      confirmLabel={copy.export} cancelLabel={copy.cancel} onCancel={onCancel}
+      onConfirm={() => onConfirm(preset, scope)}>
         <p className="pdf-export-settings-note">{copy.scopeNote}</p>
         {bookAvailable ? (
           <ExportScopeSelector
@@ -65,19 +58,7 @@ export function PdfExportSettingsDialog({
             value={scope}
           />
         ) : null}
-        <ExportPreflightSummary
-          format="PDF"
-          hasUnsavedChanges={hasUnsavedChanges}
-          menuLanguage={menuLanguage}
-          preflight={preflightByScope?.[scope]}
-        />
-        <form
-          className="pdf-export-settings-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            onConfirm(preset, scope);
-          }}
-        >
+
           <fieldset className="pdf-margin-presets">
             <legend>{copy.marginLabel}</legend>
             {(
@@ -107,15 +88,13 @@ export function PdfExportSettingsDialog({
               );
             })}
           </fieldset>
-          <div className="dialog-actions">
-            <button disabled={hasBlockingIssue} type="submit">{copy.export}</button>
-            <button ref={cancelButtonRef} type="button" onClick={onCancel}>
-              {copy.cancel}
-            </button>
-          </div>
-        </form>
-      </section>
-    </div>
+        <ExportPreflightSummary
+          format="PDF"
+          hasUnsavedChanges={hasUnsavedChanges}
+          menuLanguage={menuLanguage}
+          preflight={preflightByScope?.[scope]}
+        />
+    </ExportDialogFrame>
   );
 }
 

@@ -984,3 +984,56 @@
   white-space: nowrap;
   width: 1px;
 }
+
+/* UI-E4a: shared export shell; only settings scroll on short windows. */
+.close-dialog.export-settings-dialog {
+  max-width: 720px;
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  overflow: hidden;
+}
+.export-settings-dialog .export-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: calc(100dvh - 32px);
+  min-height: 0;
+}
+.export-settings-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+.export-settings-header > div { min-width: 0; }
+.export-settings-header p { overflow-wrap: anywhere; margin-bottom: 0; }
+.export-format-label {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+.export-settings-body {
+  display: grid;
+  gap: 16px;
+  min-height: 0;
+  padding: 20px 24px;
+  overflow: auto;
+}
+.export-settings-footer {
+  flex: 0 0 auto;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.export-settings-footer p { font-size: .8rem; color: var(--text-muted); }
+.export-settings-footer .dialog-actions { margin-top: 10px; flex-wrap: wrap; }
+@media (max-height: 700px) {
+  .export-settings-header { padding: 12px 20px; }
+  .export-settings-body { padding: 12px 20px; gap: 12px; }
+  .export-settings-footer { padding: 10px 20px; }
+}
