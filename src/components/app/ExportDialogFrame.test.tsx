@@ -1,3 +1,4 @@
+import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
@@ -19,4 +20,20 @@ it.each(["EPUB", "PDF"])("%s keeps cancel reachable and refuses submission after
   expect(confirm).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(cancel).toHaveBeenCalledOnce();
+});
+
+it.each(["en", "ja", "kana"] as const)("HTML offers only the current document and starts on Cancel (%s)", (menuLanguage) => {
+  const confirm = vi.fn(), cancel = vi.fn();
+  const cancelButtonRef = { current: null as HTMLButtonElement | null };
+  const { container } = render(<HtmlExportSettingsDialog menuLanguage={menuLanguage}
+    dialogRef={{ current: null }} cancelButtonRef={cancelButtonRef}
+    request={{ documentName: "draft.md", hasUnsavedChanges: true, tabId: "a", sessionId: "s", workspaceRootPath: null }}
+    onConfirm={confirm} onCancel={cancel} />);
+  expect(document.activeElement).toBe(cancelButtonRef.current);
+  expect(container.textContent).toContain("draft.md");
+  expect(container.textContent).toContain("10 MiB");
+  expect(screen.queryByRole("combobox")).toBeNull();
+  fireEvent.click(cancelButtonRef.current!);
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(confirm).not.toHaveBeenCalled();
 });

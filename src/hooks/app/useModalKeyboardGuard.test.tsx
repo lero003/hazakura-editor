@@ -28,6 +28,9 @@ function renderGuard(overrides: {
   pendingCloseTabOpen?: boolean;
   epubExportSettingsOpen?: boolean;
   pdfExportSettingsOpen?: boolean;
+  htmlExportSettingsOpen?: boolean;
+  htmlExportDialogRef?: RefValue<HTMLElement>;
+  onCancelHtmlExport?: () => void;
   pendingTrashOpen?: boolean;
   preferencesOpen?: boolean;
   commandPaletteVisible?: boolean;
@@ -84,6 +87,9 @@ function renderGuard(overrides: {
       commandPaletteVisible: overrides.commandPaletteVisible ?? false,
       epubExportDialogRef,
       epubExportSettingsOpen: overrides.epubExportSettingsOpen ?? false,
+      htmlExportDialogRef: overrides.htmlExportDialogRef,
+      htmlExportSettingsOpen: overrides.htmlExportSettingsOpen,
+      onCancelHtmlExport: overrides.onCancelHtmlExport,
       pdfExportDialogRef,
       pdfExportSettingsOpen: overrides.pdfExportSettingsOpen ?? false,
       globalSearchVisible: overrides.globalSearchVisible ?? false,
@@ -472,4 +478,22 @@ describe("useModalKeyboardGuard export settings Tab trap", () => {
     utils.unmount();
     cleanup();
   });
+});
+
+it("keeps HTML Tab focus inside and ignores IME Escape before cancelling", () => {
+  const element = document.createElement("section");
+  element.innerHTML = '<button>Export</button><button>Cancel</button>';
+  document.body.appendChild(element);
+  const onCancelHtmlExport = vi.fn();
+  renderGuard({ modalOpen: true, htmlExportSettingsOpen: true,
+    htmlExportDialogRef: { current: element }, onCancelHtmlExport });
+  const buttons = element.querySelectorAll("button");
+  buttons[1].focus();
+  fireEvent.keyDown(document, { key: "Tab" });
+  expect(document.activeElement).toBe(buttons[0]);
+  fireEvent.keyDown(document, { key: "Escape", isComposing: true });
+  expect(onCancelHtmlExport).not.toHaveBeenCalled();
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(onCancelHtmlExport).toHaveBeenCalledOnce();
+  element.remove();
 });

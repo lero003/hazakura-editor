@@ -3,7 +3,7 @@ import type { DocumentExportScope } from "../../features/document/exportScope";
 import type { MenuLanguage } from "../../types";
 
 type Props = {
-  format: "EPUB" | "PDF";
+  format: "EPUB" | "PDF" | "HTML";
   title: string;
   documentName: string;
   scope: DocumentExportScope;

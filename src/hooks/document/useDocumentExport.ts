@@ -69,6 +69,14 @@ type UseDocumentExportOptions = {
   tabs?: readonly EditorTab[];
 };
 
+export type HtmlExportRequest = {
+  documentName: string;
+  hasUnsavedChanges: boolean;
+  tabId: string;
+  sessionId: string;
+  workspaceRootPath: string | null;
+};
+
 export type EpubExportRequest = {
   bookAvailable: boolean;
   bookChapterRelativePaths: string[];
@@ -105,6 +113,8 @@ export function useDocumentExport({
 }: UseDocumentExportOptions) {
   const activeContentsRef = useRef(activeContents);
   activeContentsRef.current = activeContents;
+  const workspaceRootRef = useRef(workspaceRootPath);
+  workspaceRootRef.current = workspaceRootPath;
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
   const materializeRef = useRef(materializeImagesOnExport);
@@ -156,6 +166,21 @@ export function useDocumentExport({
         : undefined,
     };
   }, [buildExportMediaAccess, workspaceRootPath]);
+  const [htmlExportRequest, setHtmlExportRequest] = useState<HtmlExportRequest | null>(null);
+  const htmlExportRequestRef = useRef<HtmlExportRequest | null>(null);
+  const cancelHtmlExport = useCallback(() => {
+    htmlExportRequestRef.current = null;
+    setHtmlExportRequest(null);
+  }, []);
+  const exportHtml = useCallback(async () => {
+    const tab = activeTabRef.current;
+    if (!tab) { setStatus("No active document to export"); return; }
+    const request = { documentName: tab.name, hasUnsavedChanges: isDirty(tab), tabId: tab.id,
+      sessionId: tab.sessionId, workspaceRootPath };
+    htmlExportRequestRef.current = request;
+    setHtmlExportRequest(request);
+  }, [setStatus, workspaceRootPath]);
+
   const [epubExportRequest, setEpubExportRequest] =
     useState<EpubExportRequest | null>(null);
   const [pdfExportRequest, setPdfExportRequest] =
@@ -722,21 +747,23 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
     workspaceRootPath,
   ]);
 
-  const exportHtml = useCallback(async () => {
-    if (!activeTab || activeContents === undefined) {
-      setStatus("No active document to export");
-      return;
-    }
+  const confirmHtmlExport = useCallback(async () => {
+    const request = htmlExportRequestRef.current;
+    if (!request) return;
+    cancelHtmlExport();
+    const targetIsCurrent = () => activeTabRef.current?.id === request.tabId &&
+      activeTabRef.current?.sessionId === request.sessionId && workspaceRootRef.current === request.workspaceRootPath;
+    if (!targetIsCurrent()) { setStatus("Export HTML stopped; document changed"); return; }
 
     try {
       const destPath = await saveDialog({
-        defaultPath: activeTab.name.replace(/\.[^.]+$/, "") + ".html",
+        defaultPath: request.documentName.replace(/\.[^.]+$/, "") + ".html",
         filters: [{ name: "HTML", extensions: ["html"] }],
       });
       if (!destPath) return;
 
       const tabForExport = activeTabRef.current;
-      if (!tabForExport || tabForExport.id !== activeTab.id) {
+      if (!tabForExport || !targetIsCurrent()) {
         setStatus("Export HTML stopped; document changed");
         return;
       }
@@ -897,8 +924,7 @@ ${bodyHtml}
       setStatus("Export HTML failed");
     }
   }, [
-    activeContents,
-    activeTab,
+    cancelHtmlExport,
     buildExportMediaAccess,
     createExportImageLoaders,
     setGlobalError,
@@ -1067,6 +1093,9 @@ ${bodyHtml}
     epubExportRequest,
     exportEpubBeta,
     exportHtml,
+    htmlExportRequest,
+    cancelHtmlExport,
+    confirmHtmlExport,
     exportPdf,
     pdfExportRequest,
   };

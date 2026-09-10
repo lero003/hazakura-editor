@@ -123,6 +123,37 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("useDocumentExport", () => {
+  it("requires explicit HTML confirmation and consumes cancelled requests", async () => {
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => result.current.exportHtml());
+    expect(result.current.htmlExportRequest?.documentName).toBe("a.md");
+    expect(dialogApi.save).not.toHaveBeenCalled();
+    act(() => result.current.cancelHtmlExport());
+    await act(async () => result.current.confirmHtmlExport());
+    expect(dialogApi.save).not.toHaveBeenCalled();
+  });
+
+  it.each(["session", "workspace"])("rejects changed HTML %s while the destination picker is pending", async (change) => {
+    let resolve!: (value: string) => void;
+    dialogApi.save.mockReturnValue(new Promise<string>((done) => { resolve = done; }));
+    const { result, rerender } = renderHook(({ tab, root }) => useDocumentExport({
+      activeTab: tab, activeContents: tab.contents, workspaceRootPath: root,
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }), { initialProps: { tab: makeTab(), root: "/workspace" } });
+    await act(async () => result.current.exportHtml());
+    let pending!: Promise<void>;
+    act(() => { pending = result.current.confirmHtmlExport(); });
+    await act(async () => result.current.confirmHtmlExport());
+    expect(dialogApi.save).toHaveBeenCalledTimes(1);
+    rerender({ tab: makeTab({ sessionId: change === "session" ? "reopened" : "/workspace/a.md" }),
+      root: change === "workspace" ? "/other" : "/workspace" });
+    await act(async () => { resolve("/tmp/out.html"); await pending; });
+    expect(tauriApi.saveTextFileAs).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])("reports only the selected book's unsaved buffers (dirty=%s)", async (dirty) => {
     const active = makeTab({ contents: "# Active\n", lastSavedContents: "# Active\n" });
     const chapter = { name: "章.md", path: "/canonical/章.md", relativePath: "章.md" };
@@ -204,9 +235,10 @@ describe("useDocumentExport", () => {
       },
     );
 
+    await act(async () => result.current.exportHtml());
     let exportHtml: Promise<void> = Promise.resolve();
     act(() => {
-      exportHtml = result.current.exportHtml();
+      exportHtml = result.current.confirmHtmlExport();
     });
     rerender({ activeContents: "after dialog", activeTab: tab });
 
@@ -265,9 +297,10 @@ describe("useDocumentExport", () => {
       },
     );
 
+    await act(async () => result.current.exportHtml());
     let exportHtml: Promise<void> = Promise.resolve();
     act(() => {
-      exportHtml = result.current.exportHtml();
+      exportHtml = result.current.confirmHtmlExport();
     });
     rerender({ activeContents: "second", activeTab: secondTab });
 
@@ -298,9 +331,8 @@ describe("useDocumentExport", () => {
       }),
     );
 
-    await act(async () => {
-      await result.current.exportHtml();
-    });
+    await act(async () => result.current.exportHtml());
+    await act(async () => result.current.confirmHtmlExport());
 
     const exportedHtml = tauriApi.saveTextFileAs.mock.calls[0]?.[1] ?? "";
     expect(exportedHtml).toContain("  --status-bg: #102030;");
@@ -318,6 +350,7 @@ describe("useDocumentExport", () => {
       setGlobalError, setStatus: vi.fn(), workspaceRootPath: "/workspace",
     }));
     await act(async () => result.current.exportHtml());
+    await act(async () => result.current.confirmHtmlExport());
     expect(tauriApi.saveTextFileAs).not.toHaveBeenCalled();
     expect(setGlobalError).toHaveBeenCalledWith(expect.stringContaining("画像・CSSを含むHTML全体"));
     expect(setGlobalError).toHaveBeenCalledWith(expect.stringContaining("画像を縮小"));

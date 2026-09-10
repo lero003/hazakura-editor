@@ -1,3 +1,4 @@
+import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";
 import type {
   Dispatch,
   RefObject,
@@ -60,6 +61,7 @@ import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { PdfMarginPreset } from "../../features/document/pdfExport";
 import type { DocumentExportScope } from "../../features/document/exportScope";
 import type {
+  HtmlExportRequest,
   EpubExportRequest,
   PdfExportRequest,
 } from "../../hooks/document/useDocumentExport";
@@ -147,6 +149,11 @@ type AppOverlaysProps = {
   pdfExportCancelButtonRef: RefObject<HTMLButtonElement | null>;
   pdfExportDialogRef: RefObject<HTMLElement | null>;
   pdfExportRequest: PdfExportRequest | null;
+  htmlExportRequest?: HtmlExportRequest | null;
+  htmlExportDialogRef?: RefObject<HTMLElement | null>;
+  htmlExportCancelButtonRef?: RefObject<HTMLButtonElement | null>;
+  onCancelHtmlExport?: () => void;
+  onConfirmHtmlExport?: () => void | Promise<void>;
   fileOpsCopy: WorkspaceFileOpsCopy;
   filteredCommands: Command[];
   menuLanguage: MenuLanguage;
@@ -299,6 +306,11 @@ export function AppOverlays({
   pdfExportCancelButtonRef,
   pdfExportDialogRef,
   pdfExportRequest,
+  htmlExportRequest,
+  htmlExportDialogRef,
+  htmlExportCancelButtonRef,
+  onCancelHtmlExport,
+  onConfirmHtmlExport,
   fileOpsCopy,
   filteredCommands,
   menuLanguage,
@@ -500,6 +512,11 @@ export function AppOverlays({
         />
       ) : null}
 
+      {htmlExportRequest && htmlExportDialogRef && htmlExportCancelButtonRef && onCancelHtmlExport && onConfirmHtmlExport ? (
+        <HtmlExportSettingsDialog request={htmlExportRequest} menuLanguage={menuLanguage}
+          dialogRef={htmlExportDialogRef} cancelButtonRef={htmlExportCancelButtonRef}
+          onCancel={onCancelHtmlExport} onConfirm={onConfirmHtmlExport} />
+      ) : null}
       {pdfExportRequest ? (
         <PdfExportSettingsDialog
           bookAvailable={pdfExportRequest.bookAvailable}

@@ -32,6 +32,9 @@ type UseAppKeyboardFocusEffectsOptions = {
   closeTabDialogRef: RefValue<HTMLElement>;
   epubExportDialogRef: RefValue<HTMLElement>;
   epubExportSettingsOpen: boolean;
+  htmlExportDialogRef?: RefValue<HTMLElement>;
+  htmlExportSettingsOpen?: boolean;
+  onCancelHtmlExport?: () => void;
   pdfExportDialogRef: RefValue<HTMLElement>;
   pdfExportSettingsOpen: boolean;
   // v0.18 accessibility follow-up: the move-to-trash dialog
@@ -110,6 +113,9 @@ export function useAppKeyboardFocusEffects({
   closeTabDialogRef,
   epubExportDialogRef,
   epubExportSettingsOpen,
+  htmlExportDialogRef,
+  htmlExportSettingsOpen,
+  onCancelHtmlExport,
   pdfExportDialogRef,
   pdfExportSettingsOpen,
   moveTrashCancelButtonRef,
@@ -202,6 +208,9 @@ export function useAppKeyboardFocusEffects({
     okfReviewVisible,
     epubExportDialogRef,
     epubExportSettingsOpen,
+    htmlExportDialogRef,
+    htmlExportSettingsOpen,
+    onCancelHtmlExport,
     pdfExportDialogRef,
     pdfExportSettingsOpen,
     globalSearchVisible,

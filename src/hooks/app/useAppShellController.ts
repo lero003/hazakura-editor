@@ -407,6 +407,8 @@ export function useAppShellController() {
     discardingWindowCloseRef,
     epubExportCancelButtonRef,
     epubExportDialogRef,
+    htmlExportCancelButtonRef,
+    htmlExportDialogRef,
     pdfExportCancelButtonRef,
     pdfExportDialogRef,
     modalOpen,
@@ -1160,6 +1162,9 @@ export function useAppShellController() {
     epubExportRequest,
     exportEpubBeta,
     exportHtml,
+    htmlExportRequest,
+    cancelHtmlExport,
+    confirmHtmlExport,
     exportPdf,
     pdfExportRequest,
     saveActiveTab: saveActiveTabUnsafe,
@@ -1212,6 +1217,7 @@ export function useAppShellController() {
     [rejectIfAppleAssistLocksTab, saveTabByIdUnsafe, tabs],
   );
   const epubExportSettingsOpen = epubExportRequest !== null;
+  const htmlExportSettingsOpen = htmlExportRequest !== null;
   const pdfExportSettingsOpen = pdfExportRequest !== null;
   const conflictSurface = useSaveConflictSurface(activeTab, activeConflict);
   const otherBlockingDialog =
@@ -1219,7 +1225,7 @@ export function useAppShellController() {
     pendingTrashOpen ||
     pendingAssistDiscardOpen ||
     epubExportSettingsOpen ||
-    pdfExportSettingsOpen;
+    pdfExportSettingsOpen || htmlExportSettingsOpen;
 
   // L Mode (えるモード) is Markdown-only. CSS/HTML remount switches the
   // parser and drops undo history; refuse non-Markdown with a status note.
@@ -1799,6 +1805,9 @@ export function useAppShellController() {
       closeTabDialogRef,
       epubExportDialogRef,
       epubExportSettingsOpen,
+      htmlExportDialogRef,
+      htmlExportSettingsOpen,
+      onCancelHtmlExport: cancelHtmlExport,
       pdfExportDialogRef,
       pdfExportSettingsOpen,
       moveTrashCancelButtonRef,
@@ -1968,9 +1977,12 @@ export function useAppShellController() {
     editorPreviewGridStyle,
     editorSettings: activeEditorSettings,
     editorTheme,
+    htmlExportRequest,
     epubExportCancelButtonRef,
     epubExportDialogRef,
     epubExportRequest,
+    htmlExportCancelButtonRef,
+    htmlExportDialogRef,
     pdfExportCancelButtonRef,
     pdfExportDialogRef,
     pdfExportRequest,
@@ -2129,6 +2141,8 @@ export function useAppShellController() {
     onCancelEpubBetaExport: cancelEpubBetaExport,
     onConfirmEpubBetaExport: confirmEpubBetaExport,
     onCancelPdfExport: cancelPdfExport,
+    onCancelHtmlExport: cancelHtmlExport,
+    onConfirmHtmlExport: confirmHtmlExport,
     onConfirmPdfExport: confirmPdfExport,
     pendingAppClose,
     pendingCloseTab,

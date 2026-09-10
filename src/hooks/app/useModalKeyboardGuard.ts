@@ -13,6 +13,9 @@ type UseModalKeyboardGuardOptions = {
   commandPaletteVisible: boolean;
   epubExportDialogRef: RefValue<HTMLElement>;
   epubExportSettingsOpen: boolean;
+  htmlExportDialogRef?: RefValue<HTMLElement>;
+  htmlExportSettingsOpen?: boolean;
+  onCancelHtmlExport?: () => void;
   pdfExportDialogRef: RefValue<HTMLElement>;
   pdfExportSettingsOpen: boolean;
   globalSearchVisible: boolean;
@@ -49,6 +52,9 @@ export function useModalKeyboardGuard({
   commandPaletteVisible,
   epubExportDialogRef,
   epubExportSettingsOpen,
+  htmlExportDialogRef,
+  htmlExportSettingsOpen,
+  onCancelHtmlExport,
   pdfExportDialogRef,
   pdfExportSettingsOpen,
   globalSearchVisible,
@@ -110,6 +116,8 @@ export function useModalKeyboardGuard({
           onCancelPendingTrash();
         } else if (pendingAssistDiscardOpen) {
           onCancelAssistDiscard();
+        } else if (htmlExportSettingsOpen) {
+          onCancelHtmlExport?.();
         } else if (pdfExportSettingsOpen) {
           onCancelPdfExport();
         } else if (epubExportSettingsOpen) {
@@ -129,6 +137,8 @@ export function useModalKeyboardGuard({
                 ? moveTrashDialogRef.current
                 : pendingAssistDiscardOpen
                   ? assistDiscardDialogRef.current
+                  : htmlExportSettingsOpen
+                    ? htmlExportDialogRef?.current ?? null
                   : pdfExportSettingsOpen
                     ? pdfExportDialogRef.current
                   : epubExportSettingsOpen
@@ -169,6 +179,9 @@ export function useModalKeyboardGuard({
     pendingAssistDiscardOpen,
     pendingCloseTabOpen,
     pendingTrashOpen,
+    htmlExportDialogRef,
+    htmlExportSettingsOpen,
+    onCancelHtmlExport,
     pdfExportDialogRef,
     pdfExportSettingsOpen,
     preferencesDialogRef,
