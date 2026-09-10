@@ -101,3 +101,26 @@ it("keeps emoji and supplementary-plane characters intact around the match (R1)"
     expect(mark.textContent).not.toMatch(/[\uD800-\uDFFF]/u);
   }
 });
+
+it("keeps a late match visible by windowing the line around it", () => {
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+  // 行頭固定の切り詰めだと、行の後方で一致したときに着色が窓の外へ出る。
+  const long = "あ".repeat(400) + "余白" + "い".repeat(40);
+  const late = { line: 1, column: 401, text: long };
+  const file = { path: "/work/c.md", relativePath: "chapters/c.md", matches: [late], truncated: false };
+  render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={() => {}} onRun={() => {}}
+    onSetActiveIndex={() => {}} onSetQuery={() => {}} query="余白"
+    rows={[{ fileIndex: 0, matchIndex: 0, file, match: late }]}
+    searching={false}
+    summary={{ totalFilesScanned: 1, totalMatches: 1, totalFilesMatched: 1, truncated: false }} searchError={null}
+    workspaceOpen workspaceName="Book" />);
+
+  const mark = document.querySelector("mark.global-search-match");
+  expect(mark?.textContent).toBe("余白");
+  const line = mark?.parentElement?.textContent ?? "";
+  // 一致が見えており、行頭を切った印が付いている。
+  expect(line).toContain("余白");
+  expect(line.startsWith("…")).toBe(true);
+  // 表示は 240 文字ぶんに収まる（＋省略記号）。
+  expect(Array.from(line.replace(/…/gu, "")).length).toBeLessThanOrEqual(240);
+});

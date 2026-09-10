@@ -46,12 +46,29 @@ function toCodePoints(text: string): string[] {
   return Array.from(text);
 }
 
-function clipLineText(text: string): string {
-  const codePoints = toCodePoints(text);
-  if (codePoints.length <= MAX_VISIBLE_LINE_CHARS) {
-    return text;
+/** 一致の手前に見せる量。行頭から切り詰めると後方の一致が見えなくなるため。 */
+const MATCH_CONTEXT_BEFORE = 60;
+
+/**
+ * 長い行は**一致位置を中心**に窓を作る。行頭固定の切り詰めだと、行の後方で
+ * 一致したとき着色部分が窓の外へ出てしまう（レビュー 09 の指摘）。
+ */
+function windowAroundMatch(codePoints: string[], start: number) {
+  const total = codePoints.length;
+  if (total <= MAX_VISIBLE_LINE_CHARS) {
+    return { points: codePoints, offset: 0, headClipped: false, tailClipped: false };
   }
-  return `${codePoints.slice(0, MAX_VISIBLE_LINE_CHARS).join("")}…`;
+  const from = Math.max(
+    0,
+    Math.min(start - MATCH_CONTEXT_BEFORE, total - MAX_VISIBLE_LINE_CHARS),
+  );
+  const to = Math.min(total, from + MAX_VISIBLE_LINE_CHARS);
+  return {
+    points: codePoints.slice(from, to),
+    offset: from,
+    headClipped: from > 0,
+    tailClipped: to < total,
+  };
 }
 
 function fileGroupKey(row: GlobalSearchRow): string {
@@ -71,16 +88,31 @@ function fileCountUnit(menuLanguage: MenuLanguage): string {
  * 色に頼りきらないよう `<mark>` で意味も持たせる（モック09）。
  */
 function renderMatchedLine(text: string, column: number, needle: string) {
-  const clipped = clipLineText(text);
-  const codePoints = toCodePoints(clipped);
   const start = column - 1;
-  if (!needle || start < 0 || start >= codePoints.length) return clipped;
-  const end = Math.min(start + toCodePoints(needle).length, codePoints.length);
+  const needleLength = toCodePoints(needle).length;
+  // 一致が行の後方でも見えるよう、一致位置を中心に窓を作る。
+  const source = toCodePoints(text);
+  const windowed =
+    needle && start >= 0 && start < source.length
+      ? windowAroundMatch(source, start)
+      : { ...windowAroundMatch(source, 0), offset: 0 };
+  const points = windowed.points;
+  const localStart = start - windowed.offset;
+  const inWindow =
+    !!needle && localStart >= 0 && localStart < points.length && needleLength > 0;
+  if (!inWindow) {
+    return `${windowed.headClipped ? "…" : ""}${points.join("")}${windowed.tailClipped ? "…" : ""}`;
+  }
+  const localEnd = Math.min(localStart + needleLength, points.length);
   return (
     <>
-      {codePoints.slice(0, start).join("")}
-      <mark className="global-search-match">{codePoints.slice(start, end).join("")}</mark>
-      {codePoints.slice(end).join("")}
+      {windowed.headClipped ? "…" : null}
+      {points.slice(0, localStart).join("")}
+      <mark className="global-search-match">
+        {points.slice(localStart, localEnd).join("")}
+      </mark>
+      {points.slice(localEnd).join("")}
+      {windowed.tailClipped ? "…" : null}
     </>
   );
 }
