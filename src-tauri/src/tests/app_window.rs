@@ -15,7 +15,7 @@ fn agent_window_background_color_returns_palette_color_for_known_theme() {
     assert_eq!(dark, tauri::window::Color(0x18, 0x24, 0x1e, 0xff));
     // 江戸彼岸 is a dark twilight surface (#2a2030), not the old light sakura.
     let edohigan = agent_window_background_color("edohigan");
-    assert_eq!(edohigan, tauri::window::Color(0x2a, 0x20, 0x30, 0xff));
+    assert_eq!(edohigan, tauri::window::Color(0xfb, 0xf4, 0xf2, 0xff));
     let yakou = agent_window_background_color("yakou");
     assert_eq!(yakou, tauri::window::Color(0x12, 0x10, 0x2a, 0xff));
     let shokou = agent_window_background_color("shokou");

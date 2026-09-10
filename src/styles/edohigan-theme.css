@@ -1,12 +1,16 @@
 /* === edohigan-theme.css ===
-   江戸彼岸（静謐）— 薄暮の彼岸空。演出が透ける半透明 UI。
-   和紙固定は捨て、深海と同思想の「背景が見える surface」で最上級を取る。
+   江戸彼岸（静謐）— 明るい桜色の紙面。モックの .edohigan 定義に準拠する。
+   紙 #fffcf8 / 地 #fbf4f2 / インク #453735 / アクセント #975b68（reference/mock-styles.css）。
+
+   モックの罫線（#e6d8d0 / #c9b6ae）は紙面比 1.36 / 1.90 で階層の契約
+   （--border 1.45〜1.7・--border-strong ≥2.1・差 ≥0.4）を満たさないため、
+   同じ色相のまま紙面からの距離を伸ばして 1.55 / 2.20 に置き直す（B案の前例に従う）。
 
    構成:
-     1. パレット (薄暮インク + 桜アクセント)
+     1. パレット (桜色の紙 + 梅紫のアクセント)
      2. .app-shell 背景
      3. canvas / 前景オーバーレイ
-     4. 文字 (ごく弱いグロー)
+     4. 文字
      5. 起動シーケンス
      6. reduced-motion
      7. (keyframes なし)
@@ -14,96 +18,98 @@
 
 /* 1. パレット */
 :root[data-theme="edohigan"] {
-  --bg: #2a2030;
+  --bg: #fbf4f2;
   /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
-  --chrome-surface: #2a2030;
-  /* 背景シェーダーを透かすのは surface / nav-surface（操作面）。
-     読む・書く面は不透明な紙面 --surface-paper を使う。 */
-  --surface: rgba(42, 28, 40, 0.68);
-  --surface-paper: #342230;
-  --nav-surface: rgba(46, 29, 44, 0.78);
-  --surface-rgb: 42, 28, 40;
-  --surface-strong: rgba(52, 34, 48, 0.72);
-  --surface-strong-rgb: 52, 34, 48;
-  --surface-muted: rgba(32, 22, 34, 0.7);
-  --border: #553e53;
-  --border-strong: #73516b;
-  --text: #f2e4e8;
-  --text-muted: #b898a4;
-  --accent: #e8a0b0;
-  --accent-secondary: #c8b070;
-  --accent-gradient: linear-gradient(135deg, #e8a0b0 0%, #c8b070 50%, #a080b8 100%);
-  --accent-soft: #3a2838;
-  --accent-glass: rgba(232, 160, 176, 0.12);
-  --accent-contrast: #2a1824;
-  --danger: #e08088;
-  --conflict: #d0a860;
-  --status-bg: #1a121c;
-  --status-text: #f2e4e8;
-  --selection-bg: rgba(232, 160, 176, 0.22);
-  --scrollbar-thumb: rgba(232, 160, 176, 0.18);
-  --scrollbar-thumb-hover: rgba(232, 160, 176, 0.32);
+  --chrome-surface: #fbf4f2;
+  /* 背景シェーダーを透かすのは surface（操作面）。
+     読む・書く面は不透明な紙面 --surface-paper、ナビ面も不透明にして
+     明色の紙面で文字コントラストを自動検査できるようにする。 */
+  --surface: rgba(255, 253, 250, 0.72);
+  --surface-paper: #fffcf8;
+  --nav-surface: #f4e9e6;
+  --surface-rgb: 255, 253, 250;
+  --surface-strong: rgba(255, 255, 255, 0.82);
+  --surface-strong-rgb: 255, 255, 255;
+  --surface-muted: rgba(248, 239, 235, 0.82);
+  --border: #dccac0;
+  --border-strong: #bfa8a0;
+  --text: #453735;
+  --text-muted: #79655e;
+  --accent: #975b68;
+  --accent-secondary: #c19a6b;
+  --accent-gradient: linear-gradient(135deg, #975b68 0%, #b0808a 50%, #8a6f9b 100%);
+  --accent-soft: #f3e0e1;
+  --accent-glass: rgba(151, 91, 104, 0.1);
+  --accent-contrast: #ffffff;
+  --danger: #934851;
+  --conflict: #b07a3c;
+  --status-bg: #fbf4f2;
+  --status-text: #453735;
+  --selection-bg: rgba(151, 91, 104, 0.16);
+  --scrollbar-thumb: rgba(151, 91, 104, 0.2);
+  --scrollbar-thumb-hover: rgba(151, 91, 104, 0.36);
 
-  --diff-added-fg: #9dd4a8;
-  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 16%, transparent);
-  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 18%, transparent);
+  --diff-added-fg: #3f6b46;
+  --diff-removed-fg: #a04a52;
+  --diff-added-row-bg: #e7efdf;
+  --diff-removed-row-bg: #f7e2e1;
   --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   --cm-bg: var(--surface-paper);
-  --cm-fg: #f2e4e8;
-  --cm-caret: #e8a0b0;
-  --cm-gutter-bg: rgba(28, 18, 30, 0.78);
+  --cm-fg: #453735;
+  --cm-caret: #975b68;
+  --cm-gutter-bg: #f4e9e6;
   --cm-gutter-border: var(--border);
-  --cm-gutter-fg: #b898a4;
-  --cm-active-line-bg: rgba(232, 160, 176, 0.07);
-  --cm-active-gutter-bg: rgba(232, 160, 176, 0.09);
-  --cm-selection-bg: #5a3a50;
-  --cm-search-match-bg: rgba(208, 168, 96, 0.28);
-  --cm-search-match-active-bg: rgba(208, 168, 96, 0.55);
-  --cm-search-match-active-shadow: 0 0 0 1px #d0a860;
-  --cm-invisible-space: radial-gradient(circle, #886878 1px, transparent 1px);
-  --cm-invisible-tab: rgba(232, 160, 176, 0.12);
-  --cm-trailing-space: rgba(224, 128, 136, 0.28);
-  --cm-mark-heading: #f0b8c4;
-  --cm-mark-strong: #f2e4e8;
-  --cm-mark-link: #e8a0b0;
-  --cm-mark-monospace: #d8a0b8;
-  --cm-mark-quote: #b898a4;
+  --cm-gutter-fg: #8b7a72;
+  --cm-active-line-bg: rgba(151, 91, 104, 0.06);
+  --cm-active-gutter-bg: rgba(151, 91, 104, 0.09);
+  --cm-selection-bg: #efd2d6;
+  --cm-search-match-bg: rgba(193, 154, 107, 0.3);
+  --cm-search-match-active-bg: rgba(193, 154, 107, 0.58);
+  --cm-search-match-active-shadow: 0 0 0 1px #c19a6b;
+  --cm-invisible-space: radial-gradient(circle, #b9a49c 1px, transparent 1px);
+  --cm-invisible-tab: rgba(151, 91, 104, 0.12);
+  --cm-trailing-space: rgba(147, 72, 81, 0.3);
+  --cm-mark-heading: #8a4553;
+  --cm-mark-strong: #453735;
+  --cm-mark-link: #97606e;
+  --cm-mark-monospace: #7a5a86;
+  --cm-mark-quote: #79655e;
 
-  --xterm-bg: #1a121c;
-  --xterm-fg: #f2e4e8;
-  --xterm-cursor: #e8a0b0;
-  --xterm-selection-bg: rgba(232, 160, 176, 0.28);
-  --xterm-black: #1a121c;
-  --xterm-red: #e0a0a8;
-  --xterm-green: #a0c8a8;
-  --xterm-yellow: #d8c080;
-  --xterm-blue: #b0a0d0;
-  --xterm-magenta: #d8a0b8;
-  --xterm-cyan: #c0a8b0;
-  --xterm-white: #e8d8dc;
-  --xterm-bright-black: #886878;
-  --xterm-bright-red: #f0b8c0;
-  --xterm-bright-green: #b8d8c0;
-  --xterm-bright-yellow: #e8d8a0;
-  --xterm-bright-blue: #c8b8e0;
-  --xterm-bright-magenta: #e8c0d0;
-  --xterm-bright-cyan: #d8c0c8;
-  --xterm-bright-white: #f8f0f2;
+  --xterm-bg: #fbf4f2;
+  --xterm-fg: #453735;
+  --xterm-cursor: #975b68;
+  --xterm-selection-bg: rgba(151, 91, 104, 0.24);
+  --xterm-black: #453735;
+  --xterm-red: #934851;
+  --xterm-green: #3f6b46;
+  --xterm-yellow: #8a6a2e;
+  --xterm-blue: #5a5f8c;
+  --xterm-magenta: #8a4f70;
+  --xterm-cyan: #3f6b6b;
+  --xterm-white: #f4e9e6;
+  --xterm-bright-black: #8b7a72;
+  --xterm-bright-red: #b85a62;
+  --xterm-bright-green: #4f8557;
+  --xterm-bright-yellow: #a9853d;
+  --xterm-bright-blue: #6f74a8;
+  --xterm-bright-magenta: #a56189;
+  --xterm-bright-cyan: #4f8585;
+  --xterm-bright-white: #fffcf8;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
-  --shadow-accent: 0 4px 18px rgba(232, 160, 176, 0.22), 0 1px 3px rgba(200, 176, 112, 0.08);
-  --accent-glow: 0 0 36px rgba(232, 160, 176, 0.08);
+  --shadow-sm: 0 1px 2px rgba(74, 54, 60, 0.1);
+  --shadow-md: 0 4px 14px rgba(74, 54, 60, 0.14), 0 1px 3px rgba(74, 54, 60, 0.08);
+  --shadow-lg: 0 12px 28px rgba(74, 54, 60, 0.16), 0 2px 6px rgba(74, 54, 60, 0.1);
+  --shadow-accent: 0 4px 18px rgba(151, 91, 104, 0.18), 0 1px 3px rgba(193, 154, 107, 0.1);
+  --accent-glow: 0 0 36px rgba(151, 91, 104, 0.1);
 }
 :root[data-theme="edohigan"] .preference-preview-badge {
   letter-spacing: 0.08em;
 }
 
-/* 2. app-shell — 薄暮下地 */
+/* 2. app-shell — 桜色の下地 */
 :root[data-theme="edohigan"] .app-shell {
-  background: #2a2030;
+  background: #fbf4f2;
 }
 
 /* 3. canvas / overlay */
@@ -122,43 +128,44 @@
   opacity: 0;
 }
 
-/* 前景: 薄い天頂の彼岸光 + 端のビネット (screen 桃は廃止) */
+/* 前景: 明るい紙面に合わせた、ごく淡い桜の光。装飾は本文の背後に留める
+   （モーダル・パレットより手前へ出さない: z は --z-dropdown より下）。 */
 .edohigan-overlay {
   background:
     radial-gradient(
       ellipse 110% 48% at 50% 0%,
-      rgba(232, 160, 176, 0.11) 0%,
+      rgba(151, 91, 104, 0.06) 0%,
       transparent 58%
     ),
     radial-gradient(
       ellipse 70% 36% at 18% 88%,
-      rgba(160, 112, 176, 0.05) 0%,
+      rgba(151, 91, 104, 0.04) 0%,
       transparent 52%
     ),
     radial-gradient(
       ellipse 80% 40% at 70% 100%,
-      rgba(200, 176, 112, 0.07) 0%,
+      rgba(193, 154, 107, 0.05) 0%,
       transparent 55%
     ),
     radial-gradient(
       ellipse at center,
-      transparent 64%,
-      rgba(10, 6, 14, 0.4) 100%
+      transparent 70%,
+      rgba(120, 90, 96, 0.08) 100%
     );
   inset: 0;
   mix-blend-mode: normal;
   pointer-events: none;
   position: fixed;
-  z-index: var(--z-crt-top);
+  z-index: var(--z-base);
 }
 
-/* 4. 文字 — 深海級の静かなグローのみ (読みやすさを保ちつつごく薄く) */
+/* 4. 文字 — 明るい紙面ではグローを載せない */
 :root[data-theme="edohigan"] .cm-content {
-  text-shadow: 0 0 7px rgba(232, 160, 176, 0.1);
+  text-shadow: none;
 }
 
 :root[data-theme="edohigan"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
-  text-shadow: 0 0 7px rgba(232, 160, 176, 0.08);
+  text-shadow: none;
 }
 
 :root[data-theme="edohigan"] .markdown-preview :is(code, pre) {
@@ -173,12 +180,12 @@
 
 :root[data-theme="edohigan"] .tree-file:hover,
 :root[data-theme="edohigan"] .tree-directory-button:hover {
-  background: rgba(232, 160, 176, 0.08);
+  background: rgba(151, 91, 104, 0.08);
 }
 
 /* 5. 起動 */
 .edohigan-boot {
-  background: #1a121c;
+  background: #fbf4f2;
   inset: 0;
   overflow: hidden;
   pointer-events: none;

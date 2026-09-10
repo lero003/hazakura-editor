@@ -252,12 +252,13 @@ void main() {
   float velMag = length(u_mouseVel);
   float flowMag = length(baseFlow);
 
-  // === 1. 薄暮の彼岸空 ===
-  // 上: 藍紫 / 中: 藤 / 下: 薄紅 — 深海 teal と差別化、演出が立つ暗さ
-  vec3 skyTop = vec3(0.22, 0.20, 0.38);
-  vec3 skyMid = vec3(0.42, 0.28, 0.42);
-  vec3 skyLow = vec3(0.62, 0.38, 0.42);
-  vec3 skyBot = vec3(0.72, 0.48, 0.48);
+  // === 1. 明るい桜空 ===
+  // 江戸彼岸の紙（#fbf4f2）に合わせた淡い桜色。上: 藤鼠 / 下: 生成り。
+  // 暗い空を描くと明色テーマで演出が前に出るので、紙よりわずかに濃い側だけを使う。
+  vec3 skyTop = vec3(0.949, 0.925, 0.941);
+  vec3 skyMid = vec3(0.965, 0.937, 0.941);
+  vec3 skyLow = vec3(0.976, 0.949, 0.945);
+  vec3 skyBot = vec3(0.984, 0.957, 0.949);
   float hy = clamp(uv.y, 0.0, 1.0);
   vec3 sky = mix(skyBot, skyLow, smoothstep(0.0, 0.3, hy));
   sky = mix(sky, skyMid, smoothstep(0.25, 0.65, hy));
@@ -272,7 +273,8 @@ void main() {
   lightVec += baseFlow * 0.25; // 風で光が歪む
   float lightD = length(lightVec);
   float halo = exp(-lightD * 3.2) * 0.35 + exp(-lightD * 1.4) * 0.12;
-  sky += vec3(1.0, 0.82, 0.78) * halo * u_intensity;
+  // 明色では加算ではなく桜色へ寄せる（加算は白飛びして紙面が濁る）。
+  sky = mix(sky, vec3(0.965, 0.87, 0.87), clamp(halo * u_intensity, 0.0, 1.0) * 0.5);
 
   // 柔らかい光の筋 2 本
   float ang = atan(lightVec.y, lightVec.x);
@@ -280,25 +282,25 @@ void main() {
   shaft += pow(max(cos(ang * 3.0 + t * 0.12 + baseFlow.x * 2.0), 0.0), 14.0) * 0.45;
   shaft += pow(max(cos(ang * 5.5 - t * 0.08), 0.0), 18.0) * 0.28;
   shaft *= smoothstep(1.1, 0.08, lightD) * (0.08 + flowMag * 0.06);
-  sky += vec3(1.0, 0.85, 0.8) * shaft * u_intensity;
+  sky = mix(sky, vec3(0.968, 0.885, 0.885), clamp(shaft * u_intensity, 0.0, 1.0) * 0.45);
 
   vec3 col = sky;
 
   // === 2. 雲 3 層 (同じ風) ===
   float c0 = windCloud(uv, aspect, t * 0.5, baseFlow, 0.85, 0.34, 0.58, 0.12);
   float s0 = fbm((uv + baseFlow * 0.08) * vec2(aspect, 1.0) * 0.8, 4);
-  vec3 cloud0 = mix(vec3(0.35, 0.28, 0.38), vec3(0.85, 0.78, 0.82), smoothstep(0.3, 0.75, s0));
-  cloud0 = mix(cloud0, vec3(0.92, 0.72, 0.78), smoothstep(0.1, 0.4, c0) * (1.0 - smoothstep(0.4, 0.85, c0)) * 0.25);
-  col = mix(col, cloud0, c0 * 0.72);
+  vec3 cloud0 = mix(vec3(0.937, 0.906, 0.914), vec3(0.984, 0.965, 0.968), smoothstep(0.3, 0.75, s0));
+  cloud0 = mix(cloud0, vec3(0.949, 0.851, 0.871), smoothstep(0.1, 0.4, c0) * (1.0 - smoothstep(0.4, 0.85, c0)) * 0.3);
+  col = mix(col, cloud0, c0 * 0.5);
 
   float c1 = windCloud(uv + vec2(0.05, -0.02), aspect, t * 0.85, baseFlow, 1.4, 0.36, 0.6, 0.2);
   float s1 = fbm(uv * vec2(aspect, 1.0) * 1.3 + 2.0, 4);
-  vec3 cloud1 = mix(vec3(0.4, 0.3, 0.38), vec3(0.9, 0.82, 0.85), smoothstep(0.25, 0.8, s1));
-  cloud1 = mix(cloud1, vec3(0.95, 0.78, 0.82), 0.12);
-  col = mix(col, cloud1, c1 * 0.55);
+  vec3 cloud1 = mix(vec3(0.945, 0.918, 0.925), vec3(0.988, 0.973, 0.976), smoothstep(0.25, 0.8, s1));
+  cloud1 = mix(cloud1, vec3(0.957, 0.871, 0.886), 0.14);
+  col = mix(col, cloud1, c1 * 0.4);
 
   float c2 = windCloud(uv + vec2(-0.04, 0.03), aspect, t * 1.2, baseFlow, 2.1, 0.4, 0.64, 0.32);
-  col = mix(col, vec3(0.88, 0.8, 0.84), c2 * 0.35);
+  col = mix(col, vec3(0.973, 0.953, 0.957), c2 * 0.25);
 
   // 雲下の影
   col *= 1.0 - (c0 * 0.35 + c1 * 0.25) * smoothstep(0.65, 0.2, uv.y) * 0.12;
@@ -307,7 +309,7 @@ void main() {
   vec2 hazeUv = uv + baseFlow * 0.06;
   float haze = fbm(hazeUv * vec2(aspect, 1.0) * 2.8 + t * 0.04, 4);
   haze = smoothstep(0.42, 0.7, haze) * 0.14;
-  col = mix(col, vec3(0.78, 0.52, 0.55), haze);
+  col = mix(col, vec3(0.957, 0.878, 0.882), haze);
 
   // 花粉 FBM 粒 (暖色・3層、深海チリに対抗)
   vec2 pFg = uv + baseFlow * 1.5 * 0.08 + u_mouseVel * mouseWake * 0.04;
@@ -318,9 +320,9 @@ void main() {
   vec2 pFar = uv + baseFlow * 0.5 * 0.04;
   float pollenFar = smoothstep(0.48, 0.65, fbm(pFar * vec2(aspect, 1.0) * 7.0 - t * 0.02, 3));
 
-  col += vec3(0.95, 0.72, 0.78) * pollenFg * 0.18 * u_intensity;
-  col += vec3(0.88, 0.62, 0.7) * pollenNear * 0.11 * u_intensity;
-  col += vec3(0.7, 0.48, 0.55) * pollenFar * 0.06 * u_intensity;
+  col = mix(col, vec3(0.957, 0.792, 0.827), pollenFg * 0.16 * u_intensity);
+  col = mix(col, vec3(0.902, 0.741, 0.788), pollenNear * 0.1 * u_intensity);
+  col = mix(col, vec3(0.859, 0.729, 0.776), pollenFar * 0.06 * u_intensity);
 
   // === 4. 彼岸の風の帯 (異質な演出の核) ===
   // 花弁の代わりに「形を無理に作らない」桜色の絹筋。flow に沿って流れる。
@@ -340,11 +342,16 @@ void main() {
   ribbon2 *= exp(-pow(across + 0.08, 2.0) * 40.0) * 0.35;
   ribbon2 *= 0.5 + 0.5 * sin(along * 12.0 - t * 0.5);
   float ribbons = (ribbon + ribbon2) * (0.7 + flowMag * 0.8 + mouseWake * 0.4);
-  col += vec3(0.95, 0.65, 0.72) * ribbons * 0.28 * u_intensity;
+  col = mix(col, vec3(0.922, 0.776, 0.804), clamp(ribbons * 0.3 * u_intensity, 0.0, 1.0));
 
   // === 5. 花弁 2 層 — 雫形・少なめ・ゆっくり (形が読める枚数) ===
-  vec3 tip = vec3(0.99, 0.94, 0.95);
-  vec3 root = vec3(0.9, 0.62, 0.7);
+  // モックの花びら色（#ebc6cd / #e3b5bf）をそのまま使う。
+  vec3 tip = vec3(0.922, 0.776, 0.804);
+  vec3 root = vec3(0.890, 0.710, 0.749);
+  // 花びらは左右の余白だけに出す（本文列の背後を横切らせない）。狭い窓では
+  // 本文が幅いっぱいになるので、このマスクだけで自然に消える。
+  float dx = abs(uv.x - 0.5) * 2.0;
+  float sideMask = smoothstep(0.42, 0.78, dx);
 
   float aFar = 0.0;
   vec3 farP = drawPetals(
@@ -359,18 +366,18 @@ void main() {
     tip, root, aFg
   );
 
-  col = mix(col, farP, clamp(aFar, 0.0, 1.0) * 0.5);
-  col = mix(col, fgP,  clamp(aFg, 0.0, 1.0) * 0.78);
+  col = mix(col, farP, clamp(aFar, 0.0, 1.0) * 0.5 * sideMask);
+  col = mix(col, fgP,  clamp(aFg, 0.0, 1.0) * 0.7 * sideMask);
 
   // === 6. 手の陽光 ===
-  vec3 wake = mix(vec3(1.0, 0.9, 0.85), vec3(1.0, 0.8, 0.85), 0.4);
-  col += wake * mouseWake * (0.1 + velMag * 0.45 + flowMag * 0.15) * u_intensity;
+  vec3 wake = mix(vec3(0.976, 0.878, 0.843), vec3(0.976, 0.824, 0.871), 0.4);
+  col = mix(col, wake, clamp(mouseWake * (0.1 + velMag * 0.45 + flowMag * 0.15) * u_intensity, 0.0, 1.0));
 
-  // ビネット
+  // ビネット — 明色では暗くせず、端をわずかに桜色へ寄せる
   float vig = smoothstep(1.4, 0.4, length((uv - 0.5) * vec2(aspect, 1.0)));
-  col *= mix(0.82, 1.0, vig);
+  col = mix(col, col * vec3(1.0, 0.972, 0.968), 1.0 - vig);
 
-  // ごく薄い grain (暗背景向け)
+  // ごく薄い grain (明色では紙の質感として残す)
   float grain = (hash21(floor(uv * u_resolution * 0.4) + fract(t * 0.03)) - 0.5) * 0.015;
   col += grain;
 

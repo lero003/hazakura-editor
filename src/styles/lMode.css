@@ -112,7 +112,6 @@
      subtle because the goal is quiet, not lifted. */
 :root[data-l-mode="on"][data-theme="dark"],
 :root[data-l-mode="on"][data-theme="yakou"],
-:root[data-l-mode="on"][data-theme="edohigan"],
 :root[data-l-mode="on"][data-theme="crt"],
 :root[data-l-mode="on"][data-theme="shinkai"] {
   /* Surfaces — deep warm dark */
@@ -182,6 +181,68 @@
   --cm-mark-quote: var(--text-muted);
 }
 
+/* --- 0b-2. 江戸彼岸のえるモード ---
+   モックの江戸彼岸（20-edohigan.png）は**明るい桜色の紙面**（紙 #fffcf8 /
+   インク #453735 / アクセント #975b68）。えるモードでもこの明色を保つので、
+   暗色系グループには入れない。紙面はテーマと同じ不透明な紙、まわりは --bg。 */
+:root[data-l-mode="on"][data-theme="edohigan"] {
+  --bg: #fbf4f2;
+  --surface: #fffcf8;
+  --surface-rgb: 255, 252, 248;
+  --surface-strong: #fffdfa;
+  --surface-strong-rgb: 255, 253, 250;
+  --surface-muted: #f4e9e6;
+
+  --border: #dccac0;
+  --border-strong: #bfa8a0;
+
+  --text: #453735;
+  --text-muted: #79655e;
+
+  --accent: #975b68;
+  --accent-soft: #f3e0e1;
+  --accent-glass: rgba(151, 91, 104, 0.1);
+  --accent-contrast: #ffffff;
+  --selection-bg: rgba(151, 91, 104, 0.16);
+
+  --scrollbar-thumb: rgba(151, 91, 104, 0.2);
+  --scrollbar-thumb-hover: rgba(151, 91, 104, 0.36);
+
+  --shadow-sm: 0 1px 2px rgba(74, 54, 60, 0.1);
+  --shadow-md: 0 4px 12px rgba(74, 54, 60, 0.14), 0 1px 3px rgba(74, 54, 60, 0.08);
+  --shadow-lg: 0 12px 32px rgba(74, 54, 60, 0.16), 0 2px 8px rgba(74, 54, 60, 0.1);
+
+  --cm-bg: #fffcf8;
+  --cm-fg: var(--text);
+  --cm-caret: var(--accent);
+  --cm-gutter-bg: #f4e9e6;
+  --cm-gutter-border: var(--border);
+  --cm-gutter-fg: var(--text-muted);
+  --cm-active-line-bg: rgba(151, 91, 104, 0.06);
+  --cm-active-gutter-bg: rgba(151, 91, 104, 0.09);
+  --cm-selection-bg: #efd2d6;
+  --cm-search-match-bg: rgba(193, 154, 107, 0.3);
+  --cm-search-match-active-bg: rgba(193, 154, 107, 0.58);
+  --cm-search-match-active-shadow: 0 0 0 1px #c19a6b;
+  --cm-invisible-space: radial-gradient(circle, #b9a49c 1px, transparent 1px);
+  --cm-invisible-tab: rgba(151, 91, 104, 0.12);
+  --cm-trailing-space: rgba(147, 72, 81, 0.3);
+
+  --cm-mark-heading: #8a4553;
+  --cm-mark-strong: var(--text);
+  --cm-mark-link: var(--accent);
+  --cm-mark-monospace: #7a5a86;
+  --cm-mark-quote: var(--text-muted);
+}
+
+/* 机と紙 — L モードの書き面は既定で机の色（--bg）をそのまま使う。
+   モックの江戸彼岸は「机 #fbf4f2 の上に紙 #fffcf8」なので、中央の本文
+   カラム（.cm-content のボックス）へ紙を敷いて階層を作る。 */
+:root[data-l-mode="on"][data-theme="edohigan"] .cm-content {
+  background: var(--cm-bg);
+  box-shadow: var(--shadow-sm);
+}
+
 /* --- 0c. Shared floating-chrome surface ---
    えるモードの floating chrome (タブ / ステータスバー /
    アクションレール / エグジットピル) は同じ frosted glass の
@@ -247,6 +308,13 @@
 :root[data-l-mode="on"] .preview-pane,
 :root[data-l-mode="on"] .pane-toggles,
 :root[data-l-mode="on"] .diff-pane {
+  display: none;
+}
+
+/* 分割バーも一緒に消す。列が1本になると分割バーは2行目へ落ち、
+   行いっぱいに伸びて `--border` の帯になる（実測: 1440×850 で 323px、
+   窓の約38%）。L モードに分割する相手はいないので、ここで落とす。 */
+:root[data-l-mode="on"] .editor-preview-grid > .pane-resizer {
   display: none;
 }
 

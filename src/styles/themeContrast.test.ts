@@ -70,7 +70,7 @@ const selectionPalette = {
   dark: { background: "#87cba8", foreground: "#0e1311" },
   yakou: { background: "#a090ff", foreground: "#0a0a14" },
   shokou: { background: "#3478ad", foreground: "#ffffff" },
-  edohigan: { background: "#e8a0b0", foreground: "#2a1824" },
+  edohigan: { background: "#975b68", foreground: "#ffffff" },
   crt: { background: "#5fe06a", foreground: "#040a06" },
   shinkai: { background: "#7dd3e0", foreground: "#0a2430" },
 } as const;
@@ -132,7 +132,7 @@ describe("Preview theme contrast", () => {
   );
 
   it.each([
-    ["edohigan", "#342230"],
+    ["edohigan", "#fffcf8"],
     ["crt", "#0d1a11"],
     ["shinkai", "#14384a"],
   ] as const)("%s keeps an opaque paper for reading", (theme, surface) => {
@@ -151,14 +151,14 @@ describe("paper token", () => {
     dark: "#1d2a23",
     yakou: "#1c1d31",
     shokou: "#f5f8fc",
-    edohigan: "#342230",
+    edohigan: "#fffcf8",
     crt: "#0d1a11",
     shinkai: "#14384a",
   } as const;
 
   // ナビ面が半透明のテーマは背景シェーダーを透かすため、合成後の色は実描画でしか測れない。
   // この2テーマは tests ではなく、資料の実描画ピクセル測定で確認する。
-  const translucentNav = new Set(["edohigan", "shinkai"]);
+  const translucentNav = new Set(["shinkai"]);
 
   const selectorFor = (theme: string) =>
     theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
@@ -306,7 +306,7 @@ describe("chrome surface", () => {
     dark: "#18241e",
     yakou: "#12102a",
     shokou: "#eef5fb",
-    edohigan: "#2a2030",
+    edohigan: "#fbf4f2",
     shinkai: "#0a2a38",
     crt: "#040a06",
   } as const;

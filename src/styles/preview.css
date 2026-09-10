@@ -43,8 +43,8 @@
 
 :root[data-theme="edohigan"] .preview-pane-preview {
   --preview-reading-surface: var(--surface-paper);
-  --preview-selection-bg: #e8a0b0;
-  --preview-selection-fg: #2a1824;
+  --preview-selection-bg: #975b68;
+  --preview-selection-fg: #ffffff;
 }
 
 :root[data-theme="crt"] .preview-pane-preview {

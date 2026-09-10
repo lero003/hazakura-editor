@@ -120,7 +120,7 @@ describe("lMode.css", () => {
   });
 
   it("uses the night writing palette for every dark-base theme", () => {
-    for (const theme of ["dark", "yakou", "edohigan", "crt", "shinkai"]) {
+    for (const theme of ["dark", "yakou", "crt", "shinkai"]) {
       expect(lModeCss).toMatch(
         new RegExp(
           `:root\\[data-l-mode="on"\\]\\[data-theme="${theme}"\\]`,
@@ -129,6 +129,34 @@ describe("lMode.css", () => {
     }
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\]\[data-theme="shinkai"\]\s*{[^}]*--bg:\s*#1a1612/s,
+    );
+  });
+
+  it("keeps the edohigan L Mode on the light blossom paper", () => {
+    // モックの江戸彼岸（20-edohigan.png）は明るい桜色の紙面。えるモードでも
+    // それを保つので、暗色系グループへ入れてはいけない（入れると #1a1612 になり、
+    // 紙が #2a2030 の薄暮だった頃の見た目へ逆戻りする）。
+    expect(lModeCss).not.toMatch(
+      /:root\[data-l-mode="on"\]\[data-theme="edohigan"\],/,
+    );
+    const block =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\]\[data-theme="edohigan"\]\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    expect(block).toMatch(/--bg:\s*#fbf4f2/);
+    expect(block).toMatch(/--cm-bg:\s*#fffcf8/);
+    expect(block).toMatch(/--text:\s*#453735/);
+    expect(block).toMatch(/--text-muted:\s*#79655e/);
+    expect(block).toMatch(/--accent:\s*#975b68/);
+    expect(block).toMatch(/--accent-contrast:\s*#ffffff/);
+    expect(block).toMatch(/--cm-gutter-border:\s*var\(--border\)/);
+  });
+
+  it("hides the pane resizer on the single-column L Mode surface", () => {
+    // 列が1本になると分割バーは2行目へ落ち、行いっぱいの `--border` の帯になる
+    // （実測: 1440×850 で 323px = 窓の約38%、ライトでも同様）。
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\]\s*\.editor-preview-grid\s*>\s*\.pane-resizer\s*{[^}]*display:\s*none/s,
     );
   });
 
