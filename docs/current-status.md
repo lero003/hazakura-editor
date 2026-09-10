@@ -35,7 +35,10 @@ Last reviewed: 2026-09-10
   透明タイトルバー色も追従。実測で面の分離は1.06〜1.13:1、accent面の文字を全テーマ検査しyakou/crtの不足を修正。
   [証跡](reviews/2026-09-10-v3-theme-stage2/README.md)。
 - **確認:** ローカル259ファイル・2,269件、typecheck・Vite・App Store surface117件・cargo fmt・cargo test 383件が成功。
-- **次:** 第二調整（面の分離の強さA/B/C）、5テーマの文字色/境界線、設定外枠寸法、native受入。UI-Gは未完了。
+- **UI 第二調整:** 罫線の階層を全7テーマで調整（`--border` 紙面比1.54〜1.55、`--border-strong` 2.18〜2.22・差0.63以上）。
+  focus（`--accent` outline）3:1以上と `theme-palette.json`＝CSS `--chrome-surface` を自動検査に固定。
+  実描画の罫線画素 `#dce2d9`→`#c7d2c5` を同座標で確認。[証跡](reviews/2026-09-11-v3-border-hierarchy/README.md)。
+- **次:** 「実装途中感」3点（No folder open二重・プレビュー上端の空白・開始画面ヘッダー二重）、chrome/紙面の境目の線、設定外枠寸法、native受入。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。

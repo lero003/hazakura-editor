@@ -1,8 +1,9 @@
 # 外部レビュー依頼 — UI-G2〜G4 と 段階2（設定レール・紙面トークン・開始画面・配色/chrome面）
 
-Status: Review request（3回目）
-Implementation scope: `fa6c9ba0..c83bbad3`（G2〜G4と段階2の実装、10コミット）
-Review packet HEAD: `9ddd64d5`（docs、ブランチ全体では11コミット）
+Status: Review request（4回目）
+Implementation scope: `fa6c9ba0..8561178b`（13コミット: G2〜G4・段階2・第二調整）
+Review packet: この依頼文を含む docs-only コミット（`8561178b` の直後1コミット。`fa6c9ba0..` はブランチ全体で14コミット）
+再現: `git log --oneline -14`
 Authority: Request
 Date: 2026-09-10
 
@@ -24,9 +25,11 @@ Date: 2026-09-10
 | `2a118313` | 1回目のレビュー対応：末尾clamp・テーマ整合テストの実CSS参照化 | G2/G3の各資料 |
 | `c83bbad3` | 段階2：モック配色をlight/darkへ反映し、chrome面トークン（`--chrome-surface`）を全7テーマへ新設 | [段階2](2026-09-10-v3-theme-stage2/README.md) |
 | `9ddd64d5` | 段階2の証跡とP3指摘3件 | 同上 |
+| `8efce875` | レビュー依頼を段階2まで拡張（docs） | — |
+| `8561178b` | 第二調整：境界線の階層を全7テーマで調整、focus 3:1とnative chrome契約を自動検査 | [境界線](2026-09-11-v3-border-hierarchy/README.md) |
 
-前回の依頼文で「4コミット」と書いていたのは誤り（`c937e036` が抜けていた）。現在は10コミット（うち段階2が2件）で、
-対象面は設定ダイアログ、テーマ／面のトークン定義、開始画面の表示、chrome面の配線のみ。
+前回の依頼文で「4コミット」と書いていたのは誤り（`c937e036` が抜けていた）。現在は13コミットで、
+対象面は設定ダイアログ、テーマ／面のトークン定義、開始画面の表示、chrome面の配線と罫線の階層のみ。
 保存・反映・パス・実行・AIの各契約には触れていない。
 
 ## 1回目のレビュー指摘への対応
@@ -59,26 +62,50 @@ Date: 2026-09-10
 境界線が **1.31:1 / 1.48:1** で、モック自身のC08（重要な境界は3:1目安）と衝突する。
 「A=モック値のまま／B=境界線を強める／C=面で分ける」を判断待ちとして資料に残した（実装は未決定のまま）。
 
+## 第二調整（`8561178b`）の追加スコープ
+
+前回の判定「B方向で進めてOK」に沿って、**面の構造は変えずに罫線の階層だけ**を調整した。
+
+| トークン | 目標 | 実測（7テーマ） |
+| --- | --- | --- |
+| `--border` | 紙面比 1.5〜1.7 | 1.54〜1.55 |
+| `--border-strong` | 2.1以上・`--border` と 0.4以上の差 | 2.18〜2.22、差 0.63〜0.68 |
+| focus（`outline: 2px solid var(--accent)`） | 3:1以上 | 3.96〜11.76 |
+
+モックの提案値（`#DCE2D9` / `#B9C6B8`）からは**意図的に離れた**（静かさより輪郭の読み取りを優先）。
+値は「paper から既存border色への補間を伸ばす」方法で求め、テーマの色相は維持している。
+実描画で罫線の画素が `#dce2d9` → `#c7d2c5` に変わることを同座標で確認した。
+
+**P3-test（native chrome 契約）への対応**：`theme-palette.json[theme] === CSS --chrome-surface` を7テーマで直接assert。
+CSSだけ変更してJSON側を忘れる事故を、片方ずつのpin更新では見逃さないようにした。
+
+**残る未決**：chrome と紙面の境目（ステータス上端 y≈836・タブ下 y≈118）は面差1.06:1のため相対的に薄い。
+ここだけ `--border-strong` を使う案を今回は採らず、記録に留めた。
+
 ## 特に見てほしい点
 
 1. **末尾clampの判定**：`scrollHeight - clientHeight` の 1px 遊びで最下部とみなす実装と、
    そのとき「最後に測定できた見出し」を返す仕様。短い最終セクション・見出し未測定（NaN）の扱いを含む。
-2. **テストの実CSS参照化**：`themeContrast.test.ts` が色をハードコードしなくなったこと。
-   不透明navの自動検査と半透明navの分離が、ガードとして妥当か（緩めていないか）。
+2. **テストの実CSS参照化**：コントラスト計算に使う文字色・補助文字・面の色をCSS実値から読む形にしたこと
+   （紙面の設計値7色と selection palette は意図的にpin）。不透明navの自動検査と半透明navの分離が妥当か。
 3. **G4 の開始画面**：既存データ／コールバックの再利用、`aria-label`（表示名）と行の表示内容、
    履歴0件の案内、`toContain` へ変更した textContent assert の妥当性。
-4. **`--surface-paper` / `--nav-surface` の適用範囲**：edohigan / shinkai のエディタ面を不透明化した点、
-   `.tabs-row` が紙面・ツールバーがナビ面という現状の一貫性。
+4. **面の適用範囲**：edohigan / shinkai のエディタ面を不透明化した点と、
+   段階2以降の `--chrome-surface`（chrome＝ツールバー・タブ・ステータス／サイドバーは `--nav-surface`）の分離。
 5. **docs の主張が実装を超えていないか**：特に「4.5:1」の範囲表現と、native受入の未実施の書き方。
 6. **段階2の面の意味づけ**：`--chrome-surface` を `--bg` ではなく独立トークンにしたこと、
    サイドバーを `--nav-surface` のまま残した配線（`workspace-chrome.css` の使用箇所はchrome3・nav1）。
 7. **accent面の文字の修正**（yakou / crt / dark）が範囲として妥当か。モックが出典の dark 以外は
    同型の関係を適用した推論である。
 8. **面の分離をモック値のまま残した判断**（未決として提示）が、レビュー観点で妥当か。
+9. **第二調整の境界線**（`8561178b`）：モック値から意図的に離して `--border` を紙面比 1.5〜1.7 へ、
+   `--border-strong` を 2.1以上（差 0.4以上）へ揃えた点。全罫線を3:1にしない役割分担の妥当性。
+10. **focus と native 契約の自動検査**：`--accent` の outline を紙面・ナビ面・chrome面で3:1検査、
+    `theme-palette.json` と CSS `--chrome-surface` の同値を7テーマで直接assert（P3-testの対応）。
 
 ## 主張と根拠
 
-- ローカル：`npm run typecheck` 成功、`npm test` **259ファイル / 2,269件**、`smoke:app-store-surface` 117件、
+- ローカル：`npm run typecheck` 成功、`npm test` **259ファイル / 2,304件**、`smoke:app-store-surface` 117件、
   `vite build` 成功、`cargo fmt --check` 成功、`cargo test` **383件成功**（段階2でRustのpinを更新したため実行）。
 - 実測の数値はすべて実描画のスクリーンショットから画素を採取したもの（[段階2](2026-09-10-v3-theme-stage2/README.md)）。
 - **言っていないこと**：native 200% / VoiceOver / 実機 / CI の合格。半透明ナビの合成は紙面・ダイアログ上での測定であること。
@@ -88,7 +115,7 @@ Date: 2026-09-10
 ## 再現手順
 
 ```bash
-git checkout codex/v3 && git log --oneline -9
+git checkout codex/v3 && git log --oneline -14
 npm run typecheck && npm test
 npm run dev:vite
 # 実アプリ: http://127.0.0.1:1420/（localStorage の hazakura-note-theme / -menu-language / -recent-folders で状態を作れる）
@@ -97,6 +124,9 @@ npm run dev:vite
 
 ## レビュー後の予定
 
-- 段階2：文字色・アクセント・境界線の全テーマ調整＋chrome/tabs/status の面の決定
+- ~~段階2：文字色・アクセント・境界線の全テーマ調整＋chrome/tabs/status の面の決定~~
+  → **実施済み**（`c83bbad3` 段階2、`8561178b` 第二調整の境界線）
+- 「実装途中感」の3点：サイドバーの「No folder open」二重表示、プレビュー上端の空白、開始画面ヘッダーの二重表示
 - 設定の外枠寸法（1100px参考・レール200px）、画面16/05/23/24
 - native 受入（VoiceOver / 200% / 再起動後設定 / 実System）
+- 継続未決：chrome と紙面の境目（ステータス上端・タブ下）だけ `--border-strong` を使うか

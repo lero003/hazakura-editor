@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: UI 段階2（配色・chrome面）の合評とnative受入
+Scope: UI 第二調整（境界線の階層）と「実装途中感」3点の解消、native受入
 Authority: High
 Last reviewed: 2026-09-10
 
@@ -12,22 +12,21 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
-## 現在の区切り — UI 段階2（文字色・アクセント・境界線・chrome面）
+## 現在の区切り — UI 第二調整（境界線の階層）
 
-モックに等価な定義があるlight/darkへ配色を通し（light §5、dark `.dark`ブロック）、
-chrome（ツールバー・タブ・ステータス）を `--chrome-surface` として意味トークンに追加（全7テーマ）。
-サイドバーは `--nav-surface` のまま。透明タイトルバー色（`theme-palette.json`）も追従。
-[実装と証跡](reviews/2026-09-10-v3-theme-stage2/README.md)。
+段階2（light/darkへモック配色、chrome面トークン新設）を外部レビューでAPPROVE。面の分離は実測1.06〜1.13:1で
+「1pxの罫線が分離を担う」状態だったため、オーナー判断で **B案＝面の構造は変えず罫線だけ一段強める** を実施。
+`--border` を紙面比 1.54〜1.55、`--border-strong` を 2.18〜2.22（差0.63〜0.68）へ全7テーマで揃え、
+focus（`--accent` のoutline）3:1以上と `theme-palette.json` ＝ CSS `--chrome-surface` の同値を自動検査に固定した。
+[実装と証跡](reviews/2026-09-11-v3-border-hierarchy/README.md)。
 
-ローカル259ファイル・2,269件、typecheck・Vite・App Store surface 117件・cargo fmt・cargo test 383件が成功。
-実測は chrome vs 紙面 1.06:1（light）/1.07:1（dark）、境界線 1.31:1 / 1.48:1 で、
-**面の分離は1pxの罫線が担う**（モック自身のC08「重要な境界3:1目安」と衝突）。第二調整の論点として残した。
-accent面の文字が全テーマ検査で yakou 2.40:1 / crt 1.70:1 と基準未満だったため濃色インクへ修正した。
+ローカル259ファイル・2,304件、typecheck・Vite・App Store surface 117件が成功。cargo test 383件も段階2で確認済み。
+実描画で罫線の画素が `#dce2d9`→`#c7d2c5` に変わることを同座標で確認。
 
 ## 次のまとまった区切り
 
-1. 第二調整：面の分離の強さ（A=モック値のまま／B=境界線を強める／C=面で分ける）をオーナーが選ぶ。
-2. モックに等価定義がない5テーマ（yakou/shokou/edohigan/shinkai/crt）の文字色・境界線。
+1. 「実装途中感」の3点：サイドバーの「No folder open」二重表示、プレビュー上端の空白、開始画面ヘッダーの二重表示。
+2. chrome と紙面の境目（ステータス上端・タブ下）だけ `--border-strong` を使うか（面差1.06:1の補い方）。
 3. 設定の外枠寸法（1100px参考）・レール幅200px・Help導線。画面16/05/23/24。
 4. UI-G受入表のnative操作（VoiceOver／200%／再起動後設定／別窓同期）、実IME→Reader→章編集→Undo。
 5. Diff行の背景（モックの追加`#E8F1E6`／削除`#F8E9E7`）を既存トークンへ寄せるかは別スライス。
