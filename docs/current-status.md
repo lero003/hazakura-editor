@@ -25,10 +25,12 @@ Last reviewed: 2026-09-10
 - **UI-G3:** モックの紙面／ナビ面を意味トークン（`--surface-paper` / `--nav-surface`）として新設し
   全7テーマへ適用。エディタ面を紙面トークンへ統一し、補助文字を全テーマ4.5:1以上に調整。
   [実装と証跡](reviews/2026-09-10-v3-theme-paper/README.md)／[差の棚卸し](v3-mock-gap-inventory.md)。
-- **確認:** ローカル258ファイル・2,242件、型検査・Vite・App Store surfaceが成功。
-  7テーマの実測で本文/紙面10.08〜16.56、補助/紙面4.82〜5.69、補助/ナビ4.66〜6.24。
-  edohigan/shinkai のエディタ面は不透明化（C08）。Rust無変更・cargo test未実行。
-- **次:** G3合評、01開始画面の2ペイン構造、設定外枠寸法、native/VoiceOver/200%受入。UI-Gは未完了。
+- **UI-G4:** 開始画面（画面01）を2ペイン化。左＝ナビ面のブランド＋45px明朝コピー＋開始操作、
+  右＝紙面の「続きから」一覧（アイコン・名前・補足パス・今日/昨日/9月7日）。履歴0件の案内を追加。
+  [実装と証跡](reviews/2026-09-10-v3-ui-g4/README.md)。
+- **確認:** ローカル259ファイル・2,248件、型検査・Vite・App Store surfaceが成功。
+  1440×850で左右720pxずつ、1024×748で縦積み。Rust無変更・cargo test未実行。
+- **次:** G4合評、段階2（文字色・アクセント・境界線の全テーマ調整）、設定外枠寸法、native受入。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
