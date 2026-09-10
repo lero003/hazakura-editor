@@ -154,3 +154,21 @@ it("blocks native document/menu mutations while the conflict surface owns input"
     expect(togglePreviewSurface).not.toHaveBeenCalled();
   } finally { dialog.remove(); }
 });
+
+it("blocks native export and view actions behind an export modal but preserves Quit", () => {
+  const { actions, togglePreviewSurface } = setup();
+  const modal = document.createElement("section");
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  document.body.appendChild(modal);
+  for (const payload of ["export-html", "export-pdf", "export-epub-beta", "toggle-preview"]) {
+    void menuListeners.at(-1)?.({ payload } as never);
+  }
+  expect(actions.exportHtml).not.toHaveBeenCalled();
+  expect(actions.exportPdf).not.toHaveBeenCalled();
+  expect(actions.exportEpubBeta).not.toHaveBeenCalled();
+  expect(togglePreviewSurface).not.toHaveBeenCalled();
+  void menuListeners.at(-1)?.({ payload: "quit-app" } as never);
+  expect(actions.requestAppQuit).toHaveBeenCalledOnce();
+  modal.remove();
+});

@@ -123,6 +123,37 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("useDocumentExport", () => {
+  it.each(["pdf", "epub"] as const)("ignores late %s preflight after HTML takes ownership, including after cancel", async (format) => {
+    let resolve!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    let pending!: Promise<void>;
+    act(() => { pending = format === "pdf" ? result.current.exportPdf() : result.current.exportEpubBeta(); });
+    await act(async () => result.current.exportHtml());
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    act(() => result.current.cancelHtmlExport());
+    await act(async () => { resolve(makeTab({ path: "/workspace/book.md" })); await pending; });
+    expect(result.current.pdfExportRequest).toBeNull();
+    expect(result.current.epubExportRequest).toBeNull();
+    expect(result.current.htmlExportRequest).toBeNull();
+  });
+
+  it.each(["html", "pdf", "epub"] as const)("keeps the visible %s modal as the only export owner", async (format) => {
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => format === "html" ? result.current.exportHtml() :
+      format === "pdf" ? result.current.exportPdf() : result.current.exportEpubBeta());
+    await act(async () => { await result.current.exportHtml(); await result.current.exportPdf(); await result.current.exportEpubBeta(); });
+    expect([result.current.htmlExportRequest, result.current.pdfExportRequest, result.current.epubExportRequest].filter(Boolean)).toHaveLength(1);
+    expect(format === "html" ? result.current.htmlExportRequest : format === "pdf" ? result.current.pdfExportRequest : result.current.epubExportRequest).not.toBeNull();
+  });
+
   it("requires explicit HTML confirmation and consumes cancelled requests", async () => {
     const { result } = renderHook(() => useDocumentExport({
       activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,
@@ -165,8 +196,10 @@ describe("useDocumentExport", () => {
       setGlobalError: vi.fn(), setStatus: vi.fn(), workspaceRootPath: "/workspace",
     }));
     await act(async () => result.current.exportPdf());
+    const pdfRequest = result.current.pdfExportRequest;
+    act(() => result.current.cancelPdfExport());
     await act(async () => result.current.exportEpubBeta());
-    for (const request of [result.current.pdfExportRequest, result.current.epubExportRequest]) {
+    for (const request of [pdfRequest, result.current.epubExportRequest]) {
       expect(request?.preflightByScope.document.hasUnsavedChanges).toBe(false);
       expect(request?.preflightByScope.book.hasUnsavedChanges).toBe(dirty);
     }
@@ -525,12 +558,10 @@ describe("useDocumentExport", () => {
       }),
     );
 
-    await act(async () => {
-      await result.current.exportPdf();
-      await result.current.exportEpubBeta();
-    });
-
+    await act(async () => result.current.exportPdf());
     expect(result.current.pdfExportRequest?.hasUnsavedChanges).toBe(true);
+    act(() => result.current.cancelPdfExport());
+    await act(async () => result.current.exportEpubBeta());
     expect(result.current.epubExportRequest?.hasUnsavedChanges).toBe(true);
   });
 

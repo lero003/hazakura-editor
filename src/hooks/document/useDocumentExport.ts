@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
@@ -166,20 +166,42 @@ export function useDocumentExport({
         : undefined,
     };
   }, [buildExportMediaAccess, workspaceRootPath]);
+  // One owner across all formats. A new intent supersedes preflight, never a visible modal.
+  type ExportFormat = "html" | "pdf" | "epub";
+  type ExportAttempt = { format: ExportFormat; phase: "preflight" | "modal" };
+  const exportAttemptRef = useRef<ExportAttempt | null>(null);
+  useEffect(() => () => { exportAttemptRef.current = null; }, []);
+  const beginExport = useCallback((format: ExportFormat) => {
+    if (exportAttemptRef.current?.phase === "modal") return null;
+    const attempt: ExportAttempt = { format, phase: "preflight" };
+    exportAttemptRef.current = attempt;
+    return attempt;
+  }, []);
+  const consumeExport = useCallback((format: ExportFormat) => {
+    const attempt = exportAttemptRef.current;
+    if (attempt?.format !== format || attempt.phase !== "modal") return false;
+    exportAttemptRef.current = null;
+    return true;
+  }, []);
+
   const [htmlExportRequest, setHtmlExportRequest] = useState<HtmlExportRequest | null>(null);
   const htmlExportRequestRef = useRef<HtmlExportRequest | null>(null);
   const cancelHtmlExport = useCallback(() => {
+    consumeExport("html");
     htmlExportRequestRef.current = null;
     setHtmlExportRequest(null);
-  }, []);
+  }, [consumeExport]);
   const exportHtml = useCallback(async () => {
     const tab = activeTabRef.current;
     if (!tab) { setStatus("No active document to export"); return; }
+    const attempt = beginExport("html");
+    if (!attempt) return;
+    attempt.phase = "modal";
     const request = { documentName: tab.name, hasUnsavedChanges: isDirty(tab), tabId: tab.id,
       sessionId: tab.sessionId, workspaceRootPath };
     htmlExportRequestRef.current = request;
     setHtmlExportRequest(request);
-  }, [setStatus, workspaceRootPath]);
+  }, [beginExport, setStatus, workspaceRootPath]);
 
   const [epubExportRequest, setEpubExportRequest] =
     useState<EpubExportRequest | null>(null);
@@ -250,11 +272,27 @@ export function useDocumentExport({
       return;
     }
 
-    const preflightByScope = await buildPreflightByScope();
-    if (activeTabRef.current?.id !== activeTab.id) {
+    const attempt = beginExport("pdf");
+    if (!attempt) return;
+    const root = workspaceRootRef.current;
+    let preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
+    try {
+      preflightByScope = await buildPreflightByScope();
+    } catch (error) {
+      if (exportAttemptRef.current !== attempt) return;
+      exportAttemptRef.current = null;
+      setStatus("PDF export preflight failed");
+      setGlobalError(String(error));
+      return;
+    }
+    if (exportAttemptRef.current !== attempt) return;
+    if (activeTabRef.current?.sessionId !== activeTab.sessionId ||
+        activeTabRef.current?.id !== activeTab.id || workspaceRootRef.current !== root) {
+      exportAttemptRef.current = null;
       setStatus("PDF export stopped; document changed");
       return;
     }
+    attempt.phase = "modal";
     setPdfExportRequest({
       bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
@@ -264,18 +302,19 @@ export function useDocumentExport({
       preset: DEFAULT_PDF_MARGIN_PRESET,
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, bookScopeChapters, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
+  }, [beginExport, setGlobalError, activeContents, activeTab, bookScopeChapters, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
 
   const cancelPdfExport = useCallback(() => {
+    consumeExport("pdf");
     setPdfExportRequest(null);
-  }, []);
+  }, [consumeExport]);
 
   const confirmPdfExport = useCallback(async (
     preset: PdfMarginPreset,
     scope: DocumentExportScope = "document",
   ) => {
     const request = pdfExportRequest;
-    if (!request) {
+    if (!request || !consumeExport("pdf")) {
       return;
     }
 
@@ -741,6 +780,7 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
   }, [
     buildExportMediaAccess,
     createExportImageLoaders,
+    consumeExport,
     pdfExportRequest,
     setGlobalError,
     setStatus,
@@ -938,11 +978,27 @@ ${bodyHtml}
       return;
     }
 
-    const preflightByScope = await buildPreflightByScope();
-    if (activeTabRef.current?.id !== activeTab.id) {
-      setStatus("Export EPUB beta stopped; document changed");
+    const attempt = beginExport("epub");
+    if (!attempt) return;
+    const root = workspaceRootRef.current;
+    let preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
+    try {
+      preflightByScope = await buildPreflightByScope();
+    } catch (error) {
+      if (exportAttemptRef.current !== attempt) return;
+      exportAttemptRef.current = null;
+      setStatus("EPUB export preflight failed");
+      setGlobalError(String(error));
       return;
     }
+    if (exportAttemptRef.current !== attempt) return;
+    if (activeTabRef.current?.sessionId !== activeTab.sessionId ||
+        activeTabRef.current?.id !== activeTab.id || workspaceRootRef.current !== root) {
+      exportAttemptRef.current = null;
+      setStatus("EPUB export stopped; document changed");
+      return;
+    }
+    attempt.phase = "modal";
     setEpubExportRequest({
       bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
@@ -956,18 +1012,19 @@ ${bodyHtml}
       }),
       tabId: activeTab.id,
     });
-  }, [activeContents, activeTab, bookScopeChapters, bookScopeNodes, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
+  }, [beginExport, setGlobalError, activeContents, activeTab, bookScopeChapters, bookScopeNodes, bookScopeUnavailable.length, buildPreflightByScope, setStatus]);
 
   const cancelEpubBetaExport = useCallback(() => {
+    consumeExport("epub");
     setEpubExportRequest(null);
-  }, []);
+  }, [consumeExport]);
 
   const confirmEpubBetaExport = useCallback(async (
     settings: EpubExportSettings,
     scope: DocumentExportScope = "document",
   ) => {
     const request = epubExportRequest;
-    if (!request) {
+    if (!request || !consumeExport("epub")) {
       return;
     }
 
@@ -1079,6 +1136,7 @@ ${bodyHtml}
   }, [
     buildExportMediaAccess,
     createExportImageLoaders,
+    consumeExport,
     epubExportRequest,
     setGlobalError,
     setStatus,
