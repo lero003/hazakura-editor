@@ -1,17 +1,26 @@
 import { useMemo } from "react";
 import hazakuraMark from "../../assets/hazakura-mark.png";
 import { draftStorageKey } from "../../features/document/pathlessDraftRecovery";
+import { formatRecentOpenedAt } from "../../features/workspace/recentOpenedAtLabel";
 import { resolveStartPanelReturningContext } from "../../features/workspace/startPanelReturning";
 import { readPersistedWorkspaceState } from "../../lib/storage";
 import type { RecoveryCopy, SafeEditorCopy } from "../../lib/locale";
 import { buildRecentDisplayEntries } from "../../lib/utils";
-import type { DraftRecord, RecentEntry } from "../../types";
+import type { DraftRecord, MenuLanguage, RecentEntry } from "../../types";
 
 /** Visible cap on Start Panel (storage may keep more for the OS menu). */
 export const START_PANEL_RECENT_WORKSPACES_LIMIT = 5;
 
+/** 開始画面の行に出す補足パス。名前を優先し、末尾の要素は落とす。 */
+function parentFolderPath(path: string): string {
+  const trimmed = path.replace(/\/+$/, "");
+  const slashIndex = trimmed.lastIndexOf("/");
+  return slashIndex > 0 ? trimmed.slice(0, slashIndex) : trimmed;
+}
+
 export function StartPanel({
   copy,
+  language = "en",
   liveWorkspaceRootPath = null,
   onDiscardDraft,
   onNewFile,
@@ -27,6 +36,8 @@ export function StartPanel({
   recoveryCopy,
 }: {
   copy: SafeEditorCopy;
+  /** 最近開いたフォルダの日時ラベルに使う。表示文言は copy 側が正本。 */
+  language?: MenuLanguage;
   liveWorkspaceRootPath?: string | null;
   onDiscardDraft?: (draftPathOrKey: string) => void;
   onNewFile: () => void | Promise<void>;
@@ -80,96 +91,120 @@ export function StartPanel({
       ? copy.startHeadingReturning
       : copy.startHeading;
 
+  const resumeButton =
+    returning.showResumeWorkspace &&
+    returning.resumeWorkspaceLabel &&
+    onReopenPersistedWorkspace ? (
+      <section
+        className="start-resume-section"
+        aria-label={copy.startResumeSection}
+      >
+        <div className="start-actions start-actions-primary">
+          <button
+            type="button"
+            className="start-resume-button"
+            autoFocus
+            aria-label={copy.startResumeWorkspace(returning.resumeWorkspaceLabel)}
+            onClick={() => void onReopenPersistedWorkspace()}
+          >
+            {returning.resumeWorkspaceLabel}
+          </button>
+        </div>
+      </section>
+    ) : null;
+
+  const startActions = (
+    <div
+      className={`start-actions${
+        resumeButton ? " start-actions-secondary" : ""
+      }`}
+      aria-label={copy.startActions}
+    >
+      <button
+        type="button"
+        className="start-open-folder"
+        autoFocus={!liveWorkspaceRootPath && !resumeButton}
+        onClick={() => void onOpenFolder()}
+      >
+        {copy.openFolder}
+      </button>
+      <button type="button" onClick={() => void onNewFile()}>
+        {copy.newFile}
+      </button>
+      <button type="button" onClick={() => void onOpenFile()}>
+        {copy.openFile}
+      </button>
+    </div>
+  );
+
   return (
     <div
       className="start-panel"
       data-start-mode={returning.mode}
       data-testid="start-panel"
     >
-      <div className="start-panel-intro">
+      {/* 左: 静かなブランド面。大きなコピーと開始操作を置く（画面01）。 */}
+      <section className="start-panel-intro">
         <div className="start-brand">
           <img className="start-logo" src={hazakuraMark} alt="" />
           <span className="start-kicker">Hazakura Editor</span>
         </div>
+        <h1 className="start-heading">{heading}</h1>
         <p className="start-value-pitch">{copy.startValuePitch}</p>
-      </div>
+        {resumeButton}
+        {startActions}
+      </section>
+
+      {/* 右: 続きから書く面。最近のフォルダと復旧候補。 */}
       <div className="start-panel-main">
-        <h1>{heading}</h1>
-
-        {returning.showResumeWorkspace &&
-        returning.resumeWorkspaceLabel &&
-        onReopenPersistedWorkspace ? (
-          <section
-            className="start-resume-section"
-            aria-label={copy.startResumeSection}
-          >
-            <div className="start-actions start-actions-primary">
-              <button
-                type="button"
-                className="start-resume-button"
-                autoFocus
-                aria-label={copy.startResumeWorkspace(
-                  returning.resumeWorkspaceLabel,
-                )}
-                onClick={() => void onReopenPersistedWorkspace()}
-              >
-                {returning.resumeWorkspaceLabel}
-              </button>
-            </div>
-          </section>
-        ) : null}
-
-        <div
-          className={`start-actions${
-            returning.showResumeWorkspace &&
-            returning.resumeWorkspaceLabel &&
-            onReopenPersistedWorkspace
-              ? " start-actions-secondary"
-              : ""
-          }`}
-          aria-label={copy.startActions}
+        <section
+          className="start-recent-section"
+          aria-label={copy.startRecentWorkspacesSection}
+          data-testid="start-panel-recent-workspaces"
         >
-          <button type="button"
-            autoFocus={!liveWorkspaceRootPath && !(returning.showResumeWorkspace && returning.resumeWorkspaceLabel && onReopenPersistedWorkspace)}
-            onClick={() => void onOpenFolder()}>
-            {copy.openFolder}
-          </button>
-          <button type="button" onClick={() => void onNewFile()}>
-            {copy.newFile}
-          </button>
-          <button type="button" onClick={() => void onOpenFile()}>
-            {copy.openFile}
-          </button>
-        </div>
-
-        {recentWorkspaceRows.length > 0 && onOpenRecentWorkspace ? (
-          <section
-            className="start-recent-section"
-            aria-label={copy.startRecentWorkspacesSection}
-            data-testid="start-panel-recent-workspaces"
-          >
-            <h2 className="start-section-heading">
-              {copy.startRecentWorkspacesSection}
-            </h2>
+          <h2 className="start-section-heading">
+            {copy.startRecentWorkspacesSection}
+          </h2>
+          {recentWorkspaceRows.length > 0 && onOpenRecentWorkspace ? (
             <ul className="start-recent-list">
-              {recentWorkspaceRows.map((entry) => (
-                <li key={entry.path}>
-                  <button
-                    type="button"
-                    className="start-recent-button"
-                    aria-label={copy.startOpenRecentWorkspace(
-                      entry.displayLabel,
-                    )}
-                    title={entry.path}
-                    onClick={() => void onOpenRecentWorkspace(entry.path)}
-                  >
-                    {entry.displayLabel}
-                  </button>
-                </li>
-              ))}
+              {recentWorkspaceRows.map((entry) => {
+                const when = formatRecentOpenedAt(
+                  entry.openedAt,
+                  language,
+                  Date.now(),
+                );
+                return (
+                  <li key={entry.path}>
+                    <button
+                      type="button"
+                      className="start-recent-button"
+                      aria-label={copy.startOpenRecentWorkspace(
+                        entry.displayLabel,
+                      )}
+                      title={entry.path}
+                      onClick={() => void onOpenRecentWorkspace(entry.path)}
+                    >
+                      <span className="start-recent-mark" aria-hidden="true" />
+                      <span className="start-recent-copy">
+                        <strong className="start-recent-name">
+                          {entry.displayLabel}
+                        </strong>
+                        <small className="start-recent-path">
+                          {parentFolderPath(entry.path)}
+                        </small>
+                      </span>
+                      {when ? (
+                        <span className="start-recent-when">{when}</span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-          </section>
-        ) : null}
+          ) : (
+            <p className="start-recent-empty">{copy.startRecentEmpty}</p>
+          )}
+        </section>
 
         {returning.showRecovery &&
         recoveryCopy &&

@@ -1,4 +1,5 @@
-/* UI-B2: reuse StartPanel's real resume/recovery actions and content. */
+/* UI-B2: reuse StartPanel's real resume/recovery actions and content.
+   UI-G4: モック画面01の2ペイン（左=ナビ面のブランド、右=紙面の続き）へ。 */
 .workspace.workspace-start { grid-template-columns: minmax(0, 1fr); }
 .workspace-start > :is(.file-tree-pane, .workspace-sidebar-rail, .pane-resizer) {
   display: none;
@@ -11,43 +12,178 @@
 
 .v3-shell .start-panel {
   display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
-  align-items: start;
-  gap: clamp(24px, 4vw, 64px);
-  padding: clamp(24px, 5vh, 56px) clamp(24px, 5vw, 64px);
-  background: var(--workspace-chrome-paper);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--surface-paper);
 }
+
+/* 左: 静かなブランド面。サイドバーと同じナビ面に置く。 */
 .v3-shell .start-panel-intro {
-  padding: 28px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--workspace-chrome-surface);
+  display: grid;
+  align-content: start;
   min-width: 0;
+  padding: 74px 62px 50px 82px;
+  border-right: 1px solid var(--border);
+  background: var(--nav-surface);
 }
-.v3-shell .start-panel-intro .start-brand { flex-wrap: wrap; }
-.v3-shell .start-panel-intro .start-value-pitch {
-  margin: 26px 0 4px;
-  font: 500 clamp(24px, 2.4vw, 36px)/1.8 var(--lmode-prose-font-family);
+.v3-shell .start-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.v3-shell .start-logo {
+  width: 63px;
+  height: 63px;
+  padding: 11px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface-paper);
+  object-fit: contain;
+}
+.v3-shell .start-kicker {
+  font: 600 11px/1.4 var(--font-ui);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.v3-shell .start-panel-intro .start-heading {
+  margin: 32px 0 0;
+  font: 500 45px/1.7 var(--lmode-prose-font-family);
+  letter-spacing: 4px;
   color: var(--text);
   overflow-wrap: anywhere;
 }
-.v3-shell .start-panel-main { max-width: 620px; gap: 24px; }
-.v3-shell .start-panel h1 { font-size: 24px; line-height: 1.5; font-weight: 650; }
-.v3-shell .start-actions button { min-height: 38px; }
-.v3-shell .start-recent-list { gap: 0; }
-.v3-shell .start-recent-list li { border-bottom: 1px solid var(--border); padding-block: 6px; }
-.v3-shell .start-recent-button { min-height: 38px; text-align: start; }
-.v3-shell .start-recovery-section { border-top: 1px solid var(--border); padding-top: 16px; }
+.v3-shell .start-panel-intro .start-value-pitch {
+  margin: 21px 0 30px;
+  font: 400 13px/2.2 var(--font-ui);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.v3-shell .start-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.v3-shell .start-actions button { min-height: 42px; padding: 7px 20px; }
+.v3-shell .start-actions .start-open-folder,
+.v3-shell .start-resume-button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast, var(--surface));
+  font-weight: 600;
+}
+
+/* 右: 続きから書く面。紙面に置く。 */
+.v3-shell .start-panel-main {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 68px 55px;
+  background: var(--surface-paper);
+}
+.v3-shell .start-section-heading {
+  margin: 0 0 22px;
+  font: 600 18px/1.5 var(--font-ui);
+  color: var(--text);
+}
+/* 右ペインは1列のリスト（画面01）。基本ルールの2列グリッドを解除する。 */
+.v3-shell .start-recent-list {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.v3-shell .start-recent-button {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 17px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 18px 0;
+  text-align: start;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text);
+  cursor: pointer;
+}
+.v3-shell .start-recent-button:hover {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.v3-shell .start-recent-button:hover .start-recent-name {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.v3-shell .start-recent-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.v3-shell .start-recent-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--accent);
+}
+.v3-shell .start-recent-mark::before {
+  grid-area: 1 / 1;
+  content: "";
+  width: 17px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+.v3-shell .start-recent-mark::after {
+  grid-area: 1 / 1;
+  content: "";
+  width: 9px;
+  height: 4px;
+  border: 1.5px solid currentColor;
+  border-bottom: 0;
+  border-radius: 2px 2px 0 0;
+  transform: translate(-4px, -6px);
+}
+.v3-shell .start-recent-copy { display: grid; gap: 6px; min-width: 0; }
+.v3-shell .start-recent-name { font: 550 14px/1.4 var(--font-ui); overflow-wrap: anywhere; }
+.v3-shell .start-recent-path {
+  font: 400 11px/1.4 var(--font-ui);
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.v3-shell .start-recent-when { font: 400 11px/1.4 var(--font-ui); color: var(--text-muted); white-space: nowrap; }
+.v3-shell .start-recent-empty { margin: 0; font: 400 13px/1.9 var(--font-ui); color: var(--text-muted); }
+.v3-shell .start-recovery-section {
+  margin-top: 32px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
 .v3-shell .start-recovery-item { flex-wrap: wrap; }
 
 @container document-workspace (max-width: 1050px) {
-  .v3-shell .start-panel { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-  .v3-shell .start-panel-intro { padding: 16px 20px; }
-  .v3-shell .start-panel-intro .start-value-pitch { font-size: 24px; margin-top: 10px; }
-  .v3-shell .start-panel-main { max-width: none; gap: 16px; }
+  .v3-shell .start-panel { grid-template-columns: minmax(0, 1fr); }
+  .v3-shell .start-panel-intro {
+    padding: 28px 24px 24px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .v3-shell .start-panel-intro .start-heading { font-size: 30px; letter-spacing: 2px; margin-top: 20px; }
+  .v3-shell .start-panel-intro .start-value-pitch { margin: 10px 0 20px; }
+  .v3-shell .start-panel-main { padding: 24px; }
 }
 
 @media (max-height: 680px) {
-  .v3-shell .start-panel { padding-block: 20px; }
-  .v3-shell .start-panel-intro { padding: 16px 20px; }
+  .v3-shell .start-panel-intro { padding: 24px 24px 20px; }
+  .v3-shell .start-panel-main { padding: 24px; }
+  .v3-shell .start-panel-intro .start-heading { font-size: 32px; margin-top: 16px; }
+  .v3-shell .start-panel-intro .start-value-pitch { margin: 8px 0 16px; }
 }

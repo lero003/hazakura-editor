@@ -211,6 +211,7 @@ export function EditorMainPane({
       ) : (
         <StartPanel
           copy={copy}
+          language={menuLanguage}
           liveWorkspaceRootPath={workspaceRootPath}
           onDiscardDraft={onDiscardDraft}
           onNewFile={onNewFile}

@@ -240,11 +240,63 @@ describe("StartPanel returning visit", () => {
       screen.getByRole("button", { name: 'Open folder “essays - Archive”' }),
     ).toBeTruthy();
     expect(
+      // 行は「名前・補足パス・日時」を出すが、読み上げ名は表示名のまま（上の getByRole が担保）。
       screen.getByRole("button", { name: 'Open folder “essays - Projects”' })
         .textContent,
-    ).toBe("essays - Projects");
+    ).toContain("essays - Projects");
     expect(
       screen.queryByText("Nothing is scanned automatically.", { exact: false }),
     ).toBeNull();
+  });
+
+  it("shows the folder path and opened date on each recent row", () => {
+    render(
+      <StartPanel
+        copy={getSafeEditorCopy("ja")}
+        language="ja"
+        onNewFile={vi.fn()}
+        onOpenFile={vi.fn()}
+        onOpenFolder={vi.fn()}
+        onOpenRecentWorkspace={vi.fn()}
+        persistedWorkspaceRootPath={null}
+        recentWorkspaces={[
+          {
+            path: "/Users/example/Projects/essays",
+            label: "随筆",
+            openedAt: Date.now(),
+            pinnedAt: null,
+          },
+          {
+            path: "/Users/example/Archive/notes",
+            label: "メモ",
+            openedAt: new Date(2026, 8, 7, 12, 0, 0).getTime(),
+            pinnedAt: null,
+          },
+        ]}
+      />,
+    );
+
+    // 名前・補足パス・日時を出す（画像のサンプル日時を固定表示しない）。
+    expect(screen.getByText("随筆")).toBeTruthy();
+    expect(screen.getByText("/Users/example/Projects")).toBeTruthy();
+    expect(screen.getByText("今日")).toBeTruthy();
+    expect(screen.getByText("9月7日")).toBeTruthy();
+  });
+
+  it("keeps the start actions reachable with an empty history", () => {
+    render(
+      <StartPanel
+        copy={getSafeEditorCopy("ja")}
+        language="ja"
+        onNewFile={vi.fn()}
+        onOpenFile={vi.fn()}
+        onOpenFolder={vi.fn()}
+        persistedWorkspaceRootPath={null}
+      />,
+    );
+
+    expect(screen.getByText("最近開いたフォルダはまだありません")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "フォルダを開く" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "新規ファイル" })).toBeTruthy();
   });
 });

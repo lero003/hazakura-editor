@@ -29,6 +29,8 @@ export type SafeEditorCopy = {
   /** Explicit recent workspace folders (capped list; no indexing). */
   startRecentWorkspacesSection: string;
   startOpenRecentWorkspace: (folderLabel: string) => string;
+  /** 履歴が無いときの案内。主要操作は消さずに理由を示す。 */
+  startRecentEmpty: string;
   startRecoverySection: string;
   startRecoveryHeading: string;
   workspace: string;
@@ -63,6 +65,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       startRecentWorkspacesSection: "さいきん ひらいた ところ",
       startOpenRecentWorkspace: (folderLabel) =>
         `ところ「${folderLabel}」をひらく`,
+      startRecentEmpty: "さいきん ひらいた ところは まだ ありません",
       startRecoverySection: "たしかめる",
       startRecoveryHeading: "ほぞんまえの メモを ふっきゅう",
       workspace: "ところ",
@@ -98,6 +101,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startRecentWorkspacesSection: "最近開いたフォルダ",
         startOpenRecentWorkspace: (folderLabel) =>
           `フォルダ「${folderLabel}」を開く`,
+        startRecentEmpty: "最近開いたフォルダはまだありません",
         startRecoverySection: "確かめる",
         startRecoveryHeading: "保存前のメモを復旧",
         workspace: "ワークスペース",
@@ -130,6 +134,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startRecentWorkspacesSection: "Recent folders",
         startOpenRecentWorkspace: (folderLabel) =>
           `Open folder “${folderLabel}”`,
+        startRecentEmpty: "No recent folders yet",
         startRecoverySection: "Verify",
         startRecoveryHeading: "Recover pre-save notes",
         workspace: "Workspace",
