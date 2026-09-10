@@ -19,6 +19,34 @@ const themeCss = [
   .map((file) => readFileSync(`${process.cwd()}/src/styles/${file}`, "utf8"))
   .join("\n");
 
+// chrome バー（ツールバー・タブ・ステータス）の面トークンの配線を見る。
+const workspaceChromeCss = readFileSync(
+  `${process.cwd()}/src/styles/workspace-chrome.css`,
+  "utf8",
+);
+
+const themeNames = [
+  "light",
+  "dark",
+  "yakou",
+  "shokou",
+  "edohigan",
+  "crt",
+  "shinkai",
+] as const;
+
+function selectorForTheme(theme: string): string {
+  return theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
+}
+
+/** テーマCSSからトークンの宣言値を読む（テスト内に色を書き写さない）。 */
+function themeToken(theme: string, token: string): string {
+  return tokenDeclarationIn(themeCss, selectorForTheme(theme), token).replace(
+    `${token}: `,
+    "",
+  );
+}
+
 function ruleBodyIn(css: string, selector: string): string {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return (
@@ -189,21 +217,43 @@ describe("paper token", () => {
 });
 
 describe("solid accent control contrast", () => {
-  it("keeps light-theme accent buttons on a dark green with white-adjacent text", () => {
+  // accent 面に載る文字は --accent-contrast。CSSから実値を読む。
+  it.each(themeNames)("%s keeps text on the accent surface readable", (theme) => {
+    const ink = themeToken(theme, "--accent-contrast");
+    expect(ink).toMatch(/^#[0-9a-fA-F]{6}$/);
     expect(
-      contrastRatio("#2e6b4f", "#ffffff"),
+      contrastRatio(themeToken(theme, "--accent"), ink),
     ).toBeGreaterThanOrEqual(4.5);
   });
+});
 
-  it("keeps dark-theme sage accent readable against the dark surface", () => {
-    expect(
-      contrastRatio("#87cba8", "#141a17"),
-    ).toBeGreaterThanOrEqual(4.5);
+describe("chrome surface", () => {
+  const chrome = {
+    light: "#f7f8f5",
+    dark: "#18241e",
+    yakou: "#12102a",
+    shokou: "#eef5fb",
+    edohigan: "#2a2030",
+    shinkai: "#0a2a38",
+    crt: "#040a06",
+  } as const;
+
+  it.each(themeNames)("%s defines one opaque chrome surface", (theme) => {
+    expect(themeToken(theme, "--chrome-surface")).toBe(chrome[theme]);
   });
 
-  it("keeps CRT phosphor accent readable against the CRT surface", () => {
-    expect(
-      contrastRatio("#5fe06a", "#08120c"),
-    ).toBeGreaterThanOrEqual(4.5);
+  it.each(themeNames)("%s keeps chrome text readable", (theme) => {
+    const surface = themeToken(theme, "--chrome-surface");
+    expect(contrastRatio(surface, themeToken(theme, "--text"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(surface, themeToken(theme, "--text-muted"))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps chrome bars on the chrome token and the sidebar on the nav token", () => {
+    expect(workspaceChromeCss).toContain("--workspace-chrome-bar: var(--chrome-surface)");
+    const barUses = workspaceChromeCss.match(/background:\s*var\(--workspace-chrome-bar\)/g) ?? [];
+    const navUses = workspaceChromeCss.match(/background:\s*var\(--workspace-chrome-surface\)/g) ?? [];
+    // ツールバー・タブ・ステータスの3箇所が chrome、サイドバーの1箇所が nav。
+    expect(barUses).toHaveLength(3);
+    expect(navUses).toHaveLength(1);
   });
 });

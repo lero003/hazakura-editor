@@ -20,6 +20,8 @@
 /* 1. パレット定義 / CRT palette */
 :root[data-theme="crt"] {
   --bg: #040a06;
+  /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
+  --chrome-surface: #040a06;
   --surface: #08120c;
   --surface-paper: #0d1a11;
   --nav-surface: #101d13;
@@ -32,6 +34,8 @@
   --text: #9be0a4;
   --text-muted: #61916b;
   --accent: #5fe06a;
+  /* 燐光の明るい緑に載る文字は濃いインク。白だと 1.7:1 まで落ちる。 */
+  --accent-contrast: #04120a;
   --accent-soft: #0e2417;
   --accent-glass: rgba(95, 224, 106, 0.1);
   --danger: #c66b6f;

@@ -15,6 +15,8 @@
 /* 1. パレット */
 :root[data-theme="edohigan"] {
   --bg: #2a2030;
+  /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
+  --chrome-surface: #2a2030;
   /* 背景シェーダーを透かすのは surface / nav-surface（操作面）。
      読む・書く面は不透明な紙面 --surface-paper を使う。 */
   --surface: rgba(42, 28, 40, 0.68);

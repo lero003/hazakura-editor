@@ -12,7 +12,7 @@ fn agent_window_background_color_returns_palette_color_for_known_theme() {
     // so a future palette edit can't silently break the
     // agent-window initial-paint color.
     let dark = agent_window_background_color("dark");
-    assert_eq!(dark, tauri::window::Color(0x10, 0x16, 0x13, 0xff));
+    assert_eq!(dark, tauri::window::Color(0x18, 0x24, 0x1e, 0xff));
     // 江戸彼岸 is a dark twilight surface (#2a2030), not the old light sakura.
     let edohigan = agent_window_background_color("edohigan");
     assert_eq!(edohigan, tauri::window::Color(0x2a, 0x20, 0x30, 0xff));
@@ -23,7 +23,7 @@ fn agent_window_background_color_returns_palette_color_for_known_theme() {
     let crt = agent_window_background_color("crt");
     assert_eq!(crt, tauri::window::Color(0x04, 0x0a, 0x06, 0xff));
     let light = agent_window_background_color("light");
-    assert_eq!(light, tauri::window::Color(0xfa, 0xfb, 0xfa, 0xff));
+    assert_eq!(light, tauri::window::Color(0xf7, 0xf8, 0xf5, 0xff));
 }
 
 #[test]
@@ -32,7 +32,7 @@ fn agent_window_background_color_falls_back_to_dark_for_unknown_theme() {
     // open path; they should fall back to the dark palette entry,
     // matching the previous hand-written match arm.
     let fallback = agent_window_background_color("definitely-not-a-theme");
-    assert_eq!(fallback, tauri::window::Color(0x10, 0x16, 0x13, 0xff));
+    assert_eq!(fallback, tauri::window::Color(0x18, 0x24, 0x1e, 0xff));
 }
 
 #[test]

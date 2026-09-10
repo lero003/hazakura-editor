@@ -90,7 +90,7 @@ describe("useAppPreferences", () => {
     renderHook(() => useAppPreferences());
 
     expect(tauriMocks.setCurrentWindowBackgroundColor).toHaveBeenCalledWith(
-      "#fafbfa",
+      "#f7f8f5",
     );
   });
 });

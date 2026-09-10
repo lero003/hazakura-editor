@@ -4,7 +4,11 @@
    各ジョークテーマ専用 CSS）で各変数を上書き済み。
    ここは light 既定の単一ソース。差し色以外を極力ニュートラルに保つ。 */
 :root {
-  --bg: #fafbfa;
+  --bg: #f7f8f5;
+  /* ツールバー・タブ・ステータスなどの chrome の下地。モックは --bg を使うが、
+     「chrome」という役割として独立させ、サイドバー(--nav-surface)や
+     紙面(--surface-paper)と混ざらないようにする。 */
+  --chrome-surface: #f7f8f5;
   --surface: #ffffff;
   /* 本文の紙面: 読む・書く面の下地。汎用 surface(白)とは別の意味を持つ。 */
   --surface-paper: #fffefb;
@@ -13,19 +17,19 @@
   --surface-rgb: 255, 255, 255;
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
-  --surface-muted: #f1f3f2;
-  --border: #e4e7e5;
-  --border-strong: #c8cfc9;
-  --text: #1a1f1d;
+  --surface-muted: #f2f4ef;
+  --border: #dce2d9;
+  --border-strong: #b9c6b8;
+  --text: #24362d;
   --text-muted: #606f64;
-  --accent: #2e6b4f;
-  --accent-soft: #eef3f0;
-  --accent-glass: rgba(46, 107, 79, 0.08);
+  --accent: #356b50;
+  --accent-soft: #e1ecdf;
+  --accent-glass: rgba(53, 107, 80, 0.08);
   --danger: #9e3f43;
   --conflict: #997838;
   --status-bg: #1c2420;
   --status-text: #f0f7f3;
-  --selection-bg: rgba(46, 107, 79, 0.15);
+  --selection-bg: rgba(53, 107, 80, 0.15);
   --scrollbar-thumb: rgba(107, 118, 112, 0.25);
   --scrollbar-thumb-hover: rgba(107, 118, 112, 0.4);
 
@@ -47,22 +51,22 @@
 
   /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
   --cm-bg: var(--surface-paper);
-  --cm-fg: #1a1f1d;
-  --cm-caret: #2e6b4f;
-  --cm-gutter-bg: #f4f6f5;
-  --cm-gutter-border: #e4e7e5;
+  --cm-fg: #24362d;
+  --cm-caret: #356b50;
+  --cm-gutter-bg: #f7f8f5;
+  --cm-gutter-border: #dce2d9;
   --cm-gutter-fg: #6b7670;
-  --cm-active-line-bg: rgba(46, 107, 79, 0.05);
-  --cm-active-gutter-bg: rgba(46, 107, 79, 0.05);
+  --cm-active-line-bg: rgba(53, 107, 80, 0.05);
+  --cm-active-gutter-bg: rgba(53, 107, 80, 0.05);
   --cm-selection-bg: #a8cdb8;
   --cm-search-match-bg: rgba(153, 120, 56, 0.2);
   --cm-search-match-active-bg: rgba(153, 120, 56, 0.5);
   --cm-search-match-active-shadow: 0 0 0 1px #997838;
   --cm-invisible-space: radial-gradient(circle, #7a8a81 1px, transparent 1px);
-  --cm-invisible-tab: rgba(46, 107, 79, 0.12);
+  --cm-invisible-tab: rgba(53, 107, 80, 0.12);
   --cm-trailing-space: rgba(158, 63, 67, 0.2);
   --cm-mark-heading: #1a4536;
-  --cm-mark-strong: #1a1f1d;
+  --cm-mark-strong: #24362d;
   --cm-mark-link: #245d8a;
   --cm-mark-monospace: #245c40;
   --cm-mark-quote: #4f6659;
@@ -138,7 +142,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-accent: 0 4px 16px rgba(46, 92, 70, 0.12);
+  --shadow-accent: 0 4px 16px rgba(53, 107, 80, 0.12);
   /* v0.34: bare --shadow は color-mix の基点として各所から参照される。
      --shadow-lg と同程度の無彩シャドウを既定値にする。themes.css 側で
      テームごとに上書き可能。 */

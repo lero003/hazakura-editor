@@ -3,6 +3,9 @@
 .v3-shell {
   grid-template-rows: auto min-content minmax(0, 1fr) auto;
   --workspace-chrome-surface: var(--nav-surface);
+  /* chrome バー（ツールバー・タブ・ステータス）は --chrome-surface。
+     サイドバーは --nav-surface のまま役割を分ける。 */
+  --workspace-chrome-bar: var(--chrome-surface);
   --workspace-chrome-paper: var(--surface-paper);
 }
 .primary-toolbar-slot { min-width: 0; position: relative; z-index: var(--z-sticky); }
@@ -14,7 +17,7 @@
   min-height: 66px;
   padding: 8px 20px 8px 84px;
   box-sizing: border-box;
-  background: var(--workspace-chrome-surface);
+  background: var(--workspace-chrome-bar);
   border-bottom: 1px solid var(--border);
   color: var(--text);
   font: 13px/1.45 var(--font-sans);
@@ -58,7 +61,7 @@
   grid-template-columns: 42px minmax(0, 1fr);
   grid-template-rows: minmax(43px, auto) minmax(48px, auto);
   height: auto; padding: 0 14px; gap: 0 8px;
-  background: var(--workspace-chrome-paper); border-bottom: 1px solid var(--border);
+  background: var(--workspace-chrome-bar); border-bottom: 1px solid var(--border);
   -webkit-app-region: no-drag;
 }
 :root:not([data-l-mode="on"]) .v3-shell .window-drag-strip { display: none; }
@@ -71,7 +74,7 @@
 :root:not([data-l-mode="on"]) .v3-shell .pane-control-cluster { flex-wrap: wrap; }
 :root:not([data-l-mode="on"]) .v3-shell .pane-toggles { flex-wrap: wrap; }
 :root:not([data-l-mode="on"]) .v3-shell .file-tree-pane { background: var(--workspace-chrome-surface); border-right: 1px solid var(--border); }
-:root:not([data-l-mode="on"]) .v3-shell .status-bar { min-height: 35px; height: auto; box-sizing: border-box; background: var(--workspace-chrome-surface); color: var(--text-muted); border-top: 1px solid var(--border); }
+:root:not([data-l-mode="on"]) .v3-shell .status-bar { min-height: 35px; height: auto; box-sizing: border-box; background: var(--workspace-chrome-bar); color: var(--text-muted); border-top: 1px solid var(--border); }
 :root[data-l-mode="on"] .primary-toolbar-slot { display: none; }
 :root[data-l-mode="on"] .workspace-document-column { grid-template-rows: minmax(0, 1fr); }
 @media (max-width: 1100px) {

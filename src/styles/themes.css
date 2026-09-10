@@ -26,26 +26,29 @@ html, body, #root, .app-shell,
 
 /* 森の夜 / Dark – deep moss-black with luminous sage accent */
 :root[data-theme="dark"] {
-  --bg: #0e1311;
-  --surface: #141a17;
+  --bg: #18241e;
+  --chrome-surface: #18241e;
+  --surface: #25332a;
   --surface-paper: #1d2a23;
   --nav-surface: #142019;
-  --surface-rgb: 20, 26, 23;
+  --surface-rgb: 37, 51, 42;
   --surface-strong: #1a211d;
   --surface-strong-rgb: 26, 33, 29;
-  --surface-muted: #101613;
-  --border: #232c28;
-  --border-strong: #34423b;
-  --text: #e8ede5;
-  --text-muted: #8a9b91;
-  --accent: #87cba8;
-  --accent-soft: #1d2c25;
-  --accent-glass: rgba(135, 203, 168, 0.1);
+  --surface-muted: #213128;
+  --border: #35463a;
+  --border-strong: #4a5f4d;
+  --text: #e5eddf;
+  --text-muted: #a6b5a5;
+  --accent: #aad0ac;
+  --accent-soft: #2e4935;
+  --accent-glass: rgba(170, 208, 172, 0.1);
+  /* 明るいセージの面に載る文字は濃いインク。白だと 2.05:1 まで落ちる。 */
+  --accent-contrast: #15251a;
   --danger: #c66b6f;
   --conflict: #b59045;
   --status-bg: #0a0e0c;
-  --status-text: #e8ede5;
-  --selection-bg: rgba(135, 203, 168, 0.2);
+  --status-text: #e5eddf;
+  --selection-bg: rgba(170, 208, 172, 0.2);
   --scrollbar-thumb: rgba(140, 160, 148, 0.15);
   --scrollbar-thumb-hover: rgba(140, 160, 148, 0.3);
 
@@ -60,19 +63,19 @@ html, body, #root, .app-shell,
 
   /* CodeMirror ダーク用配色 / CodeMirror Dark Colors */
   --cm-bg: var(--surface-paper);
-  --cm-fg: #e8ede5;
-  --cm-caret: #87cba8;
-  --cm-gutter-bg: #101613;
-  --cm-gutter-border: #232c28;
-  --cm-gutter-fg: #8a9b91;
-  --cm-active-line-bg: rgba(135, 203, 168, 0.08);
-  --cm-active-gutter-bg: rgba(135, 203, 168, 0.08);
+  --cm-fg: #e5eddf;
+  --cm-caret: #aad0ac;
+  --cm-gutter-bg: #213128;
+  --cm-gutter-border: #35463a;
+  --cm-gutter-fg: #a6b5a5;
+  --cm-active-line-bg: rgba(170, 208, 172, 0.08);
+  --cm-active-gutter-bg: rgba(170, 208, 172, 0.08);
   --cm-selection-bg: #5f8a6f;
   --cm-search-match-bg: rgba(181, 144, 69, 0.3);
   --cm-search-match-active-bg: rgba(181, 144, 69, 0.7);
   --cm-search-match-active-shadow: 0 0 0 1px #b59045;
   --cm-invisible-space: radial-gradient(circle, #75847b 1px, transparent 1px);
-  --cm-invisible-tab: rgba(135, 203, 168, 0.12);
+  --cm-invisible-tab: rgba(170, 208, 172, 0.12);
   --cm-trailing-space: rgba(198, 107, 111, 0.3);
   --cm-mark-heading: #d8f7e8;
   --cm-mark-strong: #f2f7f4;
@@ -106,7 +109,7 @@ html, body, #root, .app-shell,
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.18);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.18);
-  --shadow-accent: 0 4px 20px rgba(135, 203, 168, 0.15);
+  --shadow-accent: 0 4px 20px rgba(170, 208, 172, 0.15);
 }
 
 /* 江戸彼岸 (Edohigan) のパレット定義は edohigan-theme.css へ移管。
@@ -118,6 +121,8 @@ html, body, #root, .app-shell,
 :root[data-theme="yakou"] {
   --bg: linear-gradient(135deg, #0a0a14 0%, #14122c 48%, #0c0e18 100%);
   --bg-gradient: true;
+  /* chrome は --bg がグラデーションのため、同系の不透明色を別に持つ。 */
+  --chrome-surface: #12102a;
   --surface: #15151f;
   --surface-paper: #1c1d31;
   --nav-surface: #141426;
@@ -134,8 +139,9 @@ html, body, #root, .app-shell,
   --accent-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
   --accent-soft: #1e1a3a;
   --accent-glass: rgba(160, 144, 255, 0.11);
-  /* グラデ CTA 上の文字は常に明色 */
-  --accent-contrast: #f4f2ff;
+  /* 明るい紫〜青緑のグラデ CTA に載る文字は濃いインク。
+     白系だと 2.4:1 まで落ちる。 */
+  --accent-contrast: #0a0a14;
   --danger: #e26070;
   --conflict: #d4a842;
   --status-bg: #08080e;
@@ -211,6 +217,8 @@ html, body, #root, .app-shell,
 /* 曙光 / Shokou – bright dawn sky with soft blue and warm peach */
 :root[data-theme="shokou"] {
   --bg: linear-gradient(135deg, #e4f1ff 0%, #f6faff 36%, #ffe6c4 72%, #f8cbb8 100%);
+  /* chrome は --bg がグラデーションのため、空の明るい側の不透明色を別に持つ。 */
+  --chrome-surface: #eef5fb;
   --surface: #f6f9fd;
   --surface-paper: #f5f8fc;
   --nav-surface: #e2ecf5;
