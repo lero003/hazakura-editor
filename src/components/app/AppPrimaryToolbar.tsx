@@ -46,7 +46,9 @@ export function AppPrimaryToolbar({ documentName, workspaceName, menuLanguage, n
         <PanelLeftOpenIcon />
       </button>
       <div className="primary-document-name"><strong title={documentName}>{documentName}</strong>
-        <small title={workspaceName}>{workspaceName || "Hazakura Editor"}</small></div>
+        {/* 副題は開いているフォルダ名。無いときは何も出さない（製品名をここへ
+            繰り返すと上段と下段で同じ文字列が二度並ぶ）。 */}
+        {workspaceName ? <small title={workspaceName}>{workspaceName}</small> : null}</div>
       {isDeveloperDistributionLane() && <span className="distribution-badge distribution-badge-dev">DEV</span>}
     </div>
     <WorkspaceModeNavigation {...navigation} />

@@ -71,6 +71,11 @@
 :root:not([data-l-mode="on"]) .v3-shell .editor-quick-settings { grid-column: 1; grid-row: 2; justify-self: start; }
 :root:not([data-l-mode="on"]) .v3-shell .document-meta { grid-column: 2; grid-row: 2; justify-self: stretch; max-width: none; margin: 0; flex-wrap: wrap; padding: 5px 0; }
 :root:not([data-l-mode="on"]) .v3-shell .document-meta .chrome-section { flex-shrink: 1; }
+/* タブ行の下段（表示ツールバー）は文書カラム全幅に広がる。編集系は左、閲覧系
+   （Preview / e-book / Outline / Reference / Diff）の節は右端へ寄せ、プレビュー列の上の帯を
+   空のまま残さない。モックの「並べて表示」が右端に置かれている位置に相当する。
+   押し出す対象は flex の子である chrome-section 側（cluster はその中身）。 */
+:root:not([data-l-mode="on"]) .v3-shell .document-meta > .chrome-section:has(.pane-control-cluster.reading-controls) { margin-left: auto; }
 :root:not([data-l-mode="on"]) .v3-shell .pane-control-cluster { flex-wrap: wrap; }
 :root:not([data-l-mode="on"]) .v3-shell .pane-toggles { flex-wrap: wrap; }
 :root:not([data-l-mode="on"]) .v3-shell .file-tree-pane { background: var(--workspace-chrome-surface); border-right: 1px solid var(--border); }

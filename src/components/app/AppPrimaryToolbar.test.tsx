@@ -65,6 +65,16 @@ describe("AppPrimaryToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: /not supported on this Mac/ }));
     expect(onOpenAppleAssistWindow).toHaveBeenCalledOnce();
   });
+  it("does not repeat the product name as both the title and the subtitle", () => {
+    render(<AppPrimaryToolbar {...base} documentName="Hazakura Editor" workspaceName="" />);
+    // 無題＋フォルダ未選択のとき、上段と下段に同じ製品名を出さない。
+    expect(screen.getAllByText("Hazakura Editor")).toHaveLength(1);
+  });
+  it("keeps the workspace name as the subtitle when one is open", () => {
+    render(<AppPrimaryToolbar {...base} documentName="朝の余白.md" workspaceName="随筆" />);
+    expect(screen.getByText("朝の余白.md")).toBeTruthy();
+    expect(screen.getByText("随筆")).toBeTruthy();
+  });
   it("does not turn an interactive control into a window drag", () => {
     const view = render(<AppPrimaryToolbar {...base} />);
     fireEvent.mouseDown(screen.getByRole("button", {name:"保存"}), {button:0});

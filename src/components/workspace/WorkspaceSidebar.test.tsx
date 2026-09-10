@@ -27,6 +27,8 @@ afterEach(cleanup);
 function renderSidebar(options: {
   activePath?: string | null;
   onMoveToTrash?: (path: string, name: string, isDirectory: boolean) => void;
+  workspaceRootPath?: string | null;
+  workspaceTree?: WorkspaceTreeEntry | null;
 } = {}) {
   const onMoveToTrash = options.onMoveToTrash ?? vi.fn();
   const result = render(
@@ -56,8 +58,8 @@ function renderSidebar(options: {
       openFilePaths={[]}
       renamingPath={null}
       requestRename={vi.fn()}
-      workspaceRootPath="/workspace"
-      workspaceTree={workspaceTree}
+      workspaceRootPath={options.workspaceRootPath === undefined ? "/workspace" : options.workspaceRootPath}
+      workspaceTree={options.workspaceTree === undefined ? workspaceTree : options.workspaceTree}
     />,
   );
   return { ...result, onMoveToTrash };
@@ -101,5 +103,15 @@ describe("WorkspaceSidebar Theme A clarity", () => {
     expect(
       screen.getByRole("group", { name: "Knowledge folder starters" }),
     ).toBeTruthy();
+  });
+});
+
+describe("WorkspaceSidebar empty workspace", () => {
+  it("says the empty-folder message once and keeps the open action", () => {
+    const copy = getSafeEditorCopy("en");
+    renderSidebar({ workspaceRootPath: null, workspaceTree: null });
+    // ヘッダーの見出しと空状態の本文で同じ文言を二度出さない。
+    expect(screen.getAllByText(copy.noFolderOpen)).toHaveLength(1);
+    expect(screen.getByRole("button", { name: copy.openFolder })).toBeTruthy();
   });
 });

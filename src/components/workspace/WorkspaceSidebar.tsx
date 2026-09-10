@@ -283,11 +283,13 @@ export function WorkspaceSidebar({
         <div className="workspace-heading">
           <div className="workspace-labels">
             <span className="workspace-kicker">{copy.workspace}</span>
-            <span className="workspace-title" title={workspaceRootPath ?? ""}>
-              {workspaceRootPath
-                ? folderLabelFromPath(workspaceRootPath)
-                : copy.noFolderOpen}
-            </span>
+            {/* フォルダ未選択のときは見出しを出さない。同じ「開いていない」案内は
+                下の空状態が操作ボタンと一緒に示すので、ヘッダーで繰り返さない。 */}
+            {workspaceRootPath ? (
+              <span className="workspace-title" title={workspaceRootPath}>
+                {folderLabelFromPath(workspaceRootPath)}
+              </span>
+            ) : null}
           </div>
           <div className="workspace-header-actions">
             {workspaceRootPath ? (
