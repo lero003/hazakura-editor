@@ -29,7 +29,8 @@ chrome 面に合成すると 3:1 を割っていた。意味トークン `--focu
 - `focusRingCss.test.ts`（新規）：**全CSSファイルを走査して `outline: … color-mix(…)` が1つも無いこと**を固定。
   薄めたリングが再導入されたら落ちる。`--focus-ring` の定義が `var(--accent)` であることも固定。
 - `themeContrast.test.ts`：focus の検査を `--accent` ではなく **`--focus-ring` の実値**で行い、
-  紙面・ナビ面・chrome面のすべてで 3:1 以上を確認（7テーマ）。
+  3:1 以上を確認する。**自動検査の範囲は紙面とchrome面の全7テーマ＋不透明ナビの5テーマ**で、
+  半透明ナビ（edohigan / shinkai）は合成後でしか測れないため**実描画の証跡**（前段の測定）に委ねる。
 
 ## 2. [P3] ガター境界を全テーマで `--border` に追従させた
 

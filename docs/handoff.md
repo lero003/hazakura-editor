@@ -37,6 +37,9 @@ Last reviewed: 2026-09-10
   focus（`--accent` outline）3:1以上と `theme-palette.json`＝CSS `--chrome-surface` を自動検査に固定。
   実描画の罫線画素 `#dce2d9`→`#c7d2c5` を同座標で確認。ローカル259ファイル・2,304件が成功。
   [証跡](reviews/2026-09-10-v3-border-hierarchy/README.md)。
+- **UI 狭幅23:** ≤1100pxでサイドバーを表示上だけ畳む（保存設定なし・明示選択は幅が変わるまで優先）。
+  1440=開く／1024=畳む／トグルで開く／1440復帰を実測。264ファイル・2,326件が成功。
+  残差は1024のエディタ564px（container閾値780px）。[証跡](reviews/2026-09-11-v3-compact-sidebar/README.md)。
 - **設定の外枠:** モック基準へ（1100×752、左レール200px、パディング23×14、項目min-height40px、アイコンなし）。
   1440×850で1100×752・960×640で912×592を実測。[証跡](reviews/2026-09-10-v3-settings-frame/README.md)。
 - **UI focus/境界:** focusリングの薄め9箇所を `--focus-ring` へ（light 2.40→5.85:1、shokou 2.11→4.30:1）、
@@ -48,7 +51,7 @@ Last reviewed: 2026-09-10
   プレビュー上端の空白（表示ツールバー行の右半分が98.8%単色）を修正。閲覧系の節を行の右端へ寄せ、
   空状態の案内を一本化。ローカル260ファイル・2,309件、App Store surface 117件が成功。
   [証跡](reviews/2026-09-10-v3-rough-edges/README.md)。
-- **次:** 画面23（狭い窓のサイドバー一時折畳み）、画面16（書体・行間の独立設定は別タスク）、画面24（寸法差の計測）、Help導線の採否、native受入。UI-Gは未完了。
+- **次:** 棚卸し§6の残課題8件（A=1024の本文幅の判断、B=書体・行間、C=画像寸法の実機計測、D=Help導線、E=Diff行、F=L Mode既定値、G=native受入、H=CI）。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
