@@ -19,10 +19,13 @@ Last reviewed: 2026-09-10
 - **UI-G1:** Settingsの未probeを非対応と断定するP2-lowを138e0cc3で修正。
   56d80817でHelpの画像通信/明示Apply説明、799f649aで低い有効領域の到達性を調整。
   [最新合評・受入表](reviews/2026-09-10-v3-ui-g1/README.md)。
-- **確認:** ローカル256ファイル・2,209件、表示境界117件。近接46件と最終Help21件も成功。
-  最終コードのtypecheck/Vite/native preview/署名整合成功。
-  960×640と480×320のreflow予備確認。nativeの200%実行とは区別。Rust無変更・再実行なし。
-- **次:** G1合評、native/VoiceOver/200%/再起動/実Systemの受入表を埋める。UI-Gは未完了。
+- **UI-G2:** 未コミットで残っていた設定の左レール化を引き取り、カテゴリの現在地を
+  本文スクロールから導出する処理を追加（c937e036のassert補強、1cb1e564）。
+  [実装と証跡](reviews/2026-09-10-v3-ui-g2/README.md)。
+- **確認:** ローカル258ファイル・2,220件、表示境界117件。typecheck/Vite成功。
+  7テーマの実描画測定で現在地の左バーが最小4.16:1、本文の文字は全て10:1以上。
+  Rust無変更・cargo test未実行。G1の近接46件・Help21件は再実行していない。
+- **次:** G2合評と、native/VoiceOver/200%/再起動/実Systemの受入表を埋める。UI-Gは未完了。
 - **UI-G残件:** Reader背景sidebarのVoiceOver仮想カーソル確認を継続。
 - **Local Assist:** v3.0はSystem共通基盤、v3.1はallowlistモデルのDL・管理・切り替え。
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。

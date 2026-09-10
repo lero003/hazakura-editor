@@ -1,6 +1,6 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-F2 externally accepted; UI-G1 ready for review; native acceptance pending
+Status: UI-F2 externally accepted; UI-G1/G2 implemented; native acceptance pending
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
 Last reviewed: 2026-09-10
@@ -137,6 +137,7 @@ UI-A1の実装・ブラウザー画像・自動検証・未実施項目は
 UI-A1再レビュー通過、UI-B R3〜R5 CLOSED、LA-0/UI-C1は外部GO。C1追修正/C2-R1は外部CLOSED。
 D1画像/候補一覧・D2aは外部GO、D1-R1 CLOSED。
 D2b/Save As通知は外部CLOSED、UI-E1 GO。E2/E3のR1〜R3は外部CLOSED、UI-E4a外部GO。UI-E4bのHTML/取り込みは外部GO、export modal排他P2は外部CLOSED、UI-F1 GO。UI-F2も外部GO。UI-G1で未probe表示・Help文言・低い有効領域を調整。
-[最新資料](reviews/2026-09-10-v3-ui-g1/README.md)で合評する。
+UI-G2で設定の左レールとカテゴリの現在地を実装し、[G2の実装と証跡](reviews/2026-09-10-v3-ui-g2/README.md)へまとめた（区切り名は本資料の呼称）。
+[G1の資料](reviews/2026-09-10-v3-ui-g1/README.md)と合わせて合評する。
 UI-EのReader実機受入/本構成一覧/出力/取り込み、UI-F設定、UI-G/native受入、LA-1以降は未完了。
 次の担当は[current-work.md](current-work.md)から進む。
