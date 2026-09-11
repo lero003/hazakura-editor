@@ -238,6 +238,8 @@ export function AppShell(props: AppShellProps) {
           canSave={resolvePrimarySaveEnabled({
             activeDirty: props.activeDirty,
             canNavigate: navigation.canNavigate,
+            // 保存先がまだ無い文書（新規作成）は、中身が空でも「保存」で名前を付けられる。
+            pathless: !props.activeTab?.path,
             generationLocked: !!props.appleAssistGenerationLock,
             readingOverlayOpen,
             saveStatus: props.activeTab?.saveStatus ?? null,
