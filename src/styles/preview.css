@@ -1114,6 +1114,9 @@
   /* 紙の中の余白。見開きの紙幅は**この余白も含めて**計算しないと、2列目が紙の内側に
      収まらず「片側に寄った一枚＋空の右半分」になる（実機指摘②の実体）。 */
   --ebook-sheet-pad-x: clamp(22px, 3vw, 39px);
+  /* 紙の上下の内側余白。横だけ指定していたため、本文の1行目が紙の上端に接していた
+     （実測: 紙 y=195 / 本文 y=196）。実機指摘「文字と枠がほぼくっついてる」。 */
+  --ebook-sheet-pad-y: clamp(24px, 3.4vh, 40px);
   --ebook-spread-width: calc(
     var(--ebook-page-width) * 2 + var(--ebook-page-gap) + var(--ebook-sheet-pad-x) * 2 + 2px
   );
@@ -1143,7 +1146,7 @@
   border: 1px solid var(--border);
   border-radius: 3px;
   box-shadow: var(--shadow-sm);
-  padding: 0 var(--ebook-sheet-pad-x);
+  padding: var(--ebook-sheet-pad-y) var(--ebook-sheet-pad-x);
 }
 
 .ebook-page-viewport {

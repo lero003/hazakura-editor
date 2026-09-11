@@ -292,8 +292,15 @@ describe("preview.css", () => {
     expect(chapterBody).toMatch(
       /--ebook-sheet-pad-x:\s*clamp\(22px,\s*3vw,\s*39px\)/,
     );
+    // 実機指摘（第2弾）「文字と枠がほぼくっついてる」: 横だけ指定していたため
+    // 本文の1行目が紙の上端に接していた（実測 紙y=195 / 本文y=196）。上下の余白も持たせる。
+    expect(chapterBody).toMatch(
+      /--ebook-sheet-pad-y:\s*clamp\(24px,\s*3\.4vh,\s*40px\)/,
+    );
     const sheet = ruleBody(".ebook-page-sheet");
-    expect(sheet).toMatch(/padding:\s*0 var\(--ebook-sheet-pad-x\)/);
+    expect(sheet).toMatch(
+      /padding:\s*var\(--ebook-sheet-pad-y\) var\(--ebook-sheet-pad-x\)/,
+    );
     // 紙幅は**紙の内側の余白も含めて**数える。ここを落とすと2列目が紙の外へ出て
     // 「片側に寄った一枚＋空の右半分」に戻る（実機指摘②の実体）。
     expect(chapterBody).toMatch(
