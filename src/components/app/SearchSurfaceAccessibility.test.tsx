@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -28,6 +28,111 @@ describe("search surface accessibility semantics", () => {
       HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
     } else {
       delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView;
+    }
+  });
+
+  it("activates a result from the keyboard and ignores the right button (R5)", () => {
+    // 外部レビュー R5: 結果は onPointerDown だけで実行していたため、Tab で結果へ移って
+    // Enter/Space を押しても何も起きず、右クリックでも実行されていた。
+    const onOpenFile = vi.fn();
+    render(
+      <QuickOpen
+        menuLanguage="en"
+        onClose={vi.fn()}
+        onOpenFile={onOpenFile}
+        tree={{
+          name: "workspace",
+          path: "/workspace",
+          kind: "directory",
+          children_loaded: true,
+          children_truncated: false,
+          children: [
+            {
+              name: "draft.md",
+              path: "/workspace/draft.md",
+              kind: "file",
+              children_loaded: true,
+              children_truncated: false,
+              children: [],
+            },
+          ],
+        }}
+      />,
+    );
+
+    const option = screen.getByRole("option", { name: /draft\.md/ });
+    // 右クリック（主ボタン以外）では実行しない。
+    fireEvent.pointerDown(option, { button: 2 });
+    expect(onOpenFile).not.toHaveBeenCalled();
+    // 主ボタンでは実行する（ポインタ経路の既存挙動）。
+    fireEvent.pointerDown(option, { button: 0 });
+    expect(onOpenFile).toHaveBeenCalledTimes(1);
+    // キーボード由来の click（detail === 0。Enter/Space がボタンに送る）でも実行する。
+    fireEvent.click(option, { detail: 0 });
+    expect(onOpenFile).toHaveBeenCalledTimes(2);
+    // ポインタ由来の click（detail !== 0）では二重実行しない。
+    fireEvent.click(option, { detail: 1 });
+    expect(onOpenFile).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not run a command on the right button in the palette (R5)", () => {
+    const onRun = vi.fn();
+    render(
+      <CommandPalette
+        activeIndex={0}
+        commands={[{ id: "save", label: "Save", category: "File", run: vi.fn() }]}
+        menuLanguage="en"
+        onClose={vi.fn()}
+        onRun={onRun}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query=""
+      />,
+    );
+
+    const option = screen.getByRole("option", { name: /Save/ });
+    fireEvent.pointerDown(option, { button: 2 });
+    expect(onRun).not.toHaveBeenCalled();
+    fireEvent.pointerDown(option, { button: 0 });
+    expect(onRun).toHaveBeenCalledTimes(1);
+    fireEvent.click(option, { detail: 0 });
+    expect(onRun).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps Tab inside the palette frame (R5)", () => {
+    // 外部レビュー R5: パレット自身に focus trap が無く、Tab で枠外のボタンへ抜けていた。
+    // jsdom には layout が無く `getClientRects()` が常に空なので、trap の可視判定
+    // （focusTrap.ts が getClientRects で可視を判定する）を通すための最小の stub。
+    const originalRects = Element.prototype.getClientRects;
+    Element.prototype.getClientRects = function getClientRects() {
+      return [{ bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0, x: 0, y: 0, toJSON: () => ({}) }] as unknown as DOMRectList;
+    };
+    try {
+      render(
+      <CommandPalette
+        activeIndex={0}
+        commands={[{ id: "save", label: "Save", category: "File", run: vi.fn() }]}
+        menuLanguage="en"
+        onClose={vi.fn()}
+        onRun={vi.fn()}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query=""
+      />,
+    );
+
+      const dialog = screen.getByRole("dialog", { name: "Command palette" });
+      const input = screen.getByRole("combobox", { name: "Command palette" });
+      const option = screen.getByRole("option", { name: /Save/ });
+      option.focus();
+      expect(document.activeElement).toBe(option);
+
+      fireEvent.keyDown(option, { key: "Tab" });
+      // 枠の中で循環する（最後の要素から Tab で先頭＝入力へ戻る）。
+      expect(document.activeElement).toBe(input);
+      expect(dialog.contains(document.activeElement)).toBe(true);
+    } finally {
+      Element.prototype.getClientRects = originalRects;
     }
   });
 

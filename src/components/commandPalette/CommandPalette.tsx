@@ -5,6 +5,7 @@ import {
   isCommandEnabled,
   type Command,
 } from "../../hooks/commandPalette/useCommandPalette";
+import { trapFocusInElement } from "../../lib/focusTrap";
 import type { MenuLanguage } from "../../types";
 
 type CommandPaletteProps = {
@@ -99,11 +100,26 @@ export function CommandPalette({
   };
 
   return (
-    <div className="command-palette-overlay" onPointerDown={onClose}>
+    <div
+      className="command-palette-overlay"
+      onPointerDown={(event) => {
+        // 主ボタンだけ。右クリックで閉じない（外部レビュー R5）。
+        if (event.button === 0) {
+          onClose();
+        }
+      }}
+    >
       <div
         aria-label={copy.dialogLabel}
         aria-modal="true"
         className="command-palette-dialog"
+        // Tab / Shift+Tab をこの面の中で循環させる（外部レビュー R5: 以前は枠外へ
+        // 抜けていた）。結果の option は Tab 順に残し、Enter/Space で実行できる。
+        onKeyDown={(event) => {
+          if (event.key === "Tab") {
+            trapFocusInElement(event.currentTarget, event.nativeEvent);
+          }
+        }}
         onPointerDown={(event) => event.stopPropagation()}
         role="dialog"
       >
@@ -144,9 +160,21 @@ export function CommandPalette({
                   }${enabled ? "" : " is-disabled"}`}
                   id={`command-palette-option-${index}`}
                   onMouseEnter={() => onSetActiveIndex(index)}
+                  // 主ボタンだけ実行する（右クリックで実行しない。外部レビュー R5）。
                   onPointerDown={(event) => {
+                    if (event.button !== 0) {
+                      return;
+                    }
                     if (!enabled) {
                       event.preventDefault();
+                      return;
+                    }
+                    onRun(command);
+                  }}
+                  // Tab で結果へ移ったあとの Enter/Space は click（detail === 0）で受ける。
+                  // pointerdown と二重に実行しないよう、キーボード由来だけを拾う。
+                  onClick={(event) => {
+                    if (event.detail !== 0 || !enabled) {
                       return;
                     }
                     onRun(command);

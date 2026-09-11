@@ -284,7 +284,15 @@ export function GlobalSearch({
   };
 
   return (
-    <div className="global-search-overlay" onPointerDown={onClose}>
+    <div
+      className="global-search-overlay"
+      onPointerDown={(event) => {
+        // 主ボタンだけ。右クリックで閉じない（外部レビュー R5）。
+        if (event.button === 0) {
+          onClose();
+        }
+      }}
+    >
       <div
         ref={dialogRef}
         onKeyDown={event => {
@@ -379,8 +387,20 @@ export function GlobalSearch({
                     }`}
                     id={`global-search-option-${index}`}
                     onMouseEnter={() => onSetActiveIndex(index)}
+                    // 主ボタンだけ実行（右クリックで実行しない。外部レビュー R5）。
                     onPointerDown={(event) => {
+                      if (event.button !== 0) {
+                        return;
+                      }
                       event.preventDefault();
+                      onRun(row);
+                    }}
+                    // 行は tabIndex=-1 で Tab 順から外れている（combobox 方針）。それでも
+                    // スクリーンリーダー等が click を送る場合に備えて拾う。
+                    onClick={(event) => {
+                      if (event.detail !== 0) {
+                        return;
+                      }
                       onRun(row);
                     }}
                     role="option"

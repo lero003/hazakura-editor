@@ -4,6 +4,7 @@ import {
   QUICK_OPEN_RESULT_LIMIT,
   workspaceTreeIsPartial,
 } from "../../features/workspace/quickOpenFiles";
+import { trapFocusInElement } from "../../lib/focusTrap";
 import { isImeComposing } from "../../lib/keyboard";
 import { getQuickOpenCopy } from "../../lib/locale/quickOpen";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
@@ -162,11 +163,25 @@ export function QuickOpen({
     : undefined;
 
   return (
-    <div className="quick-open-overlay" onPointerDown={onClose}>
+    <div
+      className="quick-open-overlay"
+      onPointerDown={(event) => {
+        // 主ボタンだけ。右クリックで閉じない（外部レビュー R5）。
+        if (event.button === 0) {
+          onClose();
+        }
+      }}
+    >
       <div
         aria-label={copy.dialogLabel}
         aria-modal="true"
         className="quick-open-dialog"
+        // Tab / Shift+Tab をこの面の中で循環させる（外部レビュー R5）。
+        onKeyDown={(event) => {
+          if (event.key === "Tab") {
+            trapFocusInElement(event.currentTarget, event.nativeEvent);
+          }
+        }}
         onPointerDown={(e) => e.stopPropagation()}
         role="dialog"
       >
@@ -211,7 +226,20 @@ export function QuickOpen({
                 aria-selected={i === activeIndex}
                 className={`quick-open-item${i === activeIndex ? " active" : ""}`}
                 id={`quick-open-option-${i}`}
-                onPointerDown={() => openSelected(i)}
+                // 主ボタンだけ実行（右クリックで実行しない。外部レビュー R5）。
+                onPointerDown={(event) => {
+                  if (event.button !== 0) {
+                    return;
+                  }
+                  openSelected(i);
+                }}
+                // Tab で結果へ移ったあとの Enter/Space は click（detail === 0）で受ける。
+                onClick={(event) => {
+                  if (event.detail !== 0) {
+                    return;
+                  }
+                  openSelected(i);
+                }}
                 onMouseEnter={() => setActiveIndex(i)}
                 role="option"
                 type="button"

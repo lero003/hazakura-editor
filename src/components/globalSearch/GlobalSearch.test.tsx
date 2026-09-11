@@ -24,6 +24,33 @@ function hit(
     lineLength: Array.from(text).length,
   };
 }
+it("runs a match from the keyboard and ignores the right button (R5)", () => {
+  // 外部レビュー R5: 行の実行が onPointerDown だけで、右クリックでも実行されていた。
+  const original = HTMLElement.prototype.scrollIntoView;
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+  const run = vi.fn();
+  const match = hit(3, 1, "needle here", 6);
+  const row = { fileIndex: 0, matchIndex: 0, file: { path: "/work/a.md", relativePath: "chapters/a.md", matches: [match], truncated: false }, match };
+  try {
+  render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={vi.fn()} onRun={run}
+    onSetActiveIndex={() => {}} onSetQuery={() => {}} query="needle" searching={false}
+    rows={[row]} summary={null} searchError={null}
+    workspaceOpen workspaceName="My manuscript" />);
+
+  const option = screen.getByRole("option");
+  fireEvent.pointerDown(option, { button: 2 });
+  expect(run).not.toHaveBeenCalled();
+  fireEvent.pointerDown(option, { button: 0 });
+  expect(run).toHaveBeenCalledTimes(1);
+  fireEvent.click(option, { detail: 0 });
+  expect(run).toHaveBeenCalledTimes(2);
+  fireEvent.click(option, { detail: 1 });
+  expect(run).toHaveBeenCalledTimes(2);
+  } finally {
+    if (original) { HTMLElement.prototype.scrollIntoView = original; } else { delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView; }
+  }
+});
+
 it("keeps the selected folder visible and exposes a close action without running a match", () => {
   const close = vi.fn(); const run = vi.fn();
   render(<GlobalSearch activeIndex={0} menuLanguage="en" onClose={close} onRun={run}
