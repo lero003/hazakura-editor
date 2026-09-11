@@ -133,7 +133,9 @@ type EBookReaderCopy = {
 
 const WHEEL_PAGE_THRESHOLD = 40;
 const WHEEL_PAGE_COOLDOWN_MS = 220;
-const EBOOK_SPREAD_CONTAINER_MIN_WIDTH = 920;
+// 見開きの容器閾値。CSS 側 `@container (min-width: 1090px)` と同じ値にする
+// （紙面455px×2＋ガター6px が、容器の余白を引いた後にも並ぶ幅）。
+const EBOOK_SPREAD_CONTAINER_MIN_WIDTH = 1090;
 const EBOOK_SPREAD_WIDTH_TOLERANCE = 1;
 
 export default function EBookPane({

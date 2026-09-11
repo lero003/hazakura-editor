@@ -50,3 +50,35 @@ describe("WorkspaceModeNavigation", () => {
     expect(document.activeElement).toBe(trigger);
   });
 });
+
+describe("WorkspaceModeNavigation while reading", () => {
+  it("keeps 書く pressable and stops 読む・確認 while the reading surface is open", () => {
+    // 実機指摘②: 電子書籍モードでも「書く」で編集へ戻れる必要がある。
+    const onWrite = vi.fn();
+    const onRead = vi.fn();
+    render(
+      <WorkspaceModeNavigation
+        {...base}
+        mode="read"
+        onRead={onRead}
+        onWrite={onWrite}
+        readingOpen
+        reviewTargets={["disk"]}
+      />,
+    );
+
+    const write = screen.getByRole("button", { name: "書く" }) as HTMLButtonElement;
+    const read = screen.getByRole("button", { name: "読む" }) as HTMLButtonElement;
+    const review = screen.getByRole("button", { name: "確認" }) as HTMLButtonElement;
+
+    expect(write.disabled).toBe(false);
+    expect(write.getAttribute("title")).toBe("読むのをやめて編集へ戻る");
+    expect(read.disabled).toBe(true);
+    expect(review.disabled).toBe(true);
+
+    fireEvent.click(write);
+    expect(onWrite).toHaveBeenCalledTimes(1);
+    fireEvent.click(read);
+    expect(onRead).not.toHaveBeenCalled();
+  });
+});

@@ -148,6 +148,11 @@ type AppWorkspaceProps = {
   proposalReviewVisible?: boolean;
   /** 「提案を残して編集に戻る」入口（レビュー面の中のボタン）。 */
   onReturnToEditing?: () => void;
+  /**
+   * 上部ナビの「読む」「書く」から読書面を開閉する要求（実機指摘②）。
+   * `token` が変わるたびに1回だけ適用する（同じ要求の再描画で開き直さない）。
+   */
+  readingFocusIntent?: { open: boolean; token: number } | null;
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
@@ -316,6 +321,7 @@ export function AppWorkspace({
   proposalReviewRef,
   onReturnToEditing,
   proposalReviewVisible = true,
+  readingFocusIntent = null,
   clearCompareSource,
   clearCompareTarget,
   closeCompareView,
@@ -607,8 +613,12 @@ export function AppWorkspace({
     setEbookFocusOpen(false);
     moveEditorToEbookLocation(returnLocation, { focus: true });
   };
+  // 読書面は本文を全幅で読む面で、プレビュー列の設定とは独立している。
+  // ここで previewVisible を要求すると、プレビューを閉じている利用者にとって
+  // 「読む」が無反応になる（実機指摘②）。
   const ebookReadingFocusActive =
-    ebookFocusOpen && activeTab !== null && previewVisible && selectedImage === null;
+    ebookFocusOpen && activeTab !== null && selectedImage === null;
+
   useEffect(() => {
     bookReaderRequestRef.current += 1;
     setBookReaderLoading(false);
@@ -652,6 +662,21 @@ export function AppWorkspace({
     setBookReaderResult(null);
     setBookReaderResume(null);
   };
+  // 上部ナビの「読む」で読書面を開き、「書く」で閉じる（実機指摘②）。
+  // 適用は token 単位で1回だけ（同じ要求の再描画で開き直さない）。
+  // 閉じるときは既存の退出処理（読書位置の保存と本文への復帰）を通す。
+  useEffect(() => {
+    if (!readingFocusIntent) {
+      return;
+    }
+    if (readingFocusIntent.open) {
+      setEbookFocusOpen(true);
+      return;
+    }
+    closeEbookReadingFocus();
+    // 本全体の読書面（Book Scope Reader）も同じ導線で閉じる。
+    closeBookScopeReader();
+  }, [readingFocusIntent]);
   const persistBookReaderPosition = (
     relativePath: string,
     scrollRatio: number,

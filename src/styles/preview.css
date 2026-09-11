@@ -1108,8 +1108,15 @@
   --ebook-page-footer-height: 34px;
   --ebook-page-gap: 6px;
   --ebook-page-height-max: 700px;
-  --ebook-page-width: min(420px, calc(100vw - 56px));
-  --ebook-spread-width: calc((var(--ebook-page-width) * 2) + var(--ebook-page-gap));
+  /* 紙面の基準寸法はモック04（一枚455px・左右内側39px）。実機指摘④「余白が足りない」で
+     420/14〜22px から寄せた。 */
+  --ebook-page-width: min(455px, calc(100vw - 56px));
+  /* 紙の中の余白。見開きの紙幅は**この余白も含めて**計算しないと、2列目が紙の内側に
+     収まらず「片側に寄った一枚＋空の右半分」になる（実機指摘②の実体）。 */
+  --ebook-sheet-pad-x: clamp(22px, 3vw, 39px);
+  --ebook-spread-width: calc(
+    var(--ebook-page-width) * 2 + var(--ebook-page-gap) + var(--ebook-sheet-pad-x) * 2 + 2px
+  );
   box-sizing: border-box;
   container-type: inline-size;
   display: flex;
@@ -1136,7 +1143,7 @@
   border: 1px solid var(--border);
   border-radius: 3px;
   box-shadow: var(--shadow-sm);
-  padding: 0 clamp(14px, 2vw, 22px);
+  padding: 0 var(--ebook-sheet-pad-x);
 }
 
 .ebook-page-viewport {
@@ -1168,7 +1175,11 @@
   word-break: break-word;
 }
 
-@container (min-width: 920px) {
+/* 見開きは「紙面455px×2＋ガター6px = 916px が実際に並ぶ幅」でだけ成立させる。
+   `.ebook-chapter` は左右に clamp(22px,4vw,48px) の余白を取り、紙面はさらに内側の
+   padding を引くので、容器が 1090px 未満だと2列目が入らず「片側に寄った一枚」になる。
+   EBookPane の JS 側（viewport.clientWidth ≥ 916）と同じ結論になる閾値。 */
+@container (min-width: 1090px) {
   .ebook-page-sheet-spread .ebook-next-chapter-preview {
     bottom: var(--ebook-page-bottom-safe-area);
     box-sizing: border-box;
@@ -1184,8 +1195,11 @@
     max-width: var(--ebook-spread-width);
   }
 
+  /* 紙の内側で2列（pageWidth×2＋ガター）がちょうど収まる幅。 */
   .ebook-page-sheet-spread .ebook-page-viewport {
-    max-width: var(--ebook-spread-width);
+    max-width: calc(
+      var(--ebook-spread-width) - var(--ebook-sheet-pad-x) * 2 - 2px
+    );
   }
 }
 

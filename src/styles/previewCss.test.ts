@@ -258,14 +258,25 @@ describe("preview.css", () => {
     expect(chapterBody).not.toMatch(/100vh/);
     expect(chapterBody).toMatch(/container-type:\s*inline-size/);
     expect(chapterBody).toMatch(/--ebook-page-height-max:\s*700px/);
+    // 紙面の基準寸法はモック04（一枚455px）。実機指摘④「余白が足りない」で 420 → 455。
     expect(chapterBody).toMatch(
-      /--ebook-page-width:\s*min\(420px,\s*calc\(100vw - 56px\)\)/,
+      /--ebook-page-width:\s*min\(455px,\s*calc\(100vw - 56px\)\)/,
     );
     // 見開き中央のガターは本のようにほぼ密着させる（モック04: 4〜6px）。
     expect(chapterBody).toMatch(/--ebook-page-gap:\s*6px/);
     expect(chapterBody).toMatch(/--ebook-page-footer-height:\s*34px/);
     // 紙面そのものを見せる（モック04: 不透明な紙 + 罫線 + 控えめな影）。
+    // 紙面の内側の余白もモック04（左右39px）へ寄せる（実機指摘④）。
+    expect(chapterBody).toMatch(
+      /--ebook-sheet-pad-x:\s*clamp\(22px,\s*3vw,\s*39px\)/,
+    );
     const sheet = ruleBody(".ebook-page-sheet");
+    expect(sheet).toMatch(/padding:\s*0 var\(--ebook-sheet-pad-x\)/);
+    // 紙幅は**紙の内側の余白も含めて**数える。ここを落とすと2列目が紙の外へ出て
+    // 「片側に寄った一枚＋空の右半分」に戻る（実機指摘②の実体）。
+    expect(chapterBody).toMatch(
+      /--ebook-spread-width:\s*calc\([^;]*var\(--ebook-sheet-pad-x\) \* 2[^;]*\)/,
+    );
     expect(sheet).toMatch(/background:\s*var\(--surface-paper\)/);
     expect(sheet).toMatch(/border:\s*1px solid var\(--border\)/);
     expect(sheet).toMatch(/box-shadow:\s*var\(--shadow-sm\)/);
@@ -278,12 +289,15 @@ describe("preview.css", () => {
   });
 
   it("gates the e-book spread frame on available reader width", () => {
-    expect(previewCss).toMatch(/@container\s*\(min-width:\s*920px\)/);
+    // 紙面455px×2＋ガター6px が、容器の左右余白を引いた後にも並ぶ幅。
+    // EBookPane の EBOOK_SPREAD_CONTAINER_MIN_WIDTH と同じ値にする。
+    expect(previewCss).toMatch(/@container\s*\(min-width:\s*1090px\)/);
     expect(previewCss).toMatch(
       /\.ebook-page-sheet-spread\s*{[^}]*max-width:\s*var\(--ebook-spread-width\)/s,
     );
+    // 本文域は「紙幅 − 余白×2 − 罫線2px」＝ 紙面×2＋ガター。
     expect(previewCss).toMatch(
-      /\.ebook-page-sheet-spread \.ebook-page-viewport\s*{[^}]*max-width:\s*var\(--ebook-spread-width\)/s,
+      /\.ebook-page-sheet-spread \.ebook-page-viewport\s*{[^}]*max-width:\s*calc\([^}]*var\(--ebook-sheet-pad-x\) \* 2/s,
     );
   });
 
@@ -299,7 +313,7 @@ describe("preview.css", () => {
     expect(previewFlowBody).toMatch(/column-gap:\s*var\(--ebook-page-gap\)/);
     expect(previewFlowBody).toMatch(/column-width:\s*var\(--ebook-page-width\)/);
     expect(previewCss).toMatch(
-      /@container\s*\(min-width:\s*920px\)\s*{[^}]*\.ebook-page-sheet-spread \.ebook-next-chapter-preview\s*{[^}]*display:\s*block[^}]*left:\s*calc\(var\(--ebook-page-width\) \+ var\(--ebook-page-gap\)\)[^}]*position:\s*absolute/s,
+      /@container\s*\(min-width:\s*1090px\)\s*{[^}]*\.ebook-page-sheet-spread \.ebook-next-chapter-preview\s*{[^}]*display:\s*block[^}]*left:\s*calc\(var\(--ebook-page-width\) \+ var\(--ebook-page-gap\)\)[^}]*position:\s*absolute/s,
     );
   });
 

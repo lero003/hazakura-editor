@@ -91,6 +91,12 @@ export function AppShell(props: AppShellProps) {
     setCollapsed: setWorkspaceSidebarCollapsed,
   } = useCompactSidebarCollapse();
   const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
+  // 上部ナビの「読む」「書く」から読書面を開閉する要求（実機指摘②）。token で1回だけ適用する。
+  const [readingFocusIntent, setReadingFocusIntent] = useState<
+    { open: boolean; token: number } | null
+  >(null);
+  const requestReadingFocus = (open: boolean) =>
+    setReadingFocusIntent((current) => ({ open, token: (current?.token ?? 0) + 1 }));
   const proposalReviewRef = useRef<HTMLDivElement>(null);
 
   const chapterReviewRequestRef = useRef(0);
@@ -151,7 +157,10 @@ export function AppShell(props: AppShellProps) {
    * 面が unmount されている状態で「確認→提案」を押しても、閉じたままにしない。
    */
   const returnToEditing = () => {
-    if (!navigation.canNavigate || readingOverlayOpen) return;
+    if (!navigation.canNavigate) return;
+    // 読書面を開いているなら、まず読書面を閉じてから編集へ戻す（実機指摘②:
+    // 電子書籍モードでも「書く」は押せる必要がある）。
+    if (readingOverlayOpen) requestReadingFocus(false);
     // 編集へ戻るときは、レビュー面だけ閉じる（提案は保持。反映は利用者の操作）。
     setProposalReviewHidden(true);
     revealEditorRegion();
@@ -242,7 +251,11 @@ export function AppShell(props: AppShellProps) {
           sidePaneCopy={props.sidePaneCopy}
           onOpenAppleAssistWindow={props.onOpenAppleAssistWindow}
           onOpenAgentWindow={props.onOpenAgentWindow}
-          navigation={{ ...navigation, canNavigate: navigation.canNavigate && !readingOverlayOpen,
+          navigation={{ ...navigation,
+            // 読書面を開いている間は、「読む」「確認」だけを止める。「書く」は編集へ戻る
+            // 唯一の導線なので残す（実機指摘②）。
+            canNavigate: navigation.canNavigate,
+            readingOpen: readingOverlayOpen,
             // レビューを見せている間は「確認」を選択状態にする（見えている面と一致させる）。
             mode: readingOverlayOpen ? "read" : proposalReviewVisible ? "review" : navigation.mode,
             documentName: props.activeTab?.name ?? "", menuLanguage: props.menuLanguage,
@@ -251,7 +264,10 @@ export function AppShell(props: AppShellProps) {
               props.compareView?.caseKey, props.referenceCompare?.reference.path, props.referenceCompare?.sourceFingerprint]),
             onWrite: navigateToEditor,
             onRead: () => {
-              if (navigation.canNavigate && !readingOverlayOpen && props.sidePaneMode !== "ebook") props.onToggleEbook();
+              if (!navigation.canNavigate || readingOverlayOpen) return;
+              // 「読む」は右ペインの電子書籍ではなく、**本文を全幅の読書面（見開き）**で開く
+              // （モック04も全幅の見開き読書画面）。右ペインの電子書籍は別途トグルで残る。
+              requestReadingFocus(true);
             },
             onReview: (target) => {
               if (!navigation.canNavigate || readingOverlayOpen) return;
@@ -270,6 +286,7 @@ export function AppShell(props: AppShellProps) {
       <AppWorkspace
         {...props}
         documentChrome={props.lModeEnabled ? null : topChrome}
+        readingFocusIntent={readingFocusIntent}
         proposalReviewRef={proposalReviewRef}
         proposalReviewVisible={proposalReviewVisible}
         onReturnToEditing={returnToEditing}

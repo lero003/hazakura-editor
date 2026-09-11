@@ -4,9 +4,12 @@ import type { WorkspaceMode, WorkspaceReviewTarget } from "../../features/worksp
 import { BookIcon, LModeIcon, ReferenceIcon } from "./Icons";
 
 export function WorkspaceModeNavigation({ mode, canNavigate, documentName, contextKey = documentName,
-  menuLanguage, reviewTargets, referenceName, comparisonName, onWrite, onRead, onReview }: {
+  menuLanguage, readingOpen = false, reviewTargets, referenceName, comparisonName,
+  onWrite, onRead, onReview }: {
   mode: WorkspaceMode;
   canNavigate: boolean;
+  /** 読書面（電子書籍の全幅表示）を開いているか。「書く」だけは押せるまま残す。 */
+  readingOpen?: boolean;
   documentName: string;
   contextKey?: string;
   menuLanguage: MenuLanguage;
@@ -23,12 +26,18 @@ export function WorkspaceModeNavigation({ mode, canNavigate, documentName, conte
     targets: "確認する対象", empty: "確認できる提案・保存前の変更・参照がありません",
     readTitle: "現在の文書を本として読む", proposal: "Local Assistの提案", disk: "保存前の変更",
     reference: "参照ファイル", comparison: "開いている比較",
+    writeTitle: "いまの文書の編集へ戻る", writeExitTitle: "読むのをやめて編集へ戻る",
   } : {
     navigation: "Document activity", write: "Write", read: "Read", review: "Review",
     targets: "Choose what to review", empty: "No proposal, unsaved changes or reference to review",
     readTitle: "Read the current document as a book", proposal: "Local Assist proposal", disk: "Unsaved changes",
     reference: "Reference file", comparison: "Open comparison",
+    writeTitle: "Return to editing this document", writeExitTitle: "Stop reading and return to editing",
   };
+  // 読書面を開いている間も「書く」は押せる（読みから編集へ戻る唯一の導線。実機指摘②）。
+  // 「読む」「確認」は、いま開いている面と同じ行き先なので押させない。
+  const canRead = canNavigate && !readingOpen;
+  const canReview = canRead;
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const firstChoiceRef = useRef<HTMLButtonElement>(null);
@@ -59,15 +68,16 @@ export function WorkspaceModeNavigation({ mode, canNavigate, documentName, conte
         triggerRef.current?.focus(); setOpenFor(null);
       }
     }}>
-    <button type="button" aria-pressed={mode === "write"} disabled={!canNavigate} onClick={onWrite}>
+    <button type="button" aria-pressed={mode === "write"} disabled={!canNavigate} onClick={onWrite}
+      title={readingOpen ? copy.writeExitTitle : copy.writeTitle}>
       <span aria-hidden="true"><LModeIcon /></span>{copy.write}
     </button>
-    <button type="button" aria-pressed={mode === "read"} disabled={!canNavigate} onClick={onRead} title={copy.readTitle}>
+    <button type="button" aria-pressed={mode === "read"} disabled={!canRead} onClick={onRead} title={copy.readTitle}>
       <span aria-hidden="true"><BookIcon /></span>{copy.read}
     </button>
     <button type="button" ref={triggerRef} aria-pressed={mode === "review"}
       aria-expanded={reviewTargets.length > 1 ? open : undefined} aria-controls={open ? panelId : undefined}
-      disabled={!canNavigate || reviewTargets.length === 0} title={reviewTargets.length ? copy.targets : copy.empty}
+      disabled={!canReview || reviewTargets.length === 0} title={reviewTargets.length ? copy.targets : copy.empty}
       onClick={() => {
         if (reviewTargets.length === 1) onReview(reviewTargets[0]);
         else setOpenFor(open ? null : signature);

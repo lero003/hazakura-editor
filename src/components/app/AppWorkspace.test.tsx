@@ -1943,3 +1943,39 @@ describe("proposal review visibility (07 P1)", () => {
     expect(localAssistProposalStore.getLatest("s-review")?.requestId).toBe("req-1");
   });
 });
+
+describe("reading surface from the top navigation intent", () => {
+  it("opens the full-width reading surface even when the preview columns are off", async () => {
+    // 実機指摘②: 上部ナビの「読む」は右ペインの電子書籍ではなく、全幅の読書面を開く。
+    // 読書面はプレビュー列の設定に依存させない（依存させると「読む」が無反応になる）。
+    const base = {
+      activeContents: ["# Chapter One", "", "body", "", "## Chapter Two", "", "body"].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 5,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      hasWorkspaceSelection: true,
+      previewVisible: false,
+      sidePaneMode: "preview" as const,
+      sidePaneVisible: false,
+      workspaceRootPath: "/workspace",
+    };
+    const view = render(
+      <AppWorkspace {...makeWorkspaceProps(base)} readingFocusIntent={{ open: true, token: 1 }} />,
+    );
+
+    // 保存済みの読書位置が無いときは、いま見ている見出しの章から開く。
+    expect((await screen.findByTestId("ebook-focus-pane")).textContent).toContain("focus 1:0");
+
+    view.rerender(
+      <AppWorkspace {...makeWorkspaceProps(base)} readingFocusIntent={{ open: false, token: 2 }} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("ebook-focus-pane")).toBeNull();
+    });
+  });
+});
