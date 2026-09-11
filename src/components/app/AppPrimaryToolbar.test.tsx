@@ -2,8 +2,11 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppPrimaryToolbar } from "./AppPrimaryToolbar";
 import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
-const { startDragging } = vi.hoisted(() => ({ startDragging: vi.fn().mockResolvedValue(undefined) }));
-vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ startDragging }) }));
+const { startDragging, toggleMaximize } = vi.hoisted(() => ({
+  startDragging: vi.fn().mockResolvedValue(undefined),
+  toggleMaximize: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ startDragging, toggleMaximize }) }));
 vi.mock("../../lib/distributionLane", () => ({ isDeveloperDistributionLane: () => false }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 const sidePaneCopy: RightPaneToggleCopy = {
@@ -29,8 +32,6 @@ const sidePaneCopy: RightPaneToggleCopy = {
   referenceTabTitle: "Open Reference",
   referenceTabTitleHide: "Hide Reference",
   referenceTabTitleRetained: "Show retained Reference",
-  reviewMenu: "Review",
-  reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
 };
 
@@ -39,7 +40,7 @@ const base = {
   documentName: "朝の余白.md", workspaceName: "随筆", menuLanguage: "ja" as const,
   navigation: { mode: "write" as const, canNavigate: true, documentName: "朝の余白.md", menuLanguage: "ja" as const,
     reviewTargets: [], onWrite: vi.fn(), onRead: vi.fn(), onReview: vi.fn() },
-  sidebarCollapsed: false, onToggleSidebar: vi.fn(), canSave: true, saving: false, onSave: vi.fn(),
+  canSave: true, saving: false, onSave: vi.fn(),
   assistSurfaceActive: "none" as const, agentWorkbenchAvailable: true, sidePaneCopy,
   onOpenAppleAssistWindow: vi.fn(), onOpenAgentWindow: vi.fn(),
 };
@@ -81,5 +82,18 @@ describe("AppPrimaryToolbar", () => {
     expect(startDragging).not.toHaveBeenCalled();
     fireEvent.mouseDown(view.container.querySelector("header")!, {button:0});
     expect(startDragging).toHaveBeenCalledOnce();
+  });
+  it("zooms (maximizes) the window on a double click in the drag area", () => {
+    const view = render(<AppPrimaryToolbar {...base} />);
+    fireEvent.doubleClick(screen.getByRole("button", {name:"保存"}));
+    expect(toggleMaximize).not.toHaveBeenCalled();
+    fireEvent.doubleClick(view.container.querySelector("header")!, {button:0});
+    expect(toggleMaximize).toHaveBeenCalledOnce();
+  });
+  it("keeps the sidebar toggle off the toolbar", () => {
+    // サイドバーの開閉はサイドバー自身（畳んだ後は左端のレール）が持つ。
+    const view = render(<AppPrimaryToolbar {...base} />);
+    expect(view.container.querySelector(".primary-sidebar-toggle")).toBeNull();
+    expect(screen.queryByRole("button", { name: /サイドバーを切り替える|Toggle sidebar/ })).toBeNull();
   });
 });

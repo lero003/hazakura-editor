@@ -31,15 +31,12 @@ const copy: RightPaneToggleCopy = {
   referenceTabTitle: "Open Reference",
   referenceTabTitleHide: "Hide Reference",
   referenceTabTitleRetained: "Show retained Reference",
-  reviewMenu: "Review",
-  reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
 };
 
 function renderControls(
   overrides: Partial<Parameters<typeof RightPaneToggleControls>[0]> = {},
 ) {
-  const onReviewChanges = vi.fn();
   const onToggleDiff = vi.fn();
   const onToggleEbook = vi.fn();
   const onToggleOutline = vi.fn();
@@ -50,7 +47,6 @@ function renderControls(
       diffAvailable
       ebookActive={false}
       ebookAvailable
-      onReviewChanges={onReviewChanges}
       onToggleDiff={onToggleDiff}
       onToggleEbook={onToggleEbook}
       onToggleOutline={onToggleOutline}
@@ -59,15 +55,12 @@ function renderControls(
       outlineAvailable
       previewActive={false}
       referenceActive={false}
-      reviewChangesAvailable={false}
-      reviewChangesLabel="Review changes"
       onToggleReference={vi.fn()}
       {...overrides}
     />,
   );
 
   return {
-    onReviewChanges,
     onToggleDiff,
     onToggleEbook,
     onToggleOutline,
@@ -103,29 +96,23 @@ describe("RightPaneToggleControls", () => {
     expect(onToggleEbook).not.toHaveBeenCalled();
   });
 
-  it("keeps review changes hidden until dirty review is available", () => {
+  it("never puts a second review entry beside the reading controls", () => {
+    // 二段目（表示ツールバー）の「確認」は外した。上部ナビのグローバル「確認」が
+    // レビュー対象を選ぶので、同じ文言・同じ行き先の導線を二本置かない（実機指摘）。
     renderControls();
 
     expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Review Desk" })).toBeNull();
+    expect(
+      screen.getAllByRole("button").map((button) => button.textContent),
+    ).toEqual(["Preview", "e-book", "Outline", "Reference", "Diff"]);
   });
 
-  it("keeps dirty review, Diff, and Outline controls available when relevant", () => {
-    const {
-      onReviewChanges,
-      onToggleDiff,
-      onToggleOutline,
-    } = renderControls({
-      reviewChangesAvailable: true,
-    });
+  it("keeps Diff and Outline controls available when relevant", () => {
+    const { onToggleDiff, onToggleOutline } = renderControls();
 
-    const reviewButton = screen.getByRole("button", { name: "Review" });
     const diffButton = screen.getByRole("button", { name: "Diff" });
     const outlineButton = screen.getByRole("button", { name: "Outline" });
-
-    expect(reviewButton.getAttribute("aria-pressed")).toBeNull();
-    reviewButton.click();
-    expect(onReviewChanges).toHaveBeenCalledTimes(1);
 
     expect(diffButton.getAttribute("aria-pressed")).toBe("false");
     diffButton.click();
@@ -134,29 +121,6 @@ describe("RightPaneToggleControls", () => {
     expect(outlineButton.getAttribute("aria-pressed")).toBe("false");
     outlineButton.click();
     expect(onToggleOutline).toHaveBeenCalledTimes(1);
-  });
-
-  it("keeps review separated after the stable reading and comparison controls", () => {
-    renderControls({ reviewChangesAvailable: true });
-
-    expect(
-      screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual([
-      "Preview",
-      "e-book",
-      "Outline",
-      "Reference",
-      "Diff",
-      "Review",
-    ]);
-  });
-
-  it("hides dirty review when review changes are unavailable", () => {
-    renderControls();
-
-    expect(
-      screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["Preview", "e-book", "Outline", "Reference", "Diff"]);
   });
 
   it("marks Reference as the active right pane", () => {
@@ -175,7 +139,6 @@ describe("RightPaneToggleControls", () => {
         diffAvailable
         ebookActive={false}
         ebookAvailable
-        onReviewChanges={vi.fn()}
         onToggleDiff={vi.fn()}
         onToggleEbook={vi.fn()}
         onToggleOutline={vi.fn()}
@@ -185,8 +148,6 @@ describe("RightPaneToggleControls", () => {
         previewActive={false}
         referenceActive={false}
         referenceLoaded
-        reviewChangesAvailable={false}
-        reviewChangesLabel="Review changes"
         onToggleReference={vi.fn()}
       />,
     );

@@ -33,6 +33,7 @@ import type { LocalAssistProposal } from "../../features/editor/localAssistPropo
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import { useCompactSidebarCollapse } from "../../hooks/app/useCompactSidebarCollapse";
+import { resolvePrimarySaveEnabled } from "../../features/workspace/primarySaveEnabled";
 import { useCrtMouseTracking } from "../../hooks/app/useCrtMouseTracking";
 
 export type AppShellProps = Omit<
@@ -68,6 +69,9 @@ export type AppShellProps = Omit<
     pendingAssistDiscard: { sessionId: string; beforeBuffer: string } | null;
     onExitLModeToWorkspace: () => void;
     onOpenAppleAssistFromLMode: () => void;
+    /** 上部ナビの「確認 → 保存前の変更」。二段目の確認ボタンを外したので、
+        レビュー面への入口はこの1本（`navigation.onReview("disk")`）だけになる。 */
+    onReviewChanges: (tab: EditorTab) => void;
     onReviewChangesFromLMode: () => Promise<ChangeReviewSnapshot | null>;
     onToggleLMode: () => void;
     resolvedTheme: ResolvedTheme;
@@ -80,9 +84,10 @@ export function AppShell(props: AppShellProps) {
   const edohiganMode = props.resolvedTheme === "edohigan";
   useCrtMouseTracking(crtMode);
   // 狭い窓ではサイドバーを一時的に畳む（保存設定は持たない・モック23）。
+  // サイドバーの開閉はサイドバー自身（畳んだ後は左端のレール）が持つ。
+  // 上部バーのトグルは置かない（実機指摘）。
   const {
     collapsed: workspaceSidebarCollapsed,
-    toggle: toggleWorkspaceSidebar,
     setCollapsed: setWorkspaceSidebarCollapsed,
   } = useCompactSidebarCollapse();
   const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
@@ -221,9 +226,13 @@ export function AppShell(props: AppShellProps) {
           documentName={props.selectedImage?.name ?? props.activeTab?.name ?? "Hazakura Editor"}
           workspaceName={props.workspaceRootPath?.split(/[\\/]/).filter(Boolean).at(-1) ?? ""}
           menuLanguage={props.menuLanguage}
-          sidebarCollapsed={workspaceSidebarCollapsed}
-          onToggleSidebar={toggleWorkspaceSidebar}
-          canSave={navigation.canNavigate && !readingOverlayOpen && !props.appleAssistGenerationLock && props.activeTab?.saveStatus !== "saving"}
+          canSave={resolvePrimarySaveEnabled({
+            activeDirty: props.activeDirty,
+            canNavigate: navigation.canNavigate,
+            generationLocked: !!props.appleAssistGenerationLock,
+            readingOverlayOpen,
+            saveStatus: props.activeTab?.saveStatus ?? null,
+          })}
           saving={props.activeTab?.saveStatus === "saving"}
           onSave={() => { void props.onSaveDocument(); }}
           assistSurfaceActive={props.assistSurfaceActive}

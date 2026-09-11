@@ -8,7 +8,6 @@
 .workspace-start .tabs-row,
 .workspace-start .editor-preview-grid > :not(.reference-editor-host) { display: none; }
 .workspace-start .editor-preview-grid { grid-template-columns: minmax(0, 1fr) !important; }
-.v3-shell:has(.workspace-start) .primary-sidebar-toggle { visibility: hidden; }
 
 .v3-shell .start-panel {
   display: grid;

@@ -7,7 +7,6 @@ import {
   OutlineIcon,
   PreviewIcon,
   ReferenceIcon,
-  ReviewDeskIcon,
 } from "./Icons";
 
 export interface RightPaneToggleCopy {
@@ -35,8 +34,6 @@ export interface RightPaneToggleCopy {
   referenceTabTitle: string;
   referenceTabTitleHide: string;
   referenceTabTitleRetained: string;
-  reviewMenu: string;
-  reviewMenuTitle: string;
   sidePaneMode: string;
 }
 
@@ -98,13 +95,14 @@ function PaneToggle({
   );
 }
 
+/* 二段目に「確認」は置かない（上部ナビのグローバル「確認」がレビュー対象を選ぶ）。
+   同じ文言が上下に二度出て、同じ場所へ行く導線が二本あった（実機指摘・モック02にも無い）。 */
 export function RightPaneToggleControls({
   copy,
   diffActive,
   diffAvailable,
   ebookActive,
   ebookAvailable,
-  onReviewChanges,
   onToggleDiff,
   onToggleEbook,
   onToggleOutline,
@@ -114,8 +112,6 @@ export function RightPaneToggleControls({
   previewActive,
   referenceActive,
   referenceLoaded = false,
-  reviewChangesAvailable,
-  reviewChangesLabel,
   onToggleReference,
 }: {
   copy: RightPaneToggleCopy;
@@ -123,7 +119,6 @@ export function RightPaneToggleControls({
   diffAvailable: boolean;
   ebookActive: boolean;
   ebookAvailable: boolean;
-  onReviewChanges: () => void;
   onToggleDiff: () => void;
   onToggleEbook: () => void;
   onToggleOutline: () => void;
@@ -134,8 +129,6 @@ export function RightPaneToggleControls({
   referenceActive: boolean;
   /** Loaded reference session exists even when the column is hidden. */
   referenceLoaded?: boolean;
-  reviewChangesAvailable: boolean;
-  reviewChangesLabel: string;
   onToggleReference: () => void;
 }) {
   const titles = useMemo(
@@ -214,14 +207,6 @@ export function RightPaneToggleControls({
           title={titles.diff}
         />
       </div>
-      <PaneToggle
-        caption={copy.reviewMenu}
-        className="pane-review-action"
-        concealed={!reviewChangesAvailable}
-        icon={<ReviewDeskIcon />}
-        onClick={onReviewChanges}
-        title={reviewChangesLabel || copy.reviewMenuTitle}
-      />
     </div>
   );
 }

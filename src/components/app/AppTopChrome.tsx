@@ -8,7 +8,6 @@ import { EditorQuickSettingsMenu } from "./EditorQuickSettingsMenu";
 import { TabBar } from "../editor/TabBar";
 import type {
   LModeCopy,
-  RecoveryCopy,
   SidePaneCopy,
 } from "../../lib/locale";
 import type {
@@ -24,7 +23,6 @@ import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type AppTopChromeProps = {
   primaryToolbarPresent?: boolean;
-  activeDirty: boolean;
   activeTab: EditorTab | null;
   activeTabId: string | null;
   agentWorkbenchAvailable: boolean;
@@ -46,7 +44,6 @@ type AppTopChromeProps = {
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
   onPointerEnter: () => void;
-  onReviewChanges: (tab: EditorTab) => void;
   onSelectTab: (tabId: string) => void;
   onTabContextMenu: (
     path: string,
@@ -65,7 +62,6 @@ type AppTopChromeProps = {
   onToggleReference: () => void;
   openFileTabsLabel: string;
   openFilesLabel: string;
-  recoveryCopy: RecoveryCopy;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
@@ -79,7 +75,6 @@ type AppTopChromeProps = {
 
 export function AppTopChrome({
   primaryToolbarPresent = false,
-  activeDirty,
   activeTab,
   activeTabId,
   agentWorkbenchAvailable,
@@ -101,7 +96,6 @@ export function AppTopChrome({
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
   onPointerEnter,
-  onReviewChanges,
   onSelectTab,
   onTabContextMenu,
   onTabPointerDown,
@@ -114,7 +108,6 @@ export function AppTopChrome({
   onToggleReference,
   openFileTabsLabel,
   openFilesLabel,
-  recoveryCopy,
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
@@ -167,7 +160,6 @@ export function AppTopChrome({
       ) : null}
       <DocumentMetaBar
         showCompanion={!primaryToolbarPresent}
-        activeDirty={activeDirty}
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         appleAssistAvailability={appleAssistAvailability}
@@ -180,7 +172,6 @@ export function AppTopChrome({
         lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
         onOpenAppleAssistWindow={onOpenAppleAssistWindow}
-        onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}
         onToggleEbook={onToggleEbook}
         onToggleLMode={onToggleLMode}
@@ -191,7 +182,6 @@ export function AppTopChrome({
         previewPaneActive={!referencePaneVisible && sidePaneMode === "preview"}
         referencePaneActive={referencePaneVisible}
         referenceLoaded={referenceLoaded}
-        recoveryReviewChangesLabel={recoveryCopy.reviewChanges}
         sidePaneCopy={sidePaneCopy}
       />
     </TabBar>

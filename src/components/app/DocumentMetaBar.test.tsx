@@ -30,8 +30,6 @@ const sidePaneCopy: RightPaneToggleCopy = {
   referenceTabTitle: "Open Reference",
   referenceTabTitleHide: "Hide Reference",
   referenceTabTitleRetained: "Show retained Reference",
-  reviewMenu: "Review",
-  reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
 };
 
@@ -63,7 +61,6 @@ function renderMeta(
   overrides: Partial<Parameters<typeof DocumentMetaBar>[0]> = {},
 ) {
   const actions = {
-    onReviewChanges: vi.fn(),
     onToggleDiff: vi.fn(),
     onToggleEbook: vi.fn(),
     onToggleLMode: vi.fn(),
@@ -73,7 +70,6 @@ function renderMeta(
   };
   render(
     <DocumentMetaBar
-      activeDirty
       activeTab={activeTab}
       agentWorkbenchAvailable
       appleAssistAvailability={{ kind: "available" }}
@@ -84,7 +80,6 @@ function renderMeta(
       lModeEnabled={lModeEnabled}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
-      onReviewChanges={actions.onReviewChanges}
       onToggleDiff={actions.onToggleDiff}
       onToggleEbook={actions.onToggleEbook}
       onToggleLMode={actions.onToggleLMode}
@@ -94,7 +89,6 @@ function renderMeta(
       outlinePaneActive={false}
       previewPaneActive={false}
       referencePaneActive={false}
-      recoveryReviewChangesLabel="変更を確認"
       sidePaneCopy={sidePaneCopy}
       {...overrides}
     />,
@@ -103,7 +97,7 @@ function renderMeta(
 }
 
 describe("DocumentMetaBar", () => {
-  it("hides review and Agent controls in L Mode", () => {
+  it("hides the display tools and Agent controls in L Mode", () => {
     renderMeta(true);
 
     expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
@@ -115,11 +109,12 @@ describe("DocumentMetaBar", () => {
     ).toBeNull();
   });
 
-  it("keeps dirty review and Agent controls available outside L Mode", () => {
+  it("keeps the display tools and Agent controls available outside L Mode", () => {
     renderMeta(false);
 
     expect(screen.queryByRole("button", { name: "Review Desk" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Review" })).toBeTruthy();
+    // 二段目の「確認」は置かない（上部ナビのグローバル「確認」へ一本化）。
+    expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
     expect(screen.getByRole("button", { name: "Diff" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Outline" })).toBeTruthy();
     expect(screen.queryByRole("menu")).toBeNull();
@@ -136,7 +131,6 @@ describe("DocumentMetaBar", () => {
 
   it("keeps the e-book toggle visible but disabled when no document is active", () => {
     const actions = renderMeta(false, "external-cli", {
-      activeDirty: false,
       activeTab: null,
       ebookPaneActive: true,
     });
@@ -160,11 +154,8 @@ describe("DocumentMetaBar", () => {
     expect(actions.onToggleEbook).toHaveBeenCalledTimes(1);
   });
 
-  it("routes dirty review controls to their pane actions", () => {
+  it("routes the display controls to their pane actions", () => {
     const actions = renderMeta(false);
-
-    fireEvent.click(screen.getByRole("button", { name: "Review" }));
-    expect(actions.onReviewChanges).toHaveBeenCalledWith(activeTab);
 
     fireEvent.click(screen.getByRole("button", { name: "Diff" }));
     expect(actions.onToggleDiff).toHaveBeenCalledTimes(1);

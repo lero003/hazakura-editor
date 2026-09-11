@@ -13,14 +13,13 @@ const copy: RightPaneToggleCopy = {
   previewTab: "Preview", previewTabTitle: "Open Preview", previewTabTitleHide: "Hide Preview",
   referenceTab: "Reference", referenceTabTitle: "Open Reference",
   referenceTabTitleHide: "Hide Reference", referenceTabTitleRetained: "Show retained Reference",
-  reviewMenu: "Review", reviewMenuTitle: "Review changes", sidePaneMode: "Side pane",
+  sidePaneMode: "Side pane",
 };
 function props() {
   return {
     copy, diffActive: false, diffAvailable: true, ebookActive: false, ebookAvailable: true,
     outlineActive: false, outlineAvailable: true, previewActive: true, referenceActive: false,
-    reviewChangesAvailable: false, reviewChangesLabel: "Review changes",
-    onReviewChanges: vi.fn(), onToggleDiff: vi.fn(), onToggleEbook: vi.fn(),
+    onToggleDiff: vi.fn(), onToggleEbook: vi.fn(),
     onToggleOutline: vi.fn(), onTogglePreview: vi.fn(), onToggleReference: vi.fn(),
   };
 }
@@ -32,21 +31,17 @@ describe("reading control layout contract", () => {
       .toEqual(["Preview", "e-book", "Outline", "Reference", "Diff"]);
     expect(screen.getByRole("button", { name: "Preview" }).getAttribute("aria-pressed")).toBe("true");
   });
-  it("reserves the review slot without exposing or activating it when unavailable", () => {
+  it("does not reserve a second review slot at all", () => {
+    // 二段目の「確認」を外した（上部ナビのグローバル「確認」へ一本化）。
+    // 隠すだけの枠を残すと、同じ導線が二本ある状態に戻る。
     const p = props();
     const view = render(<RightPaneToggleControls {...p} />);
-    const review = view.container.querySelector<HTMLButtonElement>(".pane-review-action")!;
+    expect(view.container.querySelector(".pane-review-action")).toBeNull();
     expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
-    expect(review.disabled).toBe(true);
-    expect(review.tabIndex).toBe(-1);
-    fireEvent.click(review);
-    expect(p.onReviewChanges).not.toHaveBeenCalled();
     const modes = [...view.container.querySelectorAll(".pane-toggles button")];
-    view.rerender(<RightPaneToggleControls {...p} reviewChangesAvailable />);
-    expect(view.container.querySelector(".pane-review-action")).toBe(review);
+    expect(modes).toHaveLength(5);
+    view.rerender(<RightPaneToggleControls {...p} diffActive />);
     expect([...view.container.querySelectorAll(".pane-toggles button")]).toEqual(modes);
-    fireEvent.click(screen.getByRole("button", { name: "Review" }));
-    expect(p.onReviewChanges).toHaveBeenCalledOnce();
   });
   it("retains a hidden Reference session's accessible name and marker", () => {
     render(<RightPaneToggleControls {...props()} referenceLoaded />);

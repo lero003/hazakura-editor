@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
 import {
   getLModeCopy,
-  getRecoveryCopy,
   getSidePaneCopy,
   getWorkspaceFileOpsCopy,
 } from "../../lib/locale";
@@ -34,7 +33,6 @@ function renderTopChrome(
   const onToggleEbook = vi.fn();
   render(
     <AppTopChrome
-      activeDirty={false}
       activeTab={null}
       activeTabId={null}
       agentWorkbenchAvailable
@@ -53,7 +51,6 @@ function renderTopChrome(
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
       onPointerEnter={vi.fn()}
-      onReviewChanges={vi.fn()}
       onSelectTab={vi.fn()}
       onTabContextMenu={vi.fn()}
       onTabPointerDown={vi.fn()}
@@ -66,7 +63,6 @@ function renderTopChrome(
       onToggleReference={vi.fn()}
       openFileTabsLabel="Open file tabs"
       openFilesLabel="Open files"
-      recoveryCopy={getRecoveryCopy("en")}
       shouldSuppressTabClick={() => false}
       selectedImage={null}
       sidePaneCopy={getSidePaneCopy("en")}
@@ -170,7 +166,6 @@ describe("AppTopChrome", () => {
     };
 
     renderTopChrome({
-      activeDirty: true,
       activeTabId: tab.id,
       tabs: [tab],
       unsavedFileStateLabel: getWorkspaceFileOpsCopy("ja").unsavedOpenFileState,
@@ -446,7 +441,6 @@ describe("AppTopChrome", () => {
     };
 
     renderTopChrome({
-      activeDirty: true,
       activeTabId: dirtyTab.id,
       selectedImage: {
         name: "photo.png",
@@ -495,7 +489,7 @@ describe("AppTopChrome", () => {
       size: 10,
     };
 
-    renderTopChrome({ tabs: [dirtyTab], activeDirty: true });
+    renderTopChrome({ tabs: [dirtyTab] });
 
     const tabButton = screen.getByRole("tab", {
       description: "unsaved",
@@ -536,7 +530,7 @@ describe("AppTopChrome", () => {
       size: 5,
     };
 
-    renderTopChrome({ tabs: [encodingDirtyTab], activeDirty: true });
+    renderTopChrome({ tabs: [encodingDirtyTab] });
 
     const tabButton = screen.getByRole("tab", {
       description: "unsaved",

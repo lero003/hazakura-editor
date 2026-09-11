@@ -5,19 +5,18 @@ import type { AppleAssistAvailability } from "../../lib/tauri";
 import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
 import { appleAssistButtonTitle } from "./DocumentMetaBar";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
-import { AgentWindowIcon, SparklesIcon, PanelLeftOpenIcon } from "./Icons";
+import { toggleWindowZoom } from "../../features/workspace/windowZoom";
+import { AgentWindowIcon, SparklesIcon } from "./Icons";
 import { WorkspaceModeNavigation } from "./WorkspaceModeNavigation";
 
 export function AppPrimaryToolbar({ documentName, workspaceName, menuLanguage, navigation,
-  sidebarCollapsed, onToggleSidebar, canSave, saving, onSave, assistSurfaceActive,
+  canSave, saving, onSave, assistSurfaceActive,
   agentWorkbenchAvailable, appleAssistAvailability, appleAssistAvailabilityProbed,
   sidePaneCopy, onOpenAppleAssistWindow, onOpenAgentWindow }: {
   documentName: string;
   workspaceName: string;
   menuLanguage: MenuLanguage;
   navigation: ComponentProps<typeof WorkspaceModeNavigation>;
-  sidebarCollapsed: boolean;
-  onToggleSidebar: () => void;
   canSave: boolean;
   saving: boolean;
   onSave: () => void;
@@ -35,16 +34,22 @@ export function AppPrimaryToolbar({ documentName, workspaceName, menuLanguage, n
   const companionTitle = apple ? (appleAssistAvailabilityProbed === false ? sidePaneCopy.appleAssistWindowTitle
     : appleAssistButtonTitle(sidePaneCopy.appleAssistWindowTitle, appleAssistAvailability ?? { kind: "unsupported" }, sidePaneCopy))
     : sidePaneCopy.agentWindowTitle;
-  return <header className="app-primary-toolbar" data-tauri-drag-region="true" onMouseDown={(event) => {
-    if (event.button === 0 && !(event.target as HTMLElement).closest("button, [role=group]")) {
-      void getCurrentWindow().startDragging().catch(() => {});
-    }
-  }}>
+  /** 操作部品の上では、ドラッグもダブルクリックのズームも起こさない。 */
+  const isInteractiveTarget = (target: EventTarget | null) =>
+    target instanceof HTMLElement && target.closest("button, [role=group]") !== null;
+  return <header className="app-primary-toolbar" data-tauri-drag-region="true"
+    onDoubleClick={(event) => {
+      // macOS のタイトルバーと同じく、ダブルクリックは「最大化」。フルスクリーンにはしない。
+      if (!isInteractiveTarget(event.target)) toggleWindowZoom();
+    }}
+    onMouseDown={(event) => {
+      if (event.button === 0 && !isInteractiveTarget(event.target)) {
+        void getCurrentWindow().startDragging().catch(() => {});
+      }
+    }}>
+    {/* サイドバーの開閉はサイドバー自身の折りたたみ（畳んだ後は左端のレール）に一本化した。
+        ここに置くと、ロゴの場所に開閉ボタンがあるように見えて用途が読めない（実機指摘）。 */}
     <div className="primary-document-identity">
-      <button type="button" className="primary-sidebar-toggle" aria-expanded={!sidebarCollapsed}
-        aria-label={ja ? "サイドバーを切り替える" : "Toggle sidebar"} onClick={onToggleSidebar}>
-        <PanelLeftOpenIcon />
-      </button>
       <div className="primary-document-name"><strong title={documentName}>{documentName}</strong>
         {/* 副題は開いているフォルダ名。無いときは何も出さない（製品名をここへ
             繰り返すと上段と下段で同じ文字列が二度並ぶ）。 */}

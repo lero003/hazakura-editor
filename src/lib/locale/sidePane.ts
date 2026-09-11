@@ -61,8 +61,6 @@ export type SidePaneCopy = {
   loadingPreview: string;
   /** Delayed Suspense status for e-book chunk load. */
   loadingEbook: string;
-  reviewMenu: string;
-  reviewMenuTitle: string;
   resizeColumns: string;
   resizeColumnsTitle: string;
   sidePaneMode: string;
@@ -146,8 +144,6 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       previewUnavailable: "したみをしめせません",
       loadingPreview: "したみを よみこみちゅう…",
       loadingEbook: "えーぼっくを よみこみちゅう…",
-      reviewMenu: "かくにん",
-      reviewMenuTitle: "へんこうをかくにん",
       resizeColumns: "えでぃたとよこのまどのはばをかへる",
       resizeColumnsTitle: "ひきて、えでぃたとよこのまどのはばをかへます",
       sidePaneMode: "よこのまど",
@@ -231,8 +227,6 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         previewUnavailable: "プレビューを表示できません",
         loadingPreview: "プレビューを読み込み中…",
         loadingEbook: "電子書籍表示を読み込み中…",
-        reviewMenu: "確認",
-        reviewMenuTitle: "変更を確認",
         resizeColumns: "エディタとサイドペインの幅を変更",
         resizeColumnsTitle:
           "ドラッグしてエディタとサイドペインの幅を変更",
@@ -313,8 +307,6 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         previewUnavailable: "Preview unavailable",
         loadingPreview: "Loading preview…",
         loadingEbook: "Loading e-book…",
-        reviewMenu: "Review",
-        reviewMenuTitle: "Review changes",
         resizeColumns: "Resize editor and side pane columns",
         resizeColumnsTitle: "Drag to resize editor and side pane",
         sidePaneMode: "Side pane mode",

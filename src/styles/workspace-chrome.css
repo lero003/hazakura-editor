@@ -39,7 +39,6 @@
 .app-primary-toolbar button:hover:not(:disabled) { background: var(--accent-soft); color: var(--text); }
 .app-primary-toolbar button:disabled { opacity: .55; cursor: default; }
 .app-primary-toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.app-primary-toolbar button.primary-sidebar-toggle { padding: 7px; flex: 0 0 35px; }
 .app-primary-toolbar .primary-save { background: var(--surface); border-color: var(--border-strong, var(--border)); color: var(--text); }
 .workspace-mode-navigation { position: relative; display: flex; padding: 3px; gap: 2px; border: 1px solid var(--border); border-radius: 9px; }
 .app-primary-toolbar .workspace-mode-navigation > button { min-width: 78px; }

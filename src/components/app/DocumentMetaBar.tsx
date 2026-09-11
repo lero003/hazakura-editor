@@ -10,7 +10,6 @@ import type { AppleAssistAvailability } from "../../lib/tauri";
 
 type DocumentMetaBarProps = {
   showCompanion?: boolean;
-  activeDirty: boolean;
   activeTab: EditorTab | null;
   agentWorkbenchAvailable: boolean;
   /** Current on-device Assist probe result. Used for honest button titles. */
@@ -25,7 +24,6 @@ type DocumentMetaBarProps = {
   lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
-  onReviewChanges: (tab: EditorTab) => void;
   onToggleDiff: () => void;
   onToggleEbook: () => void;
   onToggleLMode: () => void;
@@ -37,13 +35,11 @@ type DocumentMetaBarProps = {
   referencePaneActive: boolean;
   /** Reference session loaded even when the column is hidden. */
   referenceLoaded?: boolean;
-  recoveryReviewChangesLabel: string;
   sidePaneCopy: RightPaneToggleCopy;
 };
 
 export function DocumentMetaBar({
   showCompanion = true,
-  activeDirty,
   activeTab,
   agentWorkbenchAvailable,
   appleAssistAvailability = { kind: "unsupported" },
@@ -56,7 +52,6 @@ export function DocumentMetaBar({
   lModeEnabled,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
-  onReviewChanges,
   onToggleDiff,
   onToggleEbook,
   onToggleLMode,
@@ -67,7 +62,6 @@ export function DocumentMetaBar({
   previewPaneActive,
   referencePaneActive,
   referenceLoaded = false,
-  recoveryReviewChangesLabel,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
   const showCompanionSection =
@@ -120,11 +114,6 @@ export function DocumentMetaBar({
               diffAvailable
               ebookActive={ebookPaneActive}
               ebookAvailable={ebookAvailable}
-              onReviewChanges={() => {
-                if (activeTab) {
-                  onReviewChanges(activeTab);
-                }
-              }}
               onToggleDiff={onToggleDiff}
               onToggleEbook={onToggleEbook}
               onToggleOutline={onToggleOutline}
@@ -135,8 +124,6 @@ export function DocumentMetaBar({
               previewActive={previewPaneActive}
               referenceActive={referencePaneActive}
               referenceLoaded={referenceLoaded}
-              reviewChangesAvailable={activeDirty && activeTab !== null}
-              reviewChangesLabel={recoveryReviewChangesLabel}
             />
           </section>
         </>
