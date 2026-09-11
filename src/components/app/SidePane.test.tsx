@@ -300,10 +300,11 @@ describe("SidePane", () => {
 
     const header = screen.getByTestId("right-pane-header");
     expect(header.getAttribute("data-right-pane-mode")).toBe("preview");
-    expect(screen.getByRole("heading", { name: "Preview" })).toBeTruthy();
-    expect(
-      screen.getByText("Continuous scroll to check layout"),
-    ).toBeTruthy();
+    const heading = screen.getByRole("heading", { name: "Preview" });
+    // 実機フィードバック: 見出しに説明文を出さない（モックは `PREVIEW / 表示のみ`）。
+    // 説明はホバーにも出さない（null）——プレビューには短い注記が無いため。
+    expect(screen.queryByText("Continuous scroll to check layout")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Preview" }).getAttribute("title")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Close side pane" }));
     expect(onHideSidePane).toHaveBeenCalledTimes(1);

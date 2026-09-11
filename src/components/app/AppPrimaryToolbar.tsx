@@ -6,13 +6,13 @@ import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
 import { appleAssistButtonTitle } from "./DocumentMetaBar";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 import { toggleWindowZoom } from "../../features/workspace/windowZoom";
-import { AgentWindowIcon, SparklesIcon } from "./Icons";
+import { AgentWindowIcon, ExportIcon, SparklesIcon } from "./Icons";
 import { WorkspaceModeNavigation } from "./WorkspaceModeNavigation";
 
 export function AppPrimaryToolbar({ documentName, workspaceName, menuLanguage, navigation,
   canSave, saving, onSave, assistSurfaceActive,
   agentWorkbenchAvailable, appleAssistAvailability, appleAssistAvailabilityProbed,
-  sidePaneCopy, onOpenAppleAssistWindow, onOpenAgentWindow }: {
+  sidePaneCopy, onOpenAppleAssistWindow, onOpenAgentWindow, onExport, canExport }: {
   documentName: string;
   workspaceName: string;
   menuLanguage: MenuLanguage;
@@ -27,6 +27,10 @@ export function AppPrimaryToolbar({ documentName, workspaceName, menuLanguage, n
   sidePaneCopy: RightPaneToggleCopy;
   onOpenAppleAssistWindow: () => void;
   onOpenAgentWindow: () => void;
+  /** 書き出し（モックの右上「書き出す」）。形式ナビ付きの既存ダイアログを開く。 */
+  onExport: () => void;
+  /** 書き出せる文書があるか。 */
+  canExport: boolean;
 }) {
   const ja = isJapaneseMenuLanguage(menuLanguage);
   const apple = assistSurfaceActive === "apple-local";
@@ -65,6 +69,25 @@ export function AppPrimaryToolbar({ documentName, workspaceName, menuLanguage, n
       </button>}
       <button type="button" className="primary-save" disabled={!canSave} onClick={onSave}>
         {ja ? (saving ? "保存中…" : "保存") : (saving ? "Saving…" : "Save")}
+      </button>
+      <button
+        aria-label={ja ? "書き出す" : "Export"}
+        className="primary-export"
+        disabled={!canExport}
+        onClick={onExport}
+        title={
+          canExport
+            ? ja
+              ? "書き出し先を選ぶ（EPUB / PDF / HTML）"
+              : "Choose an export format (EPUB / PDF / HTML)"
+            : ja
+              ? "書き出せる文書がありません"
+              : "No document to export"
+        }
+        type="button"
+      >
+        <span aria-hidden="true"><ExportIcon /></span>
+        <span>{ja ? "書き出す" : "Export"}</span>
       </button>
     </div>
   </header>;

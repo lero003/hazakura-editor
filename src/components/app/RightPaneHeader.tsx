@@ -39,6 +39,9 @@ export function RightPaneHeader({
       data-right-pane-mode={mode}
       data-testid="right-pane-header"
     >
+      {/* 実機フィードバック: 見出しに長い説明文を出していた（モックは `PREVIEW / 表示のみ`
+          のような2〜3語）。ここは**短い注記だけ**を受ける面にし、説明は呼び出し側で
+          purposeTitle（ホバー）へ回す。 */}
       <div className="right-pane-header-text">
         <h2 className="right-pane-header-title">{title}</h2>
         {purpose ? (

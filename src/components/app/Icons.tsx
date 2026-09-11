@@ -258,6 +258,48 @@ export function SparklesIcon() {
   );
 }
 
+export function SearchIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      focusable="false"
+      height="14"
+      viewBox="0 0 16 16"
+      width="14"
+    >
+      <circle cx="6.6" cy="6.6" r="4.4" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="m10 10 4 4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.4"
+      />
+    </svg>
+  );
+}
+
+export function ExportIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      focusable="false"
+      height="14"
+      viewBox="0 0 16 16"
+      width="14"
+    >
+      <path
+        d="M8 11V1m-3 3 3-3 3 3M3 8v7h10V8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.4"
+      />
+    </svg>
+  );
+}
+
 export function TypewriterIcon() {
   return (
     <svg

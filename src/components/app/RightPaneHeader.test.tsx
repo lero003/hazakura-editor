@@ -5,7 +5,7 @@ import { RightPaneHeader } from "./RightPaneHeader";
 afterEach(cleanup);
 
 describe("RightPaneHeader", () => {
-  it("renders title, purpose, mode hook, and close action", () => {
+  it("renders the title with a short note and its hover text", () => {
     const onClose = vi.fn();
     render(
       <RightPaneHeader
@@ -22,15 +22,16 @@ describe("RightPaneHeader", () => {
     const header = screen.getByTestId("right-pane-header");
     expect(header.getAttribute("data-right-pane-mode")).toBe("preview");
     expect(screen.getByRole("heading", { name: "Preview" })).toBeTruthy();
-    const purpose = screen.getByText("continuous scroll");
-    expect(purpose.getAttribute("title")).toBe("/full/path when needed");
+    // 出せるのは**短い注記**だけ。説明文は呼び出し側が purposeTitle（ホバー）へ回す。
+    const note = screen.getByText("continuous scroll");
+    expect(note.getAttribute("title")).toBe("/full/path when needed");
     expect(screen.getByRole("button", { name: "Extra" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Close side pane" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("omits purpose and close when not provided", () => {
+  it("omits the note and close when not provided", () => {
     render(
       <RightPaneHeader mode="compare" title="Diff" closeLabel="Close" />,
     );

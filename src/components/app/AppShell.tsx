@@ -244,6 +244,10 @@ export function AppShell(props: AppShellProps) {
           })}
           saving={props.activeTab?.saveStatus === "saving"}
           onSave={() => { void props.onSaveDocument(); }}
+          // 右上の「書き出す」（モック）。形式ナビ付きの既存ダイアログを開くだけで、
+          // 新しい書き出し経路は作らない。
+          onExport={() => { void props.exportEpubBeta(); }}
+          canExport={navigation.canNavigate}
           assistSurfaceActive={props.assistSurfaceActive}
           agentWorkbenchAvailable={props.agentWorkbenchAvailable}
           appleAssistAvailability={props.appleAssistAvailability}
@@ -345,6 +349,7 @@ export function AppShell(props: AppShellProps) {
             reviewChangesAvailable={props.activeDirty}
             typewriterModeEnabled={props.editorSettings.lModeTypewriter}
             workspaceSidebarProps={{
+              onOpenGlobalSearch: () => props.onOpenGlobalSearch(),
               activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
               bookScopeChapterRelativePaths: props.bookScopeChapterRelativePaths,
               bookScopeNodes: props.bookScopeNodes,

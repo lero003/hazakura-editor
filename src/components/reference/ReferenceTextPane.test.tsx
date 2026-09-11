@@ -29,8 +29,10 @@ describe("ReferenceTextPane", () => {
     expect(screen.getByTestId("right-pane-header").getAttribute("data-right-pane-mode")).toBe(
       "reference",
     );
-    const purpose = screen.getByText(/style\.md · 読み取り専用/);
-    expect(purpose.getAttribute("title")).toBe("/ws/style.md");
+    // 実機フィードバック: 見出しはファイル名、注記は「読み取り専用」の2〜3語だけ。
+    expect(screen.getByRole("heading", { name: "style.md" })).toBeTruthy();
+    const note = screen.getByText("読み取り専用");
+    expect(note.getAttribute("title")).toBe("/ws/style.md");
     expect(screen.getByText("line one")).toBeTruthy();
     expect(screen.getByText("line two")).toBeTruthy();
 
@@ -56,7 +58,10 @@ describe("ReferenceTextPane", () => {
 
     const image = screen.getByRole("img", { name: "cover.png" });
     expect(image.getAttribute("src")).toBe("data:image/png;base64,aaa");
-    expect(screen.getByText(/cover\.png · 読み取り専用/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "cover.png" })).toBeTruthy();
+    expect(screen.getByText("読み取り専用").getAttribute("title")).toBe(
+      "/ws/cover.png",
+    );
     expect(screen.queryByTestId("reference-text-surface")).toBeNull();
   });
 

@@ -43,6 +43,7 @@ const base = {
   canSave: true, saving: false, onSave: vi.fn(),
   assistSurfaceActive: "none" as const, agentWorkbenchAvailable: true, sidePaneCopy,
   onOpenAppleAssistWindow: vi.fn(), onOpenAgentWindow: vi.fn(),
+  onExport: vi.fn(), canExport: true,
 };
 describe("AppPrimaryToolbar", () => {
   it("uses the existing save action only when enabled", () => {
@@ -89,6 +90,20 @@ describe("AppPrimaryToolbar", () => {
     expect(toggleMaximize).not.toHaveBeenCalled();
     fireEvent.doubleClick(view.container.querySelector("header")!, {button:0});
     expect(toggleMaximize).toHaveBeenCalledOnce();
+  });
+  it("reaches the existing export dialog from the toolbar", () => {
+    // モックの右上は Local Assist | 保存 | 書き出す。書き出しの経路は既存の
+    // ダイアログ（形式ナビ付き）で、新しい経路は作らない。
+    const onExport = vi.fn();
+    const view = render(<AppPrimaryToolbar {...base} onExport={onExport} />);
+    fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
+    expect(onExport).toHaveBeenCalledOnce();
+
+    view.rerender(<AppPrimaryToolbar {...base} canExport={false} onExport={onExport} />);
+    const disabled = screen.getByRole("button", { name: "書き出す" }) as HTMLButtonElement;
+    expect(disabled.disabled).toBe(true);
+    fireEvent.click(disabled);
+    expect(onExport).toHaveBeenCalledOnce();
   });
   it("keeps the sidebar toggle off the toolbar", () => {
     // サイドバーの開閉はサイドバー自身（畳んだ後は左端のレール）が持つ。
