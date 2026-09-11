@@ -19,7 +19,14 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 16px;
-  min-height: 66px;
+  /* 高さは**固定**（実機指摘: 起動直後と操作後で信号機との相対位置が変わって見える）。
+     ネイティブの信号機は `tauri.conf.json` の trafficLightPosition でウィンドウ上端からの
+     絶対位置に置かれ、実行時に動かない。一方このバーが min-height で伸びると、
+     中身だけが下へずれて「信号機が相対的に動いた」ように見える。
+     66px に固定すれば y=27 の玉は常にバーの縦中央（(66-12)/2 = 27）。
+     数字の対応は workspaceChromeCss.test.ts が両方を読んで検査する。 */
+  height: 66px;
+  min-height: 0;
   padding: 8px 20px 8px var(--toolbar-document-inset);
   box-sizing: border-box;
   background: var(--workspace-chrome-bar);
@@ -38,7 +45,7 @@
   line-height: 0;
 }
 .primary-document-identity, .primary-document-actions { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.primary-document-actions { justify-content: flex-end; flex-wrap: wrap; }
+.primary-document-actions { justify-content: flex-end; flex-wrap: nowrap; }
 .primary-document-name { display: grid; gap: 1px; min-width: 0; }
 .primary-document-name strong, .primary-document-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .primary-document-name strong { font-size: 13px; font-weight: 650; }

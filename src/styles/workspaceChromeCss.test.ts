@@ -34,6 +34,24 @@ describe("workspace-chrome.css", () => {
     expect(x + 12 * 3 + 8 * 2).toBeLessThan(127);
   });
 
+  it("fixes the primary toolbar height so the native traffic lights stay centered", () => {
+    // 実機指摘: 起動直後と操作後で信号機との相対位置が変わって見える。
+    // ネイティブの玉は絶対位置なので、バーが伸びると中身だけがずれる。
+    // → バーの高さを固定し、y が「バー高さの縦中央（12px玉）」であることを両方読んで検査する。
+    const toolbar = ruleBody(".app-primary-toolbar");
+    expect(toolbar).toMatch(/height:\s*66px/);
+    expect(toolbar).not.toMatch(/min-height:\s*66px/);
+    // 中身が2行に折り返してバーを押し広げないこと（折り返すと固定高さの中で溢れる）。
+    expect(chromeCss).toMatch(
+      /\.primary-document-actions\s*{[^}]*flex-wrap:\s*nowrap/,
+    );
+    expect(chromeCss).not.toMatch(/\.primary-document-actions\s*{[^}]*flex-wrap:\s*wrap/);
+    const conf = readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8");
+    const y = Number(/"trafficLightPosition"[^}]*"y"\s*:\s*(\d+)/.exec(conf)?.[1]);
+    // 玉は12px。バーの縦中央 = (66 - 12) / 2 = 27。
+    expect(y).toBe((66 - 12) / 2);
+  });
+
   it("spreads the display toolbar row across the whole document column", () => {
     // タブ行・表示ツールバー行は文書カラム全幅。プレビュー列の上の帯を空にしない。
     const meta = ruleBody(':root:not([data-l-mode="on"]) .v3-shell .document-meta');
