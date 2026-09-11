@@ -1077,6 +1077,12 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  /* 最も高い面（EPUB: 実測 779px = ヘッダー93 + タブ44 + 本文542 + フッター98 + 罫線2）に
+     合わせて**外枠**の高さを固定する。揃えるべきは本文の最小高さではなく外枠である
+     ——本文側に min-height を置くと、長い文書名でヘッダーが伸びたときに
+     フッターが枠外へ押し出される（外部レビュー R2: 960×640・240字名で 69.19px はみ出し）。
+     低い窓では viewport に合わせて縮み、本文だけがスクロールする。 */
+  height: min(779px, calc(100dvh - 32px));
   max-height: calc(100dvh - 32px);
   min-height: 0;
 }
@@ -1098,6 +1104,7 @@
   align-items: flex-end;
   border-bottom: 1px solid var(--border);
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   gap: 4px;
   margin: 0;
@@ -1141,17 +1148,17 @@
   padding: 10px 12px;
   font-weight: 600;
 }
-/* 3形式で本文の高さが違うため、切り替えるたびに枠が伸び縮みしていた
-   （実測: EPUB 542px / PDF 434px / HTML 273px → 枠は 777 / 669 / 508）。
-   最も高い面に合わせて固定し、切り替えで枠が動かないようにする。
-   ウィンドウが低いときは利用可能な高さまで縮めて本文だけスクロールさせる
-   （chrome は ヘッダー93 + タブ36 + フッター98 + 余白 ≈ 264px）。 */
+/* 3形式で本文の高さが違う（実測: EPUB 542px / PDF 434px / HTML 273px）。外枠を固定したので
+   本文は残り空間をそのまま取り、はみ出す分だけスクロールする。`align-content: start` で
+   短い面（HTMLの説明など）が余白へ引き伸ばされないようにする。 */
 .export-settings-body {
+  align-content: start;
   display: grid;
+  flex: 1 1 auto;
   gap: 16px;
-  min-height: min(542px, calc(100dvh - 264px));
-  padding: 20px 24px;
+  min-height: 0;
   overflow: auto;
+  padding: 20px 24px;
 }
 .export-settings-footer {
   flex: 0 0 auto;
