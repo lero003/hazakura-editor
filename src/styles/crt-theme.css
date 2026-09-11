@@ -142,13 +142,13 @@
     ),
     radial-gradient(
       ellipse 70% 48% at 50% 42%,
-      rgba(95, 224, 106, 0.06) 0%,
+      rgba(95, 224, 106, 0.09) 0%,
       transparent 58%
     ),
     radial-gradient(
       ellipse at center,
       transparent 52%,
-      rgba(0, 0, 0, 0.46) 100%
+      rgba(0, 0, 0, 0.5) 100%
     );
   inset: 0;
   mix-blend-mode: multiply;
@@ -194,11 +194,12 @@
     calc((0.5 - var(--crt-mx)) * 1.2px) 0 rgba(40, 140, 255, 0.4);
 }
 
-/* 実機指摘⑦（オーナー判断: 演出はサイドバーとタブまで／ステータスと主要操作ボタンは除外）。
-   本文（CodeMirror / preview）と同じ色収差を、タブとサイドバーの文字にも**薄く**載せる。
-   操作ラベルの可読を落とさないため、ずれは 1.6px → 0.9px、不透明度は約半分にする。 */
+/* 実機指摘（第2弾）: 開いているファイルのタブは演出が過剰に見えた（タブは小さく、常に目に入る面）。
+   タブからは色収差を引き、**サイドバーの文字だけ**に薄く載せる（本文より弱い語彙はそのまま）。
+   操作ラベルの可読を落とさないため、ずれは 1.6px → 0.9px、不透明度は約半分。
+   ステータスと主要操作ボタンは引き続き除外。 */
 :root[data-theme="crt"]
-  :is(.tab-name, .tab-parent, .empty-tabs, .tree-name, .workspace-kicker, .workspace-title, .workspace-labels, .workspace-empty) {
+  :is(.tree-name, .workspace-kicker, .workspace-title, .workspace-labels, .workspace-empty) {
   text-shadow:
     calc((var(--crt-mx) - 0.5) * 0.9px) 0 rgba(255, 40, 40, 0.3),
     calc((0.5 - var(--crt-mx)) * 0.9px) 0 rgba(40, 140, 255, 0.28);

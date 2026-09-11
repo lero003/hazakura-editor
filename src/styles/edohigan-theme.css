@@ -113,10 +113,19 @@
 }
 
 /* 3. canvas / overlay */
+/* 明るい紙面の上に載る唯一のキャンバス。他テーマは screen(深海)/multiply(CRT) で
+   「紙を置き換えない」合成にしているが、ここは指定が無く、不透明（シェーダは alpha=1）の
+   まま本文より手前 (z-index: 1) に描かれていた。そのため暗い花びらが紙と文字を置き換え、
+   プレビューの上部・下部が読めなくなっていた（実機指摘。実測: プレビュー面の紙が
+   252 → 48 まで落ちた画素があった）。
+   multiply は**紙と文字を同じ係数で暗くする**のでコントラスト比が保たれる
+   （不透明度で花びらは淡い影として残す）。 */
 .edohigan-canvas {
   display: block;
   height: 100%;
   inset: 0;
+  mix-blend-mode: multiply;
+  opacity: 0.25;
   pointer-events: none;
   position: fixed;
   width: 100%;

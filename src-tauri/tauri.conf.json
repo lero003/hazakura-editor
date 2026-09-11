@@ -20,7 +20,7 @@
         "theme": "Dark",
         "titleBarStyle": "Overlay",
         "trafficLightPosition": {
-          "x": 9,
+          "x": 21,
           "y": 27
         },
         "hiddenTitle": true,

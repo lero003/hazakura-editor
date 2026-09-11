@@ -114,8 +114,9 @@ describe("macOS build scripts", () => {
     expect(mainWindow?.titleBarStyle).toBe("Overlay");
     expect(mainWindow?.hiddenTitle).toBe(true);
     expect(mainWindow?.transparent).toBe(true);
-    // 実機フィードバック: シグナルは上部バー（66px）の縦中央に置く。y=18 だと上に寄る。
-    expect(mainWindow?.trafficLightPosition).toEqual({ x: 9, y: 27 });
+    // 実機フィードバック: シグナルは上部バー（66px）の縦中央（y=27）に置き、
+    // 左はモック（内側余白21px）に合わせて x=21。x=9 だと左端に張り付いて見えた。
+    expect(mainWindow?.trafficLightPosition).toEqual({ x: 21, y: 27 });
   });
 
   it("allows the main window to start native dragging from custom chrome", () => {

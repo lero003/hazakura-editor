@@ -4,6 +4,10 @@ import type { AmbientIntensity } from "../../types";
  * Q-THM-1 — shared budget for joke-theme WebGL overlays.
  * Edohigan stays calm; Shinkai/CRT use these caps so "showy" themes
  * do not always run at full Retina 60fps + CSS filter loops.
+ *
+ * 実機フィードバック（第2弾）: 抑えすぎで「攻めたテーマなのにつまらない」と感じられたため、
+ * DPR cap を**一段だけ**戻す（描画の解像度＝背景の締まり。フレーム間引きは据え置き＝
+ * 負荷の主因は動かさない）。CSS filter を使わない方針は維持する。
  */
 
 /** Cap for `devicePixelRatio` when sizing ambient canvases. */
@@ -14,9 +18,9 @@ export function ambientDevicePixelRatioCap(
     case "dramatic":
       return 2;
     case "normal":
-      return 1.5;
+      return 2;
     case "subtle":
-      return 1.25;
+      return 1.5;
     case "off":
     default:
       return 1;
