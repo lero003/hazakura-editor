@@ -18,6 +18,21 @@ export function measureEBookPageCount(element: HTMLElement | null): number {
   return Math.max(1, Math.ceil((measuredWidth + gap) / pageStep));
 }
 
+/**
+ * 紙を何列ぶん使うか。本文が1列にしか満ちていない章で、見開きの器だけが広がって
+ * 右半分が空くのを避ける（実機指摘⑦）。次の章の頭を見せる場合は右ページを使うので
+ * 見開きのまま（`nextChapterPreview`）。
+ */
+export function resolveEBookSpread(data: {
+  nextChapterPreview: boolean;
+  pageCount: number;
+}): "one" | "two" {
+  if (data.nextChapterPreview || data.pageCount >= 2) {
+    return "two";
+  }
+  return "one";
+}
+
 export function getEBookPageOffset(
   pageIndex: number,
   element: HTMLElement | null,

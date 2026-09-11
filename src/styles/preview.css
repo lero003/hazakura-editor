@@ -1201,6 +1201,25 @@
       var(--ebook-spread-width) - var(--ebook-sheet-pad-x) * 2 - 2px
     );
   }
+
+  /* 本文が1列にしか満ちず、次の章の頭も出さない章では、**紙の表示幅だけ**を
+     1ページ分に縮める。中の flow は見開き幅のまま据え置き、列の割り付け・折り返し・
+     ページ計算は1列も変えない（縮めた結果で組み直すと、計測と表示が循環して
+     本文が切れる）。使う列数は EBookPane が計測して data-spread で渡す。 */
+  .ebook-page-sheet-spread[data-spread="one"] {
+    max-width: var(--ebook-page-width);
+    overflow: hidden;
+  }
+
+  .ebook-page-sheet-spread[data-spread="one"] .ebook-page-viewport {
+    max-width: var(--ebook-page-width);
+  }
+
+  .ebook-page-sheet-spread[data-spread="one"] .ebook-page-flow {
+    width: calc(
+      var(--ebook-spread-width) - var(--ebook-sheet-pad-x) * 2 - 2px
+    );
+  }
 }
 
 .ebook-page-flow {
@@ -1432,7 +1451,9 @@
 
 .ebook-chapter-frontmatter {
   font-style: normal;
-  max-width: min(620px, 100%);
+  /* 以前はここで max-width: min(620px, 100%) に絞っていたため、前付の章は
+     見開きの閾値（1090px）に永久に届かず、寛い窓でも1ページのままだった
+     （実機指摘⑦）。狭い列にしたい意図は紙側の `[data-spread="one"]` が果たす。 */
 }
 
 .ebook-chapter-frontmatter .ebook-page-flow {

@@ -8,6 +8,17 @@ const previewCss = readFileSync(
   "utf8",
 );
 
+/** 同じ語を含む派生セレクタ（`.ebook-page-sheet-spread[data-spread="one"] .ebook-page-flow`
+ *  など）に釣られず、そのセレクタ自身のルール本文を取る。 */
+function exactRuleBody(selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    previewCss.match(
+      new RegExp(`(?:^|\\n)\\s*${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"),
+    )?.groups?.body ?? ""
+  );
+}
+
 function ruleBody(selector: string): string {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return (
@@ -230,7 +241,7 @@ describe("preview.css", () => {
   });
 
   it("keeps e-book CSS columns scoped to the page flow only", () => {
-    const flowBody = ruleBody(".ebook-page-flow");
+    const flowBody = exactRuleBody(".ebook-page-flow");
     const paneBody = ruleBody(".ebook-pane");
     const chromeBody = ruleBody(".ebook-pane .ebook-reader-chrome");
 
@@ -239,6 +250,17 @@ describe("preview.css", () => {
     expect(flowBody).toMatch(/column-fill:\s*auto/);
     expect(paneBody).not.toMatch(/column-/);
     expect(chromeBody).not.toMatch(/column-/);
+  });
+
+  it("shrinks only the paper when a chapter uses a single column", () => {
+    // 実機フィードバック⑦: 1列しか使わない章で見開きの右半分が空くのを避ける。
+    // 縮めるのは**紙の表示幅**だけで、本文の列組み（flow の幅）は変えない。
+    expect(previewCss).toMatch(
+      /\.ebook-page-sheet-spread\[data-spread="one"\]\s*{[^}]*max-width:\s*var\(--ebook-page-width\)/s,
+    );
+    expect(
+      exactRuleBody('.ebook-page-sheet-spread[data-spread="one"] .ebook-page-flow'),
+    ).toMatch(/width:\s*calc\(/);
   });
 
   it("keeps the e-book page viewport as the only clipping page frame", () => {

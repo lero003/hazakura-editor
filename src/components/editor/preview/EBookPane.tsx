@@ -53,6 +53,7 @@ import { isJapaneseMenuLanguage } from "../../../types";
 import {
   getEBookPageOffset,
   measureEBookPageCount,
+  resolveEBookSpread,
 } from "./ebookPagination";
 import {
   clampChapterIndex,
@@ -1340,7 +1341,13 @@ export default function EBookPane({
             activeChapterIndexSafe,
           )}
         >
-          <div className="ebook-page-sheet ebook-page-sheet-spread">
+          <div
+            className="ebook-page-sheet ebook-page-sheet-spread"
+            data-spread={resolveEBookSpread({
+              nextChapterPreview: shouldShowNextChapterPreview,
+              pageCount: measuredPageCount,
+            })}
+          >
             <div className="ebook-page-viewport" ref={viewportRef}>
               <div
                 className={
@@ -1516,9 +1523,12 @@ function getVisiblePageStep(
   const pageGap = parseCssPixelValue(flowStyle.columnGap);
   if (pageWidth > 0) {
     const spreadWidth = pageWidth * 2 + pageGap;
-    return viewport.clientWidth + EBOOK_SPREAD_WIDTH_TOLERANCE >= spreadWidth
-      ? 2
-      : 1;
+    // 判断は **viewport と flow の広い方**で行う。紙を1ページ分に見せている章では
+    // viewport が1ページ幅に縮むが flow は見開き幅のまま（列組みを変えないため）なので、
+    // 表示幅だけで判断すると「見開きじゃない」に化けて、列もページ計算も崩れる
+    // （実機指摘⑦の再発防止）。
+    const layoutWidth = Math.max(viewport.clientWidth, flow.clientWidth);
+    return layoutWidth + EBOOK_SPREAD_WIDTH_TOLERANCE >= spreadWidth ? 2 : 1;
   }
 
   const chapter = viewport.closest(".ebook-chapter");

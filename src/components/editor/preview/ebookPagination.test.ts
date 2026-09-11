@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getEBookPageOffset, measureEBookPageCount } from "./ebookPagination";
+import {
+  getEBookPageOffset,
+  measureEBookPageCount,
+  resolveEBookSpread,
+} from "./ebookPagination";
 
 function setReadOnlyNumber(
   element: HTMLElement,
@@ -63,5 +67,27 @@ describe("ebookPagination", () => {
     flow.append(heading);
 
     expect(measureEBookPageCount(flow)).toBe(1);
+  });
+});
+
+// 実機フィードバック⑦: 本文が1列にしか満ちない章で、見開きの器だけが広がって
+// 右半分が空くのを避ける。紙を1ページ分に縮めるのは「右ページに出す物が無い」ときだけ。
+describe("resolveEBookSpread", () => {
+  it("shrinks the paper to one page when a single column is all the chapter uses", () => {
+    expect(resolveEBookSpread({ nextChapterPreview: false, pageCount: 1 })).toBe(
+      "one",
+    );
+  });
+
+  it("keeps the spread when the body fills both columns", () => {
+    expect(resolveEBookSpread({ nextChapterPreview: false, pageCount: 2 })).toBe(
+      "two",
+    );
+  });
+
+  it("keeps the spread when the next chapter opens on the facing page", () => {
+    expect(resolveEBookSpread({ nextChapterPreview: true, pageCount: 1 })).toBe(
+      "two",
+    );
   });
 });

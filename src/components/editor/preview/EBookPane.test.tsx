@@ -22,6 +22,7 @@ vi.mock("../../../lib/tauri", () => ({
 vi.mock("./ebookPagination", () => ({
   getEBookPageOffset: vi.fn((pageIndex: number) => pageIndex * 320),
   measureEBookPageCount: vi.fn(() => 1),
+  resolveEBookSpread: vi.fn(() => "one"),
 }));
 
 // v0.34: 本番では200msデバウンスで marked + DOMPurify を間引くが、テストでは
