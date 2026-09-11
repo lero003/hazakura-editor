@@ -1061,12 +1061,17 @@
 }
 
 /* UI-E4a: shared export shell; only settings scroll on short windows. */
+/* 実機フィードバック: 形式ナビの切替は「いまのダイアログを閉じて次を開く」ので、
+   登場フェード（modalShow 0.18s）が毎回再生されて切り替え感が強く出ていた。
+   この面は連続した1つの枠として見せたいので、フェードを持たない。
+   （高さは下の .export-settings-body の min-height で揃える） */
 .close-dialog.export-settings-dialog {
   max-width: 720px;
   width: min(720px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
   padding: 0;
   overflow: hidden;
+  animation: none;
 }
 .export-settings-dialog .export-settings-form {
   display: flex;
@@ -1085,27 +1090,42 @@
 }
 .export-settings-header > div { min-width: 0; }
 .export-settings-header p { overflow-wrap: anywhere; margin-bottom: 0; }
-/* 形式ナビ（画面11）: 3つのコマンドは残したまま、同じ画面で形式を選ぶ。 */
+/* 形式ナビ（画面11）: 3つのコマンドは残したまま、同じ画面で形式を選ぶ。
+   実機フィードバック: ボタンの左端だけ枠に接していて余白が無く、切り替え時に
+   枠が入れ替わる印象が強かった。ヘッダー・本文と同じ 24px の内側に揃えた**タブ帯**にし、
+   下線と本体を繋げてタブとして読ませる。 */
 .export-format-nav {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 2px 0 4px;
+  gap: 4px;
+  margin: 0;
+  /* タブ自身の左右パディング(12px)ぶんを引いて、**ラベルの左端**を本文・見出しの
+     24px に揃える（枠の左端ではなく文字の左端を揃える）。 */
+  padding: 10px 12px 0;
 }
 .export-format-nav-button {
-  min-height: 36px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px 8px 0 0;
+  color: var(--text-muted);
+  cursor: pointer;
   font: inherit;
   font-size: 13px;
-  cursor: pointer;
+  margin-bottom: -1px;
+  min-height: 34px;
+  padding: 6px 12px;
+}
+/* 選択中のタブは、枠と同じ面（ダイアログの下地）を持たせて本体と繋げて見せる。 */
+.export-format-nav-button:hover {
+  background: var(--accent-soft);
+  color: var(--text);
 }
 .export-format-nav-button[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  background: rgba(var(--surface-strong-rgb), 0.85);
+  border-bottom-color: var(--accent);
   color: var(--text);
   font-weight: 600;
 }
@@ -1121,10 +1141,15 @@
   padding: 10px 12px;
   font-weight: 600;
 }
+/* 3形式で本文の高さが違うため、切り替えるたびに枠が伸び縮みしていた
+   （実測: EPUB 542px / PDF 434px / HTML 273px → 枠は 777 / 669 / 508）。
+   最も高い面に合わせて固定し、切り替えで枠が動かないようにする。
+   ウィンドウが低いときは利用可能な高さまで縮めて本文だけスクロールさせる
+   （chrome は ヘッダー93 + タブ36 + フッター98 + 余白 ≈ 264px）。 */
 .export-settings-body {
   display: grid;
   gap: 16px;
-  min-height: 0;
+  min-height: min(542px, calc(100dvh - 264px));
   padding: 20px 24px;
   overflow: auto;
 }
