@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>信号機と文書名の距離 — 調整ウィジェット</title>
+<style>
+  :root { color: var(--foreground); font-family: inherit; }
+  .wrap { display: flex; flex-direction: column; gap: 10px; }
+  .note { color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
+  .strip-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 8px; }
+  /* 以下は実アプリの上部バーの再現（実測した色と寸法）。この箱だけは実アプリの値をそのまま使う。 */
+  .strip { position: relative; width: 900px; height: 66px; background: rgb(24,36,30); border-bottom: 1px solid rgb(56,73,60); }
+  .lights { position: absolute; left: var(--lx); top: var(--ly); display: flex; gap: 8px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .lights i:nth-child(1) { background: #ff5f57; }
+  .lights i:nth-child(2) { background: #febc2e; }
+  .lights i:nth-child(3) { background: #28c840; }
+  .name { position: absolute; left: var(--tx); top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 12px; }
+  .name strong { color: rgb(229,237,223); font-size: 13px; font-weight: 650; }
+  .badge { color: rgb(229,236,232); background: rgb(53,107,80); border-radius: 999px; font-size: 10.5px; padding: 3px 8px; border: 1px solid rgb(70,128,98); }
+  .nav { position: absolute; left: 629px; top: 11px; height: 43px; display: flex; align-items: center; gap: 2px;
+        color: rgb(229,237,223); font-size: 13px; }
+  .nav span { padding: 6px 12px; border-radius: 9px; opacity: .62; }
+  .nav span.on { background: rgb(255,255,255); color: rgb(36,54,45); opacity: 1; }
+  .guide { position: absolute; top: 0; bottom: 0; width: 1px; background: #ff5f57; opacity: .5; }
+  .guide.mock { background: #7a9bff; opacity: .45; }
+  /* 凡例はバーの外に出す（中に入れると本文と衝突する）。 */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: var(--muted-foreground); margin-top: 6px; }
+  .legend b { font-weight: 600; }
+  .sw { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 5px; }
+  .ctrls { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 12px; }
+  label { display: block; font-size: 12px; color: var(--muted-foreground); margin-bottom: 4px; }
+  input[type=range] { width: 100%; }
+  b { color: var(--foreground); font-variant-numeric: tabular-nums; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button { font: inherit; font-size: 12px; padding: 6px 10px; border-radius: 8px;
+           border: 1px solid var(--border); background: var(--card); color: var(--foreground); cursor: pointer; }
+  button:hover { background: var(--accent); color: var(--card); }
+  .readout { font-size: 12px; color: var(--muted-foreground); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="note">
+    実アプリの上部バー（<b>1440×850 / 高さ66px / padding-left 84px</b>）の左側を1:1で再現。
+    <b>信号機はネイティブ描画なのでブラウザには写らない</b>ため、同じ寸法（12px玉・8px間隔）で描いています。
+  </div>
+  <div class="strip-scroll">
+    <div class="strip" id="strip">
+      <div class="lights"><i></i><i></i><i></i></div>
+      <div class="name"><strong>untitled.md</strong><span class="badge">DEV</span></div>
+      <div class="nav"><span class="on">書く</span><span>読む</span><span>確認</span></div>
+      <div class="guide" id="g1" style="left:73px"></div>
+      <div class="guide mock" id="g2" style="left:127px"></div>
+      <div class="guide mock" id="g3" style="left:93px"></div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="sw" style="background:#ff5f57"></span>信号機の右端（<b id="lg1">73</b>px・現在の値から算出）</span>
+    <span><span class="sw" style="background:#7a9bff"></span>モックの切替アイコン <b>93</b>px</span>
+    <span><span class="sw" style="background:#7a9bff"></span>モックの文書名 <b>127</b>px</span>
+  </div>
+  <div class="ctrls">
+    <div>
+      <label>信号機の左位置 x = <b id="vx">21</b> px（ネイティブ）</label>
+      <input id="ix" type="range" min="12" max="32" value="21">
+    </div>
+    <div>
+      <label>信号機の上位置 y = <b id="vy">27</b> px（= 66pxバーの縦中央）</label>
+      <input id="iy" type="range" min="14" max="40" value="27">
+    </div>
+    <div>
+      <label>文書名の左位置 = <b id="vt">84</b> px（CSS）</label>
+      <input id="it" type="range" min="72" max="150" value="84">
+    </div>
+  </div>
+  <div class="row">
+    <button id="now">現状に戻す（21 / 27 / 84）</button>
+    <button id="mock">モック準拠（20 / 27 / 127）</button>
+    <button id="mid">間を取る（20 / 27 / 96）</button>
+    <button id="toggleGuide">ガイド線を消す</button>
+  </div>
+  <div class="readout" id="out"></div>
+  <div class="row">
+    <button data-hermes-send="信号機と文書名の位置は x=21 / y=27 / 文書名=84 で決まり。実機ビルドに反映して">この値で進めて</button>
+  </div>
+  <div class="note">
+    見え方の目安: 信号機の右端は x+52（12px玉×3 + 8px間隔×2）。文書名が <b>84</b> なら右端から11px、
+    <b>96</b> なら23px、<b>127</b> ならモックと同じ位置（ただしモックは間に切替アイコンが入る）。
+  </div>
+</div>
+<script>
+  const st = document.getElementById('strip');
+  const ix = document.getElementById('ix'), iy = document.getElementById('iy'), it = document.getElementById('it');
+  const vx = document.getElementById('vx'), vy = document.getElementById('vy'), vt = document.getElementById('vt');
+  const g1 = document.getElementById('g1');
+  const out = document.getElementById('out');
+  const send = document.querySelector('[data-hermes-send]');
+
+  function draw() {
+    const x = +ix.value, y = +iy.value, t = +it.value;
+    st.style.setProperty('--lx', x + 'px');
+    st.style.setProperty('--ly', y + 'px');
+    st.style.setProperty('--tx', t + 'px');
+    vx.textContent = x; vy.textContent = y; vt.textContent = t;
+    g1.style.left = (x + 52) + 'px';
+    document.getElementById('lg1').textContent = String(x + 52);
+    const gap = t - (x + 52);
+    out.textContent = `信号機の右端 = ${x + 52}px / 文書名 = ${t}px → 距離 ${gap}px`
+      + (gap < 12 ? '（詰まり気味。モックは24px）'
+        : gap <= 32 ? '（モックの24pxに近い）'
+        : '（離れすぎ。モックは24px）');
+    send.setAttribute('data-hermes-send',
+      `信号機と文書名の位置は x=${x} / y=${y} / 文書名=${t}px で決まり。実機ビルドに反映して`);
+  }
+  [ix, iy, it].forEach(el => el.addEventListener('input', draw));
+  document.getElementById('now').onclick = () => { ix.value = 21; iy.value = 27; it.value = 84; draw(); };
+  document.getElementById('mock').onclick = () => { ix.value = 20; iy.value = 27; it.value = 127; draw(); };
+  document.getElementById('mid').onclick = () => { ix.value = 20; iy.value = 27; it.value = 96; draw(); };
+  let guide = true;
+  document.getElementById('toggleGuide').onclick = (e) => {
+    guide = !guide;
+    document.querySelectorAll('.guide').forEach(el => el.style.display = guide ? '' : 'none');
+    e.target.textContent = guide ? 'ガイド線を消す' : 'ガイド線を出す';
+  };
+  draw();
+</script>
+</body>
+</html>
