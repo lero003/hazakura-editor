@@ -213,9 +213,19 @@
   text-shadow: none;
 }
 
-/* UI chrome はグローなし。ラベルが滲んで読めないのを避ける。 */
+/* 実機指摘⑦（オーナー判断: 演出はサイドバーとタブまで／ステータスと主要操作ボタンは除外）。
+   水中のグローをタブとサイドバーの文字にも載せるが、滲んで読めなくならないよう
+   本文（6px / 0.16）より弱くする（5px / 0.10）。 */
 :root[data-theme="shinkai"]
-  :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
+  :is(.tab-name, .tab-parent, .empty-tabs, .tree-name, .workspace-kicker, .workspace-title, .workspace-labels, .workspace-empty) {
+  text-shadow: 0 0 5px rgba(125, 211, 224, 0.1);
+}
+
+/* ステータス（状態表示）と主要操作ボタンはグローなし。 */
+:root[data-theme="shinkai"]
+  :is(.status-bar, .workspace-sidebar-rail, .app-primary-toolbar, .pane-toggle, .primary-save,
+      .workspace-new-button, .workspace-open-button, .workspace-trash-button,
+      .workspace-collapse-button, .workspace-restore-button)
   :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
   text-shadow: none;
 }

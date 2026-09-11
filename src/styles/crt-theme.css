@@ -194,10 +194,22 @@
     calc((0.5 - var(--crt-mx)) * 1.2px) 0 rgba(40, 140, 255, 0.4);
 }
 
-/* UI chrome は色収差なし。操作ラベルの可読を優先し、
-   色収差・明滅は本文 (CodeMirror / preview) に限定する。 */
+/* 実機指摘⑦（オーナー判断: 演出はサイドバーとタブまで／ステータスと主要操作ボタンは除外）。
+   本文（CodeMirror / preview）と同じ色収差を、タブとサイドバーの文字にも**薄く**載せる。
+   操作ラベルの可読を落とさないため、ずれは 1.6px → 0.9px、不透明度は約半分にする。 */
 :root[data-theme="crt"]
-  :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
+  :is(.tab-name, .tab-parent, .empty-tabs, .tree-name, .workspace-kicker, .workspace-title, .workspace-labels, .workspace-empty) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 0.9px) 0 rgba(255, 40, 40, 0.3),
+    calc((0.5 - var(--crt-mx)) * 0.9px) 0 rgba(40, 140, 255, 0.28);
+}
+
+/* ステータス（状態表示）と主要操作ボタンは色収差なし。
+   ここは値を読み違えると操作を誤る面なので、可読を最優先にする。 */
+:root[data-theme="crt"]
+  :is(.status-bar, .workspace-sidebar-rail, .app-primary-toolbar, .pane-toggle, .primary-save,
+      .workspace-new-button, .workspace-open-button, .workspace-trash-button,
+      .workspace-collapse-button, .workspace-restore-button)
   :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
   text-shadow: none;
 }
