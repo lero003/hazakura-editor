@@ -44,6 +44,7 @@ export function ExportDialogFrame(props: Props) {
         </header>
         {/* 形式ナビは枠が持つ（同じ画面で形式を選べる）。 */}
         {props.formatNav}
+
         <div className="export-settings-body">{props.children}</div>
         <footer className="export-settings-footer">
           <p>{copy.note}</p>

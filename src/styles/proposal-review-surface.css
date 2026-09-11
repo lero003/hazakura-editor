@@ -29,6 +29,10 @@
 .local-assist-proposal-review-text { min-height: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 .local-assist-proposal-review-diff { flex: 1 1 auto; }
 @media (max-height: 680px) {
-  .local-assist-proposal-review { gap: 8px; padding: 12px 16px; max-height: calc(100dvh - 150px); }
+  /* 07 P2: 本文領域いっぱいに置く面なので、高さは**ホストに従う**。
+     浮遊パネル時代の `calc(100dvh - 150px)` を残すと、低い窓（えるモードや
+     640px 前後）で面が縮み、下に背後のエディタが見えて押せてしまう。
+     サイドバー内の差し込み表示は local-assist-sidebar.css が別に制限している。 */
+  .local-assist-proposal-review { gap: 8px; padding: 12px 16px; }
   .local-assist-proposal-review-title { font-size: 18px; }
 }

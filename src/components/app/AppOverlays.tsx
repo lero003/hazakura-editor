@@ -1,6 +1,7 @@
 import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";
 import { ExportFormatNav, type ExportFormatId } from "./ExportFormatNav";
 import { exportFormatSwitchPlan } from "./exportFormatSwitch";
+import { useExportDrafts } from "../../hooks/document/useExportDrafts";
 import type {
   Dispatch,
   RefObject,
@@ -387,6 +388,9 @@ export function AppOverlays({
   assistDiscardCancelButtonRef,
   assistDiscardDialogRef,
 }: AppOverlaysProps) {
+  // 形式ナビで行き来しても、一度の書き出し操作のあいだは入力と対象を保つ（画面11）。
+  const exportDrafts = useExportDrafts(activeTab?.sessionId ?? null);
+
   const activeHelpDoc =
     preferencesDialogMode && isHelpDocumentDialogMode(preferencesDialogMode)
       ? helpDocsByMode[preferencesDialogMode]
@@ -533,13 +537,16 @@ export function AppOverlays({
 
       {epubExportRequest ? (
         <EpubExportSettingsDialog
+          key={epubExportRequest.tabId}
           formatNav={renderExportFormatNav("epub")}
           bookAvailable={epubExportRequest.bookAvailable}
           cancelButtonRef={epubExportCancelButtonRef}
           dialogRef={epubExportDialogRef}
           documentName={epubExportRequest.documentName}
           hasUnsavedChanges={epubExportRequest.hasUnsavedChanges}
-          initialSettings={epubExportRequest.settings}
+          initialScope={exportDrafts.drafts.scope ?? "document"}
+          initialSettings={exportDrafts.drafts.epub ?? epubExportRequest.settings}
+          onDraftChange={exportDrafts.rememberEpub}
           menuLanguage={menuLanguage}
           preflightByScope={epubExportRequest.preflightByScope}
           onCancel={onCancelEpubBetaExport}
@@ -554,13 +561,16 @@ export function AppOverlays({
       ) : null}
       {pdfExportRequest ? (
         <PdfExportSettingsDialog
+          key={pdfExportRequest.tabId}
           formatNav={renderExportFormatNav("pdf")}
           bookAvailable={pdfExportRequest.bookAvailable}
           cancelButtonRef={pdfExportCancelButtonRef}
           dialogRef={pdfExportDialogRef}
           documentName={pdfExportRequest.documentName}
           hasUnsavedChanges={pdfExportRequest.hasUnsavedChanges}
-          initialPreset={pdfExportRequest.preset}
+          initialPreset={exportDrafts.drafts.pdf ?? pdfExportRequest.preset}
+          initialScope={exportDrafts.drafts.scope ?? "document"}
+          onDraftChange={exportDrafts.rememberPdf}
           menuLanguage={menuLanguage}
           preflightByScope={pdfExportRequest.preflightByScope}
           onCancel={onCancelPdfExport}

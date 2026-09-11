@@ -144,6 +144,10 @@ type AppWorkspaceProps = {
   ) => Promise<{ ok: true } | { ok: false; error: string }>;
   onDiscardLocalAssistProposal: (proposal: LocalAssistProposal) => void;
   proposalReviewRef?: RefObject<HTMLDivElement | null>;
+  /** レビュー面を出しているか（提案があっても、編集へ戻れば閉じる。07 P1）。 */
+  proposalReviewVisible?: boolean;
+  /** 「提案を残して編集に戻る」入口（レビュー面の中のボタン）。 */
+  onReturnToEditing?: () => void;
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
@@ -310,6 +314,8 @@ export function AppWorkspace({
   onApplyLocalAssistProposal,
   onDiscardLocalAssistProposal,
   proposalReviewRef,
+  onReturnToEditing,
+  proposalReviewVisible = true,
   clearCompareSource,
   clearCompareTarget,
   closeCompareView,
@@ -696,6 +702,22 @@ export function AppWorkspace({
     onReadingOverlayChange?.(readingOverlayActive);
   }, [readingOverlayActive, onReadingOverlayChange]);
 
+  // 07(P1): レビュー面が本文を覆っている間は、背後の本文を入力・フォーカスの対象から
+  // 外す（`inert`）。エディタは破棄しないので Undo や選択は失われない（既存の
+  // 読み取り専用面と同じ扱い）。見えている面と入力先を一致させるための処置。
+  const editorRegionRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const region = editorRegionRef.current;
+    if (!region) return;
+    const editorPane = region.querySelector<HTMLElement>(":scope > .editor-pane");
+    if (!editorPane) return;
+    if (proposalReviewVisible) editorPane.setAttribute("inert", "");
+    else editorPane.removeAttribute("inert");
+    return () => {
+      editorPane.removeAttribute("inert");
+    };
+  }, [proposalReviewVisible]);
+
   return (
     <section
       className={`workspace${startSurfaceActive ? " workspace-start" : ""}${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${readingOverlayActive ? " workspace-reading-focus" : ""}`}
@@ -897,7 +919,7 @@ export function AppWorkspace({
             </button>
           </div>
         ) : null}
-        <div className="reference-editor-host">
+        <div className="reference-editor-host" ref={editorRegionRef}>
           <EditorMainPane
             activeContents={activeContents}
             activeDocumentLineCount={activeDocumentLineCount}
@@ -953,16 +975,19 @@ export function AppWorkspace({
           {/* 生成された案は**主編集領域**で読む（モック07）。右下のフローティングでは
               なく、この面が本文幅と高さを使い、長文は面の内側でスクロールする。
               生成や適用の経路は増やさず、既存の単一ライタへそのまま渡す。 */}
-          <div className="proposal-review-host" ref={proposalReviewRef}>
-            <LocalAssistProposalReview
-              activeTab={activeTab}
-              blocked={!!appleAssistGenerationLock}
-              fontSize={editorSettings.editorFontSize}
-              menuLanguage={menuLanguage}
-              onApply={onApplyLocalAssistProposal}
-              onDiscard={onDiscardLocalAssistProposal}
-            />
-          </div>
+          {proposalReviewVisible ? (
+            <div className="proposal-review-host" ref={proposalReviewRef}>
+              <LocalAssistProposalReview
+                activeTab={activeTab}
+                blocked={!!appleAssistGenerationLock}
+                fontSize={editorSettings.editorFontSize}
+                menuLanguage={menuLanguage}
+                onApply={onApplyLocalAssistProposal}
+                onDiscard={onDiscardLocalAssistProposal}
+                onReturnToEditing={onReturnToEditing}
+              />
+            </div>
+          ) : null}
         </div>
         {visibleReferenceCompare ? (
           <>

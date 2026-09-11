@@ -97,16 +97,16 @@ it("shows the format nav inside the shared frame and reuses the same dialog (画
     />,
   );
 
-  // 形式ナビは共通の枠（dialog）の中にあり、対象（文書／本全体）と同居する。
+  // 形式ナビは**共通の枠（実在する role=dialog）の中**にあり、対象と同居する。
+  // （以前は両側とも `div[role='dialog']` を探していて、null === null で無条件に
+  //   成功していた。実在と包含を別々に確かめる。）
+  const dialog = screen.getByRole("dialog");
   const group = screen.getByRole("group", { name: "書き出す形式" });
-  expect(
-    group.closest("div[role='dialog']"),
-  ).toBe(container.querySelector("div[role='dialog']"));
+  expect(dialog.contains(group)).toBe(true);
+  expect(screen.getAllByRole("dialog")).toHaveLength(1);
   expect(container.querySelector(".export-settings-header p")?.textContent).toBe(
     "draft.md",
   );
-
-  // 別形式を選ぶと、既存の準備処理へ切り替えを委ねる（新しい経路は作らない）。
-  fireEvent.click(screen.getByRole("button", { name: "HTML" }));
-  expect(onSelectFormat).toHaveBeenCalledExactlyOnceWith("html");
+  // 切替の通知自体は ExportFormatNav.test.tsx が固定している（重複を避ける）。
+  expect(onSelectFormat).not.toHaveBeenCalled();
 });

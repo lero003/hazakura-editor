@@ -120,6 +120,22 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 検索の wire 形式を変�
      2026-06-09 の**明示的な決定**を持ち、`smoke:app-store-surface`(117件) の対象でもある。
      日本語の使い方面を足すかは**ご判断ください**（勝手に寄せていません）。
 
+## 1.4 07・11レビュー（P1×1・P2×3）への対応
+
+外部レビューの指摘に対する修正。詳細と実測は `docs/reviews/2026-09-11-v3-slice-07/README.md` と
+`docs/reviews/2026-09-11-v3-slice-11/README.md`。
+
+| # | 指摘 | 対応 |
+| --- | --- | --- |
+| P1 | 「書く」を押してもレビューが残り、見えない本文へ入力できる | 「提案がある」と「面を見せている」を分離（`proposalReviewHidden`）。面を閉じても**提案は保持**し、レビュー内に「案を残して編集に戻る」を追加。面が本文を覆う間は `.editor-pane` を **`inert`** にして入力を止める（エディタは破棄しない） |
+| P2 | 狭幅でプレビュー／参照表示中は面が `display: none` になりフォーカスできない | レビュー導線に**領域の開示**を組み込み、**開示→再検証→フォーカス**を再試行。成功条件は `document.activeElement === region` |
+| P2 | 低い窓で旧フローティング用の `max-height` が残る | `@media (max-height: 680px)` の高さ上書きを撤去（高さはホストに従う）。640 / 680 / 200%文字でも**未被覆0**を実測 |
+| P2 | 形式の往復で入力と「本全体」が失われる | `useExportDrafts` で、一度の書き出し操作のあいだ文書identity・対象・形式別草稿を保持（文書が変われば初期化）。実アプリで往復して書名が残ることを実測 |
+| 受入テスト | `div[role=dialog]` 比較が `null === null` で無条件成功 | 実在（`getByRole`）＋包含（`contains`）＋単一性（`getAllByRole`）へ変更。**ナビを枠外へ出すと落ちる**ことを確認。重複は整理し、往復の統合テストを追加 |
+
+**証跡の範囲**: 07の fixture は面単体の寸法確認用であり、往復・compact・フォーカスの受入ではない。
+それらは実コンポーネントのテストで固定し、**ネイティブのAI生成を伴う通し確認は未実施**と記録した。
+
 ## 1.5 レビュー（P2 5件）への対応 — 2026-09-11
 
 外部レビューの P2 5件と受入範囲の指摘に対応した。詳細と実測は
@@ -151,7 +167,7 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 検索の wire 形式を変�
 | 種別 | 結果 |
 | --- | --- |
 | `npm run typecheck` | 成功 |
-| `npm test` | **274ファイル / 2,393件** 成功 |
+| `npm test` | **275ファイル / 2,401件** 成功 |
 | `cargo test` | **385 passed, 2 ignored**（検索の snippet 契約を変更） |
 | `npm run smoke:app-store-surface` | 117件 成功 |
 | `npm run build:vite` | 成功（chunk サイズ警告は既存） |

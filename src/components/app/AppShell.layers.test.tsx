@@ -18,8 +18,10 @@ vi.mock("./AppWorkspace", () => ({
     onReadingOverlayChange,
     compactPreviewFocus,
     onCompactPreviewFocusChange,
+    proposalReviewVisible,
   }: {
     appleAssistGenerationLock?: { requestId: string } | null;
+    proposalReviewVisible?: boolean;
     documentChrome?: ReactNode;
     compactPreviewFocus: "editor" | "preview";
     onCompactPreviewFocusChange: (focus: "editor" | "preview") => void;
@@ -29,6 +31,7 @@ vi.mock("./AppWorkspace", () => ({
       className="workspace"
       data-compact-preview={compactPreviewFocus}
       data-generation-lock={appleAssistGenerationLock ? "set" : "none"}
+      data-review-visible={proposalReviewVisible ? "true" : "false"}
     >
       <div className="workspace-document-column">
         {documentChrome}
@@ -45,7 +48,12 @@ vi.mock("./AppOverlays", () => ({AppOverlays: () => null}));
 vi.mock("./LModeActionRail", () => ({LModeActionRail: () => null}));
 vi.mock("./LModeExitPill", () => ({LModeExitPill: () => null}));
 vi.mock("./LocalAssistProposalReview", () => ({LocalAssistProposalReview: ({blocked}: {blocked: boolean}) => <div data-testid="proposal-lock" data-blocked={blocked} />}));
-vi.mock("../../hooks/editor/useLocalAssistProposal", () => ({useLocalAssistProposal: () => ({proposal: null})}));
+const proposalState = vi.hoisted(() => ({
+  proposal: null as null | { requestId: string; streaming?: boolean },
+}));
+vi.mock("../../hooks/editor/useLocalAssistProposal", () => ({
+  useLocalAssistProposal: () => ({ proposal: proposalState.proposal }),
+}));
 
 afterEach(cleanup);
 
@@ -66,6 +74,37 @@ function ConnectedShell(props: AppShellProps) {
 }
 
 describe("AppShell chrome layers", () => {
+  it("closes the review surface but keeps the proposal when Write is pressed (07 P1)", () => {
+    proposalState.proposal = { requestId: "req-1" };
+    try {
+      render(
+        <ConnectedShell
+          {...base}
+          activeTab={
+            {
+              name: "draft.md",
+              path: "/workspace/draft.md",
+              sessionId: "s1",
+            } as AppShellProps["activeTab"]
+          }
+        />,
+      );
+      expect(
+        document.querySelector(".workspace")?.getAttribute("data-review-visible"),
+      ).toBe("true");
+
+      fireEvent.click(screen.getByRole("button", { name: "Write" }));
+
+      // 面だけを閉じる（提案は保持。反映は利用者の操作）。
+      expect(
+        document.querySelector(".workspace")?.getAttribute("data-review-visible"),
+      ).toBe("false");
+      expect(proposalState.proposal).not.toBeNull();
+    } finally {
+      proposalState.proposal = null;
+    }
+  });
+
   it("passes the generation or cancellation lock down to the workspace", () => {
     // 07: 案のレビューは主編集領域（AppWorkspace の中）へ移したので、
     // ロックはシェルからワークスペースへ渡るところまでを確かめる。

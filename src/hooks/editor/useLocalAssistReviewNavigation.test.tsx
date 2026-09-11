@@ -94,3 +94,67 @@ it("expires the whole attempt while native focus is pending and ignores its late
     expect(h.emit).toHaveBeenLastCalledWith("apple-assist", "local-assist-review-result", { ...retry, accepted: true });
   } finally { vi.useRealTimers(); }
 });
+
+// 07 P2: 狭幅でプレビュー／参照を表示していると本文領域が `display: none` になり、
+// タブと DOM があってもフォーカスできない。開示 → 再検証 → フォーカスの順を固定する。
+function NarrowMain({ reveal }: { reveal: () => void }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const focusable = useRef(false);
+  useLocalAssistReviewNavigation({
+    tabs: [tab], activeTab: tab, blocked: false, hostRef,
+    onSelectTab: () => {}, onRevealRegion: () => { focusable.current = true; reveal(); },
+  });
+  return (
+    <div ref={hostRef}>
+      <div
+        data-review-request-id={identity.requestId}
+        ref={(node) => {
+          if (!node) return;
+          node.focus = () => {
+            // 表示が開くまでは focus しても何も起きない（`display: none` と同じ）。
+            if (focusable.current) HTMLElement.prototype.focus.call(node);
+          };
+        }}
+        role="region"
+        tabIndex={-1}
+      />
+    </div>
+  );
+}
+
+it("reveals the editing region before focusing and retries after the view switches (07 P2)", async () => {
+  const reveal = vi.fn();
+  render(<NarrowMain reveal={reveal} />);
+  await act(async () => h.receive!({ payload: identity }));
+
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("region")));
+  expect(reveal).toHaveBeenCalledTimes(1);
+  expect(h.emit).toHaveBeenLastCalledWith(
+    "apple-assist", "local-assist-review-result", { ...identity, accepted: true },
+  );
+});
+
+it("reports failure when the region stays hidden even after revealing (07 P2)", async () => {
+  // 開示しても本文領域が見えないままなら「開けた」と言わない。
+  function StillHidden() {
+    const hostRef = useRef<HTMLDivElement>(null);
+    useLocalAssistReviewNavigation({
+      tabs: [tab], activeTab: tab, blocked: false, hostRef,
+      onSelectTab: () => {}, onRevealRegion: () => {},
+    });
+    return (
+      <div ref={hostRef}>
+        <div data-review-request-id={identity.requestId} role="region" tabIndex={-1}
+          ref={(node) => { if (node) node.focus = () => {}; }} />
+      </div>
+    );
+  }
+  render(<StillHidden />);
+  await act(async () => h.receive!({ payload: identity }));
+  await waitFor(() =>
+    expect(h.emit).toHaveBeenLastCalledWith(
+      "apple-assist", "local-assist-review-result", { ...identity, accepted: false },
+    ),
+  );
+  expect(document.activeElement).not.toBe(screen.getByRole("region"));
+});

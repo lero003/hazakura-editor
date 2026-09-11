@@ -1,5 +1,5 @@
 import { ExportDialogFrame } from "./ExportDialogFrame";
-import { useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useState, type ReactNode, type RefObject } from "react";
 import {
   PDF_MARGIN_PRESETS,
   type PdfMarginPreset,
@@ -20,6 +20,8 @@ type PdfExportSettingsDialogProps = {
   initialScope?: DocumentExportScope;
   /** 形式を選ぶ入口（画面11）。 */
   formatNav?: ReactNode;
+  /** 形式を切り替えても入力を保つための通知（画面11）。 */
+  onDraftChange?: (preset: PdfMarginPreset, scope: DocumentExportScope) => void;
   menuLanguage: MenuLanguage;
   preflightByScope?: Record<DocumentExportScope, ExportPreflightResult>;
   onCancel: () => void;
@@ -35,6 +37,7 @@ export function PdfExportSettingsDialog({
   hasUnsavedChanges,
   initialScope = "document",
   formatNav,
+  onDraftChange,
   menuLanguage,
   preflightByScope,
   onCancel,
@@ -43,6 +46,9 @@ export function PdfExportSettingsDialog({
   const copy = getPdfExportSettingsCopy(menuLanguage);
   const [preset, setPreset] = useState<PdfMarginPreset>(initialPreset);
   const [scope, setScope] = useState<DocumentExportScope>(initialScope);
+  useEffect(() => {
+    onDraftChange?.(preset, scope);
+  }, [preset, scope, onDraftChange]);
   const hasBlockingIssue = preflightByScope?.[scope].issues.some(
     (issue) => issue.severity === "error",
   ) ?? false;

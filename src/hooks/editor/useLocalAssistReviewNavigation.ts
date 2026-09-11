@@ -18,7 +18,9 @@ export function resolveReviewTab(identity: LocalAssistReviewIdentity, tabs: Edit
 }
 
 type Options = { tabs: EditorTab[]; activeTab: EditorTab | null; blocked: boolean;
-  onSelectTab: (id: string) => void; hostRef: RefObject<HTMLDivElement | null> };
+  onSelectTab: (id: string) => void; hostRef: RefObject<HTMLDivElement | null>;
+  /** 本文領域を見える状態にする（狭幅のcompact/参照表示を畳む）。07 P2。 */
+  onRevealRegion?: () => void; };
 
 /** Navigation only. Both before selecting and after rendering, main checks its own store. */
 export function useLocalAssistReviewNavigation(options: Options): void {
@@ -71,13 +73,32 @@ export function useLocalAssistReviewNavigation(options: Options): void {
     if (!region || region.dataset.reviewRequestId !== pending.requestId) { finish(pending, false); return; }
     if (job.focusStarted) return;
     job.focusStarted = true;
+    // まず表示領域を開く（`display: none` のままでは focus しても何も起きない）。
+    current.current.onRevealRegion?.();
     void focusMainLocalAssistReview().then(() => {
       if (pendingRef.current !== job) return;
-      if (Date.now() >= job.expiresAt || blocked() || current.current.activeTab?.sessionId !== pending.documentSessionId ||
-          !resolveReviewTab(pending, current.current.tabs) || !region.isConnected ||
-          region.dataset.reviewRequestId !== pending.requestId) { finish(pending, false); return; }
-      region.focus();
-      finish(pending, document.activeElement === region);
+      /**
+       * 開示 → 再検証 → フォーカス。表示の切替は1フレーム後なので、数フレームまで
+       * 再試行する。成功条件は `document.activeElement === region`（DOMがあることや
+       * タブが合っていることでは「開けた」としない）。
+       */
+      const attempt = (retriesLeft: number) => {
+        if (pendingRef.current !== job) return;
+        if (Date.now() >= job.expiresAt || blocked() ||
+            current.current.activeTab?.sessionId !== pending.documentSessionId ||
+            !resolveReviewTab(pending, current.current.tabs)) { finish(pending, false); return; }
+        const live = current.current.hostRef.current?.querySelector<HTMLElement>("[data-review-request-id]");
+        if (!live || live.dataset.reviewRequestId !== pending.requestId) { finish(pending, false); return; }
+        live.focus();
+        if (document.activeElement === live) { finish(pending, true); return; }
+        if (retriesLeft <= 0) { finish(pending, false); return; }
+        if (typeof window !== "undefined" && "requestAnimationFrame" in window) {
+          window.requestAnimationFrame(() => attempt(retriesLeft - 1));
+        } else {
+          setTimeout(() => attempt(retriesLeft - 1), 0);
+        }
+      };
+      attempt(3);
     }).catch(() => finish(pending, false));
   }, [pending, options.activeTab, options.tabs, options.blocked, options.hostRef]);
 }

@@ -1,5 +1,5 @@
 import { ExportDialogFrame } from "./ExportDialogFrame";
-import { useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useState, type ReactNode, type RefObject } from "react";
 import { pickEpubCoverImage } from "../../lib/tauri/dialog";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { MenuLanguage } from "../../types";
@@ -18,6 +18,8 @@ type EpubExportSettingsDialogProps = {
   initialScope?: DocumentExportScope;
   /** 形式を選ぶ入口（画面11）。 */
   formatNav?: ReactNode;
+  /** 形式を切り替えても入力を保つための通知（画面11）。 */
+  onDraftChange?: (settings: EpubExportSettings, scope: DocumentExportScope) => void;
   menuLanguage: MenuLanguage;
   preflightByScope?: Record<DocumentExportScope, ExportPreflightResult>;
   onCancel: () => void;
@@ -33,6 +35,7 @@ export function EpubExportSettingsDialog({
   hasUnsavedChanges,
   initialScope = "document",
   formatNav,
+  onDraftChange,
   menuLanguage,
   preflightByScope,
   onCancel,
@@ -46,6 +49,13 @@ export function EpubExportSettingsDialog({
     initialSettings.coverImagePath ?? null,
   );
   const [scope, setScope] = useState<DocumentExportScope>(initialScope);
+  // 入力のたびに親へ知らせる（形式を切り替えても、同じ書き出し操作の間は保つ）。
+  useEffect(() => {
+    onDraftChange?.(
+      { author, ...(coverImagePath ? { coverImagePath } : {}), language, title },
+      scope,
+    );
+  }, [author, coverImagePath, language, scope, title, onDraftChange]);
   const titleValid = title.trim().length > 0;
   const hasBlockingIssue = preflightByScope?.[scope].issues.some(
     (issue) => issue.severity === "error",

@@ -1,6 +1,6 @@
 import { SaveConflictDialog } from "./SaveConflictDialog";
 import { useLocalAssistReviewNavigation } from "../../hooks/editor/useLocalAssistReviewNavigation";
-import { useMemo, useRef, useState, type ComponentProps } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
   EditorSettings,
@@ -87,9 +87,7 @@ export function AppShell(props: AppShellProps) {
   } = useCompactSidebarCollapse();
   const [readingOverlayOpen, setReadingOverlayOpen] = useState(false);
   const proposalReviewRef = useRef<HTMLDivElement>(null);
-  useLocalAssistReviewNavigation({ tabs: props.tabs, activeTab: props.activeTab,
-    blocked: readingOverlayOpen || !!props.selectedImage,
-    onSelectTab: props.onSelectTab, hostRef: proposalReviewRef });
+
   const chapterReviewRequestRef = useRef(0);
   const chapterReviewQueueRef = useRef<Promise<void>>(Promise.resolve());
   const workspaceTabMarkers = useMemo(
@@ -102,6 +100,16 @@ export function AppShell(props: AppShellProps) {
   const pendingProposal = useLocalAssistProposal(
     props.activeTab?.sessionId ?? null,
   ).proposal;
+  // 07(P1): 「提案がある」と「レビュー面を見せている」を分ける。提案は保持したまま
+  // 面だけ閉じられるようにしないと、「書く」で編集へ戻ってもレビューが本文を覆い、
+  // 見えていない本文へ入力が届いてしまう。
+  const [proposalReviewHidden, setProposalReviewHidden] = useState(false);
+  useEffect(() => {
+    // 新しい提案が来たら、また見せる（閉じたままにしない）。
+    setProposalReviewHidden(false);
+  }, [pendingProposal?.requestId]);
+  const proposalReviewVisible =
+    !!pendingProposal && !pendingProposal.streaming && !proposalReviewHidden;
 
   const openComparison = props.compareView ? props.getCompareCaseByKey(props.compareView.caseKey) : undefined;
   const comparisonName = openComparison?.kind === "file"
@@ -114,13 +122,33 @@ export function AppShell(props: AppShellProps) {
     canReviewDisk: !!props.activeTab?.path && props.activeDirty,
     hasComparison: !!openComparison && openComparison.kind !== "candidate",
   });
-  const navigateToEditor = () => {
-    if (!navigation.canNavigate || readingOverlayOpen) return;
+  /** 本文領域を見える状態にする（狭幅のcompact表示・参照表示・別ペインを畳む）。 */
+  const revealEditorRegion = () => {
     props.onCompactPreviewFocusChange?.("editor");
     if (props.referencePaneVisible) props.onToggleReference();
     if (props.sidePaneMode === "ebook" || props.sidePaneMode === "compare") props.hideSidePane();
+  };
+  const navigateToEditor = () => {
+    if (!navigation.canNavigate || readingOverlayOpen) return;
+    // 編集へ戻るときは、レビュー面だけ閉じる（提案は保持。反映は利用者の操作）。
+    setProposalReviewHidden(true);
+    revealEditorRegion();
     requestAnimationFrame(() => props.editorPaneRef.current?.focus());
   };
+  /**
+   * 提案レビューを開く導線（07 P2）。**領域を開示してから**フォーカスする。
+   * 狭幅でプレビューや参照を表示していると本文領域が `display: none` になり、
+   * タブとDOMが存在しても「開けた」ことにならない。
+   */
+  const revealProposalReview = () => {
+    setProposalReviewHidden(false);
+    revealEditorRegion();
+  };
+  // 別窓からの「提案を見る」導線。領域を開示してからフォーカスする（07 P2）。
+  useLocalAssistReviewNavigation({ tabs: props.tabs, activeTab: props.activeTab,
+    blocked: readingOverlayOpen || !!props.selectedImage,
+    onSelectTab: props.onSelectTab, hostRef: proposalReviewRef,
+    onRevealRegion: revealProposalReview });
   const topChrome = <AppTopChrome {...props} primaryToolbarPresent={!props.lModeEnabled}
     onEditorSettingsChange={props.setEditorSettings} />;
 
@@ -212,6 +240,8 @@ export function AppShell(props: AppShellProps) {
         {...props}
         documentChrome={props.lModeEnabled ? null : topChrome}
         proposalReviewRef={proposalReviewRef}
+        proposalReviewVisible={proposalReviewVisible}
+        onReturnToEditing={() => setProposalReviewHidden(true)}
         onReadingOverlayChange={setReadingOverlayOpen}
         compactPreviewFocus={props.compactPreviewFocus}
         onCompactPreviewFocusChange={props.onCompactPreviewFocusChange}

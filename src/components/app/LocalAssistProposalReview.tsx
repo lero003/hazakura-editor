@@ -19,6 +19,8 @@ type LocalAssistProposalReviewProps = {
   blocked?: boolean;
   onApply: (proposal: LocalAssistProposal) => Promise<ApplyResult>;
   onDiscard: (proposal: LocalAssistProposal) => void;
+  /** 提案は残したまま、編集面へ戻る（07 P1）。 */
+  onReturnToEditing?: () => void;
 };
 
 function getProposalReviewCopy(lang: MenuLanguage) {
@@ -29,6 +31,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     applyLabel: "ふみに はんえい", discardLabel: "あんを すてる", originalLabel: "もとの ぶん", proposalLabel: "せいせい あん",
     diff: "ちがひ", after: "かえた あと", before: "もとの ぶん", views: "みかた", chars: "もじ", target: "たいしょう", turn: "かいめの あん",
     busy: "あんを つくっています。ふみは かわりません。", applying: "はんえいちゅう…", applied: "はんえいずみ",
+    backToEditing: "あんを のこして へんしゅうに もどる",
     appliedNotice: "ふみに はんえいしました（みほぞん）。⌘Zで もどせます。", removedLegend: "さくじょ", addedLegend: "ついか",
     stale: "たいしょうが かわりました。あらためて あんを つくってください。", unchanged: "もとの ぶんと おなじです。はんえいは いりません。",
     whitespace: "くうはく・かいぎょうだけの へんこうです。", unavailable: "ちがひの かわりに ぶんそのものを かくにんできます。",
@@ -42,6 +45,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     applyLabel: "文書へ反映", discardLabel: "案を破棄", originalLabel: "元の文章", proposalLabel: "生成案",
     diff: "差分", after: "変更後", before: "元の文章", views: "表示方法", chars: "文字", target: "対象", turn: "回目の提案",
     busy: "提案を生成しています。本文は変更されません。", applying: "反映中…", applied: "反映済み",
+    backToEditing: "案を残して編集に戻る",
     appliedNotice: "文書へ反映しました（未保存）。⌘Zで戻せます。", removedLegend: "削除", addedLegend: "追加",
     stale: "対象の文章が変わりました。対象を確認し、新しい提案を作ってください。", unchanged: "元の文章と同じです。反映する必要はありません。",
     whitespace: "空白・改行のみの変更です。", unavailable: "差分の代わりに「変更後」と「元の文章」で全文を確認できます。",
@@ -55,6 +59,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
     applyLabel: "Apply proposal", discardLabel: "Discard proposal", originalLabel: "Original", proposalLabel: "Proposal",
     diff: "Diff", after: "After", before: "Before", views: "Review view", chars: "characters", target: "Target", turn: "revision",
     busy: "Generating a proposal. The document is unchanged.", applying: "Applying…", applied: "Applied",
+    backToEditing: "Back to editing (keep proposal)",
     appliedNotice: "Applied to the document (unsaved). Use ⌘Z to undo.", removedLegend: "Removed", addedLegend: "Added",
     stale: "The target has changed. Check the target and create a new proposal.", unchanged: "This is identical to the original. No application is needed.",
     whitespace: "Only whitespace or line breaks have changed.", unavailable: "Review the complete text in After and Before instead of a line diff.",
@@ -63,7 +68,7 @@ function getProposalReviewCopy(lang: MenuLanguage) {
   };
 }
 
-export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, blocked = false, onApply, onDiscard }: LocalAssistProposalReviewProps) {
+export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, blocked = false, onApply, onDiscard, onReturnToEditing }: LocalAssistProposalReviewProps) {
   const copy = getProposalReviewCopy(menuLanguage);
   const { proposal } = useLocalAssistProposal(activeTab?.sessionId ?? null);
   const [mode, setMode] = useState<Mode>("diff");
@@ -180,6 +185,9 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, b
         <footer className="local-assist-proposal-review-footer">
           <p className="local-assist-proposal-review-notice">{copy.undo}</p>
           <div className="local-assist-proposal-review-actions">
+            {/* 提案は残したまま編集面へ戻る（07 P1）。破棄や反映とは別の操作。 */}
+            {onReturnToEditing ? <button type="button" className="local-assist-proposal-review-button"
+              onClick={onReturnToEditing}>{copy.backToEditing}</button> : null}
             <button type="button" className="local-assist-proposal-review-button" disabled={blocked || applying || wasApplied}
               onClick={handleDiscard}>{copy.discardLabel}</button>
             {/* 反映済みの案は反映ボタンを残さない（同じ案をもう一度「採用」させない）。 */}

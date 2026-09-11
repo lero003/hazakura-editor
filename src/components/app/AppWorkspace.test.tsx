@@ -19,6 +19,7 @@ import {
 } from "../../lib/locale";
 import type { EditorPaneHandle } from "../editor/EditorPane";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 import type { EditorSettings, EditorTab } from "../../types";
 import type {
   EditorViewState,
@@ -36,7 +37,9 @@ const editorMainPaneMock = vi.hoisted(() => ({
 vi.mock("../editor/EditorMainPane", () => ({
   EditorMainPane: (props: NonNullable<typeof editorMainPaneMock.props>) => {
     editorMainPaneMock.props = props;
-    return <div data-testid="editor-main-pane" />;
+    // 実コンポーネントと同じルート要素（`.editor-pane`）。07 P1 の inert は
+    // この要素に付くので、テストでも同じクラスで描く。
+    return <div className="pane editor-pane" data-testid="editor-main-pane" />;
   },
 }));
 
@@ -1873,5 +1876,70 @@ describe("proposal review placement (07)", () => {
     expect(proposalReviewMock.props?.onApply).toBe(onApply);
     expect(proposalReviewMock.props?.onDiscard).toBe(onDiscard);
     expect(proposalReviewMock.props?.activeTab).toMatchObject({ sessionId: "s1" });
+  });
+});
+
+describe("proposal review visibility (07 P1)", () => {
+  afterEach(() => {
+    proposalReviewMock.props = null;
+    localAssistProposalStore.clear("s-review");
+  });
+
+  it("hides the review and stops input reaching the covered editor, keeping the proposal", () => {
+    const tab = {
+      contents: "original",
+      id: "a",
+      name: "note.md",
+      path: "/workspace/note.md",
+      sessionId: "s-review",
+    } as EditorTab;
+    // 実際のストアに提案を入れる（面を閉じても提案は残ることを、モックではなく実データで確かめる）。
+    localAssistProposalStore.record("s-review", {
+      requestId: "req-1",
+      request: "短くして",
+      actionId: "rewrite_natural",
+      conversationId: "c1",
+      originalText: "original",
+      candidateText: "short",
+      target: {
+        kind: "document",
+        start: 0,
+        end: 8,
+        text: "original",
+        label: "",
+        activeDocumentPath: tab.path,
+        activeDocumentName: tab.name,
+        activeDocumentSessionId: tab.sessionId,
+        capturedAtMs: 0,
+      },
+      turnIndex: 0,
+    } as never);
+
+    const { container, rerender } = render(
+      <AppWorkspace
+        {...makeWorkspaceProps({
+          activeTab: tab,
+          proposalReviewVisible: true,
+        })}
+      />,
+    );
+
+    // 面が見えている間は、背後の本文を入力・フォーカスの対象から外す。
+    expect(container.querySelector("[data-testid='proposal-review']")).toBeTruthy();
+    expect(container.querySelector(".editor-pane")?.hasAttribute("inert")).toBe(true);
+
+    rerender(
+      <AppWorkspace
+        {...makeWorkspaceProps({
+          activeTab: tab,
+          proposalReviewVisible: false,
+        })}
+      />,
+    );
+
+    // 面は閉じるが、提案は消えていない（反映・破棄は利用者の操作）。
+    expect(container.querySelector("[data-testid='proposal-review']")).toBeNull();
+    expect(container.querySelector(".editor-pane")?.hasAttribute("inert")).toBe(false);
+    expect(localAssistProposalStore.getLatest("s-review")?.requestId).toBe("req-1");
   });
 });
