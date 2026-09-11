@@ -43,7 +43,10 @@ export function WorkspaceModeNavigation({ mode, canNavigate, documentName, conte
   const firstChoiceRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   // Only disclosure state is local. A different document/target set invalidates the choice.
-  const signature = JSON.stringify([contextKey, canNavigate, reviewTargets]);
+  // `canReview` も含める: 読書面へ入ると確認ボタンが無効になるので、開きっぱなしの
+  // 選択メニューが読書画面の上に残らないようにする（押しても何も起きない popup は
+  // 単なる UI 不整合。レビューでは P3 として指摘された）。
+  const signature = JSON.stringify([contextKey, canNavigate, canReview, reviewTargets]);
   const [openFor, setOpenFor] = useState<string | null>(null);
   const open = openFor === signature;
   useEffect(() => {

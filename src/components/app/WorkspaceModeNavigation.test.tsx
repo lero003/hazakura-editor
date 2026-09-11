@@ -81,4 +81,28 @@ describe("WorkspaceModeNavigation while reading", () => {
     fireEvent.click(read);
     expect(onRead).not.toHaveBeenCalled();
   });
+
+  it("closes the open target menu when the reading surface takes over", () => {
+    // 「確認（複数候補）を開く → 読む」の遷移で、選択メニューが開いたまま読書面の上に
+    // 残っていた（押しても何も起きない popup）。読書面へ入ると確認ボタンが無効になるので、
+    // 開いているメニューも一緒に閉じる。
+    const view = render(
+      <WorkspaceModeNavigation {...base} reviewTargets={["proposal", "disk"]} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "確認" }));
+    expect(screen.getByRole("group", { name: "確認する対象" })).toBeTruthy();
+
+    view.rerender(
+      <WorkspaceModeNavigation
+        {...base}
+        readingOpen
+        reviewTargets={["proposal", "disk"]}
+      />,
+    );
+
+    expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
+    expect(
+      (screen.getByRole("button", { name: "確認" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
 });
