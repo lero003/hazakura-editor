@@ -10,41 +10,39 @@
    Markdown and the editing surface is CodeMirror — only the
    rendering aspires to a custom writing-app feel. */
 
-/* --- 0. Paper-warm palette override ---
-   When L Mode is on, the writing surface and the floating
-   chrome share a paper-feel color scheme. Restrained warm
-   cream surfaces, dark ink text, warm sepia accent — the
-   shift is small in saturation but covers every visible
-   surface so the editor body reads as a sheet of paper
-   rather than a UI panel. The accent stays a single warm
-   tone (sepia) instead of going pink: the goal is
-   "quiet library paper," not "decorative." */
+/* --- 0. Neutral paper palette override ---
+   When L Mode is on, the writing surface keeps a fixed light
+   paper palette even under a dark menu theme ("a sheet of
+   paper", not a UI panel), but it is **neutral** now: the
+   cream/sepia set was dropped (実機フィードバック: 黄色くする
+   必要はもうない). Values match the mock's L Mode screen, which
+   uses the light theme's plain paper, ink and green accent. */
 :root[data-l-mode="on"] {
-  /* Surfaces — paper cream */
-  --bg: #faf6ee;
-  --surface: #fdfaf4;
-  --surface-rgb: 253, 250, 244;
-  --surface-strong: #fdfaf4;
-  --surface-strong-rgb: 253, 250, 244;
-  --surface-muted: #f0e8d8;
+  /* Surfaces — plain paper */
+  --bg: #fffefb;
+  --surface: #fffefb;
+  --surface-rgb: 255, 254, 251;
+  --surface-strong: #fffefb;
+  --surface-strong-rgb: 255, 254, 251;
+  --surface-muted: #f2f4ef;
 
-  /* Borders — warm */
-  --border: #e0d5bd;
-  --border-strong: #c8b89a;
+  /* Borders — neutral */
+  --border: #c7d2c5;
+  --border-strong: #a1b3a1;
 
-  /* Text — dark warm ink */
-  --text: #2a2218;
-  --text-muted: #6b5e4a;
+  /* Text — dark green ink */
+  --text: #24362d;
+  --text-muted: #606f64;
 
-  /* Accent — warm sepia */
-  --accent: #7d4a3a;
-  --accent-soft: #f0d8c8;
-  --accent-glass: rgba(125, 74, 58, 0.08);
-  --selection-bg: rgba(125, 74, 58, 0.15);
+  /* Accent — the usual green */
+  --accent: #356b50;
+  --accent-soft: #e1ecdf;
+  --accent-glass: rgba(53, 107, 80, 0.08);
+  --selection-bg: rgba(53, 107, 80, 0.15);
 
-  /* Scrollbar — warm tint */
-  --scrollbar-thumb: rgba(107, 94, 74, 0.25);
-  --scrollbar-thumb-hover: rgba(107, 94, 74, 0.4);
+  /* Scrollbar — neutral tint */
+  --scrollbar-thumb: rgba(36, 54, 45, 0.22);
+  --scrollbar-thumb-hover: rgba(36, 54, 45, 0.36);
 
   /* CodeMirror editor chrome — paper-warm values that match
      the L Mode palette above. The editor's EditorView.theme

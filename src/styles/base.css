@@ -1,43 +1,9 @@
 /* === base.css === */
-/* ── スクロールバー ── */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: var(--radius-sm);
-  border: 2px solid transparent;
-  background-clip: content-box;
-  transition: background 0.2s var(--ease-standard);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* エディタ内スクロールバー: v0.12 の常時表示に近いまま、
-   CodeMirror 6 の .cm-scroller だけ hit target を少し広げる。 */
-.cm-scroller::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-.cm-scroller::-webkit-scrollbar-thumb {
-  border: 4px solid transparent;
-  background-clip: content-box;
-}
-.cm-scroller::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-  border: 4px solid transparent;
-  background-clip: content-box;
-}
+/* ── スクロールバー ──
+   実機フィードバック: `::-webkit-scrollbar` を自前定義すると macOS の
+   オーバーレイ（スクロール中だけ出る）が無効になり、エディタ・ツリー・
+   プレビュー・ダイアログの全部に常時バーが出て「静か」でなくなる。
+   以後は OS 既定に任せる。細くしたい場合はここで width を指定しないこと。 */
 
 /* テキスト選択 */
 ::selection {

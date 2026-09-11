@@ -15,6 +15,8 @@ export type SafeEditorCopy = {
   openFolder: string;
   openWorkspaceFolder: string;
   restoreWorkspaceSidebar: string;
+  /** サイドバー下端の「フォルダ内を検索」（モック準拠）。 */
+  searchInFolder: string;
   resizeWorkspaceSidebar: string;
   resizeWorkspaceSidebarTitle: string;
   startHeading: string;
@@ -53,6 +55,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       openFolder: "ふぉるだをひらく",
       openWorkspaceFolder: "ところをひらく",
       restoreWorkspaceSidebar: "ところをもどす",
+      searchInFolder: "ふぉるだのなかをさがす",
       resizeWorkspaceSidebar: "ところとへんしゅうのはばをかへる",
       resizeWorkspaceSidebarTitle: "ひきて、ところとへんしゅうのはばをかへます",
       startHeading: "しづかにかきはじめる",
@@ -88,6 +91,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openFolder: "フォルダを開く",
         openWorkspaceFolder: "ワークスペースフォルダを開く",
         restoreWorkspaceSidebar: "ワークスペースサイドバーを戻す",
+        searchInFolder: "フォルダ内を検索",
         resizeWorkspaceSidebar: "ワークスペースと編集領域の幅を変更",
         resizeWorkspaceSidebarTitle:
           "ドラッグしてワークスペースと編集領域の幅を変更します",
@@ -121,6 +125,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openFolder: "Open Folder",
         openWorkspaceFolder: "Open workspace folder",
         restoreWorkspaceSidebar: "Restore workspace sidebar",
+        searchInFolder: "Search in folder",
         resizeWorkspaceSidebar: "Resize workspace and editor columns",
         resizeWorkspaceSidebarTitle:
           "Drag to resize the workspace and editor columns",

@@ -228,6 +228,8 @@ type AppWorkspaceProps = {
   onMoveToTrash: (path: string, name: string, isDirectory: boolean) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
   onWorkspaceSidebarCollapsedChange?: (collapsed: boolean) => void;
+  /** サイドバー下端の「フォルダ内を検索」。 */
+  onOpenGlobalSearch?: () => void;
   requestRename: (path: string) => void;
   renamingPath: string | null;
   restoreComplete: boolean;
@@ -378,6 +380,7 @@ export function AppWorkspace({
   onMoveToTrash,
   onSubmitRename,
   onWorkspaceSidebarCollapsedChange,
+  onOpenGlobalSearch,
   requestRename,
   renamingPath,
   restoreComplete,
@@ -785,6 +788,7 @@ export function AppWorkspace({
           dirtyFilePaths={workspaceTabMarkers.dirtyFilePaths}
           fileOpsCopy={fileOpsCopy}
           menuLanguage={menuLanguage}
+          onOpenGlobalSearch={onOpenGlobalSearch}
           onCommitBookScope={commitBookScopeNodes}
           onCancelBookScopeSuggestion={cancelBookScopeSuggestion}
           onCreateBookScopeSuggestion={createBookScopeSuggestion}

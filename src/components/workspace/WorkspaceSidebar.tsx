@@ -24,6 +24,7 @@ import {
   OpenFolderIcon,
   PanelLeftCloseIcon,
   PlusIcon,
+  SearchIcon,
   TrashIcon,
 } from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
@@ -73,6 +74,8 @@ type WorkspaceSidebarProps = {
   onOpenRootContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
+  /** フォルダ内を検索（モックのサイドバー下端）。 */
+  onOpenGlobalSearch?: () => void;
   onReadBookScope?: () => void;
   onReviewChapterChanges?: (path: string) => void;
   onRevalidateBookScope?: () => void;
@@ -120,6 +123,7 @@ export function WorkspaceSidebar({
   onOpenRootContextMenu,
   onOpenFile,
   onOpenWorkspace,
+  onOpenGlobalSearch,
   onReadBookScope,
   onReviewChapterChanges = () => {},
   onRevalidateBookScope = () => {},
@@ -450,6 +454,18 @@ export function WorkspaceSidebar({
       )}
       {workspaceTree && sidebarView === "files" ? (
         <div className="workspace-footer">
+          {/* 実機フィードバック: ゴミ箱だけだと何ができる場所か分かりにくい。
+              モックのサイドバー下端に合わせて「フォルダ内を検索」を並べる。 */}
+          {onOpenGlobalSearch ? (
+            <button
+              className="workspace-search-button"
+              onClick={onOpenGlobalSearch}
+              type="button"
+            >
+              <SearchIcon />
+              <span>{copy.searchInFolder}</span>
+            </button>
+          ) : null}
           <button
             aria-label={trashLabel}
             className="workspace-trash-button"

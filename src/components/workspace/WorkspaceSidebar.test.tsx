@@ -27,10 +27,12 @@ afterEach(cleanup);
 function renderSidebar(options: {
   activePath?: string | null;
   onMoveToTrash?: (path: string, name: string, isDirectory: boolean) => void;
+  onOpenGlobalSearch?: () => void;
   workspaceRootPath?: string | null;
   workspaceTree?: WorkspaceTreeEntry | null;
 } = {}) {
   const onMoveToTrash = options.onMoveToTrash ?? vi.fn();
+  const onOpenGlobalSearch = options.onOpenGlobalSearch ?? vi.fn();
   const result = render(
     <WorkspaceSidebar
       activePath={options.activePath ?? null}
@@ -52,6 +54,7 @@ function renderSidebar(options: {
       onOpenContextMenu={vi.fn()}
       onOpenFile={vi.fn()}
       onOpenRootContextMenu={vi.fn()}
+      onOpenGlobalSearch={onOpenGlobalSearch}
       onOpenWorkspace={vi.fn()}
       onSelectCompareFile={vi.fn()}
       onSubmitRename={vi.fn()}
@@ -62,10 +65,22 @@ function renderSidebar(options: {
       workspaceTree={options.workspaceTree === undefined ? workspaceTree : options.workspaceTree}
     />,
   );
-  return { ...result, onMoveToTrash };
+  return { ...result, onMoveToTrash, onOpenGlobalSearch };
 }
 
 describe("WorkspaceSidebar Theme A clarity", () => {
+  it("puts Search in folder next to Trash in the footer", () => {
+    // 実機フィードバック: ゴミ箱だけでは何ができる場所か分からない。モックの
+    // サイドバー下端に合わせて「フォルダ内を検索」を並べる。
+    const onOpenGlobalSearch = vi.fn();
+    renderSidebar({ onOpenGlobalSearch });
+    const search = screen.getByRole("button", {
+      name: "Search in folder",
+    });
+    fireEvent.click(search);
+    expect(onOpenGlobalSearch).toHaveBeenCalledOnce();
+  });
+
   it("names the exact active-file Trash target and keeps no-active copy honest", () => {
     const onMoveToTrash =
       vi.fn<(path: string, name: string, isDirectory: boolean) => void>();
