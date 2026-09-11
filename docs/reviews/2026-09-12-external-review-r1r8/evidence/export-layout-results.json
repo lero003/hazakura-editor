@@ -1,0 +1,262 @@
+[
+  {
+    "nameLength": 7,
+    "nameUTF8Bytes": 7,
+    "viewport": [
+      960,
+      640
+    ],
+    "rootFontSize": 16,
+    "dialog": {
+      "top": 28.40625,
+      "bottom": 611.59375,
+      "height": 583.1875,
+      "clientHeight": 581,
+      "scrollHeight": 581
+    },
+    "header": {
+      "top": 29.40625,
+      "bottom": 109.40625,
+      "height": 80,
+      "clientHeight": 79,
+      "scrollHeight": 79
+    },
+    "nav": {
+      "top": 109.40625,
+      "bottom": 153.40625,
+      "height": 44,
+      "clientHeight": 43,
+      "scrollHeight": 44
+    },
+    "body": {
+      "top": 153.40625,
+      "bottom": 529.40625,
+      "height": 376,
+      "clientHeight": 376,
+      "scrollHeight": 376
+    },
+    "footer": {
+      "top": 529.40625,
+      "bottom": 610.59375,
+      "height": 81.1875,
+      "clientHeight": 80,
+      "scrollHeight": 80
+    },
+    "cancel": {
+      "top": 579.59375,
+      "bottom": 600.59375,
+      "height": 21,
+      "clientHeight": 17,
+      "scrollHeight": 17
+    },
+    "overflow": 0
+  },
+  {
+    "nameLength": 243,
+    "nameUTF8Bytes": 243,
+    "viewport": [
+      960,
+      640
+    ],
+    "rootFontSize": 16,
+    "dialog": {
+      "top": 16,
+      "bottom": 624,
+      "height": 608,
+      "clientHeight": 606,
+      "scrollHeight": 686
+    },
+    "header": {
+      "top": 17,
+      "bottom": 202,
+      "height": 185,
+      "clientHeight": 184,
+      "scrollHeight": 184
+    },
+    "nav": {
+      "top": 202,
+      "bottom": 246,
+      "height": 44,
+      "clientHeight": 43,
+      "scrollHeight": 44
+    },
+    "body": {
+      "top": 246,
+      "bottom": 622,
+      "height": 376,
+      "clientHeight": 376,
+      "scrollHeight": 376
+    },
+    "footer": {
+      "top": 622,
+      "bottom": 703.1875,
+      "height": 81.1875,
+      "clientHeight": 80,
+      "scrollHeight": 80
+    },
+    "cancel": {
+      "top": 672.1875,
+      "bottom": 693.1875,
+      "height": 21,
+      "clientHeight": 17,
+      "scrollHeight": 17
+    },
+    "overflow": 69.1875
+  },
+  {
+    "nameLength": 83,
+    "nameUTF8Bytes": 243,
+    "viewport": [
+      960,
+      640
+    ],
+    "rootFontSize": 16,
+    "dialog": {
+      "top": 17.90625,
+      "bottom": 622.09375,
+      "height": 604.1875,
+      "clientHeight": 602,
+      "scrollHeight": 602
+    },
+    "header": {
+      "top": 18.90625,
+      "bottom": 119.90625,
+      "height": 101,
+      "clientHeight": 100,
+      "scrollHeight": 100
+    },
+    "nav": {
+      "top": 119.90625,
+      "bottom": 163.90625,
+      "height": 44,
+      "clientHeight": 43,
+      "scrollHeight": 44
+    },
+    "body": {
+      "top": 163.90625,
+      "bottom": 539.90625,
+      "height": 376,
+      "clientHeight": 376,
+      "scrollHeight": 376
+    },
+    "footer": {
+      "top": 539.90625,
+      "bottom": 621.09375,
+      "height": 81.1875,
+      "clientHeight": 80,
+      "scrollHeight": 80
+    },
+    "cancel": {
+      "top": 590.09375,
+      "bottom": 611.09375,
+      "height": 21,
+      "clientHeight": 17,
+      "scrollHeight": 17
+    },
+    "overflow": 0
+  },
+  {
+    "nameLength": 243,
+    "nameUTF8Bytes": 243,
+    "viewport": [
+      960,
+      640
+    ],
+    "rootFontSize": 32,
+    "dialog": {
+      "top": 16,
+      "bottom": 624,
+      "height": 608,
+      "clientHeight": 606,
+      "scrollHeight": 744
+    },
+    "header": {
+      "top": 17,
+      "bottom": 202,
+      "height": 185,
+      "clientHeight": 184,
+      "scrollHeight": 184
+    },
+    "nav": {
+      "top": 202,
+      "bottom": 246,
+      "height": 44,
+      "clientHeight": 43,
+      "scrollHeight": 44
+    },
+    "body": {
+      "top": 246,
+      "bottom": 622,
+      "height": 376,
+      "clientHeight": 376,
+      "scrollHeight": 376
+    },
+    "footer": {
+      "top": 622,
+      "bottom": 760.78125,
+      "height": 138.78125,
+      "clientHeight": 138,
+      "scrollHeight": 138
+    },
+    "cancel": {
+      "top": 729.78125,
+      "bottom": 750.78125,
+      "height": 21,
+      "clientHeight": 17,
+      "scrollHeight": 17
+    },
+    "overflow": 126.78125
+  },
+  {
+    "nameLength": 7,
+    "nameUTF8Bytes": 7,
+    "viewport": [
+      480,
+      320
+    ],
+    "rootFontSize": 16,
+    "dialog": {
+      "top": 16,
+      "bottom": 304,
+      "height": 288,
+      "clientHeight": 286,
+      "scrollHeight": 288
+    },
+    "header": {
+      "top": 17,
+      "bottom": 97,
+      "height": 80,
+      "clientHeight": 79,
+      "scrollHeight": 79
+    },
+    "nav": {
+      "top": 97,
+      "bottom": 141,
+      "height": 44,
+      "clientHeight": 43,
+      "scrollHeight": 44
+    },
+    "body": {
+      "top": 141,
+      "bottom": 223.8125,
+      "height": 82.8125,
+      "clientHeight": 83,
+      "scrollHeight": 266
+    },
+    "footer": {
+      "top": 223.8125,
+      "bottom": 305,
+      "height": 81.1875,
+      "clientHeight": 80,
+      "scrollHeight": 80
+    },
+    "cancel": {
+      "top": 274,
+      "bottom": 295,
+      "height": 21,
+      "clientHeight": 17,
+      "scrollHeight": 17
+    },
+    "overflow": 0
+  }
+]

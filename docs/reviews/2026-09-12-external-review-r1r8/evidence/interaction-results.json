@@ -1,0 +1,26 @@
+{
+  "method": "extracted DOM handler/controlled-input logic; not React/native tests",
+  "reader_cancel_arrow_right": {
+    "pageTurns": 1,
+    "focused": "reader",
+    "modalFocusRetained": false
+  },
+  "reader_input_control": {
+    "pageTurns": 1,
+    "focused": "field"
+  },
+  "font_select_all_then_type_20": {
+    "value": "22",
+    "changes": [
+      {
+        "raw": "2",
+        "applied": 12
+      },
+      {
+        "raw": "120",
+        "applied": 22
+      }
+    ]
+  },
+  "font_whole_value_control": "20"
+}

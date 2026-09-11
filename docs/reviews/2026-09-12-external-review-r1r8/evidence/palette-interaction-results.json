@@ -1,0 +1,22 @@
+{
+  "method": "source-extracted DOM activation/focus routes; no React app/native execution",
+  "input_enter_control": {
+    "runs": [
+      "option0"
+    ],
+    "focused": "query"
+  },
+  "tab_then_enter_space_on_option": {
+    "runs": [],
+    "focused": "option0"
+  },
+  "tab_leaves_dialog": {
+    "focused": "underlying",
+    "insideDialog": false
+  },
+  "right_pointer_down_runs_command": {
+    "runs": [
+      "option0"
+    ]
+  }
+}

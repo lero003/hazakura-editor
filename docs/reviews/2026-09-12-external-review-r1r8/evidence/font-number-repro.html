@@ -1,0 +1,7 @@
+<meta charset="utf-8"><title>Extracted FontSizeControl input clamp</title><input id="size" type="number" min="12" max="22" step="1" value="14"><pre id="events"></pre><script>
+window.changes=[];document.getElementById('size').addEventListener('input',event=>{
+ const raw=event.currentTarget.value;
+ const value=Number(raw);const applied=Number.isFinite(value)?Math.min(Math.max(Math.trunc(value),12),22):14;
+ window.changes.push({raw,applied});event.currentTarget.value=applied;
+ document.getElementById('events').textContent=JSON.stringify(window.changes,null,2);
+});</script>

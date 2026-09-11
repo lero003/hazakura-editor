@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>Extracted palette activation and focus routes</title>
+<div role="dialog" aria-modal="true" id="palette"><input id="query" role="combobox" aria-controls="options" aria-expanded="true" aria-activedescendant="option0"><div id="options" role="listbox"><button id="option0" role="option" aria-selected="true" type="button">First command</button><button id="option1" role="option" aria-selected="false" type="button">Second command</button></div></div><button id="underlying">Underlying application button</button>
+<script>
+window.runs=[];
+const run=id=>window.runs.push(id);
+document.getElementById('query').addEventListener('keydown',event=>{
+ if(event.isComposing || event.keyCode===229)return;
+ if(event.key==='Enter'){event.preventDefault();run('option0');}
+});
+for(const button of document.querySelectorAll('[role=option]')) {
+ button.addEventListener('pointerdown',()=>run(button.id));
+}
+</script>
