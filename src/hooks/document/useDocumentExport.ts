@@ -171,12 +171,30 @@ export function useDocumentExport({
   type ExportAttempt = { format: ExportFormat; phase: "preflight" | "modal" };
   const exportAttemptRef = useRef<ExportAttempt | null>(null);
   useEffect(() => () => { exportAttemptRef.current = null; }, []);
-  const beginExport = useCallback((format: ExportFormat) => {
-    if (exportAttemptRef.current?.phase === "modal") return null;
-    const attempt: ExportAttempt = { format, phase: "preflight" };
-    exportAttemptRef.current = attempt;
-    return attempt;
-  }, []);
+  /**
+   * 書き出しの試行を始める。
+   *
+   * 通常は「開いているダイアログ（modal 相）があるなら始めない」。
+   * `replaceOpen: true` は形式切替のときだけ渡され、開いている枠を置き換えることを許す
+   * （外部レビュー R6: 準備の間ダイアログが消えるのを避け、切替を同じ tick の入れ替えにする）。
+   */
+  /**
+   * 形式切替のときだけ渡す口（外部レビュー R6）。
+   * `cancelPrevious` は「直前に開いていた形式のダイアログを閉じる」関数で、
+   * 新しい要求を state に載せるのと同じ tick で呼ぶために使う。
+   */
+  type ExportCancelOptions = { cancelPrevious?: () => void };
+
+  const beginExport = useCallback(
+    (format: ExportFormat, options?: { replaceOpen?: boolean }) => {
+      const current = exportAttemptRef.current;
+      if (current?.phase === "modal" && !options?.replaceOpen) return null;
+      const attempt: ExportAttempt = { format, phase: "preflight" };
+      exportAttemptRef.current = attempt;
+      return attempt;
+    },
+    [],
+  );
   const consumeExport = useCallback((format: ExportFormat) => {
     const attempt = exportAttemptRef.current;
     if (attempt?.format !== format || attempt.phase !== "modal") return false;
@@ -191,14 +209,17 @@ export function useDocumentExport({
     htmlExportRequestRef.current = null;
     setHtmlExportRequest(null);
   }, [consumeExport]);
-  const exportHtml = useCallback(async () => {
+  const exportHtml = useCallback(async (options?: ExportCancelOptions) => {
     const tab = activeTabRef.current;
     if (!tab) { setStatus("No active document to export"); return; }
-    const attempt = beginExport("html");
+    const attempt = beginExport("html", { replaceOpen: Boolean(options?.cancelPrevious) });
     if (!attempt) return;
     attempt.phase = "modal";
     const request = { documentName: tab.name, hasUnsavedChanges: isDirty(tab), tabId: tab.id,
       sessionId: tab.sessionId, workspaceRootPath };
+    // 形式切替で来たときは、直前の枠を**ここで**閉じる。同じ tick で新しい要求を載せるので、
+    // 枠が消えるフレームが無い（外部レビュー R6）。
+    options?.cancelPrevious?.();
     htmlExportRequestRef.current = request;
     setHtmlExportRequest(request);
   }, [beginExport, setStatus, workspaceRootPath]);
@@ -264,7 +285,7 @@ export function useDocumentExport({
     return { book, document };
   }, [createExportImageLoaders, workspaceRootPath]);
 
-  const exportPdf = useCallback(async () => {
+  const exportPdf = useCallback(async (options?: ExportCancelOptions) => {
     // Match HTML / EPUB: an open tab may be empty (pathless draft or blank
     // file). Only a missing active tab is "no document".
     if (!activeTab || activeContents === undefined) {
@@ -272,7 +293,7 @@ export function useDocumentExport({
       return;
     }
 
-    const attempt = beginExport("pdf");
+    const attempt = beginExport("pdf", { replaceOpen: Boolean(options?.cancelPrevious) });
     if (!attempt) return;
     const root = workspaceRootRef.current;
     let preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
@@ -293,6 +314,8 @@ export function useDocumentExport({
       return;
     }
     attempt.phase = "modal";
+    // 形式切替で来たときは、直前の枠をここで閉じる（外部レビュー R6）。
+    options?.cancelPrevious?.();
     setPdfExportRequest({
       bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
@@ -972,13 +995,13 @@ ${bodyHtml}
     workspaceRootPath,
   ]);
 
-  const exportEpubBeta = useCallback(async () => {
+  const exportEpubBeta = useCallback(async (options?: ExportCancelOptions) => {
     if (!activeTab || activeContents === undefined) {
       setStatus("No active document to export");
       return;
     }
 
-    const attempt = beginExport("epub");
+    const attempt = beginExport("epub", { replaceOpen: Boolean(options?.cancelPrevious) });
     if (!attempt) return;
     const root = workspaceRootRef.current;
     let preflightByScope: Record<DocumentExportScope, ExportPreflightResult>;
@@ -999,6 +1022,8 @@ ${bodyHtml}
       return;
     }
     attempt.phase = "modal";
+    // 形式切替で来たときは、直前の枠をここで閉じる（外部レビュー R6）。
+    options?.cancelPrevious?.();
     setEpubExportRequest({
       bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
       bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),

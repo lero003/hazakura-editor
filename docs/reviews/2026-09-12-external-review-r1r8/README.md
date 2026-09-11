@@ -56,10 +56,10 @@ Authority: High（R1〜R8 の内容は原典 `review-2438ef1f.md` が正）
 | R8 Local Assist の状態表示 | **修正済み** | composer の直前に1行（`role=status`）で理由＋要件を常時表示し、無効な入力欄と `aria-describedby` で結ぶ。詳細（但し書き・利用条件）は畳んだヘルプのまま。実機fixture（`2026-09-09-v3-ui-c1`）で `noteText`/`describedBy`/help 折りたたみを実測。画像 `r8-assist-unavailable.png` |
 | R3 書き出しEscapeの草稿 | **修正済み** | 草稿の所有者を controller へ上げ、**利用者のキャンセル（ボタン・Escape）と確定が同じ終了口**を通るようにした。形式切替の内部キャンセルは素の cancel のまま（切替は操作の途中）。実機fixture実測: 書名を「テスト書名」→Escape→開き直し→**初期値に戻る**。EPUBで「セッション書名」→PDF→EPUBに戻ると**保たれる**→キャンセル→開き直しで初期値 |
 | R1 読書面のキー奪取 | **修正済み** | ページ送りの所有権を純関数（`features/editor/readerKeyboardOwnership.ts`）へ切り出し、**モーダル中・自分のキーを持つ面（`role="separator"` のペイン境界）・非表示/inert の下**では処理しないようにした。フォーカスを戻すのは**所有権の判定を通ったあとだけ**にした。実機fixtureで原典の再現手順（読書面→書き出し→キャンセルにフォーカス→ArrowRight×2）を実行: **Page 1/6 のまま・フォーカスも奪われない**。既存の意図（本文にフォーカスが残っていてもページ送りする）は維持 |
-| R5 パレットの activation | 未着手 | パッケージ2（R1 と一緒に。確定を `onClick` へ寄せる） |
-| R6 形式切替の枠維持 | **一部実測・要判断** | 実機fixture（fixture の prepare は即時）で切替中の DOM を rAF サンプリング: `EPUB → PDF` が **10ms（1フレーム）で入れ替わり、枠が消えた区間は 0 件**。原典も「速い処理では目立たない可能性」と留保している。**遅い prepare（本構成の章読込・画像確認）での再現は未計測** → 次段で prepare を遅延させて測る。外枠を1つ維持する実装（activeFormat だけ切替）は3ダイアログの分割を伴うため、計測結果を見てから着手する |
+| R5 パレットの activation | **修正済み** | 結果を `onClick` でも受ける（`detail === 0` のときだけ実行＝Enter/Space のボタン既定動作。pointerdown と二重実行しない）。`onPointerDown` は**主ボタンだけ**にし、右クリックでは実行も閉じもしない。パレットと Quick Open の**自身の focus trap** を `trapFocusInElement` で接続（GlobalSearch は既に持っていた）。実機fixtureで ⌘⇧P → 「r」→ Tab で結果へ → **Enter でコマンド実行・パレットが閉じる**を確認（従来は無反応）。※CDP の keyDown/keyUp だけではボタンの既定動作が出ないため `rawKeyDown` + `char` で計測 |
+| R6 形式切替の枠維持 | **修正済み** | 原因は切替の順序が「**いまのダイアログを閉じてから**次の準備を呼ぶ」（`exportFormatSwitchPlan` + cancel → start）だったこと。準備（本スコープでは章・画像の読み込み）が終わるまで枠が存在しなかった。→ 順序を反転し、**枠は閉じずに準備させ、新しい要求を state に載せるのと同じ tick で直前の形式を閉じる**（`beginExport` に切替専用の `replaceOpen`、書き出し関数に `cancelPrevious`）。実機fixtureの rAF サンプリング **401フレームで枠が消えたフレーム 0**、高さ 781・位置 35 が全フレーム一定（EPUB→PDF→HTML→EPUB の3回）。フックのテストでは**本スコープの準備を未解決のまま保留**しても直前の枠が残り、解決時に同一 tick で入れ替わることを固定 |
 
-検証（この時点）: typecheck ✓ / 全Vitest **278ファイル・2,439件** ✓ / App Store面 **123件** ✓。
+検証（この時点）: typecheck ✓ / 全Vitest **279ファイル・2,450件** ✓ / Vite build ✓（要再実行）。
 レビュー側の再現物は `evidence/`（最小再現であって実アプリの証跡ではない。混同しない）。
 
 ## 進め方（パッケージ分割・原典の提案に沿う）

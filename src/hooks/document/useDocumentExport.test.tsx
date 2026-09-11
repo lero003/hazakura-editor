@@ -154,6 +154,48 @@ describe("useDocumentExport", () => {
     expect(format === "html" ? result.current.htmlExportRequest : format === "pdf" ? result.current.pdfExportRequest : result.current.epubExportRequest).not.toBeNull();
   });
 
+  it("keeps the open dialog while the next format prepares, then swaps in one step (R6)", async () => {
+    // 外部レビュー R6: 形式切替は「いまのダイアログを閉じてから次の準備を呼ぶ」だったため、
+    // 準備（本スコープの章・画像の読み込み）の間はダイアログの枠が消えていた。
+    let resolve!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => result.current.exportHtml());
+    expect(result.current.htmlExportRequest).not.toBeNull();
+
+    // 形式ナビで EPUB を選ぶ: 直前の HTML の枠は開いたまま、EPUB の準備が走る。
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.exportEpubBeta({
+        cancelPrevious: result.current.cancelHtmlExport,
+      }) as Promise<void>;
+    });
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    expect(result.current.epubExportRequest).toBeNull();
+
+    // 準備が終わった瞬間に、同じ act（＝同じ tick）で入れ替わる。
+    await act(async () => { resolve(makeTab({ path: "/workspace/book.md" })); await pending; });
+    expect(result.current.epubExportRequest).not.toBeNull();
+    expect(result.current.htmlExportRequest).toBeNull();
+  });
+
+  it("does not replace an open dialog without the switch option (R6)", async () => {
+    // 切替の口を通らない書き出しは、今までどおり「開いているダイアログがあるなら始めない」。
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => result.current.exportHtml());
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    await act(async () => result.current.exportHtml());
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    expect(result.current.pdfExportRequest).toBeNull();
+  });
+
   it("requires explicit HTML confirmation and consumes cancelled requests", async () => {
     const { result } = renderHook(() => useDocumentExport({
       activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,

@@ -41,7 +41,15 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
   自分のキーを持つ面（ペイン境界の `role="separator"`）・非表示/inert の下**では処理しない。
   フォーカスを読書面へ戻すのは所有権の判定を通ったあとだけにした（ダイアログ操作中は奪わない）。
   実機fixtureで原典の再現手順を実行し、ArrowRight×2 で **Page 1/6 のまま**を確認。
-- 残り: R5（パレット/Quick Open の activation）と R6 の遅い経路の計測。
+- **R5 パレット/Quick Open（P2）**: 結果の実行を `onClick`（キーボード由来の `detail === 0`
+  だけ）でも受け、`onPointerDown` は主ボタンだけにした（右クリックで実行・閉じをしない）。
+  パレットと Quick Open に `trapFocusInElement` で自身の Tab trap を接続。
+- **R6 形式切替の枠（P2）**: 切替が「閉じてから次の準備」だった順序を反転し、**枠は閉じずに
+  準備させ、新しい要求を載せるのと同じ tick で入れ替える**（`beginExport` の切替専用
+  `replaceOpen` と、書き出し関数の `cancelPrevious`）。実機fixtureの401フレームで
+  枠が消えたフレーム **0**、高さ・位置も全フレーム一定。本スコープの準備を保留した状態でも
+  直前の枠が残ることをフックのテストで固定。
+- 残り: 実機受入（WKWebView / VoiceOver / 日本語IME / WebGL）と、差分の行内ハイライト（`del`/`ins`）。
 
 検証: typecheck / 全Vitest **278ファイル・2,439件** / App Store面 **123件**。
 

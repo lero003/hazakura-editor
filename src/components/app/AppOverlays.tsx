@@ -174,9 +174,9 @@ type AppOverlaysProps = {
   onCancelEpubBetaExport: () => void;
   onCancelPdfExport: () => void;
   /** 書き出しの準備（各形式の既存の入口。形式ナビの切替もここを呼ぶ）。 */
-  exportEpubBeta: () => void | Promise<void>;
-  exportHtml: () => void | Promise<void>;
-  exportPdf: () => void | Promise<void>;
+  exportEpubBeta: (options?: { cancelPrevious?: () => void }) => void | Promise<void>;
+  exportHtml: (options?: { cancelPrevious?: () => void }) => void | Promise<void>;
+  exportPdf: (options?: { cancelPrevious?: () => void }) => void | Promise<void>;
   onConfirmEpubBetaExport: (
     settings: EpubExportSettings,
     scope?: DocumentExportScope,
@@ -424,12 +424,17 @@ export function AppOverlays({
         // 「閉じてから、選ばれた形式の既存の準備を呼ぶ」だけ（判断は純関数）。
         const plan = exportFormatSwitchPlan(current, next);
         if (!plan) return;
-        if (plan.cancel === "epub") onCancelEpubBetaExport();
-        else if (plan.cancel === "pdf") onCancelPdfExport();
-        else onCancelHtmlExport?.();
-        if (plan.start === "epub") void exportEpubBeta();
-        else if (plan.start === "pdf") void exportPdf();
-        else void exportHtml();
+        // いまの枠はここでは閉じない。選んだ形式の準備ができた時点で、新しい要求を載せるのと
+        // 同じ tick で入れ替える（外部レビュー R6: 準備の間ダイアログの枠が消えていた）。
+        const cancelPrevious =
+          plan.cancel === "epub"
+            ? onCancelEpubBetaExport
+            : plan.cancel === "pdf"
+              ? onCancelPdfExport
+              : onCancelHtmlExport;
+        if (plan.start === "epub") void exportEpubBeta({ cancelPrevious });
+        else if (plan.start === "pdf") void exportPdf({ cancelPrevious });
+        else void exportHtml({ cancelPrevious });
       }}
     />
   );
