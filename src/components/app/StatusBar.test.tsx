@@ -27,7 +27,8 @@ const activeTab: EditorTab = {
 };
 
 const labels = {
-  encodingAriaLabel: "Encoding",
+  encodingActionLabel: "Encoding actions",
+  encodingActionPlaceholder: "Choose an action",
   encodingChipTitle: "Encoding chip",
   encodingLabel: "Encoding",
   encodingReopenBlocked: "Save or discard unsaved changes first",
@@ -64,11 +65,15 @@ describe("StatusBar", () => {
     // 1チップに2群（読み直す / 保存時に使う）を入れ、操作を value の接頭辞で分ける。
     const group = container.querySelector(".status-bar-format-group");
     expect(group?.querySelectorAll(".status-bar-format-chip")).toHaveLength(2);
-    const encodingSelect = screen.getByRole("combobox", { name: "Encoding" });
+    const encodingSelect = screen.getByRole("combobox", {
+      name: "Encoding actions",
+    }) as HTMLSelectElement;
     const optionValues = Array.from(encodingSelect.querySelectorAll("option")).map(
       (option) => option.value,
     );
+    // 先頭は中立（まだ何も選んでいない）。そのあとに読み直す群 → 保存する群の順。
     expect(optionValues).toEqual([
+      "",
       "reopen:utf-8",
       "reopen:utf-8-bom",
       "reopen:shift-jis",
@@ -79,12 +84,21 @@ describe("StatusBar", () => {
       "save:euc-jp",
     ]);
 
+    // この select は「これから行う操作」を選ぶ面なので、**selected は常に中立**。
+    // 以前は selected を `save:<現在の文字コード>` にしていたため、ネイティブの select や
+    // キーボード/VoiceOver では「保存する文字コードを変える」が選択中に見え、
+    // 安全側（読み直す）を先頭に置いた狙いが実質的に弱まっていた。
+    expect(encodingSelect.value).toBe("");
+
     fireEvent.change(encodingSelect, { target: { value: "reopen:euc-jp" } });
     expect(reopen).toHaveBeenCalledWith("euc-jp");
     expect(convert).not.toHaveBeenCalled();
+    // 操作のあとは中立へ戻る（直前に選んだ操作が選択中として残らない）。
+    expect(encodingSelect.value).toBe("");
 
     fireEvent.change(encodingSelect, { target: { value: "save:shift-jis" } });
     expect(convert).toHaveBeenCalledWith("shift-jis");
+    expect(encodingSelect.value).toBe("");
   });
 
   it("blocks the re-read group while the buffer has unsaved edits", () => {
@@ -111,9 +125,13 @@ describe("StatusBar", () => {
       />,
     );
 
-    const encodingSelect = screen.getByRole("combobox", { name: "Encoding" });
+    const encodingSelect = screen.getByRole("combobox", {
+      name: "Encoding actions",
+    }) as HTMLSelectElement;
     expect(encodingSelect.querySelectorAll('option[value^="reopen:"]')).toHaveLength(0);
     expect(encodingSelect.querySelectorAll('option[value^="save:"]')).toHaveLength(4);
+    // パスが無いときは読み直す群そのものが無い＝中立＋保存する群だけ。
+    expect(encodingSelect.value).toBe("");
   });
 
   it("keeps detail and format controls in the same trailing row", () => {

@@ -13,7 +13,13 @@ export type EditorChromeCopy = {
   encodingReopenGroup: string;
   /** 1チップ内の第2群: 次に保存するときの文字コードを変える。 */
   encodingSaveGroup: string;
-  encodings: string;
+  /**
+   * 文字コードチップの select は**これから行う操作**を選ぶ面（アクション選択）で、
+   * 現在値はチップの表示が示す。ここはその select の aria-label。
+   */
+  encodingActionLabel: string;
+  /** まだ操作を選んでいない中立の表示（selected は常にこれ）。 */
+  encodingActionPlaceholder: string;
   find: string;
   findInActiveFile: string;
   findOptions: string;
@@ -48,7 +54,8 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       encodingReopenBlocked: "よみなほすには、さきに ほぞんするか、すててください。",
       encodingReopenGroup: "この かきかたで よみなほす",
       encodingSaveGroup: "ほぞんする かきかたを かへる",
-      encodings: "ふみのかきかた",
+      encodingActionLabel: "もじこーどの そうさ",
+      encodingActionPlaceholder: "そうさを えらぶ",
       find: "さがす",
       findInActiveFile: "いまのふみをさがす",
       findOptions: "さがしのおこのみ",
@@ -83,7 +90,8 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         encodingReopenBlocked: "読み直すには、未保存の編集を保存するか、破棄してください。",
         encodingReopenGroup: "この文字コードで読み直す",
         encodingSaveGroup: "保存する文字コードを変える",
-        encodings: "文字コード",
+        encodingActionLabel: "文字コードの操作",
+        encodingActionPlaceholder: "操作を選ぶ",
         find: "検索",
         findInActiveFile: "アクティブファイル内を検索",
         findOptions: "検索オプション",
@@ -115,7 +123,8 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         encodingReopenBlocked: "Save or discard unsaved changes before re-reading the file.",
         encodingReopenGroup: "Re-read the file as",
         encodingSaveGroup: "Use when saving",
-        encodings: "Encoding",
+        encodingActionLabel: "Encoding actions",
+        encodingActionPlaceholder: "Choose an action",
         find: "Find",
         findInActiveFile: "Find in active file",
         findOptions: "Find options",

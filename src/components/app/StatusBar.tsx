@@ -1,3 +1,4 @@
+import type { ChangeEvent } from "react";
 import type {
   EditableLineEnding,
   EditorTab,
@@ -12,6 +13,11 @@ import { formatLineEndingKind, formatTextEncoding } from "../../lib/format";
  * 別の操作だが、別チップに並べると利用者から見て違いが分からない。しかも
  * 「読み直す」だけが文字化けの復旧路で、安全側（未保存なら実行しない）でもある。
  * そこで1つの select の中を2群に分け、**読み直す側を先**に置く。
+ * さらにこの select は「これから行う操作」を選ぶ面（アクション選択）にし、
+ * **selected は常に中立の placeholder** にする（現在値はチップの表示側が示す）。
+ * 以前は selected を `save:<現在の文字コード>` にしていたため、ネイティブの
+ * select やキーボード/VoiceOver では「保存する文字コードを変える」側が選択中に
+ * 見え、安全側を先頭に置いた狙いが実質的に弱まっていた。
  * 現在値の表示（`--status-text` ではない chrome の文字色）と併せて、
  * ライトテーマでも文字が沈まないようにする。
  */
@@ -32,10 +38,13 @@ type StatusBarProps = {
   detail: string;
   secondaryDetail: string;
   dirtyLabel: string;
-  encodingAriaLabel: string;
   /** チップの説明。読み直せないときは理由を足して出す。 */
   encodingChipTitle: string;
   encodingLabel: string;
+  /** select の aria-label（アクション選択であることを示す）。 */
+  encodingActionLabel: string;
+  /** 未選択（中立）の表示。selected は常にこれ。 */
+  encodingActionPlaceholder: string;
   /** 読み直せない理由（未保存の編集があるとき）。 */
   encodingReopenBlocked: string;
   encodingReopenGroup: string;
@@ -58,8 +67,9 @@ export function StatusBar({
   detail,
   secondaryDetail,
   dirtyLabel,
-  encodingAriaLabel,
   encodingChipTitle,
+  encodingActionLabel,
+  encodingActionPlaceholder,
   encodingLabel,
   encodingReopenBlocked,
   encodingReopenGroup,
@@ -74,6 +84,18 @@ export function StatusBar({
   saveAffirmationKey,
   statusText,
 }: StatusBarProps) {
+  // この select は「これから行う操作」を選ぶ面。selected は常に中立で、現在の文字コードは
+  // チップの表示（「文字コード UTF-8」）が示す。
+  const handleEncodingAction = (event: ChangeEvent<HTMLSelectElement>) => {
+    const action = event.target.value;
+    // controlled なので React が props の値（中立）へ戻すが、state が変わらない選択でも
+    // 確実に戻す。次に開いたとき、直前の操作が選択中に見えないようにする。
+    event.target.value = "";
+    if (!action) {
+      return;
+    }
+    onEncodingChoice(action);
+  };
   const showFormatControls = Boolean(activeTab && !lModeEnabled);
   const fullDetail = joinStatusDetail(detail, secondaryDetail);
   const visibleDetail = showFormatControls ? detail : fullDetail;
@@ -156,11 +178,14 @@ export function StatusBar({
               {formatTextEncoding(activeTab.encoding, "en")}
             </span>
             <select
-              aria-label={encodingAriaLabel}
+              aria-label={encodingActionLabel}
               className="status-bar-format-select"
-              value={`${SAVE_ENCODING_PREFIX}${activeTab.encoding}`}
-              onChange={(event) => onEncodingChoice(event.target.value)}
+              value=""
+              onChange={handleEncodingAction}
             >
+              {/* 中立。ここが selected のまま戻るので、開いた直後に「保存側が選択中」に
+                  見えることがない。 */}
+              <option value="">{encodingActionPlaceholder}</option>
               {activeTab.path ? (
                 <optgroup label={encodingReopenGroup}>
                   {TEXT_ENCODINGS.map((encoding) => (

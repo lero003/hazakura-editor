@@ -14,7 +14,8 @@ type AppStatusBarProps = {
   detail: string;
   secondaryDetail: string;
   dirtyLabel: string;
-  encodingAriaLabel: string;
+  encodingActionLabel: string;
+  encodingActionPlaceholder: string;
   encodingChipTitle: string;
   encodingLabel: string;
   encodingReopenBlocked: string;
@@ -41,7 +42,8 @@ export function AppStatusBar({
   detail,
   secondaryDetail,
   dirtyLabel,
-  encodingAriaLabel,
+  encodingActionLabel,
+  encodingActionPlaceholder,
   encodingChipTitle,
   encodingLabel,
   encodingReopenBlocked,
@@ -70,7 +72,8 @@ export function AppStatusBar({
       detail={detail}
       secondaryDetail={secondaryDetail}
       dirtyLabel={dirtyLabel}
-      encodingAriaLabel={encodingAriaLabel}
+      encodingActionLabel={encodingActionLabel}
+      encodingActionPlaceholder={encodingActionPlaceholder}
       encodingChipTitle={encodingChipTitle}
       encodingLabel={encodingLabel}
       encodingReopenBlocked={encodingReopenBlocked}
