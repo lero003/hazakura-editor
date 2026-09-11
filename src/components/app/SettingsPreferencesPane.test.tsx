@@ -270,19 +270,53 @@ it.each([
   ["previewFontSize", 12, 24],
   ["workspaceFontSize", 10, 18],
   ["lModeFontSize", 12, 24],
-] as const)("changes only %s and retains its existing range", (key, min, max) => {
+] as const)("clamps %s to its range on commit, leaving other rows alone", (key, min, max) => {
   const copy = getPreferencesCopy("en");
   renderWithState(defaultEditorSettings());
   const keys = ["editorFontSize", "previewFontSize", "workspaceFontSize", "lModeFontSize"] as const;
   const originals = Object.fromEntries(keys.map((name) => [name, (screen.getByRole("spinbutton", { name: copy[name] }) as HTMLInputElement).value]));
   const input = screen.getByRole("spinbutton", { name: copy[key] }) as HTMLInputElement;
+  // R4: 確定は blur / Enter。入力中は打った文字列がそのまま見える。
   fireEvent.change(input, { target: { value: "999" } });
+  expect(input.value).toBe("999");
+  fireEvent.blur(input);
   expect(input.value).toBe(String(max));
   fireEvent.change(input, { target: { value: "1" } });
+  fireEvent.keyDown(input, { key: "Enter" });
   expect(input.value).toBe(String(min));
   for (const other of keys.filter((name) => name !== key)) {
     expect((screen.getByRole("spinbutton", { name: copy[other] }) as HTMLInputElement).value).toBe(originals[other]);
   }
+});
+
+it.each([
+  ["editorFontSize", 12, 22],
+  ["previewFontSize", 12, 24],
+  ["lModeFontSize", 12, 24],
+] as const)("lets %s be typed as two digits, one key at a time (R4)", (key, _min, max) => {
+  // 外部レビュー R4: 即時 clamp のため「20」を打つと "2"→12、"120"→22 になっていた。
+  // 実際のキー入力の並びで、完成値がそのまま通ることを固定する。
+  const copy = getPreferencesCopy("en");
+  renderWithState(defaultEditorSettings());
+  const input = screen.getByRole("spinbutton", { name: copy[key] }) as HTMLInputElement;
+  // workspaceFontSize(10〜18) は2桁の20を取れないので、この並びは20以上を取れる行で見る。
+  expect(max).toBeGreaterThanOrEqual(20);
+
+  fireEvent.change(input, { target: { value: "2" } });
+  expect(input.value).toBe("2");
+  fireEvent.change(input, { target: { value: "20" } });
+  fireEvent.blur(input);
+  expect(input.value).toBe("20");
+  expect(input.value).not.toBe(String(max));
+
+  // 全消しで確定したときは勝手に下限へ飛ばさず、元の値へ戻す。
+  fireEvent.change(input, { target: { value: "" } });
+  fireEvent.blur(input);
+  expect(input.value).toBe("20");
+  // Escape は入力を取り消す。
+  fireEvent.change(input, { target: { value: "19" } });
+  fireEvent.keyDown(input, { key: "Escape" });
+  expect(input.value).toBe("20");
 });
 
 it.each([

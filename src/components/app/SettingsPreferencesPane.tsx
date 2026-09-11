@@ -455,7 +455,24 @@ function FontSizeControl({
   onChange: (value: number) => void;
   value: number;
 }) {
-  const apply = (raw: string) =>
+  // 外部レビュー R4: 以前は onChange ごとに即 clamp していたため、2桁の値を打てなかった
+  // （"2" → 12 に補正され、続く "0" で "120" → 22）。フォーカス中は**入力中の文字列**を
+  // そのまま持ち、確定（blur / Enter）で clamp する。Escape は入力を取り消す（元の値へ戻す）。
+  // 空文字・数値でない確定は「変更しない」＝元の値へ戻す（勝手に下限へ飛ばさない）。
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = (raw: string) => {
+    setDraft(null);
+    const trimmed = raw.trim();
+    if (trimmed === "" || !Number.isFinite(Number(trimmed))) {
+      return;
+    }
+    const next = clampNumber(Number(trimmed), min, max, fallback);
+    if (next !== value) {
+      onChange(next);
+    }
+  };
+  // slider は連続操作なので即時に反映する（数値欄の draft とは別の契約）。
+  const applyImmediately = (raw: string) =>
     onChange(clampNumber(Number(raw), min, max, fallback));
 
   return (
@@ -465,17 +482,25 @@ function FontSizeControl({
         aria-label={label}
         max={max}
         min={min}
-        onChange={(event) => apply(event.currentTarget.value)}
+        onBlur={(event) => commit(event.currentTarget.value)}
+        onChange={(event) => setDraft(event.currentTarget.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            commit(event.currentTarget.value);
+          } else if (event.key === "Escape") {
+            setDraft(null);
+          }
+        }}
         step="1"
         type="number"
-        value={value}
+        value={draft ?? String(value)}
       />
       <input
         aria-label={label}
         className="settings-font-range"
         max={max}
         min={min}
-        onChange={(event) => apply(event.currentTarget.value)}
+        onChange={(event) => applyImmediately(event.currentTarget.value)}
         step="1"
         type="range"
         value={value}
