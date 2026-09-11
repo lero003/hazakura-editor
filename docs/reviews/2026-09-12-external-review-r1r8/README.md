@@ -59,7 +59,8 @@ Authority: High（R1〜R8 の内容は原典 `review-2438ef1f.md` が正）
 | R5 パレットの activation | **修正済み** | 結果を `onClick` でも受ける（`detail === 0` のときだけ実行＝Enter/Space のボタン既定動作。pointerdown と二重実行しない）。`onPointerDown` は**主ボタンだけ**にし、右クリックでは実行も閉じもしない。パレットと Quick Open の**自身の focus trap** を `trapFocusInElement` で接続（GlobalSearch は既に持っていた）。実機fixtureで ⌘⇧P → 「r」→ Tab で結果へ → **Enter でコマンド実行・パレットが閉じる**を確認（従来は無反応）。※CDP の keyDown/keyUp だけではボタンの既定動作が出ないため `rawKeyDown` + `char` で計測 |
 | R6 形式切替の枠維持 | **修正済み** | 原因は切替の順序が「**いまのダイアログを閉じてから**次の準備を呼ぶ」（`exportFormatSwitchPlan` + cancel → start）だったこと。準備（本スコープでは章・画像の読み込み）が終わるまで枠が存在しなかった。→ 順序を反転し、**枠は閉じずに準備させ、新しい要求を state に載せるのと同じ tick で直前の形式を閉じる**（`beginExport` に切替専用の `replaceOpen`、書き出し関数に `cancelPrevious`）。実機fixtureの rAF サンプリング **401フレームで枠が消えたフレーム 0**、高さ 781・位置 35 が全フレーム一定（EPUB→PDF→HTML→EPUB の3回）。フックのテストでは**本スコープの準備を未解決のまま保留**しても直前の枠が残り、解決時に同一 tick で入れ替わることを固定 |
 
-検証（この時点）: typecheck ✓ / 全Vitest **279ファイル・2,450件** ✓ / Vite build ✓（要再実行）。
+検証: この版（R1〜R8 完了時）は typecheck ✓ / 全Vitest 279ファイル・2,450件 ✓ / Vite build ✓。
+**最終検証の数字は第2次レビュー対応後**（`docs/current-work.md` の統一表: **279ファイル・2,457件**）を参照。
 レビュー側の再現物は `evidence/`（最小再現であって実アプリの証跡ではない。混同しない）。
 
 ## 進め方（パッケージ分割・原典の提案に沿う）

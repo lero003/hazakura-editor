@@ -1,0 +1,78 @@
+{
+  "kind": "extracted DOM handlers in Chromium; not full app",
+  "browser": "144.0.7559.96",
+  "commit": "c11721d7",
+  "cases": [
+    {
+      "case": "Tab → Enter",
+      "observed": {
+        "open": false,
+        "executions": 1,
+        "closes": 1,
+        "activeIndex": 0,
+        "events": [
+          "open:0"
+        ],
+        "focus": "option-0"
+      },
+      "expectedMet": true
+    },
+    {
+      "case": "Tab → Space",
+      "observed": {
+        "open": false,
+        "executions": 1,
+        "closes": 1,
+        "activeIndex": 0,
+        "events": [
+          "open:0"
+        ],
+        "focus": "option-0"
+      },
+      "expectedMet": true
+    },
+    {
+      "case": "right click",
+      "observed": {
+        "open": true,
+        "executions": 0,
+        "closes": 0,
+        "activeIndex": 0,
+        "events": [],
+        "focus": "option-0"
+      },
+      "expectedMet": true
+    },
+    {
+      "case": "Tab trap",
+      "last": "option-1",
+      "wrappedTo": "query",
+      "expectedMet": true
+    },
+    {
+      "case": "Tab → Escape",
+      "observed": {
+        "open": true,
+        "executions": 0,
+        "closes": 0,
+        "activeIndex": 0,
+        "events": [],
+        "focus": "option-0"
+      },
+      "expectedOpen": false,
+      "observedBug": true
+    },
+    {
+      "case": "Escape from input",
+      "observed": {
+        "open": false,
+        "executions": 0,
+        "closes": 1,
+        "activeIndex": 0,
+        "events": [],
+        "focus": "query"
+      },
+      "expectedMet": true
+    }
+  ]
+}

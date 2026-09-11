@@ -1,0 +1,78 @@
+<!doctype html><meta charset="utf-8"><title>Quick Open — extracted interaction reproducer</title>
+<p>Extraction-based interaction reproducer; not Hazakura Editor.</p>
+<button id="outside-before">Outside before</button>
+<div id="overlay">
+  <div id="dialog" role="dialog" aria-modal="true" aria-label="Quick Open">
+    <input id="query" role="combobox" aria-label="Query">
+    <div role="listbox">
+      <button id="option-0" type="button" role="option">a.md</button>
+      <button id="option-1" type="button" role="option">b.md</button>
+    </div>
+  </div>
+</div>
+<button id="outside-after">Outside after</button>
+<script>
+// Source: QuickOpen.tsx@c11721d7:119–148,177–185,229–245.
+// Focus helper transcribed from src/lib/focusTrap.ts; TS types removed only.
+function trapFocusInElement(container, event) {
+  if (!container || event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
+  const elements = getFocusableElements(container);
+  if (!elements.length) {
+    event.preventDefault();
+    if (!container.hasAttribute("tabindex")) container.tabIndex = -1;
+    container.focus({ preventScroll: true });
+    return;
+  }
+  const active = container.ownerDocument.activeElement;
+  const index = elements.findIndex((element) => element === active);
+  if (event.shiftKey && index <= 0) {
+    event.preventDefault(); elements[elements.length - 1].focus();
+  } else if (!event.shiftKey && (index < 0 || index === elements.length - 1)) {
+    event.preventDefault(); elements[0].focus();
+  }
+}
+function getFocusableElements(container) {
+  const window = container.ownerDocument.defaultView;
+  if (!window) return [];
+  return Array.from(container.querySelectorAll(
+    'button,input,select,textarea,a[href],summary,[contenteditable="true"],[tabindex]'
+  )).filter((element) => {
+    if (element.tabIndex < 0 || element.matches(":disabled") || element.closest("[hidden],[inert]")) return false;
+    const style = window.getComputedStyle(element);
+    return style.visibility !== "hidden" && style.visibility !== "collapse" && element.getClientRects().length > 0;
+  }).sort((a, b) => {
+    const first = a.tabIndex > 0 ? a.tabIndex : Number.MAX_SAFE_INTEGER;
+    const second = b.tabIndex > 0 ? b.tabIndex : Number.MAX_SAFE_INTEGER;
+    return first - second;
+  });
+}
+const query = document.getElementById('query');
+const dialog = document.getElementById('dialog');
+const overlay = document.getElementById('overlay');
+window.state = { open: true, executions: 0, closes: 0, activeIndex: 0, events: [] };
+function onClose() { state.open = false; state.closes++; overlay.hidden = true; }
+function openSelected(i) { state.executions++; state.events.push('open:' + i); onClose(); }
+// Matches the component's input-only keyboard handler.
+query.addEventListener('keydown', e => {
+  if (e.isComposing || e.keyCode === 229) return;
+  switch (e.key) {
+    case 'ArrowDown': e.preventDefault(); state.activeIndex = Math.min(state.activeIndex + 1, 1); break;
+    case 'ArrowUp': e.preventDefault(); state.activeIndex = Math.max(state.activeIndex - 1, 0); break;
+    case 'Enter': e.preventDefault(); openSelected(state.activeIndex); break;
+    case 'Escape': e.preventDefault(); onClose(); break;
+  }
+});
+// The new root handler handles Tab only, not Escape.
+dialog.addEventListener('keydown', e => {
+  if (e.key === 'Tab') trapFocusInElement(e.currentTarget, e);
+});
+dialog.addEventListener('pointerdown', e => e.stopPropagation());
+overlay.addEventListener('pointerdown', e => { if (e.button === 0) onClose(); });
+for (let i = 0; i < 2; i++) {
+ const button = document.getElementById('option-' + i);
+ button.addEventListener('pointerdown', e => { if (e.button !== 0) return; openSelected(i); });
+ button.addEventListener('click', e => { if (e.detail !== 0) return; openSelected(i); });
+ button.addEventListener('mouseenter', () => { state.activeIndex = i; });
+}
+query.focus();
+</script>

@@ -45,13 +45,35 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
   だけ）でも受け、`onPointerDown` は主ボタンだけにした（右クリックで実行・閉じをしない）。
   パレットと Quick Open に `trapFocusInElement` で自身の Tab trap を接続。
 - **R6 形式切替の枠（P2）**: 切替が「閉じてから次の準備」だった順序を反転し、**枠は閉じずに
-  準備させ、新しい要求を載せるのと同じ tick で入れ替える**（`beginExport` の切替専用
-  `replaceOpen` と、書き出し関数の `cancelPrevious`）。実機fixtureの401フレームで
+  準備させ、新しい要求を載せるのと同じ tick で入れ替える**。実機fixtureの401フレームで
   枠が消えたフレーム **0**、高さ・位置も全フレーム一定。本スコープの準備を保留した状態でも
   直前の枠が残ることをフックのテストで固定。
-- 残り: 実機受入（WKWebView / VoiceOver / 日本語IME / WebGL）と、差分の行内ハイライト（`del`/`ins`）。
+- **R6 再オープン → F1/F2 で修正**（第2次レビュー対象 `c11721d7`）: `replaceOpen` が表示中の
+  所有者を次形式へ**乗っ取っていた**ため、**切替の準備中にキャンセルすると新しいダイアログが
+  後から開き（F1）**、**準備が例外で終わると残った旧画面が確定できなくなっていた（F2）**。
+  切替を「所有者の乗っ取り」から**別枠の transition（世代 id 付き）**へ変え、利用者のキャンセルは
+  `endExportSession()`＝**セッション全体の終了**にした（ボタンと Escape が同じ口）。
+  準備中の旧形式の確定は**仕様どおり実行**（押せるのに無反応、にはしない）。
+  実機fixture再測: F1/F2 の再設計後も **396フレームで枠が消えたフレーム 0**・高さ781一定。
+  F1/F2 は fixture で「準備中」の窓を作れないため、**Hook テスト（保留 Promise）を証跡**とする。
+- **F3 Quick Open の Escape（P3）**: Escape が input にだけ付いていた（パレットは共通ガードが
+  拾っていた）→ **面（dialog）側へ上げ**、input 側から外して二重取消を無くした。
+- 残り: 実機受入（WKWebView / VoiceOver / 日本語IME / WebGL / 信号機 / 配布候補.app）と、
+  差分の行内ハイライト（`del`/`ins`）。
 
-検証: typecheck / 全Vitest **278ファイル・2,439件** / App Store面 **123件**。
+検証（2026-09-11 時点・最終）:
+
+| 項目 | 結果 |
+|---|---|
+| `npm run typecheck` | ✅ |
+| Vitest 全体 | ✅ **279ファイル / 2,457件** |
+| `npm run build:vite` | ✅（既知のチャンク警告のみ） |
+| `npm run smoke:app-store-surface` | 未実行（App Store 面を触っていない） |
+| `cargo test` | 未実行（**Rust 無変更**） |
+
+**未解消のフレーク**: `src/components/app/AppWorkspace.test.tsx` の
+「whole-book edit returns to the retained editor only on open success: true」が全体実行で1回だけ失敗
+（当時の実行は結果を絞り込んだため **assertion とログは未取得**）。単体・再実行では緑。断定せず残す。
 
 ## 現在の区切り — 実機フィードバック第3弾・7件（2026-09-12）
 

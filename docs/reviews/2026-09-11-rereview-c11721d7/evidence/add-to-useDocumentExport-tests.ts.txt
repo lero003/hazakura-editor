@@ -1,0 +1,42 @@
+// Proposal only; NOT executed against the repository in this review.
+// Insert inside the existing describe("useDocumentExport", ...) in
+// src/hooks/document/useDocumentExport.test.tsx, reusing its makeTab,
+// filesApi, act, renderHook, useDocumentExport, vi and expect.
+// This adds cancellation to the same deferred Book Scope setup as the new R6 test.
+it.each(["pdf", "epub"] as const)(
+  "does not reopen %s after cancelling the visible modal during replacement preflight",
+  async (format) => {
+    let resolve!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile.mockReturnValueOnce(
+      new Promise((done) => { resolve = done; }),
+    );
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(),
+      activeContents: "draft",
+      workspaceRootPath: "/workspace",
+      bookScopeChapters: [
+        { name: "book.md", path: "/workspace/book.md", relativePath: "book.md" },
+      ],
+      setStatus: vi.fn(),
+      setGlobalError: vi.fn(),
+    }));
+    await act(async () => { await result.current.exportHtml(); });
+    let pending!: Promise<void>;
+    act(() => {
+      const options = { cancelPrevious: result.current.cancelHtmlExport };
+      pending = format === "pdf"
+        ? result.current.exportPdf(options)
+        : result.current.exportEpubBeta(options);
+    });
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    act(() => { result.current.cancelHtmlExport(); });
+    expect(result.current.htmlExportRequest).toBeNull();
+    await act(async () => {
+      resolve(makeTab({ path: "/workspace/book.md" }));
+      await pending;
+    });
+    expect(result.current.htmlExportRequest).toBeNull();
+    expect(result.current.pdfExportRequest).toBeNull();
+    expect(result.current.epubExportRequest).toBeNull();
+  },
+);

@@ -1,0 +1,121 @@
+{
+  "kind": "extraction-based state/control-flow reproducer; not React/Tauri integration",
+  "commit": "c11721d79ae1f3265d4b485fe43388b44f052a17",
+  "runtime": "v22.16.0",
+  "cases": [
+    {
+      "case": "normal replacement",
+      "during": {
+        "visible": [
+          "html"
+        ],
+        "owner": {
+          "format": "epub",
+          "phase": "preflight"
+        },
+        "events": []
+      },
+      "after": {
+        "visible": [
+          "epub"
+        ],
+        "owner": {
+          "format": "epub",
+          "phase": "modal"
+        },
+        "events": []
+      },
+      "expectedMet": true
+    },
+    {
+      "case": "cancel HTML during pdf preparation",
+      "afterCancel": {
+        "visible": [],
+        "owner": {
+          "format": "pdf",
+          "phase": "preflight"
+        },
+        "events": []
+      },
+      "afterResolve": {
+        "visible": [
+          "pdf"
+        ],
+        "owner": {
+          "format": "pdf",
+          "phase": "modal"
+        },
+        "events": []
+      },
+      "expectedVisibleAfterResolve": [],
+      "observedBug": true
+    },
+    {
+      "case": "cancel HTML during epub preparation",
+      "afterCancel": {
+        "visible": [],
+        "owner": {
+          "format": "epub",
+          "phase": "preflight"
+        },
+        "events": []
+      },
+      "afterResolve": {
+        "visible": [
+          "epub"
+        ],
+        "owner": {
+          "format": "epub",
+          "phase": "modal"
+        },
+        "events": []
+      },
+      "expectedVisibleAfterResolve": [],
+      "observedBug": true
+    },
+    {
+      "case": "pdf retained after epub preflight exception",
+      "afterFailure": {
+        "visible": [
+          "pdf"
+        ],
+        "owner": null,
+        "events": [
+          "epub: preflight failed: injected preflight exception"
+        ]
+      },
+      "confirmReachedWriter": false,
+      "expectedConfirmReachedWriter": true,
+      "observedBug": true
+    },
+    {
+      "case": "epub retained after pdf preflight exception",
+      "afterFailure": {
+        "visible": [
+          "epub"
+        ],
+        "owner": null,
+        "events": [
+          "pdf: preflight failed: injected preflight exception"
+        ]
+      },
+      "confirmReachedWriter": false,
+      "expectedConfirmReachedWriter": true,
+      "observedBug": true
+    },
+    {
+      "case": "newer intent supersedes earlier preflight",
+      "after": {
+        "visible": [
+          "html"
+        ],
+        "owner": {
+          "format": "html",
+          "phase": "modal"
+        },
+        "events": []
+      },
+      "expectedMet": true
+    }
+  ]
+}
