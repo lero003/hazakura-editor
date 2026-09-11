@@ -57,6 +57,20 @@ Last reviewed: 2026-09-10
   明示Diff/Apply、Undo、no auto-save、取消mutex境界を維持。内部再編・依存・版数は未変更。
 - **作業保全:** App Store設定の既存未コミット変更を保持。公開タグ・アセットは変更しない。
 
+## v3.0候補（TestFlight準備・2026-09-11）
+
+- **版数:** npm / Tauri / Cargo を `3.0.0` へ更新した。オーナー管理の
+  `src-tauri/tauri.conf.appstore.json`（build番号）は**触っていない**。
+- **内容:** モック24画面へのUI整合（江戸彼岸の明色化、スライスC/D/E、07本文面化、11形式ナビ）と、
+  外部レビューの修正（R1〜R5、P1×1・P2×3、受入テストの穴）。
+- **検証:** typecheck / 全Vitest **275 files・2,401 tests** / Vite build /
+  App Store surface **10 files・117 tests** / Rust fmt・**385 passed・2 ignored**。
+- **未実施:** 署名pkgは未作成。Appleへのupload・処理・TestFlight配布・App Review は未実施。
+  実機受入（WebGL・native・VoiceOver・IME・T01〜T10）はこれから。
+- **判断待ち:** 05 / 12 / 13 / 18 / 03。
+  採否は `docs/reviews/2026-09-11-v3-slice-cde-review-request.md` に記録。
+- 証跡: [3.0.0候補](releases/3.0.0-source-tag.release.md)。
+
 ## v2.9候補時点の記録（2026-09-09公開報告前）
 
 以下は候補準備時点の証跡。配布前の「未実施」「次」は当時の記録であり、現行キューではない。

@@ -15,7 +15,12 @@ Latest GitHub source / local-app tag:
 
 - `v2.3.0` — `2.3.0-source-tag.release.md` (no binary assets; prior `v2.0.0` immutable)
 
-Current source-preview candidate:
+Current source-preview candidate (TestFlight prepare):
+
+- `3.0.0` — `3.0.0-source-tag.release.md` (v3 UI alignment with the 24-screen mock plus the
+  external-review fixes; **not submitted, not distributed**; signed pkg not built yet)
+
+Prior candidates:
 
 - `2.8.0` — `2.8.0-source-tag.release.md` (Local Assist + merged PR #40 Preview polish; build 124 predates PR #40; physical validation pending)
 

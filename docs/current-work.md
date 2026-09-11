@@ -12,6 +12,14 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
+## 現在の区切り — v3.0.0（TestFlight準備・2026-09-11）
+
+- npm / Tauri / Cargo の版数を **3.0.0** へ更新（`tauri.conf.appstore.json` の build番号はオーナー管理のため未変更）。
+- 検証: typecheck / 全Vitest **275 files・2,401 tests** / Vite build / App Store surface **117 tests** /
+  Rust fmt・**385 passed・2 ignored**。
+- 資料: `docs/releases/3.0.0-source-tag.release.md` / `3.0.0-app-store-release-notes.md`（TestFlightで確認する項目つき）。
+- 署名pkgは未作成。Apple送信・TestFlight配布は未実施。次は build番号を更新して `npm run candidate:app-store-pkg`。
+
 ## 現在の区切り — 07・11レビュー対応（2026-09-11）
 
 - **P1**: 「書く」でレビュー面だけ閉じ、提案は保持。面が本文を覆う間は `.editor-pane` を `inert` に。
