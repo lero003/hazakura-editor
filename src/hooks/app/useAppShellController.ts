@@ -1,4 +1,5 @@
 import { useSaveConflictSurface } from "../document/useSaveConflictSurface";
+import { useExportDrafts } from "../document/useExportDrafts";
 import { useBackupReviewActions } from "../workspace/useBackupReviewActions";
 import { usePreviewSurface } from "../editor/usePreviewSurface";
 // `useAppShellController` is the Phase 3 single orchestrator hook
@@ -1153,6 +1154,17 @@ export function useAppShellController() {
     setStatus, rejectIfLocked: rejectIfAppleAssistLocksTab,
   });
 
+  /**
+   * 書き出し操作の草稿（画面11）と**終了口の一本化**（外部レビュー R3）。
+   *
+   * 以前は草稿の所有者が AppOverlays 側にあり、ダイアログのキャンセルボタンだけが
+   * `clear()` を呼んでいた。Escape は共通キーボードガードから各形式のキャンセルを
+   * 直接呼ぶため草稿が残り、開き直すと書名・対象範囲まで復活していた。
+   * 所有者をここへ上げ、ボタン・Escape・確定が同じ関数を通るようにする。
+   * 形式切替の内部キャンセルは同じ操作の途中なので、ここは通らない（従来どおり）。
+   */
+  const exportDrafts = useExportDrafts(activeTab?.sessionId ?? null);
+
   // section: document IO controller
   const {
     cancelPdfExport,
@@ -1194,6 +1206,25 @@ export function useAppShellController() {
     tabsRef,
     workspaceRootPath,
   });
+  /**
+   * 書き出し操作の終了口（外部レビュー R3）。ダイアログのキャンセル・確定と、共通
+   * キーボードガードの Escape が**同じ関数**を通るようにする。片方だけが草稿を捨てる
+   * 状態を作らない（明示的にキャンセルした設定が開き直しで復活していた）。
+   * 形式切替の内部キャンセルは同じ操作の途中なので、ここを通らない。
+   */
+  const cancelEpubExportSession = useCallback(() => {
+    exportDrafts.clear();
+    cancelEpubBetaExport();
+  }, [exportDrafts, cancelEpubBetaExport]);
+  const cancelPdfExportSession = useCallback(() => {
+    exportDrafts.clear();
+    cancelPdfExport();
+  }, [exportDrafts, cancelPdfExport]);
+  const cancelHtmlExportSession = useCallback(() => {
+    exportDrafts.clear();
+    cancelHtmlExport();
+  }, [exportDrafts, cancelHtmlExport]);
+
   const saveActiveTab = useCallback(async () => {
     if (rejectIfAppleAssistLocksTab(activeTab)) {
       return;
@@ -1807,7 +1838,7 @@ export function useAppShellController() {
       epubExportSettingsOpen,
       htmlExportDialogRef,
       htmlExportSettingsOpen,
-      onCancelHtmlExport: cancelHtmlExport,
+      onCancelHtmlExport: cancelHtmlExportSession,
       pdfExportDialogRef,
       pdfExportSettingsOpen,
       moveTrashCancelButtonRef,
@@ -1847,8 +1878,8 @@ export function useAppShellController() {
       onSaveActiveTab: saveActiveTab,
       onSaveActiveTabAs: saveActiveTabAs,
       onToggleLMode: toggleLMode,
-      onCancelEpubBetaExport: cancelEpubBetaExport,
-      onCancelPdfExport: cancelPdfExport,
+      onCancelEpubBetaExport: cancelEpubExportSession,
+      onCancelPdfExport: cancelPdfExportSession,
       pendingAppClose,
       pendingAssistDiscardOpen,
       pendingCloseTabOpen,
@@ -2146,10 +2177,16 @@ export function useAppShellController() {
     reopenPersistedWorkspace,
     importSourcePathAsMarkdownDraft,
     outlineTruncated: documentStructureTruncated,
+    exportDrafts,
+    // 形式切替の内部キャンセル（操作は続くので草稿は保つ）。
     onCancelEpubBetaExport: cancelEpubBetaExport,
-    onConfirmEpubBetaExport: confirmEpubBetaExport,
     onCancelPdfExport: cancelPdfExport,
     onCancelHtmlExport: cancelHtmlExport,
+    // 利用者のキャンセル・確定（操作が終わるので草稿も捨てる）。
+    onEndEpubExportSession: cancelEpubExportSession,
+    onEndPdfExportSession: cancelPdfExportSession,
+    onEndHtmlExportSession: cancelHtmlExportSession,
+    onConfirmEpubBetaExport: confirmEpubBetaExport,
     onConfirmHtmlExport: confirmHtmlExport,
     onConfirmPdfExport: confirmPdfExport,
     pendingAppClose,

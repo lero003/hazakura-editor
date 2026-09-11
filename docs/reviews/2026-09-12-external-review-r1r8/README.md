@@ -54,10 +54,10 @@ Authority: High（R1〜R8 の内容は原典 `review-2438ef1f.md` が正）
 | R4 文字サイズの2桁 | **修正済み** | 数値欄はフォーカス中に文字列draftを持ち、blur/Enter で clamp（Escape は取消・空確定は元の値へ戻す）。`SettingsPreferencesPane.test.tsx` に「2 → 20 が通る」「999 は確定時に上限」「空確定は戻す」を追加 |
 | R7 空の新規文書の保存 | **修正済み** | `resolvePrimarySaveEnabled` に `pathless` を入れ、`pathなし || dirty` で有効化（読書面・生成ロック・保存中の除外は維持、dirty 扱いにはしない）。単体テスト追加 |
 | R8 Local Assist の状態表示 | **修正済み** | composer の直前に1行（`role=status`）で理由＋要件を常時表示し、無効な入力欄と `aria-describedby` で結ぶ。詳細（但し書き・利用条件）は畳んだヘルプのまま。実機fixture（`2026-09-09-v3-ui-c1`）で `noteText`/`describedBy`/help 折りたたみを実測。画像 `r8-assist-unavailable.png` |
+| R3 書き出しEscapeの草稿 | **修正済み** | 草稿の所有者を controller へ上げ、**利用者のキャンセル（ボタン・Escape）と確定が同じ終了口**を通るようにした。形式切替の内部キャンセルは素の cancel のまま（切替は操作の途中）。実機fixture実測: 書名を「テスト書名」→Escape→開き直し→**初期値に戻る**。EPUBで「セッション書名」→PDF→EPUBに戻ると**保たれる**→キャンセル→開き直しで初期値 |
 | R1 読書面のキー奪取 | 未着手 | パッケージ2（R5 と一緒に） |
-| R3 書き出しEscapeの草稿 | 未着手 | パッケージ1（R6 と一緒に。終了口の一本化） |
 | R5 パレットの activation | 未着手 | パッケージ2（R1 と一緒に。確定を `onClick` へ寄せる） |
-| R6 形式切替の枠維持 | 未着手 | パッケージ1（R3 と一緒に。外枠を1つ維持し activeFormat だけ切替） |
+| R6 形式切替の枠維持 | **一部実測・要判断** | 実機fixture（fixture の prepare は即時）で切替中の DOM を rAF サンプリング: `EPUB → PDF` が **10ms（1フレーム）で入れ替わり、枠が消えた区間は 0 件**。原典も「速い処理では目立たない可能性」と留保している。**遅い prepare（本構成の章読込・画像確認）での再現は未計測** → 次段で prepare を遅延させて測る。外枠を1つ維持する実装（activeFormat だけ切替）は3ダイアログの分割を伴うため、計測結果を見てから着手する |
 
 検証（この時点）: typecheck ✓ / 全Vitest **278ファイル・2,439件** ✓ / App Store面 **123件** ✓。
 レビュー側の再現物は `evidence/`（最小再現であって実アプリの証跡ではない。混同しない）。

@@ -1,7 +1,7 @@
 import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";
 import { ExportFormatNav, type ExportFormatId } from "./ExportFormatNav";
 import { exportFormatSwitchPlan } from "./exportFormatSwitch";
-import { useExportDrafts } from "../../hooks/document/useExportDrafts";
+import type { useExportDrafts } from "../../hooks/document/useExportDrafts";
 import type {
   Dispatch,
   RefObject,
@@ -72,6 +72,16 @@ import type {
 type AppOverlaysProps = {
   activeAgentSession: boolean;
   activeTab: EditorTab | null;
+  /**
+   * 書き出しダイアログの入力草稿（画面11）。所有者は controller 側に置く ——
+   * 「利用者のキャンセル（ボタン・Escape）」「確定」が同じ終了口を通るようにするため
+   * （外部レビュー R3: ボタンだけが草稿を消していた）。
+   */
+  exportDrafts: ReturnType<typeof useExportDrafts>;
+  /** 利用者のキャンセル（草稿も捨てる）。形式切替の内部キャンセルとは別。 */
+  onEndEpubExportSession: () => void;
+  onEndPdfExportSession: () => void;
+  onEndHtmlExportSession: () => void;
   agentSession: AgentWorkbenchSession | null;
   agentWorkbenchActive: boolean;
   agentWorkbenchConsent: boolean;
@@ -327,6 +337,11 @@ export function AppOverlays({
   onCancelPdfExport,
   onConfirmEpubBetaExport,
   onConfirmPdfExport,
+  exportDrafts,
+  // 利用者のキャンセルは草稿まで捨てる（外部レビュー R3）。形式切替は素の cancel を使う。
+  onEndEpubExportSession,
+  onEndPdfExportSession,
+  onEndHtmlExportSession,
   exportEpubBeta,
   exportHtml,
   exportPdf,
@@ -389,7 +404,7 @@ export function AppOverlays({
   assistDiscardDialogRef,
 }: AppOverlaysProps) {
   // 形式ナビで行き来しても、一度の書き出し操作のあいだは入力と対象を保つ（画面11）。
-  const exportDrafts = useExportDrafts(activeTab?.sessionId ?? null);
+  // 草稿の所有者は controller（書き出し操作の終了口を一本化するため。外部レビュー R3）。
 
   const activeHelpDoc =
     preferencesDialogMode && isHelpDocumentDialogMode(preferencesDialogMode)
@@ -549,11 +564,9 @@ export function AppOverlays({
           onDraftChange={exportDrafts.rememberEpub}
           menuLanguage={menuLanguage}
           preflightByScope={epubExportRequest.preflightByScope}
-          onCancel={() => {
-            // 利用者のキャンセル: この書き出し操作は終わりなので草稿を捨てる。
-            exportDrafts.clear();
-            onCancelEpubBetaExport();
-          }}
+          // キャンセル（ボタン・Escape）は controller が草稿の破棄まで含めて一本化した
+          // ハンドラを受け取る（外部レビュー R3）。形式切替はこの下の renderExportFormatNav。
+          onCancel={onEndEpubExportSession}
           onConfirm={(settings, scope) => {
             exportDrafts.clear();
             void onConfirmEpubBetaExport(settings, scope);
@@ -564,7 +577,7 @@ export function AppOverlays({
       {htmlExportRequest && htmlExportDialogRef && htmlExportCancelButtonRef && onCancelHtmlExport && onConfirmHtmlExport ? (
         <HtmlExportSettingsDialog request={htmlExportRequest} formatNav={renderExportFormatNav("html")} menuLanguage={menuLanguage}
           dialogRef={htmlExportDialogRef} cancelButtonRef={htmlExportCancelButtonRef}
-          onCancel={() => { exportDrafts.clear(); onCancelHtmlExport(); }}
+          onCancel={onEndHtmlExportSession}
           onConfirm={() => { exportDrafts.clear(); return onConfirmHtmlExport(); }} />
       ) : null}
       {pdfExportRequest ? (
@@ -581,10 +594,7 @@ export function AppOverlays({
           onDraftChange={exportDrafts.rememberPdf}
           menuLanguage={menuLanguage}
           preflightByScope={pdfExportRequest.preflightByScope}
-          onCancel={() => {
-            exportDrafts.clear();
-            onCancelPdfExport();
-          }}
+          onCancel={onEndPdfExportSession}
           onConfirm={(preset, scope) => {
             exportDrafts.clear();
             void onConfirmPdfExport(preset, scope);
