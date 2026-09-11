@@ -180,18 +180,21 @@ export function useDocumentExport({
     id: number;
   } | null>(null);
   const exportTransitionSeqRef = useRef(0);
-  useEffect(() => () => { exportAttemptRef.current = null; }, []);
+  useEffect(
+    () => () => {
+      // Hook が消えたら、表示中の所有者と**切替の準備**の両方を失効させる（外部レビュー N2）。
+      // transition を残すと、アンマウント後に解決した preflight が id だけを見て
+      // 「自分の番だ」と判断してしまう。ユーザー可視の実害は未確認だが、寿命管理として揃える。
+      exportAttemptRef.current = null;
+      exportTransitionRef.current = null;
+    },
+    [],
+  );
   /**
-   * 書き出しの試行を始める。
-   *
-   * 通常は「開いているダイアログ（modal 相）があるなら始めない」。
-   * `replaceOpen: true` は形式切替のときだけ渡され、開いている枠を置き換えることを許す
-   * （外部レビュー R6: 準備の間ダイアログが消えるのを避け、切替を同じ tick の入れ替えにする）。
-   */
-  /**
-   * 形式切替のときだけ渡す口（外部レビュー R6）。
+   * 形式切替のときだけ渡す口。
    * `cancelPrevious` は「直前に開いていた形式のダイアログを閉じる」関数で、
-   * 新しい要求を state に載せるのと同じ tick で呼ぶために使う。
+   * 新しい要求を state に載せるのと同じ tick で呼ぶ（外部レビュー R6）。
+   * 切替の本体は下の transition（`beginExportTransition` ほか）で、**所有者は乗っ取らない**。
    */
   type ExportCancelOptions = { cancelPrevious?: () => void };
 

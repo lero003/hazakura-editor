@@ -413,15 +413,15 @@ export function AppOverlays({
 
   /**
    * 形式ナビ（画面11）。3つのコマンドはそのまま残し、開いているダイアログの枠に
-   * 形式の入口を出す。切替は「いまのダイアログを閉じる → 選んだ形式の**既存の**
-   * 準備処理を呼ぶ」だけで、新しい書き出し経路は作らない。
+   * 形式の入口を出す。切替は、**いまの枠を閉じずに**選んだ形式の既存の準備を走らせ、
+   * 準備できた時点で同じ tick に表示を入れ替える（外部レビュー R6）。新しい書き出し経路は作らない。
    */
   const renderExportFormatNav = (current: ExportFormatId) => (
     <ExportFormatNav
       format={current}
       menuLanguage={menuLanguage}
       onSelectFormat={(next) => {
-        // 「閉じてから、選ばれた形式の既存の準備を呼ぶ」だけ（判断は純関数）。
+        // どの形式を閉じ、どれを始めるかは純関数で決める（いまはまだ閉じない）。
         const plan = exportFormatSwitchPlan(current, next);
         if (!plan) return;
         // いまの枠はここでは閉じない。選んだ形式の準備ができた時点で、新しい要求を載せるのと

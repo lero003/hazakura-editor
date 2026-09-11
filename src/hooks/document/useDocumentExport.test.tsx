@@ -273,6 +273,29 @@ describe("useDocumentExport", () => {
     expect(result.current.pdfExportRequest).toBeNull();
   });
 
+  it("drops the pending switch when the hook unmounts (N2)", async () => {
+    // 外部レビュー N2: cleanup が所有者だけを消していたため、切替の準備が
+    // アンマウント後に解決すると「自分の番」と判断し得た。両方を失効させる。
+    let resolve!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const { result, unmount } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => { await result.current.exportHtml(); });
+    const cancelPrevious = vi.fn();
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.exportPdf({ cancelPrevious }) as Promise<void>;
+    });
+
+    unmount();
+    await act(async () => { resolve(makeTab({ path: "/workspace/book.md" })); await pending; });
+    // アンマウント後に旧画面を閉じる callback を呼ばない
+    expect(cancelPrevious).not.toHaveBeenCalled();
+  });
+
   it("keeps only the last of consecutive format switches (F1)", async () => {
     let resolveFirst!: (value: ReturnType<typeof makeTab>) => void;
     let resolveSecond!: (value: ReturnType<typeof makeTab>) => void;
