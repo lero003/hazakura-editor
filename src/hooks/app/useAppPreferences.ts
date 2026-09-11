@@ -5,6 +5,7 @@ import {
   setCurrentWindowTheme,
 } from "../../lib/tauri";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
+import { applyWindowTheme } from "../../features/app/windowAppearance";
 import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
@@ -119,9 +120,14 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
         ? "dark"
         : "light";
 
-    void setCurrentWindowTheme(windowTheme).catch((err) => {
-      console.warn("Failed to update window theme", err);
-      onStatusRef.current?.("Failed to update window theme");
+    // 窓の OS 外観を変えると macOS がタイトルバーを組み直し、tauri.conf.json の
+    // trafficLightPosition が失われる（実機で信号機の位置がズレる）。生成時の設定と
+    // 同じ外観・同じ基調のテーマ間では呼ばない（features/app/windowAppearance.ts）。
+    applyWindowTheme(windowTheme, (theme) => {
+      void setCurrentWindowTheme(theme).catch((err) => {
+        console.warn("Failed to update window theme", err);
+        onStatusRef.current?.("Failed to update window theme");
+      });
     });
     void setCurrentWindowBackgroundColor(
       windowBackgroundColorForTheme(themePreference),
