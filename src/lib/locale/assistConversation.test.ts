@@ -5,6 +5,8 @@ describe("Assist conversation copy", () => {
   it.each([ ["en", "Request"], ["ja", "依頼"], ["kana", "おねがい"] ] as const)("provides %s copy", (language, composer) => {
     const copy = getAssistConversationCopy(language);
     expect(copy.composer).toBe(composer);
-    expect(copy.title).toBeTruthy(); expect(copy.boundary).toBeTruthy();
+    // 「ことばを、整える。」のような作業に効かない言葉は UI から外したので、
+    // 但し書き（安全のための情報）だけが残る。
+    expect(copy.boundary).toBeTruthy();
   });
 });

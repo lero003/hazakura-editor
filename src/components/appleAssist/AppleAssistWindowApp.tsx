@@ -845,7 +845,10 @@ export function AppleAssistWindowApp() {
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        <div className="apple-assist-intro"><h1>{ui.title}</h1><p>{ui.boundary}</p></div>
+        {/* 実機フィードバック: 「ことばを、整える。」のような、作業に効かない言葉を
+            UI から外す（この窓の仕事は対象文書の提案）。動作の但し書き（このMac内で
+            処理・自動反映/自動保存なし）は安全のための情報なので、畳んである
+            ヘルプの中へ移して残す。作業に要る情報（対象）だけを上に置く。 */}
         {reviewIdentity && conversation?.id === reviewIdentity.conversationId ?
           <div className="apple-assist-review-link">
             <button type="button" className="apple-assist-window-new-conversation" disabled={busy || reviewPending}
@@ -872,6 +875,7 @@ export function AppleAssistWindowApp() {
         </details>
         <details className="apple-assist-help">
           <summary>{ui.details}</summary>
+          <p>{ui.boundary}</p>
           <p>{copy.subtitle} · {copy.modeLabel}</p>
           <p>{available ? copy.availableDisclosure : availabilityMessage}</p>
           <p>{copy.streamPreviewIdle}</p>
