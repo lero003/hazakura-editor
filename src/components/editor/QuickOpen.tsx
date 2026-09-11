@@ -139,13 +139,11 @@ export function QuickOpen({
           e.preventDefault();
           openSelected(activeIndex);
           break;
-        case "Escape":
-          e.preventDefault();
-          onClose();
-          break;
+        // Escape は面（dialog）側で1回だけ受ける。ここに置くと、Tab で結果へ移った
+        // ときに閉じられないうえ、input 上では二重取消になる（外部レビュー F3）。
       }
     },
-    [activeIndex, results.length, openSelected, onClose],
+    [activeIndex, results.length, openSelected],
   );
 
   // Scroll active item into view
@@ -176,10 +174,22 @@ export function QuickOpen({
         aria-label={copy.dialogLabel}
         aria-modal="true"
         className="quick-open-dialog"
-        // Tab / Shift+Tab をこの面の中で循環させる（外部レビュー R5）。
         onKeyDown={(event) => {
           if (event.key === "Tab") {
+            // Tab / Shift+Tab をこの面の中で循環させる（外部レビュー R5）。
             trapFocusInElement(event.currentTarget, event.nativeEvent);
+            return;
+          }
+          if (event.key === "Escape") {
+            // Escape は面全体で受ける（外部レビュー F3: input だけに付いていたため、
+            // Tab で結果へ移ったあとに閉じられなかった）。input 側では扱わないので
+            // 二重取消にならない。IME 変換中の Escape は IME に渡す。
+            if (isImeComposing(event.nativeEvent)) {
+              return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            onClose();
           }
         }}
         onPointerDown={(e) => e.stopPropagation()}

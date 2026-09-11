@@ -31,6 +31,49 @@ describe("search surface accessibility semantics", () => {
     }
   });
 
+  it("closes Quick Open with Escape from the input and from any result (F3)", () => {
+    // 外部レビュー F3: Escape が input にしか付いていなかったため、Tab で結果へ移ると
+    // 閉じられなかった。面（dialog）側で1回だけ受け、二重取消にしない。
+    const onClose = vi.fn();
+    render(
+      <QuickOpen
+        menuLanguage="en"
+        onClose={onClose}
+        onOpenFile={vi.fn()}
+        tree={{
+          name: "workspace",
+          path: "/workspace",
+          kind: "directory",
+          children_loaded: true,
+          children_truncated: false,
+          children: ["draft.md", "other.md"].map((name) => ({
+            name,
+            path: `/workspace/${name}`,
+            kind: "file" as const,
+            children_loaded: true,
+            children_truncated: false,
+            children: [],
+          })),
+        }}
+      />,
+    );
+
+    const input = screen.getByRole("combobox");
+    const options = screen.getAllByRole("option");
+    // 入力欄
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    // 先頭の結果（Tab で移った先）
+    fireEvent.keyDown(options[0], { key: "Escape" });
+    expect(onClose).toHaveBeenCalledTimes(2);
+    // 末尾の結果
+    fireEvent.keyDown(options[options.length - 1], { key: "Escape" });
+    expect(onClose).toHaveBeenCalledTimes(3);
+    // IME 変換中の Escape は IME に渡す（閉じない）
+    fireEvent.keyDown(options[0], { key: "Escape", isComposing: true });
+    expect(onClose).toHaveBeenCalledTimes(3);
+  });
+
   it("activates a result from the keyboard and ignores the right button (R5)", () => {
     // 外部レビュー R5: 結果は onPointerDown だけで実行していたため、Tab で結果へ移って
     // Enter/Space を押しても何も起きず、右クリックでも実行されていた。
