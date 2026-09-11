@@ -17,6 +17,23 @@ function ruleBody(selector: string): string {
 }
 
 describe("workspace-chrome.css", () => {
+  it("keeps the primary toolbar's document inset clear of the native traffic lights", () => {
+    // 実機指摘: 信号機と文書名の距離が詰まりすぎ（11px）。モックの文書名は左から127pxで、
+    // ネイティブの信号機は x=20・12px玉×3＋8px間隔＝右端72px。
+    // 数字を2箇所に書かないよう、CSSはトークン経由・Tauriは config を読み、右端と比較する。
+    expect(ruleBody(".v3-shell")).toMatch(/--toolbar-document-inset:\s*127px/);
+    expect(ruleBody(".app-primary-toolbar")).toMatch(
+      /padding:\s*8px 20px 8px var\(--toolbar-document-inset\)/,
+    );
+    const conf = readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8");
+    const x = Number(/"trafficLightPosition"\s*:\s*\{\s*"x"\s*:\s*(\d+)/.exec(conf)?.[1]);
+    const y = Number(/"trafficLightPosition"[^}]*"y"\s*:\s*(\d+)/.exec(conf)?.[1]);
+    expect(x).toBe(20);
+    expect(y).toBe(27);
+    // 信号機の右端（x+12*3+8*2）が文書名の位置より十分左にあること。
+    expect(x + 12 * 3 + 8 * 2).toBeLessThan(127);
+  });
+
   it("spreads the display toolbar row across the whole document column", () => {
     // タブ行・表示ツールバー行は文書カラム全幅。プレビュー列の上の帯を空にしない。
     const meta = ruleBody(':root:not([data-l-mode="on"]) .v3-shell .document-meta');

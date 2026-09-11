@@ -7,6 +7,11 @@
      サイドバーは --nav-surface のまま役割を分ける。 */
   --workspace-chrome-bar: var(--chrome-surface);
   --workspace-chrome-paper: var(--surface-paper);
+  /* 上部バーの左端に文書名を置く位置（実機調整）。
+     macOS の信号機はネイティブで x=20（`src-tauri/tauri.conf.json`）・12px玉×3＋8px間隔＝
+     右端 72px。モックの文書名は左から127pxで、その手前に切替アイコンが入る。
+     実測の根拠は docs/reviews/2026-09-11-mock-gap-sweep/README.md。 */
+  --toolbar-document-inset: 127px;
 }
 .primary-toolbar-slot { min-width: 0; position: relative; z-index: var(--z-sticky); }
 .app-primary-toolbar {
@@ -15,7 +20,7 @@
   align-items: center;
   gap: 16px;
   min-height: 66px;
-  padding: 8px 20px 8px 84px;
+  padding: 8px 20px 8px var(--toolbar-document-inset);
   box-sizing: border-box;
   background: var(--workspace-chrome-bar);
   border-bottom: 1px solid var(--border);
@@ -118,7 +123,7 @@
   .app-primary-toolbar .primary-companion > span:last-child { display: none; }
 }
 @media (max-width: 700px) {
-  .app-primary-toolbar { grid-template-columns: minmax(0, 1fr) auto; padding-left: 84px; }
+  .app-primary-toolbar { grid-template-columns: minmax(0, 1fr) auto; padding-left: var(--toolbar-document-inset); }
   .workspace-mode-navigation { grid-row: 2; grid-column: 1 / -1; justify-self: center; }
   .primary-document-actions { grid-column: 2; grid-row: 1; }
 }

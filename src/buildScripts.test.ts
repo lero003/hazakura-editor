@@ -116,7 +116,8 @@ describe("macOS build scripts", () => {
     expect(mainWindow?.transparent).toBe(true);
     // 実機フィードバック: シグナルは上部バー（66px）の縦中央（y=27）に置き、
     // 左はモック（内側余白21px）に合わせて x=21。x=9 だと左端に張り付いて見えた。
-    expect(mainWindow?.trafficLightPosition).toEqual({ x: 21, y: 27 });
+    // 実機調整: モックの玉は窓の左から20px（11px玉・18pxピッチ）。垂直は66pxバーの中央。
+    expect(mainWindow?.trafficLightPosition).toEqual({ x: 20, y: 27 });
   });
 
   it("allows the main window to start native dragging from custom chrome", () => {
