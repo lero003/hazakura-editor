@@ -1191,6 +1191,56 @@ describe("EBookPane chapter reader", () => {
     });
   });
 
+  it("keeps paging keys out of dialogs, pane dividers and hidden readers (R1)", async () => {
+    // 外部レビュー R1: 読書面が document の capture で左右/Space を拾っていたため、
+    // ダイアログのボタンにフォーカスしたまま矢印を押すと背後のページが送られ、
+    // ペイン境界（リサイザ）の矢印も奪っていた。
+    const view = render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    // 1) モーダル（role=dialog）が開いている間は送らない。
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    const cancel = document.createElement("button");
+    dialog.append(cancel);
+    document.body.append(dialog);
+    cancel.focus();
+    fireEvent.keyDown(cancel, { key: "ArrowRight" });
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+    // フォーカスも奪わない。
+    expect(document.activeElement).toBe(cancel);
+    dialog.remove();
+
+    // 2) ペイン境界（role=separator）からの矢印は奪わない（幅の増減に残す）。
+    const divider = document.createElement("div");
+    divider.setAttribute("role", "separator");
+    divider.tabIndex = 0;
+    document.body.append(divider);
+    divider.focus();
+    fireEvent.keyDown(divider, { key: "ArrowRight" });
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+    divider.remove();
+
+    // 3) 非表示（inert/hidden/aria-hidden の下）の読書面は処理しない。
+    view.unmount();
+    render(
+      <div inert>
+        <EBookPane
+          menuLanguage="en"
+          source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+        />
+      </div>,
+    );
+    const hidden = screen.getByRole("article", { name: "Book reader" });
+    fireEvent.keyDown(hidden, { key: "ArrowRight" });
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+  });
+
   it("handles ArrowLeft and ArrowRight from the reader root or a focused child", async () => {
     render(
       <EBookPane

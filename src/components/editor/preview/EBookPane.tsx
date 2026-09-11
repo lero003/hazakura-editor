@@ -51,6 +51,11 @@ import {
 import type { MenuLanguage } from "../../../types";
 import { isJapaneseMenuLanguage } from "../../../types";
 import {
+  READER_KEY_OWNER_SELECTOR,
+  READER_MODAL_SELECTOR,
+  resolveReaderPagingOwnership,
+} from "../../../features/editor/readerKeyboardOwnership";
+import {
   getEBookPageOffset,
   measureEBookPageCount,
   resolveEBookSpread,
@@ -947,6 +952,28 @@ export default function EBookPane({
     }
   };
 
+  // 全幅の読書面を開いたら、その面へ**明示的に**フォーカスを移す（キーの宛先を決める）。
+  // 以前はページ送りのたびに `document` から読書面へフォーカスを戻していたため、
+  // ダイアログのボタンにフォーカスしたまま左右矢印を押すとフォーカスまで奪われた
+  // （外部レビュー R1: 開くときに移す／「とにかく戻す」方式をやめる）。
+  useEffect(() => {
+    if (!readingFocusActive) {
+      return;
+    }
+    const article = articleRef.current;
+    if (!article) {
+      return;
+    }
+    const active = document.activeElement;
+    if (active instanceof Node && article.contains(active)) {
+      return;
+    }
+    if (document.querySelector('.modal-backdrop, [aria-modal="true"]')) {
+      return;
+    }
+    article.focus();
+  }, [readingFocusActive]);
+
   useEffect(() => {
     const isReaderPagingKey = (
       event: globalThis.KeyboardEvent,
@@ -1011,11 +1038,28 @@ export default function EBookPane({
       // the editor still owns focus (e.g. right after opening the e-book
       // pane, or on a single-page chapter where repeated flips must not
       // fall through to the editor).
-      if (!articleRef.current) {
+      const article = articleRef.current;
+      if (!article) {
         return;
       }
       const direction = isReaderPagingKey(event);
       if (direction === null) {
+        return;
+      }
+      // モーダル中・非表示（hidden/inert/aria-hidden の下）・サイドペイン表示で
+      // 発生源が読書面の外、のいずれかならページ送りに使わない（外部レビュー R1）。
+      // フォーカスは奪わない（開くときに一度だけ移す）。
+      if (
+        !resolveReaderPagingOwnership({
+          eventFromOtherKeyOwner:
+            event.target instanceof Element &&
+            event.target.closest(READER_KEY_OWNER_SELECTOR) !== null,
+          modalOpen:
+            document.querySelector(READER_MODAL_SELECTOR) !== null,
+          readerAvailable:
+            article.closest('[inert], [hidden], [aria-hidden="true"]') === null,
+        })
+      ) {
         return;
       }
       event.preventDefault();
@@ -1025,8 +1069,10 @@ export default function EBookPane({
       } else {
         goPreviousPageRef.current();
       }
-      const article = articleRef.current;
-      if (article && document.activeElement !== article) {
+      // 送ったあとは読書面へフォーカスを戻す（読書面の中で操作している間、子要素に
+      // 残ったフォーカスで以降のページ送りが途切れないように）。**所有権の判定を
+      // 通ったあとだけ**なので、ダイアログ操作中のフォーカスは奪わない（外部レビュー R1）。
+      if (document.activeElement !== article) {
         article.focus();
       }
     };
