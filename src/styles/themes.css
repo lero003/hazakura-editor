@@ -48,6 +48,7 @@ html, body, #root, .app-shell,
   --conflict: #b59045;
   --status-bg: #0a0e0c;
   --status-text: #e5eddf;
+  --form-control-scheme: dark;
   --selection-bg: rgba(170, 208, 172, 0.2);
   --scrollbar-thumb: rgba(140, 160, 148, 0.15);
   --scrollbar-thumb-hover: rgba(140, 160, 148, 0.3);
@@ -146,6 +147,7 @@ html, body, #root, .app-shell,
   --conflict: #d4a842;
   --status-bg: #08080e;
   --status-text: #e8e8f4;
+  --form-control-scheme: dark;
   --selection-bg: rgba(160, 144, 255, 0.18);
 
   /* Diff カラー: 夜光の上書き / Diff colors (yakou override)

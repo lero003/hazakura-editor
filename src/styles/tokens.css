@@ -33,6 +33,9 @@
   --conflict: #997838;
   --status-bg: #1c2420;
   --status-text: #f0f7f3;
+  /* ネイティブのフォーム部品（select のポップアップ等）の面。
+     light 既定。暗色テーマだけ dark へ上書きする。 */
+  --form-control-scheme: light;
   --selection-bg: rgba(53, 107, 80, 0.15);
   --scrollbar-thumb: rgba(107, 118, 112, 0.25);
   --scrollbar-thumb-hover: rgba(107, 118, 112, 0.4);

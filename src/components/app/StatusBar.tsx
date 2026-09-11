@@ -5,14 +5,41 @@ import type {
 } from "../../types";
 import { formatLineEndingKind, formatTextEncoding } from "../../lib/format";
 
+/**
+ * 文字コードのチップは**1つだけ**にする（第二調整）。
+ *
+ * 「保存するときの文字コードを変える」と「ファイルをこの文字コードで読み直す」は
+ * 別の操作だが、別チップに並べると利用者から見て違いが分からない。しかも
+ * 「読み直す」だけが文字化けの復旧路で、安全側（未保存なら実行しない）でもある。
+ * そこで1つの select の中を2群に分け、**読み直す側を先**に置く。
+ * 現在値の表示（`--status-text` ではない chrome の文字色）と併せて、
+ * ライトテーマでも文字が沈まないようにする。
+ */
+const SAVE_ENCODING_PREFIX = "save:";
+const REOPEN_ENCODING_PREFIX = "reopen:";
+
+const TEXT_ENCODINGS: { label: string; value: TextEncoding }[] = [
+  { label: "UTF-8", value: "utf-8" },
+  { label: "UTF-8 BOM", value: "utf-8-bom" },
+  { label: "Shift-JIS", value: "shift-jis" },
+  { label: "EUC-JP", value: "euc-jp" },
+];
+
 type StatusBarProps = {
+  activeDirty: boolean;
   activeTab: EditorTab | null;
   agentLabel: string | null;
   detail: string;
   secondaryDetail: string;
   dirtyLabel: string;
   encodingAriaLabel: string;
+  /** チップの説明。読み直せないときは理由を足して出す。 */
+  encodingChipTitle: string;
   encodingLabel: string;
+  /** 読み直せない理由（未保存の編集があるとき）。 */
+  encodingReopenBlocked: string;
+  encodingReopenGroup: string;
+  encodingSaveGroup: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
   lModeEnabled: boolean;
@@ -25,13 +52,18 @@ type StatusBarProps = {
 };
 
 export function StatusBar({
+  activeDirty,
   activeTab,
   agentLabel,
   detail,
   secondaryDetail,
   dirtyLabel,
   encodingAriaLabel,
+  encodingChipTitle,
   encodingLabel,
+  encodingReopenBlocked,
+  encodingReopenGroup,
+  encodingSaveGroup,
   lineEndingAriaLabel,
   lineEndingLabel,
   lModeEnabled,
@@ -45,6 +77,27 @@ export function StatusBar({
   const showFormatControls = Boolean(activeTab && !lModeEnabled);
   const fullDetail = joinStatusDetail(detail, secondaryDetail);
   const visibleDetail = showFormatControls ? detail : fullDetail;
+  // 読み直しは「ディスクのファイルがある」「未保存の編集が無い」ときだけ。
+  // 実行側（reopenTabFromDisk）と同じ条件をここで先に出し、押せない理由を title に書く。
+  const reopenAvailable =
+    Boolean(activeTab?.path) && !activeDirty && Boolean(onReopenEncoding);
+  const encodingTitle = reopenAvailable
+    ? encodingChipTitle
+    : `${encodingChipTitle} — ${encodingReopenBlocked}`;
+
+  const onEncodingChoice = (choice: string) => {
+    if (choice.startsWith(REOPEN_ENCODING_PREFIX)) {
+      onReopenEncoding?.(
+        choice.slice(REOPEN_ENCODING_PREFIX.length) as TextEncoding,
+      );
+      return;
+    }
+    if (choice.startsWith(SAVE_ENCODING_PREFIX)) {
+      onConvertEncoding(
+        choice.slice(SAVE_ENCODING_PREFIX.length) as TextEncoding,
+      );
+    }
+  };
 
   return (
     <footer className="status-bar lmode-surface">
@@ -97,38 +150,42 @@ export function StatusBar({
               <option value="crlf">CRLF</option>
             </select>
           </label>
-          <label className="status-bar-segment status-bar-format-chip">
+          <label className="status-bar-segment status-bar-format-chip" title={encodingTitle}>
             <span className="status-bar-format-label">{encodingLabel}</span>
             <span className="status-bar-format-value" aria-hidden="true">
               {formatTextEncoding(activeTab.encoding, "en")}
             </span>
             <select
-              title="保存時の文字コードを変更します。表示の読み直しは「開き直す」を使用してください。"
               aria-label={encodingAriaLabel}
               className="status-bar-format-select"
-              value={activeTab.encoding}
-              onChange={(event) =>
-                onConvertEncoding(event.target.value as TextEncoding)
-              }
+              value={`${SAVE_ENCODING_PREFIX}${activeTab.encoding}`}
+              onChange={(event) => onEncodingChoice(event.target.value)}
             >
-              <option value="utf-8">UTF-8</option>
-              <option value="utf-8-bom">UTF-8 BOM</option>
-              <option value="shift-jis">Shift-JIS</option>
-              <option value="euc-jp">EUC-JP</option>
+              {activeTab.path ? (
+                <optgroup label={encodingReopenGroup}>
+                  {TEXT_ENCODINGS.map((encoding) => (
+                    <option
+                      disabled={!reopenAvailable}
+                      key={`${REOPEN_ENCODING_PREFIX}${encoding.value}`}
+                      value={`${REOPEN_ENCODING_PREFIX}${encoding.value}`}
+                    >
+                      {encoding.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              <optgroup label={encodingSaveGroup}>
+                {TEXT_ENCODINGS.map((encoding) => (
+                  <option
+                    key={`${SAVE_ENCODING_PREFIX}${encoding.value}`}
+                    value={`${SAVE_ENCODING_PREFIX}${encoding.value}`}
+                  >
+                    {encoding.label}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </label>
-          {activeTab.path && onReopenEncoding ? (
-            <label className="status-bar-segment status-bar-format-chip" title="自動判定で文字化けしたときに使用します。未保存の編集がある場合は開き直せません。">
-              <span className="status-bar-format-label">開き直す</span>
-              <select aria-label="指定した文字コードで開き直す" className="status-bar-format-select" value="" onChange={event => onReopenEncoding(event.target.value as TextEncoding)}>
-                <option value="" disabled>文字コードを選択</option>
-                <option value="utf-8">UTF-8</option>
-                <option value="utf-8-bom">UTF-8 BOM</option>
-                <option value="shift-jis">Shift-JIS</option>
-                <option value="euc-jp">EUC-JP</option>
-              </select>
-            </label>
-          ) : null}
         </span>
       ) : (
         <span className="status-bar-segment status-bar-detail" title={fullDetail}>

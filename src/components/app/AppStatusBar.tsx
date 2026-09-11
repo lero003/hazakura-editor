@@ -15,7 +15,11 @@ type AppStatusBarProps = {
   secondaryDetail: string;
   dirtyLabel: string;
   encodingAriaLabel: string;
+  encodingChipTitle: string;
   encodingLabel: string;
+  encodingReopenBlocked: string;
+  encodingReopenGroup: string;
+  encodingSaveGroup: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
   lModeEnabled: boolean;
@@ -38,7 +42,11 @@ export function AppStatusBar({
   secondaryDetail,
   dirtyLabel,
   encodingAriaLabel,
+  encodingChipTitle,
   encodingLabel,
+  encodingReopenBlocked,
+  encodingReopenGroup,
+  encodingSaveGroup,
   lineEndingAriaLabel,
   lineEndingLabel,
   lModeEnabled,
@@ -52,6 +60,7 @@ export function AppStatusBar({
 }: AppStatusBarProps) {
   return (
     <StatusBar
+      activeDirty={activeDirty}
       activeTab={activeTab}
       agentLabel={
         !lModeEnabled && agentWorkbenchActive && activeAgentSession
@@ -62,7 +71,11 @@ export function AppStatusBar({
       secondaryDetail={secondaryDetail}
       dirtyLabel={dirtyLabel}
       encodingAriaLabel={encodingAriaLabel}
+      encodingChipTitle={encodingChipTitle}
       encodingLabel={encodingLabel}
+      encodingReopenBlocked={encodingReopenBlocked}
+      encodingReopenGroup={encodingReopenGroup}
+      encodingSaveGroup={encodingSaveGroup}
       lineEndingAriaLabel={lineEndingAriaLabel}
       lineEndingLabel={lineEndingLabel}
       lModeEnabled={lModeEnabled}

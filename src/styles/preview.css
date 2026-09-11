@@ -605,7 +605,9 @@
 .status-bar-detail {
   flex: 1 1 auto;
   max-width: min(40ch, 38vw);
-  opacity: 0.85;
+  /* opacity で薄めない。chrome 面（--chrome-surface）で 3.7:1 まで落ちる
+     （実機指摘の「文字が沈む」と同じ class の不具合）。--text-muted は
+     themeContrast が 4.5:1 以上を検査済み。 */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -627,12 +629,15 @@
   min-width: 0;
 }
 
+/* このチップは chrome 面（--chrome-surface）に載る。旧・暗色ステータスバーの専用
+   トークン --status-text は light でほぼ白（#f0f7f3）になり、明るい chrome の上で
+   文字が沈む（実機指摘）。chrome の文字色は --text / --text-muted へ統一する。 */
 .status-bar-format-chip {
   align-items: center;
-  background: color-mix(in srgb, var(--status-text) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--status-text) 16%, transparent);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
   border-radius: var(--radius-sm);
-  color: var(--status-text);
+  color: var(--text);
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 11px;
@@ -649,17 +654,20 @@
 .status-bar-format-chip:focus-within {
   background: color-mix(in srgb, var(--accent) 24%, transparent);
   border-color: color-mix(in srgb, var(--accent) 36%, transparent);
-  color: var(--status-text);
+  color: var(--text);
 }
 
+/* ラベル（「改行」「文字コード」）は 11px。--text-muted でもチップの塗りの上では
+   画素実測 4.35:1 まで落ちるため、値と同じ --text を使い、階層は太さ
+   （値 700 / ラベル 600）で付ける。 */
 .status-bar-format-label {
+  color: var(--text);
   letter-spacing: 0.02em;
-  opacity: 0.75;
   pointer-events: none;
 }
 
 .status-bar-format-value {
-  color: var(--status-text);
+  color: var(--text);
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -675,8 +683,10 @@
   background-image: none;
   border: 0;
   box-shadow: none;
-  color: var(--status-text);
-  color-scheme: dark;
+  color: var(--text);
+  /* ネイティブのポップアップ面は select 自身の色ではなくこの指定に従う。
+     light テーマで暗いメニューが出ないよう、テーマ側の意味トークンで揃える。 */
+  color-scheme: var(--form-control-scheme, light);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
@@ -697,7 +707,7 @@
 }
 
 .status-bar-format-select:hover {
-  color: var(--status-text);
+  color: var(--text);
 }
 
 @media (max-width: 860px) {

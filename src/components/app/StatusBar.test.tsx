@@ -26,14 +26,94 @@ const activeTab: EditorTab = {
   size: 10,
 };
 
+const labels = {
+  encodingAriaLabel: "Encoding",
+  encodingChipTitle: "Encoding chip",
+  encodingLabel: "Encoding",
+  encodingReopenBlocked: "Save or discard unsaved changes first",
+  encodingReopenGroup: "Re-read the file as",
+  encodingSaveGroup: "Use when saving",
+  lineEndingAriaLabel: "Line endings",
+  lineEndingLabel: "Line endings",
+};
+
+const base = {
+  activeDirty: false,
+  activeTab,
+  agentLabel: null,
+  detail: "",
+  secondaryDetail: "",
+  dirtyLabel: "",
+  lModeEnabled: false,
+  saveAffirmation: false,
+  saveAffirmationKey: null,
+  statusText: "Ready",
+  ...labels,
+  onConvertEncoding: () => {},
+  onConvertLineEnding: () => {},
+};
+
 describe("StatusBar", () => {
-  it("keeps explicit re-decoding separate from save encoding", () => {
+  it("keeps explicit re-decoding separate from save encoding in one chip", () => {
     const reopen = vi.fn();
     const convert = vi.fn();
-    render(<StatusBar activeTab={activeTab} agentLabel={null} detail="" secondaryDetail="" dirtyLabel="" encodingAriaLabel="Encoding" encodingLabel="Encoding" lineEndingAriaLabel="Line endings" lineEndingLabel="Line endings" lModeEnabled={false} onConvertEncoding={convert} onReopenEncoding={reopen} onConvertLineEnding={vi.fn()} saveAffirmation={false} saveAffirmationKey={null} statusText="Ready" />);
-    fireEvent.change(screen.getByRole("combobox", { name: "指定した文字コードで開き直す" }), { target: { value: "euc-jp" } });
+    const { container } = render(
+      <StatusBar {...base} onConvertEncoding={convert} onReopenEncoding={reopen} />,
+    );
+
+    // 1チップに2群（読み直す / 保存時に使う）を入れ、操作を value の接頭辞で分ける。
+    const group = container.querySelector(".status-bar-format-group");
+    expect(group?.querySelectorAll(".status-bar-format-chip")).toHaveLength(2);
+    const encodingSelect = screen.getByRole("combobox", { name: "Encoding" });
+    const optionValues = Array.from(encodingSelect.querySelectorAll("option")).map(
+      (option) => option.value,
+    );
+    expect(optionValues).toEqual([
+      "reopen:utf-8",
+      "reopen:utf-8-bom",
+      "reopen:shift-jis",
+      "reopen:euc-jp",
+      "save:utf-8",
+      "save:utf-8-bom",
+      "save:shift-jis",
+      "save:euc-jp",
+    ]);
+
+    fireEvent.change(encodingSelect, { target: { value: "reopen:euc-jp" } });
     expect(reopen).toHaveBeenCalledWith("euc-jp");
     expect(convert).not.toHaveBeenCalled();
+
+    fireEvent.change(encodingSelect, { target: { value: "save:shift-jis" } });
+    expect(convert).toHaveBeenCalledWith("shift-jis");
+  });
+
+  it("blocks the re-read group while the buffer has unsaved edits", () => {
+    const { container } = render(
+      <StatusBar {...base} activeDirty onReopenEncoding={vi.fn()} />,
+    );
+
+    const reopenOptions = Array.from(
+      container.querySelectorAll('option[value^="reopen:"]'),
+    );
+    expect(reopenOptions).toHaveLength(4);
+    expect(reopenOptions.every((option) => option.hasAttribute("disabled"))).toBe(true);
+    // 押せない理由はチップの title に出す（disabled な option の title は読めない）。
+    const chip = container.querySelector(".status-bar-format-chip[title]");
+    expect(chip?.getAttribute("title")).toContain("Save or discard unsaved changes first");
+  });
+
+  it("does not offer re-reading a pathless draft from disk", () => {
+    render(
+      <StatusBar
+        {...base}
+        activeTab={{ ...activeTab, id: "draft:1", sessionId: "draft:1", path: "" }}
+        onReopenEncoding={vi.fn()}
+      />,
+    );
+
+    const encodingSelect = screen.getByRole("combobox", { name: "Encoding" });
+    expect(encodingSelect.querySelectorAll('option[value^="reopen:"]')).toHaveLength(0);
+    expect(encodingSelect.querySelectorAll('option[value^="save:"]')).toHaveLength(4);
   });
 
   it("keeps detail and format controls in the same trailing row", () => {
@@ -41,21 +121,10 @@ describe("StatusBar", () => {
     const onConvertLineEnding = vi.fn();
     const { container } = render(
       <StatusBar
-        activeTab={activeTab}
-        agentLabel={null}
+        {...base}
         detail="Markdown / UTF-8 / 10 bytes"
-        secondaryDetail=""
-        dirtyLabel=""
-        encodingAriaLabel="Encoding"
-        encodingLabel="Encoding"
-        lineEndingAriaLabel="Line endings"
-        lineEndingLabel="Line endings"
-        lModeEnabled={false}
         onConvertEncoding={onConvertEncoding}
         onConvertLineEnding={onConvertLineEnding}
-        saveAffirmation={false}
-        saveAffirmationKey={null}
-        statusText="Ready"
       />,
     );
 
@@ -71,12 +140,8 @@ describe("StatusBar", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Line endings" }), {
       target: { value: "crlf" },
     });
-    fireEvent.change(screen.getByRole("combobox", { name: "Encoding" }), {
-      target: { value: "shift-jis" },
-    });
 
     expect(onConvertLineEnding).toHaveBeenCalledWith("crlf");
-    expect(onConvertEncoding).toHaveBeenCalledWith("shift-jis");
 
     // The status text must be exposed as a live region so
     // screen readers announce status changes (e.g. "Saved",
@@ -91,21 +156,9 @@ describe("StatusBar", () => {
   it("shortens the passive detail in normal mode while keeping the full title", () => {
     const { container } = render(
       <StatusBar
-        activeTab={activeTab}
-        agentLabel={null}
+        {...base}
         detail="Markdown · 10 B · 7 characters"
         secondaryDetail="UTF-8 · LF · final newline · Ln 1, Col 1"
-        dirtyLabel=""
-        encodingAriaLabel="Encoding"
-        encodingLabel="Encoding"
-        lineEndingAriaLabel="Line endings"
-        lineEndingLabel="Line endings"
-        lModeEnabled={false}
-        onConvertEncoding={vi.fn()}
-        onConvertLineEnding={vi.fn()}
-        saveAffirmation={false}
-        saveAffirmationKey={null}
-        statusText="Ready"
       />,
     );
 
@@ -135,21 +188,10 @@ describe("StatusBar", () => {
   it("shows the full detail in L Mode because format controls are hidden", () => {
     const { container } = render(
       <StatusBar
-        activeTab={activeTab}
-        agentLabel={null}
+        {...base}
         detail="Markdown · 10 B · 7 characters"
+        lModeEnabled
         secondaryDetail="UTF-8 · LF · final newline · Ln 1, Col 1"
-        dirtyLabel=""
-        encodingAriaLabel="Encoding"
-        encodingLabel="Encoding"
-        lineEndingAriaLabel="Line endings"
-        lineEndingLabel="Line endings"
-        lModeEnabled={true}
-        onConvertEncoding={vi.fn()}
-        onConvertLineEnding={vi.fn()}
-        saveAffirmation={false}
-        saveAffirmationKey={null}
-        statusText="Ready"
       />,
     );
 
@@ -163,23 +205,7 @@ describe("StatusBar", () => {
 
   it("removes focusable format controls in L Mode", () => {
     const { container } = render(
-      <StatusBar
-        activeTab={activeTab}
-        agentLabel={null}
-        detail="Markdown / UTF-8 / 10 bytes"
-        secondaryDetail=""
-        dirtyLabel=""
-        encodingAriaLabel="Encoding"
-        encodingLabel="Encoding"
-        lineEndingAriaLabel="Line endings"
-        lineEndingLabel="Line endings"
-        lModeEnabled={true}
-        onConvertEncoding={vi.fn()}
-        onConvertLineEnding={vi.fn()}
-        saveAffirmation={false}
-        saveAffirmationKey={null}
-        statusText="Ready"
-      />,
+      <StatusBar {...base} detail="Markdown / UTF-8 / 10 bytes" lModeEnabled />,
     );
 
     expect(container.querySelector(".status-bar-format-group")).toBeNull();
@@ -195,45 +221,13 @@ describe("StatusBar", () => {
 
   it("renders the unsaved pill when dirtyLabel is provided", () => {
     const { container, rerender } = render(
-      <StatusBar
-        activeTab={activeTab}
-        agentLabel={null}
-        detail="Markdown / UTF-8 / 10 bytes"
-        secondaryDetail=""
-        dirtyLabel=""
-        encodingAriaLabel="Encoding"
-        encodingLabel="Encoding"
-        lineEndingAriaLabel="Line endings"
-        lineEndingLabel="Line endings"
-        lModeEnabled={false}
-        onConvertEncoding={vi.fn()}
-        onConvertLineEnding={vi.fn()}
-        saveAffirmation={false}
-        saveAffirmationKey={null}
-        statusText="Ready"
-      />,
+      <StatusBar {...base} detail="Markdown / UTF-8 / 10 bytes" />,
     );
 
     expect(container.querySelector(".status-bar-unsaved-pill")).toBeNull();
 
     rerender(
-      <StatusBar
-        activeTab={activeTab}
-        agentLabel={null}
-        detail="Markdown / UTF-8 / 10 bytes"
-        secondaryDetail=""
-        dirtyLabel="未保存"
-        encodingAriaLabel="Encoding"
-        encodingLabel="Encoding"
-        lineEndingAriaLabel="Line endings"
-        lineEndingLabel="Line endings"
-        lModeEnabled={false}
-        onConvertEncoding={vi.fn()}
-        onConvertLineEnding={vi.fn()}
-        saveAffirmation={false}
-        saveAffirmationKey={null}
-        statusText="Ready"
-      />,
+      <StatusBar {...base} detail="Markdown / UTF-8 / 10 bytes" dirtyLabel="未保存" />,
     );
 
     const pill = container.querySelector(".status-bar-unsaved-pill");

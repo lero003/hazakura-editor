@@ -5,6 +5,14 @@ export type EditorChromeCopy = {
   caseSensitive: string;
   closeSearch: string;
   encoding: string;
+  /** 「文字コード」チップの説明（読み直す／保存時の2つの意味を持つ1チップ）。 */
+  encodingChipTitle: string;
+  /** 読み直せない理由（未保存の編集がある／パスが無い）。 */
+  encodingReopenBlocked: string;
+  /** 1チップ内の第1群: ファイルをこの文字コードで読み直す。 */
+  encodingReopenGroup: string;
+  /** 1チップ内の第2群: 次に保存するときの文字コードを変える。 */
+  encodingSaveGroup: string;
   encodings: string;
   find: string;
   findInActiveFile: string;
@@ -36,6 +44,10 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       caseSensitive: "おほもじ",
       closeSearch: "さがしをとぢる",
       encoding: "ふみのかきかた",
+      encodingChipTitle: "よみなほす かきかたと、つぎに ほぞんする かきかたを えらびます。",
+      encodingReopenBlocked: "よみなほすには、さきに ほぞんするか、すててください。",
+      encodingReopenGroup: "この かきかたで よみなほす",
+      encodingSaveGroup: "ほぞんする かきかたを かへる",
       encodings: "ふみのかきかた",
       find: "さがす",
       findInActiveFile: "いまのふみをさがす",
@@ -67,6 +79,10 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         caseSensitive: "大文字",
         closeSearch: "検索を閉じる",
         encoding: "文字コード",
+        encodingChipTitle: "このファイルを読み直す文字コードと、次に保存するときの文字コードを選びます。",
+        encodingReopenBlocked: "読み直すには、未保存の編集を保存するか、破棄してください。",
+        encodingReopenGroup: "この文字コードで読み直す",
+        encodingSaveGroup: "保存する文字コードを変える",
         encodings: "文字コード",
         find: "検索",
         findInActiveFile: "アクティブファイル内を検索",
@@ -95,7 +111,11 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         caseSensitive: "Case",
         closeSearch: "Close search",
         encoding: "Encoding",
-        encodings: "Encodings",
+        encodingChipTitle: "Choose the encoding used to re-read this file, and the encoding used the next time it is saved.",
+        encodingReopenBlocked: "Save or discard unsaved changes before re-reading the file.",
+        encodingReopenGroup: "Re-read the file as",
+        encodingSaveGroup: "Use when saving",
+        encodings: "Encoding",
         find: "Find",
         findInActiveFile: "Find in active file",
         findOptions: "Find options",
