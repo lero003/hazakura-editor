@@ -12,6 +12,23 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 全体計画は[v3製品計画](v3-product-completion-plan.md)、Assistの技術条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)。公開buildと候補sourceの対応は未確認。
 
+## 現在の区切り — 外部レビュー follow-up（P2 / P3・2026-09-11）
+
+ドーン氏のレビューで挙がった2件。どちらも「設計の意図が実際の挙動に届いていない」型。
+
+- **P2 文字コードの1チップ**: select の `value` が常に `save:<現在の文字コード>` で、selected が
+  必ず「保存する文字コードを変える」側だった（ネイティブ select / キーボード / VoiceOver は
+  selected を基準にするため、安全側の「読み直す」を先頭に置いた狙いが弱まる）。select を
+  **アクション選択**にし、`value=""` の**中立 placeholder**（「操作を選ぶ」）を selected に。
+  現在の文字コードはチップの表示が示す。操作後は中立へ戻す。aria-label は「文字コードの操作」。
+  実測（実アプリの fixture）: `"save:utf-8"` → **`""`**。見た目は不変（select は `opacity: 0`）。
+- **P3 確認メニューの残り**: `WorkspaceModeNavigation` の open を無効化する signature に
+  `readingOpen`（＝`canReview`）が無く、「確認を開く → 読む」で操作不能な popup が読書面の上に
+  残っていた。signature に `canReview` を足し、トリガーの有効条件と同じ由来で閉じるようにする。
+
+検証: typecheck / 全Vitest **278ファイル・2,430件** / Rust無変更。
+資料: `reviews/2026-09-11-v3-followup-p2p3`。
+
 ## 現在の区切り — 実機フィードバック第2弾・11件（2026-09-11）
 
 1回目の修正を載せた実機で触って出た11件（右上の書き出す／アイコンずれ／信号機の位置／
