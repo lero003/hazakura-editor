@@ -706,6 +706,19 @@
   color: var(--text); font-size: 14px; line-height: 1.7;
 }
 .apple-assist-window-form { padding-top: 14px; }
+/* 利用できない理由と必要な操作の1行（外部レビュー R8）。入力欄の直前に置き、
+   入力が無効な理由がその場で読めるようにする。詳細はヘルプの中。 */
+.apple-assist-state-note {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--conflict) 30%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--conflict) 8%, transparent);
+  color: var(--text);
+  /* この窓の文字は14px以上（可読性の契約。appleAssistWindowCss.test が固定している）。 */
+  font-size: 14px;
+  line-height: 1.6;
+}
 .apple-assist-window-textarea { min-height: 88px; border-radius: 8px; }
 .apple-assist-window-progress { display: flex; padding-block: 12px; }
 @media (max-height: 640px) {

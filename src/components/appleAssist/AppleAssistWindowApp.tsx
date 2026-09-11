@@ -903,7 +903,20 @@ export function AppleAssistWindowApp() {
           )}</div>
         </details>
         <label htmlFor="apple-assist-rough-request" className="apple-assist-window-label">{ui.composer}</label>
+        {/* 外部レビュー R8: 使えない理由と復帰方法を畳んだヘルプの中だけに置かない。
+            今の状態と必要な操作を composer の直前へ1行で出し、無効な入力欄と結びつける。
+            詳細（但し書き・利用条件）はヘルプに残す。 */}
+        {available ? null : (
+          <p
+            className="apple-assist-state-note"
+            id="apple-assist-availability"
+            role="status"
+          >
+            {availabilityMessage}
+          </p>
+        )}
         <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
+          aria-describedby={available ? undefined : "apple-assist-availability"}
           value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
           rows={3} placeholder={copy.placeholder} disabled={busy || !available}
           onKeyDown={(event) => {
