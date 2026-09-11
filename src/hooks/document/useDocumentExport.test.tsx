@@ -28,6 +28,9 @@ const filesApi = vi.hoisted(() => ({
   openTextFile: vi.fn(),
 }));
 
+/** 事前検査の例外を1回だけ注入する口（外部レビュー F2 の再現用）。 */
+const preflightApi = vi.hoisted(() => ({ failNextWith: null as string | null }));
+
 const epubApi = vi.hoisted(() => ({
   buildEpubBetaArchive: vi.fn(async () => new Uint8Array([1, 2, 3])),
   buildEpubBetaArchiveWithReport: vi.fn(async () => ({
@@ -62,6 +65,27 @@ vi.mock("../../features/document/epubExport", () => ({
   buildEpubBetaArchiveWithReport: epubApi.buildEpubBetaArchiveWithReport,
   defaultEpubExportSettings: epubApi.defaultEpubExportSettings,
 }));
+
+vi.mock("../../features/document/exportPreflight", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("../../features/document/exportPreflight")
+  >();
+  return {
+    ...actual,
+    async analyzeExportPreflight(
+      options: Parameters<typeof actual.analyzeExportPreflight>[0],
+    ) {
+      // 章や画像の読込失敗は failures/issues として正常 return する（その経路は変えない）。
+      // ここで注入するのは「事前検査そのものが例外で終わった」ケース（外部レビュー F2）。
+      if (preflightApi.failNextWith) {
+        const message = preflightApi.failNextWith;
+        preflightApi.failNextWith = null;
+        throw new Error(message);
+      }
+      return actual.analyzeExportPreflight(options);
+    },
+  };
+});
 
 vi.mock("../../features/document/markdownExportCss", () => ({
   getMarkdownPreviewCss: () => `
@@ -181,6 +205,163 @@ describe("useDocumentExport", () => {
     await act(async () => { resolve(makeTab({ path: "/workspace/book.md" })); await pending; });
     expect(result.current.epubExportRequest).not.toBeNull();
     expect(result.current.htmlExportRequest).toBeNull();
+  });
+
+  it.each(["pdf", "epub"] as const)(
+    "does not reopen %s after cancelling the visible modal during replacement preflight (F1)",
+    async (format) => {
+      // 外部レビュー F1: 切替の準備中に表示中の画面をキャンセルしても、準備が終わると
+      // 新しいダイアログが後から開いていた（利用者のキャンセルはセッション全体の終了）。
+      let resolve!: (value: ReturnType<typeof makeTab>) => void;
+      filesApi.openTextFile.mockReturnValueOnce(
+        new Promise((done) => { resolve = done; }),
+      );
+      const { result } = renderHook(() => useDocumentExport({
+        activeTab: makeTab(),
+        activeContents: "draft",
+        workspaceRootPath: "/workspace",
+        bookScopeChapters: [
+          { name: "book.md", path: "/workspace/book.md", relativePath: "book.md" },
+        ],
+        setStatus: vi.fn(),
+        setGlobalError: vi.fn(),
+      }));
+      await act(async () => { await result.current.exportHtml(); });
+      let pending!: Promise<void>;
+      act(() => {
+        const options = { cancelPrevious: result.current.cancelHtmlExport };
+        pending = format === "pdf"
+          ? result.current.exportPdf(options)
+          : result.current.exportEpubBeta(options);
+      });
+      expect(result.current.htmlExportRequest).not.toBeNull();
+      act(() => { result.current.cancelHtmlExport(); });
+      expect(result.current.htmlExportRequest).toBeNull();
+      await act(async () => {
+        resolve(makeTab({ path: "/workspace/book.md" }));
+        await pending;
+      });
+      expect(result.current.htmlExportRequest).toBeNull();
+      expect(result.current.pdfExportRequest).toBeNull();
+      expect(result.current.epubExportRequest).toBeNull();
+    },
+  );
+
+  it("runs the visible format when confirmed during a pending switch, and drops the prepared one (F1)", async () => {
+    // 切替の準備中でも、表示中の形式の確定は仕様どおり実行できる（「押せるのに無反応」にしない）。
+    // 確定したら切替は捨てるので、準備が終わっても別の面は開かない。
+    let resolve!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => { await result.current.exportHtml(); });
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.exportPdf({
+        cancelPrevious: result.current.cancelHtmlExport,
+      }) as Promise<void>;
+    });
+
+    dialogApi.save.mockResolvedValueOnce(null);
+    await act(async () => { await result.current.confirmHtmlExport(); });
+    expect(result.current.htmlExportRequest).toBeNull();
+
+    await act(async () => { resolve(makeTab({ path: "/workspace/book.md" })); await pending; });
+    expect(result.current.pdfExportRequest).toBeNull();
+  });
+
+  it("keeps only the last of consecutive format switches (F1)", async () => {
+    let resolveFirst!: (value: ReturnType<typeof makeTab>) => void;
+    let resolveSecond!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile
+      .mockReturnValueOnce(new Promise((done) => { resolveFirst = done; }))
+      .mockReturnValueOnce(new Promise((done) => { resolveSecond = done; }));
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => { await result.current.exportHtml(); });
+    let pdfRun!: Promise<void>;
+    let epubRun!: Promise<void>;
+    act(() => {
+      pdfRun = result.current.exportPdf({
+        cancelPrevious: result.current.cancelHtmlExport,
+      }) as Promise<void>;
+      epubRun = result.current.exportEpubBeta({
+        cancelPrevious: result.current.cancelHtmlExport,
+      }) as Promise<void>;
+    });
+
+    // 先に始めた PDF が遅れて完了しても、後から選んだ EPUB を追い越さない。
+    await act(async () => { resolveFirst(makeTab({ path: "/workspace/book.md" })); await pdfRun; });
+    expect(result.current.pdfExportRequest).toBeNull();
+    expect(result.current.htmlExportRequest).not.toBeNull();
+
+    await act(async () => { resolveSecond(makeTab({ path: "/workspace/book.md" })); await epubRun; });
+    expect(result.current.epubExportRequest).not.toBeNull();
+    expect([
+      result.current.htmlExportRequest,
+      result.current.pdfExportRequest,
+      result.current.epubExportRequest,
+    ].filter(Boolean)).toHaveLength(1);
+  });
+
+  it("does not let a cancelled prepare touch a new export session (F1)", async () => {
+    let resolve!: (value: ReturnType<typeof makeTab>) => void;
+    filesApi.openTextFile.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => { await result.current.exportHtml(); });
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.exportPdf({
+        cancelPrevious: result.current.cancelHtmlExport,
+      }) as Promise<void>;
+    });
+
+    // 利用者のキャンセル（＝セッション終了）→ 新しい書き出しを始める。
+    act(() => { result.current.endExportSession(); });
+    await act(async () => { await result.current.exportHtml(); });
+    expect(result.current.htmlExportRequest).not.toBeNull();
+
+    // 古い準備が後着しても、新しいセッションには干渉しない。
+    await act(async () => { resolve(makeTab({ path: "/workspace/book.md" })); await pending; });
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    expect(result.current.pdfExportRequest).toBeNull();
+  });
+
+  it("keeps the visible dialog confirmable when the next format preflight throws (F2)", async () => {
+    // 外部レビュー F2: 切替の準備が例外で終わると、残った旧画面は描かれているのに
+    // 確定の入口を通れなかった（表示と確定権限の分離）。
+    const setStatus = vi.fn();
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: "/workspace",
+      bookScopeChapters: [{ name: "book.md", path: "/workspace/book.md", relativePath: "book.md" }],
+      setStatus, setGlobalError: vi.fn(),
+    }));
+    await act(async () => { await result.current.exportPdf(); });
+    expect(result.current.pdfExportRequest).not.toBeNull();
+
+    // 切替の準備（事前検査）だけを例外で終わらせる。章の読込失敗は failures として
+    // 正常 return するので、ここは「検査そのものが例外」の経路を突く。
+    preflightApi.failNextWith = "injected preflight failure";
+    await act(async () => {
+      await result.current.exportEpubBeta({ cancelPrevious: result.current.cancelPdfExport });
+    });
+    expect(result.current.epubExportRequest).toBeNull();  // 準備は破棄
+    expect(result.current.pdfExportRequest).not.toBeNull(); // 旧画面は残る
+
+    setStatus.mockClear();
+    await act(async () => { await result.current.confirmPdfExport("standard", "document"); });
+    // 確定の入口を通っている（＝「押せるのに無反応」になっていない）
+    expect(setStatus).toHaveBeenCalledWith("Preparing PDF export...");
   });
 
   it("does not replace an open dialog without the switch option (R6)", async () => {

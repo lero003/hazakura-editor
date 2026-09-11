@@ -1169,6 +1169,7 @@ export function useAppShellController() {
   const {
     cancelPdfExport,
     cancelEpubBetaExport,
+    endExportSession,
     confirmPdfExport,
     confirmEpubBetaExport,
     epubExportRequest,
@@ -1214,16 +1215,18 @@ export function useAppShellController() {
    */
   const cancelEpubExportSession = useCallback(() => {
     exportDrafts.clear();
-    cancelEpubBetaExport();
-  }, [exportDrafts, cancelEpubBetaExport]);
+    // 利用者のキャンセルは**セッション全体の終了**（外部レビュー F1: 切替の準備も失効させ、
+    // 後着したダイアログが開かないようにする）。
+    endExportSession();
+  }, [exportDrafts, endExportSession]);
   const cancelPdfExportSession = useCallback(() => {
     exportDrafts.clear();
-    cancelPdfExport();
-  }, [exportDrafts, cancelPdfExport]);
+    endExportSession();
+  }, [exportDrafts, endExportSession]);
   const cancelHtmlExportSession = useCallback(() => {
     exportDrafts.clear();
-    cancelHtmlExport();
-  }, [exportDrafts, cancelHtmlExport]);
+    endExportSession();
+  }, [exportDrafts, endExportSession]);
 
   const saveActiveTab = useCallback(async () => {
     if (rejectIfAppleAssistLocksTab(activeTab)) {
