@@ -63,7 +63,7 @@ Last reviewed: 2026-09-10
   `src-tauri/tauri.conf.appstore.json`（build番号）は**触っていない**。
 - **内容:** モック24画面へのUI整合（江戸彼岸の明色化、スライスC/D/E、07本文面化、11形式ナビ）と、
   外部レビューの修正（R1〜R5、P1×1・P2×3、受入テストの穴）。
-- **検証:** typecheck / 全Vitest **275 files・2,401 tests** / Vite build /
+- **検証:** typecheck / 全Vitest **275 files・2,403 tests** / Vite build /
   App Store surface **10 files・117 tests** / Rust fmt・**385 passed・2 ignored**。
 - **未実施:** 署名pkgは未作成。Appleへのupload・処理・TestFlight配布・App Review は未実施。
   実機受入（WebGL・native・VoiceOver・IME・T01〜T10）はこれから。

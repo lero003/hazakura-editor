@@ -39,39 +39,6 @@ it.each(["en", "ja", "kana"] as const)("HTML offers only the current document an
   expect(confirm).not.toHaveBeenCalled();
 });
 
-it("shows the format nav inside the shared frame and reuses the same dialog (画面11)", () => {
-  const onSelectFormat = vi.fn();
-  const nav = (
-    <ExportFormatNav
-      format="pdf"
-      menuLanguage="ja"
-      onSelectFormat={onSelectFormat}
-    />
-  );
-  const { container } = render(
-    <PdfExportSettingsDialog
-      bookAvailable={false}
-      cancelButtonRef={{ current: null }}
-      dialogRef={{ current: null }}
-      documentName="draft.md"
-      formatNav={nav}
-      hasUnsavedChanges={false}
-      initialPreset="standard"
-      menuLanguage="ja"
-      onCancel={() => {}}
-      onConfirm={() => {}}
-    />,
-  );
-
-  // 形式ナビは共通の枠（dialog）の中にあり、対象（文書／本全体）と同居する。
-  const group = screen.getByRole("group", { name: "書き出す形式" });
-  expect(group.closest("div[role='dialog']")).toBe(container.querySelector("div[role='dialog']"));
-  expect(container.querySelector(".export-settings-header p")?.textContent).toBe("draft.md");
-
-  // 別形式を選ぶと、既存の準備処理へ切り替えを委ねる（新しい経路は作らない）。
-  fireEvent.click(screen.getByRole("button", { name: "HTML" }));
-  expect(onSelectFormat).toHaveBeenCalledExactlyOnceWith("html");
-});
 
 it("shows the format nav inside the shared frame and reuses the same dialog (画面11)", () => {
   const onSelectFormat = vi.fn();

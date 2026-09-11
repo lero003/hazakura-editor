@@ -15,7 +15,7 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 ## 現在の区切り — v3.0.0（TestFlight準備・2026-09-11）
 
 - npm / Tauri / Cargo の版数を **3.0.0** へ更新（`tauri.conf.appstore.json` の build番号はオーナー管理のため未変更）。
-- 検証: typecheck / 全Vitest **275 files・2,401 tests** / Vite build / App Store surface **117 tests** /
+- 検証: typecheck / 全Vitest **275 files・2,403 tests** / Vite build / App Store surface **117 tests** /
   Rust fmt・**385 passed・2 ignored**。
 - 資料: `docs/releases/3.0.0-source-tag.release.md` / `3.0.0-app-store-release-notes.md`（TestFlightで確認する項目つき）。
 - 署名pkgは未作成。Apple送信・TestFlight配布は未実施。次は build番号を更新して `npm run candidate:app-store-pkg`。
@@ -25,7 +25,7 @@ v2.9は2026-09-09にオーナーが審査通過・公開を報告。次はv3.0�
 - **P1**: 「書く」でレビュー面だけ閉じ、提案は保持。面が本文を覆う間は `.editor-pane` を `inert` に。
 - **P2**: レビュー導線に「領域を開示 → 再検証 → フォーカス（再試行）」を組み込み／低い窓の旧 `max-height` を撤去（640・680・200%でも未被覆0）／形式の往復で入力と対象を保持（`useExportDrafts`）。
 - **受入テスト**: `null===null` で成功していた比較を実在＋包含＋単一性へ。往復の統合テストを追加。
-- テスト 275ファイル/2,401件。資料: slice-07 / slice-11 のREADME。
+- テスト 275ファイル/2,403件。資料: slice-07 / slice-11 のREADME。
 
 ## 現在の区切り — スライス11: 書き出しの形式ナビ（2026-09-11）
 

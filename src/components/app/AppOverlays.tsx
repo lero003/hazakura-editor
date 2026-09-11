@@ -549,15 +549,23 @@ export function AppOverlays({
           onDraftChange={exportDrafts.rememberEpub}
           menuLanguage={menuLanguage}
           preflightByScope={epubExportRequest.preflightByScope}
-          onCancel={onCancelEpubBetaExport}
-          onConfirm={(settings, scope) => void onConfirmEpubBetaExport(settings, scope)}
+          onCancel={() => {
+            // 利用者のキャンセル: この書き出し操作は終わりなので草稿を捨てる。
+            exportDrafts.clear();
+            onCancelEpubBetaExport();
+          }}
+          onConfirm={(settings, scope) => {
+            exportDrafts.clear();
+            void onConfirmEpubBetaExport(settings, scope);
+          }}
         />
       ) : null}
 
       {htmlExportRequest && htmlExportDialogRef && htmlExportCancelButtonRef && onCancelHtmlExport && onConfirmHtmlExport ? (
         <HtmlExportSettingsDialog request={htmlExportRequest} formatNav={renderExportFormatNav("html")} menuLanguage={menuLanguage}
           dialogRef={htmlExportDialogRef} cancelButtonRef={htmlExportCancelButtonRef}
-          onCancel={onCancelHtmlExport} onConfirm={onConfirmHtmlExport} />
+          onCancel={() => { exportDrafts.clear(); onCancelHtmlExport(); }}
+          onConfirm={() => { exportDrafts.clear(); return onConfirmHtmlExport(); }} />
       ) : null}
       {pdfExportRequest ? (
         <PdfExportSettingsDialog
@@ -573,8 +581,14 @@ export function AppOverlays({
           onDraftChange={exportDrafts.rememberPdf}
           menuLanguage={menuLanguage}
           preflightByScope={pdfExportRequest.preflightByScope}
-          onCancel={onCancelPdfExport}
-          onConfirm={(preset, scope) => void onConfirmPdfExport(preset, scope)}
+          onCancel={() => {
+            exportDrafts.clear();
+            onCancelPdfExport();
+          }}
+          onConfirm={(preset, scope) => {
+            exportDrafts.clear();
+            void onConfirmPdfExport(preset, scope);
+          }}
         />
       ) : null}
 

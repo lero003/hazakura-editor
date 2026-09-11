@@ -167,9 +167,11 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 検索の wire 形式を変�
 | 種別 | 結果 |
 | --- | --- |
 | `npm run typecheck` | 成功 |
-| `npm test` | **275ファイル / 2,401件** 成功 |
+| `npm test` | **275ファイル / 2,403件** 成功 |
 | `cargo test` | **385 passed, 2 ignored**（検索の snippet 契約を変更） |
-| `npm run smoke:app-store-surface` | 117件 成功 |
+| `npm run smoke:app-store-surface` | **117件** 成功 |
+| `npx vitest run src/components/app/AppShell.layers.test.tsx` | **14件** 成功（07の往復・選択状態） |
+| `npx vitest run src/components/app/ExportFormatRoundTrip.test.tsx` | **5件** 成功（11の往復・草稿のclear） |
 | `npm run build:vite` | 成功（chunk サイズ警告は既存） |
 | `cargo fmt --check` / `cargo test` | OK / **385 passed, 2 ignored**（検索の snippet 契約を変更したため） |
 

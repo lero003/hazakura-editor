@@ -1,15 +1,22 @@
 import { usePreviewSurface } from "../../hooks/editor/usePreviewSurface";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { AppShell, type AppShellProps } from "./AppShell";
 vi.mock("./AppTopChrome", () => ({
-  AppTopChrome: ({ onTogglePreview }: { onTogglePreview: () => void }) =>
-    <div className="tabs-row"><button>Document tab</button><button onClick={onTogglePreview}>Toggle Preview</button></div>,
+  AppTopChrome: ({ onTogglePreview, navigation }: { onTogglePreview: () => void; navigation: { onReview: (target: string) => void } }) =>
+    <div className="tabs-row">
+      <button>Document tab</button>
+      <button onClick={onTogglePreview}>Toggle Preview</button>
+    </div>,
 }));
 vi.mock("./AppPrimaryToolbar", () => ({
-  AppPrimaryToolbar: ({ navigation }: { navigation: { onWrite: () => void } }) =>
-    <button onClick={navigation.onWrite}>Write</button>,
+  AppPrimaryToolbar: ({ navigation }: { navigation: { mode: string; onWrite: () => void; onReview: (target: string) => void } }) =>
+    <div data-mode={navigation.mode}>
+      <button onClick={navigation.onWrite}>Write</button>
+      {/* 上部ナビの「確認 → 提案」。実ナビと同じく navigation.onReview を通す。 */}
+      <button onClick={() => navigation.onReview("proposal")}>Check proposal</button>
+    </div>,
 }));
 vi.mock("./AppWorkspace", () => ({
   AppWorkspace: ({
@@ -18,6 +25,8 @@ vi.mock("./AppWorkspace", () => ({
     onReadingOverlayChange,
     compactPreviewFocus,
     onCompactPreviewFocusChange,
+    onReturnToEditing,
+    proposalReviewRef,
     proposalReviewVisible,
   }: {
     appleAssistGenerationLock?: { requestId: string } | null;
@@ -25,6 +34,8 @@ vi.mock("./AppWorkspace", () => ({
     documentChrome?: ReactNode;
     compactPreviewFocus: "editor" | "preview";
     onCompactPreviewFocusChange: (focus: "editor" | "preview") => void;
+    onReturnToEditing?: () => void;
+    proposalReviewRef?: { current: HTMLDivElement | null };
     onReadingOverlayChange: (open: boolean) => void;
   }) => (
     <section
@@ -37,6 +48,13 @@ vi.mock("./AppWorkspace", () => ({
         {documentChrome}
         <input aria-label="Editor" defaultValue="unsaved" />
       </div>
+      {proposalReviewVisible ? (
+        // 実レビュー面と同じく、面の中に role=region の読み取り面を持つ。
+        <div className="proposal-review-host" data-testid="review" ref={proposalReviewRef}>
+          <div role="region" tabIndex={-1} aria-label="Proposal review" />
+        </div>
+      ) : null}
+      <button onClick={onReturnToEditing}>Return to editing</button>
       <button onClick={() => onReadingOverlayChange(true)}>Open Reader</button>
       <button onClick={() => onCompactPreviewFocusChange("preview")}>Compact Preview</button>
     </section>
@@ -74,6 +92,27 @@ function ConnectedShell(props: AppShellProps) {
 }
 
 describe("AppShell chrome layers", () => {
+  it("shows the proposal review as the selected mode while it is visible (07 P2)", () => {
+    proposalState.proposal = { requestId: "req-1" };
+    try {
+      render(
+        <ConnectedShell
+          {...base}
+          activeTab={
+            {
+              name: "draft.md",
+              path: "/workspace/draft.md",
+              sessionId: "s1",
+            } as AppShellProps["activeTab"]
+          }
+        />,
+      );
+      expect(document.querySelector("[data-mode]")?.getAttribute("data-mode")).toBe("review");
+    } finally {
+      proposalState.proposal = null;
+    }
+  });
+
   it("closes the review surface but keeps the proposal when Write is pressed (07 P1)", () => {
     proposalState.proposal = { requestId: "req-1" };
     try {
@@ -99,6 +138,45 @@ describe("AppShell chrome layers", () => {
       expect(
         document.querySelector(".workspace")?.getAttribute("data-review-visible"),
       ).toBe("false");
+      expect(proposalState.proposal).not.toBeNull();
+    } finally {
+      proposalState.proposal = null;
+    }
+  });
+
+
+  it("reopens the same proposal review after returning to editing (07 P2)", async () => {
+    // 3つの遷移（「書く」／「案を残して編集に戻る」／「確認 → 提案」）を2本の関数へ統一した。
+    // 面が unmount されていても「確認 → 提案」で再表示され、フォーカスも戻ることを固定する。
+    proposalState.proposal = { requestId: "req-1" };
+    try {
+      render(
+        <ConnectedShell
+          {...base}
+          activeTab={
+            {
+              name: "draft.md",
+              path: "/workspace/draft.md",
+              sessionId: "s1",
+            } as AppShellProps["activeTab"]
+          }
+        />,
+      );
+      const reviewVisible = () =>
+        document.querySelector(".workspace")?.getAttribute("data-review-visible");
+      expect(reviewVisible()).toBe("true");
+
+      // レビュー内の「案を残して編集に戻る」。
+      fireEvent.click(screen.getByRole("button", { name: "Return to editing" }));
+      expect(reviewVisible()).toBe("false");
+      expect(proposalState.proposal).not.toBeNull();
+
+      // 上部ナビの「確認 → 提案」。面が無い状態からでも再表示＋フォーカスされる。
+      fireEvent.click(screen.getByRole("button", { name: "Check proposal" }));
+      expect(reviewVisible()).toBe("true");
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole("region", { name: "Proposal review" })),
+      );
       expect(proposalState.proposal).not.toBeNull();
     } finally {
       proposalState.proposal = null;

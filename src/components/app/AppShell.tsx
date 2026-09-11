@@ -128,22 +128,42 @@ export function AppShell(props: AppShellProps) {
     if (props.referencePaneVisible) props.onToggleReference();
     if (props.sidePaneMode === "ebook" || props.sidePaneMode === "compare") props.hideSidePane();
   };
-  const navigateToEditor = () => {
+  /**
+   * 提案レビューを見える状態にする（07 P2）。狭幅でプレビューや参照を表示していると
+   * 本文領域が `display: none` になり、タブとDOMが存在しても「開けた」ことにならないので、
+   * 面の表示と**領域の開示**を必ず一緒に行う。
+   */
+  const showProposalReview = () => {
+    setProposalReviewHidden(false);
+    revealEditorRegion();
+  };
+  const focusProposalReviewRegion = () =>
+    proposalReviewRef.current?.querySelector<HTMLElement>("[role=region]")?.focus();
+  /**
+   * 編集 ↔ 提案レビューの往復は**この2本だけ**を通す（遷移ごとに別々の処理を書かない）。
+   * - 編集へ戻る: 面を閉じる＋提案は保持＋本文へフォーカス
+   * - レビューを開く: 面を見せる＋領域を開示＋レビューへフォーカス
+   * 面が unmount されている状態で「確認→提案」を押しても、閉じたままにしない。
+   */
+  const returnToEditing = () => {
     if (!navigation.canNavigate || readingOverlayOpen) return;
     // 編集へ戻るときは、レビュー面だけ閉じる（提案は保持。反映は利用者の操作）。
     setProposalReviewHidden(true);
     revealEditorRegion();
-    requestAnimationFrame(() => props.editorPaneRef.current?.focus());
+    requestAnimationFrame(() => props.editorPaneRef?.current?.focus());
   };
-  /**
-   * 提案レビューを開く導線（07 P2）。**領域を開示してから**フォーカスする。
-   * 狭幅でプレビューや参照を表示していると本文領域が `display: none` になり、
-   * タブとDOMが存在しても「開けた」ことにならない。
-   */
+  const openProposalReview = () => {
+    showProposalReview();
+    // 面が描画された次のフレームでフォーカスする（再表示直後は region がまだ無い）。
+    requestAnimationFrame(() => {
+      focusProposalReviewRegion();
+    });
+  };
+  /** 別窓からの導線。開示だけを担い、フォーカスはフックが再試行つきで行う。 */
   const revealProposalReview = () => {
-    setProposalReviewHidden(false);
-    revealEditorRegion();
+    showProposalReview();
   };
+  const navigateToEditor = returnToEditing;
   // 別窓からの「提案を見る」導線。領域を開示してからフォーカスする（07 P2）。
   useLocalAssistReviewNavigation({ tabs: props.tabs, activeTab: props.activeTab,
     blocked: readingOverlayOpen || !!props.selectedImage,
@@ -214,7 +234,8 @@ export function AppShell(props: AppShellProps) {
           onOpenAppleAssistWindow={props.onOpenAppleAssistWindow}
           onOpenAgentWindow={props.onOpenAgentWindow}
           navigation={{ ...navigation, canNavigate: navigation.canNavigate && !readingOverlayOpen,
-            mode: readingOverlayOpen ? "read" : navigation.mode,
+            // レビューを見せている間は「確認」を選択状態にする（見えている面と一致させる）。
+            mode: readingOverlayOpen ? "read" : proposalReviewVisible ? "review" : navigation.mode,
             documentName: props.activeTab?.name ?? "", menuLanguage: props.menuLanguage,
             referenceName: props.referenceCompare?.reference.name, comparisonName,
             contextKey: JSON.stringify([props.activeTab?.sessionId, pendingProposal?.requestId,
@@ -225,7 +246,8 @@ export function AppShell(props: AppShellProps) {
             },
             onReview: (target) => {
               if (!navigation.canNavigate || readingOverlayOpen) return;
-              if (target === "proposal") proposalReviewRef.current?.querySelector<HTMLElement>("[role=region]")?.focus();
+              // 提案は「見せる＋開示＋フォーカス」を一本化した経路で開く（07 P2）。
+              if (target === "proposal") openProposalReview();
               if (target === "disk" && props.activeTab) props.onReviewChanges(props.activeTab);
               if (target === "reference" && !props.referencePaneVisible) props.onToggleReference();
               if (target === "comparison" && props.sidePaneMode !== "compare") props.onToggleDiff();
@@ -241,7 +263,7 @@ export function AppShell(props: AppShellProps) {
         documentChrome={props.lModeEnabled ? null : topChrome}
         proposalReviewRef={proposalReviewRef}
         proposalReviewVisible={proposalReviewVisible}
-        onReturnToEditing={() => setProposalReviewHidden(true)}
+        onReturnToEditing={returnToEditing}
         onReadingOverlayChange={setReadingOverlayOpen}
         compactPreviewFocus={props.compactPreviewFocus}
         onCompactPreviewFocusChange={props.onCompactPreviewFocusChange}

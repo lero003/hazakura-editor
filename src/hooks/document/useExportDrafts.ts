@@ -39,6 +39,16 @@ export function useExportDrafts(documentKey: string | null) {
     [key],
   );
 
+  /**
+   * 書き出し操作の終了（利用者のキャンセル・確定）で草稿を捨てる。
+   * **形式切替の内部キャンセルでは呼ばない**（切替は同じ操作の途中）。
+   */
+  const clear = useCallback(() => {
+    setStored((current) =>
+      current.documentKey === key ? { documentKey: key, drafts: {} } : current,
+    );
+  }, [key]);
+
   const rememberEpub = useCallback(
     (epub: EpubExportSettings, scope: DocumentExportScope) => {
       remember({ epub, scope });
@@ -53,5 +63,5 @@ export function useExportDrafts(documentKey: string | null) {
     [remember],
   );
 
-  return { drafts, rememberEpub, rememberPdf };
+  return { clear, drafts, rememberEpub, rememberPdf };
 }

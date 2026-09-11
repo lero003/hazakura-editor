@@ -16,6 +16,7 @@ afterEach(cleanup);
 function Harness({ documentKey = "doc-1" }: { documentKey?: string }) {
   const drafts = useExportDrafts(documentKey);
   const [format, setFormat] = useState<ExportFormatId>("epub");
+  const [open, setOpen] = useState(true);
   const nav = (
     <ExportFormatNav
       format={format}
@@ -30,12 +31,23 @@ function Harness({ documentKey = "doc-1" }: { documentKey?: string }) {
     documentName: "note.md",
     hasUnsavedChanges: false,
     menuLanguage: "ja" as const,
-    onCancel: vi.fn(),
-    onConfirm: vi.fn(),
+    // 利用者のキャンセル・確定は「この書き出し操作の終了」なので草稿を捨てる。
+    // **形式切替の内部キャンセルでは捨てない**（切替は同じ操作の途中）。
+    onCancel: () => {
+      drafts.clear();
+      setOpen(false);
+    },
+    onConfirm: () => {
+      drafts.clear();
+      setOpen(false);
+    },
   };
   return (
     <>
-      {format === "epub" ? (
+      {!open ? (
+        <button onClick={() => setOpen(true)}>書き出しを開く</button>
+      ) : null}
+      {open && format === "epub" ? (
         <EpubExportSettingsDialog
           key={documentKey}
           {...common}
@@ -47,7 +59,7 @@ function Harness({ documentKey = "doc-1" }: { documentKey?: string }) {
           onDraftChange={drafts.rememberEpub}
         />
       ) : null}
-      {format === "pdf" ? (
+      {open && format === "pdf" ? (
         <PdfExportSettingsDialog
           key={documentKey}
           {...common}
@@ -57,7 +69,7 @@ function Harness({ documentKey = "doc-1" }: { documentKey?: string }) {
           onDraftChange={drafts.rememberPdf}
         />
       ) : null}
-      {format === "html" ? (
+      {open && format === "html" ? (
         <HtmlExportSettingsDialog
           key={documentKey}
           {...common}
@@ -121,6 +133,27 @@ describe("export format round trip (画面11)", () => {
     expect(
       screen.getByText(/「本全体」は PDF と EPUB で書き出せます/),
     ).toBeTruthy();
+  });
+
+  it("drops the entries when the export operation ends, on cancel", () => {
+    // 「同じ文書なら次回も覚えておく」ではなく、**今回の操作のあいだだけ**保持する。
+    render(<Harness />);
+    fireEvent.change(screen.getByLabelText("書名"), {
+      target: { value: "一度きりの本" },
+    });
+    fireEvent.click(screen.getByRole("radio", { name: "本全体" }));
+
+    // 利用者のキャンセル（＝この書き出し操作は終わり）。
+    fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
+    expect(screen.queryByLabelText("書名")).toBeNull();
+
+    // 改めて書き出しを始めると、既定（文書・空欄）から始まる。
+    fireEvent.click(screen.getByRole("button", { name: "書き出しを開く" }));
+    expect((screen.getByLabelText("書名") as HTMLInputElement).value).toBe("");
+    // 対象も既定（この文書）へ戻る（`book` が持ち越されない）。
+    expect(
+      (screen.getByRole("radio", { name: "現在のファイル" }) as HTMLInputElement).checked,
+    ).toBe(true);
   });
 
   it("does not carry the previous document's entries into another document", () => {
