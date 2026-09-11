@@ -1220,9 +1220,24 @@
   .settings-layout .theme-preference-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .settings-layout .theme-preference-paper { min-height: 88px; }
 }
+/* 実機指摘⑪: 1行にラベル・数値・slider を並べる（モック16「項目行はラベルと説明を左、
+   操作と値を右へ」）。行ごとの見本（.settings-font-sample）は「この設定での見え方」
+   （.settings-type-preview）と重複していたため外した。 */
 .settings-text-sizes { display: grid; gap: 14px; min-width: 0; padding: 0; margin: 0; border: 0; }
 .settings-text-sizes legend { padding: 0 0 10px; font-size: 12px; color: var(--text-muted); }
-.settings-font-sample { display: block; overflow-wrap: anywhere; color: var(--text); background: var(--surface); padding: 10px; border: 1px solid var(--border); border-radius: 5px; }
+.settings-font-size {
+  align-items: center;
+  display: grid;
+  gap: 6px 12px;
+  grid-template-columns: minmax(0, 1fr) 68px minmax(120px, 1.5fr);
+}
+.settings-font-size > span { grid-column: 1; }
+.settings-font-size > input[type="number"] { grid-column: 2; }
+.settings-font-size > .settings-font-range { accent-color: var(--accent); grid-column: 3; min-width: 0; }
+@media (max-width: 900px) {
+  .settings-font-size { grid-template-columns: minmax(0, 1fr) 68px; }
+  .settings-font-size > .settings-font-range { grid-column: 1 / -1; }
+}
 
 .preferences-help-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; flex: 0 0 auto; padding: 10px 20px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
 .preferences-help-navigation select { min-width: 0; flex: 1 1 220px; max-width: 100%; }

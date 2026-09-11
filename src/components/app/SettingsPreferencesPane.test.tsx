@@ -284,3 +284,33 @@ it.each([
     expect((screen.getByRole("spinbutton", { name: copy[other] }) as HTMLInputElement).value).toBe(originals[other]);
   }
 });
+
+it.each([
+  ["editorFontSize", 12, 22],
+  ["previewFontSize", 12, 24],
+  ["workspaceFontSize", 10, 18],
+  ["lModeFontSize", 12, 24],
+] as const)("drives %s from its paired slider inside the same range", (key, min, max) => {
+  // 実機指摘⑪: 数値入力だけの行に、同じ値・値域へ接続した slider を足した。
+  const copy = getPreferencesCopy("en");
+  renderWithState(defaultEditorSettings());
+
+  const slider = screen.getByRole("slider", { name: copy[key] }) as HTMLInputElement;
+  expect(slider.min).toBe(String(min));
+  expect(slider.max).toBe(String(max));
+
+  fireEvent.change(slider, { target: { value: String(max) } });
+  expect(slider.value).toBe(String(max));
+  // 同じ設定を触るので、数値入力側も追随する（どちらか一方だけが動く状態にしない）。
+  expect(
+    (screen.getByRole("spinbutton", { name: copy[key] }) as HTMLInputElement).value,
+  ).toBe(String(max));
+});
+
+it("keeps one type sample instead of one per size row", () => {
+  // 実機指摘⑩: 行ごとの「静かな一ページ」は「この設定での見え方」と重複していた。
+  renderWithState(defaultEditorSettings());
+
+  expect(document.querySelector(".settings-font-sample")).toBeNull();
+  expect(document.querySelectorAll(".settings-type-preview-row")).toHaveLength(4);
+});

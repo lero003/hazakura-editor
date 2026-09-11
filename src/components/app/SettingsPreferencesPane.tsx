@@ -67,9 +67,9 @@ export function SettingsPreferencesPane({
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const categoryLabels = [copy.editor, copy.mediaAndDisplay, copy.application, copy.appearanceAndWriting];
   const navigationLabel = menuLanguage === "en" ? "Settings categories" : menuLanguage === "kana" ? "せっていの もくじ" : "設定の目次";
-  const sizeCopy = menuLanguage === "en" ? { title: "Text sizes", sample: "A quiet page" } :
-    menuLanguage === "kana" ? { title: "もじの おほきさ", sample: "しづかな いちページ" } :
-    { title: "文字サイズ", sample: "静かな一ページ" };
+  const sizeCopy = menuLanguage === "en" ? { title: "Text sizes" } :
+    menuLanguage === "kana" ? { title: "もじの おほきさ" } :
+    { title: "文字サイズ" };
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
   const appleAssistStatus = appleAssistStatusText(
     copy,
@@ -157,98 +157,50 @@ export function SettingsPreferencesPane({
           }
         />
         <fieldset className="settings-text-sizes"><legend>{sizeCopy.title}</legend>
-        <label className="field-control">
-          <span>{copy.editorFontSize}</span>
-          <input
-            aria-label={copy.editorFontSize}
-            type="number"
-            min="12"
-            max="22"
-            step="1"
-            value={editorSettings.editorFontSize}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                editorFontSize: clampNumber(
-                  Number(event.target.value),
-                  12,
-                  22,
-                  14,
-                ),
-              }))
-            }
-          />
-          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.editorFontSize }}>{sizeCopy.sample}</span>
-        </label>
-        <label className="field-control">
-          <span>{copy.previewFontSize}</span>
-          <input
-            aria-label={copy.previewFontSize}
-            type="number"
-            min="12"
-            max="24"
-            step="1"
-            value={editorSettings.previewFontSize}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                previewFontSize: clampNumber(
-                  Number(event.target.value),
-                  12,
-                  24,
-                  15,
-                ),
-              }))
-            }
-          />
-          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.previewFontSize }}>{sizeCopy.sample}</span>
-        </label>
-        <label className="field-control">
-          <span>{copy.workspaceFontSize}</span>
-          <input
-            aria-label={copy.workspaceFontSize}
-            type="number"
-            min="10"
-            max="18"
-            step="1"
-            value={editorSettings.workspaceFontSize}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                workspaceFontSize: clampNumber(
-                  Number(event.target.value),
-                  10,
-                  18,
-                  13,
-                ),
-              }))
-            }
-          />
-          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.workspaceFontSize }}>{sizeCopy.sample}</span>
-        </label>
-        <label className="field-control">
-          <span>{copy.lModeFontSize}</span>
-          <input
-            aria-label={copy.lModeFontSize}
-            type="number"
-            min="12"
-            max="24"
-            step="1"
-            value={editorSettings.lModeFontSize}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                lModeFontSize: clampNumber(
-                  Number(event.target.value),
-                  12,
-                  24,
-                  15,
-                ),
-              }))
-            }
-          />
-          <span className="settings-font-sample" aria-hidden="true" style={{ fontSize: editorSettings.lModeFontSize }}>{sizeCopy.sample}</span>
-        </label>
+        {/* 実機指摘⑩⑪: 行ごとの見本（「静かな一ページ」）は、すぐ下の
+            「この設定での見え方」（モック16）と役割が重複していたので外した。
+            代わりに同じ値・同じ値域へ接続した slider を各行へ足す（モック16の指示3:
+            「数値入力を残し、必要なら同じ値・値域に接続した slider を補助追加する」）。 */}
+        <FontSizeControl
+          fallback={14}
+          label={copy.editorFontSize}
+          max={22}
+          min={12}
+          onChange={(editorFontSize) =>
+            onEditorSettingsChange((current) => ({ ...current, editorFontSize }))
+          }
+          value={editorSettings.editorFontSize}
+        />
+        <FontSizeControl
+          fallback={15}
+          label={copy.previewFontSize}
+          max={24}
+          min={12}
+          onChange={(previewFontSize) =>
+            onEditorSettingsChange((current) => ({ ...current, previewFontSize }))
+          }
+          value={editorSettings.previewFontSize}
+        />
+        <FontSizeControl
+          fallback={13}
+          label={copy.workspaceFontSize}
+          max={18}
+          min={10}
+          onChange={(workspaceFontSize) =>
+            onEditorSettingsChange((current) => ({ ...current, workspaceFontSize }))
+          }
+          value={editorSettings.workspaceFontSize}
+        />
+        <FontSizeControl
+          fallback={15}
+          label={copy.lModeFontSize}
+          max={24}
+          min={12}
+          onChange={(lModeFontSize) =>
+            onEditorSettingsChange((current) => ({ ...current, lModeFontSize }))
+          }
+          value={editorSettings.lModeFontSize}
+        />
         </fieldset>
         {/* 4つの設定の結果を1箇所で確かめられる面（モック16のLIVE PREVIEW）。
             保存済みの値だけを使い、ここから本文を書き換えない。 */}
@@ -479,6 +431,55 @@ export function SettingsPreferencesPane({
         </div>
       </section>
       </div>
+    </div>
+  );
+}
+
+/**
+ * 文字サイズの1行。数値入力と、**同じ値・同じ値域**へ接続した slider を並べる
+ * （モック16の指示3）。どちらもアクセシブルな名前は同じ項目名で、role
+ * （spinbutton / slider）で区別できる。行ごとの見本は外した（実機指摘⑩）。
+ */
+function FontSizeControl({
+  fallback,
+  label,
+  max,
+  min,
+  onChange,
+  value,
+}: {
+  fallback: number;
+  label: string;
+  max: number;
+  min: number;
+  onChange: (value: number) => void;
+  value: number;
+}) {
+  const apply = (raw: string) =>
+    onChange(clampNumber(Number(raw), min, max, fallback));
+
+  return (
+    <div className="field-control settings-font-size">
+      <span>{label}</span>
+      <input
+        aria-label={label}
+        max={max}
+        min={min}
+        onChange={(event) => apply(event.currentTarget.value)}
+        step="1"
+        type="number"
+        value={value}
+      />
+      <input
+        aria-label={label}
+        className="settings-font-range"
+        max={max}
+        min={min}
+        onChange={(event) => apply(event.currentTarget.value)}
+        step="1"
+        type="range"
+        value={value}
+      />
     </div>
   );
 }
