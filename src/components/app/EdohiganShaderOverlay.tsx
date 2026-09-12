@@ -124,6 +124,15 @@ float canopyField(vec2 p) {
   return fbm3(p * 8.0 + (w - 0.5) * 1.25);
 }
 
+/* 突風: ほとんど静かで、ときどき強く吹く（40〜70秒に一度）。
+   位置を直接動かすと葉が飛ぶので、**時間そのものを前後に揺らす**。
+   速度だけが変わる＝ふっと流れて、また静かに戻る。 */
+float gustWave(float t) {
+  float base = 0.5 + 0.5 * sin(t * 0.085 + 1.7 * sin(t * 0.019));
+  // 指数を上げると「短く強く、あとは静か」になる（実測の平均 0.25 → 0.12 程度）。
+  return pow(base, 9.0);
+}
+
 /* 葉の形: 先 (+x) へ細る楕円。p はローカル座標（長辺 = x）。 */
 float leafShape(vec2 p) {
   float taper = mix(1.5, 7.0, smoothstep(-0.52, 0.58, p.x));
@@ -195,6 +204,11 @@ void main() {
   vec2 flow = texture(u_flowField, uv).rg * 2.0 - 1.0;
   vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
 
+  // 実機要望（第13報）: 動きの演出。突風のときだけ時間が進み、葉も埃も光も
+  // まとめて流れる。位置を直接いじらないので不自然に飛ばない。
+  float gust = gustWave(t) * motion;
+  float wt = t + 7.5 * gust;
+
   // multiply 合成なので 1.0 = 紙のまま。ここから**引いた分だけが影**になる。
   // 光は「影を引かなかった場所」として現れる（紙の上の木漏れ日はそう見える）。
   vec3 col = vec3(1.0);
@@ -204,7 +218,9 @@ void main() {
   col -= vec3(0.075, 0.066, 0.056) * (1.0 - sunDir);
 
   // 木漏れ日（主役）。風でわずかに流れる。
-  float field = canopyField(p + flow * 0.30 + vec2(t * 0.010, -t * 0.007));
+  // 光もゆっくり移る（突風では少しだけ速く動く＝木の上の枝が揺れる）。
+  float lt = t + 2.5 * gust;
+  float field = canopyField(p + flow * 0.30 + vec2(lt * 0.014, -lt * 0.010));
   // 葉の隙間 = 明るい側。1 つの場から光と翳りを同時に作る（光に翳りは無い）。
   // 影を引かない場所＝紙がそのまま見える場所が「光」。multiply では明るくはできないが、
   // 影の無い面が隣接することで光として読める（紙の上の木漏れ日の見え方と同じ）。
@@ -215,7 +231,7 @@ void main() {
 
   // 舞う葉（影として落ちる）。
   float petalHits;
-  float leaves = driftingLeaves(uv, aspect, t, motion, flow, petalHits);
+  float leaves = driftingLeaves(uv, aspect, wt, motion, flow, petalHits);
   col -= vec3(0.80, 0.87, 0.76) * leaves * motion;
 
   // 遅れて落ちる花びらも、紙の上では薄い影として落ちる。
@@ -228,8 +244,9 @@ void main() {
     float r1 = hash21(vec2(fi, 2.11));
     float r2 = hash21(vec2(fi, 5.37));
     float r3 = hash21(vec2(fi, 13.9));
-    float y = fract(r2 + t * (0.006 + r1 * 0.010) * motion);
-    float x = fract(r3 + 0.03 * sin(t * 0.05 + r1 * 6.28) + flow.x * 0.18);
+    // 突風では埃も舞い上がる（wt に突風ぶんが乗っているので速度が上がる）。
+    float y = fract(r2 + wt * (0.006 + r1 * 0.010) * motion);
+    float x = fract(r3 + 0.03 * sin(wt * 0.05 + r1 * 6.28) + flow.x * 0.18);
     vec2 pos = vec2((x - 0.5) * aspect, y - 0.5);
     float d = length(p - pos) / (0.0035 + r2 * 0.0035);
     float mote = exp(-d * d * 1.6);

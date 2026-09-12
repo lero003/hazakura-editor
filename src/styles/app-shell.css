@@ -108,7 +108,9 @@
   inset: 0;
   /* 明るい地では明度を触ると読みづらくなる。色相だけを移す color を使う。 */
   mix-blend-mode: color;
-  opacity: 0.42;
+  /* 実機判断（第13報）: 「優しい黄と青で綺麗だが、エディタとしては悩ましい」。
+     色は残しつつ、少しだけ淡くして紙面の主張を弱める。 */
+  opacity: 0.25;
   pointer-events: none;
   position: fixed;
 }
