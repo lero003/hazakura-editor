@@ -663,13 +663,17 @@
    （値 700 / ラベル 600）で付ける。 */
 .status-bar-format-label {
   color: var(--text);
+  /* 値（500）より一段軽く。ステータス全体を静かに保つ。 */
+  font-weight: 450;
   letter-spacing: 0.02em;
   pointer-events: none;
 }
 
 .status-bar-format-value {
   color: var(--text);
-  font-weight: 700;
+  /* 実機指摘: どこも強い。ステータスは最も静かな帯なので 500 まで落とす
+     （色はコントラスト確保のため --text のまま、階層は太さの差を小さくして示す）。 */
+  font-weight: 500;
   letter-spacing: 0.04em;
   line-height: 1;
   pointer-events: none;

@@ -77,16 +77,15 @@
 .workspace-mode-navigation { position: relative; display: flex; padding: 3px; gap: 2px; border: 1px solid var(--border); border-radius: 9px; }
 .app-primary-toolbar .workspace-mode-navigation > button {
   /* 実機指摘: 「書く/読む/確認」の縦が大きい。ナビ全体で 36px（= 28 + 上下padding 3×2 + 枠1×2）に。 */
-  min-width: 72px; min-height: 28px; padding: 4px 11px; font-size: 12.5px;
+  min-width: 72px; min-height: 28px; padding: 4px 11px; font-size: 12.5px; font-weight: 400;
 }
 .app-primary-toolbar .workspace-mode-navigation > button[aria-pressed="true"] {
-  /* 実機/目視: 面トークン(--surface)だけだとバーとほぼ同色（コントラスト 1.07）で
-     選択中が分からない。淡いアクセント面＋太字で示す。 */
-  /* 淡いアクセント面だけだとライトテーマで 1.14 しか出ないので、内側に細い枠も足す。 */
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 1px var(--border-strong, var(--border));
+  /* 実機指摘: 選択中に罫線を足すと全体の線が増える。**面の濃さ**だけで示す。
+     --accent-soft は淡すぎ（ライトで 1.14）、--surface はほぼ同色（1.07）なので、
+     アクセントを混ぜた面にする。強さは控えめ（ゴールは「静かなUI」）。 */
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
   color: var(--text);
-  font-weight: 650;
+  font-weight: 550;
 }
 .workspace-review-choices {
   position: absolute; top: calc(100% + 8px); right: 0; z-index: var(--z-popover, 100);
@@ -125,8 +124,8 @@
 }
 :root:not([data-l-mode="on"]) .v3-shell .window-drag-strip { display: none; }
 :root:not([data-l-mode="on"]) .v3-shell .tab-list { grid-column: 1 / -1; grid-row: 1; padding: 0; gap: 0; border-bottom: 0; }
-:root:not([data-l-mode="on"]) .v3-shell .tab-item { border-radius: 0; box-shadow: none; border: 0; background: transparent; min-height: 36px; font-size: 12px; }
-:root:not([data-l-mode="on"]) .v3-shell .tab-item.active { background: var(--surface); box-shadow: inset 0 -2px 0 var(--accent); }
+:root:not([data-l-mode="on"]) .v3-shell .tab-item { border-radius: 0; box-shadow: none; border: 0; background: transparent; min-height: 36px; font-size: 12px; font-weight: 400; }
+:root:not([data-l-mode="on"]) .v3-shell .tab-item.active { background: var(--surface); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 500; }
 /* 実機指摘: フォントサイズの呼び出しが行の左端に孤立して見えた。行の右端（ビュー切替の右隣）へ。 */
 :root:not([data-l-mode="on"]) .v3-shell .editor-quick-settings { grid-column: 3; grid-row: 2; justify-self: end; }
 :root:not([data-l-mode="on"]) .v3-shell .document-meta { grid-column: 2; grid-row: 2; justify-self: stretch; max-width: none; margin: 0; flex-wrap: wrap; padding: 5px 0; }

@@ -35,8 +35,9 @@
 }
 
 .reading-controls .pane-toggle[aria-pressed="true"] {
+  /* 実機指摘: 罫線が多く主張が強い。選択中は**面と下線**で示す（枠は消す）。 */
   background: var(--surface-strong);
-  border-color: var(--border-strong);
+  border-color: transparent;
   box-shadow: inset 0 -2px 0 var(--accent);
   color: var(--text);
 }

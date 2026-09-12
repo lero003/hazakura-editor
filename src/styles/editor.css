@@ -295,7 +295,13 @@
 
 .pane-toggle-caption {
   flex: 0 0 auto;
+  /* 実機指摘: 全体の主張が強い。切替の見出しは軽くし、選択中だけ一段戻す。 */
+  font-weight: 450;
   letter-spacing: 0.01em;
+}
+
+.reading-controls .pane-toggle[aria-pressed="true"] .pane-toggle-caption {
+  font-weight: 500;
 }
 
 .open-agent-window-button {

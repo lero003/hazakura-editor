@@ -2706,7 +2706,8 @@
 .right-pane-header-title {
   color: var(--text);
   font-size: 12px;
-  font-weight: 700;
+  /* 実機指摘: どの場所も主張が強い。パネ見出しは 500 まで落とす（強さは本文へ譲る）。 */
+  font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.25;
   margin: 0;
