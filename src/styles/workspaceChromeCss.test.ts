@@ -18,26 +18,23 @@ function ruleBody(selector: string): string {
 
 describe("workspace-chrome.css", () => {
   it("keeps the primary toolbar's document inset clear of the native traffic lights", () => {
-    // 実機指摘: 信号機と文書名の距離が詰まりすぎ（11px）。モックの文書名は左から127pxで、
-    // ネイティブの信号機は x=20・12px玉×3＋8px間隔＝右端72px。
-    // 数字を2箇所に書かないよう、CSSはトークン経由・Tauriは config を読み、右端と比較する。
+    // 実機指摘: 信号機と文書名の距離が詰まりすぎ（11px）。モックの文書名は左から127px。
     expect(ruleBody(".v3-shell")).toMatch(/--toolbar-document-inset:\s*127px/);
     expect(ruleBody(".app-primary-toolbar")).toMatch(
       /padding:\s*8px 20px 8px var\(--toolbar-document-inset\)/,
     );
+    // 実機判断: 信号機の位置は**指定しない**（macOS標準）。指定するとテーマ切替で窓の外観が
+    // 変わったときに組み直しで失われ、ボタンが動いて見えた。標準なら常に同じ場所へ戻る。
     const conf = readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8");
-    const x = Number(/"trafficLightPosition"\s*:\s*\{\s*"x"\s*:\s*(\d+)/.exec(conf)?.[1]);
-    const y = Number(/"trafficLightPosition"[^}]*"y"\s*:\s*(\d+)/.exec(conf)?.[1]);
-    expect(x).toBe(20);
-    expect(y).toBe(27);
-    // 信号機の右端（x+12*3+8*2）が文書名の位置より十分左にあること。
-    expect(x + 12 * 3 + 8 * 2).toBeLessThan(127);
+    expect(conf).not.toMatch(/"trafficLightPosition"/);
+    // macOS標準の信号機は左から約20px・12px玉×3＋8px間隔＝右端 約72px。
+    // 文書名の 127px はそれより十分右（= 重ならない）。
+    expect(20 + 12 * 3 + 8 * 2).toBeLessThan(127);
   });
 
-  it("fixes the primary toolbar height so the native traffic lights stay centered", () => {
+  it("fixes the primary toolbar height so the chrome can not shift under the native controls", () => {
     // 実機指摘: 起動直後と操作後で信号機との相対位置が変わって見える。
-    // ネイティブの玉は絶対位置なので、バーが伸びると中身だけがずれる。
-    // → バーの高さを固定し、y が「バー高さの縦中央（12px玉）」であることを両方読んで検査する。
+    // ネイティブのボタンは窓の絶対位置なので、バーが伸びると中身だけがずれる。
     const toolbar = ruleBody(".app-primary-toolbar");
     expect(toolbar).toMatch(/height:\s*66px/);
     expect(toolbar).not.toMatch(/min-height:\s*66px/);
@@ -46,10 +43,6 @@ describe("workspace-chrome.css", () => {
       /\.primary-document-actions\s*{[^}]*flex-wrap:\s*nowrap/,
     );
     expect(chromeCss).not.toMatch(/\.primary-document-actions\s*{[^}]*flex-wrap:\s*wrap/);
-    const conf = readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8");
-    const y = Number(/"trafficLightPosition"[^}]*"y"\s*:\s*(\d+)/.exec(conf)?.[1]);
-    // 玉は12px。バーの縦中央 = (66 - 12) / 2 = 27。
-    expect(y).toBe((66 - 12) / 2);
   });
 
   it("spreads the display toolbar row across the whole document column", () => {

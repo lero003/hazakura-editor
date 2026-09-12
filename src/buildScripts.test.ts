@@ -114,10 +114,11 @@ describe("macOS build scripts", () => {
     expect(mainWindow?.titleBarStyle).toBe("Overlay");
     expect(mainWindow?.hiddenTitle).toBe(true);
     expect(mainWindow?.transparent).toBe(true);
-    // 実機フィードバック: シグナルは上部バー（66px）の縦中央（y=27）に置き、
-    // 左はモック（内側余白21px）に合わせて x=21。x=9 だと左端に張り付いて見えた。
-    // 実機調整: モックの玉は窓の左から20px（11px玉・18pxピッチ）。垂直は66pxバーの中央。
-    expect(mainWindow?.trafficLightPosition).toEqual({ x: 20, y: 27 });
+    // 実機判断: シグナルの位置は**指定しない**（macOS標準に任せる）。
+    // 指定すると、テーマ切替で窓の外観が変わったときに macOS がタイトルバーを組み直し、
+    // 指定が失われて標準位置へ戻る＝切替のたびにボタンが動いて見えた。
+    // 標準位置なら、外観が変わっても同じ場所へ戻るので動かない。
+    expect(mainWindow?.trafficLightPosition).toBeUndefined();
   });
 
   it("allows the main window to start native dragging from custom chrome", () => {
