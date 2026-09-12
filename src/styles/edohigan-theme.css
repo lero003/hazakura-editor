@@ -126,11 +126,11 @@
   display: block;
   height: 100%;
   inset: 0;
+  /* 木漏れ日は **影** として紙に落ちる（紙の上の光は「影が無い場所」）。
+     soft-light は #fffcf8 のようなほぼ白い紙では sqrt(base)-base → 0 となり
+     実効 1% しか動かない（実測で確認）。multiply なら影の濃さがそのまま出る。 */
   mix-blend-mode: multiply;
-  /* 実機要望（第10報）: お遊びテーマの「遊び」が見えない。花びらを**前景**へ戻す。
-     multiply は紙と文字を同じ係数で暗くするのでコントラスト比は保たれる（＝読める）。
-     紙の上に淡い影として乗る程度に opacity を抑える。 */
-  opacity: 0.18;
+  opacity: 0.5;
   pointer-events: none;
   position: fixed;
   width: 100%;

@@ -2614,32 +2614,12 @@
   flex: 0 0 auto;
 }
 
+/* 実機指摘（第11報）: 以前ここに特殊テーマ用の暗いグラデーション上書きがあった
+   （edohigan / shinkai / yakou）。江戸彼岸は明るい紙なのに暗い紫で塗られ、プレビューの
+   下部が「硬い帯」に見えていた。読み面の正本は --preview-reading-surface
+   （= --surface-paper）で、themeContrast の契約もそれを前提にしている。 */
 .preview-pane-card {
   background: var(--surface-muted);
-}
-
-:root[data-theme="edohigan"] .preview-pane-card {
-  background: linear-gradient(
-    145deg,
-    rgba(42, 28, 40, 0.72) 0%,
-    rgba(52, 34, 48, 0.78) 100%
-  );
-}
-
-:root[data-theme="shinkai"] .preview-pane-card {
-  background: linear-gradient(
-    145deg,
-    rgba(15, 53, 72, 0.62) 0%,
-    rgba(20, 64, 86, 0.7) 100%
-  );
-}
-
-:root[data-theme="yakou"] .preview-pane-card {
-  background: linear-gradient(
-    145deg,
-    rgba(20, 20, 30, 0.88) 0%,
-    rgba(26, 26, 40, 0.92) 100%
-  );
 }
 
 .side-pane-tabs {

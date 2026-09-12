@@ -333,12 +333,12 @@
     0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+/* 実機指摘（第11報）: 江戸彼岸の紙の上 30% に暗い #3a2838 のグラデーションが残っていた
+   （明るい紙 #fffcf8 のテーマなのに暗い帯が出て、プレビューの上部が「汚れ」に見えた）。
+   同じ意図の crt / shinkai は var(--preview-reading-surface) に統一済み。江戸彼岸だけが
+   旧仕様の取り残しだったので、同じ扱いに揃える。 */
 :root[data-theme="edohigan"] .preview-pane-preview .markdown-preview {
-  background: linear-gradient(
-    180deg,
-    #3a2838 0%,
-    var(--preview-reading-surface) 30%
-  );
+  background: var(--preview-reading-surface);
 }
 
 :root[data-theme="crt"] .preview-pane-preview .markdown-preview,
