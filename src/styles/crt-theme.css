@@ -23,7 +23,10 @@
   /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
   --chrome-surface: #040a06;
   --surface: #08120c;
-  --surface-paper: #0d1a11;
+  /* 実機要望（第10報）: お遊びテーマの演出が紙を通して見えるように、読み書きの面を
+     少しだけ透かす（alpha 0.92 = 背景の動きが8%だけ乗る）。文字は面の上に載るので
+     コントラストはほぼ変わらない（themeContrast テストで担保）。 */
+  --surface-paper: rgba(13, 26, 17, 0.9);
   --nav-surface: #101d13;
   --surface-rgb: 8, 18, 12;
   --surface-strong: #0d1a11;

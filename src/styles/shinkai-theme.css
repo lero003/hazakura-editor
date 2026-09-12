@@ -32,7 +32,8 @@
      ただし読む・書く面 (エディタ / プレビュー) は不透明な紙面 --surface-paper を使い、
      水流はサイドバーなど操作面で残す。 */
   --surface: rgba(15, 53, 72, 0.72);
-  --surface-paper: #14384a;
+  /* 実機要望（第10報）: 水流・チリが紙を通して見えるように少しだけ透かす（alpha 0.92）。 */
+  --surface-paper: rgba(20, 56, 74, 0.9);
   --nav-surface: rgba(9, 36, 49, 0.78);
   --surface-rgb: 15, 53, 72;
   --surface-strong: rgba(20, 64, 86, 0.72);

@@ -110,6 +110,37 @@
 - ビュー切替（プレビュー/電子書籍…）の選択中も**枠を透明に**して面と下線だけに。
 - 紙（プレビューの本文＝見出しの 700）は**そのまま**＝読ませたいところだけ残す。
 
+### 実機第4弾・第10報（お遊びテーマの演出復活）
+
+オーナーの指摘: 「CRT / 江戸彼岸は全くリッチ要素が無い。オープニングは動くが、それ以上の
+演出が無い。深海はワークスペースだけ動く。お遊びテーマなので“遊び”を明確に。全部戻す必要は
+ないが演出はする（負荷は多少かけて良い）」。
+
+**原因**: 演出（WebGL）は不透明な紙の**後ろ**（`z-index: var(--z-base)`）に居たため、
+ペインが覆う範囲では見えず、背景の隙間（ワークスペース）だけ動いていた。
+
+方針（オーナー選択）: **面を透かして背景の動きを見せる＋前景の演出を一段戻す。
+タブ・ツールバー・ステータスは静かなまま**（読みやすさは守る）。負荷は見た目優先。
+
+| 変更 | 内容 |
+|---|---|
+| 紙を透かす | crt/shinkai `--surface-paper: rgba(..., 0.9)`、edohigan `rgba(..., 0.93)`（`--cm-bg` も追随） |
+| 江戸彼岸の花びら | `z-base` → `calc(var(--z-dropdown) - 10)`（面の上・モーダルより下）、opacity 0.25→0.18、multiply 維持 |
+| 江戸彼岸の淡い光 | 同上の層へ、`normal` → `soft-light` |
+| フレーム上限 | normal 30fps → **60fps**、subtle 24 → 30fps（DPR 2 は維持） |
+
+**契約の置き換え**: `themeContrast.test.ts` の「**不透明な紙**」を「**透かしても読める**」へ。
+半透明の紙を地色と合成し、本文・補助文字が AA（4.5:1）以上であること＋ alpha ≥ 0.88 を検査
+（`resolvedPaper` / `blendOver` / `hexToChannels` を追加）。
+
+実描画（fixture・実DOM実測）:
+- crt: paper `rgba(13, 26, 17, 0.9)` / canvas z=1（背後＝透けて見える）/ overlay z=1200 multiply（前景スキャン）
+- shinkai: paper `rgba(20, 56, 74, 0.9)` / canvas z=1 / overlay z=1200 screen
+- edohigan: paper `rgba(255, 252, 248, 0.93)` / canvas z=90 opacity 0.18 multiply / overlay z=90 soft-light
+
+画像: `theme-play-crt.png` / `theme-play-edohigan.png`。WebGL の中身はヘッドレスで
+キャプチャが不安定なため、層と透け具合は computed style で確認している（映像の最終確認は実機）。
+
 ### 未着手（やるなら次スライス）
 
 | # | 内容 | 見積り |

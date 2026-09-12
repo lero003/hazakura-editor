@@ -38,12 +38,13 @@ export function ambientMinFrameIntervalMs(
     case "dramatic":
       return 0;
     case "normal":
-      return 1000 / 30;
+      // 実機要望（第10報）: 演出が見えないほど間引かれていた。見た目優先で 60fps へ戻す。
+      return 1000 / 60;
     case "subtle":
-      return 1000 / 24;
+      return 1000 / 30;
     case "off":
     default:
-      return 1000 / 24;
+      return 1000 / 30;
   }
 }
 

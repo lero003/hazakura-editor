@@ -89,6 +89,47 @@ function tokenValue(selector: string, token: string): string {
   return body.match(new RegExp(`${token}:\\s*(#[0-9a-f]{6})`, "i"))?.[1] ?? "";
 }
 
+function hexToChannels(hex: string): string {
+  return [1, 3, 5]
+    .map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16))
+    .join(", ");
+}
+
+/**
+ * 紙トークンを不透明な色に解決する（半透明なら地色と合成＝実描画の見え方に近い）。
+ * お遊びテーマは演出を透かすために紙が rgba なので、色の検査はこの解決を通す。
+ */
+function resolvedPaper(theme: string): string {
+  const selector = theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;
+  const declaration = tokenDeclarationIn(themeCss, selector, "--surface-paper").replace(
+    "--surface-paper: ",
+    "",
+  );
+  const rgba = declaration.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+  if (!rgba) {
+    return declaration;
+  }
+  const hex = `#${[1, 2, 3]
+    .map((index) => Number(rgba[index]).toString(16).padStart(2, "0"))
+    .join("")}`;
+  const background = tokenDeclarationIn(themeCss, selector, "--bg").replace("--bg: ", "");
+  return /^#[0-9a-fA-F]{6}$/.test(background)
+    ? blendOver(hex, background, Number(rgba[4]))
+    : hex;
+}
+
+/** 半透明の面（top, alpha）を下地（bottom）に重ねた結果の色。 */
+function blendOver(top: string, bottom: string, alpha: number): string {
+  const channel = (offset: number) =>
+    Math.round(
+      Number.parseInt(top.slice(offset, offset + 2), 16) * alpha +
+        Number.parseInt(bottom.slice(offset, offset + 2), 16) * (1 - alpha),
+    );
+  return `#${[1, 3, 5]
+    .map((offset) => channel(offset).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
 function relativeLuminance(hex: string): number {
   const channels = [1, 3, 5].map((offset) =>
     Number.parseInt(hex.slice(offset, offset + 2), 16) / 255,
@@ -131,18 +172,34 @@ describe("Preview theme contrast", () => {
     },
   );
 
+  /**
+   * 実機要望（第10報）: お遊びテーマの演出が紙を通して見えるように、読み書きの面を
+   * **少しだけ**透かす（従来は「不透明な紙」を固定していた）。読めなくならないよう、
+   * 背景（テーマの --bg）と合成した最悪ケースでも本文のコントラストを AA 以上に保つ。
+   */
   it.each([
-    ["edohigan", "#fffcf8"],
-    ["crt", "#0d1a11"],
-    ["shinkai", "#14384a"],
-  ] as const)("%s keeps an opaque paper for reading", (theme, surface) => {
-    expect(
-      tokenDeclarationIn(themeCss, `:root[data-theme="${theme}"]`, "--surface-paper"),
-    ).toBe(`--surface-paper: ${surface}`);
-    expect(
-      tokenDeclarationIn(previewCss, `:root[data-theme="${theme}"] .preview-pane-preview`, "--preview-reading-surface"),
-    ).toBe("--preview-reading-surface: var(--surface-paper)");
-  });
+    ["edohigan", "#fffcf8", 0.93],
+    ["crt", "#0d1a11", 0.9],
+    ["shinkai", "#14384a", 0.9],
+  ] as const)(
+    "%s lets the theme show through the paper while keeping the text readable",
+    (theme, paper, alpha) => {
+      expect(
+        tokenDeclarationIn(themeCss, `:root[data-theme="${theme}"]`, "--surface-paper"),
+      ).toBe(`--surface-paper: rgba(${hexToChannels(paper)}, ${alpha})`);
+      expect(
+        tokenDeclarationIn(previewCss, `:root[data-theme="${theme}"] .preview-pane-preview`, "--preview-reading-surface"),
+      ).toBe("--preview-reading-surface: var(--surface-paper)");
+
+      // 透かした紙をテーマの地色と合成した色＝紙の下から演出が見える分だけ地色が混ざる。
+      const composited = blendOver(paper, themeToken(theme, "--bg"), alpha);
+      expect(
+        contrastRatio(composited, themeToken(theme, "--text")),
+      ).toBeGreaterThanOrEqual(4.5);
+      // 透かしすぎない（読む面として成立する下限）。
+      expect(alpha).toBeGreaterThanOrEqual(0.88);
+    },
+  );
 });
 
 describe("paper token", () => {
@@ -173,7 +230,15 @@ describe("paper token", () => {
   it.each(themes)(
     "%s defines one paper token in the theme",
     (theme) => {
-      expect(tokenHex(theme, "--surface-paper")).toBe(paper[theme]);
+      // お遊びテーマは演出を透かすために rgba（同じ色・alpha 0.88 以上）。
+      const declaration = tokenHex(theme, "--surface-paper");
+      expect(
+        declaration === paper[theme] ||
+          declaration.startsWith(`rgba(${hexToChannels(paper[theme])},`),
+      ).toBe(true);
+      if (declaration.startsWith("rgba(")) {
+        expect(Number(declaration.match(/,\s*([\d.]+)\)$/)?.[1] ?? "0")).toBeGreaterThanOrEqual(0.88);
+      }
       expect(tokenDeclarationIn(themeCss, selectorFor(theme), "--nav-surface")).not.toBe("");
     },
   );
@@ -182,10 +247,10 @@ describe("paper token", () => {
     "%s keeps body and muted text readable on the paper",
     (theme) => {
       expect(
-        contrastRatio(paper[theme], tokenHex(theme, "--text")),
+        contrastRatio(resolvedPaper(theme), tokenHex(theme, "--text")),
       ).toBeGreaterThanOrEqual(4.5);
       expect(
-        contrastRatio(paper[theme], tokenHex(theme, "--text-muted")),
+        contrastRatio(resolvedPaper(theme), tokenHex(theme, "--text-muted")),
       ).toBeGreaterThanOrEqual(4.5);
     },
   );
@@ -221,7 +286,7 @@ describe("border hierarchy", () => {
   // 2段階の差が潰れないことを見る。単なるペイン間の1px線は3:1を目標にしない（C08の3:1は
   // focus と重要な輪郭の話で、全罫線を濃くすると静かな紙面が壊れる）。
   it.each(themeNames)("%s keeps the two border steps distinct", (theme) => {
-    const paper = themeToken(theme, "--surface-paper");
+    const paper = resolvedPaper(theme);
     const border = themeToken(theme, "--border");
     const strong = themeToken(theme, "--border-strong");
     expect(border).toMatch(/^#[0-9a-fA-F]{6}$/);

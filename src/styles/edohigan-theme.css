@@ -25,7 +25,9 @@
      読む・書く面は不透明な紙面 --surface-paper、ナビ面も不透明にして
      明色の紙面で文字コントラストを自動検査できるようにする。 */
   --surface: rgba(255, 253, 250, 0.72);
-  --surface-paper: #fffcf8;
+  /* 実機要望（第10報）: 花びら・陽光が紙を通して見えるように少しだけ透かす
+     （alpha 0.93。明るい紙なので背景はほんのり色づく程度に留める）。 */
+  --surface-paper: rgba(255, 252, 248, 0.93);
   --nav-surface: #f4e9e6;
   --surface-rgb: 255, 253, 250;
   --surface-strong: rgba(255, 255, 255, 0.82);
@@ -125,11 +127,15 @@
   height: 100%;
   inset: 0;
   mix-blend-mode: multiply;
-  opacity: 0.25;
+  /* 実機要望（第10報）: お遊びテーマの「遊び」が見えない。花びらを**前景**へ戻す。
+     multiply は紙と文字を同じ係数で暗くするのでコントラスト比は保たれる（＝読める）。
+     紙の上に淡い影として乗る程度に opacity を抑える。 */
+  opacity: 0.18;
   pointer-events: none;
   position: fixed;
   width: 100%;
-  z-index: var(--z-base);
+  /* 面の上・モーダル/パレットより下（このファイル元来の意図を守る）。 */
+  z-index: calc(var(--z-dropdown) - 10);
 }
 
 :root[data-theme="edohigan"] .app-shell:has(.edohigan-boot:not(.edohigan-boot-scatter))
@@ -162,10 +168,11 @@
       rgba(120, 90, 96, 0.08) 100%
     );
   inset: 0;
-  mix-blend-mode: normal;
+  mix-blend-mode: soft-light;
   pointer-events: none;
   position: fixed;
-  z-index: var(--z-base);
+  /* 淡い桜の光も面の上へ（soft-light なので明るい紙を濁らせない）。モーダルより下は維持。 */
+  z-index: calc(var(--z-dropdown) - 10);
 }
 
 /* 4. 文字 — 明るい紙面ではグローを載せない */
