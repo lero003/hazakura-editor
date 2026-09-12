@@ -21,11 +21,9 @@
 }
 
 /* 特殊テーマは main 窓のグラデ / シェーダーを inherit しない。
-   ツール窓はフラット面で機能面として読ませる。light/dark は --bg のまま。 */
-:root[data-theme="edohigan"] .apple-assist-window-shell {
-  background: #322438;
-}
-
+   ツール窓はフラット面で機能面として読ませる。light/dark は --bg のまま。
+   edohigan も --bg（明色のフラット面）へ戻す——暗色時代の #322438 が残ると
+   明色テーマの --text が沈む（実測 1.28:1、2026-09-12 修正）。 */
 :root[data-theme="shokou"] .apple-assist-window-shell {
   background: #eef5fb;
 }

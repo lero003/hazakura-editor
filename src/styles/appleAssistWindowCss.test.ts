@@ -78,10 +78,6 @@ describe("apple-assist-window.css", () => {
   });
 
   it("uses flat helper backgrounds for special themes instead of inheriting app-shell gradients", () => {
-    const edohiganShell = ruleBody(
-      css,
-      ':root[data-theme="edohigan"] .apple-assist-window-shell',
-    );
     const shokouShell = ruleBody(
       css,
       ':root[data-theme="shokou"] .apple-assist-window-shell',
@@ -99,20 +95,25 @@ describe("apple-assist-window.css", () => {
       ':root[data-theme="shinkai"] .apple-assist-window-shell',
     );
 
-    expect(edohiganShell).toMatch(/background:\s*#322438/);
     expect(shokouShell).toMatch(/background:\s*#eef5fb/);
     expect(yakouShell).toMatch(/background:\s*#14141e/);
     expect(crtShell).toMatch(/background:\s*#08120c/);
     expect(shinkaiShell).toMatch(/background:\s*#0f3548/);
-    for (const shell of [
-      edohiganShell,
-      shokouShell,
-      yakouShell,
-      crtShell,
-      shinkaiShell,
-    ]) {
+    for (const shell of [shokouShell, yakouShell, crtShell, shinkaiShell]) {
       expect(shell).not.toMatch(/gradient/);
     }
+  });
+
+  it("does not pin a dark literal on the light edohigan shell", () => {
+    // edohigan は明色化後に --bg がフラットになったため、この窓の専用上書きを持たない。
+    // 暗色時代の #322438 が残ると明色テーマの --text（#453735）が沈む
+    // （実測 1.28:1、2026-09-12 修正）。面の可読性は themeContrast.test が全テーマで検査する。
+    const edohiganShell = ruleBody(
+      css,
+      ':root[data-theme="edohigan"] .apple-assist-window-shell',
+    );
+    expect(edohiganShell).not.toMatch(/#[0-9a-fA-F]{6}/);
+    expect(edohiganShell).not.toMatch(/gradient/);
   });
 
   it("keeps the request textarea on a flat surface instead of inheriting theme gradients", () => {

@@ -367,6 +367,37 @@ describe("solid accent control contrast", () => {
   });
 });
 
+describe("assist window shell surface", () => {
+  // 分離窓（Hazakura Local Assist）のフラット面。特殊テーマは app-shell の
+  // グラデ / シェーダーを継承しない代わりに、apple-assist-window.css がフラット色を敷く。
+  // 面ごとの 4.5:1 契約にこの窓も加える（江戸彼岸の明色化で暗色背景だけが残り、
+  // --text が 1.28:1 まで沈む事故が出た。実測 2026-09-12）。
+  const assistWindowCss = readFileSync(
+    `${process.cwd()}/src/styles/apple-assist-window.css`,
+    "utf8",
+  );
+
+  function assistShellBackground(theme: string): string {
+    const override = ruleBodyIn(
+      assistWindowCss,
+      `:root[data-theme="${theme}"] .apple-assist-window-shell`,
+    ).match(/background:\s*(#[0-9a-fA-F]{6})/)?.[1];
+    // 上書きを持たないテーマ（light / dark / edohigan）は基の宣言 var(--bg) をそのまま使う。
+    return override ?? themeToken(theme, "--bg");
+  }
+
+  it.each(themeNames)(
+    "%s keeps the assist window text readable on its shell",
+    (theme) => {
+      const background = assistShellBackground(theme);
+      expect(background).toMatch(/^#[0-9a-fA-F]{6}$/);
+      expect(
+        contrastRatio(background, themeToken(theme, "--text")),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+});
+
 describe("chrome surface", () => {
   const chrome = {
     light: "#f7f8f5",
