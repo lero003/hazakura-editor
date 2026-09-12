@@ -124,9 +124,12 @@ html, body, #root, .app-shell,
   --bg-gradient: true;
   /* chrome は --bg がグラデーションのため、同系の不透明色を別に持つ。 */
   --chrome-surface: #12102a;
-  --surface: #15151f;
-  --surface-paper: #1c1d31;
-  --nav-surface: #141426;
+  /* 実機要望（第10報の続き）: 夜行も「背景が微かに色づく」演出（.app-shell の bgDrift）が
+     あった。ペインが不透明で覆っていたため隙間からしか見えなかったので、面を少しだけ
+     透かして戻す（紙 0.94）。動きはゆっくり（22s）なので気配として残る。 */
+  --surface: rgba(21, 21, 31, 0.94);
+  --surface-paper: rgba(28, 29, 49, 0.94);
+  --nav-surface: rgba(20, 20, 38, 0.94);
   --surface-rgb: 21, 21, 31;
   --surface-strong: #1c1c2c;
   --surface-strong-rgb: 28, 28, 44;

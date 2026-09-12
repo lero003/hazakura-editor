@@ -215,7 +215,9 @@ describe("paper token", () => {
 
   // ナビ面が半透明のテーマは背景シェーダーを透かすため、合成後の色は実描画でしか測れない。
   // この2テーマは tests ではなく、資料の実描画ピクセル測定で確認する。
-  const translucentNav = new Set(["shinkai"]);
+  // shinkai: 背景シェーダーを透かすため元から半透明。
+  // yakou: 実機要望（第10報の続き）で bgDrift（背景が微かに色づく演出）を透かすため半透明に。
+  const translucentNav = new Set(["shinkai", "yakou"]);
 
   const selectorFor = (theme: string) =>
     theme === "light" ? ":root" : `:root[data-theme="${theme}"]`;

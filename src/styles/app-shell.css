@@ -27,9 +27,11 @@
 /* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift
    空の青〜暖桃の帯を少し滑らかにし、朝焼けの層が読めるようにする。 */
 :root[data-theme="shokou"] .app-shell {
+  /* 実機指摘（第10報の続き）: 曙光は色の変化が強すぎるかもしれない。光の帯（ラジアル）を
+     控えめにして、動きは残しつつ「色が入れ替わる」印象を弱める。 */
   background:
-    radial-gradient(circle at 12% 8%, rgba(255, 236, 210, 0.55), transparent 38%),
-    radial-gradient(circle at 88% 18%, rgba(180, 214, 240, 0.42), transparent 36%),
+    radial-gradient(circle at 12% 8%, rgba(255, 236, 210, 0.34), transparent 38%),
+    radial-gradient(circle at 88% 18%, rgba(180, 214, 240, 0.26), transparent 36%),
     linear-gradient(135deg, #e4f1ff 0%, #f6faff 34%, #ffe6c4 70%, #f8cbb8 100%);
   background-size: 200% 200%;
   animation: bgDrift 26s ease-in-out infinite;

@@ -141,6 +141,29 @@
 画像: `theme-play-crt.png` / `theme-play-edohigan.png`。WebGL の中身はヘッドレスで
 キャプチャが不安定なため、層と透け具合は computed style で確認している（映像の最終確認は実機）。
 
+### 実機第4弾・第11報（夜行の演出を戻す／曙光を鎮める）
+
+オーナーの指摘: 「夜行にも元々少しアニメーションがあった（背景色が微かに色づいていた）。
+曙光は色が変わりすぎかもしれない」。
+
+**調査結果**: 夜行の演出は消えていなかった。`.app-shell` に `bgDrift`
+（`background-position` を 200% のグラデーションで 22s かけて往復＝背景が微かに色づく）が
+**そのまま残っていた**。ただしペインが不透明で覆うため、隙間からしか見えなかった
+（＝深海・CRT・江戸彼岸と同じ「演出が面の後ろにいる」問題）。曙光も同じ仕組み（26s）。
+
+- **夜行**: `--surface` / `--surface-paper` / `--nav-surface` を alpha 0.94 に（演出が紙を
+  通して微かに見える）。星の粒子（52個・starRise）も同じ面の下から気配として見える。
+- **曙光**: 「色が変わりすぎ」への対応として、色の帯（ラジアル）の alpha を落とす
+  （0.55→0.34 / 0.42→0.26）。動き（26s の bgDrift）と朝焼けの色は残す。
+- 契約テスト: `themeContrast.test.ts` の「半透明のnav」扱いに **yakou** を追加
+  （既存の shinkai と同じく、合成後の色は実描画で確認する経路）。
+
+実描画（fixture 実DOM実測）:
+- yakou: paper `rgba(28, 29, 49, 0.94)` / `.app-shell` `animation: bgDrift 22s` / 粒子52
+- shokou: paper `#f5f8fc`（不透明のまま）/ `.app-shell` `bgDrift 26s` / 粒子46
+
+画像: `theme-yakou-ambient.png` / `theme-shokou-ambient.png`。
+
 ### 未着手（やるなら次スライス）
 
 | # | 内容 | 見積り |
