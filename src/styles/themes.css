@@ -120,6 +120,20 @@ html, body, #root, .app-shell,
 
 /* 夜光 / Yakou – deep cosmic indigo with luminous purple-teal accent */
 :root[data-theme="yakou"] {
+  /* 背景の色づき（bgDrift でゆっくり動く）。app-shell の下地と、面の上に重ねる
+     オーロラ（.ambient-yakou）で同じ定義を使う。 */
+  /* 面の上に重ねる用（不透明色）。重ねる側は opacity で薄くするので、色そのものは濃く持つ。 */
+  --ambient-aurora-overlay:
+    radial-gradient(circle at 18% 16%, #7a5ff0, transparent 58%),
+    radial-gradient(circle at 82% 26%, #2f9fd8, transparent 55%),
+    radial-gradient(circle at 58% 86%, #6455c0, transparent 62%),
+    radial-gradient(circle at 88% 68%, #35b8a0, transparent 52%);
+  --ambient-aurora:
+    radial-gradient(circle at 8% 6%, rgba(120, 96, 220, 0.34), transparent 36%),
+    radial-gradient(circle at 22% 18%, rgba(52, 90, 180, 0.26), transparent 40%),
+    radial-gradient(circle at 88% 12%, rgba(72, 190, 170, 0.12), transparent 32%),
+    radial-gradient(circle at 70% 78%, rgba(88, 70, 160, 0.1), transparent 42%),
+    linear-gradient(145deg, #0a0a16 0%, #12102a 38%, #0e1424 66%, #08080e 100%);
   --bg: linear-gradient(135deg, #0a0a14 0%, #14122c 48%, #0c0e18 100%);
   --bg-gradient: true;
   /* chrome は --bg がグラデーションのため、同系の不透明色を別に持つ。 */

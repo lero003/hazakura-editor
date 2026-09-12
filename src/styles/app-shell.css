@@ -10,12 +10,7 @@
    アクセント (#a090ff) と副色 teal に揃えた宇宙夜。青一色ではなく
    紫〜藍〜青緑の層で読む。 */
 :root[data-theme="yakou"] .app-shell {
-  background:
-    radial-gradient(circle at 8% 6%, rgba(120, 96, 220, 0.34), transparent 36%),
-    radial-gradient(circle at 22% 18%, rgba(52, 90, 180, 0.26), transparent 40%),
-    radial-gradient(circle at 88% 12%, rgba(72, 190, 170, 0.12), transparent 32%),
-    radial-gradient(circle at 70% 78%, rgba(88, 70, 160, 0.1), transparent 42%),
-    linear-gradient(145deg, #0a0a16 0%, #12102a 38%, #0e1424 66%, #08080e 100%);
+  background: var(--ambient-aurora);
   background-size: 200% 200%;
   animation: bgDrift 22s ease-in-out infinite;
 }
@@ -26,13 +21,22 @@
 
 /* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift
    空の青〜暖桃の帯を少し滑らかにし、朝焼けの層が読めるようにする。 */
-:root[data-theme="shokou"] .app-shell {
-  /* 実機指摘（第10報の続き）: 曙光は色の変化が強すぎるかもしれない。光の帯（ラジアル）を
-     控えめにして、動きは残しつつ「色が入れ替わる」印象を弱める。 */
-  background:
+:root[data-theme="shokou"] {
+  /* 背景の色づき（bgDrift でゆっくり動く曙のグラデーション）。
+     下地と前景（.ambient-shokou）で同じ定義を使う。 */
+  /* 面の上に重ねる用（不透明色）。color 合成なので明度は動かず、色相だけが移る。 */
+  --ambient-dawn-overlay:
+    radial-gradient(circle at 14% 12%, #ffd2a0, transparent 56%),
+    radial-gradient(circle at 86% 22%, #8fb6ee, transparent 54%),
+    radial-gradient(circle at 50% 90%, #ffc7ae, transparent 60%);
+  --ambient-dawn:
     radial-gradient(circle at 12% 8%, rgba(255, 236, 210, 0.34), transparent 38%),
     radial-gradient(circle at 88% 18%, rgba(180, 214, 240, 0.26), transparent 36%),
     linear-gradient(135deg, #e4f1ff 0%, #f6faff 34%, #ffe6c4 70%, #f8cbb8 100%);
+}
+
+:root[data-theme="shokou"] .app-shell {
+  background: var(--ambient-dawn);
   background-size: 200% 200%;
   animation: bgDrift 26s ease-in-out infinite;
 }
@@ -73,6 +77,40 @@
 .lmode-action-rail {
   position: relative;
   z-index: var(--z-base);
+}
+
+/* 実機指摘（第12報）: 曙光/夜行は「何もアニメーションが見えない」。演出（bgDrift）が
+   .app-shell の下地＝不透明なペインの後ろにあり、隙間からしか見えていなかった。
+   面の上（モーダルより下）に同じグラデーションを薄く重ね、色づきとして見せる。 */
+:root[data-theme="yakou"] .ambient-yakou,
+:root[data-theme="shokou"] .ambient-shokou {
+  z-index: calc(var(--z-dropdown) - 10);
+}
+
+:root[data-theme="yakou"] .ambient-yakou::before {
+  background: var(--ambient-aurora-overlay);
+  background-size: 200% 200%;
+  animation: bgDrift 22s ease-in-out infinite;
+  content: "";
+  inset: 0;
+  /* 暗い地の上なので screen で色を灯す。 */
+  mix-blend-mode: screen;
+  opacity: 0.16;
+  pointer-events: none;
+  position: fixed;
+}
+
+:root[data-theme="shokou"] .ambient-shokou::before {
+  background: var(--ambient-dawn-overlay);
+  background-size: 200% 200%;
+  animation: bgDrift 26s ease-in-out infinite;
+  content: "";
+  inset: 0;
+  /* 明るい地では明度を触ると読みづらくなる。色相だけを移す color を使う。 */
+  mix-blend-mode: color;
+  opacity: 0.42;
+  pointer-events: none;
+  position: fixed;
 }
 
 .ambient-particle {

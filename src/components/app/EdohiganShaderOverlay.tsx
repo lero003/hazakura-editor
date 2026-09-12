@@ -65,7 +65,7 @@ uniform sampler2D u_flowField;
    AA: 分岐ループ内で fwidth を使わない（すべて固定幅の smoothstep）。
    ============================================================================ */
 
-#define LEAF_COUNT 9
+#define LEAF_COUNT 12
 #define MOTE_COUNT 20
 
 float hash21(vec2 p) {
@@ -120,7 +120,8 @@ float fbm3(vec2 p) {
    大きすぎると一枚の塊になり、細かすぎると汚れに見える。 */
 float canopyField(vec2 p) {
   vec2 w = vec2(fbm4(p * 2.0 + 11.3), fbm4(p * 2.0 - 4.7));
-  return fbm3(p * 4.6 + (w - 0.5) * 1.25);
+  // 実機指摘（第12報）: まだらが大きすぎて「巨大な葉」に見えた。セルを約半分に。
+  return fbm3(p * 8.0 + (w - 0.5) * 1.25);
 }
 
 /* 葉の形: 先 (+x) へ細る楕円。p はローカル座標（長辺 = x）。 */
@@ -156,7 +157,7 @@ float driftingLeaves(
     float x = fract(r3 + 0.055 * sin(t * 0.055 + r1 * 6.28) + flow.x * 0.22);
     vec2 pos = vec2((x - 0.5) * aspect, y - 0.5);
 
-    float size = (0.045 + r3 * 0.030) * mix(1.0, 1.35, motion * 0.35);
+    float size = (0.026 + r3 * 0.018) * mix(1.0, 1.35, motion * 0.35);
     vec2 local = (p - pos) / max(size, 1e-4);
     if (dot(local, local) > 4.5) {
       continue;
@@ -176,14 +177,14 @@ float driftingLeaves(
     // 主脈: 葉の中央をうっすら明るく抜く（影の中の筋）。
     float vein = 1.0 - smoothstep(0.008, 0.045, abs(spinLocal.y));
     // 影は「紙の上に落ちる葉の影」として読める濃さにする（薄すぎると模様にしか見えない）。
-    float depth = mix(0.58, 0.40, clamp(r2, 0.0, 1.0));
+    float depth = mix(0.34, 0.22, clamp(r2, 0.0, 1.0));
     float amount = body * (depth - vein * depth * 0.40);
     shade += amount;
 
     // 遅れて落ちてくる花びらを 2 枚だけ（葉桜＝終わりかけの花）。
     petalHits += step(0.72, r1) * body;
   }
-  return clamp(shade, 0.0, 0.70);
+  return clamp(shade, 0.0, 0.46);
 }
 
 void main() {
@@ -209,7 +210,8 @@ void main() {
   // 影の無い面が隣接することで光として読める（紙の上の木漏れ日の見え方と同じ）。
   float shade = smoothstep(0.50, 0.18, field);
   // 実測（合成後の画素）で効きが 3% 程度しか出ていなかったので、影の濃さを上げる。
-  col -= vec3(0.360, 0.330, 0.310) * shade * motion;
+  // 実機指摘: コントラストが強くて文字が読みづらい。影の濃さを戻す（薄く気配として）。
+  col -= vec3(0.205, 0.188, 0.178) * shade * motion;
 
   // 舞う葉（影として落ちる）。
   float petalHits;

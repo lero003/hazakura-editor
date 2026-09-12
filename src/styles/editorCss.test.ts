@@ -176,17 +176,35 @@ describe("editor tab close affordance CSS", () => {
   it("keeps special theme app shell gradients visible behind native chrome", () => {
     // edohigan (v1.6: ジョークテーマへ格上げ) の .app-shell 背景は
     // edohigan-theme.css へ移管したため、ここでは yakou / shokou のみ検証する。
+    const themesCss = readFileSync(`${process.cwd()}/src/styles/themes.css`, "utf8");
     const yakouShell = ruleBody(appShellCss, ':root[data-theme="yakou"] .app-shell');
     const shokouShell = ruleBody(appShellCss, ':root[data-theme="shokou"] .app-shell');
+    const yakouTint = ruleBody(
+      appShellCss,
+      ':root[data-theme="yakou"] .ambient-yakou::before',
+    );
+    const shokouTint = ruleBody(
+      appShellCss,
+      ':root[data-theme="shokou"] .ambient-shokou::before',
+    );
 
-    expect(yakouShell).toMatch(/background:\s*radial-gradient/);
-    expect(yakouShell).toMatch(/circle at 8% 6%/);
-    expect(yakouShell).toMatch(/rgba\(120,\s*96,\s*220,\s*0\.34\)/);
-    expect(yakouShell).toMatch(/linear-gradient\(145deg/);
+    // 下地（app-shell）はトークンを参照する。色そのものはトークン側が持つ。
+    expect(yakouShell).toMatch(/background:\s*var\(--ambient-aurora\)/);
     expect(yakouShell).toMatch(/animation:\s*bgDrift\s+22s/);
-    expect(shokouShell).toMatch(/radial-gradient/);
-    expect(shokouShell).toMatch(/linear-gradient\(135deg/);
+    expect(shokouShell).toMatch(/background:\s*var\(--ambient-dawn\)/);
     expect(shokouShell).toMatch(/animation:\s*bgDrift\s+26s/);
+
+    expect(themesCss).toMatch(/--ambient-aurora:[\s\S]*circle at 8% 6%/);
+    expect(themesCss).toMatch(/--ambient-aurora:[\s\S]*rgba\(120,\s*96,\s*220,\s*0\.34\)/);
+    expect(themesCss).toMatch(/--ambient-aurora:[\s\S]*linear-gradient\(145deg/);
+    expect(appShellCss).toMatch(/--ambient-dawn:[\s\S]*linear-gradient\(135deg/);
+
+    // 実機指摘（第12報）: 演出が面の後ろで見えなかったため、面の上に薄く重ねる層を足した。
+    expect(yakouTint).toMatch(/background:\s*var\(--ambient-aurora-overlay\)/);
+    expect(yakouTint).toMatch(/mix-blend-mode:\s*screen/);
+    expect(yakouTint).toMatch(/animation:\s*bgDrift\s+22s/);
+    expect(shokouTint).toMatch(/background:\s*var\(--ambient-dawn-overlay\)/);
+    expect(shokouTint).toMatch(/mix-blend-mode:\s*color/);
   });
 
   it("keeps top chrome popovers above the workspace layer", () => {
