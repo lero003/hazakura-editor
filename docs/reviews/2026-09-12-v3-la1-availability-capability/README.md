@@ -105,16 +105,30 @@ native実機（別窓の表示・IME・VoiceOver）、x86_64実機での実モ�
 
 ## 再実行
 
+**順序が要**。liveビルドはfixtureと同じ `binaries/hazakura-local-assist-helper-aarch64-apple-darwin` を
+上書きするため、liveを先に焼くと `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` がlive実物を指し、fixture期待
+（定型応答・`fixture:` modelId）と一致しない。**fixture → cargo test → live** の順で回す。
+
 ```bash
 swift test --package-path src-helpers/apple-assist
 npm run build:apple-assist-helper:fixture
-npm run build:apple-assist-helper:live
 HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE="$PWD/binaries/hazakura-local-assist-helper-aarch64-apple-darwin" \
   cargo test --manifest-path src-tauri/Cargo.toml
+npm run build:apple-assist-helper:live
 ```
 
-`binaries/` は追跡外。fixtureビルドはhost archの `-aarch64-apple-darwin` を上書きする（既存挙動）。
-liveのuniversalバイナリは別名で残る。
+`binaries/` は追跡外。liveのuniversalバイナリは別名で残る。liveを焼いた後でfixtureテストを回したい場合は、
+fixtureビルド直後に一時パスへコピーし、`HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` をそこへ向ける。
+
+## 外部レビュー対応（P2）
+
+- **P2: 再実行手順の順序。** 旧版は fixture → live → cargo test の順で、liveビルドがfixtureバイナリを
+  上書きしていた。上記のとおり **fixture → cargo test → live** へ修正（コード・挙動の変更なし）。
+  修正後の順序で再実行し、`cargo test` **385 passed / 2 ignored**（fixture注入）、liveビルドの
+  arm64 / x86_64 / universalとprobe smoke、`swift test` 16件を再確認した。
+- 外部レビューの独立確認（受領記録）: Swift **16件**、TSエラー分類 **18件**、liveのarm64 / x86_64ビルドが成功。
+  Rustは初回の並列実行で時間制限テスト1件がタイムアウトし、直列再実行で **68件成功**（レビュー側の環境。
+  ローカルの全体実行は上記 385件）。
 
 ## 参照
 
