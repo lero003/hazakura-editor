@@ -1,0 +1,44 @@
+{
+  "edohigan": {
+    "theme": "edohigan",
+    "shellBg": "rgb(251, 244, 242)",
+    "shellText": "rgb(69, 55, 53)",
+    "shellContrast": 10.44
+  },
+  "light": {
+    "theme": "light",
+    "shellBg": "rgb(247, 248, 245)",
+    "shellText": "rgb(36, 54, 45)",
+    "shellContrast": 12.01
+  },
+  "dark": {
+    "theme": "dark",
+    "shellBg": "rgb(24, 36, 30)",
+    "shellText": "rgb(229, 237, 223)",
+    "shellContrast": 13.37
+  },
+  "yakou": {
+    "theme": "yakou",
+    "shellBg": "rgb(20, 20, 30)",
+    "shellText": "rgb(232, 232, 244)",
+    "shellContrast": 15.05
+  },
+  "shokou": {
+    "theme": "shokou",
+    "shellBg": "rgb(238, 245, 251)",
+    "shellText": "rgb(28, 53, 84)",
+    "shellContrast": 11.32
+  },
+  "crt": {
+    "theme": "crt",
+    "shellBg": "rgb(8, 18, 12)",
+    "shellText": "rgb(155, 224, 164)",
+    "shellContrast": 12.33
+  },
+  "shinkai": {
+    "theme": "shinkai",
+    "shellBg": "rgb(15, 53, 72)",
+    "shellText": "rgb(212, 236, 242)",
+    "shellContrast": 10.52
+  }
+}

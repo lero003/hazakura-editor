@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-08-16 (v2.6 physical Assist release gate)
+Last reviewed: 2026-09-12 (Local Assist window theme item added)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -910,6 +910,8 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 11. Confirm Agent Window and Hazakura Local Assist Window still replace rather than coexist as the primary external companion.
 12. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.
 13. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-local-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
+
+14. Switch through all seven themes with the Local Assist window open and confirm the window background follows the theme as a flat surface with readable text — `edohigan` is a light pink surface with dark ink and must not fall back to a dark window (fixed 2026-09-12; see the [browser measurements and before/after capture](reviews/2026-09-12-v3-assist-window-theme/README.md)).
 
 Latest light manual note: on 2026-06-21, user-side built-app smoke
 confirmed the dedicated Hazakura Local Assist UI opened, the helper was

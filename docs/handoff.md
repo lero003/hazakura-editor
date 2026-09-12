@@ -7,6 +7,10 @@ Last reviewed: 2026-09-12
 
 ## Current State
 
+- **Local Assist 分離窓の江戸彼岸色を修正（2026-09-12）:** 暗色時代の固定背景色の残骸で本文が沈む不整合
+  （実測 1.28:1→10.44）を `--bg` へ戻して修正し、全7テーマの窓面コントラスト契約（4.5:1）を追加。
+  全2,487件成功。[前後画像と再現](reviews/2026-09-12-v3-assist-window-theme/README.md)。native目視は次の実機ラウンドに合流。
+
 - **Local Assist v3基盤（LA-1a）:** Systemの利用可否（四態wire、不変）と生成能力（locale）を
   `AssistRuntimeContract` で分離し、ゲートの能力失敗を `unsupported_language` へ（文言不変）。
   swift test 16件・live/fixtureビルド・実機live生成・cargo 385件を確認。27環境での照合と評価（LA-1b）は未実施。

@@ -1,0 +1,44 @@
+{
+  "light": {
+    "theme": "light",
+    "shellBg": "rgb(247, 248, 245)",
+    "shellText": "rgb(36, 54, 45)",
+    "shellContrast": 12.01,
+    "noteBg": "color(srgb 0.6 0.470588 0.219608 / 0.08)"
+  },
+  "dark": {
+    "theme": "dark",
+    "shellBg": "rgb(24, 36, 30)",
+    "shellText": "rgb(229, 237, 223)",
+    "shellContrast": 13.37,
+    "noteBg": "color(srgb 0.709804 0.564706 0.270588 / 0.08)"
+  },
+  "yakou": {
+    "theme": "yakou",
+    "shellBg": "rgb(20, 20, 30)",
+    "shellText": "rgb(232, 232, 244)",
+    "shellContrast": 15.05,
+    "noteBg": "color(srgb 0.831373 0.658824 0.258824 / 0.08)"
+  },
+  "shokou": {
+    "theme": "shokou",
+    "shellBg": "rgb(238, 245, 251)",
+    "shellText": "rgb(28, 53, 84)",
+    "shellContrast": 11.32,
+    "noteBg": "color(srgb 0.635294 0.435294 0.12549 / 0.08)"
+  },
+  "crt": {
+    "theme": "crt",
+    "shellBg": "rgb(8, 18, 12)",
+    "shellText": "rgb(155, 224, 164)",
+    "shellContrast": 12.33,
+    "noteBg": "color(srgb 0.709804 0.564706 0.270588 / 0.08)"
+  },
+  "shinkai": {
+    "theme": "shinkai",
+    "shellBg": "rgb(15, 53, 72)",
+    "shellText": "rgb(212, 236, 242)",
+    "shellContrast": 10.52,
+    "noteBg": "color(srgb 0.815686 0.627451 0.333333 / 0.08)"
+  }
+}
