@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { MenuLanguage } from "../../../types";
 import { PreviewFeedback } from "./PreviewFeedback";
+import { resolvePreviewSection } from "./previewSection";
 import {
   interceptPreviewLink,
   paintPreviewHtml,
@@ -103,6 +104,8 @@ export default function PreviewPane({
     failed: false,
   }));
   const [retryRevision, setRetryRevision] = useState(0);
+  /** 紙の上端に貼り付ける「いま見ている見出し」（実機要望: HUD の情報を常設に）。 */
+  const [currentSection, setCurrentSection] = useState<string | null>(null);
   // First settled paint per document identity is `initial`; later paints
   // (typing debounce, workspace image inlining) are `update` so the parent
   // can avoid re-applying scroll-ratio after content height changes.
@@ -407,6 +410,39 @@ export default function PreviewPane({
     };
   }, [previewIdentity]);
 
+  // 実機要望: 編集面にはスクロール中に現在の見出し（HUD）が一瞬出る。同じ情報を
+  // プレビューにも常設したい。プレビューは独立にスクロールするので、**プレビュー自身の
+  // 位置**から見出しを求め、紙の上端に貼り付ける。紙の先頭では何も出さない。
+  useEffect(() => {
+    const host = previewHostRef.current;
+    const scroller = host?.parentElement;
+    if (!host || !scroller) return;
+    let frame: number | null = null;
+    const update = () => {
+      frame = null;
+      const scrollerTop = scroller.getBoundingClientRect().top;
+      const sections = Array.from(
+        host.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"),
+      ).map((heading) => ({
+        text: (heading.textContent ?? "").trim(),
+        top:
+          heading.getBoundingClientRect().top -
+          scrollerTop +
+          scroller.scrollTop,
+      }));
+      setCurrentSection(resolvePreviewSection(sections, scroller.scrollTop));
+    };
+    const onScroll = () => {
+      if (frame === null) frame = requestAnimationFrame(update);
+    };
+    update();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, [preview.identity, preview.html, preview.failed, preview.pending]);
+
   useEffect(() => {
     if (
       preview.pending ||
@@ -487,6 +523,9 @@ export default function PreviewPane({
         />
       ) : empty ? (
         <PreviewFeedback kind="empty" menuLanguage={menuLanguage} />
+      ) : null}
+      {currentSection && !empty ? (
+        <div className="preview-section-cue">{currentSection}</div>
       ) : null}
       <article
         aria-busy={pending ? "true" : undefined}

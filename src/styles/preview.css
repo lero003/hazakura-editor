@@ -1,5 +1,23 @@
 /* === preview.css === */
 /* プレビューの洗練 / Markdown Preview Styling */
+
+/* 実機要望: スクロール中に一瞬出る「現在の見出し」（編集面のHUD）と同じ情報を、
+   プレビューでも常に見えるようにする。紙の上端に貼り付く薄い一行。
+   紙の先頭（どの見出しにも達していない）では出さない＝情報を増やさない。 */
+.preview-section-cue {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 5px 12px 6px;
+  background: var(--preview-reading-surface, var(--surface-strong));
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  font: 400 11.5px/1.5 var(--font-ui);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .markdown-preview {
   background: var(--preview-reading-surface, var(--surface-strong));
   border: 1px solid color-mix(in srgb, var(--border-strong) 58%, transparent);
