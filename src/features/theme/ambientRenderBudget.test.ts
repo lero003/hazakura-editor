@@ -21,8 +21,12 @@ describe("ambientRenderBudget (Q-THM-1)", () => {
   });
 
   it("throttles frames outside dramatic", () => {
+    // 実機要望（第10報）: 演出が見えないほど間引かれていたため一段戻した
+    // （normal は 60fps。dramatic は据え置きで毎フレーム）。
     expect(ambientMinFrameIntervalMs("dramatic")).toBe(0);
-    expect(ambientMinFrameIntervalMs("normal")).toBeCloseTo(1000 / 30);
-    expect(ambientMinFrameIntervalMs("subtle")).toBeCloseTo(1000 / 24);
+    expect(ambientMinFrameIntervalMs("normal")).toBeCloseTo(1000 / 60);
+    expect(ambientMinFrameIntervalMs("subtle")).toBeCloseTo(1000 / 30);
+    // off でも描画を止めるだけで、上限は subtle と同じ扱い（既存の落ち方を維持）。
+    expect(ambientMinFrameIntervalMs("off")).toBeCloseTo(1000 / 30);
   });
 });
