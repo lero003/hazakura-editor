@@ -26,6 +26,16 @@ function ruleBody(selector: string): string {
 }
 
 describe("workspace.css", () => {
+  it("keeps the new-file menu inside a narrow sidebar", () => {
+    // 実機指摘（第15報）: メニューは右端基準（左へ開く）なので、28px の「＋」ボタンを
+    // 基準にすると狭いサイドバーで左へはみ出した（実測: 240px で 17px、200px で 57px 隠れる）。
+    // 基準を行の右端に移すと、はみ出し分が右へずれて必ず内側に収まる
+    // （修正後の実測: 240px で左右とも内側）。
+    expect(ruleBody(".workspace-header-actions")).toMatch(/position:\s*relative/);
+    expect(ruleBody(".workspace-new-menu")).toMatch(/position:\s*static/);
+    expect(ruleBody(".workspace-new-menu-popover")).toMatch(/right:\s*0/);
+  });
+
   it("lets native vibrancy drive every theme shell surface", () => {
     for (const theme of [
       "dark",

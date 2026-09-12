@@ -628,10 +628,16 @@
   display: flex;
   flex: 0 0 auto;
   gap: 4px;
+  /* 新規メニューの基準位置。28px の「＋」ボタンを基準にすると、メニューは左へ開くため
+     サイドバーが狭いとき左へはみ出す（実測: 240px で 17px、200px で 57px が隠れた）。
+     行の右端を基準にすれば、はみ出し分が右へずれて必ず内側に収まる。 */
+  position: relative;
 }
 
 .workspace-new-menu {
-  position: relative;
+  /* 実機指摘（第15報）: 子の .workspace-new-menu-popover は .workspace-header-actions
+     基準で右端に貼り付けたいので、ここでは位置指定を持たない。 */
+  position: static;
 }
 
 .workspace-new-button {
