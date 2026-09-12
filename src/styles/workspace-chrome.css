@@ -11,7 +11,7 @@
      macOS の信号機はネイティブで x=20（`src-tauri/tauri.conf.json`）・12px玉×3＋8px間隔＝
      右端 72px。モックの文書名は左から127pxで、その手前に切替アイコンが入る。
      実測の根拠は docs/reviews/2026-09-11-mock-gap-sweep/README.md。 */
-  --toolbar-document-inset: 127px;
+  --toolbar-document-inset: 96px;
 }
 .primary-toolbar-slot { min-width: 0; position: relative; z-index: var(--z-sticky); }
 .app-primary-toolbar {

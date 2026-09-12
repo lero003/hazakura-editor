@@ -70,12 +70,12 @@
       <input id="iy" type="range" min="14" max="40" value="27">
     </div>
     <div>
-      <label>文書名の左位置 = <b id="vt">127</b> px（CSS）</label>
-      <input id="it" type="range" min="72" max="150" value="127">
+      <label>文書名の左位置 = <b id="vt">96</b> px（CSS）</label>
+      <input id="it" type="range" min="72" max="150" value="96">
     </div>
   </div>
   <div class="row">
-    <button id="now">決定値（20 / 27 / 127）</button>
+    <button id="now">決定値（文書名 96px）</button>
     <button id="mock">モック準拠（20 / 27 / 127）</button>
     <button id="mid">間を取る（20 / 27 / 96）</button>
     <button id="toggleGuide">ガイド線を消す</button>
@@ -114,7 +114,7 @@
       `信号機と文書名の位置は x=${x} / y=${y} / 文書名=${t}px で決まり。実機ビルドに反映して`);
   }
   [ix, iy, it].forEach(el => el.addEventListener('input', draw));
-  document.getElementById('now').onclick = () => { ix.value = 20; iy.value = 27; it.value = 127; draw(); };
+  document.getElementById('now').onclick = () => { ix.value = 20; iy.value = 27; it.value = 96; draw(); };
   document.getElementById('mock').onclick = () => { ix.value = 20; iy.value = 27; it.value = 127; draw(); };
   document.getElementById('mid').onclick = () => { ix.value = 20; iy.value = 27; it.value = 96; draw(); };
   let guide = true;

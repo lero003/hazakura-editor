@@ -25,6 +25,8 @@ export type SafeEditorCopy = {
   startActions: string;
   /** Short purpose-led pitch: write / read / verify. */
   startValuePitch: string;
+  /** Where the files live (local-first promise). Mock 01 の盾つき一行。 */
+  startLocalNote: string;
   /** Primary resume control for the last workspace folder. */
   startResumeWorkspace: (folderLabel: string) => string;
   startResumeSection: string;
@@ -62,6 +64,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       startHeadingReturning: "つづきから かく",
       startActions: "はじめのわざ",
       startValuePitch: "かき、よみ、たしかめる。",
+      startLocalNote: "ふぁいるは、じぶんのMacに。",
       startResumeWorkspace: (folderLabel) =>
         `まへの ところ「${folderLabel}」をひらく`,
       startResumeSection: "つづきを かく",
@@ -99,6 +102,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startHeadingReturning: "続きから書く",
         startActions: "開始操作",
         startValuePitch: "書いて、読んで、確かめる。",
+        startLocalNote: "ファイルは、自分のMacに。",
         startResumeWorkspace: (folderLabel) =>
           `前回のフォルダ「${folderLabel}」を開く`,
         startResumeSection: "続きを書く",
@@ -133,6 +137,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         startHeadingReturning: "Continue where you left off",
         startActions: "Start actions",
         startValuePitch: "Write, read, and verify.",
+        startLocalNote: "Your files stay on your Mac.",
         startResumeWorkspace: (folderLabel) =>
           `Open last folder “${folderLabel}”`,
         startResumeSection: "Continue writing",

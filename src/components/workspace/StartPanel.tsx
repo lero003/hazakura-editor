@@ -153,6 +153,24 @@ export function StartPanel({
         <p className="start-value-pitch">{copy.startValuePitch}</p>
         {resumeButton}
         {startActions}
+        {/* 画面01: ファイルの在りかを一言で示す（モックの盾つき一行）。 */}
+        <p className="start-local-note">
+          <span aria-hidden="true" className="start-local-note-icon">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" />
+            </svg>
+          </span>
+          {copy.startLocalNote}
+        </p>
       </section>
 
       {/* 右: 続きから書く面。最近のフォルダと復旧候補。 */}

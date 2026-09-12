@@ -22,8 +22,11 @@
 
 /* 左: 静かなブランド面。サイドバーと同じナビ面に置く。 */
 .v3-shell .start-panel-intro {
-  display: grid;
-  align-content: start;
+  /* 下端の注記（start-local-note）を下へ寄せるため flex 列にする。見え方は
+     以前の grid + align-content: start と同じ（中身は自然高さ・左揃え）。 */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   min-width: 0;
   padding: 74px 62px 50px 82px;
   border-right: 1px solid var(--border);
@@ -60,6 +63,23 @@
   overflow-wrap: anywhere;
 }
 .v3-shell .start-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+/* 画面01: ファイルはローカルに、の一行。モックと同じくボタン群の直下に置くが、
+   すぐ下に付けるとボタンの説明に見えるので、他の要素間より広い間隔を取る。 */
+.v3-shell .start-local-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 34px 0 0;
+  font: 400 12px/1.7 var(--font-ui);
+  color: var(--text-muted);
+}
+.v3-shell .start-local-note-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: var(--accent);
+}
 .v3-shell .start-actions button { min-height: 42px; padding: 7px 20px; }
 .v3-shell .start-actions .start-open-folder,
 .v3-shell .start-resume-button {

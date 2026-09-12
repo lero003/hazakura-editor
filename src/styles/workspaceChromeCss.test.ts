@@ -19,7 +19,7 @@ function ruleBody(selector: string): string {
 describe("workspace-chrome.css", () => {
   it("keeps the primary toolbar's document inset clear of the native traffic lights", () => {
     // 実機指摘: 信号機と文書名の距離が詰まりすぎ（11px）。モックの文書名は左から127px。
-    expect(ruleBody(".v3-shell")).toMatch(/--toolbar-document-inset:\s*127px/);
+    expect(ruleBody(".v3-shell")).toMatch(/--toolbar-document-inset:\s*96px/);
     expect(ruleBody(".app-primary-toolbar")).toMatch(
       /padding:\s*8px 20px 8px var\(--toolbar-document-inset\)/,
     );
@@ -28,8 +28,9 @@ describe("workspace-chrome.css", () => {
     const conf = readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8");
     expect(conf).not.toMatch(/"trafficLightPosition"/);
     // macOS標準の信号機は左から約20px・12px玉×3＋8px間隔＝右端 約72px。
-    // 文書名の 127px はそれより十分右（= 重ならない）。
-    expect(20 + 12 * 3 + 8 * 2).toBeLessThan(127);
+    // 文書名の 96px はそこから約24px空ける（モックの「次の要素まで24px」と同じリズム）。
+    expect(20 + 12 * 3 + 8 * 2).toBeLessThan(96);
+    expect(96 - (20 + 12 * 3 + 8 * 2)).toBeGreaterThanOrEqual(16);
   });
 
   it("fixes the primary toolbar height so the chrome can not shift under the native controls", () => {
