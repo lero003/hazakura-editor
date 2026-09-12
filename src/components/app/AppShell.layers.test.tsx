@@ -223,6 +223,34 @@ describe("AppShell chrome layers", () => {
     expect(hideSidePane).not.toHaveBeenCalled();
   });
 
+  it("closes an open preview when the proposal review is opened from Review", () => {
+    const hideSidePane = vi.fn();
+    proposalState.proposal = { requestId: "req-preview" };
+    try {
+      render(
+        <ConnectedShell
+          {...base}
+          activeTab={
+            {
+              name: "draft.md",
+              path: "/workspace/draft.md",
+              sessionId: "s1",
+            } as AppShellProps["activeTab"]
+          }
+          sidePaneMode="preview"
+          hideSidePane={hideSidePane}
+        />,
+      );
+      // 提案があること自体では畳まない（面を開いたときだけ）。
+      expect(hideSidePane).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "Check proposal" }));
+      // 確認の面は他の作業面を並べない（実機指摘: プレビューが残っていた）。
+      expect(hideSidePane).toHaveBeenCalledOnce();
+    } finally {
+      proposalState.proposal = null;
+    }
+  });
+
   it("keeps floating L Mode tabs outside the workspace stacking context while retaining the editor", () => {
     const view = render(<ConnectedShell {...base} />);
     const editor = screen.getByRole("textbox", {name: "Editor"});

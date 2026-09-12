@@ -140,6 +140,14 @@ export function AppShell(props: AppShellProps) {
     if (props.sidePaneMode === "ebook" || props.sidePaneMode === "compare") props.hideSidePane();
   };
   /**
+   * 確認（review）の面は他の作業面を並べない。提案レビューを出すときは
+   * プレビューを含むサイドペインも畳む（実機指摘: 「確認」を開いても
+   * プレビューが表示されたままだった）。
+   */
+  const closeSidePaneForReview = () => {
+    if (props.sidePaneMode) props.hideSidePane();
+  };
+  /**
    * 提案レビューを見える状態にする（07 P2）。狭幅でプレビューや参照を表示していると
    * 本文領域が `display: none` になり、タブとDOMが存在しても「開けた」ことにならないので、
    * 面の表示と**領域の開示**を必ず一緒に行う。
@@ -147,6 +155,8 @@ export function AppShell(props: AppShellProps) {
   const showProposalReview = () => {
     setProposalReviewHidden(false);
     revealEditorRegion();
+    // 確認の面は他の作業面を並べない: 開いているプレビューも畳む（実機指摘）。
+    closeSidePaneForReview();
   };
   const focusProposalReviewRegion = () =>
     proposalReviewRef.current?.querySelector<HTMLElement>("[role=region]")?.focus();

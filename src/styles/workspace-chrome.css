@@ -97,6 +97,9 @@
 .app-primary-toolbar .workspace-review-choices button { display: grid; text-align: left; justify-content: stretch; white-space: normal; overflow-wrap: anywhere; }
 .workspace-review-choices small { color: var(--text-muted); font-size: 12px; font-weight: 400; }
 .workspace-document-column { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; }
+/* 確認（review）の面は文書クロームを出さないぶん、本文領域を全高で使う
+   （クロームが無いと1行目が空き、2行目へ落ちて面が縮むため）。 */
+.workspace-document-column.workspace-review-focus { grid-template-rows: minmax(0, 1fr); }
 .workspace-document-column > .editor-preview-grid { min-height: 0; }
 /* レビュー面の絶対配置の基準（本文領域の箱）。 */
 .reference-editor-host { position: relative; }

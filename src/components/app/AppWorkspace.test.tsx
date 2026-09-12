@@ -1859,6 +1859,7 @@ describe("proposal review placement (07)", () => {
             sessionId: "s1",
           } as EditorTab,
           appleAssistGenerationLock: { requestId: "pending" } as never,
+          proposalReviewVisible: true,
           onApplyLocalAssistProposal: onApply,
           onDiscardLocalAssistProposal: onDiscard,
         })}
@@ -1941,6 +1942,65 @@ describe("proposal review visibility (07 P1)", () => {
     expect(container.querySelector("[data-testid='proposal-review']")).toBeNull();
     expect(container.querySelector(".editor-pane")?.hasAttribute("inert")).toBe(false);
     expect(localAssistProposalStore.getLatest("s-review")?.requestId).toBe("req-1");
+  });
+
+  it("hides the document chrome (tabs and tools) while the review surface is shown", () => {
+    const tab = {
+      contents: "original",
+      id: "a",
+      name: "note.md",
+      path: "/workspace/note.md",
+      sessionId: "s-review",
+    } as EditorTab;
+    localAssistProposalStore.record("s-review", {
+      requestId: "req-1",
+      request: "短くして",
+      actionId: "rewrite_natural",
+      conversationId: "c1",
+      originalText: "original",
+      candidateText: "short",
+      target: {
+        kind: "document",
+        start: 0,
+        end: 8,
+        text: "original",
+        label: "",
+        activeDocumentPath: tab.path,
+        activeDocumentName: tab.name,
+        activeDocumentSessionId: tab.sessionId,
+        capturedAtMs: 0,
+      },
+      turnIndex: 0,
+    } as never);
+    const documentChrome = (
+      <div data-testid="document-chrome">Document tools</div>
+    );
+
+    const { container, rerender } = render(
+      <AppWorkspace
+        {...makeWorkspaceProps({
+          activeTab: tab,
+          documentChrome,
+          proposalReviewVisible: true,
+        })}
+      />,
+    );
+
+    // 確認の面は他の文書クローム（タブ・表示ツールバー）を並べない（実機指摘）。
+    expect(container.querySelector("[data-testid='document-chrome']")).toBeNull();
+
+    rerender(
+      <AppWorkspace
+        {...makeWorkspaceProps({
+          activeTab: tab,
+          documentChrome,
+          proposalReviewVisible: false,
+        })}
+      />,
+    );
+    expect(
+      container.querySelector("[data-testid='document-chrome']"),
+    ).toBeTruthy();
   });
 });
 

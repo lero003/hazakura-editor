@@ -322,7 +322,7 @@ export function AppWorkspace({
   onDiscardLocalAssistProposal,
   proposalReviewRef,
   onReturnToEditing,
-  proposalReviewVisible = true,
+  proposalReviewVisible = false,
   readingFocusIntent = null,
   clearCompareSource,
   clearCompareTarget,
@@ -717,6 +717,13 @@ export function AppWorkspace({
       ? referenceCompare
       : null;
 
+  // 確認（review）の面は、その面の体験へ集中するため他の文書クローム
+  // （タブ・表示ツールバー）を並べない（実機指摘: グローバルなメニューの行き先）。
+  const reviewFocusActive =
+    !!proposalReviewVisible ||
+    (sidePaneMode === "compare" && !visibleReferenceCompare) ||
+    !!visibleReferenceCompare;
+
   // Both independent readers own the workspace; keep the editor mounted but inert.
   const importContext = importDraftContextCopy(menuLanguage);
   const compactViewCopy = getCompactViewCopy(menuLanguage);
@@ -874,8 +881,8 @@ export function AppWorkspace({
           value={workspaceSidebarWidth}
         />
       ) : null}
-      <div className="workspace-document-column" hidden={readingOverlayActive} inert={readingOverlayActive}>
-      {documentChrome}
+      <div className={`workspace-document-column${reviewFocusActive ? " workspace-review-focus" : ""}`} hidden={readingOverlayActive} inert={readingOverlayActive}>
+      {reviewFocusActive ? null : documentChrome}
       <div
         ref={editorPreviewGridRef}
         data-compact-preview={compactPreviewAvailable ? compactPreviewFocus : undefined}

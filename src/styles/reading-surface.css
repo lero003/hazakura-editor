@@ -103,6 +103,12 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* 確認（review）の面: 差分のヘッダー（ChangeReviewView）が面のタイトルと閉じるを
+   持つため、サイドペインのヘッダーを重ねない（二段ヘッダーを避ける・モック07/08）。 */
+.preview-pane-compare:has(.diff-pane) > .right-pane-header {
+  display: none;
+}
+
 .preview-pane-preview > .markdown-preview {
   line-height: 1.8;
   margin: 16px auto;
