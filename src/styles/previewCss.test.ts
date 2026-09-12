@@ -201,35 +201,38 @@ describe("preview.css", () => {
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
   });
 
-  it("keeps the Reading Focus table of contents as a quiet overlay drawer", () => {
-    const backdropBody = ruleBody(".ebook-pane .ebook-reader-toc-backdrop");
-    const panelBody = ruleBody(".ebook-pane .ebook-reader-toc-panel");
+  it("keeps the Reading Focus table of contents as a rail beside the paper", () => {
+    const bodyBody = ruleBody(".ebook-reader-focus-body");
+    const railBody = ruleBody(".ebook-reader-toc-rail");
+    const railHeadingBody = ruleBody(".ebook-reader-toc-rail-heading");
+    const railMetaBody = ruleBody(".ebook-reader-toc-rail-meta");
     const listBody = ruleBody(".ebook-pane .ebook-reader-toc-list");
     const itemBody = ruleBody(".ebook-pane .ebook-reader-toc-item");
+    const focusFooterBody = ruleBody(
+      ".ebook-pane.ebook-pane-focus .ebook-reader-footer",
+    );
 
-    // v0.33: 目次トグルは右上浮遊ツールのピル（base は .ebook-reader-floating-button）
-    // 展開状態は複合セレクタで上書きされる
-    expect(
-      ruleBody('.ebook-pane .ebook-reader-toc-toggle[aria-expanded="true"]'),
-    ).toMatch(/color:\s*var\(--accent/);
-    expect(backdropBody).toMatch(/position:\s*absolute/);
-    expect(backdropBody).toMatch(/inset:\s*0/);
-    expect(backdropBody).toMatch(/background:\s*transparent/);
-    expect(backdropBody).toMatch(/box-shadow:\s*none/);
-    expect(backdropBody).toMatch(/transform:\s*none/);
-    expect(
-      ruleBody(".ebook-pane .ebook-reader-toc-backdrop:hover,\n.ebook-pane .ebook-reader-toc-backdrop:focus-visible,\n.ebook-pane .ebook-reader-toc-backdrop:active"),
-    ).toMatch(/background:\s*transparent/);
-    expect(
-      ruleBody(".ebook-pane .ebook-reader-toc-backdrop:hover,\n.ebook-pane .ebook-reader-toc-backdrop:focus-visible,\n.ebook-pane .ebook-reader-toc-backdrop:active"),
-    ).toMatch(/transform:\s*none/);
-    expect(panelBody).toMatch(/position:\s*absolute/);
-    expect(panelBody).toMatch(/left:\s*clamp/);
-    // v1.5 dense 化: 目次パネルを 320px → 340px に広げた
-    expect(panelBody).toMatch(/max-width:\s*min\(340px,\s*calc\(100% - 32px\)\)/);
+    // 読書面は「目次レール + メイン（紙と操作帯）」の2カラム（モック04）。
+    expect(bodyBody).toMatch(/display:\s*grid/);
+    expect(bodyBody).toMatch(
+      /grid-template-columns:\s*minmax\(212px,\s*240px\) minmax\(0,\s*1fr\)/,
+    );
+    expect(railBody).toMatch(/border-right:\s*1px solid var\(--border\)/);
+    expect(railBody).toMatch(
+      /grid-template-rows:\s*auto minmax\(0,\s*1fr\) auto/,
+    );
+    expect(railHeadingBody).toMatch(/font-size:\s*11px/);
+    expect(railMetaBody).toMatch(/border-top/);
     expect(listBody).toMatch(/overflow:\s*auto/);
-    expect(itemBody).toMatch(/grid-template-columns:\s*2\.6em minmax\(0,\s*1fr\)/);
-    expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-toc-panel\s*{/);
+    expect(itemBody).toMatch(
+      /grid-template-columns:\s*2\.6em minmax\(0,\s*1fr\)/,
+    );
+    // 旧オーバーレイのドロワーは廃止した（常設レールへ一本化）。
+    expect(previewCss).not.toMatch(/ebook-reader-toc-panel/);
+    expect(previewCss).not.toMatch(/ebook-reader-toc-backdrop/);
+    expect(previewCss).not.toMatch(/ebook-reader-toc-toggle/);
+    // 紙の外に置く下部操作帯（reader-bottom）は53pxの帯にする。
+    expect(focusFooterBody).toMatch(/height:\s*53px/);
   });
 
   it("keeps e-book chapter header styling inside the e-book pane flow", () => {

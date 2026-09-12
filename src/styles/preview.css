@@ -807,6 +807,96 @@
   text-align: center;
 }
 
+/* 読書面（モック04）: 上部は書名と対象タグだけを置く。章・ページ・進捗と
+   ページ操作は下部の操作帯（reader-bottom）へ移した。 */
+.ebook-pane-focus .ebook-reader-chrome {
+  position: static;
+}
+
+.ebook-pane-focus .ebook-reader-status {
+  justify-content: flex-start;
+  min-height: 52px;
+  padding: 10px clamp(16px, 3vw, 28px);
+  text-align: left;
+}
+
+.ebook-reader-focus-identity {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ebook-reader-focus-identity .ebook-reader-title {
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.ebook-reader-scope-tag {
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* 左に常設の本の目次、メインに紙と下部操作帯（モック04の book-pages/reader-bottom）。 */
+.ebook-reader-focus-body {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(212px, 240px) minmax(0, 1fr);
+  min-height: 0;
+  width: 100%;
+}
+
+.ebook-reader-toc-rail {
+  background: color-mix(
+    in srgb,
+    var(--nav-surface, var(--surface)) 55%,
+    var(--surface)
+  );
+  border-right: 1px solid var(--border);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ebook-reader-toc-rail-heading {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 14px 16px 12px;
+}
+
+.ebook-reader-toc-rail .ebook-reader-toc-list {
+  padding: 10px;
+}
+
+.ebook-reader-toc-rail-meta {
+  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  padding: 12px 16px;
+}
+
+.ebook-reader-focus-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
 .ebook-pane .ebook-reader-edit-here {
   background: color-mix(in srgb, var(--accent-soft) 55%, transparent);
   border-color: color-mix(in srgb, var(--accent) 35%, transparent);
@@ -897,91 +987,6 @@
   background: color-mix(in srgb, var(--accent-soft) 92%, var(--surface));
   border-color: color-mix(in srgb, var(--accent) 46%, transparent);
   color: var(--accent);
-}
-
-.ebook-pane .ebook-reader-toc-toggle[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
-  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
-  color: var(--accent);
-}
-
-.ebook-pane .ebook-reader-toc-backdrop {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  cursor: default;
-  inset: 0;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  transform: none;
-  z-index: var(--z-base);
-}
-
-.ebook-pane .ebook-reader-toc-backdrop:hover,
-.ebook-pane .ebook-reader-toc-backdrop:focus-visible,
-.ebook-pane .ebook-reader-toc-backdrop:active {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  outline: none;
-  transform: none;
-}
-
-.ebook-pane .ebook-reader-toc-panel {
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 48px color-mix(in srgb, var(--shadow) 16%, transparent);
-  box-sizing: border-box;
-  color: var(--text);
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  left: clamp(18px, 4vw, 44px);
-  max-height: min(64vh, 520px);
-  max-width: min(340px, calc(100% - 32px));
-  min-height: 180px;
-  overflow: hidden;
-  position: absolute;
-  top: clamp(92px, 14vh, 140px);
-  width: min(340px, calc(100% - 32px));
-  z-index: var(--z-base);
-}
-
-.ebook-pane .ebook-reader-toc-header {
-  align-items: center;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
-  display: grid;
-  font-family: var(--font-ui);
-  font-size: 12px;
-  font-weight: 750;
-  grid-template-columns: minmax(0, 1fr) auto;
-  letter-spacing: 0;
-  padding: 10px 12px 9px 14px;
-}
-
-.ebook-pane .ebook-reader-toc-close {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
-  cursor: pointer;
-  display: inline-flex;
-  font-family: var(--font-ui);
-  font-size: 16px;
-  height: 24px;
-  justify-content: center;
-  line-height: 1;
-  padding: 0;
-  width: 24px;
-}
-
-.ebook-pane .ebook-reader-toc-close:hover,
-.ebook-pane .ebook-reader-toc-close:focus-visible {
-  background: var(--accent-soft);
-  color: var(--text);
-  outline: none;
 }
 
 .ebook-pane .ebook-reader-toc-list {
@@ -1316,6 +1321,59 @@
 .ebook-pane .ebook-reader-footer-page {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* 集中中（読書面）は footer が紙の外（メイン下端）へ出るので、footer 分の行と余白を詰める。 */
+.ebook-pane.ebook-pane-focus .ebook-chapter {
+  --ebook-page-footer-height: 0px;
+  /* モック04の紙内余白（上36px前後）へ寄せる。 */
+  --ebook-sheet-pad-y: clamp(30px, 4.6vh, 44px);
+  padding-bottom: clamp(14px, 2vw, 22px);
+}
+
+/* 下部のページ操作帯（モック04 reader-bottom）: 紙の外に置く 53px の帯。
+   操作は中央にまとめて並べる（モックは justify-content: center）。 */
+.ebook-pane.ebook-pane-focus .ebook-reader-footer {
+  align-items: center;
+  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  height: 53px;
+  justify-content: center;
+  padding: 0 clamp(16px, 3vw, 28px);
+}
+
+/* 読書面の「この章を編集」は控えめに（モック04の ghost ボタン）。 */
+.ebook-pane.ebook-pane-focus .ebook-reader-footer .ebook-reader-edit-here {
+  background: transparent;
+  border-color: transparent;
+  color: color-mix(in srgb, var(--accent) 85%, var(--text));
+}
+
+.ebook-pane.ebook-pane-focus
+  .ebook-reader-footer
+  .ebook-reader-edit-here:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-soft) 42%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* 帯の中の進捗バーはページ位置と章位置の間（モック04の reader-bottom）。 */
+.ebook-pane .ebook-reader-footer .ebook-reader-progress-bar {
+  flex: 0 1 auto;
+  margin-top: 0;
+  width: min(205px, 24vw);
+}
+
+.ebook-pane .ebook-reader-footer-chapter {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 「この章を編集」はページ送りから少し離す（モック04の間隔）。 */
+.ebook-pane .ebook-reader-footer .ebook-reader-edit-here {
+  margin-left: 12px;
 }
 
 .ebook-chapter h1,

@@ -176,7 +176,7 @@ describe("EBookPane chapter reader", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
+        expect(screen.getByText("章内ページ 1 / 1")).toBeTruthy();
       });
 
       const article = screen.getByRole("article", { name: "本のように読む" });
@@ -185,9 +185,9 @@ describe("EBookPane chapter reader", () => {
       expect(nextPreview).toBeTruthy();
       expect(nextPreview?.textContent).toContain("Chapter Two");
       expect(nextPreview?.textContent).toContain("body two");
-      expect(screen.getByText("章 1 / 2")).toBeTruthy();
+      expect(screen.getAllByText("第1章 / 2章").length).toBeGreaterThan(0);
       expect(article.querySelector(".ebook-reader-footer")?.textContent).toContain(
-        "章: Chapter One",
+        "章内ページ 1 / 1",
       );
 
       fireEvent.click(screen.getByRole("button", { name: "この位置を編集" }));
@@ -317,7 +317,7 @@ describe("EBookPane chapter reader", () => {
     expect(screen.getByText("Page 1 / 2")).toBeTruthy();
   });
 
-  it("shows a Reading Focus table of contents drawer and jumps to a chapter", async () => {
+  it("shows a Reading Focus table of contents rail and jumps to a chapter", async () => {
     const onLocationChange = vi.fn();
 
     render(
@@ -329,17 +329,11 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    const tocButton = screen.getByRole("button", { name: "目次" });
-    expect(tocButton.classList.contains("ebook-reader-toc-toggle")).toBe(true);
-    // 目次は下部のページ操作帯へ移した（モック04）。
-    expect(tocButton.closest(".ebook-reader-footer")).not.toBeNull();
-    expect(tocButton.closest(".ebook-pane")).not.toBeNull();
-
-    fireEvent.click(tocButton);
-
-    const drawer = screen.getByRole("navigation", { name: "目次" });
-    expect(drawer.classList.contains("ebook-reader-toc-panel")).toBe(true);
-    expect(screen.getByRole("button", { name: /^Chapter One/ })).toBeTruthy();
+    // 目次は読書面の左に常設される（モック04の本の目次）。
+    const rail = screen.getByRole("navigation", { name: "目次" });
+    expect(rail.classList.contains("ebook-reader-toc-rail")).toBe(true);
+    expect(rail.closest(".ebook-reader-focus-body")).not.toBeNull();
+    expect(rail.closest(".ebook-pane")).not.toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /^Chapter Two/ }));
 
@@ -347,9 +341,9 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
     });
     expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
-    expect(screen.queryByRole("navigation", { name: "目次" })).toBeNull();
-    expect(screen.getByText("章 2 / 2")).toBeTruthy();
-    expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
+    // 章位置とページ位置は下部のページ操作帯へ移した（モック04 reader-bottom）。
+    expect(screen.getAllByText("第2章 / 2章").length).toBeGreaterThan(0);
+    expect(screen.getByText("章内ページ 1 / 1")).toBeTruthy();
     expect(onLocationChange).toHaveBeenLastCalledWith(
       expect.objectContaining({
         chapterIndex: 1,
@@ -379,8 +373,7 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "目次" }));
-
+    // 目次は読書面の左に常設される（モック04）。クリック不要。
     const firstChapter = screen.getByRole("button", { name: /^第一章/ });
     // v1.5 dense 化: 小見出しプレビューが最大 4 件になったため、
     // 場面A/B/C はすべて表示され「ほかN件」は出ない。
@@ -568,7 +561,7 @@ describe("EBookPane chapter reader", () => {
     expect(onLocationChange).not.toHaveBeenCalled();
   });
 
-  it("keeps the table of contents drawer exclusive to Reading Focus", () => {
+  it("keeps the table of contents rail exclusive to Reading Focus", () => {
     render(
       <EBookPane
         menuLanguage="ja"
@@ -576,8 +569,40 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: "目次" })).toBeNull();
+    // 目次レールは読書面（集中）にだけ常設する。
     expect(screen.queryByRole("navigation", { name: "目次" })).toBeNull();
+    expect(screen.queryByText("第1章 / 2章")).toBeNull();
+  });
+
+  it("keeps the Reading Focus footer outside the paper sheet (mock 04)", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(2);
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        readingFocusActive
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("章内ページ 1 / 2")).toBeTruthy();
+    });
+
+    const article = screen.getByRole("article", { name: "本のように読む" });
+    const sheet = article.querySelector(".ebook-page-sheet");
+    const footer = article.querySelector(".ebook-reader-footer");
+    const main = article.querySelector(".ebook-reader-focus-main");
+
+    // 読書面ではページ操作帯が紙の外（メイン下端）へ出る（モック04 reader-bottom）。
+    expect(sheet).toBeTruthy();
+    expect(footer).toBeTruthy();
+    expect(main).toBeTruthy();
+    expect(sheet?.contains(footer)).toBe(false);
+    expect(main?.contains(footer)).toBe(true);
+    expect(sheet?.contains(article.querySelector(".ebook-page-viewport"))).toBe(
+      true,
+    );
   });
 
   it("treats a leading image before the first heading as a standalone cover image page", async () => {
@@ -859,7 +884,7 @@ describe("EBookPane chapter reader", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("ページ 3 / 5")).toBeTruthy();
+        expect(screen.getByText("章内ページ 3 / 5")).toBeTruthy();
       });
       expect(getEBookPageOffset).toHaveBeenCalledWith(
         2,
@@ -875,7 +900,7 @@ describe("EBookPane chapter reader", () => {
         />,
       );
       await waitFor(() => {
-        expect(screen.getByText("ページ 5 / 5")).toBeTruthy();
+        expect(screen.getByText("章内ページ 5 / 5")).toBeTruthy();
       });
     } finally {
       getComputedStyleSpy.mockRestore();
@@ -932,11 +957,11 @@ describe("EBookPane chapter reader", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+        expect(screen.getByText("Chapter page 1 / 3")).toBeTruthy();
       });
 
       fireEvent.click(screen.getByRole("button", { name: "Next page" }));
-      expect(screen.getByText("Page 3 / 3")).toBeTruthy();
+      expect(screen.getByText("Chapter page 3 / 3")).toBeTruthy();
       expect(
         screen
           .getByRole("article", { name: "Book reader" })
@@ -952,35 +977,35 @@ describe("EBookPane chapter reader", () => {
       await waitFor(() => {
         expect(screen.getByRole("heading", { name: "Part Two" })).toBeTruthy();
       });
-      expect(screen.getByText("Chapter 2 / 3")).toBeTruthy();
-      expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+      expect(screen.getAllByText("Chapter 2 / 3").length).toBeGreaterThan(0);
+      expect(screen.getByText("Chapter page 1 / 1")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("button", { name: "Next page" }));
 
       await waitFor(() => {
         expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
       });
-      expect(screen.getByText("Chapter 3 / 3")).toBeTruthy();
+      expect(screen.getAllByText("Chapter 3 / 3").length).toBeGreaterThan(0);
       // Part Two is a one-page chapter, so while it was shown its spare right
       // spread page previewed Chapter Two's opener. The turn therefore
       // continues one page past that previewed opener (Page 2 / 3) instead of
       // jumping back to Page 1 / 3 — no backwards jump, no skipped page.
-      expect(screen.getByText("Page 2 / 3")).toBeTruthy();
+      expect(screen.getByText("Chapter page 2 / 3")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
 
       await waitFor(() => {
         expect(screen.getByRole("heading", { name: "Part Two" })).toBeTruthy();
       });
-      expect(screen.getByText("Chapter 2 / 3")).toBeTruthy();
+      expect(screen.getAllByText("Chapter 2 / 3").length).toBeGreaterThan(0);
 
       fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
 
       await waitFor(() => {
         expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
       });
-      expect(screen.getByText("Chapter 1 / 3")).toBeTruthy();
-      expect(screen.getByText("Page 3 / 3")).toBeTruthy();
+      expect(screen.getAllByText("Chapter 1 / 3").length).toBeGreaterThan(0);
+      expect(screen.getByText("Chapter page 3 / 3")).toBeTruthy();
       expect(
         screen
           .getByRole("article", { name: "Book reader" })

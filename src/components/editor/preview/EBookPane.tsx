@@ -119,13 +119,16 @@ type EBookPageFlowStyle = CSSProperties & {
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
-  closeTableOfContents: string;
+  /** 読書面の上部に出す対象タグ（モック04の「本全体」に相当）。 */
+  documentTag: string;
   enterReadingFocus: string;
   exitReadingFocus: string;
   /** Always-visible control: jump/focus editor at the current reader place. */
   editCurrentLocation: string;
   editCurrentLocationTitle: string;
   footerChapter: string;
+  /** 下部操作帯の章位置（モック04の「第2章 / 6章」）。 */
+  footerChapterPosition: (chapter: number, total: number) => string;
   footerPageProgress: string;
   frontMatter: string;
   nextPage: string;
@@ -199,7 +202,6 @@ export default function EBookPane({
   const [visiblePageStep, setVisiblePageStep] = useState(1);
   const [pageTransitionSuppressed, setPageTransitionSuppressed] =
     useState(false);
-  const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
   const pendingPageTargetRef = useRef<PendingPageTarget | null>(null);
   const pendingSearchSourceLineRef = useRef<number | null>(null);
   const chapterPageCountsRef = useRef<Map<number, number>>(new Map());
@@ -235,7 +237,6 @@ export default function EBookPane({
     // previous document).
     measuredChapterIndexRef.current = null;
     pendingPageTargetRef.current = initialLocation ? null : "first";
-    setTableOfContentsOpen(false);
     setActiveChapterIndex(
       clampChapterIndex(initialLocation?.chapterIndex ?? 0, chapters.length),
     );
@@ -263,12 +264,6 @@ export default function EBookPane({
     initialLocation?.chapterIndex,
     initialLocation?.pageIndex,
   ]);
-
-  useEffect(() => {
-    if (!readingFocusActive) {
-      setTableOfContentsOpen(false);
-    }
-  }, [readingFocusActive]);
 
   useEffect(() => {
     setActiveChapterIndex((current) =>
@@ -897,7 +892,6 @@ export default function EBookPane({
     setPageTransitionSuppressed(true);
     setActivePageIndex(0);
     setActiveChapterIndex(nextChapterIndex);
-    setTableOfContentsOpen(false);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
@@ -1191,6 +1185,13 @@ export default function EBookPane({
     totalChapters,
     copy,
   );
+  // 読書面の上部に出す文書名（モック04の書名の位置）。パスが無ければ章ラベルへ戻す。
+  const documentFileName = useMemo(() => {
+    const path = documentPath?.trim();
+    if (!path) return null;
+    const segments = path.split(/[/\\]+/).filter(Boolean);
+    return segments.length > 0 ? segments[segments.length - 1] : null;
+  }, [documentPath]);
   const previousDisabled =
     activeChapterIndexSafe === 0 && activePageIndexSafe === 0;
   const nextDisabled =
@@ -1213,6 +1214,117 @@ export default function EBookPane({
   if (pageViewportHeight > 0) {
     pageFlowStyle["--ebook-page-viewport-height"] = `${pageViewportHeight}px`;
   }
+  // 下部のページ操作帯（モック04 reader-bottom）。集中中は紙の外のメイン下端に、
+  // サイドパネル表示では従来どおり紙の中に置く。
+  const readerFooter = activeChapterHtml ? (
+    <footer className="ebook-reader-footer" aria-label={copy.pageProgress}>
+      <div className="ebook-reader-footer-nav">
+        <button
+          className="ebook-reader-button"
+          disabled={previousDisabled}
+          onClick={goToPreviousPage}
+          type="button"
+        >
+          {copy.previousPage}
+        </button>
+      </div>
+      <span className="ebook-reader-footer-position">
+        {readingFocusActive ? (
+          <>
+            <span className="ebook-reader-footer-page">
+              {ebookProgressText(progressInput, copy, "footer")}
+            </span>
+            <span
+              aria-label={copy.pageProgress}
+              className="ebook-reader-progress-bar"
+              role="progressbar"
+              {...ebookProgressAria(progressInput, copy)}
+            >
+              <span
+                style={{
+                  width: `${ebookProgressPercent(progressInput)}%`,
+                }}
+              />
+            </span>
+            <span className="ebook-reader-footer-chapter">
+              {copy.footerChapterPosition(
+                activeChapterIndexSafe + 1,
+                totalChapters,
+              )}
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="ebook-reader-footer-title" title={chapterLabel}>
+              {copy.footerChapter}: {chapterLabel}
+            </span>
+            <span className="ebook-reader-footer-page">
+              {ebookProgressText(progressInput, copy, "footer")}
+            </span>
+          </>
+        )}
+      </span>
+      <div className="ebook-reader-footer-nav ebook-reader-footer-nav-end">
+        <button
+          className="ebook-reader-button"
+          disabled={nextDisabled}
+          onClick={goToNextPage}
+          type="button"
+        >
+          {copy.nextPage}
+        </button>
+        {readingFocusActive && onExitReadingFocus ? (
+          <button
+            className="ebook-reader-button ebook-reader-edit-here"
+            onClick={() => onExitReadingFocus(activeReaderLocation)}
+            title={copy.editCurrentLocationTitle}
+            type="button"
+          >
+            {copy.exitReadingFocus}
+          </button>
+        ) : null}
+      </div>
+    </footer>
+  ) : null;
+  // 紙（見開きシート）。集中中は footer をシートの外（メイン下端）へ出す。
+  const chapterSheet = activeChapterHtml ? (
+    <section
+      className={chapterClassName(activeChapterHtml, activeChapterIndexSafe)}
+    >
+      <div
+        className="ebook-page-sheet ebook-page-sheet-spread"
+        data-spread={resolveEBookSpread({
+          nextChapterPreview: shouldShowNextChapterPreview,
+          pageCount: measuredPageCount,
+        })}
+      >
+        <div className="ebook-page-viewport" ref={viewportRef}>
+          <div
+            className={
+              pageTransitionSuppressed
+                ? "ebook-page-flow ebook-page-flow-transition-suppressed"
+                : "ebook-page-flow"
+            }
+            dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
+            ref={flowRef}
+            style={pageFlowStyle}
+          />
+          {shouldShowNextChapterPreview && nextChapterHtml ? (
+            <div className="ebook-next-chapter-preview">
+              <div
+                className="ebook-next-chapter-preview-flow"
+                dangerouslySetInnerHTML={{
+                  __html: nextChapterHtml.html,
+                }}
+                ref={nextPreviewFlowRef}
+              />
+            </div>
+          ) : null}
+        </div>
+        {!readingFocusActive ? readerFooter : null}
+      </div>
+    </section>
+  ) : null;
 
   return (
     <article
@@ -1225,50 +1337,66 @@ export default function EBookPane({
       tabIndex={0}
     >
       <header className="ebook-reader-chrome">
-        <div className="ebook-reader-status">
-          <div className="ebook-reader-title" title={chapterLabel}>
-            {chapterLabel}
+        {readingFocusActive ? (
+          /* 読書面の上部（モック04の reader-toolbar）: 左に書名と対象タグ。
+             章・ページ・進捗は下部の操作帯へ移した。 */
+          <div className="ebook-reader-status ebook-reader-status-focus">
+            <div className="ebook-reader-focus-identity">
+              <span
+                className="ebook-reader-title"
+                title={documentFileName ?? chapterLabel}
+              >
+                {documentFileName ?? chapterLabel}
+              </span>
+              <span className="ebook-reader-scope-tag">{copy.documentTag}</span>
+            </div>
           </div>
-          <div
-            className="ebook-reader-progress"
-            aria-label={copy.chapterProgress}
-          >
-            {copy.chapterProgress} {activeChapterIndexSafe + 1} /{" "}
-            {totalChapters}
-          </div>
-          {/* 未計測の間は「1 / 1」と言い切らない（R4）。バーの ARIA と同じ契約に揃える。 */}
-          <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
-            {ebookProgressText(progressInput, copy, "header")}
-          </div>
-          {/* 章のどこにいるかを一目で分かるようにする（モック04の進捗バー）。
-              未計測の間は進捗を推測せず、`aria-valuenow` も出さない（R4）。
-              計測済みは min=0 / max=総ページ / now=現在ページ＋1 にして、
-              視覚の割合（(現在+1)/総）と ARIA の割合を一致させる。 */}
-          <div
-            aria-label={copy.pageProgress}
-            className="ebook-reader-progress-bar"
-            role="progressbar"
-            {...ebookProgressAria(progressInput, copy)}
-          >
-            <span
-              style={{
-                width: `${ebookProgressPercent(progressInput)}%`,
-              }}
-            />
-          </div>
-          {/* Always-visible: e-book → editor discovery (not hover-only).
-              集中中の「編集に戻る」は下部の操作帯へ移した（モック04）。 */}
-          {!readingFocusActive && onEditCurrentLocation ? (
-            <button
-              className="ebook-reader-button ebook-reader-edit-here"
-              onClick={() => onEditCurrentLocation(activeReaderLocation)}
-              title={copy.editCurrentLocationTitle}
-              type="button"
+        ) : (
+          <div className="ebook-reader-status">
+            <div className="ebook-reader-title" title={chapterLabel}>
+              {chapterLabel}
+            </div>
+            <div
+              className="ebook-reader-progress"
+              aria-label={copy.chapterProgress}
             >
-              {copy.editCurrentLocation}
-            </button>
-          ) : null}
-        </div>
+              {copy.chapterProgress} {activeChapterIndexSafe + 1} /{" "}
+              {totalChapters}
+            </div>
+            {/* 未計測の間は「1 / 1」と言い切らない（R4）。バーの ARIA と同じ契約に揃える。 */}
+            <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
+              {ebookProgressText(progressInput, copy, "header")}
+            </div>
+            {/* 章のどこにいるかを一目で分かるようにする（モック04の進捗バー）。
+                未計測の間は進捗を推測せず、`aria-valuenow` も出さない（R4）。
+                計測済みは min=0 / max=総ページ / now=現在ページ＋1 にして、
+                視覚の割合（(現在+1)/総）と ARIA の割合を一致させる。 */}
+            <div
+              aria-label={copy.pageProgress}
+              className="ebook-reader-progress-bar"
+              role="progressbar"
+              {...ebookProgressAria(progressInput, copy)}
+            >
+              <span
+                style={{
+                  width: `${ebookProgressPercent(progressInput)}%`,
+                }}
+              />
+            </div>
+            {/* Always-visible: e-book → editor discovery (not hover-only).
+                集中中の「編集に戻る」は下部の操作帯へ移した（モック04）。 */}
+            {onEditCurrentLocation ? (
+              <button
+                className="ebook-reader-button ebook-reader-edit-here"
+                onClick={() => onEditCurrentLocation(activeReaderLocation)}
+                title={copy.editCurrentLocationTitle}
+                type="button"
+              >
+                {copy.editCurrentLocation}
+              </button>
+            ) : null}
+          </div>
+        )}
         {/* 集中の入口だけを上に残す。前／次／目次／編集は読書面の下端へ移した
             （モック04: 下部のページ操作帯にまとめる）。 */}
         <div className="ebook-reader-toolbar">
@@ -1285,32 +1413,19 @@ export default function EBookPane({
           ) : null}
         </div>
       </header>
-      {readingFocusActive && tableOfContentsOpen ? (
-        <>
-          <button
-            aria-label={copy.closeTableOfContents}
-            className="ebook-reader-toc-backdrop"
-            onClick={() => setTableOfContentsOpen(false)}
-            type="button"
-          />
-          <nav
-            aria-label={copy.tableOfContents}
-            className="ebook-reader-toc-panel"
-            id="ebook-reader-table-of-contents"
-          >
-            <div className="ebook-reader-toc-header">
-              <span>{copy.tableOfContents}</span>
-              <button
-                aria-label={copy.closeTableOfContents}
-                className="ebook-reader-toc-close"
-                onClick={() => setTableOfContentsOpen(false)}
-                type="button"
-              >
-                ×
-              </button>
-            </div>
-            <div className="ebook-reader-toc-list">
-              {tableOfContentsEntries.map((entry) => {
+      {readingFocusActive ? (
+        /* 読書面（モック04）: 左に常設の目次、メインに紙と下部の操作帯。 */
+        <div className="ebook-reader-focus-body">
+          {tableOfContentsEntries.length > 1 ? (
+            <nav
+              aria-label={copy.tableOfContents}
+              className="ebook-reader-toc-rail"
+            >
+              <div className="ebook-reader-toc-rail-heading">
+                {copy.tableOfContents}
+              </div>
+              <div className="ebook-reader-toc-list">
+                {tableOfContentsEntries.map((entry) => {
                 const subheadingText =
                   entry.subheadingPreview.length > 0
                     ? [
@@ -1375,111 +1490,24 @@ export default function EBookPane({
                     </span>
                   </button>
                 );
-              })}
-            </div>
-          </nav>
-        </>
-      ) : null}
-      {activeChapterHtml ? (
-        <section
-          className={chapterClassName(
-            activeChapterHtml,
-            activeChapterIndexSafe,
-          )}
-        >
-          <div
-            className="ebook-page-sheet ebook-page-sheet-spread"
-            data-spread={resolveEBookSpread({
-              nextChapterPreview: shouldShowNextChapterPreview,
-              pageCount: measuredPageCount,
-            })}
-          >
-            <div className="ebook-page-viewport" ref={viewportRef}>
-              <div
-                className={
-                  pageTransitionSuppressed
-                    ? "ebook-page-flow ebook-page-flow-transition-suppressed"
-                    : "ebook-page-flow"
-                }
-                dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
-                ref={flowRef}
-                style={pageFlowStyle}
-              />
-              {shouldShowNextChapterPreview && nextChapterHtml ? (
-                <div className="ebook-next-chapter-preview">
-                  <div
-                    className="ebook-next-chapter-preview-flow"
-                    dangerouslySetInnerHTML={{
-                      __html: nextChapterHtml.html,
-                    }}
-                    ref={nextPreviewFlowRef}
-                  />
-                </div>
-              ) : null}
-            </div>
-            {/* 下部のページ操作帯（モック04）。前後ページ・現在位置・目次・
-                編集への入口を読書面の下端へまとめる。 */}
-            <footer
-              className="ebook-reader-footer"
-              aria-label={copy.pageProgress}
-            >
-              <div className="ebook-reader-footer-nav">
-                <button
-                  className="ebook-reader-button"
-                  disabled={previousDisabled}
-                  onClick={goToPreviousPage}
-                  type="button"
-                >
-                  {copy.previousPage}
-                </button>
+                })}
               </div>
-              <span className="ebook-reader-footer-position">
-                <span className="ebook-reader-footer-title" title={chapterLabel}>
-                  {copy.footerChapter}: {chapterLabel}
-                </span>
-                <span className="ebook-reader-footer-page">
-                  {ebookProgressText(progressInput, copy, "footer")}
-                </span>
-              </span>
-              <div className="ebook-reader-footer-nav ebook-reader-footer-nav-end">
-                {readingFocusActive && onExitReadingFocus ? (
-                  <button
-                    className="ebook-reader-button ebook-reader-edit-here"
-                    onClick={() => onExitReadingFocus(activeReaderLocation)}
-                    title={copy.editCurrentLocationTitle}
-                    type="button"
-                  >
-                    {copy.exitReadingFocus}
-                  </button>
-                ) : null}
-                {readingFocusActive && tableOfContentsEntries.length > 1 ? (
-                  <button
-                    aria-controls={
-                      tableOfContentsOpen
-                        ? "ebook-reader-table-of-contents"
-                        : undefined
-                    }
-                    aria-expanded={tableOfContentsOpen}
-                    className="ebook-reader-button ebook-reader-toc-toggle"
-                    onClick={() => setTableOfContentsOpen((open) => !open)}
-                    type="button"
-                  >
-                    {copy.tableOfContents}
-                  </button>
-                ) : null}
-                <button
-                  className="ebook-reader-button"
-                  disabled={nextDisabled}
-                  onClick={goToNextPage}
-                  type="button"
-                >
-                  {copy.nextPage}
-                </button>
+              <div className="ebook-reader-toc-rail-meta">
+                {copy.footerChapterPosition(
+                  activeChapterIndexSafe + 1,
+                  totalChapters,
+                )}
               </div>
-            </footer>
+            </nav>
+          ) : null}
+          <div className="ebook-reader-focus-main">
+            {chapterSheet}
+            {readerFooter}
           </div>
-        </section>
-      ) : null}
+        </div>
+      ) : (
+        chapterSheet
+      )}
     </article>
   );
 }
@@ -1760,13 +1788,15 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
-      closeTableOfContents: "もくじを閉じる",
+      documentTag: "このぶんしょ",
       enterReadingFocus: "よむことに集中",
       exitReadingFocus: "このいちを へんしゅう",
       editCurrentLocation: "このいちを へんしゅう",
       editCurrentLocationTitle:
         "いまの ページに 対応する いちへ エディタを うごかして フォーカスします",
       footerChapter: "章",
+      footerChapterPosition: (chapter, total) =>
+        `だい${chapter}しょう / ${total}しょう`,
       footerPageProgress: "章内ページ",
       frontMatter: "前付",
       nextPage: "つぎのページ",
@@ -1782,13 +1812,14 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
-      closeTableOfContents: "目次を閉じる",
+      documentTag: "この文書",
       enterReadingFocus: "集中して読む",
       exitReadingFocus: "この位置を編集",
       editCurrentLocation: "この位置を編集",
       editCurrentLocationTitle:
         "いまのページに対応する位置へエディタを動かしてフォーカスします",
       footerChapter: "章",
+      footerChapterPosition: (chapter, total) => `第${chapter}章 / ${total}章`,
       footerPageProgress: "章内ページ",
       frontMatter: "前付",
       nextPage: "次のページ",
@@ -1803,13 +1834,14 @@ function getEBookReaderCopy(
   return {
     body: "Body",
     chapterProgress: "Chapter",
-    closeTableOfContents: "Close contents",
+    documentTag: "This document",
     enterReadingFocus: "Focus reading",
     exitReadingFocus: "Edit this place",
     editCurrentLocation: "Edit this place",
     editCurrentLocationTitle:
       "Move the editor caret to this page’s source and focus the editor",
     footerChapter: "Chapter",
+    footerChapterPosition: (chapter, total) => `Chapter ${chapter} / ${total}`,
     footerPageProgress: "Chapter page",
     frontMatter: "Front matter",
     nextPage: "Next page",
