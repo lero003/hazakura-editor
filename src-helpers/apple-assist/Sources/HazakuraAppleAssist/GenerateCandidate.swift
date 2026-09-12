@@ -88,7 +88,7 @@ enum GenerateCandidate {
         }
         return .error(
             AppleAssistErrorEnvelope(
-                error: "Foundation Models requires macOS 26 or later.",
+                error: AssistRuntimeMessages.requiresMacOS26,
                 kind: "unavailable"
             )
         )
@@ -163,7 +163,7 @@ enum GenerateCandidate {
         }
         return .error(
             AppleAssistErrorEnvelope(
-                error: "Foundation Models requires macOS 26 or later.",
+                error: AssistRuntimeMessages.requiresMacOS26,
                 kind: "unavailable"
             )
         )
