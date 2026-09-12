@@ -46,6 +46,18 @@ describe("workspace-chrome.css", () => {
     expect(chromeCss).not.toMatch(/\.primary-document-actions\s*{[^}]*flex-wrap:\s*wrap/);
   });
 
+  it("keeps the font-size control at the right end of the display toolbar row", () => {
+    // 実機指摘: 左端に孤立して見えたため右端へ。行は3列（先頭の字下げ / 文書列 / 右端の設定）。
+    const tabsRow = ruleBody(':root:not([data-l-mode="on"]) .v3-shell .tabs-row');
+    const quickSettings = ruleBody(
+      ':root:not([data-l-mode="on"]) .v3-shell .editor-quick-settings',
+    );
+
+    expect(tabsRow).toMatch(/grid-template-columns:\s*42px\s+minmax\(0,\s*1fr\)\s+auto/);
+    expect(quickSettings).toMatch(/grid-column:\s*3/);
+    expect(quickSettings).toMatch(/justify-self:\s*end/);
+  });
+
   it("spreads the display toolbar row across the whole document column", () => {
     // タブ行・表示ツールバー行は文書カラム全幅。プレビュー列の上の帯を空にしない。
     const meta = ruleBody(':root:not([data-l-mode="on"]) .v3-shell .document-meta');

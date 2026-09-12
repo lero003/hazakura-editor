@@ -97,6 +97,25 @@ function renderMeta(
 }
 
 describe("DocumentMetaBar", () => {
+  it("shows the document's location as a breadcrumb next to the display tools", () => {
+    // 実機/モック: 「散文集 / chapters / 02_朝の余白.md」のように、いま開いている文書の
+    // 場所を示す。長い絶対パスは出さず、末尾2要素だけ。
+    renderMeta(false);
+
+    const breadcrumb = screen.getByTitle("/workspace/note.md");
+
+    expect(breadcrumb.textContent?.replace(/\s+/g, "")).toBe("workspace/note.md");
+  });
+
+  it("does not invent a location for a document that has none", () => {
+    // 未保存の文書では出さない。
+    renderMeta(false, "external-cli", {
+      activeTab: { ...activeTab, path: "" },
+    });
+
+    expect(screen.queryByTitle("/workspace/note.md")).toBeNull();
+  });
+
   it("hides the display tools and Agent controls in L Mode", () => {
     renderMeta(true);
 

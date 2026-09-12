@@ -7,6 +7,7 @@ import { AgentWindowIcon, SparklesIcon } from "./Icons";
 import type { AssistSurfacePreference, EditorTab } from "../../types";
 import type { LModeCopy } from "../../lib/locale";
 import type { AppleAssistAvailability } from "../../lib/tauri";
+import { documentBreadcrumbParts } from "../../features/workspace/documentBreadcrumb";
 
 type DocumentMetaBarProps = {
   showCompanion?: boolean;
@@ -94,6 +95,8 @@ export function DocumentMetaBar({
           onClick: onOpenAgentWindow,
         };
 
+  const documentBreadcrumb = documentBreadcrumbParts(activeTab?.path ?? null);
+
   return (
     <div className="document-meta">
       {!lModeEnabled ? (
@@ -107,6 +110,27 @@ export function DocumentMetaBar({
             />
           </section>
           <span className="chrome-divider" aria-hidden="true" />
+          {/* 画面02: いま開いている文書の場所。モード群の手前＝行の中央に置く（モック準拠）。
+              未保存の文書では出さない。 */}
+          {documentBreadcrumb.length > 0 ? (
+            <>
+              <section className="chrome-section" aria-label={activeTab?.path ?? ""}>
+                <span className="document-breadcrumb" title={activeTab?.path ?? ""}>
+                  {documentBreadcrumb.map((part, index) => (
+                    <span className="document-breadcrumb-part" key={`${part}-${index}`}>
+                      {index > 0 ? (
+                        <span className="document-breadcrumb-sep" aria-hidden="true">
+                          /
+                        </span>
+                      ) : null}
+                      {part}
+                    </span>
+                  ))}
+                </span>
+              </section>
+              <span className="chrome-divider" aria-hidden="true" />
+            </>
+          ) : null}
           <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
             <RightPaneToggleControls
               copy={sidePaneCopy}
