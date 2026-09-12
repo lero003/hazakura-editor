@@ -3,9 +3,14 @@
 Status: Operational
 Scope: v2.9公開状態、v3準備、実装証跡
 Authority: High
-Last reviewed: 2026-09-10
+Last reviewed: 2026-09-12
 
 ## Current State
+
+- **v3 Local Assist基盤（2026-09-12）:** LA-1aでSystemの利用可否と生成能力を分離（四態wireと文言は不変、
+  能力失敗は `unsupported_language`）。swift test 16件、live/fixtureビルド、実機live生成、cargo 385件を確認。
+  27 SDKが無いため27固有APIの照合と評価は未実施。
+  [検証と残確認](reviews/2026-09-12-v3-la1-availability-capability/README.md)。
 
 - **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。

@@ -148,4 +148,6 @@ UI-G4で開始画面（画面01）を2ペイン化し、[G4の実装と証跡](r
 focus 3:1と native chrome 契約を自動検査に固定した（[境界線の実装と証跡](reviews/2026-09-10-v3-border-hierarchy/README.md)）。
 [G1の資料](reviews/2026-09-10-v3-ui-g1/README.md)と合わせて合評する。
 UI-EのReader実機受入/本構成一覧/出力/取り込み、UI-F設定、UI-G/native受入、LA-1以降は未完了。
+LA-1a（Systemの利用可否と生成能力の分離）を実装し、[LA-1aの記録](reviews/2026-09-12-v3-la1-availability-capability/README.md)へまとめた。
+27環境でのSystem評価（LA-1b）と残りのLA-1以降は続くスライス。
 次の担当は[current-work.md](current-work.md)から進む。

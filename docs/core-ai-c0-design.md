@@ -32,6 +32,13 @@ G-1は品質評価で採否を決める。下記C-2のG-1依存は採用時の�
 D1の新AFMによる品質向上は期待であり、Hazakuraでの日本語品質は実機評価を必要とする。
 SDK署名、adapter既定値、対応OS/architectureは実装時に固定版で再確認する。
 
+**v3.0実装メモ（2026-09-12、LA-1a）:** Systemの利用可否（availability）と生成能力（capability）を
+`AssistRuntimeContract`（helper、fixture/live共通の純関数）で分離した。利用可否は四態wire
+（`AvailabilityProbe`、不変・System専用のまま）、生成能力はlocale（`SystemAssistRuntime` が読み出し、
+26未満は不明として扱う）。生成前ゲートは両者を直に合成し、能力失敗は `unsupported_language`、
+利用可否失敗は `unavailable`（メッセージ文言は不変）。選択backendのprobeとcomposer接続は
+D24のままC-2に残す。詳細と残確認: `docs/reviews/2026-09-12-v3-la1-availability-capability/README.md`。
+
 ## Overview
 
 Hazakura Local Assist は、選択した Markdown に対してオンデバイスで未反映の編集案を作り、メイン窓の Diff から明示反映する Writing Companion である。現行 helper は macOS 26 の `SystemLanguageModel.default` を **リクエストごとに新しい `LanguageModelSession`** で呼び、会話 UX は分離窓、Apply/Discard はメイン窓、モデル名は helper JSON の `apple:foundation-models:system-default` に閉じている。

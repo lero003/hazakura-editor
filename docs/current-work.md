@@ -3,7 +3,17 @@
 Status: Operational
 Scope: モック対応の残課題A〜H（判断・実機）とnative受入
 Authority: High
-Last reviewed: 2026-09-10
+Last reviewed: 2026-09-12
+
+## 現在の区切り — LA-1a: 利用可否と生成能力の分離（2026-09-12）
+
+Local Assist v3共通基盤の第一スライス。生成前ゲートが四態probeの文字列を通っていたため、
+locale（生成能力）の失敗が `unavailable` に混線していた（`unsupported_language` 分岐は実質到達不能）。
+fixture/live共通の純関数 `AssistRuntimeContract` を新設し、利用可否（四態wire、不変）と生成能力
+（locale、26未満は不明）を分離。ゲートは能力失敗を `unsupported_language` に分類（文言は不変）。
+swift test 16件、live(arm64/x86_64/universal)・fixtureのビルドとsmoke、実機live生成、cargo 385件を確認。
+27 SDK環境が無いため、27固有APIの照合とSystem評価は続くスライス（LA-1b）。
+詳細: [LA-1aの記録](reviews/2026-09-12-v3-la1-availability-capability/README.md)。
 
 ## Current Phase
 

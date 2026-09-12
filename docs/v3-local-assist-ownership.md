@@ -15,6 +15,7 @@ Last reviewed: 2026-09-10
 | 主画面の確認・単回反映 | `LocalAssistProposalReview.tsx` / `useAppleAssistApplyHandler.ts` | 再検証して未保存bufferへ1回。失敗時候補保持、Undo。二重クリック/stale/遅い完了の既存テスト |
 | TS/native境界 | `lib/tauri/appleAssist.ts` | 固定用途の要求・取消・イベント。任意backend/path/URL入力を追加しない |
 | 要求予約・取消・helper再利用 | `commands/apple_assist.rs` / `apple_assist_supervisor.rs` | prepare予約、native終了までlock。完了勝ちのhelperを遅いcancelで破棄しない。Rust同名tests |
+| Systemの利用可否と生成能力 | `AvailabilityProbe` / `AssistRuntimeContract`（LA-1aで分離）/ `SystemAssistRuntime` | 四態wireは不変。能力失敗は `unsupported_language`、利用可否失敗は `unavailable`。26未満の能力は不明。製品経路は `system_default` のみ |
 
 ## 今回の決定
 
