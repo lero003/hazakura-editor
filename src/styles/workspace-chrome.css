@@ -61,8 +61,19 @@
 .app-primary-toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .app-primary-toolbar .primary-save { background: var(--surface); border-color: var(--border-strong, var(--border)); color: var(--text); }
 .workspace-mode-navigation { position: relative; display: flex; padding: 3px; gap: 2px; border: 1px solid var(--border); border-radius: 9px; }
-.app-primary-toolbar .workspace-mode-navigation > button { min-width: 78px; }
-.app-primary-toolbar .workspace-mode-navigation > button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 650; }
+.app-primary-toolbar .workspace-mode-navigation > button {
+  /* 実機指摘: 「書く/読む/確認」の縦が大きい。ナビ全体で 36px（= 28 + 上下padding 3×2 + 枠1×2）に。 */
+  min-width: 72px; min-height: 28px; padding: 4px 11px; font-size: 12.5px;
+}
+.app-primary-toolbar .workspace-mode-navigation > button[aria-pressed="true"] {
+  /* 実機/目視: 面トークン(--surface)だけだとバーとほぼ同色（コントラスト 1.07）で
+     選択中が分からない。淡いアクセント面＋太字で示す。 */
+  /* 淡いアクセント面だけだとライトテーマで 1.14 しか出ないので、内側に細い枠も足す。 */
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--border-strong, var(--border));
+  color: var(--text);
+  font-weight: 650;
+}
 .workspace-review-choices {
   position: absolute; top: calc(100% + 8px); right: 0; z-index: var(--z-popover, 100);
   display: grid; gap: 4px; width: min(300px, 75vw); max-height: min(420px, 60vh); overflow: auto;
@@ -90,7 +101,9 @@
 .proposal-review-host > .local-assist-proposal-review { pointer-events: auto; }
 :root:not([data-l-mode="on"]) .v3-shell .tabs-row {
   grid-template-columns: 42px minmax(0, 1fr);
-  grid-template-rows: minmax(43px, auto) minmax(48px, auto);
+  /* 実機指摘: タブと表示ツールバーの縦が大きい。モックのタブは38px・フォント12px。
+     43/48 → 36/44 に詰める（フォントも下で12pxへ）。 */
+  grid-template-rows: minmax(36px, auto) minmax(44px, auto);
   height: auto; padding: 0 14px; gap: 0 8px;
   /* タブ群 → 文書本文の境界。大きな領域が切り替わる場所だけ一段強くする。 */
   background: var(--workspace-chrome-bar); border-bottom: 1px solid var(--border-strong);
@@ -98,7 +111,7 @@
 }
 :root:not([data-l-mode="on"]) .v3-shell .window-drag-strip { display: none; }
 :root:not([data-l-mode="on"]) .v3-shell .tab-list { grid-column: 1 / -1; grid-row: 1; padding: 0; gap: 0; border-bottom: 0; }
-:root:not([data-l-mode="on"]) .v3-shell .tab-item { border-radius: 0; box-shadow: none; border: 0; background: transparent; min-height: 42px; }
+:root:not([data-l-mode="on"]) .v3-shell .tab-item { border-radius: 0; box-shadow: none; border: 0; background: transparent; min-height: 36px; font-size: 12px; }
 :root:not([data-l-mode="on"]) .v3-shell .tab-item.active { background: var(--surface); box-shadow: inset 0 -2px 0 var(--accent); }
 :root:not([data-l-mode="on"]) .v3-shell .editor-quick-settings { grid-column: 1; grid-row: 2; justify-self: start; }
 :root:not([data-l-mode="on"]) .v3-shell .document-meta { grid-column: 2; grid-row: 2; justify-self: stretch; max-width: none; margin: 0; flex-wrap: wrap; padding: 5px 0; }

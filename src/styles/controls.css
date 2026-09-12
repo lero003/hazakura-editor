@@ -185,6 +185,14 @@
   justify-self: center;
   position: relative;
 }
+/* 実機指摘: スライダーのアイコンは複雑。文字の大きさの調整と分かる「Aa」の印にする。 */
+.editor-quick-settings-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 12px/1 var(--font-ui);
+  letter-spacing: .01em;
+}
 
 .editor-quick-settings-trigger[aria-expanded="true"] {
   background: var(--accent-soft);

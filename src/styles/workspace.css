@@ -1857,7 +1857,15 @@
 }
 
 .pane-resizer {
-  background: var(--border);
+  /* 実機指摘: ペインの区切りが太い。6px は「つかむための幅」で、見える線は中央の1pxだけにする。
+     （左右4pxは ::before の透明な当たり判定。a11y のヒット領域は狭めない。） */
+  background: linear-gradient(
+    to right,
+    transparent calc(50% - 0.5px),
+    var(--border) calc(50% - 0.5px),
+    var(--border) calc(50% + 0.5px),
+    transparent calc(50% + 0.5px)
+  );
   cursor: col-resize;
   min-height: 0;
   position: relative;
@@ -1876,7 +1884,14 @@
 
 .pane-resizer:hover,
 .pane-resizer:focus-visible {
-  background: var(--accent);
+  /* hover/フォーカスは 2px のアクセント線で示す（つかむ幅は 6px のまま）。 */
+  background: linear-gradient(
+    to right,
+    transparent calc(50% - 1px),
+    var(--accent) calc(50% - 1px),
+    var(--accent) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
   outline: none;
 }
 

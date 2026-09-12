@@ -9,7 +9,6 @@ import {
 import type { EditorSettings, MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { clampNumber } from "../../lib/utils";
-import { SlidersIcon } from "./Icons";
 
 type EditorQuickSettingsMenuProps = {
   editorSettings: EditorSettings;
@@ -105,7 +104,10 @@ export function EditorQuickSettingsMenu({
         title={copy.title}
         type="button"
       >
-        <SlidersIcon />
+        {/* 実機指摘: アイコンが複雑。文字サイズの調整だと一目で分かる「Aa」にする。 */}
+        <span className="editor-quick-settings-mark" aria-hidden="true">
+          Aa
+        </span>
       </button>
       {open ? (
         <div
