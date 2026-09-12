@@ -207,6 +207,16 @@ describe("editor tab close affordance CSS", () => {
     expect(shokouTint).toMatch(/mix-blend-mode:\s*color/);
   });
 
+  it("opens the font-size popover inside the window", () => {
+    // 実機指摘（第15報）: Aa は表示ツールバーの右端にあるため、左基準（left: 0）だと
+    // ポップアップが右へ伸びてウィンドウ外に出る（実測: 1100px の窓で 224px はみ出し、
+    // ラベルが「イズ」「プレビ」のように切れていた）。右端基準にして内側へ開く。
+    const popover = ruleBody(controlsCss, ".editor-quick-settings-popover");
+    expect(popover).toMatch(/right:\s*0/);
+    expect(popover).toMatch(/left:\s*auto/);
+    expect(popover).toMatch(/max-width:\s*calc\(100vw/);
+  });
+
   it("keeps top chrome popovers above the workspace layer", () => {
     // v0.34: z-index トークン化。両方とも --z-base で、順序はソース順。
     expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*var\(--z-base\)/);

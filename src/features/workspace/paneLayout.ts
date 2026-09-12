@@ -7,7 +7,11 @@ import {
 import { clampNumber } from "../../lib/utils";
 
 export const DEFAULT_WORKSPACE_SIDEBAR_WIDTH = 280;
-export const MIN_WORKSPACE_SIDEBAR_WIDTH = 200;
+/* 実機指摘（第15報）: 200 ではワークスペースのヘッダー行（「WORKSPACE」の見出し＋
+   新規/開く/ゴミ箱のアイコン）が必要とする幅（実測 約199px）にちょうど重なり、
+   最小まで狭めると左側が数px 隠れていた。見出しの文字幅は言語とフォントで変わるため、
+   余裕を見て 240 を下限にする（既定 280 / 上限 400 の範囲は変えない）。 */
+export const MIN_WORKSPACE_SIDEBAR_WIDTH = 240;
 // The app window can shrink to 960 px. Keeping the sidebar at or below 400 px
 // leaves room for the existing 280 px editor + 260 px right-pane minima and
 // both 6 px separators without horizontal overflow.

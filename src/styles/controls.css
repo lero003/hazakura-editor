@@ -207,10 +207,15 @@
   box-shadow: var(--shadow-md);
   display: grid;
   gap: 10px;
-  left: 0;
+  /* 実機指摘（第15報）: Aa を表示ツールバーの右端へ移したため、左基準（left: 0）だと
+     ポップアップが右へ伸びてウィンドウ外に隠れた（実測: 1100px の窓で 224px はみ出し）。
+     右端基準にして内側へ開く。 */
+  left: auto;
+  max-width: calc(100vw - 24px);
   min-width: 268px;
   padding: 10px;
   position: absolute;
+  right: 0;
   top: calc(100% + 8px);
   z-index: var(--z-sticky);
 }

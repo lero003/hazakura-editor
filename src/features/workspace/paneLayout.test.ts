@@ -14,6 +14,14 @@ import {
 describe("workspace pane layout", () => {
   beforeEach(() => window.localStorage.clear());
 
+  it("keeps the sidebar minimum wide enough for its header row", () => {
+    // 実機指摘（第15報）: 最小まで狭めるとワークスペースのヘッダー（「WORKSPACE」の見出し＋
+    // 新規/開く/ゴミ箱）が数px 溢れて左が隠れていた。実測で約199px 必要なので、
+    // 言語・フォント差の余裕を見て下限は 216px 以上にする。
+    expect(MIN_WORKSPACE_SIDEBAR_WIDTH).toBeGreaterThanOrEqual(216);
+    expect(MIN_WORKSPACE_SIDEBAR_WIDTH).toBeLessThan(DEFAULT_WORKSPACE_SIDEBAR_WIDTH);
+  });
+
   it("uses quiet defaults when no layout has been saved", () => {
     expect(readWorkspacePaneLayout()).toEqual({
       previewColumnPercent: 42,
