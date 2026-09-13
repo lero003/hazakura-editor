@@ -1,11 +1,48 @@
 # Handoff
 
 Status: Operational
-Scope: v2.9公開後のv3準備と引き継ぎ
+Scope: v3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-12
+Last reviewed: 2026-09-14
 
 ## Current State
+
+- **v3.0.0公開済み（2026-09-14）:** オーナーが公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認。
+  公開build/sourceの対応・build番号・TestFlight個別受入は独立未確認。未コミットで残っていたv3最終調整は
+  区切りごとにコミット済み。GitHubソースタグ `v3.0.0`＋Release（ソースのみ）を作成。README・公開画像をv3へ更新。
+  [公開記録](releases/3.0.0-source-tag.release.md)。
+
+- **編集クロームを整理（2026-09-13）:** 全テーマでタブの上下線を静かな選択面に置換。えるモード左の空列、下段の重複パンくず、表示操作の選択下線を整理。上部ボタンの文字選択も抑止。
+  QA実機7テーマ・5タブ・狭幅・Aa/えるモード往復を確認。Local Assistラベルはブラウザfixtureで検証（QA設定では入口非表示）。
+  全2,498件、型検査/Vite、surface125件成功。[画像と検証範囲](reviews/2026-09-13-editor-chrome/README.md)。提出候補の更新は別。
+
+- **「読む」の見開き・文字サイズを調整（2026-09-13）:** 既定1280×820で可変幅の見開き、中央52pxの余白、
+  上部に文字サイズ12〜24（既存プレビュー設定と共通）を追加。端数のページ計測と現在章の目次再選択による送り停止も修正。
+  QA実機で標準/狭幅・文字拡大・再入場・本文未変更を確認。全2,498件、型検査/Vite、surface125件成功。
+  [変更と実機画像](reviews/2026-09-13-reader-layout/README.md)。提出候補・全体受入は別。
+
+- **「確認」の往復とスクロールを修正（2026-09-13）:** 差分への入力を遮る空の editor host を隠し、
+  「書く」で比較を終了。WebKit の blur で選択クリックが失われる問題も修正。
+  QA実機で末尾スクロール・上部のみ3往復・追加編集の再比較・Undoを確認。全2,495件、型検査/Vite、surface125件成功。
+  [再現・原因・検証範囲](reviews/2026-09-13-review-navigation-fix/README.md)。提出候補とv3全体受入は別。
+
+- **v3の空気感を実機で調整（2026-09-13）:** 設定/ヘルプの案内を集約し、検索の行間・読書見出し・復旧/衝突の紙色を整理。
+  文書領域960px以下は既存の一面切替へ。目次なしの一章文書が細い列に入る不具合も修正。
+  分離したQAアプリで実表示・検索/読書/比較導線・狭幅復帰を確認。全2,492件、型検査/Vite、surface125件成功。
+  v3全体の受入とは分ける。[変更・実機の前後画像・残確認](reviews/2026-09-13-v3-atmosphere-polish/README.md)。
+
+- **v3の空気感レビュー（2026-09-13・提案のみ）:** 24モックを確認し、現行21項目の関連表示（部品・空状態を含む）を撮影。
+  設定/ヘルプ、復旧/衝突の面色、検索の密度、読書の組版を調整候補に整理。狭幅の分割は判断待ち。
+  機能コード未変更。Import Assist・生成中・生成失敗は実表示未判定。[比較レポートと確認範囲](reviews/2026-09-13-v3-atmosphere-audit/README.md)。
+
+- **次はv3実機受入:** 最新UI/江戸彼岸を含む提出文案へ更新。未コミット修正の確定→候補再作成→同じbuildの
+  保存/復旧・IME・Assist生成/停止/Apply/Undo・書き出し現物を確認する。候補管理の最新記録は旧版のまま。
+  [候補の現状と限界](releases/3.0.0-source-tag.release.md)。27固有API/品質評価は未検証として維持。
+
+- **江戸彼岸:** 全面WebGLの葉影/起動演出を `EdohiganAmbient` の枝花とCSS花びらへ置換。
+  明色トークンは維持、Previewのリンク/コードとReaderの旧暗色指定は解消。全2,486件・型検査/Vite・surface125件成功。
+  次はnativeで演出強度・動きを減らす設定・入力中の落ち着きを確認する。混在する既存UI/App Store設定差分を保持。
+  [前後比較・素材由来・残確認](reviews/2026-09-12-v3-edohigan-refinement/README.md)。
 
 - **Local Assist 分離窓の江戸彼岸色を修正（2026-09-12）:** 暗色時代の固定背景色の残骸で本文が沈む不整合
   （実測 1.28:1→10.44）を `--bg` へ戻して修正し、全7テーマの窓面コントラスト契約（4.5:1）を追加。
@@ -15,6 +52,12 @@ Last reviewed: 2026-09-12
   `AssistRuntimeContract` で分離し、ゲートの能力失敗を `unsupported_language` へ（文言不変）。
   swift test 16件・live/fixtureビルド・実機live生成・cargo 385件を確認。27環境での照合と評価（LA-1b）は未実施。
   [記録](reviews/2026-09-12-v3-la1-availability-capability/README.md)。
+
+- **直近のv3 UI調整:** 新規作成直後の入力、読書面から本文の表示復帰後に位置・フォーカスを戻す処理、
+  検索語変更時の先頭選択、形式切替をまたぐ書き出し元への復帰を修正。全2,479件/型検査/Vite/surface125件成功。
+  [再現・画像・次の実機確認](reviews/2026-09-12-v3-final-ux/README.md)。既存App Store設定差分は保持、native候補は未再作成。
+  追加のCSS調整は書き出しの紙色・余白共有、文字見本の列揃え、設定外枠のclip。
+  [比較画像・再現条件](reviews/2026-09-12-v3-design-polish/README.md)を参照し、nativeでタイトル固定とテーマを受け入れる。
 
 - **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
@@ -815,11 +858,11 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. `docs/current-work.md` と `docs/reviews/2026-09-09-v3-ui-a1/README.md` を読み、v3レビュー指摘かnative受入を一つ選ぶ。
+1. `docs/current-work.md` を読み、公開後の次のスライス（残課題の判断、またはv3.1準備）を選ぶ。
 2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
-5. 公開済み版やタグを変更せず、新しい提出・公開は別工程とする。
+5. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。
 
 ## Key Paths
 

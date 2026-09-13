@@ -665,15 +665,15 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `2.9.0` is published",
+        "Hazakura Editor `3.0.0` is published",
         `Current source version is \`${packageJson.version}\``,
-        "The published App Store version is `2.9.0`",
-        "latest published GitHub source / local-app tag remains [v2.3.0]",
+        "The published App Store version is `3.0.0`",
+        "latest published GitHub source / local-app tag is [v3.0.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `2.9.0`",
+        "Published App Store version: `3.0.0`",
         `Current source / Developer version: \`${packageJson.version}\``,
-        "GitHub source tag: immutable `v2.3.0`",
+        "GitHub source tag: `v3.0.0`",
       ],
       "docs/current-status.md": [
         "**v2.8公開:** 2026-09-08オーナー報告",
@@ -697,7 +697,7 @@ describe("macOS build scripts", () => {
       ],
       "docs/roadmap.md": [
         `| ソース版 | ${packageJson.version}`,
-        "| 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告）",
+        "| 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |",
         "## Phase Decision — 2026-09-09",
         "**v3.0**",
         "**v3.1**",

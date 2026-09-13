@@ -1,9 +1,9 @@
 # v3 — UI/UX刷新とアプリの完成度
 
-Status: UI-F2 externally accepted; UI-G1〜G4 implemented; stage 2 (mock palette + chrome surface) implemented; native acceptance pending
+Status: v3.0.0 published (2026-09-14, owner-reported; store page confirms 3.0.0); UI/UX refresh and review fixes shipped; residual device-evidence and decision items remain separately tracked
 Scope: v3.0の製品全体の方針、UI資料の採否、実装順と受け入れ
 Authority: Medium
-Last reviewed: 2026-09-10
+Last reviewed: 2026-09-14
 
 ## 今回の決定
 
@@ -17,7 +17,7 @@ Last reviewed: 2026-09-10
 
 v2.9の審査通過・公開はオーナー報告。公開build/source対応や個別実機項目は推定しない。
 ソース版数は2.9.0のまま。追加のオーナー依頼により `codex/v3` を作成しUI-A0/A1を実装した。
-[第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に現状と証拠をまとめる。提出・公開は未実施。
+[第1回レビュー](reviews/2026-09-09-v3-ui-a1/README.md)に現状と証拠をまとめる。提出・公開は当時未実施で、後にv3.0.0として公開された（2026-09-14・オーナー報告・ストアページで確認）。
 v3.1の検証済みallowlistモデルDL・管理・切り替えは維持し、v3.0へ取り込まない。
 AFM/Systemの共通基盤・SDK/旧OSの受け入れ条件は
 [Local Assist plan](v2.9-v3-local-assist-plan.md)を技術詳細の正本とする。

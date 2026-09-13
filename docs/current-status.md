@@ -1,11 +1,36 @@
 # Current Status
 
 Status: Operational
-Scope: v2.9公開状態、v3準備、実装証跡
+Scope: v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-12
+Last reviewed: 2026-09-14
 
 ## Current State
+
+- **v3.0.0を公開（2026-09-14）:** オーナーが公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認（更新表示は確認時点で約1時間前）。公開build番号・公開buildとソースの対応・Apple側の処理/審査の詳細・TestFlightでの個別実機受入結果は独立未確認。ローカル候補記録（`docs/internal/app-store-candidates/latest.json`）は2.9.0 / build 125のままで、v3.0.0 pkgの書き戻しはない。未コミットで残っていたv3最終調整は区切りごとにコミットし、GitHubソースタグ `v3.0.0`＋Release（ソースのみ・バイナリなし）を作成、READMEと公開画像もv3へ更新した。詳細は [3.0.0候補記録](releases/3.0.0-source-tag.release.md)。
+
+- **編集クロームを整理（2026-09-13）:** 全テーマでタブの上下線を静かな選択面に置換。えるモード左の空列、下段の重複パンくず、表示操作の選択下線を整理。上部ボタンの文字選択も抑止。
+  QA実機7テーマ・5タブ・狭幅・Aa/えるモード往復を確認。Local Assistラベルはブラウザfixtureで検証（QA設定では入口非表示）。
+  全2,498件、型検査/Vite、surface125件成功。[画像と検証範囲](reviews/2026-09-13-editor-chrome/README.md)。提出候補の更新は別。
+
+- **「読む」の見開き・文字サイズを調整（2026-09-13）:** 既定1280×820で可変幅の見開き、中央52pxの余白、
+  上部に文字サイズ12〜24（既存プレビュー設定と共通）を追加。端数のページ計測と現在章の目次再選択による送り停止も修正。
+  QA実機で標準/狭幅・文字拡大・再入場・本文未変更を確認。全2,498件、型検査/Vite、surface125件成功。
+  [変更と実機画像](reviews/2026-09-13-reader-layout/README.md)。提出候補・全体受入は別。
+
+- **「確認」の往復とスクロールを修正（2026-09-13）:** 差分への入力を遮る空の editor host を隠し、
+  「書く」で比較を終了。WebKit の blur で選択クリックが失われる問題も修正。
+  QA実機で末尾スクロール・上部のみ3往復・追加編集の再比較・Undoを確認。全2,495件、型検査/Vite、surface125件成功。
+  [再現・原因・検証範囲](reviews/2026-09-13-review-navigation-fix/README.md)。提出候補とv3全体受入は別。
+
+- **v3の空気感を実機で調整（2026-09-13）:** 設定/ヘルプの案内を集約し、検索の行間・読書見出し・復旧/衝突の紙色を整理。
+  文書領域960px以下は既存の一面切替へ。目次なしの一章文書が細い列に入る不具合も修正。
+  分離したQAアプリで実表示・検索/読書/比較導線・狭幅復帰を確認。全2,492件、型検査/Vite、surface125件成功。
+  v3全体の受入とは分ける。[変更・実機の前後画像・残確認](reviews/2026-09-13-v3-atmosphere-polish/README.md)。
+
+- **江戸彼岸の意匠調整（2026-09-12）:** 明色パレットを維持し、全面の葉影・暗い起動演出を枝花と花びらへ置換。
+  Preview/Readerの暗色時代の指定と設定の見本・説明も整合。全2,486件・型検査/Vite・surface 125件成功。
+  nativeの動き・操作は未受入。[比較画像と検証範囲](reviews/2026-09-12-v3-edohigan-refinement/README.md)。
 
 - **分離窓のテーマ色修正（2026-09-12）:** Local Assist 窓の江戸彼岸背景が暗色時代の固定色のまま残り、
   本文が 1.28:1 まで沈んでいたのを修正（明色テーマの `--bg` へ）。全7テーマの窓面コントラスト契約を追加。
@@ -15,6 +40,12 @@ Last reviewed: 2026-09-12
   能力失敗は `unsupported_language`）。swift test 16件、live/fixtureビルド、実機live生成、cargo 385件を確認。
   27 SDKが無いため27固有APIの照合と評価は未実施。
   [検証と残確認](reviews/2026-09-12-v3-la1-availability-capability/README.md)。
+
+- **v3最終UI調整（2026-09-12）:** 新規作成・読書復帰・検索候補・書き出し終了の操作継続を修正。
+  ブラウザ確認と全2,479件、型検査/Vite、App Store surface 125件が成功。native再ビルド・実機受入は未実施。
+  [今回の検証範囲と画像](reviews/2026-09-12-v3-final-ux/README.md)。
+  続けて書き出しの面・余白、設定の文字見本の整列・外枠固定を調整。
+  [デザインの比較記録](reviews/2026-09-12-v3-design-polish/README.md)。
 
 - **v2.9公開済み:** 2026-09-09、オーナーが審査通過・公開を報告。公開build/source対応、
   TestFlightや個別のIME・VoiceOver・旧OS試験結果は今回独立確認していない。
@@ -68,6 +99,8 @@ Last reviewed: 2026-09-12
 - **作業保全:** App Store設定の既存未コミット変更を保持。公開タグ・アセットは変更しない。
 
 ## v3.0候補（TestFlight準備・2026-09-11）
+
+> 2026-09-14 に公開された（上部の公開記録を参照）。以下は候補時点の記録。
 
 - **版数:** npm / Tauri / Cargo を `3.0.0` へ更新した。オーナー管理の
   `src-tauri/tauri.conf.appstore.json`（build番号）は**触っていない**。
@@ -747,11 +780,9 @@ Last reviewed: 2026-09-12
 - Published Mac App Store version: **`2.6.2`** (user-confirmed 2026-08-28;
   staged rollout to all users). Prior store baselines (`2.4.0`, `2.3.0`,
   `2.0.0`, `1.13.0`, …) remain historical.
-- Latest published GitHub source / local-app tag: `v2.3.0` (source archive only;
-  see `docs/releases/2.3.0-source-tag.release.md`). The `2.6.2` note is
-  `docs/releases/2.6.2-source-tag.release.md` (Mac App Store published;
-  no v2.6 GitHub tag yet).
-  Prior checkpoint: `v2.0.0`.
+- Latest published GitHub source / local-app tag: `v3.0.0` (source archive only;
+  see `docs/releases/3.0.0-source-tag.release.md`). Prior checkpoints: `v2.3.0`
+  (`docs/releases/2.3.0-source-tag.release.md`) and `v2.0.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in
@@ -1260,8 +1291,8 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. `docs/current-work.md` と `docs/reviews/2026-09-09-v3-ui-a1/README.md` を読み、v3レビュー指摘かnative受入を一つ選ぶ。
+1. `docs/current-work.md` を読み、公開後の次のスライス（残課題の判断、またはv3.1準備）を選ぶ。
 2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
-5. 公開済み版やタグを変更せず、新しい提出・公開は別工程とする。
+5. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。

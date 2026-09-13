@@ -610,8 +610,15 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
     the surrounding theme effects remain present. Repeat with macOS Increase
     Contrast enabled. Repeat the same reading check in e-book pages and a
     whole-book Reader chapter: the page/paper stays opaque and the text does
-    not flicker or glow, while shell shaders, scanlines, and boot sequences
-    remain. Exported HTML is unchanged.
+    not flicker or glow, while the surrounding theme decoration remains.
+    Edohigan now uses branch artwork and petals; its former leaf shader and
+    dark boot sequence are intentionally absent. Exported HTML is unchanged.
+    For Edohigan, check off → subtle → normal → dramatic → off: the decoration
+    disappears completely when off, then returns with the chosen strength.
+    With Reduce Motion enabled, only a static branch remains. Hide and restore
+    the app, and check the motion resumes without disrupting typing or selection.
+    At 960px, check that the smaller branch does not crowd the manuscript; also
+    inspect L Mode, settings, and the Local Assist window on the native build.
 15. With Preview open on a document that has nearby images and several
     paragraphs, select a phrase with the mouse. Confirm the highlight stays
     while a nearby image finishes loading and while the editor keeps receiving
@@ -1149,6 +1156,19 @@ recovered state separately where relevant.
     diagnostic detail, and do not also announce the zero-match state.
     Confirm Enter runs the active result, Escape closes the surface, and IME
     conversion Enter / arrows are not intercepted.
+    In Quick Open and Command Palette, select the second match, then change
+    the query to one with the same result count. Confirm the first new match
+    is selected and Enter runs that match.
+    For v3 operation continuity, create a new document and type immediately;
+    enter Reading Focus and return through Write or Edit here, then type again.
+    Cancel an export after switching formats and confirm focus returns to the
+    control or writing surface that opened it. See the
+    [browser evidence and native follow-up](reviews/2026-09-12-v3-final-ux/README.md).
+    At 960×640, switch Settings categories, edit font sizes, and scroll the
+    settings body. Confirm the title and close button remain visible, and the
+    text samples share a left edge while wrapping at large sizes. Check export
+    tab/content alignment and paper surfaces in each theme. See
+    [design comparisons](reviews/2026-09-12-v3-design-polish/README.md).
 25. **Localized rename VoiceOver name**: switch the menu language through
     English, Japanese, and kana. Start inline rename for both a file and a
     folder; confirm VoiceOver announces the localized rename action together

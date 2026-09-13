@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-10
+Last reviewed: 2026-09-14
 
 ## Current Position
 
@@ -12,10 +12,10 @@ v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じ�
 
 | 対象 | 状態 |
 |---|---|
-| 公開版 | v2.9（2026-09-09オーナーによる審査通過・公開報告） |
-| ソース版 | 3.0.0。codex/v3でUI-G1〜G4（状態表示・Help、設定レール/現在地、紙面/ナビ面トークン、開始画面2ペイン）と段階2（モック配色・chrome面トークン）・第二調整（罫線の階層とfocus/native契約の検査）・設定外枠・狭幅23、続いてモック起点の再点検（江戸彼岸の明色化・スライスC/D/E・07本文面化・11形式ナビ）とレビュー修正（R1〜R5・P1/P2）を実装。 |
+| 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |
+| ソース版 | 3.0.0。codex/v3でUI-G1〜G4（状態表示・Help、設定レール/現在地、紙面/ナビ面トークン、開始画面2ペイン）と段階2（モック配色・chrome面トークン）・第二調整（罫線の階層とfocus/native契約の検査）・設定外枠・狭幅23、続いてモック起点の再点検（江戸彼岸の明色化・スライスC/D/E・07本文面化・11形式ナビ）とレビュー修正（R1〜R5・P1/P2）を実装し、v3.0.0として公開。 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | モックの構造差（07/11）は完了。残りは判断待ち（05/12/13/18・03の全テーマ方針）と実機受入 — `docs/reviews/2026-09-11-v3-slice-cde-review-request.md` |
+| 現行キュー | v3.0.0は公開済み。残りは公開後のフィードバックと判断待ち（05/12/13/18・03の全テーマ方針） — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
@@ -122,6 +122,7 @@ These boundaries stay active across roadmap changes:
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
 | 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
 | v2.8 | 別窓Writing Companion | 公開報告済み（2026-09-08）。詳細な配布証跡は別 |
+| **v3.0** | UI/UX刷新・読書見開き・書き出し形式ナビ・Local Assist LA-1a | **公開（2026-09-14オーナー報告。ストアページで3.0.0を確認）** |
 
 Bridge rationale: `docs/v1.8-plus-product-review-roadmap.md`.
 Historical phase prose:

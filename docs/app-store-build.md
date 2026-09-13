@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-08 (2.9.0 quality candidate preparation)
+Last reviewed: 2026-09-14 (3.0.0 publication record)
 
 ## Purpose
 
@@ -41,15 +41,16 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `2.9.0` (owner-reported 2026-09-09).
-  Exact released-build provenance and rollout coverage remain unverified here.
-  See `docs/releases/2.9.0-source-tag.release.md`.
-- Current source / Developer version: `3.0.0`. Quality candidate evidence is in
-  `docs/releases/2.9.0-source-tag.release.md`. System-only boundaries remain in
+- Published App Store version: `3.0.0` (2026-09-14; the store listing shows
+  version 3.0.0). Exact released-build provenance, build number, and rollout
+  coverage remain unverified here. See `docs/releases/3.0.0-source-tag.release.md`.
+  Prior published line: `2.9.0` (owner-reported 2026-09-09).
+- Current source / Developer version: `3.0.0`. Release evidence is in
+  `docs/releases/3.0.0-source-tag.release.md`. System-only boundaries remain in
   `docs/v2.9-v3-local-assist-plan.md`.
   Earlier v2.7 packages remain historical candidates, not an active submission queue.
-  GitHub source tag: immutable `v2.3.0` (prior `v2.0.0` also immutable).
-  This update does not claim a new GitHub publication.
+  GitHub source tag: `v3.0.0` (source-only repository checkpoint, created 2026-09-14;
+  prior `v2.3.0` and `v2.0.0` remain immutable).
 - Latest local App Store package candidate metadata (version, build
   counter, pkg path, SHA-256, generated time, base source commit, and
   pre-build worktree state): see
