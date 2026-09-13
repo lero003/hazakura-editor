@@ -152,6 +152,16 @@ function contrastRatio(background: string, foreground: string): number {
 }
 
 describe("Preview theme contrast", () => {
+  it.each(["a", "code"])("edohigan keeps %s ink readable after the light-theme migration", (tag) => {
+    const color = ruleBody(`:root[data-theme="edohigan"] .markdown-preview ${tag}`)
+      .match(/color:\s*(#[0-9a-f]{6}|var\(--[a-z-]+\))/i)?.[1] ?? "";
+    const ink = color.startsWith("var(")
+      ? themeToken("edohigan", color.slice(4, -1))
+      : color;
+    expect(ink).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(contrastRatio(resolvedPaper("edohigan"), ink)).toBeGreaterThanOrEqual(4.5);
+  });
+
   it.each(Object.entries(selectionPalette))(
     "%s keeps selected Preview text at WCAG AA contrast",
     (theme, palette) => {

@@ -83,16 +83,23 @@ describe("joke theme effect reach", () => {
     }
   });
 
-  it("keeps the edohigan canvas out of the paper's pixels", () => {
-    // 実機指摘: 江戸彼岸のプレビュー上部が暗い花びらに覆われて読めなかった。
-    // 原因はこのキャンバスだけ blend 指定が無く、不透明のまま本文より手前に描かれていたこと。
-    // multiply は紙と文字を同じ係数で暗くするのでコントラスト比が保たれる。
-    // （WebGL はヘッドレスのスクリーンショットに写らないため、ここは CSS 契約として固定する）
-    const canvas = edohigan.match(/\.edohigan-canvas[^{]*{(?<body>[^}]*)}/s)?.groups
-      ?.body;
-    expect(canvas, "edohigan canvas rule").toBeTruthy();
-    expect(canvas).toMatch(/mix-blend-mode:\s*(multiply|screen)/);
-    expect(canvas).toMatch(/opacity:\s*0\.[0-9]+/);
+  it("keeps edohigan decoration away from interaction and central writing", () => {
+    const ambient = edohigan.match(/\.edohigan-ambient\s*{([^}]*)}/s)?.[1];
+    expect(ambient).toMatch(/pointer-events:\s*none/);
+    expect(ambient).toMatch(/z-index:\s*calc\(var\(--z-base\) \+ 1\)/);
+    expect(ambient).not.toContain("mix-blend-mode");
+    const petals = edohigan.match(/\.edohigan-petals\s*{([^}]*)}/s)?.[1];
+    expect(petals).toContain("transparent 32%, transparent 68%");
+    // 合成指定はコントラスト比の保証ではない。前後の実画面も記録する。
+    expect(edohigan).not.toContain(".edohigan-canvas");
+  });
+
+  it("stops edohigan motion for OS reduced motion and background windows", () => {
+    const reduced = edohigan.split("@media (prefers-reduced-motion: reduce)")[1];
+    expect(reduced).toMatch(/\.edohigan-branch\s*{\s*animation:\s*none/);
+    expect(reduced).toMatch(/\.edohigan-petals\s*{\s*display:\s*none/);
+    expect(edohigan).toContain('[data-paused="true"]');
+    expect(edohigan).toContain("animation-play-state: paused");
   });
 
   it("keeps the sidebar treatment weaker than the body", () => {

@@ -1,32 +1,14 @@
-/* === edohigan-theme.css ===
-   江戸彼岸（静謐）— 明るい桜色の紙面。モックの .edohigan 定義に準拠する。
-   紙 #fffcf8 / 地 #fbf4f2 / インク #453735 / アクセント #975b68（reference/mock-styles.css）。
-
-   モックの罫線（#e6d8d0 / #c9b6ae）は紙面比 1.36 / 1.90 で階層の契約
-   （--border 1.45〜1.7・--border-strong ≥2.1・差 ≥0.4）を満たさないため、
-   同じ色相のまま紙面からの距離を伸ばして 1.55 / 2.20 に置き直す（B案の前例に従う）。
-
-   構成:
-     1. パレット (桜色の紙 + 梅紫のアクセント)
-     2. .app-shell 背景
-     3. canvas / 前景オーバーレイ
-     4. 文字
-     5. 起動シーケンス
-     6. reduced-motion
-     7. (keyframes なし)
-*/
+/* 江戸彼岸 — 花白の紙、古木の墨、蕾の紅。
+   明色の紙面は従来の正本を維持し、装飾は同梱の植物画と少数の花弁に限定する。 */
 
 /* 1. パレット */
 :root[data-theme="edohigan"] {
   --bg: #fbf4f2;
   /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
   --chrome-surface: #fbf4f2;
-  /* 背景シェーダーを透かすのは surface（操作面）。
-     読む・書く面は不透明な紙面 --surface-paper、ナビ面も不透明にして
-     明色の紙面で文字コントラストを自動検査できるようにする。 */
+  /* 操作面、紙面、ナビ面の順に色の階層を保つ。 */
   --surface: rgba(255, 253, 250, 0.72);
-  /* 実機要望（第10報）: 花びら・陽光が紙を通して見えるように少しだけ透かす
-     （alpha 0.93。明るい紙なので背景はほんのり色づく程度に留める）。 */
+  /* 既存の紙色・透過率は維持。本文の上に全画面の陰影を重ねない。 */
   --surface-paper: rgba(255, 252, 248, 0.93);
   --nav-surface: #f4e9e6;
   --surface-rgb: 255, 253, 250;
@@ -39,7 +21,7 @@
   --text-muted: #79655e;
   --accent: #975b68;
   --accent-secondary: #c19a6b;
-  --accent-gradient: linear-gradient(135deg, #975b68 0%, #b0808a 50%, #8a6f9b 100%);
+  --accent-gradient: linear-gradient(135deg, #975b68 0%, #885260 100%);
   --accent-soft: #f3e0e1;
   --accent-glass: rgba(151, 91, 104, 0.1);
   --accent-contrast: #ffffff;
@@ -114,65 +96,100 @@
   background: #fbf4f2;
 }
 
-/* 3. canvas / overlay */
-/* 明るい紙面の上に載る唯一のキャンバス。他テーマは screen(深海)/multiply(CRT) で
-   「紙を置き換えない」合成にしているが、ここは指定が無く、不透明（シェーダは alpha=1）の
-   まま本文より手前 (z-index: 1) に描かれていた。そのため暗い花びらが紙と文字を置き換え、
-   プレビューの上部・下部が読めなくなっていた（実機指摘。実測: プレビュー面の紙が
-   252 → 48 まで落ちた画素があった）。
-   multiply は**紙と文字を同じ係数で暗くする**のでコントラスト比が保たれる
-   （不透明度で花びらは淡い影として残す）。 */
-.edohigan-canvas {
+/* 3. 枝花と花弁。本文をまだらに暗くする全画面シェーダーは使わない。
+   上部ツールバーやモーダルは覆わない。形は同梱画像、動くのは小さな花弁だけ。 */
+.edohigan-ambient {
+  inset: 66px 0 34px;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: calc(var(--z-base) + 1);
+  --branch-opacity: 0.24;
+  --petal-opacity: 0.48;
+}
+
+.edohigan-branch {
+  background: url("../assets/themes/edohigan-branch.webp") left bottom / contain no-repeat;
+  bottom: -24px;
+  height: min(42vh, 360px);
+  left: -18px;
+  opacity: var(--branch-opacity);
+  mix-blend-mode: multiply;
+  position: absolute;
+  width: min(22vw, 280px);
+  animation: edohigan-arrive 900ms ease-out both;
+}
+
+.edohigan-ambient[data-intensity="subtle"] {
+  --branch-opacity: 0.14;
+  --petal-opacity: 0.30;
+}
+
+.edohigan-ambient[data-intensity="dramatic"] {
+  --branch-opacity: 0.34;
+  --petal-opacity: 0.62;
+}
+
+/* 起動画面の広い余白では植物画を見せる。操作と見出しの位置は動かさない。 */
+:root[data-theme="edohigan"] .app-shell:has(.workspace-start) .edohigan-branch {
+  height: min(55vh, 480px);
+  width: min(40vw, 520px);
+  left: auto;
+  right: 2vw;
+  bottom: -32px;
+  opacity: calc(var(--branch-opacity) * 1.8);
+}
+
+.edohigan-petals {
+  inset: 0;
+  position: absolute;
+  /* 中央の執筆カラムには花弁を流さず、窓の左右へ気配を残す。 */
+  mask-image: linear-gradient(90deg, #000 0%, #000 10%, transparent 32%, transparent 68%, #000 90%, #000 100%);
+}
+
+.edohigan-petal {
+  animation: edohigan-fall var(--petal-duration) linear infinite;
+  animation-delay: var(--petal-delay);
+  height: var(--petal-size);
+  position: absolute;
+  top: -48px;
+  width: var(--petal-size);
+}
+
+.edohigan-petal i {
+  animation: edohigan-turn 13s ease-in-out infinite alternate;
+  animation-delay: var(--petal-delay);
+  background: url("../assets/themes/edohigan-petal.webp") center / contain no-repeat;
   display: block;
   height: 100%;
-  inset: 0;
-  /* 木漏れ日は **影** として紙に落ちる（紙の上の光は「影が無い場所」）。
-     soft-light は #fffcf8 のようなほぼ白い紙では sqrt(base)-base → 0 となり
-     実効 1% しか動かない（実測で確認）。multiply なら影の濃さがそのまま出る。 */
+  opacity: var(--petal-opacity);
   mix-blend-mode: multiply;
-  opacity: 0.38;
-  pointer-events: none;
-  position: fixed;
   width: 100%;
-  /* 面の上・モーダル/パレットより下（このファイル元来の意図を守る）。 */
-  z-index: calc(var(--z-dropdown) - 10);
 }
 
-:root[data-theme="edohigan"] .app-shell:has(.edohigan-boot:not(.edohigan-boot-scatter))
-  .edohigan-canvas {
-  opacity: 0;
+.edohigan-ambient[data-paused="true"] :is(.edohigan-branch, .edohigan-petal, .edohigan-petal i) {
+  animation-play-state: paused;
 }
 
-/* 前景: 明るい紙面に合わせた、ごく淡い桜の光。装飾は本文の背後に留める
-   （モーダル・パレットより手前へ出さない: z は --z-dropdown より下）。 */
-.edohigan-overlay {
-  background:
-    radial-gradient(
-      ellipse 110% 48% at 50% 0%,
-      rgba(151, 91, 104, 0.06) 0%,
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse 70% 36% at 18% 88%,
-      rgba(151, 91, 104, 0.04) 0%,
-      transparent 52%
-    ),
-    radial-gradient(
-      ellipse 80% 40% at 70% 100%,
-      rgba(193, 154, 107, 0.05) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse at center,
-      transparent 70%,
-      rgba(120, 90, 96, 0.08) 100%
-    );
-  inset: 0;
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-  position: fixed;
-  /* 淡い桜の光も面の上へ（soft-light なので明るい紙を濁らせない）。モーダルより下は維持。 */
-  z-index: calc(var(--z-dropdown) - 10);
+@keyframes edohigan-arrive {
+  from { opacity: 0; transform: translateY(8px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes edohigan-fall {
+  0% { transform: translate3d(0, 0, 0) rotate(var(--petal-turn)); opacity: 0; }
+  8%, 88% { opacity: 1; }
+  100% { transform: translate3d(var(--petal-drift), calc(100vh + 48px), 0) rotate(calc(var(--petal-turn) + 110deg)); opacity: 0; }
+}
+
+@keyframes edohigan-turn {
+  from { transform: rotate(-18deg) scaleX(0.55); }
+  to { transform: rotate(22deg) scaleX(1); }
+}
+
+@media (max-width: 1100px) {
+  /* サイドバーが畳まれる幅では原稿の左余白に収める。 */
+  .edohigan-branch { width: 92px; opacity: 0.12; }
 }
 
 /* 4. 文字 — 明るい紙面ではグローを載せない */
@@ -199,29 +216,8 @@
   background: rgba(151, 91, 104, 0.08);
 }
 
-/* 5. 起動 */
-.edohigan-boot {
-  background: #fbf4f2;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  position: fixed;
-  z-index: calc(var(--z-crt-top) + 100);
-}
-
-.edohigan-boot-canvas {
-  display: block;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 1;
-}
-
-/* 6. reduced-motion */
+/* 動きを減らす設定では枝花だけの静止画。設定変更にもCSSで即座に追従。 */
 @media (prefers-reduced-motion: reduce) {
-  .edohigan-canvas {
-    display: none;
-  }
+  .edohigan-branch { animation: none; }
+  .edohigan-petals { display: none; }
 }
