@@ -7,7 +7,7 @@ Last reviewed: 2026-09-14
 
 ## Current State
 
-- **v3.0.0を公開（2026-09-14）:** オーナーが公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認（更新表示は確認時点で約1時間前）。公開build番号・公開buildとソースの対応・Apple側の処理/審査の詳細・TestFlightでの個別実機受入結果は独立未確認。ローカル候補記録（`docs/internal/app-store-candidates/latest.json`）は2.9.0 / build 125のままで、v3.0.0 pkgの書き戻しはない。未コミットで残っていたv3最終調整は区切りごとにコミットし、GitHubソースタグ `v3.0.0`＋Release（ソースのみ・バイナリなし）を作成、READMEと公開画像もv3へ更新した。詳細は [3.0.0候補記録](releases/3.0.0-source-tag.release.md)。
+- **v3.0.0を公開（2026-09-14）:** オーナーが公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認（更新表示は確認時点で約1時間前）。公開build番号・公開buildとソースの対応・Apple側の処理/審査の詳細・TestFlightでの個別実機受入結果は独立未確認。ローカル候補記録（`docs/internal/app-store-candidates/latest.json`）は2.9.0 / build 125のままで、v3.0.0 pkgの書き戻しはない。未コミットで残っていたv3最終調整は区切りごとにコミットし、GitHubソースタグ `v3.0.0`＋Release（ソースのみ・バイナリなし）を作成、READMEと公開画像もv3へ更新し、既定ブランチ `main` も v3.0.0 の状態へ同期した。詳細は [3.0.0候補記録](releases/3.0.0-source-tag.release.md)。
 
 - **編集クロームを整理（2026-09-13）:** 全テーマでタブの上下線を静かな選択面に置換。えるモード左の空列、下段の重複パンくず、表示操作の選択下線を整理。上部ボタンの文字選択も抑止。
   QA実機7テーマ・5タブ・狭幅・Aa/えるモード往復を確認。Local Assistラベルはブラウザfixtureで検証（QA設定では入口非表示）。
