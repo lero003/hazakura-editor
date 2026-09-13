@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openWorkspaceImage } from "../../../lib/tauri";
 import {
@@ -74,6 +74,36 @@ afterEach(() => {
 });
 
 describe("EBookPane chapter reader", () => {
+  it("keeps paging after selecting the current chapter in the contents", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(4);
+    await renderEBookPane(<EBookPane menuLanguage="ja" readingFocusActive source={"## One\n\nbody\n\n## Two\n\nmore"} />);
+    fireEvent.click(screen.getByRole("button", { name: /^One/ }));
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    expect(screen.getByText("章内ページ 2 / 4")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^One/ }));
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    expect(screen.getByText("章内ページ 2 / 4")).toBeTruthy();
+  });
+
+  it("changes reading text size and remeasures around the current source location", async () => {
+    const source = "## Chapter One\n\n" + Array.from({ length: 80 }, (_, i) => `Line ${i}\n`).join("\n");
+    vi.mocked(measureEBookPageCount).mockReturnValue(4);
+    function Reader() {
+      const [fontSize, setFontSize] = useState(15);
+      return <EBookPane menuLanguage="ja" readingFocusActive source={source}
+        fontSize={fontSize} onFontSizeChange={setFontSize} />;
+    }
+    const view = await renderEBookPane(<Reader />);
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    const before = view.container.querySelector(".ebook-page-flow")!.innerHTML;
+    vi.mocked(measureEBookPageCount).mockReturnValue(8);
+    fireEvent.change(screen.getByRole("combobox", { name: "文字サイズ" }), { target: { value: "24" } });
+    await waitFor(() => expect(screen.getByText("章内ページ 3 / 8")).toBeTruthy());
+    expect(view.container.querySelector(".ebook-page-flow")!.innerHTML).toBe(before);
+    expect(view.container.querySelector("article")!.style.getPropertyValue("--preview-font-size")).toBe("24px");
+    expect((screen.getByRole("combobox", { name: "文字サイズ" }) as HTMLSelectElement).value).toBe("24");
+  });
+
   it("treats only H1 and H2 as chapter boundaries, keeping H3 inline", async () => {
     // A long document with many `###` entries must not fragment into dozens
     // of one-screen chapters. H3 and below stay inside the preceding H1/H2

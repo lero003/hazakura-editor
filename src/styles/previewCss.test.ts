@@ -235,10 +235,14 @@ describe("preview.css", () => {
     expect(focusFooterBody).toMatch(/height:\s*53px/);
   });
 
+  it("lets a reader without a TOC use both grid tracks instead of the empty rail width", () => {
+    expect(ruleBody(".ebook-reader-focus-main:only-child")).toMatch(/grid-column:\s*1\s*\/\s*-1/);
+  });
+
   it("keeps e-book chapter header styling inside the e-book pane flow", () => {
     const body = ruleBody(".ebook-chapter .ebook-page-flow > h1:first-child");
 
-    expect(body).toMatch(/text-align:\s*center/);
+    expect(body).toMatch(/text-align:\s*start/);
     expect(body).toMatch(/border-bottom:\s*0/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.markdown-preview > div > h1:first-child/);
   });
@@ -259,7 +263,7 @@ describe("preview.css", () => {
     // 実機フィードバック⑦: 1列しか使わない章で見開きの右半分が空くのを避ける。
     // 縮めるのは**紙の表示幅**だけで、本文の列組み（flow の幅）は変えない。
     expect(previewCss).toMatch(
-      /\.ebook-page-sheet-spread\[data-spread="one"\]\s*{[^}]*max-width:\s*var\(--ebook-page-width\)/s,
+      /\.ebook-page-sheet-spread\[data-spread="one"\]\s*{[^}]*max-width:\s*calc\(var\(--ebook-page-width\) \+ var\(--ebook-sheet-pad-x\) \* 2 \+ 2px\)/s,
     );
     expect(
       exactRuleBody('.ebook-page-sheet-spread[data-spread="one"] .ebook-page-flow'),
@@ -287,8 +291,8 @@ describe("preview.css", () => {
     expect(chapterBody).toMatch(
       /--ebook-page-width:\s*min\(455px,\s*calc\(100vw - 56px\)\)/,
     );
-    // 見開き中央のガターは本のようにほぼ密着させる（モック04: 4〜6px）。
-    expect(chapterBody).toMatch(/--ebook-page-gap:\s*6px/);
+    // 見開き中央はコード枠と反対ページの本文の間にも余白を保つ。
+    expect(chapterBody).toMatch(/--ebook-page-gap:\s*52px/);
     expect(chapterBody).toMatch(/--ebook-page-footer-height:\s*34px/);
     // 紙面そのものを見せる（モック04: 不透明な紙 + 罫線 + 控えめな影）。
     // 紙面の内側の余白もモック04（左右39px）へ寄せる（実機指摘④）。
@@ -321,9 +325,9 @@ describe("preview.css", () => {
   });
 
   it("gates the e-book spread frame on available reader width", () => {
-    // 紙面455px×2＋ガター6px が、容器の左右余白を引いた後にも並ぶ幅。
+    // 可変幅の本文2列と中央余白が収まる容器幅。
     // EBookPane の EBOOK_SPREAD_CONTAINER_MIN_WIDTH と同じ値にする。
-    expect(previewCss).toMatch(/@container\s*\(min-width:\s*1090px\)/);
+    expect(previewCss).toMatch(/@container\s*\(min-width:\s*800px\)/);
     expect(previewCss).toMatch(
       /\.ebook-page-sheet-spread\s*{[^}]*max-width:\s*var\(--ebook-spread-width\)/s,
     );
@@ -345,7 +349,7 @@ describe("preview.css", () => {
     expect(previewFlowBody).toMatch(/column-gap:\s*var\(--ebook-page-gap\)/);
     expect(previewFlowBody).toMatch(/column-width:\s*var\(--ebook-page-width\)/);
     expect(previewCss).toMatch(
-      /@container\s*\(min-width:\s*1090px\)\s*{[^}]*\.ebook-page-sheet-spread \.ebook-next-chapter-preview\s*{[^}]*display:\s*block[^}]*left:\s*calc\(var\(--ebook-page-width\) \+ var\(--ebook-page-gap\)\)[^}]*position:\s*absolute/s,
+      /@container\s*\(min-width:\s*800px\)\s*{[^}]*\.ebook-page-sheet-spread \.ebook-next-chapter-preview\s*{[^}]*display:\s*block[^}]*left:\s*calc\(var\(--ebook-page-width\) \+ var\(--ebook-page-gap\)\)[^}]*position:\s*absolute/s,
     );
   });
 

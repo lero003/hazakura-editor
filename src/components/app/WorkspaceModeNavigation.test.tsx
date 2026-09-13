@@ -7,6 +7,29 @@ const base = { mode: "write" as const, canNavigate: true, menuLanguage: "ja" as 
   documentName: "朝の余白.md", reviewTargets: [], onWrite: vi.fn(), onRead: vi.fn(), onReview: vi.fn() };
 
 describe("WorkspaceModeNavigation", () => {
+  it("keeps a pointer choice mounted through WebKit's button-focus default", () => {
+    const onReview = vi.fn();
+    render(<WorkspaceModeNavigation {...base} reviewTargets={["disk", "comparison"]} onReview={onReview} />);
+    fireEvent.click(screen.getByRole("button", { name: "確認" }));
+    const choice = screen.getByRole("button", { name: /開いている比較/ });
+    // macOS WebKit blurs the focused first choice to the page on mouse down,
+    // rather than focusing the clicked button. Unmounting here loses its click.
+    if (fireEvent.mouseDown(choice)) {
+      fireEvent.blur(document.activeElement!, { relatedTarget: null });
+    }
+    fireEvent.mouseUp(choice);
+    fireEvent.click(choice);
+    expect(onReview).toHaveBeenCalledExactlyOnceWith("comparison");
+    expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
+  });
+
+  it("dismisses choices when keyboard focus leaves the navigation", () => {
+    render(<><WorkspaceModeNavigation {...base} reviewTargets={["disk", "reference"]} /><button>Outside</button></>);
+    fireEvent.click(screen.getByRole("button", { name: "確認" }));
+    fireEvent.blur(document.activeElement!, { relatedTarget: screen.getByRole("button", { name: "Outside" }) });
+    expect(screen.queryByRole("group", { name: "確認する対象" })).toBeNull();
+  });
+
   it("does not dispatch a review without a real target", () => {
     const onReview = vi.fn(); render(<WorkspaceModeNavigation {...base} onReview={onReview} />);
     fireEvent.click(screen.getByRole("button", { name: "確認" }));

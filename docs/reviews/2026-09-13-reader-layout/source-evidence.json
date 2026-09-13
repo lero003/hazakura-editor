@@ -1,0 +1,16 @@
+{
+  "baseHead": "d01a82b576cc00e80d42450f49ce2d9c3173b716",
+  "workingTree": "mixed uncommitted changes; hashes identify tested sources",
+  "sha256": {
+    "src/components/editor/preview/EBookPane.tsx": "0218db9c3fc972694c6972135d6d30b9e7fae9792fe36ccb249b610b463de999",
+    "src/components/editor/preview/ebookPagination.ts": "86e33702ba4553a7e261699b5b941440c9c95ea0c346beff2ff0903eaf15e69c",
+    "src/components/app/AppShell.tsx": "9a6b512c1e7ed1d69152e275926f5671467df900cba55838dbeb4e2b29a1d656",
+    "src/components/app/AppWorkspace.tsx": "76ce494cef0ea65b0d04eb286e016bf05148b4c7d5c9f9bb3b32e90b325c2344",
+    "src/styles/preview.css": "461b94afcbe517c36307da8cfb2d9c5aee6057e833424b24ebc5c453bc866412",
+    "src/components/editor/preview/EBookPane.test.tsx": "01078f49192ff4a319ed8f23ea51460d36b9ae19cc1ed559d11abe1ad1ffaefd",
+    "src/components/editor/preview/ebookPagination.test.ts": "5cf3b0145cfea39c472099c9120607f61fde4ac4807ac5cb5d52e526b2b3fd61",
+    "src/styles/previewCss.test.ts": "8499e94b39c65fcc59623596d41f737ebc884f3be7d5b961896af33a84fce716"
+  },
+  "qaBinarySha256": "f5a153b43de682b8d071e8c91daf2cc4cf4bdaa4693467a0d971b37f8753f577",
+  "sampleUnchanged": true
+}

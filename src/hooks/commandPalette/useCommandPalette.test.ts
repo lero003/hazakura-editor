@@ -17,6 +17,17 @@ function command(
 }
 
 describe("useCommandPalette", () => {
+  it("selects the best match again when a new query returns the same number of commands", () => {
+    const commands = ["朝の余白", "朝の散歩", "夜の余白", "夜の散歩"].map((label) => ({
+      ...command(label, []), id: label,
+    }));
+    const { result } = renderHook(() => useCommandPalette({ commands }));
+    act(() => { result.current.openCommandPalette(); result.current.setQuery("朝"); });
+    act(() => result.current.setActiveIndex(1));
+    act(() => result.current.setQuery("夜"));
+    expect(result.current.filteredCommands).toHaveLength(2);
+    expect(result.current.activeIndex).toBe(0);
+  });
   it("refreshes visible command labels when locale changes", () => {
     const { result, rerender } = renderHook(
       ({ commands }: { commands: Command[] }) =>

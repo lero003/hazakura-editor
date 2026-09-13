@@ -39,6 +39,7 @@ function setup(
     activeTab: null,
     clearImagePreview: vi.fn(),
     menuLanguage: "en",
+    onNewFileActivated: vi.fn(),
     openImagePreview: vi.fn(async () => true),
     refreshWorkspaceTree: vi.fn(async () => {}),
     rememberRecentFile: vi.fn(),
@@ -102,6 +103,34 @@ describe("useFileOpening", () => {
     expect(options.clearImagePreview).toHaveBeenCalled();
     expect(options.setCompareView).toHaveBeenCalledWith(null);
     expect(options.setStatus).toHaveBeenLastCalledWith("New file created");
+    expect(options.onNewFileActivated).toHaveBeenCalledOnce();
+  });
+
+  it("focuses a created workspace document before a slow folder refresh completes", async () => {
+    let finishRefresh!: () => void;
+    const refresh = new Promise<void>((resolve) => { finishRefresh = resolve; });
+    vi.mocked(pickNewMarkdownFilePath).mockResolvedValue("/workspace/new.md");
+    vi.mocked(createTextFile).mockResolvedValue({
+      name: "new.md", path: "/workspace/new.md", contents: "", encoding: "utf-8", line_ending: "lf",
+      size: 0, modified_ms: null, fingerprint: "new", large_file_warning: false,
+    });
+    const { options, result } = setup({
+      workspaceRootPath: "/workspace", refreshWorkspaceTree: () => refresh,
+    });
+    let creation!: Promise<void>;
+    await act(async () => { creation = result.current.createNewFile(); });
+    expect(options.setActiveTabId).toHaveBeenCalledWith("/workspace/new.md");
+    expect(options.onNewFileActivated).toHaveBeenCalledOnce();
+    await act(async () => { finishRefresh(); await creation; });
+    expect(options.onNewFileActivated).toHaveBeenCalledOnce();
+  });
+
+  it.each(["cancel", "failure"])("does not move focus when new-file creation ends with %s", async (outcome) => {
+    if (outcome === "cancel") vi.mocked(pickNewMarkdownFilePath).mockResolvedValue(null);
+    else vi.mocked(pickNewMarkdownFilePath).mockRejectedValue(new Error("Picker failed"));
+    const { options, result } = setup({ workspaceRootPath: "/workspace" });
+    await act(async () => { await result.current.createNewFile(); });
+    expect(options.onNewFileActivated).not.toHaveBeenCalled();
   });
 
   it("routes directly opened image files to image preview instead of text open", async () => {

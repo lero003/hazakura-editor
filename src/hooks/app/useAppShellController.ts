@@ -754,6 +754,23 @@ export function useAppShellController() {
     workspaceRootPath,
   });
 
+  // section: window dialog actions
+  const {
+    cancelPendingAppClose,
+    cancelPendingTabClose,
+    closePreferencesFromKeyboard,
+    focusEditorSoon,
+    requestAppCloseConfirmation,
+    requestWindowClose,
+  } = useWindowDialogActions({
+    editorPaneRef,
+    setGlobalError,
+    setPendingAppClose,
+    setPendingCloseTabId,
+    setPreferencesDialogMode,
+    setStatus,
+  });
+
   // section: workspace file opening
   const {
     cancelPendingRename,
@@ -787,6 +804,7 @@ export function useAppShellController() {
   } = useWorkspaceFileOpening({
     activeTab,
     clearImagePreview,
+    onNewFileActivated: focusEditorSoon,
     pairImportAssistReference: async (sourcePath, editorSessionId) => {
       const pair = pairImportAssistReferenceRef.current;
       if (pair) {
@@ -831,22 +849,6 @@ export function useAppShellController() {
   // is. This keeps global shortcuts suppressed and routes the
   // dialog through the central focus / keyboard-guard pool.
   const pendingAssistDiscardOpen = pendingAssistDiscard !== null;
-  // section: window dialog actions
-  const {
-    cancelPendingAppClose,
-    cancelPendingTabClose,
-    closePreferencesFromKeyboard,
-    focusEditorSoon,
-    requestAppCloseConfirmation,
-    requestWindowClose,
-  } = useWindowDialogActions({
-    editorPaneRef,
-    setGlobalError,
-    setPendingAppClose,
-    setPendingCloseTabId,
-    setPreferencesDialogMode,
-    setStatus,
-  });
 
   // v0.17 app-store-quality: save-restore-regression slice 1.4
   // — wrap the existing `requestAppCloseConfirmation` and

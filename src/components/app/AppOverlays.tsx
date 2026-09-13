@@ -2,6 +2,7 @@ import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";
 import { ExportFormatNav, type ExportFormatId } from "./ExportFormatNav";
 import { exportFormatSwitchPlan } from "./exportFormatSwitch";
 import type { useExportDrafts } from "../../hooks/document/useExportDrafts";
+import { useExportFocusReturn } from "../../hooks/document/useExportFocusReturn";
 import type {
   Dispatch,
   RefObject,
@@ -403,6 +404,7 @@ export function AppOverlays({
   assistDiscardCancelButtonRef,
   assistDiscardDialogRef,
 }: AppOverlaysProps) {
+  useExportFocusReturn(!!(epubExportRequest || pdfExportRequest || htmlExportRequest));
   // 形式ナビで行き来しても、一度の書き出し操作のあいだは入力と対象を保つ（画面11）。
   // 草稿の所有者は controller（書き出し操作の終了口を一本化するため。外部レビュー R3）。
 
@@ -613,6 +615,7 @@ export function AppOverlays({
           closeLabel={preferencesCopy.closeDialog}
           dialogRef={preferencesDialogRef}
           mode={preferencesDialogMode}
+          menuLanguage={menuLanguage}
           onChangeMode={setPreferencesDialogMode}
           onClose={closePreferencesFromKeyboard}
           title={
@@ -656,7 +659,7 @@ export function AppOverlays({
               wrapLines={editorSettings.wrapLines}
             />
           ) : activeHelpDoc ? (
-            <PrivacyPreferencesPane key={activeHelpDoc.id} doc={activeHelpDoc} />
+            <PrivacyPreferencesPane key={activeHelpDoc.id} doc={activeHelpDoc} menuLanguage={menuLanguage} />
           ) : (
             <SettingsPreferencesPane
               appleAssistAvailability={appleAssistAvailability}

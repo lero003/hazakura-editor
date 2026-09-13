@@ -15,7 +15,9 @@ export function measureEBookPageCount(element: HTMLElement | null): number {
   }
 
   const gap = getColumnGap(element);
-  return Math.max(1, Math.ceil((measuredWidth + gap) / pageStep));
+  // scrollWidth can round the final fractional edge up; do not invent a
+  // blank trailing page for that subpixel remainder.
+  return Math.max(1, Math.ceil((measuredWidth + gap - 1) / pageStep));
 }
 
 /**
@@ -52,7 +54,9 @@ function getEBookPageStep(element: HTMLElement): number {
 }
 
 function getActualColumnWidth(element: HTMLElement): number {
-  const availableWidth = Math.max(0, element.clientWidth);
+  // clientWidth rounds to whole pixels. A fluid two-column flow can then
+  // look just narrower than two columns and double every page offset.
+  const availableWidth = Math.max(0, element.getBoundingClientRect().width || element.clientWidth);
   const idealWidth = getColumnWidth(element);
   if (availableWidth <= 0 || idealWidth <= 0) {
     return idealWidth || availableWidth;
@@ -61,7 +65,7 @@ function getActualColumnWidth(element: HTMLElement): number {
   const gap = getColumnGap(element);
   const visibleColumns = Math.max(
     1,
-    Math.floor((availableWidth + gap) / (idealWidth + gap)),
+    Math.floor((availableWidth + gap + 1) / (idealWidth + gap)),
   );
   return Math.max(
     0,

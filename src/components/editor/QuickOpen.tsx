@@ -71,18 +71,9 @@ export function QuickOpen({
     [tree],
   );
 
-  const matchTotal = useMemo(() => {
+  const matches = useMemo(() => {
     if (!query.trim()) {
-      return files.length;
-    }
-    return files.filter(
-      (f) => fuzzyScore(query, f.path, f.name) >= 0,
-    ).length;
-  }, [query, files]);
-
-  const results = useMemo(() => {
-    if (!query.trim()) {
-      return files.slice(0, QUICK_OPEN_RESULT_LIMIT);
+      return files;
     }
     const scored = files
       .map((f) => ({
@@ -91,15 +82,17 @@ export function QuickOpen({
       }))
       .filter((f) => f.score >= 0)
       .sort((a, b) => b.score - a.score);
-    return scored.slice(0, QUICK_OPEN_RESULT_LIMIT);
+    return scored;
   }, [query, files]);
+  const matchTotal = matches.length;
+  const results = useMemo(() => matches.slice(0, QUICK_OPEN_RESULT_LIMIT), [matches]);
 
   const resultsCapped = matchTotal > results.length;
 
   // Reset active index when results change
   useEffect(() => {
     setActiveIndex(0);
-  }, [results.length]);
+  }, [query, results.length]);
 
   // Auto focus input
   useEffect(() => {
@@ -129,7 +122,7 @@ export function QuickOpen({
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setActiveIndex((prev) => Math.min(prev + 1, results.length - 1));
+          setActiveIndex((prev) => Math.max(0, Math.min(prev + 1, results.length - 1)));
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -152,7 +145,7 @@ export function QuickOpen({
     if (!list) return;
     const item = list.children[activeIndex] as HTMLElement | undefined;
     item?.scrollIntoView({ block: "nearest" });
-  }, [activeIndex]);
+  }, [activeIndex, query]);
 
   if (!tree) return null;
 

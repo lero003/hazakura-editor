@@ -90,6 +90,8 @@ type EBookPaneProps = {
   initialLocation?: EBookReaderLocation | null;
   mediaAccess?: MediaImageAccessOptions | null;
   menuLanguage?: MenuLanguage;
+  fontSize?: number;
+  onFontSizeChange?: (size: number) => void;
   onApproveLocalImageParent?: (resolvedPath: string) => void;
   onEnterReadingFocus?: (location: EBookReaderLocation) => void;
   onExitReadingFocus?: (location: EBookReaderLocation) => void;
@@ -138,13 +140,13 @@ type EBookReaderCopy = {
   previousPage: string;
   readerLabel: string;
   tableOfContents: string;
+  fontSize: string;
 };
 
 const WHEEL_PAGE_THRESHOLD = 40;
 const WHEEL_PAGE_COOLDOWN_MS = 220;
-// 見開きの容器閾値。CSS 側 `@container (min-width: 1090px)` と同じ値にする
-// （紙面455px×2＋ガター6px が、容器の余白を引いた後にも並ぶ幅）。
-const EBOOK_SPREAD_CONTAINER_MIN_WIDTH = 1090;
+// CSS の可変幅見開きと揃える。通常は実際の columnWidth で判定する。
+const EBOOK_SPREAD_CONTAINER_MIN_WIDTH = 800;
 const EBOOK_SPREAD_WIDTH_TOLERANCE = 1;
 
 export default function EBookPane({
@@ -153,6 +155,8 @@ export default function EBookPane({
   initialLocation,
   mediaAccess = null,
   menuLanguage = "en",
+  fontSize,
+  onFontSizeChange,
   onApproveLocalImageParent,
   onEnterReadingFocus,
   onExitReadingFocus,
@@ -603,7 +607,7 @@ export default function EBookPane({
     // be released. Without this the transition stayed off permanently
     // after the first chapter change.
     setPageTransitionSuppressed(false);
-  }, [activeChapter?.index, activeChapterHtml]);
+  }, [activeChapter?.index, activeChapterHtml, fontSize]);
 
   // v0.34: ResizeObserver / MutationObserver / 画像load からのページ再計測を
   // rAF で1フレームに1回に coalesce する。連続リサイズや画像続読み込みでの
@@ -888,7 +892,9 @@ export default function EBookPane({
     if (nextChapterIndex !== activeChapterIndexSafe || activePageIndexSafe !== 0) {
       markReaderLocationIntent();
     }
-    pendingPageTargetRef.current = "first";
+    // Only a different chapter will trigger the HTML measurement that clears
+    // this pending target. Selecting the current chapter must not lock paging.
+    pendingPageTargetRef.current = nextChapterIndex === activeChapterIndexSafe ? null : "first";
     setPageTransitionSuppressed(true);
     setActivePageIndex(0);
     setActiveChapterIndex(nextChapterIndex);
@@ -1331,6 +1337,7 @@ export default function EBookPane({
       ref={articleRef}
       aria-label={copy.readerLabel}
       className={`ebook-pane markdown-preview${readingFocusActive ? " ebook-pane-focus" : ""}`}
+      style={fontSize === undefined ? undefined : { "--preview-font-size": `${fontSize}px` } as CSSProperties}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onWheel={handleWheel}
@@ -1350,6 +1357,23 @@ export default function EBookPane({
               </span>
               <span className="ebook-reader-scope-tag">{copy.documentTag}</span>
             </div>
+            {onFontSizeChange && fontSize !== undefined ? (
+              <label className="ebook-reader-font-size">
+                <span>{copy.fontSize}</span>
+                <select value={fontSize} onChange={(event) => {
+                  const size = Number(event.currentTarget.value);
+                  if (!Number.isInteger(size) || size < 12 || size > 24) return;
+                  // Reflow around the same approximate source position, not the
+                  // old page number. Other chapters must be measured at this size.
+                  pendingSearchSourceLineRef.current = activeReaderLocation.sourceLine ?? null;
+                  chapterPageCountsRef.current.clear();
+                  onFontSizeChange(size);
+                }}>
+                  {Array.from({ length: 13 }, (_, index) => index + 12).map((size) =>
+                    <option key={size} value={size}>{size}</option>)}
+                </select>
+              </label>
+            ) : null}
           </div>
         ) : (
           <div className="ebook-reader-status">
@@ -1805,6 +1829,7 @@ function getEBookReaderCopy(
       previousPage: "まへのページ",
       readerLabel: "本のやうに読む",
       tableOfContents: "もくじ",
+      fontSize: "もじの大きさ",
     };
   }
 
@@ -1828,6 +1853,7 @@ function getEBookReaderCopy(
       previousPage: "前のページ",
       readerLabel: "本のように読む",
       tableOfContents: "目次",
+      fontSize: "文字サイズ",
     };
   }
 
@@ -1850,5 +1876,6 @@ function getEBookReaderCopy(
     previousPage: "Previous page",
     readerLabel: "Book reader",
     tableOfContents: "Contents",
+    fontSize: "Text size",
   };
 }

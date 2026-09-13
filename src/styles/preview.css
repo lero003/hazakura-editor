@@ -407,11 +407,11 @@
 :root[data-theme="edohigan"] .markdown-preview code {
   background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
   border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
-  color: #f0b8c4;
+  color: var(--text);
 }
 
 :root[data-theme="edohigan"] .markdown-preview a {
-  color: #f0b0c0;
+  color: var(--accent);
 }
 
 :root[data-theme="edohigan"] .markdown-table-frame th {
@@ -853,6 +853,11 @@
   width: 100%;
 }
 
+/* 一章の文書には目次レールがない。紙を空の目次列に閉じ込めない。 */
+.ebook-reader-focus-main:only-child {
+  grid-column: 1 / -1;
+}
+
 .ebook-reader-toc-rail {
   background: color-mix(
     in srgb,
@@ -1116,7 +1121,7 @@
 .ebook-chapter {
   --ebook-page-bottom-safe-area: clamp(18px, 2.4vw, 26px);
   --ebook-page-footer-height: 34px;
-  --ebook-page-gap: 6px;
+  --ebook-page-gap: 52px;
   --ebook-page-height-max: 700px;
   /* 紙面の基準寸法はモック04（一枚455px・左右内側39px）。実機指摘④「余白が足りない」で
      420/14〜22px から寄せた。 */
@@ -1188,11 +1193,9 @@
   word-break: break-word;
 }
 
-/* 見開きは「紙面455px×2＋ガター6px = 916px が実際に並ぶ幅」でだけ成立させる。
-   `.ebook-chapter` は左右に clamp(22px,4vw,48px) の余白を取り、紙面はさらに内側の
-   padding を引くので、容器が 1090px 未満だと2列目が入らず「片側に寄った一枚」になる。
-   EBookPane の JS 側（viewport.clientWidth ≥ 916）と同じ結論になる閾値。 */
-@container (min-width: 1090px) {
+/* 標準1280px窓で目次と外余白を引いても見開きにする。
+   本文列は残り幅から計算し、中央52pxと紙の内余白を先に確保する。 */
+@container (min-width: 800px) {
   .ebook-page-sheet-spread .ebook-next-chapter-preview {
     bottom: var(--ebook-page-bottom-safe-area);
     box-sizing: border-box;
@@ -1205,6 +1208,8 @@
   }
 
   .ebook-page-sheet-spread {
+    --ebook-page-width: min(455px, calc((100cqw - var(--ebook-sheet-pad-x) * 2 - var(--ebook-page-gap) - 2px) / 2));
+    --ebook-spread-width: calc(var(--ebook-page-width) * 2 + var(--ebook-page-gap) + var(--ebook-sheet-pad-x) * 2 + 2px);
     max-width: var(--ebook-spread-width);
   }
 
@@ -1220,7 +1225,7 @@
      ページ計算は1列も変えない（縮めた結果で組み直すと、計測と表示が循環して
      本文が切れる）。使う列数は EBookPane が計測して data-spread で渡す。 */
   .ebook-page-sheet-spread[data-spread="one"] {
-    max-width: var(--ebook-page-width);
+    max-width: calc(var(--ebook-page-width) + var(--ebook-sheet-pad-x) * 2 + 2px);
     overflow: hidden;
   }
 
@@ -1384,53 +1389,41 @@
   margin-top: 0;
 }
 
+/* 見出しも本文の左端から読む。章間プレビューと実ページで同じ組版にする。 */
 .ebook-chapter .ebook-page-flow > h1:first-child {
   border-bottom: 0;
-  margin: 0 auto clamp(32px, 4vw, 52px);
-  max-width: 18em;
+  margin: 0 0 1.2em;
   padding-bottom: 0;
-  text-align: center;
+  text-align: start;
+  font-size: 1.55em;
+  font-weight: 600;
+  color: var(--text);
 }
 
-.ebook-chapter .ebook-page-flow > h2:first-child {
-  border-bottom: 0;
-  margin: 0 auto clamp(32px, 4vw, 52px);
-  max-width: 18em;
-  padding-bottom: 0;
-  text-align: center;
-}
-
+.ebook-chapter .ebook-page-flow > h2:first-child,
 .ebook-next-chapter-preview-flow > h1:first-child,
 .ebook-next-chapter-preview-flow > h2:first-child {
   border-bottom: 0;
-  margin: 0 auto clamp(32px, 4vw, 52px);
-  max-width: 18em;
+  margin: 0 0 1.2em;
   padding-bottom: 0;
-  text-align: center;
+  text-align: start;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: var(--text);
 }
 
-.ebook-chapter .ebook-page-flow > h1:first-child::after,
-.ebook-chapter .ebook-page-flow > h2:first-child::after {
-  background: color-mix(in srgb, var(--accent) 62%, transparent);
-  content: "";
-  display: block;
-  height: 2px;
-  margin: clamp(14px, 2vw, 22px) auto 0;
-  width: clamp(44px, 7vw, 72px);
-}
-
-.ebook-next-chapter-preview-flow > h1:first-child::after,
-.ebook-next-chapter-preview-flow > h2:first-child::after {
-  background: color-mix(in srgb, var(--accent) 62%, transparent);
-  content: "";
-  display: block;
-  height: 2px;
-  margin: clamp(14px, 2vw, 22px) auto 0;
-  width: clamp(44px, 7vw, 72px);
+.ebook-next-chapter-preview-flow > h1:first-child {
+  font-size: 1.55em;
 }
 
 .ebook-chapter p {
   margin: 0 0 1em;
+}
+
+/* Keep multi-digit list markers inside the clipped page even at 24px.
+   The shared preview's fixed 26px indent is too small when text grows. */
+.ebook-chapter ol {
+  padding-inline-start: 2.2em;
 }
 
 .ebook-chapter img,
@@ -1518,7 +1511,7 @@
 .ebook-chapter-frontmatter {
   font-style: normal;
   /* 以前はここで max-width: min(620px, 100%) に絞っていたため、前付の章は
-     見開きの閾値（1090px）に永久に届かず、寛い窓でも1ページのままだった
+     見開きの閾値に永久に届かず、寛い窓でも1ページのままだった
      （実機指摘⑦）。狭い列にしたい意図は紙側の `[data-spread="one"]` が果たす。 */
 }
 
@@ -1560,4 +1553,32 @@
   .ebook-chapter-opener.ebook-chapter-cover {
     padding-top: clamp(48px, 12vw, 80px);
   }
+}
+
+/* Reader controls share the existing preview text-size setting. */
+.ebook-reader-font-size {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--text-muted);
+  font: 12px/1.4 var(--font-ui);
+}
+.ebook-reader-font-size select {
+  min-height: 30px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-paper);
+  color: var(--text);
+  font: inherit;
+}
+/* A fenced block owns its padding and colour; inline-code decoration
+   must not paint a separate background behind every line. */
+.ebook-pane.markdown-preview .ebook-chapter pre code {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 0;
 }

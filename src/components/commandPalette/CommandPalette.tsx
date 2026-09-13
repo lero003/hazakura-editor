@@ -67,7 +67,7 @@ export function CommandPalette({
     }
     const item = list.children[activeIndex] as HTMLElement | undefined;
     item?.scrollIntoView({ block: "nearest" });
-  }, [activeIndex]);
+  }, [activeIndex, query]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     // Mirror the find / global-search rule: Japanese / kana
@@ -82,7 +82,7 @@ export function CommandPalette({
     if (event.key === "ArrowDown") {
       event.preventDefault();
       onSetActiveIndex(
-        Math.min(activeIndexRef.current + 1, commandsRef.current.length - 1),
+        Math.max(0, Math.min(activeIndexRef.current + 1, commandsRef.current.length - 1)),
       );
     } else if (event.key === "ArrowUp") {
       event.preventDefault();

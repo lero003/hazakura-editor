@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // CommandPalette's `Command` shape is intentionally tiny: the palette
 // is a thin command launcher over the existing safe editor / agent /
@@ -89,11 +89,6 @@ export function useCommandPalette({
   const [commandPaletteVisible, setCommandPaletteVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndexRef = useRef(0);
-
-  useEffect(() => {
-    activeIndexRef.current = activeIndex;
-  }, [activeIndex]);
 
   const filteredCommands = useMemo(() => {
     if (!commandPaletteVisible) {
@@ -112,7 +107,7 @@ export function useCommandPalette({
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [filteredCommands.length, commandPaletteVisible]);
+  }, [query, filteredCommands.length, commandPaletteVisible]);
 
   const openCommandPalette = useCallback(() => {
     setCommandPaletteVisible(true);

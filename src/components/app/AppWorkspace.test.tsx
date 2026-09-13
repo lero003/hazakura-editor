@@ -1174,7 +1174,13 @@ describe("AppWorkspace workspace sidebar collapse", () => {
   });
 
   it("returns from Reading Focus to the active reader chapter heading", async () => {
-    const goToLine = vi.fn();
+    const focusWasVisible: boolean[] = [];
+    const goToLine = vi.fn((_line: number, options?: { focus?: boolean }) => {
+      if (options?.focus) {
+        const editorColumn = document.querySelector(".workspace-document-column");
+        focusWasVisible.push(!!editorColumn && !editorColumn.hasAttribute("hidden") && !editorColumn.hasAttribute("inert"));
+      }
+    });
     const editorPaneRef = {
       current: {
         applyMarkdownFormat: vi.fn(),
@@ -1216,6 +1222,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mock exit reading focus" }));
 
     expect(goToLine).toHaveBeenCalledWith(5, { focus: true });
+    expect(focusWasVisible).toEqual([true]);
   });
 
   it("returns from Reading Focus to an estimated reader source line when available", async () => {

@@ -13,8 +13,7 @@ import type { LModeCopy } from "../../lib/locale";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { CrtBootSequence } from "./CrtBootSequence";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
-import { EdohiganBootSequence } from "./EdohiganBootSequence";
-import { EdohiganShaderOverlay } from "./EdohiganShaderOverlay";
+import { EdohiganAmbient } from "./EdohiganAmbient";
 import { ShinkaiBootSequence } from "./ShinkaiBootSequence";
 import { ShinkaiShaderOverlay } from "./ShinkaiShaderOverlay";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
@@ -173,8 +172,14 @@ export function AppShell(props: AppShellProps) {
     if (readingOverlayOpen) requestReadingFocus(false);
     // 編集へ戻るときは、レビュー面だけ閉じる（提案は保持。反映は利用者の操作）。
     setProposalReviewHidden(true);
+    // 「書く」は比較を終了する。非表示にするだけだと、次の「確認」に
+    // 同じ保存前の変更が「開いている比較」としても残ってしまう。
+    if (props.sidePaneMode === "compare" && props.compareView) {
+      props.closeCompareView({ returnToEditor: true });
+    }
     revealEditorRegion();
-    requestAnimationFrame(() => props.editorPaneRef?.current?.focus());
+    // The reader owns focus restoration after the editor is visible again.
+    if (!readingOverlayOpen) requestAnimationFrame(() => props.editorPaneRef?.current?.focus());
   };
   const openProposalReview = () => {
     showProposalReview();
@@ -229,16 +234,7 @@ export function AppShell(props: AppShellProps) {
         </>
       ) : null}
       {edohiganMode ? (
-        <>
-          <EdohiganShaderOverlay intensity={props.ambientIntensity} />
-          <div className="edohigan-overlay" aria-hidden="true" />
-          {/* 起動シーケンスは前景オーバーレイ (.edohigan-overlay) の上に
-              重ねるため最後に置く。同じ z-index でも DOM 順でこちらが勝つ。 */}
-          <EdohiganBootSequence
-            intensity={props.ambientIntensity}
-            trigger={edohiganMode}
-          />
-        </>
+        <EdohiganAmbient intensity={props.ambientIntensity} />
       ) : null}
       <div className="primary-toolbar-slot">
         {!props.lModeEnabled && <AppPrimaryToolbar
@@ -302,6 +298,8 @@ export function AppShell(props: AppShellProps) {
       <AppWorkspace
         {...props}
         documentChrome={props.lModeEnabled ? null : topChrome}
+        onReadingFontSizeChange={(previewFontSize) =>
+          props.setEditorSettings((current) => ({ ...current, previewFontSize }))}
         readingFocusIntent={readingFocusIntent}
         proposalReviewRef={proposalReviewRef}
         proposalReviewVisible={proposalReviewVisible}

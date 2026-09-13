@@ -57,6 +57,8 @@ type UseFileOpeningOptions = {
   activeTab: EditorTab | null;
   clearImagePreview: () => void;
   menuLanguage: MenuLanguage;
+  /** Called only after a new-file action activates a document, before tree refresh. */
+  onNewFileActivated?: () => void;
   openImagePreview: (path: string) => Promise<unknown>;
   /** R3: pair Import Assist source as a linked reference after draft open. */
   pairImportAssistReference?: (
@@ -79,6 +81,7 @@ export function useFileOpening({
   activeTab,
   clearImagePreview,
   menuLanguage,
+  onNewFileActivated,
   openImagePreview,
   pairImportAssistReference,
   refreshWorkspaceTree,
@@ -286,6 +289,7 @@ export function useFileOpening({
       clearImagePreview();
       setCompareView(null);
       setStatus("New file created");
+      onNewFileActivated?.();
       return;
     }
 
@@ -309,6 +313,7 @@ export function useFileOpening({
         setCompareView(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
+        onNewFileActivated?.();
         return;
       }
 
@@ -327,6 +332,7 @@ export function useFileOpening({
       setCompareView(null);
       rememberRecentFile(path);
 
+      onNewFileActivated?.();
       if (workspaceRootPath) {
         try {
           await refreshWorkspaceTree();
@@ -344,6 +350,7 @@ export function useFileOpening({
     }
   }, [
     clearImagePreview,
+    onNewFileActivated,
     refreshWorkspaceTree,
     rememberRecentFile,
     setActiveTabId,

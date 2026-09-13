@@ -92,6 +92,23 @@ function ConnectedShell(props: AppShellProps) {
 }
 
 describe("AppShell chrome layers", () => {
+  it("closes the active comparison when Write returns to the unsaved editor", () => {
+    const closeCompareView = vi.fn();
+    const hideSidePane = vi.fn();
+    render(<ConnectedShell {...base}
+      activeTab={{ name: "draft.md", path: "/workspace/draft.md", sessionId: "s1" } as AppShellProps["activeTab"]}
+      activeDirty sidePaneMode="compare"
+      compareView={{ caseKey: "disk-review" } as AppShellProps["compareView"]}
+      getCompareCaseByKey={() => undefined}
+      closeCompareView={closeCompareView} hideSidePane={hideSidePane} />);
+    const editor = screen.getByRole("textbox", { name: "Editor" });
+    fireEvent.click(screen.getByRole("button", { name: "Write" }));
+    expect(closeCompareView).toHaveBeenCalledExactlyOnceWith({ returnToEditor: true });
+    expect(hideSidePane).toHaveBeenCalledOnce();
+    expect(screen.getByRole("textbox", { name: "Editor" })).toBe(editor);
+    expect((editor as HTMLInputElement).value).toBe("unsaved");
+  });
+
   it("shows the proposal review as the selected mode while it is visible (07 P2)", () => {
     proposalState.proposal = { requestId: "req-1" };
     try {

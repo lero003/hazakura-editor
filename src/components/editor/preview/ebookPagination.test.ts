@@ -32,6 +32,17 @@ function setRect(element: Element, left: number, width: number) {
 }
 
 describe("ebookPagination", () => {
+  it("keeps two fractional-width columns when clientWidth rounds down", () => {
+    const flow = document.createElement("div");
+    flow.style.columnWidth = "406.6px";
+    flow.style.columnGap = "52px";
+    setReadOnlyNumber(flow, "clientWidth", 865);
+    setReadOnlyNumber(flow, "scrollWidth", 2241);
+    setRect(flow, 0, 865.1875);
+    expect(getEBookPageOffset(2, flow)).toBeCloseTo(917.1875);
+    expect(measureEBookPageCount(flow)).toBe(5);
+  });
+
   it("uses the CSS column width as the page step when a spread viewport is wider than one page", () => {
     const flow = document.createElement("div");
     flow.style.columnWidth = "420px";

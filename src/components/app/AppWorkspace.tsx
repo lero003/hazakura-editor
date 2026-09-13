@@ -16,6 +16,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -193,6 +194,7 @@ type AppWorkspaceProps = {
   editorPreviewGridRef: RefObject<HTMLDivElement | null>;
   editorPreviewGridStyle: CSSProperties | undefined;
   editorSettings: EditorSettings;
+  onReadingFontSizeChange?: (size: number) => void;
   editorTheme: BaseTheme;
   fileOpsCopy: import("../../lib/locale").WorkspaceFileOpsCopy;
   findMatches: TextMatch[];
@@ -356,6 +358,7 @@ export function AppWorkspace({
   editorPreviewGridRef,
   editorPreviewGridStyle,
   editorSettings,
+  onReadingFontSizeChange,
   editorTheme,
   fileOpsCopy,
   findMatches,
@@ -608,13 +611,23 @@ export function AppWorkspace({
     handleEbookLocationChange(location);
     setEbookFocusOpen(true);
   };
+  const pendingReadingReturnRef = useRef<{
+    documentKey: string | null;
+    line: number | null;
+  } | null>(null);
   const closeEbookReadingFocus = (location?: EBookReaderLocation) => {
     const returnLocation = location ?? activeEbookLocation;
     if (returnLocation) {
       handleEbookLocationChange(returnLocation);
     }
     setEbookFocusOpen(false);
-    moveEditorToEbookLocation(returnLocation, { focus: true });
+    // The editor is still hidden/inert here. Restore its position and focus after commit.
+    pendingReadingReturnRef.current = {
+      documentKey: activeDocumentKey,
+      line: returnLocation
+        ? getEditorLineForEbookLocation(activeContents, returnLocation)
+        : null,
+    };
   };
   // 読書面は本文を全幅で読む面で、プレビュー列の設定とは独立している。
   // ここで previewVisible を要求すると、プレビューを閉じている利用者にとって
@@ -728,6 +741,20 @@ export function AppWorkspace({
   const importContext = importDraftContextCopy(menuLanguage);
   const compactViewCopy = getCompactViewCopy(menuLanguage);
   const readingOverlayActive = ebookReadingFocusActive || !!bookReaderResult;
+  useLayoutEffect(() => {
+    const pending = pendingReadingReturnRef.current;
+    if (!pending || readingOverlayActive) return;
+    pendingReadingReturnRef.current = null;
+    if (
+      pending.documentKey !== activeDocumentKey ||
+      document.querySelector('[role="dialog"][aria-modal="true"]')
+    ) return;
+    if (pending.line !== null) {
+      editorPaneRef.current?.goToLine(pending.line, { focus: true });
+    } else {
+      editorPaneRef.current?.focus();
+    }
+  });
   const startSurfaceActive = !activeTab && !selectedImage && !workspaceRootPath &&
     !visibleReferenceCompare && !readingOverlayActive && !editorSettings.lModeEnabled;
   const compactPreviewAvailable = !!activeTab && !selectedImage &&
@@ -1178,6 +1205,8 @@ export function AppWorkspace({
             }
           >
             <EBookPane
+              fontSize={editorSettings.previewFontSize}
+              onFontSizeChange={onReadingFontSizeChange}
               documentKey={activeDocumentKey ?? undefined}
               documentPath={activeTab.path}
               initialLocation={initialEbookLocation}

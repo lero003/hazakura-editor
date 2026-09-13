@@ -88,6 +88,9 @@ export function WorkspaceModeNavigation({ mode, canNavigate, documentName, conte
     {open && <div className="workspace-review-choices" role="group" aria-label={copy.targets} id={panelId}>
       <strong>{copy.targets}</strong>
       {reviewTargets.map((target, index) => <button type="button" key={target} ref={index === 0 ? firstChoiceRef : undefined}
+        // macOS WebKit can blur a button to the page on mouse down. Keep focus
+        // until click dispatches; otherwise the group's blur unmounts this choice.
+        onMouseDown={(event) => { if (event.button === 0) event.preventDefault(); }}
         onClick={() => { triggerRef.current?.focus(); setOpenFor(null); onReview(target); }}>
         <span>{copy[target]}</span><small>{target === "reference" && referenceName ? `${documentName} ↔ ${referenceName}` : target === "comparison" && comparisonName ? comparisonName : documentName}</small>
       </button>)}

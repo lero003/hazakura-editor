@@ -1,0 +1,12 @@
+{
+  "baseHead": "d01a82b576cc00e80d42450f49ce2d9c3173b716",
+  "workingTree": "mixed uncommitted changes; hashes identify tested sources",
+  "sha256": {
+    "src/components/app/AppShell.tsx": "a3944cdffe5663b9c670319120621eef099022b67d4e3e768a7d5acfc8a25b4d",
+    "src/components/app/WorkspaceModeNavigation.tsx": "85cf7d749d3e2d55d82023fbfbfbdc90c806cec7d5fa6b947df1a205221c9f6b",
+    "src/styles/workspace.css": "61e4553627a54751b912a7d7fba00d74fbebdfe90b4f9c4fdc9ae60e546c6144",
+    "src/components/app/AppShell.layers.test.tsx": "c80f3cf3e9bd157b46c5fb29951ec0e73c657ba5bfce4ff30a41aeb4edde2142",
+    "src/components/app/WorkspaceModeNavigation.test.tsx": "92a2d7026facf5b3943b5122192c20eaddc4fe210206e230d106033aa72da72e"
+  },
+  "qaBinarySha256": "93587563d694c3048795df58f56970824e646b0e435bc9085effb811cb2b70d0"
+}
