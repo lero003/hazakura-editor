@@ -47,21 +47,21 @@ describe("workspace-chrome.css", () => {
   });
 
   it("keeps the font-size control at the right end of the display toolbar row", () => {
-    // 実機指摘: 左端に孤立して見えたため右端へ。行は3列（先頭の字下げ / 文書列 / 右端の設定）。
+    // 実機指摘: 左端に孤立して見えたため右端へ。行は2列（文書列 / 右端の設定）。
     const tabsRow = ruleBody(':root:not([data-l-mode="on"]) .v3-shell .tabs-row');
     const quickSettings = ruleBody(
       ':root:not([data-l-mode="on"]) .v3-shell .editor-quick-settings',
     );
 
-    expect(tabsRow).toMatch(/grid-template-columns:\s*42px\s+minmax\(0,\s*1fr\)\s+auto/);
-    expect(quickSettings).toMatch(/grid-column:\s*3/);
+    expect(tabsRow).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
+    expect(quickSettings).toMatch(/grid-column:\s*2/);
     expect(quickSettings).toMatch(/justify-self:\s*end/);
   });
 
   it("spreads the display toolbar row across the whole document column", () => {
     // タブ行・表示ツールバー行は文書カラム全幅。プレビュー列の上の帯を空にしない。
     const meta = ruleBody(':root:not([data-l-mode="on"]) .v3-shell .document-meta');
-    expect(meta).toMatch(/grid-column:\s*2/);
+    expect(meta).toMatch(/grid-column:\s*1/);
     expect(meta).toMatch(/justify-self:\s*stretch/);
     expect(
       ruleBody(
@@ -80,9 +80,9 @@ describe("workspace-chrome.css", () => {
     }
   });
 
-  it("keeps only the region boundaries on the strong border", () => {
-    const strong = 'border-bottom: 1px solid var(--border-strong);';
-    expect(ruleBody(':root:not([data-l-mode="on"]) .v3-shell .tabs-row')).toContain(strong);
+  it("keeps the document toolbar boundary quiet", () => {
+    const boundary = 'border-bottom: 1px solid var(--border);';
+    expect(ruleBody(':root:not([data-l-mode="on"]) .v3-shell .tabs-row')).toContain(boundary);
     expect(ruleBody(':root:not([data-l-mode="on"]) .v3-shell .status-bar')).toMatch(/border-top: 1px solid var\(--border-strong\)/);
     // ツールバー下・サイドバー右・ガター右は通常の border のまま（画面全体をグリッド化しない）。
     expect(ruleBody(".app-primary-toolbar")).toMatch(/border-bottom: 1px solid var\(--border\)/);

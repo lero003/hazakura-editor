@@ -1,0 +1,14 @@
+{
+  "head": "d01a82b576cc00e80d42450f49ce2d9c3173b716",
+  "workingTree": "dirty; current source captured in browser; not a packaged app",
+  "date": "2026-09-13",
+  "sha256": {
+    "src/styles/preview.css": "97266b1df88a5cfc229a9e395fb9bd0915d02bd11d28a3e71661298dbb505bef",
+    "src/styles/dialogs.css": "ef872a4dbe5c37c2afb8a0551cb0d3bc317ca6a6ea5fccfffdda28fb73684866",
+    "src/styles/global-search.css": "61ca87f2db38de1c54927d2222b7621daf3a311148494e84be88c7a8df589378",
+    "src/styles/workspace-paper.css": "59cc28bf99231fcf8b1e0751a32221fdf2b0051874fb5a3d15695ba9ac165e73",
+    "src/components/app/PreferencesDialog.tsx": "99de5e9fc3c4166ac2a353111600fc0e1baf7f7d3dbf030cf4dd0021e5697a7b",
+    "src/components/app/PrivacyPreferencesPane.tsx": "3c595418e6af35496da1164290a11860ab9a970f04942b40924ad7cb90e262bf",
+    "src/components/app/AppWorkspace.tsx": "0e83779b7c0412288bce994227057d29b1518ace9184fbb75ec487f4e286b037"
+  }
+}

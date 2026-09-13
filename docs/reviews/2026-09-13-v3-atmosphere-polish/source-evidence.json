@@ -1,0 +1,18 @@
+{
+  "head": "d01a82b576cc00e80d42450f49ce2d9c3173b716",
+  "worktree": "includes pre-existing owner changes and this polish slice",
+  "nativeApp": "Hazakura Atmosphere QA",
+  "lane": "app-store",
+  "signing": "ad-hoc; not a submission candidate",
+  "sha256": {
+    "src/components/app/PreferencesDialog.tsx": "f292168918ba0fa1c9d53ce1619efc6497018f3b49d358c0bb5d78f477eae605",
+    "src/components/app/PrivacyPreferencesPane.tsx": "f02d5c884b071eab999f5f0cd89c1a74ce7c1440793b319dddfbec19a3336859",
+    "src/components/app/AppOverlays.tsx": "e106269606e8715cfe4aacbe52dccbde62f24e6c66b35130a3993f8bd1206eef",
+    "src/styles/dialogs.css": "d0a4b1339a17ce754d6fe78a048b160d38fc8ff323c0fbe97bb6c6b48c28578e",
+    "src/styles/global-search.css": "7fe56626e7a5ead30891edea45f4a6161f97e79637bdb41aff33e93ce79a0ce3",
+    "src/styles/preview.css": "159c67605fdd6d58d1178c9ab852daf816ad6f9d6eb13f8430c6b231bbcbb606",
+    "src/styles/workspace-paper.css": "7369b6eabe2f555c3cc0180d11318586fce018792b6644f3cbc01d23e16acfc7",
+    "src-tauri/target/release/bundle/macos/Hazakura Atmosphere QA.app/Contents/MacOS/hazakura-editor": "cf9181700ae11e03142f6ec256ab87ba9fe99c3485a7f8ee927268ea449af4f2",
+    "dist/assets/styles-Bcpyuv9n.css": "bdc3658aa572cde7e00fb8684dcef3819768441d6673e818293d85ca05c1faa7"
+  }
+}

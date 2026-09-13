@@ -1,0 +1,13 @@
+{
+  "baseHead": "d01a82b576cc00e80d42450f49ce2d9c3173b716",
+  "workingTree": "mixed uncommitted changes; hashes identify tested sources",
+  "sha256": {
+    "src/components/app/AppTopChrome.tsx": "c053412f70aa164d649479c2617e4188d03cea4f06e2ff5eb07408529611dd60",
+    "src/components/app/DocumentMetaBar.tsx": "3709bd06fd8e2db6d83c898b32f23a822946c08fc4447564d73ace8ef3a90f5f",
+    "src/styles/workspace-chrome.css": "0bc1016145dee4d4acd7044b2885e36546b0f4e9b48e6c5a6f325faf09f5bd52",
+    "src/styles/workspaceChromeCss.test.ts": "44a51121f4b5cf6ccd6bfb61361d21c628208bc91c01436cec73f60cba59c9ba",
+    "docs/reviews/2026-09-13-v3-atmosphere-audit/app.tsx": "2133f1c43d54a97414cbe71129cb417e6159ad825205f3e2f38a0eb9febda783"
+  },
+  "qaBinarySha256": "d97791656ce4f7d6c6efc9fe2dc9faa2f1a2eb6422761a967d9a76f669b6ee7b",
+  "sampleUnchanged": true
+}

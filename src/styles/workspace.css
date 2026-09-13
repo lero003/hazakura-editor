@@ -279,7 +279,7 @@
 }
 
 :root[data-theme="edohigan"] .book-reader-chapter .markdown-preview {
-  background: #342230;
+  background: var(--surface-paper);
 }
 
 :root[data-theme="crt"] .book-reader-chapter .markdown-preview {
@@ -394,8 +394,8 @@
 }
 
 :root[data-theme="edohigan"] {
-  /* 薄暮: 背景の春風シェーダーを透かす (深海と同思想) */
-  --native-shell-tint: rgba(42, 28, 40, 0.55);
+  /* 明色の紙面と同じ桜の下地。 */
+  --native-shell-tint: var(--chrome-surface);
   --native-shell-border: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
@@ -1313,17 +1313,19 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* 差分モードは本文面（編集ペインは display:none だが、ホストは残る）と差分面を
-   **同じセルに重ねる**。auto 行が2つあると、中身の無いホストにも高さが配られ、
-   差分の上に約120px の空白が出る（実機指摘⑧・実測 119.5px）。 */
+/* 差分は文書領域の1セルを使う。エディタはマウントを保って隠す。
+   空の positioned host を重ねると、差分へのクリックとスクロールを遮る。 */
 .editor-preview-grid.diff-workbench {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
 }
 
-.editor-preview-grid.diff-workbench > .reference-editor-host,
 .editor-preview-grid.diff-workbench > .pane {
   grid-area: 1 / 1;
+}
+
+.editor-preview-grid.diff-workbench > .reference-editor-host {
+  display: none;
 }
 
 /* v1.7 Reference Compare: editor (primary) | resizer | reference (right, preview-like) */

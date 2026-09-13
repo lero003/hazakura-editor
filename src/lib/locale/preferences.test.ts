@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getPreferencesCopy } from "./preferences";
 import type { ThemePreference } from "../../types";
 
-// v0.15 theme select polish (v1.6 で江戸彼岸をジョークテーマへ格上げ)。
+// Theme descriptions follow the current visual treatment.
 //
 // The Preferences dialog exposes seven theme options
 // (light / dark / edohigan / yakou / shokou / crt / shinkai).
-// edohigan・crt・shinkai は演出優先のジョークテーマ。
+// edohigan は桜の植物画、crt・shinkai は演出優先のジョークテーマ。
 // yakou・shokou は季節アンビエントテーマ。
 // The `themeHint` copy function supplies a short per-theme description
 // that the Preferences dialog surfaces through each option's `title`
@@ -96,11 +96,17 @@ describe("getPreferencesCopy.themeHint", () => {
 
   it("keeps kana theme hints free of the known split-word corruption", () => {
     const kana = getPreferencesCopy("kana");
-    for (const theme of ["edohigan", "crt", "shinkai"] as const) {
+    for (const theme of ["crt", "shinkai"] as const) {
       expect(kana.themeHint(theme)).toContain("じょうだんてーまです。");
       expect(kana.themeHint(theme)).not.toContain("じょうけ ん て ま す");
     }
     expect(kana.themeHint("shokou")).toContain("おもわせる");
+  });
+
+  it("describes Edohigan as the cherry tree in all three languages", () => {
+    expect(getPreferencesCopy("ja").themeHint("edohigan")).toContain("江戸彼岸桜");
+    expect(getPreferencesCopy("kana").themeHint("edohigan")).toContain("えどひがんざくら");
+    expect(getPreferencesCopy("en").themeHint("edohigan")).toContain("cherry blossoms");
   });
 
   it("keeps the kana auto-backup hint free of Japanese kanji", () => {

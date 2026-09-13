@@ -22,3 +22,14 @@ it("moves between settings and existing Help modes in the same dialog without lo
     expect(screen.getByText(value)).toBeTruthy();
   }
 });
+
+it("uses the menu language for navigation and keeps the selector in the header", () => {
+  render(<PreferencesDialog mode="settings" title="設定" closeLabel="閉じる" onClose={vi.fn()}
+    menuLanguage="ja" closeButtonRef={{ current: null }} dialogRef={{ current: null }} onChangeMode={vi.fn()}>
+    <p>本文</p>
+  </PreferencesDialog>);
+  const select = screen.getByRole("combobox", { name: "設定 / ヘルプ" });
+  expect(select.closest(".preferences-header")).toBeTruthy();
+  expect(screen.getByRole("option", { name: "設定" })).toBeTruthy();
+  expect(screen.getByRole("option", { name: "ローカルデータの説明" })).toBeTruthy();
+});

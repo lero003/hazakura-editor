@@ -56,6 +56,8 @@ describe("settings dialog frame", () => {
     expect(frame).toMatch(/max-width:\s*1100px/);
     expect(frame).toMatch(/max-height:\s*min\(752px,\s*calc\(100dvh - 48px\)\)/);
     expect(frame).toMatch(/width:\s*min\(1100px,\s*calc\(100vw - 48px\)\)/);
+    // 内側の入力欄へ移る際、外枠までスクロールしてタイトル・閉じるボタンが隠れない。
+    expect(frame).toMatch(/overflow:\s*clip/);
   });
 
   it("keeps the settings rail at the reference width without icons", () => {

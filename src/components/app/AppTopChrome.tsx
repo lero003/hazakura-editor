@@ -160,6 +160,7 @@ export function AppTopChrome({
       ) : null}
       <DocumentMetaBar
         showCompanion={!primaryToolbarPresent}
+        showDocumentLocation={!primaryToolbarPresent}
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         appleAssistAvailability={appleAssistAvailability}

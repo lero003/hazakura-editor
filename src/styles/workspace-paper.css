@@ -66,7 +66,8 @@
   }
 }
 
-/* Use available document width, including the user's sidebar width. Both
+/* Keep roughly 480px per surface before a two-pane split.
+   Use available document width, including the user's sidebar width. Both
    surfaces remain mounted; wide windows resume the saved split immediately. */
 .v3-shell .workspace-document-column {
   container: document-workspace / inline-size;
@@ -74,7 +75,7 @@
 
 .compact-preview-switch { display: none; }
 
-@container document-workspace (max-width: 780px) {
+@container document-workspace (max-width: 960px) {
   .editor-preview-grid[data-compact-preview] {
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: auto minmax(0, 1fr);

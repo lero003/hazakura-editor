@@ -11,6 +11,7 @@ import { documentBreadcrumbParts } from "../../features/workspace/documentBreadc
 
 type DocumentMetaBarProps = {
   showCompanion?: boolean;
+  showDocumentLocation?: boolean;
   activeTab: EditorTab | null;
   agentWorkbenchAvailable: boolean;
   /** Current on-device Assist probe result. Used for honest button titles. */
@@ -41,6 +42,7 @@ type DocumentMetaBarProps = {
 
 export function DocumentMetaBar({
   showCompanion = true,
+  showDocumentLocation = true,
   activeTab,
   agentWorkbenchAvailable,
   appleAssistAvailability = { kind: "unsupported" },
@@ -109,10 +111,10 @@ export function DocumentMetaBar({
               title={lModeCopy.paletteCommand}
             />
           </section>
-          <span className="chrome-divider" aria-hidden="true" />
+          {showDocumentLocation ? <span className="chrome-divider" aria-hidden="true" /> : null}
           {/* 画面02: いま開いている文書の場所。モード群の手前＝行の中央に置く（モック準拠）。
               未保存の文書では出さない。 */}
-          {documentBreadcrumb.length > 0 ? (
+          {showDocumentLocation && documentBreadcrumb.length > 0 ? (
             <>
               <section className="chrome-section" aria-label={activeTab?.path ?? ""}>
                 <span className="document-breadcrumb" title={activeTab?.path ?? ""}>

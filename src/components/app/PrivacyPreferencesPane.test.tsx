@@ -176,6 +176,18 @@ describe("PrivacyPreferencesPane", () => {
     );
   });
 
+  it("keeps publication notes available after the document in a collapsed disclosure", () => {
+    renderPane();
+    const body = screen.getByTestId("help-doc-body");
+    const note = screen.getByTestId("help-doc-boundary-note");
+    const details = note.closest("details");
+    expect(details).toBeTruthy();
+    expect(details?.open).toBe(false);
+    expect(body.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(body.closest('[role="region"]')?.contains(details)).toBe(true);
+    expect(details?.contains(screen.getByTestId("help-doc-footer-note"))).toBe(true);
+  });
+
   it("makes the Help document scroll region keyboard reachable", () => {
     renderPane(privacyPolicy);
 

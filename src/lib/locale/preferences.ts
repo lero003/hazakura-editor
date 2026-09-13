@@ -159,7 +159,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           return "よるや ひくい しど むけの おちついた きほん いろあひ。";
         }
         if (theme === "edohigan") {
-          return "はるの ひがん の ような、しずかで じょうひんな かく ば。えんしゅつ は ひかえめ、けいさん は おもい じょうだんてーまです。";
+          return "えどひがんざくら の しろい はなと、ふるい きの すみいろ。うすべにの かみの よはくに、はなびらが ゆっくり まいます。";
         }
         if (theme === "yakou") {
           return "よるの よさめ むけ。ふかめの いろ と うごき の ある きせつ いろあひ。";
@@ -211,7 +211,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         workspaceFontSize: "ワークスペースのフォントサイズ",
         lModeFontSize: "えるモードのフォントサイズ",
         light: "ライト",
-        closeDialog: "ダイアログ゙を閉じる",
+        closeDialog: "ダイアログを閉じる",
         menuLanguage: "メニュー言語",
         menuLanguageHint: "UI の表示言語を切り替えます。かなふみはひらがな中心のやさしい表記です。",
         previewPane: "プレビュー表示",
@@ -252,7 +252,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
             return "夜間や低照度向けの落ち着いた基本テーマ。";
           }
           if (theme === "edohigan") {
-            return "春の彼岸のような、静かで上質な執筆空間。演出は控えめですが、計算は重い冗談テーマです。";
+            return "江戸彼岸桜の白い花と、古木の墨色。薄紅の紙の余白に、花びらがゆっくり舞います。";
           }
           if (theme === "yakou") {
             return "夜長向け。深めの配色と、動きのある演出のアンビエントテーマ。";
@@ -342,7 +342,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
             return "Calm, low-light base theme for nighttime use.";
           }
           if (theme === "edohigan") {
-            return "A quiet, refined writing space like spring equinox light. Subtle ambience; a heavyweight joke theme.";
+            return "White Edohigan cherry blossoms and the ink tones of old wood. Petals drift slowly around a pale blush page.";
           }
           if (theme === "yakou") {
             return "Deeper palette with animated effects. Late-evening seasonal theme.";

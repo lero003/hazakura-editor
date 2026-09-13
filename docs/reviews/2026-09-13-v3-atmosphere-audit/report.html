@@ -1,0 +1,57 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v3・24画面の空気感レビュー</title><style>body{margin:0;background:#f1f3ee;color:#24362d;font:16px/1.8 -apple-system,BlinkMacSystemFont,sans-serif}main{max-width:1440px;padding:40px;margin:auto}h1{font-size:30px;font-weight:600}h2{font-size:22px;margin:0 0 12px}h3{font-size:18px}p{max-width:1000px}a{color:#356b50}section{background:#fffefa;border:1px solid #dce2d9;border-radius:10px;padding:28px;margin:28px 0;scroll-margin:20px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}figure{margin:0}img{width:100%;display:block;border:1px solid #dce2d9}figcaption{font-size:13px;color:#546458;margin:6px 0 12px}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid #dce2d9;text-align:left;padding:9px;vertical-align:top}code{font-size:12px}nav a{margin-right:20px}.muted{color:#627062;font-size:14px}details{margin:14px 0}summary{cursor:pointer}details img{max-width:1100px} .tag{font-size:13px;background:#e1ecdf;padding:3px 8px;border-radius:4px}@media(max-width:800px){main{padding:18px}.pair{grid-template-columns:1fr}section{padding:18px}}</style><main><span class="tag">2026-09-13 · レビューのみ・未実装</span><h1>24枚と見比べる、v3の空気感</h1><p>基調は揃っています。直す効果が大きいのは、案内の調子・ダイアログの面色・検索の密度・読書の章見出し。すべてをモックに一致させる必要はありません。</p><p class="muted">現在の作業ツリーをブラウザに描画。24項目中21項目の関連表示を撮影（部品・空状態を含む）。Import Assist・生成中・生成失敗は未判定。ネイティブ実機・保存・生成の受入ではありません。</p><nav><a href="#f1">1. 設定・ヘルプの案内を揃える</a><a href="#f2">2. 復旧・衝突も不透明な紙面へ</a><a href="#f3">3. 検索結果に文章を読める余白を</a><a href="#f4">4. 読書の章見出しを一段静かに</a></nav><p><a href="README.md">詳細な根拠・制約・再現手順</a></p>
+<section id="f1"><h2>1. 設定・ヘルプの案内を揃える</h2><p>英語の全幅切替と技術文書への急な移行が、日常の文章道具としての調子を変える。まず固定英語とナビの役割を整理。短い使い方の入口は採用判断。</p><div class="pair"><figure><figcaption>参照モック（説明用の外枠を含む）</figcaption><img src="reference/18-help.png" alt="参照モック 18-help.png"></figure><figure><figcaption>今回撮影した現行UI（文書・状態・外枠は一部異なる）</figcaption><img src="18-help.png" alt="現行UI 18-help.png"></figure></div></section>
+<section id="f2"><h2>2. 復旧・衝突も不透明な紙面へ</h2><p>設定・書き出しに比べ、半透明のダイアログが灰色に沈む。ダイアログ本体の面色を既存の紙色へ揃える。</p><div class="pair"><figure><figcaption>参照モック（説明用の外枠を含む）</figcaption><img src="reference/14-conflict.png" alt="参照モック 14-conflict.png"></figure><figure><figcaption>今回撮影した現行UI（文書・状態・外枠は一部異なる）</figcaption><img src="14-conflict.png" alt="現行UI 14-conflict.png"></figure></div></section>
+<section id="f3"><h2>3. 検索結果に文章を読める余白を</h2><p>検索方法やモーダル構造を変える必要はない。結果行の上下余白・抜粋の書体・淡い選択の階層を調整する。</p><div class="pair"><figure><figcaption>参照モック（説明用の外枠を含む）</figcaption><img src="reference/09-search.png" alt="参照モック 09-search.png"></figure><figure><figcaption>今回撮影した現行UI（文書・状態・外枠は一部異なる）</figcaption><img src="09-search.png" alt="現行UI 09-search.png"></figure></div></section>
+<section id="f4"><h2>4. 読書の章見出しを一段静かに</h2><p>常設目次・下部操作帯は改善。紙面では中央寄せ・太字・飾り線が強い。左寄せと控えめな見出しで本文へ視線をつなぐ。</p><div class="pair"><figure><figcaption>参照モック（説明用の外枠を含む）</figcaption><img src="reference/04-reader.png" alt="参照モック 04-reader.png"></figure><figure><figcaption>今回撮影した現行UI（文書・状態・外枠は一部異なる）</figcaption><img src="04-reader.png" alt="現行UI 04-reader.png"></figure></div></section>
+<section id="f5"><h2>5. 狭幅の2分割は再判断したい</h2><p>960×640でも編集とPreviewが並びます。単一ペインへ切り替える基準は既知の判断待ち。保存済み分割比や復帰を保ち、本文に残る幅を優先するか検討します。</p><img src="23-compact-edit.png" alt="960pxの現行UI"></section>
+<section><h2>24画面の確認範囲</h2><table>
+<tr><td>番号</td><td>対象</td><td>判定</td><td>今回の根拠・短評</td></tr>
+<tr><td>01</td><td>開始</td><td>良好</td><td>01-welcome.png。余白と2面の役割は近い。履歴0件。コピー・装飾の一致は不要</td></tr>
+<tr><td>02</td><td>Markdown＋Preview</td><td>良好</td><td>02-editor.png。紙面／ナビ／クロームの色の階層が続く。フォルダ未選択で撮影</td></tr>
+<tr><td>03</td><td>えるモード</td><td>良好</td><td>03-lmode.png。文章中心。モックの常設クロームを戻す必要なし。薄くなる操作の実機到達性は別確認</td></tr>
+<tr><td>04</td><td>読書</td><td>調整推奨</td><td>04-reader.png。外枠の改善は維持、F4</td></tr>
+<tr><td>05</td><td>本の構成</td><td>部品は良好・全体保留</td><td>05-book-component.png。280pxの実パネルのみ。専用ページ新設は既知の未採用範囲</td></tr>
+<tr><td>06</td><td>Local Assist</td><td>部分確認</td><td>06-assist-unavailable.png。入力下部固定と対象表示を確認。会話あり状態は未判定</td></tr>
+<tr><td>07</td><td>提案レビュー</td><td>概ね良好</td><td>07-proposal.png。本文と反映の役割は明確。説明の短縮はF1〜F4より低優先</td></tr>
+<tr><td>08</td><td>参照比較</td><td>部分確認・新規指摘なし</td><td>08-reference-component.png。部品のみ。本体の確認操作は 08-review-full-app.png で別確認</td></tr>
+<tr><td>09</td><td>フォルダ検索</td><td>調整推奨</td><td>09-search.png。F3</td></tr>
+<tr><td>10</td><td>見出し・構造</td><td>概ね良好</td><td>10-structure.png。小さなヒントとして収まる。カード追加のための再設計は不要</td></tr>
+<tr><td>11</td><td>書き出し</td><td>概ね良好</td><td>11-epub-export.png, 11-html-export.png。紙面の統一はできている。親の形式ナビ／PDFは今回未撮影</td></tr>
+<tr><td>12</td><td>Import Assist</td><td>未判定</td><td>native抽出後の原本＋下書き表示を未捕捉。モックの確定前ステージは現行フローとは異なる</td></tr>
+<tr><td>13</td><td>バックアップ復旧</td><td>調整推奨</td><td>13-recovery.png。F2。一覧と比較を同時にする大改修は不要</td></tr>
+<tr><td>14</td><td>保存衝突</td><td>調整推奨</td><td>14-conflict.png。F2。手元／ディスク／主操作の階層は良い</td></tr>
+<tr><td>15</td><td>テーマ設定</td><td>外観良好・案内調整</td><td>15-appearance.png。見本の並びは近い。F1</td></tr>
+<tr><td>16</td><td>文字設定</td><td>調整余地</td><td>16-typography.png。4設定維持でよい。ナビ整理が先。書体・行間設定追加は別判断</td></tr>
+<tr><td>17</td><td>Assist設定</td><td>内容良好・案内調整</td><td>17-assist-settings.png。4つの境界説明は近いがアプリケーション内。F1</td></tr>
+<tr><td>18</td><td>使い方</td><td>調整推奨</td><td>18-help.png。短い日本語の入口が不足。F1</td></tr>
+<tr><td>19</td><td>ダーク</td><td>良好</td><td>19-dark.png。色と紙面の役割は継続</td></tr>
+<tr><td>20</td><td>江戸彼岸</td><td>良好</td><td>20-edohigan.png。枝花は本文外に抑えられ、同じ方向。動きは未判定</td></tr>
+<tr><td>21</td><td>生成中・停止</td><td>未判定</td><td>生成イベント／停止途中を未捕捉。06の利用不可状態で代替合格にしない</td></tr>
+<tr><td>22</td><td>生成失敗</td><td>未判定</td><td>失敗＋前案あり状態を未捕捉。06の利用不可状態とは別</td></tr>
+<tr><td>23</td><td>狭幅</td><td>判断待ち</td><td>23-compact-edit.png。F5</td></tr>
+<tr><td>24</td><td>画像</td><td>良好</td><td>24-image.png。市松背景・画像・情報帯の役割は近い。サンプル画像の種類は比較対象外</td></tr>
+</table><h3>今回撮影した画面</h3>
+<details><summary>01-welcome</summary><img src="01-welcome.png" alt="01-welcome"></details>
+<details><summary>02-editor</summary><img src="02-editor.png" alt="02-editor"></details>
+<details><summary>03-lmode</summary><img src="03-lmode.png" alt="03-lmode"></details>
+<details><summary>04-reader</summary><img src="04-reader.png" alt="04-reader"></details>
+<details><summary>05-book-component</summary><img src="05-book-component.png" alt="05-book-component"></details>
+<details><summary>06-assist-unavailable</summary><img src="06-assist-unavailable.png" alt="06-assist-unavailable"></details>
+<details><summary>07-proposal</summary><img src="07-proposal.png" alt="07-proposal"></details>
+<details><summary>08-reference-component</summary><img src="08-reference-component.png" alt="08-reference-component"></details>
+<details><summary>08-review-full-app</summary><img src="08-review-full-app.png" alt="08-review-full-app"></details>
+<details><summary>09-search</summary><img src="09-search.png" alt="09-search"></details>
+<details><summary>10-structure</summary><img src="10-structure.png" alt="10-structure"></details>
+<details><summary>11-epub-export</summary><img src="11-epub-export.png" alt="11-epub-export"></details>
+<details><summary>11-html-export</summary><img src="11-html-export.png" alt="11-html-export"></details>
+<details><summary>13-recovery</summary><img src="13-recovery.png" alt="13-recovery"></details>
+<details><summary>14-conflict</summary><img src="14-conflict.png" alt="14-conflict"></details>
+<details><summary>15-appearance</summary><img src="15-appearance.png" alt="15-appearance"></details>
+<details><summary>16-typography</summary><img src="16-typography.png" alt="16-typography"></details>
+<details><summary>17-assist-settings</summary><img src="17-assist-settings.png" alt="17-assist-settings"></details>
+<details><summary>18-help</summary><img src="18-help.png" alt="18-help"></details>
+<details><summary>19-dark</summary><img src="19-dark.png" alt="19-dark"></details>
+<details><summary>20-edohigan</summary><img src="20-edohigan.png" alt="20-edohigan"></details>
+<details><summary>23-compact-edit</summary><img src="23-compact-edit.png" alt="23-compact-edit"></details>
+<details><summary>24-image</summary><img src="24-image.png" alt="24-image"></details>
+</section><p class="muted">機能コード・CSSは変更していません。詳しい実装候補と未判定範囲はREADMEに記録しています。</p></main></html>

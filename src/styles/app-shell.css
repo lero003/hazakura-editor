@@ -15,9 +15,7 @@
   animation: bgDrift 22s ease-in-out infinite;
 }
 
-/* 江戸彼岸は edohigan-theme.css 側で背景シェーダーを描くため、
-   ここでは .app-shell の静的背景は持たない（v1.6 で DOM 粒子から
-   フルスクリーン WebGL ジョークテーマへスクラップ&ビルド）。 */
+/* 江戸彼岸の紙色と植物画は edohigan-theme.css で定義する。 */
 
 /* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift
    空の青〜暖桃の帯を少し滑らかにし、朝焼けの層が読めるようにする。 */

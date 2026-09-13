@@ -26,6 +26,13 @@
   animation: modalShow 0.18s var(--ease-spring) forwards;
 }
 
+/* 判断する紙面は背景の影響を受けない。警告と選択の色は内側で保つ。 */
+.close-dialog.restore-backup-dialog,
+.close-dialog.save-conflict-dialog {
+  background: var(--surface-paper);
+  backdrop-filter: none;
+}
+
 .preferences-dialog {
   background: var(--surface-paper);
   backdrop-filter: blur(20px);
@@ -49,6 +56,8 @@
   max-width: 1100px;
   max-height: min(752px, calc(100dvh - 48px));
   width: min(1100px, calc(100vw - 48px));
+  /* hidden はフォーカス移動でスクロールできる。タイトルを含む外枠は動かさない。 */
+  overflow: clip;
 }
 
 .preferences-dialog.agent-workbench-dialog {
@@ -597,6 +606,9 @@
 
 /* 文字サイズ設定の結果を1箇所で確かめる面（モック16のLIVE PREVIEW）。 */
 .settings-type-preview {
+  display: grid;
+  grid-template-columns: fit-content(42%) minmax(0, 1fr);
+  gap: 12px 16px;
   margin: 12px 0 4px;
   padding: 16px 18px;
   border: 1px solid var(--border);
@@ -604,24 +616,24 @@
   background: var(--surface-paper);
 }
 .settings-type-preview-caption {
+  grid-column: 1 / -1;
   display: block;
-  margin-bottom: 8px;
   color: var(--text-muted);
   font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .settings-type-preview-row {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: baseline;
-  margin-bottom: 10px;
 }
 .settings-type-preview-row-label {
-  flex: 0 0 auto;
-  min-width: 132px;
+  min-width: 0;
   color: var(--text-muted);
   font-size: 11px;
+  overflow-wrap: anywhere;
 }
 .settings-type-preview-row-sample {
   min-width: 0;
@@ -794,15 +806,13 @@
    reads a bundled English `.md` file through
    `renderMarkdown()` and renders it as a small Help
    document inside the existing Preferences dialog shell.
-   The shell is `meta` (kicker + boundary note) on top,
-   a scroll region in the middle, and a footer that frames
-   the doc as an in-app reference. It is designed to be
+   The document and its optional publication notes share one scroll region. It is designed to be
    reused by future Help-document slices (Privacy Policy,
    Open Source Licenses, About, Support Diagnostics)
    without re-inventing the chrome. */
 .privacy-preferences {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
   overflow: hidden;
 }
@@ -1064,8 +1074,12 @@
 /* 実機フィードバック: 形式ナビの切替は「いまのダイアログを閉じて次を開く」ので、
    登場フェード（modalShow 0.18s）が毎回再生されて切り替え感が強く出ていた。
    この面は連続した1つの枠として見せたいので、フェードを持たない。
-   （高さは下の .export-settings-body の min-height で揃える） */
+   （外枠の高さを揃え、本文だけをスクロールさせる） */
 .close-dialog.export-settings-dialog {
+  --export-content-inset: 24px;
+  background: var(--surface-paper);
+  display: flex;
+  flex-direction: column;
   max-width: 720px;
   width: min(720px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
@@ -1090,7 +1104,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 20px 24px;
+  padding: 20px var(--export-content-inset);
+  background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
   flex: 0 0 auto;
 }
@@ -1110,7 +1125,8 @@
   margin: 0;
   /* タブ自身の左右パディング(12px)ぶんを引いて、**ラベルの左端**を本文・見出しの
      24px に揃える（枠の左端ではなく文字の左端を揃える）。 */
-  padding: 10px 12px 0;
+  padding: 10px calc(var(--export-content-inset) - 12px) 0;
+  background: var(--surface-muted);
 }
 .export-format-nav-button {
   background: transparent;
@@ -1131,7 +1147,7 @@
   color: var(--text);
 }
 .export-format-nav-button[aria-pressed="true"] {
-  background: rgba(var(--surface-strong-rgb), 0.85);
+  background: var(--surface-paper);
   border-bottom-color: var(--accent);
   color: var(--text);
   font-weight: 600;
@@ -1158,20 +1174,25 @@
   gap: 16px;
   min-height: 0;
   overflow: auto;
-  padding: 20px 24px;
+  padding: 20px var(--export-content-inset);
+}
+/* 本文は grid の gap で間隔を管理する。旧単体ダイアログの下余白を重ねない。 */
+.export-settings-body > :is(p, fieldset, .export-preflight-summary) {
+  margin: 0;
 }
 .export-settings-footer {
   flex: 0 0 auto;
-  padding: 14px 24px;
+  padding: 14px var(--export-content-inset);
   border-top: 1px solid var(--border);
   background: var(--surface-muted);
 }
-.export-settings-footer p { font-size: .8rem; color: var(--text-muted); }
-.export-settings-footer .dialog-actions { margin-top: 10px; flex-wrap: wrap; }
+.export-settings-footer p { margin: 0; font-size: .8rem; color: var(--text-muted); }
+.export-settings-footer .dialog-actions { margin-top: 12px; flex-wrap: wrap; }
 @media (max-height: 700px) {
-  .export-settings-header { padding: 12px 20px; }
-  .export-settings-body { padding: 12px 20px; gap: 12px; }
-  .export-settings-footer { padding: 10px 20px; }
+  .close-dialog.export-settings-dialog { --export-content-inset: 20px; }
+  .export-settings-header { padding-block: 12px; }
+  .export-settings-body { padding-block: 12px; gap: 12px; }
+  .export-settings-footer { padding-block: 10px; }
 }
 
 /* Static theme samples: no ambient engines or document renderers per card. */
@@ -1197,7 +1218,11 @@
 .theme-preference-card[data-theme-preview="dark"] { --sample-bg: #0e1311; --sample-text: #e8ede5; }
 .theme-preference-card[data-theme-preview="yakou"] { --sample-bg: #14122c; --sample-text: #e8e8f4; }
 .theme-preference-card[data-theme-preview="shokou"] { --sample-bg: #e4f1ff; --sample-text: #1c3554; }
-.theme-preference-card[data-theme-preview="edohigan"] { --sample-bg: #f6e6e4; --sample-text: #593f48; }
+.theme-preference-card[data-theme-preview="edohigan"] { --sample-bg: #fffcf8; --sample-text: #453735; }
+.theme-preference-card[data-theme-preview="edohigan"] .theme-preference-paper {
+  background: url("../assets/themes/edohigan-branch.webp") right -12px bottom -32px / 90px auto no-repeat, var(--sample-bg);
+}
+.theme-preference-card[data-theme-preview="edohigan"] .theme-preference-paper i { width: 50%; }
 .theme-preference-card[data-theme-preview="shinkai"] { --sample-bg: #071b2b; --sample-text: #cde7f0; }
 .theme-preference-card[data-theme-preview="crt"] { --sample-bg: #081308; --sample-text: #8fef92; }
 
@@ -1271,16 +1296,28 @@
   .settings-font-size > .settings-font-range { grid-column: 1 / -1; }
 }
 
-.preferences-help-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; flex: 0 0 auto; padding: 10px 20px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
-.preferences-help-navigation select { min-width: 0; flex: 1 1 220px; max-width: 100%; }
+.preferences-help-navigation { min-width: 0; max-width: calc(100% - 48px); }
+.preferences-help-navigation select {
+  width: min(320px, 100%);
+  max-width: 100%;
+  min-height: 32px;
+  padding: 5px 10px;
+  color: var(--text);
+  background: var(--surface-paper);
+  font: 500 14px/1.5 var(--font-ui);
+}
+.help-document-notes { margin: 0 26px 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; }
+.help-document-notes summary { cursor: pointer; padding: 14px 0; }
+.help-document-notes summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.help-document-notes .privacy-preferences-meta { padding: 0; border: 0; }
+.help-document-notes .privacy-preferences-footer { padding: 12px 0 0; background: transparent; border: 0; }
 
 /* Reflow at short effective viewports; keep all controls and Help text reachable. */
 @media (max-height: 480px) {
   .preferences-dialog { max-height: calc(100dvh - 16px); width: min(640px, calc(100vw - 16px)); }
   .preferences-dialog.settings-dialog { width: min(920px, calc(100vw - 16px)); }
   .preferences-header { padding: 8px 12px; }
-  .preferences-help-navigation { padding: 6px 12px; flex-wrap: nowrap; }
-  .preferences-help-navigation select { flex-basis: 0; }
+
   .settings-category-nav { padding: 6px 12px; flex-wrap: nowrap; overflow-x: auto; }
   .settings-category-nav button { flex: 0 0 auto; }
   .settings-layout .preference-section { padding: 12px; }

@@ -1,5 +1,7 @@
 import { helpDocsByMode, isHelpDocumentDialogMode } from "./helpDocs";
 import type { ReactNode, RefObject } from "react";
+import { getCommandPaletteCopy } from "../../lib/locale/commandPalette";
+import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
 import type { PreferencesDialogMode } from "../../types";
 
 type PreferencesDialogProps = {
@@ -8,6 +10,7 @@ type PreferencesDialogProps = {
   closeLabel: string;
   dialogRef: RefObject<HTMLElement | null>;
   mode: PreferencesDialogMode;
+  menuLanguage?: MenuLanguage;
   onClose: () => void;
   onChangeMode?: (mode: PreferencesDialogMode) => void;
   title: string;
@@ -19,10 +22,22 @@ export function PreferencesDialog({
   closeLabel,
   dialogRef,
   mode,
+  menuLanguage = "en",
   onClose,
   onChangeMode,
   title,
 }: PreferencesDialogProps) {
+  const navigationCopy = getCommandPaletteCopy(menuLanguage);
+  const helpCommands = {
+    privacy: "help.localDataDisclosure",
+    diagnostics: "help.supportDiagnostics",
+    "privacy-policy": "help.privacyPolicy",
+    "open-source-acknowledgements": "help.openSourceAcknowledgements",
+    "books-and-knowledge-folders": "help.booksAndKnowledgeFolders",
+    about: "help.about",
+  } as const;
+  const navigationLabel = isJapaneseMenuLanguage(menuLanguage) ? "設定 / ヘルプ" : "Settings / Help";
+  const hasNavigation = onChangeMode && mode !== "agent";
   const isHelpMode = mode !== "settings" && mode !== "agent";
   const modeClass =
     mode === "agent"
@@ -42,11 +57,24 @@ export function PreferencesDialog({
       >
         <div className="preferences-header">
           <h2
-            className={isHelpMode ? "sr-only" : undefined}
+            className={isHelpMode || hasNavigation ? "sr-only" : undefined}
             id="preferences-title"
           >
             {title}
           </h2>
+          {hasNavigation ? (
+            <label className="preferences-help-navigation">
+              <span className="sr-only">{navigationLabel}</span>
+              <select aria-label={navigationLabel} value={mode} onChange={(event) => {
+                const next = event.target.value;
+                if (next === "settings" || isHelpDocumentDialogMode(next)) onChangeMode(next);
+              }}>
+                <option value="settings">{navigationCopy.commands["settings.open"].label.replace(/…$/, "")}</option>
+                {Object.keys(helpDocsByMode).filter(isHelpDocumentDialogMode).map((key) =>
+                  <option key={key} value={key}>{navigationCopy.commands[helpCommands[key]].label.replace(/…$/, "")}</option>)}
+              </select>
+            </label>
+          ) : null}
           <button
             aria-label={closeLabel}
             className="icon-button"
@@ -70,19 +98,6 @@ export function PreferencesDialog({
             </svg>
           </button>
         </div>
-        {onChangeMode && mode !== "agent" ? (
-          <label className="preferences-help-navigation">
-            <span>Settings / Help</span>
-            <select aria-label="Settings / Help" value={mode} onChange={(event) => {
-              const next = event.target.value;
-              if (next === "settings" || isHelpDocumentDialogMode(next)) onChangeMode(next);
-            }}>
-              <option value="settings">Settings</option>
-              {Object.entries(helpDocsByMode).map(([key, doc]) =>
-                <option key={key} value={key}>{doc.title}</option>)}
-            </select>
-          </label>
-        ) : null}
         {children}
       </section>
     </div>
