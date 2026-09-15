@@ -495,7 +495,9 @@ focus（`--accent` のoutline）3:1以上と `theme-palette.json` ＝ CSS `--chr
 
 ## Held / Separate Work
 
-- モデルDL・管理・切り替えはv3.1のC-1/C-2ゲート待ち。MLX M-0bも停止を維持。
+- 本番のモデルDL・カタログ・開示はv3.1のC-1/C-2ゲート待ち。fixtureベースのC-1配管
+  （Developer/GitHubレーン限定・カタログ未公開）は先に進めてよく、本番identityはリリース前に
+  カタログ確定・実験を経てpinする。MLX M-0bも停止を維持。
 - 新しい書体/行間/永続設定、native別窓、Importの確定前ステージ、画像倍率は別仕様。
 - UI刷新とnative runtime再編・新SDK採用を同じ変更へ混ぜない。
 - 保存済み原稿、既存Apply/Undo/no auto-save、R2-cの完了/取消mutex境界を広げない。

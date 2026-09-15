@@ -57,6 +57,11 @@ export function useAppMenuStateSync({
     onStatusRef.current = onStatus;
   }, [onStatus]);
 
+  // The native menu is rebuilt by `set_menu`, so cache the presence only.
+  // Every keystroke replaces the tab object and would otherwise rebuild
+  // the menu bar on macOS on each update.
+  const hasActiveTab = Boolean(activeTab);
+
   useEffect(() => {
     const menuRecentFiles: AppMenuRecentItem[] = buildRecentDisplayEntries(
       recentFiles,
@@ -70,7 +75,7 @@ export function useAppMenuStateSync({
     }));
 
     void updateAppMenuState({
-      hasActiveTab: Boolean(activeTab),
+      hasActiveTab,
       activeDirty,
       previewVisible,
       wrapLines: editorSettings.wrapLines,
@@ -90,7 +95,6 @@ export function useAppMenuStateSync({
     });
   }, [
     activeDirty,
-    activeTab,
     agentWorkbenchActive,
     agentWorkbenchConsent,
     assistSurfaceActive,
@@ -103,5 +107,6 @@ export function useAppMenuStateSync({
     recentFiles,
     recentFolders,
     themePreference,
+    hasActiveTab,
   ]);
 }

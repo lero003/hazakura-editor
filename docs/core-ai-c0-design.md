@@ -123,14 +123,15 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 
 ## Key Decisions
 
-実装に入る前に固定する判断。根拠は短い。Open Questions 1–4 はオーナー回答済み。本番モデル identity だけ未決のまま凍結。2026-08-27 の最終事前レビュー（P1–P3）を D24–D29 に折り込んだ。
+実装に入る前に固定する判断。根拠は短い。Open Questions 1–4 はオーナー回答済み。本番モデル identity だけ未決のまま凍結。2026-08-27 の最終事前レビュー（P1–P3）を D24–D29 に折り込んだ。2026-09-15 のオーナー決定で、fixture ベースの C-1 配管は Developer / GitHub レーン限定・カタログ未公開のまま先に進めてよい。本番カタログ entry・開示文書の書き換え・C-2 接続は identity 決定を待つ。
 
 ### Development gate
 
 | Slice | Gate |
 |---|---|
 | **U-\* / H-1 / G-1** | **GO** on `SystemLanguageModel`. Do not wait for Core AI. |
-| **C-1** | **HOLD** until (1) owner picks a production identity, (2) expanded `resourceManifest` is in the catalog contract (D25), (3) delivery is the locked D19 split (Background Assets on MAS when possible, Hazakura origin otherwise) plus maintainer AOT. |
+| **C-1 (fixture 配管)** | **GO, Developer / GitHub lane only.** Download / verify / prepare / delete lifecycle may be built against a non-production fixture bundle. Catalog stays unshipped; App Store exposure, production catalog entry, and the D12 disclosure rewrite stay deferred. |
+| **C-1 (production)** | **HOLD** until (1) owner pins a production identity, (2) expanded `resourceManifest` is in the catalog contract (D25), (3) delivery is the locked D19 split (Background Assets on MAS when possible, Hazakura origin otherwise) plus maintainer AOT, and (4) release-preflight bake-off accepts the pinned model on Japanese manuscripts. |
 | **C-2** | **HOLD** until C-1 plus (4) backend-specific availability (D24) and (5) Rust is the only backend selector (D20). |
 | **Apply** | **Do not touch.** No C-0 PR changes `applyReviewedLocalAssistProposal`. |
 
@@ -142,7 +143,7 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 | **D4** | Revision Packet は **現行 A-2**（`buildAppleAssistRevisionContext`）を正とする。transcript 再利用がオンでも Packet を消さない。最新提案を rewrite 対象として明示する。reuse 時の Packet 痩せは測定結果待ち。 | 小さなモデルは対象を落とす。二重計上の最適化は測ってから。 |
 | **D5** | PCC / 第三者クラウド `LanguageModel` は Local Assist に **出さない・fallback しない・隠し設定にもしない。** | 「この Mac で整える」が製品主張。PCC のプライバシー保証はクラウドである事実を消さない。 |
 | **D6** | allowlist はアプリ同梱の versioned catalog。digest 検証、サイズ上限、sandbox 内 Application Support 保存。Markdown workspace には置かない。削除は明示。 | 任意 URL 禁止。workspace をモデル置き場にしない。 |
-| **D7** | **第一の本番 allowlist identity は未決。C-1 はオーナーがモデルを選ぶまで始めない。** Qwen3-4B Instruct 4-bit は研究メモの例示であり、本番 id にしない。Qwen3-8B はコード予約・UI 非表示（Q4）。Gemma 3 は HF gated のためカタログに入れない。Gate B / C-2 も identity 決定後。U-\* は SystemLanguageModel だけで進めてよい。 | オーナー 2026-08-27。店を開かない。未決の identity で DL 面を実装しない。 |
+| **D7** | **第一の本番 allowlist identity は未決。** Qwen3-4B Instruct 4-bit は研究メモの例示であり、本番 id にしない。Qwen3-8B はコード予約・UI 非表示（Q4）。Gemma 3 は HF gated のためカタログに入れない。Gate B / C-2 も identity 決定後。U-\* は SystemLanguageModel だけで進めてよい。**2026-09-15 補足:** fixture ベースの C-1 配管（DL・検証・準備・削除の Developer / GitHub レーン限定実装、カタログ未公開、App Store 露出なし・開示書き換えなし）は先に進めてよい。本番 identity はリリース前のカタログ確定と実験（bake-off）を経て pin する。fixture bundle を本番 id に昇格しない。 | オーナー 2026-08-27。店を開かない。2026-09-15: 配信用モデルはリリース前にカタログ確定・実験を経て再調整する。 |
 | **D8** | C-0/C-1 の Core AI スライスでは **tool calling なし。** OCR / Spotlight / Barcode は採用しない。読み取り専用ツールも最初のスライスでは足さない。 | 副作用と workspace 索引形を避ける。品質問題はモデルとプロンプトで解く。 |
 | **D9** | 画像入力は C-1 対象外。後続で、ユーザーが明示添付した図、または現在 Preview 画像 + consent に限定。 | トークン予算と同意境界が未設計。 |
 | **D10** | `@Generable` で `{ candidateMarkdown, changeSummary }` を返す。**Diff（sanitize 後の candidate vs pinned original）がレビュー正本。** `changeSummary` は補助表示だけ。sanitize 後の candidate が raw と違ったら **モデル summary を捨て、既存の deterministic `proposalChangeSummary` に fallback。** guided generation 非対応なら free-text + 既存 sanitizer（JSON-in-prompt を新発明しない）。G-1 は SystemLanguageModel だけで出荷可能。 | 現行 sanitizer は boundary / preamble / fence を削る。モデル要約と Apply 本文がズレうる。 |
@@ -1292,4 +1293,3 @@ U-2（hero 視覚仕上げ）を分けるなら **U-1 の直後・同一レビ�
 - TS generate に `backend` / catalog id を載せる
 - archive digest だけで展開後 tree を信じること
 - Apply 境界を「ついでに」触ること
-
