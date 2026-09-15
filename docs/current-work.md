@@ -5,6 +5,23 @@ Scope: v3.0公開の記録と公開後のキュー
 Authority: High
 Last reviewed: 2026-09-14
 
+## 3.0.1候補 — 文字入力ごとのメニューバー再構築の修正（2026-09-15）
+
+本文の1文字入力で `useAppMenuStateSync` の `activeTab` オブジェクトが差し替わり、
+macOSのネイティブメニューバーが `app.set_menu` で丸ごと組み直されていた。
+前回の修正では `hasActiveTab` のbooleanに依存を絞り、本文だけの差し替えでは
+再構築しないようにした。今回さらにdirty遷移境界の回帰テストを追加して、
+Saveメニューの有効/無効と保存後の解除を固定した。
+
+版数はnpm / Tauri / Cargo / package-lockを`3.0.1`へ揃えた。README・App Store docs・roadmapの
+現行ソース版の記述も整合した。公開版はまだ3.0.0のままであり、3.0.1の提出・公開は別工程。
+
+`npm test`（283ファイル・2,502件）、`cargo test`（385件・2件host-dependent ignored）、
+`cargo fmt --check`、`npm run build:vite`、`npm run smoke:app-store-surface`（10ファイル・125件）通過。
+`npm run build`（3.0.1 / build 134）はローカルsmoke `.app`まで通過済み。
+typecheckはversion bump後のHEADでも通過済み。署名pkgとnativeメニュー、実職の
+IME・保存衝突・Local Assist実運用の受入は3.0.1候補.appの別工程に残る。
+
 ## v3.0.0を公開（2026-09-14）
 
 オーナーがv3.0.0の公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認した。

@@ -95,6 +95,58 @@ describe("useAppMenuStateSync", () => {
       .toMatchObject({ hasActiveTab: false });
   });
 
+  it("keeps the Save menu state in sync across dirty transitions", async () => {
+    const base = {
+      activeTab: { id: "doc-one" },
+      agentWorkbenchActive: false,
+      agentWorkbenchConsent: false,
+      assistSurfaceActive: "none" as const,
+      editorSettings: {
+        lModeEnabled: false,
+        showInvisibles: false,
+        spellcheckEnabled: false,
+        wrapLines: false,
+      },
+      menuLanguage: "ja" as const,
+      previewVisible: false,
+      recentFiles: [],
+      recentFolders: [],
+      themePreference: "light" as const,
+    };
+    const initial = renderHook(
+      ({ activeDirty }: { activeDirty: boolean }) =>
+        useAppMenuStateSync({ activeDirty, ...base }),
+      { initialProps: { activeDirty: false } },
+    );
+
+    await waitFor(() => {
+      expect(updateAppMenuState).toHaveBeenCalledTimes(1);
+    });
+    expect(vi.mocked(updateAppMenuState).mock.calls.at(-1)?.[0])
+      .toMatchObject({ activeDirty: false });
+
+    // The first character flips the save indicator before any save.
+    initial.rerender({ activeDirty: true });
+    await waitFor(() => {
+      expect(updateAppMenuState).toHaveBeenCalledTimes(2);
+    });
+    expect(vi.mocked(updateAppMenuState).mock.calls.at(-1)?.[0])
+      .toMatchObject({ activeDirty: true });
+
+    // Additional text-only edits do not recreate the menu bar; only
+    // the next state boundary does.
+    initial.rerender({ activeDirty: true });
+    expect(updateAppMenuState).toHaveBeenCalledTimes(2);
+
+    // A successful save makes the Save menu item disable again.
+    initial.rerender({ activeDirty: false });
+    await waitFor(() => {
+      expect(updateAppMenuState).toHaveBeenCalledTimes(3);
+    });
+    expect(vi.mocked(updateAppMenuState).mock.calls.at(-1)?.[0])
+      .toMatchObject({ activeDirty: false });
+  });
+
   it("surfaces menu state sync failures through the status channel", async () => {
     vi.mocked(updateAppMenuState).mockRejectedValue(new Error("ipc failed"));
     const onStatus = vi.fn();
