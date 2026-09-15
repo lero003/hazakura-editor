@@ -93,6 +93,23 @@ describe("DiagnosticsPane", () => {
     ).toBe("診断JSON");
   });
 
+  it("uses the standard kana wording rather than dialect spellings", async () => {
+    const onCopy = vi.fn();
+    renderPane({ menuLanguage: "kana", onCopy });
+    const copy = screen.getByTestId("diagnostics-pane-copy");
+    expect(copy.textContent).toBe("コピー");
+    fireEvent.click(copy);
+    await waitFor(() => {
+      expect(copy.textContent).toBe("コピーしました");
+    });
+    expect(screen.getByTestId("diagnostics-pane-refresh").textContent).toBe(
+      "さいど よみこむ",
+    );
+    expect(
+      screen.getByTestId("diagnostics-pane-json").getAttribute("aria-label"),
+    ).toBe("しんだん JSON");
+  });
+
   beforeEach(() => {
     // Use fake timers only for Date so the snapshot
     // timestamp is stable and the Refresh-button test

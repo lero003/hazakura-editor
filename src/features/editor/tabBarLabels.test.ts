@@ -50,4 +50,17 @@ describe("shortestDistinguishingAncestor", () => {
     ]);
     expect(labels.size).toBe(0);
   });
+
+  it("keeps widening past any fixed depth until the labels differ", () => {
+    // 10 shared ancestors, then the differing folder, then 23 more shared
+    // ones: uniqueness only appears at depth 24, beyond a 24-exclusive cap.
+    const prefix = Array.from({ length: 10 }, (_, index) => `p${index + 1}`);
+    const shared = Array.from({ length: 23 }, (_, index) => `s${index + 1}`);
+    const labels = shortestDistinguishingAncestor([
+      tab("1", "index.md", `/${[...prefix, "book-a", ...shared].join("/")}/index.md`),
+      tab("2", "index.md", `/${[...prefix, "book-b", ...shared].join("/")}/index.md`),
+    ]);
+    expect(labels.get("1")).toBe(["book-a", ...shared].join("/"));
+    expect(labels.get("2")).toBe(["book-b", ...shared].join("/"));
+  });
 });

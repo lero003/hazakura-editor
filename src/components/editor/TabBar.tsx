@@ -116,10 +116,11 @@ export function TabBar({
   );
   const duplicatePathLabels = shortestDistinguishingAncestor(tabs);
 
-  // Keep the selected tab visible without stealing focus. This is a
-  // one-shot scroll for navigation/restore relayout; typing does not
-  // call it and clicking a partially visible tab still lands on the
-  // user's pointer position.
+  // Keep the selected tab visible without stealing focus. The contract
+  // is deliberately narrow: this runs when the active tab changes or
+  // the tab count changes (switch / add / close). Typing does not call
+  // it, a window resize alone does not re-run it, and clicking a
+  // partially visible tab still lands on the user's pointer position.
   useEffect(() => {
     if (!activeTabId) return;
     const item = tabItemRefs.current.get(activeTabId);
@@ -138,11 +139,12 @@ export function TabBar({
     }
     // `scrollLeft` is viewport-relative to the row, so move it by the
     // exact on-screen overflow instead of reconstructing an absolute
-    // target from `getBoundingClientRect`.
+    // target from `getBoundingClientRect`. Overflowing to the left is a
+    // negative delta, overflowing to the right a positive one.
     const scrollDelta =
       itemLeft < rowRect.left
         ? itemLeft - rowRect.left
-        : Math.min(0, itemRight - rowRect.right);
+        : itemRight - rowRect.right;
     row.scrollLeft += scrollDelta;
   }, [activeTabId, tabs.length]);
 
@@ -256,6 +258,13 @@ export function TabBar({
                   data-tauri-drag-region="false"
                   data-tab-id={tab.id}
                   key={tab.id}
+                  ref={(el) => {
+                    if (el) {
+                      tabItemRefs.current.set(tab.id, el);
+                    } else {
+                      tabItemRefs.current.delete(tab.id);
+                    }
+                  }}
                   role="presentation"
                   onContextMenu={(event) => onTabContextMenu(tab.path, event)}
                   onPointerDown={(event) => onTabPointerDown(event, tab.id)}

@@ -16,13 +16,13 @@ export function getDiagnosticsPaneCopy(
 ): DiagnosticsPaneCopy {
   if (isKanaStyle(lang)) {
     return {
-      actionLabel: "しよう",
-      copied: "copied",
-      copyFailed: "こぴーでけへん",
-      copy: "こぴー",
-      json: "だい",
-      refresh: "こうしん",
-      unavailable: "すなっぷしょっとみつからへん",
+      actionLabel: "コピー そうさ",
+      copied: "コピーしました",
+      copyFailed: "コピーできませんでした",
+      copy: "コピー",
+      json: "しんだん JSON",
+      refresh: "さいど よみこむ",
+      unavailable: "しんだん スナップショットが とれません。",
     };
   }
 

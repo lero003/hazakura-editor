@@ -55,61 +55,29 @@ const base = {
 };
 
 describe("StatusBar", () => {
-  it("shows mixed and absent line endings without offering them as edits", () => {
+  it("offers only the editable line endings and dispatches the chosen one", () => {
     const onConvertLineEnding = vi.fn();
     const { container } = render(
-      <StatusBar
-        {...base}
-        activeTab={
-          {
-            ...activeTab,
-            line_ending: "mixed",
-          } as unknown as EditorTab
-        }
-        onConvertLineEnding={onConvertLineEnding}
-      />,
+      <StatusBar {...base} onConvertLineEnding={onConvertLineEnding} />,
     );
 
     const lineEndingSelect = screen.getByRole("combobox", {
       name: "Line endings",
     }) as HTMLSelectElement;
-    expect(lineEndingSelect.value).toBe("mixed");
-    const mixedOption = lineEndingSelect.querySelector<
-      HTMLOptionElement >(`option[value="mixed"]`);
-    expect(mixedOption?.disabled).toBe(true);
+    // `LineEndingKind` in the Rust/Tauri boundary is `lf | crlf`, so those
+    // are the only states this select may offer as an edit.
+    expect(lineEndingSelect.value).toBe("lf");
+    const optionValues = Array.from(
+      container.querySelectorAll<HTMLOptionElement>(
+        ".status-bar-format-chip option",
+      ),
+    )
+      .map((option) => option.value)
+      .filter((value) => value === "lf" || value === "crlf");
+    expect(optionValues).toEqual(["lf", "crlf"]);
 
-    const lfOption = container.querySelector<HTMLOptionElement>(
-      `option[value="lf"]`,
-    );
-    expect(lfOption?.disabled).toBe(false);
-
-    fireEvent.change(lineEndingSelect, { target: { value: "lf" } });
-    expect(onConvertLineEnding).toHaveBeenCalledWith("lf");
-  });
-
-  it("shows absent line endings as a disabled current state", () => {
-    const onConvertLineEnding = vi.fn();
-    const { container } = render(
-      <StatusBar
-        {...base}
-        activeTab={
-          {
-            ...activeTab,
-            line_ending: "none",
-          } as unknown as EditorTab
-        }
-        onConvertLineEnding={onConvertLineEnding}
-      />,
-    );
-
-    const lineEndingSelect = screen.getByRole("combobox", {
-      name: "Line endings",
-    }) as HTMLSelectElement;
-    expect(lineEndingSelect.value).toBe("none");
-    const noneOption = container.querySelector<HTMLOptionElement>(
-      `option[value="none"]`,
-    );
-    expect(noneOption?.disabled).toBe(true);
+    fireEvent.change(lineEndingSelect, { target: { value: "crlf" } });
+    expect(onConvertLineEnding).toHaveBeenCalledWith("crlf");
   });
 
   it("keeps explicit re-decoding separate from save encoding in one chip", () => {

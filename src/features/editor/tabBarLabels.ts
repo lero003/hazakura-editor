@@ -5,11 +5,6 @@ type PathEntry = {
   parts: string[];
 };
 
-type PathGroup = {
-  key: string;
-  entries: PathEntry[];
-};
-
 /**
  * Duplicated tab names need the shortest ancestor segment that makes
  * their visible row label unique. `path` remains tab identity; the
@@ -39,7 +34,13 @@ export function shortestDistinguishingAncestor(
     // Pick the shortest prefix of ancestor folders that separates the
     // duplicated tab names. Depth 1 tries only the closest folder, then
     // extends outward toward the root/home level until the labels differ.
-    for (let depth = 1; depth < 24; depth += 1) {
+    // The cap is the deepest ancestor list in the group, so a fixed
+    // magic number can never silently stop short of a unique label.
+    const maxDepth = pathSegments.reduce(
+      (deepest, entry) => Math.max(deepest, entry.parts.length),
+      1,
+    );
+    for (let depth = 1; depth <= maxDepth; depth += 1) {
       const candidate = new Map(
         pathSegments.map((entry) => [
           entry.id,

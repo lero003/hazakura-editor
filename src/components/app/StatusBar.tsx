@@ -2,7 +2,6 @@ import type { ChangeEvent } from "react";
 import type {
   EditableLineEnding,
   EditorTab,
-  LineEndingKind,
   TextEncoding,
 } from "../../types";
 import { formatLineEndingKind, formatTextEncoding } from "../../lib/format";
@@ -31,11 +30,6 @@ const TEXT_ENCODINGS: { label: string; value: TextEncoding }[] = [
   { label: "Shift-JIS", value: "shift-jis" },
   { label: "EUC-JP", value: "euc-jp" },
 ];
-
-type LineEndingOption = {
-  label: string;
-  value: LineEndingKind;
-};
 
 type StatusBarProps = {
   activeDirty: boolean;
@@ -126,25 +120,6 @@ export function StatusBar({
       );
     }
   };
-  // `mixed` and `none` are display states, not choices. Show them as
-  // the disabled current state so a controlled select never looks like
-  // it points at a row that is absent from the option list.
-  const currentLineEnding = activeTab
-    ? (activeTab.line_ending as unknown as LineEndingKind)
-    : null;
-  const lineEndingOptions: LineEndingOption[] = currentLineEnding
-    ? [
-        { label: "LF", value: "lf" },
-        { label: "CRLF", value: "crlf" },
-        ...(currentLineEnding === "mixed"
-          ? [{ label: "Mixed", value: "mixed" as const }]
-          : []),
-        ...(currentLineEnding === "none"
-          ? [{ label: "None", value: "none" as const }]
-          : []),
-      ]
-    : [];
-
   return (
     <footer className="status-bar lmode-surface">
       <span className="status-bar-segment status-bar-status" role="status" aria-live="polite">
@@ -192,15 +167,8 @@ export function StatusBar({
                 onConvertLineEnding(event.target.value as EditableLineEnding)
               }
             >
-              {lineEndingOptions.map((option) => (
-                <option
-                  disabled={option.value !== "lf" && option.value !== "crlf"}
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
+              <option value="lf">LF</option>
+              <option value="crlf">CRLF</option>
             </select>
           </label>
           <label className="status-bar-segment status-bar-format-chip" title={encodingTitle}>
