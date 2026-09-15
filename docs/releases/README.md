@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-07
+Last reviewed: 2026-09-16
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -15,10 +15,18 @@ Latest GitHub source / local-app tag:
 
 - `v2.3.0` — `2.3.0-source-tag.release.md` (no binary assets; prior `v2.0.0` immutable)
 
-Current source-preview candidate (TestFlight prepare):
+Current App Store submission candidate:
 
-- `3.0.0` — `3.0.0-source-tag.release.md` (v3 UI alignment with the 24-screen mock plus the
-  external-review fixes; **not submitted, not distributed**; signed pkg not built yet)
+- `3.0.1` — `3.0.1-app-store-release-notes.md` (quality-only patch on the published
+  `3.0.0`: menu-bar rebuild suppression, tab scroll / duplicate-name labels, and localized
+  diagnostics; **submission copy prepared, not yet submitted**; the signed App Store package
+  is built locally with `release:candidate --with-app-store-pkg`)
+
+Published store baseline:
+
+- `3.0.0` — `3.0.0-source-tag.release.md` and
+  `3.0.0-app-store-release-notes.md` (v3 UI alignment with the 24-screen mock plus the
+  external-review fixes; Mac App Store published, owner-reported 2026-09-14)
 
 Prior candidates:
 
@@ -47,8 +55,14 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`2.7.0` is the current local App Store/TestFlight candidate**; it is not
-  uploaded or published. See `2.7.0-app-store-release-notes.md`.
+- **`3.0.1` is the current App Store submission candidate**; its submission
+  copy is prepared but not yet submitted. See `3.0.1-app-store-release-notes.md`.
+- **`3.0.0` is published** on the Mac App Store (owner-reported 2026-09-14;
+  the listing shows version 3.0.0). Exact released-build provenance and
+  rollout coverage remain unverified here. See
+  `3.0.0-app-store-release-notes.md`.
+- `2.7.0` / `2.8.0` remain retained local candidates, not an active upload
+  queue. See `2.7.0-app-store-release-notes.md`.
 - **`2.6.2` is published** on the Mac App Store (user-confirmed 2026-08-28;
   staged rollout to all users). See `2.6.2-app-store-release-notes.md`.
   A GitHub `v2.6.2` source tag is not claimed.
@@ -112,6 +126,10 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
+- `3.0.1-app-store-release-notes.md` is the prepared submission copy for the
+  current quality patch on the published `3.0.0`.
+- `3.0.0-app-store-release-notes.md` records the published `3.0.0` App Store
+  copy (owner-reported 2026-09-14).
 - `2.6.2-app-store-release-notes.md` records the published `2.6.2` App Store
   copy (user-confirmed 2026-08-28; staged rollout).
 - `2.6.1-app-store-release-notes.md` is the prior local candidate draft.
