@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v3.0公開の記録と公開後のキュー
 Authority: High
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-16
 
 ## 3.0.1候補 — 文字入力ごとのメニューバー再構築の修正（2026-09-15）
 
@@ -32,9 +32,14 @@ IME・保存衝突・Local Assist実運用の受入は3.0.1候補.appの別工�
 （ひらがな＋語間スペース、外来語はカタカナ）へ揃え、同名タブの識別上限だった
 `depth < 24`の固定マジックナンバーを祖先長から導出する形にした。
 
-この修正後の確認は`npm run typecheck`、`npm test`（285ファイル・2,512件）、
+この修正後の確認は`npm run typecheck`、`npm test`（286ファイル・2,514件）、
 `npm run build:vite`、`npm run smoke:app-store-surface`（125件）通過。
 TabBarの見切れは幅の狭い実機で最終確認したい。
+
+再レビューで残っていたのは、診断画面のコピー操作グループに名前が無い点だけだった。
+`actionLabel`を`role="group"`の`aria-label`として配線し、コピー結果の読み上げは
+ボタン名の変化に任せている（専用のlive regionは二重読み上げになるため、VoiceOver
+実機受入で必要性を判断する）。
 
 ## v3.0.0を公開（2026-09-14）
 

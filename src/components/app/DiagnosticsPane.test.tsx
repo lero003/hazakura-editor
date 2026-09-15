@@ -91,6 +91,10 @@ describe("DiagnosticsPane", () => {
     expect(
       screen.getByTestId("diagnostics-pane-json").getAttribute("aria-label"),
     ).toBe("診断JSON");
+    // The copy / refresh pair is exposed as one named group so a screen
+    // reader can announce what the two buttons belong to.
+    const actions = screen.getByRole("group", { name: "診断の操作" });
+    expect(actions.contains(copy)).toBe(true);
   });
 
   it("uses the standard kana wording rather than dialect spellings", async () => {

@@ -16,7 +16,7 @@ export function getDiagnosticsPaneCopy(
 ): DiagnosticsPaneCopy {
   if (isKanaStyle(lang)) {
     return {
-      actionLabel: "コピー そうさ",
+      actionLabel: "しんだんの そうさ",
       copied: "コピーしました",
       copyFailed: "コピーできませんでした",
       copy: "コピー",
@@ -28,7 +28,7 @@ export function getDiagnosticsPaneCopy(
 
   return isJapaneseMenuLanguage(lang)
     ? {
-        actionLabel: "コピー操作",
+        actionLabel: "診断の操作",
         copied: "コピーしました",
         copyFailed: "コピーできませんでした",
         copy: "コピー",
@@ -37,7 +37,7 @@ export function getDiagnosticsPaneCopy(
         unavailable: "診断スナップショットが取得できません。",
       }
     : {
-        actionLabel: "Copy action",
+        actionLabel: "Diagnostics actions",
         copied: "Copied",
         copyFailed: "Copy failed",
         copy: "Copy",

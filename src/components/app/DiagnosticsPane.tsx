@@ -238,8 +238,10 @@ export function DiagnosticsPane({
           dangerouslySetInnerHTML={{ __html: introHtml }}
         />
         <div
+          aria-label={copy.actionLabel}
           className="diagnostics-pane-actions"
           data-testid="diagnostics-pane-actions"
+          role="group"
         >
           <button
             type="button"

@@ -8,7 +8,7 @@ import { getDiagnosticsPaneCopy } from "./diagnostics";
 describe("getDiagnosticsPaneCopy", () => {
   it("keeps the kana strings in the shared read-aloud style", () => {
     expect(getDiagnosticsPaneCopy("kana")).toEqual({
-      actionLabel: "コピー そうさ",
+      actionLabel: "しんだんの そうさ",
       copied: "コピーしました",
       copyFailed: "コピーできませんでした",
       copy: "コピー",
