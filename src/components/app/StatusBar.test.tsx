@@ -55,6 +55,63 @@ const base = {
 };
 
 describe("StatusBar", () => {
+  it("shows mixed and absent line endings without offering them as edits", () => {
+    const onConvertLineEnding = vi.fn();
+    const { container } = render(
+      <StatusBar
+        {...base}
+        activeTab={
+          {
+            ...activeTab,
+            line_ending: "mixed",
+          } as unknown as EditorTab
+        }
+        onConvertLineEnding={onConvertLineEnding}
+      />,
+    );
+
+    const lineEndingSelect = screen.getByRole("combobox", {
+      name: "Line endings",
+    }) as HTMLSelectElement;
+    expect(lineEndingSelect.value).toBe("mixed");
+    const mixedOption = lineEndingSelect.querySelector<
+      HTMLOptionElement >(`option[value="mixed"]`);
+    expect(mixedOption?.disabled).toBe(true);
+
+    const lfOption = container.querySelector<HTMLOptionElement>(
+      `option[value="lf"]`,
+    );
+    expect(lfOption?.disabled).toBe(false);
+
+    fireEvent.change(lineEndingSelect, { target: { value: "lf" } });
+    expect(onConvertLineEnding).toHaveBeenCalledWith("lf");
+  });
+
+  it("shows absent line endings as a disabled current state", () => {
+    const onConvertLineEnding = vi.fn();
+    const { container } = render(
+      <StatusBar
+        {...base}
+        activeTab={
+          {
+            ...activeTab,
+            line_ending: "none",
+          } as unknown as EditorTab
+        }
+        onConvertLineEnding={onConvertLineEnding}
+      />,
+    );
+
+    const lineEndingSelect = screen.getByRole("combobox", {
+      name: "Line endings",
+    }) as HTMLSelectElement;
+    expect(lineEndingSelect.value).toBe("none");
+    const noneOption = container.querySelector<HTMLOptionElement>(
+      `option[value="none"]`,
+    );
+    expect(noneOption?.disabled).toBe(true);
+  });
+
   it("keeps explicit re-decoding separate from save encoding in one chip", () => {
     const reopen = vi.fn();
     const convert = vi.fn();

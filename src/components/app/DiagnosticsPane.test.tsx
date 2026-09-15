@@ -46,6 +46,7 @@ function renderPane(overrides: {
   onCopy?: (text: string) => void;
   forceSafetyCheckFailure?: boolean;
   onOpenExternalLink?: (href: string) => void;
+  menuLanguage?: "en" | "ja" | "kana";
 } = {}) {
   return render(
     <DiagnosticsPane
@@ -57,6 +58,7 @@ function renderPane(overrides: {
       lModeEnabled={overrides.lModeEnabled ?? false}
       onCopy={overrides.onCopy}
       onOpenExternalLink={overrides.onOpenExternalLink}
+      menuLanguage={overrides.menuLanguage ?? "en"}
       theme={overrides.theme ?? "dark"}
       wrapLines={overrides.wrapLines ?? true}
     />,
@@ -74,6 +76,23 @@ function parseJson(): DiagnosticsSnapshot {
 }
 
 describe("DiagnosticsPane", () => {
+  it("localises the diagnostics controls while keeping diagnostics data intact", async () => {
+    const onCopy = vi.fn();
+    renderPane({ menuLanguage: "ja", onCopy });
+    const copy = screen.getByTestId("diagnostics-pane-copy");
+    expect(copy.textContent).toBe("コピー");
+    fireEvent.click(copy);
+    await waitFor(() => {
+      expect(copy.textContent).toBe("コピーしました");
+    });
+    expect(screen.getByTestId("diagnostics-pane-refresh").textContent).toBe(
+      "再読み込み",
+    );
+    expect(
+      screen.getByTestId("diagnostics-pane-json").getAttribute("aria-label"),
+    ).toBe("診断JSON");
+  });
+
   beforeEach(() => {
     // Use fake timers only for Date so the snapshot
     // timestamp is stable and the Refresh-button test

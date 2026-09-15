@@ -5,8 +5,9 @@ import type {
   ReactNode,
 } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { isDirty } from "../../features/editor/editorTabs";
+import { shortestDistinguishingAncestor } from "../../features/editor/tabBarLabels";
 import type { EditorTab, ImagePreviewState } from "../../types";
 import {
   TabImageIcon,
@@ -82,7 +83,6 @@ function getParentFolderName(path: string): string | null {
   const parts = path.split(/[\\/]+/).filter(Boolean);
   return parts.length >= 2 ? parts.at(-2) ?? null : null;
 }
-
 export function TabBar({
   activeTabId,
   children,
@@ -107,12 +107,44 @@ export function TabBar({
   tabs,
 }: TabBarProps) {
   const tabButtonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const tabItemRefs = useRef(new Map<string, HTMLDivElement>());
   const showEmptyState = tabs.length === 0 && selectedImage === null;
   const duplicateTabNames = new Set(
     tabs
       .map((tab) => tab.name)
       .filter((name, index, names) => names.indexOf(name) !== names.lastIndexOf(name)),
   );
+  const duplicatePathLabels = shortestDistinguishingAncestor(tabs);
+
+  // Keep the selected tab visible without stealing focus. This is a
+  // one-shot scroll for navigation/restore relayout; typing does not
+  // call it and clicking a partially visible tab still lands on the
+  // user's pointer position.
+  useEffect(() => {
+    if (!activeTabId) return;
+    const item = tabItemRefs.current.get(activeTabId);
+    if (!item) return;
+    const row = item.closest<HTMLElement>(".tab-list");
+    if (!row) return;
+    const itemRect = item.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const itemLeft = itemRect.left;
+    const itemRight = itemRect.right;
+    if (
+      itemLeft >= rowRect.left - 1 &&
+      itemRight <= rowRect.right + 1
+    ) {
+      return;
+    }
+    // `scrollLeft` is viewport-relative to the row, so move it by the
+    // exact on-screen overflow instead of reconstructing an absolute
+    // target from `getBoundingClientRect`.
+    const scrollDelta =
+      itemLeft < rowRect.left
+        ? itemLeft - rowRect.left
+        : Math.min(0, itemRight - rowRect.right);
+    row.scrollLeft += scrollDelta;
+  }, [activeTabId, tabs.length]);
 
   const handleWindowDragMouseDown = (
     event: ReactMouseEvent<HTMLDivElement>,
@@ -212,8 +244,10 @@ export function TabBar({
               const parentFolder = duplicateTabNames.has(tab.name)
                 ? getParentFolderName(tab.path)
                 : null;
-              const visibleTabLabel = parentFolder
-                ? `${tab.name} — ${parentFolder}`
+              const distinguishedParent =
+                duplicatePathLabels.get(tab.id) ?? parentFolder;
+              const visibleTabLabel = distinguishedParent
+                ? `${tab.name} — ${distinguishedParent}`
                 : tab.name;
 
               return (
@@ -274,8 +308,8 @@ export function TabBar({
                     </span>
                     <span className="tab-name">
                       <span>{tab.name}</span>
-                      {parentFolder ? (
-                        <span className="tab-parent"> — {parentFolder}</span>
+                      {distinguishedParent ? (
+                        <span className="tab-parent"> — {distinguishedParent}</span>
                       ) : null}
                     </span>
                     {dirty ? (

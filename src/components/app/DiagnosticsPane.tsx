@@ -30,6 +30,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { assertNoForbiddenKeys } from "../../lib/diagnostics";
+import { getDiagnosticsPaneCopy } from "../../lib/locale/diagnostics";
+import type { MenuLanguage } from "../../types";
 import { normalizeExternalMarkdownLink } from "../../features/editor/markdownLinks";
 import { renderMarkdown } from "../../features/editor/markdown";
 import { openExternalUrl } from "../../lib/tauri";
@@ -63,6 +65,7 @@ export type DiagnosticsPaneProps = {
    */
   forceSafetyCheckFailure?: boolean;
   onOpenExternalLink?: (href: string) => void | Promise<void>;
+  menuLanguage: MenuLanguage;
 };
 
 type CopyState = "idle" | "copied" | "failed";
@@ -76,6 +79,7 @@ export function DiagnosticsPane({
   onCopy,
   forceSafetyCheckFailure = false,
   onOpenExternalLink = openExternalUrl,
+  menuLanguage = "en" as MenuLanguage,
 }: DiagnosticsPaneProps) {
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const [refreshToken, setRefreshToken] = useState(0);
@@ -120,6 +124,8 @@ export function DiagnosticsPane({
     if (!safeSnapshot.ok) return "";
     return JSON.stringify(safeSnapshot.snapshot, null, 2);
   }, [safeSnapshot]);
+
+  const copy = getDiagnosticsPaneCopy(menuLanguage);
 
   const introHtml = useMemo(
     () =>
@@ -243,10 +249,10 @@ export function DiagnosticsPane({
             onClick={() => void handleCopy()}
           >
             {copyState === "copied"
-              ? "Copied"
+              ? copy.copied
               : copyState === "failed"
-                ? "Copy failed"
-                : "Copy"}
+                ? copy.copyFailed
+                : copy.copy}
           </button>
           <button
             type="button"
@@ -255,15 +261,15 @@ export function DiagnosticsPane({
             disabled={!safeSnapshot.ok}
             onClick={handleRefresh}
           >
-            Refresh
+            {copy.refresh}
           </button>
         </div>
         <pre
-          aria-label="Diagnostics JSON"
+          aria-label={copy.json}
           className="diagnostics-pane-json"
           data-testid="diagnostics-pane-json"
         >
-          {safeSnapshot.ok ? json : "Snapshot unavailable."}
+          {safeSnapshot.ok ? json : copy.unavailable}
         </pre>
       </div>
       <footer className="privacy-preferences-footer">

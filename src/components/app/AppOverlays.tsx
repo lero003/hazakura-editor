@@ -655,6 +655,7 @@ export function AppOverlays({
               }
               autoBackupEnabled={editorSettings.autoBackupEnabled}
               lModeEnabled={editorSettings.lModeEnabled}
+              menuLanguage={menuLanguage}
               theme={themePreference}
               wrapLines={editorSettings.wrapLines}
             />
