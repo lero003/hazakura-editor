@@ -1,5 +1,8 @@
 use super::*;
-use crate::menu::{menu_state_needs_rebuild, plan_app_menu_updates, AppMenuItemUpdate};
+use crate::menu::{
+    canonical_check_state_for_action, menu_state_needs_rebuild, plan_app_menu_updates,
+    AppMenuItemUpdate,
+};
 use crate::types::{AppMenuRecentItem, AppMenuState};
 
 fn base_menu_state() -> AppMenuState {
@@ -328,5 +331,76 @@ fn theme_menu_clicks_do_not_move_the_marker_before_the_app_accepts_them() {
     assert!(
         !emit_body.contains("sync_theme_menu_state"),
         "emit_app_menu_event must not pre-sync the theme marker before the app accepts the click",
+    );
+}
+
+#[test]
+fn canonical_check_state_reads_the_field_the_app_actually_holds() {
+    let state = AppMenuState {
+        active_dirty: false,
+        agent_workbench_active: false,
+        agent_workbench_consent: false,
+        assist_surface_active: "none".to_string(),
+        has_active_tab: true,
+        l_mode_enabled: true,
+        menu_language: "ja".to_string(),
+        preview_visible: true,
+        recent_files: vec![],
+        recent_folders: vec![],
+        show_invisibles: true,
+        spellcheck_enabled: false,
+        theme_preference: "light".to_string(),
+        wrap_lines: false,
+    };
+
+    // muda flips the marker before the app sees the click, so the click
+    // handler needs the app's value back, keyed by the menu item id.
+    assert_eq!(
+        canonical_check_state_for_action(MENU_TOGGLE_PREVIEW, &state),
+        Some(true),
+    );
+    assert_eq!(
+        canonical_check_state_for_action(MENU_TOGGLE_L_MODE, &state),
+        Some(true),
+    );
+    assert_eq!(
+        canonical_check_state_for_action(MENU_TOGGLE_WRAP, &state),
+        Some(false),
+    );
+    assert_eq!(
+        canonical_check_state_for_action(MENU_TOGGLE_INVISIBLES, &state),
+        Some(true),
+    );
+    assert_eq!(
+        canonical_check_state_for_action(MENU_TOGGLE_SPELLCHECK, &state),
+        Some(false),
+    );
+
+    // Everything else is not a check item and must be left alone.
+    for action in [MENU_SAVE, MENU_SAVE_AS, MENU_THEME_YAKOU, MENU_PREFERENCES] {
+        assert_eq!(
+            canonical_check_state_for_action(action, &state),
+            None,
+            "{action} is not a check item",
+        );
+    }
+}
+
+#[test]
+fn emit_app_menu_event_restores_check_markers_muda_toggled() {
+    let source = include_str!("../menu.rs");
+    let emit_body = source
+        .split("pub(crate) fn emit_app_menu_event")
+        .nth(1)
+        .and_then(|section| section.split("\n}\n").next())
+        .expect("find the emit_app_menu_event body");
+
+    // Without this, a Preview/Wrap/... click that the frontend drops
+    // (modal or save-conflict surface open) leaves the native check moved
+    // while the app keeps the old value, and the delta update will not put
+    // it back because the field never changed.
+    assert!(
+        emit_body.contains("restore_check_marker_from_canonical_state"),
+        "emit_app_menu_event must restore muda's self-toggled check marker before emitting",
     );
 }

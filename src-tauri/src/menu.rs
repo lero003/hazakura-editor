@@ -5,6 +5,7 @@ use tauri::menu::{
     Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::Emitter;
+use tauri::Manager;
 
 /// The Agent Window item is enabled only when the distribution allows the
 /// workbench, the user turned it on, and consent was recorded. Shared by the
@@ -680,6 +681,16 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
 ) {
     let action = event.id().as_ref();
 
+    // muda flips a check item's own state *before* it delivers this event
+    // (muda 0.19.3, `platform_impl/macos/mod.rs`: `set_checked(!is_checked())`
+    // then `MenuEvent::send`). The frontend drops non-quit menu events while
+    // a modal or the save-conflict surface owns input, so without this the
+    // native check would move while the app kept its old value — and the
+    // delta menu update cannot correct it, because the field never changed.
+    // Put the marker back to the state the app actually holds; an accepted
+    // click moves it again through `update_app_menu_state`.
+    restore_check_marker_from_canonical_state(app, action);
+
     // The theme marker is deliberately NOT moved here. The frontend drops
     // non-quit menu events while a modal or the save-conflict surface owns
     // input (see `useAppMenuActionListener`), so moving the marker before
@@ -746,6 +757,43 @@ fn theme_preference_for_menu_action(action: &str) -> Option<&'static str> {
         MENU_THEME_SHINKAI => Some("shinkai"),
         _ => None,
     }
+}
+
+/// The check state the app actually holds for a View check item. `None` for
+/// actions that are not check items.
+pub(crate) fn canonical_check_state_for_action(action: &str, state: &AppMenuState) -> Option<bool> {
+    match action {
+        MENU_TOGGLE_PREVIEW => Some(state.preview_visible),
+        MENU_TOGGLE_L_MODE => Some(state.l_mode_enabled),
+        MENU_TOGGLE_WRAP => Some(state.wrap_lines),
+        MENU_TOGGLE_INVISIBLES => Some(state.show_invisibles),
+        MENU_TOGGLE_SPELLCHECK => Some(state.spellcheck_enabled),
+        _ => None,
+    }
+}
+
+/// Put a check item's marker back to the app's canonical value. muda flips
+/// the marker on click, so a click the frontend later drops would otherwise
+/// leave the native menu out of step with the app. Best effort: when the
+/// store or menu is gone, the normal delta update path still owns the value.
+#[cfg(desktop)]
+fn restore_check_marker_from_canonical_state<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    action: &str,
+) {
+    let Some(state) = app
+        .try_state::<AppMenuStateStore>()
+        .and_then(|store| store.previous())
+    else {
+        return;
+    };
+    let Some(checked) = canonical_check_state_for_action(action, &state) else {
+        return;
+    };
+    let Some(menu) = app.menu() else {
+        return;
+    };
+    let _ = set_check_menu_item_checked(&menu, action, checked);
 }
 
 /// `set_menu` replaces the whole macOS menu bar, which the user sees as a

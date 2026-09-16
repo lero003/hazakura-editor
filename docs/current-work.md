@@ -78,6 +78,28 @@ delta化で新たに露出した経路を1本塞いだ。
 確認した。検証: `cargo test` 393件（+2 ignored）、`cargo fmt --check`、
 `npm run typecheck`、`npm test`（286ファイル・2,517件）。
 
+### チェック項目にも残っていた同型の経路（2026-09-16）
+
+テーマと同型の「nativeがReactより先に状態を変える」経路が、View のチェック項目にも
+残っていた。muda 0.19.3 の macOS 実装は、チェック項目がクリックされると
+`set_checked(!is_checked())` を実行してから `MenuEvent::send` する。フロントは
+モーダルまたは保存衝突UIがあると Quit 以外のメニューイベントを捨てるので、
+**Preview / Lモード / 行の折り返し / 不可視文字 / スペルチェック** の5項目で
+「アプリは元のまま、ネイティブの✓だけ反転し、delta化により後からも直らない」状態が
+起きていた。
+
+`emit_app_menu_event` に、イベントを送る前に `AppMenuStateStore` の正本値へ
+チェック表示を戻す処理を入れた。受理されたクリックはこれまでどおり
+`update_app_menu_state` のdeltaで新しい値になる。モーダル中に捨てられた場合は、
+正本へ戻した表示がそのまま残る。
+
+`canonical_check_state_for_action` を純関数として切り出し、5項目の対応
+（preview / l mode / wrap / invisibles / spellcheck）と、チェック項目でない
+アクションでは何もしないことをテストで固定した。`emit_app_menu_event` が復元を
+呼ぶこともRustテストで固定し、呼び出しを外すと落ちることを確認している。
+検証: `cargo test` 395件（+2 ignored）、`npm test`（286ファイル・2,517件）、
+`npm run typecheck`、`cargo fmt --check`。
+
 ## 3.0.1候補 — 文字入力ごとのメニューバー再構築の修正（2026-09-15）
 
 本文の1文字入力で `useAppMenuStateSync` の `activeTab` オブジェクトが差し替わり、
