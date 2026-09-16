@@ -35,19 +35,26 @@ export function useWindowTitle({
     onStatusRef.current = onStatus;
   }, [onStatus]);
 
+  // Live editing replaces the tab object on every character, so depend on
+  // the parts that make up the title instead of the object itself. Sending
+  // the same title again on each keystroke makes macOS repaint the window
+  // chrome, which the user sees as the title and menu bar blinking.
+  const activeName = activeTab?.name ?? null;
+  const imageName = selectedImage?.name ?? null;
+
   useEffect(() => {
     const appName = isDeveloperDistributionLane()
       ? "Hazakura Editor Dev"
       : "Hazakura Editor";
-    const title = selectedImage
-      ? `${selectedImage.name} - ${appName}`
-      : activeTab
-      ? `${activeTab.name}${activeDirty ? " *" : ""} - ${appName}`
-      : appName;
+    const title = imageName
+      ? `${imageName} - ${appName}`
+      : activeName
+        ? `${activeName}${activeDirty ? " *" : ""} - ${appName}`
+        : appName;
 
     void setCurrentWindowTitle(title).catch((err) => {
       console.warn("Failed to update window title", err);
       onStatusRef.current?.("Failed to update window title");
     });
-  }, [activeDirty, activeTab, selectedImage]);
+  }, [activeDirty, activeName, imageName]);
 }

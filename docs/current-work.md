@@ -5,6 +5,33 @@ Scope: v3.0公開の記録と公開後のキュー
 Authority: High
 Last reviewed: 2026-09-16
 
+## 3.0.2候補 — メニューバーの明滅が3.0.1でも再発（2026-09-16）
+
+公開済み `3.0.1` でも「文字を打つ・改行するとmacOSのメニューバーが明滅する」が再発した。
+入力ごとにネイティブ側へ到達していた経路が2つ残っていた。
+
+1. `useWindowTitle` が `activeTab` オブジェクトを依存に持っていた。本文更新のたびに
+   tab object が差し替わるので、タイトル文字列が同じでも `set_title` のIPCが1文字ごとに
+   走っていた。依存を `activeName` / `imageName` の文字列へ絞り、実際にタイトルが
+   変わるまで送らないようにした。
+2. `update_app_menu_state` は、`Save`項目の有効/無効などフラグだけが変わるときも
+   `build_app_menu_with_state` + `app.set_menu` で**メニューバー全体**を作り直していた。
+   macOSではこれがメニューバーの描き直しとして見える。保存直後の1文字目でdirtyが
+   false→trueへ変わるたびに起きていた。
+   適用済みの状態を `AppMenuStateStore` に記録し、(a) 同一stateなら何もしない、
+   (b) フラグだけの変化は `apply_app_menu_state_in_place` で項目を直接更新する、
+   (c) ラベルか項目集合が変わる場合（表示言語、最近使ったファイル/フォルダ）だけ
+   再構築する、という3段階にした。
+
+`Save` / `Save As` の有効・無効は `active_dirty` / `has_active_tab` として引き続き
+追従する（回帰テストで固定）。読み方・保存・書き出しの挙動は変えていない。
+
+検証: `cargo test` 389件（+2 ignored）、`cargo fmt --check`、`npm run typecheck`、
+`npm test`（287ファイル・2,516件）。`useWindowTitle` の1文字ごと送信は
+**修正前のテストが落ちる**ことを確認してから直した。`menu_state_needs_rebuild` は
+フィールドごとに、フラグのみ / 再構築要 / 同一stateの3分類をRustテストで固定した。
+実機での見た目の確認は3.0.2候補.appの別工程に残る。
+
 ## 3.0.1候補 — 文字入力ごとのメニューバー再構築の修正（2026-09-15）
 
 本文の1文字入力で `useAppMenuStateSync` の `activeTab` オブジェクトが差し替わり、

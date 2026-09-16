@@ -89,6 +89,7 @@ pub(crate) fn update_app_menu_state<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     state: AppMenuState,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+    menu_state_store: tauri::State<'_, AppMenuStateStore>,
 ) -> Result<(), String> {
     ensure_main_window(&window)?;
     // Mirror the Agent Workbench active + consent flags into the
@@ -105,10 +106,33 @@ pub(crate) fn update_app_menu_state<R: tauri::Runtime>(
         .agent_workbench_consent
         .store(state.agent_workbench_consent, Ordering::SeqCst);
 
+    // `app.set_menu` replaces the whole macOS menu bar, and replacing it
+    // while the user is typing reads as a flash of the menu bar. Most of
+    // this state only flips an enabled/checked flag, so:
+    //   1. an unchanged state does no native work at all,
+    //   2. a flag-only change updates the existing items in place,
+    //   3. only a structural change (labels or the item set) rebuilds.
+    let previous = menu_state_store.previous();
+    if previous.as_ref() == Some(&state) {
+        return Ok(());
+    }
+    if !crate::menu::menu_state_needs_rebuild(previous.as_ref(), &state) {
+        match crate::menu::apply_app_menu_state_in_place(&app, &state) {
+            Ok(()) => {
+                menu_state_store.remember(state);
+                return Ok(());
+            }
+            // Keep the menu truthful even if the in-place path cannot find
+            // an expected item (for example after a platform menu change).
+            Err(err) => eprintln!("Cannot update app menu in place, rebuilding: {err}"),
+        }
+    }
+
     let menu = build_app_menu_with_state(&app, Some(&state))
         .map_err(|err| format!("Cannot build app menu: {err}"))?;
     app.set_menu(menu)
         .map_err(|err| format!("Cannot update app menu: {err}"))?;
+    menu_state_store.remember(state);
 
     Ok(())
 }

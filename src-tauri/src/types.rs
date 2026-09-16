@@ -493,7 +493,7 @@ pub(crate) struct OkfScaffoldResult {
     pub(crate) open_path: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct AppMenuState {
     pub(crate) has_active_tab: bool,
@@ -512,9 +512,28 @@ pub(crate) struct AppMenuState {
     pub(crate) assist_surface_active: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub(crate) struct AppMenuRecentItem {
     pub(crate) label: String,
+}
+
+/// Remembers the last menu state that reached the native menu bar.
+/// `app.set_menu` rebuilds the whole macOS menu bar, which the user sees
+/// as a flash while typing, so `update_app_menu_state` uses this to skip
+/// repeated states and to apply flag-only changes in place.
+#[derive(Default)]
+pub(crate) struct AppMenuStateStore(Mutex<Option<AppMenuState>>);
+
+impl AppMenuStateStore {
+    pub(crate) fn previous(&self) -> Option<AppMenuState> {
+        self.0.lock().ok().and_then(|last| last.clone())
+    }
+
+    pub(crate) fn remember(&self, state: AppMenuState) {
+        if let Ok(mut last) = self.0.lock() {
+            *last = Some(state);
+        }
+    }
 }
 
 pub(crate) trait AgentRuntimeAdapter {

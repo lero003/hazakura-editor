@@ -133,6 +133,7 @@ pub fn run() {
 
     let builder = tauri::Builder::default()
         .manage(AgentWorkbenchSessionStore::default())
+        .manage(AppMenuStateStore::default())
         .manage(std::sync::Arc::new(AppleAssistHelperStore::default()))
         .manage(std::sync::Arc::new(
             commands::okf::OkfDiscoveryCancelStore::default(),

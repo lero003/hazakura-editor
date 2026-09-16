@@ -1,10 +1,34 @@
 use crate::distribution::*;
 use crate::types::*;
 use tauri::menu::{
-    AboutMetadata, CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
-    HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
+    AboutMetadata, CheckMenuItem, IsMenuItem, Menu, MenuItem, MenuItemKind, PredefinedMenuItem,
+    Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::Emitter;
+
+/// The Agent Window item is enabled only when the distribution allows the
+/// workbench, the user turned it on, and consent was recorded. Shared by the
+/// full build and the in-place update so the two paths cannot drift.
+#[cfg(desktop)]
+pub(crate) fn agent_window_item_enabled(state: Option<&AppMenuState>) -> bool {
+    agent_workbench_allowed_by_distribution()
+        && state
+            .map(|state| state.agent_workbench_active)
+            .unwrap_or(false)
+        && state
+            .map(|state| state.agent_workbench_consent)
+            .unwrap_or(false)
+}
+
+/// The Hazakura Local Assist window item is enabled only when the
+/// distribution allows that surface and the user selected it.
+#[cfg(desktop)]
+pub(crate) fn apple_assist_window_item_enabled(state: Option<&AppMenuState>) -> bool {
+    apple_assist_allowed_by_distribution()
+        && state
+            .map(|state| state.assist_surface_active.as_str() == "apple-local")
+            .unwrap_or(false)
+}
 
 #[cfg(desktop)]
 pub(crate) fn build_app_menu<R: tauri::Runtime>(
@@ -29,18 +53,8 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
     let apple_assist_allowed = apple_assist_allowed_by_distribution();
     let assist_surface_settings_allowed = assist_surface_settings_allowed_by_distribution();
-    let apple_assist_active = apple_assist_allowed
-        && state
-            .map(|state| state.assist_surface_active.as_str() == "apple-local")
-            .unwrap_or(false);
-    let agent_workbench_active = state
-        .map(|state| state.agent_workbench_active)
-        .unwrap_or(false);
-    let agent_workbench_consent = state
-        .map(|state| state.agent_workbench_consent)
-        .unwrap_or(false);
-    let agent_window_enabled =
-        agent_workbench_allowed && agent_workbench_active && agent_workbench_consent;
+    let apple_assist_active = apple_assist_window_item_enabled(state);
+    let agent_window_enabled = agent_window_item_enabled(state);
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
         .unwrap_or("dark");
@@ -728,6 +742,118 @@ fn theme_preference_for_menu_action(action: &str) -> Option<&'static str> {
         MENU_THEME_SHINKAI => Some("shinkai"),
         _ => None,
     }
+}
+
+/// `set_menu` replaces the whole macOS menu bar, which the user sees as a
+/// flash while they are typing. Only changes that alter the item set or the
+/// item labels need that rebuild; every other field only flips an
+/// enabled/checked flag and is applied to the existing items in place.
+pub(crate) fn menu_state_needs_rebuild(
+    previous: Option<&AppMenuState>,
+    next: &AppMenuState,
+) -> bool {
+    match previous {
+        None => true,
+        Some(previous) => {
+            previous.menu_language != next.menu_language
+                || previous.recent_files != next.recent_files
+                || previous.recent_folders != next.recent_folders
+        }
+    }
+}
+
+/// Apply the flag-only part of `state` to the existing menu items without
+/// replacing the menu. Returns an error when an expected item is missing, so
+/// the caller can fall back to a full rebuild instead of leaving stale flags.
+#[cfg(desktop)]
+pub(crate) fn apply_app_menu_state_in_place<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    state: &AppMenuState,
+) -> Result<(), String> {
+    let menu = app
+        .menu()
+        .ok_or_else(|| "App menu not available".to_string())?;
+
+    set_menu_item_enabled(&menu, MENU_SAVE, state.active_dirty)?;
+    set_menu_item_enabled(&menu, MENU_SAVE_AS, state.has_active_tab)?;
+    set_menu_item_enabled(
+        &menu,
+        MENU_OPEN_AGENT_WINDOW,
+        agent_window_item_enabled(Some(state)),
+    )?;
+    set_menu_item_enabled(
+        &menu,
+        MENU_OPEN_APPLE_ASSIST_WINDOW,
+        apple_assist_window_item_enabled(Some(state)),
+    )?;
+    set_check_menu_item_checked(&menu, MENU_TOGGLE_PREVIEW, state.preview_visible)?;
+    set_check_menu_item_checked(&menu, MENU_TOGGLE_L_MODE, state.l_mode_enabled)?;
+    set_check_menu_item_checked(&menu, MENU_TOGGLE_WRAP, state.wrap_lines)?;
+    set_check_menu_item_checked(&menu, MENU_TOGGLE_INVISIBLES, state.show_invisibles)?;
+    set_check_menu_item_checked(&menu, MENU_TOGGLE_SPELLCHECK, state.spellcheck_enabled)?;
+    // The theme submenu marks its selection in the item label, so it updates
+    // in place for the same reason: no full menu replacement.
+    sync_theme_menu_state(app, &state.theme_preference)?;
+
+    Ok(())
+}
+
+#[cfg(desktop)]
+fn set_menu_item_enabled<R: tauri::Runtime>(
+    menu: &Menu<R>,
+    id: &str,
+    enabled: bool,
+) -> Result<(), String> {
+    with_menu_item(menu, id, |item| match item {
+        MenuItemKind::MenuItem(item) => item.set_enabled(enabled).map_err(|e| e.to_string()),
+        MenuItemKind::Check(item) => item.set_enabled(enabled).map_err(|e| e.to_string()),
+        _ => Err(format!("Menu item {id} is not a normal menu item")),
+    })
+}
+
+#[cfg(desktop)]
+fn set_check_menu_item_checked<R: tauri::Runtime>(
+    menu: &Menu<R>,
+    id: &str,
+    checked: bool,
+) -> Result<(), String> {
+    with_menu_item(menu, id, |item| match item {
+        MenuItemKind::Check(item) => item.set_checked(checked).map_err(|e| e.to_string()),
+        _ => Err(format!("Menu item {id} is not a check menu item")),
+    })
+}
+
+#[cfg(desktop)]
+fn with_menu_item<R: tauri::Runtime, T>(
+    menu: &Menu<R>,
+    id: &str,
+    apply: impl FnOnce(&MenuItemKind<R>) -> Result<T, String>,
+) -> Result<T, String> {
+    let items = menu.items().map_err(|e| e.to_string())?;
+    let item = find_menu_item(items, id).ok_or_else(|| format!("Menu item {id} not found"))?;
+    apply(&item)
+}
+
+/// `Menu::get` only looks at the top level, while every state-driven item
+/// lives inside a submenu, so walk the tree instead.
+#[cfg(desktop)]
+fn find_menu_item<R: tauri::Runtime>(
+    items: Vec<MenuItemKind<R>>,
+    id: &str,
+) -> Option<MenuItemKind<R>> {
+    for item in items {
+        if item.id().as_ref() == id {
+            return Some(item);
+        }
+        if let MenuItemKind::Submenu(submenu) = &item {
+            if let Ok(children) = submenu.items() {
+                if let Some(found) = find_menu_item(children, id) {
+                    return Some(found);
+                }
+            }
+        }
+    }
+    None
 }
 
 #[cfg(desktop)]
