@@ -17,10 +17,16 @@ Latest GitHub source / local-app tag:
 
 Current App Store submission candidate:
 
-- `3.0.1` — `3.0.1-app-store-release-notes.md` (quality-only patch on the published
-  `3.0.0`: menu-bar rebuild suppression, tab scroll / duplicate-name labels, and localized
-  diagnostics; **submission copy prepared, not yet submitted**; the signed App Store package
-  is built locally with `release:candidate --with-app-store-pkg`)
+- `3.0.2` — `3.0.2-app-store-release-notes.md` (bug-fix patch on the 3.0 line:
+  the macOS menu bar no longer flickers while typing, and native menu markers no longer
+  drift from the app state while a modal owns input; **submission copy prepared, not yet
+  submitted**; the signed App Store package is built locally with
+  `release:candidate --with-app-store-pkg`)
+
+Prior submission copy:
+
+- `3.0.1` — `3.0.1-app-store-release-notes.md` (menu-bar rebuild suppression, tab scroll /
+  duplicate-name labels, and localized diagnostics; owner-reported as submitted)
 
 Published store baseline:
 
@@ -55,8 +61,10 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`3.0.1` is the current App Store submission candidate**; its submission
-  copy is prepared but not yet submitted. See `3.0.1-app-store-release-notes.md`.
+- **`3.0.2` is the current App Store submission candidate**; its submission
+  copy is prepared but not yet submitted. See `3.0.2-app-store-release-notes.md`.
+- `3.0.1` was owner-reported as submitted; this repository does not record a
+  verified published build for it. See `3.0.1-app-store-release-notes.md`.
 - **`3.0.0` is published** on the Mac App Store (owner-reported 2026-09-14;
   the listing shows version 3.0.0). Exact released-build provenance and
   rollout coverage remain unverified here. See
@@ -126,6 +134,8 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
+- `3.0.2-app-store-release-notes.md` is the prepared submission copy for the current
+  bug-fix patch on the 3.0 line.
 - `3.0.1-app-store-release-notes.md` is the prepared submission copy for the
   current quality patch on the published `3.0.0`.
 - `3.0.0-app-store-release-notes.md` records the published `3.0.0` App Store

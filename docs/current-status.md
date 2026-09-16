@@ -3,9 +3,11 @@
 Status: Operational
 Scope: v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-16
 
 ## Current State
+
+- **v3.0.2を提出用に準備（2026-09-16）:** 公開済み3.0系で残っていたmacOSメニューバーの明滅を直した不具合修正版。原因は2経路で、本文更新のたびに `set_title` のIPCが走っていたこと（`useWindowTitle` の `activeTab` オブジェクト依存）と、フラグだけの変化でも `app.set_menu` でメニューバー全体を作り直していたこと。メニュー状態は「同一state→何もしない / フラグのみ→delta適用 / ラベルか項目集合→再構築」に変更した。あわせて、App Store laneに存在しないAgent項目をin-placeが要求して再構築へ戻る問題、モーダル中のテーマ／チェック項目でネイティブ表示だけが変わる問題も塞いだ。版数はnpm / Tauri / Cargo / package-lockを `3.0.2` へ揃えた。提出文案は [3.0.2 App Store notes](releases/3.0.2-app-store-release-notes.md)、作業記録は [current-work](current-work.md)。実機確認（入力中のちらつき、モーダル中のメニュー操作）と署名pkg作成は別工程。3.0.1はオーナーがストア申請済みと報告しており、公開build番号との対応は未確認。
 
 - **v3.0.0を公開（2026-09-14）:** オーナーが公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認（更新表示は確認時点で約1時間前）。公開build番号・公開buildとソースの対応・Apple側の処理/審査の詳細・TestFlightでの個別実機受入結果は独立未確認。ローカル候補記録（`docs/internal/app-store-candidates/latest.json`）は2.9.0 / build 125のままで、v3.0.0 pkgの書き戻しはない。未コミットで残っていたv3最終調整は区切りごとにコミットし、GitHubソースタグ `v3.0.0`＋Release（ソースのみ・バイナリなし）を作成、READMEと公開画像もv3へ更新し、既定ブランチ `main` も v3.0.0 の状態へ同期した。詳細は [3.0.0候補記録](releases/3.0.0-source-tag.release.md)。
 

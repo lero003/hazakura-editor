@@ -3,9 +3,16 @@
 Status: Operational
 Scope: v3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-16
 
 ## Current State
+
+- **v3.0.2を提出用に準備（2026-09-16）:** 公開済み3.0系で残っていたmacOSメニューバーの明滅を直した不具合修正版。
+  本文更新ごとの `set_title` IPC と、フラグ変化ごとの `app.set_menu` 全再構築を止め、メニュー状態は
+  「同一state→何もしない / フラグのみ→差分適用 / ラベルか項目集合→再構築」にした。App Store lane で
+  in-place が失敗して再構築へ戻る問題、モーダル中のテーマ／チェック項目でネイティブ表示だけが変わる問題も塞いだ。
+  版数は npm / Tauri / Cargo / package-lock を `3.0.2` へ。提出文案は
+  [3.0.2 App Store notes](releases/3.0.2-app-store-release-notes.md)、作業記録は [current-work](current-work.md)。
 
 - **v3.0.0公開済み（2026-09-14）:** オーナーが公開を報告。Mac App Storeの製品ページでバージョン3.0.0を確認。
   公開build/sourceの対応・build番号・TestFlight個別受入は独立未確認。未コミットで残っていたv3最終調整は
