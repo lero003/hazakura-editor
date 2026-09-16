@@ -680,10 +680,14 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
 ) {
     let action = event.id().as_ref();
 
-    if let Some(theme_preference) = theme_preference_for_menu_action(action) {
-        let _ = sync_theme_menu_state(app, theme_preference);
-    }
-
+    // The theme marker is deliberately NOT moved here. The frontend drops
+    // non-quit menu events while a modal or the save-conflict surface owns
+    // input (see `useAppMenuActionListener`), so moving the marker before
+    // the event is accepted would leave the native menu showing a theme the
+    // app never applied — and the delta menu update would not put it back,
+    // because the preference itself never changed. The preference on the
+    // React side stays the source of truth, and the marker follows it
+    // through the normal `update_app_menu_state` path.
     if action.starts_with(MENU_RECENT_FILE_PREFIX)
         || action.starts_with(MENU_RECENT_FOLDER_PREFIX)
         || matches!(

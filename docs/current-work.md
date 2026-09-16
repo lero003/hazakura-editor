@@ -56,6 +56,28 @@ MAS版こそ今回直したい lane なので、これは実害のある blocker
 Agent Workbench項目が入らない**ことと、変更フィールドだけが並ぶことをテストで固定した。
 guardを外すとこのテストが落ちることも確認済み。
 
+### 外部レビュー後の再々修正（2026-09-16）
+
+delta化で新たに露出した経路を1本塞いだ。
+
+- `emit_app_menu_event` は、テーマ項目が押された瞬間にReactへイベントを送る**前に**
+  `sync_theme_menu_state` でネイティブの「●」を動かしていた。フロントはモーダルまたは
+  保存衝突UIが出ているとQuit以外のメニューイベントを捨てるので、
+  「設定ダイアログを開いたままメニューからテーマを選ぶ」と、**アプリは元のテーマのまま
+  ネイティブの●だけ新テーマ**になる。delta化により、その後dirtyなどが変わっても
+  `theme_preference` 自体は変わっていないので直らない経路になっていた。
+  先行同期を削除し、テーマの正本をReact側に一本化した（受理されて `themePreference` が
+  変わったあとに `update_app_menu_state` 経由でネイティブへ反映される）。
+- 重複していたテーマ同期経路を畳んだ。`useThemeMenuStateSync` と
+  `update_theme_menu_state` command、`lib/tauri/theme.ts` を削除し、
+  `AppMenuState` の `ThemeSync` を唯一の経路にした。
+
+回帰テストは2本。フロント側に「モーダル表示中のテーマメニュー操作で
+`setThemePreference` を呼ばない」、Rust側に「`emit_app_menu_event` が
+`sync_theme_menu_state` を先行実行しない」を追加し、先行同期を戻すと後者が落ちることを
+確認した。検証: `cargo test` 393件（+2 ignored）、`cargo fmt --check`、
+`npm run typecheck`、`npm test`（286ファイル・2,517件）。
+
 ## 3.0.1候補 — 文字入力ごとのメニューバー再構築の修正（2026-09-15）
 
 本文の1文字入力で `useAppMenuStateSync` の `activeTab` オブジェクトが差し替わり、

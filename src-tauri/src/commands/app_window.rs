@@ -282,16 +282,6 @@ pub(crate) fn set_agent_window_theme_with_label_for_lane(
 }
 
 #[tauri::command]
-pub(crate) fn update_theme_menu_state<R: tauri::Runtime>(
-    window: tauri::WebviewWindow<R>,
-    app: tauri::AppHandle<R>,
-    theme_preference: String,
-) -> Result<(), String> {
-    ensure_main_window(&window)?;
-    crate::menu::sync_theme_menu_state(&app, &theme_preference)
-}
-
-#[tauri::command]
 pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,

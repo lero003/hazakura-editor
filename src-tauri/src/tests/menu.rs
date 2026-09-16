@@ -309,3 +309,24 @@ fn app_menu_event_emits_all_theme_actions() {
         );
     }
 }
+
+#[test]
+fn theme_menu_clicks_do_not_move_the_marker_before_the_app_accepts_them() {
+    let source = include_str!("../menu.rs");
+    let emit_body = source
+        .split("pub(crate) fn emit_app_menu_event")
+        .nth(1)
+        .and_then(|section| section.split("\n}\n").next())
+        .expect("find the emit_app_menu_event body");
+
+    // The React side drops non-quit menu events while a modal or the
+    // save-conflict surface owns input. Moving the native theme marker on
+    // the click itself would leave the menu showing a theme the app never
+    // applied, and the delta menu update cannot correct it because the
+    // preference did not change. The marker must follow the accepted
+    // preference through `update_app_menu_state` instead.
+    assert!(
+        !emit_body.contains("sync_theme_menu_state"),
+        "emit_app_menu_event must not pre-sync the theme marker before the app accepts the click",
+    );
+}

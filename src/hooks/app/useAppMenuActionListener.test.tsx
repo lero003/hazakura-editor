@@ -137,6 +137,25 @@ describe("useAppMenuActionListener", () => {
 
     expect(setThemePreference).toHaveBeenCalledWith("shinkai");
   });
+
+  it("ignores theme menu actions while a modal owns input", () => {
+    const { setThemePreference } = setup();
+    const modal = document.createElement("section");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    document.body.appendChild(modal);
+
+    try {
+      void menuListeners.at(-1)?.({ payload: "theme-yakou" } as never);
+
+      // The native side must not have moved its theme marker for an event
+      // the app is about to drop: the preference never changes, so the
+      // delta menu update has nothing to correct it with.
+      expect(setThemePreference).not.toHaveBeenCalled();
+    } finally {
+      modal.remove();
+    }
+  });
 });
 
 it("blocks native document/menu mutations while the conflict surface owns input", () => {

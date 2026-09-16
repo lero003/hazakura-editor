@@ -228,7 +228,6 @@ pub fn run() {
             save_text_file_as,
             save_binary_file_as,
             update_app_menu_state,
-            update_theme_menu_state,
             open_agent_window,
             set_agent_window_theme,
             open_apple_assist_window,

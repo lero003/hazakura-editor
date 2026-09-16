@@ -10,7 +10,6 @@ import type {
 } from "../../types";
 import { useAppMenuStateSync } from "./useAppMenuStateSync";
 import { useDraftPersistence } from "../document/useDraftPersistence";
-import { useThemeMenuStateSync } from "./useThemeMenuStateSync";
 import { useWindowTitle } from "./useWindowTitle";
 import { useWorkspaceStatePersistence } from "../workspace/useWorkspaceStatePersistence";
 
@@ -80,8 +79,6 @@ export function useAppShellSync({
     recentFolders,
     themePreference,
   });
-
-  useThemeMenuStateSync(themePreference, { onStatus });
 
   useWorkspaceStatePersistence({
     activeTab,
