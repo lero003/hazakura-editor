@@ -113,19 +113,21 @@ pub(crate) fn update_app_menu_state<R: tauri::Runtime>(
     //   2. a flag-only change updates the existing items in place,
     //   3. only a structural change (labels or the item set) rebuilds.
     let previous = menu_state_store.previous();
-    if previous.as_ref() == Some(&state) {
-        return Ok(());
-    }
-    if !crate::menu::menu_state_needs_rebuild(previous.as_ref(), &state) {
-        match crate::menu::apply_app_menu_state_in_place(&app, &state) {
-            Ok(()) => {
-                menu_state_store.remember(state);
-                return Ok(());
+    match previous.as_ref() {
+        Some(previous) if previous == &state => return Ok(()),
+        Some(previous) if !crate::menu::menu_state_needs_rebuild(Some(previous), &state) => {
+            match crate::menu::apply_app_menu_state_in_place(&app, previous, &state) {
+                Ok(()) => {
+                    menu_state_store.remember(state);
+                    return Ok(());
+                }
+                // Keep the menu truthful even if the in-place path cannot
+                // find an expected item (for example after a platform menu
+                // change).
+                Err(err) => eprintln!("Cannot update app menu in place, rebuilding: {err}"),
             }
-            // Keep the menu truthful even if the in-place path cannot find
-            // an expected item (for example after a platform menu change).
-            Err(err) => eprintln!("Cannot update app menu in place, rebuilding: {err}"),
         }
+        _ => {}
     }
 
     let menu = build_app_menu_with_state(&app, Some(&state))

@@ -1,5 +1,5 @@
 use super::*;
-use crate::menu::menu_state_needs_rebuild;
+use crate::menu::{menu_state_needs_rebuild, plan_app_menu_updates, AppMenuItemUpdate};
 use crate::types::{AppMenuRecentItem, AppMenuState};
 
 fn base_menu_state() -> AppMenuState {
@@ -129,6 +129,85 @@ fn label_and_recent_list_changes_rebuild_the_menu() {
     assert!(
         menu_state_needs_rebuild(Some(&base), &recent_folders),
         "the recent-folders submenu items only change by rebuilding",
+    );
+}
+
+#[test]
+fn in_place_plan_only_queues_the_field_that_changed() {
+    let saved = base_menu_state();
+
+    // The common typing case: nothing but the Save flag moves.
+    let mut edited = saved.clone();
+    edited.active_dirty = true;
+    assert_eq!(
+        plan_app_menu_updates(&saved, &edited, true, true),
+        vec![AppMenuItemUpdate::Enabled(MENU_SAVE, true)],
+    );
+
+    // An identical state queues nothing at all.
+    assert!(plan_app_menu_updates(&saved, &saved, true, true).is_empty());
+}
+
+#[test]
+fn app_store_lane_never_requests_the_absent_agent_menu_item() {
+    let base = base_menu_state();
+    let mut next = base.clone();
+    next.active_dirty = true;
+    next.agent_workbench_active = true;
+    next.agent_workbench_consent = true;
+    next.assist_surface_active = "apple-local".to_string();
+    next.preview_visible = !base.preview_visible;
+
+    // App Store lane: `build_app_menu_with_state` leaves the Agent
+    // Workbench item out, so asking for it would fail and force the caller
+    // back into the full `set_menu` rebuild this path exists to avoid.
+    let app_store_plan = plan_app_menu_updates(&base, &next, false, true);
+    assert!(
+        !app_store_plan.iter().any(|update| matches!(
+            update,
+            AppMenuItemUpdate::Enabled(MENU_OPEN_AGENT_WINDOW, _)
+        )),
+        "the App Store lane must not touch the missing Agent Workbench item",
+    );
+    assert!(
+        app_store_plan.iter().any(|update| matches!(
+            update,
+            AppMenuItemUpdate::Enabled(MENU_OPEN_APPLE_ASSIST_WINDOW, _)
+        )),
+        "the Assist item exists in the App Store lane and must still update",
+    );
+
+    // The developer lane keeps its Agent Workbench item in the menu.
+    let developer_plan = plan_app_menu_updates(&base, &next, true, true);
+    assert!(
+        developer_plan.iter().any(|update| matches!(
+            update,
+            AppMenuItemUpdate::Enabled(MENU_OPEN_AGENT_WINDOW, _)
+        )),
+        "the developer lane must keep the Agent Workbench item current",
+    );
+}
+
+#[test]
+fn theme_submenu_only_syncs_when_the_theme_changed() {
+    let base = base_menu_state();
+
+    let mut dirty_only = base.clone();
+    dirty_only.active_dirty = true;
+    assert!(
+        !plan_app_menu_updates(&base, &dirty_only, true, true)
+            .iter()
+            .any(|update| matches!(update, AppMenuItemUpdate::ThemeSync(_))),
+        "typing must not rewrite the theme labels",
+    );
+
+    let mut themed = base.clone();
+    themed.theme_preference = "yakou".to_string();
+    assert!(
+        plan_app_menu_updates(&base, &themed, true, true)
+            .iter()
+            .any(|update| matches!(update, AppMenuItemUpdate::ThemeSync(_))),
+        "a real theme change still syncs the submenu",
     );
 }
 

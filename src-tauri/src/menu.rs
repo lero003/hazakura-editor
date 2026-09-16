@@ -762,38 +762,123 @@ pub(crate) fn menu_state_needs_rebuild(
     }
 }
 
-/// Apply the flag-only part of `state` to the existing menu items without
+/// One queued change to an existing menu item. Keeping the update as data
+/// lets tests assert exactly which items a distribution lane may touch.
+#[derive(Debug, PartialEq)]
+pub(crate) enum AppMenuItemUpdate {
+    Enabled(&'static str, bool),
+    Checked(&'static str, bool),
+    ThemeSync(String),
+}
+
+/// Plan the in-place updates for `previous -> next`.
+///
+/// Only fields that actually changed are queued, and optional items are
+/// queued only when the current distribution lane put them in the menu:
+/// the App Store lane has no Agent Workbench item, so asking for it would
+/// fail and push the caller back into a full `set_menu` rebuild — the flash
+/// this path exists to avoid. Items that are expected everywhere (Save,
+/// Save As, the View checks) are still requested unconditionally so a
+/// genuine menu regression surfaces as an error instead of silence.
+pub(crate) fn plan_app_menu_updates(
+    previous: &AppMenuState,
+    next: &AppMenuState,
+    agent_window_item_present: bool,
+    apple_assist_item_present: bool,
+) -> Vec<AppMenuItemUpdate> {
+    let mut updates = Vec::new();
+
+    if previous.active_dirty != next.active_dirty {
+        updates.push(AppMenuItemUpdate::Enabled(MENU_SAVE, next.active_dirty));
+    }
+    if previous.has_active_tab != next.has_active_tab {
+        updates.push(AppMenuItemUpdate::Enabled(
+            MENU_SAVE_AS,
+            next.has_active_tab,
+        ));
+    }
+    if agent_window_item_present
+        && (previous.agent_workbench_active != next.agent_workbench_active
+            || previous.agent_workbench_consent != next.agent_workbench_consent)
+    {
+        updates.push(AppMenuItemUpdate::Enabled(
+            MENU_OPEN_AGENT_WINDOW,
+            agent_window_item_enabled(Some(next)),
+        ));
+    }
+    if apple_assist_item_present && previous.assist_surface_active != next.assist_surface_active {
+        updates.push(AppMenuItemUpdate::Enabled(
+            MENU_OPEN_APPLE_ASSIST_WINDOW,
+            apple_assist_window_item_enabled(Some(next)),
+        ));
+    }
+    if previous.preview_visible != next.preview_visible {
+        updates.push(AppMenuItemUpdate::Checked(
+            MENU_TOGGLE_PREVIEW,
+            next.preview_visible,
+        ));
+    }
+    if previous.l_mode_enabled != next.l_mode_enabled {
+        updates.push(AppMenuItemUpdate::Checked(
+            MENU_TOGGLE_L_MODE,
+            next.l_mode_enabled,
+        ));
+    }
+    if previous.wrap_lines != next.wrap_lines {
+        updates.push(AppMenuItemUpdate::Checked(
+            MENU_TOGGLE_WRAP,
+            next.wrap_lines,
+        ));
+    }
+    if previous.show_invisibles != next.show_invisibles {
+        updates.push(AppMenuItemUpdate::Checked(
+            MENU_TOGGLE_INVISIBLES,
+            next.show_invisibles,
+        ));
+    }
+    if previous.spellcheck_enabled != next.spellcheck_enabled {
+        updates.push(AppMenuItemUpdate::Checked(
+            MENU_TOGGLE_SPELLCHECK,
+            next.spellcheck_enabled,
+        ));
+    }
+    // The theme submenu marks its selection in the item label, so it updates
+    // in place for the same reason: no full menu replacement.
+    if previous.theme_preference != next.theme_preference {
+        updates.push(AppMenuItemUpdate::ThemeSync(next.theme_preference.clone()));
+    }
+
+    updates
+}
+
+/// Apply the planned in-place updates to the existing menu items without
 /// replacing the menu. Returns an error when an expected item is missing, so
 /// the caller can fall back to a full rebuild instead of leaving stale flags.
 #[cfg(desktop)]
 pub(crate) fn apply_app_menu_state_in_place<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
-    state: &AppMenuState,
+    previous: &AppMenuState,
+    next: &AppMenuState,
 ) -> Result<(), String> {
     let menu = app
         .menu()
         .ok_or_else(|| "App menu not available".to_string())?;
+    let updates = plan_app_menu_updates(
+        previous,
+        next,
+        agent_workbench_allowed_by_distribution(),
+        apple_assist_allowed_by_distribution(),
+    );
 
-    set_menu_item_enabled(&menu, MENU_SAVE, state.active_dirty)?;
-    set_menu_item_enabled(&menu, MENU_SAVE_AS, state.has_active_tab)?;
-    set_menu_item_enabled(
-        &menu,
-        MENU_OPEN_AGENT_WINDOW,
-        agent_window_item_enabled(Some(state)),
-    )?;
-    set_menu_item_enabled(
-        &menu,
-        MENU_OPEN_APPLE_ASSIST_WINDOW,
-        apple_assist_window_item_enabled(Some(state)),
-    )?;
-    set_check_menu_item_checked(&menu, MENU_TOGGLE_PREVIEW, state.preview_visible)?;
-    set_check_menu_item_checked(&menu, MENU_TOGGLE_L_MODE, state.l_mode_enabled)?;
-    set_check_menu_item_checked(&menu, MENU_TOGGLE_WRAP, state.wrap_lines)?;
-    set_check_menu_item_checked(&menu, MENU_TOGGLE_INVISIBLES, state.show_invisibles)?;
-    set_check_menu_item_checked(&menu, MENU_TOGGLE_SPELLCHECK, state.spellcheck_enabled)?;
-    // The theme submenu marks its selection in the item label, so it updates
-    // in place for the same reason: no full menu replacement.
-    sync_theme_menu_state(app, &state.theme_preference)?;
+    for update in updates {
+        match update {
+            AppMenuItemUpdate::Enabled(id, enabled) => set_menu_item_enabled(&menu, id, enabled)?,
+            AppMenuItemUpdate::Checked(id, checked) => {
+                set_check_menu_item_checked(&menu, id, checked)?
+            }
+            AppMenuItemUpdate::ThemeSync(preference) => sync_theme_menu_state(app, &preference)?,
+        }
+    }
 
     Ok(())
 }

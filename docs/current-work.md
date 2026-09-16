@@ -26,11 +26,35 @@ Last reviewed: 2026-09-16
 `Save` / `Save As` の有効・無効は `active_dirty` / `has_active_tab` として引き続き
 追従する（回帰テストで固定）。読み方・保存・書き出しの挙動は変えていない。
 
-検証: `cargo test` 389件（+2 ignored）、`cargo fmt --check`、`npm run typecheck`、
-`npm test`（287ファイル・2,516件）。`useWindowTitle` の1文字ごと送信は
-**修正前のテストが落ちる**ことを確認してから直した。`menu_state_needs_rebuild` は
-フィールドごとに、フラグのみ / 再構築要 / 同一stateの3分類をRustテストで固定した。
+検証: `cargo test` 392件（+2 ignored）、`cargo fmt --check`、`npm run typecheck`、
+`npm test`（287ファイル・2,517件）、`npm run smoke:app-store-surface`（125件）。
+`useWindowTitle` の1文字ごと送信は**修正前のテストが落ちる**ことを確認してから直した。
+`menu_state_needs_rebuild` はフィールドごとに、フラグのみ / 再構築要 / 同一stateの3分類を
+Rustテストで固定した。`npm run build:app-store-preview` は通過し、
+`3.0.1`のローカル.app（App Store lane・ad-hoc署名）を実機確認用に作成した。
 実機での見た目の確認は3.0.2候補.appの別工程に残る。
+
+### 外部レビュー後の再修正（2026-09-16）
+
+再レビューで、**App Store laneでは in-place 更新が必ず失敗して `set_menu` に戻る**ことが
+見つかった。`build_app_menu_with_state` は `agent_workbench_allowed` が false のとき
+`MENU_OPEN_AGENT_WINDOW` をメニューへ追加しないのに、in-place 側が無条件に要求していた。
+MAS版こそ今回直したい lane なので、これは実害のある blocker だった。
+
+- optional な項目（Agent Workbench / Local Assist）は、構築時と同じ配布 lane 条件で
+  guard する。存在しない項目を黙って無視するのではなく、そのlaneに本来無いものだけを
+  条件で外し、Saveなどの必須項目が消えた場合はエラーのままにする。
+- あわせて in-place を **delta apply** にした。`previous` と `next` を比較し、変わった
+  フィールドの項目だけを更新する。テーマのラベル書き換えも
+  `theme_preference` が変わったときだけ実行する（dirtyだけの変化で全項目を触らない）。
+- `useWindowTitle` はタイトル文字列そのものを依存にした。画像プレビュー中はタイトルが
+  画像名だけで決まるので、背後の本文やdirtyが動いても同じタイトルを再送しない。
+
+このHighがテストをすり抜けた理由も残しておく: 分類器（`menu_state_needs_rebuild`）だけを
+テストしていて、in-place が「そのlaneに無い項目を要求しないか」を見ていなかった。
+今回 `plan_app_menu_updates` を純関数として切り出し、**App Store laneの計画に
+Agent Workbench項目が入らない**ことと、変更フィールドだけが並ぶことをテストで固定した。
+guardを外すとこのテストが落ちることも確認済み。
 
 ## 3.0.1候補 — 文字入力ごとのメニューバー再構築の修正（2026-09-15）
 

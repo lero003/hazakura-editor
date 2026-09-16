@@ -72,4 +72,28 @@ describe("useWindowTitle", () => {
       expect.stringMatching(/^note\.md \* - Hazakura Editor/),
     );
   });
+
+  it("ignores background tab changes while an image preview owns the title", async () => {
+    const initial = renderHook(
+      ({ activeDirty }: { activeDirty: boolean }) =>
+        useWindowTitle({
+          activeDirty,
+          activeTab: { name: "note.md" },
+          selectedImage: { name: "photo.png" },
+        }),
+      { initialProps: { activeDirty: false } },
+    );
+
+    await waitFor(() => {
+      expect(setCurrentWindowTitle).toHaveBeenCalledTimes(1);
+    });
+    expect(setCurrentWindowTitle).toHaveBeenLastCalledWith(
+      expect.stringMatching(/^photo\.png - Hazakura Editor/),
+    );
+
+    // The image name is what the title shows, so a dirty flag moving on the
+    // document behind it must not send the same title again.
+    initial.rerender({ activeDirty: true });
+    expect(setCurrentWindowTitle).toHaveBeenCalledTimes(1);
+  });
 });
