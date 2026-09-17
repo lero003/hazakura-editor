@@ -807,7 +807,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         // 張り付く」症状の原因になる（handoff の既知バグ）。
         view.contentDOM.blur();
         const win = view.dom.ownerDocument.defaultView ?? window;
-        const handleScrollEnd = () => {
+        const handleScrollEnd = (mouseUpEvent: MouseEvent) => {
           win.removeEventListener("mouseup", handleScrollEnd, {
             capture: true,
           });
@@ -818,6 +818,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           ) {
             view.focus();
           }
+          keepBottomAfterScrollbarDrag(view, mouseUpEvent);
         };
         scrollbarMouseUpHandlerRef.current = handleScrollEnd;
         win.addEventListener("mouseup", handleScrollEnd, { capture: true });
@@ -1584,6 +1585,69 @@ function readScrollRatio(scroller: HTMLElement): number {
   }
 
   return scroller.scrollTop / scrollableHeight;
+}
+
+// スクロールバーで最下部まで引いて離したときの底のずれを補正する。
+//
+// CodeMirror は未計測の行の高さを推定しているため、スクロールバーのドラッグで
+// 一気に末尾へ飛ぶと、ドラッグ中は推定値で最大値が決まり、その後に表示された行を
+// 測り直して総高さが伸びる。すると離した位置は「そのときの最下部」のまま取り残され、
+// 見た目が末尾より少し上で止まる（仮想化の無いプレビュー側では起きない）。
+// 「末尾まで引いた」の判定は、スクロール位置ではなくポインタの位置で行う。
+// 高さが伸びるとスクロール位置は既に最下部でなくなるため、位置で判定すると
+// 取りこぼす（実測: ドラッグ終了時に 2601px、再計測後は最大 2660px）。
+// 縦スクロールバーの帯の内側でトラックの下端まで来ていれば、末尾まで引いている。
+const SCROLLBAR_BOTTOM_SNAP_TOLERANCE_PX = 4;
+// オーバーレイスクロールバーでは offsetWidth と clientWidth が同じになる。
+const OVERLAY_SCROLLBAR_FALLBACK_WIDTH_PX = 14;
+
+function keepBottomAfterScrollbarDrag(
+  view: EditorView,
+  mouseUpEvent: MouseEvent,
+) {
+  const scroller = view.scrollDOM;
+
+  if (scroller.scrollHeight <= scroller.clientHeight) {
+    return;
+  }
+
+  const rect = scroller.getBoundingClientRect();
+  const verticalBand =
+    Math.max(0, scroller.offsetWidth - scroller.clientWidth) ||
+    OVERLAY_SCROLLBAR_FALLBACK_WIDTH_PX;
+  const draggedToTrackEnd =
+    mouseUpEvent.clientX >= rect.right - verticalBand &&
+    mouseUpEvent.clientY >= rect.bottom - SCROLLBAR_BOTTOM_SNAP_TOLERANCE_PX;
+
+  if (!draggedToTrackEnd) {
+    return;
+  }
+
+  // CodeMirror の再計測はこの後に数フレームかけて進む。1 回の読み直しでは
+  // まだ伸びていないので、伸びが止むまで（最大 8 フレーム）底へ寄せ直す。
+  // 離した後でユーザーが上へ動かしたら、その時点で降りる。
+  const win = scroller.ownerDocument.defaultView ?? window;
+  let framesLeft = 8;
+  let lastWritten = scroller.scrollTop;
+
+  const settle = () => {
+    if (!view.dom.isConnected || framesLeft <= 0) {
+      return;
+    }
+    framesLeft -= 1;
+    const inner = view.scrollDOM;
+    if (inner.scrollTop < lastWritten - SCROLLBAR_BOTTOM_SNAP_TOLERANCE_PX) {
+      return;
+    }
+    const max = inner.scrollHeight - inner.clientHeight;
+    if (max > inner.scrollTop) {
+      inner.scrollTop = max;
+      lastWritten = max;
+    }
+    win.requestAnimationFrame(settle);
+  };
+
+  win.requestAnimationFrame(settle);
 }
 
 function buildInvisibleDecorations(doc: Text): DecorationSet {

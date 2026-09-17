@@ -713,6 +713,57 @@ describe("EditorPane", () => {
     expect(document.activeElement).toBe(content);
   });
 
+  it("keeps the editor at the bottom when the scrollbar is dragged to the track end", () => {
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      });
+
+    try {
+      const { container } = render(
+        renderEditorPane({
+          value: Array.from({ length: 120 }, (_, index) => `line ${index + 1}`).join(
+            "\n",
+          ),
+        }),
+      );
+      const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+      // CodeMirror は未計測の行を推定しているため、末尾へ飛んだ後に総高さが伸びる。
+      // ここでは 1200 → 1400 の伸びを模す。
+      let scrollHeight = 1200;
+      Object.defineProperties(scroller, {
+        clientHeight: { configurable: true, value: 200 },
+        clientWidth: { configurable: true, value: 280 },
+        offsetHeight: { configurable: true, value: 215 },
+        offsetWidth: { configurable: true, value: 300 },
+        scrollHeight: { configurable: true, get: () => scrollHeight },
+        scrollWidth: { configurable: true, value: 280 },
+      });
+      scroller.getBoundingClientRect = () =>
+        ({
+          bottom: 215,
+          height: 215,
+          left: 0,
+          right: 300,
+          top: 0,
+          width: 300,
+        }) as DOMRect;
+
+      // スクロールバーのドラッグで末尾まで引いた状態（当時の最下部 = 1000）。
+      scroller.scrollTop = 1000;
+      fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
+      scrollHeight = 1400;
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 215 });
+
+      // 推定の伸び分を捨てず、再計測後の最下部（1400 - 200）へ寄せ直す。
+      expect(scroller.scrollTop).toBe(1200);
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {
     const editorRef = createRef<EditorPaneHandle>();
     const onChange = vi.fn();

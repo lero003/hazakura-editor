@@ -121,6 +121,79 @@ describe("usePreviewScrollSync", () => {
     requestAnimationFrameSpy.mockRestore();
   });
 
+  it("keeps the editor guard alive while syncPreviewScroll fires continuously (scrollbar drag)", () => {
+    vi.useFakeTimers();
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    const setScrollRatio = vi.fn(() => true);
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 1500,
+      scrollTop: 0,
+    });
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+
+    // スクロールバーのドラッグを模倣: 編集側が連続して比率を書き込み続ける。
+    // 固定 80ms の解除だと、ドラッグが続く間にガードが切れ、キューに残った
+    // プレビューの古いエコーが編集位置を上書きする（最下部で少し戻る症状）。
+    for (let i = 0; i < 5; i += 1) {
+      act(() => {
+        result.current.syncPreviewScroll(0.1 * (i + 1));
+      });
+      act(() => {
+        const pending = [...frameCallbacks];
+        frameCallbacks.length = 0;
+        pending.forEach((callback) => callback(0));
+      });
+      // ガードタイマー（150ms）より前に進めても、まだ解除されない。
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
+      act(() => {
+        result.current.syncEditorScroll();
+      });
+      act(() => {
+        const pending = [...frameCallbacks];
+        frameCallbacks.length = 0;
+        pending.forEach((callback) => callback(0));
+      });
+      // ドラッグ継続中はプレビュー発の書き戻しが編集位置を動かさない。
+      expect(setScrollRatio).not.toHaveBeenCalled();
+    }
+
+    // ドラッグが止まってガードが切れると、プレビュー発の同期が再び通る。
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    act(() => {
+      const pending = [...frameCallbacks];
+      frameCallbacks.length = 0;
+      pending.forEach((callback) => callback(0));
+    });
+    expect(setScrollRatio).toHaveBeenCalled();
+
+    requestAnimationFrameSpy.mockRestore();
+  });
+
   it("does not move Preview scroll while the user is selecting text in the pane", () => {
     vi.useFakeTimers();
     const frameCallbacks: FrameRequestCallback[] = [];

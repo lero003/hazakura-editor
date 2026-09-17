@@ -86,6 +86,55 @@ function record(entry: Omit<ProbeEntry, "ms">) {
       .join(" ") + "\n";
 }
 
+// ?traceScroll=1 で、`.cm-scroller` への scrollTop / scrollTo 代入をスタックつきで
+// 記録する。ドラッグ終了後に「誰がスクロール位置を書き戻したか」を特定するため。
+if (params.get("traceScroll") === "1") {
+  const traceMirror = document.createElement("pre");
+  traceMirror.id = "__trace-mirror";
+  traceMirror.style.display = "none";
+  document.body.append(traceMirror);
+  const recordWrite = (what: string) => {
+    const stack = (new Error().stack ?? "")
+      .split("\n")
+      .slice(1)
+      .filter((line) => !line.includes("fixture.tsx"))
+      .slice(0, 6)
+      .map((line) => line.trim().replace(/^at\s+/, "").replace(/\(.*?(\/[^/)]+)\)$/, "$1"))
+      .join(" | ");
+    traceMirror.textContent +=
+      what + "  <<< " + stack + "\n";
+  };
+  const scrollTopDescriptor = Object.getOwnPropertyDescriptor(
+    Element.prototype,
+    "scrollTop",
+  );
+  if (scrollTopDescriptor?.get && scrollTopDescriptor.set) {
+    const { get, set } = scrollTopDescriptor;
+    Object.defineProperty(Element.prototype, "scrollTop", {
+      configurable: true,
+      get() {
+        return get.call(this);
+      },
+      set(value: number) {
+        if (this instanceof HTMLElement && this.classList.contains("cm-scroller")) {
+          recordWrite("scrollTop=" + Math.round(Number(value)));
+        }
+        set.call(this, value);
+      },
+    });
+  }
+  const nativeScrollTo = Element.prototype.scrollTo;
+  Element.prototype.scrollTo = function scrollToPatched(
+    this: Element,
+    ...args: unknown[]
+  ) {
+    if (this instanceof HTMLElement && this.classList.contains("cm-scroller")) {
+      recordWrite("scrollTo " + JSON.stringify(args[0]));
+    }
+    return (nativeScrollTo as (...rest: unknown[]) => void).apply(this, args);
+  } as typeof Element.prototype.scrollTo;
+}
+
 for (const kind of ["mousedown", "mouseup", "pointerdown", "pointerup"] as const) {
   window.addEventListener(
     kind,

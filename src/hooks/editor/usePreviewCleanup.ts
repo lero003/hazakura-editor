@@ -5,16 +5,22 @@ type TimerRef = {
 };
 
 type UsePreviewCleanupOptions = {
+  editorGuardTimerRef: TimerRef;
   previewScrollFrameRef: TimerRef;
   scrollHudHideTimerRef: TimerRef;
 };
 
 export function usePreviewCleanup({
+  editorGuardTimerRef,
   previewScrollFrameRef,
   scrollHudHideTimerRef,
 }: UsePreviewCleanupOptions) {
   useEffect(
     () => () => {
+      if (editorGuardTimerRef.current !== null) {
+        window.clearTimeout(editorGuardTimerRef.current);
+      }
+
       if (previewScrollFrameRef.current !== null) {
         window.cancelAnimationFrame(previewScrollFrameRef.current);
       }
@@ -23,6 +29,6 @@ export function usePreviewCleanup({
         window.clearTimeout(scrollHudHideTimerRef.current);
       }
     },
-    [previewScrollFrameRef, scrollHudHideTimerRef],
+    [editorGuardTimerRef, previewScrollFrameRef, scrollHudHideTimerRef],
   );
 }

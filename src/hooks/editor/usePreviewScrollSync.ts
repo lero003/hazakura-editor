@@ -43,6 +43,11 @@ export function usePreviewScrollSync({
   // タイマーを「連続イベントで自己延長」する。これにより慣性継続中は editor→preview
   // の書き戻しがブロックされ続け、OSの慣性位置とJSの同期位置が衝突しない。
   const previewGuardTimerRef = useRef<number | null>(null);
+  // スクロールバーのドラッグは連続イベントで数十ms〜数秒続く。editor→preview の
+  // ガード解除を固定 80ms にすると、ドラッグが続く間にガードが切れ、キューに残った
+  // プレビュー側の古いエコーが編集位置を上書きする（最下部まで引いたのに少し上へ
+  // 戻る症状）。preview 側と同じく、連続イベントで自己延長する。
+  const editorGuardTimerRef = useRef<number | null>(null);
   // v0.34: syncEditorScroll を1フレームに1回に間引き、慣性スクロールの
   // 高頻度イベントでの scrollHeight 読み取り（強制リフロー）を抑制する。
   const editorScrollFrameRef = useRef<number | null>(null);
@@ -56,6 +61,7 @@ export function usePreviewScrollSync({
   );
 
   usePreviewCleanup({
+    editorGuardTimerRef,
     previewScrollFrameRef,
     scrollHudHideTimerRef,
   });
@@ -101,6 +107,12 @@ export function usePreviewScrollSync({
     previewScrollFrameRef.current = window.requestAnimationFrame(() => {
       previewScrollFrameRef.current = null;
 
+      // rAF を待っている間にプレビュー側が書き込みを始めていたら、この古い
+      // 書き込みは降りる（先頭のチェックだけでは後追いのエコーを止められない）。
+      if (scrollSyncSourceRef.current === "preview") {
+        return;
+      }
+
       const previewPane = previewPaneRef.current;
 
       if (!previewPane || isPreviewSelectionGesture(previewPane)) {
@@ -114,13 +126,17 @@ export function usePreviewScrollSync({
         Math.abs(previewPane.scrollTop - nextScrollTop) >=
         SCROLL_SYNC_TOLERANCE_PX
       ) {
+        if (editorGuardTimerRef.current !== null) {
+          window.clearTimeout(editorGuardTimerRef.current);
+        }
         scrollSyncSourceRef.current = "editor";
         previewPane.scrollTop = nextScrollTop;
-        window.setTimeout(() => {
+        editorGuardTimerRef.current = window.setTimeout(() => {
+          editorGuardTimerRef.current = null;
           if (scrollSyncSourceRef.current === "editor") {
             scrollSyncSourceRef.current = null;
           }
-        }, 80);
+        }, SCROLL_SYNC_GUARD_RELEASE_MS);
       }
     });
   }, [previewPaneRef, showScrollPositionHud]);
@@ -144,6 +160,12 @@ export function usePreviewScrollSync({
 
     editorScrollFrameRef.current = window.requestAnimationFrame(() => {
       editorScrollFrameRef.current = null;
+
+      // rAF 待ちの間に編集側がスクロール（ドラッグ等）を始めていたら、
+      // プレビューの古い比率で編集位置を書き戻さない。
+      if (scrollSyncSourceRef.current === "editor") {
+        return;
+      }
 
       const currentPreviewPane = previewPaneRef.current;
       if (!currentPreviewPane || isPreviewSelectionGesture(currentPreviewPane)) {
