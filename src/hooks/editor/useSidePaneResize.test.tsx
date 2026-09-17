@@ -37,9 +37,11 @@ describe("useSidePaneResize", () => {
       useSidePaneResize({ sidePaneMode: "preview", sidePaneVisible: true }),
     );
 
-    // つかむ幅はこの 6px + `.pane-resizer::before` の右 4px = 10px。
-    // 左への張り出しは編集面のスクロールバーを奪うため禁止
-    // （src/styles/workspaceCss.test.ts が固定）。
+    // これはスクロールバー回帰の主テストではなく、リサイザ列が 6px のままである
+    // ことを固定するレイアウト構造の補助テスト。実際の当たり判定（つかむ幅は
+    // 6px + `.pane-resizer::before` の右 4px）は
+    // src/styles/workspaceCss.test.ts と
+    // docs/reviews/2026-09-17-scrollbar-drag/README.md の実測が担保する。
     expect(
       result.current.editorPreviewGridStyle?.gridTemplateColumns,
     ).toContain(" 6px ");

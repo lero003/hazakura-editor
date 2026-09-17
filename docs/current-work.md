@@ -20,14 +20,18 @@ Last reviewed: 2026-09-17
   `view.scrollDOM` 自身にイベントが来たときだけ働くので、今回は無関係だった。
 
 直し: `.pane-resizer::before` の張り出しを**右だけ**に（`left: 0; right: -4px`）。
-つかむ幅は表示6px + 右4px = 10px を維持する。左隣は必ず「右端にスクロールバーを持つ
-スクロール面」なので、左へ張り出さないのが正しい。コメントも実態に合わせて直した。
+つかむ幅は表示6px + 右4px = 10px を確保する（修正前は左右へ張り出して 14px だったので
+4px 狭くなる。実測でリサイザ操作は成立するため、スクロールバーを潰してまで 14px を
+維持する理由はない）。左隣は必ず「右端にスクロールバーを持つスクロール面」なので、
+左へ張り出さないのが正しい。コメントも実態に合わせて直した。
 `src/styles/workspaceCss.test.ts` が左への張り出しを、`useSidePaneResize.test.tsx` が
 6px のリサイザ列を固定する。
 
 検証: `npm run typecheck` / `npm test` / `npm run build:vite`。
 ブラウザ実測（`docs/reviews/2026-09-17-scrollbar-drag`）で、右端2pxからの縦ドラッグが
 scroll 179→1441 になり、リサイザ単体（6px 列）も従来どおり動くことを確認した。
+同種の当たり判定が他に無いことも総当たりで検査した（書く/プレビュー・L Mode・書き出し・
+差分は conflicts 0。手順と未計測面は同 review pack の `scan-scroll-edges.js` と README）。
 未受入: **WKWebView実機**で「常に表示」とオーバーレイの両方、右端2px / 8px の
 つかみ比べ（ヘッドレスの Chromium ではオーバーレイの当たり判定を再現できない）。
 

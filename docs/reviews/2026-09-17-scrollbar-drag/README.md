@@ -61,7 +61,9 @@ open "http://127.0.0.1:1420/docs/reviews/2026-09-17-scrollbar-drag/fixture.html?
 ## 直した内容（2026-09-17）
 
 左隣は必ず「右端にスクロールバーを持つスクロール面」なので、左への張り出しを
-やめれば衝突が消える。つかむ幅は 6px + 右 4px = 10px 残る。
+やめれば衝突が消える。つかむ幅は 6px + 右 4px = 10px を確保する（修正前は
+6px + 左右 4px = 14px で、4px 狭くなる。リサイザ操作は実測で成立しているので、
+スクロールバーを潰してまで 14px を維持する理由はない）。
 
 ```css
 .pane-resizer::before {
@@ -72,7 +74,8 @@ open "http://127.0.0.1:1420/docs/reviews/2026-09-17-scrollbar-drag/fixture.html?
 
 `src/styles/workspace.css` のコメントも実態に合わせた。固定は
 `src/styles/workspaceCss.test.ts`（左へ張り出さない）と
-`src/hooks/editor/useSidePaneResize.test.tsx`（6px のリサイザ列）の2か所。
+`src/hooks/editor/useSidePaneResize.test.tsx`（6px のリサイザ列。回帰の主テストではなく
+レイアウト構造の補助）の2か所。
 
 ## 修正後の実測（同じ fixture・同じ条件）
 
@@ -93,3 +96,42 @@ open "http://127.0.0.1:1420/docs/reviews/2026-09-17-scrollbar-drag/fixture.html?
   （`docs/current-work.md` の既存記述と同じ制約）。ヒットテストが描画順で
   決まる点は WebKit も同じなので、同じ帯が死んでいる可能性が高い。
 - 実機で「常に表示」とオーバーレイの両方で、右端 2px と 8px をつかみ比べるのが確実。
+
+## 同種の問題の総当たり検査（2026-09-17）
+
+同じ型の不具合（スクロール面の端を別要素が奪う）が他に無いか、機械的に洗った。
+検査は `scan-scroll-edges.js` をブラウザで実行する。すべてのスクロール面について
+右端 / 下端の 1〜14px を `elementFromPoint` で走査し、**自分自身でも子孫でもない要素**
+が返ったら「その端は奪われている」として報告する。
+
+偽陰性が無いことの確認（negative control）: 修正前の CSS（`left: -4px`）に戻すと
+`.cm-scroller` について `right d1〜d4 -> div.pane-resizer` が 4 件出る。修正後は 0 件。
+
+| 面 | 走査したスクロール面 | conflicts |
+|---|---|---|
+| 書く / プレビュー（既定） | `div.cm-scroller`, `div.pane.preview-pane` | 0 |
+| えるモード（実トグル・L Mode） | `div.cm-scroller`（全ウィンドウ） | 0 |
+| 書き出しダイアログ | `div.export-settings-body` | 0（背景の `.cm-scroller` はモーダル遮蔽で出る＝想定内） |
+| 確認 / 差分（diff-workbench） | `div.diff-table` | 0 |
+| アウトライン / 電子書籍（右ペイン） | 溢れなし（スクロール面が生じず検査対象外） | — |
+| ファイルツリー | 溢れなし（空ワークスペース）。右端 1〜8px は `.workspace-empty`＝リサイザが食っていない | 0（幾何のみ） |
+
+構造で問題ないことを確認したもの（実測ではなく読み）:
+
+- 装飾オーバーレイ（`.edohigan-ambient`, `.ambient-yakou` / `.ambient-shokou`）は
+  `pointer-events: none`。`pointer-events` は継承するので子にも伝わる。
+- L Mode の `.l-mode-action-rail` は `right: 18px`、`.lmode-window-drag-band` は
+  `right: 156px` / `height: 52px` で、どちらも右端のスクロールバー帯（10〜15px）に届かない
+  （L Mode の走査でも 0 件）。
+- ポップオーバーの外側クリック処理（`useSlashMenu` / `WorkspaceSidebar` /
+  `TabContextMenu` / `BookScopePanel` / `EditorQuickSettingsMenu`）は mousedown /
+  pointerdown で `preventDefault()` しない。開いていてもスクロールバーのドラッグを
+  打ち消さない。
+
+今回の修正で張り出しを右へ移した点は、右隣のペインの**左端**（＝本文の余白）に乗る。
+実測でサイドバーのリサイザ右張り出しは右ペイン左端の 1〜3px がリサイザ、4px から内容で、
+スクロールバーではないことを確認した（スクロールバーは各ペインの右端にある）。
+
+まだ検査していない面（次に触るならここ）: ファイル一覧が入った本物のツリー、
+クイックオープン / コマンドパレット / 全文検索のリスト、設定、バックアップ一覧、
+Local Assist の会話ログ、Agent Workbench のターミナル、電子書籍の集中読書面。
