@@ -3,9 +3,18 @@
 Status: Operational
 Scope: v3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
 
 ## Current State
+
+- **v3.0.3を審査用に準備（2026-09-17）:** 編集面のスクロールバー不具合を直した不具合修正版。
+  右ペインのリサイザ `.pane-resizer::before` の透明な当たり判定が本文の右端へ 4px 食い込み、
+  本文右端でつかむとスクロールの代わりにペイン幅変更が始まっていた。張り出しを右だけに限定。
+  同種の当たり判定は fixture で到達できる主要面について総当たり検査し、他に該当なし
+  （`reviews/2026-09-17-scrollbar-drag/README.md`）。版数は npm / Tauri / Cargo /
+  package-lock を `3.0.3` へ。提出文案は
+  [3.0.3 App Store notes](releases/3.0.3-app-store-release-notes.md)。
+  署名 pkg の作成と実機受入（WKWebView で右端 2px / 8px のつかみ比べ）は別工程。
 
 - **v3.0.2を提出用に準備（2026-09-16）:** 公開済み3.0系で残っていたmacOSメニューバーの明滅を直した不具合修正版。
   本文更新ごとの `set_title` IPC と、フラグ変化ごとの `app.set_menu` 全再構築を止め、メニュー状態は

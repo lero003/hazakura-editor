@@ -3,9 +3,21 @@
 Status: Operational
 Scope: v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
 
 ## Current State
+
+- **v3.0.3を審査用に準備（2026-09-17）:** 編集面のスクロールバー不具合を直した不具合修正版。
+  右ペイン表示時、本文の右端でスクロールバーをつかむとスクロールせず、代わりにペイン幅の
+  変更が始まっていた。原因は右ペインのリサイザ `.pane-resizer::before` の透明な当たり判定が
+  本文側へ 4px 食い込んでいたこと（当たり判定が描画順で手前になる）。張り出しを右だけに
+  限定し、左隣（本文・ファイル一覧の右端＝スクロールバーのある場所）へは広げないようにした。
+  同種の当たり判定は fixture で到達できる主要面について総当たり検査し、他に該当なし
+  （[原因・実測・検査手順](reviews/2026-09-17-scrollbar-drag/README.md)）。版数は npm / Tauri /
+  Cargo / package-lock を `3.0.3` へ揃えた。提出文案は
+  [3.0.3 App Store notes](releases/3.0.3-app-store-release-notes.md)、作業記録は
+  [current-work](current-work.md)。署名 pkg の作成と、WKWebView 実機での受入
+  （右端 2px / 8px のつかみ比べ）は別工程。
 
 - **v3.0.2を提出用に準備（2026-09-16）:** 公開済み3.0系で残っていたmacOSメニューバーの明滅を直した不具合修正版。原因は2経路で、本文更新のたびに `set_title` のIPCが走っていたこと（`useWindowTitle` の `activeTab` オブジェクト依存）と、フラグだけの変化でも `app.set_menu` でメニューバー全体を作り直していたこと。メニュー状態は「同一state→何もしない / フラグのみ→delta適用 / ラベルか項目集合→再構築」に変更した。あわせて、App Store laneに存在しないAgent項目をin-placeが要求して再構築へ戻る問題、モーダル中のテーマ／チェック項目でネイティブ表示だけが変わる問題も塞いだ。版数はnpm / Tauri / Cargo / package-lockを `3.0.2` へ揃えた。提出文案は [3.0.2 App Store notes](releases/3.0.2-app-store-release-notes.md)、作業記録は [current-work](current-work.md)。実機確認（入力中のちらつき、モーダル中のメニュー操作）と署名pkg作成は別工程。3.0.1はオーナーがストア申請済みと報告しており、公開build番号との対応は未確認。
 

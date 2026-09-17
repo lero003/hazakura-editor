@@ -5,6 +5,25 @@ Scope: v3.0公開の記録と公開後のキュー
 Authority: High
 Last reviewed: 2026-09-17
 
+## 3.0.3候補 — 審査用にスクロールバー修正版を準備（2026-09-17）
+
+公開済み 3.0 系に対する不具合修正版として `3.0.3` を用意した。中身は
+「編集エリアのスクロールバーが右端で効かない」の 1 件（次の節）だけで、新機能は足していない。
+
+- 版数: npm / Tauri / Cargo / package-lock / Cargo.lock を `3.0.3` に揃えた。
+- 提出文案: `docs/releases/3.0.3-app-store-release-notes.md`（掲載用短文・詳細・
+  TestFlight/審査で見る項目・提出用メモ）。`docs/releases/README.md` の索引と
+  `README.md` / `docs/current-status.md` / `docs/handoff.md` / `docs/roadmap.md` /
+  `docs/app-store-build.md` の現行版表記も 3.0.3 へ。
+- 境界は不変: source 正本、明示操作、外部クラウドAIへ送らない、auto-save なし。
+
+検証: `npm run typecheck` / `npm test` / `npm run build:vite` / `cargo fmt --check` /
+`cargo test` / `npm run smoke:app-store-surface`。
+
+別工程に残す: 署名済み App Store pkg の作成（`APPLE_SIGNING_IDENTITY` /
+`APPLE_INSTALLER_SIGNING_IDENTITY` を与えた `npm run release:candidate -- --with-app-store-pkg`）と、
+**WKWebView 実機**でのスクロールバー受入（右端 2px / 8px のつかみ比べ）。
+
 ## 編集エリアのスクロールバーが右端で効かない（2026-09-17）
 
 実機報告: 編集エリアのスクロールバーをマウスでドラッグしてもスクロールできない。
@@ -30,8 +49,9 @@ Last reviewed: 2026-09-17
 検証: `npm run typecheck` / `npm test` / `npm run build:vite`。
 ブラウザ実測（`docs/reviews/2026-09-17-scrollbar-drag`）で、右端2pxからの縦ドラッグが
 scroll 179→1441 になり、リサイザ単体（6px 列）も従来どおり動くことを確認した。
-同種の当たり判定が他に無いことも総当たりで検査した（書く/プレビュー・L Mode・書き出し・
-差分は conflicts 0。手順と未計測面は同 review pack の `scan-scroll-edges.js` と README）。
+同種の当たり判定が他に無いことも、**fixture で到達できる主要面について**総当たりで
+検査した（書く/プレビュー・L Mode・書き出し・差分は conflicts 0。アプリ全体の検査では
+ないので、未計測面は同 review pack の `scan-scroll-edges.js` と README に列挙している）。
 未受入: **WKWebView実機**で「常に表示」とオーバーレイの両方、右端2px / 8px の
 つかみ比べ（ヘッドレスの Chromium ではオーバーレイの当たり判定を再現できない）。
 

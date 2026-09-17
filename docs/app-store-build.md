@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-14 (3.0.0 publication record)
+Last reviewed: 2026-09-17 (3.0.3 submission-copy preparation)
 
 ## Purpose
 
@@ -45,8 +45,8 @@ Agent Workbench behind its existing boundary.
   version 3.0.0). Exact released-build provenance, build number, and rollout
   coverage remain unverified here. See `docs/releases/3.0.0-source-tag.release.md`.
   Prior published line: `2.9.0` (owner-reported 2026-09-09).
-- Current source / Developer version: `3.0.2`. Submission copy for this
-  patch is in `docs/releases/3.0.2-app-store-release-notes.md`; release evidence is in
+- Current source / Developer version: `3.0.3`. Submission copy for this
+  patch is in `docs/releases/3.0.3-app-store-release-notes.md`; release evidence is in
   `docs/releases/3.0.0-source-tag.release.md`. System-only boundaries remain in
   `docs/v2.9-v3-local-assist-plan.md`.
   Earlier v2.7 packages remain historical candidates, not an active submission queue.

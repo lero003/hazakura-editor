@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -17,13 +17,17 @@ Latest GitHub source / local-app tag:
 
 Current App Store submission candidate:
 
-- `3.0.2` — `3.0.2-app-store-release-notes.md` (bug-fix patch on the 3.0 line:
-  the macOS menu bar no longer flickers while typing, and native menu markers no longer
-  drift from the app state while a modal owns input; **submission copy prepared, not yet
+- `3.0.3` — `3.0.3-app-store-release-notes.md` (bug-fix patch on the 3.0 line:
+  the editor's right-edge scrollbar drag no longer loses the gesture to the
+  preview pane resizer's invisible 4px grab area; **submission copy prepared, not yet
   submitted**; the signed App Store package is built locally with
   `release:candidate --with-app-store-pkg`)
 
 Prior submission copy:
+
+- `3.0.2` — `3.0.2-app-store-release-notes.md` (bug-fix patch on the 3.0 line:
+  the macOS menu bar no longer flickers while typing, and native menu markers no longer
+  drift from the app state while a modal owns input)
 
 - `3.0.1` — `3.0.1-app-store-release-notes.md` (menu-bar rebuild suppression, tab scroll /
   duplicate-name labels, and localized diagnostics; owner-reported as submitted)
@@ -61,8 +65,10 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`3.0.2` is the current App Store submission candidate**; its submission
-  copy is prepared but not yet submitted. See `3.0.2-app-store-release-notes.md`.
+- **`3.0.3` is the current App Store submission candidate**; its submission
+  copy is prepared but not yet submitted. See `3.0.3-app-store-release-notes.md`.
+- `3.0.2` submission copy was prepared but is superseded by `3.0.3`. See
+  `3.0.2-app-store-release-notes.md`.
 - `3.0.1` was owner-reported as submitted; this repository does not record a
   verified published build for it. See `3.0.1-app-store-release-notes.md`.
 - **`3.0.0` is published** on the Mac App Store (owner-reported 2026-09-14;
@@ -134,7 +140,9 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
-- `3.0.2-app-store-release-notes.md` is the prepared submission copy for the current
+- `3.0.3-app-store-release-notes.md` is the prepared submission copy for the current
+  bug-fix patch on the 3.0 line.
+- `3.0.2-app-store-release-notes.md` is the prior prepared submission copy for a
   bug-fix patch on the 3.0 line.
 - `3.0.1-app-store-release-notes.md` is the prepared submission copy for the
   current quality patch on the published `3.0.0`.
