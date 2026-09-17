@@ -7,11 +7,18 @@ import {
 } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { isImeComposing } from "../../lib/keyboard";
+import type { TextMatch } from "../../types";
 
 type UseFindReplaceActionsOptions = {
+  activeMatchIndex: number;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
+  findMatches: readonly TextMatch[];
   findMatchCount: number;
+  // Local Assist 生成ロック中は置換（1件・全件）を止める。検索は使える。
+  replaceLocked?: boolean;
   replaceQuery: string;
+  // 置換後に、その位置より後ろの最初の一致を選び直す。
+  selectMatchAfter: (position: number) => void;
   setActiveMatchIndex: Dispatch<SetStateAction<number>>;
   setFindQuery: Dispatch<SetStateAction<string>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
@@ -20,9 +27,13 @@ type UseFindReplaceActionsOptions = {
 };
 
 export function useFindReplaceActions({
+  activeMatchIndex,
   editorPaneRef,
+  findMatches,
   findMatchCount,
+  replaceLocked = false,
   replaceQuery,
+  selectMatchAfter,
   setActiveMatchIndex,
   setFindQuery,
   setFindVisible,
@@ -64,16 +75,38 @@ export function useFindReplaceActions({
   ]);
 
   const replaceOne = useCallback(() => {
+    if (replaceLocked) {
+      return;
+    }
+
+    const activeMatch = findMatches[activeMatchIndex];
+
+    if (!activeMatch) {
+      return;
+    }
+
     const replaced = editorPaneRef.current?.replaceCurrent(replaceQuery);
 
     if (replaced) {
-      showNextMatch();
+      // 番号を進めるのではなく、置換後の位置から次の一致を選び直す。
+      selectMatchAfter(activeMatch.from + replaceQuery.length);
     }
-  }, [editorPaneRef, replaceQuery, showNextMatch]);
+  }, [
+    activeMatchIndex,
+    editorPaneRef,
+    findMatches,
+    replaceLocked,
+    replaceQuery,
+    selectMatchAfter,
+  ]);
 
   const replaceAll = useCallback(() => {
+    if (replaceLocked) {
+      return;
+    }
+
     editorPaneRef.current?.replaceAll(replaceQuery);
-  }, [editorPaneRef, replaceQuery]);
+  }, [editorPaneRef, replaceLocked, replaceQuery]);
 
   const handleReplaceKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLInputElement>) => {

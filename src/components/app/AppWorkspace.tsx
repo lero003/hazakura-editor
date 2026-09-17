@@ -280,6 +280,9 @@ type AppWorkspaceProps = {
   slashMenuCopy: SlashMenuCopy;
   sidePaneMode: RightPaneMode | null;
   sidePaneVisible: boolean;
+  // 反対ペインでユーザーのスクロール操作が始まった（同期の所有権を受け渡す）。
+  releaseEditorGuard: () => void;
+  releasePreviewGuard: () => void;
   syncEditorScroll: () => void;
   syncPreviewScroll: (ratio: number) => void;
   tabs: readonly EditorTab[];
@@ -427,6 +430,8 @@ export function AppWorkspace({
   slashMenuCopy,
   sidePaneMode,
   sidePaneVisible,
+  releaseEditorGuard,
+  releasePreviewGuard,
   syncEditorScroll,
   syncPreviewScroll,
   tabs,
@@ -1010,6 +1015,7 @@ export function AppWorkspace({
             onPasteImage={handlePasteImage}
             onReopenPersistedWorkspace={() => void reopenPersistedWorkspace()}
             onRestoreDraft={restoreDraft}
+            onScrollGestureStart={releasePreviewGuard}
             onScrollRatioChange={syncPreviewScroll}
             onSelectionChange={setSelectionInfo}
             onSendToAgent={handleSendSelectionToAgent}
@@ -1179,6 +1185,7 @@ export function AppWorkspace({
             onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}
+            onPreviewScrollGestureStart={releaseEditorGuard}
             onPreviewViewStateChange={handlePreviewViewStateChange}
             onRunSelectedFileCompare={runSelectedFileCompare}
             onChangeHeadingLevel={changeHeadingLevel}

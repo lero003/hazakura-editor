@@ -37,6 +37,8 @@ type FindReplaceBarProps = {
   findQuery: string;
   goToLineValue: string;
   invalidRegex: boolean;
+  // Local Assist 生成ロック中は置換だけ止める（検索は使える）。
+  replaceLocked?: boolean;
   onClose: () => void;
   onFindKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
   onGoToLine: () => void;
@@ -62,6 +64,7 @@ export function FindReplaceBar({
   findQuery,
   goToLineValue,
   invalidRegex,
+  replaceLocked = false,
   onClose,
   onFindKeyDown,
   onGoToLine,
@@ -202,14 +205,14 @@ export function FindReplaceBar({
           <button
             type="button"
             onClick={onReplaceOne}
-            disabled={findMatchCount === 0}
+            disabled={findMatchCount === 0 || replaceLocked}
           >
             {copy.replaceOne}
           </button>
           <button
             type="button"
             onClick={onReplaceAll}
-            disabled={findMatchCount === 0}
+            disabled={findMatchCount === 0 || replaceLocked}
           >
             {copy.replaceAll}
           </button>

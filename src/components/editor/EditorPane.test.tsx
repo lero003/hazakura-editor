@@ -132,6 +132,8 @@ describe("EditorPane", () => {
     onPasteImage,
     readOnly = false,
     ref,
+    activeSearchMatchIndex = -1,
+    searchMatches = [],
     slashCommands = [],
     value,
   }: {
@@ -149,13 +151,15 @@ describe("EditorPane", () => {
     ) => Promise<string | null>;
     readOnly?: boolean;
     ref?: React.Ref<EditorPaneHandle>;
+    activeSearchMatchIndex?: number;
+    searchMatches?: readonly { from: number; to: number }[];
     slashCommands?: readonly SlashCommand[];
     value: string;
   }) {
     return (
       <EditorPane
         ref={ref}
-        activeSearchMatchIndex={-1}
+        activeSearchMatchIndex={activeSearchMatchIndex}
         documentKey={documentKey}
         editorSessionKey={editorSessionKey}
         editorViewState={editorViewState}
@@ -169,7 +173,7 @@ describe("EditorPane", () => {
         onScrollRatioChange={onScrollRatioChange}
         readOnly={readOnly}
         onSelectionChange={vi.fn()}
-        searchMatches={[]}
+        searchMatches={[...searchMatches]}
         showInvisibles={false}
         slashCommands={slashCommands}
         slashMenuCopy={getSlashMenuCopy("en")}
@@ -713,55 +717,185 @@ describe("EditorPane", () => {
     expect(document.activeElement).toBe(content);
   });
 
-  it("keeps the editor at the bottom when the scrollbar is dragged to the track end", () => {
+  // トラック 500px / つまみ 100px（scrollHeight 2500・clientHeight 500・最大 2000）を
+  // 前提に、末尾ドラッグの当たり判定を固定する。CodeMirror の再計測による高さの伸びは
+  // mouseup の *後* に与え、rAF を1フレームずつ進めて確認する。
+  function mountBottomDragHarness() {
+    const frames: FrameRequestCallback[] = [];
     const requestAnimationFrameSpy = vi
       .spyOn(window, "requestAnimationFrame")
       .mockImplementation((callback: FrameRequestCallback) => {
-        callback(0);
-        return 1;
+        frames.push(callback);
+        return frames.length;
       });
+    const stepFrames = () => {
+      const pending = [...frames];
+      frames.length = 0;
+      pending.forEach((callback) => callback(0));
+    };
+    const { container } = render(
+      renderEditorPane({
+        value: Array.from({ length: 120 }, (_, index) => `line ${index + 1}`).join(
+          "\n",
+        ),
+      }),
+    );
+    const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+    let scrollHeight = 2500;
+    Object.defineProperties(scroller, {
+      clientHeight: { configurable: true, value: 500 },
+      clientWidth: { configurable: true, value: 280 },
+      offsetHeight: { configurable: true, value: 515 },
+      offsetWidth: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, get: () => scrollHeight },
+      scrollWidth: { configurable: true, value: 280 },
+    });
+    scroller.getBoundingClientRect = () =>
+      ({
+        bottom: 500,
+        height: 500,
+        left: 0,
+        right: 300,
+        top: 0,
+        width: 300,
+      }) as DOMRect;
+
+    return {
+      scroller,
+      setScrollHeight: (next: number) => {
+        scrollHeight = next;
+      },
+      stepFrames,
+      requestAnimationFrameSpy,
+    };
+  }
+
+  it("keeps the bottom when the thumb (grabbed at its center) reaches the track end", () => {
+    const harness = mountBottomDragHarness();
 
     try {
-      const { container } = render(
-        renderEditorPane({
-          value: Array.from({ length: 120 }, (_, index) => `line ${index + 1}`).join(
-            "\n",
-          ),
-        }),
-      );
-      const scroller = container.querySelector(".cm-scroller") as HTMLElement;
-      // CodeMirror は未計測の行を推定しているため、末尾へ飛んだ後に総高さが伸びる。
-      // ここでは 1200 → 1400 の伸びを模す。
-      let scrollHeight = 1200;
-      Object.defineProperties(scroller, {
-        clientHeight: { configurable: true, value: 200 },
-        clientWidth: { configurable: true, value: 280 },
-        offsetHeight: { configurable: true, value: 215 },
-        offsetWidth: { configurable: true, value: 300 },
-        scrollHeight: { configurable: true, get: () => scrollHeight },
-        scrollWidth: { configurable: true, value: 280 },
-      });
-      scroller.getBoundingClientRect = () =>
-        ({
-          bottom: 215,
-          height: 215,
-          left: 0,
-          right: 300,
-          top: 0,
-          width: 300,
-        }) as DOMRect;
-
-      // スクロールバーのドラッグで末尾まで引いた状態（当時の最下部 = 1000）。
-      scroller.scrollTop = 1000;
+      const { scroller } = harness;
+      // つまみは先頭（scrollTop 0）にあり、その中央（y=50）をつかむ。
+      scroller.scrollTop = 0;
       fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
-      scrollHeight = 1400;
-      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 215 });
+      // つまみの下端がトラック下端へ届く位置＝ポインタ y=450 まで運ぶ。
+      scroller.scrollTop = 2000;
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 450 });
 
-      // 推定の伸び分を捨てず、再計測後の最下部（1400 - 200）へ寄せ直す。
-      expect(scroller.scrollTop).toBe(1200);
+      // 離した後に CodeMirror が測り直して総高さが伸びる（2500 → 2800）。
+      harness.setScrollHeight(2800);
+      act(() => {
+        harness.stepFrames();
+      });
+      expect(scroller.scrollTop).toBe(2300);
     } finally {
-      requestAnimationFrameSpy.mockRestore();
+      harness.requestAnimationFrameSpy.mockRestore();
     }
+  });
+
+  it("keeps the bottom when the pointer is released past the track end", () => {
+    const harness = mountBottomDragHarness();
+
+    try {
+      const { scroller } = harness;
+      scroller.scrollTop = 0;
+      fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
+      scroller.scrollTop = 2000;
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 540 });
+
+      harness.setScrollHeight(2800);
+      act(() => {
+        harness.stepFrames();
+      });
+      expect(scroller.scrollTop).toBe(2300);
+    } finally {
+      harness.requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
+  it("follows repeated height growth across later frames", () => {
+    const harness = mountBottomDragHarness();
+
+    try {
+      const { scroller } = harness;
+      scroller.scrollTop = 0;
+      fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
+      scroller.scrollTop = 2000;
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 450 });
+
+      harness.setScrollHeight(2800);
+      act(() => {
+        harness.stepFrames();
+      });
+      harness.setScrollHeight(3000);
+      act(() => {
+        harness.stepFrames();
+      });
+      expect(scroller.scrollTop).toBe(2500);
+    } finally {
+      harness.requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
+  it("does not snap to the bottom when the drag ends in the middle of the track", () => {
+    const harness = mountBottomDragHarness();
+
+    try {
+      const { scroller } = harness;
+      scroller.scrollTop = 0;
+      fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
+      scroller.scrollTop = 1000;
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 250 });
+
+      harness.setScrollHeight(2800);
+      act(() => {
+        harness.stepFrames();
+      });
+      expect(scroller.scrollTop).toBe(1000);
+    } finally {
+      harness.requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
+  it("refuses find/replace while the editor is locked (Local Assist generation)", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    render(
+      renderEditorPane({
+        activeSearchMatchIndex: 0,
+        onChange,
+        readOnly: true,
+        ref: editorRef,
+        searchMatches: [{ from: 0, to: 3 }],
+        value: "foo foo foo",
+      }),
+    );
+
+    // 置換 API は編集ロックを自分で検査する（facet だけでは dispatch は止まらない）。
+    expect(editorRef.current?.replaceCurrent("bar")).toBe(false);
+    expect(editorRef.current?.replaceAll("bar")).toBeUndefined();
+
+    // 見えている本文と保存対象（onChange が運ぶ正本）が食い違わない。
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("foo foo foo");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("replaces the active search match when the editor is editable", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    render(
+      renderEditorPane({
+        activeSearchMatchIndex: 0,
+        onChange,
+        ref: editorRef,
+        searchMatches: [{ from: 0, to: 3 }],
+        value: "foo foo foo",
+      }),
+    );
+
+    expect(editorRef.current?.replaceCurrent("bar")).toBe(true);
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("bar foo foo");
+    expect(onChange).toHaveBeenCalledWith("bar foo foo");
   });
 
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {

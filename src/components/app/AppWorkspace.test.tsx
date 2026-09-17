@@ -455,6 +455,8 @@ function makeWorkspaceProps(
     slashMenuCopy: getSlashMenuCopy("en"),
     syncEditorScroll: vi.fn(),
     syncPreviewScroll: vi.fn(),
+    releaseEditorGuard: vi.fn(),
+    releasePreviewGuard: vi.fn(),
     tabs: [],
     workspaceRootPath: null,
     workspaceTree: null,

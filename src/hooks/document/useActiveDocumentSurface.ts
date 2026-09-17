@@ -80,6 +80,8 @@ export function useActiveDocumentSurface({
     sidePaneMode,
   });
   const {
+    releaseEditorGuard,
+    releasePreviewGuard,
     scrollHudContext,
     scrollHudLine,
     scrollHudVisible,
@@ -104,6 +106,8 @@ export function useActiveDocumentSurface({
     documentStructureAdvisories,
     documentStructureItems,
     documentStructureTruncated,
+    releaseEditorGuard,
+    releasePreviewGuard,
     scrollHudContext,
     scrollHudLine,
     scrollHudVisible,

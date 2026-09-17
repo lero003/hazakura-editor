@@ -8,7 +8,8 @@ Last reviewed: 2026-09-17
 ## 3.0.3候補 — 審査用にスクロールバー修正版を準備（2026-09-17）
 
 公開済み 3.0 系に対する不具合修正版として `3.0.3` を用意した。中身は編集面の
-スクロールバー 2 件（右端で効かない／一気に最下部まで引くと少し戻る。次の節）だけで、
+スクロールバー 2 件（右端で効かない／一気に最下部まで引くと少し戻る。次の節）と、
+追加レビューで見つかった編集ロックの抜け・1件置換の取りこぼし（下の節）だけで、
 新機能は足していない。
 
 - 版数: npm / Tauri / Cargo / package-lock / Cargo.lock を `3.0.3` に揃えた。
@@ -73,6 +74,62 @@ scroll 179→1441 になり、リサイザ単体（6px 列）も従来どおり�
 回帰テストは `usePreviewScrollSync.test.ts`（ガードの自己延長）と
 `EditorPane.test.tsx`（最下部での寄せ直し）。どちらも修正前の実装で落ちることを確認した。
 未受入: 同じく **WKWebView 実機**で「一気に最下部へ引いて離す」を確認する。
+
+## 追加レビュー対応 — 編集ロックと置換、スクロールの境界（2026-09-18）
+
+外部レビュー（固定 SHA `281a4863`）の指摘に対する修正。優先度の高い編集ロックから着手した。
+
+### R1（P1）編集ロック中の置換が本文だけを書き換えていた
+
+Local Assist の生成ロックは `EditorView.editable.of(!readOnly)` しか設定しておらず、
+これは DOM からの直接編集を止めるだけで `dispatch({ changes })` は止めない。
+自作の `replaceCurrent` / `replaceAll` にも検査が無く、ロック中でも CodeMirror の本文だけが
+変わり、親の `handleEditorChange` が正本の更新を拒否するため**画面と保存対象が食い違う**
+状態になり得た。
+
+- `EditorState.readOnly.of(readOnly)` を `EditorView.editable` と一緒に設定（初期構築・更新の両方）。
+- `replaceCurrent` / `replaceAll` の入口で `readOnly` / `state.readOnly` / IME 合成を検査。
+- Tab インデントは読み取り専用ではイベントを奪わない（ブラウザのフォーカス移動に任せる）。
+- 画像貼り付けは非同期完了の**適用直前**に `state.readOnly` を再検査。
+- 検索は使えるまま、置換ボタンと置換 Enter をロック中は無効化（`replaceLocked` を
+  `useAppShellController` → `AppDocumentFeedback` → `FindReplaceBar` へ通す）。
+
+回帰テスト: `EditorPane.test.tsx`（ロック中は本文も onChange も変わらない／編集可能時は従来どおり）。
+
+### R2（P2）つまみ中央を握って末尾へ運ぶと補正から漏れていた
+
+「末尾まで引いた」の判定がポインタの絶対位置だったため、つまみの中央を握ると
+ポインタはトラック下端よりつまみ半分ぶん上で止まり、補正が起動しなかった。
+ドラッグ開始時のつかみ位置（つまみ内の相対位置）から「つまみが下端へ届くポインタ Y」を
+計算する方式へ変更。高さの伸びが mouseup 後に複数フレーム続くケースも追従する。
+
+回帰テスト: `EditorPane.test.tsx`（つまみ中央で末尾・ポインタが端を越える・中央で離す・
+複数フレームの伸び）。ブラウザ実測も再取得（下の review pack）。
+
+### R3（P2）ガード中に反対ペインを操作すると最後のスクロールを捨てていた
+
+同期ガード中は反対ペインの scroll を一律に捨てていたため、150ms 以内にユーザーが
+操作先を切り替えると最後の位置が残った。JS が書いたエコーとユーザー操作を分けるため、
+ホイール / ポインタ / キー入力の入口でその向きの所有権を手放す
+（`usePreviewScrollSync.releaseEditorGuard` / `releasePreviewGuard`、
+`EditorPane.onScrollGestureStart`、`SidePane.onPreviewScrollGestureStart`）。
+編集側の延長は「同期先への書き込み差分 10px 以上」から切り離し、操作が続く限り延長する。
+
+回帰テスト: `usePreviewScrollSync.test.ts`（操作の受け渡し 2 方向・差分 10px 未満でも延長）。
+
+### R4（P2）1件置換で次の一致を飛ばしていた
+
+置換後に番号を 1 つ進めていたため、置換で当該一致が消えると次の一致が繰り上がり、
+さらに次へ進んで 1 件飛ばしていた。置換後の位置から一致を選び直す
+（`useFindReplaceState.selectMatchAfter`）。置換語に検索語が残る場合も、置換そのものの
+中の一致へ留まらず、置換の後ろへ進む。末尾を置換したら先頭へ循環する。
+
+回帰テスト: `useFindReplaceState.test.ts`（消える／置換語に残る／末尾→先頭）、
+`useFindReplaceActions.test.ts`（位置ベースの選択・ロック中は何もしない・拒否時は進めない）。
+
+検証: `npm run typecheck` / `npm test`（287ファイル・2,535件）/ `npm run build:vite`。
+いずれも R1〜R4 の修正前実装で新テストが落ちることを確認してから通した。
+未受入: WKWebView 実機（つまみの上・中央・下、反対ペインへの素早い操作切替）。
 
 ## 3.0.2候補 — メニューバーの明滅が3.0.1でも再発（2026-09-16）
 

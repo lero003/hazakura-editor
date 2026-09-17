@@ -27,6 +27,8 @@ import { useGoToLine } from "./useGoToLine";
 type UseEditorFindControllerOptions = {
   documentKey: string;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
+  // Local Assist 生成ロック中は置換（1件・全件）を止める。検索は使える。
+  replaceLocked?: boolean;
   setStatus: Dispatch<SetStateAction<string>>;
   source: string;
 };
@@ -34,12 +36,14 @@ type UseEditorFindControllerOptions = {
 export function useEditorFindController({
   documentKey,
   editorPaneRef,
+  replaceLocked = false,
   setStatus,
   source,
 }: UseEditorFindControllerOptions) {
   const findReplace = useFindReplaceController({
     documentKey,
     editorPaneRef,
+    replaceLocked,
     setStatus,
     source,
   });

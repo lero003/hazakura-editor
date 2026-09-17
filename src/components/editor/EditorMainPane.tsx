@@ -64,6 +64,8 @@ type EditorMainPaneProps = {
   onReopenPersistedWorkspace?: () => void | Promise<void>;
   onRestoreDraft?: (draft: DraftRecord) => void;
   onScrollRatioChange: (ratio: number) => void;
+  // エディタでユーザーのスクロール操作が始まった（反対ペインの同期所有権を手放す）。
+  onScrollGestureStart?: () => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
   onSendToAgent: (text: string) => void;
   pathlessDrafts?: DraftRecord[];
@@ -108,6 +110,7 @@ export function EditorMainPane({
   onReopenPersistedWorkspace,
   onRestoreDraft,
   onScrollRatioChange,
+  onScrollGestureStart,
   onSelectionChange,
   onSendToAgent,
   pathlessDrafts = [],
@@ -148,6 +151,7 @@ export function EditorMainPane({
             lModeTypewriter={editorSettings.lModeTypewriter}
             onChange={onChange}
             onEditorViewStateChange={onEditorViewStateChange}
+            onScrollGestureStart={onScrollGestureStart}
             onScrollRatioChange={onScrollRatioChange}
             readOnly={appleAssistLocked}
             onSelectionChange={onSelectionChange}

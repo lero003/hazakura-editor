@@ -525,6 +525,8 @@ export function useAppShellController() {
     handlePreviewResizePointerMove,
     hasWorkspaceSelection,
     previewColumnPercent,
+    releaseEditorGuard,
+    releasePreviewGuard,
     scrollHudContext,
     scrollHudLine,
     scrollHudVisible,
@@ -619,6 +621,8 @@ export function useAppShellController() {
   } = useEditorFindController({
     documentKey,
     editorPaneRef,
+    // Local Assist 生成ロック中は置換を止める（検索は使える）。
+    replaceLocked: appleAssistGenerationLock !== null,
     setStatus,
     source: activeContents,
   });
@@ -2217,6 +2221,7 @@ export function useAppShellController() {
     saveAffirmation,
     saveAffirmationKey,
     replaceOne,
+    replaceLocked: activeAppleAssistGenerationLock !== null,
     replaceQuery,
     renameWorkspacePath,
     pendingTrash,
@@ -2272,6 +2277,8 @@ export function useAppShellController() {
     slashMenuCopy,
     sidePaneMode,
     sidePaneVisible,
+    releaseEditorGuard,
+    releasePreviewGuard,
     status,
     syncEditorScroll,
     syncPreviewScroll,

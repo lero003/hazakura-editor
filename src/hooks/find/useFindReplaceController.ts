@@ -7,6 +7,8 @@ import { useFindReplaceState } from "./useFindReplaceState";
 type UseFindReplaceControllerOptions = {
   documentKey: string;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
+  // Local Assist 生成ロック中は置換（1件・全件）を止める。検索は使える。
+  replaceLocked?: boolean;
   setStatus: Dispatch<SetStateAction<string>>;
   source: string;
 };
@@ -14,14 +16,19 @@ type UseFindReplaceControllerOptions = {
 export function useFindReplaceController({
   documentKey,
   editorPaneRef,
+  replaceLocked = false,
   setStatus,
   source,
 }: UseFindReplaceControllerOptions) {
   const state = useFindReplaceState(source);
   const actions = useFindReplaceActions({
+    activeMatchIndex: state.activeMatchIndex,
     editorPaneRef,
+    findMatches: state.findMatches,
     findMatchCount: state.findMatchCount,
+    replaceLocked,
     replaceQuery: state.replaceQuery,
+    selectMatchAfter: state.selectMatchAfter,
     setActiveMatchIndex: state.setActiveMatchIndex,
     setFindQuery: state.setFindQuery,
     setFindVisible: state.setFindVisible,

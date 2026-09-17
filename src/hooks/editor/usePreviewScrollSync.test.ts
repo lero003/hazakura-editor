@@ -194,6 +194,180 @@ describe("usePreviewScrollSync", () => {
     requestAnimationFrameSpy.mockRestore();
   });
 
+  it("hands scroll ownership over when the opposite pane gets a user gesture", () => {
+    vi.useFakeTimers();
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    const setScrollRatio = vi.fn(() => true);
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 1500,
+      scrollTop: 0,
+    });
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+    const flushFrames = () => {
+      act(() => {
+        const pending = [...frameCallbacks];
+        frameCallbacks.length = 0;
+        pending.forEach((callback) => callback(0));
+      });
+    };
+
+    // 編集側が駆動してガードが張られる。
+    act(() => {
+      result.current.syncPreviewScroll(0.5);
+    });
+    flushFrames();
+    expect(previewPane.scrollTop).toBe(500);
+
+    // ガード中はプレビュー発の同期を捨てる（JS が書いた位置のエコー）。
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    flushFrames();
+    expect(setScrollRatio).not.toHaveBeenCalled();
+
+    // ユーザーがプレビューを操作したら所有権を渡す。以後のプレビュー発は反映される。
+    act(() => {
+      result.current.releaseEditorGuard();
+    });
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    flushFrames();
+    expect(setScrollRatio).toHaveBeenCalledWith(0.5, expect.any(Number));
+
+    requestAnimationFrameSpy.mockRestore();
+  });
+
+  it("keeps the editor guard even when the preview write stays under the tolerance", () => {
+    vi.useFakeTimers();
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    const setScrollRatio = vi.fn(() => true);
+    // 可動域 10000px。比率の小さな変化では書き込み差分が 10px に届かない。
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 10500,
+      scrollTop: 5000,
+    });
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+
+    act(() => {
+      result.current.syncPreviewScroll(0.5005);
+    });
+    act(() => {
+      const pending = [...frameCallbacks];
+      frameCallbacks.length = 0;
+      pending.forEach((callback) => callback(0));
+    });
+    // 書き込みは不要（差分 5px）でも、所有権は編集側のまま延長される。
+    expect(previewPane.scrollTop).toBe(5000);
+
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    act(() => {
+      const pending = [...frameCallbacks];
+      frameCallbacks.length = 0;
+      pending.forEach((callback) => callback(0));
+    });
+    expect(setScrollRatio).not.toHaveBeenCalled();
+
+    requestAnimationFrameSpy.mockRestore();
+  });
+
+  it("hands the other direction over when the editor gets a user gesture", () => {
+    vi.useFakeTimers();
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    const setScrollRatio = vi.fn(() => true);
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 1500,
+      scrollTop: 500,
+    });
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+    const flushFrames = () => {
+      act(() => {
+        const pending = [...frameCallbacks];
+        frameCallbacks.length = 0;
+        pending.forEach((callback) => callback(0));
+      });
+    };
+
+    // プレビュー側が駆動してガードが張られる。
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    flushFrames();
+    expect(setScrollRatio).toHaveBeenCalled();
+
+    // ガード中なので編集側からの書き戻しは捨てる。
+    act(() => {
+      result.current.syncPreviewScroll(0);
+    });
+    flushFrames();
+    expect(previewPane.scrollTop).toBe(500);
+
+    // ユーザーが編集面を操作したら所有権を渡す。
+    act(() => {
+      result.current.releasePreviewGuard();
+    });
+    act(() => {
+      result.current.syncPreviewScroll(0);
+    });
+    flushFrames();
+    expect(previewPane.scrollTop).toBe(0);
+
+    requestAnimationFrameSpy.mockRestore();
+  });
+
   it("does not move Preview scroll while the user is selecting text in the pane", () => {
     vi.useFakeTimers();
     const frameCallbacks: FrameRequestCallback[] = [];

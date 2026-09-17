@@ -70,6 +70,9 @@ type SidePaneProps = {
   onHideSidePane?: () => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
+  // プレビュー面でユーザーのスクロール操作（ホイール・ポインタ）が始まった。
+  // 反対側（編集面）の同期所有権を手放してもらうために使う。
+  onPreviewScrollGestureStart?: () => void;
   onPreviewViewStateChange: (state: PreviewViewState) => void;
   onRunSelectedFileCompare: () => void;
   onChangeHeadingLevel: (
@@ -114,6 +117,7 @@ export function SidePane({
   onOpenEbookReadingFocus,
   onOpenPreviewLocalLink,
   onPreviewScroll,
+  onPreviewScrollGestureStart,
   onPreviewViewStateChange,
   onRunSelectedFileCompare,
   onChangeHeadingLevel,
@@ -227,6 +231,12 @@ export function SidePane({
       ref={sidePaneMode === "preview" ? previewPaneRef : null}
       aria-label={sidePaneAriaLabel(sidePaneMode, copy)}
       onScroll={sidePaneMode === "preview" ? handlePreviewScroll : undefined}
+      onWheel={
+        sidePaneMode === "preview" ? onPreviewScrollGestureStart : undefined
+      }
+      onPointerDown={
+        sidePaneMode === "preview" ? onPreviewScrollGestureStart : undefined
+      }
     >
       <RightPaneHeader
         mode={header.mode}

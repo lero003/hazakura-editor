@@ -41,6 +41,8 @@ type AppDocumentFeedbackProps = {
   recoveryCopy: RecoveryCopy;
   reopenTabFromDisk: (tabId: string) => void;
   replaceAll: () => void;
+  // Local Assist 生成ロック中は置換ボタンと置換 Enter を無効にする。
+  replaceLocked?: boolean;
   replaceOne: () => void;
   replaceQuery: string;
   restoreDraft: (draft: DraftRecord) => void;
@@ -86,6 +88,7 @@ export function AppDocumentFeedback({
   recoveryCopy,
   reopenTabFromDisk,
   replaceAll,
+  replaceLocked = false,
   replaceOne,
   replaceQuery,
   restoreDraft,
@@ -125,6 +128,7 @@ export function AppDocumentFeedback({
           onReplaceAll={replaceAll}
           onReplaceKeyDown={handleReplaceKeyDown}
           onReplaceOne={replaceOne}
+          replaceLocked={replaceLocked}
           replaceQuery={replaceQuery}
           searchOptions={searchOptions}
           setFindQuery={setFindQuery}

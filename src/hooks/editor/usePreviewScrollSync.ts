@@ -60,6 +60,45 @@ export function usePreviewScrollSync({
     scrollHudLine,
   );
 
+  // 編集側が同期元の間、ガードを自己延長する。書き込みの有無とは切り離し、
+  // 「編集側の操作が続いているか」だけで延長する。
+  const armEditorGuard = useCallback(() => {
+    if (editorGuardTimerRef.current !== null) {
+      window.clearTimeout(editorGuardTimerRef.current);
+    }
+
+    scrollSyncSourceRef.current = "editor";
+    editorGuardTimerRef.current = window.setTimeout(() => {
+      editorGuardTimerRef.current = null;
+      if (scrollSyncSourceRef.current === "editor") {
+        scrollSyncSourceRef.current = null;
+      }
+    }, SCROLL_SYNC_GUARD_RELEASE_MS);
+  }, []);
+
+  // 反対ペインで本物のユーザー操作（ホイール・ポインタ・キー）が始まったら、
+  // その向きの所有権を手放す。JS が書いた位置のエコーと、ユーザーの操作を
+  // 分けるための入口。ガード中に届いた新しい操作を捨てないために必要。
+  const releaseEditorGuard = useCallback(() => {
+    if (editorGuardTimerRef.current !== null) {
+      window.clearTimeout(editorGuardTimerRef.current);
+      editorGuardTimerRef.current = null;
+    }
+    if (scrollSyncSourceRef.current === "editor") {
+      scrollSyncSourceRef.current = null;
+    }
+  }, []);
+
+  const releasePreviewGuard = useCallback(() => {
+    if (previewGuardTimerRef.current !== null) {
+      window.clearTimeout(previewGuardTimerRef.current);
+      previewGuardTimerRef.current = null;
+    }
+    if (scrollSyncSourceRef.current === "preview") {
+      scrollSyncSourceRef.current = null;
+    }
+  }, []);
+
   usePreviewCleanup({
     editorGuardTimerRef,
     previewScrollFrameRef,
@@ -119,6 +158,11 @@ export function usePreviewScrollSync({
         return;
       }
 
+      // 同期先に書き込む必要がなくても、編集側が操作を続けている間は所有権を延長する。
+      // 書き込み差分が 10px 未満のときにガードが切れ、古いプレビュー エコーが
+      // 本文位置を上書きするのを防ぐ。
+      armEditorGuard();
+
       const scrollableHeight = previewPane.scrollHeight - previewPane.clientHeight;
       const nextScrollTop = scrollableHeight <= 0 ? 0 : scrollableHeight * ratio;
 
@@ -126,20 +170,10 @@ export function usePreviewScrollSync({
         Math.abs(previewPane.scrollTop - nextScrollTop) >=
         SCROLL_SYNC_TOLERANCE_PX
       ) {
-        if (editorGuardTimerRef.current !== null) {
-          window.clearTimeout(editorGuardTimerRef.current);
-        }
-        scrollSyncSourceRef.current = "editor";
         previewPane.scrollTop = nextScrollTop;
-        editorGuardTimerRef.current = window.setTimeout(() => {
-          editorGuardTimerRef.current = null;
-          if (scrollSyncSourceRef.current === "editor") {
-            scrollSyncSourceRef.current = null;
-          }
-        }, SCROLL_SYNC_GUARD_RELEASE_MS);
       }
     });
-  }, [previewPaneRef, showScrollPositionHud]);
+  }, [armEditorGuard, previewPaneRef, showScrollPositionHud]);
 
   const syncEditorScroll = useCallback(() => {
     if (scrollSyncSourceRef.current === "editor") {
@@ -210,6 +244,8 @@ export function usePreviewScrollSync({
   }, [editorPaneRef, previewPaneRef, showScrollPositionHud]);
 
   return {
+    releaseEditorGuard,
+    releasePreviewGuard,
     scrollHudContext: scrollHudHeadingContext,
     scrollHudLine,
     scrollHudVisible: scrollHud.visible,

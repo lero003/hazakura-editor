@@ -92,7 +92,9 @@ type EditorPaneProps = {
     dataBase64: string,
     fileName: string,
   ) => Promise<string | null>;
-  onSendToAgent?: (text: string) => void;
+  // エディタでユーザーのスクロール操作（ホイール・ポインタ・キー）が始まった。
+ onSendToAgent?: (text: string) => void;
+  onScrollGestureStart?: () => void;
   onChange: (nextValue: string) => void;
   onEditorViewStateChange?: (patch: EditorViewStatePatch) => void;
   onScrollRatioChange: (ratio: number) => void;
@@ -154,7 +156,10 @@ const editorTabIndentation = Prec.highest(
         event.key !== "Tab" ||
         event.metaKey ||
         event.ctrlKey ||
-        event.altKey
+        event.altKey ||
+        // 読み取り専用（編集ロック中）は Tab を奪わない。ブラウザの
+        // フォーカス移動に任せ、キーボードだけで抜けられるようにする。
+        view.state.readOnly
       ) {
         return false;
       }
@@ -171,6 +176,16 @@ const editorTabIndentation = Prec.highest(
     },
   }),
 );
+
+// `EditorView.editable` は DOM から直接編集できるかの設定で、API 経由の
+// `dispatch({ changes })` は止めない。標準編集コマンドと自作コマンドが参照する
+// `EditorState.readOnly` も必ず一緒に立てる（自作 dispatch は個別の検査も要る）。
+function editorReadOnlyExtensions(readOnly: boolean): Extension {
+  return [
+    EditorState.readOnly.of(readOnly),
+    EditorView.editable.of(!readOnly),
+  ];
+}
 
 const invisibleCharactersField = StateField.define<DecorationSet>({
   create(state) {
@@ -234,6 +249,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       workspaceRoot,
       onPasteImage,
       onSendToAgent,
+      onScrollGestureStart,
     },
     ref,
   ) {
@@ -245,6 +261,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onEditorViewStateChangeRef = useRef(onEditorViewStateChange);
   const onPasteImageRef = useRef(onPasteImage);
+  const onScrollGestureStartRef = useRef(onScrollGestureStart);
   const onSendToAgentRef = useRef<(text: string) => void>(() => {});
   const applyingExternalValueRef = useRef(false);
   const compositionActiveRef = useRef(false);
@@ -457,7 +474,15 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       },
       replaceCurrent(replacement) {
         const view = viewRef.current;
-        if (!view || searchMatches.length === 0 || activeSearchMatchIndex < 0) {
+        if (
+          !view ||
+          readOnly ||
+          view.state.readOnly ||
+          compositionActiveRef.current ||
+          view.composing ||
+          searchMatches.length === 0 ||
+          activeSearchMatchIndex < 0
+        ) {
           return false;
         }
 
@@ -473,7 +498,16 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       },
       replaceAll(replacement) {
         const view = viewRef.current;
-        if (!view || searchMatches.length === 0) return;
+        if (
+          !view ||
+          readOnly ||
+          view.state.readOnly ||
+          compositionActiveRef.current ||
+          view.composing ||
+          searchMatches.length === 0
+        ) {
+          return;
+        }
 
         const changes = searchMatches.map((match) => ({
           from: match.from,
@@ -491,6 +525,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onScrollGestureStartRef.current = onScrollGestureStart;
+  }, [onScrollGestureStart]);
 
   useEffect(() => {
     onScrollRatioChangeRef.current = onScrollRatioChange;
@@ -652,7 +690,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           { typewriterMode: lModeTypewriter },
         ),
       ),
-      readOnlyCompartmentRef.current.of(EditorView.editable.of(!readOnly)),
+      readOnlyCompartmentRef.current.of(editorReadOnlyExtensions(readOnly)),
       EditorView.domEventHandlers({
         compositionstart() {
           compositionActiveRef.current = true;
@@ -712,6 +750,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
               const relativePath = await handler(rawBase64, fileName);
               if (!relativePath) return;
               if (view.state.doc !== docAtPaste) return;
+              // 非同期の完了時点で編集ロックがかかっていることがある。
+              // 適用の直前に読み取り専用を再検査する。
+              if (view.state.readOnly) return;
               view.dispatch({
                 changes: {
                   from: pasteSelection.from,
@@ -807,6 +848,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         // 張り付く」症状の原因になる（handoff の既知バグ）。
         view.contentDOM.blur();
         const win = view.dom.ownerDocument.defaultView ?? window;
+        // 「つまみがトラック下端へ届くポインタ位置」をドラッグ開始時に計算しておく。
+        const bottomIntent = captureScrollbarBottomIntent(event, view.scrollDOM);
         const handleScrollEnd = (mouseUpEvent: MouseEvent) => {
           win.removeEventListener("mouseup", handleScrollEnd, {
             capture: true,
@@ -818,7 +861,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           ) {
             view.focus();
           }
-          keepBottomAfterScrollbarDrag(view, mouseUpEvent);
+          keepBottomAfterScrollbarDrag(view, bottomIntent, mouseUpEvent);
         };
         scrollbarMouseUpHandlerRef.current = handleScrollEnd;
         win.addEventListener("mouseup", handleScrollEnd, { capture: true });
@@ -827,6 +870,20 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.scrollDOM.addEventListener("mousedown", handleScrollerMouseDown);
     view.scrollDOM.addEventListener("scroll", handleScroll, { passive: true });
+
+    // ユーザーがこの面のスクロールを始めたことを親へ伝える（反対ペインの
+    // スクロール同期所有権を手放してもらう）。JS が書いた位置のエコーと、
+    // 本物の操作を分けるための入口。
+    const handleScrollGestureStart = () => {
+      onScrollGestureStartRef.current?.();
+    };
+    view.scrollDOM.addEventListener("wheel", handleScrollGestureStart, {
+      passive: true,
+    });
+    view.scrollDOM.addEventListener("pointerdown", handleScrollGestureStart, {
+      passive: true,
+    });
+    view.contentDOM.addEventListener("keydown", handleScrollGestureStart);
 
     // Preview open/close and workspace splits change the editor
     // width without a document transaction. With line wrapping on
@@ -901,6 +958,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       }
       view.scrollDOM.removeEventListener("mousedown", handleScrollerMouseDown);
       view.scrollDOM.removeEventListener("scroll", handleScroll);
+      view.scrollDOM.removeEventListener("wheel", handleScrollGestureStart);
+      view.scrollDOM.removeEventListener("pointerdown", handleScrollGestureStart);
+      view.contentDOM.removeEventListener("keydown", handleScrollGestureStart);
       view.destroy();
       if (viewRef.current === view) {
         viewRef.current = null;
@@ -948,7 +1008,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: readOnlyCompartmentRef.current.reconfigure(
-        EditorView.editable.of(!readOnly),
+        editorReadOnlyExtensions(readOnly),
       ),
     });
   }, [readOnly]);
@@ -1593,33 +1653,70 @@ function readScrollRatio(scroller: HTMLElement): number {
 // 一気に末尾へ飛ぶと、ドラッグ中は推定値で最大値が決まり、その後に表示された行を
 // 測り直して総高さが伸びる。すると離した位置は「そのときの最下部」のまま取り残され、
 // 見た目が末尾より少し上で止まる（仮想化の無いプレビュー側では起きない）。
-// 「末尾まで引いた」の判定は、スクロール位置ではなくポインタの位置で行う。
-// 高さが伸びるとスクロール位置は既に最下部でなくなるため、位置で判定すると
-// 取りこぼす（実測: ドラッグ終了時に 2601px、再計測後は最大 2660px）。
-// 縦スクロールバーの帯の内側でトラックの下端まで来ていれば、末尾まで引いている。
+// 「末尾まで引いた」の判定は、ポインタの絶対位置ではなく「つまみがトラック下端に
+// 届いたか」で行う。つまみの中央をつかんで末尾まで運ぶと、ポインタはつまみ半分ぶん
+// トラック下端より上で止まるため、ポインタ位置だけでは取りこぼす。
+// 高さが伸びるとスクロール位置も最下部でなくなるので、位置で判定するのも不十分
+// （実測: ドラッグ終了時に 2601px、再計測後は最大 2660px）。
 const SCROLLBAR_BOTTOM_SNAP_TOLERANCE_PX = 4;
 // オーバーレイスクロールバーでは offsetWidth と clientWidth が同じになる。
 const OVERLAY_SCROLLBAR_FALLBACK_WIDTH_PX = 14;
+// ブラウザが描くつまみの最短長の目安（これより短いことは通常ない）。
+const MIN_SCROLLBAR_THUMB_PX = 20;
 
-function keepBottomAfterScrollbarDrag(
-  view: EditorView,
-  mouseUpEvent: MouseEvent,
-) {
-  const scroller = view.scrollDOM;
+type ScrollbarBottomIntent = {
+  // この Y 以上で離せば「つまみが下端に届いた」とみなす。null は縦ドラッグでない。
+  pointerEndY: number | null;
+};
 
-  if (scroller.scrollHeight <= scroller.clientHeight) {
-    return;
+// ドラッグ開始時に、つかんだ位置（つまみ内のどこか）から「下端到達とみなす
+// ポインタ Y」を求める。横スクロールバー（下端）のドラッグは縦の末尾要求ではない。
+function captureScrollbarBottomIntent(
+  event: MouseEvent,
+  scroller: HTMLElement,
+): ScrollbarBottomIntent {
+  const max = scroller.scrollHeight - scroller.clientHeight;
+  const rect = scroller.getBoundingClientRect();
+
+  if (max <= 0 || rect.height <= 0) {
+    return { pointerEndY: null };
   }
 
-  const rect = scroller.getBoundingClientRect();
   const verticalBand =
     Math.max(0, scroller.offsetWidth - scroller.clientWidth) ||
     OVERLAY_SCROLLBAR_FALLBACK_WIDTH_PX;
-  const draggedToTrackEnd =
-    mouseUpEvent.clientX >= rect.right - verticalBand &&
-    mouseUpEvent.clientY >= rect.bottom - SCROLLBAR_BOTTOM_SNAP_TOLERANCE_PX;
 
-  if (!draggedToTrackEnd) {
+  if (event.clientX < rect.right - verticalBand) {
+    return { pointerEndY: null };
+  }
+
+  const thumbHeight = Math.max(
+    MIN_SCROLLBAR_THUMB_PX,
+    (scroller.clientHeight / scroller.scrollHeight) * rect.height,
+  );
+  const thumbTop =
+    rect.top + (scroller.scrollTop / max) * Math.max(rect.height - thumbHeight, 0);
+  const grabOffset = Math.min(Math.max(event.clientY - thumbTop, 0), thumbHeight);
+
+  return { pointerEndY: rect.bottom - (thumbHeight - grabOffset) };
+}
+
+function keepBottomAfterScrollbarDrag(
+  view: EditorView,
+  bottomIntent: ScrollbarBottomIntent,
+  mouseUpEvent: MouseEvent,
+) {
+  if (
+    bottomIntent.pointerEndY === null ||
+    mouseUpEvent.clientY <
+      bottomIntent.pointerEndY - SCROLLBAR_BOTTOM_SNAP_TOLERANCE_PX
+  ) {
+    return;
+  }
+
+  const scroller = view.scrollDOM;
+
+  if (scroller.scrollHeight <= scroller.clientHeight) {
     return;
   }
 
