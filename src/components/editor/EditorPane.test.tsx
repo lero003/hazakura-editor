@@ -25,6 +25,7 @@ import {
 } from "./EditorPane";
 import EditorPane from "./EditorPane";
 import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
+import { findTextMatches } from "../../hooks/find/useFindMatches";
 import type { SlashCommand } from "../../types/slash";
 import type {
   EditorViewState,
@@ -904,6 +905,62 @@ describe("EditorPane", () => {
     } finally {
       harness.requestAnimationFrameSpy.mockRestore();
     }
+  });
+
+  it("replaces the correct range for a case-insensitive match after İ", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const source = "İ foo Z";
+    // 検索範囲そのものを実装から取り、その範囲が置換トランザクションへ渡ることを見る。
+    const matches = findTextMatches(source, "foo", {
+      caseSensitive: false,
+      regex: false,
+      wholeWord: false,
+    });
+    render(
+      renderEditorPane({
+        activeSearchMatchIndex: 0,
+        ref: editorRef,
+        searchMatches: matches,
+        value: source,
+      }),
+    );
+
+    expect(editorRef.current?.replaceCurrent("bar")).toBe(true);
+    // 旧実装は [3, 6) を返し、İ fbarZ になっていた。
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("İ bar Z");
+  });
+
+  it("replaces every case-insensitive match after İ and undoes in one step", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    const source = "İ foo foo";
+    const matches = findTextMatches(source, "foo", {
+      caseSensitive: false,
+      regex: false,
+      wholeWord: false,
+    });
+    const { container } = render(
+      renderEditorPane({
+        onChange,
+        ref: editorRef,
+        searchMatches: matches,
+        value: source,
+      }),
+    );
+
+    act(() => {
+      editorRef.current?.replaceAll("bar");
+    });
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("İ bar bar");
+
+    fireEvent.keyDown(container.querySelector(".cm-content") as Element, {
+      ctrlKey: true,
+      key: "z",
+    });
+    await waitFor(() => {
+      expect(editorRef.current?.getActiveDocument()?.text).toBe(source);
+    });
+    expect(onChange).toHaveBeenLastCalledWith(source);
   });
 
   it("refuses find/replace while the editor is locked (Local Assist generation)", () => {
