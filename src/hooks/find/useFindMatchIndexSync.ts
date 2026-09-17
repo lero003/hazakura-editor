@@ -8,6 +8,9 @@ type UseFindMatchIndexSyncOptions = {
   findQuery: string;
   searchOptions: SearchOptions;
   setActiveMatchIndex: Dispatch<SetStateAction<number>>;
+  // 置換直後の位置ベース選択が未処理の間は、件数による丸めを止める。
+  // 同じ render で両方が index を書くと、古い index と新しい件数を見た丸めが後勝ちする。
+  suppressClamp?: boolean;
 };
 
 export function useFindMatchIndexSync({
@@ -17,14 +20,15 @@ export function useFindMatchIndexSync({
   findQuery,
   searchOptions,
   setActiveMatchIndex,
+  suppressClamp = false,
 }: UseFindMatchIndexSyncOptions) {
   useEffect(() => {
     setActiveMatchIndex(0);
   }, [documentKey, findQuery, searchOptions, setActiveMatchIndex]);
 
   useEffect(() => {
-    if (activeMatchIndex >= findMatchCount) {
+    if (!suppressClamp && activeMatchIndex >= findMatchCount) {
       setActiveMatchIndex(Math.max(findMatchCount - 1, 0));
     }
-  }, [activeMatchIndex, findMatchCount, setActiveMatchIndex]);
+  }, [activeMatchIndex, findMatchCount, setActiveMatchIndex, suppressClamp]);
 }

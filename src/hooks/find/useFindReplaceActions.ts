@@ -12,13 +12,12 @@ import type { TextMatch } from "../../types";
 type UseFindReplaceActionsOptions = {
   activeMatchIndex: number;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
-  findMatches: readonly TextMatch[];
   findMatchCount: number;
   // Local Assist 生成ロック中は置換（1件・全件）を止める。検索は使える。
   replaceLocked?: boolean;
   replaceQuery: string;
-  // 置換後に、その位置より後ろの最初の一致を選び直す。
-  selectMatchAfter: (position: number) => void;
+  // 置換後に、その位置より後ろの最初の一致を選び直す（一致一覧が更新されてから）。
+  selectAfterReplacement: (matchIndex: number, replacement: string) => void;
   setActiveMatchIndex: Dispatch<SetStateAction<number>>;
   setFindQuery: Dispatch<SetStateAction<string>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
@@ -29,11 +28,10 @@ type UseFindReplaceActionsOptions = {
 export function useFindReplaceActions({
   activeMatchIndex,
   editorPaneRef,
-  findMatches,
   findMatchCount,
   replaceLocked = false,
   replaceQuery,
-  selectMatchAfter,
+  selectAfterReplacement,
   setActiveMatchIndex,
   setFindQuery,
   setFindVisible,
@@ -79,25 +77,18 @@ export function useFindReplaceActions({
       return;
     }
 
-    const activeMatch = findMatches[activeMatchIndex];
-
-    if (!activeMatch) {
-      return;
-    }
-
     const replaced = editorPaneRef.current?.replaceCurrent(replaceQuery);
 
     if (replaced) {
       // 番号を進めるのではなく、置換後の位置から次の一致を選び直す。
-      selectMatchAfter(activeMatch.from + replaceQuery.length);
+      selectAfterReplacement(activeMatchIndex, replaceQuery);
     }
   }, [
     activeMatchIndex,
     editorPaneRef,
-    findMatches,
     replaceLocked,
     replaceQuery,
-    selectMatchAfter,
+    selectAfterReplacement,
   ]);
 
   const replaceAll = useCallback(() => {

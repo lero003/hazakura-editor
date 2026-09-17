@@ -24,11 +24,10 @@ export function useFindReplaceController({
   const actions = useFindReplaceActions({
     activeMatchIndex: state.activeMatchIndex,
     editorPaneRef,
-    findMatches: state.findMatches,
     findMatchCount: state.findMatchCount,
     replaceLocked,
     replaceQuery: state.replaceQuery,
-    selectMatchAfter: state.selectMatchAfter,
+    selectAfterReplacement: state.selectAfterReplacement,
     setActiveMatchIndex: state.setActiveMatchIndex,
     setFindQuery: state.setFindQuery,
     setFindVisible: state.setFindVisible,
@@ -43,6 +42,7 @@ export function useFindReplaceController({
     findQuery: state.findQuery,
     searchOptions: state.searchOptions,
     setActiveMatchIndex: state.setActiveMatchIndex,
+    suppressClamp: state.pendingSelectAfterReplace !== null,
   });
 
   return {

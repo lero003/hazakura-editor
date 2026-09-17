@@ -2,6 +2,7 @@ import type { BackupRestoreRequest } from "../../features/diff/backupReview";
 import {
   lazy,
   Suspense,
+  type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
   useCallback,
   useEffect,
@@ -93,6 +94,17 @@ type SidePaneProps = {
   workspaceRootPath: string | null;
 };
 
+// プレビュー面をキーボードでスクロールさせるキーだけを対象にする。
+const PREVIEW_SCROLL_KEYS = new Set([
+  " ",
+  "ArrowDown",
+  "ArrowUp",
+  "End",
+  "Home",
+  "PageDown",
+  "PageUp",
+]);
+
 export function SidePane({
   activeContents,
   activeTab,
@@ -160,6 +172,27 @@ export function SidePane({
       scrollRatio: Math.min(1, Math.max(0, scrollRatio)),
     });
   }, [onPreviewScroll, onPreviewViewStateChange, previewPaneRef]);
+
+  // プレビュー面でキー操作によるスクロールが始まったことを伝える。
+  // 入力欄・IME 合成・リンク操作は奪わない（スクロールを動かすキーだけが対象）。
+  const handlePreviewKeyDownGesture = (
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) => {
+    if (!onPreviewScrollGestureStart || event.nativeEvent.isComposing) {
+      return;
+    }
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      target.closest("input, textarea, select, [contenteditable='true'], a")
+    ) {
+      return;
+    }
+    if (!PREVIEW_SCROLL_KEYS.has(event.key)) {
+      return;
+    }
+    onPreviewScrollGestureStart();
+  };
   const restorePreviewScroll = useCallback(
     (kind: PreviewRenderCompleteKind = "initial") => {
       // Same-document re-renders (typing headings/lists/fences, image
@@ -236,6 +269,9 @@ export function SidePane({
       }
       onPointerDown={
         sidePaneMode === "preview" ? onPreviewScrollGestureStart : undefined
+      }
+      onKeyDown={
+        sidePaneMode === "preview" ? handlePreviewKeyDownGesture : undefined
       }
     >
       <RightPaneHeader

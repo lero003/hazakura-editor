@@ -489,6 +489,16 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         const match = searchMatches[activeSearchMatchIndex];
         if (!match) return false;
 
+        if (view.state.sliceDoc(match.from, match.to) === replacement) {
+          // 同じ語への置換は本文を変えない（dirty / Undo を作らない）。
+          // それでも置換操作としては成立したので、呼び出し側は次の一致へ進める。
+          view.dispatch({
+            selection: { anchor: match.from + replacement.length },
+          });
+          view.focus();
+          return true;
+        }
+
         view.dispatch({
           changes: { from: match.from, to: match.to, insert: replacement },
           selection: { anchor: match.from + replacement.length },
@@ -509,11 +519,22 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           return;
         }
 
-        const changes = searchMatches.map((match) => ({
-          from: match.from,
-          to: match.to,
-          insert: replacement,
-        }));
+        const changes = searchMatches
+          .filter(
+            (match) =>
+              view.state.sliceDoc(match.from, match.to) !== replacement,
+          )
+          .map((match) => ({
+            from: match.from,
+            to: match.to,
+            insert: replacement,
+          }));
+
+        if (changes.length === 0) {
+          // 全一致が同じ語への置換なら、変更なし（dirty / Undo を作らない）。
+          view.focus();
+          return;
+        }
 
         view.dispatch({ changes });
         view.focus();
@@ -1206,7 +1227,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     state: slashState,
   } = useSlashMenu({
     commands: slashCommands,
-    enabled: true,
+    // 編集ロック中はメニューを開かない／開いていたら閉じる（実行時にも検査する）。
+    enabled: !readOnly,
     viewKey: documentKey,
     viewRef,
   });
@@ -1677,8 +1699,17 @@ function captureScrollbarBottomIntent(
 ): ScrollbarBottomIntent {
   const max = scroller.scrollHeight - scroller.clientHeight;
   const rect = scroller.getBoundingClientRect();
+  // 横スクロールバーがレイアウト領域を占める場合（macOS の「常に表示」）、
+  // 要素の rect と縦トラックは一致しない。オーバーレイでは差が 0 になる。
+  const horizontalBand = Math.max(
+    0,
+    scroller.offsetHeight - scroller.clientHeight,
+  );
+  const trackTop = rect.top;
+  const trackBottom = rect.bottom - horizontalBand;
+  const trackHeight = trackBottom - trackTop;
 
-  if (max <= 0 || rect.height <= 0) {
+  if (max <= 0 || trackHeight <= 0) {
     return { pointerEndY: null };
   }
 
@@ -1692,13 +1723,14 @@ function captureScrollbarBottomIntent(
 
   const thumbHeight = Math.max(
     MIN_SCROLLBAR_THUMB_PX,
-    (scroller.clientHeight / scroller.scrollHeight) * rect.height,
+    (scroller.clientHeight / scroller.scrollHeight) * trackHeight,
   );
   const thumbTop =
-    rect.top + (scroller.scrollTop / max) * Math.max(rect.height - thumbHeight, 0);
+    trackTop +
+    (scroller.scrollTop / max) * Math.max(trackHeight - thumbHeight, 0);
   const grabOffset = Math.min(Math.max(event.clientY - thumbTop, 0), thumbHeight);
 
-  return { pointerEndY: rect.bottom - (thumbHeight - grabOffset) };
+  return { pointerEndY: trackBottom - (thumbHeight - grabOffset) };
 }
 
 function keepBottomAfterScrollbarDrag(

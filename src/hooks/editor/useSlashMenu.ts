@@ -12,6 +12,7 @@ import {
   type SlashCommand,
   type SlashMenuState,
 } from "../../types/slash";
+import { canEditView } from "../../features/editor/editorEditability";
 
 // The `/` must be at a word boundary — at the start of the
 // buffer, or preceded by whitespace. The lookbehind `(?<!\S)`
@@ -209,6 +210,12 @@ export function useSlashMenu({
     (command: SlashCommand) => {
       const view = viewRef.current;
       if (!view) {
+        return;
+      }
+      // 編集ロック中は実行しない。`enabled` で menu は閉じるが、ロック前に
+      // 開いていた場合に備えて実行入口でも検査する（表示と保存対象を食い違わせない）。
+      if (!canEditView(view)) {
+        setMenuState(HIDDEN_SLASH_STATE);
         return;
       }
       const currentState = stateRef.current;

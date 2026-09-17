@@ -165,7 +165,7 @@ describe("useFindReplaceState", () => {
 
     act(() => {
       // 1件置換: 最初の一致が "bar" になり、一致一覧は作り直される。
-      result.current.selectMatchAfter(0 + "bar".length);
+      result.current.selectAfterReplacement(0, "bar");
     });
     rerender({ source: "bar foo foo" });
 
@@ -187,7 +187,7 @@ describe("useFindReplaceState", () => {
 
     act(() => {
       // 置換語にも検索語が残るケース。置換そのものの中の一致へ留まらせない。
-      result.current.selectMatchAfter(0 + "foofoo".length);
+      result.current.selectAfterReplacement(0, "foofoo");
     });
     rerender({ source: "foofoo foo" });
 
@@ -209,7 +209,7 @@ describe("useFindReplaceState", () => {
     });
 
     act(() => {
-      result.current.selectMatchAfter(4 + "bar".length);
+      result.current.selectAfterReplacement(1, "bar");
     });
     rerender({ source: "foo bar" });
 

@@ -51,6 +51,10 @@ export function usePreviewScrollSync({
   // v0.34: syncEditorScroll を1フレームに1回に間引き、慣性スクロールの
   // 高頻度イベントでの scrollHeight 読み取り（強制リフロー）を抑制する。
   const editorScrollFrameRef = useRef<number | null>(null);
+  // 予約済みの同期 rAF を「世代」で失効させる。ユーザーが操作先を切り替えた後、
+  // 古い予約が遅れて実行されて所有権を取り戻すのを防ぐ。
+  const previewSyncGenerationRef = useRef(0);
+  const editorSyncGenerationRef = useRef(0);
   const scrollHudLine = Math.min(
     activeDocumentLineCount,
     Math.max(1, Math.round(1 + scrollHud.ratio * (activeDocumentLineCount - 1))),
@@ -87,6 +91,12 @@ export function usePreviewScrollSync({
     if (scrollSyncSourceRef.current === "editor") {
       scrollSyncSourceRef.current = null;
     }
+    // 予約済みの editor→preview 書き込みも破棄する（解除後に古い位置を書かせない）。
+    if (previewScrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(previewScrollFrameRef.current);
+      previewScrollFrameRef.current = null;
+    }
+    previewSyncGenerationRef.current += 1;
   }, []);
 
   const releasePreviewGuard = useCallback(() => {
@@ -97,6 +107,11 @@ export function usePreviewScrollSync({
     if (scrollSyncSourceRef.current === "preview") {
       scrollSyncSourceRef.current = null;
     }
+    if (editorScrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(editorScrollFrameRef.current);
+      editorScrollFrameRef.current = null;
+    }
+    editorSyncGenerationRef.current += 1;
   }, []);
 
   usePreviewCleanup({
@@ -145,8 +160,14 @@ export function usePreviewScrollSync({
       window.cancelAnimationFrame(previewScrollFrameRef.current);
     }
 
+    const generation = previewSyncGenerationRef.current;
     previewScrollFrameRef.current = window.requestAnimationFrame(() => {
       previewScrollFrameRef.current = null;
+
+      // 予約後にユーザーが操作先を切り替えていたら、この古い書き込みは捨てる。
+      if (generation !== previewSyncGenerationRef.current) {
+        return;
+      }
 
       // rAF を待っている間にプレビュー側が書き込みを始めていたら、この古い
       // 書き込みは降りる（先頭のチェックだけでは後追いのエコーを止められない）。
@@ -194,8 +215,14 @@ export function usePreviewScrollSync({
       return;
     }
 
+    const generation = editorSyncGenerationRef.current;
     editorScrollFrameRef.current = window.requestAnimationFrame(() => {
       editorScrollFrameRef.current = null;
+
+      // 予約後にユーザーが操作先を切り替えていたら、この古い書き戻しは捨てる。
+      if (generation !== editorSyncGenerationRef.current) {
+        return;
+      }
 
       // rAF 待ちの間に編集側がスクロール（ドラッグ等）を始めていたら、
       // プレビューの古い比率で編集位置を書き戻さない。

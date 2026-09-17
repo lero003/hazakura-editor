@@ -750,10 +750,12 @@ describe("EditorPane", () => {
       scrollHeight: { configurable: true, get: () => scrollHeight },
       scrollWidth: { configurable: true, value: 280 },
     });
+    // 横スクロールバーが 15px を占める（clientHeight 500 + 横バー 15 = 515）。
+    // 縦トラックは 0〜500 で、要素の rect とは一致しない。
     scroller.getBoundingClientRect = () =>
       ({
-        bottom: 500,
-        height: 500,
+        bottom: 515,
+        height: 515,
         left: 0,
         right: 300,
         top: 0,
@@ -808,6 +810,53 @@ describe("EditorPane", () => {
         harness.stepFrames();
       });
       expect(scroller.scrollTop).toBe(2300);
+    } finally {
+      harness.requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
+  it("uses the vertical track when a horizontal scrollbar occupies the bottom band", () => {
+    const harness = mountBottomDragHarness();
+
+    try {
+      const { scroller } = harness;
+      // 横バー併設の幾何モデル: 表示領域 500 / 本文 2000 / 横バー 15。
+      // 縦トラックは 0〜500 で、つまみは 125。
+      harness.setScrollHeight(2000);
+      // つまみは先頭（scrollTop 0）にあり、その中央（y=62.5）をつかむ。
+      scroller.scrollTop = 0;
+      fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 63 });
+      // つまみの下端が縦トラックの下端（y=500）へ届く位置＝ポインタ y=437.5。
+      scroller.scrollTop = 1500;
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 438 });
+
+      harness.setScrollHeight(2300);
+      act(() => {
+        harness.stepFrames();
+      });
+      // 横バーを含む rect（515）で計算すると到達しない位置で、補正が効く。
+      expect(scroller.scrollTop).toBe(1800);
+    } finally {
+      harness.requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
+  it("does not treat a check short of the vertical track end as a bottom request", () => {
+    const harness = mountBottomDragHarness();
+
+    try {
+      const { scroller } = harness;
+      harness.setScrollHeight(2000);
+      scroller.scrollTop = 0;
+      fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 63 });
+      scroller.scrollTop = 1500;
+      // 真の末尾到達 Y は 437.5。420 で離すのは途中停止なので補正しない。
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 420 });
+
+      act(() => {
+        harness.stepFrames();
+      });
+      expect(scroller.scrollTop).toBe(1500);
     } finally {
       harness.requestAnimationFrameSpy.mockRestore();
     }

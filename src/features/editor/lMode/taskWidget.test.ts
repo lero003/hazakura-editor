@@ -25,8 +25,11 @@ import { LModeClasses } from "./classes";
 // `extension.test.ts` and the dedicated `extension.test.ts`
 // composing-spy. Here we focus on the dispatch helper.
 
-function makeView(initialDoc: string): EditorView {
-  const state = EditorState.create({ doc: initialDoc });
+function makeView(initialDoc: string, options: { readOnly?: boolean } = {}): EditorView {
+  const state = EditorState.create({
+    doc: initialDoc,
+    extensions: options.readOnly ? [EditorState.readOnly.of(true)] : [],
+  });
   // jsdom is happy with detached parents; we just need a
   // place to mount the EditorView so `view.dom` exists.
   const parent = document.createElement("div");
@@ -52,7 +55,7 @@ function makeTaskSpan(
   checked: boolean,
 ): HTMLSpanElement {
   const widget = new LModeTaskWidget(from, to, checked);
-  const span = widget.toDOM();
+  const span = widget.toDOM(view);
   view.dom.appendChild(span);
   return span;
 }
@@ -66,6 +69,7 @@ describe("LModeTaskWidget DOM contract", () => {
     expect(span.getAttribute("aria-checked")).toBe("false");
     expect(span.getAttribute("aria-label")).toBe("Incomplete task");
     expect(span.getAttribute("tabindex")).toBe("0");
+    expect(span.getAttribute("aria-disabled")).toBeNull();
     expect(span.dataset.lmodeTaskFrom).toBe(String(from));
     expect(span.dataset.lmodeTaskTo).toBe(String(to));
     expect(span.classList.contains(LModeClasses.task)).toBe(true);
@@ -82,6 +86,15 @@ describe("LModeTaskWidget DOM contract", () => {
     expect(span.classList.contains(LModeClasses.taskChecked)).toBe(true);
     expect(span.textContent).toBe("\u2611"); // ☑
   });
+
+  it("marks the checkbox disabled and unfocusable while the editor is read-only", () => {
+    const view = makeView("- [ ] todo", { readOnly: true });
+    const { from, to } = findTaskRange(view);
+    const span = makeTaskSpan(view, from, to, false);
+
+    expect(span.getAttribute("aria-disabled")).toBe("true");
+    expect(span.getAttribute("tabindex")).toBeNull();
+  });
 });
 
 describe("dispatchTaskToggle", () => {
@@ -96,6 +109,20 @@ describe("dispatchTaskToggle", () => {
 
     expect(result).toBe(true);
     expect(view.state.doc.toString()).toBe("- [x] todo");
+  });
+
+  it("refuses the toggle (doc unchanged) while the editor is read-only", () => {
+    const view = makeView("- [ ] todo", { readOnly: true });
+    const { from, to } = findTaskRange(view);
+    const span = makeTaskSpan(view, from, to, false);
+
+    const event = new MouseEvent("click", { bubbles: true });
+    Object.defineProperty(event, "target", { value: span });
+    const result = dispatchTaskToggle(view, event);
+
+    // 編集ロック中のタスク切替は本文を変えない（画面と保存対象を食い違わせない）。
+    expect(result).toBe(false);
+    expect(view.state.doc.toString()).toBe("- [ ] todo");
   });
 
   it("toggles [x] -> [ ] when the click target is the widget span", () => {

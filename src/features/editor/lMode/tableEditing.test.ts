@@ -12,13 +12,19 @@ import {
   snapLModeCursorToContent,
 } from "./tableEditing";
 
-function makeView(doc: string, anchor: number, head = anchor): EditorView {
+function makeView(
+  doc: string,
+  anchor: number,
+  head = anchor,
+  options: { readOnly?: boolean } = {},
+): EditorView {
   const parent = document.createElement("div");
   document.body.appendChild(parent);
   return new EditorView({
     parent,
     state: EditorState.create({
       doc,
+      extensions: options.readOnly ? [EditorState.readOnly.of(true)] : [],
       selection: EditorSelection.range(anchor, head),
     }),
   });
@@ -33,6 +39,38 @@ function offsetOf(doc: string, needle: string): number {
 }
 
 describe("L Mode table editing", () => {
+  describe("edit lock", () => {
+    const tableDoc = "| A | B |\n| --- | --- |\n| foo | bar |\n";
+
+    it("refuses table changes while the editor is read-only", () => {
+      const caret = offsetOf(tableDoc, "foo") + 1;
+      const view = makeView(tableDoc, caret, caret, { readOnly: true });
+
+      // 生成ロック中に表を書き換える入口はどれも本文を変えない。
+      expect(insertTableRowAfterCursor(view)).toBe(false);
+      expect(insertTableCellBreak(view)).toBe(false);
+      expect(insertTableCellPipe(view)).toBe(false);
+      expect(view.state.doc.toString()).toBe(tableDoc);
+
+      const rangeView = makeView(
+        tableDoc,
+        offsetOf(tableDoc, "foo"),
+        offsetOf(tableDoc, "bar") + "bar".length,
+        { readOnly: true },
+      );
+      expect(deleteSelectedTableRows(rangeView)).toBe(false);
+      expect(rangeView.state.doc.toString()).toBe(tableDoc);
+    });
+
+    it("still applies table changes when the editor is editable (control)", () => {
+      const caret = offsetOf(tableDoc, "foo") + 1;
+      const view = makeView(tableDoc, caret);
+
+      expect(insertTableCellPipe(view)).toBe(true);
+      expect(view.state.doc.toString()).not.toBe(tableDoc);
+    });
+  });
+
   // v0.18 caret movement edge cases. These pin down
   // the table cell boundary arithmetic for:
   //   * rows with uneven cell padding (e.g. `| あ |  い|`),

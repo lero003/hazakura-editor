@@ -11,6 +11,7 @@ import {
   type ViewUpdate,
   ViewPlugin,
 } from "@codemirror/view";
+import { canEditView } from "../editorEditability";
 
 type TableCell = {
   rawFrom: number;
@@ -78,6 +79,11 @@ export function moveTableCellLeft(view: EditorView): boolean {
 }
 
 export function insertTableRowAfterCursor(view: EditorView): boolean {
+  // 編集ロック中（Local Assist 生成中など）は本文を変えない。
+  if (!canEditView(view)) {
+    return false;
+  }
+
   const range = view.state.selection.main;
   if (!range.empty) {
     return false;
@@ -110,6 +116,10 @@ export function insertTableRowAfterCursor(view: EditorView): boolean {
 }
 
 export function insertTableCellBreak(view: EditorView): boolean {
+  if (!canEditView(view)) {
+    return false;
+  }
+
   const range = view.state.selection.main;
   if (!range.empty) {
     return false;
@@ -138,6 +148,10 @@ export function insertTableCellBreak(view: EditorView): boolean {
 }
 
 export function insertTableCellPipe(view: EditorView): boolean {
+  if (!canEditView(view)) {
+    return false;
+  }
+
   const range = view.state.selection.main;
   if (!range.empty) {
     return false;
@@ -161,6 +175,10 @@ export function insertTableCellPipe(view: EditorView): boolean {
 }
 
 export function deleteSelectedTableRows(view: EditorView): boolean {
+  if (!canEditView(view)) {
+    return false;
+  }
+
   const range = view.state.selection.main;
   if (range.empty) {
     return false;

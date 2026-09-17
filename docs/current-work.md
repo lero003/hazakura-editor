@@ -131,6 +131,60 @@ Local Assist の生成ロックは `EditorView.editable.of(!readOnly)` しか設
 いずれも R1〜R4 の修正前実装で新テストが落ちることを確認してから通した。
 未受入: WKWebView 実機（つまみの上・中央・下、反対ペインへの素早い操作切替）。
 
+## 再レビュー対応 — ロックの残り入口と同期の競合（2026-09-18）
+
+固定 SHA `8f560695` への再レビュー（P1×1・P2×3）に対する修正。
+
+### R1継続（P1）自作コマンドの編集ロック検査漏れ
+
+`replaceCurrent` / `replaceAll` / Tab / 画像貼り付けに続き、残っていた入口を塞いだ。
+共通ヘルパー `features/editor/editorEditability.ts` の `canEditView(view)` を追加し、
+
+- `lMode/taskWidget.ts`: `dispatchTaskToggle` をロック中は何もしない。ウィジェットは
+  `aria-disabled` + フォーカス対象外にし、ロック切替時（compartment の reconfigure）に
+  既存 DOM の属性も更新する
+- `lMode/tableEditing.ts`: 行追加 / セル内改行 / パイプ挿入 / 選択行削除（doc を変える 4 つ）
+- `useSlashMenu.ts`: `runCommand` の実行直前で検査し、ロック中はメニューを閉じる。
+  `EditorPane` から `enabled: !readOnly` を渡して開かせない
+
+回帰テスト: `taskWidget.test.ts` / `tableEditing.test.ts` / `useSlashMenu.test.ts`（いずれも
+ロック中は本文が変わらないこと、ロック解除後は従来どおり動くこと）。
+
+### R3継続（P2）予約済み rAF が所有権を奪い返す／プレビュー側のキー配線漏れ
+
+`releaseEditorGuard` / `releasePreviewGuard` で、その向きの予約済み rAF を取り消し、
+世代番号（`previewSyncGenerationRef` / `editorSyncGenerationRef`）で古い通知を失効させた。
+プレビュー側の入力入口に `keydown` を追加（PageDown / PageUp / Space / 矢印 / Home / End。
+入力欄・IME 合成・リンク操作は対象外）。
+
+回帰テスト: `usePreviewScrollSync.test.ts`（旧予約が遅れて動いても新しい操作が勝つ）。
+
+### R4継続（P2）次一致の選択が既存の番号補正と競合
+
+置換後の選択要求を ref から state へ変え、**一致一覧が置換後の内容へ更新されてから**
+解決するようにした（同じ語への置換は source が変わらないので即時解決）。
+未処理の要求がある間は `useFindMatchIndexSync` の件数丸めを抑止し、同じ index を
+2 か所から書かないようにした。同じ語への置換では本文を変更しない（dirty / Undo を作らない）。
+
+回帰テスト: `useFindReplaceController.test.ts`（3件以上の末尾→先頭、同一語置換、
+置換語内の一致スキップ、全一致消滅、1操作で1つだけ進む）。
+
+### R2継続（P2）横スクロールバー併設時のトラック長
+
+`captureScrollbarBottomIntent` が `rect.height` / `rect.bottom` を使っていたため、
+横スクロールバーがレイアウト領域を占めると縦トラックを過大に見積もっていた。
+横向きの帯（`offsetHeight - clientHeight`。オーバーレイでは 0）を除いた縦トラックで
+つまみ長と下端到達 Y を計算する。
+
+回帰テスト: `EditorPane.test.tsx`（横バー併設の幾何モデルで末尾到達が成立する／
+437.5px の真の到達点に対し 420px の途中停止は補正しない）。
+
+検証: `npm run typecheck` / `npm test`（288ファイル・2,548件）/ `npm run build:vite` /
+`npm run smoke:app-store-surface`（10ファイル・125件）。R1〜R4 の新テストは
+修正前実装で落ちることを個別に確認。
+未処理: `npm audit` による moderate 2 件のトリアージ（依存ツリーを registry へ送る照会のため、
+この作業セッションでは実行していない）。
+
 ## 3.0.2候補 — メニューバーの明滅が3.0.1でも再発（2026-09-16）
 
 公開済み `3.0.1` でも「文字を打つ・改行するとmacOSのメニューバーが明滅する」が再発した。

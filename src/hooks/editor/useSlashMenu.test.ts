@@ -10,13 +10,18 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-function makeEditorView(doc = "body", selection?: { anchor: number; head?: number }) {
+function makeEditorView(
+  doc = "body",
+  selection?: { anchor: number; head?: number },
+  options: { readOnly?: boolean } = {},
+) {
   const parent = document.createElement("div");
   document.body.append(parent);
   return new EditorView({
     parent,
     state: EditorState.create({
       doc,
+      extensions: options.readOnly ? [EditorState.readOnly.of(true)] : [],
       selection: selection
         ? { anchor: selection.anchor, head: selection.head ?? selection.anchor }
         : undefined,
@@ -95,6 +100,36 @@ describe("useSlashMenu", () => {
     });
 
     expect(view.state.doc.toString()).toBe("# body");
+    expect(result.current.state.visible).toBe(false);
+  });
+
+  it("refuses to run a command while the editor is read-only (edit lock)", () => {
+    const view = makeEditorView("body", undefined, { readOnly: true });
+    const command: SlashCommand = {
+      category: "markdown",
+      hint: "#",
+      id: "heading-1",
+      insertText: "# ",
+      label: "Heading 1",
+      searchKeys: ["heading", "h1"],
+    };
+
+    const { result } = renderHook(() =>
+      useSlashMenu({
+        commands: [command],
+        enabled: true,
+        viewKey: "doc",
+        viewRef: { current: view },
+      }),
+    );
+
+    act(() => {
+      // ロック前に開いていたメニューが残っていても、実行時に本文を変えない。
+      result.current.openMenuAtContext(view, { bottom: 64, left: 48, top: 64 });
+      result.current.runCommand(command);
+    });
+
+    expect(view.state.doc.toString()).toBe("body");
     expect(result.current.state.visible).toBe(false);
   });
 

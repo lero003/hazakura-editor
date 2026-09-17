@@ -24,12 +24,29 @@
 // widget is rebuilt on every decoration recompute (i.e., on
 // every doc change).
 
-import { ViewPlugin, type EditorView, WidgetType } from "@codemirror/view";
+import {
+  ViewPlugin,
+  type EditorView,
+  type ViewUpdate,
+  WidgetType,
+} from "@codemirror/view";
 import type { Extension } from "@codemirror/state";
 import { LModeClasses } from "./classes";
+import { canEditView } from "../editorEditability";
 
 const CHECKED_GLYPH = "☑";
 const UNCHECKED_GLYPH = "☐";
+
+// 読み取り専用（編集ロック中）はフォーカス対象から外し、無効状態を読み上げさせる。
+function applyTaskReadOnlyState(el: HTMLElement, readOnly: boolean) {
+  if (readOnly) {
+    el.setAttribute("aria-disabled", "true");
+    el.removeAttribute("tabindex");
+    return;
+  }
+  el.removeAttribute("aria-disabled");
+  el.setAttribute("tabindex", "0");
+}
 
 export class LModeTaskWidget extends WidgetType {
   constructor(
@@ -48,7 +65,7 @@ export class LModeTaskWidget extends WidgetType {
     );
   }
 
-  toDOM(): HTMLElement {
+  toDOM(view: EditorView): HTMLElement {
     const span = document.createElement("span");
     span.className = this.checked
       ? `${LModeClasses.task} ${LModeClasses.taskChecked}`
@@ -62,13 +79,9 @@ export class LModeTaskWidget extends WidgetType {
       "aria-label",
       this.checked ? "Completed task" : "Incomplete task",
     );
-    // `tabindex="0"` puts the widget into the keyboard tab
-    // order so a keyboard-only user can reach the checkbox
-    // without the mouse. The `keydown` handler in
-    // `lModeTaskClickPlugin` then toggles the marker on
-    // Enter / Space — the standard a11y interaction for a
-    // `role="checkbox"` element.
-    span.setAttribute("tabindex", "0");
+    // 編集ロック中はフォーカス対象から外し、無効状態を読み上げさせる
+    // （`tabindex="0"` はキーボードだけでチェックボックスへ到達するため）。
+    applyTaskReadOnlyState(span, view.state.readOnly);
     return span;
   }
 
@@ -95,6 +108,12 @@ export class LModeTaskWidget extends WidgetType {
 // dispatch helper so the click path stays untouched.
 
 export function dispatchTaskToggle(view: EditorView, event: Event): boolean {
+  // 編集ロック中（Local Assist 生成中など）は本文を変更しない。装飾は doc の
+  // 写しなので、ここを止めれば画面と保存対象が食い違わない。
+  if (!canEditView(view)) {
+    return false;
+  }
+
   const target = event.target;
   if (!(target instanceof Element)) return false;
   const taskEl = target.closest(`.${LModeClasses.task}`);
@@ -131,6 +150,18 @@ export function dispatchTaskToggle(view: EditorView, event: Event): boolean {
 const lModeTaskClickViewPlugin = ViewPlugin.fromClass(
   class {
     constructor(readonly view: EditorView) {}
+    update(update: ViewUpdate) {
+      // readOnly は compartment の reconfigure で切り替わり、ウィジェットの DOM は
+      // 再利用される（eq が同じため作り直されない）。切替時に属性だけ更新する。
+      if (update.startState.readOnly === update.state.readOnly) {
+        return;
+      }
+      update.view.dom
+        .querySelectorAll<HTMLElement>("[data-lmode-task-from]")
+        .forEach((el) => {
+          applyTaskReadOnlyState(el, update.state.readOnly);
+        });
+    }
     destroy() {}
   },
   {

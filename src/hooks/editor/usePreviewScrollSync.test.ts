@@ -368,6 +368,78 @@ describe("usePreviewScrollSync", () => {
     requestAnimationFrameSpy.mockRestore();
   });
 
+  it("invalidates a queued sync frame when the user switches panes", () => {
+    vi.useFakeTimers();
+    const frames = new Map<number, FrameRequestCallback>();
+    let nextFrameId = 0;
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        nextFrameId += 1;
+        frames.set(nextFrameId, callback);
+        return nextFrameId;
+      });
+    const cancelAnimationFrameSpy = vi
+      .spyOn(window, "cancelAnimationFrame")
+      .mockImplementation((handle: number) => {
+        frames.delete(handle);
+      });
+
+    const setScrollRatio = vi.fn(() => true);
+    const previewPane = createPreviewPane({
+      clientHeight: 500,
+      scrollHeight: 1500,
+      scrollTop: 300,
+    });
+
+    const { result } = renderHook(() =>
+      usePreviewScrollSync({
+        activeDocumentLineCount: 11,
+        activeTab: { path: "/workspace/book.md" } as EditorTab,
+        documentHeadings: [],
+        editorPaneRef: { current: { setScrollRatio } },
+        previewPaneRef: { current: previewPane },
+      }),
+    );
+    const flushFrames = () => {
+      const pending = [...frames.values()];
+      frames.clear();
+      act(() => {
+        pending.forEach((callback) => callback(0));
+      });
+    };
+
+    // 本文 400 をプレビューへ書く rAF を予約したまま実行しない。
+    act(() => {
+      result.current.syncPreviewScroll(0.4);
+    });
+    const staleFrame = [...frames.values()][0];
+    expect(staleFrame).toBeDefined();
+
+    // ユーザーがプレビューを操作して所有権を移す（予約は失効する）。
+    act(() => {
+      result.current.releaseEditorGuard();
+    });
+    previewPane.scrollTop = 600;
+
+    // 失効した予約が遅れて動いても、プレビューを古い 400 へ戻さない。
+    act(() => {
+      staleFrame(0);
+    });
+    expect(previewPane.scrollTop).toBe(600);
+
+    // 新しい操作側（プレビュー）の同期は生きている。
+    act(() => {
+      result.current.syncEditorScroll();
+    });
+    flushFrames();
+    expect(setScrollRatio).toHaveBeenCalledWith(0.6, expect.any(Number));
+    expect(previewPane.scrollTop).toBe(600);
+
+    requestAnimationFrameSpy.mockRestore();
+    cancelAnimationFrameSpy.mockRestore();
+  });
+
   it("does not move Preview scroll while the user is selecting text in the pane", () => {
     vi.useFakeTimers();
     const frameCallbacks: FrameRequestCallback[] = [];
