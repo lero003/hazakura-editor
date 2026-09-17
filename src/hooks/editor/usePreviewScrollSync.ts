@@ -101,6 +101,8 @@ export function usePreviewScrollSync({
 
   usePreviewCleanup({
     editorGuardTimerRef,
+    editorScrollFrameRef,
+    previewGuardTimerRef,
     previewScrollFrameRef,
     scrollHudHideTimerRef,
   });

@@ -6,12 +6,16 @@ type TimerRef = {
 
 type UsePreviewCleanupOptions = {
   editorGuardTimerRef: TimerRef;
+  editorScrollFrameRef: TimerRef;
+  previewGuardTimerRef: TimerRef;
   previewScrollFrameRef: TimerRef;
   scrollHudHideTimerRef: TimerRef;
 };
 
 export function usePreviewCleanup({
   editorGuardTimerRef,
+  editorScrollFrameRef,
+  previewGuardTimerRef,
   previewScrollFrameRef,
   scrollHudHideTimerRef,
 }: UsePreviewCleanupOptions) {
@@ -19,6 +23,14 @@ export function usePreviewCleanup({
     () => () => {
       if (editorGuardTimerRef.current !== null) {
         window.clearTimeout(editorGuardTimerRef.current);
+      }
+
+      if (previewGuardTimerRef.current !== null) {
+        window.clearTimeout(previewGuardTimerRef.current);
+      }
+
+      if (editorScrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(editorScrollFrameRef.current);
       }
 
       if (previewScrollFrameRef.current !== null) {
@@ -29,6 +41,12 @@ export function usePreviewCleanup({
         window.clearTimeout(scrollHudHideTimerRef.current);
       }
     },
-    [editorGuardTimerRef, previewScrollFrameRef, scrollHudHideTimerRef],
+    [
+      editorGuardTimerRef,
+      editorScrollFrameRef,
+      previewGuardTimerRef,
+      previewScrollFrameRef,
+      scrollHudHideTimerRef,
+    ],
   );
 }
