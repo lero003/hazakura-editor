@@ -31,4 +31,17 @@ describe("useSidePaneResize", () => {
     expect(result.current.previewColumnPercent).toBe(53);
     expect(readWorkspacePaneLayout().previewColumnPercent).toBe(53);
   });
+
+  it("keeps a 6px resizer column between the editor and the right pane", () => {
+    const { result } = renderHook(() =>
+      useSidePaneResize({ sidePaneMode: "preview", sidePaneVisible: true }),
+    );
+
+    // つかむ幅はこの 6px + `.pane-resizer::before` の右 4px = 10px。
+    // 左への張り出しは編集面のスクロールバーを奪うため禁止
+    // （src/styles/workspaceCss.test.ts が固定）。
+    expect(
+      result.current.editorPreviewGridStyle?.gridTemplateColumns,
+    ).toContain(" 6px ");
+  });
 });

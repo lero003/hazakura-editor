@@ -3,7 +3,33 @@
 Status: Operational
 Scope: v3.0公開の記録と公開後のキュー
 Authority: High
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
+
+## 編集エリアのスクロールバーが右端で効かない（2026-09-17）
+
+実機報告: 編集エリアのスクロールバーをマウスでドラッグしてもスクロールできない。
+原因はドラッグ処理ではなく**つかむ場所**で、CSS の当たり判定が 4px だけ重なっていた。
+
+- 通常の右ペイン表示時は `editor | 6px resizer | right pane` の3列（`useSidePaneResize`）。
+- `.pane-resizer::before` が左右へ 4px 張り出していたため、**編集ペインの右端4px**を
+  リサイザが持っていた。スクロールバーはペインの右端にあるので、そこでつかむと
+  `mousedown` がスクロールバーに届かず、リサイザの `setPointerCapture` に食われる。
+  縦にドラッグしても何も起きず、横に振るとペイン幅が変わる。
+- ツリー側（`tree | 6px resizer | editor`）も同じ条件。
+- `EditorPane` の v0.34 対策（スクロールバー mousedown での blur / mouseup での復帰）は
+  `view.scrollDOM` 自身にイベントが来たときだけ働くので、今回は無関係だった。
+
+直し: `.pane-resizer::before` の張り出しを**右だけ**に（`left: 0; right: -4px`）。
+つかむ幅は表示6px + 右4px = 10px を維持する。左隣は必ず「右端にスクロールバーを持つ
+スクロール面」なので、左へ張り出さないのが正しい。コメントも実態に合わせて直した。
+`src/styles/workspaceCss.test.ts` が左への張り出しを、`useSidePaneResize.test.tsx` が
+6px のリサイザ列を固定する。
+
+検証: `npm run typecheck` / `npm test` / `npm run build:vite`。
+ブラウザ実測（`docs/reviews/2026-09-17-scrollbar-drag`）で、右端2pxからの縦ドラッグが
+scroll 179→1441 になり、リサイザ単体（6px 列）も従来どおり動くことを確認した。
+未受入: **WKWebView実機**で「常に表示」とオーバーレイの両方、右端2px / 8px の
+つかみ比べ（ヘッドレスの Chromium ではオーバーレイの当たり判定を再現できない）。
 
 ## 3.0.2候補 — メニューバーの明滅が3.0.1でも再発（2026-09-16）
 

@@ -1866,7 +1866,7 @@
 
 .pane-resizer {
   /* 実機指摘: ペインの区切りが太い。6px は「つかむための幅」で、見える線は中央の1pxだけにする。
-     （左右4pxは ::before の透明な当たり判定。a11y のヒット領域は狭めない。） */
+     つかむ幅は ::before で右へだけ 4px 広げる（＝10px）。理由は ::before のコメント参照。 */
   /* 背景色は紙と同じ不透明色にする（実機指摘: テーマによって色が付く。曙光のように
      背景アニメーションがあるテーマでは、透明部分から背景が透けて別の色の帯に見えていた）。 */
   background-color: var(--surface-paper);
@@ -1884,10 +1884,15 @@
 }
 
 .pane-resizer::before {
+  /* つかむ幅の透明な当たり判定。右へだけ 4px 広げる（表示 6px + 4px = 10px）。
+     左へ張り出してはいけない: 左隣は editor / tree の右端で、そこがスクロールバーの
+     ある場所。左へ張り出すと mousedown がリサイザに食われ、スクロールバーを
+     ドラッグしても（縦に動かす限り）何も起きなくなる。
+     実測: docs/reviews/2026-09-17-scrollbar-drag/README.md */
   background: transparent;
   bottom: 0;
   content: "";
-  left: -4px;
+  left: 0;
   position: absolute;
   right: -4px;
   top: 0;
@@ -1895,7 +1900,7 @@
 
 .pane-resizer:hover,
 .pane-resizer:focus-visible {
-  /* hover/フォーカスは 2px のアクセント線で示す（つかむ幅は 6px のまま）。 */
+  /* hover/フォーカスは 2px のアクセント線で示す（つかむ幅は ::before の 10px のまま）。 */
   background-color: var(--surface-paper);
   background-image: linear-gradient(
     to right,

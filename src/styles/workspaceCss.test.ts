@@ -243,4 +243,18 @@ describe("workspace.css", () => {
       /background:\s*var\(--diff-blank-row-bg\)/,
     );
   });
+
+  it("keeps the pane resizer grab area off the neighbouring scrollbar", () => {
+    // 実機報告: 編集エリアのスクロールバーを右端でつかむとスクロールしなかった。
+    // 右ペインのリサイザは editor / tree の右端（＝スクロールバーのある場所）に
+    // 隣接するため、::before を左へ張り出すと mousedown がリサイザに食われ、
+    // 縦ドラッグが「何も起きない」になる。張り出しは右側だけに限る。
+    // ブラウザでの実測は docs/reviews/2026-09-17-scrollbar-drag/README.md。
+    const grabArea = ruleBody(".pane-resizer::before");
+
+    expect(grabArea).not.toBe("");
+    expect(grabArea).toMatch(/left:\s*0(?:px)?;/);
+    expect(grabArea).not.toMatch(/left:\s*-/);
+    expect(grabArea).toMatch(/right:\s*-4px;/);
+  });
 });
