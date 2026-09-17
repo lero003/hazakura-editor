@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import type { SearchOptions } from "../../types";
 import { advanceStringIndex, useFindMatches } from "./useFindMatches";
@@ -148,6 +148,93 @@ describe("useFindMatches", () => {
     expect(result.current.findMatches.map((match) => match.from)).toEqual([
       0, 6, 12,
     ]);
+  });
+
+  // N4: 前後の文字を UTF-16 の 1 単位で取ると、補助面の漢字・数字が
+  // 「単語文字でない」と判定され、単語全体ではない箇所まで一致になる。
+  it("treats astral letters and digits as word characters for whole-word search", () => {
+    const cases: Array<[string, number]> = [
+      // 直前が補助面の漢字（𠮷 U+20BB7）
+      ["吉田", 0],
+      ["𠮷田", 0],
+      // 直後が補助面の漢字
+      ["田𠮷", 0],
+      // 絵文字は単語文字ではないので境界になる
+      ["😀田", 1],
+      ["🙂田🙂", 1],
+      // 補助面の数字（𝟙 U+1D7D9）も単語文字
+      ["𝟙田", 0],
+      // 空白で囲まれた通常の一致は対照
+      [" 田 ", 1],
+    ];
+
+    for (const [source, expected] of cases) {
+      const { result } = renderHook(() =>
+        useFindMatches({
+          options: { ...baseOptions, wholeWord: true },
+          query: "田",
+          source,
+        }),
+      );
+
+      expect([source, result.current.findMatches.length]).toEqual([
+        source,
+        expected,
+      ]);
+    }
+  });
+
+  it("applies the same code-point boundaries to regex search", () => {
+    const { result } = renderHook(() =>
+      useFindMatches({
+        options: { ...baseOptions, regex: true, wholeWord: true },
+        query: "田",
+        source: "𠮷田",
+      }),
+    );
+
+    expect(result.current.findMatches).toEqual([]);
+  });
+
+  // N3: 999 件そろった後に 1000 回目の照合をしない（条件式の順序）。
+  it("does not attempt another regex match once 999 matches are collected", () => {
+    const execSpy = vi.spyOn(RegExp.prototype, "exec");
+    const source = "x".repeat(1500);
+
+    try {
+      const { result } = renderHook(() =>
+        useFindMatches({
+          options: { ...baseOptions, regex: true },
+          query: "x",
+          source,
+        }),
+      );
+
+      expect(result.current.findMatches).toHaveLength(999);
+      expect(
+        execSpy.mock.calls.filter(([value]) => value === source).length,
+      ).toBe(999);
+    } finally {
+      execSpy.mockRestore();
+    }
+  });
+
+  it("does not attempt another literal match once 999 matches are collected", () => {
+    const execSpy = vi.spyOn(RegExp.prototype, "exec");
+    const source = "x".repeat(1500);
+
+    try {
+      const { result } = renderHook(() =>
+        useFindMatches({ options: baseOptions, query: "x", source }),
+      );
+
+      expect(result.current.findMatches).toHaveLength(999);
+      expect(
+        execSpy.mock.calls.filter(([value]) => value === source).length,
+      ).toBe(999);
+    } finally {
+      execSpy.mockRestore();
+    }
   });
 
   it("sets invalidRegex and returns no matches for a malformed regex pattern", () => {

@@ -65,11 +65,14 @@ function findLiteralMatches(
     return [];
   }
 
-  const steps = createStepBudget(source);
-  let match: RegExpExecArray | null;
+  const budget = createMatchAttemptBudget(source);
 
-  while ((match = regex.exec(source)) && matches.length < 999) {
-    if (steps.spend()) {
+  // 件数と上限を「次の照合より前」に検査する。条件式の順序が exec 先だと、
+  // 999 件そろっていても 1000 回目の照合（高コストになり得る）へ入ってしまう。
+  while (matches.length < 999 && budget.take()) {
+    const match = regex.exec(source);
+
+    if (!match) {
       break;
     }
 
@@ -94,11 +97,12 @@ function findRegexMatches(
   try {
     const flags = options.caseSensitive ? "gu" : "giu";
     const regex = new RegExp(query, flags);
-    let match: RegExpExecArray | null;
-    const steps = createStepBudget(source);
+    const budget = createMatchAttemptBudget(source);
 
-    while ((match = regex.exec(source)) && matches.length < 999) {
-      if (steps.spend()) {
+    while (matches.length < 999 && budget.take()) {
+      const match = regex.exec(source);
+
+      if (!match) {
         break;
       }
 
@@ -146,15 +150,18 @@ export function advanceStringIndex(text: string, index: number): number {
   return index + 2;
 }
 
-// 同期処理なので、壊れた前進規則や病的なパターンでも本文を走査し続けないよう
-// 反復に上限を置く（正しい実装では本文長の 2 倍 + 余裕で足りる）。
-function createStepBudget(source: string) {
+// 外周（照合の呼び出し）回数の上限。正しい前進規則なら本文長の 2 倍 + 余裕で足りる。
+//
+// 注意: これは **1 回の照合にかかる時間**を制限しない。`exec()` 自体が
+// バックトラックで長引くケース（例 `^(a+)+$`）は、この上限では止められない。
+// UI の応答性まで保証するには照合を Worker へ分離する必要があり、それは別スライス。
+function createMatchAttemptBudget(source: string) {
   let remaining = Math.max(2000, source.length * 2 + 1000);
 
   return {
-    spend(): boolean {
+    take(): boolean {
       remaining -= 1;
-      return remaining <= 0;
+      return remaining > 0;
     },
   };
 }
@@ -173,10 +180,41 @@ function canCompileRegex(query: string): boolean {
 }
 
 function isWordBoundary(source: string, from: number, to: number): boolean {
-  const before = from > 0 ? source[from - 1] : "";
-  const after = to < source.length ? source[to] : "";
+  // 隣接文字はコードポイント単位で取る。UTF-16 の 1 単位で切ると、サロゲートペアの
+  // 文字（補助面の漢字・数字）が片側だけになり、\p{L} / \p{N} に一致せず
+  // 「文字・数字なのに単語境界」と誤判定する。
+  const before = codePointBefore(source, from);
+  const after = codePointAt(source, to);
 
   return !isWordCharacter(before) && !isWordCharacter(after);
+}
+
+function codePointAt(text: string, index: number): string {
+  if (index < 0 || index >= text.length) {
+    return "";
+  }
+
+  const code = text.codePointAt(index);
+
+  return code === undefined ? "" : String.fromCodePoint(code);
+}
+
+function codePointBefore(text: string, index: number): string {
+  if (index <= 0 || index > text.length) {
+    return "";
+  }
+
+  const low = text.charCodeAt(index - 1);
+
+  if (low >= 0xdc00 && low <= 0xdfff && index >= 2) {
+    const high = text.charCodeAt(index - 2);
+
+    if (high >= 0xd800 && high <= 0xdbff) {
+      return text.slice(index - 2, index);
+    }
+  }
+
+  return text.slice(index - 1, index);
 }
 
 function isWordCharacter(char: string): boolean {

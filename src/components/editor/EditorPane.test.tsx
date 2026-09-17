@@ -907,6 +907,32 @@ describe("EditorPane", () => {
     }
   });
 
+  it("does not replace part of a name when whole-word search skips astral boundaries", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const source = "𠮷田 田";
+    // 先頭の「田」は直前が補助面の漢字（𠮷）なので単語全体ではない。
+    const matches = findTextMatches(source, "田", {
+      caseSensitive: false,
+      regex: false,
+      wholeWord: true,
+    });
+    expect(matches).toEqual([{ from: 4, to: 5 }]);
+
+    render(
+      renderEditorPane({
+        ref: editorRef,
+        searchMatches: matches,
+        value: source,
+      }),
+    );
+
+    act(() => {
+      editorRef.current?.replaceAll("bar");
+    });
+    // 名前に含まれる「田」は残る。
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("𠮷田 bar");
+  });
+
   it("replaces the correct range for a case-insensitive match after İ", () => {
     const editorRef = createRef<EditorPaneHandle>();
     const source = "İ foo Z";
