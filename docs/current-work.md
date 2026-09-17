@@ -251,6 +251,25 @@ UI の応答性まで保証するには照合を Worker へ分離して外から
 名前の一部を置換しない）。N3・N4 とも修正前実装で新テストが落ちることを確認
 （N3 は exec 回数 1000、N4 は前後それぞれを 1 単位へ戻して失敗を確認）。
 
+## 依存の脆弱性トリアージ（2026-09-18）
+
+ユーザー承認のもと **照会のみ**（依存は変更せず `npm audit --json`。`audit fix` は未実行）を
+実行した。CI の `npm ci` が出していた「2 moderate」は、同一 advisory の 2 ノードだった。
+
+| 項目 | 内容 |
+|---|---|
+| advisory | GHSA-82fw-gwwq-j7x9 — Vitest: Path Traversal / Arbitrary File Read via `@vitest/mocker` Redirect Mock |
+| 深刻度 | moderate（CVSS 3.1 = 5.9、CWE-22） |
+| 影響ノード | `vitest`（devDependency・直接）/ `@vitest/mocker`（vitest の推移依存） |
+| 現在の版 | どちらも 4.1.9（`package.json` は `vitest: ^4.1.8`） |
+| 修正版 | 4.1.11 以降（`fixAvailable: true`） |
+| prod / dev | 両方 dev。`package.json` の devDependencies のみ（prod 34 / dev 147 / total 181） |
+| 出荷物への混入 | なし。App Store lane は `frontendDist: ../dist`（`src/` の Vite ビルド）+ Rust + helper で、vitest の実装コードは含まれない。`dist` 内の "vitest" 文字列は同梱された `package.json` のテキスト（スクリプト名と依存レンジ）で、コードではない |
+| 外部入力からの到達性 | なし。advisory はテスト実行時の mock / redirect 設定を攻撃者が制御できる状況（開発・CI 文脈）を前提とする。アプリの入力・ファイル・ネットワーク面からは到達しない |
+| 判断 | **3.0.3（139）では受容する。** dev 専用・テスト時のみ・非同梱で、修正は開発ツールのパッチ上げ（`vitest` ^4.1.11）に閉じる。解消は別スライスで行い、依存更新と全ゲート再実行として記録する（無差別な `npm audit fix` はしない） |
+
+再取得は `npm audit --json`（照会のみ。実行にはユーザー承認が必要。依存は変更しない）。
+
 ## 3.0.2候補 — メニューバーの明滅が3.0.1でも再発（2026-09-16）
 
 公開済み `3.0.1` でも「文字を打つ・改行するとmacOSのメニューバーが明滅する」が再発した。
