@@ -742,6 +742,7 @@ describe("EditorPane", () => {
       }),
     );
     const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+    const content = container.querySelector(".cm-content") as HTMLElement;
     let scrollHeight = 2500;
     Object.defineProperties(scroller, {
       clientHeight: { configurable: true, value: 500 },
@@ -764,6 +765,7 @@ describe("EditorPane", () => {
       }) as DOMRect;
 
     return {
+      content,
       scroller,
       setScrollHeight: (next: number) => {
         scrollHeight = next;
@@ -905,6 +907,76 @@ describe("EditorPane", () => {
     } finally {
       harness.requestAnimationFrameSpy.mockRestore();
     }
+  });
+
+  // スクロールバーのドラッグを離してフォーカスを戻すとき、こちらの関与しない
+  // 経路（CodeMirror の focus 復帰 / Safari 26 系のフォーカス時スクロール）が
+  // 位置を書き換えても、ドラッグが決めた位置から動かないことを固定する。
+  // 実機では「フォーカスがある行へ吸い寄せられる」として見える現象。
+  async function dragThenRefocusScrolledAway({
+    pulledBackScrollTop,
+    afterMouseUp,
+  }: {
+    pulledBackScrollTop: number;
+    afterMouseUp?: (scroller: HTMLElement) => void;
+  }) {
+    const harness = mountBottomDragHarness();
+    const { content, scroller, stepFrames } = harness;
+    content.focus();
+    scroller.scrollTop = 500;
+    fireEvent.scroll(scroller);
+
+    // スクロールバーで 300 へ運ぶ。
+    scroller.scrollTop = 300;
+    fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
+    expect(document.activeElement).not.toBe(content);
+
+    const originalFocus = content.focus.bind(content);
+    const focusSpy = vi.spyOn(content, "focus").mockImplementation(() => {
+      originalFocus();
+      // 実機ではフォーカス直後（次のタスク）にキャレット側へ寄せられる。
+      // jsdom の CodeMirror は同期で元へ戻してしまうため、非同期の引き戻しとして模す。
+      queueMicrotask(() => {
+        scroller.scrollTop = pulledBackScrollTop;
+      });
+    });
+
+    try {
+      fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 250 });
+      afterMouseUp?.(scroller);
+      // 引き戻し（マイクロタスク）を流してから、保持フレームを進める。
+      await act(async () => {
+        await Promise.resolve();
+      });
+      act(() => {
+        stepFrames();
+      });
+      expect(document.activeElement).toBe(content);
+      return scroller;
+    } finally {
+      focusSpy.mockRestore();
+      harness.requestAnimationFrameSpy.mockRestore();
+    }
+  }
+
+  it("keeps the dragged position when refocusing pulls the scroll toward the caret", async () => {
+    const scroller = await dragThenRefocusScrolledAway({
+      pulledBackScrollTop: 500,
+    });
+
+    expect(scroller.scrollTop).toBe(300);
+  });
+
+  it("yields the dragged position when the user scrolls again right after the drag", async () => {
+    const scroller = await dragThenRefocusScrolledAway({
+      pulledBackScrollTop: 500,
+      afterMouseUp: (draggedScroller) => {
+        fireEvent.wheel(draggedScroller, { deltaY: 120 });
+      },
+    });
+
+    // ユーザーの新しい操作を上書きしない。
+    expect(scroller.scrollTop).toBe(500);
   });
 
   it("does not replace part of a name when whole-word search skips astral boundaries", () => {

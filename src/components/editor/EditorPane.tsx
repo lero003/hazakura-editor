@@ -876,11 +876,16 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             capture: true,
           });
           scrollbarMouseUpHandlerRef.current = null;
+          // フォーカス復帰の直前に、ドラッグが決めた位置を控える。
+          const draggedScrollTop = view.scrollDOM.scrollTop;
           // ユーザーが別のクリッカブル要素を押したのでなければフォーカスを戻す。
           if (
             view.contentDOM.ownerDocument.activeElement !== view.contentDOM
           ) {
             view.focus();
+            // フォーカス復帰そのものがスクロール位置を動かしても、
+            // ドラッグが決めた位置はユーザーの意思なので取り戻す。
+            holdDraggedScrollTop(view, draggedScrollTop);
           }
           keepBottomAfterScrollbarDrag(view, bottomIntent, mouseUpEvent);
         };
@@ -1667,6 +1672,49 @@ function readScrollRatio(scroller: HTMLElement): number {
   }
 
   return scroller.scrollTop / scrollableHeight;
+}
+
+// スクロールバーのドラッグを離したあとフォーカスを戻すと、こちらの関与しない
+// 経路がスクロール位置を書き換えることがある。
+//
+// - CodeMirror は focus のたびに「scrollTop が 0 なら直前に観測した位置へ戻す」
+//   処理を持つ（`observers.focus` の "When focusing reset the scroll position"）。
+// - Safari 26 系では `focus({ preventScroll: true })` が効かないため、フォーカス
+//   時のキャレット位置まで引き戻される（CodeMirror 側も preventScroll を
+//   無効化して自前で戻すが、キャレット位置への移動はその後に起きる）。
+//
+// どちらもドラッグで決めた位置を無視した書き換えなので、その 1 フレームだけ
+// 取り戻す。ユーザー自身が新しくスクロール・クリック・キー入力したら降りる。
+function holdDraggedScrollTop(view: EditorView, draggedScrollTop: number) {
+  const scroller = view.scrollDOM;
+  const win = scroller.ownerDocument.defaultView ?? window;
+  let released = false;
+  const release = () => {
+    released = true;
+    win.removeEventListener("wheel", release, true);
+    win.removeEventListener("pointerdown", release, true);
+    win.removeEventListener("keydown", release, true);
+  };
+  const apply = () => {
+    if (released || !view.dom.isConnected) {
+      return;
+    }
+    if (Math.abs(scroller.scrollTop - draggedScrollTop) <= 1) {
+      return;
+    }
+    scroller.scrollTop = draggedScrollTop;
+  };
+
+  win.addEventListener("wheel", release, true);
+  win.addEventListener("pointerdown", release, true);
+  win.addEventListener("keydown", release, true);
+  // 同期（CodeMirror の復元は focus イベント内で同期的に走る）＋ 次フレーム
+  // （エンジン側の引き戻しが次のタスクで起きる場合）。
+  apply();
+  win.requestAnimationFrame(() => {
+    apply();
+    release();
+  });
 }
 
 // スクロールバーで最下部まで引いて離したときの底のずれを補正する。
