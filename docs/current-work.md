@@ -3,9 +3,9 @@
 Status: Operational
 Scope: v3.0公開の記録と公開後のキュー
 Authority: High
-Last reviewed: 2026-09-17
+Last reviewed: 2026-09-18
 
-## 3.0.3候補 — 審査用にスクロールバー修正版を準備（2026-09-17）
+## 3.0.3 — スクロールバー修正版を実機確認して申請（2026-09-18）
 
 公開済み 3.0 系に対する不具合修正版として `3.0.3` を用意した。中身は編集面の
 スクロールバー 3 件（右端で効かない／一気に最下部まで引くと少し戻る／離すと
@@ -23,9 +23,11 @@ Last reviewed: 2026-09-17
 検証: `npm run typecheck` / `npm test` / `npm run build:vite` / `cargo fmt --check` /
 `cargo test` / `npm run smoke:app-store-surface`。
 
-別工程に残す: 署名済み App Store pkg の作成（`APPLE_SIGNING_IDENTITY` /
-`APPLE_INSTALLER_SIGNING_IDENTITY` を与えた `npm run release:candidate -- --with-app-store-pkg`）と、
-**WKWebView 実機**でのスクロールバー受入（右端 2px / 8px のつかみ比べ）。
+実機と申請: オーナーが 3.0.3 候補を実機（WKWebView）で確認し、問題なしと報告
+（2026-09-18）。その報告で申請する。署名済み App Store pkg は build 140 を作成済み
+（`docs/app-store-build.md` の手順）。pkg のパスと SHA-256 の正本は
+`docs/internal/app-store-candidates/latest.json` だが、この候補では未更新のまま
+2.9.0 / build 125 を指している。
 
 ## 編集エリアのスクロールバーが右端で効かない（2026-09-17）
 
@@ -55,8 +57,9 @@ scroll 179→1441 になり、リサイザ単体（6px 列）も従来どおり�
 同種の当たり判定が他に無いことも、**fixture で到達できる主要面について**総当たりで
 検査した（書く/プレビュー・L Mode・書き出し・差分は conflicts 0。アプリ全体の検査では
 ないので、未計測面は同 review pack の `scan-scroll-edges.js` と README に列挙している）。
-未受入: **WKWebView実機**で「常に表示」とオーバーレイの両方、右端2px / 8px の
-つかみ比べ（ヘッドレスの Chromium ではオーバーレイの当たり判定を再現できない）。
+実機受入: オーナーが WKWebView で確認し問題なし（2026-09-18）。ネイティブで
+重なり幅を厳密に測るのは別で、ヘッドレスの Chromium ではオーバーレイの
+当たり判定を再現できないため未計測のまま。
 
 ## 追補 — 一気に最下部まで引くと少し上に戻る（2026-09-17）
 
@@ -74,7 +77,7 @@ scroll 179→1441 になり、リサイザ単体（6px 列）も従来どおり�
 
 回帰テストは `usePreviewScrollSync.test.ts`（ガードの自己延長）と
 `EditorPane.test.tsx`（最下部での寄せ直し）。どちらも修正前の実装で落ちることを確認した。
-未受入: 同じく **WKWebView 実機**で「一気に最下部へ引いて離す」を確認する。
+実機受入: 同じくオーナーが WKWebView で確認し問題なし（2026-09-18）。
 
 ## 追補2 — 離すとキャレットの行へ吸い寄せられる（2026-09-18）
 
@@ -98,8 +101,8 @@ in-app browser（Chromium）の fixture では再現しなかった。ネイテ�
 検証: `npm run typecheck` / `npm test`（288ファイル・2,565件）/ `npm run build:vite`。
 `EditorPane.test.tsx` の新テスト2件（保持 / 新しい操作で降りる）は、保持の呼び出しを
 外すと前者が `expected 500 to be 300` で落ちる。
-未受入: **WKWebView 実機**での確認（Chromium ではフォーカス時のキャレット移動を
-再現できない）。
+実機受入: オーナーが WKWebView で確認し問題なし（2026-09-18）。Chromium では
+フォーカス時のキャレット移動を再現できないため、ブラウザ側の証跡は当たり判定の幾何に留まる。
 
 ## 追加レビュー対応 — 編集ロックと置換、スクロールの境界（2026-09-18）
 
@@ -155,7 +158,7 @@ Local Assist の生成ロックは `EditorView.editable.of(!readOnly)` しか設
 
 検証: `npm run typecheck` / `npm test`（287ファイル・2,535件）/ `npm run build:vite`。
 いずれも R1〜R4 の修正前実装で新テストが落ちることを確認してから通した。
-未受入: WKWebView 実機（つまみの上・中央・下、反対ペインへの素早い操作切替）。
+実機受入: オーナーが WKWebView で確認し問題なし（2026-09-18）。
 
 ## 再レビュー対応 — ロックの残り入口と同期の競合（2026-09-18）
 
@@ -244,7 +247,7 @@ Local Assist の生成ロックは `EditorView.editable.of(!readOnly)` しか設
 全件置換 → ⌘Z で原文復帰）。N1・N2 とも修正前実装で新テストが落ちることを確認
 （N1 は反復上限によりハングせず失敗する）。
 
-未受入: WKWebView 実機での Unicode 検索・置換（絵文字・結合文字・サロゲート）。
+実機受入: オーナーが WKWebView で確認し問題なし（2026-09-18）。
 
 ## 検索の境界と照合上限（N3・N4、2026-09-18）
 

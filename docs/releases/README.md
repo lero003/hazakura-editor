@@ -3,13 +3,13 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-17
+Last reviewed: 2026-09-18
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Release-preparation tree: `2.8.0`; `2.8.0-source-tag.release.md` and
-`2.8.0-app-store-release-notes.md`. Active plan:
-`../v2.8-plan.md`.
+Current release-preparation tree: `3.0.3`; `3.0.3-app-store-release-notes.md`.
+Earlier tree: `2.8.0` (`2.8.0-source-tag.release.md`,
+`2.8.0-app-store-release-notes.md`, plan `../v2.8-plan.md`).
 
 Latest GitHub source / local-app tag:
 
@@ -19,9 +19,10 @@ Current App Store submission candidate:
 
 - `3.0.3` — `3.0.3-app-store-release-notes.md` (bug-fix patch on the 3.0 line:
   the editor's right-edge scrollbar drag no longer loses the gesture to the
-  preview pane resizer's invisible 4px grab area; **submission copy prepared, not yet
-  submitted**; the signed App Store package is built locally with
-  `release:candidate --with-app-store-pkg`)
+  preview pane resizer's invisible 4px grab area, dragging to the end no longer
+  stops just short of the bottom, and releasing a drag no longer pulls the view
+  back to the caret line; **device-accepted, owner submitting 2026-09-18**,
+  the signed App Store package is local build 140)
 
 Prior submission copy:
 
@@ -65,8 +66,10 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`3.0.3` is the current App Store submission candidate**; its submission
-  copy is prepared but not yet submitted. See `3.0.3-app-store-release-notes.md`.
+- **`3.0.3` is the current App Store submission candidate**; the owner
+  device-accepted it (WKWebView, no problems reported) and reports they are
+  submitting it on 2026-09-18. The App Store Connect result is not recorded here. See
+  `3.0.3-app-store-release-notes.md`.
 - `3.0.2` submission copy was prepared but is superseded by `3.0.3`. See
   `3.0.2-app-store-release-notes.md`.
 - `3.0.1` was owner-reported as submitted; this repository does not record a
@@ -140,8 +143,8 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
-- `3.0.3-app-store-release-notes.md` is the prepared submission copy for the current
-  bug-fix patch on the 3.0 line.
+- `3.0.3-app-store-release-notes.md` is the submission copy for the current
+  bug-fix patch on the 3.0 line (device-accepted 2026-09-18).
 - `3.0.2-app-store-release-notes.md` is the prior prepared submission copy for a
   bug-fix patch on the 3.0 line.
 - `3.0.1-app-store-release-notes.md` is the prepared submission copy for the
