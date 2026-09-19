@@ -1,6 +1,7 @@
 import { requestLocalAssistReview } from "../../lib/tauri/localAssistReview";
 import { LOCAL_ASSIST_REVIEW_RESULT_EVENT } from "../../features/editor/localAssistReviewIdentity";
 vi.mock("../../lib/tauri/localAssistReview", () => ({ requestLocalAssistReview: vi.fn(async () => undefined) }));
+import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import { act, fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppleAssistWindowApp, getAppleAssistWindowCopy } from "./AppleAssistWindowApp";
@@ -50,17 +51,18 @@ vi.mock("../../lib/tauri", async () => {
 });
 
 vi.mock("../../hooks/agent/useAppleAssistAvailability", () => ({
-  useAppleAssistAvailability: () => ({
+  useAppleAssistAvailability: vi.fn(() => ({
     availability: { kind: "available" },
     available: true,
     probed: true,
-  }),
+  })),
 }));
 
 afterEach(() => {
   cleanup();
   localStorage.removeItem(MENU_LANGUAGE_STORAGE_KEY);
   document.documentElement.lang = "en";
+  vi.mocked(useAppleAssistAvailability).mockReturnValue({ availability: { kind: "available" }, available: true, probed: true });
   vi.clearAllMocks();
   eventListeners.clear();
   delete (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
@@ -191,16 +193,29 @@ describe("AppleAssistWindowApp render", () => {
     expect(cancelAppleAssistProposal).toHaveBeenCalledWith(requestId);
   });
 
-  it("routes the cancel button to main with the active request id", async () => {
+  it("switches the same send button to stop and back without losing the request", async () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
     render(<AppleAssistWindowApp />);
     await act(async () => { await Promise.resolve(); });
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "整えて" } });
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    const action = screen.getByRole("button", { name: "Send request" });
+    await act(async () => { fireEvent.click(action); });
     const payload = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
+    expect(screen.getByRole("button", { name: "Stop generating" })).toBe(action);
+    expect(screen.queryByRole("button", { name: "Sending..." })).toBeNull();
+    await act(async () => { fireEvent.click(action); });
     expect(cancelAppleAssistProposal).toHaveBeenCalledWith(payload.requestId);
+    expect(screen.getByRole("button", { name: "Stopping…" })).toBe(action);
+    expect(action.hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
+    await act(async () => {
+      eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({
+        payload: { ...payload, phase: "cancelled", emittedAtMs: 0 },
+      });
+    });
+    expect(screen.getByRole("button", { name: "Send request" })).toBe(action);
+    expect(action.hasAttribute("disabled")).toBe(false);
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("整えて");
   });
 
   it("does not repeat the Hazakura Local Assist title inside the window body", () => {
@@ -212,14 +227,45 @@ describe("AppleAssistWindowApp render", () => {
     ).toBeNull();
   });
 
-  it("shows the target while keeping help and presets collapsed beside one conversation log", () => {
+  it("keeps target details compact and presets accessible without sending", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
     const { container } = render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
     expect(screen.getByRole("log", { name: "Conversation" })).toBeTruthy();
     const details = [...container.querySelectorAll("details")];
-    expect(details).toHaveLength(3);
-    expect(details.filter((element) => element.open).map(element => element.className)).toEqual(["apple-assist-target-details"]);
-    expect(screen.queryByTestId("apple-assist-stream-preview")).toBeNull();
-    expect(screen.getByRole("textbox")).toBeTruthy();
+    expect(details).toHaveLength(2);
+    expect(details.every((element) => !element.open)).toBe(true);
+    const summary = container.querySelector(".apple-assist-target-details summary")!;
+    expect(summary.textContent).toContain("note.md");
+    expect(summary.textContent).toContain("Paragraph · 8 chars");
+    const preset = getAppleAssistWindowCopy("en").presets[0];
+    fireEvent.click(screen.getByRole("button", { name: preset.label }));
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(preset.requestText);
+    expect(screen.getByRole("button", { name: preset.label }).getAttribute("aria-pressed")).toBe("true");
+    expect(requestAppleAssistProposal).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Custom request" } });
+    expect(screen.getByRole("button", { name: preset.label }).getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("lets users confirm the System model without sending or changing their request", async () => {
+    render(<AppleAssistWindowApp />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Keep my draft request" } });
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }));
+    expect(screen.getAllByRole("menuitemradio")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Apple Intelligence" }));
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep my draft request");
+    expect(requestAppleAssistProposal).not.toHaveBeenCalled();
+  });
+
+  it("shows one actionable availability note beside the disabled composer", async () => {
+    vi.mocked(useAppleAssistAvailability).mockReturnValue({ availability: { kind: "disabled" }, available: false, probed: true });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByRole("status").textContent).toContain("Assist Settings");
+    expect(screen.getByRole("textbox").getAttribute("aria-describedby")).toBe("apple-assist-availability");
+    expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("log").textContent).toBe("");
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
   });
 
   it("keeps the detached window conversation-focused after a proposal completes", async () => {

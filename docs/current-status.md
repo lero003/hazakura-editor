@@ -7,6 +7,11 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **Local Assist表示整理（2026-09-20）:** 対象要約・依頼チップ・一体化した入力欄へ整理し、
+  説明の重複を減らした。送信横にSystem 1件でも開けるモデル選択枠を追加。
+  フロント全2,620テストと最小サイズのブラウザーfixtureを確認。Core AIへの切替は未接続。
+  [表示・検証記録](reviews/2026-09-20-local-assist-polish/README.md)。次はnative窓の操作・IME・VoiceOver確認。
+
 - **v3.1俯瞰レビュー追補（2026-09-20）:** 保存言語のstorage例外時fallbackと表の祖先lang保持を修正。
   [修正・検証記録](reviews/2026-09-20-v3.1-overview-followup/README.md)。
   [テスト用Core AIモデル](core-ai-test-model.md)は約347 MBのQwen3-0.6Bを実生成まで確認したが、

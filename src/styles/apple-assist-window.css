@@ -7,13 +7,13 @@
   color: var(--text);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
   font-family: var(--app-font-family);
   height: 100dvh;
   min-height: 0;
-  padding: 16px;
-  gap: 12px;
+  padding: 20px;
+  gap: 16px;
   box-sizing: border-box;
   overflow: hidden;
   --text-muted: color-mix(in srgb, var(--text) 85%, var(--bg));
@@ -43,9 +43,9 @@
 .apple-assist-window-header {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+  gap: 10px;
+  max-height: 36vh;
+  overflow-y: auto;
 }
 
 .apple-assist-window-subtitle {
@@ -142,18 +142,19 @@
 .apple-assist-preset {
   background: var(--bg-elev);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   color: var(--text);
   cursor: pointer;
   font-size: 14px;
-  padding: 6px 10px;
+  padding: 4px 11px;
 }
 
 .apple-assist-preset:hover {
   background: var(--bg-elev-hover);
 }
 
-.apple-assist-preset-active {
+.apple-assist-preset-active,
+.apple-assist-preset[aria-pressed="true"] {
   border-color: var(--accent);
   color: var(--accent, var(--text));
   font-weight: 650;
@@ -530,16 +531,18 @@
 
 .apple-assist-window-textarea {
   background: var(--surface-strong, var(--surface, var(--bg)));
-  border: 1px solid var(--border-strong, var(--border));
-  border-radius: var(--radius-sm);
+  border: 0;
+  border-radius: 4px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-  max-height: 10rem;
+  font-size: 15px;
+  line-height: 1.65;
+  max-height: 8rem;
   min-height: 5rem;
+  width: 100%;
+  box-sizing: border-box;
   overflow-y: auto;
-  padding: 8px;
+  padding: 2px;
   resize: vertical;
 }
 
@@ -634,99 +637,150 @@
   }
 }
 
-/* Readable companion: avoid faded small text and multiple competing scroll areas. */
-.apple-assist-window-doc,
-.apple-assist-window-target,
-.apple-assist-window-textarea,
-.apple-assist-stream-preview-body { font-size: 16px; line-height: 1.7; }
-.apple-assist-window-doc { font-weight: 650; }
-.apple-assist-window-target { overflow-wrap: anywhere; }
-.apple-assist-window-label { font-size: 16px; font-weight: 650; }
-.apple-assist-window-shell button { min-height: 38px; font-family: inherit; }
-.apple-assist-window-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-.apple-assist-window-cancel {
+/* Compact companion chrome; keep the editor's existing fonts and theme tokens. */
+.apple-assist-window-shell button { min-height: 32px; font-family: inherit; }
+.apple-assist-window-shell :is(button, textarea, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.apple-assist-window-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 32px;
+}
+.apple-assist-target-details {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elev);
+}
+.apple-assist-target-details > summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.apple-assist-target-details > summary::-webkit-details-marker { display: none; }
+.apple-assist-target-file { display: flex; align-items: center; gap: 8px; flex: 1 1 130px; min-width: 0; }
+.apple-assist-target-file > span:first-child { display: flex; flex: 0 0 auto; color: var(--text-muted); }
+.apple-assist-target-name { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.apple-assist-target-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.apple-assist-target-scope { font-size: 14px; color: var(--text-muted); }
+.apple-assist-target-pinned {
+  font-size: 14px;
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+}
+.apple-assist-target-chevron { display: flex; }
+.apple-assist-target-details[open] .apple-assist-target-chevron { transform: rotate(90deg); }
+.apple-assist-window-target { padding: 0 12px 12px; margin: 0; overflow-wrap: anywhere; }
+.apple-assist-window-target-summary { margin: 0 0 6px; font-size: 14px; }
+.apple-assist-window-target-excerpt { margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-muted); font-weight: 400; }
+.apple-assist-help summary { font-size: 14px; color: var(--text-muted); cursor: pointer; width: fit-content; }
+.apple-assist-help p { margin: 8px 0; font-size: 14px; line-height: 1.65; color: var(--text-muted); }
+
+/* One flexible conversation; presets and request stay reachable below it. */
+.apple-assist-chat { min-height: 0; overflow-y: auto; padding: 4px 2px; overscroll-behavior: contain; }
+.apple-assist-chat-messages { display: flex; flex-direction: column; gap: 16px; }
+.apple-assist-chat-message { margin: 0; font-size: 15px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.apple-assist-chat-message-user {
+  align-self: flex-end;
+  max-width: 90%;
+  background: color-mix(in srgb, var(--accent) 9%, var(--bg));
+  border-radius: 12px 12px 4px 12px;
+  padding: 12px 14px;
+}
+.apple-assist-chat-message-assistant { font-size: 14px; color: var(--text-muted); padding-inline: 2px; }
+.apple-assist-chat-empty { margin: 0; max-width: 28em; color: var(--text-muted); font-size: 14px; line-height: 1.75; text-wrap: pretty; }
+.apple-assist-chat .apple-assist-window-stream-preview { margin: 16px 0; max-height: none; overflow: visible; border: 0; border-left: 2px solid var(--border-strong); border-radius: 0; padding: 4px 0 4px 12px; }
+.apple-assist-chat .apple-assist-stream-preview-body { font-size: 15px; line-height: 1.75; overflow: visible; }
+.apple-assist-stream-preview-heading { letter-spacing: 0; text-transform: none; font-weight: 500; }
+.apple-assist-window-progress { display: flex; padding-block: 12px; font-size: 14px; }
+.apple-assist-review-link { margin-top: 12px; }
+.apple-assist-review-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: 8px;
   background: var(--bg-elev);
   color: var(--text);
-  border: 1px solid var(--border-strong, var(--border));
-  border-radius: var(--radius-sm);
   font-size: 14px;
-  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: start;
 }
-.apple-assist-window-cancel:disabled { opacity: .55; }
+.apple-assist-review-button > span { display: flex; }
+.apple-assist-review-button:hover:not(:disabled) { background: var(--bg-elev-hover); }
+.apple-assist-review-button:disabled { opacity: .5; cursor: not-allowed; }
+.apple-assist-review-link p { margin: 8px 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }
+
+.apple-assist-window-form { gap: 12px; overflow: visible; }
+.apple-assist-presets-list { margin: 0; gap: 6px; }
+.apple-assist-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface-strong, var(--surface, var(--bg)));
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: 12px;
+  padding: 12px;
+}
+.apple-assist-composer:focus-within { border-color: var(--accent); }
+/* Keep the accessible label without another visible title above the prompt. */
+.apple-assist-window-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .apple-assist-window-textarea:disabled { opacity: 1; }
 .apple-assist-window-textarea::placeholder { color: var(--text-muted); opacity: 1; }
-.apple-assist-window-shell :is(button, textarea, summary):focus-visible {
-  outline: 2px solid var(--accent); outline-offset: 3px;
-}
-.apple-assist-window-feedback { display: block; overflow: auto; }
-.apple-assist-feedback-header { cursor: pointer; display: list-item; padding: 10px 12px; }
-.apple-assist-feedback-heading { display: inline; }
-.apple-assist-feedback-body { max-height: 8rem; }
-.apple-assist-conversation-state { flex-wrap: wrap; padding: 10px; }
-.apple-assist-conversation-history { max-height: 9rem; line-height: 1.6; }
-.apple-assist-window-apply { color: var(--surface, var(--bg)); }
-
-/* Conversation-first detached window: one scrolling log, anchored composer. */
-.apple-assist-window-header { max-height: 30vh; overflow-y: auto; gap: 8px; }
-.apple-assist-window-header summary { cursor: pointer; font-size: 14px; }
-.apple-assist-target-details > summary { font-size: 16px; font-weight: 650; overflow-wrap: anywhere; }
-.apple-assist-help p { margin: 8px 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
-.apple-assist-chat { min-height: 0; overflow-y: auto; padding: 8px 2px; overscroll-behavior: contain; }
-.apple-assist-chat-messages { display: flex; flex-direction: column; gap: 14px; }
-.apple-assist-chat-message { margin: 0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
-.apple-assist-chat-message-user { align-self: flex-end; max-width: 90%; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
-.apple-assist-chat-message-assistant { color: var(--text); }
-.apple-assist-chat-empty { margin: 12px 0; color: var(--text-muted); font-size: 14px; }
-.apple-assist-chat .apple-assist-window-stream-preview { margin: 14px 0; max-height: none; overflow: visible; }
-.apple-assist-chat .apple-assist-stream-preview-body { overflow: visible; }
-.apple-assist-chat .apple-assist-window-status { margin-top: 12px; color: var(--text-muted); }
-/* 入力は下端に固定し、スクロールするのは会話だけ（モック06の指示6）。
-   フォーム自体を max-height + overflow でスクロールさせない。 */
-.apple-assist-window-form { border-top: 1px solid var(--border); padding-top: 12px; overflow: visible; }
-.apple-assist-window-target-excerpt { margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
-.apple-assist-window-presets { padding: 0; border: 0; display: block; }
-.apple-assist-window-presets summary { cursor: pointer; font-size: 14px; }
-.apple-assist-presets-list { margin-top: 8px; }
-
-/* UI-C1: distinct target, conversation and composer; no second request state. */
-.apple-assist-window-shell { padding: 22px; gap: 18px; }
-.apple-assist-window-header { max-height: 36vh; }
-.apple-assist-target-details { padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-elev); }
-.apple-assist-chat-message-user { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); border-color: transparent; padding: 14px 16px; }
-.apple-assist-chat-message-assistant { padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
-/* 失敗の面。`--error`(=--danger) ではなく注意のトークン（--conflict）から作る。
-   赤一色の危機演出にせず、会話の一部に収まる淡い注意面にする。 */
-.apple-assist-window-error {
-  padding: 12px 14px; margin-block: 12px; border-radius: 8px; overflow-wrap: anywhere;
-  border: 1px solid color-mix(in srgb, var(--conflict) 34%, transparent);
-  background: color-mix(in srgb, var(--conflict) 10%, transparent);
-  /* この画面の他の文言と同じ下限（14px）に合わせる。 */
-  color: var(--text); font-size: 14px; line-height: 1.7;
-}
-.apple-assist-window-form { padding-top: 14px; }
-/* 利用できない理由と必要な操作の1行（外部レビュー R8）。入力欄の直前に置き、
-   入力が無効な理由がその場で読めるようにする。詳細はヘルプの中。 */
+.apple-assist-window-actions { position: relative; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.apple-assist-window-shell .apple-assist-window-apply { min-height: 36px; min-width: 6rem; border-radius: 8px; color: var(--surface, var(--bg)); padding: 6px 12px; }
 .apple-assist-state-note {
-  margin: 0 0 8px;
+  margin: 0;
   padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--conflict) 30%, transparent);
-  border-radius: 8px;
+  border-left: 2px solid var(--conflict);
   background: color-mix(in srgb, var(--conflict) 8%, transparent);
   color: var(--text);
-  /* この窓の文字は14px以上（可読性の契約。appleAssistWindowCss.test が固定している）。 */
   font-size: 14px;
   line-height: 1.6;
 }
-.apple-assist-window-textarea { min-height: 88px; border-radius: 8px; }
-.apple-assist-window-progress { display: flex; padding-block: 12px; }
+.apple-assist-window-error { padding: 10px 12px; margin-block: 12px; border-radius: 8px; overflow-wrap: anywhere; border: 1px solid color-mix(in srgb, var(--conflict) 34%, transparent); background: color-mix(in srgb, var(--conflict) 10%, transparent); color: var(--text); font-size: 14px; line-height: 1.7; }
 @media (max-height: 640px) {
   .apple-assist-window-shell { padding: 12px 16px; gap: 10px; }
-  .apple-assist-window-header { max-height: 30vh; }
+  .apple-assist-window-header { max-height: 30vh; gap: 6px; }
+  .apple-assist-window-form { gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .apple-assist-window-spinner { animation: none; }
 }
 
-/* The proposal link precedes expandable target details in short windows. */
-.apple-assist-review-link button { min-height: 32px; white-space: normal; text-align: start; }
-.apple-assist-review-link p { margin: 6px 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }
+/* Current System selection remains inspectable even when it is the only model. */
+.apple-assist-model-picker { display: flex; min-width: 0; }
+.apple-assist-model-trigger {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-elev); color: var(--text); border: 1px solid transparent;
+  border-radius: var(--radius-pill); padding: 5px 10px; font-size: 14px; cursor: pointer;
+}
+.apple-assist-model-trigger:hover:not(:disabled),
+.apple-assist-model-trigger[aria-expanded="true"] { background: var(--bg-elev-hover); }
+.apple-assist-model-trigger:disabled { opacity: .5; cursor: not-allowed; }
+.apple-assist-model-chevron { display: flex; color: var(--text-muted); }
+.apple-assist-model-menu {
+  position: absolute; z-index: 10; inset-inline-end: 0; bottom: calc(100% + 8px);
+  width: min(252px, 100%); padding: 8px; box-sizing: border-box;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface-strong, var(--surface, var(--bg))); color: var(--text);
+  box-shadow: 0 6px 22px rgb(0 0 0 / 12%);
+}
+.apple-assist-model-heading { margin: 2px 8px 6px; color: var(--text-muted); font-size: 14px; }
+.apple-assist-model-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: 100%; padding: 8px; border: 0; border-radius: 6px; cursor: pointer;
+  background: transparent; color: var(--text); text-align: start; font-size: 14px;
+}
+.apple-assist-model-option:hover, .apple-assist-model-option:focus-visible { background: var(--bg-elev); }

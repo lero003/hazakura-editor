@@ -2,7 +2,9 @@ import { requestLocalAssistReview } from "../../lib/tauri/localAssistReview";
 import { acceptsReviewOutcome, matchesReviewIdentity, matchesReviewNavigation, LOCAL_ASSIST_REVIEW_RESULT_EVENT,
   type LocalAssistReviewIdentity, type LocalAssistReviewRequest, type LocalAssistReviewResult } from "../../features/editor/localAssistReviewIdentity";
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
+import { AssistModelPicker } from "./AssistModelPicker";
 import { AssistConversationMessages } from "./AssistConversationMessages";
+import { ChevronIcon, DiffIcon, TextFileIcon } from "../app/Icons";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import { appleAssistTargetExcerpt } from "../../features/editor/appleAssistText";
 import {
@@ -840,7 +842,7 @@ export function AppleAssistWindowApp() {
 
   const chatItems = [
     ...sentRequests.map((entry) => ({ ...entry, role: "user" as const, kind: undefined })),
-    ...feedback.filter((entry) => !["ready", "target-acquired", "request-sent", "generation-started"].includes(entry.kind))
+    ...feedback.filter((entry) => !["ready", "unavailable", "target-acquired", "request-sent", "generation-started"].includes(entry.kind))
       .map((entry) => ({ id: entry.id, at: entry.at, role: "assistant" as const, kind: entry.kind,
         text: copy.feedbackEntry(entry.kind, entry.payload) })),
   ].sort((left, right) => left.at - right.at).slice(-48);
@@ -848,40 +850,43 @@ export function AppleAssistWindowApp() {
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        {/* 実機フィードバック: 「ことばを、整える。」のような、作業に効かない言葉を
-            UI から外す（この窓の仕事は対象文書の提案）。動作の但し書き（このMac内で
-            処理・自動反映/自動保存なし）は安全のための情報なので、畳んである
-            ヘルプの中へ移して残す。作業に要る情報（対象）だけを上に置く。 */}
-        {reviewIdentity && conversation?.id === reviewIdentity.conversationId ?
-          <div className="apple-assist-review-link">
-            <button type="button" className="apple-assist-window-new-conversation" disabled={busy || reviewPending}
-              onClick={() => void openReview()}>{reviewPending ? ui.reviewOpening : ui.review}</button>
-            {reviewUnavailable ? <p role="status">{ui.reviewUnavailable}</p> : null}
-          </div> : null}
-        <details className="apple-assist-target-details" open>
-          <summary>{ui.target}: {displayedTarget?.activeDocumentName || ui.noDocument}</summary>
+        {/* Keep the target visible; expanded help retains the processing and apply/save boundary. */}
+        {conversation ? <div className="apple-assist-window-toolbar">
+          <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
+            onClick={() => {
+              setConversation(null); conversationRef.current = null;
+              clearReviewNavigation();
+              reviewIdentityRef.current = null; setReviewIdentity(null);
+              setStreamPreview(""); setStreamOriginalText(""); setError(null);
+              setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
+            }}>{copy.newConversationButton}</button>
+        </div> : null}
+        <details className="apple-assist-target-details">
+          <summary>
+            <span className="sr-only">{ui.target}: </span>
+            <span className="apple-assist-target-file">
+              <span aria-hidden="true"><TextFileIcon /></span>
+              <span className="apple-assist-target-name" lang={displayedTarget?.activeDocumentName ? DOCUMENT_CONTENT_LANG : undefined}>
+                {displayedTarget?.activeDocumentName || ui.noDocument}
+              </span>
+            </span>
+            <span className="apple-assist-target-meta">
+              {displayedTarget ? <span className="apple-assist-target-scope">
+                {ui.scope[displayedTarget.kind]} · {ui.characters(displayedTarget.text.length)}
+              </span> : null}
+              {conversation ? <span className="apple-assist-target-pinned" data-testid="apple-assist-conversation-state">{ui.pinned}</span> : null}
+              <span className="apple-assist-target-chevron" aria-hidden="true"><ChevronIcon expanded={false} /></span>
+            </span>
+          </summary>
           <div className="apple-assist-window-target" data-testid="apple-assist-target">
             <p className="apple-assist-window-target-summary">{renderTargetSummary(displayedTarget, copy)}</p>
-            {displayedTarget?.text ? <p className="apple-assist-window-target-excerpt">{appleAssistTargetExcerpt(displayedTarget.text)}</p> : null}
+            {displayedTarget?.text ? <p className="apple-assist-window-target-excerpt" lang={DOCUMENT_CONTENT_LANG}>{appleAssistTargetExcerpt(displayedTarget.text)}</p> : null}
           </div>
-          {conversation ? <div className="apple-assist-conversation-state" data-testid="apple-assist-conversation-state">
-            <span>{copy.conversationPinned}</span>
-            <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
-              onClick={() => {
-                setConversation(null); conversationRef.current = null;
-                clearReviewNavigation();
-                reviewIdentityRef.current = null; setReviewIdentity(null);
-                setStreamPreview(""); setStreamOriginalText(""); setError(null);
-                setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
-              }}>{copy.newConversationButton}</button>
-          </div> : null}
         </details>
         <details className="apple-assist-help">
           <summary>{ui.details}</summary>
-          <p>{ui.boundary}</p>
-          <p>{copy.subtitle} · {copy.modeLabel}</p>
-          <p>{available ? copy.availableDisclosure : availabilityMessage}</p>
-          <p>{copy.streamPreviewIdle}</p>
+          <p>{copy.availableDisclosure}</p>
+          {!available ? <p>{availabilityMessage}</p> : null}
         </details>
       </header>
 
@@ -891,49 +896,54 @@ export function AppleAssistWindowApp() {
           const element = event.currentTarget;
           followChatRef.current = element.scrollHeight - element.scrollTop - element.clientHeight < 40;
         }}>
-        <AssistConversationMessages items={chatItems} emptyText={ui.empty} />
+        {chatItems.length ? <AssistConversationMessages items={chatItems} emptyText={ui.empty} /> : null}
+        {reviewIdentity && conversation?.id === reviewIdentity.conversationId ?
+          <div className="apple-assist-review-link">
+            <button type="button" className="apple-assist-review-button" disabled={busy || reviewPending}
+              onClick={() => void openReview()}><span aria-hidden="true"><DiffIcon /></span>{reviewPending ? ui.reviewOpening : ui.review}</button>
+            {reviewUnavailable ? <p role="status">{ui.reviewUnavailable}</p> : null}
+          </div> : null}
         {!cancelling && (busy || streamPreview) ? <StreamPreview busy={busy} copy={copy} streamPreview={streamPreview} /> : null}
         {busy ? <div className="apple-assist-window-progress" role="status"><span className="apple-assist-window-spinner" aria-hidden="true" />{status}</div> : null}
         {error ? <div className="apple-assist-window-error" role="alert">{error}</div> : null}
       </div>
 
       <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
-        <details className="apple-assist-window-presets">
-          <summary>{copy.presetsLabel}</summary>
-          <div className="apple-assist-presets-list">{copy.presets.map((preset) =>
-            <button key={preset.actionId} type="button" className="apple-assist-preset"
+        <div className="apple-assist-presets-list" role="group" aria-label={copy.presetsLabel}>{copy.presets.map((preset) =>
+            <button key={preset.actionId} type="button" className="apple-assist-preset" aria-pressed={selectedActionId === preset.actionId && requestText === preset.requestText}
               onClick={() => onPickPreset(preset)} disabled={busy || !available}>{preset.label}</button>
-          )}</div>
-        </details>
-        <label htmlFor="apple-assist-rough-request" className="apple-assist-window-label">{ui.composer}</label>
-        {/* 外部レビュー R8: 使えない理由と復帰方法を畳んだヘルプの中だけに置かない。
-            今の状態と必要な操作を composer の直前へ1行で出し、無効な入力欄と結びつける。
-            詳細（但し書き・利用条件）はヘルプに残す。 */}
-        {available ? null : (
-          <p
-            className="apple-assist-state-note"
-            id="apple-assist-availability"
-            role="status"
-          >
-            {availabilityMessage}
-          </p>
-        )}
-        <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
-          lang={DOCUMENT_CONTENT_LANG}
-          aria-describedby={available ? undefined : "apple-assist-availability"}
-          value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
-          rows={3} placeholder={copy.placeholder} disabled={busy || !available}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !event.nativeEvent.isComposing && event.keyCode !== 229) {
-              event.preventDefault(); if (!busy) void applyRoughRequest();
-            }
-          }} />
-        <div className="apple-assist-window-actions">
-          {busy ? <button type="button" className="apple-assist-window-cancel" onClick={() => void cancelGeneration()} disabled={cancelling}>
-            {cancelling ? copy.cancellingStatus : copy.cancelButton}</button> : null}
-          <button type="button" className="apple-assist-window-apply" onClick={() => void applyRoughRequest()}
-            disabled={busy || !available || requestText.trim().length === 0}>
-            {busy ? copy.generatingButton : copy.applyButton}</button>
+        )}</div>
+        <div className="apple-assist-composer">
+          <label htmlFor="apple-assist-rough-request" className="apple-assist-window-label">{ui.composer}</label>
+          {/* 外部レビュー R8: 使えない理由と復帰方法を畳んだヘルプの中だけに置かない。
+              今の状態と必要な操作を composer の直前へ1行で出し、無効な入力欄と結びつける。
+              詳細（但し書き・利用条件）はヘルプに残す。 */}
+          {available ? null : (
+            <p
+              className="apple-assist-state-note"
+              id="apple-assist-availability"
+              role="status"
+            >
+              {!probed ? ui.checking : availability.kind === "disabled" ? ui.disabled : availability.kind === "unsupported" ? ui.unsupported : ui.unavailable}
+            </p>
+          )}
+          <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
+            lang={DOCUMENT_CONTENT_LANG}
+            aria-describedby={available ? undefined : "apple-assist-availability"}
+            value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
+            rows={3} placeholder={copy.placeholder} disabled={busy || !available}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+                event.preventDefault(); if (!busy) void applyRoughRequest();
+              }
+            }} />
+          <div className="apple-assist-window-actions">
+            <AssistModelPicker language={menuLanguage} disabled={busy} />
+            <button type="button" className="apple-assist-window-apply"
+              onClick={() => { if (busy) void cancelGeneration(); else void applyRoughRequest(); }}
+              disabled={busy ? cancelling : !available || requestText.trim().length === 0}>
+              {busy ? (cancelling ? copy.cancellingStatus : copy.cancelButton) : copy.applyButton}</button>
+          </div>
         </div>
       </section>
     </div>
@@ -1312,7 +1322,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       cancelledStatus: "つくるのを とめました。",
       cancellingStatus: "とめて います…",
       availableDisclosure:
-        "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは みはんえいの まま さぶんで かくにんできます。そとの AI さーびすには おくりません。",
+        "ぷれびゅーばんのため、ないようを たしかめてください。このMacで しょりし、そとの AI さーびすには おくりません。さぶんを みて はんえいするまで ふみは かわらず、じどう ほぞんも しません。",
       modelContextTooLongError: "モデルが いちどに あつかえる りょうを こえました。たいしょうを みじかくするか、つづけて たのんでいたら あたらしい かいわから たのんでください。ふみは かわっていません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
@@ -1322,9 +1332,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは おねがいの ないようを かいてください。",
       generatingButton: "おねがい中...",
       generatingChange:
-        "ろーかる もでるで しょり中。みはんえいの あんを さぶんで かくにん できます。ふみは まだ かわりません。",
+        "あんを つくっています。ふみは まだ かわりません。",
       generatingInMain: () =>
-        "へんしゅう あんを つくっています。みはんえいの まま さぶんで かくにん できます。ふみは まだ かわりません。",
+        "あんを つくっています。ふみは まだ かわりません。",
       failedStatus:
         "おねがいに しっぱいしました。下の めっせーじを みてください。",
       guardrailError:
@@ -1465,7 +1475,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       cancelledStatus: "生成を停止しました。",
       cancellingStatus: "停止処理中…",
       availableDisclosure:
-        "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未反映のまま差分で確認でき、明示操作まで本文は変更しません。外部 AI サービスには情報を送りません。",
+        "プレビュー版のため、出力内容は確認してください。このMac内で処理し、外部 AI サービスへは送信しません。差分を確認して反映するまで本文は変わらず、自動保存もしません。",
       modelContextTooLongError: "モデルが一度に扱える量を超えました。対象を短くするか、追加指示が続いている場合は新しい会話から依頼してください。本文は変更していません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
@@ -1475,9 +1485,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは依頼内容を入力してください。",
       generatingButton: "依頼中...",
       generatingChange:
-        "ローカルモデルで処理中。未反映の案を差分で確認できます。本文はまだ変更しません。",
+        "編集案を作っています。本文は未変更です。",
       generatingInMain: () =>
-        "編集案を作っています。未反映のまま差分で確認できます。本文はまだ変更しません。",
+        "編集案を作っています。本文は未変更です。",
       failedStatus:
         "依頼に失敗しました。下のメッセージを確認してください。",
       guardrailError:
@@ -1617,7 +1627,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     cancelledStatus: "Generation stopped.",
     cancellingStatus: "Stopping…",
     availableDisclosure:
-      "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Proposals stay unapplied while you review the Diff; the document is unchanged until an explicit action. Nothing is sent to an external AI service.",
+      "Preview results need your review. Processing stays on this Mac; nothing is sent to an external AI service. Your document changes only when you apply the Diff, and is never saved automatically.",
     modelContextTooLongError: "The model cannot handle this much input at once. Select a shorter target, or start a new conversation after repeated follow-ups. Your document is unchanged.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
@@ -1627,9 +1637,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Type a request first.",
     generatingButton: "Sending...",
     generatingChange:
-      "Processing with the local model. The unapplied proposal is available in Diff review; the document is unchanged.",
+      "Creating a proposal. Your document is unchanged.",
     generatingInMain: () =>
-      "Creating an unapplied proposal. You can review it in Diff; the document is unchanged.",
+      "Creating a proposal. Your document is unchanged.",
     failedStatus:
       "Request failed. Check the message below.",
     guardrailError:

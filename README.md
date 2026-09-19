@@ -28,8 +28,8 @@ Local Assistは利用可能なMac上のオンデバイスモデルを使うプ�
 
 Current source version is `3.0.3`. Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
-explicit action, without auto-save. Model download/selection and MLX runtime
-are not implemented.
+explicit action, without auto-save. The model picker currently shows Apple Intelligence as its only option.
+Additional model download/switching and MLX runtime are not implemented.
 
 The `3.0.0` release refreshes the UI/UX across the app (reader spread layout,
 a unified EPUB / PDF / HTML export dialog, daily-flow continuity) and organizes

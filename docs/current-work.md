@@ -5,6 +5,17 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-20
 
+## Local Assist表示整理（2026-09-20）
+
+対象要約、依頼チップ、一体化した入力欄へ整理。冗長な説明を減らし、差分確認を会話の直下へ移した。
+[実装・ブラウザー検証](reviews/2026-09-20-local-assist-polish/README.md)は完了。
+次はnative窓での日本語IME・VoiceOver・本体Diffへの移動を確認する。生成・保存の契約は不変。
+
+モデル選択はLocal Assist窓の入力欄下部・送信ボタンの左隣を主入口とする方針に更新（2026-09-20）。
+DL・容量・削除は設定、選択正本はRustの `selectedId`。C-2実装時に接続する設計変更で、
+現在の製品はSystemのみ。選択枠は1件でも開き、選択済みのApple Intelligenceを確認できる。
+[選択UXの正本](core-ai-c0-design.md#5-モデル選択-uxc-2-店にしない)。
+
 ## v3.1 — I-0技術棚卸しと最初の修正（2026-09-19）
 
 v3.1は **Core AIの実利用** と **英語を入口にした海外App Store展開** の二本立て。

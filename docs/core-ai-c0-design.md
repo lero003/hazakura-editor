@@ -11,7 +11,7 @@
 | **Scope** | Design only. No product source, no C-1/C-2 implementation. |
 | **Tree baseline** | Package `2.6.1`. Local Assist A-1–A-4 source merged. Physical Assist gate pending. HEAD observed `82e6d307`. |
 | **Does not reopen** | v2.6 apply boundary (`applyReviewedLocalAssistProposal` is the single apply path) |
-| **Last revised** | 2026-09-08 (版別配置とH-1b前倒し範囲) |
+| **Last revised** | 2026-09-20 (Local Assist窓内でのモデル選択) |
 
 ---
 
@@ -156,8 +156,8 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 | **D17** | 文字数 cap（4000/8000/1000）は C-1 でも維持。`tokenCount` は観測用に helper が返してよいが、製品ハード上限にはしない。 | 実機の contextSize が 4K とも 8K とも言い切れない。 |
 | **D18** | v2.6 Apply 境界は凍結。本レーンは生成バックエンドと UI であり、`applyReviewedLocalAssistProposal` の stale/lock/Undo 契約を変えない。 | current-work の明示。 |
 | **D19** | **配信は二経路、AOT は常にメンテナー側。** (1) メンテナーは `xcrun coreai-build compile` でアーキテクチャ別 `.aimodelc` を焼く（WWDC26 326）。D23 の初回 specialize を構造的に短くする。(2) **App Store:** 可能なら Apple-hosted Background Assets で opt-in 取得（巨大モデルを .app に入れない）。materialize 後も D25 の manifest 検証は必須。(3) **Developer、および BA が使えない MAS フォールバック:** Hazakura 管理の静的 origin + Rust stream-to-temp（D15）。GitHub Releases は第一ホストにしない。catalog URL は最終オブジェクト。allowlist はホスト名 + パス接頭辞。公開 URL は immutable。 | 「検討せず自前 downloader」を避ける。BA は審査向け配布、origin は digest と Developer 検証、AOT はチャネル非依存。 |
-| **D20** | **マシンローカルの既定 backend は Preferences の一行だけ。正本は Rust の app-private `selectedId`。** TS の generate request は `backend` も catalog id も送らない。Rust が selectedId を読み、catalog / OS / メモリ / path を解決し、helper stdin にだけ backend と `coreAiResourcesPath` を書く。フロントが渡してよいのは文章・operation・`menuLanguage` 程度。companion フッターは正体表示と Preferences へのリンク。「この会話だけ」は入れない。 | renderer が 1 リクエストだけ別モデルを作れると D20 が型として死ぬ。 |
-| **D21** | **C-1 はオーナーが本番 identity を選ぶまで始めない。** 始まったら list/download/verify/delete は両レーン（D12）。**DL・容量・削除・利用選択の正本 UI は管理ページ。** Companion のモデルチップは C-2 の利便ショートカットであり、入手 UI ではない。**generate に使う `selectedId` の書き込みは C-2。** C-1 の `selectedId` は常に null。helper は `system_default` 以外を拒否。Gate B / C-2 は identity + bake-off。 | オーナー 2026-08-28。管理ページが店の裏方。ヘルパーに DL を置かない。C-1 で selectedId を書くと未対応 helper が落ちる。 |
+| **D20** | **マシンローカルの既定 backend の正本は Rust の app-private `selectedId`。選択の主入口は Companion のモデルチップ（オーナー 2026-09-20）。** TS の generate request は `backend` も catalog id も送らない。Rust が selectedId を読み、catalog / OS / メモリ / path を解決し、helper stdin にだけ backend と `coreAiResourcesPath` を書く。フロントが渡してよいのは文章・operation・`menuLanguage` 程度。companion 入力欄下部・送信ボタンの左隣で、入手済み・利用可能なモデルを明示選択する。選択コマンドをRustで検証し、確定した同じ `selectedId` を管理ページにも反映する。「この会話だけ」は入れない。 | renderer が 1 リクエストだけ別モデルを作れると D20 が型として死ぬ。 |
+| **D21** | **C-1 はオーナーが本番 identity を選ぶまで始めない。** 始まったら list/download/verify/delete は両レーン（D12）。**DL・容量・削除の管理 UI は設定。利用選択の主入口は Companion のモデルチップ（C-2）。** 入手 UI は Companion に置かない。**generate に使う `selectedId` の書き込みは C-2。** C-1 の `selectedId` は常に null。helper は `system_default` 以外を拒否。Gate B / C-2 は identity + bake-off。 | オーナー 2026-08-28。管理ページが店の裏方。ヘルパーに DL を置かない。C-1 で selectedId を書くと未対応 helper が落ちる。 |
 | **D22** | C-2 の Core AI ロード前に **概算メモリ（bundle size + 余裕）を見て拒否**する。失敗コピーは「この Mac のメモリが足りません」。System へ自動で逃げない。 | 8 GB 機で 3 GB モデル + editor + WebView は OOM しうる。 |
 | **D23** | H-1 の System 経路は現行どおり cancel = helper child kill、`GENERATE_TIMEOUT` 360s でよい。C-2 の受け入れは (1) 協調キャンセル（セッション単位）**または** OS specialization cache / AOT 後の再ロードが短いことの実測、(2) specialize 中の別ステータスと別タイムアウト、(3) 生成 watchdog を specialize と分ける。 | Core AI の未 AOT 初回 specialize は数十秒〜数分。kill のたびにやり直すと体感が壊れる。 |
 | **D24** | 現行 `probe_apple_assist_availability` / `AvailabilityProbe` は **System backend 専用**として凍結する。四態 wire は変えない。C-2 で `probe_local_assist_backend_availability` 相当を追加する。companion の composer disable は **選択中 backend の可用性**だけを見る。Core AI 選択中に Apple Intelligence OFF を理由に塞がない。 | Core AI は Apple Intelligence とは別のオンデバイス実行基盤。System 四態を C-2 まで流用すると「AI OFF だが入手済み Core AI は使える」を誤って閉じる。 |
@@ -166,7 +166,7 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 | **D27** | streaming partial 本文は **Rust → companion だけ**（現行 B2）。main の proposal store には載せない。完了 envelope だけ main → store → Diff。全体図もこの流れに合わせる。 | `Gen → Store → Draft` と読むと実装者が B2 を壊す。 |
 | **D28** | Core AI 配布物はメンテナーが **AOT 済み**（`coreai-build compile`、アーキテクチャ別）を正とする。ユーザー機でのフル specialize を既定体験にしない。AOT 後もデバイス固有 specialize は残るが、D23 の待ちを短くするのが目的。 | WWDC26 326。チャネル（BA / origin）とは独立。 |
 | **D29** | `maximumResponseTokens` は C-2 で明示する。stock Core AI executor は未指定だと 512（reasoning 時 2048）で切れる。長文 rewrite の既定にしない。 | 最終事前レビュー / stock adapter。System 経路の現行 helper はこの既定に依存していない。 |
-| **D30** | **体験ピン（オーナー 2026-08-28）。** Companion は会話面。対象（選択 / 現在ファイル / 見出し）を指定しながら校正する。本文への反映はメイン Diff の明示確認のあと。**ローカル LLM の DL・削除・利用選択の正本は管理ページ。** ヘルパーのモデルチップは、すでに使えるローカル backend を切り替える利便（C-2）。入手 UI をヘルパーに置かない。Notion の会話形には寄せる。Notion Agent / クラウドモデル店にはしない。切替の機械正本は D20（Rust `selectedId`）。U-4 は System 表示のみ。Web 検索は将来の任意。いまはローカルのみ。 | 管理ページが DL と利用。ヘルパー切替は便利のため。 |
+| **D30** | **体験ピン（オーナー 2026-08-28）。** Companion は会話面。対象（選択 / 現在ファイル / 見出し）を指定しながら校正する。本文への反映はメイン Diff の明示確認のあと。**ローカル LLM の DL・容量・削除は管理ページ。利用選択はヘルパーのモデルチップを主入口とする（オーナー 2026-09-20）。** すでに使えるローカル backend を同じ窓から切り替える（C-2）。入手 UI をヘルパーに置かない。Notion の会話形には寄せる。Notion Agent / クラウドモデル店にはしない。切替の機械正本は D20（Rust `selectedId`）。U-4 は System 表示のみ。Web 検索は将来の任意。いまはローカルのみ。 | 管理ページは入手管理。日常のモデル選択はヘルパー内。 |
 
 ---
 
@@ -381,7 +381,7 @@ activeModel: loaded System or Core AI model instance
 | 同じ backend + model 生存 | **model インスタンスを再利用**（Core AI の再 specialize を避ける） |
 | 同じ `conversationId` + transcript フラグオン | session を再利用。H-1 ではフラグオフなので毎回新規 session |
 | 新しい `conversationId` | session 破棄。model は同じ backend なら残す |
-| backend 切替（Preferences のマシン既定） | model と session を破棄して再ロード |
+| backend 切替（Rust所有のマシン既定） | model と session を破棄して再ロード |
 | Cancel / helper kill（System / H-1） | 全部破棄（現行プロセス寿命） |
 | Cancel（Core AI / C-2） | D23。specialize 完了後なら cache 再ロードを実測 |
 | アプリ再起動 | 残らない（非目標） |
@@ -444,7 +444,7 @@ Apple の stock `CoreAILanguageModel` が guided generation / tool calling を�
 
 ### 4. Core AI ライフサイクル（C-1）
 
-C-1 は **オーナーが本番 identity を選んだあと**の list / download / verify / delete。両レーン（D12）。下図の「Preferences で選んで generate」は **C-2**（D20 / D21）。helper は C-1 では `system_default` 以外を拒否する。
+C-1 は **オーナーが本番 identity を選んだあと**の list / download / verify / delete。両レーン（D12）。「Companion で選んで generate」は **C-2**（D20 / D21）。helper は C-1 では `system_default` 以外を拒否する。
 
 ```mermaid
 sequenceDiagram
@@ -584,13 +584,13 @@ Apple `coreai-models` の macOS recipe には Qwen3 0.6B / 4B / 8B がある。*
 
 ### 5. モデル選択 UX（C-2）— 店にしない
 
-**マシンローカルの既定 backend は Preferences の一行だけ（D20）。** companion に「この会話で使う」は置かない。
+**モデル選択の主入口は Local Assist窓の入力欄下部・送信ボタンの左隣に置く小さなモデルチップ（オーナー 2026-09-20）。** 右側は送信操作。設定を開かず切り替えられる。選択の正本はRustのマシンローカル `selectedId`（D20）とし、会話ごとの別設定は持たない。現行製品にはSystemの1件だけを表示する選択枠を実装（オーナー 2026-09-20）。1件でも開閉・選択できるが、backend変更や生成は行わない。Core AIへの切り替えはC-2で接続し、未接続の選択肢は表示しない。
 
 - 既定: `Apple Intelligence（この Mac）`
 - 任意: 入手済みなら catalog の `displayName`（identity はオーナー決定後。店に並べない）
-- companion フッター: いまの正体 + 「オンデバイス」+ 可用性。未入手でも marketplace にしない。入手は Preferences の一行。
-- Preferences 切替は **次の依頼から** 全会話に効く。進行中は無効。切替は model + session 破棄。
-- System が unavailable のとき Core AI へ **自動で逃げない。** Core AI が失敗したとき System へ自動で逃げない。ユーザーが Preferences で選び直す。
+- チップは現在のモデル名と開閉記号だけ。メニューはSystemと入手済み・検証済み・利用可能なモデル。ダウンロード・容量・削除は設定の管理ページへ置く。長い説明や「オンデバイス」の常時表示を足さない。
+- モデル切替は **次の依頼から** 全会話に効く。進行中は無効。切替は model + session 破棄。
+- System が unavailable のとき Core AI へ **自動で逃げない。** Core AI が失敗したとき System へ自動で逃げない。ユーザーがLocal Assist窓で選び直す。
 - composer の enable/disable は **選択中 backend の probe**（D24）。Core AI 選択中は `probe_apple_assist_availability` の Apple Intelligence OFF で塞がない。
 - メモリ不足（D22）:
 
@@ -598,7 +598,7 @@ Apple `coreai-models` の macOS recipe には Qwen3 0.6B / 4B / 8B がある。*
 
 その他の失敗:
 
-> 文章モデルの準備に失敗しました。本文は変更していません。設定で Apple Intelligence に戻すか、モデルを削除して入れ直せます。外部 AI には送っていません。
+> 文章モデルの準備に失敗しました。本文は変更していません。この窓で Apple Intelligence に戻すか、設定でモデルを削除して入れ直せます。外部 AI には送っていません。
 
 ### 6. Availability — System 四態は凍結。C-2 は選択中 backend
 
@@ -849,7 +849,7 @@ C-2 追加（U-\* では実装しない）:
 
 ```mermaid
 stateDiagram-v2
-  [*] --> PrefSelect: Preferences で文章モデルを選ぶ
+  [*] --> PrefSelect: Companion で文章モデルを選ぶ
   PrefSelect --> MemCheck: ロード前メモリ概算
   MemCheck --> MemDenied: 足りない（System に逃げない）
   MemCheck --> Specialize: 足りる
@@ -1270,9 +1270,9 @@ U-2（hero 視覚仕上げ）を分けるなら **U-1 の直後・同一レビ�
 ### PR C-2 — 同じ Local Assist UX から allowlist モデルを使う
 
 - **Title:** Local Assist から allowlist 文章モデルを選んで使う
-- **Files:** helper `CoreAILanguageModel`（SDK 名は実装時）、`set_local_assist_backend`、**管理ページの利用選択**（正本）、companion モデルチップ（利便ショートカット）、失敗時 no-fallback、specialize ステータスと timeout、メモリ事前拒否（D22）、cancel 分離（D23）
+- **Files:** helper `CoreAILanguageModel`（SDK 名は実装時）、`set_local_assist_backend`、**companion モデルチップ**（利用選択の主入口）、管理ページとの選択状態同期、失敗時 no-fallback、specialize ステータスと timeout、メモリ事前拒否（D22）、cancel 分離（D23）
 - **Depends:** H-1b、G-1、Gate B、**D24 backend probe**、**D20 Rust selectedId 正本**、オーナーが選んだ本番 identity。x86_64 は System のみ。identity 未決なら始めない。
-- **Changes:** ここで初めて `selectedId` に coreai id を書いてよい。`probe_local_assist_backend_availability`。利用選択の正本は管理ページ。companion チップは同じ `selectedId` を切る利便。入手 UI は C-1 のまま。companion は選択中 backend で disable。切替は次の依頼から全会話。System ↔ Core AI の自動逃げなし。`maximumResponseTokens` 明示（D29）。tools 空。画像なし。Apply 境界そのまま。
+- **Changes:** ここで初めて `selectedId` に coreai id を書いてよい。`probe_local_assist_backend_availability`。利用選択の主入口はcompanionチップ。Rustが選択を検証・確定し、管理ページも同じ `selectedId` を表示する。入手 UI は C-1 のまま。companion は選択中 backend で disable。切替は次の依頼から全会話。System ↔ Core AI の自動逃げなし。`maximumResponseTokens` 明示（D29）。tools 空。画像なし。Apply 境界そのまま。
 - **Tests:** System OFF かつ Core AI selected で composer が開くこと。TS generate に backend が無いこと。メモリ拒否コピー。specialize timeout が生成 watchdog と別。cancel 後の再ロードまたは協調キャンセル。
 
 ### 明示的にこのレーンでやらない PR
