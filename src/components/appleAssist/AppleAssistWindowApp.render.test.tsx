@@ -60,12 +60,37 @@ vi.mock("../../hooks/agent/useAppleAssistAvailability", () => ({
 afterEach(() => {
   cleanup();
   localStorage.removeItem(MENU_LANGUAGE_STORAGE_KEY);
+  document.documentElement.lang = "en";
   vi.clearAllMocks();
   eventListeners.clear();
   delete (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 });
 
 describe("AppleAssistWindowApp render", () => {
+  it("syncs the detached window document language from storage", () => {
+    localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
+
+    render(<AppleAssistWindowApp />);
+
+    expect(document.documentElement.lang).toBe("ja");
+
+    act(() => {
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: MENU_LANGUAGE_STORAGE_KEY,
+        newValue: "en",
+      }));
+    });
+    expect(document.documentElement.lang).toBe("en");
+
+    act(() => {
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: MENU_LANGUAGE_STORAGE_KEY,
+        newValue: "kana",
+      }));
+    });
+    expect(document.documentElement.lang).toBe("ja");
+  });
+
   it("shows a matching Japanese Apply failure and keeps the conversation and prior draft", async () => {
     localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
     Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });

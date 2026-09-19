@@ -6,6 +6,7 @@ import {
 } from "../../lib/tauri";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { applyWindowTheme } from "../../features/app/windowAppearance";
+import { documentLanguageForMenuLanguage } from "../../features/app/documentLanguage";
 import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
@@ -171,6 +172,11 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
 
   useEffect(() => {
     window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, menuLanguage);
+  }, [menuLanguage]);
+
+  useEffect(() => {
+    document.documentElement.lang =
+      documentLanguageForMenuLanguage(menuLanguage);
   }, [menuLanguage]);
 
   return {

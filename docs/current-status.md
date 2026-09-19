@@ -11,9 +11,11 @@ Last reviewed: 2026-09-19
   二本立てとして開始。最初のI-0ソース／静的棚卸しは
   `docs/international-launch/` に集約した。英語ストア文案はproposalで、Connect設定、
   対象地域、価格、契約、公開Web、署名候補の英語受け入れは未実施。Core AI本番C-1/C-2も
-  identity・manifest・配信/AOT・bake-offのゲート待ち。次の実装I-0aは表示言語とHTML
-  `lang`の整合だけを小さく固定する。bundleの言語宣言は主要導線の監査後まで保留する。
-  詳細は [current-work](current-work.md)。
+  identity・manifest・配信/AOT・bake-offのゲート待ち。I-0aではメイン窓とLocal Assist窓の
+  HTML `lang`を表示言語へ同期し、`kana`は日本語として `ja`へ対応させた。生成・保存・
+  Assist能力判定は不変。次は英語主要導線の静的棚卸しで、bundleの言語宣言はその監査後まで
+  保留する。詳細は [current-work](current-work.md) と
+  [I-0a証跡](reviews/2026-09-19-v3.1-i0a-document-language/README.md)。
 
 - **v3.0.3を実機確認して申請（2026-09-18）:** 編集面のスクロールバー不具合を直した不具合修正版。
   3 件を修正した。(1) 右ペイン表示時、本文の右端でスクロールバーをつかむとスクロールせず、

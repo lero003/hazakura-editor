@@ -5,6 +5,7 @@ import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { AssistConversationMessages } from "./AssistConversationMessages";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import { appleAssistTargetExcerpt } from "../../features/editor/appleAssistText";
+import { documentLanguageForMenuLanguage } from "../../features/app/documentLanguage";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -325,6 +326,11 @@ export function AppleAssistWindowApp() {
       console.warn("Failed to update Hazakura Local Assist window OS theme", err);
     });
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang =
+      documentLanguageForMenuLanguage(menuLanguage);
+  }, [menuLanguage]);
 
   // v0.17 operation-feedback: when the availability probe
   // resolves, push exactly one "ready" or "unavailable"

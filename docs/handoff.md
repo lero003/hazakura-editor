@@ -10,9 +10,10 @@ Last reviewed: 2026-09-19
 - **v3.1開始（2026-09-19）:** Core AI実利用と海外App Store展開の二本立て。
   `docs/international-launch/` のI-0ソース／静的棚卸しを入口にし、Connect上の地域・価格・
   契約、公開Web、署名候補の英語受け入れは未完了として分離する。Core AI本番C-1/C-2は
-  identity等のゲート待ち。次の小スライスI-0aはメイン窓／Local Assist窓のHTML `lang`同期だけ。
-  bundleの英語・日本語宣言は主要導線の監査と署名候補確認後まで保留し、翻訳範囲や公開状態を
-  越えて主張しない。
+  identity等のゲート待ち。I-0aでメイン窓／Local Assist窓のHTML `lang`を表示言語へ同期し、
+  `kana`は `ja`として扱うことをテストで固定した。次は英語主要導線の静的棚卸し。bundleの
+  英語・日本語宣言は主要導線の監査と署名候補確認後まで保留し、翻訳範囲や公開状態を越えて
+  主張しない。
 
 - **v3.0.3を実機確認して申請（2026-09-18）:** 編集面のスクロールバー不具合 3 件を直した不具合修正版。
   (1) 右ペインのリサイザ `.pane-resizer::before` の透明な当たり判定が本文の右端へ 4px 食い込み、
@@ -889,8 +890,8 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. `docs/current-work.md` のv3.1 I-0aから、表示言語とHTML `lang`の意味を固定する。
-2. I-0のオーナー判断（地域・価格・契約・公開URL）を推測で閉じず、英語主要導線の漏れを小さく分ける。bundle言語宣言はその監査後。
+1. I-0aのHTML `lang`同期を前提に、英語主要導線の文言漏れを静的に棚卸しして画面単位へ分ける。
+2. I-0のオーナー判断（地域・価格・契約・公開URL）を推測で閉じない。bundle言語宣言は主要導線の監査後。
 3. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 4. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 5. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。

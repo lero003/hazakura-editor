@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AUTO_BACKUP_USER_CHOICE_STORAGE_KEY,
   EDITOR_SETTINGS_STORAGE_KEY,
+  MENU_LANGUAGE_STORAGE_KEY,
   THEME_STORAGE_KEY,
 } from "../../types";
 import { useAppPreferences } from "./useAppPreferences";
@@ -38,12 +39,31 @@ if (typeof window !== "undefined" && !window.matchMedia) {
 describe("useAppPreferences", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    document.documentElement.lang = "en";
     vi.clearAllMocks();
   });
 
   afterEach(() => {
     window.localStorage.clear();
+    document.documentElement.lang = "en";
     vi.clearAllMocks();
+  });
+
+  it("syncs the document language with the visible menu language", () => {
+    window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
+    const { result } = renderHook(() => useAppPreferences());
+
+    expect(document.documentElement.lang).toBe("ja");
+
+    act(() => {
+      result.current.setMenuLanguage("kana");
+    });
+    expect(document.documentElement.lang).toBe("ja");
+
+    act(() => {
+      result.current.setMenuLanguage("en");
+    });
+    expect(document.documentElement.lang).toBe("en");
   });
 
   it("keeps auto-backup off by default", () => {
