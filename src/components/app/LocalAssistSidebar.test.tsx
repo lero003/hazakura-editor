@@ -25,6 +25,32 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); unregister(); localAssistProposalStore.clear(tab.sessionId); });
 describe("Local Assist sidebar", () => {
+  it("keeps the UI language off the pinned target and the composer", () => {
+    document.documentElement.lang = "ja";
+    const { container } = render(<LocalAssistSidebar {...props()} />);
+
+    // 依頼文は利用者の文章。UI 文言ではないので UI 言語を継承させない。
+    expect(
+      screen.getByLabelText("文章への依頼").getAttribute("lang"),
+    ).toBe("");
+
+    fireEvent.click(screen.getByRole("button", { name: "対象を確認して固定" }));
+
+    const pinned = container.querySelector(
+      ".local-assist-sidebar-target pre",
+    ) as HTMLElement;
+    expect(pinned).not.toBeNull();
+    expect(pinned.getAttribute("lang")).toBe("");
+    // 同じ枠の見出し・要約は UI 文言なので UI 言語のまま。
+    expect(
+      container
+        .querySelector(".local-assist-sidebar-target summary")
+        ?.hasAttribute("lang"),
+    ).toBe(false);
+
+    document.documentElement.lang = "";
+  });
+
   it("names the stop action and shows a classified reason with a retry after a failure", () => {
     render(<LocalAssistSidebar {...props()} />);
     fireEvent.change(screen.getByLabelText("文章への依頼"), { target: { value: "短くして" } });

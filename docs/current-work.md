@@ -28,7 +28,8 @@ Local Assist窓のHTML `lang`を表示言語へ同期した。保存済み日本
 外部レビューのP2・P3も同じスライスで閉じた。ルートの同期はUI chrome用とし、本文を描く面
 （編集・プレビュー・読書・Local Assistの入力/生成途中・候補レビュー）はHTMLの「言語不明」を
 持たせてUI言語を継承させない。メイン窓・Local Assist窓・Agent窓は、React初回描画の前にも
-保存済み表示言語を反映する。Help・設定・診断・会話一覧はUI文言と本文が同居しているため残件。
+保存済み表示言語を反映する。参照面とLocal Assistサイドバーの固定対象も同じ境界。Help・設定・
+診断と会話ログ（依頼文・生成文がUI文言と同じ枠）、差分のヘッダ行はUI文言側なので残件。
 実装・red/green証跡は `docs/reviews/2026-09-19-v3.1-i0a-document-language/`。
 
 macOS bundleの言語宣言は、主要英語導線の静的／実表示監査と署名候補のInfo.plist確認後まで

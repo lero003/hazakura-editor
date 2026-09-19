@@ -66,13 +66,19 @@ Tests       22 passed (22)
 - 候補レビューも生成された本文そのものなので境界を置いた: 全文ビューの
   `.local-assist-proposal-review-text` と、`DiffBody` が描く行（差分の本文列）。
   `DiffBody` は2ファイル比較でも同じ本文列を出すため、ここで一括して切る。
+- 参照面（`ReferenceTextPane` の `.reference-text-surface`）と、Local Assistサイドバーの
+  固定した対象の抜粋（`<pre>`）・依頼入力（`textarea`）にも同じ境界を置いた。
 - `EBookPane` はレビュー案の `<article>` ではなく**紙の中身**（flow）へ付けた。
   `<article>` は読書面の操作帯・章名・ページ送りというUI文言も包んでおり、そこまで
   「不明」にすると今度はUI側が不明になる。境界は「本文を描く箱」に置く方を選んだ。
+- 同じ理由で、差分のセクション行（「変更位置: § 見出し」）と候補レビューのヘッダ行は
+  UI文言を含むため境界を付けない。境界は**本文が入る箱**にだけ置く。
 
 回帰テストは本文面ごとに「日本語UI + 英語本文」「英語UI + 日本語本文」の両方向を固定した
-（`EditorPane`・`PreviewPane`・`EBookPane`・Local Assist入力/生成途中・候補レビュー）。
-境界を外すと本文面4ファイルで4件が落ちる（`lang` が `ja` になる／`null` のまま）。
+（`EditorPane`・`PreviewPane`・`EBookPane`・Local Assist入力/生成途中・候補レビュー・
+参照面・サイドバー）。境界の値を誤らせると、本文面8ファイルで12件が落ちる
+（`lang` が `ja` になる／`null` のまま）。境界の値そのものを固定している
+`documentLanguage.test.ts` の1件を足すと、9ファイル13件。
 
 ### P3 — 初回描画前の同期
 
@@ -88,8 +94,10 @@ Reactを描く**前**に保存済み表示言語を反映する。
 
 ### 既知の残件（今回は触らない）
 
-Help・設定・診断・会話一覧は、UI文言と本文が同じ枠に同居している。本文側だけを切り出すには
-表示の作り直しが要るので、今回の境界には含めず残件として記録する。
+Help（`PrivacyPreferencesPane`）・設定・診断（`DiagnosticsPane`）はUI文言の面、会話ログ
+（`AssistConversationMessages`）は依頼文・生成文と進行状況のUI文言が同じ枠に同居する面で、
+本文側だけを切り出すには表示の作り直しが要る。今回の境界には含めず残件として記録する。
+差分スイッチャのヘッダ行や各レビュー面の操作帯も、UI文言なのでUI言語のままにする。
 
 ## 内部レビュー2回目（コミット`d44b6341`）
 
@@ -110,10 +118,25 @@ Help・設定・診断・会話一覧は、UI文言と本文が同じ枠に同�
 - **P3（対応済み）** 差分で`AppleAssistWindowApp`の`storage`ハンドラのインデントが
   12スペースへずれていたので10スペースへ戻した（挙動は不変）。
 
+## 内部レビュー3回目（コミット`3341102b`）
+
+前回の指摘5件はいずれも閉じたことを変異テストで確認できた。新しい穴は2件。
+
+- **P2（対応済み）** `DiffBody`のセクション行は「変更位置:」というUI文言と見出しの
+  合成なのに、本文行と同じ境界を付けていた。UI文言を「言語不明」にしてしまうため
+  セクション行からは外し、本文行にだけ残した。2ファイル比較のfixtureで固定。
+- **P3（対応済み）** `ReferenceTextPane`の参照本文と、Local Assistサイドバーの固定対象
+  （`<pre>`）・依頼入力（`textarea`）が境界の外に残っていた（メイン窓側のLocal Assist）。
+  同じ規則で境界を置き、テストで固定した。
+- **P3（対応済み）** 残件の「会話一覧」はコード上で面が特定できなかったため、
+  「会話ログ（`AssistConversationMessages`）」と実名で書き直した。
+- **P3（対応済み）** `current-status`の1行が長くなっていたので折り返し、他2ファイルと
+  文面を揃えた。
+
 ## 自動検証
 
 - `npm run typecheck`
-- `npm test` — 290 files / 2,587 tests passed
+- `npm test` — 291 files / 2,590 tests passed
 - `npm run build:vite` — passed（既存の500 kB超chunk警告あり）
 - `npm run smoke:app-store-surface` — 10 files / 125 tests passed
 - `python3 docs/international-launch/validate_metadata.py --self-test` — 14 self-tests passed

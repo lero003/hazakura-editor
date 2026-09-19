@@ -10,9 +10,11 @@ export function DiffBody({ compareCase, menuLanguage, view }: {
 }) {
   const rows = buildDiffDisplayRows(compareCase, view, buildSplitDiffRows(view.lines), menuLanguage);
   if (!rows.length) return <div className="diff-empty">{emptyLabel(menuLanguage)}</div>;
-  // 行は本文（と行番号）だけ。UI 文言が同居しないので、ここで言語の境界を切る。
+  // 本文の行（と行番号）は UI 文言が同居しないので、ここで言語の境界を切る。
+  // セクション行のラベルは「変更位置:」のような UI 文言と見出しの合成なので、
+  // 境界は付けず UI 言語を継承させる（EBookPane で操作帯を巻き込まない判断と同じ）。
   return <>{rows.map((displayRow) => {
-    if (displayRow.kind === "section") return <div className="diff-section-row" key={displayRow.key} lang={DOCUMENT_CONTENT_LANG} role="row"><span role="cell">{displayRow.label}</span></div>;
+    if (displayRow.kind === "section") return <div className="diff-section-row" key={displayRow.key} role="row"><span role="cell">{displayRow.label}</span></div>;
     const row = displayRow.row;
     const change = row.kind === "changed" ? describeInlineChange(row.left.text, row.right.text) : null;
     return <div className={`diff-split-row ${row.kind}`} key={displayRow.key} lang={DOCUMENT_CONTENT_LANG} role="row">

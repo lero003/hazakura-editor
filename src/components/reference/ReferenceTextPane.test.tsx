@@ -8,6 +8,34 @@ afterEach(() => {
 });
 
 describe("ReferenceTextPane", () => {
+  it("keeps the UI language off the reference file contents", () => {
+    document.documentElement.lang = "ja";
+    render(
+      <ReferenceTextPane
+        copy={referenceCompareCopy("ja")}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        reference={{
+          kind: "text",
+          path: "/ws/manuscript.md",
+          name: "manuscript.md",
+          contents: "An English line\nもう一つの行",
+          encoding: "utf-8",
+        }}
+      />,
+    );
+
+    // 参照面の本文は原稿そのもの。見出し・注記（UI 文言）は UI 言語のまま。
+    expect(screen.getByTestId("reference-text-surface").getAttribute("lang")).toBe(
+      "",
+    );
+    expect(
+      screen.getByTestId("right-pane-header").getAttribute("lang"),
+    ).toBeNull();
+
+    document.documentElement.lang = "";
+  });
+
   it("shows read-only text with line numbers and closes on request", () => {
     const onClose = vi.fn();
     render(

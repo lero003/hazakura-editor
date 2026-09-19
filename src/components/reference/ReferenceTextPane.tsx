@@ -10,6 +10,7 @@ import {
 import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
+import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import { resolveReferencePaneHeader } from "../../features/workspace/rightPaneHeaderModel";
 import { RightPaneHeader } from "../app/RightPaneHeader";
@@ -150,6 +151,7 @@ export function ReferenceTextPane({
             className="reference-text-surface"
             data-testid="reference-text-surface"
             data-windowed="false"
+            lang={DOCUMENT_CONTENT_LANG}
             tabIndex={0}
           >
             {textLines.map((line, index) => {

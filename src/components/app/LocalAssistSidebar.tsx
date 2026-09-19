@@ -12,6 +12,7 @@ import { localAssistReasonKey } from "../../features/editor/localAssistFailureRe
 import { readTargetTextForGeneration } from "../../features/editor/appleAssistText";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
+import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
 import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
 import "../../styles/local-assist-sidebar.css";
 
@@ -191,7 +192,7 @@ export function LocalAssistSidebar(props: Props) {
         </fieldset>
         {session.target ? <section aria-label={copy.pinned} className="local-assist-sidebar-target">
           <strong>{session.target.activeDocumentName} · {session.target.label}</strong>
-          <details><summary>{copy.pinned}</summary><pre>{session.target.text}</pre></details>
+          <details><summary>{copy.pinned}</summary><pre lang={DOCUMENT_CONTENT_LANG}>{session.target.text}</pre></details>
           {!currentTarget ? <p role="status">{copy.targetChanged}</p> : null}
           <button type="button" disabled={controlsDisabled || foreignProposal} onClick={() => setConfirmReset(sessionId)}>{copy.reset}</button>
         </section> : null}
@@ -219,6 +220,7 @@ export function LocalAssistSidebar(props: Props) {
           </div>
           <label htmlFor={`${id}-request`}>{copy.composer}</label>
           <textarea ref={composerRef} id={`${id}-request`} value={session.draft} rows={4} placeholder={copy.placeholder}
+            lang={DOCUMENT_CONTENT_LANG}
             disabled={!props.activeTab || applying || foreignProposal} aria-describedby={`${id}-hint`}
             onChange={(event) => updateSession(sessionId, (value) => ({ ...value, draft: event.target.value, actionId: "rewrite_natural" }))}
             onKeyDown={(event) => {
