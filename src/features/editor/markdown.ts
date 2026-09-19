@@ -1,5 +1,6 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import { DOCUMENT_CONTENT_LANG } from "../app/documentLanguage";
 import {
   buildBlockedImageElement,
   classifyMarkdownImageSource,
@@ -283,8 +284,12 @@ function applyTablePreviewPolicyToFragment(
     frame.className = "markdown-table-frame";
     frame.setAttribute("role", "region");
     frame.setAttribute("aria-label", "Markdown table");
-    // ラベルは英語のアプリ文言。本文（lang=""）の内側なので宣言も一緒に持たせる。
+    // 枠のラベルは英語のアプリ文言。利用者本文へ継承させず、raw HTMLが明示した
+    // tableの言語は保持する。
     frame.setAttribute("lang", "en");
+    if (!table.hasAttribute("lang")) {
+      table.setAttribute("lang", DOCUMENT_CONTENT_LANG);
+    }
     table.replaceWith(frame);
     frame.append(table);
   }

@@ -291,12 +291,31 @@ describe("renderMarkdown task list preview", () => {
 });
 
 describe("renderMarkdown table preview", () => {
-  it("labels the generated table frame in its own language", () => {
-    const html = renderMarkdown("| a | b |\n| --- | --- |\n| 1 | 2 |");
+  it("keeps the English frame label separate from Markdown table content", () => {
+    const html = renderMarkdown("| 見出し |\n| --- |\n| 日本語の本文 |");
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    const frame = container.querySelector(".markdown-table-frame");
+    const table = frame?.querySelector("table");
 
     // 枠のラベルは英語のアプリ文言。本文（lang=""）へ差し込むので en を宣言する。
-    expect(html).toContain('aria-label="Markdown table"');
-    expect(html).toMatch(/class="markdown-table-frame"[^>]*lang="en"/);
+    expect(frame?.getAttribute("aria-label")).toBe("Markdown table");
+    expect(frame?.getAttribute("lang")).toBe("en");
+    expect(table?.getAttribute("lang")).toBe("");
+    expect(table?.textContent).toContain("日本語の本文");
+  });
+
+  it("preserves an explicit language on a raw HTML table", () => {
+    const html = renderMarkdown(
+      '<table lang="ja"><tbody><tr><td>日本語の本文</td></tr></tbody></table>',
+    );
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    expect(
+      container.querySelector(".markdown-table-frame")?.getAttribute("lang"),
+    ).toBe("en");
+    expect(container.querySelector("table")?.getAttribute("lang")).toBe("ja");
   });
 });
 
