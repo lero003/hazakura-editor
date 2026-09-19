@@ -3,12 +3,14 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-19
 
 ## Current Position
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
+v3.1は、検証済みCore AIモデルをLocal Assistから実際に利用できるようにすることと、
+英語を入口に海外のApp Storeで見つけ、購入し、使い続けられる状態を同じ版で整える。
 
 | 対象 | 状態 |
 |---|---|
@@ -28,11 +30,12 @@ v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じ�
 |---|---|---|
 | v2.9 | 公開済みの日常品質とSystem-only改善 | 保存・復旧等の修正履歴を維持。公開報告から未記録の個別試験を合格にしない |
 | **v3.0** | **UI/UX刷新・アプリの完成度・Local Assist architecture整理** | 編集→読書→提案確認→出力と失敗/復旧の一貫性、全テーマ/狭幅/実機、System共通契約とAFM評価 |
-| **v3.1** | **検証済みモデルのDL・管理・切り替え** | allowlistモデルを明示入手・検証・利用・削除できるC-1/C-2 |
+| **v3.1** | **Core AIの実利用・海外App Store展開** | allowlistモデルを明示入手・検証・選択・生成・削除できるC-1/C-2と、英語を入口にした製品/ストア情報・対象地域・価格・サポート導線の受け入れ |
 | v3.2以降 | 文章品質の追加機能、明示章参照、読む・届ける追加機能 | 需要で選ぶ候補。v3.0の既存画面整理と区別 |
 
 添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。
 モデル管理はv3.1に維持し、v3.0ではSystem経路で共通基盤を検証する。
+海外展開はモデル配布とは別レーンで先行できるが、v3.1の公開判定では同じ提出候補へ合流する。
 PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
 AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
 
@@ -55,7 +58,7 @@ Closed on store + source as the `2.3.0` / `2.4.0` lineage history.
 
 Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 
-### Parked (resume only if friction or a later milestone)
+### Gated / parked (resume only at the named milestone or trigger)
 
 | Bucket | Examples | When to touch |
 |--------|----------|----------------|
@@ -65,6 +68,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
 | Core AI models | Allowlisted `.aimodel` catalog | v3.1のC-1/C-2。identityと既存ゲート確定後 |
+| 海外App Store展開 | 英語ローカライズ、製品ページ、対象地域、価格、サポート/Privacy導線 | v3.1。I-0の棚卸しと対象市場決定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published v2.9 hotfix | App Review / daily-use blocker | Only when reproduced |
 
@@ -196,6 +200,47 @@ shell / Python 実行は不可とする。対応 architecture / model data、rev
 app-managed storage、ロード前 memory check、取得経路、App Store 可否の詳細は
 M-0b の product / security / distribution review で固定する。M-0a の正本は
 `docs/mlx-m0-preflight-design.md`。
+
+## v3.1 — Core AI利用と海外App Store展開
+
+Goal: **Core AIをダウンロードできるだけで終わらせず、既存のLocal Assistから安全に
+選んで使えるようにする。同時に、海外の利用者が製品を理解し、購入し、初回利用と
+サポートまで進めるApp Store経路を整える。**
+
+両レーンは並行して進めてよい。ただし「Core AI対応」や「海外販売対応」を公開上の
+完了とするのは、同じv3.1提出候補とApp Store Connect設定を通した後に限る。
+v3.0.xの公開状態、タグ、既存アセットは変更しない。
+
+| レーン | v3.1で行うこと | 完了の目安 |
+|---|---|---|
+| **C-1 — 資産ライフサイクル** | allowlist catalogからの明示DL、サイズ/進捗/取消、digest/signature検証、準備、復旧、削除 | 未検証資産をreadyにせず、壊れた/不足した資産から安全に復旧できる |
+| **C-2 — Core AI利用** | Rust-owned `selectedId`、backend別availability、Systemとの切り替え、同じConversation / Proposal / Diff / Applyからの生成 | 選択した検証済みモデルで実際に生成でき、失敗時も本文を変えずSystemと混同しない |
+| **I-0 — 海外展開の棚卸し** | 現在のUI/Help/a11y文言、App Store情報、WebのPrivacy/Support、対象地域、価格、モデルの権利/地域制限を棚卸し | 最初の対象言語・地域・価格方針と、翻訳/法務/サポートの責任範囲が明記される |
+| **I-1 — 製品ローカライズ** | 英語を第一候補に、主要UI、Help、エラー、Local Assist/Core AIの状態・容量・通信説明、VoiceOver labelを整える | 英語環境で主要導線が日本語へ不意に戻らず、日本語環境とsource正本/保存挙動が同じ |
+| **I-2 — App Store製品ページ** | localized name/subtitle/description/keywords/What's New、英語スクリーンショット、Privacy/Support URL、review notesを用意 | 実装・対応OS・モデルavailabilityを越える主張がなく、英語で購入前後の期待がつながる |
+| **I-3 — 販売設定** | 対象storefront、base country/region、価格、Paid Apps Agreement・税務/銀行、age rating・content rights・export complianceを確認 | 選んだ地域で販売可能な状態をApp Store Connect上で確認し、アカウント固有情報はtracked docsへ残さない |
+| **I-4 — 統合受け入れ** | 同一候補で日本語/英語、clean install、Local AssistのSystem/Core AI、DL取消/再開/削除、Diff/Apply/Undo、offline/未選択/非対応状態を確認 | 署名候補、TestFlight、製品ページ、価格/地域、App Reviewの証跡を分離して記録し、未確認を合格扱いしない |
+
+### 進める順序
+
+1. C-1の本番identity gateを待つ間にI-0を閉じ、I-1の不足をテスト可能な単位へ分ける。
+2. C-1/C-2は既存HOLD条件を満たしてから進める。fixture配管を本番利用やApp Store対応と呼ばない。
+3. モデルidentity、容量、権利、対応OS、品質比較が固まってからI-2のCore AI文言と画像を確定する。
+4. I-3はオーナーがApp Store Connectで確認する。対象地域を理由なく一括有効化せず、価格とサポート可能性を明示判断する。
+5. code freeze後に同じv3.1候補でI-4を行う。修正が入った場合は候補を再作成し、古い受け入れ結果を流用しない。
+
+### v3.1のNon-Goals
+
+- 任意URL/import、unsigned model、一般モデルmarketplace、MLX同時導入。
+- cloud inference、network fallback、tool calling、background indexing、auto-apply / auto-save。
+- Agent Workbench / external CLI agentをApp Store laneへ入れること。
+- 機械翻訳だけで公開文言を確定すること、または未確認の全地域販売・法令対応を主張すること。
+- App Store Connectの連絡先、契約、証明書、価格メモなどのaccount固有情報をtracked docsへ書くこと。
+
+App Store Connectの具体操作は実行時点のApple公式資料を正本として再確認する:
+[metadata localization](https://developer.apple.com/help/app-store-connect/manage-app-information/localize-app-information)、
+[availability](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/manage-availability-for-your-app-on-the-app-store)、
+[pricing](https://developer.apple.com/help/app-store-connect/manage-app-pricing/set-a-price)。
 
 ## anydoc (evaluation only)
 

@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-19
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -34,8 +34,10 @@ are not implemented.
 The `3.0.0` release refreshes the UI/UX across the app (reader spread layout,
 a unified EPUB / PDF / HTML export dialog, daily-flow continuity) and organizes
 the Local Assist architecture around the on-device System backend. Next:
-**v3.1 adds optional curated-model download, management and switching (planned).**
-See the [v3 product plan](docs/v3-product-completion-plan.md) and
+**v3.1 is planned around two coordinated tracks: using curated on-device
+Core AI models through Local Assist, and an international App Store rollout
+beginning with English product and storefront localization.**
+See the [roadmap](docs/roadmap.md), [v3 product plan](docs/v3-product-completion-plan.md), and
 [Local Assist plan](docs/v2.9-v3-local-assist-plan.md). These are planned milestones.
 
 ## Mac App Store

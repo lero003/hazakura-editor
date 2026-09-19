@@ -3,12 +3,13 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-19
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（オーナー報告・ストアページで確認）。
-次の版はv3.1（モデル管理）を計画し、公開後のフィードバックと残課題は `current-work.md` で扱う。
+次の版はv3.1（Core AIの実利用 + 英語を入口にした海外App Store展開）を計画し、
+公開後のフィードバックと残課題は `current-work.md` で扱う。
 `current-work.md` → `v3-product-completion-plan.md` → `v2.9-v3-local-assist-plan.md` の順に読む。
 過去の候補・実機未確認・GitHub公開は別証跡として保持する。
 
@@ -21,7 +22,7 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
 - `current-work.md`: **v3 post-release queue**.
-- `roadmap.md`: **v2.9–v3.1の版別方針**.
+- `roadmap.md`: **v2.9–v3.1の版別方針**（v3.1のCore AI + 海外App Store展開を含む）。
 - `v3-product-completion-plan.md`: **v3全体計画**。添付UI資料の採否・着手順・完成判定。
 - `v2.9-v3-local-assist-plan.md`: **current technical plan** for Local Assist / AFM / Core AI.
 - `v2.8-plan.md`: published-line planning history; unshipped U-3/U-4/G-1 moved to the next plan.
@@ -59,7 +60,7 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.9–v3.1の版別方針**
+- `roadmap.md` — **v2.9–v3.1の版別方針**（v3.1はCore AI + 海外App Store展開）
 - `current-work.md` — v3 UI-A0→UI-A1の着手準備; C-1/C-2はv3.1のゲート待ち
 - `v3-product-completion-plan.md` — v3全体とUI刷新の計画
 - `v2.9-v3-local-assist-plan.md` — active technical plan, attachment reconciliation and acceptance
