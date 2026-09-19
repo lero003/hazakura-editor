@@ -9,6 +9,35 @@ type RootErrorRecoveryState = {
   info: string | null;
 };
 
+type RootErrorRecoveryCopy = {
+  title: string;
+  body: string;
+  diagnostics: string;
+  reload: string;
+  dismiss: string;
+};
+
+function getRootErrorRecoveryCopy(): RootErrorRecoveryCopy {
+  if (document.documentElement.lang === "ja") {
+    return {
+      title: "編集セッションを保護しています",
+      body:
+        "予期しないエラーが発生しました。未保存のパス付き下書きや復旧候補はアプリ内ストレージに残っている場合があります。ソースファイルへの自動保存は行いません。",
+      diagnostics: "診断情報",
+      reload: "アプリを再読み込み",
+      dismiss: "この画面を閉じて続行を試す",
+    };
+  }
+  return {
+    title: "Editing session protected",
+    body:
+      "An unexpected error occurred. Unsaved drafts and recovery candidates associated with file paths may still be available in app storage. Source files are not saved automatically.",
+    diagnostics: "Diagnostics",
+    reload: "Reload app",
+    dismiss: "Close this screen and try to continue",
+  };
+}
+
 /**
  * S-2: root-level recovery surface. A frontend exception should not
  * strand the entire editing session without a safe reload path.
@@ -48,6 +77,7 @@ export class RootErrorRecovery extends Component<
     if (!error) {
       return this.props.children;
     }
+    const copy = getRootErrorRecoveryCopy();
 
     return (
       <div
@@ -56,33 +86,25 @@ export class RootErrorRecovery extends Component<
         role="alert"
       >
         <div className="root-error-recovery-card">
-          <h1>編集セッションを保護しています</h1>
-          <p>
-            予期しないエラーが発生しました。未保存のパス付き下書きや復旧候補は
-            アプリ内ストレージに残っている場合があります。ソースファイルへの
-            自動保存は行いません。
-          </p>
-          <p className="root-error-recovery-detail">
+          <h1>{copy.title}</h1>
+          <p>{copy.body}</p>
+          <p className="root-error-recovery-detail" lang="">
             {error.message || "Unknown error"}
           </p>
           {info ? (
             <details className="root-error-recovery-stack">
-              <summary>診断情報</summary>
-              <pre>{info}</pre>
+              <summary>{copy.diagnostics}</summary>
+              <pre lang="">{info}</pre>
             </details>
           ) : null}
           <div className="root-error-recovery-actions">
             <button type="button" onClick={this.handleReload}>
-              アプリを再読み込み
+              {copy.reload}
             </button>
             <button type="button" onClick={this.handleDismiss}>
-              この画面を閉じて続行を試す
+              {copy.dismiss}
             </button>
           </div>
-          <p className="root-error-recovery-en" lang="en">
-            Editing session protected. Unsaved recovery candidates may still be
-            available after reload. Source files are never auto-written.
-          </p>
         </div>
       </div>
     );

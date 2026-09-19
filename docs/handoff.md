@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-20
 
 ## Current State
 
@@ -16,9 +16,11 @@ Last reviewed: 2026-09-19
   本文へ差し込むアプリ文言（画像ブロックの案内は `ja`、ページ区切り・テーブル枠・
   L Modeタスクのラベルは `en`）は、それぞれ実際の言語を宣言する。
   メイン窓・Local Assist窓はReact初回描画の前にも保存値を反映するが、Agent窓は
-  chromeが英語固定なので `en` のまま。次は英語主要導線の静的棚卸し。bundleの
-  英語・日本語宣言は主要導線の監査と署名候補確認後まで保留し、翻訳範囲や公開状態を越えて
-  主張しない。
+  chromeが英語固定なので `en` のまま。外部再レビューのテーブル枠P2は、子 `table` を
+  `lang=""` へ戻し、raw HTMLの明示言語を保持して閉じた。I-0bで主要導線の英語copyを
+  静的に棚卸しし、英語UIでも日本語を主表示していた致命的フロントエラー復旧面を
+  英語／日本語へ分離した。次はbuilt appの英語実表示。bundleの英語・日本語宣言は
+  署名候補確認後まで保留し、翻訳範囲や公開状態を越えて主張しない。
 
 - **v3.0.3を実機確認して申請（2026-09-18）:** 編集面のスクロールバー不具合 3 件を直した不具合修正版。
   (1) 右ペインのリサイザ `.pane-resizer::before` の透明な当たり判定が本文の右端へ 4px 食い込み、
@@ -895,8 +897,8 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. I-0aのHTML `lang`同期を前提に、英語主要導線の文言漏れを静的に棚卸しして画面単位へ分ける。
-2. I-0のオーナー判断（地域・価格・契約・公開URL）を推測で閉じない。bundle言語宣言は主要導線の監査後。
+1. I-0bの静的棚卸しを前提に、専用テスト環境のbuilt appで英語の主要導線を画面単位に確認する。
+2. I-0のオーナー判断（地域・価格・契約・公開URL）を推測で閉じない。bundle言語宣言はbuilt app／署名候補確認後。
 3. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 4. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 5. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。

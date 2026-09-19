@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-20
 
 ## v3.1 — I-0技術棚卸しと最初の修正（2026-09-19）
 
@@ -35,13 +35,24 @@ L Modeタスクのラベルは英語なので `en`）。参照面とLocal Assist
 （依頼文・生成文がUI文言と同じ枠）、差分のヘッダ行はUI文言側なので残件。
 実装・red/green証跡は `docs/reviews/2026-09-19-v3.1-i0a-document-language/`。
 
+外部再レビューで残ったテーブル枠のP2も閉じた。枠の `aria-label="Markdown table"` は
+`lang="en"` のまま、Markdown由来の子 `table` は `lang=""` へ戻し、raw HTMLで利用者が
+明示した `lang` は保持する。
+
+**I-0b完了:** 英語表示の主要導線をソース／既存テストから画面単位で静的に棚卸しした。
+開始・編集、保存／衝突／復旧、設定、Help／診断、Reader、出力、Local Assistには英語の
+分岐または英語固定本文がある。致命的フロントエラーの復旧面だけは英語UIでも日本語を
+主表示していたため、`<html lang>` に応じた英語／日本語copyへ分離し、技術由来のエラー本文は
+`lang=""` にした。証跡は
+`docs/reviews/2026-09-20-v3.1-i0b-english-major-flow-static-audit/`。
+
 macOS bundleの言語宣言は、主要英語導線の静的／実表示監査と署名候補のInfo.plist確認後まで
 保留する。宣言だけを増やさず、I-0のオーナー判断が閉じてからI-1へ進む。
 
-**次のスライス:** 英語表示の主要導線をまず静的に棚卸しし、漏れを画面単位の小さな
-スライスへ分ける。実表示、nativeメニュー、Help、VoiceOver、署名候補の受け入れは
-ソース検査と区別する。C-1 fixture配管は別コミット系列とし、App Store露出・本番catalog・
-開示変更・`selectedId`書き込みへ広げない。
+**次のスライス:** 専用テスト環境のbuilt appで英語起動→設定→保存／衝突→Reader→出力を
+小さく分けて実表示確認する。nativeメニュー、Help、VoiceOver、署名候補は別ゲートのまま。
+C-1 fixture配管は別コミット系列とし、App Store露出・本番catalog・開示変更・
+`selectedId`書き込みへ広げない。
 
 ## 3.0.3 — スクロールバー修正版を実機確認して申請（2026-09-18）
 

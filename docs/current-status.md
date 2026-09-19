@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v3.1開発状態、v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-20
 
 ## Current State
 
@@ -19,10 +19,14 @@ Last reviewed: 2026-09-19
   本文へ差し込むアプリ文言（画像ブロックの案内は `ja`、ページ区切り・テーブル枠・
   L Modeタスクのラベルは `en`）は、それぞれ実際の言語を宣言する。
   メイン窓・Local Assist窓はReact初回描画の前にも保存済み表示言語を反映するが、
-  Agent窓はchromeが英語固定なので `en` のまま。次は英語主要導線の静的棚卸しで、
-  bundleの言語宣言はその監査後まで保留する。
+  Agent窓はchromeが英語固定なので `en` のまま。テーブル枠の外部再レビューP2では、
+  英語ラベルを持つ枠から利用者の表本文へ `en` が継承しないよう、子 `table` を
+  `lang=""` へ戻し、raw HTMLの明示言語は保持した。I-0bでは英語主要導線を静的に棚卸しし、
+  英語UIでも日本語を主表示していた致命的フロントエラー復旧面を英語／日本語へ分離した。
+  次はbuilt appの英語実表示。bundleの言語宣言は署名候補確認まで保留する。
   詳細は [current-work](current-work.md) と
-  [I-0a証跡](reviews/2026-09-19-v3.1-i0a-document-language/README.md)。
+  [I-0a証跡](reviews/2026-09-19-v3.1-i0a-document-language/README.md)、
+  [I-0b証跡](reviews/2026-09-20-v3.1-i0b-english-major-flow-static-audit/README.md)。
 
 - **v3.0.3を実機確認して申請（2026-09-18）:** 編集面のスクロールバー不具合を直した不具合修正版。
   3 件を修正した。(1) 右ペイン表示時、本文の右端でスクロールバーをつかむとスクロールせず、
