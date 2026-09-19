@@ -71,7 +71,12 @@ describe("renderMarkdown image policy", () => {
     });
 
     expect(html).toContain('data-hazakura-image-block="outside-workspace"');
-    expect(html).toContain("画像を表示できません: secret");
+    expect(html).toContain("画像を表示できません");
+    // 案内は日本語のアプリ文言。利用者が書いた alt は別ノードで言語不明のまま。
+    expect(html).toMatch(/class="blocked-image"[^>]*lang="ja"/);
+    expect(html).toMatch(
+      /class="blocked-image-document-text"[^>]*lang=""[^>]*>secret</,
+    );
     expect(html).toContain("親フォルダをワークスペースとして開く");
     expect(html).not.toContain("data-hazakura-image-path");
   });
@@ -92,7 +97,10 @@ describe("renderMarkdown image policy", () => {
       workspaceRoot: "/project/book",
     });
     expect(childWorkspace).toContain('data-hazakura-image-block="outside-workspace"');
-    expect(childWorkspace).toContain("画像を表示できません: cover");
+    expect(childWorkspace).toContain("画像を表示できません");
+    expect(childWorkspace).toMatch(
+      /class="blocked-image-document-text"[^>]*lang=""[^>]*>cover</,
+    );
     expect(childWorkspace).toContain("../assets/cover.jpg");
     expect(childWorkspace).toContain("親フォルダをワークスペースとして開く");
     expect(childWorkspace).not.toContain("data-hazakura-image-path");
@@ -120,7 +128,10 @@ describe("renderMarkdown image policy", () => {
       throw new Error("missing fixture");
     });
     expect(preview).toContain('data-hazakura-image-block="load-failed"');
-    expect(preview).toContain("画像を表示できません: missing");
+    expect(preview).toContain("画像を表示できません");
+    expect(preview).toMatch(
+      /class="blocked-image-document-text"[^>]*lang=""[^>]*>missing</,
+    );
     expect(preview).toContain("読めませんでした");
     expect(preview).not.toContain("data-hazakura-image-path");
   });
@@ -144,7 +155,10 @@ describe("renderMarkdown image policy", () => {
     });
 
     expect(html).toContain('data-hazakura-image-block="remote"');
-    expect(html).toContain("画像を表示できません: remote");
+    expect(html).toContain("画像を表示できません");
+    expect(html).toMatch(
+      /class="blocked-image-document-text"[^>]*lang=""[^>]*>remote</,
+    );
     expect(html).toContain("リモート画像は設定で許可するまで読み込みません");
     expect(html).toContain("example.com");
     // Full URL must not remain as an image source (no automatic fetch path).
@@ -345,7 +359,11 @@ describe("renderMarkdown sanitization", () => {
     expect(html).not.toContain("alert(document.cookie)");
     expect(html).not.toContain('<img src="javascript');
     expect(html).toContain('data-hazakura-image-block="unsupported-scheme"');
-    expect(html).toContain("スキーム javascript");
+    expect(html).toContain("スキーム");
+    // スキーム名は文書由来の断片なので、案内の言語へ巻き込まない。
+    expect(html).toMatch(
+      /class="blocked-image-document-text"[^>]*lang=""[^>]*>javascript</,
+    );
   });
 
   it("does not mutate the source Markdown string", () => {

@@ -172,6 +172,54 @@ describe("formatBlockedImageNote", () => {
 });
 
 describe("buildBlockedImageElement", () => {
+  it("declares the app copy language and keeps document fragments unknown", () => {
+    const el = buildBlockedImageElement({
+      reason: "outside-workspace",
+      alt: "cover",
+      reference: "../assets/cover.jpg",
+      resolvedPath: "/ws/assets/cover.jpg",
+      canApproveLocal: true,
+    });
+
+    // 案内はアプリの日本語文言なので、本文（lang=""）の言語を継承させない。
+    expect(el.getAttribute("lang")).toBe("ja");
+
+    // 利用者が書いた alt と参照パスは、案内の言語へ巻き込まない。
+    const fromDocument = Array.from(
+      el.querySelectorAll(".blocked-image-document-text"),
+    );
+    expect(fromDocument.map((node) => node.textContent)).toEqual([
+      "cover",
+      "../assets/cover.jpg",
+    ]);
+    expect(
+      fromDocument.every((node) => node.getAttribute("lang") === ""),
+    ).toBe(true);
+
+    // 読み上げ以外の見え方は変えない（textContent は分割前と同じ）。
+    expect(el.querySelector(".blocked-image-title")?.textContent).toBe(
+      "画像を表示できません: cover",
+    );
+    expect(el.querySelector(".blocked-image-reason")?.textContent).toContain(
+      "（../assets/cover.jpg）。",
+    );
+    expect(el.querySelector(".blocked-image-next")?.textContent).toContain(
+      "次の操作:",
+    );
+    expect(el.querySelector(".blocked-image-action")?.getAttribute("lang")).toBeNull();
+  });
+
+  it("does not split copy that has no document-derived fragment", () => {
+    // 参照を持たない理由（data URL の形式・サイズ）は、そのまま本文の外の文言。
+    const el = buildBlockedImageElement({ reason: "unsafe-data" });
+
+    expect(el.getAttribute("lang")).toBe("ja");
+    expect(el.querySelector(".blocked-image-document-text")).toBeNull();
+    expect(el.querySelector(".blocked-image-reason")?.textContent).toContain(
+      "埋め込み画像の形式またはサイズが非対応です",
+    );
+  });
+
   it("exposes stable data keys for reason and does not embed remote URLs as img", () => {
     const el = buildBlockedImageElement({
       reason: "remote",

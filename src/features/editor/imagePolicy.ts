@@ -13,6 +13,7 @@ import {
   type OutsideImagePolicy,
   DEFAULT_MEDIA_IMAGE_SETTINGS,
 } from "./mediaImageSettings";
+import { DOCUMENT_CONTENT_LANG } from "../app/documentLanguage";
 
 export const MAX_EMBEDDED_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
 
@@ -224,6 +225,21 @@ export function classifyMarkdownImageSource(
 
 export type BlockedImageNoteCopy = {
   title: string;
+  /**
+   * Document-derived fragment (the image alt text) that appears inside `title`.
+   * `buildBlockedImageElement` renders it as its own node so it is not announced
+   * with the app copy's language.
+   */
+  titleDocumentText: string | null;
+  reasonLine: string;
+  /** Document-derived fragment (the image reference) inside `reasonLine`. */
+  reasonDocumentText: string | null;
+  nextLine: string;
+  approveLabel?: string;
+};
+
+type BlockedImageNoteCopyParts = {
+  title: string;
   reasonLine: string;
   nextLine: string;
   approveLabel?: string;
@@ -245,10 +261,11 @@ export function formatBlockedImageNote(options: {
   const approveLabel = options.canApproveLocal
     ? "この画像の親フォルダを許可して表示"
     : undefined;
+  let copy: BlockedImageNoteCopyParts;
 
   switch (options.reason) {
     case "outside-workspace":
-      return {
+      copy = {
         title,
         reasonLine: ref
           ? `理由: ワークスペース外の相対パスです（${ref}）。`
@@ -258,8 +275,9 @@ export function formatBlockedImageNote(options: {
           : "次の操作: 画像を含む親フォルダをワークスペースとして開く。または workspace 内（例: assets/）へ画像を置いて相対パスを直す。設定で「ワークスペース外の画像」を変更できます。",
         approveLabel,
       };
+      break;
     case "absolute-outside":
-      return {
+      copy = {
         title,
         reasonLine: ref
           ? `理由: ワークスペース外の絶対パスです（${ref}）。`
@@ -269,8 +287,9 @@ export function formatBlockedImageNote(options: {
           : "次の操作: 画像を選択中の workspace 内へ置き、文書からの相対パスで参照する。",
         approveLabel,
       };
+      break;
     case "remote":
-      return {
+      copy = {
         title,
         reasonLine: ref
           ? `理由: リモート画像は設定で許可するまで読み込みません（${ref}）。`
@@ -278,8 +297,9 @@ export function formatBlockedImageNote(options: {
         nextLine:
           "次の操作: 設定 → 表示とメディア で「Preview でリモート画像を読み込む」をオン（https のみ・サーバーに要求が届きます）。またはローカルに保存して相対パスで参照する。",
       };
+      break;
     case "unsupported-scheme":
-      return {
+      copy = {
         title,
         // Do not render a live `scheme:` token (e.g. `javascript:`).
         reasonLine: ref
@@ -288,16 +308,18 @@ export function formatBlockedImageNote(options: {
         nextLine:
           "次の操作: workspace 内の相対パス、または対応する埋め込み画像を使う。",
       };
+      break;
     case "unsafe-data":
-      return {
+      copy = {
         title,
         reasonLine:
           "理由: 埋め込み画像の形式またはサイズが非対応です（png / jpeg / gif / webp の小さな data URL のみ）。",
         nextLine:
           "次の操作: 対応形式の小さな埋め込みにするか、workspace 内ファイルへの相対パスに切り替える。",
       };
+      break;
     case "missing-context":
-      return {
+      copy = {
         title,
         reasonLine: ref
           ? `理由: 画像パスを解決するワークスペース／文書コンテキストがありません（${ref}）。`
@@ -305,8 +327,9 @@ export function formatBlockedImageNote(options: {
         nextLine:
           "次の操作: フォルダをワークスペースとして開き、保存済みの Markdown からプレビューする。",
       };
+      break;
     case "load-failed":
-      return {
+      copy = {
         title,
         reasonLine: ref
           ? `理由: 画像を読めませんでした（${ref}）。`
@@ -314,9 +337,10 @@ export function formatBlockedImageNote(options: {
         nextLine:
           "次の操作: ファイルの有無・名前・拡張子・許可範囲を確認する。必要なら assets/ に置き直す。",
       };
+      break;
     case "invalid-src":
     default:
-      return {
+      copy = {
         title,
         reasonLine: ref
           ? `理由: 画像参照を解釈できません（${ref}）。`
@@ -324,6 +348,49 @@ export function formatBlockedImageNote(options: {
         nextLine:
           "次の操作: Markdown の画像構文とパスを確認する（バックスラッシュや不正な URL エンコードに注意）。",
       };
+      break;
+  }
+
+  return {
+    ...copy,
+    titleDocumentText: alt || null,
+    reasonDocumentText: ref || null,
+  };
+}
+
+/**
+ * App-authored copy in these notes is Japanese today. The note declares that
+ * language so it is not announced with the document's language, and the
+ * document-derived fragments inside the copy (alt text, reference) become
+ * their own `lang=""` nodes so they are not announced as Japanese either.
+ * Translating these notes means changing this constant and the copy together.
+ */
+const BLOCKED_IMAGE_COPY_LANG = "ja";
+
+/** Append `copy`, rendering `documentText` as its own language-unknown node. */
+function appendCopyWithDocumentText(
+  host: HTMLElement,
+  copy: string,
+  documentText: string | null,
+): void {
+  const fragment = documentText?.trim() ?? "";
+  const index = fragment ? copy.indexOf(fragment) : -1;
+  if (!fragment || index < 0) {
+    host.textContent = copy;
+    return;
+  }
+  const before = copy.slice(0, index);
+  const after = copy.slice(index + fragment.length);
+  const fromDocument = document.createElement("span");
+  fromDocument.className = "blocked-image-document-text";
+  fromDocument.setAttribute("lang", DOCUMENT_CONTENT_LANG);
+  fromDocument.textContent = fragment;
+  if (before) {
+    host.append(before);
+  }
+  host.append(fromDocument);
+  if (after) {
+    host.append(after);
   }
 }
 
@@ -338,6 +405,7 @@ export function buildBlockedImageElement(options: {
   const copy = formatBlockedImageNote(options);
   const replacement = document.createElement("span");
   replacement.className = "blocked-image";
+  replacement.setAttribute("lang", BLOCKED_IMAGE_COPY_LANG);
   replacement.setAttribute("role", "note");
   replacement.setAttribute("data-hazakura-image-block", options.reason);
 
@@ -356,11 +424,11 @@ export function buildBlockedImageElement(options: {
 
   const title = document.createElement("span");
   title.className = "blocked-image-title";
-  title.textContent = copy.title;
+  appendCopyWithDocumentText(title, copy.title, copy.titleDocumentText);
 
   const reason = document.createElement("span");
   reason.className = "blocked-image-reason";
-  reason.textContent = copy.reasonLine;
+  appendCopyWithDocumentText(reason, copy.reasonLine, copy.reasonDocumentText);
 
   const next = document.createElement("span");
   next.className = "blocked-image-next";

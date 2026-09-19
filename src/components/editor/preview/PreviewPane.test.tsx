@@ -476,6 +476,36 @@ describe("PreviewPane local link routing", () => {
 });
 
 describe("PreviewPane document language", () => {
+  it("marks the app-generated image notice with its own language", async () => {
+    // 日本語UI + 英語本文で、表示を許可していないリモート画像を含む場合。
+    document.documentElement.lang = "ja";
+    const { container } = render(
+      <PreviewPane
+        menuLanguage="ja"
+        source="![shot](https://example.com/shot.png)"
+      />,
+    );
+    await flushPreviewFrame();
+
+    // 本文は UI 言語を継承しない。
+    expect(
+      container.querySelector("article.markdown-preview")?.getAttribute("lang"),
+    ).toBe("");
+
+    // 本文へ差し込むアプリの案内は、実際の文言の言語（日本語）を宣言する。
+    const notice = container.querySelector(".blocked-image") as HTMLElement;
+    expect(notice).not.toBeNull();
+    expect(notice.getAttribute("lang")).toBe("ja");
+    // 案内の中の文書由来の断片（参照 URL）は言語不明のまま。
+    expect(
+      notice
+        .querySelector(".blocked-image-document-text")
+        ?.getAttribute("lang"),
+    ).toBe("");
+
+    document.documentElement.lang = "";
+  });
+
   it.each([
     ["ja", "# English heading"],
     ["en", "# 日本語の見出し"],

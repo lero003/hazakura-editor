@@ -12,7 +12,8 @@ Last reviewed: 2026-09-19
 
 外部レビュー（固定SHA `3cfb04e6`）のP2・P3を受け、ルートの同期は**UI chrome**の
 ためだけのものとし、本文を描く領域には言語の境界を置いた。日本語UIで英語原稿を書く
-場合でも、本文が `ja` として読まれることはない。
+場合でも、本文はHTMLの言語判定上UIの `ja` を継承しない（実機の読み上げ言語を
+保証するものではない）。
 
 これは補助技術へ表示文言の言語を伝えるための小修正であり、bundleの対応言語宣言、
 英語翻訳の完了、VoiceOver受け入れ、海外販売開始を意味しない。
@@ -68,6 +69,9 @@ Tests       22 passed (22)
   `DiffBody` は2ファイル比較でも同じ本文列を出すため、ここで一括して切る。
 - 参照面（`ReferenceTextPane` の `.reference-text-surface`）と、Local Assistサイドバーの
   固定した対象の抜粋（`<pre>`）・依頼入力（`textarea`）にも同じ境界を置いた。
+- 本文の中へアプリが差し込む案内（`buildBlockedImageElement` の画像ブロック案内）は、
+  日本語のアプリ文言なので案内自身が `ja` を宣言する。案内に混ざる利用者由来の断片
+  （alt text・参照パス）は `lang=""` の別ノードに分ける。
 - `EBookPane` はレビュー案の `<article>` ではなく**紙の中身**（flow）へ付けた。
   `<article>` は読書面の操作帯・章名・ページ送りというUI文言も包んでおり、そこまで
   「不明」にすると今度はUI側が不明になる。境界は「本文を描く箱」に置く方を選んだ。
@@ -84,8 +88,8 @@ Tests       22 passed (22)
 
 `index.html` / `apple-assist.html` の既定は `en` で、保存済み `ja` でも
 「HTMLロード → React初回描画 → effect → `lang=ja`」の瞬間があったため、
-`main.tsx` / `appleAssistEntry.tsx` / `agentEntry.tsx`（Developerレーン）が
-Reactを描く**前**に保存済み表示言語を反映する。
+`main.tsx` / `appleAssistEntry.tsx` がReactを描く**前**に保存済み表示言語を反映する。
+Developerレーンの `agentEntry.tsx` は chrome が英語固定なので `en` のまま固定する。
 `src/appEntryLanguage.test.tsx` が `createRoot(...).render` の呼び出し時点の
 `document.documentElement.lang` を記録し、順序そのものを固定する。
 
@@ -133,10 +137,45 @@ Help（`PrivacyPreferencesPane`）・設定・診断（`DiagnosticsPane`）はUI
 - **P3（対応済み）** `current-status`の1行が長くなっていたので折り返し、他2ファイルと
   文面を揃えた。
 
+## 外部レビュー2回目対応（コミット`71ad9596`）
+
+固定SHA `71ad9596` への外部レビューでP2が2件。どちらも「宣言と中身の言語が合っていない」
+方向の指摘で、方針（本文かどうかで分ける）を一段細かくするもの。
+
+### P2-01 Agent窓の宣言を英語のまま固定（対応済み）
+
+前回 `agentEntry.tsx` にまで保存値の同期を広げたが、**Agent窓のchromeは英語固定**で、
+表示文言は保存済み表示言語を読まない（`AgentWindowApp` は `menuLanguage` を参照しない）。
+そのため、日本語設定の人には「英語の画面に `lang=ja`」という逆方向の食い違いが出ていた。
+
+- `agentEntry.tsx` は `document.documentElement.lang = "en"` を明示し、同期を外した。
+  翻訳を入れるときは、文言とこの宣言を一緒に切り替える。
+- `appEntryLanguage.test.tsx` は、保存値が `en` / `ja` / `kana` のいずれでも
+  **初回描画時点が `en`** であることを固定する（同期を戻すと赤）。
+- `AgentWindowApp.language.test.ts` が、窓の操作文言が英語で、窓が表示言語設定を
+  読んでいないことを構造として固定する。
+
+### P2-02 本文内へ差し込むアプリ案内の言語（対応済み）
+
+プレビュー本文の `lang=""` は維持しつつ、`renderMarkdown` が本文へ差し込む
+**アプリ生成の案内**（表示を許可していない画像の「画像を表示できません」「理由: …」
+「次の操作: …」、親フォルダの許可操作）は日本語の文言なので、案内自身が `ja` を宣言する。
+
+- `buildBlockedImageElement` に `lang="ja"` を付けた（`BLOCKED_IMAGE_COPY_LANG`。
+  翻訳するときは文言と一緒に切り替える）。
+- 案内に混ざる利用者由来の断片（alt text・参照パス）は `.blocked-image-document-text`
+  として `lang=""` の別ノードへ分けた。`textContent` は分割前と同じ。
+- このビルダーはプレビュー・読書面・書き出し（PDF/EPUB）で共有しているため、
+  差し込む案内の言語はどこでも同じ規則になる。
+- 回帰テスト: `imagePolicy.test.ts`（案内は `ja` / 断片は `""` / 断片が無い理由では
+  分割しない）と `PreviewPane.test.tsx`（日本語UI + 英語本文 + ブロック画像）。
+
+赤証跡: Agent窓の同期を戻すと2件（`ja` / `kana`）、案内の `lang` を外すと3件が落ちる。
+
 ## 自動検証
 
 - `npm run typecheck`
-- `npm test` — 291 files / 2,590 tests passed
+- `npm test` — 292 files / 2,596 tests passed
 - `npm run build:vite` — passed（既存の500 kB超chunk警告あり）
 - `npm run smoke:app-store-surface` — 10 files / 125 tests passed
 - `python3 docs/international-launch/validate_metadata.py --self-test` — 14 self-tests passed
