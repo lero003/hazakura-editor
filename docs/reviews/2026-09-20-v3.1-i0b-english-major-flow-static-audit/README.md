@@ -48,7 +48,8 @@ Date: 2026-09-20
 - `git diff --check` — passed。
 
 外部レビューでは、初回固定SHAに「falsyな値をthrowすると復旧面へ入らない」P2が1件あった。
-`hasError`の分離と上記回帰テストで修正し、再レビューを行う。
+`hasError`の分離と上記回帰テストで修正した。修正後の固定SHA `3e33849b` は再レビューで
+P0 / P1 / P2 / P3なし。Quality run `#35466308356` もfrontend / nativeともにsuccess。
 
 ## 未確認・次段階
 

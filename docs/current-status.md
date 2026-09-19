@@ -23,7 +23,8 @@ Last reviewed: 2026-09-20
   英語ラベルを持つ枠から利用者の表本文へ `en` が継承しないよう、子 `table` を
   `lang=""` へ戻し、raw HTMLの明示言語は保持した。I-0bでは英語主要導線を静的に棚卸しし、
   英語UIでも日本語を主表示していた致命的フロントエラー復旧面を英語／日本語へ分離した。
-  外部レビューのfalsy throw値P2も、エラー発生状態をcatch値から分離して閉じた。
+  外部レビューのfalsy throw値P2も、エラー発生状態をcatch値から分離して閉じ、再レビューは
+  P0 / P1 / P2 / P3なし。Quality run `#35466308356` はfrontend / nativeともにsuccess。
   次はbuilt appの英語実表示。bundleの言語宣言は署名候補確認まで保留する。
   詳細は [current-work](current-work.md) と
   [I-0a証跡](reviews/2026-09-19-v3.1-i0a-document-language/README.md)、
