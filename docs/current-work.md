@@ -1,9 +1,37 @@
 # Current Work
 
 Status: Operational
-Scope: v3.0公開の記録と公開後のキュー
+Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
-Last reviewed: 2026-09-18
+Last reviewed: 2026-09-19
+
+## v3.1 — I-0技術棚卸しと最初の修正（2026-09-19）
+
+v3.1は **Core AIの実利用** と **英語を入口にした海外App Store展開** の二本立て。
+Core AI本番C-1/C-2はモデルidentity・expanded `resourceManifest`・配信/AOT・bake-offの
+ゲートを維持する。Developer / GitHubレーン限定のfixture配管は着手可能だが、最初の
+スライスは、本番identityを仮定せず進められるI-0から始める。
+
+I-0のソース／静的棚卸しは `docs/international-launch/` に集約済み。英語UIの既存基盤、
+最低OS、Local Assistの条件、通信境界、英語ストア文案、スクリーンショット/Web要件を
+確認し、metadataのローカル検査も用意した。これは次を完了した意味ではない。
+
+- App Store Connect上の対象地域、価格、契約・税務・銀行、Privacy回答
+- 公開済みSupport / Privacy / Marketing URLと英語で受けられる問い合わせ導線
+- 署名済み同一候補での英語UI、ネイティブメニュー、Help、VoiceOver、主要導線の受け入れ
+- Core AIのモデルidentity、権利、容量、地域制限、配信方式
+
+**次の実装スライス I-0a:** 現行の `en` / `ja`（`kana`は日本語読み上げ）を増やさず、
+メイン窓とLocal Assist窓のHTML `lang`を表示言語へ同期する。これは現状棚卸しで見つかった
+読み上げ意味の不整合を直すだけで、英語対応宣言や翻訳完了を意味しない。切替後の保持、
+分離窓、生成・保存の挙動は変えない。
+
+macOS bundleの言語宣言は、主要英語導線の静的／実表示監査と署名候補のInfo.plist確認後まで
+保留する。宣言だけを増やさず、I-0のオーナー判断が閉じてからI-1へ進む。
+
+I-0aの後は英語表示の主要導線を静的・実表示で棚卸しし、漏れを画面単位の小さなスライスへ
+分ける。C-1 fixture配管は別コミット系列とし、App Store露出・本番catalog・開示変更・
+`selectedId`書き込みへ広げない。
 
 ## 3.0.3 — スクロールバー修正版を実機確認して申請（2026-09-18）
 

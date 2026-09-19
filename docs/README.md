@@ -21,7 +21,7 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **v3 post-release queue**.
+- `current-work.md`: **v3.1 I-0から始める現行キュー**とv3.0公開後の記録。
 - `roadmap.md`: **v2.9–v3.1の版別方針**（v3.1のCore AI + 海外App Store展開を含む）。
 - `v3-product-completion-plan.md`: **v3全体計画**。添付UI資料の採否・着手順・完成判定。
 - `v2.9-v3-local-assist-plan.md`: **current technical plan** for Local Assist / AFM / Core AI.
@@ -61,7 +61,7 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **v2.9–v3.1の版別方針**（v3.1はCore AI + 海外App Store展開）
-- `current-work.md` — v3 UI-A0→UI-A1の着手準備; C-1/C-2はv3.1のゲート待ち
+- `current-work.md` — v3.1 I-0技術棚卸しと小修正。I-1とbundle宣言はI-0判断後。C-1本番/C-2はゲート待ち
 - `v3-product-completion-plan.md` — v3全体とUI刷新の計画
 - `v2.9-v3-local-assist-plan.md` — active technical plan, attachment reconciliation and acceptance
 - `v2.8-plan.md` — historical writing-companion plan
