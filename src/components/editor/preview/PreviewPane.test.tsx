@@ -474,3 +474,21 @@ describe("PreviewPane local link routing", () => {
     expect(onOpenLocalLink).not.toHaveBeenCalled();
   });
 });
+
+describe("PreviewPane document language", () => {
+  it("keeps the UI language out of the rendered document", async () => {
+    // 日本語UI + 英語本文。プレビュー面がルートの `ja` を継承しないことを固定する。
+    document.documentElement.lang = "ja";
+    const { container } = render(
+      <PreviewPane menuLanguage="ja" source="# English heading" />,
+    );
+    await flushPreviewFrame();
+
+    const article = container.querySelector("article.markdown-preview");
+    expect(article).not.toBeNull();
+    expect(article?.getAttribute("lang")).toBe("");
+    expect(document.documentElement.lang).toBe("ja");
+
+    document.documentElement.lang = "";
+  });
+});

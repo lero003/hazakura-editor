@@ -1968,3 +1968,23 @@ it("does not reuse the previous document's page count (document identity, P2-low
   await waitFor(() => expect(screen.getByText("Page 1 / 1")).toBeTruthy());
   expect(footerPage()).toBe("Chapter page 1 / 1");
 });
+
+it("keeps the UI language out of the reader's document pages", async () => {
+  // 日本語UIで英語の原稿を読む場合。紙の本文はルートの `ja` を継承せず、
+  // 読書面の操作帯（UI 文言）だけが UI 言語のままであることを固定する。
+  document.documentElement.lang = "ja";
+  const { container } = await renderEBookPane(
+    <EBookPane
+      menuLanguage="ja"
+      readingFocusActive
+      source={"# English chapter\n\nBody."}
+    />,
+  );
+
+  expect(
+    container.querySelector(".ebook-page-flow")?.getAttribute("lang"),
+  ).toBe("");
+  expect(document.documentElement.lang).toBe("ja");
+
+  document.documentElement.lang = "";
+});

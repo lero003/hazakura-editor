@@ -50,6 +50,7 @@ import {
 } from "../../../lib/tauri";
 import type { MenuLanguage } from "../../../types";
 import { isJapaneseMenuLanguage } from "../../../types";
+import { DOCUMENT_CONTENT_LANG } from "../../../features/app/documentLanguage";
 import {
   READER_KEY_OWNER_SELECTOR,
   READER_MODAL_SELECTOR,
@@ -1293,6 +1294,8 @@ export default function EBookPane({
     </footer>
   ) : null;
   // 紙（見開きシート）。集中中は footer をシートの外（メイン下端）へ出す。
+  // 紙の本文は UI 文言ではないので、ルートの表示言語を継承させず
+  // 「言語不明」を明示する。読書面の操作帯・章名は UI 言語のまま。
   const chapterSheet = activeChapterHtml ? (
     <section
       className={chapterClassName(activeChapterHtml, activeChapterIndexSafe)}
@@ -1312,6 +1315,7 @@ export default function EBookPane({
                 : "ebook-page-flow"
             }
             dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
+            lang={DOCUMENT_CONTENT_LANG}
             ref={flowRef}
             style={pageFlowStyle}
           />
@@ -1322,6 +1326,7 @@ export default function EBookPane({
                 dangerouslySetInnerHTML={{
                   __html: nextChapterHtml.html,
                 }}
+                lang={DOCUMENT_CONTENT_LANG}
                 ref={nextPreviewFlowRef}
               />
             </div>

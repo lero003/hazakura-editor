@@ -5,7 +5,12 @@ import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { AssistConversationMessages } from "./AssistConversationMessages";
 import { classifyLocalAssistError } from "../../lib/appleAssist/errors";
 import { appleAssistTargetExcerpt } from "../../features/editor/appleAssistText";
-import { documentLanguageForMenuLanguage } from "../../features/app/documentLanguage";
+import {
+  DOCUMENT_CONTENT_LANG,
+  documentLanguageForMenuLanguage,
+  isMenuLanguage,
+  readStoredMenuLanguage,
+} from "../../features/app/documentLanguage";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
@@ -210,18 +215,10 @@ function readInitialTheme(): ThemePreference {
   return (migrated as ThemePreference) ?? "dark";
 }
 
-function readInitialMenuLanguage(): MenuLanguage {
-  if (typeof window === "undefined") {
-    return "en";
-  }
-  const stored = window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY);
-  return isMenuLanguage(stored) ? stored : "en";
-}
-
 export function AppleAssistWindowApp() {
   const [theme, setTheme] = useState<ThemePreference>(readInitialTheme);
   const [menuLanguage, setMenuLanguage] =
-    useState<MenuLanguage>(readInitialMenuLanguage);
+    useState<MenuLanguage>(readStoredMenuLanguage);
   const copy = useMemo(
     () => getAppleAssistWindowCopy(menuLanguage),
     [menuLanguage],
@@ -230,7 +227,7 @@ export function AppleAssistWindowApp() {
     useState<LocalAssistActionId | null>(null);
   const [requestText, setRequestText] = useState<string>("");
   const [status, setStatus] = useState<string>(
-    () => getAppleAssistWindowCopy(readInitialMenuLanguage()).readyStatus,
+    () => getAppleAssistWindowCopy(readStoredMenuLanguage()).readyStatus,
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
@@ -371,7 +368,7 @@ export function AppleAssistWindowApp() {
       if (event.key === THEME_STORAGE_KEY && event.newValue) {
         setTheme(event.newValue as ThemePreference);
       }
-      if (event.key === MENU_LANGUAGE_STORAGE_KEY && isMenuLanguage(event.newValue)) {
+            if (event.key === MENU_LANGUAGE_STORAGE_KEY && isMenuLanguage(event.newValue)) {
         setMenuLanguage(event.newValue);
       }
     };
@@ -922,6 +919,7 @@ export function AppleAssistWindowApp() {
           </p>
         )}
         <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
+          lang={DOCUMENT_CONTENT_LANG}
           aria-describedby={available ? undefined : "apple-assist-availability"}
           value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
           rows={3} placeholder={copy.placeholder} disabled={busy || !available}
@@ -966,6 +964,7 @@ function StreamPreview({ streamPreview, busy, copy }: StreamPreviewProps) {
         <p
           className="apple-assist-stream-preview-body"
           data-testid="apple-assist-stream-preview-body"
+          lang={DOCUMENT_CONTENT_LANG}
         >
           {presentation.text}
         </p>
@@ -1246,10 +1245,6 @@ function renderTargetSummary(
       : copy.targetSection(target.text.length);
   }
   return copy.targetDocument(target.text.length);
-}
-
-function isMenuLanguage(value: string | null): value is MenuLanguage {
-  return value === "en" || value === "ja" || value === "kana";
 }
 
 function buildLocalAssistPresets(lang: MenuLanguage): LocalAssistPreset[] {

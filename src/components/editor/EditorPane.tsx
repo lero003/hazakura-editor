@@ -44,6 +44,7 @@ import {
   type EditorViewStatePatch,
 } from "../../features/editor/documentViewState";
 import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
+import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
 import type { LModeCopy } from "../../lib/locale";
 import type { SlashCommand } from "../../types/slash";
 import type { MarkdownStructureHeading } from "../../features/editor/markdownStructure";
@@ -682,6 +683,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     const editorExtensions: Extension[] = [
       // Writing-surface base (no foldGutter — see editorBaseSetup.ts).
       editorBaseSetup,
+      // 本文は UI 文言ではないので、ルートの表示言語を継承させない
+      // （空文字＝HTML の「言語不明」。将来 文書言語を持つならここへ入れる）。
+      EditorView.contentAttributes.of({ lang: DOCUMENT_CONTENT_LANG }),
       rectangularSelection(),
       crosshairCursor(),
       editorKeyboardShortcuts,

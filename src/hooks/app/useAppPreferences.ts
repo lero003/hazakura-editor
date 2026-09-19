@@ -6,7 +6,10 @@ import {
 } from "../../lib/tauri";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { applyWindowTheme } from "../../features/app/windowAppearance";
-import { documentLanguageForMenuLanguage } from "../../features/app/documentLanguage";
+import {
+  documentLanguageForMenuLanguage,
+  readStoredMenuLanguage,
+} from "../../features/app/documentLanguage";
 import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
@@ -227,12 +230,6 @@ function windowBackgroundColorForTheme(theme: ThemePreference): string {
     themeBackgroundColorJson[theme] ??
     themeBackgroundColorJson.dark
   );
-}
-
-function readStoredMenuLanguage(): MenuLanguage {
-  const value = window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY);
-
-  return value === "ja" || value === "kana" ? value : "en";
 }
 
 function readStoredPreviewVisible(): boolean {

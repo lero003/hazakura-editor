@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { MenuLanguage } from "../../../types";
+import { DOCUMENT_CONTENT_LANG } from "../../../features/app/documentLanguage";
 import { PreviewFeedback } from "./PreviewFeedback";
 import {
   interceptPreviewLink,
@@ -488,9 +489,11 @@ export default function PreviewPane({
       ) : empty ? (
         <PreviewFeedback kind="empty" menuLanguage={menuLanguage} />
       ) : null}
+      {/* 本文は UI 文言ではない。UI 言語を継承させず「言語不明」を明示する。 */}
       <article
         aria-busy={pending ? "true" : undefined}
         hidden={empty}
+        lang={DOCUMENT_CONTENT_LANG}
         className={
           pending && (!current || preview.html.length === 0)
             ? "markdown-preview markdown-preview-loading"
