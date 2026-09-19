@@ -29,9 +29,26 @@ describe("app entry document language", () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     document.body.innerHTML = "";
     document.documentElement.lang = "";
   });
+
+  it.each(["main", "appleAssistEntry"] as const)(
+    "reaches root creation in %s when the storage getter throws",
+    async (entry) => {
+      vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+        throw new DOMException("Storage denied", "SecurityError");
+      });
+      document.documentElement.lang = "ja";
+      vi.resetModules();
+      if (entry === "main") await import("./main");
+      else await import("./appleAssistEntry");
+      expect(createRootMock).toHaveBeenCalledTimes(1);
+      expect(renderMock).toHaveBeenCalledTimes(1);
+      expect(languageAtFirstRender).toBe("en");
+    },
+  );
 
   it("sets <html lang> from storage before the main window renders", async () => {
     window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");

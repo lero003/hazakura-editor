@@ -7,6 +7,11 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **v3.1俯瞰レビュー追補（2026-09-20）:** 保存言語のstorage例外時fallbackと表の祖先lang保持を修正。
+  [修正・検証記録](reviews/2026-09-20-v3.1-overview-followup/README.md)。
+  [テスト用Core AIモデル](core-ai-test-model.md)は約347 MBのQwen3-0.6Bを実生成まで確認したが、
+  校正精度は不合格。製品の生成はSystemのみ、本番C-1/C-2と海外展開の残ゲートを維持する。
+
 - **v3.1開発へ移行（2026-09-19）:** 次の版をCore AIの実利用と海外App Store展開の
   二本立てとして開始。最初のI-0ソース／静的棚卸しは
   `docs/international-launch/` に集約した。英語ストア文案はproposalで、Connect設定、

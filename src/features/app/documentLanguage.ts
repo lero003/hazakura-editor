@@ -23,8 +23,13 @@ export function readStoredMenuLanguage(): MenuLanguage {
     return "en";
   }
 
-  const value = window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY);
-  return isMenuLanguage(value) ? value : "en";
+  try {
+    const value = window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY);
+    return isMenuLanguage(value) ? value : "en";
+  } catch {
+    // The storage getter itself can throw before the recovery root mounts.
+    return "en";
+  }
 }
 
 /**

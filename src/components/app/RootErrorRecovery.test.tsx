@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RootErrorRecovery } from "./RootErrorRecovery";
+import { syncDocumentLanguageFromStorage } from "../../features/app/documentLanguage";
 
 function BrokenApp(): never {
   throw new Error("renderer failed");
@@ -17,6 +18,22 @@ afterEach(() => {
 });
 
 describe("RootErrorRecovery", () => {
+  it("mounts the recovery surface after storage-denied language initialization", () => {
+    vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new DOMException("Storage denied", "SecurityError");
+    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    syncDocumentLanguageFromStorage();
+    render(
+      <RootErrorRecovery>
+        <BrokenApp />
+      </RootErrorRecovery>,
+    );
+    expect(
+      screen.getByRole("heading", { name: "Editing session protected" }),
+    ).toBeTruthy();
+  });
+
   it("uses English recovery copy when the app chrome is English", () => {
     document.documentElement.lang = "en";
     vi.spyOn(console, "error").mockImplementation(() => {});

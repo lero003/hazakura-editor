@@ -305,6 +305,28 @@ describe("renderMarkdown table preview", () => {
     expect(table?.textContent).toContain("日本語の本文");
   });
 
+  it.each([
+    ['<section lang="fr"><table><tr><td>Bonjour</td></tr></table></section>', "fr"],
+    ['<section lang="fr"><div lang="de"><table><tr><td>Hallo</td></tr></table></div></section>', "de"],
+    ['<section lang="fr"><table lang=""><tr><td>Bonjour</td></tr></table></section>', ""],
+    ['<section lang="fr"><div lang=""><table><tr><td>Bonjour</td></tr></table></div></section>', ""],
+    ['<table><tr><td>Bonjour</td></tr></table>', ""],
+  ])("preserves the nearest authored language before wrapping %s", (source, language) => {
+    const container = document.createElement("div");
+    container.lang = "ja";
+    container.innerHTML = renderMarkdown(source);
+    expect(container.querySelector("table")?.getAttribute("lang")).toBe(language);
+    expect(container.querySelector(".markdown-table-frame")?.getAttribute("lang")).toBe("en");
+  });
+
+  it("keeps nested tables in the authored language despite outer UI wrappers", () => {
+    const container = document.createElement("div");
+    container.innerHTML = renderMarkdown(
+      '<section lang="fr"><table><tr><td><table><tr><td>Bonjour</td></tr></table></td></tr></table></section>',
+    );
+    expect(Array.from(container.querySelectorAll("table"), (table) => table.lang)).toEqual(["fr", "fr"]);
+  });
+
   it("preserves an explicit language on a raw HTML table", () => {
     const html = renderMarkdown(
       '<table lang="ja"><tbody><tr><td>日本語の本文</td></tr></tbody></table>',

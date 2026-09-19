@@ -7,6 +7,11 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **俯瞰レビュー追補:** H31-01/H31-02は修正・回帰テスト済み。
+  [検証記録](reviews/2026-09-20-v3.1-overview-followup/README.md)を参照。
+  [Core AIテストモデル](core-ai-test-model.md)を単体生成まで確認したが校正品質は不合格。
+  次は画像ブロックの英語復旧案内とbuilt appの状態別受入。C-1/C-2製品接続は別スライス。
+
 - **v3.1開始（2026-09-19）:** Core AI実利用と海外App Store展開の二本立て。
   `docs/international-launch/` のI-0ソース／静的棚卸しを入口にし、Connect上の地域・価格・
   契約、公開Web、署名候補の英語受け入れは未完了として分離する。Core AI本番C-1/C-2は

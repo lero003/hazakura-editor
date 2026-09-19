@@ -275,7 +275,13 @@ function applyImagePreviewPolicyToFragment(
 function applyTablePreviewPolicyToFragment(
   fragment: DocumentFragment,
 ): void {
-  for (const table of Array.from(fragment.querySelectorAll("table"))) {
+  // Snapshot authored inheritance before inserting any English UI wrappers,
+  // including wrappers around outer tables. This detached fragment has no UI root.
+  const tables = Array.from(fragment.querySelectorAll("table"), (table) => ({
+    table,
+    language: table.closest("[lang]")?.getAttribute("lang") ?? DOCUMENT_CONTENT_LANG,
+  }));
+  for (const { table, language } of tables) {
     if (table.parentElement?.classList.contains("markdown-table-frame")) {
       continue;
     }
@@ -285,10 +291,10 @@ function applyTablePreviewPolicyToFragment(
     frame.setAttribute("role", "region");
     frame.setAttribute("aria-label", "Markdown table");
     // 枠のラベルは英語のアプリ文言。利用者本文へ継承させず、raw HTMLが明示した
-    // tableの言語は保持する。
+    // table自身または本文内の祖先が明示した言語は保持する。
     frame.setAttribute("lang", "en");
     if (!table.hasAttribute("lang")) {
-      table.setAttribute("lang", DOCUMENT_CONTENT_LANG);
+      table.setAttribute("lang", language);
     }
     table.replaceWith(frame);
     frame.append(table);

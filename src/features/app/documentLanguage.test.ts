@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MENU_LANGUAGE_STORAGE_KEY } from "../../types";
 import {
   DOCUMENT_CONTENT_LANG,
@@ -36,7 +36,29 @@ describe("isMenuLanguage", () => {
 
 describe("readStoredMenuLanguage", () => {
   beforeEach(() => window.localStorage.clear());
-  afterEach(() => window.localStorage.clear());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
+  it("falls back when the storage getter is denied", () => {
+    vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new DOMException("Storage denied", "SecurityError");
+    });
+    expect(readStoredMenuLanguage()).toBe("en");
+  });
+
+  it("falls back when getItem throws without changing stored data", () => {
+    window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
+    const getItem = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(() => {
+        throw new Error("Storage unavailable");
+      });
+    expect(readStoredMenuLanguage()).toBe("en");
+    getItem.mockRestore();
+    expect(readStoredMenuLanguage()).toBe("ja");
+  });
 
   it("falls back to en when nothing usable is stored", () => {
     expect(readStoredMenuLanguage()).toBe("en");
@@ -45,10 +67,13 @@ describe("readStoredMenuLanguage", () => {
     expect(readStoredMenuLanguage()).toBe("en");
   });
 
-  it("reads the stored ja / kana preferences", () => {
-    window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "kana");
-    expect(readStoredMenuLanguage()).toBe("kana");
-  });
+  it.each(["en", "ja", "kana"] as const)(
+    "reads the stored %s preference",
+    (language) => {
+      window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, language);
+      expect(readStoredMenuLanguage()).toBe(language);
+    },
+  );
 });
 
 describe("syncDocumentLanguageFromStorage", () => {

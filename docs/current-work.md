@@ -50,7 +50,14 @@ catch値を分離して閉じ、再レビューはP0 / P1 / P2 / P3なし。証�
 macOS bundleの言語宣言は、主要英語導線の静的／実表示監査と署名候補のInfo.plist確認後まで
 保留する。宣言だけを増やさず、I-0のオーナー判断が閉じてからI-1へ進む。
 
-**次のスライス:** 専用テスト環境のbuilt appで英語起動→設定→保存／衝突→Reader→出力を
+**俯瞰レビュー追補（2026-09-20）:** H31-01の保存言語取得例外をen fallbackで閉じ、
+H31-02の表の祖先lang継承をラッパー挿入前に保持した。入れ子・明示空文字も回帰固定。
+詳細と検証は [修正記録](reviews/2026-09-20-v3.1-overview-followup/README.md)。
+Core AIは[単体テスト用Qwen3-0.6B](core-ai-test-model.md)を準備し、実ロード・生成を確認。
+日本語校正の結果は不正確で品質合格ではない。C-1/C-2製品接続は未実装、v3.1の二本立ては維持する。
+
+**次のスライス:** 画像ブロック（remote／workspace外許可／load-failed）の英語復旧案内を閉じ、
+専用テスト環境のbuilt appで英語起動→設定→保存／衝突→Reader→出力を
 小さく分けて実表示確認する。nativeメニュー、Help、VoiceOver、署名候補は別ゲートのまま。
 C-1 fixture配管は別コミット系列とし、App Store露出・本番catalog・開示変更・
 `selectedId`書き込みへ広げない。
