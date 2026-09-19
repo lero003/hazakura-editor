@@ -14,9 +14,9 @@ Last reviewed: 2026-09-19
   identity・manifest・配信/AOT・bake-offのゲート待ち。I-0aではメイン窓とLocal Assist窓の
   HTML `lang`を表示言語へ同期し、`kana`は日本語として `ja`へ対応させた。生成・保存・
   Assist能力判定は不変。外部レビューのP2・P3も同じスライスで閉じ、ルートの同期はUI chrome
-  用として、本文を描く面（編集・プレビュー・読書・Local Assistの入力と生成途中）へは
-  UI言語を継承させず「言語不明」を持たせた。React初回描画の前にも保存済み表示言語を
-  反映する。次は英語主要導線の静的棚卸しで、bundleの言語宣言はその監査後まで
+  用として、本文を描く面（編集・プレビュー・読書・Local Assistの入力/生成途中・
+  候補レビュー）へはUI言語を継承させず「言語不明」を持たせた。メイン窓・Local Assist窓・
+  Agent窓はReact初回描画の前にも保存済み表示言語を反映する。次は英語主要導線の静的棚卸しで、bundleの言語宣言はその監査後まで
   保留する。詳細は [current-work](current-work.md) と
   [I-0a証跡](reviews/2026-09-19-v3.1-i0a-document-language/README.md)。
 

@@ -3,17 +3,19 @@ import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import { findCurrentMarkdownHeading, isMarkdownDocumentPath, parseMarkdownHeadingLine } from "../../lib/utils";
 import { describeInlineChange } from "../../features/diff/inlineChange";
+import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
 
 export function DiffBody({ compareCase, menuLanguage, view }: {
   compareCase: CompareCase; menuLanguage: MenuLanguage; view: CompareViewState;
 }) {
   const rows = buildDiffDisplayRows(compareCase, view, buildSplitDiffRows(view.lines), menuLanguage);
   if (!rows.length) return <div className="diff-empty">{emptyLabel(menuLanguage)}</div>;
+  // 行は本文（と行番号）だけ。UI 文言が同居しないので、ここで言語の境界を切る。
   return <>{rows.map((displayRow) => {
-    if (displayRow.kind === "section") return <div className="diff-section-row" key={displayRow.key} role="row"><span role="cell">{displayRow.label}</span></div>;
+    if (displayRow.kind === "section") return <div className="diff-section-row" key={displayRow.key} lang={DOCUMENT_CONTENT_LANG} role="row"><span role="cell">{displayRow.label}</span></div>;
     const row = displayRow.row;
     const change = row.kind === "changed" ? describeInlineChange(row.left.text, row.right.text) : null;
-    return <div className={`diff-split-row ${row.kind}`} key={displayRow.key} role="row">
+    return <div className={`diff-split-row ${row.kind}`} key={displayRow.key} lang={DOCUMENT_CONTENT_LANG} role="row">
       <span className={`diff-line-number ${row.left.kind}`} role="cell">{row.left.line ?? ""}</span>
       <code className={`diff-cell ${row.left.kind}`} role="cell">
         {row.left.kind === "removed" ? <span className="diff-cell-marker" aria-hidden="true">-</span> : null}

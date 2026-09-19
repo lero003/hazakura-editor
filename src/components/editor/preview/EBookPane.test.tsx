@@ -1969,22 +1969,24 @@ it("does not reuse the previous document's page count (document identity, P2-low
   expect(footerPage()).toBe("Chapter page 1 / 1");
 });
 
-it("keeps the UI language out of the reader's document pages", async () => {
-  // 日本語UIで英語の原稿を読む場合。紙の本文はルートの `ja` を継承せず、
-  // 読書面の操作帯（UI 文言）だけが UI 言語のままであることを固定する。
-  document.documentElement.lang = "ja";
-  const { container } = await renderEBookPane(
-    <EBookPane
-      menuLanguage="ja"
-      readingFocusActive
-      source={"# English chapter\n\nBody."}
-    />,
-  );
+it.each([
+  ["ja", "# English chapter\n\nBody."],
+  ["en", "# 日本語の章\n\n本文。"],
+] as const)(
+  "keeps the %s UI language out of the reader's document pages",
+  async (uiLanguage, source) => {
+    // 紙の本文はルートの `lang` を継承せず、読書面の操作帯（UI 文言）だけが
+    // UI 言語のままであることを、両方向で固定する。
+    document.documentElement.lang = uiLanguage;
+    const { container } = await renderEBookPane(
+      <EBookPane menuLanguage={uiLanguage} readingFocusActive source={source} />,
+    );
 
-  expect(
-    container.querySelector(".ebook-page-flow")?.getAttribute("lang"),
-  ).toBe("");
-  expect(document.documentElement.lang).toBe("ja");
+    expect(
+      container.querySelector(".ebook-page-flow")?.getAttribute("lang"),
+    ).toBe("");
+    expect(document.documentElement.lang).toBe(uiLanguage);
 
-  document.documentElement.lang = "";
-});
+    document.documentElement.lang = "";
+  },
+);

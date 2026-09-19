@@ -1,7 +1,7 @@
 # v3.1 I-0a — HTML文書言語の同期
 
 Status: Implemented — source / automated test evidence only
-Scope: メイン窓とLocal Assist分離窓のHTML `lang`
+Scope: UI chromeの `lang` 同期と、本文を描く領域の言語境界
 Last reviewed: 2026-09-19
 
 ## 結論
@@ -63,19 +63,23 @@ Tests       22 passed (22)
   `<article>`、`EBookPane` の `ebook-page-flow` と `ebook-next-chapter-preview-flow`。
 - Local Assistは依頼入力の `textarea` と、生成途中の本文
   （`apple-assist-stream-preview-body`）。
+- 候補レビューも生成された本文そのものなので境界を置いた: 全文ビューの
+  `.local-assist-proposal-review-text` と、`DiffBody` が描く行（差分の本文列）。
+  `DiffBody` は2ファイル比較でも同じ本文列を出すため、ここで一括して切る。
 - `EBookPane` はレビュー案の `<article>` ではなく**紙の中身**（flow）へ付けた。
   `<article>` は読書面の操作帯・章名・ページ送りというUI文言も包んでおり、そこまで
   「不明」にすると今度はUI側が不明になる。境界は「本文を描く箱」に置く方を選んだ。
 
-回帰テストは「日本語UI + 英語本文」を本文面ごとに固定した（`EditorPane`・`PreviewPane`・
-`EBookPane`・Local Assist入力/生成途中）。実装前は本文面の4ファイルで4件が落ちること
-（境界を外すと `lang` が `ja` になる）を確認した。エントリ順序の2件は下のP3で別に取る。
+回帰テストは本文面ごとに「日本語UI + 英語本文」「英語UI + 日本語本文」の両方向を固定した
+（`EditorPane`・`PreviewPane`・`EBookPane`・Local Assist入力/生成途中・候補レビュー）。
+境界を外すと本文面4ファイルで4件が落ちる（`lang` が `ja` になる／`null` のまま）。
 
 ### P3 — 初回描画前の同期
 
 `index.html` / `apple-assist.html` の既定は `en` で、保存済み `ja` でも
 「HTMLロード → React初回描画 → effect → `lang=ja`」の瞬間があったため、
-`main.tsx` / `appleAssistEntry.tsx` がReactを描く**前**に保存済み表示言語を反映する。
+`main.tsx` / `appleAssistEntry.tsx` / `agentEntry.tsx`（Developerレーン）が
+Reactを描く**前**に保存済み表示言語を反映する。
 `src/appEntryLanguage.test.tsx` が `createRoot(...).render` の呼び出し時点の
 `document.documentElement.lang` を記録し、順序そのものを固定する。
 
@@ -84,13 +88,32 @@ Tests       22 passed (22)
 
 ### 既知の残件（今回は触らない）
 
-Help・設定・診断・差分/候補レビュー・会話一覧は、UI文言と本文が同じ枠に同居している。
-本文側だけを切り出すには表示の作り直しが要るので、今回の境界には含めず残件として記録する。
+Help・設定・診断・会話一覧は、UI文言と本文が同じ枠に同居している。本文側だけを切り出すには
+表示の作り直しが要るので、今回の境界には含めず残件として記録する。
+
+## 内部レビュー2回目（コミット`d44b6341`）
+
+実装の核（`lang=""`の選択、CodeMirrorでの保持、EBookPaneの境界位置、リファクタの同値性）は
+指摘なしだった。変異テストでも、境界やエントリ同期を外すと追加テストが落ちることが
+確認できた。以下は見つかった穴と対応。
+
+- **P2（対応済み）** 候補レビューの全文ビューと差分の本文列が境界の外に残っていた。
+  `LocalAssistProposalReview`の`<pre>`と`DiffBody`の行へ`DOCUMENT_CONTENT_LANG`を追加し、
+  テストで固定した（外すと当該2件が落ちる）。
+- **P3（対応済み）** `agent.html` / `agentEntry.tsx`（DeveloperレーンのAgent窓）だけ
+  同期が無く、docsが「React初回描画の前」と無条件に書いていた。`agentEntry.tsx`にも
+  同じ同期を入れ、エントリテストの対象を3エントリへ広げた。
+- **P3（対応済み）** 本文面テストが日本語UI側しか見ていなかったため、両方向のループへ変更。
+- **P3（対応・指摘の一部は誤り）** エントリテストが`clearMocks`に依存しているとの指摘は、
+  ローカルで`render`呼び出しを外すと実際に落ちるため成立していない。ただし
+  `createRoot`と`render`を別々に検証する形へ直し、暗黙依存を無くした。
+- **P3（対応済み）** 差分で`AppleAssistWindowApp`の`storage`ハンドラのインデントが
+  12スペースへずれていたので10スペースへ戻した（挙動は不変）。
 
 ## 自動検証
 
 - `npm run typecheck`
-- `npm test` — 290 files / 2,581 tests passed
+- `npm test` — 290 files / 2,587 tests passed
 - `npm run build:vite` — passed（既存の500 kB超chunk警告あり）
 - `npm run smoke:app-store-surface` — 10 files / 125 tests passed
 - `python3 docs/international-launch/validate_metadata.py --self-test` — 14 self-tests passed

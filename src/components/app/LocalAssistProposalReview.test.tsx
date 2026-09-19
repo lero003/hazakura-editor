@@ -119,6 +119,30 @@ describe("LocalAssistProposalReview", () => {
     expect(screen.getByRole("region", { name: "Before" }).textContent).toBe("original");
     expect(screen.getByRole("region", { name: "Before" }).style.fontSize).toBe("32px");
   });
+
+  it("keeps the UI language off the candidate text and the diff rows", () => {
+    seedProposal();
+    document.documentElement.lang = "ja";
+    render(<LocalAssistProposalReview {...props()} menuLanguage="ja" />);
+
+    // 差分の行は本文（と行番号）だけなので、UI 言語を継承させない。
+    const row = document.querySelector(
+      ".diff-split-row:not(.diff-row-header)",
+    ) as HTMLElement;
+    expect(row).not.toBeNull();
+    expect(row.getAttribute("lang")).toBe("");
+
+    // 「変更後」の全文ビューも生成された本文そのもの。
+    fireEvent.click(screen.getByRole("button", { name: "変更後" }));
+    expect(
+      document
+        .querySelector(".local-assist-proposal-review-text")
+        ?.getAttribute("lang"),
+    ).toBe("");
+    expect(document.documentElement.lang).toBe("ja");
+
+    document.documentElement.lang = "";
+  });
   it("explains no-op proposals instead of inviting a failed apply", () => {
     seedProposal({ candidateText: "original" }); render(<LocalAssistProposalReview {...props()} />);
     expect((screen.getByRole("button", { name: "Apply proposal" }) as HTMLButtonElement).disabled).toBe(true);

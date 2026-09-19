@@ -368,7 +368,7 @@ export function AppleAssistWindowApp() {
       if (event.key === THEME_STORAGE_KEY && event.newValue) {
         setTheme(event.newValue as ThemePreference);
       }
-            if (event.key === MENU_LANGUAGE_STORAGE_KEY && isMenuLanguage(event.newValue)) {
+      if (event.key === MENU_LANGUAGE_STORAGE_KEY && isMenuLanguage(event.newValue)) {
         setMenuLanguage(event.newValue);
       }
     };

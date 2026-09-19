@@ -476,19 +476,26 @@ describe("PreviewPane local link routing", () => {
 });
 
 describe("PreviewPane document language", () => {
-  it("keeps the UI language out of the rendered document", async () => {
-    // 日本語UI + 英語本文。プレビュー面がルートの `ja` を継承しないことを固定する。
-    document.documentElement.lang = "ja";
-    const { container } = render(
-      <PreviewPane menuLanguage="ja" source="# English heading" />,
-    );
-    await flushPreviewFrame();
+  it.each([
+    ["ja", "# English heading"],
+    ["en", "# 日本語の見出し"],
+  ] as const)(
+    "keeps the %s UI language out of the rendered document",
+    async (uiLanguage, source) => {
+      // 日本語UI + 英語本文 / 英語UI + 日本語本文の両方向で、
+      // プレビュー面がルートの `lang` を継承しないことを固定する。
+      document.documentElement.lang = uiLanguage;
+      const { container } = render(
+        <PreviewPane menuLanguage={uiLanguage} source={source} />,
+      );
+      await flushPreviewFrame();
 
-    const article = container.querySelector("article.markdown-preview");
-    expect(article).not.toBeNull();
-    expect(article?.getAttribute("lang")).toBe("");
-    expect(document.documentElement.lang).toBe("ja");
+      const article = container.querySelector("article.markdown-preview");
+      expect(article).not.toBeNull();
+      expect(article?.getAttribute("lang")).toBe("");
+      expect(document.documentElement.lang).toBe(uiLanguage);
 
-    document.documentElement.lang = "";
-  });
+      document.documentElement.lang = "";
+    },
+  );
 });

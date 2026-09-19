@@ -195,20 +195,23 @@ describe("EditorPane", () => {
     expect(container.querySelector(".editor-mount")).not.toBeNull();
   });
 
-  it("keeps the UI language out of the editor body", () => {
-    // 日本語UI + 英語文書。本文がルートの `ja` を継承すると、英語原稿を
-    // 日本語として読み上げてしまう。
-    document.documentElement.lang = "ja";
-    const { container } = render(
-      renderEditorPane({ value: "# English note\n\nBody." }),
-    );
-    const content = container.querySelector(".cm-content") as HTMLElement;
+  it.each(["ja", "en"] as const)(
+    "keeps the %s UI language out of the editor body",
+    (uiLanguage) => {
+      // UI 言語がどちらでも本文はルートの `lang` を継承しない
+      // （日本語UI + 英語文書 / 英語UI + 日本語文書の両方向）。
+      document.documentElement.lang = uiLanguage;
+      const { container } = render(
+        renderEditorPane({ value: "# English note\n\nBody." }),
+      );
+      const content = container.querySelector(".cm-content") as HTMLElement;
 
-    expect(content.getAttribute("lang")).toBe("");
-    expect(document.documentElement.lang).toBe("ja");
+      expect(content.getAttribute("lang")).toBe("");
+      expect(document.documentElement.lang).toBe(uiLanguage);
 
-    document.documentElement.lang = "";
-  });
+      document.documentElement.lang = "";
+    },
+  );
 
   it("changes a heading level as one undoable editor transaction", async () => {
     const source = "### Chapter ###\nbody\n";

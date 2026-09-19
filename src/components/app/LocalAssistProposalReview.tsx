@@ -5,6 +5,7 @@ import { canBuildProposalLineDiff, countProposalCharacters, isProposalCurrentFor
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
 import { isAppleAssistCandidateReadyForReview } from "../../features/editor/appleAssistText";
 import { DiffBody } from "../diff/DiffBody";
+import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
 import { isJapaneseMenuLanguage, type CompareCase, type CompareViewState, type EditorTab, type MenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import { SparklesIcon } from "./Icons";
@@ -178,7 +179,7 @@ export function LocalAssistProposalReview({ activeTab, menuLanguage, fontSize, b
             </div>
             <DiffBody compareCase={compareCase} menuLanguage={menuLanguage} view={view} />
           </div>
-        ) : <pre className="local-assist-proposal-review-text" role="region" tabIndex={0}
+        ) : <pre className="local-assist-proposal-review-text" lang={DOCUMENT_CONTENT_LANG} role="region" tabIndex={0}
           aria-label={actualMode === "before" ? copy.before : copy.after} style={{ fontSize: `${safeFontSize}px` }}>
           {actualMode === "before" ? proposal.originalText : proposal.candidateText}
         </pre>}

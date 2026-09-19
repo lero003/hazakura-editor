@@ -91,45 +91,50 @@ describe("AppleAssistWindowApp render", () => {
     expect(document.documentElement.lang).toBe("ja");
   });
 
-  it("keeps the UI language out of the assist input and the generated draft", async () => {
-    localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
-    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
-    render(<AppleAssistWindowApp />);
-    await act(async () => { await Promise.resolve(); });
+  it.each(["ja", "en"] as const)(
+    "keeps the %s UI language out of the assist input and the generated draft",
+    async (uiLanguage) => {
+      localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, uiLanguage);
+      Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+      render(<AppleAssistWindowApp />);
+      await act(async () => { await Promise.resolve(); });
 
-    // 日本語UIで英語の依頼・生成文を扱う場合。入力と途中の案は UI 文言ではないので、
-    // ルートの `ja` を継承させず「言語不明」を持つ。
-    const input = document.getElementById(
-      "apple-assist-rough-request",
-    ) as HTMLTextAreaElement;
-    expect(input.getAttribute("lang")).toBe("");
-    expect(document.documentElement.lang).toBe("ja");
+      // 入力と途中の案は UI 文言ではないので、UI 言語に関わらずルートの `lang` を
+      // 継承させず「言語不明」を持つ。
+      const input = document.getElementById(
+        "apple-assist-rough-request",
+      ) as HTMLTextAreaElement;
+      expect(input.getAttribute("lang")).toBe("");
+      expect(document.documentElement.lang).toBe(uiLanguage);
 
-    fireEvent.change(input, { target: { value: "English draft request" } });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "依頼する" }));
-    });
-    const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
-      ?.requestId;
-
-    await act(async () => {
-      eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)?.({
-        payload: {
-          phase: "partial",
-          requestId,
-          request: "English draft request",
-          message: "partial",
-          partialText: "Draft in progress",
-          emittedAtMs: 0,
-        },
+      fireEvent.change(input, { target: { value: "English draft request" } });
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", {
+          name: uiLanguage === "ja" ? "依頼する" : "Send request",
+        }));
       });
-    });
+      const requestId = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)?.[0]
+        ?.requestId;
 
-    expect(
-      screen.getByTestId("apple-assist-stream-preview-body").getAttribute("lang"),
-    ).toBe("");
-    expect(document.documentElement.lang).toBe("ja");
-  });
+      await act(async () => {
+        eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)?.({
+          payload: {
+            phase: "partial",
+            requestId,
+            request: "English draft request",
+            message: "partial",
+            partialText: "Draft in progress",
+            emittedAtMs: 0,
+          },
+        });
+      });
+
+      expect(
+        screen.getByTestId("apple-assist-stream-preview-body").getAttribute("lang"),
+      ).toBe("");
+      expect(document.documentElement.lang).toBe(uiLanguage);
+    },
+  );
 
   it("shows a matching Japanese Apply failure and keeps the conversation and prior draft", async () => {
     localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
