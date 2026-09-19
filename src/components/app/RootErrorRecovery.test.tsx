@@ -6,6 +6,10 @@ function BrokenApp(): never {
   throw new Error("renderer failed");
 }
 
+function FalsyBrokenApp(): never {
+  throw null;
+}
+
 afterEach(() => {
   cleanup();
   document.documentElement.lang = "";
@@ -48,5 +52,21 @@ describe("RootErrorRecovery", () => {
       screen.getByRole("button", { name: "アプリを再読み込み" }),
     ).toBeTruthy();
     expect(screen.queryByText("Editing session protected.")).toBeNull();
+  });
+
+  it("keeps the recovery surface available when a child throws a falsy value", () => {
+    document.documentElement.lang = "en";
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(
+      <RootErrorRecovery>
+        <FalsyBrokenApp />
+      </RootErrorRecovery>,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Editing session protected" }),
+    ).toBeTruthy();
+    expect(screen.getByText("Unknown error").getAttribute("lang")).toBe("");
   });
 });

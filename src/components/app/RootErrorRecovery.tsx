@@ -5,7 +5,8 @@ type RootErrorRecoveryProps = {
 };
 
 type RootErrorRecoveryState = {
-  error: Error | null;
+  hasError: boolean;
+  error: unknown;
   info: string | null;
 };
 
@@ -38,6 +39,27 @@ function getRootErrorRecoveryCopy(): RootErrorRecoveryCopy {
   };
 }
 
+function formatCaughtError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message || error.name || "Unknown error";
+  }
+  if (typeof error === "string") {
+    return error || "Unknown error";
+  }
+  if (error == null) {
+    return "Unknown error";
+  }
+  switch (typeof error) {
+    case "boolean":
+    case "bigint":
+    case "number":
+    case "symbol":
+      return String(error);
+    default:
+      return "Unknown error";
+  }
+}
+
 /**
  * S-2: root-level recovery surface. A frontend exception should not
  * strand the entire editing session without a safe reload path.
@@ -48,15 +70,16 @@ export class RootErrorRecovery extends Component<
   RootErrorRecoveryState
 > {
   state: RootErrorRecoveryState = {
+    hasError: false,
     error: null,
     info: null,
   };
 
-  static getDerivedStateFromError(error: Error): Partial<RootErrorRecoveryState> {
-    return { error };
+  static getDerivedStateFromError(error: unknown): Partial<RootErrorRecoveryState> {
+    return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: unknown, errorInfo: ErrorInfo) {
     this.setState({
       info: errorInfo.componentStack ?? null,
     });
@@ -69,12 +92,12 @@ export class RootErrorRecovery extends Component<
   };
 
   private handleDismiss = () => {
-    this.setState({ error: null, info: null });
+    this.setState({ hasError: false, error: null, info: null });
   };
 
   render() {
-    const { error, info } = this.state;
-    if (!error) {
+    const { hasError, error, info } = this.state;
+    if (!hasError) {
       return this.props.children;
     }
     const copy = getRootErrorRecoveryCopy();
@@ -89,7 +112,7 @@ export class RootErrorRecovery extends Component<
           <h1>{copy.title}</h1>
           <p>{copy.body}</p>
           <p className="root-error-recovery-detail" lang="">
-            {error.message || "Unknown error"}
+            {formatCaughtError(error)}
           </p>
           {info ? (
             <details className="root-error-recovery-stack">

@@ -43,7 +43,8 @@ L Modeタスクのラベルは英語なので `en`）。参照面とLocal Assist
 開始・編集、保存／衝突／復旧、設定、Help／診断、Reader、出力、Local Assistには英語の
 分岐または英語固定本文がある。致命的フロントエラーの復旧面だけは英語UIでも日本語を
 主表示していたため、`<html lang>` に応じた英語／日本語copyへ分離し、技術由来のエラー本文は
-`lang=""` にした。証跡は
+`lang=""` にした。外部レビューで見つかったfalsyなthrow値の取りこぼしも、エラー発生状態と
+catch値を分離して閉じた。証跡は
 `docs/reviews/2026-09-20-v3.1-i0b-english-major-flow-static-audit/`。
 
 macOS bundleの言語宣言は、主要英語導線の静的／実表示監査と署名候補のInfo.plist確認後まで

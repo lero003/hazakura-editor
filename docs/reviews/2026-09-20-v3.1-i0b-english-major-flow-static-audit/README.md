@@ -30,6 +30,8 @@ Date: 2026-09-20
 ## 実装修正
 
 - `RootErrorRecovery` は `<html lang>` が `en` なら英語、`ja` なら日本語の復旧文言を表示する。
+- エラー発生状態とcatch値を分離し、`null` などfalsyな値がthrowされても復旧面を維持する。
+- catch値は `unknown` として扱い、任意objectの変換メソッドを呼ばず、表示不能時は `Unknown error` に閉じる。
 - 技術由来の `error.message` とcomponent stackは `lang=""` とし、UI言語を誤って継承させない。
 - 英語UIで日本語主文＋英語補足を重ねる旧構造と、その専用CSSを削除した。
 - `RootErrorRecovery.test.tsx` で英語・日本語の見出し／操作と技術本文の言語境界を固定した。
@@ -38,12 +40,15 @@ Date: 2026-09-20
 
 - red: `npm test -- src/components/app/RootErrorRecovery.test.tsx`
   - 英語時に英語見出しが見つからず失敗。
-- green: 同コマンド — 2 tests passed。
-- `npm test` — 293 files / 2,601 tests passed。
+- green: 同コマンド — 3 tests passed（英語、日本語、falsy throw）。
+- `npm test` — 293 files / 2,602 tests passed。
 - `npm run build:vite` — typecheck + Vite build passed。既知の500 kB超chunk警告あり。
 - `npm run smoke:app-store-surface` — 10 files / 125 tests passed。
 - `python3 docs/international-launch/validate_metadata.py` — copy checks passed。
 - `git diff --check` — passed。
+
+外部レビューでは、初回固定SHAに「falsyな値をthrowすると復旧面へ入らない」P2が1件あった。
+`hasError`の分離と上記回帰テストで修正し、再レビューを行う。
 
 ## 未確認・次段階
 
