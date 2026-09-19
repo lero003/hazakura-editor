@@ -79,6 +79,8 @@ export class LModeTaskWidget extends WidgetType {
       "aria-label",
       this.checked ? "Completed task" : "Incomplete task",
     );
+    // ラベルは英語。本文（lang=""）の内側に置くので、宣言も一緒に持たせる。
+    span.setAttribute("lang", "en");
     // 編集ロック中はフォーカス対象から外し、無効状態を読み上げさせる
     // （`tabindex="0"` はキーボードだけでチェックボックスへ到達するため）。
     applyTaskReadOnlyState(span, view.state.readOnly);

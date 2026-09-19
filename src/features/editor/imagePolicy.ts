@@ -223,27 +223,29 @@ export function classifyMarkdownImageSource(
   };
 }
 
+/**
+ * One line of blocked-image copy: app text, with document-derived fragments
+ * (alt text, reference) marked as such. The template decides where the fragment
+ * sits, so `buildBlockedImageElement` never has to search the sentence and can
+ * give those fragments their own `lang=""` node.
+ */
+export type BlockedImageNoteLine = ReadonlyArray<
+  string | { readonly documentText: string }
+>;
+
 export type BlockedImageNoteCopy = {
-  title: string;
-  /**
-   * Document-derived fragment (the image alt text) that appears inside `title`.
-   * `buildBlockedImageElement` renders it as its own node so it is not announced
-   * with the app copy's language.
-   */
-  titleDocumentText: string | null;
-  reasonLine: string;
-  /** Document-derived fragment (the image reference) inside `reasonLine`. */
-  reasonDocumentText: string | null;
+  title: BlockedImageNoteLine;
+  reasonLine: BlockedImageNoteLine;
   nextLine: string;
   approveLabel?: string;
 };
 
-type BlockedImageNoteCopyParts = {
-  title: string;
-  reasonLine: string;
-  nextLine: string;
-  approveLabel?: string;
-};
+/** Plain text of a note line (labels, tests, debugging). */
+export function blockedImageNoteLineText(line: BlockedImageNoteLine): string {
+  return line
+    .map((part) => (typeof part === "string" ? part : part.documentText))
+    .join("");
+}
 
 /**
  * Japanese-first blocked-image copy (Q-IMP-1 / existing Preview surface).
@@ -257,19 +259,24 @@ export function formatBlockedImageNote(options: {
 }): BlockedImageNoteCopy {
   const alt = options.alt?.trim() || "";
   const ref = options.reference?.trim() || "";
-  const title = alt ? `画像を表示できません: ${alt}` : "画像を表示できません";
+  const title: BlockedImageNoteLine = alt
+    ? ["画像を表示できません: ", { documentText: alt }]
+    : ["画像を表示できません"];
+  /** `理由: …（ref）。` / 参照が無ければ `理由: …。` */
+  const reasonInParens = (sentence: string, prefix = ""): BlockedImageNoteLine =>
+    ref
+      ? [`${sentence}（${prefix}`, { documentText: ref }, "）。"]
+      : [`${sentence}。`];
   const approveLabel = options.canApproveLocal
     ? "この画像の親フォルダを許可して表示"
     : undefined;
-  let copy: BlockedImageNoteCopyParts;
+  let copy: BlockedImageNoteCopy;
 
   switch (options.reason) {
     case "outside-workspace":
       copy = {
         title,
-        reasonLine: ref
-          ? `理由: ワークスペース外の相対パスです（${ref}）。`
-          : "理由: ワークスペース外の相対パスです。",
+        reasonLine: reasonInParens("理由: ワークスペース外の相対パスです"),
         nextLine: options.canApproveLocal
           ? "次の操作: 下の許可を使うか、親フォルダをワークスペースとして開く。または workspace 内（例: assets/）へ画像を置く。"
           : "次の操作: 画像を含む親フォルダをワークスペースとして開く。または workspace 内（例: assets/）へ画像を置いて相対パスを直す。設定で「ワークスペース外の画像」を変更できます。",
@@ -279,9 +286,7 @@ export function formatBlockedImageNote(options: {
     case "absolute-outside":
       copy = {
         title,
-        reasonLine: ref
-          ? `理由: ワークスペース外の絶対パスです（${ref}）。`
-          : "理由: ワークスペース外の絶対パスです。",
+        reasonLine: reasonInParens("理由: ワークスペース外の絶対パスです"),
         nextLine: options.canApproveLocal
           ? "次の操作: 下の許可を使うか、画像を workspace 内へ置いて相対パスで参照する。"
           : "次の操作: 画像を選択中の workspace 内へ置き、文書からの相対パスで参照する。",
@@ -291,9 +296,9 @@ export function formatBlockedImageNote(options: {
     case "remote":
       copy = {
         title,
-        reasonLine: ref
-          ? `理由: リモート画像は設定で許可するまで読み込みません（${ref}）。`
-          : "理由: リモート画像は設定で許可するまで読み込みません。",
+        reasonLine: reasonInParens(
+          "理由: リモート画像は設定で許可するまで読み込みません",
+        ),
         nextLine:
           "次の操作: 設定 → 表示とメディア で「Preview でリモート画像を読み込む」をオン（https のみ・サーバーに要求が届きます）。またはローカルに保存して相対パスで参照する。",
       };
@@ -302,9 +307,10 @@ export function formatBlockedImageNote(options: {
       copy = {
         title,
         // Do not render a live `scheme:` token (e.g. `javascript:`).
-        reasonLine: ref
-          ? `理由: この参照形式は使えません（スキーム ${ref}）。`
-          : "理由: この参照形式は使えません。",
+        reasonLine: reasonInParens(
+          "理由: この参照形式は使えません",
+          "スキーム ",
+        ),
         nextLine:
           "次の操作: workspace 内の相対パス、または対応する埋め込み画像を使う。",
       };
@@ -312,8 +318,9 @@ export function formatBlockedImageNote(options: {
     case "unsafe-data":
       copy = {
         title,
-        reasonLine:
+        reasonLine: [
           "理由: 埋め込み画像の形式またはサイズが非対応です（png / jpeg / gif / webp の小さな data URL のみ）。",
+        ],
         nextLine:
           "次の操作: 対応形式の小さな埋め込みにするか、workspace 内ファイルへの相対パスに切り替える。",
       };
@@ -321,9 +328,9 @@ export function formatBlockedImageNote(options: {
     case "missing-context":
       copy = {
         title,
-        reasonLine: ref
-          ? `理由: 画像パスを解決するワークスペース／文書コンテキストがありません（${ref}）。`
-          : "理由: 画像パスを解決するワークスペース／文書コンテキストがありません。",
+        reasonLine: reasonInParens(
+          "理由: 画像パスを解決するワークスペース／文書コンテキストがありません",
+        ),
         nextLine:
           "次の操作: フォルダをワークスペースとして開き、保存済みの Markdown からプレビューする。",
       };
@@ -331,9 +338,7 @@ export function formatBlockedImageNote(options: {
     case "load-failed":
       copy = {
         title,
-        reasonLine: ref
-          ? `理由: 画像を読めませんでした（${ref}）。`
-          : "理由: 画像を読めませんでした。",
+        reasonLine: reasonInParens("理由: 画像を読めませんでした"),
         nextLine:
           "次の操作: ファイルの有無・名前・拡張子・許可範囲を確認する。必要なら assets/ に置き直す。",
       };
@@ -342,20 +347,14 @@ export function formatBlockedImageNote(options: {
     default:
       copy = {
         title,
-        reasonLine: ref
-          ? `理由: 画像参照を解釈できません（${ref}）。`
-          : "理由: 画像参照を解釈できません。",
+        reasonLine: reasonInParens("理由: 画像参照を解釈できません"),
         nextLine:
           "次の操作: Markdown の画像構文とパスを確認する（バックスラッシュや不正な URL エンコードに注意）。",
       };
       break;
   }
 
-  return {
-    ...copy,
-    titleDocumentText: alt || null,
-    reasonDocumentText: ref || null,
-  };
+  return copy;
 }
 
 /**
@@ -367,30 +366,22 @@ export function formatBlockedImageNote(options: {
  */
 const BLOCKED_IMAGE_COPY_LANG = "ja";
 
-/** Append `copy`, rendering `documentText` as its own language-unknown node. */
-function appendCopyWithDocumentText(
-  host: HTMLElement,
-  copy: string,
-  documentText: string | null,
-): void {
-  const fragment = documentText?.trim() ?? "";
-  const index = fragment ? copy.indexOf(fragment) : -1;
-  if (!fragment || index < 0) {
-    host.textContent = copy;
-    return;
-  }
-  const before = copy.slice(0, index);
-  const after = copy.slice(index + fragment.length);
-  const fromDocument = document.createElement("span");
-  fromDocument.className = "blocked-image-document-text";
-  fromDocument.setAttribute("lang", DOCUMENT_CONTENT_LANG);
-  fromDocument.textContent = fragment;
-  if (before) {
-    host.append(before);
-  }
-  host.append(fromDocument);
-  if (after) {
-    host.append(after);
+/**
+ * Append a note line, rendering the document-derived fragments as their own
+ * language-unknown nodes. The template already decided where they sit, so this
+ * never has to search the sentence.
+ */
+function appendNoteLine(host: HTMLElement, line: BlockedImageNoteLine): void {
+  for (const part of line) {
+    if (typeof part === "string") {
+      host.append(part);
+      continue;
+    }
+    const fromDocument = document.createElement("span");
+    fromDocument.className = "blocked-image-document-text";
+    fromDocument.setAttribute("lang", DOCUMENT_CONTENT_LANG);
+    fromDocument.textContent = part.documentText;
+    host.append(fromDocument);
   }
 }
 
@@ -424,11 +415,11 @@ export function buildBlockedImageElement(options: {
 
   const title = document.createElement("span");
   title.className = "blocked-image-title";
-  appendCopyWithDocumentText(title, copy.title, copy.titleDocumentText);
+  appendNoteLine(title, copy.title);
 
   const reason = document.createElement("span");
   reason.className = "blocked-image-reason";
-  appendCopyWithDocumentText(reason, copy.reasonLine, copy.reasonDocumentText);
+  appendNoteLine(reason, copy.reasonLine);
 
   const next = document.createElement("span");
   next.className = "blocked-image-next";

@@ -499,6 +499,8 @@ describe("applyEbookPageBreakMarkers", () => {
 
     expect(marked).toContain('class="page-break"');
     expect(marked.match(/class="page-break"/g)).toHaveLength(2);
+    // 区切りのラベルは英語のアプリ文言。本文（lang=""）へ差し込むので宣言を持つ。
+    expect(marked).toContain('aria-label="Page break" lang="en"');
     expect(marked).toContain("First page");
     expect(marked).toContain("Second page");
     expect(marked).toContain("Third page");

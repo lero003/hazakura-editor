@@ -283,6 +283,8 @@ function applyTablePreviewPolicyToFragment(
     frame.className = "markdown-table-frame";
     frame.setAttribute("role", "region");
     frame.setAttribute("aria-label", "Markdown table");
+    // ラベルは英語のアプリ文言。本文（lang=""）の内側なので宣言も一緒に持たせる。
+    frame.setAttribute("lang", "en");
     table.replaceWith(frame);
     frame.append(table);
   }

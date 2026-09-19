@@ -211,5 +211,7 @@ export function applyEbookPageBreakMarkers(source: string): string {
 }
 
 function pageBreakMarkerHtml(): string {
-  return '<div class="page-break" role="separator" aria-label="Page break"></div>';
+  // アプリが本文へ差し込む印。ラベルは英語なので en を宣言する。EPUB 書き出しは
+  // class / role / aria-label を目印に検出するため、文言そのものは変えない。
+  return '<div class="page-break" role="separator" aria-label="Page break" lang="en"></div>';
 }

@@ -290,6 +290,16 @@ describe("renderMarkdown task list preview", () => {
   });
 });
 
+describe("renderMarkdown table preview", () => {
+  it("labels the generated table frame in its own language", () => {
+    const html = renderMarkdown("| a | b |\n| --- | --- |\n| 1 | 2 |");
+
+    // 枠のラベルは英語のアプリ文言。本文（lang=""）へ差し込むので en を宣言する。
+    expect(html).toContain('aria-label="Markdown table"');
+    expect(html).toMatch(/class="markdown-table-frame"[^>]*lang="en"/);
+  });
+});
+
 // v0.17 app-store-quality: markdown-preview-export-security slice 2.1
 // — script execution vectors in Markdown preview and HTML export.
 // Both preview and export share the same `renderMarkdown` pipeline

@@ -47,6 +47,8 @@ Tests       22 passed (22)
 あった。`switch` と `never` の網羅性チェックへ変更し、新しい `MenuLanguage` を追加した際は
 対応規則を明示しない限りtypecheckで止まるようにした。Local Assistの `storage` event追随も
 テストへ追加した。再レビューはfindingなし。
+（※このときAgent窓にも同期を広げたが、後の外部レビュー2回目で英語固定へ戻した。現行は
+「P2-01」のとおり。）
 
 ## 外部レビュー対応（P2・P3）
 
@@ -170,12 +172,33 @@ Help（`PrivacyPreferencesPane`）・設定・診断（`DiagnosticsPane`）はUI
 - 回帰テスト: `imagePolicy.test.ts`（案内は `ja` / 断片は `""` / 断片が無い理由では
   分割しない）と `PreviewPane.test.tsx`（日本語UI + 英語本文 + ブロック画像）。
 
-赤証跡: Agent窓の同期を戻すと2件（`ja` / `kana`）、案内の `lang` を外すと3件が落ちる。
+赤証跡（現行ツリー）: Agent窓の同期を戻すと3件（2ファイル。エントリの `ja` / `kana` と、
+窓の英語chrome契約テスト）。本文へ差し込むアプリ文言の言語宣言（画像案内・ページ区切り・
+テーブル枠・L Modeタスク）を外すと7件（5ファイル）。
+
+## 内部レビュー4回目（コミット`e1c98245`）
+
+P2-01（Agent窓の `en` 固定）は「窓の中で保存言語により日本語になる経路は無い」ことを
+追跡して指摘なし。P2-02と同じ「本文境界の内側へアプリが文字を差し込む」経路が3か所
+残っていたので、同じ規則で閉じた。
+
+- **ページ区切り（`ebookChapters.pageBreakMarkerHtml`）**: `aria-label="Page break"` は
+  英語のアプリ文言なので `lang="en"` を宣言する。EPUB書き出しは class / role /
+  aria-label を目印に検出するため、文言そのものは変えない。
+- **テーブル枠（`markdown.applyTablePreviewPolicyToFragment`）**: 生成した
+  `.markdown-table-frame` の `aria-label="Markdown table"` も英語なので `lang="en"`。
+- **L Modeタスク（`lMode/taskWidget`）**: `Completed task` / `Incomplete task` は英語なので
+  ウィジェットへ `lang="en"`。編集面の `.cm-content` は `lang=""` なので、ここも同じ規則。
+- 案内の組み立てを、文字列を後から検索して切る方式から**テンプレートが位置を決める方式**
+  （`BlockedImageNoteLine` の断片マーカー）へ変更した。参照文字列がアプリ文言と同じ語
+  （例: 「ワークスペース」）でも、文書由来として包むのは文末の1か所だけになる。
+- P3（`imagePolicy.ts` の初回一致、`README` の赤証跡の件数、`current-status` の折り返し）も
+  あわせて直した。
 
 ## 自動検証
 
 - `npm run typecheck`
-- `npm test` — 292 files / 2,596 tests passed
+- `npm test` — 292 files / 2,598 tests passed
 - `npm run build:vite` — passed（既存の500 kB超chunk警告あり）
 - `npm run smoke:app-store-surface` — 10 files / 125 tests passed
 - `python3 docs/international-launch/validate_metadata.py --self-test` — 14 self-tests passed

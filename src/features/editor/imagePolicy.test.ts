@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  blockedImageNoteLineText,
   buildBlockedImageElement,
   classifyMarkdownImageSource,
   formatBlockedImageNote,
@@ -142,9 +143,15 @@ describe("formatBlockedImageNote", () => {
       alt: "cover",
       reference: "../assets/cover.jpg",
     });
-    expect(note.title).toBe("画像を表示できません: cover");
-    expect(note.reasonLine).toContain("ワークスペース外の相対パス");
-    expect(note.reasonLine).toContain("../assets/cover.jpg");
+    expect(blockedImageNoteLineText(note.title)).toBe(
+      "画像を表示できません: cover",
+    );
+    expect(blockedImageNoteLineText(note.reasonLine)).toContain(
+      "ワークスペース外の相対パス",
+    );
+    expect(blockedImageNoteLineText(note.reasonLine)).toContain(
+      "../assets/cover.jpg",
+    );
     expect(note.nextLine).toContain("親フォルダをワークスペースとして開く");
     expect(note.nextLine).toContain("assets/");
   });
@@ -155,7 +162,9 @@ describe("formatBlockedImageNote", () => {
       alt: "remote",
       reference: "example.com/shot.png",
     });
-    expect(note.reasonLine).toContain("リモート画像は設定で許可するまで読み込みません");
+    expect(blockedImageNoteLineText(note.reasonLine)).toContain(
+      "リモート画像は設定で許可するまで読み込みません",
+    );
     expect(note.nextLine).toContain("ローカルに保存");
     expect(note.nextLine).toMatch(/設定/);
   });
@@ -166,7 +175,9 @@ describe("formatBlockedImageNote", () => {
       alt: "missing",
       reference: "missing.png",
     });
-    expect(note.reasonLine).toContain("読めませんでした");
+    expect(blockedImageNoteLineText(note.reasonLine)).toContain(
+      "読めませんでした",
+    );
     expect(note.nextLine).toContain("有無");
   });
 });
@@ -217,6 +228,32 @@ describe("buildBlockedImageElement", () => {
     expect(el.querySelector(".blocked-image-document-text")).toBeNull();
     expect(el.querySelector(".blocked-image-reason")?.textContent).toContain(
       "埋め込み画像の形式またはサイズが非対応です",
+    );
+  });
+
+  it("keeps the reference at its template position even when the text also occurs in the copy", () => {
+    // 参照文字列がアプリ文言と同じ語（例: 「ワークスペース」）でも、
+    // 文書由来として包むのはテンプレートが決めた位置の1か所だけ。
+    const el = buildBlockedImageElement({
+      reason: "missing-context",
+      reference: "ワークスペース",
+    });
+
+    const fromDocument = Array.from(
+      el.querySelectorAll(".blocked-image-document-text"),
+    );
+    expect(fromDocument).toHaveLength(1);
+    expect(fromDocument[0].textContent).toBe("ワークスペース");
+    expect(fromDocument[0].getAttribute("lang")).toBe("");
+
+    const reason = el.querySelector(".blocked-image-reason") as HTMLElement;
+    // 断片はテンプレートが決めた位置（末尾の括弧の中）にあり、前方の同じ語を包まない。
+    expect(fromDocument[0].previousSibling?.textContent).toBe(
+      "理由: 画像パスを解決するワークスペース／文書コンテキストがありません（",
+    );
+    expect(fromDocument[0].nextSibling?.textContent).toBe("）。");
+    expect(reason.textContent).toBe(
+      "理由: 画像パスを解決するワークスペース／文書コンテキストがありません（ワークスペース）。",
     );
   });
 

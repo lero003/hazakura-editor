@@ -68,6 +68,8 @@ describe("LModeTaskWidget DOM contract", () => {
     expect(span.getAttribute("role")).toBe("checkbox");
     expect(span.getAttribute("aria-checked")).toBe("false");
     expect(span.getAttribute("aria-label")).toBe("Incomplete task");
+    // ラベルは英語。本文（lang=""）の内側なので、宣言も一緒に持つ。
+    expect(span.getAttribute("lang")).toBe("en");
     expect(span.getAttribute("tabindex")).toBe("0");
     expect(span.getAttribute("aria-disabled")).toBeNull();
     expect(span.dataset.lmodeTaskFrom).toBe(String(from));
