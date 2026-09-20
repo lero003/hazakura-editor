@@ -1,8 +1,12 @@
 import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
+import { readAndValidateProvisioningProfile } from "./apple-provisioning-profile.mjs";
 
-const identity = process.env.APPLE_SIGNING_IDENTITY || "-";
+const identity = process.env.APPLE_SIGNING_IDENTITY;
+if (!identity || identity === "-") {
+  throw new Error("APPLE_SIGNING_IDENTITY is required for an App Store submit build.");
+}
 const appPath = resolve(
   "src-tauri/target/universal-apple-darwin/release/bundle/macos/Hazakura Editor.app",
 );
@@ -24,8 +28,17 @@ const extensionPath = resolve(
 const extensionEntitlements = resolve(
   "src-native/background-downloader/BackgroundDownloader/BackgroundDownloader.entitlements",
 );
+const mainProfile = resolve(
+  process.env.HAZAKURA_APP_STORE_MAIN_PROFILE ||
+    "src-tauri/profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile",
+);
 const extensionProfile = resolve(
-  "src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile",
+  process.env.HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE ||
+    "src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile",
+);
+const embeddedMainProfile = resolve(
+  appPath,
+  "Contents/embedded.provisionprofile",
 );
 const embeddedExtensionProfile = resolve(
   extensionPath,
@@ -48,6 +61,7 @@ for (const path of [
   helperEntitlements,
   extensionPath,
   extensionEntitlements,
+  mainProfile,
   extensionProfile,
 ]) {
   if (!existsSync(path)) {
@@ -55,7 +69,27 @@ for (const path of [
   }
 }
 
+const mainProfileMetadata = readAndValidateProvisioningProfile(
+  mainProfile,
+  "dev.hazakura.editor",
+  "group.dev.hazakura.editor",
+);
+const extensionProfileMetadata = readAndValidateProvisioningProfile(
+  extensionProfile,
+  "dev.hazakura.editor.background-downloader",
+  "group.dev.hazakura.editor",
+);
+
+copyFileSync(mainProfile, embeddedMainProfile);
 copyFileSync(extensionProfile, embeddedExtensionProfile);
+console.log(
+  `Embedded main provisioning profile: ${basename(mainProfile)} ` +
+    `(expires ${mainProfileMetadata.expiresAt})`,
+);
+console.log(
+  `Embedded extension provisioning profile: ${basename(extensionProfile)} ` +
+    `(expires ${extensionProfileMetadata.expiresAt})`,
+);
 console.log(`Signing Background Download extension: ${extensionPath}`);
 run("codesign", [
   "--force",

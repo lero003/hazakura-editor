@@ -12,7 +12,7 @@ Last reviewed: 2026-09-21
   `AssetPackManager`、進捗・取消・再開・削除・再起動復元、G1/G2をsource実装した。
   Apple-hosted asset pack upload、AOT、notice最終確認、署名候補/TestFlight実機受入は未完了。Developer固定Qwenを配布catalogへ
   入れず、任意URL/path/GGUFと自動fallbackも足さない。
-  最終のSwift 24、Rust 417（2 ignored）、frontend 2,646、model asset 10、surface 129、
+  最終のSwift 24、Rust 417（2 ignored）、frontend 2,646、project script 14、surface 129、
   `npm run build`とlocal preview probeは成功。
   [記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
   レビューP2追補: 起動選択を一本化し、Developer明示指定を優先・永続化せず、App Storeは無視。
@@ -23,16 +23,19 @@ Last reviewed: 2026-09-21
   「再確認」は会話を保持し、切替・確認中は重複操作と送信を止める。
   最終Rust 417（2 ignored）、frontend 2,646、surface 129件、build / preview probeは成功。
   native遅延helperテストは成功、遅延中の実ウィンドウ操作は隔離QAで導線へ到達できず未確認。
-  次は修正版`ba-package`でE4B `.aar`を作り、本体・extension profileを再生成してasset/buildを
+  次は修正版`ba-package`でE4B `.aar`を作り、macOS用の本体・extension profileと署名identityを
+  用意してasset/buildを
   uploadし、Internal TestFlightのCDN→検証→helper loadを実機で受け入れる。
   2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定。
   `scripts/core-ai-production-models.json`へ変換物revisionとfile digestをlockし、
   `scripts/prepare-core-ai-model-assets.mjs`で取得・検証・resource manifest・Apple-hosted `.aar`を
-  再生成できる。ただし現ホストのXcode 27.0 `ba-package`は公式JSONまで拡張子判定で拒否し、
+  再生成できる。ただし現ホストのXcode 27.0 `ba-package`は相対/絶対、短/長output option、
+  default/明示`package`、`template -o`の全比較で公式JSONまで同じexit 64となり、
   stage/manifest以降の`.aar`作成は修正版toolchain待ち。product helperは分離した
   `CoreAIProduction.Package.resolved`のCoreAIKit runtimeで
   E4B PLE / 12B bundleをロードする。詳細は[本番候補準備](core-ai-production-models.md)。
-  現ホストは`coreai-build`なしのためAOTも未完了。両profile、App Store Connect upload、
+  現ホストは`coreai-build`なしのためAOTも未完了。追加profileはmobile platformでpreflight拒否、
+  既存main profileはApp Groupなし、code-signing identityも0件。macOS用両profile、App Store Connect upload、
   TestFlight実機受入、license最終確認が残る。
   [2026-09-21 handoff](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)を正本にする。
   E4Bと12BはM4 Max / 128 GBのホストでproduction helperのloadと短い日本語校正まで成功。

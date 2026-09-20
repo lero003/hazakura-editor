@@ -104,14 +104,28 @@ tracked docs.
 Do not commit certificates, private keys, API keys, or provisioning
 profiles.
 
-Download the App Store provisioning profile and place it locally at:
+Download the two native macOS **Mac App Distribution** provisioning profiles and place them
+locally at:
 
 ```txt
 src-tauri/profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile
+src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile
 ```
 
-That path is ignored by `.gitignore` and is referenced only by
-`src-tauri/tauri.conf.appstore.json`.
+These paths are ignored by `.gitignore`. The signing workflow validates both profiles before the
+expensive build begins and again before embedding them. Each profile must include the `OSX`
+platform, its exact target Bundle ID, `group.dev.hazakura.editor`, a future expiry, and no enabled
+`get-task-allow`. A `.mobileprovision` whose platform list is only `iOS / xrOS / visionOS` is not a
+native macOS profile even if its display name says "Mac App Store".
+
+If the local files use different names, select them without changing tracked configuration:
+
+```bash
+HAZAKURA_APP_STORE_MAIN_PROFILE=/absolute/path/to/main.provisionprofile \
+HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE=/absolute/path/to/extension.provisionprofile \
+APPLE_SIGNING_IDENTITY="Apple Distribution: <Name> (<TEAM_ID>)" \
+  npm run build:app-store-submit
+```
 
 Place account-specific submission notes under ignored local paths such
 as:
@@ -250,12 +264,13 @@ That config sets:
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
 - `bundle.macOS.infoPlist` to `./Info.appstore.plist` for the three managed
   Apple-hosting keys
-- `bundle.macOS.files.embedded.provisionprofile` to the local profile path
+- the final signing script, rather than tracked Tauri configuration, embeds the validated main-app
+  and extension profiles after the extension has been added
 
 After Tauri finishes the submit app bundle, `npm run build:app-store-submit`
 builds and embeds `HazakuraBackgroundDownloader.appex`, then runs
-`scripts/sign-app-store-submit-app.mjs`. That post-sign step copies the ignored
-extension profile, signs the extension with its App Group entitlement, re-signs
+`scripts/sign-app-store-submit-app.mjs`. That post-sign step copies both ignored
+profiles, signs the extension with its App Group entitlement, re-signs
 each nested helper with the inherited sandbox entitlement
 (`app-store-helper.plist`), re-seals the app bundle, and verifies the deep
 signature. The distribution helper build emits `aarch64`, `x86_64`, and

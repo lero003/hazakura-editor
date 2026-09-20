@@ -48,17 +48,23 @@ remaining signed TestFlight/device acceptance item; source and local builds cann
 ## Signing handoff
 
 The extension Xcode target uses Automatic Signing when opened interactively. The repository's
-actual Tauri submission workflow already embeds a manual main-app profile, so the scripted submit
-path requires both local ignored files:
+scripted Tauri submission path embeds both profiles immediately before the final nested and app
+signatures. It validates `OSX`, the exact application identifier, the shared App Group, expiry, and
+the distribution debug setting before building. The default local ignored paths are:
 
 ```txt
 src-tauri/profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile
 src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile
 ```
 
-Regenerate both Mac App Distribution profiles after enabling the App Group. The extension profile
-must belong to `dev.hazakura.editor.background-downloader`; the main profile must belong to
-`dev.hazakura.editor`. Both must contain `group.dev.hazakura.editor`. Do not commit either file.
+Alternative local names can be selected with `HAZAKURA_APP_STORE_MAIN_PROFILE` and
+`HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`. The two profiles supplied on 2026-09-21 have the correct
+application identifiers and App Group, but their platform list is `iOS / xrOS / visionOS`, not
+`OSX`; the preflight correctly rejects them for this native macOS app. The older main profile is
+`OSX` but lacks the App Group. Regenerate both profiles as **Mac App Distribution** profiles. The
+current keychain also has no valid code-signing identity, so an Apple Distribution certificate and
+private key must be installed before a signed candidate can be produced. Do not commit profiles,
+certificates, or private keys.
 
 ## `.aar` blocker
 
@@ -70,17 +76,25 @@ Xcode 27.0 (27A266a)
 ba-package 2.0
 ```
 
-`xcrun ba-package template` succeeds to stdout. The following all fail at argument validation with
-exit 64 and `path extension isn’t “json”` before manifest content is evaluated:
+`xcrun ba-package template` succeeds to stdout. The 41-byte fixture now exercises the complete CLI
+matrix requested for this follow-up. The following all fail at argument validation with exit 64 and
+`path extension isn’t “json”` before manifest content is evaluated:
 
-- Apple's own template with `template --output-path .../apple-template.json`
-- a 41-byte asset and minimal valid JSON with `evaluate .../manifest.json`
-- the same fixture with `package .../manifest.json --output-path ...smoke.v1.aar`
+- Apple's own template with relative `template -o apple-template.json` and
+  `template --output-path apple-template-long.json`
+- relative and absolute `evaluate manifest.json`
+- Apple's documented default package form `ba-package manifest.json -o smoke.aar`, with relative
+  and absolute paths
+- explicit `package manifest.json` with relative and absolute paths, using both `-o` and
+  `--output-path`
 - the pinned E4B Background Assets manifest
 
-This classifies the current failure as a toolchain path-extension-validation defect, not an npm
-wrapper, model-manifest, payload-size, or archive-format issue. No fake `.aar` is created. A corrected
-Xcode `ba-package` or Apple's official compatible packaging tool is required before upload.
+There is no success/failure split by relative versus absolute path, short versus long output option,
+or default versus explicit `package`. This confirms the current failure as a toolchain
+path-extension-validation defect, not an npm wrapper, model-manifest, payload-size, CLI-form, or
+archive-format issue. The production script nevertheless now uses Apple's documented default
+package command with relative paths. No fake `.aar` is created. A corrected Xcode `ba-package` or
+Apple's official compatible packaging tool is required before upload.
 
 Expected output after that toolchain is available:
 
@@ -103,7 +117,7 @@ not the catalog revision and cannot be reported before a successful upload/proce
 - `npm run coreai:ba-package:reproduce`: the minimal fixture reproduces the toolchain defect above;
   no `.aar` exists.
 - `npm run typecheck`, `npm run build:vite`, and `npm test`: pass. Vitest reports 295 files and
-  2,646 tests; the production-model scripts report another 10 tests.
+  2,646 tests; the production-model and provisioning-profile scripts report another 14 tests.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and
   `cargo test --manifest-path src-tauri/Cargo.toml`: pass; 417 tests passed and 2 session-dependent
   tests were ignored.

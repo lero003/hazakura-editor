@@ -14,7 +14,7 @@ Last reviewed: 2026-09-21
   `BA*` keys、`AssetPackManager` download / progress / cancel / resume / remove / restart復元を追加した。
   Developer production catalogは空、12Bは未公開。署名候補、Apple upload、TestFlight受入、
   本番モデル採用の証跡ではない。
-  最終のSwift 24件、Rust 417件（2 ignored）、frontend 2,646件、model asset 10件、
+  最終のSwift 24件、Rust 417件（2 ignored）、frontend 2,646件、project script 14件、
   App Store surface 129件とローカル`npm run build`は成功。
   [配布前記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
   外部レビューP2追補でDeveloper明示テスト選択を維持し、App Storeは指定を無視するよう修正。
@@ -28,6 +28,9 @@ Last reviewed: 2026-09-21
   固定し、community変換物のcommit/file digest、CoreAIKit runtime、再現可能なBackground Assets
   stage/manifest/`.aar`準備処理を追加した。[候補・再現手順・残ゲート](core-ai-production-models.md)。
   現ホストのXcode 27.0 `ba-package`は公式JSONまで拡張子判定で拒否するため`.aar`作成は未完了。
+  相対/絶対path、`-o`/`--output-path`、default/明示`package`、Appleの`template -o`を比較しても
+  全て同じexit 64となり、CLI形式では回避できないことを確認した。追加profileは正しいIDとApp Groupを
+  持つが`OSX`ではなく、署名前preflightで拒否する。macOS profileと署名identityは未準備。
   `coreai-build`も利用できずAOTは未完了。`.aar`、Apple CDN、TestFlight実機取得、
   production helperからのmaterialized path読込、品質採用、App Store出荷を確認した状態ではない。
   E4Bと12BはいずれもM4 Max / 128 GBのローカルproduction helperでloadと短い日本語校正を

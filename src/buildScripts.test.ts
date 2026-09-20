@@ -215,7 +215,7 @@ describe("macOS build scripts", () => {
     );
   });
 
-  it("keeps the App Store submission command on a provisioning-profile config", () => {
+  it("embeds validated main and extension profiles during App Store signing", () => {
     expect(packageJson.scripts["build:app-store-submit"]).toContain(
       "HAZAKURA_DISTRIBUTION_LANE=app-store",
     );
@@ -226,6 +226,9 @@ describe("macOS build scripts", () => {
       "npm run build:tauri:app-store-submit",
     );
     expect(packageJson.scripts["build:app-store-submit"]).toContain(
+      "node scripts/validate-app-store-profiles.mjs",
+    );
+    expect(packageJson.scripts["build:app-store-submit"]).toContain(
       "node scripts/sign-app-store-submit-app.mjs",
     );
     expect(packageJson.scripts["build:app-store-submit"]).toContain(
@@ -234,9 +237,7 @@ describe("macOS build scripts", () => {
     expect(packageJson.scripts["build:tauri:app-store-submit"]).toContain(
       "--config src-tauri/tauri.conf.appstore.json",
     );
-    expect(appStoreSubmitConfig).toContain(
-      '"embedded.provisionprofile": "./profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile"',
-    );
+    expect(appStoreSubmitConfig).not.toContain("embedded.provisionprofile");
     expect(appStoreSubmitConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStoreSubmitConfigJson.build?.beforeBuildCommand).toBe(
       "npm run build:apple-assist-helper:distribution && npm run build:import-assist-helper:live && npm run build:vite",
@@ -256,6 +257,12 @@ describe("macOS build scripts", () => {
     );
     expect(appStoreSubmitSignScript).toContain(
       "Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile",
+    );
+    expect(appStoreSubmitSignScript).toContain("HAZAKURA_APP_STORE_MAIN_PROFILE");
+    expect(appStoreSubmitSignScript).toContain("HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE");
+    expect(appStoreSubmitSignScript).toContain("readAndValidateProvisioningProfile");
+    expect(appStoreSubmitSignScript).toContain(
+      "APPLE_SIGNING_IDENTITY is required for an App Store submit build",
     );
     expect(appleAssistHelperLiveScript).toContain(
       "hazakura-local-assist-helper-universal-apple-darwin",

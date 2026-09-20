@@ -93,18 +93,34 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
 ```
 
 `download`はpinned revisionから取得し、全ファイルのsizeとSHA-256を照合してからstageへ移す。
-`package`は展開後resource manifestを再生成・再検証し、`ba-package evaluate`を通した後に`.aar`を
-作る。`archive.json`には最終archiveのsize、SHA-256、残release blockerを記録する。
+`package`は展開後resource manifestを再生成・再検証し、version rootをworking directoryとして
+相対pathで`ba-package evaluate manifests/background-assets-manifest.json`を通す。その後、Appleの
+公式例と同じdefault package形式（`ba-package manifests/background-assets-manifest.json -o
+archives/<asset-pack-id>.aar`）で`.aar`を作る。`archive.json`には最終archiveのsize、SHA-256、
+残release blockerを記録する。
 
-### 2026-09-20 host toolchain result
+### 2026-09-21 host toolchain result
 
 この作業ホストのXcode 27.0（27A266a）に含まれる`ba-package 2.0`は、Apple公式手順どおりの
 `Manifest.json`と、このリポジトリが生成した`.json`の双方を、`path extension isn’t “json”`として
-`template -o` / `evaluate` / `package`の入口で拒否する。したがって、検証済みstageとmanifestまでは
-作成するが、別形式の偽`.aar`は作らない。失敗内容はモデル別`archives/PACKAGING-BLOCKED.md`へ残す。
-修正版toolchainで同じ`npm run coreai:models:package`を再実行し、成功後だけ`.aar`をupload対象とする。
-`npm run coreai:ba-package:reproduce`はApple公式template、41 byteのfixture、`evaluate`、`package`を
-既存モデルscriptから切り離して再現し、同じ入口エラーをJSON reportへ残す。
+引数検証時に拒否する。41 byte fixtureで次を独立比較した。
+
+| 入力 | 相対path | 絶対path |
+| --- | --- | --- |
+| `template -o <json>` | exit 64 | 対象外 |
+| `template --output-path <json>` | exit 64 | 対象外 |
+| `evaluate <json>` | exit 64 | exit 64 |
+| default package `<json> -o <aar>` | exit 64 | exit 64 |
+| `package <json> -o <aar>` | exit 64 | exit 64 |
+| `package <json> --output-path <aar>` | exit 64 | exit 64 |
+
+`template`のstdout出力だけは成功するが、Apple自身のtemplateを`template -o apple-template.json`で
+保存する入口も同じエラーになる。したがって、absolute-path処理、`-o`の別名、`package`
+サブコマンドの世代差、Hazakura manifest内容のいずれでもなく、このtoolchainのpath-extension
+検証不具合と判断する。検証済みstageとmanifestまでは保持するが、別形式の偽`.aar`は作らない。
+失敗内容はモデル別`archives/PACKAGING-BLOCKED.md`へ残す。修正版toolchainで同じ
+`npm run coreai:models:package`を再実行し、成功後だけ`.aar`をupload対象とする。
+`npm run coreai:ba-package:reproduce`は全比較をJSON reportへ残す。
 
 ## Locked Apple-hosted asset pack IDs
 
@@ -149,13 +165,20 @@ Developer Portal側は次の値で準備済み。
 - App Group: `group.dev.hazakura.editor`
 
 両App IDへ同じApp Groupを付与済み。コード側にもこの値でextension、entitlements、Info.plist、
-AssetPackManagerを接続した。残る署名準備は、App Groupを含むMac App Distribution profileを
-両target用に再生成し、ignoredな次のpathへ置くこと。
+AssetPackManagerを接続した。署名scriptはprofileを埋め込む前に`OSX` platform、正確なBundle ID、
+App Group、有効期限、`get-task-allow`を検査する。App Groupを含むMac App Distribution profileを
+両target用に作り、ignoredな次のpathへ置く。
 
 ```txt
 src-tauri/profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile
 src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile
 ```
+
+別名で保存する場合は`HAZAKURA_APP_STORE_MAIN_PROFILE`と
+`HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`で指定できる。2026-09-21に追加された2 profileは
+Bundle IDとApp Groupは正しいが、`Platform`が`iOS / xrOS / visionOS`で`OSX`を含まないため、
+native macOS appには使用せずpreflightで拒否した。既存main profileは`OSX`だがApp Groupを含まない。
+Apple Developer Portalでprofile種別をmacOSのMac App Distributionとして両方再生成する必要がある。
 
 `.aar`ができた後のApp Store Connect作業は次の順序にする。
 

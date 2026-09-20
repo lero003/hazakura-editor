@@ -11,7 +11,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { basename, dirname, join, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -249,8 +249,9 @@ export function formatPackagingBlocker(model, toolchain, details) {
     `- Toolchain: \`${toolchain.replaceAll("\n", " / ")}\`\n\n` +
     `The staged model and manifests remain available and verified. No .aar was created.\n\n` +
     `\`\`\`text\n${details.trim()}\n\`\`\`\n\n` +
-    `Re-run \`npm run coreai:models:package -- --model=${model.key}\` with an Xcode ` +
-    `toolchain whose \`ba-package\` accepts Apple's documented JSON manifest input.\n`;
+    `Run \`npm run coreai:ba-package:reproduce\` to compare Apple's documented CLI form ` +
+    `with the installed toolchain, then re-run ` +
+    `\`npm run coreai:models:package -- --model=${model.key}\`.\n`;
 }
 
 function runBaPackage(args, options) {
@@ -262,7 +263,7 @@ function runBaPackage(args, options) {
     if (/path extension isn.t [“\"]?json/i.test(details)) {
       throw new Error(
         `The installed ba-package rejects Apple's documented .json manifest input. ` +
-        `Use a corrected Xcode toolchain and retry.\n${details}`,
+        `Run npm run coreai:ba-package:reproduce to classify the CLI compatibility issue.\n${details}`,
       );
     }
     throw error;
@@ -455,6 +456,33 @@ export function buildBackgroundAssetsManifest(model) {
   };
 }
 
+export function buildBaPackageCommands(manifestPath, archivePath) {
+  const cwd = dirname(dirname(manifestPath));
+  const manifestArgument = relative(cwd, manifestPath);
+  const archiveArgument = relative(cwd, archivePath);
+  for (const [label, argument] of [
+    ["manifest", manifestArgument],
+    ["archive", archiveArgument],
+  ]) {
+    if (
+      argument.length === 0 ||
+      argument === ".." ||
+      argument.startsWith(`..${sep}`) ||
+      resolve(cwd, argument) !== resolve(label === "manifest" ? manifestPath : archivePath)
+    ) {
+      throw new Error(`ba-package ${label} path must stay inside ${cwd}.`);
+    }
+  }
+  return {
+    cwd,
+    evaluate: ["evaluate", manifestArgument],
+    // Apple's managed asset-pack documentation uses the default package
+    // subcommand and short output option. Keep this exact form because some
+    // ba-package 2.0 builds reject equivalent explicit/absolute invocations.
+    package: [manifestArgument, "-o", archiveArgument, "--verbose"],
+  };
+}
+
 async function writeManifests(model, outputRoot) {
   const versionRoot = join(outputRoot, model.key, model.catalogVersion);
   const manifestRoot = join(versionRoot, "manifests");
@@ -510,12 +538,11 @@ async function packageModel(model, outputRoot) {
   // to the external packaging tool. A toolchain failure must not mask a
   // corrupt or incomplete stage.
   const resourceManifest = await verifyModel(model, outputRoot);
+  const commands = buildBaPackageCommands(manifestPath, archivePath);
   try {
-    runBaPackage(["evaluate", manifestPath], { cwd: dirname(manifestPath) });
+    runBaPackage(commands.evaluate, { cwd: commands.cwd });
     await rm(archivePath, { force: true });
-    runBaPackage(["package", manifestPath, "--output-path", archivePath, "--verbose"], {
-      cwd: dirname(manifestPath),
-    });
+    runBaPackage(commands.package, { cwd: commands.cwd });
   } catch (error) {
     const toolchain = run("xcodebuild", ["-version"]).trim();
     const details = error instanceof Error ? error.message : String(error);

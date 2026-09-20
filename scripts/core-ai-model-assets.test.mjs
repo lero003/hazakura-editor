@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import {
   buildBackgroundAssetsManifest,
+  buildBaPackageCommands,
   buildDownloadCommand,
   buildModelMetadata,
   buildResourceManifest,
@@ -103,6 +104,23 @@ test("Background Assets manifests are on-demand, macOS-only, and contain no netw
   assert.deepEqual(manifest.platforms, ["macOS"]);
   assert.equal(JSON.stringify(manifest).includes("http"), false);
   assert.equal(manifest.fileSelectors[0].directoryDestination.startsWith("CoreAIModels/"), true);
+});
+
+test("ba-package uses Apple's documented default package command with relative paths", () => {
+  const commands = buildBaPackageCommands(
+    "/tmp/hazakura/manifests/background-assets-manifest.json",
+    "/tmp/hazakura/archives/model.aar",
+  );
+  assert.deepEqual(commands, {
+    cwd: "/tmp/hazakura",
+    evaluate: ["evaluate", "manifests/background-assets-manifest.json"],
+    package: [
+      "manifests/background-assets-manifest.json",
+      "-o",
+      "archives/model.aar",
+      "--verbose",
+    ],
+  });
 });
 
 test("packaging blocker records the exact toolchain failure without claiming an archive", () => {

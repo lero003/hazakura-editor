@@ -22,16 +22,19 @@ SettingsとLocal Assist窓を同期し、G2はsigned manifest、safe path、size
 
 [本番候補とasset準備の正本](core-ai-production-models.md)では、巨大なmodel/archiveを
 `.hazakura/coreai-production/`へ生成しGitへ入れない。現ホストには`ba-package`がある一方、
-Xcode 27.0の同toolが公式JSONまで拡張子判定で拒否し、`.aar`作成は修正版toolchain待ち。
+Xcode 27.0の同toolは相対/絶対、`-o`/`--output-path`、default/明示`package`の全比較と
+`template -o`で公式JSONまで拡張子判定拒否となり、`.aar`作成は修正版toolchain待ち。
 `coreai-build`もなくMac AOT済み`.aimodelc`はまだ作れない。`.aar`のローカル生成成功も
 Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡にはしない。
 
 source側は「E4BのApple CDN取得を要求し、検証後にproduction helperへ渡す」形まで進んだ。
 ただし`.aar`は未生成で、Apple CDN upload、署名済みbuild、TestFlight取得・helper load、AOT、
-16 GB機の日本語bake-off、notice最終確認は未完了。App Groupを含む本体・extension両profileも
-再生成が必要。[実装・Apple側handoff・実機手順](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)。
+16 GB機の日本語bake-off、notice最終確認は未完了。追加された本体・extension両profileはBundle IDと
+App Groupは正しいが`OSX`ではないmobile profileだったため、Mac App Distributionとして再生成が必要。
+署名scriptはplatformを含むprofile preflightを追加した。現キーチェーンには署名identityもない。
+[実装・Apple側handoff・実機手順](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)。
 
-最終検証はSwift 24件、Rust 417件（2件ignored）、frontend 2,646件、model asset 10件、
+最終検証はSwift 24件、Rust 417件（2件ignored）、frontend 2,646件、project script 14件、
 App Store surface 129件、型検査、Rust format、Vite build、`npm run build`まで成功。
 ローカルad-hoc previewに3 helperとBackground Download extensionが入り、BA設定・App Group・
 deep signatureをprobeした。署名済みApp Store pkg / TestFlightではない。
@@ -48,7 +51,8 @@ TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
 この後の最終値はRust 417件（2 ignored）、frontend 2,646件、surface 129件とbuild / preview probeが成功。
 次は遅延probe中の実ウィンドウ応答・停止受入（隔離QAでは起動導線へ到達できず未確認）。
 G1 / G2はsource実装と回帰テストまで閉じた。次は修正版`ba-package`でE4B `.aar`を生成し、
-profile再生成、asset upload / processing、署名済みInternal TestFlightの一本受入を行う。
+macOS用profileと署名identityを用意してasset upload / processing、署名済みInternal TestFlightの
+一本受入を行う。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
