@@ -104,7 +104,7 @@ tracked docs.
 Do not commit certificates, private keys, API keys, or provisioning
 profiles.
 
-Download the two native macOS **Mac App Distribution** provisioning profiles and place them
+Download the two native macOS **Mac App Store Connect** provisioning profiles and place them
 locally at:
 
 ```txt
@@ -311,7 +311,7 @@ of the following in the same release line:
 1. Review the pinned production model identity, license/provenance, download and
    installed sizes, AOT output, archive digest, and full resource manifest in
    `docs/core-ai-production-models.md` and the generated `archive.json`.
-2. Regenerate matching main-app and extension Mac App Distribution profiles with
+2. Regenerate matching main-app and extension Mac App Store Connect profiles with
    `group.dev.hazakura.editor` and place them at the ignored profile paths documented
    in `docs/core-ai-production-models.md`.
 3. Package the managed asset pack, upload it to App Store Connect, wait for Apple

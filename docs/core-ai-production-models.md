@@ -166,7 +166,7 @@ Developer Portal側は次の値で準備済み。
 
 両App IDへ同じApp Groupを付与済み。コード側にもこの値でextension、entitlements、Info.plist、
 AssetPackManagerを接続した。署名scriptはprofileを埋め込む前に`OSX` platform、正確なBundle ID、
-App Group、有効期限、`get-task-allow`を検査する。App Groupを含むMac App Distribution profileを
+App Group、有効期限、`get-task-allow`を検査する。App Groupを含むMac App Store Connect profileを
 両target用に作り、ignoredな次のpathへ置く。
 
 ```txt
@@ -178,7 +178,7 @@ src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisio
 `HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`で指定できる。2026-09-21に追加された2 profileは
 Bundle IDとApp Groupは正しいが、`Platform`が`iOS / xrOS / visionOS`で`OSX`を含まないため、
 native macOS appには使用せずpreflightで拒否した。既存main profileは`OSX`だがApp Groupを含まない。
-Apple Developer Portalでprofile種別をmacOSのMac App Distributionとして両方再生成する必要がある。
+Apple Developer PortalのDistributionで`Mac App Store Connect`を選び、両方再生成する必要がある。
 
 `.aar`ができた後のApp Store Connect作業は次の順序にする。
 

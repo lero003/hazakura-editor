@@ -30,7 +30,7 @@ Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡には
 source側は「E4BのApple CDN取得を要求し、検証後にproduction helperへ渡す」形まで進んだ。
 ただし`.aar`は未生成で、Apple CDN upload、署名済みbuild、TestFlight取得・helper load、AOT、
 16 GB機の日本語bake-off、notice最終確認は未完了。追加された本体・extension両profileはBundle IDと
-App Groupは正しいが`OSX`ではないmobile profileだったため、Mac App Distributionとして再生成が必要。
+App Groupは正しいが`OSX`ではないmobile profileだったため、Mac App Store Connectとして再生成が必要。
 署名scriptはplatformを含むprofile preflightを追加した。現キーチェーンには署名identityもない。
 [実装・Apple側handoff・実機手順](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)。
 

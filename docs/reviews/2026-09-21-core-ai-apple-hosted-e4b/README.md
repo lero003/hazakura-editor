@@ -61,7 +61,7 @@ Alternative local names can be selected with `HAZAKURA_APP_STORE_MAIN_PROFILE` a
 `HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`. The two profiles supplied on 2026-09-21 have the correct
 application identifiers and App Group, but their platform list is `iOS / xrOS / visionOS`, not
 `OSX`; the preflight correctly rejects them for this native macOS app. The older main profile is
-`OSX` but lacks the App Group. Regenerate both profiles as **Mac App Distribution** profiles. The
+`OSX` but lacks the App Group. Regenerate both as **Mac App Store Connect** profiles. The
 current keychain also has no valid code-signing identity, so an Apple Distribution certificate and
 private key must be installed before a signed candidate can be produced. Do not commit profiles,
 certificates, or private keys.
