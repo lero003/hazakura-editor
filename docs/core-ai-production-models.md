@@ -175,10 +175,11 @@ src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisio
 ```
 
 別名で保存する場合は`HAZAKURA_APP_STORE_MAIN_PROFILE`と
-`HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`で指定できる。2026-09-21に追加された2 profileは
-Bundle IDとApp Groupは正しいが、`Platform`が`iOS / xrOS / visionOS`で`OSX`を含まないため、
-native macOS appには使用せずpreflightで拒否した。既存main profileは`OSX`だがApp Groupを含まない。
-Apple Developer PortalのDistributionで`Mac App Store Connect`を選び、両方再生成する必要がある。
+`HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`で指定できる。最初に追加されたmobile platformの2 profileは
+preflightで拒否したが、2026-09-21に再生成された`Mac App Store Connect` profileは、両targetとも
+`OSX`、正しいBundle ID、`group.dev.hazakura.editor`、有効期限を満たした。profile内certificateと
+インストール済みApple Distribution identityの一致も確認し、3.1.0 build 143の署名app/pkg作成と
+distribution probeを通した。profileとcertificateは引き続きGitへ含めない。
 
 `.aar`ができた後のApp Store Connect作業は次の順序にする。
 

@@ -264,5 +264,5 @@ echo "== Gatekeeper assessment =="
 if spctl -a -vv -t open "$APP" 2>&1; then
     echo "spctl: accepted"
 else
-    echo "spctl: rejected or inconclusive (expected for local or not-notarized preview builds)"
+    echo "spctl: rejected or inconclusive (not an App Store Connect validation gate; use Transporter or altool)"
 fi

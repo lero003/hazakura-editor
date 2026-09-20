@@ -23,9 +23,10 @@ Last reviewed: 2026-09-21
   「再確認」は会話を保持し、切替・確認中は重複操作と送信を止める。
   最終Rust 417（2 ignored）、frontend 2,646、surface 129件、build / preview probeは成功。
   native遅延helperテストは成功、遅延中の実ウィンドウ操作は隔離QAで導線へ到達できず未確認。
-  次は修正版`ba-package`でE4B `.aar`を作り、macOS用の本体・extension profileと署名identityを
-  用意してasset/buildを
-  uploadし、Internal TestFlightのCDN→検証→helper loadを実機で受け入れる。
+  再生成されたmacOS用の本体・extension profileと署名identityは検証済み。3.1.0 build 143の
+  Apple Distribution署名appとInstaller署名pkg、entitlement probe、deep verify、installer chainを
+  通した。次は修正版`ba-package`でE4B `.aar`を作り、asset/buildをuploadし、Internal TestFlightの
+  CDN→検証→helper loadを実機で受け入れる。
   2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定。
   `scripts/core-ai-production-models.json`へ変換物revisionとfile digestをlockし、
   `scripts/prepare-core-ai-model-assets.mjs`で取得・検証・resource manifest・Apple-hosted `.aar`を
@@ -34,9 +35,9 @@ Last reviewed: 2026-09-21
   stage/manifest以降の`.aar`作成は修正版toolchain待ち。product helperは分離した
   `CoreAIProduction.Package.resolved`のCoreAIKit runtimeで
   E4B PLE / 12B bundleをロードする。詳細は[本番候補準備](core-ai-production-models.md)。
-  現ホストは`coreai-build`なしのためAOTも未完了。追加profileはmobile platformでpreflight拒否、
-  既存main profileはApp Groupなし、code-signing identityも0件。macOS用両profile、App Store Connect upload、
-  TestFlight実機受入、license最終確認が残る。
+  現ホストは`coreai-build`なしのためAOTも未完了。最初のmobile profileはpreflightで拒否したが、
+  再生成profileと署名identityは上記candidateで受入済み。App Store Connect asset/app upload、
+  processing、TestFlight実機受入、license最終確認が残る。
   [2026-09-21 handoff](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)を正本にする。
   E4Bと12BはM4 Max / 128 GBのホストでproduction helperのloadと短い日本語校正まで成功。
   E4Bは7,376 ms、12Bは8,872 ms。これは16 GB / 32 GB機の性能、正式bake-off、署名app、

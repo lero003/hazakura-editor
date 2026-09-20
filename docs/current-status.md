@@ -29,8 +29,10 @@ Last reviewed: 2026-09-21
   stage/manifest/`.aar`準備処理を追加した。[候補・再現手順・残ゲート](core-ai-production-models.md)。
   現ホストのXcode 27.0 `ba-package`は公式JSONまで拡張子判定で拒否するため`.aar`作成は未完了。
   相対/絶対path、`-o`/`--output-path`、default/明示`package`、Appleの`template -o`を比較しても
-  全て同じexit 64となり、CLI形式では回避できないことを確認した。追加profileは正しいIDとApp Groupを
-  持つが`OSX`ではなく、署名前preflightで拒否する。macOS profileと署名identityは未準備。
+  全て同じexit 64となり、CLI形式では回避できないことを確認した。再生成profileは両targetとも
+  `OSX`、正しいID、App Group、有効期限を満たし、profile内certificateとApple Distribution identityも
+  一致した。3.1.0 build 143の署名app/pkg、entitlement probe、deep verify、installer signatureは成功。
+  Transporter uploadとApple processingは未実施。
   `coreai-build`も利用できずAOTは未完了。`.aar`、Apple CDN、TestFlight実機取得、
   production helperからのmaterialized path読込、品質採用、App Store出荷を確認した状態ではない。
   E4Bと12BはいずれもM4 Max / 128 GBのローカルproduction helperでloadと短い日本語校正を

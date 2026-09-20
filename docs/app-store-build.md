@@ -511,8 +511,14 @@ Verify the package before opening Transporter:
 
 ```bash
 pkgutil --check-signature "$PKG"
-spctl --assess --type install --verbose=4 "$PKG"
 ```
+
+`spctl --assess` evaluates Gatekeeper policy for software distributed outside the Mac App Store.
+A package signed with `3rd Party Mac Developer Installer` can therefore be rejected by `spctl`
+without invalidating its App Store signature. Treat `pkgutil --check-signature` as the local
+installer-chain check and use Transporter or `xcrun altool --validate-app` for the Apple-side upload
+validation. Do not re-sign this package with Developer ID just to satisfy `spctl`; that is a
+different distribution lane.
 
 Upload the `PKG_PATH` printed by the candidate workflow with
 Transporter. After upload,

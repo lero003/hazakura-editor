@@ -29,9 +29,10 @@ Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡には
 
 source側は「E4BのApple CDN取得を要求し、検証後にproduction helperへ渡す」形まで進んだ。
 ただし`.aar`は未生成で、Apple CDN upload、署名済みbuild、TestFlight取得・helper load、AOT、
-16 GB機の日本語bake-off、notice最終確認は未完了。追加された本体・extension両profileはBundle IDと
-App Groupは正しいが`OSX`ではないmobile profileだったため、Mac App Store Connectとして再生成が必要。
-署名scriptはplatformを含むprofile preflightを追加した。現キーチェーンには署名identityもない。
+16 GB機の日本語bake-off、notice最終確認は未完了。再生成された本体・extension両profileは`OSX`、
+Bundle ID、App Group、有効期限をpreflightで通過し、profile内certificateとインストール済みidentityも
+一致した。3.1.0 build 143のApple Distribution署名appとInstaller署名pkgを作成し、entitlement probe、
+deep verify、`pkgutil --check-signature`を通した。Transporter uploadとApple processingは未実施。
 [実装・Apple側handoff・実機手順](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)。
 
 最終検証はSwift 24件、Rust 417件（2件ignored）、frontend 2,646件、project script 14件、
@@ -51,8 +52,8 @@ TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
 この後の最終値はRust 417件（2 ignored）、frontend 2,646件、surface 129件とbuild / preview probeが成功。
 次は遅延probe中の実ウィンドウ応答・停止受入（隔離QAでは起動導線へ到達できず未確認）。
 G1 / G2はsource実装と回帰テストまで閉じた。次は修正版`ba-package`でE4B `.aar`を生成し、
-macOS用profileと署名identityを用意してasset upload / processing、署名済みInternal TestFlightの
-一本受入を行う。
+署名app/pkg側は準備済み。次は修正版toolchainでasset `.aar`を作り、asset upload / processing、
+app build upload、署名済みInternal TestFlightの一本受入を行う。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 

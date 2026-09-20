@@ -58,13 +58,18 @@ src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisio
 ```
 
 Alternative local names can be selected with `HAZAKURA_APP_STORE_MAIN_PROFILE` and
-`HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`. The two profiles supplied on 2026-09-21 have the correct
-application identifiers and App Group, but their platform list is `iOS / xrOS / visionOS`, not
-`OSX`; the preflight correctly rejects them for this native macOS app. The older main profile is
-`OSX` but lacks the App Group. Regenerate both as **Mac App Store Connect** profiles. The
-current keychain also has no valid code-signing identity, so an Apple Distribution certificate and
-private key must be installed before a signed candidate can be produced. Do not commit profiles,
-certificates, or private keys.
+`HAZAKURA_BACKGROUND_DOWNLOADER_PROFILE`. The first two profiles supplied on 2026-09-21 had mobile
+platforms and were correctly rejected. Their replacements pass `OSX`, exact application identifier,
+shared App Group, expiry, and distribution checks for both targets. Their embedded certificate
+matches an installed Apple Distribution identity. The same host also has a matching Mac App Store
+installer identity. Do not commit profiles, certificates, or private keys.
+
+The 3.1.0 build 143 candidate was created from clean source commit `a9ed2d57`. The universal app,
+extension, and three helpers pass deep signature and required-entitlement checks. The installer pkg
+passes `pkgutil --check-signature`; its SHA-256 is recorded in the ignored candidate metadata.
+Transporter upload and Apple processing have not been attempted. A local `spctl` rejection is not
+an App Store validation failure because Gatekeeper evaluates the outside-the-Store Developer ID
+lane; use Transporter or `altool --validate-app` for upload validation.
 
 ## `.aar` blocker
 
