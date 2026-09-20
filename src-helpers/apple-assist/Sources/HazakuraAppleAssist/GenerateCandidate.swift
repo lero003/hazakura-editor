@@ -298,6 +298,8 @@ enum GenerateCandidate {
         } ?? nil
     }
 
+    #if COREAI_TEST_BACKEND
+    @available(macOS 27.0, *)
     private static func coreAITestOptions() -> GenerationOptions {
         GenerationOptions(
             samplingMode: .greedy,
@@ -305,6 +307,7 @@ enum GenerateCandidate {
             maximumResponseTokens: CoreAITestRuntime.maximumResponseTokens
         )
     }
+    #endif
 
     private static func runCoreAITest(
         _ request: AppleAssistRequest,
