@@ -21,6 +21,9 @@ HELPERS=(
 HELPER="${HELPERS[0]}"
 PLIST="$APP/Contents/Info.plist"
 RESOURCES="$APP/Contents/Resources"
+EXTENSION="$APP/Contents/Extensions/HazakuraBackgroundDownloader.appex"
+EXTENSION_PLIST="$EXTENSION/Contents/Info.plist"
+EXTENSION_EXECUTABLE="$EXTENSION/Contents/MacOS/HazakuraBackgroundDownloader"
 
 if [ ! -d "$APP" ]; then
     echo "error: app bundle not found: $APP" >&2
@@ -45,6 +48,9 @@ echo "identifier: $(print_plist_value CFBundleIdentifier)"
 echo "name: $(print_plist_value CFBundleName)"
 echo "executable: $(print_plist_value CFBundleExecutable)"
 echo "minimumSystemVersion: $(print_plist_value LSMinimumSystemVersion)"
+echo "BAAppGroupID: $(print_plist_value BAAppGroupID)"
+echo "BAHasManagedAssetPacks: $(print_plist_value BAHasManagedAssetPacks)"
+echo "BAUsesAppleHosting: $(print_plist_value BAUsesAppleHosting)"
 
 echo
 echo "== bundled notices =="
@@ -60,6 +66,16 @@ for notice in LICENSE THIRD_PARTY_NOTICES.md; do
 done
 
 echo
+echo "== Background Download extension =="
+if [ -x "$EXTENSION_EXECUTABLE" ] && [ -f "$EXTENSION_PLIST" ]; then
+    echo "extension: present"
+    echo "identifier: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$EXTENSION_PLIST")"
+    echo "extension point: $(/usr/libexec/PlistBuddy -c 'Print :EXAppExtensionAttributes:EXExtensionPointIdentifier' "$EXTENSION_PLIST")"
+else
+    echo "extension: missing"
+fi
+
+echo
 echo "== nested helpers =="
 for helper in "${HELPERS[@]}"; do
     if [ -x "$helper" ]; then
@@ -68,6 +84,14 @@ for helper in "${HELPERS[@]}"; do
         echo "$(basename "$helper"): missing or not executable"
     fi
 done
+
+echo
+echo "== Background Download extension signature details =="
+if [ -d "$EXTENSION" ]; then
+    codesign -dvvv --entitlements - "$EXTENSION" 2>&1 || true
+else
+    echo "(extension unavailable)"
+fi
 
 echo
 echo "== codesign verify =="
@@ -111,6 +135,7 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
     fi
 
     for entitlement in \
+        "com.apple.security.application-groups" \
         "com.apple.security.files.user-selected.read-write" \
         "com.apple.security.files.bookmarks.app-scope" \
         "com.apple.security.network.client"; do
@@ -123,6 +148,45 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
             fi
         fi
     done
+
+    if [ "$(print_plist_value BAAppGroupID)" != "group.dev.hazakura.editor" ] || \
+       [ "$(print_plist_value BAHasManagedAssetPacks)" != "true" ] || \
+       [ "$(print_plist_value BAUsesAppleHosting)" != "true" ]; then
+        echo "Background Assets Info.plist settings: invalid"
+        missing_required_entitlement=1
+    else
+        echo "Background Assets Info.plist settings: present"
+    fi
+
+    if [ ! -x "$EXTENSION_EXECUTABLE" ] || [ ! -f "$EXTENSION_PLIST" ]; then
+        echo "Background Download extension: missing"
+        missing_required_entitlement=1
+    else
+        if [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$EXTENSION_PLIST")" != "dev.hazakura.editor.background-downloader" ]; then
+            echo "Background Download extension bundle identifier: invalid"
+            missing_required_entitlement=1
+        else
+            echo "Background Download extension bundle identifier: present"
+        fi
+        if [ "$(/usr/libexec/PlistBuddy -c 'Print :EXAppExtensionAttributes:EXExtensionPointIdentifier' "$EXTENSION_PLIST")" != "com.apple.background-asset-downloader-extension" ]; then
+            echo "Background Download extension point: invalid"
+            missing_required_entitlement=1
+        else
+            echo "Background Download extension point: present"
+        fi
+        for entitlement in \
+            "com.apple.security.app-sandbox" \
+            "com.apple.security.application-groups"; do
+            if has_entitlement "$EXTENSION" "$entitlement"; then
+                echo "extension $entitlement entitlement: present"
+            else
+                echo "extension $entitlement entitlement: missing"
+                if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+                    missing_required_entitlement=1
+                fi
+            fi
+        done
+    fi
 
     for entitlement in \
         "com.apple.security.network.server" \

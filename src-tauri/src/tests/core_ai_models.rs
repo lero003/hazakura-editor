@@ -1,8 +1,69 @@
 use crate::commands::apple_assist_supervisor::{store_without_helper, AssistBackendSelection};
+use crate::commands::background_assets::{BackgroundAssetSnapshot, BackgroundAssetTransport};
 use crate::commands::core_ai_models::{
     CoreAiCatalogEntry, CoreAiDistributionStatus, CoreAiModelKind, CoreAiModelStatus,
     CoreAiModelStore, SYSTEM_MODEL_ID,
 };
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+const TEST_PUBLISHED_MODEL_ID: &str = "apple:core-ai:test-pack";
+const TEST_RESOURCE_MANIFEST: &str = r#"{
+  "modelId": "apple:core-ai:test-pack",
+  "catalogVersion": "test-v1",
+  "storageDirectory": "test-pack",
+  "maxEntries": 1,
+  "files": [
+    {
+      "path": "model.bin",
+      "size": 5,
+      "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+    }
+  ]
+}
+"#;
+
+struct PublishedFixtureTransport {
+    root: PathBuf,
+}
+
+impl BackgroundAssetTransport for PublishedFixtureTransport {
+    fn snapshot(
+        &self,
+        _asset_pack_id: &str,
+        _relative_path: &str,
+    ) -> Result<BackgroundAssetSnapshot, String> {
+        Ok(BackgroundAssetSnapshot {
+            supported: true,
+            available: true,
+            phase: "downloaded".into(),
+            progress: Some(1.0),
+            path: Some(self.root.clone()),
+            error: None,
+            asset_pack_version: Some(1),
+        })
+    }
+
+    fn start(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn cancel(&self, _asset_pack_id: &str) -> Result<bool, String> {
+        Ok(true)
+    }
+
+    fn remove(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn sha256_file(&self, path: &Path) -> Result<String, String> {
+        if std::fs::read(path).map_err(|error| error.to_string())? == b"hello" {
+            Ok("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824".into())
+        } else {
+            Ok("corrupt".into())
+        }
+    }
+}
 
 fn temp_data_dir() -> std::path::PathBuf {
     std::env::temp_dir().join(format!(
@@ -13,6 +74,12 @@ fn temp_data_dir() -> std::path::PathBuf {
             .expect("clock")
             .as_nanos()
     ))
+}
+
+fn create_ready_fixture(data_dir: &std::path::Path, storage_directory: &str) {
+    let model_dir = data_dir.join("CoreAIModels").join(storage_directory);
+    std::fs::create_dir_all(&model_dir).expect("model fixture directory");
+    std::fs::write(model_dir.join("hazakura-model.json"), "{}").expect("model fixture marker");
 }
 
 #[test]
@@ -40,12 +107,100 @@ fn production_catalog_fails_closed_until_a_model_is_published() {
 }
 
 #[test]
+fn app_store_catalog_publishes_only_the_pinned_e4b_asset_pack() {
+    let developer = CoreAiModelStore::production_catalog_for_lane(false).list();
+    assert_eq!(
+        developer.distribution_status,
+        CoreAiDistributionStatus::NotPublished
+    );
+    assert_eq!(developer.models.len(), 1);
+
+    let app_store = CoreAiModelStore::production_catalog_for_lane(true).list();
+    assert_eq!(
+        app_store.distribution_status,
+        CoreAiDistributionStatus::Available
+    );
+    assert_eq!(app_store.models.len(), 2);
+    assert_eq!(
+        app_store.models[1].id,
+        "apple:core-ai:gemma-4-e4b-it-int4-v1"
+    );
+    assert_eq!(app_store.models[1].display_name, "Gemma 4 E4B");
+    assert_eq!(app_store.models[1].status, CoreAiModelStatus::NotDownloaded);
+}
+
+#[test]
+fn an_empty_model_directory_is_never_ready() {
+    let data_dir = temp_data_dir();
+    std::fs::create_dir_all(data_dir.join("CoreAIModels/empty")).unwrap();
+    let helper = store_without_helper();
+    let store = CoreAiModelStore::with_fixture_catalog(vec![CoreAiCatalogEntry::fixture(
+        "apple:core-ai:empty",
+        "Empty",
+        "empty",
+    )]);
+    store.configure(Ok(data_dir.clone()), &helper, None);
+
+    assert_eq!(
+        store.list().models[1].status,
+        CoreAiModelStatus::NotDownloaded
+    );
+    assert!(store.select("apple:core-ai:empty", &helper).is_err());
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn downloaded_pack_requires_exact_manifest_files_sizes_and_sha_before_ready() {
+    for (payload, expected) in [
+        (Some(b"hello".as_slice()), None),
+        (Some(b"short".as_slice()), Some("SHA-256 mismatch")),
+        (None, Some("missing model.bin")),
+    ] {
+        let data_dir = temp_data_dir();
+        let root = data_dir.join("materialized-test-pack");
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(
+            root.join("hazakura-resource-manifest.json"),
+            TEST_RESOURCE_MANIFEST,
+        )
+        .unwrap();
+        if let Some(payload) = payload {
+            std::fs::write(root.join("model.bin"), payload).unwrap();
+        }
+        let helper = store_without_helper();
+        let store = CoreAiModelStore::with_test_transport(
+            vec![CoreAiCatalogEntry::published_fixture(
+                TEST_PUBLISHED_MODEL_ID,
+                "test-pack",
+                TEST_RESOURCE_MANIFEST,
+            )],
+            Arc::new(PublishedFixtureTransport { root }),
+        );
+        store.configure(Ok(data_dir.clone()), &helper, None);
+
+        let result = store.refresh_model_for_test(TEST_PUBLISHED_MODEL_ID);
+        match expected {
+            None => {
+                assert_eq!(result.unwrap(), CoreAiModelStatus::Ready);
+                assert_eq!(store.list().models[1].status, CoreAiModelStatus::Ready);
+                assert!(store.select(TEST_PUBLISHED_MODEL_ID, &helper).is_ok());
+            }
+            Some(message) => {
+                assert!(result.unwrap_err().contains(message));
+                assert_eq!(store.list().models[1].status, CoreAiModelStatus::Failed);
+                assert!(store.select(TEST_PUBLISHED_MODEL_ID, &helper).is_err());
+            }
+        }
+        std::fs::remove_dir_all(data_dir).unwrap();
+    }
+}
+
+#[test]
 fn ready_catalog_model_can_be_selected_and_restored_without_frontend_path_input() {
     let data_dir = temp_data_dir();
     let model_id = "apple:core-ai:fixture-ready";
     let entry = CoreAiCatalogEntry::fixture(model_id, "Fixture Ready", "fixture-ready");
-    let model_dir = data_dir.join("CoreAIModels/fixture-ready");
-    std::fs::create_dir_all(&model_dir).expect("model fixture");
+    create_ready_fixture(&data_dir, "fixture-ready");
     let helper = store_without_helper();
     let store = CoreAiModelStore::with_fixture_catalog(vec![entry.clone()]);
     store.configure(Ok(data_dir.clone()), &helper, None);
@@ -82,7 +237,10 @@ fn published_but_missing_model_cannot_be_selected_or_fake_downloaded() {
     let download_error = store
         .start_download(model_id)
         .expect_err("transport is gated");
-    assert!(download_error.contains("not active"), "{download_error}");
+    assert!(
+        download_error.contains("not configured"),
+        "{download_error}"
+    );
 
     std::fs::remove_dir_all(data_dir).expect("cleanup");
 }
@@ -155,7 +313,7 @@ fn invalid_selection_repair_failure_does_not_abort_startup() {
 #[test]
 fn failed_selection_write_keeps_the_previous_runtime_model() {
     let data_dir = temp_data_dir();
-    std::fs::create_dir_all(data_dir.join("CoreAIModels/ready")).unwrap();
+    create_ready_fixture(&data_dir, "ready");
     let helper = store_without_helper();
     let model_id = "apple:core-ai:ready";
     let store = CoreAiModelStore::with_fixture_catalog(vec![CoreAiCatalogEntry::fixture(
@@ -172,7 +330,7 @@ fn failed_selection_write_keeps_the_previous_runtime_model() {
 #[test]
 fn app_store_ignores_all_developer_overrides_and_restores_production_selection() {
     let data_dir = temp_data_dir();
-    std::fs::create_dir_all(data_dir.join("CoreAIModels/ready")).unwrap();
+    create_ready_fixture(&data_dir, "ready");
     let model_id = "apple:core-ai:ready";
     std::fs::write(
         data_dir.join("core-ai-selection.json"),
@@ -201,7 +359,7 @@ fn app_store_ignores_all_developer_overrides_and_restores_production_selection()
 #[test]
 fn explicit_developer_override_wins_without_rewriting_production_preference() {
     let data_dir = temp_data_dir();
-    std::fs::create_dir_all(data_dir.join("CoreAIModels/ready")).unwrap();
+    create_ready_fixture(&data_dir, "ready");
     let saved = r#"{"selectedModelId":"apple:core-ai:ready"}"#;
     std::fs::write(data_dir.join("core-ai-selection.json"), saved).unwrap();
     for (value, expected) in [
@@ -312,7 +470,7 @@ fn unreadable_or_malformed_selection_is_reported_without_aborting_startup() {
 #[test]
 fn pending_generation_rejects_selection_without_writing_preferences() {
     let data_dir = temp_data_dir();
-    std::fs::create_dir_all(data_dir.join("CoreAIModels/ready")).unwrap();
+    create_ready_fixture(&data_dir, "ready");
     let helper = store_without_helper();
     let store = CoreAiModelStore::with_fixture_catalog(vec![CoreAiCatalogEntry::fixture(
         "apple:core-ai:ready",

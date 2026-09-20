@@ -123,4 +123,4 @@ lipo -create "$CORE_AI_ARM64" "$CORE_AI_X86" -output "$UNIVERSAL_DEST"
 chmod +x "$UNIVERSAL_DEST"
 
 echo "==> wrote $UNIVERSAL_DEST"
-echo "==> Core AI model catalog remains empty until an Apple-hosted asset pack is published"
+echo "==> App Store model availability is resolved at runtime; no model weights are bundled"

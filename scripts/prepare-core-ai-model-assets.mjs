@@ -458,12 +458,21 @@ export function buildBackgroundAssetsManifest(model) {
 async function writeManifests(model, outputRoot) {
   const versionRoot = join(outputRoot, model.key, model.catalogVersion);
   const manifestRoot = join(versionRoot, "manifests");
+  const payloadRoot = modelPayloadRoot(outputRoot, model);
   await mkdir(manifestRoot, { recursive: true });
   const entries = await collectManifestEntries(model, outputRoot);
   const resourceManifest = buildResourceManifest(model, entries);
   const backgroundAssetsManifest = buildBackgroundAssetsManifest(model);
   await writeFile(
     join(manifestRoot, "resource-manifest.json"),
+    stableJson(resourceManifest),
+    "utf8",
+  );
+  // The app validates the Apple-hosted materialization against the same
+  // signed catalog manifest. Keep this file outside its own `files` list so
+  // the manifest remains deterministic and cannot recursively hash itself.
+  await writeFile(
+    join(payloadRoot, "hazakura-resource-manifest.json"),
     stableJson(resourceManifest),
     "utf8",
   );

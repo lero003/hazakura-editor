@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import type { MenuLanguage } from "../../types";
 import {
+  cancelCoreAiModelDownload,
   deleteCoreAiModel,
+  listenCoreAiModelStateChanges,
   listCoreAiModels,
   selectLocalAssistModel,
   startCoreAiModelDownload,
@@ -18,21 +20,28 @@ export function CoreAiModelManager({ language }: { language: MenuLanguage }) {
 
   useEffect(() => {
     let disposed = false;
+    let unlisten: (() => void) | undefined;
     void listCoreAiModels()
       .then((next) => { if (!disposed) setCatalog(next); })
       .catch((reason: unknown) => {
         if (!disposed) setError(reason instanceof Error ? reason.message : String(reason));
       });
-    return () => { disposed = true; };
+    void listenCoreAiModelStateChanges((next) => {
+      if (!disposed) setCatalog(next);
+    }).then((stop) => {
+      if (disposed) stop(); else unlisten = stop;
+    }).catch((reason: unknown) => console.warn("Failed to listen for Core AI model state", reason));
+    return () => { disposed = true; unlisten?.(); };
   }, []);
 
-  const run = async (model: CoreAiModelSummary, action: "select" | "download" | "delete") => {
+  const run = async (model: CoreAiModelSummary, action: "select" | "download" | "cancel" | "delete") => {
     setBusyId(model.id);
     setError(null);
     try {
       if (action === "select") setCatalog(await selectLocalAssistModel(model.id));
-      if (action === "download") {
-        await startCoreAiModelDownload(model.id);
+      if (action === "download") setCatalog(await startCoreAiModelDownload(model.id));
+      if (action === "cancel") {
+        await cancelCoreAiModelDownload(model.id);
         setCatalog(await listCoreAiModels());
       }
       if (action === "delete") setCatalog(await deleteCoreAiModel(model.id));
@@ -58,12 +67,21 @@ export function CoreAiModelManager({ language }: { language: MenuLanguage }) {
           <div>
             <strong>{model.displayName}</strong>
             <span>{model.selected ? copy.selected : statusLabel(model, copy)}</span>
+            {model.status === "downloading" ? <progress
+              aria-label={copy.downloadProgress(model.displayName)}
+              max={1} value={model.progress ?? undefined}
+            /> : null}
+            {model.error ? <span className="preference-warning" role="status">{model.error}</span> : null}
           </div>
           <div className="core-ai-model-actions">
             {model.status === "ready" && !model.selected ?
               <button type="button" disabled={busy} onClick={() => void run(model, "select")}>{copy.select}</button> : null}
             {model.kind === "core_ai" && model.status === "not_downloaded" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{copy.download}</button> : null}
+            {model.kind === "core_ai" && (model.status === "paused" || model.status === "failed") ?
+              <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{model.status === "paused" ? copy.resume : copy.retry}</button> : null}
+            {model.kind === "core_ai" && model.status === "downloading" ?
+              <button type="button" disabled={busy} onClick={() => void run(model, "cancel")}>{copy.cancel}</button> : null}
             {model.kind === "core_ai" && model.status === "ready" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "delete")}>{copy.delete}</button> : null}
           </div>
@@ -87,6 +105,11 @@ function statusLabel(model: CoreAiModelSummary, copy: ManagerCopy): string {
     return copy.notDownloaded + size;
   }
   if (model.status === "not_published") return copy.notPublishedShort;
+  if (model.status === "downloading") return copy.downloading(model.progress);
+  if (model.status === "paused") return copy.paused;
+  if (model.status === "verifying") return copy.verifying;
+  if (model.status === "failed") return copy.failed;
+  if (model.status === "unsupported") return copy.unsupported;
   return copy.ready;
 }
 
@@ -94,7 +117,10 @@ function managerCopy(language: MenuLanguage) {
   if (language === "en") return {
     title: "On-device models", localOnly: "Local only", selected: "Selected", ready: "Ready",
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
-    download: "Download", delete: "Delete",
+    download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete",
+    downloading: (progress?: number | null) => progress == null ? "Downloading" : `Downloading · ${Math.round(progress * 100)}%`,
+    downloadProgress: (name: string) => `Download progress for ${name}`,
+    paused: "Paused", verifying: "Verifying download", failed: "Download unavailable", unsupported: "Requires macOS 27",
     notPublished: "No Core AI model has been published for download yet. This build includes the adapter and management controls. Apple Intelligence is the default model.",
     developerOverride: "A Developer test backend is selected for this session. Restart without the test override to manage models.",
     managementUnavailable: "Model management is unavailable. You can continue editing documents. Resolve the following error and restart the app:",
@@ -103,7 +129,10 @@ function managerCopy(language: MenuLanguage) {
   if (language === "kana") return {
     title: "この Mac の もでる", localOnly: "この Mac だけ", selected: "えらんでゐます", ready: "つかへます",
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
-    download: "いれる", delete: "けす",
+    download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす",
+    downloading: (progress?: number | null) => progress == null ? "いれてゐます" : `いれてゐます · ${Math.round(progress * 100)}%`,
+    downloadProgress: (name: string) => `${name}を いれる すすみぐあい`,
+    paused: "とめてゐます", verifying: "たしかめてゐます", failed: "いれられませんでした", unsupported: "macOS 27 から つかへます",
     notPublished: "Core AI の もでるは まだ くばってゐません。この あぷりには うけいれと かんりの しくみだけが あり、はじめは Apple Intelligence を つかひます。",
     developerOverride: "ためすための もでるを えらんでゐます。もでるを かんりするには、ためすための していを はづして あぷりを ひらきなほして ください。",
     managementUnavailable: "もでるを かんりできません。ぶんしょは そのまま かきつづけられます。つぎの げんいんを なおして あぷりを ひらきなほして ください：",
@@ -112,7 +141,10 @@ function managerCopy(language: MenuLanguage) {
   return {
     title: "オンデバイスモデル", localOnly: "ローカルのみ", selected: "選択中", ready: "利用可能",
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
-    download: "ダウンロード", delete: "削除",
+    download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除",
+    downloading: (progress?: number | null) => progress == null ? "ダウンロード中" : `ダウンロード中 · ${Math.round(progress * 100)}%`,
+    downloadProgress: (name: string) => `${name}のダウンロード進捗`,
+    paused: "一時停止", verifying: "検証中", failed: "ダウンロード失敗", unsupported: "macOS 27以降が必要",
     notPublished: "Core AI モデルはまだ配布されていません。このビルドには実行アダプタと管理画面だけが入り、標準では Apple Intelligence を使います。",
     developerOverride: "Developer用のテストモデル指定が有効です。モデルを管理するには、テスト指定を外してアプリを再起動してください。",
     managementUnavailable: "モデル管理を利用できません。文書の編集は続けられます。次の原因を解消してアプリを再起動してください：",

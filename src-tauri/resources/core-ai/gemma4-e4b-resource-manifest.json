@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "modelId": "apple:core-ai:gemma-4-e4b-it-int4-v1",
+  "catalogVersion": "2026.09.20.1",
+  "storageDirectory": "gemma-4-e4b-it-int4-v1",
+  "expandedBytes": 6807926119,
+  "maxExpandedBytes": 6824703335,
+  "maxEntries": 12,
+  "files": [
+    {
+      "path": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.hash",
+      "size": 32,
+      "sha256": "cbbda8eafdbbdc8ae9ea83ef131950829b8306226951ca4b0644946c803941db"
+    },
+    {
+      "path": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.mlirb",
+      "size": 3956099192,
+      "sha256": "37581be8c9756f33a8639c32536a4d5d760f2c2b2fba1ee0fe98885d3b83dc09"
+    },
+    {
+      "path": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/metadata.json",
+      "size": 105,
+      "sha256": "d623df0677f44cfaf90cc49ddc7d4377b6c2015f8f09a75f0dd00b9bc9ca4243"
+    },
+    {
+      "path": "decoder/metadata.json",
+      "size": 640,
+      "sha256": "560cd7ffe9ba2d2cdd5d0aabba580a0ac47a2da401f8e7c1aee82c58901ae566"
+    },
+    {
+      "path": "decoder/tokenizer/chat_template.jinja",
+      "size": 18569,
+      "sha256": "0a2c8073c878ab1da004bee933a998606537bbb62016310352c7285c3f01c5b5"
+    },
+    {
+      "path": "decoder/tokenizer/tokenizer_config.json",
+      "size": 2744,
+      "sha256": "c273475fdd20f9cf8ee67b949dc1a5ac6afb096c974de93cb47e52c870229ee8"
+    },
+    {
+      "path": "decoder/tokenizer/tokenizer.json",
+      "size": 32169626,
+      "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f"
+    },
+    {
+      "path": "hazakura-model.json",
+      "size": 1925,
+      "sha256": "39044c981fa4d39fda8c0869b2d22e91a9295129d00538636aa0ac04fa55c5cc"
+    },
+    {
+      "path": "LICENSE-APACHE-2.0.txt",
+      "size": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "tables/embed_per_layer.i8",
+      "size": 2818572288,
+      "sha256": "891f77177b4ab317e5562b6684c5f7825cd5795a9c4b26f97af121ebf4bb7ccb"
+    },
+    {
+      "path": "tables/embed_per_layer.scale.f32",
+      "size": 1048576,
+      "sha256": "512d9d0a2b089ae37594ce80e848a08e1b5a6b3f40014a32333e6d191a9b6131"
+    },
+    {
+      "path": "THIRD_PARTY_MODEL_NOTICE.md",
+      "size": 1065,
+      "sha256": "f98b7056e8dbab430d21ce4b9113118e33507342e3bfb24f569cc50bc5af5235"
+    }
+  ]
+}

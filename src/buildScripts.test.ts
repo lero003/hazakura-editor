@@ -23,6 +23,23 @@ const appStoreSubmitSignScript = readFileSync(
   "scripts/sign-app-store-submit-app.mjs",
   "utf8",
 );
+const backgroundDownloaderEmbedScript = readFileSync(
+  "scripts/embed-background-downloader-extension.mjs",
+  "utf8",
+);
+const backgroundDownloaderSource = readFileSync(
+  "src-native/background-downloader/BackgroundDownloader/DownloaderExtension.swift",
+  "utf8",
+);
+const backgroundDownloaderInfo = readFileSync(
+  "src-native/background-downloader/BackgroundDownloader/Info.plist",
+  "utf8",
+);
+const backgroundDownloaderEntitlements = readFileSync(
+  "src-native/background-downloader/BackgroundDownloader/BackgroundDownloader.entitlements",
+  "utf8",
+);
+const appStoreInfo = readFileSync("src-tauri/Info.appstore.plist", "utf8");
 const appleAssistHelperLiveScript = readFileSync(
   "scripts/build-apple-assist-helper-live.sh",
   "utf8",
@@ -160,6 +177,9 @@ describe("macOS build scripts", () => {
     expect(packageJson.scripts["build:app-store-preview"]).toContain(
       "npm run build:tauri:app-store-preview",
     );
+    expect(packageJson.scripts["build:app-store-preview"]).toContain(
+      "embed-background-downloader-extension.mjs preview",
+    );
     expect(packageJson.scripts["build:tauri:app-store-preview"]).toContain(
       "env -u APPLE_SIGNING_IDENTITY",
     );
@@ -208,6 +228,9 @@ describe("macOS build scripts", () => {
     expect(packageJson.scripts["build:app-store-submit"]).toContain(
       "node scripts/sign-app-store-submit-app.mjs",
     );
+    expect(packageJson.scripts["build:app-store-submit"]).toContain(
+      "embed-background-downloader-extension.mjs submit",
+    );
     expect(packageJson.scripts["build:tauri:app-store-submit"]).toContain(
       "--config src-tauri/tauri.conf.appstore.json",
     );
@@ -231,6 +254,9 @@ describe("macOS build scripts", () => {
     expect(appStoreSubmitSignScript).toContain(
       "mac-app-store.entitlements",
     );
+    expect(appStoreSubmitSignScript).toContain(
+      "Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile",
+    );
     expect(appleAssistHelperLiveScript).toContain(
       "hazakura-local-assist-helper-universal-apple-darwin",
     );
@@ -238,6 +264,24 @@ describe("macOS build scripts", () => {
     expect(packageJson.scripts["build:apple-assist-helper:distribution"]).toBe(
       "bash scripts/build-apple-assist-helper-distribution.sh",
     );
+  });
+
+  it("configures the Apple-hosted managed Background Download extension", () => {
+    for (const config of [appStorePreviewConfig, appStoreSubmitConfig]) {
+      expect(config).toContain('"infoPlist": "./Info.appstore.plist"');
+    }
+    expect(appStoreInfo).toContain("<key>BAAppGroupID</key>");
+    expect(appStoreInfo).toContain("group.dev.hazakura.editor");
+    expect(appStoreInfo).toContain("<key>BAHasManagedAssetPacks</key>");
+    expect(appStoreInfo).toContain("<key>BAUsesAppleHosting</key>");
+    expect(appStoreInfo).not.toMatch(/BADownloaderExtensionClass|BAInitialDownloadRestrictions|BAMaxInstallSize/u);
+    expect(backgroundDownloaderSource).toContain("StoreDownloaderExtension");
+    expect(backgroundDownloaderSource).toContain("shouldDownload");
+    expect(backgroundDownloaderInfo).toContain("com.apple.background-asset-downloader-extension");
+    expect(backgroundDownloaderEntitlements).toContain("group.dev.hazakura.editor");
+    expect(appStoreEntitlements).toContain("group.dev.hazakura.editor");
+    expect(backgroundDownloaderEmbedScript).toContain("HazakuraBackgroundDownloader.appex");
+    expect(backgroundDownloaderEmbedScript).toContain("CURRENT_PROJECT_VERSION");
   });
 
   it("uses a review-neutral Local Assist helper executable name in shipping scripts", () => {

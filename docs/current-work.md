@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
-Last reviewed: 2026-09-20
+Last reviewed: 2026-09-21
 
 ## Core AI 配布前基盤 — TestFlight手前（2026-09-20）
 
@@ -13,14 +13,12 @@ Last reviewed: 2026-09-20
 利用可能モデルの選択を接続し、Rustだけがapp-privateな選択と検証済みpathを保持する。
 frontendから任意path / URL / GGUFを渡す入口、製品内変換、cloud fallbackは追加しない。
 
-本番catalogは意図的に空。2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを
-高品質比較候補としてidentity、変換物revision、file digest、Apple-hosted asset pack IDを固定し、
-再現可能なdownload / verify / `ba-package`処理とproduct helper用CoreAIKit runtimeを追加した。
-一方、AOT、権利の最終確認、Background Assets接続、日本語bake-off、G1/G2が未完了なので、
-現在の配布buildは引き続き `not_published` を表示して
-Apple Intelligenceだけを選べる。download / cancel / deleteのcommand契約はあるが、
-Background Assets downloader extension、App Group、pack登録が完了するまでfail closed。
-モデルをappへ仮同梱したり、Developer用Qwen fixtureを本番idへ昇格したりしない。
+2026-09-21に内部TestFlight受入へ進むため、App StoreレーンだけGemma 4 E4Bをproduction
+catalogへ接続した。12BとDeveloperレーンのproduction catalogは未公開のまま。Apple-hosted managed
+Background Download extension、`group.dev.hazakura.editor`、3つの`BA*` key、`AssetPackManager`の
+download / progress / cancel / resume / remove / restart復元を実装した。G1はmodel-state eventで
+SettingsとLocal Assist窓を同期し、G2はsigned manifest、safe path、size、全SHA-256検証後だけ
+`Ready`にする。モデルをappへ仮同梱したり、Developer用Qwen fixtureを本番idへ昇格したりしない。
 
 [本番候補とasset準備の正本](core-ai-production-models.md)では、巨大なmodel/archiveを
 `.hazakura/coreai-production/`へ生成しGitへ入れない。現ホストには`ba-package`がある一方、
@@ -28,14 +26,15 @@ Xcode 27.0の同toolが公式JSONまで拡張子判定で拒否し、`.aar`作�
 `coreai-build`もなくMac AOT済み`.aimodelc`はまだ作れない。`.aar`のローカル生成成功も
 Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡にはしない。
 
-このスライスは「CDNへモデルを置く前でも、同じ配布build形でadapterと管理面を検証できる」
-ところまで。本番モデル選定とasset作成だけで出荷可能になるわけではなく、AOT、
-Background Assets設定とupload、G1/G2、notice最終確認、署名済み同一候補のTestFlight実機受入が残る。
-[実装・検証・残ゲート](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
+source側は「E4BのApple CDN取得を要求し、検証後にproduction helperへ渡す」形まで進んだ。
+ただし`.aar`は未生成で、Apple CDN upload、署名済みbuild、TestFlight取得・helper load、AOT、
+16 GB機の日本語bake-off、notice最終確認は未完了。App Groupを含む本体・extension両profileも
+再生成が必要。[実装・Apple側handoff・実機手順](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)。
 
-検証はSwift 21件、Rust 400件（2件ignored）、frontend 2,630件、App Store surface 128件、
-型検査、Rust format、`npm run build`まで成功。ローカルad-hoc previewに3 helperが入り、
-deep signatureを確認した。署名済みApp Store pkg / TestFlightではない。
+最終検証はSwift 24件、Rust 417件（2件ignored）、frontend 2,646件、model asset 10件、
+App Store surface 129件、型検査、Rust format、Vite build、`npm run build`まで成功。
+ローカルad-hoc previewに3 helperとBackground Download extensionが入り、BA設定・App Group・
+deep signatureをprobeした。署名済みApp Store pkg / TestFlightではない。
 
 外部レビューP2追補では、Developer明示テスト選択の起動時上書きと、任意機能の
 モデル管理エラーが通常起動を止める経路を修正。App Storeはテスト指定を無視し、
@@ -46,10 +45,10 @@ TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
 
 再レビューR1 / R2ではprobeのworker移動・生成中即時拒否と、表示言語変更で通知購読を
 張り直さない修正を追加。「再確認」は会話を保持し、切替・確認中の送信を止める。
-最終Rust 414件（2 ignored）、frontend 2,643件、surface 128件とbuild / preview probeは成功。
+この後の最終値はRust 417件（2 ignored）、frontend 2,646件、surface 129件とbuild / preview probeが成功。
 次は遅延probe中の実ウィンドウ応答・停止受入（隔離QAでは起動導線へ到達できず未確認）。
-本番catalog公開前にG1（複数窓の選択・availability同期）とG2（manifest/digest検証後のReady）を
-実装・検証する。それまでは空catalogを維持する。
+G1 / G2はsource実装と回帰テストまで閉じた。次は修正版`ba-package`でE4B `.aar`を生成し、
+profile再生成、asset upload / processing、署名済みInternal TestFlightの一本受入を行う。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
@@ -59,9 +58,9 @@ npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発�
 現時点で実装済みのLocal Assist表示整理と言語・復旧面の改善だけを掲載候補として記載した。
 
 Core AIはDeveloper専用の固定Qwen fixtureを既存Local Assistへ接続し、Phase 1の
-Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認した。さらに配布版へ
-空catalogのadapter・管理・選択基盤を追加した。本番C-1のidentity/file digest/asset作成recipeは
-固定したが、Apple-hosted配布、検証済みReady・削除、AOT、品質採用は未実装。
+Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認した。開始時点では配布版へ
+空catalogのadapter・管理・選択基盤を追加し、その後2026-09-21にE4BのApple-hosted source経路、
+検証済みReady、削除まで実装した。asset upload、AOT、品質採用は未完了。
 海外App StoreもConnect設定・公開Web・署名候補の英語受け入れが未完了で、これらは
 実装・受入後に草案へ追記する。
 `src-tauri/tauri.conf.appstore.json` のbundleVersion変更は本作業と並行する既存変更として保持し、
@@ -73,7 +72,8 @@ Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認�
 `.hazakura/coreai-test/exports/hazakura-qwen3-0.6b-test/` をCore AIへ渡すDeveloper経路を追加。
 TypeScriptからbackend / path / model id / URLを渡す入口、製品内変換・取得、Systemへの自動fallbackは
 追加していない。このDeveloper fixture自体は通常build / App Store buildへ含めない。
-後続の配布前基盤では、固定fixtureとは別のCore AI production adapterを空catalogで同梱する。
+後続の配布前基盤では、固定fixtureとは別のCore AI production adapterを用い、App Storeだけ
+E4Bの固定catalogへ進めた。Developer production catalogは空のまま。
 
 専用QA appでQwenのロード、stream、Proposal保持、main window Diff、実生成元表示、明示Apply、
 未保存、Undo、再依頼、Cancelを確認し、同じappを `system_default` で再起動してSystem生成と
@@ -147,8 +147,8 @@ Core AIは[単体テスト用Qwen3-0.6B](core-ai-test-model.md)を準備し、�
 **次のスライス:** 画像ブロック（remote／workspace外許可／load-failed）の英語復旧案内を閉じ、
 専用テスト環境のbuilt appで英語起動→設定→保存／衝突→Reader→出力を
 小さく分けて実表示確認する。nativeメニュー、Help、VoiceOver、署名候補は別ゲートのまま。
-Core AI配布前基盤は別スライスで接続済み。本番catalogは空のままとし、モデルidentity・
-asset pack・manifestが揃うまでCore AIの `selectedId` は受理しない。
+Core AIはE4BのApple-hosted source経路まで接続済み。未download・未検証の`selectedId`は
+引き続き受理しない。次の配布ゲートは`.aar`、Apple processing、署名済みTestFlight受入。
 
 ## 3.0.3 — スクロールバー修正版を実機確認して申請（2026-09-18）
 

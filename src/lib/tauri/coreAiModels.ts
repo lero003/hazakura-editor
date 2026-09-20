@@ -1,11 +1,21 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { isTauriRuntime } from "./_runtime";
 
 export const SYSTEM_LOCAL_ASSIST_MODEL_ID = "apple:foundation-models:system-default";
+export const CORE_AI_MODEL_STATE_CHANGED_EVENT = "core-ai-model-state-changed";
 
 export type CoreAiDistributionStatus = "not_published" | "available";
 export type CoreAiModelKind = "system" | "core_ai";
-export type CoreAiModelStatus = "ready" | "not_downloaded" | "not_published";
+export type CoreAiModelStatus =
+  | "ready"
+  | "not_downloaded"
+  | "downloading"
+  | "paused"
+  | "verifying"
+  | "failed"
+  | "unsupported"
+  | "not_published";
 
 export type CoreAiModelSummary = {
   id: string;
@@ -14,6 +24,9 @@ export type CoreAiModelSummary = {
   status: CoreAiModelStatus;
   selected: boolean;
   downloadSizeBytes?: number;
+  progress?: number | null;
+  error?: string | null;
+  assetPackVersion?: number | null;
 };
 
 export type CoreAiModelCatalog = {
@@ -47,8 +60,8 @@ export async function selectLocalAssistModel(modelId: string): Promise<CoreAiMod
   return invoke<CoreAiModelCatalog>("select_local_assist_model", { modelId });
 }
 
-export async function startCoreAiModelDownload(modelId: string): Promise<void> {
-  await invoke("start_core_ai_model_download", { modelId });
+export async function startCoreAiModelDownload(modelId: string): Promise<CoreAiModelCatalog> {
+  return invoke<CoreAiModelCatalog>("start_core_ai_model_download", { modelId });
 }
 
 export async function cancelCoreAiModelDownload(modelId: string): Promise<boolean> {
@@ -57,4 +70,13 @@ export async function cancelCoreAiModelDownload(modelId: string): Promise<boolea
 
 export async function deleteCoreAiModel(modelId: string): Promise<CoreAiModelCatalog> {
   return invoke<CoreAiModelCatalog>("delete_core_ai_model", { modelId });
+}
+
+export async function listenCoreAiModelStateChanges(
+  onChange: (catalog: CoreAiModelCatalog) => void,
+): Promise<UnlistenFn> {
+  if (!isTauriRuntime()) return () => undefined;
+  return listen<CoreAiModelCatalog>(CORE_AI_MODEL_STATE_CHANGED_EVENT, (event) => {
+    onChange(event.payload);
+  });
 }

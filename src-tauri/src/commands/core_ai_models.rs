@@ -1,14 +1,33 @@
 use crate::commands::apple_assist_supervisor::{AppleAssistHelperStore, AssistBackendSelection};
-use crate::distribution::ensure_apple_assist_allowed_by_distribution;
+use crate::commands::background_assets::{
+    BackgroundAssetTransport, PlatformBackgroundAssetTransport,
+};
+use crate::distribution::{
+    ensure_apple_assist_allowed_by_distribution, is_app_store_distribution_lane,
+};
 use crate::security::window_guard::{ensure_label_is_main, ensure_label_is_main_or_apple_assist};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use tauri::Emitter;
 
 pub(crate) const SYSTEM_MODEL_ID: &str = "apple:foundation-models:system-default";
+pub(crate) const CORE_AI_MODEL_STATE_CHANGED_EVENT: &str = "core-ai-model-state-changed";
+const E4B_MODEL_ID: &str = "apple:core-ai:gemma-4-e4b-it-int4-v1";
+const E4B_ASSET_PACK_ID: &str = "dev.hazakura.editor.coreai.gemma4-e4b.v1";
+const E4B_CATALOG_VERSION: &str = "2026.09.20.1";
+const E4B_STORAGE_DIRECTORY: &str = "gemma-4-e4b-it-int4-v1";
+const E4B_RESOURCE_MANIFEST: &str =
+    include_str!("../../resources/core-ai/gemma4-e4b-resource-manifest.json");
+const E4B_RESOURCE_MANIFEST_SHA256: &str =
+    "d46c81f18147a2faf0d066b4ef2d31f72416b75ee544397580815fa2e4fb4af3";
+const PACK_RESOURCE_MANIFEST_FILENAME: &str = "hazakura-resource-manifest.json";
 const STATE_FILENAME: &str = "core-ai-selection.json";
 const MODEL_DIRECTORY: &str = "CoreAIModels";
+const VALIDATION_DIRECTORY: &str = "core-ai-validation";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -29,10 +48,15 @@ pub(crate) enum CoreAiModelKind {
 pub(crate) enum CoreAiModelStatus {
     Ready,
     NotDownloaded,
+    Downloading,
+    Paused,
+    Verifying,
+    Failed,
+    Unsupported,
     NotPublished,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CoreAiModelSummary {
     pub(crate) id: String,
@@ -41,9 +65,12 @@ pub(crate) struct CoreAiModelSummary {
     pub(crate) status: CoreAiModelStatus,
     pub(crate) selected: bool,
     pub(crate) download_size_bytes: Option<u64>,
+    pub(crate) progress: Option<f64>,
+    pub(crate) error: Option<String>,
+    pub(crate) asset_pack_version: Option<u64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CoreAiModelCatalogResponse {
     pub(crate) distribution_status: CoreAiDistributionStatus,
@@ -60,6 +87,10 @@ pub(crate) struct CoreAiCatalogEntry {
     storage_directory: String,
     published: bool,
     download_size_bytes: Option<u64>,
+    asset_pack_id: Option<String>,
+    catalog_version: Option<String>,
+    resource_manifest: Option<&'static str>,
+    resource_manifest_sha256: Option<&'static str>,
 }
 
 impl CoreAiCatalogEntry {
@@ -71,6 +102,43 @@ impl CoreAiCatalogEntry {
             storage_directory: storage_directory.into(),
             published: true,
             download_size_bytes: Some(1024),
+            asset_pack_id: None,
+            catalog_version: None,
+            resource_manifest: None,
+            resource_manifest_sha256: None,
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn published_fixture(
+        id: &str,
+        storage_directory: &str,
+        resource_manifest: &'static str,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            display_name: "Published fixture".into(),
+            storage_directory: storage_directory.into(),
+            published: true,
+            download_size_bytes: Some(5),
+            asset_pack_id: Some("dev.hazakura.editor.coreai.test.v1".into()),
+            catalog_version: Some("test-v1".into()),
+            resource_manifest: Some(resource_manifest),
+            resource_manifest_sha256: Some("test-resource-manifest-sha256"),
+        }
+    }
+
+    fn e4b() -> Self {
+        Self {
+            id: E4B_MODEL_ID.into(),
+            display_name: "Gemma 4 E4B".into(),
+            storage_directory: E4B_STORAGE_DIRECTORY.into(),
+            published: true,
+            download_size_bytes: Some(6_807_926_119),
+            asset_pack_id: Some(E4B_ASSET_PACK_ID.into()),
+            catalog_version: Some(E4B_CATALOG_VERSION.into()),
+            resource_manifest: Some(E4B_RESOURCE_MANIFEST),
+            resource_manifest_sha256: Some(E4B_RESOURCE_MANIFEST_SHA256),
         }
     }
 
@@ -82,7 +150,39 @@ impl CoreAiCatalogEntry {
         if !matches!(components.next(), Some(Component::Normal(_))) || components.next().is_some() {
             return Err("Core AI catalog contains an invalid storage directory.".into());
         }
+        if self.asset_pack_id.is_some()
+            != (self.catalog_version.is_some()
+                && self.resource_manifest.is_some()
+                && self.resource_manifest_sha256.is_some())
+        {
+            return Err("Core AI catalog contains an incomplete Background Assets entry.".into());
+        }
         Ok(())
+    }
+
+    fn relative_asset_path(&self) -> String {
+        format!("{MODEL_DIRECTORY}/{}", self.storage_directory)
+    }
+}
+
+#[derive(Debug, Clone)]
+struct RuntimeState {
+    status: CoreAiModelStatus,
+    progress: Option<f64>,
+    error: Option<String>,
+    materialized_path: Option<PathBuf>,
+    asset_pack_version: Option<u64>,
+}
+
+impl Default for RuntimeState {
+    fn default() -> Self {
+        Self {
+            status: CoreAiModelStatus::NotDownloaded,
+            progress: None,
+            error: None,
+            materialized_path: None,
+            asset_pack_version: None,
+        }
     }
 }
 
@@ -92,36 +192,99 @@ struct CoreAiSelectionState {
     selected_model_id: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ValidationReceipt {
+    model_id: String,
+    catalog_version: String,
+    resource_manifest_sha256: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ResourceManifest {
+    model_id: String,
+    catalog_version: String,
+    storage_directory: String,
+    max_entries: usize,
+    files: Vec<ResourceManifestFile>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ResourceManifestFile {
+    path: String,
+    size: u64,
+    sha256: String,
+}
+
 pub(crate) struct CoreAiModelStore {
     data_dir: Mutex<Option<PathBuf>>,
     selected_model_id: Mutex<String>,
+    pending_restore_model_id: Mutex<Option<String>>,
     catalog: Vec<CoreAiCatalogEntry>,
+    runtime_states: Mutex<HashMap<String, RuntimeState>>,
     management_error: Mutex<Option<String>>,
     selection_locked: Mutex<bool>,
+    transport: Arc<dyn BackgroundAssetTransport>,
 }
 
 impl Default for CoreAiModelStore {
     fn default() -> Self {
-        // Deliberately empty until the product model, license, manifest,
-        // Apple-hosted asset-pack id, and hashes are release-approved.
-        Self::with_catalog(Vec::new())
+        Self::with_catalog_and_transport(
+            if is_app_store_distribution_lane() {
+                vec![CoreAiCatalogEntry::e4b()]
+            } else {
+                Vec::new()
+            },
+            Arc::new(PlatformBackgroundAssetTransport),
+        )
     }
 }
 
 impl CoreAiModelStore {
-    fn with_catalog(catalog: Vec<CoreAiCatalogEntry>) -> Self {
+    fn with_catalog_and_transport(
+        catalog: Vec<CoreAiCatalogEntry>,
+        transport: Arc<dyn BackgroundAssetTransport>,
+    ) -> Self {
+        let runtime_states = catalog
+            .iter()
+            .map(|entry| (entry.id.clone(), RuntimeState::default()))
+            .collect();
         Self {
             data_dir: Mutex::new(None),
             selected_model_id: Mutex::new(SYSTEM_MODEL_ID.into()),
+            pending_restore_model_id: Mutex::new(None),
             catalog,
+            runtime_states: Mutex::new(runtime_states),
             management_error: Mutex::new(None),
             selection_locked: Mutex::new(false),
+            transport,
         }
     }
 
     #[cfg(test)]
     pub(crate) fn with_fixture_catalog(catalog: Vec<CoreAiCatalogEntry>) -> Self {
-        Self::with_catalog(catalog)
+        Self::with_catalog_and_transport(catalog, Arc::new(PlatformBackgroundAssetTransport))
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_test_transport(
+        catalog: Vec<CoreAiCatalogEntry>,
+        transport: Arc<dyn BackgroundAssetTransport>,
+    ) -> Self {
+        Self::with_catalog_and_transport(catalog, transport)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn production_catalog_for_lane(app_store: bool) -> Self {
+        Self::with_catalog_and_transport(
+            if app_store {
+                vec![CoreAiCatalogEntry::e4b()]
+            } else {
+                Vec::new()
+            },
+            Arc::new(PlatformBackgroundAssetTransport),
+        )
     }
 
     pub(crate) fn configure(
@@ -130,8 +293,6 @@ impl CoreAiModelStore {
         helper_store: &AppleAssistHelperStore,
         startup_override: Option<AssistBackendSelection>,
     ) {
-        // Model management is optional. Never propagate its storage/selection
-        // errors into Tauri setup; retain them for the settings surface.
         let result = self.configure_inner(data_dir, helper_store, startup_override);
         *self
             .management_error
@@ -147,8 +308,6 @@ impl CoreAiModelStore {
     ) -> Result<(), String> {
         let overridden = startup_override.is_some();
         *self.selection_locked.lock().expect("selection locked lock") = overridden;
-        // Establish the safe runtime choice before touching storage. Explicit
-        // Developer overrides never read or rewrite the production preference.
         helper_store.set_selected_backend(
             startup_override.unwrap_or(AssistBackendSelection::SystemDefault),
         )?;
@@ -168,13 +327,35 @@ impl CoreAiModelStore {
         let selected = self
             .read_persisted_selection()?
             .unwrap_or_else(|| SYSTEM_MODEL_ID.into());
-        if self.selection_for(&selected).is_err() {
-            // System is already active even if repairing the preference fails.
+        if selected == SYSTEM_MODEL_ID {
+            return Ok(());
+        }
+        if self.catalog_entry(&selected).is_err() {
             self.persist_selection(SYSTEM_MODEL_ID)?;
-        } else {
+        } else if self.selection_for(&selected).is_ok() {
             self.apply_selection(&selected, helper_store)?;
+        } else {
+            *self
+                .pending_restore_model_id
+                .lock()
+                .expect("pending restore lock") = Some(selected);
         }
         Ok(())
+    }
+
+    pub(crate) fn start_startup_refresh<R: tauri::Runtime>(
+        self: &Arc<Self>,
+        app: tauri::AppHandle<R>,
+        helper_store: Arc<AppleAssistHelperStore>,
+    ) {
+        for model_id in self
+            .catalog
+            .iter()
+            .filter(|entry| entry.asset_pack_id.is_some())
+            .map(|entry| entry.id.clone())
+        {
+            self.spawn_monitor(app.clone(), model_id, Some(helper_store.clone()));
+        }
     }
 
     pub(crate) fn list(&self) -> CoreAiModelCatalogResponse {
@@ -190,14 +371,23 @@ impl CoreAiModelStore {
             status: CoreAiModelStatus::Ready,
             selected: selected == SYSTEM_MODEL_ID,
             download_size_bytes: None,
+            progress: None,
+            error: None,
+            asset_pack_version: None,
         }];
-        models.extend(self.catalog.iter().map(|entry| CoreAiModelSummary {
-            id: entry.id.clone(),
-            display_name: entry.display_name.clone(),
-            kind: CoreAiModelKind::CoreAi,
-            status: self.status_for(entry),
-            selected: selected == entry.id,
-            download_size_bytes: entry.download_size_bytes,
+        models.extend(self.catalog.iter().map(|entry| {
+            let runtime = self.runtime_state(entry);
+            CoreAiModelSummary {
+                id: entry.id.clone(),
+                display_name: entry.display_name.clone(),
+                kind: CoreAiModelKind::CoreAi,
+                status: runtime.status,
+                selected: selected == entry.id,
+                download_size_bytes: entry.download_size_bytes,
+                progress: runtime.progress,
+                error: runtime.error,
+                asset_pack_version: runtime.asset_pack_version,
+            }
         }));
         CoreAiModelCatalogResponse {
             distribution_status: if self.catalog.iter().any(|entry| entry.published) {
@@ -224,59 +414,278 @@ impl CoreAiModelStore {
         self.ensure_management_available()?;
         let selection = self.selection_for(model_id)?;
         {
-            // Serialize preferences writes from the main and detached windows.
             let mut selected = self.selected_model_id.lock().expect("selected model lock");
             helper_store
                 .set_selected_backend_after(selection, || self.persist_selection(model_id))?;
             *selected = model_id.into();
         }
+        *self
+            .pending_restore_model_id
+            .lock()
+            .expect("pending restore lock") = None;
         Ok(self.list())
     }
 
-    pub(crate) fn start_download(&self, model_id: &str) -> Result<(), String> {
+    pub(crate) fn start_download(
+        &self,
+        model_id: &str,
+    ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
-        if !entry.published {
-            return Err(
-                "This Core AI model has not been published through Apple-hosted assets.".into(),
-            );
+        let asset_pack_id = self.asset_pack_id(entry)?;
+        if self.runtime_state(entry).status == CoreAiModelStatus::Ready {
+            return Ok(self.list());
         }
-        if self.status_for(entry) == CoreAiModelStatus::Ready {
-            return Ok(());
-        }
-        Err(
-            "Apple-hosted model downloading is not active until the asset pack and downloader extension are configured."
-                .into(),
-        )
+        self.transport.start(asset_pack_id)?;
+        self.set_runtime_state(
+            model_id,
+            RuntimeState {
+                status: CoreAiModelStatus::Downloading,
+                progress: Some(0.0),
+                ..RuntimeState::default()
+            },
+        );
+        Ok(self.list())
     }
 
     pub(crate) fn cancel_download(&self, model_id: &str) -> Result<bool, String> {
         self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
-        if !entry.published {
-            return Err(
-                "This Core AI model has not been published through Apple-hosted assets.".into(),
-            );
+        let cancelled = self.transport.cancel(self.asset_pack_id(entry)?)?;
+        if cancelled {
+            let mut state = self.runtime_state(entry);
+            state.status = CoreAiModelStatus::Paused;
+            state.progress = None;
+            state.error = None;
+            self.set_runtime_state(model_id, state);
         }
-        Ok(false)
+        Ok(cancelled)
     }
 
     pub(crate) fn delete(
         &self,
         model_id: &str,
-        _helper_store: &AppleAssistHelperStore,
+        helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
-        if !entry.published {
+        if self
+            .selected_model_id
+            .lock()
+            .expect("selected model lock")
+            .as_str()
+            == model_id
+        {
+            helper_store
+                .set_selected_backend_after(AssistBackendSelection::SystemDefault, || {
+                    self.persist_selection(SYSTEM_MODEL_ID)
+                })?;
+            *self.selected_model_id.lock().expect("selected model lock") = SYSTEM_MODEL_ID.into();
+        }
+        self.transport.remove(self.asset_pack_id(entry)?)?;
+        let _ = fs::remove_file(self.validation_receipt_path(entry)?);
+        self.set_runtime_state(model_id, RuntimeState::default());
+        let pending = self
+            .pending_restore_model_id
+            .lock()
+            .expect("pending restore lock")
+            .as_deref()
+            == Some(model_id);
+        if pending {
+            *self
+                .pending_restore_model_id
+                .lock()
+                .expect("pending restore lock") = None;
+            self.persist_selection(SYSTEM_MODEL_ID)?;
+        }
+        Ok(self.list())
+    }
+
+    pub(crate) fn spawn_monitor<R: tauri::Runtime>(
+        self: &Arc<Self>,
+        app: tauri::AppHandle<R>,
+        model_id: String,
+        helper_store: Option<Arc<AppleAssistHelperStore>>,
+    ) {
+        let store = self.clone();
+        std::thread::spawn(move || loop {
+            let terminal = match store.refresh_model(&model_id) {
+                Ok(status) => matches!(
+                    status,
+                    CoreAiModelStatus::Ready
+                        | CoreAiModelStatus::NotDownloaded
+                        | CoreAiModelStatus::Paused
+                        | CoreAiModelStatus::Failed
+                        | CoreAiModelStatus::Unsupported
+                ),
+                Err(error) => {
+                    store.set_failure(&model_id, error);
+                    true
+                }
+            };
+            if store.runtime_status(&model_id) == Some(CoreAiModelStatus::Ready) {
+                if let Some(helper) = helper_store.as_deref() {
+                    let _ = store.restore_pending_selection(&model_id, helper);
+                }
+            }
+            let _ = app.emit(CORE_AI_MODEL_STATE_CHANGED_EVENT, store.list());
+            if terminal {
+                break;
+            }
+            std::thread::sleep(Duration::from_secs(1));
+        });
+    }
+
+    fn refresh_model(&self, model_id: &str) -> Result<CoreAiModelStatus, String> {
+        let entry = self.catalog_entry(model_id)?;
+        let snapshot = self
+            .transport
+            .snapshot(self.asset_pack_id(entry)?, &entry.relative_asset_path())?;
+        if !snapshot.supported {
+            self.set_runtime_state(
+                model_id,
+                RuntimeState {
+                    status: CoreAiModelStatus::Unsupported,
+                    error: snapshot.error,
+                    asset_pack_version: snapshot.asset_pack_version,
+                    ..RuntimeState::default()
+                },
+            );
+            return Ok(CoreAiModelStatus::Unsupported);
+        }
+        if snapshot.available {
+            let path = snapshot.path.ok_or_else(|| {
+                "Background Assets reported E4B as downloaded without a materialized path."
+                    .to_string()
+            })?;
+            self.set_runtime_state(
+                model_id,
+                RuntimeState {
+                    status: CoreAiModelStatus::Verifying,
+                    progress: Some(1.0),
+                    asset_pack_version: snapshot.asset_pack_version,
+                    ..RuntimeState::default()
+                },
+            );
+            self.verify_materialized_model(entry, &path)?;
+            self.set_runtime_state(
+                model_id,
+                RuntimeState {
+                    status: CoreAiModelStatus::Ready,
+                    progress: Some(1.0),
+                    materialized_path: Some(path),
+                    asset_pack_version: snapshot.asset_pack_version,
+                    error: None,
+                },
+            );
+            return Ok(CoreAiModelStatus::Ready);
+        }
+        let status = match snapshot.phase.as_str() {
+            "resolving" | "downloading" => CoreAiModelStatus::Downloading,
+            "paused" => CoreAiModelStatus::Paused,
+            "failed" => CoreAiModelStatus::Failed,
+            _ => CoreAiModelStatus::NotDownloaded,
+        };
+        self.set_runtime_state(
+            model_id,
+            RuntimeState {
+                status,
+                progress: snapshot.progress.map(|value| value.clamp(0.0, 1.0)),
+                error: snapshot.error,
+                materialized_path: None,
+                asset_pack_version: snapshot.asset_pack_version,
+            },
+        );
+        Ok(status)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn refresh_model_for_test(
+        &self,
+        model_id: &str,
+    ) -> Result<CoreAiModelStatus, String> {
+        match self.refresh_model(model_id) {
+            Ok(status) => Ok(status),
+            Err(error) => {
+                self.set_failure(model_id, error.clone());
+                Err(error)
+            }
+        }
+    }
+
+    fn verify_materialized_model(
+        &self,
+        entry: &CoreAiCatalogEntry,
+        root: &Path,
+    ) -> Result<(), String> {
+        let expected_manifest = entry
+            .resource_manifest
+            .ok_or_else(|| "Core AI entry has no resource manifest.".to_string())?;
+        let packaged_manifest = fs::read(root.join(PACK_RESOURCE_MANIFEST_FILENAME))
+            .map_err(|error| format!("The E4B resource manifest is missing: {error}"))?;
+        if packaged_manifest != expected_manifest.as_bytes() {
             return Err(
-                "This Core AI model has not been published through Apple-hosted assets.".into(),
+                "The downloaded E4B resource manifest does not match the signed catalog.".into(),
             );
         }
-        Err(
-            "Apple-hosted model removal is not active until the asset pack and downloader extension are configured."
-                .into(),
-        )
+        let manifest: ResourceManifest = serde_json::from_str(expected_manifest)
+            .map_err(|error| format!("The signed E4B resource manifest is invalid: {error}"))?;
+        if manifest.model_id != entry.id
+            || manifest.storage_directory != entry.storage_directory
+            || Some(manifest.catalog_version.as_str()) != entry.catalog_version.as_deref()
+            || manifest.files.len() != manifest.max_entries
+        {
+            return Err("The signed E4B resource manifest identity is inconsistent.".into());
+        }
+        let receipt_is_valid = self.read_validation_receipt(entry).unwrap_or(false);
+        for file in &manifest.files {
+            validate_relative_path(&file.path)?;
+            let path = root.join(&file.path);
+            let metadata = fs::symlink_metadata(&path)
+                .map_err(|error| format!("E4B is missing {}: {error}", file.path))?;
+            if metadata.file_type().is_symlink() || !metadata.is_file() {
+                return Err(format!(
+                    "E4B contains an unsafe non-file entry: {}",
+                    file.path
+                ));
+            }
+            if metadata.len() != file.size {
+                return Err(format!(
+                    "E4B file size mismatch for {}: expected {}, got {}.",
+                    file.path,
+                    file.size,
+                    metadata.len()
+                ));
+            }
+            if !receipt_is_valid && self.transport.sha256_file(&path)? != file.sha256 {
+                return Err(format!("E4B SHA-256 mismatch for {}.", file.path));
+            }
+        }
+        if !receipt_is_valid {
+            self.write_validation_receipt(entry)?;
+        }
+        Ok(())
+    }
+
+    fn restore_pending_selection(
+        &self,
+        model_id: &str,
+        helper_store: &AppleAssistHelperStore,
+    ) -> Result<(), String> {
+        let pending = self
+            .pending_restore_model_id
+            .lock()
+            .expect("pending restore lock")
+            .clone();
+        if pending.as_deref() != Some(model_id) {
+            return Ok(());
+        }
+        self.apply_selection(model_id, helper_store)?;
+        *self
+            .pending_restore_model_id
+            .lock()
+            .expect("pending restore lock") = None;
+        Ok(())
     }
 
     fn ensure_management_available(&self) -> Result<(), String> {
@@ -310,8 +719,10 @@ impl CoreAiModelStore {
             return Ok(AssistBackendSelection::SystemDefault);
         }
         let entry = self.catalog_entry(model_id)?;
-        if self.status_for(entry) != CoreAiModelStatus::Ready {
-            return Err("The selected Core AI model is not downloaded and ready.".into());
+        if self.runtime_state(entry).status != CoreAiModelStatus::Ready {
+            return Err(
+                "The selected Core AI model is not downloaded, verified, and ready.".into(),
+            );
         }
         Ok(AssistBackendSelection::CoreAi {
             model_id: entry.id.clone(),
@@ -326,24 +737,85 @@ impl CoreAiModelStore {
             .ok_or_else(|| "The requested Core AI model is not in the signed app catalog.".into())
     }
 
-    fn status_for(&self, entry: &CoreAiCatalogEntry) -> CoreAiModelStatus {
+    fn asset_pack_id<'a>(&self, entry: &'a CoreAiCatalogEntry) -> Result<&'a str, String> {
         if !entry.published {
-            return CoreAiModelStatus::NotPublished;
+            return Err(
+                "This Core AI model has not been published through Apple-hosted assets.".into(),
+            );
         }
-        match self.model_path(entry) {
-            Ok(path) if path.is_dir() => CoreAiModelStatus::Ready,
-            _ => CoreAiModelStatus::NotDownloaded,
+        entry.asset_pack_id.as_deref().ok_or_else(|| {
+            "Apple-hosted model downloading is not configured for this catalog entry.".into()
+        })
+    }
+
+    fn runtime_state(&self, entry: &CoreAiCatalogEntry) -> RuntimeState {
+        if entry.asset_pack_id.is_none() {
+            let path = self.fixture_model_path(entry);
+            let ready = path
+                .as_ref()
+                .map(|path| path.join("hazakura-model.json").is_file())
+                .unwrap_or(false);
+            return RuntimeState {
+                status: if ready {
+                    CoreAiModelStatus::Ready
+                } else {
+                    CoreAiModelStatus::NotDownloaded
+                },
+                materialized_path: if ready { path.ok() } else { None },
+                ..RuntimeState::default()
+            };
         }
+        self.runtime_states
+            .lock()
+            .expect("runtime states lock")
+            .get(&entry.id)
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    fn runtime_status(&self, model_id: &str) -> Option<CoreAiModelStatus> {
+        self.catalog_entry(model_id)
+            .ok()
+            .map(|entry| self.runtime_state(entry).status)
+    }
+    fn set_runtime_state(&self, model_id: &str, state: RuntimeState) {
+        self.runtime_states
+            .lock()
+            .expect("runtime states lock")
+            .insert(model_id.into(), state);
+    }
+    fn set_failure(&self, model_id: &str, error: String) {
+        let version = self
+            .catalog_entry(model_id)
+            .ok()
+            .and_then(|entry| self.runtime_state(entry).asset_pack_version);
+        self.set_runtime_state(
+            model_id,
+            RuntimeState {
+                status: CoreAiModelStatus::Failed,
+                error: Some(error),
+                asset_pack_version: version,
+                ..RuntimeState::default()
+            },
+        );
     }
 
     fn model_path(&self, entry: &CoreAiCatalogEntry) -> Result<PathBuf, String> {
         entry.validate()?;
+        if entry.asset_pack_id.is_none() {
+            return self.fixture_model_path(entry);
+        }
+        self.runtime_state(entry)
+            .materialized_path
+            .ok_or_else(|| "The verified Core AI model path is unavailable.".into())
+    }
+
+    fn fixture_model_path(&self, entry: &CoreAiCatalogEntry) -> Result<PathBuf, String> {
         Ok(self
             .data_dir()?
             .join(MODEL_DIRECTORY)
             .join(&entry.storage_directory))
     }
-
     fn data_dir(&self) -> Result<PathBuf, String> {
         self.data_dir
             .lock()
@@ -351,9 +823,44 @@ impl CoreAiModelStore {
             .clone()
             .ok_or_else(|| "Core AI model storage is not initialized.".into())
     }
-
     fn state_path(&self) -> Result<PathBuf, String> {
         Ok(self.data_dir()?.join(STATE_FILENAME))
+    }
+    fn validation_receipt_path(&self, entry: &CoreAiCatalogEntry) -> Result<PathBuf, String> {
+        Ok(self
+            .data_dir()?
+            .join(VALIDATION_DIRECTORY)
+            .join(format!("{}.json", entry.storage_directory)))
+    }
+
+    fn read_validation_receipt(&self, entry: &CoreAiCatalogEntry) -> Result<bool, String> {
+        let data = match fs::read(self.validation_receipt_path(entry)?) {
+            Ok(data) => data,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => return Err(format!("Failed to read E4B validation receipt: {error}")),
+        };
+        let receipt: ValidationReceipt = serde_json::from_slice(&data)
+            .map_err(|error| format!("Failed to decode E4B validation receipt: {error}"))?;
+        Ok(receipt.model_id == entry.id
+            && Some(receipt.catalog_version.as_str()) == entry.catalog_version.as_deref()
+            && Some(receipt.resource_manifest_sha256.as_str()) == entry.resource_manifest_sha256)
+    }
+
+    fn write_validation_receipt(&self, entry: &CoreAiCatalogEntry) -> Result<(), String> {
+        let path = self.validation_receipt_path(entry)?;
+        fs::create_dir_all(
+            path.parent()
+                .ok_or_else(|| "E4B validation receipt has no parent directory.".to_string())?,
+        )
+        .map_err(|error| format!("Failed to prepare E4B validation receipt: {error}"))?;
+        let data = serde_json::to_vec_pretty(&ValidationReceipt {
+            model_id: entry.id.clone(),
+            catalog_version: entry.catalog_version.clone().unwrap_or_default(),
+            resource_manifest_sha256: entry.resource_manifest_sha256.unwrap_or_default().into(),
+        })
+        .map_err(|error| format!("Failed to encode E4B validation receipt: {error}"))?;
+        fs::write(path, data)
+            .map_err(|error| format!("Failed to save E4B validation receipt: {error}"))
     }
 
     fn read_persisted_selection(&self) -> Result<Option<String>, String> {
@@ -382,6 +889,24 @@ impl CoreAiModelStore {
     }
 }
 
+fn validate_relative_path(path: &str) -> Result<(), String> {
+    let mut count = 0;
+    for component in Path::new(path).components() {
+        match component {
+            Component::Normal(_) => count += 1,
+            _ => return Err(format!("Resource manifest contains an unsafe path: {path}")),
+        }
+    }
+    if count == 0 {
+        return Err("Resource manifest contains an empty path.".into());
+    }
+    Ok(())
+}
+
+fn emit_catalog<R: tauri::Runtime>(app: &tauri::AppHandle<R>, store: &CoreAiModelStore) {
+    let _ = app.emit(CORE_AI_MODEL_STATE_CHANGED_EVENT, store.list());
+}
+
 #[tauri::command]
 pub(crate) fn list_core_ai_models<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
@@ -395,45 +920,74 @@ pub(crate) fn list_core_ai_models<R: tauri::Runtime>(
 #[tauri::command]
 pub(crate) fn select_local_assist_model<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
     store: tauri::State<'_, Arc<CoreAiModelStore>>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
     model_id: String,
 ) -> Result<CoreAiModelCatalogResponse, String> {
     ensure_label_is_main_or_apple_assist(window.label())?;
     ensure_apple_assist_allowed_by_distribution()?;
-    store.select(&model_id, helper_store.inner().as_ref())
+    let catalog = store.select(&model_id, helper_store.inner().as_ref())?;
+    emit_catalog(&app, store.inner().as_ref());
+    Ok(catalog)
 }
 
 #[tauri::command]
-pub(crate) fn start_core_ai_model_download<R: tauri::Runtime>(
+pub(crate) async fn start_core_ai_model_download<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
-    store: tauri::State<'_, Arc<CoreAiModelStore>>,
-    model_id: String,
-) -> Result<(), String> {
-    ensure_label_is_main(window.label())?;
-    ensure_apple_assist_allowed_by_distribution()?;
-    store.start_download(&model_id)
-}
-
-#[tauri::command]
-pub(crate) fn cancel_core_ai_model_download<R: tauri::Runtime>(
-    window: tauri::WebviewWindow<R>,
-    store: tauri::State<'_, Arc<CoreAiModelStore>>,
-    model_id: String,
-) -> Result<bool, String> {
-    ensure_label_is_main(window.label())?;
-    ensure_apple_assist_allowed_by_distribution()?;
-    store.cancel_download(&model_id)
-}
-
-#[tauri::command]
-pub(crate) fn delete_core_ai_model<R: tauri::Runtime>(
-    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
     store: tauri::State<'_, Arc<CoreAiModelStore>>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
     model_id: String,
 ) -> Result<CoreAiModelCatalogResponse, String> {
     ensure_label_is_main(window.label())?;
     ensure_apple_assist_allowed_by_distribution()?;
-    store.delete(&model_id, helper_store.inner().as_ref())
+    let owned_store = store.inner().clone();
+    let owned_model_id = model_id.clone();
+    let catalog =
+        tauri::async_runtime::spawn_blocking(move || owned_store.start_download(&owned_model_id))
+            .await
+            .map_err(|error| format!("Core AI download task failed: {error}"))??;
+    emit_catalog(&app, store.inner().as_ref());
+    store.spawn_monitor(app, model_id, Some(helper_store.inner().clone()));
+    Ok(catalog)
+}
+
+#[tauri::command]
+pub(crate) async fn cancel_core_ai_model_download<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    store: tauri::State<'_, Arc<CoreAiModelStore>>,
+    model_id: String,
+) -> Result<bool, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    let owned_store = store.inner().clone();
+    let cancelled =
+        tauri::async_runtime::spawn_blocking(move || owned_store.cancel_download(&model_id))
+            .await
+            .map_err(|error| format!("Core AI cancel task failed: {error}"))??;
+    emit_catalog(&app, store.inner().as_ref());
+    Ok(cancelled)
+}
+
+#[tauri::command]
+pub(crate) async fn delete_core_ai_model<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    store: tauri::State<'_, Arc<CoreAiModelStore>>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+    model_id: String,
+) -> Result<CoreAiModelCatalogResponse, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    let owned_store = store.inner().clone();
+    let owned_helper = helper_store.inner().clone();
+    let catalog = tauri::async_runtime::spawn_blocking(move || {
+        owned_store.delete(&model_id, owned_helper.as_ref())
+    })
+    .await
+    .map_err(|error| format!("Core AI removal task failed: {error}"))??;
+    emit_catalog(&app, store.inner().as_ref());
+    Ok(catalog)
 }

@@ -25,6 +25,7 @@ import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvai
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import {
   listCoreAiModels,
+  listenCoreAiModelStateChanges,
   selectLocalAssistModel,
   unavailableCoreAiModelCatalog,
   type CoreAiModelCatalog,
@@ -250,6 +251,8 @@ export function AppleAssistWindowApp() {
   const [cancelling, setCancelling] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const [modelCatalog, setModelCatalog] = useState<CoreAiModelCatalog>(unavailableCoreAiModelCatalog);
+  const selectedModelIdRef = useRef(modelCatalog.selectedModelId);
+  selectedModelIdRef.current = modelCatalog.selectedModelId;
   const [availabilityRefreshKey, setAvailabilityRefreshKey] = useState(0);
   const [modelSwitching, setModelSwitching] = useState(false);
   const { availability, available, probed } = useAppleAssistAvailability(true, availabilityRefreshKey);
@@ -307,6 +310,23 @@ export function AppleAssistWindowApp() {
       .then((catalog) => { if (!disposed) setModelCatalog(catalog); })
       .catch((reason: unknown) => console.warn("Failed to list Core AI models", reason));
     return () => { disposed = true; };
+  }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+    void listenCoreAiModelStateChanges((catalog) => {
+      if (disposed) return;
+      const selectedChanged = catalog.selectedModelId !== selectedModelIdRef.current;
+      setModelCatalog(catalog);
+      if (selectedChanged) {
+        availabilityReportedRef.current = false;
+        setAvailabilityRefreshKey((current) => current + 1);
+      }
+    }).then((stop) => {
+      if (disposed) stop(); else unlisten = stop;
+    }).catch((reason: unknown) => console.warn("Failed to listen for Core AI model state", reason));
+    return () => { disposed = true; unlisten?.(); };
   }, []);
 
   const selectModel = useCallback(async (modelId: string) => {

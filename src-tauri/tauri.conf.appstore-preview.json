@@ -12,6 +12,7 @@
       "../binaries/hazakura-import-assist-helper"
     ],
     "macOS": {
+      "infoPlist": "./Info.appstore.plist",
       "signingIdentity": "-"
     }
   }

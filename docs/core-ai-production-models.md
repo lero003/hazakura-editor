@@ -3,7 +3,7 @@
 Status: Operational preparation
 Scope: v3.1 Core AI production candidates and Apple-hosted asset preparation
 Authority: High
-Last reviewed: 2026-09-20
+Last reviewed: 2026-09-21
 
 ## Decision
 
@@ -12,7 +12,7 @@ Hazakura Local Assistの最初の本番候補は、同じGemma 4 QAT系から次
 
 | Lane | Model ID | Target | Locked converted artifact | Expanded model bytes |
 | --- | --- | --- | --- | ---: |
-| Standard | `apple:core-ai:gemma-4-e4b-it-int4-v1` | 16 GB Macでの受入候補 | `mlboydaisuke/gemma-4-E4B-CoreAI@e9ba305a91bf3e62ea83d5652b572b69913c433a` | 6,807,911,772 |
+| Standard | `apple:core-ai:gemma-4-e4b-it-int4-v1` | 16 GB Macでの受入候補 | `mlboydaisuke/gemma-4-E4B-CoreAI@e9ba305a91bf3e62ea83d5652b572b69913c433a` | 6,807,926,119 |
 | Quality comparison | `apple:core-ai:gemma-4-12b-it-int8-v1` | 32 GB以上で先行評価 | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,417,429 |
 
 完全なfile path、byte size、SHA-256、source revision、runtime kind、asset pack IDは
@@ -78,6 +78,7 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
 .hazakura/coreai-production/<key>/<catalog-version>/
 ├── stage/CoreAIModels/<storage-directory>/
 │   ├── hazakura-model.json
+│   ├── hazakura-resource-manifest.json
 │   ├── LICENSE-APACHE-2.0.txt
 │   ├── THIRD_PARTY_MODEL_NOTICE.md
 │   └── <verified Core AI resources>
@@ -102,6 +103,8 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
 `template -o` / `evaluate` / `package`の入口で拒否する。したがって、検証済みstageとmanifestまでは
 作成するが、別形式の偽`.aar`は作らない。失敗内容はモデル別`archives/PACKAGING-BLOCKED.md`へ残す。
 修正版toolchainで同じ`npm run coreai:models:package`を再実行し、成功後だけ`.aar`をupload対象とする。
+`npm run coreai:ba-package:reproduce`はApple公式template、41 byteのfixture、`evaluate`、`package`を
+既存モデルscriptから切り離して再現し、同じ入口エラーをJSON reportへ残す。
 
 ## Locked Apple-hosted asset pack IDs
 
@@ -119,15 +122,17 @@ App Store Connect側のrecordとコード側のcatalogはこの完全一致を�
 
 ## Activation gates
 
-次がすべて閉じるまでは`CoreAiModelStore::production_catalog()`を空のまま維持する。
+2026-09-21から、内部TestFlightでCDN経路を受け入れるためApp StoreレーンだけE4Bをcatalogへ
+接続した。Developerレーンは引き続き空で、12Bは公開しない。以下は正式リリースまでのgateであり、
+catalog entryの存在だけを出荷承認として扱わない。
 
 1. `coreai-build`を含むAppleのAOT toolchainを入手し、対象Mac向け`.aimodelc`を作成・再lockする。
 2. Standard/quality候補を日本語原稿で比較し、16 GB / 32 GBの対象機でload、初回specialize、
    peak memory、生成品質、cancel後の再開を受け入れる。
-3. G1: SettingsとLocal Assist窓の選択・availabilityをmodel-state eventで同期する。
-4. G2: directory存在ではなく、展開後manifest/digest検証済み状態だけを`Ready`にする。
-5. Background Download extension、shared App Group、matching provisioning profile、`BA*` keys、
-   `AssetPackManager` transportを同じ署名候補へ接続する。
+3. **実装済み、TestFlight受入待ち:** G1としてSettingsとLocal Assist窓をmodel-state eventで同期する。
+4. **実装済み、TestFlight受入待ち:** G2としてsigned manifest、safe path、size、全SHA-256検証後だけ`Ready`にする。
+5. **source実装済み、署名profile待ち:** Background Download extension、shared App Group、`BA*` keys、
+   `AssetPackManager` transportを同じbuild形へ接続する。
 6. App Store Connectへ`.aar`をuploadしてApple処理完了を確認し、そのpackを使う同一buildを
    internal TestFlightの実機で受け入れる。
 7. runtime/modelのlicense・noticeとApp Store privacy/reviewer copyを最終確認する。
@@ -137,15 +142,21 @@ App Store Connect側のrecordとコード側のcatalogはこの完全一致を�
 
 ## Owner handoff for App Store Connect
 
-コード側のBackground Assets extensionを追加する前に、オーナー作業として次を準備する。
+Developer Portal側は次の値で準備済み。
 
-1. Developer portalでApp本体とDownloader extensionが共有するApp Groupを作り、そのIDを記録する。
-2. Downloader extension用の明示bundle IDを作り、App本体とextensionの両App IDへ同じApp Groupを付ける。
-3. App Group entitlementを含むdevelopment / Mac App Distribution profileを両target用に作る。
-4. App Group ID、extension bundle ID、profile名（またはprofile file）を実装担当へ渡す。
+- App: `dev.hazakura.editor`
+- Extension: `dev.hazakura.editor.background-downloader`
+- App Group: `group.dev.hazakura.editor`
 
-値が揃ったら、実装側でApple-Hosted / ManagedのBackground Download extensionを組み込み、App本体へ
-`BAAppGroupID`、`BAHasManagedAssetPacks=YES`、`BAUsesAppleHosting=YES`を設定する。その署名済みbuildと
+両App IDへ同じApp Groupを付与済み。コード側にもこの値でextension、entitlements、Info.plist、
+AssetPackManagerを接続した。残る署名準備は、App Groupを含むMac App Distribution profileを
+両target用に再生成し、ignoredな次のpathへ置くこと。
+
+```txt
+src-tauri/profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile
+src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile
+```
+
 `.aar`ができた後のApp Store Connect作業は次の順序にする。
 
 1. Transporterへ対応`.aar`をdropするか、App Store Connect API / `altool`で個別uploadする。
@@ -157,5 +168,5 @@ App Store Connect側のrecordとコード側のcatalogはこの完全一致を�
    （更新時は`Replace`）からversionを選び、TestFlight App Reviewへ出す。
 5. App Store配布時はasset pack versionをアプリ本体とは別にApp Reviewへ提出する。
 
-App Group IDとextension bundle IDはaccount設定とprovisioning profileに依存するため、tracked sourceへ
-推測で固定しない。値とprofileが揃った後にextension/entitlements/`AssetPackManager`接続を実装する。
+詳細と短い実機手順は
+[2026-09-21のhandoff](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)を参照する。

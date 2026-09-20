@@ -7,6 +7,7 @@ pub(crate) mod commands {
     pub(crate) mod apple_assist;
     pub(crate) mod apple_assist_supervisor;
     pub(crate) mod apple_assist_target;
+    pub(crate) mod background_assets;
     pub(crate) mod book_scope;
     pub(crate) mod core_ai_models;
     pub(crate) mod export;
@@ -168,6 +169,9 @@ pub fn run() {
             helper.inner().as_ref(),
             commands::apple_assist_supervisor::AssistBackendSelection::from_developer_environment(),
         );
+        models
+            .inner()
+            .start_startup_refresh(app.handle().clone(), helper.inner().clone());
         Ok(())
     });
 

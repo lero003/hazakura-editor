@@ -136,6 +136,8 @@ Allowed:
   user-selected workspace folders across sandboxed app restarts
 - `com.apple.security.network.client` for the Tauri/WebKit runtime to
   load bundled app assets under App Sandbox
+- `com.apple.security.application-groups` with only
+  `group.dev.hazakura.editor` for the main app and Background Download extension
 
 The Hazakura Local Assist helper is re-signed after the App Store submit
 bundle is built, using `src-tauri/entitlements/app-store-helper.plist`
@@ -143,11 +145,12 @@ with `com.apple.security.app-sandbox` and
 `com.apple.security.inherit`. The app bundle is then re-signed so the
 resource seal includes the updated helper signature.
 
-The current empty-catalog preflight does not yet add a Background Assets
-downloader extension, App Group entitlement, or `BAAppGroupID` /
-`BAHasManagedAssetPacks` / `BAUsesAppleHosting` keys. Add those only with the
-first approved asset pack and matching provisioning profiles; their absence is
-why model download and removal currently fail closed.
+The App Store lane includes the Apple-hosted managed Background Download extension,
+the shared `group.dev.hazakura.editor` entitlement, and exactly
+`BAAppGroupID`, `BAHasManagedAssetPacks`, and `BAUsesAppleHosting`. The extension
+bundle ID is `dev.hazakura.editor.background-downloader`. The local preview is
+ad-hoc signed and can verify bundle shape only; Apple-hosted downloads require the
+processed asset pack and the signed TestFlight/App Store lane.
 
 Do not add these unless there is a fresh documented reason:
 
@@ -245,10 +248,14 @@ That config sets:
   `THIRD_PARTY_NOTICES.md` inside `Contents/Resources`
 - `bundle.macOS.bundleVersion` to the current App Store Connect build number
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
+- `bundle.macOS.infoPlist` to `./Info.appstore.plist` for the three managed
+  Apple-hosting keys
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
 
 After Tauri finishes the submit app bundle, `npm run build:app-store-submit`
-runs `scripts/sign-app-store-submit-app.mjs`. That post-sign step re-signs
+builds and embeds `HazakuraBackgroundDownloader.appex`, then runs
+`scripts/sign-app-store-submit-app.mjs`. That post-sign step copies the ignored
+extension profile, signs the extension with its App Group entitlement, re-signs
 each nested helper with the inherited sandbox entitlement
 (`app-store-helper.plist`), re-seals the app bundle, and verifies the deep
 signature. The distribution helper build emits `aarch64`, `x86_64`, and
@@ -259,8 +266,8 @@ Core AI model. The import helper remains universal. Tauri therefore bundles
 all three helpers without weakening the System helper's macOS 26 deployment
 target.
 
-The preview config uses the same helper-enabled build shape, but deliberately
-skips the App Store sandbox entitlements and provisioning profile so
+The preview config uses the same helper- and extension-enabled build shape, but deliberately
+uses ad-hoc signatures and no provisioning profile so
 `npm run build` produces a launchable local smoke bundle. Use
 `npm run smoke:macos-sandbox-preview` for a local sandbox-entitlement
 probe, and use `npm run build:app-store-submit` plus `productbuild` for
@@ -281,26 +288,29 @@ This does not replace signed TestFlight manual smoke. It only pins that
 
 ## Core AI Apple-hosted Asset Activation
 
-The source is intentionally one step before asset publication. Before adding
-the first production catalog entry, complete all of the following in the same
-release line:
+The App Store source catalog now contains only the pinned E4B entry so internal
+TestFlight can exercise the CDN path. Developer builds keep the production catalog
+empty, and 12B remains deferred. Before treating E4B as release-ready, complete all
+of the following in the same release line:
 
 1. Review the pinned production model identity, license/provenance, download and
    installed sizes, AOT output, archive digest, and full resource manifest in
    `docs/core-ai-production-models.md` and the generated `archive.json`.
-2. Add the Background Assets downloader extension target, shared App Group,
-   matching provisioning profiles, and the required `BA*` Info.plist keys.
-3. Create the managed asset pack, upload it to App Store Connect, wait for Apple
+2. Regenerate matching main-app and extension Mac App Distribution profiles with
+   `group.dev.hazakura.editor` and place them at the ignored profile paths documented
+   in `docs/core-ai-production-models.md`.
+3. Package the managed asset pack, upload it to App Store Connect, wait for Apple
    processing, and bind only its immutable identifier to the internal catalog.
-4. Replace the fail-closed native download/cancel/delete transport with
-   `AssetPackManager` integration. Never expose an arbitrary URL or path to the
-   renderer or helper.
+4. Accept the implemented `AssetPackManager` download/progress/cancel/resume/remove
+   and signed-manifest/SHA validation path on internal TestFlight. Never expose an
+   arbitrary URL or path to the renderer or helper.
 5. Refresh bundled license notices and reviewer/privacy copy, then verify the
    same signed candidate through internal TestFlight on supported hardware.
 
-Until every item is complete, keep the production catalog empty. A local model
-directory or the Developer Qwen fixture is not a substitute for an Apple-hosted
-pack and must not be made visible in the App Store lane.
+Until every item is complete, the catalog entry is an internal-TestFlight test
+surface, not an App Store release claim. A local model directory or the Developer
+Qwen fixture is not a substitute for an Apple-hosted pack and is not visible in the
+App Store lane.
 
 Prepare the locked `.aar` files without placing weights in Git:
 

@@ -167,6 +167,11 @@ Agent Workbench Mode はこの AI Assistance 方針とは別の任意モード�
 
 Hazakura Local Assist or Foundation Models-based assistance must stay closer to the AI Assistance rule than to Agent Workbench, including in the App Store lane. It may change the unsaved editor buffer only after an explicit user action and only as an AI edit transaction that records before/after text, source, target scope, and review state. These edits must remain inspectable through Diff, change history, or an equivalent review surface before the user saves. Hazakura Local Assist must not expose tool-calling side effects, background workspace indexing, generic chat, command execution, local HTTP fallback, provider plugins, automatic save, or hidden/irreversible file application without a fresh boundary review.
 
+App Store版の追加Core AIモデルは、signed app内の固定catalog IDに対するユーザーの明示操作でのみ
+Apple-hosted managed asset packを取得する。rendererやhelperへ任意URL / 任意local pathを渡さず、
+不完全・symlink・manifest不一致・size / SHA-256不一致のpayloadは`Ready`にせず、生成へ渡さない。
+download完了は候補の自動生成やsource変更を開始しない。削除は生成中のmodel pathを無効化しない。
+
 A bounded editing conversation may refine one current unapplied proposal, but
 the full candidate, original-versus-candidate Diff, stale state, discard, and
 explicit apply controls belong to a distinct review area rather than assistant

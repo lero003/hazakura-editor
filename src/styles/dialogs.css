@@ -343,6 +343,7 @@
 .core-ai-model-list { display: grid; gap: 6px; }
 .core-ai-model-row { padding-block: 6px; border-top: 1px solid var(--border); }
 .core-ai-model-row > div:first-child { display: grid; gap: 2px; min-width: 0; }
+.core-ai-model-row progress { width: min(260px, 100%); accent-color: var(--accent); }
 .core-ai-model-actions button { padding: 5px 9px; }
 
 .preference-note {

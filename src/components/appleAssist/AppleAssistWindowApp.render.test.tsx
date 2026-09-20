@@ -6,7 +6,12 @@ import { act, fireEvent, render, screen, cleanup } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppleAssistWindowApp, getAppleAssistWindowCopy } from "./AppleAssistWindowApp";
 import { listen } from "@tauri-apps/api/event";
-import { listCoreAiModels, selectLocalAssistModel, unavailableCoreAiModelCatalog } from "../../lib/tauri/coreAiModels";
+import {
+  CORE_AI_MODEL_STATE_CHANGED_EVENT,
+  listCoreAiModels,
+  selectLocalAssistModel,
+  unavailableCoreAiModelCatalog,
+} from "../../lib/tauri/coreAiModels";
 import {
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
@@ -89,6 +94,31 @@ afterEach(() => {
 });
 
 describe("AppleAssistWindowApp render", () => {
+  it("refreshes the picker and availability when another window changes the model", async () => {
+    const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
+    vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);
+    const initial = unavailableCoreAiModelCatalog();
+    initial.models.push({ id: "apple:core-ai:e4b", displayName: "Gemma 4 E4B", kind: "core_ai", status: "ready", selected: false });
+    vi.mocked(listCoreAiModels).mockResolvedValueOnce(initial);
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available", modelId: initial.selectedModelId });
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available", modelId: "apple:core-ai:e4b" });
+    await act(async () => {
+      eventListeners.get(CORE_AI_MODEL_STATE_CHANGED_EVENT)?.({ payload: {
+        ...initial,
+        selectedModelId: "apple:core-ai:e4b",
+        models: initial.models.map((model) => ({ ...model, selected: model.id === "apple:core-ai:e4b" })),
+      } });
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole("button", { name: "Choose model: Gemma 4 E4B" })).toBeTruthy();
+    expect(vi.mocked(probeAppleAssistAvailability)).toHaveBeenCalledTimes(2);
+  });
+
   it("gates duplicate model actions and sending from selection until the new probe completes", async () => {
     const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
     vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);

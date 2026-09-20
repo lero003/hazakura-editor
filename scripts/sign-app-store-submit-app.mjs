@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { copyFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const identity = process.env.APPLE_SIGNING_IDENTITY || "-";
@@ -17,6 +17,20 @@ const appEntitlements = resolve(
 const helperEntitlements = resolve(
   "src-tauri/entitlements/app-store-helper.plist",
 );
+const extensionPath = resolve(
+  appPath,
+  "Contents/Extensions/HazakuraBackgroundDownloader.appex",
+);
+const extensionEntitlements = resolve(
+  "src-native/background-downloader/BackgroundDownloader/BackgroundDownloader.entitlements",
+);
+const extensionProfile = resolve(
+  "src-tauri/profiles/Hazakura_Background_Downloader_Mac_App_Store_Profile.provisionprofile",
+);
+const embeddedExtensionProfile = resolve(
+  extensionPath,
+  "Contents/embedded.provisionprofile",
+);
 
 function run(command, args) {
   const result = spawnSync(command, args, {
@@ -27,11 +41,32 @@ function run(command, args) {
   }
 }
 
-for (const path of [appPath, ...helperPaths, appEntitlements, helperEntitlements]) {
+for (const path of [
+  appPath,
+  ...helperPaths,
+  appEntitlements,
+  helperEntitlements,
+  extensionPath,
+  extensionEntitlements,
+  extensionProfile,
+]) {
   if (!existsSync(path)) {
     throw new Error(`Required App Store signing input is missing: ${path}`);
   }
 }
+
+copyFileSync(extensionProfile, embeddedExtensionProfile);
+console.log(`Signing Background Download extension: ${extensionPath}`);
+run("codesign", [
+  "--force",
+  "--sign",
+  identity,
+  "--options",
+  "runtime",
+  "--entitlements",
+  extensionEntitlements,
+  extensionPath,
+]);
 
 console.log(`App Store submit signing identity: ${identity}`);
 for (const helperPath of helperPaths) {
