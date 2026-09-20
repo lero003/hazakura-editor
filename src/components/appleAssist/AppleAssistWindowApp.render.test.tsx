@@ -69,6 +69,16 @@ afterEach(() => {
 });
 
 describe("AppleAssistWindowApp render", () => {
+  it("shows the native Core AI test backend instead of the default catalog selection", async () => {
+    vi.mocked(useAppleAssistAvailability).mockReturnValue({
+      availability: { kind: "available", modelId: "apple:core-ai:qwen3-0.6b-test" },
+      available: true, probed: true,
+    });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByRole("button", { name: "Choose model: Core AI · Qwen3 0.6B (test)" })).toBeTruthy();
+  });
+
   it("syncs the detached window document language from storage", () => {
     localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, "ja");
 

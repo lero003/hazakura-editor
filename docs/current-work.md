@@ -28,6 +28,13 @@ Background Assets設定とupload、notice、署名済み同一候補のTestFligh
 型検査、Rust format、`npm run build`まで成功。ローカルad-hoc previewに3 helperが入り、
 deep signatureを確認した。署名済みApp Store pkg / TestFlightではない。
 
+外部レビューP2追補では、Developer明示テスト選択の起動時上書きと、任意機能の
+モデル管理エラーが通常起動を止める経路を修正。App Storeはテスト指定を無視し、
+管理エラーは設定に保持する。保存失敗時のruntime切替と旧availabilityの残留も修正した。
+回帰テストのred→greenと全Rust 411件（2 ignored）、frontend 2,635件、surface 128件を確認。
+修正後の`npm run build`とlocal previewのdistribution probeも成功。
+TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
+
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
 npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発版への移行であり、

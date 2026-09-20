@@ -160,10 +160,14 @@ pub fn run() {
         let data_dir = app
             .path()
             .app_data_dir()
-            .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
+            .map_err(|error| format!("Failed to resolve app data directory: {error}"));
         let models = app.state::<std::sync::Arc<CoreAiModelStore>>();
         let helper = app.state::<std::sync::Arc<AppleAssistHelperStore>>();
-        models.configure(data_dir, helper.inner().as_ref())?;
+        models.configure(
+            data_dir,
+            helper.inner().as_ref(),
+            commands::apple_assist_supervisor::AssistBackendSelection::from_developer_environment(),
+        );
         Ok(())
     });
 

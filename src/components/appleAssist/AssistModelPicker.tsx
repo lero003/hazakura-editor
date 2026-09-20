@@ -8,9 +8,8 @@ import {
   type CoreAiModelSummary,
 } from "../../lib/tauri/coreAiModels";
 
-// Rust selects the backend and reports only its read-only provenance id. The
-// checked row confirms that native selection; it must not send a backend
-// override or start generation.
+// Only signed-catalog ids can be selected. A native Developer test id absent
+// from that catalog is disclosed as a read-only row, never as another choice.
 export function AssistModelPicker({ language, disabled, modelId, models, onSelect }: {
   language: MenuLanguage;
   disabled: boolean;
@@ -29,12 +28,14 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
     : modelId === undefined || modelId === SYSTEM_LOCAL_ASSIST_MODEL_ID
       ? "Apple Intelligence"
       : "On-device model";
-  const availableModels = models?.length ? models : modelId && modelId !== SYSTEM_LOCAL_ASSIST_MODEL_ID
+  const outsideCatalog = modelId && modelId !== SYSTEM_LOCAL_ASSIST_MODEL_ID
+    && !models?.some((model) => model.id === modelId);
+  const availableModels = outsideCatalog
     ? [{
       id: modelId, displayName: fallbackModelLabel, kind: "core_ai" as const,
       status: "ready" as const, selected: true,
     }]
-    : unavailableCoreAiModelCatalog().models;
+    : models?.length ? models : unavailableCoreAiModelCatalog().models;
   const selectedModel = availableModels.find((model) => model.id === modelId)
     ?? availableModels.find((model) => model.selected)
     ?? availableModels[0];

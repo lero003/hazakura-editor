@@ -15,6 +15,10 @@ Last reviewed: 2026-09-20
   fail closed。署名候補、Apple upload、TestFlight受入、本番モデル採用の証跡ではない。
   Swift 21件、Rust 400件（2 ignored）、frontend 2,630件、App Store surface 128件と
   ローカル`npm run build`は成功。[配布前記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
+  外部レビューP2追補でDeveloper明示テスト選択を維持し、App Storeは指定を無視するよう修正。
+  モデル管理初期化の障害は設定へ隔離し、通常起動を継続する。切替の保存失敗時は旧モデルを保持。
+  追補の全Rust 411件（2 ignored）、frontend 2,635件、surface 128件、`npm run build`と
+  local previewのdistribution probeは成功。実機/CDN受入は未確認。
 
 - **3.1.0開発版へ移行（2026-09-20）:** npm / Tauri / Cargo / lockfileの版を
   `3.1.0`へ揃え、[App Storeリリースノート草案](releases/3.1.0-app-store-release-notes.md)を開始。

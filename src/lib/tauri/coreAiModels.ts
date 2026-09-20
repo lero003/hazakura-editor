@@ -20,6 +20,8 @@ export type CoreAiModelCatalog = {
   distributionStatus: CoreAiDistributionStatus;
   selectedModelId: string;
   models: CoreAiModelSummary[];
+  managementError?: string | null;
+  selectionLocked?: boolean;
 };
 
 export function unavailableCoreAiModelCatalog(): CoreAiModelCatalog {

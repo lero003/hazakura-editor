@@ -66,9 +66,22 @@ pub(crate) enum AssistBackendSelection {
 }
 
 impl AssistBackendSelection {
-    fn from_developer_environment() -> Self {
-        match std::env::var(CORE_AI_TEST_BACKEND_ENV) {
-            Err(std::env::VarError::NotPresent) => Self::SystemDefault,
+    pub(crate) fn from_developer_environment() -> Option<Self> {
+        Self::developer_override_for_lane(
+            Some(crate::distribution::distribution_lane()),
+            std::env::var(CORE_AI_TEST_BACKEND_ENV),
+        )
+    }
+
+    pub(crate) fn developer_override_for_lane(
+        lane: Option<&str>,
+        value: Result<String, std::env::VarError>,
+    ) -> Option<Self> {
+        if crate::distribution::is_app_store_distribution_lane_for_lane(lane) {
+            return None;
+        }
+        Some(match value {
+            Err(std::env::VarError::NotPresent) => return None,
             Err(std::env::VarError::NotUnicode(_)) => Self::Invalid(
                 "Local Assist test backend selection is not valid Unicode.".to_string(),
             ),
@@ -80,7 +93,7 @@ impl AssistBackendSelection {
                 "Unsupported Local Assist test backend selection. Expected system_default or core_ai_test."
                     .to_string(),
             ),
-        }
+        })
     }
 
     fn wire_values(&self) -> Result<(&'static str, Option<&str>, Option<&str>), String> {
@@ -205,16 +218,8 @@ impl Default for AppleAssistHelperStore {
             cooldown_started_at: Mutex::new(None),
             active_cancel: Mutex::new(None),
             stream_request: Mutex::new(None),
-            selected_backend: Mutex::new({
-                #[cfg(test)]
-                {
-                    AssistBackendSelection::SystemDefault
-                }
-                #[cfg(not(test))]
-                {
-                    AssistBackendSelection::from_developer_environment()
-                }
-            }),
+            // Startup selection is resolved once by CoreAiModelStore.
+            selected_backend: Mutex::new(AssistBackendSelection::SystemDefault),
             #[cfg(test)]
             before_stream_arm: None,
             #[cfg(test)]
@@ -251,21 +256,28 @@ impl AppleAssistHelperStore {
         &self,
         selection: AssistBackendSelection,
     ) -> Result<(), String> {
-        if self
-            .active_cancel
-            .lock()
-            .expect("active cancel lock")
-            .is_some()
-            || self
-                .stream_request
-                .lock()
-                .expect("stream request lock")
-                .is_some()
-        {
+        self.set_selected_backend_after(selection, || Ok(()))
+    }
+
+    // Persistence must succeed before either the runtime backend or helper
+    // process changes. Holding the request slot also prevents a generation
+    // reservation from slipping between the busy check and the commit.
+    pub(crate) fn set_selected_backend_after(
+        &self,
+        selection: AssistBackendSelection,
+        before_change: impl FnOnce() -> Result<(), String>,
+    ) -> Result<(), String> {
+        let mut inner = self
+            .inner
+            .try_lock()
+            .map_err(|_| "Local Assist model cannot be changed while the helper is busy.")?;
+        let stream_request = self.stream_request.lock().expect("stream request lock");
+        if stream_request.is_some() {
             return Err("Local Assist model cannot be changed during generation.".into());
         }
-        *self.selected_backend.lock().expect("selected backend lock") = selection;
-        let mut inner = self.inner.lock().expect("helper store lock");
+        let mut backend = self.selected_backend.lock().expect("selected backend lock");
+        before_change()?;
+        *backend = selection;
         self.reset_locked(&mut inner);
         self.record_success();
         Ok(())

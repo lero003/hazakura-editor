@@ -966,8 +966,9 @@ export function AppleAssistWindowApp() {
               }
             }} />
           <div className="apple-assist-window-actions">
-            <AssistModelPicker language={menuLanguage} disabled={busy}
-              modelId={modelCatalog.selectedModelId || availability.modelId}
+            <AssistModelPicker language={menuLanguage}
+              disabled={busy || Boolean(modelCatalog.managementError) || Boolean(modelCatalog.selectionLocked)}
+              modelId={availability.modelId ?? modelCatalog.selectedModelId}
               models={modelCatalog.models} onSelect={selectModel} />
             <button type="button" className="apple-assist-window-apply"
               onClick={() => { if (busy) void cancelGeneration(); else void applyRoughRequest(); }}

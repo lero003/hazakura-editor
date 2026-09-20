@@ -13,6 +13,11 @@ Last reviewed: 2026-09-20
   未完了。Developer固定Qwenを配布catalogへ入れず、任意URL/path/GGUFと自動fallbackも足さない。
   Swift 21、Rust 400（2 ignored）、frontend 2,630、surface 128、`npm run build`とlocal preview
   probeは成功。[記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
+  レビューP2追補: 起動選択を一本化し、Developer明示指定を優先・永続化せず、App Storeは無視。
+  モデル管理初期化の失敗は`managementError`として設定に表示し通常起動を妨げない。
+  切替保存失敗のruntime不一致と再probe中の旧availabilityも修正。追補のRust 411（2 ignored）、
+  frontend 2,635、surface 128件、`npm run build`とlocal preview probeは成功。
+  次は同一候補の実機受入。CDN等の未完了ゲートは不変。
 
 ## Current State
 

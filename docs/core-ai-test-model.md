@@ -36,11 +36,16 @@ npm run build:apple-assist-helper:coreai-test
 HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=core_ai_test npm run dev
 ```
 
-選択はRust supervisorが起動時に固定enumとして解決する。frontendからbackend、model path、
-model id、URLを渡すAPIはない。通常build / App Store buildはSystem helperに加えて
+選択はRustのモデル管理初期化で一度だけ解決する。Developerでは明示的なテスト指定を
+保存済みの本番選択より優先し、この起動中はモデル管理による切替を無効にする。
+Local Assistの選択枠は実際のテストモデル名を表示する。テスト指定は本番選択ファイルへ保存しない。
+App Storeレーンではテスト環境変数を無視する。frontendからテストbackend、model path、
+任意model id、URLを渡すAPIはない（本番選択はcatalog内のidのみ）。通常build / App Store buildはSystem helperに加えて
 別のCore AI production adapterを作るが、テストモデルは同梱せず本番catalogも空のまま。
 Systemへ戻すときは
-`HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=system_default`（または環境変数なし）で起動する。
+`HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=system_default` で起動する。
+環境変数なしなら保存済みの本番選択を復元し、選択がなければSystemを使う。
+モデル管理の初期化に失敗しても通常起動を継続し、原因を設定のモデル管理面へ表示する。
 
 ## 固定した入力と再作成
 

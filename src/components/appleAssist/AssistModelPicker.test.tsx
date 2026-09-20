@@ -60,4 +60,16 @@ describe("AssistModelPicker", () => {
     fireEvent.click(screen.getByRole("menuitemradio", { name: "Hazakura Core AI" }));
     expect(onSelect).toHaveBeenCalledWith("apple:core-ai:writing-primary");
   });
+
+  it("does not let the production catalog hide a native developer test model", () => {
+    const onSelect = vi.fn();
+    render(<AssistModelPicker language="en" disabled={false}
+      modelId="apple:core-ai:qwen3-0.6b-test"
+      models={[{ id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: true }]}
+      onSelect={onSelect} />);
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Core AI · Qwen3 0.6B (test)" }));
+    expect(screen.getAllByRole("menuitemradio")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("menuitemradio"));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

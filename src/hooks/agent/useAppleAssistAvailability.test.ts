@@ -90,6 +90,24 @@ describe("useAppleAssistAvailability", () => {
     expect(result.current.probed).toBe(true);
   });
 
+  it("does not retain old-model availability while a changed model is being probed", async () => {
+    probeAppleAssistAvailability.mockResolvedValueOnce({ kind: "available", modelId: "old-model" });
+    const { result, rerender } = renderHook(
+      ({ refreshKey }) => useAppleAssistAvailability(true, refreshKey),
+      { initialProps: { refreshKey: 0 } },
+    );
+    await waitFor(() => expect(result.current.available).toBe(true));
+    let resolve!: (value: AppleAssistAvailability) => void;
+    probeAppleAssistAvailability.mockImplementationOnce(() => new Promise((done) => { resolve = done; }));
+    rerender({ refreshKey: 1 });
+    expect(result.current.probed).toBe(false);
+    expect(result.current.available).toBe(false);
+    expect(result.current.availability.modelId).toBeUndefined();
+    await act(async () => { resolve({ kind: "unavailable", modelId: "new-model", reason: "missing" }); });
+    expect(result.current.probed).toBe(true);
+    expect(result.current.availability.modelId).toBe("new-model");
+  });
+
   it("flips `probed` to true even when the probe settles on `unsupported`", async () => {
     // The Hazakura Local Assist operation-feedback panel
     // depends on `probed` to distinguish "probe in flight"

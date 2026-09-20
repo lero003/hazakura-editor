@@ -65,6 +65,11 @@ export function useAppleAssistAvailability(
       };
     }
 
+    // A previous model's successful probe does not establish availability of
+    // the newly selected model. Keep requests gated until this probe settles.
+    setAvailability({ kind: "unsupported" });
+    setProbed(false);
+
     timeoutId = setTimeout(() => {
       if (disposed || settled) {
         return;

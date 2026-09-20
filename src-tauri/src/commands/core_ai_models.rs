@@ -49,6 +49,8 @@ pub(crate) struct CoreAiModelCatalogResponse {
     pub(crate) distribution_status: CoreAiDistributionStatus,
     pub(crate) selected_model_id: String,
     pub(crate) models: Vec<CoreAiModelSummary>,
+    pub(crate) management_error: Option<String>,
+    pub(crate) selection_locked: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -94,6 +96,8 @@ pub(crate) struct CoreAiModelStore {
     data_dir: Mutex<Option<PathBuf>>,
     selected_model_id: Mutex<String>,
     catalog: Vec<CoreAiCatalogEntry>,
+    management_error: Mutex<Option<String>>,
+    selection_locked: Mutex<bool>,
 }
 
 impl Default for CoreAiModelStore {
@@ -110,6 +114,8 @@ impl CoreAiModelStore {
             data_dir: Mutex::new(None),
             selected_model_id: Mutex::new(SYSTEM_MODEL_ID.into()),
             catalog,
+            management_error: Mutex::new(None),
+            selection_locked: Mutex::new(false),
         }
     }
 
@@ -120,22 +126,51 @@ impl CoreAiModelStore {
 
     pub(crate) fn configure(
         &self,
-        data_dir: PathBuf,
+        data_dir: Result<PathBuf, String>,
         helper_store: &AppleAssistHelperStore,
+        startup_override: Option<AssistBackendSelection>,
+    ) {
+        // Model management is optional. Never propagate its storage/selection
+        // errors into Tauri setup; retain them for the settings surface.
+        let result = self.configure_inner(data_dir, helper_store, startup_override);
+        *self
+            .management_error
+            .lock()
+            .expect("model management error lock") = result.err();
+    }
+
+    fn configure_inner(
+        &self,
+        data_dir: Result<PathBuf, String>,
+        helper_store: &AppleAssistHelperStore,
+        startup_override: Option<AssistBackendSelection>,
     ) -> Result<(), String> {
+        let overridden = startup_override.is_some();
+        *self.selection_locked.lock().expect("selection locked lock") = overridden;
+        // Establish the safe runtime choice before touching storage. Explicit
+        // Developer overrides never read or rewrite the production preference.
+        helper_store.set_selected_backend(
+            startup_override.unwrap_or(AssistBackendSelection::SystemDefault),
+        )?;
+        *self.selected_model_id.lock().expect("selected model lock") =
+            helper_store.selected_model_id()?;
+        let data_dir = data_dir?;
         for entry in &self.catalog {
             entry.validate()?;
         }
         fs::create_dir_all(&data_dir)
             .map_err(|error| format!("Failed to prepare Core AI app data: {error}"))?;
         *self.data_dir.lock().expect("Core AI data dir lock") = Some(data_dir);
+        if overridden {
+            return Ok(());
+        }
 
         let selected = self
-            .read_persisted_selection()
+            .read_persisted_selection()?
             .unwrap_or_else(|| SYSTEM_MODEL_ID.into());
         if self.selection_for(&selected).is_err() {
+            // System is already active even if repairing the preference fails.
             self.persist_selection(SYSTEM_MODEL_ID)?;
-            helper_store.set_selected_backend(AssistBackendSelection::SystemDefault)?;
         } else {
             self.apply_selection(&selected, helper_store)?;
         }
@@ -172,6 +207,12 @@ impl CoreAiModelStore {
             },
             selected_model_id: selected,
             models,
+            management_error: self
+                .management_error
+                .lock()
+                .expect("model management error lock")
+                .clone(),
+            selection_locked: *self.selection_locked.lock().expect("selection locked lock"),
         }
     }
 
@@ -180,12 +221,20 @@ impl CoreAiModelStore {
         model_id: &str,
         helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
-        self.apply_selection(model_id, helper_store)?;
-        self.persist_selection(model_id)?;
+        self.ensure_management_available()?;
+        let selection = self.selection_for(model_id)?;
+        {
+            // Serialize preferences writes from the main and detached windows.
+            let mut selected = self.selected_model_id.lock().expect("selected model lock");
+            helper_store
+                .set_selected_backend_after(selection, || self.persist_selection(model_id))?;
+            *selected = model_id.into();
+        }
         Ok(self.list())
     }
 
     pub(crate) fn start_download(&self, model_id: &str) -> Result<(), String> {
+        self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
         if !entry.published {
             return Err(
@@ -202,6 +251,7 @@ impl CoreAiModelStore {
     }
 
     pub(crate) fn cancel_download(&self, model_id: &str) -> Result<bool, String> {
+        self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
         if !entry.published {
             return Err(
@@ -216,6 +266,7 @@ impl CoreAiModelStore {
         model_id: &str,
         _helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
+        self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
         if !entry.published {
             return Err(
@@ -226,6 +277,21 @@ impl CoreAiModelStore {
             "Apple-hosted model removal is not active until the asset pack and downloader extension are configured."
                 .into(),
         )
+    }
+
+    fn ensure_management_available(&self) -> Result<(), String> {
+        if let Some(error) = self
+            .management_error
+            .lock()
+            .expect("model management error lock")
+            .as_ref()
+        {
+            return Err(error.clone());
+        }
+        if *self.selection_locked.lock().expect("selection locked lock") {
+            return Err("Model management is locked by the Developer test backend override. Restart without the override to manage models.".into());
+        }
+        Ok(())
     }
 
     fn apply_selection(
@@ -290,11 +356,15 @@ impl CoreAiModelStore {
         Ok(self.data_dir()?.join(STATE_FILENAME))
     }
 
-    fn read_persisted_selection(&self) -> Option<String> {
-        let data = fs::read(self.state_path().ok()?).ok()?;
+    fn read_persisted_selection(&self) -> Result<Option<String>, String> {
+        let data = match fs::read(self.state_path()?) {
+            Ok(data) => data,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(format!("Failed to read Core AI selection: {error}")),
+        };
         serde_json::from_slice::<CoreAiSelectionState>(&data)
-            .ok()
-            .map(|state| state.selected_model_id)
+            .map(|state| Some(state.selected_model_id))
+            .map_err(|error| format!("Failed to decode Core AI selection: {error}"))
     }
 
     fn persist_selection(&self, model_id: &str) -> Result<(), String> {
