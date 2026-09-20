@@ -784,3 +784,4 @@
   background: transparent; color: var(--text); text-align: start; font-size: 14px;
 }
 .apple-assist-model-option:hover, .apple-assist-model-option:focus-visible { background: var(--bg-elev); }
+.apple-assist-model-option:disabled { color: var(--text-muted); cursor: not-allowed; opacity: .7; }

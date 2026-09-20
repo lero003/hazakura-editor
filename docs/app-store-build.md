@@ -21,7 +21,9 @@ The App Store lane is a reviewable safe Markdown editor build. It omits:
 - dev mode
 - arbitrary command execution
 - external AI/API calls
-- network-required features
+- general network-required features; a future user-initiated Apple-hosted model
+  download is the only planned Local Assist acquisition path and is not active
+  while the production catalog is empty
 
 The App Store lane may include Hazakura Local Assist as an on-device,
 availability-gated writing companion. Its output must stay explicit,
@@ -33,6 +35,14 @@ helper at app startup. Availability checks and helper launch belong only
 after an explicit Local Assist user action, such as opening the Local
 Assist surface or sending a writing request. Shipping permission
 (`allowed`) must stay separate from the user's active assist choice.
+
+The distribution build includes two Local Assist sidecars: the macOS 26+
+System helper and a separate macOS 27+ Core AI adapter. It does not bundle
+model weights. The production catalog is deliberately empty until a model,
+its distribution rights, digests, resource manifest, AOT result, and
+Apple-hosted asset-pack identifier are approved. In this state the UI must
+show that Core AI models are not published, keep Apple Intelligence selected,
+and refuse download, delete, or Core AI selection requests.
 
 The Developer / GitHub lane remains separate and may include optional
 Agent Workbench behind its existing boundary.
@@ -48,7 +58,9 @@ Agent Workbench behind its existing boundary.
 - Current source / Developer version: `3.1.0`. Its draft submission copy is in
   `docs/releases/3.1.0-app-store-release-notes.md`. This development version has no
   signed candidate, TestFlight submission, App Store submission, or publication record.
-  Production Core AI distribution/selection and international-release acceptance remain incomplete.
+  The Core AI distribution adapter and empty-catalog management/selection
+  contract are present, but production model assets, Apple-hosted download,
+  and international-release acceptance remain incomplete.
   The prior `3.0.3` submission copy remains in
   `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted by the owner,
   who reported submitting it 2026-09-18; signed local package build 140, while
@@ -127,6 +139,12 @@ bundle is built, using `src-tauri/entitlements/app-store-helper.plist`
 with `com.apple.security.app-sandbox` and
 `com.apple.security.inherit`. The app bundle is then re-signed so the
 resource seal includes the updated helper signature.
+
+The current empty-catalog preflight does not yet add a Background Assets
+downloader extension, App Group entitlement, or `BAAppGroupID` /
+`BAHasManagedAssetPacks` / `BAUsesAppleHosting` keys. Add those only with the
+first approved asset pack and matching provisioning profiles; their absence is
+why model download and removal currently fail closed.
 
 Do not add these unless there is a fresh documented reason:
 
@@ -209,7 +227,7 @@ src-tauri/tauri.conf.appstore.json
 That config sets:
 
 - `beforeBuildCommand` to
-  `npm run build:apple-assist-helper:live && npm run build:vite`
+  `npm run build:apple-assist-helper:distribution && npm run build:import-assist-helper:live && npm run build:vite`
 - the Vite/Rollup app input must include both `index.html` and
   `apple-assist.html` while this lane is helper-enabled. If
   `apple-assist.html` is omitted, `WebviewUrl::App("apple-assist.html")`
@@ -217,8 +235,9 @@ That config sets:
   `apple-assist` window to render Safe Editor UI and hit main-window
   command guards.
 - `frontendDist` to `../dist`
-- `bundle.externalBin` to both nested helpers:
-  `hazakura-local-assist-helper` and `hazakura-import-assist-helper`
+- `bundle.externalBin` to all three nested helpers:
+  `hazakura-local-assist-helper`, `hazakura-core-ai-helper`, and
+  `hazakura-import-assist-helper`
 - base `bundle.resources` to include `LICENSE` and
   `THIRD_PARTY_NOTICES.md` inside `Contents/Resources`
 - `bundle.macOS.bundleVersion` to the current App Store Connect build number
@@ -229,9 +248,13 @@ After Tauri finishes the submit app bundle, `npm run build:app-store-submit`
 runs `scripts/sign-app-store-submit-app.mjs`. That post-sign step re-signs
 each nested helper with the inherited sandbox entitlement
 (`app-store-helper.plist`), re-seals the app bundle, and verifies the deep
-signature. Live helper build scripts also emit `aarch64`, `x86_64`, and
-`universal-apple-darwin` sidecars so Tauri's universal App Store target can
-bundle both helpers.
+signature. The distribution helper build emits `aarch64`, `x86_64`, and
+`universal-apple-darwin` System sidecars plus a universal Core AI sidecar. The
+Core AI arm64 slice links Apple's Core AI framework with a macOS 27 deployment
+target; its x86_64 slice is an inert compatibility binary and cannot load a
+Core AI model. The import helper remains universal. Tauri therefore bundles
+all three helpers without weakening the System helper's macOS 26 deployment
+target.
 
 The preview config uses the same helper-enabled build shape, but deliberately
 skips the App Store sandbox entitlements and provisioning profile so
@@ -248,9 +271,32 @@ npm run smoke:app-store-surface
 ```
 
 This does not replace signed TestFlight manual smoke. It only pins that
-the App Store lane keeps CLI Agent / Agent Workbench commands and visible
-dev badges out of the source-tested surface while allowing the Apple
-Local Assist window, settings, and helper assumptions.
+  the App Store lane keeps CLI Agent / Agent Workbench commands and visible
+  dev badges out of the source-tested surface while allowing the Apple
+  Local Assist window, empty-catalog model-management state, settings, and
+  helper assumptions.
+
+## Core AI Apple-hosted Asset Activation
+
+The source is intentionally one step before asset publication. Before adding
+the first production catalog entry, complete all of the following in the same
+release line:
+
+1. Pin the production model identity, license/provenance, download and installed
+   sizes, AOT output, archive digest, and full resource manifest.
+2. Add the Background Assets downloader extension target, shared App Group,
+   matching provisioning profiles, and the required `BA*` Info.plist keys.
+3. Create the managed asset pack, upload it to App Store Connect, wait for Apple
+   processing, and bind only its immutable identifier to the internal catalog.
+4. Replace the fail-closed native download/cancel/delete transport with
+   `AssetPackManager` integration. Never expose an arbitrary URL or path to the
+   renderer or helper.
+5. Refresh bundled license notices and reviewer/privacy copy, then verify the
+   same signed candidate through internal TestFlight on supported hardware.
+
+Until every item is complete, keep the production catalog empty. A local model
+directory or the Developer Qwen fixture is not a substitute for an Apple-hosted
+pack and must not be made visible in the App Store lane.
 
 ## Bundled Notices
 
@@ -460,8 +506,9 @@ Run on the actual App Store lane build:
 - No unexpected external network communication occurs. In reviewer-facing
   notes, avoid absolute "no network call" wording; state that there is no
   third-party AI service, no external AI/API provider, and no network
-  fallback for Local Assist. If any system handoff appears, record the
-  reason.
+  inference fallback for Local Assist. When Apple-hosted model acquisition is
+  activated, disclose it as an explicit model download and record the observed
+  system traffic separately from inference.
 - `Cmd+Q` with dirty tabs shows the dirty-tab confirmation flow.
 - macOS red close button with dirty tabs shows the dirty-tab confirmation flow.
 - Keyboard-only tab navigation works.
@@ -477,12 +524,13 @@ validation, metadata, and App Review evidence all exist.
 Keep the final reviewer note in ignored local files, but make sure it
 can answer these public-safe points before submission:
 
-- `com.apple.security.network.client` is present so the Tauri/WebKit
-  runtime can load bundled app assets under App Sandbox. The App Store
-  lane is not designed to contact external services and keeps
-  network-required features out of the submitted build. Pair this with a
-  TestFlight smoke note that no external network communication was
-  observed.
+- `com.apple.security.network.client` is present so the Tauri/WebKit runtime
+  can load bundled app assets under App Sandbox. The current empty-catalog
+  build does not activate model downloads. After an Apple-hosted pack is
+  published, explain that acquisition as a user-initiated Apple-hosted asset
+  download and keep inference on-device; do not describe it as an AI network
+  fallback. Pair the note with observed TestFlight behavior for the actual
+  candidate.
 - Script-like file associations such as `.sh`, `.bash`, `.zsh`,
   `.fish`, and `.ps1` are treated as text-editor inputs only. Opening
   those files does not execute them, launch a shell, run a terminal, or
@@ -493,7 +541,9 @@ can answer these public-safe points before submission:
 - The App Store lane includes Hazakura Local Assist only as an on-device,
   availability-gated writing companion. It omits Agent Workbench, CLI
   Agent launch, dev mode, arbitrary command execution, external AI/API
-  calls, and network fallback. Local Assist is not started on app launch;
+  calls, and network inference fallback. The current build includes a Core AI
+  adapter but no published model pack; settings say so and Apple Intelligence
+  remains the only selectable model. Local Assist is not started on app launch;
   the helper is launched only after an explicit Local Assist user action.
   Generated text remains an unsaved draft edit that can be reviewed or
   discarded before saving. The Developer / GitHub lane remains separate.

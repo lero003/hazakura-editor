@@ -7,8 +7,9 @@ Last reviewed: 2026-09-20
 
 簡単なロード・生成確認には **Qwen3-0.6B / macOS / INT4 / context 4096** を使う。
 モデルの層は省略しない。本番allowlistのidentity、日本語文章品質の採用判定、
-App Store配布、本番C-1/C-2の完成を意味しない。通常buildの生成経路は引き続き
-`system_default`。Developer専用のPhase 1経路だけが固定fixtureを `core_ai_test` として選べる。
+App Store配布、本番C-1/C-2の完成を意味しない。配布buildは別のCore AI production
+adapterを空catalogで同梱するが、この固定fixtureとmodel idはDeveloper専用の
+Phase 1経路だけが `core_ai_test` として選べる。
 
 ## この作業環境で試す
 
@@ -36,8 +37,9 @@ HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=core_ai_test npm run dev
 ```
 
 選択はRust supervisorが起動時に固定enumとして解決する。frontendからbackend、model path、
-model id、URLを渡すAPIはない。通常build / App Store buildは従来のlive helperを作り直し、
-Core AI packageやテストモデルを同梱しない。Systemへ戻すときは
+model id、URLを渡すAPIはない。通常build / App Store buildはSystem helperに加えて
+別のCore AI production adapterを作るが、テストモデルは同梱せず本番catalogも空のまま。
+Systemへ戻すときは
 `HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=system_default`（または環境変数なし）で起動する。
 
 ## 固定した入力と再作成

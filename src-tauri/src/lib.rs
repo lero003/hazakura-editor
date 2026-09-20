@@ -8,6 +8,7 @@ pub(crate) mod commands {
     pub(crate) mod apple_assist_supervisor;
     pub(crate) mod apple_assist_target;
     pub(crate) mod book_scope;
+    pub(crate) mod core_ai_models;
     pub(crate) mod export;
     pub(crate) mod external_links;
     pub(crate) mod files;
@@ -93,6 +94,8 @@ use crate::commands::apple_assist_target::*;
 #[allow(unused_imports)]
 use crate::commands::book_scope::*;
 #[allow(unused_imports)]
+use crate::commands::core_ai_models::*;
+#[allow(unused_imports)]
 use crate::commands::export::*;
 #[allow(unused_imports)]
 use crate::commands::external_links::*;
@@ -135,6 +138,7 @@ pub fn run() {
         .manage(AgentWorkbenchSessionStore::default())
         .manage(AppMenuStateStore::default())
         .manage(std::sync::Arc::new(AppleAssistHelperStore::default()))
+        .manage(std::sync::Arc::new(CoreAiModelStore::default()))
         .manage(std::sync::Arc::new(
             commands::okf::OkfDiscoveryCancelStore::default(),
         ))
@@ -153,6 +157,13 @@ pub fn run() {
     #[cfg(target_os = "macos")]
     let builder = builder.setup(|app| {
         apply_macos_vibrancy(app.handle());
+        let data_dir = app
+            .path()
+            .app_data_dir()
+            .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
+        let models = app.state::<std::sync::Arc<CoreAiModelStore>>();
+        let helper = app.state::<std::sync::Arc<AppleAssistHelperStore>>();
+        models.configure(data_dir, helper.inner().as_ref())?;
         Ok(())
     });
 
@@ -216,6 +227,11 @@ pub fn run() {
             list_agent_provider_availability,
             probe_apple_assist_availability,
             probe_local_assist_backend_availability,
+            list_core_ai_models,
+            select_local_assist_model,
+            start_core_ai_model_download,
+            cancel_core_ai_model_download,
+            delete_core_ai_model,
             generate_apple_assist_candidate,
             prepare_apple_assist_generation,
             finish_apple_assist_generation,

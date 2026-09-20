@@ -16,13 +16,15 @@ Hazakura Editor stores local preferences such as theme, tab state, editor settin
 
 ## Hazakura Local Assist
 
-The App Store version of Hazakura Editor may include Hazakura Local Assist as an on-device writing companion. It uses Apple's Foundation Models framework through a bundled helper only after an explicit user action. The app does not send Hazakura Local Assist requests to external AI services, and proposals are not applied automatically. You review the proposal and explicitly apply it in the main window; applied text remains unsaved until you save it.
+The App Store version of Hazakura Editor may include Hazakura Local Assist as an on-device writing companion. It can use Apple Intelligence and, when separately published and explicitly downloaded, an allowlisted Core AI model stored on this Mac. The current build includes the Core AI adapter but no published Core AI model pack, so Apple Intelligence remains the only selectable model. The app does not send your document or Hazakura Local Assist requests to external AI services, and proposals are not applied automatically. You review the proposal and explicitly apply it in the main window; applied text remains unsaved until you save it.
 
 ## Network, analytics, and cloud services
 
 The App Store version of Hazakura Editor does not include external AI calls, analytics, telemetry, third-party crash reporting, or cloud sync.
 
 Remote images in Markdown preview are off by default. If you explicitly enable remote images, the app may make bounded HTTPS requests to image hosts. Local images outside the workspace follow a separate local-image permission setting. These image permissions do not enable external AI calls or an AI network fallback.
+
+If an allowlisted Core AI model is published in a later candidate, an explicit download or removal action in settings may use Apple's asset-hosting service. Model acquisition is separate from inference: generation stays on-device after installation. Hazakura Editor does not accept arbitrary model URLs, filesystem paths, or user-supplied model packages.
 
 Explicit user actions, such as printing, showing a file in Finder, or moving a file to Trash, may hand selected paths or temporary files to macOS system services.
 

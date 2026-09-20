@@ -11,6 +11,7 @@ export * from "./agent";
 export * from "./appleAssist";
 export * from "./autoBackup";
 export * from "./bookScope";
+export * from "./coreAiModels";
 export * from "./dialog";
 export * from "./external";
 export * from "./files";

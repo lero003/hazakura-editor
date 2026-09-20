@@ -2,7 +2,7 @@ import Foundation
 #if !FIXTURE_MODE
 import FoundationModels
 #endif
-#if COREAI_TEST_BACKEND && !FIXTURE_MODE
+#if COREAI_BACKEND && !FIXTURE_MODE
 import CoreAILanguageModels
 #endif
 
@@ -53,8 +53,11 @@ enum GenerateCandidate {
             )
         )
         #else
+        if case .coreAI = backend {
+            return await runCoreAI(request, backend: backend, modelPath: modelPath)
+        }
         if case .coreAITest = backend {
-            return await runCoreAITest(request, modelPath: modelPath)
+            return await runCoreAI(request, backend: backend, modelPath: modelPath)
         }
         if #available(macOS 26.0, *) {
             if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
@@ -125,9 +128,18 @@ enum GenerateCandidate {
             )
         )
         #else
-        if case .coreAITest = backend {
-            return await runCoreAITestStreaming(
+        if case .coreAI = backend {
+            return await runCoreAIStreaming(
                 request,
+                backend: backend,
+                modelPath: modelPath,
+                onPartial: onPartial
+            )
+        }
+        if case .coreAITest = backend {
+            return await runCoreAIStreaming(
+                request,
+                backend: backend,
                 modelPath: modelPath,
                 onPartial: onPartial
             )
@@ -298,31 +310,32 @@ enum GenerateCandidate {
         } ?? nil
     }
 
-    #if COREAI_TEST_BACKEND
+    #if COREAI_BACKEND
     @available(macOS 27.0, *)
     private static func coreAITestOptions() -> GenerationOptions {
         GenerationOptions(
             samplingMode: .greedy,
             temperature: 0,
-            maximumResponseTokens: CoreAITestRuntime.maximumResponseTokens
+            maximumResponseTokens: CoreAIRuntime.maximumResponseTokens
         )
     }
     #endif
 
-    private static func runCoreAITest(
+    private static func runCoreAI(
         _ request: AppleAssistRequest,
+        backend: AssistBackend,
         modelPath: String?
     ) async -> RunResult {
-        if let error = CoreAITestRuntime.unavailableErrorForCurrentHost() {
+        if let error = CoreAIRuntime.unavailableErrorForCurrentHost() {
             return .error(error)
         }
-        #if COREAI_TEST_BACKEND && arch(arm64)
+        #if COREAI_BACKEND && arch(arm64)
         if #available(macOS 27.0, *) {
             let model: CoreAILanguageModel
             do {
-                model = try await CoreAITestRuntime.loadModel(modelPath: modelPath)
+                model = try await CoreAIRuntime.loadModel(modelPath: modelPath, backend: backend)
             } catch {
-                return .error(CoreAITestRuntime.loadError(error))
+                return .error(CoreAIRuntime.loadError(error))
             }
             let startedAt = Date()
             do {
@@ -340,42 +353,43 @@ enum GenerateCandidate {
                 )
                 guard !candidate.isEmpty else {
                     return .error(AppleAssistErrorEnvelope(
-                        error: CoreAITestRuntime.emptyCandidate,
+                        error: CoreAIRuntime.emptyCandidate,
                         kind: "internal"
                     ))
                 }
                 return .ok(AppleAssistResponse(
                     operation: request.operation,
                     candidateText: candidate,
-                    modelId: AssistBackend.coreAITest.modelId,
+                    modelId: backend.modelId,
                     latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
                 ))
             } catch {
-                return .error(CoreAITestRuntime.generationError(error))
+                return .error(CoreAIRuntime.generationError(error))
             }
         }
         #endif
         return .error(AppleAssistErrorEnvelope(
-            error: CoreAITestRuntime.adapterNotBuilt,
+            error: CoreAIRuntime.adapterNotBuilt,
             kind: "unavailable"
         ))
     }
 
-    private static func runCoreAITestStreaming(
+    private static func runCoreAIStreaming(
         _ request: AppleAssistRequest,
+        backend: AssistBackend,
         modelPath: String?,
         onPartial: (AppleAssistPartialResponse) -> Void
     ) async -> RunResult {
-        if let error = CoreAITestRuntime.unavailableErrorForCurrentHost() {
+        if let error = CoreAIRuntime.unavailableErrorForCurrentHost() {
             return .error(error)
         }
-        #if COREAI_TEST_BACKEND && arch(arm64)
+        #if COREAI_BACKEND && arch(arm64)
         if #available(macOS 27.0, *) {
             let model: CoreAILanguageModel
             do {
-                model = try await CoreAITestRuntime.loadModel(modelPath: modelPath)
+                model = try await CoreAIRuntime.loadModel(modelPath: modelPath, backend: backend)
             } catch {
-                return .error(CoreAITestRuntime.loadError(error))
+                return .error(CoreAIRuntime.loadError(error))
             }
             let startedAt = Date()
             do {
@@ -400,23 +414,23 @@ enum GenerateCandidate {
                 }
                 guard !latestCandidate.isEmpty else {
                     return .error(AppleAssistErrorEnvelope(
-                        error: CoreAITestRuntime.emptyCandidate,
+                        error: CoreAIRuntime.emptyCandidate,
                         kind: "internal"
                     ))
                 }
                 return .ok(AppleAssistResponse(
                     operation: request.operation,
                     candidateText: latestCandidate,
-                    modelId: AssistBackend.coreAITest.modelId,
+                    modelId: backend.modelId,
                     latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
                 ))
             } catch {
-                return .error(CoreAITestRuntime.generationError(error))
+                return .error(CoreAIRuntime.generationError(error))
             }
         }
         #endif
         return .error(AppleAssistErrorEnvelope(
-            error: CoreAITestRuntime.adapterNotBuilt,
+            error: CoreAIRuntime.adapterNotBuilt,
             kind: "unavailable"
         ))
     }

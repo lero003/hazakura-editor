@@ -2,26 +2,44 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { MenuLanguage } from "../../types";
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { ChevronIcon } from "../app/Icons";
+import {
+  SYSTEM_LOCAL_ASSIST_MODEL_ID,
+  unavailableCoreAiModelCatalog,
+  type CoreAiModelSummary,
+} from "../../lib/tauri/coreAiModels";
 
 // Rust selects the backend and reports only its read-only provenance id. The
 // checked row confirms that native selection; it must not send a backend
 // override or start generation.
-export function AssistModelPicker({ language, disabled, modelId }: {
+export function AssistModelPicker({ language, disabled, modelId, models, onSelect }: {
   language: MenuLanguage;
   disabled: boolean;
   modelId?: string;
+  models?: CoreAiModelSummary[];
+  onSelect?: (modelId: string) => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
-  const option = useRef<HTMLButtonElement>(null);
+  const options = useRef<Array<HTMLButtonElement | null>>([]);
   const menuId = useId();
   const title = getAssistConversationCopy(language).chooseModel;
-  const modelLabel = modelId === "apple:core-ai:qwen3-0.6b-test"
+  const fallbackModelLabel = modelId === "apple:core-ai:qwen3-0.6b-test"
     ? "Core AI · Qwen3 0.6B (test)"
-    : modelId === undefined || modelId === "apple:foundation-models:system-default"
+    : modelId === undefined || modelId === SYSTEM_LOCAL_ASSIST_MODEL_ID
       ? "Apple Intelligence"
       : "On-device model";
+  const availableModels = models?.length ? models : modelId && modelId !== SYSTEM_LOCAL_ASSIST_MODEL_ID
+    ? [{
+      id: modelId, displayName: fallbackModelLabel, kind: "core_ai" as const,
+      status: "ready" as const, selected: true,
+    }]
+    : unavailableCoreAiModelCatalog().models;
+  const selectedModel = availableModels.find((model) => model.id === modelId)
+    ?? availableModels.find((model) => model.selected)
+    ?? availableModels[0];
+  const selectedId = selectedModel?.id ?? SYSTEM_LOCAL_ASSIST_MODEL_ID;
+  const modelLabel = selectedModel?.displayName ?? fallbackModelLabel;
   const expanded = open && !disabled;
   const close = (restoreFocus: boolean) => {
     if (restoreFocus) trigger.current?.focus();
@@ -31,13 +49,14 @@ export function AssistModelPicker({ language, disabled, modelId }: {
   useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
   useEffect(() => {
     if (!expanded) return;
-    option.current?.focus();
+    const selectedIndex = Math.max(0, availableModels.findIndex((model) => model.id === selectedId));
+    options.current[selectedIndex]?.focus();
     const outside = (event: PointerEvent) => {
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     };
     window.addEventListener("pointerdown", outside);
     return () => window.removeEventListener("pointerdown", outside);
-  }, [expanded]);
+  }, [availableModels, expanded, selectedId]);
 
   return <div className="apple-assist-model-picker" ref={root}
     onBlur={(event) => {
@@ -50,7 +69,18 @@ export function AssistModelPicker({ language, disabled, modelId }: {
         // Continue native tab order from the trigger to the next/previous control.
         close(true);
       } else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key) && !disabled) {
-        event.preventDefault(); setOpen(true); option.current?.focus();
+        event.preventDefault();
+        if (!expanded) {
+          setOpen(true);
+          return;
+        }
+        const enabledOptions = options.current.filter((option): option is HTMLButtonElement => Boolean(option && !option.disabled));
+        if (!enabledOptions.length) return;
+        const current = enabledOptions.indexOf(document.activeElement as HTMLButtonElement);
+        const next = event.key === "Home" ? 0 : event.key === "End" ? enabledOptions.length - 1
+          : event.key === "ArrowUp" ? (current - 1 + enabledOptions.length) % enabledOptions.length
+            : (current + 1) % enabledOptions.length;
+        enabledOptions[next]?.focus();
       }
     }}>
     <button ref={trigger} type="button" className="apple-assist-model-trigger"
@@ -62,10 +92,19 @@ export function AssistModelPicker({ language, disabled, modelId }: {
     </button>
     {expanded ? <div id={menuId} className="apple-assist-model-menu" role="menu" aria-label={title}>
       <p className="apple-assist-model-heading" aria-hidden="true">{title}</p>
-      <button ref={option} type="button" role="menuitemradio" aria-checked="true" tabIndex={-1}
-        className="apple-assist-model-option" onClick={() => close(true)}>
-        <span>{modelLabel}</span><span aria-hidden="true">✓</span>
-      </button>
+      {availableModels.map((model, index) => {
+        const selected = model.id === selectedId;
+        return <button key={model.id} ref={(node) => { options.current[index] = node; }} type="button"
+          role="menuitemradio" aria-checked={selected} tabIndex={-1}
+          disabled={model.status !== "ready"}
+          className="apple-assist-model-option"
+          onClick={() => {
+            if (!selected) void onSelect?.(model.id);
+            close(true);
+          }}>
+          <span>{model.displayName}</span><span aria-hidden="true">{selected ? "✓" : model.status === "ready" ? "" : "—"}</span>
+        </button>;
+      })}
     </div> : null}
   </div>;
 }

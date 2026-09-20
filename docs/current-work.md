@@ -5,6 +5,29 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-20
 
+## Core AI 配布前基盤 — TestFlight手前（2026-09-20）
+
+オーナー方針により、App Store / TestFlightレーンにもCore AIの実行adapter、モデル管理、
+選択状態を含める。System用helperはmacOS 26互換のまま維持し、Core AIはmacOS 27+
+専用の別helperとしてuniversal appへ同梱する。設定にはモデル管理面、Local Assist窓には
+利用可能モデルの選択を接続し、Rustだけがapp-privateな選択と検証済みpathを保持する。
+frontendから任意path / URL / GGUFを渡す入口、製品内変換、cloud fallbackは追加しない。
+
+本番catalogは意図的に空。Apple-hosted asset pack、モデルidentity、権利、digest付き
+resource manifestが未確定なので、現在の配布buildは `not_published` を表示して
+Apple Intelligenceだけを選べる。download / cancel / deleteのcommand契約はあるが、
+Background Assets downloader extension、App Group、pack登録が完了するまでfail closed。
+モデルをappへ仮同梱したり、Developer用Qwen fixtureを本番idへ昇格したりしない。
+
+このスライスは「CDNへモデルを置く前でも、同じ配布build形でadapterと管理面を検証できる」
+ところまで。本番モデル選定だけで出荷可能になるわけではなく、AOT、manifest/digest、
+Background Assets設定とupload、notice、署名済み同一候補のTestFlight実機受入が残る。
+[実装・検証・残ゲート](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
+
+検証はSwift 21件、Rust 400件（2件ignored）、frontend 2,630件、App Store surface 128件、
+型検査、Rust format、`npm run build`まで成功。ローカルad-hoc previewに3 helperが入り、
+deep signatureを確認した。署名済みApp Store pkg / TestFlightではない。
+
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
 npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発版への移行であり、
@@ -13,8 +36,9 @@ npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発�
 現時点で実装済みのLocal Assist表示整理と言語・復旧面の改善だけを掲載候補として記載した。
 
 Core AIはDeveloper専用の固定Qwen fixtureを既存Local Assistへ接続し、Phase 1の
-Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認した。本番C-1の
-配布・digest検証・削除、通常利用者向け選択、本番モデルidentity、品質採用は未実装。
+Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認した。さらに配布版へ
+空catalogのadapter・管理・選択基盤を追加した。本番C-1のasset配布・digest検証・削除、
+本番モデルidentity、品質採用は未実装。
 海外App StoreもConnect設定・公開Web・署名候補の英語受け入れが未完了で、これらは
 実装・受入後に草案へ追記する。
 `src-tauri/tauri.conf.appstore.json` のbundleVersion変更は本作業と並行する既存変更として保持し、
@@ -25,7 +49,8 @@ Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認�
 `HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=core_ai_test` をRust/native側だけで解釈し、固定の
 `.hazakura/coreai-test/exports/hazakura-qwen3-0.6b-test/` をCore AIへ渡すDeveloper経路を追加。
 TypeScriptからbackend / path / model id / URLを渡す入口、製品内変換・取得、Systemへの自動fallbackは
-追加していない。通常buildとApp Store buildは従来どおりSystem helperで、Core AI dependencyも含めない。
+追加していない。このDeveloper fixture自体は通常build / App Store buildへ含めない。
+後続の配布前基盤では、固定fixtureとは別のCore AI production adapterを空catalogで同梱する。
 
 専用QA appでQwenのロード、stream、Proposal保持、main window Diff、実生成元表示、明示Apply、
 未保存、Undo、再依頼、Cancelを確認し、同じappを `system_default` で再起動してSystem生成と
@@ -40,8 +65,9 @@ TypeScriptからbackend / path / model id / URLを渡す入口、製品内変換
 
 モデル選択はLocal Assist窓の入力欄下部・送信ボタンの左隣を主入口とする方針に更新（2026-09-20）。
 DL・容量・削除は設定、選択正本はRustの `selectedId`。C-2実装時に接続する設計変更で、
-通常製品はSystemのみ。Developer test backendでは同じ選択枠がnative選択済みの
-`Core AI · Qwen3 0.6B (test)`を表示するが、利用者がbackendを切り替える操作にはしていない。
+本番catalogが空の現在はSystemのみ。catalogへ公開済み・検証済みモデルが入った後は
+同じ選択枠で切り替える。Developer test backendでは同じ枠がnative選択済みの
+`Core AI · Qwen3 0.6B (test)`を表示するが、配布catalogには入れない。
 [選択UXの正本](core-ai-c0-design.md#5-モデル選択-uxc-2-店にしない)。
 
 ## v3.1 — I-0技術棚卸しと最初の修正（2026-09-19）
@@ -98,8 +124,8 @@ Core AIは[単体テスト用Qwen3-0.6B](core-ai-test-model.md)を準備し、�
 **次のスライス:** 画像ブロック（remote／workspace外許可／load-failed）の英語復旧案内を閉じ、
 専用テスト環境のbuilt appで英語起動→設定→保存／衝突→Reader→出力を
 小さく分けて実表示確認する。nativeメニュー、Help、VoiceOver、署名候補は別ゲートのまま。
-C-1 fixture配管は別コミット系列とし、App Store露出・本番catalog・開示変更・
-`selectedId`書き込みへ広げない。
+Core AI配布前基盤は別スライスで接続済み。本番catalogは空のままとし、モデルidentity・
+asset pack・manifestが揃うまでCore AIの `selectedId` は受理しない。
 
 ## 3.0.3 — スクロールバー修正版を実機確認して申請（2026-09-18）
 

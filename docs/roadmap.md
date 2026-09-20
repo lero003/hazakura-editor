@@ -15,9 +15,9 @@ v3.1は、検証済みCore AIモデルをLocal Assistから実際に利用でき
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |
-| ソース版 | 3.1.0。開発版としてI-0の言語境界・英語復旧面とLocal Assist表示整理を実装済み。Core AI本番接続、海外ストア設定、署名候補の実機受入は未完了で、まだリリース候補ではない。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
+| ソース版 | 3.1.0。I-0の言語境界・英語復旧面、Local Assist表示整理、Core AIの配布前adapter・空catalog管理/選択を実装済み。本番モデルasset、海外ストア設定、署名候補の実機受入は未完了で、まだリリース候補ではない。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | v3.1.0開発版へ版面を移行し、リリースノート草案を開始。Connect上の地域・価格・契約と署名候補の英語受け入れは未完了。閉じるまでbundle言語宣言とI-1は保留。C-1本番はidentity等のゲート待ち — `docs/current-work.md` |
+| 現行キュー | Core AIの配布前build形は接続済み。本番catalogは空のまま、identity・権利・manifest/AOT・Apple-hosted asset pack・bake-offを閉じる。Connect上の地域・価格・契約と署名候補の英語受け入れも未完了 — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
@@ -67,7 +67,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
-| Core AI models | Allowlisted `.aimodel` catalog | v3.1のC-1/C-2。identityと既存ゲート確定後 |
+| Core AI models | Allowlisted `.aimodel` catalog | 配布adapterと空catalog管理/選択は実装済み。identity、asset pack、manifest/AOT、bake-off後に本番entryを公開 |
 | 海外App Store展開 | 英語ローカライズ、製品ページ、対象地域、価格、サポート/Privacy導線 | v3.1。I-0の棚卸しと対象市場決定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published v2.9 hotfix | App Review / daily-use blocker | Only when reproduced |
@@ -181,12 +181,13 @@ Product intent (not an implementation green light):
   not a hidden cloud chat path.
 - No arbitrary URL, no user-supplied unsigned blobs, no auto-apply.
 
-Sequence: **C-0 → v3.0 System共通基盤 → C-1/C-2 fixture配管 → 本番identity pin →
-リリース前bake-off → v3.1 C-1/C-2**。
+Sequence: **C-0 → v3.0 System共通基盤 → C-1/C-2 fixture配管 → 配布前adapter・空catalog →
+本番identity pin → AOT/asset pack/manifest → リリース前bake-off → v3.1本番entry公開**。
 本番C-1/C-2のHOLD条件は維持。fixtureベースの配管はDeveloper/GitHubレーン限定で
 先に進めてよい（2026-09-15オーナー決定）。2026-09-20に固定Qwenを使うC-2 Phase 1の
 Conversation / Proposal / Diff / Apply / Undo / CancelとSystem復帰を確認済みだが、
-本番選択・配布・品質採用ではない。基盤の前倒し範囲は
+本番選択・配布・品質採用ではない。2026-09-20には配布版へ空catalogのadapter、管理、
+Rust-owned選択契約まで前倒ししたが、公開済みモデルがない間はSystem以外を選べない。基盤の前倒し範囲は
 `docs/v2.9-v3-local-assist-plan.md` と `docs/core-ai-c0-design.md` に固定する。
 
 MLX のユーザー向け経路は **C-0〜C-2 では Non-Goal** のままにする。

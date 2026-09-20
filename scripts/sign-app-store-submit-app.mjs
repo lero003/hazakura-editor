@@ -8,6 +8,7 @@ const appPath = resolve(
 );
 const helperPaths = [
   resolve(appPath, "Contents/MacOS/hazakura-local-assist-helper"),
+  resolve(appPath, "Contents/MacOS/hazakura-core-ai-helper"),
   resolve(appPath, "Contents/MacOS/hazakura-import-assist-helper"),
 ];
 const appEntitlements = resolve(

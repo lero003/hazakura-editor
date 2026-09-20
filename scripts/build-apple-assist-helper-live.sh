@@ -13,6 +13,26 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HELPER_DIR="$REPO_ROOT/src-helpers/apple-assist"
 OUT_DIR="$REPO_ROOT/binaries"
+RESOLVED_FILE="$HELPER_DIR/Package.resolved"
+RESOLVED_BACKUP="$(mktemp "${TMPDIR:-/tmp}/hazakura-package-resolved.XXXXXX")"
+RESOLVED_WAS_PRESENT=0
+
+# Package.swift conditionally exposes the macOS 27 Core AI dependency. A
+# System-only build must not rewrite the committed distribution lockfile to an
+# empty graph.
+if [ -f "$RESOLVED_FILE" ]; then
+    RESOLVED_WAS_PRESENT=1
+    cp "$RESOLVED_FILE" "$RESOLVED_BACKUP"
+fi
+restore_resolved_file() {
+    if [ "$RESOLVED_WAS_PRESENT" = "1" ]; then
+        cp "$RESOLVED_BACKUP" "$RESOLVED_FILE"
+    else
+        rm -f "$RESOLVED_FILE"
+    fi
+    rm -f "$RESOLVED_BACKUP"
+}
+trap restore_resolved_file EXIT
 
 if [ ! -d "$HELPER_DIR" ]; then
     echo "error: helper package not found at $HELPER_DIR" >&2
@@ -26,9 +46,11 @@ cd "$HELPER_DIR"
 swift_build_with_sandbox_fallback() {
     local swift_arch="$1"
     local log_file
-    log_file="$(mktemp "${TMPDIR:-/tmp}/hazakura-swift-build.XXXXXX.log")"
+    log_file="$(mktemp "${TMPDIR:-/tmp}/hazakura-swift-build.XXXXXX")"
 
-    if swift build -c release --arch "$swift_arch" >"$log_file" 2>&1; then
+    if CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/clang-module-cache" \
+        SWIFTPM_MODULECACHE_OVERRIDE="$HELPER_DIR/.build/swiftpm-module-cache" \
+        swift build -c release --arch "$swift_arch" >"$log_file" 2>&1; then
         cat "$log_file"
         rm -f "$log_file"
         return 0
@@ -39,10 +61,16 @@ swift_build_with_sandbox_fallback() {
     if grep -q "sandbox_apply: Operation not permitted" "$log_file"; then
         echo "==> retry swift build with --disable-sandbox ($swift_arch)"
         mkdir -p "$HELPER_DIR/.build/clang-module-cache"
-        CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/clang-module-cache" \
-            swift build -c release --arch "$swift_arch" --disable-sandbox
-        rm -f "$log_file"
-        return 0
+        if CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/clang-module-cache" \
+            SWIFTPM_MODULECACHE_OVERRIDE="$HELPER_DIR/.build/swiftpm-module-cache" \
+            swift build -c release --arch "$swift_arch" --disable-sandbox; then
+            rm -f "$log_file"
+            return 0
+        else
+            local retry_status=$?
+            rm -f "$log_file"
+            return "$retry_status"
+        fi
     fi
 
     rm -f "$log_file"

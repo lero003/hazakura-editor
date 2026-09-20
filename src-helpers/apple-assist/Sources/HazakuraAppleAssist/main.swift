@@ -62,6 +62,7 @@ struct IncomingRequest: Decodable {
     let instruction: String?
     let additionalRequest: String?
     let backend: String?
+    let modelId: String?
     let modelPath: String?
     let measureUsage: Bool?
 }
@@ -105,7 +106,10 @@ func dispatch(_ raw: String) async {
 
     switch request.action {
     case "probe_availability":
-        guard let backend = AssistBackend.resolve(wireValue: request.backend) else {
+        guard let backend = AssistBackend.resolve(
+            wireValue: request.backend,
+            modelId: request.modelId
+        ) else {
             emit(.error(
                 AppleAssistErrorEnvelope(
                     error: "Unsupported Local Assist backend.",
@@ -130,7 +134,10 @@ func dispatch(_ raw: String) async {
             ))
             return
         }
-        guard let backend = AssistBackend.resolve(wireValue: request.backend) else {
+        guard let backend = AssistBackend.resolve(
+            wireValue: request.backend,
+            modelId: request.modelId
+        ) else {
             emit(.error(
                 AppleAssistErrorEnvelope(
                     error: "Unsupported Local Assist backend.",

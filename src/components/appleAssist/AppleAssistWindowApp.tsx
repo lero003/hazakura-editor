@@ -24,6 +24,12 @@ import {
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import {
+  listCoreAiModels,
+  selectLocalAssistModel,
+  unavailableCoreAiModelCatalog,
+  type CoreAiModelCatalog,
+} from "../../lib/tauri/coreAiModels";
+import {
   buildProposalEvent,
   getLocalAssistAction,
   isLocalAssistActionId,
@@ -239,7 +245,9 @@ export function AppleAssistWindowApp() {
   // repeated clicks read as a stuck UI).
   const [cancelling, setCancelling] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
-  const { availability, available, probed } = useAppleAssistAvailability();
+  const [modelCatalog, setModelCatalog] = useState<CoreAiModelCatalog>(unavailableCoreAiModelCatalog);
+  const [availabilityRefreshKey, setAvailabilityRefreshKey] = useState(0);
+  const { availability, available, probed } = useAppleAssistAvailability(true, availabilityRefreshKey);
   const { feedback, pushFeedback, clearFeedback } = useOperationFeedback();
   const [sentRequests, setSentRequests] = useState<Array<{ id: string; at: number; text: string }>>([]);
   const followChatRef = useRef(true);
@@ -287,6 +295,26 @@ export function AppleAssistWindowApp() {
   conversationRef.current = conversation;
   targetRef.current = target;
   const displayedTarget = conversation?.pinnedTarget ?? target;
+
+  useEffect(() => {
+    let disposed = false;
+    void listCoreAiModels()
+      .then((catalog) => { if (!disposed) setModelCatalog(catalog); })
+      .catch((reason: unknown) => console.warn("Failed to list Core AI models", reason));
+    return () => { disposed = true; };
+  }, []);
+
+  const selectModel = useCallback(async (modelId: string) => {
+    setError(null);
+    try {
+      const catalog = await selectLocalAssistModel(modelId);
+      setModelCatalog(catalog);
+      availabilityReportedRef.current = false;
+      setAvailabilityRefreshKey((current) => current + 1);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
+    }
+  }, []);
 
   useEffect(() => {
     activeRequestIdRef.current = activeRequestId;
@@ -938,7 +966,9 @@ export function AppleAssistWindowApp() {
               }
             }} />
           <div className="apple-assist-window-actions">
-            <AssistModelPicker language={menuLanguage} disabled={busy} modelId={availability.modelId} />
+            <AssistModelPicker language={menuLanguage} disabled={busy}
+              modelId={modelCatalog.selectedModelId || availability.modelId}
+              models={modelCatalog.models} onSelect={selectModel} />
             <button type="button" className="apple-assist-window-apply"
               onClick={() => { if (busy) void cancelGeneration(); else void applyRoughRequest(); }}
               disabled={busy ? cancelling : !available || requestText.trim().length === 0}>

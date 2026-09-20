@@ -14,6 +14,7 @@ EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"
 REQUIRE_APP_STORE_ENTITLEMENTS="${REQUIRE_APP_STORE_ENTITLEMENTS:-0}"
 HELPERS=(
     "$APP/Contents/MacOS/hazakura-local-assist-helper"
+    "$APP/Contents/MacOS/hazakura-core-ai-helper"
     "$APP/Contents/MacOS/hazakura-import-assist-helper"
 )
 # Back-compat alias for the original Local Assist helper path checks.

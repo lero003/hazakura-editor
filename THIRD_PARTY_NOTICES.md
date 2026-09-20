@@ -3,7 +3,7 @@
 Status: Draft
 Scope: hazakura editor dependency, bundled-helper, and asset provenance notes
 Authority: Medium
-Last reviewed: 2026-06-12
+Last reviewed: 2026-09-20
 
 This file is a distribution-prep draft, not legal advice. Before a public App
 Store, Developer ID, or commercial binary distribution, refresh the dependency
@@ -39,6 +39,7 @@ shoulders of open source software.
 - `encoding_rs` crate `COPYRIGHT`, `LICENSE-APACHE`, `LICENSE-MIT`, and
   `LICENSE-WHATWG`
 - `src-helpers/apple-assist/Package.swift`
+- `src-helpers/apple-assist/CoreAI.Package.resolved`
 - `scripts/build-apple-assist-helper-live.sh`
 - `src-tauri/tauri.conf.json`
 - Current project docs for app icon and helper build provenance
@@ -303,10 +304,40 @@ sidecar source and binary. It also uses Apple platform frameworks and SDKs,
 whose availability and distribution constraints must be handled through the
 app's Apple distribution lane, not as an OSS dependency.
 
+### `hazakura-core-ai-helper`
+
+The App Store/TestFlight build also carries a separate macOS 27 / Apple
+Silicon Core AI adapter sidecar. Keeping it separate preserves the existing
+System helper's lower deployment target. No model weights are bundled by this
+sidecar build.
+
+The committed `src-helpers/apple-assist/CoreAI.Package.resolved` currently pins this
+Swift dependency graph:
+
+| Component | Pinned version / revision | License observed in checkout |
+| --- | --- | --- |
+| `apple/coreai-models` | `3f109efd54273391f9fd9f5f5b3d8c6e99836d55` | BSD-3-Clause |
+| `huggingface/swift-transformers` | `1.3.4` | Apache-2.0 |
+| `huggingface/swift-huggingface` | `0.11.0` | Apache-2.0 |
+| `huggingface/swift-jinja` | `2.5.1` | Apache-2.0 |
+| `mlc-ai/xgrammar` | `0.2.2` | Apache-2.0 |
+| `ibireme/yyjson` | `0.12.0` | MIT |
+| `mattt/EventSource` | `1.5.1` | MIT |
+| `apple/swift-collections` | `1.6.0` | Apache-2.0 |
+| `apple/swift-crypto` | `4.5.2` | Apache-2.0 |
+| `apple/swift-asn1` | `1.7.3` | Apache-2.0 |
+
+Before an external TestFlight or App Store submission, include the upstream
+license texts required by the linked sidecar graph in the shipped notice set.
+The production model asset needs its own separately reviewed model license and
+provenance record; this table does not cover model weights.
+
 ## Final Distribution Checklist
 
 - Refresh `package-lock.json` and `src-tauri/Cargo.lock` license scans before
   each submission package. Latest tracked refresh: 2026-06-12.
+- Refresh the Core AI Swift graph from the committed `CoreAI.Package.resolved` and
+  confirm the full upstream license-text bundle before submission.
 - Confirm which dependencies are actually bundled in App Store and Developer /
   GitHub builds.
 - Preserve DOMPurify under the Apache-2.0 notice option or record a deliberate

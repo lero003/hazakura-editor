@@ -5,6 +5,15 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-20
 
+- **Core AI配布前基盤（2026-09-20）:** App Store / TestFlightレーンへCore AI production
+  adapterをmacOS 27+専用の別helperとして同梱し、設定のモデル管理とLocal Assistの選択、
+  Rust-owned選択状態を接続した。System helperはmacOS 26互換を維持。本番catalogは空なので
+  UIは `not_published`、選択はApple Intelligenceのみ。Apple-hosted asset pack、downloader
+  extension、App Group、manifest/digest、本番identity、notice、署名候補/TestFlight実機受入は
+  未完了。Developer固定Qwenを配布catalogへ入れず、任意URL/path/GGUFと自動fallbackも足さない。
+  Swift 21、Rust 400（2 ignored）、frontend 2,630、surface 128、`npm run build`とlocal preview
+  probeは成功。[記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
+
 ## Current State
 
 - **3.1.0開発版へ移行（2026-09-20）:** npm / Tauri / Cargo / lockfileの版面を更新し、

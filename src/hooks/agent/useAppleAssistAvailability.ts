@@ -41,6 +41,7 @@ export type UseAppleAssistAvailabilityResult = {
 
 export function useAppleAssistAvailability(
   enabled = true,
+  refreshKey = 0,
 ): UseAppleAssistAvailabilityResult {
   const [availability, setAvailability] = useState<AppleAssistAvailability>({
     kind: "unsupported",
@@ -110,7 +111,7 @@ export function useAppleAssistAvailability(
         clearTimeout(timeoutId);
       }
     };
-  }, [enabled]);
+  }, [enabled, refreshKey]);
 
   return {
     availability,

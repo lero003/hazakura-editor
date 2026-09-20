@@ -358,7 +358,9 @@ describe("PrivacyPreferencesPane", () => {
   it("describes local process handoffs without claiming only two launch paths", () => {
     renderPane();
     const text = getSectionBodyText("help-doc-section-network");
-    expect(text).toContain("bundled Hazakura Local Assist helper");
+    expect(text).toContain("bundled helpers");
+    expect(text).toContain("Apple's asset-hosting service");
+    expect(text).toContain("no such model is published in the current build");
     expect(text).toContain(
       "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",
     );

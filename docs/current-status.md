@@ -7,6 +7,15 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **Core AI配布前基盤（2026-09-20）:** App Store / TestFlight buildへmacOS 27+の
+  Core AI production adapterを別helperとして同梱し、設定のモデル管理、Local Assist窓の
+  選択、Rust-ownedの永続選択を接続した。System helperはmacOS 26互換を維持する。
+  本番catalogは意図的に空で、現在は `not_published` とApple Intelligenceだけを表示する。
+  Apple-hosted asset packとdownloader extensionがないためdownload / cancel / deleteは
+  fail closed。署名候補、Apple upload、TestFlight受入、本番モデル採用の証跡ではない。
+  Swift 21件、Rust 400件（2 ignored）、frontend 2,630件、App Store surface 128件と
+  ローカル`npm run build`は成功。[配布前記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
+
 - **3.1.0開発版へ移行（2026-09-20）:** npm / Tauri / Cargo / lockfileの版を
   `3.1.0`へ揃え、[App Storeリリースノート草案](releases/3.1.0-app-store-release-notes.md)を開始。
   現時点では署名済み候補・TestFlight・申請・タグ・公開のいずれでもない。Core AIは
@@ -17,7 +26,8 @@ Last reviewed: 2026-09-20
   既存Local Assistのstream / Proposal / Diff / 明示Apply / Undo / Cancelへ接続した。
   専用QA appでCore AIとSystemへの復帰を実機確認し、Proposalは実際の`modelId`を保持・表示する。
   任意path / URL / import、製品内変換、network fallback、auto-apply / auto-saveは追加していない。
-  Qwen出力品質は不合格。本番モデルidentity、C-1配布・digest・削除、App Store同梱は未実装。
+  Qwen出力品質は不合格。本番モデルidentity、asset配布・digest・削除は未実装。
+  固定Qwen fixtureはApp Storeへ含めず、配布buildには別の空catalog adapterだけを同梱する。
   [Phase 1記録](reviews/2026-09-20-core-ai-phase1/README.md)。
 
 - **Local Assist表示整理（2026-09-20）:** 対象要約・依頼チップ・一体化した入力欄へ整理し、
@@ -28,7 +38,8 @@ Last reviewed: 2026-09-20
 - **v3.1俯瞰レビュー追補（2026-09-20）:** 保存言語のstorage例外時fallbackと表の祖先lang保持を修正。
   [修正・検証記録](reviews/2026-09-20-v3.1-overview-followup/README.md)。
   [テスト用Core AIモデル](core-ai-test-model.md)は約347 MBのQwen3-0.6Bを実生成まで確認したが、
-  校正精度は不合格。通常製品の生成はSystemのみ、本番C-1/C-2と海外展開の残ゲートを維持する。
+  校正精度は不合格。配布buildはCore AI adapterを含むが、catalogが空なので現在の生成は
+  Systemのみ。本番モデルとApple-hosted asset配布、海外展開の残ゲートを維持する。
 
 - **v3.1開発へ移行（2026-09-19）:** 次の版をCore AIの実利用と海外App Store展開の
   二本立てとして開始。最初のI-0ソース／静的棚卸しは

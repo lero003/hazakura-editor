@@ -17,8 +17,11 @@ enum AvailabilityProbe {
         backend: AssistBackend = .systemDefault,
         modelPath: String? = nil
     ) async -> AppleAssistAvailabilityResponse {
-        if case .coreAITest = backend {
-            return await CoreAITestRuntime.probe(modelPath: modelPath)
+        switch backend {
+        case .coreAI, .coreAITest:
+            return await CoreAIRuntime.probe(backend: backend, modelPath: modelPath)
+        case .systemDefault:
+            break
         }
         #if FIXTURE_MODE
         return AssistRuntimeContract.probeResponse(status: .fixture)

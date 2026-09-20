@@ -3,13 +3,21 @@ import XCTest
 
 final class GenerationContractTests: XCTestCase {
     func testBackendResolverDistinguishesSystemAndCoreAITest() {
-        guard case .systemDefault = AssistBackend.resolve(wireValue: "system_default") else {
+        guard case .systemDefault = AssistBackend.resolve(wireValue: "system_default", modelId: nil) else {
             return XCTFail("system_default must resolve to the System backend")
         }
-        guard case .coreAITest = AssistBackend.resolve(wireValue: "core_ai_test") else {
+        guard case .coreAITest = AssistBackend.resolve(wireValue: "core_ai_test", modelId: nil) else {
             return XCTFail("core_ai_test must resolve to the fixed Developer test backend")
         }
-        XCTAssertNil(AssistBackend.resolve(wireValue: "core_ai"))
+        guard case .coreAI(let modelId) = AssistBackend.resolve(
+            wireValue: "core_ai",
+            modelId: "apple:core-ai:writing-primary"
+        ) else {
+            return XCTFail("core_ai must resolve only with native model provenance")
+        }
+        XCTAssertEqual(modelId, "apple:core-ai:writing-primary")
+        XCTAssertNil(AssistBackend.resolve(wireValue: "core_ai", modelId: nil))
+        XCTAssertNil(AssistBackend.resolve(wireValue: "core_ai", modelId: "https://example.com/model"))
         XCTAssertEqual(AssistBackend.coreAITest.modelId, "apple:core-ai:qwen3-0.6b-test")
     }
 

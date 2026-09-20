@@ -35,6 +35,22 @@ const appleAssistHelperCoreAITestScript = readFileSync(
   "scripts/build-apple-assist-helper-coreai-test.sh",
   "utf8",
 );
+const appleAssistHelperDistributionScript = readFileSync(
+  "scripts/build-apple-assist-helper-distribution.sh",
+  "utf8",
+);
+const importAssistHelperLiveScript = readFileSync(
+  "scripts/build-import-assist-helper-live.sh",
+  "utf8",
+);
+const appleAssistPackage = readFileSync(
+  "src-helpers/apple-assist/Package.swift",
+  "utf8",
+);
+const appleAssistResolved = readFileSync(
+  "src-helpers/apple-assist/CoreAI.Package.resolved",
+  "utf8",
+);
 const appleAssistGenerateCandidateSwift = readFileSync(
   "src-helpers/apple-assist/Sources/HazakuraAppleAssist/GenerateCandidate.swift",
   "utf8",
@@ -152,10 +168,11 @@ describe("macOS build scripts", () => {
     );
     expect(appStorePreviewConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStorePreviewConfigJson.build?.beforeBuildCommand).toBe(
-      "npm run build:apple-assist-helper:live && npm run build:import-assist-helper:live && npm run build:vite",
+      "npm run build:apple-assist-helper:distribution && npm run build:import-assist-helper:live && npm run build:vite",
     );
     expect(appStorePreviewConfigJson.bundle?.externalBin).toEqual([
       "../binaries/hazakura-local-assist-helper",
+      "../binaries/hazakura-core-ai-helper",
       "../binaries/hazakura-import-assist-helper",
     ]);
     expect(appStorePreviewConfig).not.toContain(
@@ -199,16 +216,18 @@ describe("macOS build scripts", () => {
     );
     expect(appStoreSubmitConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStoreSubmitConfigJson.build?.beforeBuildCommand).toBe(
-      "npm run build:apple-assist-helper:live && npm run build:import-assist-helper:live && npm run build:vite",
+      "npm run build:apple-assist-helper:distribution && npm run build:import-assist-helper:live && npm run build:vite",
     );
     expect(appStoreSubmitConfigJson.bundle?.externalBin).toEqual([
       "../binaries/hazakura-local-assist-helper",
+      "../binaries/hazakura-core-ai-helper",
       "../binaries/hazakura-import-assist-helper",
     ]);
     expect(appStoreSubmitConfig).toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
     );
     expect(appStoreSubmitSignScript).toContain("app-store-helper.plist");
+    expect(appStoreSubmitSignScript).toContain("hazakura-core-ai-helper");
     expect(appStoreSubmitSignScript).toContain(
       "mac-app-store.entitlements",
     );
@@ -216,6 +235,9 @@ describe("macOS build scripts", () => {
       "hazakura-local-assist-helper-universal-apple-darwin",
     );
     expect(appleAssistHelperLiveScript).toContain("lipo -create");
+    expect(packageJson.scripts["build:apple-assist-helper:distribution"]).toBe(
+      "bash scripts/build-apple-assist-helper-distribution.sh",
+    );
   });
 
   it("uses a review-neutral Local Assist helper executable name in shipping scripts", () => {
@@ -224,6 +246,7 @@ describe("macOS build scripts", () => {
       appStoreSubmitConfig,
       appStoreSubmitSignScript,
       appleAssistHelperLiveScript,
+      appleAssistHelperDistributionScript,
       appleAssistHelperFixtureScript,
       macosDistributionProbeScript,
       macosSandboxPreviewSmokeScript,
@@ -234,7 +257,7 @@ describe("macOS build scripts", () => {
     expect(shippingSurfaces).not.toContain("hazakura-apple-assist-helper");
   });
 
-  it("keeps the Core AI helper build Developer-only and fixed to local prepared inputs", () => {
+  it("keeps the Developer Core AI fixture fixed to prepared local model inputs", () => {
     expect(packageJson.scripts["build:apple-assist-helper:coreai-test"]).toBe(
       "bash scripts/build-apple-assist-helper-coreai-test.sh",
     );
@@ -250,6 +273,37 @@ describe("macOS build scripts", () => {
     expect(appleAssistHelperCoreAITestScript).not.toMatch(
       /curl|huggingface|python|model-url|\$1|\$\{1\}/u,
     );
+  });
+
+  it("ships a separate exact-revision Core AI adapter without bundling a model", () => {
+    expect(appleAssistPackage).toContain(
+      '.package(url: "https://github.com/apple/coreai-models", revision: coreAIRevision)',
+    );
+    expect(appleAssistPackage).toContain(
+      'let coreAIRevision = "3f109efd54273391f9fd9f5f5b3d8c6e99836d55"',
+    );
+    expect(appleAssistHelperDistributionScript).toContain(
+      "HAZAKURA_COREAI_DISTRIBUTION_BUILD=1",
+    );
+    expect(appleAssistHelperDistributionScript).toContain(
+      "--force-resolved-versions",
+    );
+    expect(appleAssistResolved).toContain(
+      '"revision" : "3f109efd54273391f9fd9f5f5b3d8c6e99836d55"',
+    );
+    expect(appleAssistHelperDistributionScript).toContain(
+      "hazakura-core-ai-helper-universal-apple-darwin",
+    );
+    expect(appleAssistHelperDistributionScript).not.toMatch(
+      /model-url|huggingface|\.gguf|exports\/hazakura-qwen3/u,
+    );
+  });
+
+  it("uses a BSD-compatible temporary log name for the import helper build", () => {
+    expect(importAssistHelperLiveScript).toContain(
+      "hazakura-import-swift-build.XXXXXX",
+    );
+    expect(importAssistHelperLiveScript).not.toContain("XXXXXX.log");
   });
 
   it("keeps live helper errors free of Foundation Models debug descriptions", () => {

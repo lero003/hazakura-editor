@@ -20,7 +20,9 @@ cd "$HELPER_DIR"
 swift_build_with_sandbox_fallback() {
     local swift_arch="$1"
     local log_file
-    log_file="$(mktemp "${TMPDIR:-/tmp}/hazakura-swift-build.XXXXXX.log")"
+    # BSD mktemp requires Xs at the end of the template unless a suffix flag is
+    # used. A fixed `.log` suffix can collide with a stale literal filename.
+    log_file="$(mktemp "${TMPDIR:-/tmp}/hazakura-import-swift-build.XXXXXX")"
 
     if swift build -c release --arch "$swift_arch" >"$log_file" 2>&1; then
         cat "$log_file"

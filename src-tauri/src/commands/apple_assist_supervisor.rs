@@ -48,13 +48,20 @@ pub(crate) const CORE_AI_TEST_PROBE_TIMEOUT: Duration = Duration::from_secs(60);
 /// what unblocks the read.
 pub(crate) const GENERATE_TIMEOUT: Duration = Duration::from_secs(360);
 const SYSTEM_DEFAULT_BACKEND: &str = "system_default";
+const CORE_AI_BACKEND: &str = "core_ai";
 const CORE_AI_TEST_BACKEND: &str = "core_ai_test";
 const CORE_AI_TEST_BACKEND_ENV: &str = "HAZAKURA_LOCAL_ASSIST_TEST_BACKEND";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum AssistBackendSelection {
     SystemDefault,
-    CoreAiTest { model_path: PathBuf },
+    CoreAi {
+        model_id: String,
+        model_path: PathBuf,
+    },
+    CoreAiTest {
+        model_path: PathBuf,
+    },
     Invalid(String),
 }
 
@@ -76,11 +83,24 @@ impl AssistBackendSelection {
         }
     }
 
-    fn wire_values(&self) -> Result<(&'static str, Option<&str>), String> {
+    fn wire_values(&self) -> Result<(&'static str, Option<&str>, Option<&str>), String> {
         match self {
-            Self::SystemDefault => Ok((SYSTEM_DEFAULT_BACKEND, None)),
+            Self::SystemDefault => Ok((SYSTEM_DEFAULT_BACKEND, None, None)),
+            Self::CoreAi {
+                model_id,
+                model_path,
+            } => Ok((
+                CORE_AI_BACKEND,
+                Some(model_id.as_str()),
+                Some(
+                    model_path
+                        .to_str()
+                        .ok_or("Core AI model path is not valid UTF-8.")?,
+                ),
+            )),
             Self::CoreAiTest { model_path } => Ok((
                 CORE_AI_TEST_BACKEND,
+                Some("apple:core-ai:qwen3-0.6b-test"),
                 Some(
                     model_path
                         .to_str()
@@ -91,10 +111,11 @@ impl AssistBackendSelection {
         }
     }
 
-    fn model_id(&self) -> Result<&'static str, String> {
+    fn model_id(&self) -> Result<String, String> {
         match self {
-            Self::SystemDefault => Ok("apple:foundation-models:system-default"),
-            Self::CoreAiTest { .. } => Ok("apple:core-ai:qwen3-0.6b-test"),
+            Self::SystemDefault => Ok("apple:foundation-models:system-default".into()),
+            Self::CoreAi { model_id, .. } => Ok(model_id.clone()),
+            Self::CoreAiTest { .. } => Ok("apple:core-ai:qwen3-0.6b-test".into()),
             Self::Invalid(reason) => Err(reason.clone()),
         }
     }
@@ -119,7 +140,7 @@ pub(crate) struct AppleAssistHelperStore {
     // (the `inner` mutex serializes them), so a single slot suffices.
     active_cancel: Mutex<Option<ActiveCancelHandle>>,
     stream_request: Mutex<Option<StreamRequestCancel>>,
-    selected_backend: AssistBackendSelection,
+    selected_backend: Mutex<AssistBackendSelection>,
     #[cfg(test)]
     before_stream_arm: Option<Arc<dyn Fn() + Send + Sync>>,
     #[cfg(test)]
@@ -184,7 +205,7 @@ impl Default for AppleAssistHelperStore {
             cooldown_started_at: Mutex::new(None),
             active_cancel: Mutex::new(None),
             stream_request: Mutex::new(None),
-            selected_backend: {
+            selected_backend: Mutex::new({
                 #[cfg(test)]
                 {
                     AssistBackendSelection::SystemDefault
@@ -193,7 +214,7 @@ impl Default for AppleAssistHelperStore {
                 {
                     AssistBackendSelection::from_developer_environment()
                 }
-            },
+            }),
             #[cfg(test)]
             before_stream_arm: None,
             #[cfg(test)]
@@ -219,8 +240,35 @@ impl Drop for AppleAssistHelperStore {
 }
 
 impl AppleAssistHelperStore {
-    pub(crate) fn selected_model_id(&self) -> Result<&'static str, String> {
-        self.selected_backend.model_id()
+    pub(crate) fn selected_model_id(&self) -> Result<String, String> {
+        self.selected_backend
+            .lock()
+            .expect("selected backend lock")
+            .model_id()
+    }
+
+    pub(crate) fn set_selected_backend(
+        &self,
+        selection: AssistBackendSelection,
+    ) -> Result<(), String> {
+        if self
+            .active_cancel
+            .lock()
+            .expect("active cancel lock")
+            .is_some()
+            || self
+                .stream_request
+                .lock()
+                .expect("stream request lock")
+                .is_some()
+        {
+            return Err("Local Assist model cannot be changed during generation.".into());
+        }
+        *self.selected_backend.lock().expect("selected backend lock") = selection;
+        let mut inner = self.inner.lock().expect("helper store lock");
+        self.reset_locked(&mut inner);
+        self.record_success();
+        Ok(())
     }
 
     // Reserve before dispatching generation. Cancellation never needs the
@@ -393,6 +441,18 @@ impl AppleAssistHelperStore {
     /// environment variable and resolves only the bundled helper
     /// path next to the running app executable.
     pub(crate) fn helper_path(&self) -> Result<std::path::PathBuf, String> {
+        let selection = self
+            .selected_backend
+            .lock()
+            .expect("selected backend lock")
+            .clone();
+        self.helper_path_for(&selection)
+    }
+
+    fn helper_path_for(
+        &self,
+        selection: &AssistBackendSelection,
+    ) -> Result<std::path::PathBuf, String> {
         #[cfg(test)]
         {
             if let Some(path) = &self.helper_path_override {
@@ -413,7 +473,14 @@ impl AppleAssistHelperStore {
         // there. See
         // `docs/archive/planning/apple-local-assist-helper-path-design.md`
         // for the historical resolved-path design.
-        resolve_bundled_helper_path()
+        match selection {
+            AssistBackendSelection::CoreAi { .. } => resolve_bundled_core_ai_helper_path(),
+            // The Developer-only fixture command predates the distribution
+            // sidecar and intentionally replaces the local helper artifact.
+            AssistBackendSelection::CoreAiTest { .. }
+            | AssistBackendSelection::SystemDefault
+            | AssistBackendSelection::Invalid(_) => resolve_bundled_helper_path(),
+        }
     }
 
     /// The timeout that the current probe call should use. Production
@@ -427,7 +494,9 @@ impl AppleAssistHelperStore {
             }
         }
         match backend {
-            AssistBackendSelection::CoreAiTest { .. } => CORE_AI_TEST_PROBE_TIMEOUT,
+            AssistBackendSelection::CoreAi { .. } | AssistBackendSelection::CoreAiTest { .. } => {
+                CORE_AI_TEST_PROBE_TIMEOUT
+            }
             AssistBackendSelection::SystemDefault | AssistBackendSelection::Invalid(_) => {
                 PROBE_TIMEOUT
             }
@@ -452,8 +521,12 @@ impl AppleAssistHelperStore {
         }
     }
 
-    fn spawn_locked(&self, inner_slot: &mut Option<AppleAssistHelperInner>) -> Result<(), String> {
-        let path = self.helper_path()?;
+    fn spawn_locked(
+        &self,
+        inner_slot: &mut Option<AppleAssistHelperInner>,
+        selection: &AssistBackendSelection,
+    ) -> Result<(), String> {
+        let path = self.helper_path_for(selection)?;
         let mut command = Command::new(&path);
         command
             .stdin(Stdio::piped())
@@ -860,11 +933,15 @@ enum WireRequest<'a> {
     ProbeAvailability {
         backend: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
+        model_id: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         model_path: Option<&'a str>,
     },
     #[serde(rename_all = "camelCase")]
     GenerateCandidate {
         backend: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_id: Option<&'a str>,
         #[serde(skip_serializing_if = "Option::is_none")]
         model_path: Option<&'a str>,
         operation: &'a str,
@@ -881,6 +958,8 @@ enum WireRequest<'a> {
     #[serde(rename_all = "camelCase")]
     GenerateCandidateStreaming {
         backend: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_id: Option<&'a str>,
         #[serde(skip_serializing_if = "Option::is_none")]
         model_path: Option<&'a str>,
         operation: &'a str,
@@ -955,7 +1034,12 @@ pub(crate) fn probe_availability_via_helper(
 pub(crate) fn probe_selected_backend_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
-    probe_backend_availability_via_helper(store, &store.selected_backend)
+    let selection = store
+        .selected_backend
+        .lock()
+        .expect("selected backend lock")
+        .clone();
+    probe_backend_availability_via_helper(store, &selection)
 }
 
 fn probe_backend_availability_via_helper(
@@ -968,10 +1052,10 @@ fn probe_backend_availability_via_helper(
         );
     }
 
-    let (backend, model_path) = selection.wire_values()?;
+    let (backend, model_id, model_path) = selection.wire_values()?;
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
-        store.spawn_locked(&mut guard)?;
+        store.spawn_locked(&mut guard, selection)?;
     }
 
     let timeout = store.effective_probe_timeout(selection);
@@ -980,6 +1064,7 @@ fn probe_backend_availability_via_helper(
         guard.as_mut().expect("just spawned"),
         &WireRequest::ProbeAvailability {
             backend,
+            model_id,
             model_path,
         },
         timeout,
@@ -1037,10 +1122,15 @@ pub(crate) fn generate_candidate_via_helper(
         );
     }
 
-    let (backend, model_path) = store.selected_backend.wire_values()?;
+    let selection = store
+        .selected_backend
+        .lock()
+        .expect("selected backend lock")
+        .clone();
+    let (backend, model_id, model_path) = selection.wire_values()?;
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
-        store.spawn_locked(&mut guard)?;
+        store.spawn_locked(&mut guard, &selection)?;
     }
 
     let timeout = store.effective_generate_timeout();
@@ -1049,6 +1139,7 @@ pub(crate) fn generate_candidate_via_helper(
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidate {
             backend,
+            model_id,
             model_path,
             operation,
             selected_text,
@@ -1110,10 +1201,15 @@ where
         );
     }
 
-    let (backend, model_path) = store.selected_backend.wire_values()?;
+    let selection = store
+        .selected_backend
+        .lock()
+        .expect("selected backend lock")
+        .clone();
+    let (backend, model_id, model_path) = selection.wire_values()?;
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
-        store.spawn_locked(&mut guard)?;
+        store.spawn_locked(&mut guard, &selection)?;
     }
 
     let timeout = store.effective_generate_timeout();
@@ -1122,6 +1218,7 @@ where
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidateStreaming {
             backend,
+            model_id,
             model_path,
             operation,
             selected_text,
@@ -1186,7 +1283,7 @@ pub(crate) fn store_with_helper_path_and_backend(
         cooldown_started_at: Mutex::new(None),
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
-        selected_backend,
+        selected_backend: Mutex::new(selected_backend),
         before_stream_arm: None,
         before_stream_complete: None,
         helper_path_override: Some(path),
@@ -1207,7 +1304,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         cooldown_started_at: Mutex::new(None),
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
-        selected_backend: AssistBackendSelection::SystemDefault,
+        selected_backend: Mutex::new(AssistBackendSelection::SystemDefault),
         before_stream_arm: None,
         before_stream_complete: None,
         helper_path_override: None,
@@ -1265,18 +1362,46 @@ pub(crate) fn bundled_helper_base_filename() -> &'static str {
     "hazakura-local-assist-helper"
 }
 
+pub(crate) fn bundled_core_ai_helper_filename() -> String {
+    format!("hazakura-core-ai-helper-{}", rust_target_triple())
+}
+
+pub(crate) fn bundled_core_ai_helper_base_filename() -> &'static str {
+    "hazakura-core-ai-helper"
+}
+
 pub(crate) fn resolve_bundled_helper_path_from_dir(dir: &Path) -> Result<PathBuf, String> {
-    let candidates = [
-        dir.join(bundled_helper_filename()),
-        dir.join(bundled_helper_base_filename()),
-    ];
+    resolve_bundled_sidecar_path_from_dir(
+        dir,
+        &bundled_helper_filename(),
+        bundled_helper_base_filename(),
+        "Hazakura Local Assist helper",
+    )
+}
+
+pub(crate) fn resolve_bundled_core_ai_helper_path_from_dir(dir: &Path) -> Result<PathBuf, String> {
+    resolve_bundled_sidecar_path_from_dir(
+        dir,
+        &bundled_core_ai_helper_filename(),
+        bundled_core_ai_helper_base_filename(),
+        "Hazakura Core AI helper",
+    )
+}
+
+fn resolve_bundled_sidecar_path_from_dir(
+    dir: &Path,
+    target_filename: &str,
+    base_filename: &str,
+    label: &str,
+) -> Result<PathBuf, String> {
+    let candidates = [dir.join(target_filename), dir.join(base_filename)];
     for candidate in candidates {
         if candidate.exists() {
             return Ok(candidate);
         }
     }
     Err(format!(
-        "Hazakura Local Assist helper is not configured for this build. Looked in {}.",
+        "{label} is not configured for this build. Looked in {}.",
         dir.display()
     ))
 }
@@ -1293,4 +1418,13 @@ pub(crate) fn resolve_bundled_helper_path() -> Result<std::path::PathBuf, String
         .parent()
         .ok_or_else(|| format!("Current executable path has no parent: {}", exe.display()))?;
     resolve_bundled_helper_path_from_dir(dir)
+}
+
+pub(crate) fn resolve_bundled_core_ai_helper_path() -> Result<std::path::PathBuf, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to resolve current executable path: {e}"))?;
+    let dir = exe
+        .parent()
+        .ok_or_else(|| format!("Current executable path has no parent: {}", exe.display()))?;
+    resolve_bundled_core_ai_helper_path_from_dir(dir)
 }

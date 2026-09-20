@@ -4,6 +4,10 @@ Status: Implemented and locally verified
 Date: 2026-09-20
 Scope: Developer / GitHub laneの固定test backend。C-1配布と本番モデル採用は対象外
 
+> 後続の同日スライスで、固定fixtureとは別のCore AI production adapterと空catalog管理/選択を
+> App Store / TestFlight buildへ追加した。この記録の「Core AI dependencyを含めない」は
+> Phase 1時点の履歴であり、現在もtest model自体を配布しないという境界だけが継続する。
+
 ## 結論
 
 固定Qwen3-0.6BをCore AIでロードし、既存の
@@ -17,7 +21,8 @@ Scope: Developer / GitHub laneの固定test backend。C-1配布と本番モデ�
 - TypeScriptからbackend、path、任意model id、URLを入力できない。
 - アプリはPython、変換、Hugging Face、download、network fallbackを起動しない。
 - Core AI失敗時にSystemへfallbackせず、本文を変更しない。
-- 通常build / App Store buildはCore AI dependencyとtest modelを含めない。
+- Phase 1時点の通常build / App Store buildはCore AI dependencyとtest modelを含めなかった。
+  後続buildもtest modelは含めず、production adapterだけを空catalogで同梱する。
 - Proposalは実応答の `modelId` を保持し、DiffにもSystem / Core AIを区別して表示する。
 
 ## 実機smoke
