@@ -1,6 +1,9 @@
 import Foundation
-#if COREAI_BACKEND && !FIXTURE_MODE
+#if COREAI_TEST_BACKEND && !FIXTURE_MODE
 import CoreAILanguageModels
+import FoundationModels
+#elseif COREAI_PRODUCT_BACKEND && !FIXTURE_MODE
+import CoreAIKit
 import FoundationModels
 #endif
 
@@ -20,9 +23,18 @@ enum CoreAIRuntime {
             return unavailable(requiresMacOS27)
         }
         #if arch(arm64)
-        #if COREAI_BACKEND && !FIXTURE_MODE
+        #if COREAI_TEST_BACKEND && !FIXTURE_MODE
         do {
-            _ = try await loadModel(modelPath: modelPath, backend: backend)
+            _ = try await loadTestModel(modelPath: modelPath, backend: backend)
+            return AppleAssistAvailabilityResponse(kind: "available", reason: nil)
+        } catch let failure as CoreAIRuntimeFailure {
+            return unavailable(message(for: failure))
+        } catch {
+            return unavailable(modelLoadFailed)
+        }
+        #elseif COREAI_PRODUCT_BACKEND && !FIXTURE_MODE
+        do {
+            _ = try await loadProductionModel(modelPath: modelPath, backend: backend)
             return AppleAssistAvailabilityResponse(kind: "available", reason: nil)
         } catch let failure as CoreAIRuntimeFailure {
             return unavailable(message(for: failure))
@@ -56,38 +68,16 @@ enum CoreAIRuntime {
         AppleAssistAvailabilityResponse(kind: "unavailable", reason: reason)
     }
 
-    #if COREAI_BACKEND && !FIXTURE_MODE
+    private static func logModelLoadFailure(_ error: Error) {
+        let message = "hazakura-core-ai-helper: model load failed: \(String(reflecting: error))\n"
+        FileHandle.standardError.write(Data(message.utf8))
+    }
+
+    #if (COREAI_TEST_BACKEND || COREAI_PRODUCT_BACKEND) && !FIXTURE_MODE
     enum CoreAIRuntimeFailure: Error {
         case resourceMissing
         case resourceInvalid
         case modelLoadFailed
-    }
-
-    @available(macOS 27.0, *)
-    static func loadModel(modelPath: String?, backend: AssistBackend) async throws -> CoreAILanguageModel {
-        let resourceURL: URL
-        let resourceState: CoreAITestResourceState
-        if case .coreAITest = backend {
-            resourceState = CoreAITestResourceContract.validate(path: modelPath)
-        } else {
-            resourceState = CoreAIResourceContract.validate(path: modelPath)
-        }
-        switch resourceState {
-        case .ready(let url):
-            resourceURL = url
-        case .missing:
-            throw CoreAIRuntimeFailure.resourceMissing
-        case .invalid:
-            throw CoreAIRuntimeFailure.resourceInvalid
-        }
-
-        do {
-            let model = try await CoreAILanguageModel(resourcesAt: resourceURL, mode: .eager)
-            try await model.load()
-            return model
-        } catch {
-            throw CoreAIRuntimeFailure.modelLoadFailed
-        }
     }
 
     static func loadError(_ error: Error) -> AppleAssistErrorEnvelope {
@@ -153,6 +143,84 @@ enum CoreAIRuntime {
             return resourceInvalid
         case .modelLoadFailed:
             return modelLoadFailed
+        }
+    }
+    #endif
+
+    #if COREAI_TEST_BACKEND && !FIXTURE_MODE
+    @available(macOS 27.0, *)
+    static func loadTestModel(modelPath: String?, backend: AssistBackend) async throws -> CoreAILanguageModel {
+        guard case .coreAITest = backend else { throw CoreAIRuntimeFailure.resourceInvalid }
+        let resourceState = CoreAITestResourceContract.validate(path: modelPath)
+        let resourceURL: URL
+        switch resourceState {
+        case .ready(let url):
+            resourceURL = url
+        case .missing:
+            throw CoreAIRuntimeFailure.resourceMissing
+        case .invalid:
+            throw CoreAIRuntimeFailure.resourceInvalid
+        }
+
+        do {
+            let model = try await CoreAILanguageModel(resourcesAt: resourceURL, mode: .eager)
+            try await model.load()
+            return model
+        } catch {
+            logModelLoadFailure(error)
+            throw CoreAIRuntimeFailure.modelLoadFailed
+        }
+    }
+
+    #endif
+
+    #if COREAI_PRODUCT_BACKEND && !FIXTURE_MODE
+    enum LoadedProductionModel {
+        case gemma4(KitGemmaModel)
+        case language(KitLanguageModel)
+    }
+
+    @available(macOS 27.0, *)
+    static func loadProductionModel(
+        modelPath: String?,
+        backend: AssistBackend
+    ) async throws -> LoadedProductionModel {
+        guard case .coreAI(let modelId) = backend else {
+            throw CoreAIRuntimeFailure.resourceInvalid
+        }
+        let state = CoreAIResourceContract.validate(path: modelPath, expectedModelId: modelId)
+        let resource: CoreAIProductionResource
+        switch state {
+        case .ready(let value):
+            resource = value
+        case .missing:
+            throw CoreAIRuntimeFailure.resourceMissing
+        case .invalid:
+            throw CoreAIRuntimeFailure.resourceInvalid
+        }
+        do {
+            switch resource.runtimeKind {
+            case .gemma4PLE:
+                guard let tables = resource.tables else {
+                    throw CoreAIRuntimeFailure.resourceInvalid
+                }
+                return .gemma4(try await KitGemmaModel(
+                    decoderBundleAt: resource.bundle,
+                    tablesAt: tables,
+                    modelID: modelId
+                ))
+            case .language:
+                return .language(try await KitLanguageModel(
+                    bundleAt: resource.bundle,
+                    engineVariant: .pipelined,
+                    modelID: modelId
+                ))
+            }
+        } catch let failure as CoreAIRuntimeFailure {
+            throw failure
+        } catch {
+            logModelLoadFailure(error)
+            throw CoreAIRuntimeFailure.modelLoadFailed
         }
     }
     #endif

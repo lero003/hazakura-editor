@@ -1,0 +1,12 @@
+Gemma 4 12B is provided under the Gemma Terms of Use.
+
+These Core AI (.aimodel) bundles are a format conversion of the weights from
+google/gemma-4-12B-it-qat-q4_0-unquantized and remain governed by Google's Gemma
+license. By downloading or using these files you agree to the Gemma Terms of Use.
+
+  Gemma Terms of Use:        https://ai.google.dev/gemma/terms
+  Prohibited Use Policy:     https://ai.google.dev/gemma/prohibited_use_policy
+
+The conversion itself (the Core AI bundles and the custom Metal flash-decode SDPA
+kernel that lets the model run on the engine) imposes no additional restrictions
+beyond the Gemma Terms of Use.

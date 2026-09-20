@@ -22,18 +22,28 @@ Last reviewed: 2026-09-20
   最終の全Rust 414件（2 ignored）、frontend 2,643件、surface 128件、`npm run build`と
   local previewのdistribution probeは成功。遅延中の実ウィンドウ操作・CDN受入は未確認。
   G1（複数窓同期）・G2（検証済みReady）は未実装で、本番catalog公開前の必須ゲート。
+  本番候補はGemma 4 E4B（標準、16 GB Mac受入候補）とGemma 4 12B（高品質比較、32 GB以上）へ
+  固定し、community変換物のcommit/file digest、CoreAIKit runtime、再現可能なBackground Assets
+  stage/manifest/`.aar`準備処理を追加した。[候補・再現手順・残ゲート](core-ai-production-models.md)。
+  現ホストのXcode 27.0 `ba-package`は公式JSONまで拡張子判定で拒否するため`.aar`作成は未完了。
+  `coreai-build`も利用できずAOTは未完了。catalogは引き続き空で、Apple CDN、
+  TestFlight実機取得、品質採用、App Store出荷を確認した状態ではない。
+  E4Bと12BはいずれもM4 Max / 128 GBのローカルproduction helperでloadと短い日本語校正を
+  通したが、16 GB / 32 GB対象機の性能・bake-off・配布受入を代替しない。
 
 - **3.1.0開発版へ移行（2026-09-20）:** npm / Tauri / Cargo / lockfileの版を
   `3.1.0`へ揃え、[App Storeリリースノート草案](releases/3.1.0-app-store-release-notes.md)を開始。
   現時点では署名済み候補・TestFlight・申請・タグ・公開のいずれでもない。Core AIは
-  Developer固定fixtureのPhase 1配管のみ完了し、本番C-1/C-2と海外展開の残ゲートは未完了。
+  Developer固定fixture、空catalog配布adapter、本番候補asset準備までで、本番catalogの
+  C-1/C-2接続と海外展開の残ゲートは未完了。
   並行するApp Store bundleVersion変更は候補証跡として扱わない。
 
 - **Core AI Phase 1（2026-09-20）:** 固定Qwen3-0.6BをRust-owned `core_ai_test` で選び、
   既存Local Assistのstream / Proposal / Diff / 明示Apply / Undo / Cancelへ接続した。
   専用QA appでCore AIとSystemへの復帰を実機確認し、Proposalは実際の`modelId`を保持・表示する。
   任意path / URL / import、製品内変換、network fallback、auto-apply / auto-saveは追加していない。
-  Qwen出力品質は不合格。本番モデルidentity、asset配布・digest・削除は未実装。
+  Qwen出力品質は不合格。本番identity/digestは別のGemma 4候補lockへ進んだが、
+  asset配布・検証済みReady・削除は未接続。
   固定Qwen fixtureはApp Storeへ含めず、配布buildには別の空catalog adapterだけを同梱する。
   [Phase 1記録](reviews/2026-09-20-core-ai-phase1/README.md)。
 

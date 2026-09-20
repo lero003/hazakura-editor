@@ -8,9 +8,10 @@ Last reviewed: 2026-09-20
 - **Core AI配布前基盤（2026-09-20）:** App Store / TestFlightレーンへCore AI production
   adapterをmacOS 27+専用の別helperとして同梱し、設定のモデル管理とLocal Assistの選択、
   Rust-owned選択状態を接続した。System helperはmacOS 26互換を維持。本番catalogは空なので
-  UIは `not_published`、選択はApple Intelligenceのみ。Apple-hosted asset pack、downloader
-  extension、App Group、manifest/digest、本番identity、notice、署名候補/TestFlight実機受入は
-  未完了。Developer固定Qwenを配布catalogへ入れず、任意URL/path/GGUFと自動fallbackも足さない。
+  UIは `not_published`、選択はApple Intelligenceのみ。本番identity、file digest、asset作成recipeは
+  Gemma 4候補として固定したが、Apple-hosted asset pack upload、downloader extension、App Group、
+  AOT、notice最終確認、署名候補/TestFlight実機受入は未完了。Developer固定Qwenを配布catalogへ
+  入れず、任意URL/path/GGUFと自動fallbackも足さない。
   Swift 21、Rust 400（2 ignored）、frontend 2,630、surface 128、`npm run build`とlocal preview
   probeは成功。[記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
   レビューP2追補: 起動選択を一本化し、Developer明示指定を優先・永続化せず、App Storeは無視。
@@ -23,6 +24,18 @@ Last reviewed: 2026-09-20
   native遅延helperテストは成功、遅延中の実ウィンドウ操作は隔離QAで導線へ到達できず未確認。
   次はその操作受入。本番catalog公開前にはG1の複数窓同期とG2の検証済みReadyを実装する。
   両ゲートとCDN等の残項目を閉じるまでcatalogを空に保つ。
+  2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定。
+  `scripts/core-ai-production-models.json`へ変換物revisionとfile digestをlockし、
+  `scripts/prepare-core-ai-model-assets.mjs`で取得・検証・resource manifest・Apple-hosted `.aar`を
+  再生成できる。ただし現ホストのXcode 27.0 `ba-package`は公式JSONまで拡張子判定で拒否し、
+  stage/manifest以降の`.aar`作成は修正版toolchain待ち。product helperは分離した
+  `CoreAIProduction.Package.resolved`のCoreAIKit runtimeで
+  E4B PLE / 12B bundleをロードする。詳細は[本番候補準備](core-ai-production-models.md)。
+  現ホストは`coreai-build`なしのためAOTも未完了。App Group/profile/Downloader extension、
+  `AssetPackManager`、App Store Connect upload、TestFlight実機受入、G1/G2、license最終確認が残る。
+  E4Bと12BはM4 Max / 128 GBのホストでproduction helperのloadと短い日本語校正まで成功。
+  E4Bは7,376 ms、12Bは8,872 ms。これは16 GB / 32 GB機の性能、正式bake-off、署名app、
+  TestFlight/CDN受入の証跡ではない。
 
 ## Current State
 

@@ -23,22 +23,40 @@ import PackageDescription
 import Foundation
 
 let coreAIRevision = "3f109efd54273391f9fd9f5f5b3d8c6e99836d55"
+let coreAIKitRevision = "bebe09a050c144034c169af2074fda47fb7ba326"
 let coreAITestBuild = ProcessInfo.processInfo.environment["HAZAKURA_COREAI_TEST_BUILD"] == "1"
 let coreAIDistributionBuild = ProcessInfo.processInfo.environment["HAZAKURA_COREAI_DISTRIBUTION_BUILD"] == "1"
+precondition(
+    !(coreAITestBuild && coreAIDistributionBuild),
+    "Core AI test and production distribution flavors are mutually exclusive."
+)
 let coreAIBackendBuild = coreAITestBuild || coreAIDistributionBuild
-let packageDependencies: [Package.Dependency] = coreAIBackendBuild
-    ? [.package(url: "https://github.com/apple/coreai-models", revision: coreAIRevision)]
-    : []
-let targetDependencies: [Target.Dependency] = coreAIBackendBuild
-    ? [.product(
+let packageDependencies: [Package.Dependency]
+let targetDependencies: [Target.Dependency]
+if coreAITestBuild {
+    packageDependencies = [.package(url: "https://github.com/apple/coreai-models", revision: coreAIRevision)]
+    targetDependencies = [.product(
         name: "CoreAILM",
         package: "coreai-models"
     )]
-    : []
+} else if coreAIDistributionBuild {
+    packageDependencies = [.package(
+        url: "https://github.com/john-rocky/coreai-kit",
+        revision: coreAIKitRevision
+    )]
+    targetDependencies = [.product(
+        name: "CoreAIKit",
+        package: "coreai-kit"
+    )]
+} else {
+    packageDependencies = []
+    targetDependencies = []
+}
 let helperSwiftSettings: [SwiftSetting] = [
     .define("FIXTURE_MODE", .when(configuration: .debug))
 ] + (coreAIBackendBuild ? [.define("COREAI_BACKEND")] : [])
   + (coreAITestBuild ? [.define("COREAI_TEST_BACKEND")] : [])
+  + (coreAIDistributionBuild ? [.define("COREAI_PRODUCT_BACKEND")] : [])
 
 let package = Package(
     name: "HazakuraAppleAssist",

@@ -1,4 +1,4 @@
-<!-- Canonical C-0 design SoT. Pre-development lock. Do not start C-1 until the owner picks a production model identity. -->
+<!-- Canonical C-0 design SoT. Production identities were selected on 2026-09-20; catalog activation remains gated. -->
 
 # C-0: Next Foundation Models generation + Core AI writing models + writing-companion UI
 
@@ -7,11 +7,11 @@
 | **Title** | Hazakura Local Assist — Foundation Models 次世代、Core AI 文章モデル、writing-companion UI |
 | **Author** | Design spike (C-0) |
 | **Date** | 2026-08-27 |
-| **Status** | **Pre-development lock** (APPROVE WITH CHANGES applied). Design only. |
-| **Scope** | Design only. No product source, no C-1/C-2 implementation. |
+| **Status** | **Implementation boundary lock.** Distribution preflight implemented; production catalog activation gated. |
+| **Scope** | Design and activation gates. Current implementation truth is in `current-work.md` and `core-ai-production-models.md`. |
 | **Tree baseline** | Package `2.6.1`. Local Assist A-1–A-4 source merged. Physical Assist gate pending. HEAD observed `82e6d307`. |
 | **Does not reopen** | v2.6 apply boundary (`applyReviewedLocalAssistProposal` is the single apply path) |
-| **Last revised** | 2026-09-20 (Local Assist窓内でのモデル選択) |
+| **Last revised** | 2026-09-20 (production model identity / asset preparation) |
 
 ---
 
@@ -46,7 +46,7 @@ Hazakura Local Assist は、選択した Markdown に対してオンデバイス
 本スパイクは次の三代を **一つの Assist UX** に載せる設計である。
 
 1. **macOS 27 の Foundation Models 次世代**（AFM 3 Core / Core Advanced。パラメータ数は公開報道であり API 契約ではない）を、既定の脳として受け取る。
-2. **Core AI の allowlist された文章モデル**（`.aimodel` バンドル）を、macOS 27+ の任意経路として同じ生成 UX に載せる。ネットワークはカタログ取得のみ。App Store レーンでも明示 DL を載せてよい（D12）。推論はオンデバイス。PCC / 第三者クラウドは使わない。第一の本番モデル identity は未決。**C-1 は identity 決定まで始めない。**
+2. **Core AI の allowlist された文章モデル**（`.aimodel` バンドル）を、macOS 27+ の任意経路として同じ生成 UX に載せる。ネットワークはカタログ取得のみ。App Store レーンでも明示 DL を載せてよい（D12）。推論はオンデバイス。PCC / 第三者クラウドは使わない。2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定した。**catalog公開はAOT・配信接続・bake-off・G1/G2完了まで行わない。**
 3. **writing-companion の polish**（composer-first、対象チップ、ローカルモデル指定、ストリームを主役、紙と墨）。Notion の「ヘルパーで話し、確認してから書く」には寄せる。Notion Agent 形（ツールコール、永続チャット DB、workspace RAG、自律編集、クラウドモデル店、メイン chrome の第三モード）にはしない。Goal やリリース文言に「Notion AI 級」と書かない。
 
 v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイン窓、エディタは明示反映まで不変。本設計は UI を磨き、任意で選択範囲からの静かな入口を足してよいが、会話 + Diff + エディタを一つのページエージェントにマージしない。
@@ -123,7 +123,10 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 
 ## Key Decisions
 
-実装に入る前に固定する判断。根拠は短い。Open Questions 1–4 はオーナー回答済み。本番モデル identity だけ未決のまま凍結。2026-08-27 の最終事前レビュー（P1–P3）を D24–D29 に折り込んだ。2026-09-15 のオーナー決定で、fixture ベースの C-1 配管は Developer / GitHub レーン限定・カタログ未公開のまま先に進めてよい。
+実装境界として固定する判断。根拠は短い。Open Questions 1–4 はオーナー回答済み。
+2026-09-20に本番候補identityをD7へ追補した。2026-08-27 の最終事前レビュー（P1–P3）を
+D24–D29 に折り込み、2026-09-15 のオーナー決定でfixtureベースのC-1配管は
+Developer / GitHubレーン限定・カタログ未公開のまま先行した。
 
 **2026-09-20 配布前実装の追補:** オーナーはApp Store / TestFlight buildへCore AI adapterと
 モデル管理・選択契約を先に含める方針へ更新した。本番catalogは空、Systemが既定、未公開model idは
@@ -138,7 +141,7 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 | **U-\* / H-1 / G-1** | **GO** on `SystemLanguageModel`. Do not wait for Core AI. |
 | **C-1 (fixture 配管)** | **GO, Developer / GitHub lane only.** Download / verify / prepare / delete lifecycle may be built against a non-production fixture bundle. Catalog stays unshipped; App Store exposure, production catalog entry, and the D12 disclosure rewrite stay deferred. |
 | **Distribution preflight** | **GO, both lanes, empty catalog only.** Bundle the production adapter and expose fail-closed management/selection contracts. Do not publish a model entry or activate Background Assets yet. |
-| **C-1 (production)** | **HOLD** until (1) owner pins a production identity, (2) expanded `resourceManifest` is in the catalog contract (D25), (3) delivery is the locked D19 split (Background Assets on MAS when possible, Hazakura origin otherwise) plus maintainer AOT, and (4) release-preflight bake-off accepts the pinned model on Japanese manuscripts. |
+| **C-1 (production preparation)** | **GO for locked offline artifact preparation only.** Identity、file digest、resource manifest、Apple-hosted `.aar`は再現可能に作る。catalog activationは、maintainer AOT、D19配信接続、G1/G2、release-preflight bake-off完了まで**HOLD**。 |
 | **C-2** | **HOLD** until C-1 plus (4) backend-specific availability (D24) and (5) Rust is the only backend selector (D20). |
 | **Apply** | **Do not touch.** No C-0 PR changes `applyReviewedLocalAssistProposal`. |
 
@@ -150,7 +153,7 @@ v2.6 の契約は維持する。会話は分離 companion、Diff Apply はメイ
 | **D4** | Revision Packet は **現行 A-2**（`buildAppleAssistRevisionContext`）を正とする。transcript 再利用がオンでも Packet を消さない。最新提案を rewrite 対象として明示する。reuse 時の Packet 痩せは測定結果待ち。 | 小さなモデルは対象を落とす。二重計上の最適化は測ってから。 |
 | **D5** | PCC / 第三者クラウド `LanguageModel` は Local Assist に **出さない・fallback しない・隠し設定にもしない。** | 「この Mac で整える」が製品主張。PCC のプライバシー保証はクラウドである事実を消さない。 |
 | **D6** | allowlist はアプリ同梱の versioned catalog。digest 検証、サイズ上限、sandbox 内 Application Support 保存。Markdown workspace には置かない。削除は明示。 | 任意 URL 禁止。workspace をモデル置き場にしない。 |
-| **D7** | **第一の本番 allowlist identity は未決。** Qwen3-4B Instruct 4-bit は研究メモの例示であり、本番 id にしない。Qwen3-8B はコード予約・UI 非表示（Q4）。Gemma 3 は HF gated のためカタログに入れない。Gate B / production entryはidentity決定後。U-\* はSystemだけで進めてよい。fixture bundleを本番idに昇格しない。2026-09-20はidentityなしで配布adapter・空catalogを先行してよい。 | オーナー 2026-08-27 / 2026-09-15 / 2026-09-20。店を開かず、棚と実行adapterだけを配布形へ置く。 |
+| **D7** | **2026-09-20に候補identityを固定。** Standardは`apple:core-ai:gemma-4-e4b-it-int4-v1`（Gemma 4 E4B QAT、16 GB Mac受入候補）、quality comparisonは`apple:core-ai:gemma-4-12b-it-int8-v1`（32 GB以上で先行評価）。完全なrevision/file digest/asset pack IDは`docs/core-ai-production-models.md`と`scripts/core-ai-production-models.json`を正本とする。これはproduction catalog公開決定ではない。Developer Qwen fixtureを本番idに昇格しない。 | オーナー 2026-09-20。小さい標準候補と大きい比較候補を同系統で評価し、AOT・配信・bake-off・G1/G2が閉じるまで店を開かない。 |
 | **D8** | C-0/C-1 の Core AI スライスでは **tool calling なし。** OCR / Spotlight / Barcode は採用しない。読み取り専用ツールも最初のスライスでは足さない。 | 副作用と workspace 索引形を避ける。品質問題はモデルとプロンプトで解く。 |
 | **D9** | 画像入力は C-1 対象外。後続で、ユーザーが明示添付した図、または現在 Preview 画像 + consent に限定。 | トークン予算と同意境界が未設計。 |
 | **D10** | `@Generable` で `{ candidateMarkdown, changeSummary }` を返す。**Diff（sanitize 後の candidate vs pinned original）がレビュー正本。** `changeSummary` は補助表示だけ。sanitize 後の candidate が raw と違ったら **モデル summary を捨て、既存の deterministic `proposalChangeSummary` に fallback。** guided generation 非対応なら free-text + 既存 sanitizer（JSON-in-prompt を新発明しない）。G-1 は SystemLanguageModel だけで出荷可能。 | 現行 sanitizer は boundary / preamble / fence を削る。モデル要約と Apply 本文がズレうる。 |
@@ -1173,9 +1176,12 @@ Rollback:
 
 ## Open Questions
 
-オーナー回答 2026-08-27。未決のまま残す項目は無い。本番 identity は「今は選ばない」という決定。
+オーナー回答 2026-08-27。2026-09-20にidentity回答だけを更新した。
 
-1. **Resolved（identity は未決のまま凍結）。** 第一 allowlist の本番 identity はまだ選ばない。Qwen3-4B Instruct 4-bit を本番 id にしない（研究メモの例示のみ）。**C-1 はオーナーがモデルを選ぶまで始めない。** Gate B / C-2 も identity 待ち。bake-off は identity 決定後、仮に **3 本**（校正短文、地の文の章、Markdown 多め）。見る項目: 校正精度、地の文の自然さ、Markdown 保持、前置き漏れ。
+1. **Resolved（2026-09-20更新）。** StandardはGemma 4 E4B QAT int4、quality comparisonは
+   Gemma 4 12B QAT int8へ固定した。revision/digestは`core-ai-production-models.md`を正本とする。
+   Qwen3-4B Instruct 4-bitを本番idにしない。Gate Bは **3本**（校正短文、地の文の章、
+   Markdown多め）で校正精度、地の文の自然さ、Markdown保持、前置き漏れを見る。
 2. **Resolved.** インライン「整える」は **U-5 として後回し。U-1 に混ぜない。** L Mode は U-5b。
 3. **Resolved.** App Store レーンで数 GB 級の allowlist オンデバイス DL を **許可する。** C-1 は catalog コマンドと同時（または同一系列の blocking 先行 PR）に `docs/app-store-build.md` / Local Data Disclosure / Privacy Policy を書き換える。生成は PCC / Claude / Gemini に逃げない。開示無しにコマンドを足さない。
 4. **Resolved.** より大きい級（研究メモの Qwen3-8B）は **コード予約のみ。UI に灰色でも出さない。**
@@ -1263,12 +1269,14 @@ U-2（hero 視覚仕上げ）を分けるなら **U-1 の直後・同一レビ�
 ### PR C-1 — allowlist catalog と download / verify / delete
 
 **配布前状態（2026-09-20）:** 空catalogのlist/selectと管理UI、download/cancel/deleteの
-fail-closed command contractまでは実装済み。以下のasset transport、完全性検証、production
-entry公開は本番identity決定後の残作業。
+fail-closed command contractまでは実装済み。identity/file digest/`.aar`作成recipeも固定済み。
+以下のasset transport、G2完全性検証、production entry公開は残作業。
 
 - **Title:** Core AI 文章モデルの入手・検証・削除
 - **Files:** 同梱 catalog JSON（**オーナーが選んだ本番 id のみ**）、Rust `list/start/cancel/delete` + label gate、Application Support path モジュール（新規。`app_data_dir` 先例なし）、stream-to-temp downloader、展開 containment、`catalog-state.json`、**LLM 管理ページ**（DL / 容量 / 削除。利用選択の書き込みは C-2）、選んだモデルの `THIRD_PARTY_NOTICES.md`、`docs/release-pre-check.md` の URL 切れ一行、**必須の開示:** `docs/app-store-build.md`（`network.client` / Reviewer Note）、`helpDocs/en/local-data-disclosure.md`、`helpDocs/en/privacy-policy.md`（日本語同等があればそれも。現状 en のみ）、`npm run smoke:app-store-surface`
-- **Depends:** **オーナーが本番 identity を選んでいること。** D25 `resourceManifest` 契約。D19 の MAS Background Assets vs origin を pack ごとに決めていること。D28 AOT 済み成果物。未決なら始めない。H-1 非依存。helper は触らないか、触っても `system_default` 以外拒否。
+- **Depends:** D7で選んだ本番identity。D25 `resourceManifest` 契約。D19 の MAS Background Assetsを
+  packごとに接続していること。D28 AOT済み成果物。H-1非依存。activationまではhelperが
+  `system_default`以外を製品catalogから受けない。
 - **Changes:** 選んだ identity の `archiveSha256` + 展開後 manifest、size cap、`maxExpandedBytes` / `maxEntries`、明示 DL または BA materialize、削除。配布前の `select_local_assist_model` はSystemだけを受理し、本番entryは追加しない。開示書き換えとcatalog commandは同じ系列。
 - **Tests:** path escape、symlink、hardlink、size cap、maxEntries、Cancel、archive digest mismatch、**展開後 1 ファイル改ざん**。App Store surface: 明示操作、Cancel、サイズ開示、オンデバイスのみ、クラウド fallback 無し。
 
@@ -1276,7 +1284,7 @@ entry公開は本番identity決定後の残作業。
 
 - **Files:** なし（手元 3 原稿 + メモ。tracked 製品 docs にパスを書かない）
 - **Depends:** **オーナーが選んだ identity**、C-1 で入れたバンドル、macOS 27 SystemLanguageModel
-- **Changes:** identity 未決の間は動かない。校正短文 / 地の文の章 / Markdown 多めの 3 本。合格するまで C-2 を出さない。
+- **Changes:** E4B / 12B候補を校正短文 / 地の文の章 / Markdown多めの3本で比較する。合格するまでC-2を出さない。
 
 ### PR H-1b — generate に検証済み path を載せる
 
@@ -1293,7 +1301,7 @@ Companion pickerは接続済み。ただしcatalogが空なので本番Core AI�
 
 - **Title:** Local Assist から allowlist 文章モデルを選んで使う
 - **Files:** helper `CoreAILanguageModel`、`select_local_assist_model`、**companion モデルチップ**（利用選択の主入口）、管理ページとの選択状態同期、失敗時 no-fallback、specialize ステータスと timeout、メモリ事前拒否（D22）、cancel 分離（D23）
-- **Depends:** H-1b、G-1、Gate B、**D24 backend probe**、**D20 Rust selectedId 正本**、オーナーが選んだ本番 identity。x86_64 は System のみ。identity 未決なら始めない。
+- **Depends:** H-1b、G-1、Gate B、**D24 backend probe**、**D20 Rust selectedId 正本**、D7の本番identity。x86_64 は System のみ。
 - **Changes:** ここで初めて `selectedId` に coreai id を書いてよい。`probe_local_assist_backend_availability`。利用選択の主入口はcompanionチップ。Rustが選択を検証・確定し、管理ページも同じ `selectedId` を表示する。入手 UI は C-1 のまま。companion は選択中 backend で disable。切替は次の依頼から全会話。System ↔ Core AI の自動逃げなし。`maximumResponseTokens` 明示（D29）。tools 空。画像なし。Apply 境界そのまま。
 - **Tests:** System OFF かつ Core AI selected で composer が開くこと。TS generate に backend が無いこと。メモリ拒否コピー。specialize timeout が生成 watchdog と別。cancel 後の再ロードまたは協調キャンセル。
 
@@ -1308,7 +1316,7 @@ Companion pickerは接続済み。ただしcatalogが空なので本番Core AI�
 - 59 モデルの店
 - GitHub Releases を第一成果物ホストにする
 - 開示正本を書き換えずに App Store へ catalog コマンドを足す
-- 本番 identity 未決のまま C-1 を始める
+- 本番identity/digestを固定せずにproduction entryを公開する
 - Qwen3-4B を本番 id としてコミットする
 - Qwen3-8B を UI に灰色で出す
 - System 四態 probe で Core AI 選択中の composer を塞ぐ

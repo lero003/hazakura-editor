@@ -38,9 +38,12 @@ Assist surface or sending a writing request. Shipping permission
 
 The distribution build includes two Local Assist sidecars: the macOS 26+
 System helper and a separate macOS 27+ Core AI adapter. It does not bundle
-model weights. The production catalog is deliberately empty until a model,
-its distribution rights, digests, resource manifest, AOT result, and
-Apple-hosted asset-pack identifier are approved. In this state the UI must
+model weights. Gemma 4 E4B and Gemma 4 12B preparation identities, converted
+revisions, file digests, and Apple-hosted asset-pack identifiers are pinned in
+`scripts/core-ai-production-models.json`; see `docs/core-ai-production-models.md`.
+The production catalog remains deliberately empty until distribution rights,
+AOT results, Background Assets integration, Japanese-writing acceptance, and
+the G1/G2 runtime gates are approved. In this state the UI must
 show that Core AI models are not published, keep Apple Intelligence selected,
 and refuse download, delete, or Core AI selection requests.
 
@@ -282,8 +285,9 @@ The source is intentionally one step before asset publication. Before adding
 the first production catalog entry, complete all of the following in the same
 release line:
 
-1. Pin the production model identity, license/provenance, download and installed
-   sizes, AOT output, archive digest, and full resource manifest.
+1. Review the pinned production model identity, license/provenance, download and
+   installed sizes, AOT output, archive digest, and full resource manifest in
+   `docs/core-ai-production-models.md` and the generated `archive.json`.
 2. Add the Background Assets downloader extension target, shared App Group,
    matching provisioning profiles, and the required `BA*` Info.plist keys.
 3. Create the managed asset pack, upload it to App Store Connect, wait for Apple
@@ -297,6 +301,25 @@ release line:
 Until every item is complete, keep the production catalog empty. A local model
 directory or the Developer Qwen fixture is not a substitute for an Apple-hosted
 pack and must not be made visible in the App Store lane.
+
+Prepare the locked `.aar` files without placing weights in Git:
+
+```bash
+npm run coreai:models:download -- --model=gemma4-e4b
+npm run coreai:models:package -- --model=gemma4-e4b
+npm run coreai:models:download -- --model=gemma4-12b
+npm run coreai:models:package -- --model=gemma4-12b
+```
+
+The output lives below `.hazakura/coreai-production/`. Upload only the `.aar`
+whose sibling `archive.json` and resource manifest have been retained with the
+candidate evidence. Do not activate the catalog from a raw `.aimodel` directory.
+On internal TestFlight, App Store Connect automatically serves the latest processed
+version for each asset-pack ID. External TestFlight requires selecting the version
+under `TestFlight > Builds & Assets > Asset Packs` and submitting it to TestFlight
+App Review after a compatible build is available. See
+`docs/core-ai-production-models.md` for the owner handoff and the currently observed
+Xcode 27.0 packaging-tool blocker.
 
 ## Bundled Notices
 

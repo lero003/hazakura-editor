@@ -13,15 +13,24 @@ Last reviewed: 2026-09-20
 利用可能モデルの選択を接続し、Rustだけがapp-privateな選択と検証済みpathを保持する。
 frontendから任意path / URL / GGUFを渡す入口、製品内変換、cloud fallbackは追加しない。
 
-本番catalogは意図的に空。Apple-hosted asset pack、モデルidentity、権利、digest付き
-resource manifestが未確定なので、現在の配布buildは `not_published` を表示して
+本番catalogは意図的に空。2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを
+高品質比較候補としてidentity、変換物revision、file digest、Apple-hosted asset pack IDを固定し、
+再現可能なdownload / verify / `ba-package`処理とproduct helper用CoreAIKit runtimeを追加した。
+一方、AOT、権利の最終確認、Background Assets接続、日本語bake-off、G1/G2が未完了なので、
+現在の配布buildは引き続き `not_published` を表示して
 Apple Intelligenceだけを選べる。download / cancel / deleteのcommand契約はあるが、
 Background Assets downloader extension、App Group、pack登録が完了するまでfail closed。
 モデルをappへ仮同梱したり、Developer用Qwen fixtureを本番idへ昇格したりしない。
 
+[本番候補とasset準備の正本](core-ai-production-models.md)では、巨大なmodel/archiveを
+`.hazakura/coreai-production/`へ生成しGitへ入れない。現ホストには`ba-package`がある一方、
+Xcode 27.0の同toolが公式JSONまで拡張子判定で拒否し、`.aar`作成は修正版toolchain待ち。
+`coreai-build`もなくMac AOT済み`.aimodelc`はまだ作れない。`.aar`のローカル生成成功も
+Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡にはしない。
+
 このスライスは「CDNへモデルを置く前でも、同じ配布build形でadapterと管理面を検証できる」
-ところまで。本番モデル選定だけで出荷可能になるわけではなく、AOT、manifest/digest、
-Background Assets設定とupload、notice、署名済み同一候補のTestFlight実機受入が残る。
+ところまで。本番モデル選定とasset作成だけで出荷可能になるわけではなく、AOT、
+Background Assets設定とupload、G1/G2、notice最終確認、署名済み同一候補のTestFlight実機受入が残る。
 [実装・検証・残ゲート](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
 
 検証はSwift 21件、Rust 400件（2件ignored）、frontend 2,630件、App Store surface 128件、
@@ -51,8 +60,8 @@ npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発�
 
 Core AIはDeveloper専用の固定Qwen fixtureを既存Local Assistへ接続し、Phase 1の
 Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認した。さらに配布版へ
-空catalogのadapter・管理・選択基盤を追加した。本番C-1のasset配布・digest検証・削除、
-本番モデルidentity、品質採用は未実装。
+空catalogのadapter・管理・選択基盤を追加した。本番C-1のidentity/file digest/asset作成recipeは
+固定したが、Apple-hosted配布、検証済みReady・削除、AOT、品質採用は未実装。
 海外App StoreもConnect設定・公開Web・署名候補の英語受け入れが未完了で、これらは
 実装・受入後に草案へ追記する。
 `src-tauri/tauri.conf.appstore.json` のbundleVersion変更は本作業と並行する既存変更として保持し、
@@ -87,7 +96,7 @@ DL・容量・削除は設定、選択正本はRustの `selectedId`。C-2実装�
 ## v3.1 — I-0技術棚卸しと最初の修正（2026-09-19）
 
 v3.1は **Core AIの実利用** と **英語を入口にした海外App Store展開** の二本立て。
-Core AI本番C-1/C-2はモデルidentity・expanded `resourceManifest`・配信/AOT・bake-offの
+Core AI本番C-1/C-2はlocked identity・expanded `resourceManifest`・配信/AOT・bake-offの
 ゲートを維持する。Developer / GitHubレーン限定のfixture配管は着手可能だが、最初の
 スライスは、本番identityを仮定せず進められるI-0から始める。
 

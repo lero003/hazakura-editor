@@ -15,8 +15,9 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HELPER_DIR="$REPO_ROOT/src-helpers/apple-assist"
 OUT_DIR="$REPO_ROOT/binaries"
-APPLE_REVISION="3f109efd54273391f9fd9f5f5b3d8c6e99836d55"
-CORE_AI_RESOLVED="$HELPER_DIR/CoreAI.Package.resolved"
+CORE_AI_KIT_REVISION="bebe09a050c144034c169af2074fda47fb7ba326"
+CORE_AI_MODELS_REVISION="f7a75ec0f89fab451d277572afe8995b7ef768c1"
+CORE_AI_RESOLVED="$HELPER_DIR/CoreAIProduction.Package.resolved"
 ACTIVE_RESOLVED="$HELPER_DIR/Package.resolved"
 
 "$REPO_ROOT/scripts/build-apple-assist-helper-live.sh"
@@ -24,8 +25,9 @@ ACTIVE_RESOLVED="$HELPER_DIR/Package.resolved"
 mkdir -p "$OUT_DIR"
 
 if [[ ! -f "$CORE_AI_RESOLVED" ]] || \
-   ! grep -q "$APPLE_REVISION" "$CORE_AI_RESOLVED"; then
-  echo "error: committed CoreAI.Package.resolved is missing the pinned Apple revision" >&2
+   ! grep -q "$CORE_AI_KIT_REVISION" "$CORE_AI_RESOLVED" || \
+   ! grep -q "$CORE_AI_MODELS_REVISION" "$CORE_AI_RESOLVED"; then
+  echo "error: committed CoreAIProduction.Package.resolved is missing a pinned production runtime revision" >&2
   exit 1
 fi
 
@@ -79,7 +81,7 @@ cp "$CORE_AI_BIN_PATH/HazakuraAppleAssist" "$CORE_AI_ARM64"
 chmod +x "$CORE_AI_ARM64"
 
 # The compatibility build uses the dependency-free manifest. Remove the
-# temporary active lock so SwiftPM cannot rewrite the committed Core AI lock.
+# temporary active lock so SwiftPM cannot rewrite the committed production lock.
 rm -f "$ACTIVE_RESOLVED"
 
 # The default build excludes CoreAILM and remains runnable on Intel. This

@@ -36,9 +36,15 @@
     "smoke:fixtures:v1.8-reference": "node scripts/generate-v1.8-reference-smoke.mjs",
     "smoke:fixtures:v1.10-structure": "node scripts/generate-v1.10-structure-smoke.mjs",
     "smoke:fixtures:v1.11-okf": "node scripts/generate-v1.11-okf-smoke.mjs",
+    "coreai:models:plan": "node scripts/prepare-core-ai-model-assets.mjs plan",
+    "coreai:models:download": "node scripts/prepare-core-ai-model-assets.mjs download",
+    "coreai:models:verify": "node scripts/prepare-core-ai-model-assets.mjs verify",
+    "coreai:models:package": "node scripts/prepare-core-ai-model-assets.mjs package",
+    "coreai:models:prepare": "node scripts/prepare-core-ai-model-assets.mjs all",
     "clean:generated": "node scripts/clean-generated-artifacts.mjs",
     "clean:generated:apply": "node scripts/clean-generated-artifacts.mjs --apply",
-    "test": "vitest run",
+    "test": "vitest run && npm run test:coreai-model-assets",
+    "test:coreai-model-assets": "node --test scripts/core-ai-model-assets.test.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "tooling": {
+    "appleCoreAiModelsRevision": "3f109efd54273391f9fd9f5f5b3d8c6e99836d55",
+    "coreAiKitRevision": "bebe09a050c144034c169af2074fda47fb7ba326",
+    "coreAiModelZooRevision": "347393ede35fd25e9e59203dba562e5ee4d268bb"
+  },
+  "models": [
+    {
+      "key": "gemma4-e4b",
+      "modelId": "apple:core-ai:gemma-4-e4b-it-int4-v1",
+      "catalogVersion": "2026.09.20.1",
+      "displayName": "Gemma 4 E4B",
+      "storageDirectory": "gemma-4-e4b-it-int4-v1",
+      "assetPackId": "dev.hazakura.editor.coreai.gemma4-e4b.v1",
+      "runtimeKind": "coreai-kit-gemma4-ple",
+      "sourceModel": "google/gemma-4-E4B-it-qat-q4_0-unquantized",
+      "sourceModelRevision": "476025a01dbf99361c062bbeca3d6a76bb4c4566",
+      "convertedRepository": "mlboydaisuke/gemma-4-E4B-CoreAI",
+      "convertedRevision": "e9ba305a91bf3e62ea83d5652b572b69913c433a",
+      "quantization": "Core AI int4lin from the official QAT checkpoint",
+      "licensing": {
+        "sourceModelLicense": "Apache-2.0",
+        "sourceModelLicenseUrl": "https://ai.google.dev/gemma/docs/gemma_4_license",
+        "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0 and contains no standalone LICENSE file.",
+        "reviewStatus": "manual-review-required",
+        "licenseFiles": [
+          "LICENSE-APACHE-2.0.txt"
+        ]
+      },
+      "conversion": {
+        "recipe": "gemma-4-e4b documented table-input variant",
+        "commands": [
+          "python3 ondevice/export_gemma4_gather_raw.py --hf-id google/gemma-4-E4B-it-qat-q4_0-unquantized --out <tables-dir>",
+          "python3 conversion/export_gemma4_decode_pipelined.py int4lin --hf-id google/gemma-4-E4B-it-qat-q4_0-unquantized --tbl --raw-dir <tables-dir> --max-ctx 4096"
+        ],
+        "hazakuraReexported": false
+      },
+      "runtimeRequirements": {
+        "engine": "coreai-pipelined with Gemma PLE static inputs",
+        "environment": {
+          "COREAI_CHUNK_THRESHOLD": "1"
+        }
+      },
+      "contextTokens": 4096,
+      "minimumMacOS": "27.0",
+      "acceptanceMemoryGB": 16,
+      "releaseEligible": false,
+      "releaseBlockers": [
+        "Mac AOT artifact has not been produced with coreai-build.",
+        "Hazakura Japanese writing bake-off has not passed on a 16 GB Mac.",
+        "Background Assets download and materialization are not connected to the app catalog."
+      ],
+      "layout": {
+        "decoder": "decoder",
+        "tables": "tables"
+      },
+      "files": [
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.hash",
+          "destination": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.hash",
+          "size": 32,
+          "sha256": "cbbda8eafdbbdc8ae9ea83ef131950829b8306226951ca4b0644946c803941db"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.mlirb",
+          "destination": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.mlirb",
+          "size": 3956099192,
+          "sha256": "37581be8c9756f33a8639c32536a4d5d760f2c2b2fba1ee0fe98885d3b83dc09"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/metadata.json",
+          "destination": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/metadata.json",
+          "size": 105,
+          "sha256": "d623df0677f44cfaf90cc49ddc7d4377b6c2015f8f09a75f0dd00b9bc9ca4243"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/metadata.json",
+          "destination": "decoder/metadata.json",
+          "size": 640,
+          "sha256": "560cd7ffe9ba2d2cdd5d0aabba580a0ac47a2da401f8e7c1aee82c58901ae566"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/tokenizer/chat_template.jinja",
+          "destination": "decoder/tokenizer/chat_template.jinja",
+          "size": 18569,
+          "sha256": "0a2c8073c878ab1da004bee933a998606537bbb62016310352c7285c3f01c5b5"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/tokenizer/tokenizer.json",
+          "destination": "decoder/tokenizer/tokenizer.json",
+          "size": 32169626,
+          "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/tokenizer/tokenizer_config.json",
+          "destination": "decoder/tokenizer/tokenizer_config.json",
+          "size": 2744,
+          "sha256": "c273475fdd20f9cf8ee67b949dc1a5ac6afb096c974de93cb47e52c870229ee8"
+        },
+        {
+          "source": "ios-frontend/gemma4_e4b_qat_gather_raw/embed_per_layer.i8",
+          "destination": "tables/embed_per_layer.i8",
+          "size": 2818572288,
+          "sha256": "891f77177b4ab317e5562b6684c5f7825cd5795a9c4b26f97af121ebf4bb7ccb"
+        },
+        {
+          "source": "ios-frontend/gemma4_e4b_qat_gather_raw/embed_per_layer.scale.f32",
+          "destination": "tables/embed_per_layer.scale.f32",
+          "size": 1048576,
+          "sha256": "512d9d0a2b089ae37594ce80e848a08e1b5a6b3f40014a32333e6d191a9b6131"
+        }
+      ]
+    },
+    {
+      "key": "gemma4-12b",
+      "modelId": "apple:core-ai:gemma-4-12b-it-int8-v1",
+      "catalogVersion": "2026.09.20.1",
+      "displayName": "Gemma 4 12B",
+      "storageDirectory": "gemma-4-12b-it-int8-v1",
+      "assetPackId": "dev.hazakura.editor.coreai.gemma4-12b.v1",
+      "runtimeKind": "coreai-kit-language",
+      "sourceModel": "google/gemma-4-12B-it-qat-q4_0-unquantized",
+      "sourceModelRevision": "b6ed86275a6a5735884e208bfed95b445a684ca2",
+      "convertedRepository": "mlboydaisuke/Gemma-4-12B-CoreAI",
+      "convertedRevision": "266c04582d62be179cfbb04d45260c87dc648eec",
+      "quantization": "Core AI int8lin with the msdpa_g8 custom Metal kernel",
+      "licensing": {
+        "sourceModelLicense": "Apache-2.0",
+        "sourceModelLicenseUrl": "https://ai.google.dev/gemma/docs/gemma_4_license",
+        "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0, but its standalone LICENSE file still states Gemma Terms of Use.",
+        "reviewStatus": "manual-review-required",
+        "licenseFiles": [
+          "LICENSE-APACHE-2.0.txt",
+          "UPSTREAM-CONVERSION-LICENSE.txt"
+        ],
+        "additionalLicenseAsset": "gemma-4-12b-conversion-license.txt",
+        "additionalLicenseDestination": "UPSTREAM-CONVERSION-LICENSE.txt",
+        "additionalLicenseSha256": "af121411800da8a1ce7b9eb1a3b7406eb30ddefb474311d65bb80119d41de7a2"
+      },
+      "conversion": {
+        "recipe": "gemma-4-12b-int8",
+        "commands": [
+          "python3 conversion/zoo_convert.py run gemma-4-12b-int8",
+          "python3 conversion/export_gemma4_12b_decode_pipelined.py int8lin --metal-sdpa --max-ctx 4096"
+        ],
+        "hazakuraReexported": false
+      },
+      "runtimeRequirements": {
+        "engine": "coreai-pipelined with the embedded msdpa_g8 custom Metal kernel",
+        "environment": {
+          "COREAI_CHUNK_THRESHOLD": "1"
+        }
+      },
+      "contextTokens": 4096,
+      "minimumMacOS": "27.0",
+      "acceptanceMemoryGB": 32,
+      "releaseEligible": false,
+      "releaseBlockers": [
+        "Mac AOT artifact has not been produced with coreai-build.",
+        "Hazakura Japanese writing bake-off has not passed on a 32 GB or larger Mac.",
+        "Background Assets download and materialization are not connected to the app catalog."
+      ],
+      "layout": {
+        "bundle": "bundle"
+      },
+      "files": [
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/main.hash",
+          "destination": "bundle/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/main.hash",
+          "size": 32,
+          "sha256": "78577a26a15408ee32a027730cf07bbc0f47feffe5c989e864e5732dfc7c978c"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/main.mlirb",
+          "destination": "bundle/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/main.mlirb",
+          "size": 14666226230,
+          "sha256": "8025c288ca3847c427fddc151feb21de51f315ef9392e4939c3cc69af2513bb3"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/metadata.json",
+          "destination": "bundle/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/metadata.json",
+          "size": 105,
+          "sha256": "b807a2696caef0c87a2e075235e3982f6f79469bf98808f0223d1a35db022afc"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/metadata.json",
+          "destination": "bundle/metadata.json",
+          "size": 650,
+          "sha256": "285e357b345e1d309507931c224f242bfdb90da4caebe49393bd2edea0ca03e3"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/tokenizer/chat_template.jinja",
+          "destination": "bundle/tokenizer/chat_template.jinja",
+          "size": 18683,
+          "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/tokenizer/tokenizer.json",
+          "destination": "bundle/tokenizer/tokenizer.json",
+          "size": 32169626,
+          "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f"
+        },
+        {
+          "source": "gpu-pipelined/gemma4_12b_qat_decode_int8lin_msdpa_g8/tokenizer/tokenizer_config.json",
+          "destination": "bundle/tokenizer/tokenizer_config.json",
+          "size": 2103,
+          "sha256": "b9cdb3d623794454ec6bd0caa20c195e63bd9455a3893154c67df0b3e0413643"
+        }
+      ]
+    }
+  ]
+}

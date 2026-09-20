@@ -20,6 +20,7 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: assist-surface direction (incl. conversational UX + Core AI intent).
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
+- `core-ai-production-models.md`: **v3.1 production model identities, pinned asset recipe, and activation gates**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
 - `current-work.md`: **v3.1 I-0から始める現行キュー**とv3.0公開後の記録。
 - `roadmap.md`: **v2.9–v3.1の版別方針**（v3.1のCore AI + 海外App Store展開を含む）。
@@ -80,7 +81,8 @@ Active planning surface (intentionally small):
 - `v2.5-plan.md` — closed workspace-control release plan
 - `local-assist-conversational-edit-ux.md` — conversation / Diff design SoT
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent
-- `core-ai-c0-design.md` — C-0 design spike (Foundation Models 次世代 / Core AI / writing-companion UI). Design only; not implementation.
+- `core-ai-c0-design.md` — C-0 design and locked Core AI boundary; implementation status is in current-work and core-ai-production-models.
+- `core-ai-production-models.md` — Gemma 4 candidate lock, reproducible Apple-hosted asset preparation, and remaining activation gates.
 - `core-ai-c0-external-review-2026-08-27.md` — four-lens advisory review of that spike; does not override the queue.
 - `mlx-m0-preflight-design.md` — completed OS-27-before preflight; no MLX runtime
 - `mlx-m0a-external-review-brief.md` — external review packet for `00f179ab..HEAD`

@@ -311,12 +311,17 @@ Silicon Core AI adapter sidecar. Keeping it separate preserves the existing
 System helper's lower deployment target. No model weights are bundled by this
 sidecar build.
 
-The committed `src-helpers/apple-assist/CoreAI.Package.resolved` currently pins this
-Swift dependency graph:
+Developer Core AI fixture builds use the committed
+`src-helpers/apple-assist/CoreAI.Package.resolved`. Production-distribution
+adapter builds use the separate
+`src-helpers/apple-assist/CoreAIProduction.Package.resolved`. The two entry
+dependencies are:
 
 | Component | Pinned version / revision | License observed in checkout |
 | --- | --- | --- |
-| `apple/coreai-models` | `3f109efd54273391f9fd9f5f5b3d8c6e99836d55` | BSD-3-Clause |
+| `apple/coreai-models` (Developer fixture) | `3f109efd54273391f9fd9f5f5b3d8c6e99836d55` | BSD-3-Clause |
+| `john-rocky/coreai-kit` (distribution adapter) | `bebe09a050c144034c169af2074fda47fb7ba326` | BSD-3-Clause |
+| `john-rocky/coreai-models` via CoreAIKit | `0.2.4-zoo` / `f7a75ec0f89fab451d277572afe8995b7ef768c1` | BSD-3-Clause |
 | `huggingface/swift-transformers` | `1.3.4` | Apache-2.0 |
 | `huggingface/swift-huggingface` | `0.11.0` | Apache-2.0 |
 | `huggingface/swift-jinja` | `2.5.1` | Apache-2.0 |
@@ -329,15 +334,19 @@ Swift dependency graph:
 
 Before an external TestFlight or App Store submission, include the upstream
 license texts required by the linked sidecar graph in the shipped notice set.
-The production model asset needs its own separately reviewed model license and
-provenance record; this table does not cover model weights.
+The production model assets have separately generated Apache-2.0 text,
+revision-pinned provenance records, and (for the 12B conversion) the conflicting
+standalone upstream license statement preserved verbatim; see
+`docs/core-ai-production-models.md`. Human license review remains required. This
+dependency table does not itself approve the model weights for release.
 
 ## Final Distribution Checklist
 
 - Refresh `package-lock.json` and `src-tauri/Cargo.lock` license scans before
   each submission package. Latest tracked refresh: 2026-06-12.
-- Refresh the Core AI Swift graph from the committed `CoreAI.Package.resolved` and
-  confirm the full upstream license-text bundle before submission.
+- Refresh both Core AI Swift graphs from the committed `CoreAI.Package.resolved`
+  and `CoreAIProduction.Package.resolved`, and confirm the full upstream
+  license-text bundle before submission.
 - Confirm which dependencies are actually bundled in App Store and Developer /
   GitHub builds.
 - Preserve DOMPurify under the Apache-2.0 notice option or record a deliberate
