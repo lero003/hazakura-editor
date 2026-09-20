@@ -62,6 +62,7 @@ struct IncomingRequest: Decodable {
     let instruction: String?
     let additionalRequest: String?
     let backend: String?
+    let modelPath: String?
     let measureUsage: Bool?
 }
 
@@ -104,7 +105,19 @@ func dispatch(_ raw: String) async {
 
     switch request.action {
     case "probe_availability":
-        emit(.availability(AvailabilityProbe.probe()))
+        guard let backend = AssistBackend.resolve(wireValue: request.backend) else {
+            emit(.error(
+                AppleAssistErrorEnvelope(
+                    error: "Unsupported Local Assist backend.",
+                    kind: "unsupported_backend"
+                )
+            ))
+            return
+        }
+        emit(.availability(await AvailabilityProbe.probe(
+            backend: backend,
+            modelPath: request.modelPath
+        )))
     case "generate_candidate", "generate_candidate_streaming":
         guard let operation = request.operation,
               let selectedText = request.selectedText else {
@@ -139,6 +152,7 @@ func dispatch(_ raw: String) async {
             switch await GenerateCandidate.runStreaming(
                 req,
                 backend: backend,
+                modelPath: request.modelPath,
                 onPartial: { partial in
                     emit(.candidatePartial(partial))
                 }
@@ -149,7 +163,11 @@ func dispatch(_ raw: String) async {
                 emit(.error(envelope))
             }
         } else {
-            switch await GenerateCandidate.run(req, backend: backend) {
+            switch await GenerateCandidate.run(
+                req,
+                backend: backend,
+                modelPath: request.modelPath
+            ) {
             case .ok(let response):
                 emit(.candidate(response))
             case .error(let envelope):

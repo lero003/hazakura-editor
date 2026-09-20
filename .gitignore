@@ -3,6 +3,7 @@ dist/
 src-tauri/target/
 src-tauri/gen/
 src-helpers/apple-assist/.build/
+src-helpers/apple-assist/Package.resolved
 binaries/
 /assets/
 src-tauri/profiles/*.provisionprofile

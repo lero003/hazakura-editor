@@ -19,6 +19,6 @@ export function classifyLocalAssistError(error: unknown): LocalAssistErrorKind {
   if (/guardrail|refus/.test(raw)) return "guardrail";
   if (/timed out|timeout/.test(raw)) return "timeout";
   if (/rate[ -]?limit|concurrent|busy with another request|still finishing another generation/.test(raw)) return "throttled";
-  if (/unavailable|not available|requires macos|not enabled|not eligible|not ready yet/.test(raw)) return "unavailable";
+  if (/unavailable|not available|requires macos|not enabled|not eligible|not ready yet|failed to load|resource is (?:missing|invalid)/.test(raw)) return "unavailable";
   return "unknown";
 }

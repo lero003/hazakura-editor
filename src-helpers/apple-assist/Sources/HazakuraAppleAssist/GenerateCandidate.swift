@@ -2,6 +2,9 @@ import Foundation
 #if !FIXTURE_MODE
 import FoundationModels
 #endif
+#if COREAI_TEST_BACKEND && !FIXTURE_MODE
+import CoreAILanguageModels
+#endif
 
 // `GenerateCandidate.run` is the single dispatch point for the
 // `generate_apple_assist_candidate` request. In fixture mode it
@@ -31,7 +34,8 @@ enum GenerateCandidate {
 
     static func run(
         _ request: AppleAssistRequest,
-        backend: AssistBackend
+        backend: AssistBackend,
+        modelPath: String? = nil
     ) async -> RunResult {
         if let error = operationError(for: request) {
             return .error(error)
@@ -49,6 +53,9 @@ enum GenerateCandidate {
             )
         )
         #else
+        if case .coreAITest = backend {
+            return await runCoreAITest(request, modelPath: modelPath)
+        }
         if #available(macOS 26.0, *) {
             if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
                 return .error(error)
@@ -98,6 +105,7 @@ enum GenerateCandidate {
     static func runStreaming(
         _ request: AppleAssistRequest,
         backend: AssistBackend,
+        modelPath: String? = nil,
         onPartial: (AppleAssistPartialResponse) -> Void
     ) async -> RunResult {
         if let error = operationError(for: request) {
@@ -117,6 +125,13 @@ enum GenerateCandidate {
             )
         )
         #else
+        if case .coreAITest = backend {
+            return await runCoreAITestStreaming(
+                request,
+                modelPath: modelPath,
+                onPartial: onPartial
+            )
+        }
         if #available(macOS 26.0, *) {
             if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
                 return .error(error)
@@ -281,6 +296,126 @@ enum GenerateCandidate {
             }
             return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         } ?? nil
+    }
+
+    private static func coreAITestOptions() -> GenerationOptions {
+        GenerationOptions(
+            samplingMode: .greedy,
+            temperature: 0,
+            maximumResponseTokens: CoreAITestRuntime.maximumResponseTokens
+        )
+    }
+
+    private static func runCoreAITest(
+        _ request: AppleAssistRequest,
+        modelPath: String?
+    ) async -> RunResult {
+        if let error = CoreAITestRuntime.unavailableErrorForCurrentHost() {
+            return .error(error)
+        }
+        #if COREAI_TEST_BACKEND && arch(arm64)
+        if #available(macOS 27.0, *) {
+            let model: CoreAILanguageModel
+            do {
+                model = try await CoreAITestRuntime.loadModel(modelPath: modelPath)
+            } catch {
+                return .error(CoreAITestRuntime.loadError(error))
+            }
+            let startedAt = Date()
+            do {
+                let session = LanguageModelSession(
+                    model: model,
+                    instructions: Instructions(liveSystemInstructions)
+                )
+                let response = try await session.respond(
+                    to: Prompt(CoreAITestPrompt.build(for: request)),
+                    options: coreAITestOptions()
+                )
+                let candidate = CandidateFormatting.reviewText(
+                    response.content,
+                    original: request.selectedText
+                )
+                guard !candidate.isEmpty else {
+                    return .error(AppleAssistErrorEnvelope(
+                        error: CoreAITestRuntime.emptyCandidate,
+                        kind: "internal"
+                    ))
+                }
+                return .ok(AppleAssistResponse(
+                    operation: request.operation,
+                    candidateText: candidate,
+                    modelId: AssistBackend.coreAITest.modelId,
+                    latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                ))
+            } catch {
+                return .error(CoreAITestRuntime.generationError(error))
+            }
+        }
+        #endif
+        return .error(AppleAssistErrorEnvelope(
+            error: CoreAITestRuntime.adapterNotBuilt,
+            kind: "unavailable"
+        ))
+    }
+
+    private static func runCoreAITestStreaming(
+        _ request: AppleAssistRequest,
+        modelPath: String?,
+        onPartial: (AppleAssistPartialResponse) -> Void
+    ) async -> RunResult {
+        if let error = CoreAITestRuntime.unavailableErrorForCurrentHost() {
+            return .error(error)
+        }
+        #if COREAI_TEST_BACKEND && arch(arm64)
+        if #available(macOS 27.0, *) {
+            let model: CoreAILanguageModel
+            do {
+                model = try await CoreAITestRuntime.loadModel(modelPath: modelPath)
+            } catch {
+                return .error(CoreAITestRuntime.loadError(error))
+            }
+            let startedAt = Date()
+            do {
+                let session = LanguageModelSession(
+                    model: model,
+                    instructions: Instructions(liveSystemInstructions)
+                )
+                var latestCandidate = ""
+                let stream = session.streamResponse(
+                    to: Prompt(CoreAITestPrompt.build(for: request)),
+                    options: coreAITestOptions()
+                )
+                for try await snapshot in stream {
+                    let candidate = CandidateFormatting.reviewText(
+                        snapshot.content,
+                        original: request.selectedText
+                    )
+                    if !candidate.isEmpty && candidate != latestCandidate {
+                        latestCandidate = candidate
+                        onPartial(AppleAssistPartialResponse(candidateText: candidate))
+                    }
+                }
+                guard !latestCandidate.isEmpty else {
+                    return .error(AppleAssistErrorEnvelope(
+                        error: CoreAITestRuntime.emptyCandidate,
+                        kind: "internal"
+                    ))
+                }
+                return .ok(AppleAssistResponse(
+                    operation: request.operation,
+                    candidateText: latestCandidate,
+                    modelId: AssistBackend.coreAITest.modelId,
+                    latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                ))
+            } catch {
+                return .error(CoreAITestRuntime.generationError(error))
+            }
+        }
+        #endif
+        return .error(AppleAssistErrorEnvelope(
+            error: CoreAITestRuntime.adapterNotBuilt,
+            kind: "unavailable"
+        ))
     }
 
     @available(macOS 26.0, *)

@@ -7,15 +7,22 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **Core AI Phase 1（2026-09-20）:** Developer専用の固定Qwen3-0.6BをCore AIでロードし、
+  既存Local Assistのstream / Proposal / Diff / 明示Apply / Undo / Cancelへ接続した。
+  backendと固定pathの正本はRust。frontendへ任意path / URL / importは露出せず、失敗時のSystem fallbackもない。
+  専用QA appでCore AI実フローと `system_default` 復帰を確認。実生成元をUIにも表示する。
+  Qwen品質は不合格。本番C-1配布・digest・削除、本番identity、App Store同梱は次スライス以降。
+  [検証記録](reviews/2026-09-20-core-ai-phase1/README.md)。
+
 - **Local Assist表示整理（2026-09-20）:** 対象要約・依頼チップ・一体化した入力欄へ整理し、
   説明の重複を減らした。送信横にSystem 1件でも開けるモデル選択枠を追加。
-  フロント全2,620テストと最小サイズのブラウザーfixtureを確認。Core AIへの切替は未接続。
+  フロント全2,620テストと最小サイズのブラウザーfixtureを確認。通常利用者向け切替は未接続。
   [表示・検証記録](reviews/2026-09-20-local-assist-polish/README.md)。次はnative窓の操作・IME・VoiceOver確認。
 
 - **俯瞰レビュー追補:** H31-01/H31-02は修正・回帰テスト済み。
   [検証記録](reviews/2026-09-20-v3.1-overview-followup/README.md)を参照。
   [Core AIテストモデル](core-ai-test-model.md)を単体生成まで確認したが校正品質は不合格。
-  次は画像ブロックの英語復旧案内とbuilt appの状態別受入。C-1/C-2製品接続は別スライス。
+  次は画像ブロックの英語復旧案内とbuilt appの状態別受入。Core AI本番C-1/C-2は別スライス。
 
 - **v3.1開始（2026-09-19）:** Core AI実利用と海外App Store展開の二本立て。
   `docs/international-launch/` のI-0ソース／静的棚卸しを入口にし、Connect上の地域・価格・

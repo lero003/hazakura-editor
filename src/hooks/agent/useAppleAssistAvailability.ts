@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../../lib/tauri";
 
-const APPLE_ASSIST_PROBE_UI_TIMEOUT_MS = 5_000;
+// The fixed Core AI test backend performs an eager model load so missing and
+// unloadable resources fail during the probe. Keep this just beyond the
+// native supervisor's 60 second Core AI budget; the System probe still ends
+// at its native 10 second timeout.
+const APPLE_ASSIST_PROBE_UI_TIMEOUT_MS = 65_000;
 
 // `useAppleAssistAvailability` is the on-device counterpart to
 // `useAgentProviderAvailability`. It is intentionally a single
 // value rather than a list: Hazakura Local Assist is one provider
-// (the on-device Foundation Models binding), so the React side
+// (the native-selected on-device backend), so the React side
 // only needs to know whether the feature is currently
 // addressable from this runtime, and if not, why.
 //

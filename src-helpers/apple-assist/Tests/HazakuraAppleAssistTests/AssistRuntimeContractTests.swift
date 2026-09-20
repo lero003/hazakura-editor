@@ -130,8 +130,9 @@ final class AssistRuntimeContractTests: XCTestCase {
 
     // MARK: - fixture probe
 
-    func testFixtureProbeStaysAvailable() {
-        XCTAssertEqual(AvailabilityProbe.probe().kind, "available")
-        XCTAssertNil(AvailabilityProbe.probe().reason)
+    func testFixtureProbeStaysAvailable() async {
+        let response = await AvailabilityProbe.probe()
+        XCTAssertEqual(response.kind, "available")
+        XCTAssertNil(response.reason)
     }
 }

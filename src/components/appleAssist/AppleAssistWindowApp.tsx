@@ -938,7 +938,7 @@ export function AppleAssistWindowApp() {
               }
             }} />
           <div className="apple-assist-window-actions">
-            <AssistModelPicker language={menuLanguage} disabled={busy} />
+            <AssistModelPicker language={menuLanguage} disabled={busy} modelId={availability.modelId} />
             <button type="button" className="apple-assist-window-apply"
               onClick={() => { if (busy) void cancelGeneration(); else void applyRoughRequest(); }}
               disabled={busy ? cancelling : !available || requestText.trim().length === 0}>
@@ -1005,6 +1005,7 @@ export type AppleAssistWindowCopy = {
   failedStatus: string;
   guardrailError: string;
   localRuntimeUnavailable: (reason: string) => string;
+  localCoreAITestUnavailable: (reason: string) => string;
   longRunningStatus: string;
   modeLabel: string;
   noActiveDocument: string;
@@ -1217,6 +1218,9 @@ export function renderAvailabilityMessage(
     return copy.availableDisclosure;
   }
   if (availability.kind === "unavailable") {
+    if (availability.modelId === "apple:core-ai:qwen3-0.6b-test") {
+      return copy.localCoreAITestUnavailable(availability.reason);
+    }
     return copy.localRuntimeUnavailable(availability.reason);
   }
   if (availability.kind === "disabled") {
@@ -1341,6 +1345,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "あっぷる ふぁうんでーしょん もでるず が この おねがいを うけつけませんでした。べつの おねがいで さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
         `はざくら ろーかる あしす とは つかえません: ${reason}。めやすは macOS 26 いこう、M1 いこうの Mac、あっぷる いんてりじぇんす の ゆうこうか、たいおう げんご / ちいき です。くわしくは あっぷる こうしき の Apple Intelligence あんないを かくにん してください。`,
+      localCoreAITestUnavailable: (reason) =>
+        `Core AI どうさ かくにん もでるを つかえません: ${reason}。macOS 27、Apple Silicon、こてい てすと りそーす、もでるの よみこみを かくにん してください。`,
       longRunningStatus:
         "はつかいや ながい ぶんでは すこし じかんが かかることがあります。",
       modeLabel: "ぷれびゅー",
@@ -1494,6 +1500,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "Apple Foundation Models がこの依頼を受け付けませんでした。別の依頼内容で再試行してください。",
       localRuntimeUnavailable: (reason) =>
         `Hazakura Local Assist は使えません: ${reason}。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しくは Apple 公式の Apple Intelligence 案内を確認してください。`,
+      localCoreAITestUnavailable: (reason) =>
+        `Core AI 動作確認モデルを利用できません: ${reason}。macOS 27、Apple Silicon、固定テストリソース、モデルの読み込み状態を確認してください。`,
       longRunningStatus:
         "初回や長文では少し時間がかかることがあります。",
       modeLabel: "プレビュー",
@@ -1646,6 +1654,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
       `Hazakura Local Assist is unavailable: ${reason}. As a guide, it needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.`,
+    localCoreAITestUnavailable: (reason) =>
+      `The Core AI test model is unavailable: ${reason}. Check macOS 27, Apple Silicon, the fixed test resource, and model loading.`,
     longRunningStatus:
       "First runs or longer passages can take a little while.",
     modeLabel: "Preview",

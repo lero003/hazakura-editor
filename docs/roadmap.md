@@ -181,10 +181,12 @@ Product intent (not an implementation green light):
   not a hidden cloud chat path.
 - No arbitrary URL, no user-supplied unsigned blobs, no auto-apply.
 
-Sequence: **C-0 → v3.0 System共通基盤 → C-1 fixture配管 → 本番identity pin →
+Sequence: **C-0 → v3.0 System共通基盤 → C-1/C-2 fixture配管 → 本番identity pin →
 リリース前bake-off → v3.1 C-1/C-2**。
-本番C-1/C-2のHOLD条件は維持。fixtureベースのC-1配管はDeveloper/GitHubレーン限定で
-先に進めてよい（2026-09-15オーナー決定）。基盤の前倒し範囲は
+本番C-1/C-2のHOLD条件は維持。fixtureベースの配管はDeveloper/GitHubレーン限定で
+先に進めてよい（2026-09-15オーナー決定）。2026-09-20に固定Qwenを使うC-2 Phase 1の
+Conversation / Proposal / Diff / Apply / Undo / CancelとSystem復帰を確認済みだが、
+本番選択・配布・品質採用ではない。基盤の前倒し範囲は
 `docs/v2.9-v3-local-assist-plan.md` と `docs/core-ai-c0-design.md` に固定する。
 
 MLX のユーザー向け経路は **C-0〜C-2 では Non-Goal** のままにする。

@@ -12,6 +12,8 @@ describe("Local Assist legacy error classification", () => {
     ["proposal exceeds the continuation limit of 4000 characters.", "continuation"],
     ["Apple Foundation Models assets are unavailable.", "unavailable"],
     ["Foundation Models requires macOS 26 or later.", "unavailable"],
+    ["The Core AI test model failed to load.", "unavailable"],
+    ["The fixed Core AI test resource is missing.", "unavailable"],
     ["Apple Foundation Models does not support this language or current locale for generation yet.", "language"],
     ["Apple Foundation Models is busy with another request. Try again shortly.", "throttled"],
     ["Apple Foundation Models is rate limited. Try again shortly.", "throttled"],

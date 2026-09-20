@@ -45,6 +45,7 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "generatingChange",
   "generatingInMain",
   "guardrailError",
+  "localCoreAITestUnavailable",
   "localRuntimeUnavailable",
   "longRunningStatus",
   "modeLabel",
@@ -132,6 +133,8 @@ describe("getAppleAssistWindowCopy", () => {
         expect(copy.appliedStatus("整えて")).toMatch(/\S/);
         expect(copy.generatingInMain("整えて")).toMatch(/\S/);
         expect(copy.localRuntimeUnavailable("Apple Intelligence is off"))
+          .toMatch(/\S/);
+        expect(copy.localCoreAITestUnavailable("resource is missing"))
           .toMatch(/\S/);
         expect(copy.targetSelection(123)).toMatch(/\S/);
         expect(copy.targetParagraph(123)).toMatch(/\S/);
@@ -387,6 +390,17 @@ describe("renderAvailabilityMessage", () => {
     expect(
       renderAvailabilityMessage({ kind: "unsupported" }, true, copy),
     ).toBe(copy.unsupportedStatus);
+  });
+
+  it("keeps Core AI test availability guidance separate from System settings", () => {
+    const message = renderAvailabilityMessage({
+      kind: "unavailable",
+      reason: "The fixed Core AI test resource is missing.",
+      modelId: "apple:core-ai:qwen3-0.6b-test",
+    }, true, copy);
+    expect(message).toContain("Core AI");
+    expect(message).toContain("固定テストリソース");
+    expect(message).not.toContain("Apple Intelligence の有効化");
   });
 });
 

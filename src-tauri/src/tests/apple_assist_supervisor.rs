@@ -36,9 +36,11 @@
 use crate::commands::apple_assist_supervisor::{
     bundled_helper_filename, generate_candidate_stream_via_helper,
     generate_candidate_via_helper as generate_candidate_via_helper_impl,
-    probe_availability_via_helper, resolve_bundled_helper_path, rust_target_triple,
-    store_with_helper_path, store_without_helper, AppleAssistHelperStore, HelperAvailability,
-    HelperCandidate, HelperCandidatePartial, WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
+    probe_availability_via_helper, probe_selected_backend_availability_via_helper,
+    resolve_bundled_helper_path, rust_target_triple, store_with_helper_path,
+    store_with_helper_path_and_backend, store_without_helper, AppleAssistHelperStore,
+    AssistBackendSelection, HelperAvailability, HelperCandidate, HelperCandidatePartial,
+    WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
 };
 
 fn generate_candidate_via_helper(
@@ -470,6 +472,54 @@ done
         .expect("streaming must include system backend");
         assert!(matches!(streamed, WireEnvelope::Candidate(_)));
         assert_eq!(partials, vec!["partial"]);
+    }
+
+    std::fs::remove_file(&script).ok();
+}
+
+#[test]
+fn supervisor_injects_fixed_core_ai_test_backend_and_path_without_frontend_input() {
+    let script = std::env::temp_dir().join("hazakura-apple-assist-test-coreai-wire.sh");
+    let model_path =
+        std::env::temp_dir().join(".hazakura/coreai-test/exports/hazakura-qwen3-0.6b-test");
+    let expected_path = model_path.display().to_string();
+    let body = format!(
+        r###"#!/bin/sh
+while IFS= read -r request; do
+    case "$request" in
+        *'"backend":"core_ai_test"'*'"modelPath":"{expected_path}"'*) ;;
+        *)
+            printf '%s\n' '{{"kind":"error","value":{{"error":"missing fixed Core AI selection","kind":"backend_test_failure"}}}}'
+            continue
+            ;;
+    esac
+    case "$request" in
+        *'"action":"probe_availability"'*)
+            printf '%s\n' '{{"kind":"availability","value":{{"kind":"available","reason":null}}}}'
+            ;;
+        *'"action":"generate_candidate"'*)
+            printf '%s\n' '{{"kind":"candidate","value":{{"operation":"summarize","candidateText":"generated","modelId":"apple:core-ai:qwen3-0.6b-test","latencyMs":0}}}}'
+            ;;
+    esac
+done
+"###
+    );
+    std::fs::write(&script, body).expect("write Core AI wire helper script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod Core AI wire helper script");
+
+    {
+        let store = store_with_helper_path_and_backend(
+            script.clone(),
+            AssistBackendSelection::CoreAiTest { model_path },
+        );
+        let probed = probe_selected_backend_availability_via_helper(&store)
+            .expect("selected backend probe must include Core AI path");
+        assert!(matches!(probed, WireEnvelope::Availability(_)));
+
+        let generated = generate_candidate_via_helper(&store, "summarize", "body", None, None)
+            .expect("generation must include Core AI selection");
+        assert!(matches!(generated, WireEnvelope::Candidate(_)));
     }
 
     std::fs::remove_file(&script).ok();

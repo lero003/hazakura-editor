@@ -158,6 +158,12 @@ describe("LocalAssistProposalReview", () => {
     seedProposal({ generation: { modelId: "apple:foundation-models:system-default", latencyMs: 123 } });
     render(<LocalAssistProposalReview {...props()} menuLanguage="ja" />);
     expect(screen.getByText(/生成元: Apple Intelligence/)).toBeTruthy();
+    act(() => { seedProposal({
+      requestId: "core-ai",
+      generation: { modelId: "apple:core-ai:qwen3-0.6b-test", latencyMs: 71 },
+    }); });
+    expect(screen.getByText(/生成元: Core AI（Qwen3 0.6B 動作確認用）/)).toBeTruthy();
+    expect(screen.queryByText(/生成元: Apple Intelligence/)).toBeNull();
     act(() => { seedProposal({ requestId: "legacy" }); });
     expect(screen.getByText(/生成元: 不明/)).toBeTruthy();
     expect(screen.queryByText(/生成元: Apple Intelligence/)).toBeNull();

@@ -3,11 +3,13 @@ import type { MenuLanguage } from "../../types";
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
 import { ChevronIcon } from "../app/Icons";
 
-// The product currently generates only with System. Selecting its checked row
-// confirms that selection; it must not send a backend override or start generation.
-export function AssistModelPicker({ language, disabled }: {
+// Rust selects the backend and reports only its read-only provenance id. The
+// checked row confirms that native selection; it must not send a backend
+// override or start generation.
+export function AssistModelPicker({ language, disabled, modelId }: {
   language: MenuLanguage;
   disabled: boolean;
+  modelId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -15,6 +17,11 @@ export function AssistModelPicker({ language, disabled }: {
   const option = useRef<HTMLButtonElement>(null);
   const menuId = useId();
   const title = getAssistConversationCopy(language).chooseModel;
+  const modelLabel = modelId === "apple:core-ai:qwen3-0.6b-test"
+    ? "Core AI · Qwen3 0.6B (test)"
+    : modelId === undefined || modelId === "apple:foundation-models:system-default"
+      ? "Apple Intelligence"
+      : "On-device model";
   const expanded = open && !disabled;
   const close = (restoreFocus: boolean) => {
     if (restoreFocus) trigger.current?.focus();
@@ -48,16 +55,16 @@ export function AssistModelPicker({ language, disabled }: {
     }}>
     <button ref={trigger} type="button" className="apple-assist-model-trigger"
       aria-haspopup="menu" aria-expanded={expanded} aria-controls={expanded ? menuId : undefined}
-      aria-label={`${title}: Apple Intelligence`} disabled={disabled}
+      aria-label={`${title}: ${modelLabel}`} disabled={disabled}
       onClick={() => setOpen(!expanded)}>
-      <span>Apple Intelligence</span>
+      <span>{modelLabel}</span>
       <span className="apple-assist-model-chevron" aria-hidden="true"><ChevronIcon expanded /></span>
     </button>
     {expanded ? <div id={menuId} className="apple-assist-model-menu" role="menu" aria-label={title}>
       <p className="apple-assist-model-heading" aria-hidden="true">{title}</p>
       <button ref={option} type="button" role="menuitemradio" aria-checked="true" tabIndex={-1}
         className="apple-assist-model-option" onClick={() => close(true)}>
-        <span>Apple Intelligence</span><span aria-hidden="true">✓</span>
+        <span>{modelLabel}</span><span aria-hidden="true">✓</span>
       </button>
     </div> : null}
   </div>;

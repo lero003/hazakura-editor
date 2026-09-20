@@ -36,4 +36,12 @@ describe("AssistModelPicker", () => {
     expect(screen.queryByRole("menu")).toBeNull();
     expect(screen.getByRole("button").hasAttribute("disabled")).toBe(true);
   });
+
+  it("discloses the native-selected Core AI fixture without offering another backend", () => {
+    render(<AssistModelPicker language="en" disabled={false} modelId="apple:core-ai:qwen3-0.6b-test" />);
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Core AI · Qwen3 0.6B (test)" }));
+    const options = screen.getAllByRole("menuitemradio");
+    expect(options).toHaveLength(1);
+    expect(options[0].textContent).toContain("Core AI · Qwen3 0.6B (test)");
+  });
 });

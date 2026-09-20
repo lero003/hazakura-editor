@@ -31,6 +31,10 @@ const appleAssistHelperFixtureScript = readFileSync(
   "scripts/build-apple-assist-helper-fixture.sh",
   "utf8",
 );
+const appleAssistHelperCoreAITestScript = readFileSync(
+  "scripts/build-apple-assist-helper-coreai-test.sh",
+  "utf8",
+);
 const appleAssistGenerateCandidateSwift = readFileSync(
   "src-helpers/apple-assist/Sources/HazakuraAppleAssist/GenerateCandidate.swift",
   "utf8",
@@ -228,6 +232,24 @@ describe("macOS build scripts", () => {
 
     expect(shippingSurfaces).toContain("hazakura-local-assist-helper");
     expect(shippingSurfaces).not.toContain("hazakura-apple-assist-helper");
+  });
+
+  it("keeps the Core AI helper build Developer-only and fixed to local prepared inputs", () => {
+    expect(packageJson.scripts["build:apple-assist-helper:coreai-test"]).toBe(
+      "bash scripts/build-apple-assist-helper-coreai-test.sh",
+    );
+    expect(appleAssistHelperCoreAITestScript).toContain(
+      ".hazakura/coreai-test",
+    );
+    expect(appleAssistHelperCoreAITestScript).toContain(
+      "exports/hazakura-qwen3-0.6b-test",
+    );
+    expect(appleAssistHelperCoreAITestScript).toContain(
+      "HAZAKURA_COREAI_TEST_BUILD=1",
+    );
+    expect(appleAssistHelperCoreAITestScript).not.toMatch(
+      /curl|huggingface|python|model-url|\$1|\$\{1\}/u,
+    );
   });
 
   it("keeps live helper errors free of Foundation Models debug descriptions", () => {

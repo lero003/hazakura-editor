@@ -273,6 +273,35 @@ fn apple_assist_maps_helper_availability() {
 }
 
 #[test]
+fn selected_backend_availability_discloses_actual_model_without_accepting_frontend_selection() {
+    assert_eq!(
+        map_selected_helper_availability(
+            HelperAvailability {
+                kind: "available".to_string(),
+                reason: None,
+            },
+            "apple:core-ai:qwen3-0.6b-test".to_string(),
+        ),
+        LocalAssistBackendAvailability::Available {
+            model_id: "apple:core-ai:qwen3-0.6b-test".to_string(),
+        }
+    );
+    assert_eq!(
+        map_selected_helper_availability(
+            HelperAvailability {
+                kind: "unavailable".to_string(),
+                reason: Some("The fixed Core AI test resource is missing.".to_string()),
+            },
+            "apple:core-ai:qwen3-0.6b-test".to_string(),
+        ),
+        LocalAssistBackendAvailability::Unavailable {
+            reason: "The fixed Core AI test resource is missing.".to_string(),
+            model_id: "apple:core-ai:qwen3-0.6b-test".to_string(),
+        }
+    );
+}
+
+#[test]
 fn apple_assist_maps_helper_candidate() {
     let response = map_helper_candidate(HelperCandidate {
         operation: "proofread".to_string(),

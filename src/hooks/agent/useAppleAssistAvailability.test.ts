@@ -142,7 +142,7 @@ describe("useAppleAssistAvailability", () => {
     expect(result.current.available).toBe(false);
   });
 
-  it("marks the probe unavailable after a short UI timeout", async () => {
+  it("allows the eager Core AI model probe to use its native timeout budget", async () => {
     vi.useFakeTimers();
     probeAppleAssistAvailability.mockImplementation(
       () => new Promise<AppleAssistAvailability>(() => {}),
@@ -153,7 +153,7 @@ describe("useAppleAssistAvailability", () => {
     expect(result.current.probed).toBe(false);
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(5_000);
+      await vi.advanceTimersByTimeAsync(65_000);
     });
 
     expect(result.current.probed).toBe(true);

@@ -2,12 +2,39 @@ import XCTest
 @testable import HazakuraAppleAssist
 
 final class GenerationContractTests: XCTestCase {
+    func testBackendResolverDistinguishesSystemAndCoreAITest() {
+        guard case .systemDefault = AssistBackend.resolve(wireValue: "system_default") else {
+            return XCTFail("system_default must resolve to the System backend")
+        }
+        guard case .coreAITest = AssistBackend.resolve(wireValue: "core_ai_test") else {
+            return XCTFail("core_ai_test must resolve to the fixed Developer test backend")
+        }
+        XCTAssertNil(AssistBackend.resolve(wireValue: "core_ai"))
+        XCTAssertEqual(AssistBackend.coreAITest.modelId, "apple:core-ai:qwen3-0.6b-test")
+    }
+
     func testLegacyRequestAndResponseOmitUsage() throws {
         let request = try JSONDecoder().decode(AppleAssistRequest.self, from: Data("{\"operation\":\"proofread\",\"selectedText\":\"text\"}".utf8))
         XCTAssertNil(request.measureUsage)
         let response = AppleAssistResponse(operation: "proofread", candidateText: "text", modelId: "fixture", latencyMs: 0)
         let object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(response)) as? [String: Any])
         XCTAssertEqual(Set(object.keys), ["operation", "candidateText", "modelId", "latencyMs"])
+    }
+
+    func testCoreAITestPromptDoesNotExposeProposalBoundaryMarkers() {
+        let request = AppleAssistRequest(
+            operation: "proofread",
+            actionId: "proofread_only",
+            selectedText: "今日は良い天気でず。",
+            documentContext: "前後の文脈",
+            instruction: nil,
+            additionalRequest: "誤字だけを直してください。"
+        )
+        let prompt = CoreAITestPrompt.build(for: request)
+        XCTAssertFalse(prompt.contains("HAZAKURA_TEXT"))
+        XCTAssertFalse(prompt.contains("HAZAKURA_CONTEXT"))
+        XCTAssertTrue(prompt.contains(request.selectedText))
+        XCTAssertTrue(prompt.hasSuffix("/no_think"))
     }
     func testBothGenerationPathsRefuseUnknownAndDeferredOperationsWithoutPartials() async {
         for (operation, expected) in [("unknown", "validation"), ("extract", "deferred")] {

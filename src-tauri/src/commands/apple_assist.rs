@@ -24,8 +24,9 @@
 // docs/apple-local-assist-v0.12-design-review.md.
 use crate::commands::apple_assist_supervisor::{
     generate_candidate_stream_via_helper, generate_candidate_via_helper,
-    probe_availability_via_helper, AppleAssistHelperStore, HelperAvailability, HelperCandidate,
-    HelperCandidatePartial, WireEnvelope,
+    probe_availability_via_helper, probe_selected_backend_availability_via_helper,
+    AppleAssistHelperStore, HelperAvailability, HelperCandidate, HelperCandidatePartial,
+    WireEnvelope,
 };
 use crate::distribution::*;
 use crate::security::window_guard::*;
@@ -94,6 +95,32 @@ pub enum AppleAssistAvailability {
     Unsupported,
 }
 
+/// Backend-aware availability returned only by the new Local Assist probe.
+/// The four-state contract stays intact while the read-only model id lets the
+/// UI describe the native-selected backend without accepting a backend, path,
+/// or id from TypeScript.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case", tag = "kind")]
+pub enum LocalAssistBackendAvailability {
+    Available {
+        #[serde(rename = "modelId")]
+        model_id: String,
+    },
+    Unavailable {
+        reason: String,
+        #[serde(rename = "modelId")]
+        model_id: String,
+    },
+    Disabled {
+        #[serde(rename = "modelId")]
+        model_id: String,
+    },
+    Unsupported {
+        #[serde(rename = "modelId")]
+        model_id: String,
+    },
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AppleAssistRequest {
@@ -155,6 +182,46 @@ pub(crate) fn probe_apple_assist_availability_with_helper(
     {
         let _ = helper_store;
         Ok(AppleAssistAvailability::Unsupported)
+    }
+}
+
+/// Probe the backend selected by the native supervisor. The existing
+/// `probe_apple_assist_availability` command remains the frozen System-only
+/// contract; this command is the backend-aware C-2/Developer-test entry point.
+#[tauri::command]
+pub(crate) fn probe_local_assist_backend_availability<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+) -> Result<LocalAssistBackendAvailability, String> {
+    ensure_label_is_main_or_apple_assist(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    probe_local_assist_backend_availability_with_helper(helper_store.inner().as_ref())
+}
+
+pub(crate) fn probe_local_assist_backend_availability_with_helper(
+    helper_store: &AppleAssistHelperStore,
+) -> Result<LocalAssistBackendAvailability, String> {
+    let model_id = helper_store.selected_model_id()?.to_string();
+    #[cfg(target_os = "macos")]
+    {
+        match probe_selected_backend_availability_via_helper(helper_store)? {
+            WireEnvelope::Availability(value) => {
+                Ok(map_selected_helper_availability(value, model_id))
+            }
+            WireEnvelope::Error(error) => Ok(LocalAssistBackendAvailability::Unavailable {
+                reason: error.error,
+                model_id,
+            }),
+            WireEnvelope::Candidate(_) | WireEnvelope::CandidatePartial(_) => Err(
+                "Hazakura Local Assist helper returned a candidate envelope for a backend availability probe."
+                    .to_string(),
+            ),
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = helper_store;
+        Ok(LocalAssistBackendAvailability::Unsupported { model_id })
     }
 }
 
@@ -444,6 +511,27 @@ pub(crate) fn map_helper_availability(value: HelperAvailability) -> AppleAssistA
             reason: format!(
                 "Hazakura Local Assist helper returned unknown availability kind: {other}"
             ),
+        },
+    }
+}
+
+pub(crate) fn map_selected_helper_availability(
+    value: HelperAvailability,
+    model_id: String,
+) -> LocalAssistBackendAvailability {
+    match value.kind.as_str() {
+        "available" => LocalAssistBackendAvailability::Available { model_id },
+        "disabled" => LocalAssistBackendAvailability::Disabled { model_id },
+        "unsupported" => LocalAssistBackendAvailability::Unsupported { model_id },
+        "unavailable" => LocalAssistBackendAvailability::Unavailable {
+            reason: value
+                .reason
+                .unwrap_or_else(|| "Local Assist model is unavailable.".into()),
+            model_id,
+        },
+        other => LocalAssistBackendAvailability::Unavailable {
+            reason: format!("Local Assist helper returned unknown availability kind: {other}"),
+            model_id,
         },
     }
 }

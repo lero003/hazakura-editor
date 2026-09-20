@@ -56,8 +56,8 @@ export type AppleAssistResponse = {
   // is expected to route this through an explicit review surface
   // before applying it to the editor buffer.
   candidateText: string;
-  // Opaque model identifier. Fixture builds return "fixture:*";
-  // live builds return an Apple Foundation Models identifier.
+  // Opaque actual-provenance identifier. Fixture builds return "fixture:*";
+  // live builds return the selected System or Core AI model identifier.
   modelId: string;
   // Latency in milliseconds, useful for status display and
   // future rate limiting. v0.12 stub returns 0.
@@ -69,10 +69,10 @@ export type AppleAssistResponse = {
 // the Rust enum without breaking the TS contract, as long as
 // the React layer handles each tag.
 export type AppleAssistAvailability =
-  | { kind: "available" }
-  | { kind: "unavailable"; reason: string }
-  | { kind: "disabled" }
-  | { kind: "unsupported" };
+  | { kind: "available"; modelId?: string }
+  | { kind: "unavailable"; reason: string; modelId?: string }
+  | { kind: "disabled"; modelId?: string }
+  | { kind: "unsupported"; modelId?: string };
 
 export async function probeAppleAssistAvailability(): Promise<AppleAssistAvailability> {
   if (!isTauriRuntime()) {
@@ -82,7 +82,10 @@ export async function probeAppleAssistAvailability(): Promise<AppleAssistAvailab
     // tries to render a "Tauri not available" hint to the user.
     return { kind: "unsupported" };
   }
-  return invoke<AppleAssistAvailability>("probe_apple_assist_availability");
+  // Rust owns the selected backend. The legacy
+  // `probe_apple_assist_availability` command stays System-only; this
+  // backend-aware command never accepts an id, path, or URL from TypeScript.
+  return invoke<AppleAssistAvailability>("probe_local_assist_backend_availability");
 }
 
 export async function generateAppleAssistCandidate(

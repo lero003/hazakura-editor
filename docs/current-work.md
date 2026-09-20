@@ -5,6 +5,18 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-20
 
+## Core AI Phase 1 — 固定Qwen fixture配管（2026-09-20）
+
+`HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=core_ai_test` をRust/native側だけで解釈し、固定の
+`.hazakura/coreai-test/exports/hazakura-qwen3-0.6b-test/` をCore AIへ渡すDeveloper経路を追加。
+TypeScriptからbackend / path / model id / URLを渡す入口、製品内変換・取得、Systemへの自動fallbackは
+追加していない。通常buildとApp Store buildは従来どおりSystem helperで、Core AI dependencyも含めない。
+
+専用QA appでQwenのロード、stream、Proposal保持、main window Diff、実生成元表示、明示Apply、
+未保存、Undo、再依頼、Cancelを確認し、同じappを `system_default` で再起動してSystem生成と
+`Apple Intelligence` provenanceも確認した。Qwen候補は校正として不正確で、品質合格ではない。
+[実装・検証・残ゲート](reviews/2026-09-20-core-ai-phase1/README.md)。
+
 ## Local Assist表示整理（2026-09-20）
 
 対象要約、依頼チップ、一体化した入力欄へ整理。冗長な説明を減らし、差分確認を会話の直下へ移した。
@@ -13,7 +25,8 @@ Last reviewed: 2026-09-20
 
 モデル選択はLocal Assist窓の入力欄下部・送信ボタンの左隣を主入口とする方針に更新（2026-09-20）。
 DL・容量・削除は設定、選択正本はRustの `selectedId`。C-2実装時に接続する設計変更で、
-現在の製品はSystemのみ。選択枠は1件でも開き、選択済みのApple Intelligenceを確認できる。
+通常製品はSystemのみ。Developer test backendでは同じ選択枠がnative選択済みの
+`Core AI · Qwen3 0.6B (test)`を表示するが、利用者がbackendを切り替える操作にはしていない。
 [選択UXの正本](core-ai-c0-design.md#5-モデル選択-uxc-2-店にしない)。
 
 ## v3.1 — I-0技術棚卸しと最初の修正（2026-09-19）

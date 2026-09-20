@@ -20,19 +20,33 @@
 // site of `GenerateCandidate.run`.
 
 import PackageDescription
+import Foundation
+
+let coreAITestBuild = ProcessInfo.processInfo.environment["HAZAKURA_COREAI_TEST_BUILD"] == "1"
+let coreAIModelsPath = "../../.hazakura/coreai-test/coreai-models-3f109efd54273391f9fd9f5f5b3d8c6e99836d55"
+let packageDependencies: [Package.Dependency] = coreAITestBuild
+    ? [.package(path: coreAIModelsPath)]
+    : []
+let targetDependencies: [Target.Dependency] = coreAITestBuild
+    ? [.product(
+        name: "CoreAILM",
+        package: "coreai-models-3f109efd54273391f9fd9f5f5b3d8c6e99836d55"
+    )]
+    : []
+let helperSwiftSettings: [SwiftSetting] = [
+    .define("FIXTURE_MODE", .when(configuration: .debug))
+] + (coreAITestBuild ? [.define("COREAI_TEST_BACKEND")] : [])
 
 let package = Package(
     name: "HazakuraAppleAssist",
-    platforms: [
-        .macOS(.v13)
-    ],
+    platforms: coreAITestBuild ? [.macOS("27.0")] : [.macOS(.v13)],
+    dependencies: packageDependencies,
     targets: [
         .executableTarget(
             name: "HazakuraAppleAssist",
+            dependencies: targetDependencies,
             path: "Sources/HazakuraAppleAssist",
-            swiftSettings: [
-                .define("FIXTURE_MODE", .when(configuration: .debug))
-            ]
+            swiftSettings: helperSwiftSettings
         ),
         .testTarget(
             name: "HazakuraAppleAssistTests",

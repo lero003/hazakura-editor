@@ -7,15 +7,22 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **Core AI Phase 1（2026-09-20）:** 固定Qwen3-0.6BをRust-owned `core_ai_test` で選び、
+  既存Local Assistのstream / Proposal / Diff / 明示Apply / Undo / Cancelへ接続した。
+  専用QA appでCore AIとSystemへの復帰を実機確認し、Proposalは実際の`modelId`を保持・表示する。
+  任意path / URL / import、製品内変換、network fallback、auto-apply / auto-saveは追加していない。
+  Qwen出力品質は不合格。本番モデルidentity、C-1配布・digest・削除、App Store同梱は未実装。
+  [Phase 1記録](reviews/2026-09-20-core-ai-phase1/README.md)。
+
 - **Local Assist表示整理（2026-09-20）:** 対象要約・依頼チップ・一体化した入力欄へ整理し、
   説明の重複を減らした。送信横にSystem 1件でも開けるモデル選択枠を追加。
-  フロント全2,620テストと最小サイズのブラウザーfixtureを確認。Core AIへの切替は未接続。
+  フロント全2,620テストと最小サイズのブラウザーfixtureを確認。通常利用者向け切替は未接続。
   [表示・検証記録](reviews/2026-09-20-local-assist-polish/README.md)。次はnative窓の操作・IME・VoiceOver確認。
 
 - **v3.1俯瞰レビュー追補（2026-09-20）:** 保存言語のstorage例外時fallbackと表の祖先lang保持を修正。
   [修正・検証記録](reviews/2026-09-20-v3.1-overview-followup/README.md)。
   [テスト用Core AIモデル](core-ai-test-model.md)は約347 MBのQwen3-0.6Bを実生成まで確認したが、
-  校正精度は不合格。製品の生成はSystemのみ、本番C-1/C-2と海外展開の残ゲートを維持する。
+  校正精度は不合格。通常製品の生成はSystemのみ、本番C-1/C-2と海外展開の残ゲートを維持する。
 
 - **v3.1開発へ移行（2026-09-19）:** 次の版をCore AIの実利用と海外App Store展開の
   二本立てとして開始。最初のI-0ソース／静的棚卸しは

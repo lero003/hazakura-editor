@@ -38,6 +38,7 @@ const COOLDOWN_DURATION: Duration = Duration::from_secs(300);
 /// Probe timeout. Availability checks should be quick and must not
 /// inherit the long generation budget.
 pub(crate) const PROBE_TIMEOUT: Duration = Duration::from_secs(10);
+pub(crate) const CORE_AI_TEST_PROBE_TIMEOUT: Duration = Duration::from_secs(60);
 /// Generation timeout. Live Foundation Models may take tens of
 /// seconds on first use while Apple Intelligence warms the local
 /// model. 360s keeps the UX bounded while avoiding false timeouts
@@ -47,6 +48,64 @@ pub(crate) const PROBE_TIMEOUT: Duration = Duration::from_secs(10);
 /// what unblocks the read.
 pub(crate) const GENERATE_TIMEOUT: Duration = Duration::from_secs(360);
 const SYSTEM_DEFAULT_BACKEND: &str = "system_default";
+const CORE_AI_TEST_BACKEND: &str = "core_ai_test";
+const CORE_AI_TEST_BACKEND_ENV: &str = "HAZAKURA_LOCAL_ASSIST_TEST_BACKEND";
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum AssistBackendSelection {
+    SystemDefault,
+    CoreAiTest { model_path: PathBuf },
+    Invalid(String),
+}
+
+impl AssistBackendSelection {
+    fn from_developer_environment() -> Self {
+        match std::env::var(CORE_AI_TEST_BACKEND_ENV) {
+            Err(std::env::VarError::NotPresent) => Self::SystemDefault,
+            Err(std::env::VarError::NotUnicode(_)) => Self::Invalid(
+                "Local Assist test backend selection is not valid Unicode.".to_string(),
+            ),
+            Ok(value) if value == CORE_AI_TEST_BACKEND => Self::CoreAiTest {
+                model_path: fixed_core_ai_test_model_path(),
+            },
+            Ok(value) if value == SYSTEM_DEFAULT_BACKEND => Self::SystemDefault,
+            Ok(_) => Self::Invalid(
+                "Unsupported Local Assist test backend selection. Expected system_default or core_ai_test."
+                    .to_string(),
+            ),
+        }
+    }
+
+    fn wire_values(&self) -> Result<(&'static str, Option<&str>), String> {
+        match self {
+            Self::SystemDefault => Ok((SYSTEM_DEFAULT_BACKEND, None)),
+            Self::CoreAiTest { model_path } => Ok((
+                CORE_AI_TEST_BACKEND,
+                Some(
+                    model_path
+                        .to_str()
+                        .ok_or("Core AI test model path is not valid UTF-8.")?,
+                ),
+            )),
+            Self::Invalid(reason) => Err(reason.clone()),
+        }
+    }
+
+    fn model_id(&self) -> Result<&'static str, String> {
+        match self {
+            Self::SystemDefault => Ok("apple:foundation-models:system-default"),
+            Self::CoreAiTest { .. } => Ok("apple:core-ai:qwen3-0.6b-test"),
+            Self::Invalid(reason) => Err(reason.clone()),
+        }
+    }
+}
+
+fn fixed_core_ai_test_model_path() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("src-tauri must have a repository parent")
+        .join(".hazakura/coreai-test/exports/hazakura-qwen3-0.6b-test")
+}
 
 /// The store is held by Tauri via `tauri::Builder::manage(...)`.
 pub(crate) struct AppleAssistHelperStore {
@@ -60,6 +119,7 @@ pub(crate) struct AppleAssistHelperStore {
     // (the `inner` mutex serializes them), so a single slot suffices.
     active_cancel: Mutex<Option<ActiveCancelHandle>>,
     stream_request: Mutex<Option<StreamRequestCancel>>,
+    selected_backend: AssistBackendSelection,
     #[cfg(test)]
     before_stream_arm: Option<Arc<dyn Fn() + Send + Sync>>,
     #[cfg(test)]
@@ -124,6 +184,16 @@ impl Default for AppleAssistHelperStore {
             cooldown_started_at: Mutex::new(None),
             active_cancel: Mutex::new(None),
             stream_request: Mutex::new(None),
+            selected_backend: {
+                #[cfg(test)]
+                {
+                    AssistBackendSelection::SystemDefault
+                }
+                #[cfg(not(test))]
+                {
+                    AssistBackendSelection::from_developer_environment()
+                }
+            },
             #[cfg(test)]
             before_stream_arm: None,
             #[cfg(test)]
@@ -149,6 +219,10 @@ impl Drop for AppleAssistHelperStore {
 }
 
 impl AppleAssistHelperStore {
+    pub(crate) fn selected_model_id(&self) -> Result<&'static str, String> {
+        self.selected_backend.model_id()
+    }
+
     // Reserve before dispatching generation. Cancellation never needs the
     // blocking helper mutex and is retained while the worker starts/spawns.
     pub(crate) fn prepare_stream_request(&self, request_id: &str) -> Result<(), String> {
@@ -345,14 +419,19 @@ impl AppleAssistHelperStore {
     /// The timeout that the current probe call should use. Production
     /// always uses `PROBE_TIMEOUT`. Tests that build a store
     /// via `with_timeout_override` get their value.
-    fn effective_probe_timeout(&self) -> Duration {
+    fn effective_probe_timeout(&self, backend: &AssistBackendSelection) -> Duration {
         #[cfg(test)]
         {
             if let Some(t) = self.timeout_override {
                 return t;
             }
         }
-        PROBE_TIMEOUT
+        match backend {
+            AssistBackendSelection::CoreAiTest { .. } => CORE_AI_TEST_PROBE_TIMEOUT,
+            AssistBackendSelection::SystemDefault | AssistBackendSelection::Invalid(_) => {
+                PROBE_TIMEOUT
+            }
+        }
     }
 
     /// The timeout that the current generation call should use.
@@ -777,10 +856,17 @@ impl AppleAssistHelperStore {
 #[derive(Debug, Serialize)]
 #[serde(tag = "action", rename_all = "snake_case")]
 enum WireRequest<'a> {
-    ProbeAvailability,
+    #[serde(rename_all = "camelCase")]
+    ProbeAvailability {
+        backend: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_path: Option<&'a str>,
+    },
     #[serde(rename_all = "camelCase")]
     GenerateCandidate {
         backend: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_path: Option<&'a str>,
         operation: &'a str,
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -795,6 +881,8 @@ enum WireRequest<'a> {
     #[serde(rename_all = "camelCase")]
     GenerateCandidateStreaming {
         backend: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_path: Option<&'a str>,
         operation: &'a str,
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -861,22 +949,39 @@ pub(crate) struct HelperError {
 pub(crate) fn probe_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
+    probe_backend_availability_via_helper(store, &AssistBackendSelection::SystemDefault)
+}
+
+pub(crate) fn probe_selected_backend_availability_via_helper(
+    store: &AppleAssistHelperStore,
+) -> Result<WireEnvelope, String> {
+    probe_backend_availability_via_helper(store, &store.selected_backend)
+}
+
+fn probe_backend_availability_via_helper(
+    store: &AppleAssistHelperStore,
+    selection: &AssistBackendSelection,
+) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
         return Err(
             "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
         );
     }
 
+    let (backend, model_path) = selection.wire_values()?;
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
         store.spawn_locked(&mut guard)?;
     }
 
-    let timeout = store.effective_probe_timeout();
+    let timeout = store.effective_probe_timeout(selection);
     let result = AppleAssistHelperStore::round_trip_locked(
         store,
         guard.as_mut().expect("just spawned"),
-        &WireRequest::ProbeAvailability,
+        &WireRequest::ProbeAvailability {
+            backend,
+            model_path,
+        },
         timeout,
     );
 
@@ -932,6 +1037,7 @@ pub(crate) fn generate_candidate_via_helper(
         );
     }
 
+    let (backend, model_path) = store.selected_backend.wire_values()?;
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
         store.spawn_locked(&mut guard)?;
@@ -942,7 +1048,8 @@ pub(crate) fn generate_candidate_via_helper(
         store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidate {
-            backend: SYSTEM_DEFAULT_BACKEND,
+            backend,
+            model_path,
             operation,
             selected_text,
             document_context,
@@ -1003,6 +1110,7 @@ where
         );
     }
 
+    let (backend, model_path) = store.selected_backend.wire_values()?;
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
         store.spawn_locked(&mut guard)?;
@@ -1013,7 +1121,8 @@ where
         store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidateStreaming {
-            backend: SYSTEM_DEFAULT_BACKEND,
+            backend,
+            model_path,
             operation,
             selected_text,
             document_context,
@@ -1063,12 +1172,21 @@ where
 /// cannot accidentally call this.
 #[cfg(test)]
 pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHelperStore {
+    store_with_helper_path_and_backend(path, AssistBackendSelection::SystemDefault)
+}
+
+#[cfg(test)]
+pub(crate) fn store_with_helper_path_and_backend(
+    path: std::path::PathBuf,
+    selected_backend: AssistBackendSelection,
+) -> AppleAssistHelperStore {
     AppleAssistHelperStore {
         inner: Mutex::new(None),
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
+        selected_backend,
         before_stream_arm: None,
         before_stream_complete: None,
         helper_path_override: Some(path),
@@ -1089,6 +1207,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         cooldown_started_at: Mutex::new(None),
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
+        selected_backend: AssistBackendSelection::SystemDefault,
         before_stream_arm: None,
         before_stream_complete: None,
         helper_path_override: None,

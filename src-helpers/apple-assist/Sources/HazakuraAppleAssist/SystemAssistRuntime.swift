@@ -10,6 +10,8 @@ enum SystemAssistRuntime {
         switch backend {
         case .systemDefault:
             return model
+        case .coreAITest:
+            preconditionFailure("Core AI test models are resolved by CoreAITestRuntime")
         }
     }
 

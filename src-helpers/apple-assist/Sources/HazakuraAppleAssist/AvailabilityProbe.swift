@@ -13,7 +13,13 @@ import Foundation
 // live mode reads `SystemLanguageModel` through `SystemAssistRuntime`.
 
 enum AvailabilityProbe {
-    static func probe() -> AppleAssistAvailabilityResponse {
+    static func probe(
+        backend: AssistBackend = .systemDefault,
+        modelPath: String? = nil
+    ) async -> AppleAssistAvailabilityResponse {
+        if case .coreAITest = backend {
+            return await CoreAITestRuntime.probe(modelPath: modelPath)
+        }
         #if FIXTURE_MODE
         return AssistRuntimeContract.probeResponse(status: .fixture)
         #else

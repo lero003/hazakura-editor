@@ -7,8 +7,8 @@ Last reviewed: 2026-09-20
 
 簡単なロード・生成確認には **Qwen3-0.6B / macOS / INT4 / context 4096** を使う。
 モデルの層は省略しない。本番allowlistのidentity、日本語文章品質の採用判定、
-App Store配布、Hazakura内の選択・生成経路の完成を意味しない。
-アプリの生成経路は引き続き `system_default`。本番C-1/C-2のゲートは維持する。
+App Store配布、本番C-1/C-2の完成を意味しない。通常buildの生成経路は引き続き
+`system_default`。Developer専用のPhase 1経路だけが固定fixtureを `core_ai_test` として選べる。
 
 ## この作業環境で試す
 
@@ -25,6 +25,20 @@ bash scripts/smoke-coreai-test-model.sh '日本語で短く挨拶してくださ
 `SHA256SUMS`で準備時のファイルを照合してから、Apple公式 `llm-runner` を実行する。
 最大出力128 tokens、temperature 0。`/no_think`はQwenへの入力であり、出力形式を保証しない。
 生成案は標準出力へ出る。エディタへの反映・保存は行わない。
+
+## Hazakura Local Assistで試す
+
+モデルとAppleソースを上記固定位置へ準備した環境だけで実行する。
+
+```bash
+npm run build:apple-assist-helper:coreai-test
+HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=core_ai_test npm run dev
+```
+
+選択はRust supervisorが起動時に固定enumとして解決する。frontendからbackend、model path、
+model id、URLを渡すAPIはない。通常build / App Store buildは従来のlive helperを作り直し、
+Core AI packageやテストモデルを同梱しない。Systemへ戻すときは
+`HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=system_default`（または環境変数なし）で起動する。
 
 ## 固定した入力と再作成
 
@@ -75,6 +89,12 @@ CLANG_MODULE_CACHE_PATH=../clang-cache \
   キャッシュ書込みを許可した実行で上記を確認した。キャッシュの場所はOS管理で、
   アプリにキャッシュ削除機能や広いアクセス権は追加していない。
 - `.aimodelc`へのAOTは未実施。ここで準備したのはポータブルな `.aimodel` bundle。
+- HazakuraのDeveloper専用QA appで、Core AI load → streaming → Proposal → main window Diff →
+  明示Apply（未保存）→ Undo、再依頼直後のCancelを確認。Proposalの生成元は
+  `apple:core-ai:qwen3-0.6b-test`。同じappを `system_default` で再起動し、System生成と
+  `apple:foundation-models:system-default` への復帰も確認した。
+- Local Assist経由の校正候補は「今日は良い天気でず。」に対して
+  「今日の良い天気でず。」で、**配管確認は成功、品質は不合格**。Phase 1は候補品質を採用根拠にしない。
 
 準備ログ、生成結果、manifestは `.hazakura/coreai-test/` に保持する。
 変換時にはAppleの固定依存からtorch/coremltools互換性等のwarningも出ている。
@@ -84,7 +104,8 @@ CLANG_MODULE_CACHE_PATH=../clang-cache \
 
 - 単体smoke: bundleロードと短文生成。結果と制約は下の検証記録に残す。
 - C-1 fixture配管: 取得・検証・準備・削除の製品実装は別途必要。
-- C-2: Rust所有の選択、backend固有availability、Local Assist会話→提案→Diff→明示Apply→Undoは未接続。
+- C-2 Phase 1 fixture配管: Rust所有のtest選択、backend固有availability、Local Assist会話→提案→
+  Diff→明示Apply→Undo / Cancelは接続済み。通常利用者向けの本番選択・配布契約ではない。
 - 本番: identity再選定、expanded manifest、配信/AOT、権利・容量・地域、日本語bake-offと同一署名候補の受入が必要。
 
 この軽量テストモデルを本番idへ昇格しない。アプリからPython、任意URL/import、

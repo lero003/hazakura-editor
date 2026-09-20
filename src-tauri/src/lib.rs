@@ -215,6 +215,7 @@ pub fn run() {
             resize_agent_workbench_terminal,
             list_agent_provider_availability,
             probe_apple_assist_availability,
+            probe_local_assist_backend_availability,
             generate_apple_assist_candidate,
             prepare_apple_assist_generation,
             finish_apple_assist_generation,
