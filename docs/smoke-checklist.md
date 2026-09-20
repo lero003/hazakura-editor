@@ -920,6 +920,10 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 
 14. Switch through all seven themes with the Local Assist window open and confirm the window background follows the theme as a flat surface with readable text — `edohigan` is a light pink surface with dark ink and must not fall back to a dark window (fixed 2026-09-12; see the [browser measurements and before/after capture](reviews/2026-09-12-v3-assist-window-theme/README.md)).
 
+15. With a delayed helper in an isolated QA bundle, start an availability probe and confirm native window/menu operations remain responsive. During generation, another probe must return busy without waiting, and Stop / window close must still cancel the generation. Native helper-process tests do not replace this window-loop acceptance.
+16. Change display language during generation and during an Apply decision. Confirm completed / failed / cancelled (and Apply discarded) outcomes arrive once, release busy state, and use the current language for new feedback.
+17. Use Recheck after an unavailable result without closing the Local Assist window. Confirm input, conversation, and existing proposal remain; checking / switching is visible and Send / repeated switches are disabled until the new availability result arrives.
+
 Latest light manual note: on 2026-06-21, user-side built-app smoke
 confirmed the dedicated Hazakura Local Assist UI opened, the helper was
 not present in Activity Monitor memory before opening the Local Assist

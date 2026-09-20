@@ -1040,37 +1040,57 @@ pub(crate) struct HelperError {
 pub(crate) fn probe_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
-    probe_backend_availability_via_helper(store, &AssistBackendSelection::SystemDefault)
+    probe_backend_availability_via_helper(store, Some(AssistBackendSelection::SystemDefault))
+        .map(|(_, envelope)| envelope)
 }
 
 pub(crate) fn probe_selected_backend_availability_via_helper(
     store: &AppleAssistHelperStore,
-) -> Result<WireEnvelope, String> {
-    let selection = store
-        .selected_backend
-        .lock()
-        .expect("selected backend lock")
-        .clone();
-    probe_backend_availability_via_helper(store, &selection)
+) -> Result<(String, WireEnvelope), String> {
+    probe_backend_availability_via_helper(store, None)
 }
 
 fn probe_backend_availability_via_helper(
     store: &AppleAssistHelperStore,
-    selection: &AssistBackendSelection,
-) -> Result<WireEnvelope, String> {
+    fixed_selection: Option<AssistBackendSelection>,
+) -> Result<(String, WireEnvelope), String> {
     if store.is_in_cooldown() {
         return Err(
             "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
         );
     }
 
+    // Never queue a probe behind another probe/generation. A worker waiting
+    // for this mutex would otherwise outlive the frontend's probe budget.
+    let mut guard = store.inner.try_lock().map_err(|_| {
+        "Local Assist is busy. Check availability again after the current operation finishes."
+    })?;
+    if store
+        .stream_request
+        .lock()
+        .expect("stream request lock")
+        .is_some()
+    {
+        return Err(
+            "Local Assist is busy. Check availability again after generation finishes.".into(),
+        );
+    }
+    // Selection updates acquire inner before selected_backend too. Capture
+    // the request and its response provenance under that same exclusion.
+    let selection = fixed_selection.unwrap_or_else(|| {
+        store
+            .selected_backend
+            .lock()
+            .expect("selected backend lock")
+            .clone()
+    });
+    let selected_model_id = selection.model_id()?;
     let (backend, model_id, model_path) = selection.wire_values()?;
-    let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
-        store.spawn_locked(&mut guard, selection)?;
+        store.spawn_locked(&mut guard, &selection)?;
     }
 
-    let timeout = store.effective_probe_timeout(selection);
+    let timeout = store.effective_probe_timeout(&selection);
     let result = AppleAssistHelperStore::round_trip_locked(
         store,
         guard.as_mut().expect("just spawned"),
@@ -1105,7 +1125,7 @@ fn probe_backend_availability_via_helper(
             store.record_failure();
         }
     }
-    result
+    result.map(|envelope| (selected_model_id, envelope))
 }
 
 /// Generate a candidate via the helper sidecar. The store

@@ -5,6 +5,8 @@ import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvai
 import { act, fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppleAssistWindowApp, getAppleAssistWindowCopy } from "./AppleAssistWindowApp";
+import { listen } from "@tauri-apps/api/event";
+import { listCoreAiModels, selectLocalAssistModel, unavailableCoreAiModelCatalog } from "../../lib/tauri/coreAiModels";
 import {
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   APPLE_ASSIST_PROPOSAL_STATUS_EVENT,
@@ -15,14 +17,18 @@ import {
   requestAppleAssistProposal,
   cancelAppleAssistProposal,
   getMainAppleAssistTarget,
+  probeAppleAssistAvailability,
 } from "../../lib/tauri";
 
 const eventListeners = new Map<string, (event: { payload: unknown }) => void>();
+let delayRegistration = false;
+const pendingRegistrations: Array<() => void> = [];
 
 vi.mock("@tauri-apps/api/event", () => ({
   listen: vi.fn(async (eventName: string, handler: (event: { payload: unknown }) => void) => {
+    if (delayRegistration) await new Promise<void>((resolve) => pendingRegistrations.push(resolve));
     eventListeners.set(eventName, handler);
-    return () => eventListeners.delete(eventName);
+    return () => { if (eventListeners.get(eventName) === handler) eventListeners.delete(eventName); };
   }),
 }));
 
@@ -32,6 +38,7 @@ vi.mock("../../lib/tauri", async () => {
   );
   return {
     ...actual,
+    probeAppleAssistAvailability: vi.fn(async () => ({ kind: "available" as const })),
     getMainAppleAssistTarget: vi.fn(async () => ({
       kind: "paragraph" as const,
       start: 0,
@@ -58,17 +65,140 @@ vi.mock("../../hooks/agent/useAppleAssistAvailability", () => ({
   })),
 }));
 
+vi.mock("../../lib/tauri/coreAiModels", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/coreAiModels")>("../../lib/tauri/coreAiModels");
+  return {
+    ...actual,
+    listCoreAiModels: vi.fn(async () => actual.unavailableCoreAiModelCatalog()),
+    selectLocalAssistModel: vi.fn(),
+  };
+});
+
 afterEach(() => {
   cleanup();
+  delayRegistration = false;
+  pendingRegistrations.splice(0).forEach((resolve) => resolve());
   localStorage.removeItem(MENU_LANGUAGE_STORAGE_KEY);
   document.documentElement.lang = "en";
   vi.mocked(useAppleAssistAvailability).mockReturnValue({ availability: { kind: "available" }, available: true, probed: true });
   vi.clearAllMocks();
+  vi.mocked(listCoreAiModels).mockResolvedValue(unavailableCoreAiModelCatalog());
+  vi.mocked(selectLocalAssistModel).mockReset();
   eventListeners.clear();
   delete (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 });
 
 describe("AppleAssistWindowApp render", () => {
+  it("gates duplicate model actions and sending from selection until the new probe completes", async () => {
+    const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
+    vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);
+    const catalog = unavailableCoreAiModelCatalog();
+    catalog.models.push({ id: "apple:core-ai:ready", displayName: "Ready model", kind: "core_ai", status: "ready", selected: false });
+    vi.mocked(listCoreAiModels).mockResolvedValueOnce(catalog);
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available", modelId: catalog.selectedModelId });
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Keep input" } });
+    let finishSelection!: (value: typeof catalog) => void;
+    vi.mocked(selectLocalAssistModel).mockImplementationOnce(() => new Promise((resolve) => { finishSelection = resolve; }));
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Ready model" }));
+    expect(screen.getByText("Switching model…")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Choose model:/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
+    let finishProbe!: (value: { kind: "available"; modelId: string }) => void;
+    vi.mocked(probeAppleAssistAvailability).mockImplementationOnce(() => new Promise((resolve) => { finishProbe = resolve; }));
+    await act(async () => { finishSelection({ ...catalog, selectedModelId: "apple:core-ai:ready" }); });
+    expect(screen.getByText("Checking availability…")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
+    await act(async () => { finishProbe({ kind: "available", modelId: "apple:core-ai:ready" }); });
+    expect(screen.getByRole("button", { name: "Choose model: Ready model" }).hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(false);
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep input");
+  });
+
+  it("rechecks availability without losing the conversation or typed request", async () => {
+    const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
+    vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available" });
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Keep this request" } });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    const request = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+    await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...request, phase: "completed", candidateText: "Retained draft", emittedAtMs: 1 } }); });
+    let resolveProbe!: (value: { kind: "unavailable"; reason: string }) => void;
+    vi.mocked(probeAppleAssistAvailability).mockImplementationOnce(() => new Promise((resolve) => { resolveProbe = resolve; }));
+    fireEvent.click(screen.getByRole("button", { name: "Check again" }));
+    expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep this request");
+    expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+    await act(async () => { resolveProbe({ kind: "unavailable", reason: "temporary failure" }); });
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available" });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Check again" })); });
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(false);
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+    expect(vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0].proposalText).toBe("Retained draft");
+  });
+
+  it.each(["completed", "failed", "cancelled"] as const)(
+    "retains the proposal subscription across a language change before %s", async (phase) => {
+      Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+      render(<AppleAssistWindowApp />);
+      await act(async () => { await Promise.resolve(); });
+      fireEvent.change(screen.getByRole("textbox"), { target: { value: "Please edit" } });
+      await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+      const request = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+      const calls = vi.mocked(listen).mock.calls.length;
+      delayRegistration = true;
+      act(() => { window.dispatchEvent(new StorageEvent("storage", { key: MENU_LANGUAGE_STORAGE_KEY, newValue: "ja" })); });
+      await act(async () => {
+        eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)?.({ payload: {
+          ...request, phase, candidateText: phase === "completed" ? "Edited draft" : undefined,
+          message: "test outcome", emittedAtMs: 1,
+        } });
+      });
+      expect(screen.queryByRole("button", { name: "生成を停止" })).toBeNull();
+      expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(false);
+      expect(vi.mocked(listen).mock.calls.length).toBe(calls);
+      if (phase === "completed") {
+        await act(async () => { fireEvent.click(screen.getByRole("button", { name: "依頼する" })); });
+        expect(vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0].proposalText).toBe("Edited draft");
+      }
+    },
+  );
+
+  it.each(["completed", "discarded", "failed"] as const)(
+    "retains Apply outcomes across language changes: %s", async (phase) => {
+      Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+      render(<AppleAssistWindowApp />);
+      await act(async () => { await Promise.resolve(); });
+      fireEvent.change(screen.getByRole("textbox"), { target: { value: "Please edit" } });
+      await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
+      const request = vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0];
+      await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...request, phase: "completed", candidateText: "Draft", emittedAtMs: 1 } }); });
+      const calls = vi.mocked(listen).mock.calls.length;
+      delayRegistration = true;
+      act(() => { window.dispatchEvent(new StorageEvent("storage", { key: MENU_LANGUAGE_STORAGE_KEY, newValue: "ja" })); });
+      await act(async () => {
+        eventListeners.get(APPLE_ASSIST_APPLY_STATUS_EVENT)?.({ payload: {
+          ...request, documentSessionId: request.target?.activeDocumentSessionId,
+          phase, message: "target text no longer matches the active buffer", emittedAtMs: 2,
+        } });
+      });
+      expect(vi.mocked(listen).mock.calls.length).toBe(calls);
+      if (phase === "failed") {
+        expect(screen.getByRole("alert").textContent).toBe(getAppleAssistWindowCopy("ja").targetStaleError);
+        expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
+      } else {
+        expect(screen.queryByTestId("apple-assist-conversation-state")).toBeNull();
+      }
+    },
+  );
+
   it("shows the native Core AI test backend instead of the default catalog selection", async () => {
     vi.mocked(useAppleAssistAvailability).mockReturnValue({
       availability: { kind: "available", modelId: "apple:core-ai:qwen3-0.6b-test" },

@@ -5,6 +5,7 @@ import { emit } from "@tauri-apps/api/event";
 import { AppleAssistWindowApp } from "../../../src/components/appleAssist/AppleAssistWindowApp";
 import { APPLE_ASSIST_PROPOSAL_STATUS_EVENT, type AppleAssistApplyEvent } from "../../../src/types";
 import { LOCAL_ASSIST_REVIEW_RESULT_EVENT } from "../../../src/features/editor/localAssistReviewIdentity";
+import { unavailableCoreAiModelCatalog } from "../../../src/lib/tauri/coreAiModels";
 import "../../../src/styles/index.css";
 
 const params = new URLSearchParams(location.search);
@@ -18,9 +19,20 @@ const target = {
   activeDocumentSessionId: "fixture-document", capturedAtMs: 0,
 };
 let active: AppleAssistApplyEvent | null = null;
+let probeCount = 0;
 mockIPC(async (command, args) => {
   const input = args as Record<string, any>;
   if (command === "probe_apple_assist_availability") return { kind: params.get("state") ?? "available" };
+  if (command === "list_core_ai_models") return unavailableCoreAiModelCatalog();
+  if (command === "probe_local_assist_backend_availability") {
+    probeCount += 1;
+    if (params.has("retry") && probeCount > 1) await new Promise((resolve) => setTimeout(resolve, 1500));
+    return {
+      kind: params.has("retry") ? (probeCount === 1 ? "unavailable" : "available") : params.get("state") ?? "available",
+      modelId: "apple:foundation-models:system-default",
+      reason: "Browser fixture: temporary availability failure",
+    };
+  }
   if (command === "get_main_apple_assist_target") return params.has("empty") ? null : target;
   if (command === "set_apple_assist_window_theme") return;
   if (command === "request_apple_assist_proposal") {

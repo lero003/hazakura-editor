@@ -146,11 +146,18 @@ pub const APPLE_ASSIST_MAX_CONTEXT_CHARS: usize = 8000;
 pub const APPLE_ASSIST_MAX_INSTRUCTION_CHARS: usize = 1000;
 
 #[tauri::command]
-pub(crate) fn probe_apple_assist_availability<R: tauri::Runtime>(
+pub(crate) async fn probe_apple_assist_availability<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
 ) -> Result<AppleAssistAvailability, String> {
-    probe_apple_assist_availability_with_label(window.label(), helper_store.inner().as_ref())
+    ensure_label_is_main_or_apple_assist(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    let helper_store = Arc::clone(helper_store.inner());
+    tauri::async_runtime::spawn_blocking(move || {
+        probe_apple_assist_availability_with_helper(helper_store.as_ref())
+    })
+    .await
+    .map_err(|error| format!("Local Assist availability task failed: {error}"))?
 }
 
 pub(crate) fn probe_apple_assist_availability_with_label(
@@ -189,22 +196,32 @@ pub(crate) fn probe_apple_assist_availability_with_helper(
 /// `probe_apple_assist_availability` command remains the frozen System-only
 /// contract; this command is the backend-aware C-2/Developer-test entry point.
 #[tauri::command]
-pub(crate) fn probe_local_assist_backend_availability<R: tauri::Runtime>(
+pub(crate) async fn probe_local_assist_backend_availability<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
 ) -> Result<LocalAssistBackendAvailability, String> {
     ensure_label_is_main_or_apple_assist(window.label())?;
     ensure_apple_assist_allowed_by_distribution()?;
-    probe_local_assist_backend_availability_with_helper(helper_store.inner().as_ref())
+    probe_local_assist_backend_availability_async(Arc::clone(helper_store.inner())).await
+}
+
+pub(crate) async fn probe_local_assist_backend_availability_async(
+    helper_store: Arc<AppleAssistHelperStore>,
+) -> Result<LocalAssistBackendAvailability, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        probe_local_assist_backend_availability_with_helper(helper_store.as_ref())
+    })
+    .await
+    .map_err(|error| format!("Local Assist backend availability task failed: {error}"))?
 }
 
 pub(crate) fn probe_local_assist_backend_availability_with_helper(
     helper_store: &AppleAssistHelperStore,
 ) -> Result<LocalAssistBackendAvailability, String> {
-    let model_id = helper_store.selected_model_id()?.to_string();
     #[cfg(target_os = "macos")]
     {
-        match probe_selected_backend_availability_via_helper(helper_store)? {
+        let (model_id, envelope) = probe_selected_backend_availability_via_helper(helper_store)?;
+        match envelope {
             WireEnvelope::Availability(value) => {
                 Ok(map_selected_helper_availability(value, model_id))
             }
@@ -220,7 +237,7 @@ pub(crate) fn probe_local_assist_backend_availability_with_helper(
     }
     #[cfg(not(target_os = "macos"))]
     {
-        let _ = helper_store;
+        let model_id = helper_store.selected_model_id()?;
         Ok(LocalAssistBackendAvailability::Unsupported { model_id })
     }
 }

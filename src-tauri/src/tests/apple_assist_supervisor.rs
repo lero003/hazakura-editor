@@ -90,6 +90,70 @@ fn supervisor_probe_timeout_is_shorter_than_generation_timeout() {
 }
 
 #[test]
+fn supervisor_probe_refuses_a_reserved_generation_without_starting_a_helper() {
+    let store = store_without_helper();
+    store.prepare_stream_request("pending-probe-test").unwrap();
+    let result = probe_selected_backend_availability_via_helper(&store);
+    store.finish_stream_request("pending-probe-test");
+    assert!(result.unwrap_err().contains("busy"));
+    assert_eq!(store.consecutive_failures_for_test(), 0);
+}
+
+#[test]
+fn supervisor_probe_does_not_queue_behind_generation_or_prevent_stop() {
+    use std::sync::{mpsc, Arc};
+    use std::time::Duration;
+    let script =
+        std::env::temp_dir().join(format!("hazakura-probe-busy-{}.sh", std::process::id()));
+    std::fs::write(&script, "#!/bin/sh\nread -r request\nprintf '%s\\n' '{\"kind\":\"candidate_partial\",\"value\":{\"candidateText\":\"partial\"}}'\nread -r wait_for_stop\n").unwrap();
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+    let store = Arc::new(store_with_helper_path(script.clone()));
+    let (started_tx, started_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let worker_store = Arc::clone(&store);
+    let generation = std::thread::spawn(move || {
+        generate_candidate_stream_via_helper(
+            &worker_store,
+            "summarize",
+            "body",
+            None,
+            None,
+            None,
+            None,
+            |_| {
+                started_tx.send(()).unwrap();
+                release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            },
+            None,
+        )
+    });
+    started_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+    let (probe_tx, probe_rx) = mpsc::channel();
+    let probe_store = Arc::clone(&store);
+    let probe = std::thread::spawn(move || {
+        probe_tx
+            .send(probe_selected_backend_availability_via_helper(&probe_store))
+            .unwrap();
+    });
+    let immediate = probe_rx.recv_timeout(Duration::from_millis(500));
+    // This is the same lock-independent native path used by Stop/window close.
+    assert!(store.cancel_active());
+    release_tx.send(()).unwrap();
+    assert!(generation
+        .join()
+        .unwrap()
+        .unwrap_err()
+        .contains("cancelled"));
+    probe.join().unwrap();
+    std::fs::remove_file(script).unwrap();
+    assert!(immediate
+        .expect("probe must not queue behind generation")
+        .unwrap_err()
+        .contains("busy"));
+    assert_eq!(store.consecutive_failures_for_test(), 0);
+}
+
+#[test]
 fn supervisor_store_default_constructs_cleanly() {
     // `Default::default()` does not read the environment (the
     // env-var-based override is test-only via
@@ -515,7 +579,8 @@ done
         );
         let probed = probe_selected_backend_availability_via_helper(&store)
             .expect("selected backend probe must include Core AI path");
-        assert!(matches!(probed, WireEnvelope::Availability(_)));
+        assert_eq!(probed.0, "apple:core-ai:qwen3-0.6b-test");
+        assert!(matches!(probed.1, WireEnvelope::Availability(_)));
 
         let generated = generate_candidate_via_helper(&store, "summarize", "body", None, None)
             .expect("generation must include Core AI selection");

@@ -35,6 +35,13 @@ deep signatureを確認した。署名済みApp Store pkg / TestFlightではな�
 修正後の`npm run build`とlocal previewのdistribution probeも成功。
 TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
 
+再レビューR1 / R2ではprobeのworker移動・生成中即時拒否と、表示言語変更で通知購読を
+張り直さない修正を追加。「再確認」は会話を保持し、切替・確認中の送信を止める。
+最終Rust 414件（2 ignored）、frontend 2,643件、surface 128件とbuild / preview probeは成功。
+次は遅延probe中の実ウィンドウ応答・停止受入（隔離QAでは起動導線へ到達できず未確認）。
+本番catalog公開前にG1（複数窓の選択・availability同期）とG2（manifest/digest検証後のReady）を
+実装・検証する。それまでは空catalogを維持する。
+
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
 npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発版への移行であり、

@@ -28,6 +28,53 @@ fn request_with(operation: AppleAssistOperation, text: &str) -> AppleAssistReque
 }
 
 #[test]
+#[cfg(target_os = "macos")]
+fn backend_probe_yields_native_dispatch_while_a_slow_helper_is_pending() {
+    use crate::commands::apple_assist_supervisor::store_with_helper_path;
+    use std::future::Future;
+    use std::sync::Arc;
+    use std::task::{Context, Poll, Wake, Waker};
+    use std::time::Duration;
+    struct TestWake;
+    impl Wake for TestWake {
+        fn wake(self: Arc<Self>) {}
+    }
+
+    let script =
+        std::env::temp_dir().join(format!("hazakura-async-probe-{}.sh", std::process::id()));
+    // Wait for a second stdin line that never arrives; the native watchdog
+    // ends the probe. No external model/runtime or React mock is involved.
+    std::fs::write(
+        &script,
+        "#!/bin/sh\nread -r request\nread -r wait_for_timeout\n",
+    )
+    .unwrap();
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+    let store = Arc::new(
+        store_with_helper_path(script.clone()).with_timeout_override(Duration::from_millis(150)),
+    );
+    let mut probe = Box::pin(probe_local_assist_backend_availability_async(Arc::clone(
+        &store,
+    )));
+    let waker = Waker::from(Arc::new(TestWake));
+    let first_poll = probe.as_mut().poll(&mut Context::from_waker(&waker));
+    assert!(
+        matches!(first_poll, Poll::Pending),
+        "native dispatch must yield, not run the helper inline"
+    );
+    // Read-only native work on the calling thread can continue before the
+    // probe resolves. Window-loop interaction is a separate built-app gate.
+    assert_eq!(
+        store.selected_model_id().unwrap(),
+        "apple:foundation-models:system-default"
+    );
+    let error = tauri::async_runtime::block_on(probe).unwrap_err();
+    assert!(error.contains("timed out"));
+    drop(store);
+    std::fs::remove_file(script).unwrap();
+}
+
+#[test]
 fn apple_assist_probe_rejects_unknown_window_label() {
     let store = store_without_helper();
     let error = probe_apple_assist_availability_with_label("settings", &store).unwrap_err();

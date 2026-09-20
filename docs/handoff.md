@@ -15,9 +15,14 @@ Last reviewed: 2026-09-20
   probeは成功。[記録](reviews/2026-09-20-core-ai-distribution-preflight/README.md)。
   レビューP2追補: 起動選択を一本化し、Developer明示指定を優先・永続化せず、App Storeは無視。
   モデル管理初期化の失敗は`managementError`として設定に表示し通常起動を妨げない。
-  切替保存失敗のruntime不一致と再probe中の旧availabilityも修正。追補のRust 411（2 ignored）、
-  frontend 2,635、surface 128件、`npm run build`とlocal preview probeは成功。
-  次は同一候補の実機受入。CDN等の未完了ゲートは不変。
+  切替保存失敗のruntime不一致と再probe中の旧availabilityも修正。
+  再レビューR1 / R2: probeはworker上で実行し、生成予約・占有中は即時busy。問い合わせと
+  返却model IDを同一snapshotへ固定。通知購読は言語から独立し、最新文言をref経由で読む。
+  「再確認」は会話を保持し、切替・確認中は重複操作と送信を止める。
+  最終Rust 414（2 ignored）、frontend 2,643、surface 128件、build / preview probeは成功。
+  native遅延helperテストは成功、遅延中の実ウィンドウ操作は隔離QAで導線へ到達できず未確認。
+  次はその操作受入。本番catalog公開前にはG1の複数窓同期とG2の検証済みReadyを実装する。
+  両ゲートとCDN等の残項目を閉じるまでcatalogを空に保つ。
 
 ## Current State
 

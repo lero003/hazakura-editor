@@ -231,6 +231,10 @@ export function AppleAssistWindowApp() {
     () => getAppleAssistWindowCopy(menuLanguage),
     [menuLanguage],
   );
+  // Event subscriptions live for the window lifetime. Language changes only
+  // update presentation, never detach the transport for in-flight outcomes.
+  const copyRef = useRef(copy);
+  copyRef.current = copy;
   const [selectedActionId, setSelectedActionId] =
     useState<LocalAssistActionId | null>(null);
   const [requestText, setRequestText] = useState<string>("");
@@ -247,6 +251,7 @@ export function AppleAssistWindowApp() {
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const [modelCatalog, setModelCatalog] = useState<CoreAiModelCatalog>(unavailableCoreAiModelCatalog);
   const [availabilityRefreshKey, setAvailabilityRefreshKey] = useState(0);
+  const [modelSwitching, setModelSwitching] = useState(false);
   const { availability, available, probed } = useAppleAssistAvailability(true, availabilityRefreshKey);
   const { feedback, pushFeedback, clearFeedback } = useOperationFeedback();
   const [sentRequests, setSentRequests] = useState<Array<{ id: string; at: number; text: string }>>([]);
@@ -305,6 +310,7 @@ export function AppleAssistWindowApp() {
   }, []);
 
   const selectModel = useCallback(async (modelId: string) => {
+    setModelSwitching(true);
     setError(null);
     try {
       const catalog = await selectLocalAssistModel(modelId);
@@ -313,8 +319,16 @@ export function AppleAssistWindowApp() {
       setAvailabilityRefreshKey((current) => current + 1);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
+    } finally {
+      setModelSwitching(false);
     }
   }, []);
+
+  const recheckAvailability = () => {
+    if (busy || modelSwitching || !probed) return;
+    availabilityReportedRef.current = false;
+    setAvailabilityRefreshKey((current) => current + 1);
+  };
 
   useEffect(() => {
     activeRequestIdRef.current = activeRequestId;
@@ -331,9 +345,9 @@ export function AppleAssistWindowApp() {
     clearGenerationFallback();
     generationFallbackRef.current = window.setTimeout(() => {
       generationFallbackRef.current = null;
-      setStatus(copy.longRunningStatus);
+      setStatus(copyRef.current.longRunningStatus);
     }, APPLE_ASSIST_GENERATION_FALLBACK_MS);
-  }, [clearGenerationFallback, copy.longRunningStatus]);
+  }, [clearGenerationFallback]);
 
   useEffect(() => {
     if (followChatRef.current) scrollOperationFeedbackToEnd(feedbackSectionRef.current);
@@ -419,6 +433,7 @@ export function AppleAssistWindowApp() {
         if (disposed) {
           return;
         }
+        const copy = copyRef.current;
         const payload = event.payload;
         if (!isApplyStatusForActiveRequest(activeRequestIdRef.current, payload)) {
           return;
@@ -517,7 +532,7 @@ export function AppleAssistWindowApp() {
       .catch((err) => {
         console.warn("Failed to listen for Hazakura Local Assist proposal status", err);
         if (!disposed) {
-          setError(copy.targetReadFailed);
+          setError(copyRef.current.targetReadFailed);
         }
       });
 
@@ -529,7 +544,7 @@ export function AppleAssistWindowApp() {
         unlisten = null;
       }
     };
-  }, [clearGenerationFallback, copy, pushFeedback, scheduleGenerationFallback]);
+  }, [clearGenerationFallback, clearReviewNavigation, pushFeedback, scheduleGenerationFallback]);
 
   // v2.6 B2: the main window owns Apply/Discard and reports the outcome here
   // so the detached window can reset its conversation and show a short status.
@@ -546,6 +561,7 @@ export function AppleAssistWindowApp() {
         if (disposed) {
           return;
         }
+        const copy = copyRef.current;
         const payload = event.payload;
         if (!acceptsReviewOutcome(reviewIdentityRef.current, payload, conversationRef.current?.id,
           conversationRef.current?.pinnedTarget.activeDocumentSessionId, activeRequestIdRef.current)) return;
@@ -583,7 +599,7 @@ export function AppleAssistWindowApp() {
         unlisten = null;
       }
     };
-  }, [copy, pushFeedback]);
+  }, [clearReviewNavigation, pushFeedback]);
 
   // Pull the initial target snapshot on mount and subscribe
   // to live updates from the main window. The cache is
@@ -615,7 +631,7 @@ export function AppleAssistWindowApp() {
       .catch((err) => {
         console.warn("Failed to read initial apple assist target", err);
         if (!disposed) {
-          setError(copy.targetReadFailed);
+          setError(copyRef.current.targetReadFailed);
         }
       });
 
@@ -638,7 +654,7 @@ export function AppleAssistWindowApp() {
       .catch((err) => {
         console.warn("Failed to listen for target changes", err);
         if (!disposed) {
-          setError(copy.targetReadFailed);
+          setError(copyRef.current.targetReadFailed);
         }
       });
 
@@ -652,6 +668,7 @@ export function AppleAssistWindowApp() {
   }, []);
 
   const applyRoughRequest = useCallback(async () => {
+    if (modelSwitching || !probed) return;
     const request = requestText.trim();
     if (request.length === 0) {
       setError(copy.emptyRequestError);
@@ -783,6 +800,8 @@ export function AppleAssistWindowApp() {
     }
   }, [
     available,
+    modelSwitching,
+    probed,
     availabilityMessage,
     clearGenerationFallback,
     copy,
@@ -939,27 +958,31 @@ export function AppleAssistWindowApp() {
       <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
         <div className="apple-assist-presets-list" role="group" aria-label={copy.presetsLabel}>{copy.presets.map((preset) =>
             <button key={preset.actionId} type="button" className="apple-assist-preset" aria-pressed={selectedActionId === preset.actionId && requestText === preset.requestText}
-              onClick={() => onPickPreset(preset)} disabled={busy || !available}>{preset.label}</button>
+              onClick={() => onPickPreset(preset)} disabled={busy || modelSwitching || !available}>{preset.label}</button>
         )}</div>
         <div className="apple-assist-composer">
           <label htmlFor="apple-assist-rough-request" className="apple-assist-window-label">{ui.composer}</label>
           {/* 外部レビュー R8: 使えない理由と復帰方法を畳んだヘルプの中だけに置かない。
               今の状態と必要な操作を composer の直前へ1行で出し、無効な入力欄と結びつける。
               詳細（但し書き・利用条件）はヘルプに残す。 */}
-          {available ? null : (
+          <div className="apple-assist-availability-row">
+          {available && !modelSwitching ? null : (
             <p
               className="apple-assist-state-note"
               id="apple-assist-availability"
               role="status"
             >
-              {!probed ? ui.checking : availability.kind === "disabled" ? ui.disabled : availability.kind === "unsupported" ? ui.unsupported : ui.unavailable}
+              {modelSwitching ? ui.switching : !probed ? ui.checking : availability.kind === "disabled" ? ui.disabled : availability.kind === "unsupported" ? ui.unsupported : ui.unavailable}
             </p>
           )}
+            <button type="button" className="apple-assist-recheck"
+              disabled={busy || modelSwitching || !probed} onClick={recheckAvailability}>{ui.recheck}</button>
+          </div>
           <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
             lang={DOCUMENT_CONTENT_LANG}
             aria-describedby={available ? undefined : "apple-assist-availability"}
             value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
-            rows={3} placeholder={copy.placeholder} disabled={busy || !available}
+            rows={3} placeholder={copy.placeholder} disabled={busy || modelSwitching || !available}
             onKeyDown={(event) => {
               if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !event.nativeEvent.isComposing && event.keyCode !== 229) {
                 event.preventDefault(); if (!busy) void applyRoughRequest();
@@ -967,12 +990,12 @@ export function AppleAssistWindowApp() {
             }} />
           <div className="apple-assist-window-actions">
             <AssistModelPicker language={menuLanguage}
-              disabled={busy || Boolean(modelCatalog.managementError) || Boolean(modelCatalog.selectionLocked)}
+              disabled={busy || modelSwitching || !probed || Boolean(modelCatalog.managementError) || Boolean(modelCatalog.selectionLocked)}
               modelId={availability.modelId ?? modelCatalog.selectedModelId}
               models={modelCatalog.models} onSelect={selectModel} />
             <button type="button" className="apple-assist-window-apply"
               onClick={() => { if (busy) void cancelGeneration(); else void applyRoughRequest(); }}
-              disabled={busy ? cancelling : !available || requestText.trim().length === 0}>
+              disabled={busy ? cancelling : modelSwitching || !available || requestText.trim().length === 0}>
               {busy ? (cancelling ? copy.cancellingStatus : copy.cancelButton) : copy.applyButton}</button>
           </div>
         </div>

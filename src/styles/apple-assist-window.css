@@ -739,6 +739,21 @@
 .apple-assist-window-textarea:disabled { opacity: 1; }
 .apple-assist-window-textarea::placeholder { color: var(--text-muted); opacity: 1; }
 .apple-assist-window-actions { position: relative; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+.apple-assist-availability-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.apple-assist-recheck {
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.apple-assist-recheck:hover:not(:disabled) { background: var(--bg-elev-hover); }
+.apple-assist-recheck:disabled { opacity: .5; cursor: not-allowed; }
 .apple-assist-window-shell .apple-assist-window-apply { min-height: 36px; min-width: 6rem; border-radius: 8px; color: var(--surface, var(--bg)); padding: 6px 12px; }
 .apple-assist-state-note {
   margin: 0;

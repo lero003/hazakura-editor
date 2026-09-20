@@ -57,6 +57,41 @@ Apple Intelligenceだけを選べる。モデルweightsやDeveloper Qwen fixture
   実利用者の保存先や権限は変更していない。実機での障害起動・Core AI生成・IME・VoiceOver、
   TestFlight/CDNはこの追補では未確認。初回のSwift単体21件は今回の再実行結果ではない。
 
+## 再レビューR1 / R2追補（2026-09-20）
+
+- R1: System専用・backend対応の両probe commandをasync化し、helper I/Oを
+  `spawn_blocking`へ移した。生成予約・helper占有中は即座にbusyを返し、失敗回数を増やさない。
+  問い合わせbackendと返却model IDは、切替と同じ排他区間で取得したsnapshotを使う。
+- R2: Proposal / Apply通知の購読を表示言語から独立させ、最新文言をrefから読む。
+  言語変更で購読や生成タイマーを解除せず、完了・失敗・キャンセルを受け取り続ける。
+- 復帰導線: 独立した「再確認」を追加。入力・会話・提案は保持する。
+  モデル切替中・利用可否確認中を表示し、その間の送信・再確認・重複切替を無効化する。
+- red→green: nativeの生成占有・予約中probe、非同期登録を遅延可能にしたUIの
+  生成3結果・Apply3結果と言語切替、再確認の入力保持を確認した。
+- 最終確認: Rust全414 passed / 2 ignored（single-thread）、frontend全295 files /
+  2,643 tests、App Store surface 128件、typecheck、Rust format、diff check、
+  `npm run build`、`probe:macos-distribution`成功。previewはad-hocであり、
+  App Store sandbox署名・公証の合格を意味しない。
+- nativeテストでは遅延する実helperプロセスを使い、async dispatchのPending返却、
+  生成中probeの即時拒否、生成ロック中の停止を確認。browser fixtureでは利用不可→
+  再確認中→利用可能、入力保持、狭い幅での表示を確認した。
+- 別identifierの隔離QA appも起動したが、Local Assist起動メニューが無効な状態で
+  遅延probe中の実ウィンドウ操作へ到達できなかった。この操作受入は未確認。
+  通常のpreview bundleはQA helperへ置換していない。今回、実モデル生成・IME・
+  VoiceOver・TestFlight・CDN取得を再確認したとは扱わない。
+
+### 本番catalog公開前の必須ゲート（未実装）
+
+- **G1 — 複数窓同期:** 保存・runtime切替成功後だけnativeのモデル状態変更イベントを発行し、
+  設定とLocal Assistの両方がcatalog・availabilityを更新する。古い応答は世代で破棄する。
+  双方向切替、保存失敗時の無通知、再確認完了前の送信禁止を回帰テストで固定する。
+- **G2 — 検証済みReady:** 現状のdirectory存在判定を配布可能判定として使わない。
+  stagingへ取得・展開し、必要resource・size・digestを検証してから完成状態へ切り替える。
+  空folder・途中展開・必須file欠損・digest不一致・前回中断の残骸を選択／復元不可にする。
+
+両ゲートを閉じるまで本番catalogは空を維持する。今回の修正はR1 / R2と復帰導線であり、
+モデル配布基盤全体の完成ではない。
+
 ## 未完了
 
 - 本番model identity、権利/provenance、品質bake-off
