@@ -62,7 +62,7 @@ it.each(["generation-first", "stop-first"])("keeps both windows locked until gen
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stop generating" })); });
   expect(h.emit.mock.calls.some(([, event]) => event.phase === "cancelling")).toBe(true);
   expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
-  expect(screen.getByRole("button", { name: "Sending..." }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "Stopping…" }).hasAttribute("disabled")).toBe(true);
   expect(h.stop).toHaveBeenCalledWith(payload.requestId);
   await act(async () => {
     h.listeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...payload, phase: "partial", partialText: "LATE PARTIAL" } });
@@ -72,6 +72,7 @@ it.each(["generation-first", "stop-first"])("keeps both windows locked until gen
   expect(screen.queryByText("LATE PARTIAL")).toBeNull();
   expect(isLocalAssistBusy()).toBe(true);
   expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "Stopping…" }).hasAttribute("disabled")).toBe(true);
   expect(h.emit.mock.calls.some(([, event]) => event.phase === "cancelled")).toBe(false);
   await act(async () => {
     if (order === "generation-first") finishStop(true);

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-18 (3.0.3 device-accepted; owner submitting)
+Last reviewed: 2026-09-20 (3.1.0 development version; no candidate yet)
 
 ## Purpose
 
@@ -45,11 +45,14 @@ Agent Workbench behind its existing boundary.
   version 3.0.0). Exact released-build provenance, build number, and rollout
   coverage remain unverified here. See `docs/releases/3.0.0-source-tag.release.md`.
   Prior published line: `2.9.0` (owner-reported 2026-09-09).
-- Current source / Developer version: `3.0.3`. Submission copy for this
-  patch is in `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted
-  by the owner, who is submitting it 2026-09-18; the signed local package is build 140,
-  and `latest.json` below was not refreshed for this candidate); release evidence is in
-  `docs/releases/3.0.0-source-tag.release.md`. System-only boundaries remain in
+- Current source / Developer version: `3.1.0`. Its draft submission copy is in
+  `docs/releases/3.1.0-app-store-release-notes.md`. This development version has no
+  signed candidate, TestFlight submission, App Store submission, or publication record.
+  Production Core AI distribution/selection and international-release acceptance remain incomplete.
+  The prior `3.0.3` submission copy remains in
+  `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted by the owner,
+  who reported submitting it 2026-09-18; signed local package build 140, while
+  `latest.json` was not refreshed). System-only boundaries remain in
   `docs/v2.9-v3-local-assist-plan.md`.
   Earlier v2.7 packages remain historical candidates, not an active submission queue.
   GitHub source tag: `v3.0.0` (source-only repository checkpoint, created 2026-09-14;

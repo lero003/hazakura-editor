@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-20
 
 ## Current Position
 
@@ -15,9 +15,9 @@ v3.1は、検証済みCore AIモデルをLocal Assistから実際に利用でき
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |
-| ソース版 | 3.0.3（編集面のスクロールバー不具合修正）。作業ブランチ`codex/v3`でUI-G1〜G4（状態表示・Help、設定レール/現在地、紙面/ナビ面トークン、開始画面2ペイン）と段階2（モック配色・chrome面トークン）・第二調整（罫線の階層とfocus/native契約の検査）・設定外枠・狭幅23、続いてモック起点の再点検（江戸彼岸の明色化・スライスC/D/E・07本文面化・11形式ナビ）とレビュー修正（R1〜R5・P1/P2）を実装し、v3.0.0として公開。3.0.1・3.0.2・3.0.3は`main`上で不具合修正として積み、旧`codex/v3`ブランチは削除した。 |
+| ソース版 | 3.1.0。開発版としてI-0の言語境界・英語復旧面とLocal Assist表示整理を実装済み。Core AI本番接続、海外ストア設定、署名候補の実機受入は未完了で、まだリリース候補ではない。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | v3.1 I-0の技術棚卸しと検出した小修正。Connect上の地域・価格・契約と署名候補の英語受け入れは未完了。閉じるまでbundle言語宣言とI-1は保留。C-1本番はidentity等のゲート待ち — `docs/current-work.md` |
+| 現行キュー | v3.1.0開発版へ版面を移行し、リリースノート草案を開始。Connect上の地域・価格・契約と署名候補の英語受け入れは未完了。閉じるまでbundle言語宣言とI-1は保留。C-1本番はidentity等のゲート待ち — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 

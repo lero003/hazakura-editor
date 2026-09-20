@@ -3,19 +3,27 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-18
+Last reviewed: 2026-09-20
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Current release-preparation tree: `3.0.3`; `3.0.3-app-store-release-notes.md`.
-Earlier tree: `2.8.0` (`2.8.0-source-tag.release.md`,
+Current development release-preparation tree: `3.1.0`;
+`3.1.0-app-store-release-notes.md`. It is a working draft, not a signed candidate.
+Older source-planning tree: `2.8.0` (`2.8.0-source-tag.release.md`,
 `2.8.0-app-store-release-notes.md`, plan `../v2.8-plan.md`).
 
 Latest GitHub source / local-app tag:
 
-- `v2.3.0` — `2.3.0-source-tag.release.md` (no binary assets; prior `v2.0.0` immutable)
+- `v3.0.0` — `3.0.0-source-tag.release.md` (source-only repository checkpoint;
+  no binary assets; prior `v2.3.0` and `v2.0.0` remain immutable)
 
-Current App Store submission candidate:
+Current development draft:
+
+- `3.1.0` — `3.1.0-app-store-release-notes.md` (Local Assist surface polish and
+  language/recovery improvements are implemented; production Core AI distribution/selection,
+  international rollout gates, signed-candidate acceptance, and final copy remain open)
+
+Prior App Store submission candidate:
 
 - `3.0.3` — `3.0.3-app-store-release-notes.md` (bug-fix patch on the 3.0 line:
   the editor's right-edge scrollbar drag no longer loses the gesture to the

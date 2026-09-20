@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-20
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,19 +26,22 @@ Last reviewed: 2026-09-19
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current source version is `3.0.3`. Local Assist opens in a separate native
+Current source version is `3.1.0`. It is an in-progress development version,
+not yet a signed or published
+release candidate. Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. The model picker currently shows Apple Intelligence as its only option.
 Additional model download/switching and MLX runtime are not implemented.
 
 The `3.0.0` release refreshes the UI/UX across the app (reader spread layout,
 a unified EPUB / PDF / HTML export dialog, daily-flow continuity) and organizes
-the Local Assist architecture around the on-device System backend. Next:
-**v3.1 is planned around two coordinated tracks: using curated on-device
+the Local Assist architecture around the on-device System backend. Development
+of **v3.1** is now underway across two coordinated tracks: using curated on-device
 Core AI models through Local Assist, and an international App Store rollout
-beginning with English product and storefront localization.**
+beginning with English product and storefront localization.
 See the [roadmap](docs/roadmap.md), [v3 product plan](docs/v3-product-completion-plan.md), and
-[Local Assist plan](docs/v2.9-v3-local-assist-plan.md). These are planned milestones.
+[Local Assist plan](docs/v2.9-v3-local-assist-plan.md). Production Core AI distribution and selection,
+signed-candidate acceptance, and App Store rollout remain incomplete milestones.
 
 ## Mac App Store
 
@@ -311,9 +314,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `3.0.3` across npm, Tauri, and Cargo metadata. Mac App Store `3.0.0` publication is owner-reported on 2026-09-14 (the listing shows version 3.0.0), and the `3.0.1` follow-up was owner-reported as submitted; exact released-build provenance for either remains separate. The latest published GitHub source / local-app tag is [v3.0.0](https://github.com/lero003/hazakura-editor/tree/v3.0.0) (source-only tag, no binary assets). Prior checkpoints: [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0), [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `3.1.0` across npm, Tauri, and Cargo metadata. This is an in-progress development version, not a signed or published candidate. Mac App Store `3.0.0` publication is owner-reported on 2026-09-14 (the listing shows version 3.0.0), and the `3.0.1` follow-up was owner-reported as submitted; exact released-build provenance for either remains separate. The latest published GitHub source / local-app tag is [v3.0.0](https://github.com/lero003/hazakura-editor/tree/v3.0.0) (source-only tag, no binary assets). Prior checkpoints: [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0), [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `3.0.0` (2026-09-14; rollout coverage unverified). Prior store baseline `2.9.0` remains historical. Do not reopen a published store lane without a reproduced hotfix.
-- Release notes: [3.0.3 App Store submission copy](docs/releases/3.0.3-app-store-release-notes.md), [3.0.2 App Store submission copy](docs/releases/3.0.2-app-store-release-notes.md), [3.0.1 App Store submission copy](docs/releases/3.0.1-app-store-release-notes.md), [3.0.0 release record](docs/releases/3.0.0-source-tag.release.md), [3.0.0 App Store notes](docs/releases/3.0.0-app-store-release-notes.md), [2.7.0 source note](docs/releases/2.7.0-source-tag.release.md), [2.7.0 App Store candidate notes](docs/releases/2.7.0-app-store-release-notes.md), [2.6.2 source note](docs/releases/2.6.2-source-tag.release.md), [2.6.2 App Store What's New](docs/releases/2.6.2-app-store-release-notes.md), [2.6.1 local candidate](docs/releases/2.6.1-source-tag.release.md), [2.6.0 source candidate](docs/releases/2.6.0-source-tag.release.md), [2.4.0 published App Store notes](docs/releases/2.4.0-app-store-release-notes.md), [2.3.0 published App Store notes](docs/releases/2.3.0-app-store-release-notes.md), [2.3.0 source tag](docs/releases/2.3.0-source-tag.release.md), and [2.0.0 source tag](docs/releases/2.0.0-source-tag.release.md).
+- Release notes: [3.1.0 App Store draft](docs/releases/3.1.0-app-store-release-notes.md), [3.0.3 App Store submission copy](docs/releases/3.0.3-app-store-release-notes.md), [3.0.2 App Store submission copy](docs/releases/3.0.2-app-store-release-notes.md), [3.0.1 App Store submission copy](docs/releases/3.0.1-app-store-release-notes.md), [3.0.0 release record](docs/releases/3.0.0-source-tag.release.md), and [3.0.0 App Store notes](docs/releases/3.0.0-app-store-release-notes.md). Older records remain under [docs/releases](docs/releases/README.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

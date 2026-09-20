@@ -5,6 +5,21 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-20
 
+## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
+
+npm / Tauri / Cargo / lockfileの版を `3.1.0` へ揃えた。これは開発版への移行であり、
+署名済み候補、TestFlight提出、App Store申請、GitHubタグ、公開を意味しない。
+[3.1.0 App Storeリリースノート草案](releases/3.1.0-app-store-release-notes.md)には、
+現時点で実装済みのLocal Assist表示整理と言語・復旧面の改善だけを掲載候補として記載した。
+
+Core AIはDeveloper専用の固定Qwen fixtureを既存Local Assistへ接続し、Phase 1の
+Proposal / Diff / 明示Apply / Undo / CancelとSystem復帰まで実機確認した。本番C-1の
+配布・digest検証・削除、通常利用者向け選択、本番モデルidentity、品質採用は未実装。
+海外App StoreもConnect設定・公開Web・署名候補の英語受け入れが未完了で、これらは
+実装・受入後に草案へ追記する。
+`src-tauri/tauri.conf.appstore.json` のbundleVersion変更は本作業と並行する既存変更として保持し、
+署名候補を作るまで3.1.0のbuild証跡には採用しない。
+
 ## Core AI Phase 1 — 固定Qwen fixture配管（2026-09-20）
 
 `HAZAKURA_LOCAL_ASSIST_TEST_BACKEND=core_ai_test` をRust/native側だけで解釈し、固定の

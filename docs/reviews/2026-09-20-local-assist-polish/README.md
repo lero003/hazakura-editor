@@ -90,3 +90,25 @@ native WKWebView、実モデルの生成、VoiceOver、日本語IME、署名候�
 ボタンの位置・サイズが一致し、停止後に再依頼可能な表示へ戻ることを確認した。
 回帰テストを先に失敗させ、同一要素での切替・取消中の無効化・request id・依頼保持を固定。
 変更後のtypecheck、関連5 files / 143 tests、Vite build、diff checkはpass。
+
+## P2-01: 取消統合テストの追従（2026-09-20）
+
+レビュー対象と同じ `7c2b5f1e3a7adf3fb729ebd76077ab538faf8365` で、
+`AppleAssistCancellation.integration.test.tsx` の2ケースが旧ラベル `Sending...` を探して
+失敗することをローカル再現した。送信・停止統合後の関連143テストにはこの統合テストが
+含まれていなかった。期待値を `Stopping…` へ更新し、生成／停止の片方だけが完了した
+中間状態でも同ボタンが無効である検査を追加。本体コードの変更はない。
+
+`generation-first` / `stop-first` の両方で、両処理が完了するまでのロック維持、
+取消完了後の解除、遅いpartial/finalの不採用、次の依頼成功まで通過した。
+
+修正後にローカルでCI frontend相当を最後まで実行:
+
+- `npm run typecheck`: pass
+- `npm test`: 294 files / 2,620 tests pass（取消統合2ケースを含む）
+- `npm run build:vite`: pass（既存の500kB超chunk警告あり）
+- `npm run smoke:app-store-surface`: 10 files / 125 tests pass
+- `node --test scripts/local-assist-evaluation-checks.test.mjs`: 4 tests pass
+- `git diff --check`: pass
+
+GitHub CIの再実行・push、nativeジョブ、実機・VoiceOver・日本語IMEの受け入れは今回未実施。

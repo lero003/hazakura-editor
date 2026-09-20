@@ -7,6 +7,12 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **3.1.0開発版へ移行（2026-09-20）:** npm / Tauri / Cargo / lockfileの版を
+  `3.1.0`へ揃え、[App Storeリリースノート草案](releases/3.1.0-app-store-release-notes.md)を開始。
+  現時点では署名済み候補・TestFlight・申請・タグ・公開のいずれでもない。Core AIは
+  Developer固定fixtureのPhase 1配管のみ完了し、本番C-1/C-2と海外展開の残ゲートは未完了。
+  並行するApp Store bundleVersion変更は候補証跡として扱わない。
+
 - **Core AI Phase 1（2026-09-20）:** 固定Qwen3-0.6BをRust-owned `core_ai_test` で選び、
   既存Local Assistのstream / Proposal / Diff / 明示Apply / Undo / Cancelへ接続した。
   専用QA appでCore AIとSystemへの復帰を実機確認し、Proposalは実際の`modelId`を保持・表示する。

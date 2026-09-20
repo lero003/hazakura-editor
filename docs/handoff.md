@@ -7,6 +7,11 @@ Last reviewed: 2026-09-20
 
 ## Current State
 
+- **3.1.0開発版へ移行（2026-09-20）:** npm / Tauri / Cargo / lockfileの版面を更新し、
+  [App Storeリリースノート草案](releases/3.1.0-app-store-release-notes.md)を開始した。
+  まだ署名候補・TestFlight・申請・タグ・公開ではない。Core AI本番接続、Connect設定、
+  公開Web、英語UIの署名候補受入後に掲載文を確定する。並行するbundleVersion変更は候補証跡にしない。
+
 - **Core AI Phase 1（2026-09-20）:** Developer専用の固定Qwen3-0.6BをCore AIでロードし、
   既存Local Assistのstream / Proposal / Diff / 明示Apply / Undo / Cancelへ接続した。
   backendと固定pathの正本はRust。frontendへ任意path / URL / importは露出せず、失敗時のSystem fallbackもない。
