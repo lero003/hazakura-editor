@@ -39,6 +39,8 @@ export const ASSIST_SURFACE_PREFERENCE_STORAGE_KEY =
 
 export const APP_MENU_ACTION_EVENT = "hazakura-note://menu-action";
 export const MENU_LOCAL_DATA_DISCLOSURE = "local-data-disclosure";
+/** Opens the on-device model page directly, independently of the Settings page. */
+export const MENU_ON_DEVICE_MODELS = "on-device-models";
 export const MENU_OPEN_SUPPORT_DIAGNOSTICS = "open-support-diagnostics";
 export const MENU_PRIVACY_POLICY = "privacy-policy";
 export const MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS =

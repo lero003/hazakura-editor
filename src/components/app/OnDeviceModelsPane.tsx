@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { PreferencesCopy } from "../../lib/locale";
 import type { MenuLanguage } from "../../types";
 import { CoreAiGenerationProfile } from "./CoreAiGenerationProfile";
@@ -18,9 +19,19 @@ export function OnDeviceModelsPane({
   copy: PreferencesCopy;
   language: MenuLanguage;
 }) {
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
+
+  // 設定本文の入口から来ると、押したボタンごと前のページが消えるのでフォーカスが落ちる。
+  // ヘッダーの選択で来た場合は選択にフォーカスが残っているので、そこから奪わない。
+  useEffect(() => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.closest(".preferences-header")) return;
+    headingRef.current?.focus();
+  }, []);
+
   return <div className="preferences-sections settings-preferences models-preferences">
     <section className="preference-section" aria-label={copy.onDeviceModels}>
-      <h3>{copy.onDeviceModels}</h3>
+      <h3 ref={headingRef} tabIndex={-1}>{copy.onDeviceModels}</h3>
       <p className="field-hint">{copy.onDeviceModelsStorage}</p>
       <CoreAiModelManager label={copy.onDeviceModels} language={language} />
       <CoreAiGenerationProfile language={language} />

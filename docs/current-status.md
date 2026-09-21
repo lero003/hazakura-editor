@@ -7,6 +7,18 @@ Last reviewed: 2026-09-21
 
 ## Current State
 
+- **外部レビュー追補（2026-09-21）:** モデルページのP2 2件を閉じた。ページ切替後は
+  見出しへフォーカスを移し（ヘッダーの選択から来たときは選択を維持）、生成設定は
+  「購読 → スナップショット」の順にして、取得中に通知が届いたら取得結果を採用しない。
+  あわせて`MENU_ON_DEVICE_MODELS`を追加し、システムメニューから設定本文を経由せず
+  モデルページを直接開けるようにした。Rust 424件（2 ignored）、frontend 297 files /
+  2,659件、project script 24件、surface 130件、型検査、Vite build、App Store previewの
+  `npm run build`は成功。両修正とも外すと新規テストが落ちることを確認済み。
+  **CIはこのブランチでは走らない**（`quality.yml`は`pull_request`と`main` pushのみ）ため、
+  マージ前はPR起動かmain取り込みでquality / nativeを動かす。built appのメニュー実表示・
+  フォーカス、VoiceOver、最大Dynamic Typeは未実施。
+  [証跡](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 - **オンデバイスモデルの独立ページ（2026-09-21）:** モデル管理をPreferencesダイアログの
   独立ページ（`models`）へ移した。モデル一覧（状態・サイズ・資産バージョン・開始/進捗/
   再開/取消/削除/選択）、保存先が選べないことの説明、生成設定（直近の実行）、扱えるモデルの

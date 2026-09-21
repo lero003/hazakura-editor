@@ -225,6 +225,29 @@ fn file_menu_exposes_epub_beta_export_action() {
 }
 
 #[test]
+fn app_menu_exposes_the_on_device_model_page() {
+    let source = include_str!("../menu.rs");
+
+    assert_eq!(MENU_ON_DEVICE_MODELS, "on-device-models");
+    assert!(source.contains("MENU_ON_DEVICE_MODELS"));
+    assert!(source.contains("On-device models..."));
+    assert!(source.contains("オンデバイスモデル..."));
+    // かなが表示言語のときも読める（未対応だと日本語ラベルへ落ちる）。
+    assert!(source.contains("おんでばいますもでる..."));
+}
+
+#[test]
+fn app_menu_event_allows_the_on_device_model_page() {
+    let source = include_str!("../menu.rs");
+    let emit_match = source
+        .split("matches!(")
+        .find(|section| section.contains("MENU_PREFERENCES"))
+        .expect("find menu action allowlist");
+
+    assert!(emit_match.contains("MENU_ON_DEVICE_MODELS"));
+}
+
+#[test]
 fn app_menu_event_allows_epub_beta_export_action() {
     let source = include_str!("../menu.rs");
     let emit_match = source

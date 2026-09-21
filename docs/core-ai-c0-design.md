@@ -1115,7 +1115,7 @@ helpDocs は現状 **en のみ**（`local-data-disclosure.md` / `privacy-policy.
 |---|---|---|
 | System availability kind | 現行 `probe_apple_assist_availability`（四態凍結） | U-4 まで。C-2 では選択中 backend |
 | selected-backend availability | C-2 `probe_local_assist_backend_availability` | companion composer の enable |
-| installed / selected Core AI | `list_core_ai_models`（別 IPC） | Preferences。companion は表示名だけ |
+| installed / selected Core AI | `list_core_ai_models`（別 IPC） | Preferences のオンデバイスモデルページ。設定本文とシステムメニューの両方から開ける。companion は表示名だけ |
 | modelId | helper 応答 | 表示名だけ。生 id は status の詳細に出さない |
 | latencyMs | 既存応答 | 出さない（将来の内部ログのみ、Diagnostics 禁止） |
 | download progress bytes | Rust イベント | はい（サイズと%） |

@@ -5,6 +5,29 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-21
 
+## 外部レビュー追補 — 遷移フォーカス・購読競合・メニュー入口（2026-09-21）
+
+外部レビューの P2 2件を閉じ、同時に「設定から独立したシステムメニューの入口」を足した
+（P1 は指摘なし。独立ページ化と値の出所は不変）。
+
+- **P2-01（遷移フォーカス）:** 設定本文の入口は切替でボタンごと消えるため、
+  フォーカスが `body` へ落ちていた。`OnDeviceModelsPane` の見出しを `tabIndex={-1}` の
+  受け皿にし、ヘッダー外から来たときだけ見出しへ移す。ヘッダーの選択で来たときは
+  選択にフォーカスを残す。
+- **P2-02（購読競合）:** `CoreAiGenerationProfile` を「購読 → スナップショット」の順に変え、
+  取得中に通知が届いたら取得結果を採用しない（`generation` で判定）。通知の取り逃しと
+  古い値の巻き戻しの両方を回帰テストで固定した。
+- **システムメニュー:** `MENU_ON_DEVICE_MODELS`（`on-device-models`）を追加。macOS は
+  アプリメニューの「設定...」の隣、他 OS は File の隣。設定本文を経由せずモデルページを
+  直接開く。lane 制限なし、かなラベルも追加。
+
+検証は Rust 424件（2 ignored）、frontend 297 files / 2,659件、project script 24件、
+App Store surface 130件、型検査、Vite build、App Store preview レーンの `npm run build`。
+両修正とも、外すと新規テストが落ちることを確認済み（red → green）。
+**CI はこのブランチでは走らない**（`quality.yml` は `pull_request` と `main` push のみ）。
+built app でのメニュー実表示・フォーカス、VoiceOver、最大 Dynamic Type は未実施。
+証跡は [外部レビュー追補](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 ## オンデバイスモデルを独立ページにする（2026-09-21）
 
 モデル管理を Preferences 内の1ペインから独立ページ（`models` モード）へ移した。

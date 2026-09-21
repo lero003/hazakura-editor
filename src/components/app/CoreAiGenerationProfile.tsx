@@ -20,16 +20,35 @@ export function CoreAiGenerationProfile({ language }: { language: MenuLanguage }
   useEffect(() => {
     let disposed = false;
     let unlisten: (() => void) | undefined;
-    // This block is diagnostic: a failed read or subscription leaves the
-    // honest empty state instead of blocking the rest of Preferences.
-    void getLocalAssistGenerationProfile()
-      .then((next) => { if (!disposed) setProfile(next); })
-      .catch(() => undefined);
-    void listenLocalAssistGenerationProfileChanges((next) => {
-      if (!disposed) setProfile(next);
-    }).then((stop) => {
-      if (disposed) stop(); else unlisten = stop;
-    }).catch(() => undefined);
+    // 通知は「購読してから読む」。逆順だと、購読が終わる前の更新を取り逃し、
+    // 古いスナップショットが残る。`generation` は通知が届いたことを数え、
+    // 保留中だった取得結果が後から上書きするのを防ぐ。
+    let generation = 0;
+    // この面は診断用。読めなくても Preferences の残りを止めず、空状態のままにする。
+    void (async () => {
+      let stop: (() => void) | undefined;
+      try {
+        stop = await listenLocalAssistGenerationProfileChanges((next) => {
+          generation += 1;
+          if (!disposed) setProfile(next);
+        });
+      } catch {
+        // 購読できない場合は、下のスナップショットだけでも表示する。
+      }
+      if (disposed) {
+        stop?.();
+        return;
+      }
+      unlisten = stop;
+      const observedGeneration = generation;
+      try {
+        const next = await getLocalAssistGenerationProfile();
+        // 取得中に通知が来ていれば、その通知の方が新しい。
+        if (!disposed && generation === observedGeneration) setProfile(next);
+      } catch {
+        // 取得できなければ空状態のまま。
+      }
+    })();
     return () => { disposed = true; unlisten?.(); };
   }, []);
 

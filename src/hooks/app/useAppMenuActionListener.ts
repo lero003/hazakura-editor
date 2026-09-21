@@ -9,6 +9,7 @@ import {
   MENU_EXPORT_EPUB_BETA,
   MENU_LOCAL_DATA_DISCLOSURE,
   MENU_IMPORT_PDF_IMAGE,
+  MENU_ON_DEVICE_MODELS,
   MENU_OKF_SCAFFOLD_BOOK_LIKE,
   MENU_OKF_SCAFFOLD_MINIMAL,
   MENU_OPEN_REFERENCE,
@@ -210,6 +211,9 @@ export function useAppMenuActionListener({
           break;
         case "preferences":
           setPreferencesDialogMode("settings");
+          break;
+        case MENU_ON_DEVICE_MODELS:
+          setPreferencesDialogMode("models");
           break;
         case "agent-workbench":
           setPreferencesDialogMode("agent");

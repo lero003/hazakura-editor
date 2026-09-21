@@ -122,6 +122,15 @@ describe("useAppMenuActionListener", () => {
     );
   });
 
+  it("routes the on-device models menu action straight to its own page", () => {
+    // システムメニューからは設定本文を経由せず、モデルページを直接開く。
+    const { setPreferencesDialogMode } = setup();
+
+    void menuListeners[0]?.({ payload: "on-device-models" } as never);
+
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith("models");
+  });
+
   it("routes the CRT theme menu action to setThemePreference", () => {
     const { setThemePreference } = setup();
 

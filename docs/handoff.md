@@ -5,6 +5,18 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-21
 
+- **外部レビュー追補（2026-09-21）:** モデルページの P2 2件を閉じた。遷移後の
+  フォーカスは見出しへ移し（ヘッダー選択から来たときは選択を維持）、生成設定は
+  「購読 → スナップショット」にして取得中に通知が来たら取得結果を捨てる。
+  あわせて `MENU_ON_DEVICE_MODELS` を追加し、**システムメニューから設定本文を経由せず
+  モデルページを直接開ける**ようにした（macOS はアプリメニュー、他 OS は File）。
+  Rust 424件（2 ignored）、frontend 297 files / 2,659件、project script 24件、
+  surface 130件、型検査、Vite build、App Store preview の `npm run build` は成功。
+  両修正とも外すと新規テストが落ちることを確認（red → green）。
+  **CI はこのブランチでは走らない**（`quality.yml` は PR と `main` push のみ）。
+  built app のメニュー実表示・フォーカス、VoiceOver、最大 Dynamic Type は未実施。
+  [証跡](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 - **オンデバイスモデルを独立ページにする（2026-09-21）:** Preferences ダイアログに
   `models` ページを追加し、モデル一覧（状態・サイズ・資産バージョン・開始/進捗/再開/取消/
   削除/選択）、保存先の説明、生成設定（直近の実行）、境界の説明を1ページへまとめた。

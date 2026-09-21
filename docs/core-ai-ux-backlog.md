@@ -24,6 +24,8 @@ activation gate と `docs/assist-surface-strategy.md` の境界を先に確認�
 ダウンロード（開始 / 進捗 / 再開 / 取消）、保存先の説明、削除、サイズ、バージョン、
 選択中モデルの切替（System 含む）と削除時の System 退避、生成設定（直近の実行）を1ページに置く。
 設定本文には入口だけを残し、**自動ダウンロードや起動時スキャンは足していない**。
+**設定から独立したシステムメニューの入口**（macOS はアプリメニュー、他 OS は File）から
+設定本文を経由せず直接開ける。
 [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
 
 残り: ライセンス表示（notice / Apache-2.0、12B は upstream conversion license）と

@@ -162,6 +162,14 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             #[cfg(not(target_os = "macos"))]
             &MenuItem::with_id(
                 app,
+                MENU_ON_DEVICE_MODELS,
+                label("On-device models...", "オンデバイスモデル..."),
+                true,
+                None::<&str>,
+            )?,
+            #[cfg(not(target_os = "macos"))]
+            &MenuItem::with_id(
+                app,
                 MENU_AGENT_WORKBENCH,
                 label("Assist Surface...", "アシスト設定..."),
                 true,
@@ -480,6 +488,15 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             true,
             Some("CmdOrCtrl+,"),
         )?;
+        // The model page is its own entry: the user asked for a link that is
+        // separate from Settings, and the page is allowed in every lane.
+        let on_device_models_item = MenuItem::with_id(
+            app,
+            MENU_ON_DEVICE_MODELS,
+            label("On-device models...", "オンデバイスモデル..."),
+            true,
+            None::<&str>,
+        )?;
         let assist_surface_item = MenuItem::with_id(
             app,
             MENU_AGENT_WORKBENCH,
@@ -505,8 +522,12 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             Some("CmdOrCtrl+Q"),
         )?;
 
-        let mut app_menu_items: Vec<&dyn IsMenuItem<R>> =
-            vec![&about_item, &separator_after_about, &preferences_item];
+        let mut app_menu_items: Vec<&dyn IsMenuItem<R>> = vec![
+            &about_item,
+            &separator_after_about,
+            &preferences_item,
+            &on_device_models_item,
+        ];
         if assist_surface_settings_allowed {
             app_menu_items.push(&assist_surface_item);
         }
@@ -584,6 +605,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "最近使った項目はありません" => "このごろのものなし",
         "最近使ったフォルダ" => "このごろのところ",
         "設定..." => "おこのみ...",
+        "オンデバイスモデル..." => "おんでばいますもでる...",
         "アシスト設定..." => "あしすとのせってい...",
         "保存" => "たくはふ",
         "別名で保存..." => "なをかへてたくはふ...",
@@ -730,6 +752,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_CRT
                 | MENU_THEME_SHINKAI
                 | MENU_PREFERENCES
+                | MENU_ON_DEVICE_MODELS
                 | MENU_AGENT_WORKBENCH
                 | MENU_LOCAL_DATA_DISCLOSURE
                 | MENU_OPEN_SUPPORT_DIAGNOSTICS

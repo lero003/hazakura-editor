@@ -155,6 +155,8 @@ pub(crate) const MENU_THEME_SHOKOU: &str = "theme-shokou";
 pub(crate) const MENU_THEME_CRT: &str = "theme-crt";
 pub(crate) const MENU_THEME_SHINKAI: &str = "theme-shinkai";
 pub(crate) const MENU_PREFERENCES: &str = "preferences";
+/// Opens the on-device model page directly, independently of the Settings page.
+pub(crate) const MENU_ON_DEVICE_MODELS: &str = "on-device-models";
 pub(crate) const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
 pub(crate) const MENU_LOCAL_DATA_DISCLOSURE: &str = "local-data-disclosure";
 pub(crate) const MENU_OPEN_SUPPORT_DIAGNOSTICS: &str = "open-support-diagnostics";
