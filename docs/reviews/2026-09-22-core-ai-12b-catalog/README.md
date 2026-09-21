@@ -1,6 +1,6 @@
 # Core AI 12B catalog・配布UX・出力復元 外部レビュー資料
 
-Status: Review requested
+Status: Ready for external review
 Scope: PR #52の2026-09-22追加差分
 Authority: Review evidence
 Last reviewed: 2026-09-22
@@ -67,6 +67,7 @@ M4 Max / 128 GB、distribution Core AI helper、同じ18 fixture、1 repeatで�
 - `npm run smoke:app-store-surface`: 131 passed
 - `npm run build:app-store-preview`: sandbox外で成功。3 helper、Background Download extension、
   ad-hoc署名、deep verificationまで確認
+- PR #52 Quality run `35655597653`: frontend / native成功。nativeは`runs-on: macos-26`
 - Vite fixture: 1200 x 820と640 x 820を目視。狭幅でbutton textが折り返さないよう修正し、
   model metadataとmemory warningに重なりなし
 - 12B production helper: 18/18機械check通過
@@ -82,8 +83,7 @@ M4 Max / 128 GB、distribution Core AI helper、同じ18 fixture、1 repeatで�
 
 ## 未確認・次ゲート
 
-- PR #52の`frontend` / `native` CI（push後に確認）
-- macOS 26 SDKでのguard fallback compile（PRの`native` jobを正本にする）
+- 外部レビュー指摘の反映
 - 12B `.aar`のApp Store Connect upload、processing、CDN materialization
 - 32 GB対象機でのdownload、load、初回specialize、peak memory、生成、cancel後再開、削除
 - built appの設定画面、システムメニュー、VoiceOver、最大Dynamic Type

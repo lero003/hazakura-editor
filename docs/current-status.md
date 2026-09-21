@@ -21,8 +21,8 @@ Last reviewed: 2026-09-22
 
 - **PR #52 のmacOS 26 SDK対策（2026-09-22）:** macOS 27専用Background Assets selectorを
   `__MAC_OS_X_VERSION_MAX_ALLOWED >= 270000`でcompile guardし、古いSDKはunsupported fallback
-  だけをコンパイルする。macOS 27 SDKでのRust全体・App Store preview buildは成功。
-  **macOS 26 SDKでの実証はpush後のPR CI待ち**で、CI成功前にmainへ取り込まない。
+  だけをコンパイルする。Quality run `35655597653`はfrontend / nativeともに成功し、
+  `runs-on: macos-26`でguardを実証した。外部レビュー前なのでまだmainへ取り込まない。
 
 - **外部レビュー2巡目（2026-09-21）:** `540affc7`へのP2/P3を閉じた。ページ見出しへ
   着地した後のTabがヘッダーへ戻る問題は、フォーカストラップで「ダイアログ内の

@@ -30,7 +30,8 @@ CDN materialization、TestFlight、VoiceOverの証跡ではない。
 
 検証はfrontend 298 files / 2,666件、project script 24件、Rust 424件（2 ignored）、Swift 49件、
 App Store surface 131件、型検査、Rust format、Vite build、ad-hoc App Store preview build、
-1200 x 820 / 640 x 820のVite fixture目視。次のゲートはPR #52のCIと外部レビュー、その後に
+1200 x 820 / 640 x 820のVite fixture目視。PR #52のQuality run `35655597653`はfrontend / native
+ともに成功し、macOS 26 SDK guardも実証済み。次のゲートは外部レビュー、その後に
 12B archive upload / processingと32 GB対象機のInternal TestFlight受入。
 [外部レビュー用証跡](reviews/2026-09-22-core-ai-12b-catalog/README.md)。
 

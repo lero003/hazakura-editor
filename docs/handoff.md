@@ -17,13 +17,13 @@ Last reviewed: 2026-09-22
   built appの設定画面、VoiceOverは未確認。[証跡](reviews/2026-09-22-core-ai-12b-catalog/README.md)。
 
 - **PR #52 native CI修正（2026-09-22）:** macOS 27専用Background Assets selectorをSDK compile
-  guardへ入れ、macOS 26 SDKではunsupported fallbackだけをコンパイルする。手元はmacOS 27 SDK
-  なので、古いSDK側の実証はpush後のPR CIで行う。CIと外部レビューを通すまでmergeしない。
+  guardへ入れ、macOS 26 SDKではunsupported fallbackだけをコンパイルする。Quality run
+  `35655597653`はfrontend / nativeともに成功し、PRのmerge stateも`CLEAN`を確認した。
+  外部レビューを通すまでmergeしない。
 
-- **PR #52 の旧CI失敗（2026-09-21、修正済み・再実行待ち）:** `frontend` jobは緑、`native`は
+- **PR #52 の旧CI失敗（2026-09-21、修正・再実行済み）:** `frontend` jobは緑、`native`は
   macOS 27専用Background Assets selectorを`runs-on: macos-26`でコンパイルして失敗していた。
-  2026-09-22にSDK compile guardを追加した。手元にはmacOS 27 SDKしかないため、修正後の
-  macOS 26 SDK実証はpush後のPR CIを正本とする。
+  2026-09-22にSDK compile guardを追加し、macOS 26 runnerのnative job成功で閉じた。
   [元の詳細](reviews/2026-09-21-review-followup-models-page/README.md)。
 
 - **外部レビュー2巡目（2026-09-21）:** `540affc7` への P2/P3 を閉じた。ページ見出し
