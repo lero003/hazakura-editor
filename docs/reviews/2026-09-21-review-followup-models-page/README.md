@@ -111,3 +111,23 @@ git checkout main && git merge --ff-only codex/core-ai-phase1 && git push origin
 
 のように行う（このブランチは `main` の直系なので FF できる）。PR を使う場合は
 「CI を緑にしてから、どのマージ方式を選ぶか」を別途決める。
+
+### PR の CI で見つかったこと: ローカル tsc の死角
+
+PR #52 の frontend job が
+`SettingsCategoryRail.test.tsx` の `onOpenOnDeviceModels` 欠落で落ちた。ローカルの
+`npm run typecheck` は通っていたが、原因は**大文字小文字だけが違うファイル名の衝突**だった。
+同じディレクトリに `settingsCategoryRail.test.ts`（純関数の unit）と
+`SettingsCategoryRail.test.tsx`（DOM テスト）があり、case-insensitive な macOS では
+TypeScript の `include` が後者を program から落とす。Linux の CI は両方を見るため、
+ローカルでだけ通っていた。
+
+対処:
+
+- DOM テストを `SettingsCategoryRailDom.test.tsx` へ改名し、`onOpenOnDeviceModels` を渡した
+  （改名でローカルの `--listFiles` にも現れ、CI と同じ失敗を再現してから緑にした）。
+- 参照していた `docs/reviews/2026-09-10-v3-ui-g2/README.md`、
+  `docs/reviews/2026-09-10-v3-ui-g2-g4-review-request.md`、`src/styles/dialogsCss.test.ts`
+  のコメントを更新。
+- 再発防止として `docs/development-automation.md` の Verification に、同名衝突を避ける
+  注意と `--listFiles` での確認方法を書いた。

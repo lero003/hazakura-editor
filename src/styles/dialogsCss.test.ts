@@ -70,7 +70,7 @@ describe("settings dialog frame", () => {
     expect(desktopLayout).toMatch(
       /\.settings-category-nav\s*{[^}]*width:\s*200px/s,
     );
-    // 「アイコンを置かない」は DOM 側で検査する（SettingsCategoryRail.test.tsx）。
+    // 「アイコンを置かない」は DOM 側で検査する（SettingsCategoryRailDom.test.tsx）。
     // ここはレールの幅と横並びレイアウトの契約だけを見る。
     expect(desktopLayout).toMatch(/\.settings-category-nav button\s*{[^}]*min-height:\s*40px/s);
   });

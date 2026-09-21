@@ -163,6 +163,11 @@ npm run smoke:app-store-surface
 
 For UI behavior changes, update or exercise `docs/smoke-checklist.md`. If the built app or an Agent provider session was opened, quit it before final reporting when practical.
 
+macOS の作業ツリーでは、**大文字小文字だけが違うファイル名を同じディレクトリに置かない**。
+TypeScript の `include` は case-insensitive なファイルシステム上で片方を program から
+落とすことがあり、`npm run typecheck` がローカルでだけ通って CI（Linux）で落ちる。
+`npx tsc -p tsconfig.json --noEmit --listFiles | grep <name>` で対象が入っているか確認できる。
+
 For release-candidate work, use `hazakura-note-release-candidate`, `docs/source-release-checklist.md`, and `docs/dmg-preview-checklist.md`. Do not tag, publish, release, or attach assets without explicit user approval.
 
 ## Documentation Duties

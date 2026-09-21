@@ -44,7 +44,7 @@ callback・Help導線・保存契約は変更していない。
   押下直後の `scroll` が1つ手前のカテゴリへ巻き戻していた。
   → 読み位置を80pxにし、着地のずれを吸収する。
 
-再現は `src/components/app/SettingsCategoryRail.test.tsx` の
+再現は `src/components/app/SettingsCategoryRailDom.test.tsx` の
 「keeps the clicked category after the scroll it caused settles」で固定した。
 
 ## ローカル検証（本文書の最終コードで実行）

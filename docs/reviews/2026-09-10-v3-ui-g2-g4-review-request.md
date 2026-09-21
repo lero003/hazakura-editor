@@ -134,7 +134,7 @@ C02 の基準値へ合わせた。1440×850 で**ダイアログ1100×752**、96
 | 指摘 | 対応 |
 | --- | --- |
 | 依頼文のコミット数（1箇所だけ17のまま） | 19へ。今回さらに22へ更新 |
-| 「アイコン0個をテストで固定」はCSSしか見ていない | `SettingsCategoryRail.test.tsx` に **DOMテスト**を追加（レールの `svg, img` が0件・各項目にラベルがある）。CSS側の `svg` 検査は外し、幅とmin-heightの契約に絞った |
+| 「アイコン0個をテストで固定」はCSSしか見ていない | `SettingsCategoryRailDom.test.tsx` に **DOMテスト**を追加（レールの `svg, img` が0件・各項目にラベルがある）。CSS側の `svg` 検査は外し、幅とmin-heightの契約に絞った |
 | focus 3:1 の自動検査範囲の表現 | 「**紙面・chrome面の全7テーマ＋不透明ナビ5テーマ**。半透明ナビ（edohigan/shinkai）は実描画の証跡」と明記（[focus/境界](2026-09-10-v3-focus-and-boundaries/README.md)） |
 
 ## 追加スコープ — 狭幅23（`89722d38`）

@@ -10,7 +10,8 @@ function renderSettings() {
   render(<SettingsPreferencesPane copy={copy} lModeCopy={getLModeCopy("ja")}
     menuLanguage="ja" editorSettings={defaultEditorSettings()}
     themePreference="light" previewVisible onEditorSettingsChange={vi.fn()}
-    onMenuLanguageChange={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
+    onMenuLanguageChange={vi.fn()} onOpenOnDeviceModels={vi.fn()}
+    onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
   return copy;
 }
 
