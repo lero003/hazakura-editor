@@ -49,4 +49,8 @@ struct AppleAssistUsage: Codable {
     var cachedTokens: Int? = nil
     var outputTokens: Int? = nil
     var maximumResponseTokens: Int? = nil
+    // Requested vs effective sampling settings. The pinned Core AI engine drops
+    // top-k / top-p, so an unsupported request stays visible instead of silent.
+    var samplingRequested: String? = nil
+    var samplingEffective: String? = nil
 }

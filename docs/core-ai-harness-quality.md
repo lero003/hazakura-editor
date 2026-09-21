@@ -106,8 +106,10 @@ sampling 変更時: "新しい展示は土曜からだよ。…ぜひ来てね�
 - 変換済み bundle の `decoder/tokenizer/tokenizer_config.json` は `"eos_token": "<turn|>"` で、
   `eos_token_id` を持たない。実際の語彙では `<eos>` は id 1、`<turn|>` は id 106
   （`<|turn>` 105、`<|channel>` 100 なども存在）
-- `coreai-kit` の `KitExecutor` は `tokenizer.eosTokenId` と一致した時点で生成を止める実装なので、
-  EOS の同定がずれると停止位置と本文末尾がずれる
+- `coreai-kit` の Gemma 専用実行器 `KitGemmaExecutor` は、`tokenizer.eosTokenId` に加えて
+  `arch.endOfTurn`（`<turn|>`）でも停止する。ただし `eosTokenId` が `<turn|>`=106 に解決されている
+  ため二つの停止判定が同じ id になり、本文中の `<eos>`=1 を捕まえられない。停止位置が
+  `<eos>` の分だけ後ろへずれ、`<eos>` が本文へ漏れる、という説明になる
 
 したがって残りの崩れは、**アプリ側のプロンプトやサンプリングではなく、変換 bundle の
 tokenizer 設定と coreai-kit の停止処理の組み合わせ**を疑うのが妥当。sampling は
@@ -122,3 +124,60 @@ tokenizer 設定と coreai-kit の停止処理の組み合わせ**を疑うの�
 2. 上流（coreai-kit / 変換リポジトリ）へ報告し、修正版 revision を再 pin する。
 3. 暫定緩和として、`CandidateFormatting` で末尾の特殊トークン（`<eos>` 等）を落とす。
    語尾の崩れまでは直らないため、あくまで応急処置。
+
+## 2026-09-21 追補 — 配線の作り込み（実測は Metal 制約で未完）
+
+外部レビューの指摘に沿って、モデルへ渡す設定・指示・復元の配線を直した。
+**この追補は source と unit test の証跡で、E4B の実生成による再測定はできていない**
+（下の「この環境で実測できない理由」を参照）。
+
+### 変更したもの
+
+- **操作別の基本指示を追加要望から分離した**（`AssistPrompt.swift`）。
+  追加要望があると action 別テンプレートが丸ごと落ちていた。いまは
+  「基本操作」「変更の範囲（変えてよい／変えない）」「追加のご要望」を別項目として渡す。
+  保持規則は action ごとに違えている（校正は引用・表・コードを厳守、要約は構成の組み替えを許可）。
+  System 経路も同じ `AssistPrompt.buildLive` を使う。
+- **要求した設定と実効設定を別々に記録する**（`CoreAIGenerationProfile.swift`）。
+  pinned `coreai-kit` の実行器は `GenerationOptions.temperature` だけを
+  `SamplingConfiguration` へ写し、`samplingMode`（top-k / top-p）は読まない。
+  そのため Hazakura は top-k / top-p を要求せず（要求した場合は「エンジンが捨てた」と記録する）、
+  usage に `samplingRequested` / `samplingEffective` を出す。
+  `temperature` は production で 2048 上限・greedy のまま（優劣の実測がまだ無いため）。
+- **停止トークンの漏れを外側だけ除去する**（`CandidateFormatting.stripOuterControlTokens`）。
+  本文中の言及は残し、先頭・末尾の制御トークンだけを落とす。原文の語尾崩れは直らない。
+- **ロード済みモデルを helper 内で再利用する**（`CoreAIRuntime.ProductionModelCache`）。
+  従来は 1 リクエストごとに PLE テーブル 5.4 GB の確保と engine 構築をしていた。
+  単一スロットを model id + 資源パス + サイズ/mtime の署名で保持し、セッションは毎回新しくする。
+  helper 終了（キャンセル・timeout・アプリ終了）、別モデル/別資源、アイドル
+  （既定 300 秒、`HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS` で変更可）で解放する。
+- **評価ハーネスを強化**: `noControlTokens` を独立チェックとして追加し、
+  追加指示なしの fixture を 3 件足した（従来は全 fixture が `request` を持ち、
+  action 別テンプレートの分岐を通っていなかった）。`report.fixtureCoverage` に内訳を出し、
+  warm の定義（同じ helper でロード済みモデルを再利用）も書き直した。
+
+### この環境で実測できない理由
+
+Codex の実行環境は seatbelt で GPU を渡さないため、production helper は
+`CoreAIKit.KitGemmaError.noMetalDevice` で load に失敗する。`swift build`（distribution flavor）と
+`swift test` は通り、`noMetalDevice` を除けば再現しない。**秒数・品質の before/after は
+オーナーの通常 shell で `scripts/evaluate-local-assist.mjs` を回して確定する**（下のコマンド）。
+モデル再利用の効果は「ロード時間」と「最初のトークンまで」を分けて記録すること。
+
+```bash
+node scripts/evaluate-local-assist.mjs \
+  --helper binaries/hazakura-core-ai-helper-aarch64-apple-darwin \
+  --backend core_ai --model-id apple:core-ai:gemma-4-e4b-it-int4-v1 \
+  --model-path .hazakura/coreai-production/gemma4-e4b/2026.09.20.1/stage/CoreAIModels/gemma-4-e4b-it-int4-v1 \
+  --output /tmp/e4b-report.json --repeats 3
+```
+
+### まだ残る候補
+
+1. bundle の `tokenizer_config.json` の `eos_token` を `<eos>`（または `eos_token_id: 1`）へ直した
+   変換物で語尾の崩れと `<eos>` 漏れが消えるかを確認する（lock と再現手順の更新が必要）。
+2. 上流（coreai-kit / 変換リポジトリ）へ、`samplingMode` が `SamplingConfiguration` に
+   反映されない点と `eos_token` 解決を報告する。
+3. 文脈予算（4096）の管理: 入力トークン + 出力上限 + 余裕を tokenizer で数え、
+   校正は原文と同程度、要約は小さめにする。長い選択は段落・節単位に分ける。
+4. 設定画面での可視化（実効設定の表示）は、この記録を正本にした次のスライス。

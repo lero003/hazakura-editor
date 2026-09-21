@@ -72,6 +72,10 @@ const appleAssistGenerateCandidateSwift = readFileSync(
   "src-helpers/apple-assist/Sources/HazakuraAppleAssist/GenerateCandidate.swift",
   "utf8",
 );
+const appleAssistPromptSwift = readFileSync(
+  "src-helpers/apple-assist/Sources/HazakuraAppleAssist/AssistPrompt.swift",
+  "utf8",
+);
 function extractSwiftTripleQuotedConstant(name: string): string {
   const pattern = new RegExp(
     `private static let ${name} = """\\n([\\s\\S]*?)\\n    """`,
@@ -379,40 +383,54 @@ describe("macOS build scripts", () => {
   });
 
   it("keeps the live helper user prompt free of extra routing metadata", () => {
-    expect(appleAssistGenerateCandidateSwift).toContain("依頼:");
-    expect(appleAssistGenerateCandidateSwift).toContain(
-      "対象本文（これを書き換える）:",
+    expect(appleAssistPromptSwift).toContain("基本操作:");
+    expect(appleAssistPromptSwift).toContain("変更の範囲:");
+    expect(appleAssistPromptSwift).toContain("追加のご要望:");
+    expect(appleAssistPromptSwift).toContain(
+      "対象本文（ここだけを書き換える）:",
     );
-    expect(appleAssistGenerateCandidateSwift).toContain(
+    expect(appleAssistPromptSwift).toContain(
       "参考文脈（書き換え対象ではありません）:",
     );
-    expect(appleAssistGenerateCandidateSwift).not.toContain("依頼種別:");
-    expect(appleAssistGenerateCandidateSwift).not.toContain(
+    expect(appleAssistPromptSwift).not.toContain("依頼種別:");
+    expect(appleAssistPromptSwift).not.toContain(
       "操作: \\(request.operation)",
+    );
+    // The operation's base instruction is a separate slot from the user's request.
+    expect(appleAssistPromptSwift).toContain(
+      "static func additionalRequest(for request: AppleAssistRequest) -> String?",
     );
   });
 
   it("keeps the live helper translation fallback short and target-language neutral", () => {
-    expect(appleAssistGenerateCandidateSwift).toContain(
-      "翻訳してください。Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞はできるだけ保持してください。",
+    expect(appleAssistPromptSwift).toContain("本文を翻訳してください。");
+    expect(appleAssistPromptSwift).toContain(
+      "変えない: 数値、固有名詞、リンクのURL、コードブロック、フロントマター。",
     );
-    expect(appleAssistGenerateCandidateSwift).not.toContain("英語に翻訳してください");
-    expect(appleAssistGenerateCandidateSwift).not.toContain("指定がなければ日本語は英語");
-    expect(appleAssistGenerateCandidateSwift).not.toContain("英語は日本語へ");
+    expect(appleAssistPromptSwift).not.toContain("英語に翻訳してください");
+    expect(appleAssistPromptSwift).not.toContain("指定がなければ日本語は英語");
+    expect(appleAssistPromptSwift).not.toContain("英語は日本語へ");
   });
 
   it("keeps live helper fallback request templates simple for small local models", () => {
     for (const expectedTemplate of [
-      "誤字脱字、助詞、文法ミス、表記ゆれだけ直してください。意味、文体、Markdown構造は保ってください。",
-      "意味を変えずに、読みやすい自然な文にしてください。新しい情報は足さないでください。",
-      "意味を保ったまま短くしてください。Markdown構造、リンク、コード、引用は保ってください。",
-      "本文を3〜5行で要約してください。推測や新しい情報は足さないでください。",
-      "本文に自然に続く文章を書いてください。方向性を変えないでください。",
-      "読みにくい箇所、重複、流れを直してください。意味とMarkdown構造は保ってください。",
+      "誤字脱字、助詞、文法ミス、表記ゆれだけを直してください。",
+      "意味を変えずに、読みやすい自然な文にしてください。",
+      "意味を保ったまま短くしてください。",
+      "本文を3〜5行で要約してください。",
+      "本文に自然に続く文章を書いてください。",
+      "読みにくい箇所、重複、流れを直してください。",
     ]) {
-      expect(appleAssistGenerateCandidateSwift).toContain(expectedTemplate);
+      expect(appleAssistPromptSwift).toContain(expectedTemplate);
     }
-    expect(appleAssistGenerateCandidateSwift).not.toMatch(
+    // Each action keeps its own change/preserve rules instead of one shared set.
+    for (const expectedScope of [
+      "変えない: 意味、文体、数値、固有名詞、見出し、リンク、コード、引用、表。",
+      "変えない: 事実、数値、固有名詞、条件、例外。新しい情報は足さない。",
+    ]) {
+      expect(appleAssistPromptSwift).toContain(expectedScope);
+    }
+    expect(appleAssistPromptSwift).not.toMatch(
       /可能な限り|温度感|補いすぎ|改稿案|自然な翻訳文|候補/,
     );
   });

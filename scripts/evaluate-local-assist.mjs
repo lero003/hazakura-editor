@@ -23,13 +23,20 @@ const modelPath = value('--model-path');
 const backendPayload = { backend, ...(modelId ? { modelId } : {}), ...(modelPath ? { modelPath } : {}) };
 const expectedModelId = modelId ?? 'apple:foundation-models:system-default';
 const fixtures = JSON.parse(await readFile(new URL('./fixtures/local-assist-evaluation.json', import.meta.url), 'utf8'));
+// `request` feeds `additionalRequest`. An empty request exercises the
+// action-template branch, which an all-fixtures-have-requests set never reached.
+const fixtureCoverage = {
+  withAdditionalRequest: fixtures.filter((f) => (f.request ?? '').trim().length > 0).length,
+  withoutAdditionalRequest: fixtures.filter((f) => (f.request ?? '').trim().length === 0).length,
+};
 const report = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   sourceDirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
   os: execFileSync('sw_vers', ['-productVersion'], { encoding: 'utf8' }).trim(),
   sdk: execFileSync('xcrun', ['--show-sdk-version'], { encoding: 'utf8' }).trim(),
   backend, modelId: expectedModelId, modelPath: modelPath ?? null,
   helperSha256: createHash('sha256').update(await readFile(helper)).digest('hex'), fixtureVersion: 2, repeats, results: [], qualityReview: 'pending human review; checks inspect raw helper text, before app sanitization',
-  note: 'Candidate text is from authored fixtures only. Token observations do not enforce a budget. Cold means fresh helper, not cleared OS cache.' };
+  fixtureCoverage,
+  note: 'Candidate text is from authored fixtures only. Token observations do not enforce a budget. Cold means a fresh helper whose model is not loaded yet; warm means the same helper reusing the loaded model, not a cleared OS cache.' };
 let child, lines, pending;
 function start() {
   child = spawn(resolve(helper), [], { stdio: ['pipe', 'pipe', 'ignore'] });

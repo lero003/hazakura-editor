@@ -5,6 +5,30 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-21
 
+## Core AI E4B 配線の作り込み（2026-09-21）
+
+実機（16 GB MacBook Air）で編集品質が崩れるという報告と外部レビューを受け、
+**モデルへ渡す設定・指示・復元**を直した。設定を増やすより前に配線を正す、という順序。
+
+- 追加要望があると落ちていた action 別の基本指示を、追加要望と別項目にした
+  （`AssistPrompt.swift`。基本操作 / 変更の範囲 / 追加のご要望 / 対象本文 / 参考文脈）。
+  保持規則は操作ごとに違え、System 経路も同じ契約を使う。
+- 要求した生成設定とエンジンへ渡った実効設定を usage に分けて記録する
+  （`CoreAIGenerationProfile.swift`）。pinned `coreai-kit` の Gemma 実行器は
+  `temperature` しか写さないため、top-k / top-p は要求せず、要求した場合は破棄として記録する。
+- 停止トークン（`<eos>` 等）は本文中の言及を残しつつ、先頭・末尾だけ落とす
+  （`CandidateFormatting.stripOuterControlTokens`）。
+- ロード済みモデルを helper 内で再利用する（`CoreAIRuntime.ProductionModelCache`）。
+  helper 終了・別モデル/別資源・アイドル（既定 300 秒）で解放し、セッションは毎回新しくする。
+- 評価ハーネスに `noControlTokens` と「追加指示なし」fixture 3 件を追加。
+
+検証は Swift 37 件、distribution flavor の `swift build`、frontend / Rust 一式。
+**E4B の実生成による再測定は未実施**（Codex 環境が GPU を渡さず `noMetalDevice` になるため）。
+オーナーの通常 shell で `scripts/evaluate-local-assist.mjs` を回して秒数と品質を確定する。
+詳細と再測定コマンドは [Core AI編集品質（ハーネス）調査メモ](core-ai-harness-quality.md)。
+設定画面での実効設定表示は、この記録を正本にした次スライス。
+証跡は [Core AI E4B wiring slice](reviews/2026-09-21-core-ai-e4b-wiring/README.md)。
+
 ## Core AI 配布前基盤 — TestFlight手前（2026-09-20）
 
 オーナー方針により、App Store / TestFlightレーンにもCore AIの実行adapter、モデル管理、

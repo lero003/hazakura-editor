@@ -16,11 +16,6 @@ enum CoreAIRuntime {
     static let modelLoadFailed = "The selected Core AI model failed to load."
     static let generationFailed = "Core AI generation failed."
     static let emptyCandidate = "Core AI returned an empty candidate."
-    // The Developer fixture stays deterministic and short.
-    static let maximumResponseTokens = 128
-    // Production Core AI models follow the System contract: a paragraph or
-    // section rewrite easily exceeds the fixture cap, so allow a real answer.
-    static let productionMaximumResponseTokens = 2048
 
     static func probe(backend: AssistBackend, modelPath: String?) async -> AppleAssistAvailabilityResponse {
         guard #available(macOS 27.0, *) else {
@@ -184,6 +179,63 @@ enum CoreAIRuntime {
         case language(KitLanguageModel)
     }
 
+    /// One loaded production model, kept for later requests from the same helper
+    /// process. Loading E4B copies 5.4 GB of PLE tables and builds the decode
+    /// graph, and the Rust supervisor reuses one helper child across requests, so
+    /// reloading per request dominated the time before the first token. Requests
+    /// stay serial (the supervisor holds one child), and a session is still
+    /// created per request, so this only shares the model and its engine.
+    ///
+    /// The slot is released when the helper exits (cancel, timeout, app quit),
+    /// when a different model or resource signature is requested, and after an
+    /// idle period so a 16 GB machine does not hold the weights indefinitely.
+    @available(macOS 27.0, *)
+    actor ProductionModelCache {
+        static let shared = ProductionModelCache()
+
+        private var entry: (signature: String, model: LoadedProductionModel)?
+        private var generation = 0
+
+        /// Seconds to keep an idle model. `nil` (0 or unparsable) keeps it for
+        /// the helper's lifetime.
+        private let idleReleaseSeconds: Double? = ProductionModelCache.configuredIdleSeconds(
+            from: ProcessInfo.processInfo.environment["HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS"]
+        )
+
+        static func configuredIdleSeconds(from raw: String?) -> Double? {
+            guard let raw, let seconds = Double(raw), seconds > 0 else { return nil }
+            return seconds
+        }
+
+        func model(forSignature signature: String) -> LoadedProductionModel? {
+            guard let entry, entry.signature == signature else { return nil }
+            scheduleIdleRelease()
+            return entry.model
+        }
+
+        func store(_ model: LoadedProductionModel, forSignature signature: String) {
+            entry = (signature, model)
+            scheduleIdleRelease()
+        }
+
+        /// Called by the idle timer with the token it scheduled. A later access
+        /// has already moved `generation` past it, so the release is skipped.
+        func releaseIfIdle(token: Int) {
+            guard token == generation else { return }
+            entry = nil
+        }
+
+        private func scheduleIdleRelease() {
+            guard let idleReleaseSeconds else { return }
+            generation += 1
+            let token = generation
+            Task.detached {
+                try? await Task.sleep(nanoseconds: UInt64(idleReleaseSeconds * 1_000_000_000))
+                await ProductionModelCache.shared.releaseIfIdle(token: token)
+            }
+        }
+    }
+
     @available(macOS 27.0, *)
     static func loadProductionModel(
         modelPath: String?,
@@ -202,6 +254,20 @@ enum CoreAIRuntime {
         case .invalid:
             throw CoreAIRuntimeFailure.resourceInvalid
         }
+        let signature = CoreAIResourceContract.signature(for: resource)
+        if let cached = await ProductionModelCache.shared.model(forSignature: signature) {
+            return cached
+        }
+        let model = try await makeProductionModel(resource: resource, modelId: modelId)
+        await ProductionModelCache.shared.store(model, forSignature: signature)
+        return model
+    }
+
+    @available(macOS 27.0, *)
+    private static func makeProductionModel(
+        resource: CoreAIProductionResource,
+        modelId: String
+    ) async throws -> LoadedProductionModel {
         do {
             switch resource.runtimeKind {
             case .gemma4PLE:

@@ -83,6 +83,33 @@ enum CoreAITestResourceContract {
 /// converted Core AI bundle with one `.aimodel` directory. It never accepts a
 /// URL, GGUF file, or a model identity supplied by the webview.
 enum CoreAIResourceContract {
+    /// A cheap identity for a validated resource: paths plus the size and
+    /// modification time of the files that define the loaded weights. A
+    /// re-download or re-stage changes the stamp, so a cached runtime is not
+    /// reused across the replacement.
+    static func signature(for resource: CoreAIProductionResource) -> String {
+        var parts = [
+            resource.root.path,
+            resource.runtimeKind.rawValue,
+            resource.bundle.path,
+            fileStamp(resource.root.appendingPathComponent("hazakura-model.json")),
+            fileStamp(resource.bundle.appendingPathComponent("main.hash")),
+        ]
+        if let tables = resource.tables {
+            parts.append(tables.path)
+            parts.append(fileStamp(tables.appendingPathComponent("embed_per_layer.i8")))
+            parts.append(fileStamp(tables.appendingPathComponent("embed_per_layer.scale.f32")))
+        }
+        return parts.joined(separator: "|")
+    }
+
+    private static func fileStamp(_ url: URL) -> String {
+        let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+        let size = values?.fileSize.map(String.init) ?? "?"
+        let modified = values?.contentModificationDate.map { String(Int($0.timeIntervalSince1970)) } ?? "?"
+        return "\(size):\(modified)"
+    }
+
     static func validate(path: String?, expectedModelId: String) -> CoreAIProductionResourceState {
         guard let path, !path.isEmpty else { return .missing }
         let root = URL(fileURLWithPath: path, isDirectory: true).standardizedFileURL

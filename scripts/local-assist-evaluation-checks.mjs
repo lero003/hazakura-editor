@@ -1,3 +1,15 @@
+/**
+ * Chat control tokens the shipping bundles can leak into the body. The pinned
+ * E4B bundle declares `eos_token = "<turn|>"` with no `eos_token_id`, so the
+ * real `<eos>` (id 1) can pass the stop check and decode as literal text.
+ */
+const CONTROL_TOKENS = [
+  '<eos>', '</s>', '<bos>', '<turn|>', '<|turn>', '<|channel>', '<channel|>',
+];
+const CONTROL_TOKEN_PATTERN = new RegExp(
+  CONTROL_TOKENS.map((token) => token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+);
+
 /** Checks raw helper output only. Text quality and the app's sanitizer need separate review. */
 export function checkEvaluationCandidate(
   envelope,
@@ -14,6 +26,7 @@ export function checkEvaluationCandidate(
     preserved: text && preserve.every((part) => candidate.includes(part)),
     proofreadProtectedSpans: text && (fixture.actionId !== 'proofread_only' || protectedSpansEqual(fixture.selectedText ?? '', candidate)),
     noInternalMarkers: text && !/HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_(START|END)/.test(candidate),
+    noControlTokens: text && !CONTROL_TOKEN_PATTERN.test(candidate),
   };
 }
 

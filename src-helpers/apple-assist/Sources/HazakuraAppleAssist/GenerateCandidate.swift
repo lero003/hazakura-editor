@@ -74,7 +74,7 @@ enum GenerateCandidate {
                     instructions: Instructions(liveSystemInstructions)
                 )
                 let response = try await session.respond(
-                    to: Prompt(buildLivePrompt(for: request))
+                    to: Prompt(AssistPrompt.buildLive(for: request))
                 )
                 let candidate = CandidateFormatting.reviewText(response.content, original: request.selectedText)
                 guard !candidate.isEmpty else {
@@ -160,7 +160,7 @@ enum GenerateCandidate {
                 )
                 var latestCandidate = ""
                 let stream = session.streamResponse(
-                    to: Prompt(buildLivePrompt(for: request))
+                    to: Prompt(AssistPrompt.buildLive(for: request))
                 )
                 for try await snapshot in stream {
                     let candidate = CandidateFormatting.reviewText(snapshot.content, original: request.selectedText)
@@ -215,7 +215,7 @@ enum GenerateCandidate {
             let model = SystemAssistRuntime.model(for: backend)
             do {
                 let instructions = try await model.tokenCount(for: Instructions(liveSystemInstructions))
-                let prompt = try await model.tokenCount(for: Prompt(buildLivePrompt(for: request)))
+                let prompt = try await model.tokenCount(for: Prompt(AssistPrompt.buildLive(for: request)))
                 return AppleAssistUsage(instructionTokens: instructions, promptTokens: prompt, contextSize: model.contextSize, status: "measured")
             } catch {
                 return AppleAssistUsage(instructionTokens: nil, promptTokens: nil, contextSize: model.contextSize, status: "measurement_failed")
@@ -224,102 +224,10 @@ enum GenerateCandidate {
         return AppleAssistUsage(instructionTokens: nil, promptTokens: nil, contextSize: nil, status: "unsupported_os")
     }
 
-    private static func buildLivePrompt(for request: AppleAssistRequest) -> String {
-        let actionId = sanitized(request.actionId, fallback: fallbackActionId(for: request.operation))
-        let visibleRequest = sanitized(
-            firstNonBlank(request.additionalRequest, request.instruction),
-            fallback: requestTemplate(for: actionId, operation: request.operation)
-        )
-        let context = sanitized(
-            request.documentContext,
-            fallback: "(No surrounding context provided.)"
-        )
-        return """
-        依頼:
-        \(visibleRequest)
-
-        対象本文（これを書き換える）:
-        <<<HAZAKURA_TEXT_START
-        \(request.selectedText)
-        HAZAKURA_TEXT_END>>>
-
-        参考文脈（書き換え対象ではありません）:
-        <<<HAZAKURA_CONTEXT_START
-        \(context)
-        HAZAKURA_CONTEXT_END>>>
-        """
-    }
-
-    private static func requestTemplate(for actionId: String, operation: String) -> String {
-        switch actionId {
-        case "proofread_only":
-            return "誤字脱字、助詞、文法ミス、表記ゆれだけ直してください。意味、文体、Markdown構造は保ってください。"
-        case "rewrite_natural":
-            return "意味を変えずに、読みやすい自然な文にしてください。新しい情報は足さないでください。"
-        case "shorten":
-            return "意味を保ったまま短くしてください。Markdown構造、リンク、コード、引用は保ってください。"
-        case "summarize":
-            return "本文を3〜5行で要約してください。推測や新しい情報は足さないでください。"
-        case "translate":
-            return "翻訳してください。Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞はできるだけ保持してください。"
-        case "continue_ideas":
-            return "本文に自然に続く文章を書いてください。方向性を変えないでください。"
-        case "review_section":
-            return "読みにくい箇所、重複、流れを直してください。意味とMarkdown構造は保ってください。"
-        default:
-            return defaultInstruction(for: operation)
-        }
-    }
-
-    private static func defaultInstruction(for operation: String) -> String {
-        switch operation {
-        case "summarize":
-            return "本文を短く要約してください。新しい情報は足さないでください。"
-        case "proofread":
-            return "誤字脱字、文法ミス、表記ゆれだけ直してください。"
-        case "rephrase":
-            return "意味を変えずに、読みやすくしてください。"
-        default:
-            return "依頼に沿って本文を直してください。"
-        }
-    }
-
-    private static func fallbackActionId(for operation: String) -> String {
-        switch operation {
-        case "summarize":
-            return "summarize"
-        case "proofread":
-            return "proofread_only"
-        default:
-            return "rewrite_natural"
-        }
-    }
-
-    private static func sanitized(_ value: String?, fallback: String) -> String {
-        let trimmed = (value ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            return fallback
-        }
-        return trimmed
-    }
-
-    private static func firstNonBlank(_ values: String?...) -> String? {
-        values.first { value in
-            guard let value else {
-                return false
-            }
-            return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        } ?? nil
-    }
-
     #if COREAI_BACKEND
     @available(macOS 27.0, *)
     private static func coreAITestOptions() -> GenerationOptions {
-        GenerationOptions(
-            samplingMode: .greedy,
-            temperature: 0,
-            maximumResponseTokens: CoreAIRuntime.maximumResponseTokens
-        )
+        generationOptions(for: .developerFixture)
     }
 
     // Production Core AI runs the same prompt contract as the System model.
@@ -329,21 +237,44 @@ enum GenerateCandidate {
     private static func coreAIOptions(for backend: AssistBackend) -> GenerationOptions {
         switch backend {
         case .coreAI:
-            return GenerationOptions(
-                samplingMode: .greedy,
-                temperature: 0,
-                maximumResponseTokens: CoreAIRuntime.productionMaximumResponseTokens
-            )
+            return generationOptions(for: .production)
         case .coreAITest, .systemDefault:
             return coreAITestOptions()
         }
     }
 
     @available(macOS 27.0, *)
+    private static func coreAIProfile(for backend: AssistBackend) -> CoreAIGenerationProfile {
+        switch backend {
+        case .coreAI:
+            return .production
+        case .coreAITest, .systemDefault:
+            return .developerFixture
+        }
+    }
+
+    /// Only `temperature` and `maximumResponseTokens` reach the pinned engine;
+    /// the requested profile records top-k / top-p as dropped when they are set.
+    @available(macOS 27.0, *)
+    private static func generationOptions(for profile: CoreAIGenerationProfile) -> GenerationOptions {
+        var samplingMode = GenerationOptions.SamplingMode.greedy
+        if let topK = profile.topK {
+            samplingMode = .random(top: topK)
+        } else if let topP = profile.topP {
+            samplingMode = .random(probabilityThreshold: topP)
+        }
+        return GenerationOptions(
+            samplingMode: samplingMode,
+            temperature: profile.temperature,
+            maximumResponseTokens: profile.maximumResponseTokens
+        )
+    }
+
+    @available(macOS 27.0, *)
     private static func coreAIPrompt(for request: AppleAssistRequest, backend: AssistBackend) -> String {
         switch backend {
         case .coreAI:
-            return buildLivePrompt(for: request)
+            return AssistPrompt.buildLive(for: request)
         case .coreAITest, .systemDefault:
             return CoreAITestPrompt.build(for: request)
         }
@@ -352,7 +283,7 @@ enum GenerateCandidate {
     @available(macOS 27.0, *)
     private static func coreAIUsage(
         _ usage: LanguageModelSession.Usage?,
-        maximumResponseTokens: Int?
+        profile: CoreAIGenerationProfile
     ) -> AppleAssistUsage? {
         guard let usage else { return nil }
         return AppleAssistUsage(
@@ -362,7 +293,9 @@ enum GenerateCandidate {
             status: "measured",
             cachedTokens: usage.input.cachedTokenCount,
             outputTokens: usage.output.totalTokenCount,
-            maximumResponseTokens: maximumResponseTokens
+            maximumResponseTokens: profile.maximumResponseTokens,
+            samplingRequested: profile.samplingRequested,
+            samplingEffective: profile.samplingEffective
         )
     }
     #endif
@@ -485,6 +418,7 @@ enum GenerateCandidate {
                 instructions: Instructions(liveSystemInstructions)
             )
             let options = coreAIOptions(for: backend)
+            let profile = coreAIProfile(for: backend)
             let response = try await session.respond(
                 to: Prompt(coreAIPrompt(for: request, backend: backend)),
                 options: options
@@ -504,7 +438,7 @@ enum GenerateCandidate {
                 candidateText: candidate,
                 modelId: backend.modelId,
                 latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
-                usage: coreAIUsage(response.usage, maximumResponseTokens: options.maximumResponseTokens)
+                usage: coreAIUsage(response.usage, profile: profile)
             ))
         } catch {
             return .error(CoreAIRuntime.generationError(error))
@@ -525,6 +459,7 @@ enum GenerateCandidate {
                 instructions: Instructions(liveSystemInstructions)
             )
             let options = coreAIOptions(for: backend)
+            let profile = coreAIProfile(for: backend)
             var latestCandidate = ""
             var latestUsage: LanguageModelSession.Usage?
             let stream = session.streamResponse(
@@ -553,7 +488,7 @@ enum GenerateCandidate {
                 candidateText: latestCandidate,
                 modelId: backend.modelId,
                 latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
-                usage: coreAIUsage(latestUsage, maximumResponseTokens: options.maximumResponseTokens)
+                usage: coreAIUsage(latestUsage, profile: profile)
             ))
         } catch {
             return .error(CoreAIRuntime.generationError(error))

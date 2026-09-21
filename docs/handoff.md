@@ -5,6 +5,16 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-21
 
+- **Core AI E4B配線の作り込み（2026-09-21）:** 追加要望があると action 別の基本指示が
+  落ちていた点を直し、要求した生成設定とエンジンへ渡った実効設定を usage に分けて記録し、
+  停止トークンの外側除去とロード済みモデルの再利用（アイドルで解放）を入れた。System 経路も
+  同じ `AssistPrompt.buildLive` 契約。評価ハーネスへ `noControlTokens` と追加指示なし fixture を追加。
+  Swift 37件 / distribution `swift build` / frontend / Rust は成功。**E4B の実生成による
+  再測定は未実施**（Codex 環境は GPU を渡さず `CoreAIKit.KitGemmaError.noMetalDevice`）。
+  オーナー shell で `node scripts/evaluate-local-assist.mjs --backend core_ai ...` を回し、
+  ロード時間と最初のトークンまでを分けて記録する。
+  [調査メモ](core-ai-harness-quality.md) / [current-work](current-work.md)。
+
 - **Core AI配布前基盤（2026-09-20）:** App Store / TestFlightレーンへCore AI production
   adapterをmacOS 27+専用の別helperとして同梱し、設定のモデル管理とLocal Assistの選択、
   Rust-owned選択状態を接続した。System helperはmacOS 26互換を維持。2026-09-21からApp Store

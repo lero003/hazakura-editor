@@ -45,7 +45,7 @@
     "clean:generated": "node scripts/clean-generated-artifacts.mjs",
     "clean:generated:apply": "node scripts/clean-generated-artifacts.mjs --apply",
     "test": "vitest run && npm run test:scripts",
-    "test:scripts": "node --test scripts/core-ai-model-assets.test.mjs scripts/apple-provisioning-profile.test.mjs",
+    "test:scripts": "node --test scripts/core-ai-model-assets.test.mjs scripts/apple-provisioning-profile.test.mjs scripts/local-assist-evaluation-checks.test.mjs",
     "test:coreai-model-assets": "node --test scripts/core-ai-model-assets.test.mjs",
     "test:watch": "vitest"
   },

@@ -28,3 +28,12 @@ test('proofreading flags numbers, links, quotes, tables and fenced-code changes 
     assert.equal(check(complete(changed), [], fixture).proofreadProtectedSpans, false);
   }
 });
+test('flags leaked chat control tokens separately from other checks', () => {
+  assert.equal(check(complete('本文です。'), ['本文']).noControlTokens, true);
+  for (const leaked of ['本文です。<eos>', '<bos>本文です。', '本文です。<turn|>', '本文です。<|turn>']) {
+    const result = check(complete(leaked), ['本文']);
+    assert.equal(result.completed, true);
+    assert.equal(result.preserved, true);
+    assert.equal(result.noControlTokens, false);
+  }
+});
