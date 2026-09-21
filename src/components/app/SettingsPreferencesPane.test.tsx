@@ -32,6 +32,7 @@ function renderWithState(initial: EditorSettings) {
         menuLanguage="en"
         onEditorSettingsChange={setSettings}
         onMenuLanguageChange={vi.fn()}
+        onOpenOnDeviceModels={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -43,6 +44,33 @@ function renderWithState(initial: EditorSettings) {
 }
 
 describe("SettingsPreferencesPane", () => {
+  it("links to the on-device model page instead of embedding the model list", async () => {
+    // モデル管理は独立ページへ移した（「モデル管理を独立した設定画面にする」）。
+    // 設定本文には入口だけを置き、一覧そのものは別ページに残す。
+    const onOpenOnDeviceModels = vi.fn();
+    const copy = getPreferencesCopy("en");
+    render(
+      <SettingsPreferencesPane
+        copy={copy}
+        editorSettings={defaultEditorSettings()}
+        lModeCopy={getLModeCopy("en")}
+        menuLanguage="en"
+        onEditorSettingsChange={vi.fn()}
+        onMenuLanguageChange={vi.fn()}
+        onOpenOnDeviceModels={onOpenOnDeviceModels}
+        onPreviewVisibleChange={vi.fn()}
+        onThemePreferenceChange={vi.fn()}
+        previewVisible={true}
+        themePreference="light"
+      />,
+    );
+
+    expect(screen.queryByText("Apple Intelligence")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: copy.openOnDeviceModels }));
+    expect(onOpenOnDeviceModels).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText(copy.onDeviceModels)).toBeTruthy();
+  });
+
   it("offers only per-document approval or explicit allow-all for outside images", () => {
     const copy = getPreferencesCopy("en");
     renderWithState(defaultEditorSettings());
@@ -88,6 +116,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={vi.fn()}
         onMenuLanguageChange={vi.fn()}
+        onOpenOnDeviceModels={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -118,6 +147,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={vi.fn()}
         onMenuLanguageChange={vi.fn()}
+        onOpenOnDeviceModels={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -162,6 +192,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={vi.fn()}
         onMenuLanguageChange={vi.fn()}
+        onOpenOnDeviceModels={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -186,6 +217,7 @@ describe("SettingsPreferencesPane", () => {
           menuLanguage={lang}
           onEditorSettingsChange={vi.fn()}
           onMenuLanguageChange={vi.fn()}
+          onOpenOnDeviceModels={vi.fn()}
           onPreviewVisibleChange={vi.fn()}
           onThemePreferenceChange={vi.fn()}
           previewVisible={true}
@@ -209,6 +241,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={vi.fn()}
         onMenuLanguageChange={vi.fn()}
+        onOpenOnDeviceModels={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -231,6 +264,7 @@ describe("SettingsPreferencesPane", () => {
           menuLanguage={lang}
           onEditorSettingsChange={vi.fn()}
           onMenuLanguageChange={vi.fn()}
+          onOpenOnDeviceModels={vi.fn()}
           onPreviewVisibleChange={vi.fn()}
           onThemePreferenceChange={vi.fn()}
           previewVisible={true}

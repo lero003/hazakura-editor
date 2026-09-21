@@ -10,6 +10,11 @@ type PreferencesDialogProps = {
   closeLabel: string;
   dialogRef: RefObject<HTMLElement | null>;
   mode: PreferencesDialogMode;
+  /**
+   * オンデバイスモデルページの見出し。Settings 本文の入口と同じ値を渡し、
+   * ナビの項目名をページ側と二重定義しない。
+   */
+  modelsLabel?: string;
   menuLanguage?: MenuLanguage;
   onClose: () => void;
   onChangeMode?: (mode: PreferencesDialogMode) => void;
@@ -22,6 +27,7 @@ export function PreferencesDialog({
   closeLabel,
   dialogRef,
   mode,
+  modelsLabel,
   menuLanguage = "en",
   onClose,
   onChangeMode,
@@ -38,7 +44,8 @@ export function PreferencesDialog({
   } as const;
   const navigationLabel = isJapaneseMenuLanguage(menuLanguage) ? "設定 / ヘルプ" : "Settings / Help";
   const hasNavigation = onChangeMode && mode !== "agent";
-  const isHelpMode = mode !== "settings" && mode !== "agent";
+  // "settings" / "agent" / "models" は設定系、それ以外はヘルプ文書のページ。
+  const isHelpMode = isHelpDocumentDialogMode(mode);
   const modeClass =
     mode === "agent"
       ? "agent-workbench-dialog"
@@ -67,9 +74,12 @@ export function PreferencesDialog({
               <span className="sr-only">{navigationLabel}</span>
               <select aria-label={navigationLabel} value={mode} onChange={(event) => {
                 const next = event.target.value;
-                if (next === "settings" || isHelpDocumentDialogMode(next)) onChangeMode(next);
+                if (next === "settings" || next === "models" || isHelpDocumentDialogMode(next)) {
+                  onChangeMode(next);
+                }
               }}>
                 <option value="settings">{navigationCopy.commands["settings.open"].label.replace(/…$/, "")}</option>
+                {modelsLabel ? <option value="models">{modelsLabel}</option> : null}
                 {Object.keys(helpDocsByMode).filter(isHelpDocumentDialogMode).map((key) =>
                   <option key={key} value={key}>{navigationCopy.commands[helpCommands[key]].label.replace(/…$/, "")}</option>)}
               </select>

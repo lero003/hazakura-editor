@@ -5,6 +5,17 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-21
 
+- **オンデバイスモデルを独立ページにする（2026-09-21）:** Preferences ダイアログに
+  `models` ページを追加し、モデル一覧（状態・サイズ・資産バージョン・開始/進捗/再開/取消/
+  削除/選択）、保存先の説明、生成設定（直近の実行）、境界の説明を1ページへまとめた。
+  設定本文には入口の1行だけを残す。保存先は選ばせず説明のみ、自動ダウンロードと
+  起動時スキャンは不変。変更は frontend / CSS / docs のみで Rust 契約は不変。
+  frontend 297 files / 2,654件、project script 24件、App Store surface 130件、型検査、
+  Vite build、Vite fixture の実表示（日本語 light / 英語 dark / 未配布の空状態）は成功。
+  **built app の表示・VoiceOver・最大 Dynamic Type は未実施**。ライセンス表示と
+  削除時の解放サイズは残り。
+  [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
+
 - **Core AI 生成設定の可視化（2026-09-21）:** helper が返す `usage`（要求/実効の
   サンプリング、出力上限、トークン数）を Rust が保持し、設定のオンデバイスモデル欄へ
   「生成設定（直近の実行）」として出す。表示は webview 側の写しではなく Rust の記録だけを

@@ -40,7 +40,7 @@ describe("CoreAiModelManager", () => {
       managementError: "Failed to prepare Core AI app data: permission denied",
       models: [{ id: "apple:core-ai:future", displayName: "Future", kind: "core_ai", status: "not_downloaded", selected: false }],
     });
-    render(<CoreAiModelManager language="ja" />);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     expect((await screen.findByRole("alert")).textContent).toContain("permission denied");
     expect(screen.getByRole("alert").textContent).toContain("文書の編集は続けられます");
     expect(screen.getByRole("button", { name: "ダウンロード" }).hasAttribute("disabled")).toBe(true);
@@ -55,7 +55,7 @@ describe("CoreAiModelManager", () => {
         kind: "system", status: "ready", selected: true,
       }],
     });
-    render(<CoreAiModelManager language="ja" />);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     expect(await screen.findByText(/Core AI モデルはまだ配布されていません/)).toBeTruthy();
     expect(screen.getByText("Apple Intelligence")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
@@ -67,7 +67,7 @@ describe("CoreAiModelManager", () => {
       selectionLocked: true,
       models: [{ id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: false }],
     });
-    render(<CoreAiModelManager language="ja" />);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     expect(await screen.findByText(/Developer用のテストモデル指定が有効/)).toBeTruthy();
     const select = screen.getByRole("button", { name: "使う" });
     expect(select.hasAttribute("disabled")).toBe(true);
@@ -92,7 +92,7 @@ describe("CoreAiModelManager", () => {
         ? { ...model, status: "downloading", progress: 0 }
         : model),
     });
-    render(<CoreAiModelManager language="ja" />);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     fireEvent.click(await screen.findByRole("button", { name: "ダウンロード" }));
     await waitFor(() => expect(mocks.download).toHaveBeenCalledWith("apple:core-ai:writing-primary"));
   });
@@ -108,7 +108,7 @@ describe("CoreAiModelManager", () => {
     };
     mocks.list.mockResolvedValue(downloading);
     mocks.cancel.mockResolvedValue(true);
-    render(<CoreAiModelManager language="ja" />);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     expect(await screen.findByText("ダウンロード中 · 42%")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
     await waitFor(() => expect(mocks.cancel).toHaveBeenCalledWith("apple:core-ai:e4b"));

@@ -48,6 +48,7 @@ import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
+import { OnDeviceModelsPane } from "./OnDeviceModelsPane";
 import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
 import { DiagnosticsPane } from "./DiagnosticsPane";
 import { helpDocsByMode, isHelpDocumentDialogMode } from "./helpDocs";
@@ -615,15 +616,18 @@ export function AppOverlays({
           closeLabel={preferencesCopy.closeDialog}
           dialogRef={preferencesDialogRef}
           mode={preferencesDialogMode}
+          modelsLabel={preferencesCopy.onDeviceModels}
           menuLanguage={menuLanguage}
           onChangeMode={setPreferencesDialogMode}
           onClose={closePreferencesFromKeyboard}
           title={
             preferencesDialogMode === "agent"
               ? agentWorkbenchCopy.title
-              : activeHelpDoc
-                ? activeHelpDoc.title
-                : preferencesCopy.settingsTitle
+              : preferencesDialogMode === "models"
+                ? preferencesCopy.onDeviceModels
+                : activeHelpDoc
+                  ? activeHelpDoc.title
+                  : preferencesCopy.settingsTitle
           }
         >
           {preferencesDialogMode === "agent" ? (
@@ -648,6 +652,8 @@ export function AppOverlays({
               sessionLabel={agentSessionStateLabel(agentSession, menuLanguage)}
               workspaceRootPath={workspaceRootPath}
             />
+          ) : preferencesDialogMode === "models" ? (
+            <OnDeviceModelsPane copy={preferencesCopy} language={menuLanguage} />
           ) : preferencesDialogMode === "diagnostics" ? (
             <DiagnosticsPane
               appleLocalAssistAvailable={
@@ -671,6 +677,7 @@ export function AppOverlays({
               menuLanguage={menuLanguage}
               onEditorSettingsChange={setEditorSettings}
               onMenuLanguageChange={setMenuLanguage}
+              onOpenOnDeviceModels={() => setPreferencesDialogMode("models")}
               onPreviewVisibleChange={setPreviewVisible}
               onThemePreferenceChange={setThemePreference}
               previewVisible={previewVisible}

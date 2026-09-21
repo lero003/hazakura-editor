@@ -33,3 +33,24 @@ it("uses the menu language for navigation and keeps the selector in the header",
   expect(screen.getByRole("option", { name: "設定" })).toBeTruthy();
   expect(screen.getByRole("option", { name: "ローカルデータの説明" })).toBeTruthy();
 });
+
+it("reaches the on-device model page from the same selector without closing the dialog", () => {
+  function Host() {
+    const [mode, setMode] = useState<PreferencesDialogMode>("settings");
+    return <PreferencesDialog mode={mode} title="Settings" closeLabel="Close" onClose={vi.fn()}
+      modelsLabel="On-device models"
+      closeButtonRef={{ current: null }} dialogRef={{ current: null }} onChangeMode={setMode}>
+      <p>{mode}</p>
+    </PreferencesDialog>;
+  }
+  render(<Host />);
+  const select = screen.getByRole("combobox", { name: "Settings / Help" });
+  expect(screen.getByRole("option", { name: "On-device models" })).toBeTruthy();
+
+  fireEvent.change(select, { target: { value: "models" } });
+
+  expect(screen.getByText("models")).toBeTruthy();
+  expect(screen.getAllByRole("dialog")).toHaveLength(1);
+  // 設定ページと同じ枠のまま切り替わる（ヘルプ文書の枠へ化けない）。
+  expect(screen.getByRole("dialog").className).toContain("settings-dialog");
+});

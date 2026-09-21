@@ -13,8 +13,6 @@ import type { AppleAssistAvailability } from "../../lib/tauri";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { ToggleSwitch } from "../common/ToggleSwitch";
 import { SparklesIcon } from "./Icons";
-import { CoreAiModelManager } from "./CoreAiModelManager";
-import { CoreAiGenerationProfile } from "./CoreAiGenerationProfile";
 
 type SettingsPreferencesPaneProps = {
   appleAssistAvailability?: AppleAssistAvailability;
@@ -25,6 +23,8 @@ type SettingsPreferencesPaneProps = {
   menuLanguage: MenuLanguage;
   onEditorSettingsChange: Dispatch<SetStateAction<EditorSettings>>;
   onMenuLanguageChange: (language: MenuLanguage) => void;
+  /** オンデバイスモデルの独立ページへ切り替える（同じダイアログ内の mode 変更）。 */
+  onOpenOnDeviceModels: () => void;
   onPreviewVisibleChange: (visible: boolean) => void;
   onThemePreferenceChange: (theme: ThemePreference) => void;
   previewVisible: boolean;
@@ -58,6 +58,7 @@ export function SettingsPreferencesPane({
   menuLanguage,
   onEditorSettingsChange,
   onMenuLanguageChange,
+  onOpenOnDeviceModels,
   onPreviewVisibleChange,
   onThemePreferenceChange,
   previewVisible,
@@ -349,8 +350,16 @@ export function SettingsPreferencesPane({
                 </div>
               ))}
             </div>
-            <CoreAiModelManager language={menuLanguage} />
-            <CoreAiGenerationProfile language={menuLanguage} />
+            {/* モデルの管理は独立ページへ移した（「モデル管理を独立した設定画面にする」）。
+                本文には入口だけを残し、設定のスクロールを短く保つ。 */}
+            <div className="core-ai-model-row">
+              <div><strong>{copy.onDeviceModels}</strong></div>
+              <div className="core-ai-model-actions">
+                <button type="button" onClick={onOpenOnDeviceModels}>
+                  {copy.openOnDeviceModels}
+                </button>
+              </div>
+            </div>
             <p className="field-hint">{copy.assistNotice}</p>
           </>
         ) : null}

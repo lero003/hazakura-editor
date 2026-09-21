@@ -131,6 +131,21 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* 1ページ1セクションの設定面（オンデバイスモデル）。設定本体は2カラムだが、
+   この面は1セクションしか持たないため、左半分へ縮めず全幅で使う。 */
+.settings-preferences.models-preferences {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* 独立ページの見出しは、設定カテゴリの小さなラベルではなく面の題名として出す。 */
+.settings-preferences.models-preferences .preference-section > h3 {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .agent-workbench-settings {
   display: grid;
   gap: 0;

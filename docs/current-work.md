@@ -5,6 +5,24 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-21
 
+## オンデバイスモデルを独立ページにする（2026-09-21）
+
+モデル管理を Preferences 内の1ペインから独立ページ（`models` モード）へ移した。
+設定本文（アプリケーション）には入口の1行だけを残し、押すと同じダイアログの
+モデルページへ切り替える。ページはモデル一覧（状態・サイズ・資産バージョン・
+開始/進捗/再開/取消/削除/選択）、保存先の説明、生成設定（直近の実行）、
+扱えるモデルの境界を1か所にまとめる。選択中でもサイズ・バージョンを落とさない。
+
+保存先は Apple-hosted asset pack がプロセス単位で決めるため、選ばせず説明だけを出す。
+自動ダウンロード・起動時スキャンは足していない（明示操作の境界は不変）。
+Rust の command 契約と helper へ渡す内容も不変で、変更は frontend / CSS / docs。
+
+検証は frontend 297 files / 2,654件、project script 24件、App Store surface 130件、
+型検査、Vite build、Vite fixture での実表示（日本語 light / 英語 dark / 未配布の空状態）。
+**built app（WKWebView）と VoiceOver・最大 Dynamic Type は未実施**。ライセンス表示と
+削除時の解放サイズ表示は残り。証跡は
+[オンデバイスモデルの独立ページ](reviews/2026-09-21-on-device-models-page/README.md)。
+
 ## Core AI 生成設定の可視化（2026-09-21）
 
 前スライスの `usage`（要求した設定と実効設定）を設定画面から見えるようにした。

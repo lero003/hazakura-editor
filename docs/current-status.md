@@ -7,6 +7,16 @@ Last reviewed: 2026-09-21
 
 ## Current State
 
+- **オンデバイスモデルの独立ページ（2026-09-21）:** モデル管理をPreferencesダイアログの
+  独立ページ（`models`）へ移した。モデル一覧（状態・サイズ・資産バージョン・開始/進捗/
+  再開/取消/削除/選択）、保存先が選べないことの説明、生成設定（直近の実行）、扱えるモデルの
+  境界を1ページに置き、設定本文には入口だけを残す。保存先は選ばせず、自動ダウンロード・
+  起動時スキャン・Rust command契約・helperへ渡す内容は不変。frontend 297 files / 2,654件、
+  project script 24件、App Store surface 130件、型検査、Vite build、Vite fixtureの実表示
+  （日本語light / 英語dark / 未配布の空状態）は成功。built appの表示・VoiceOver・
+  最大Dynamic Typeは未実施で、ライセンス表示と削除時の解放サイズは残り。
+  [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
+
 - **Core AI生成設定の可視化（2026-09-21）:** helperが返す`usage`をRustが保持し、設定の
   オンデバイスモデル欄に「生成設定（直近の実行）」（出力上限 / サンプリング要求 /
   サンプリング実効 / 直近のトークン数 / 直近のモデル）を表示する。値はwebview側の写しでは

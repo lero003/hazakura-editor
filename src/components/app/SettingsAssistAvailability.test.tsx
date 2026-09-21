@@ -17,7 +17,7 @@ it.each(["en", "ja", "kana"] as const)("does not call an unprobed environment un
       menuLanguage={language} editorSettings={defaultEditorSettings()}
       appleAssistAvailability={availability} appleAssistAvailabilityProbed={probed}
       themePreference="light" previewVisible onEditorSettingsChange={vi.fn()}
-      onMenuLanguageChange={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />;
+      onMenuLanguageChange={vi.fn()} onOpenOnDeviceModels={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />;
   }
   render(<Host />);
   expect(screen.getByRole("status", { name: copy.appleAssistStatusLabel }).textContent).not.toContain(copy.appleAssistStatusUnsupported);
@@ -32,7 +32,7 @@ it("states what Local Assist never does, next to the availability card (ja)", ()
   render(<SettingsPreferencesPane copy={copy} lModeCopy={getLModeCopy("ja")} menuLanguage="ja"
     editorSettings={defaultEditorSettings()} appleAssistAvailability={{ kind: "available" }}
     appleAssistAvailabilityProbed themePreference="light" previewVisible onEditorSettingsChange={vi.fn()}
-    onMenuLanguageChange={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
+    onMenuLanguageChange={vi.fn()} onOpenOnDeviceModels={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
 
   // 「しないこと」が実際の文言で並ぶ（モック17の境界説明）。
   expect(screen.getByText("外部AIへ送信しない")).toBeTruthy();
@@ -49,7 +49,7 @@ it("shows one preview surface for the type-size settings (モック16)", () => {
   render(<SettingsPreferencesPane copy={copy} lModeCopy={getLModeCopy("ja")} menuLanguage="ja"
     editorSettings={defaultEditorSettings()} appleAssistAvailability={{ kind: "available" }}
     appleAssistAvailabilityProbed themePreference="light" previewVisible onEditorSettingsChange={vi.fn()}
-    onMenuLanguageChange={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
+    onMenuLanguageChange={vi.fn()} onOpenOnDeviceModels={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
 
   expect(screen.getByText(copy.typePreviewCaption)).toBeTruthy();
   // 4つの文字サイズ設定すべてが、それぞれの大きさで1箇所に並ぶ（FB: 中央面が

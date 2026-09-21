@@ -135,6 +135,9 @@ export type HelpDocumentDialogMode =
 export type PreferencesDialogMode =
   | "settings"
   | "agent"
+  // オンデバイスモデルの管理ページ。Settings 本文から切り替える独立ページで、
+  // Local Assist ウィンドウのモデル選択と同じ Rust-owned catalog を表示する。
+  | "models"
   | HelpDocumentDialogMode;
 
 export type AssistSurfacePreference =

@@ -9,7 +9,7 @@ it.each(["en", "ja", "kana"] as const)("category navigation preserves controls a
   render(<SettingsPreferencesPane copy={copy} lModeCopy={getLModeCopy(language)}
     menuLanguage={language} editorSettings={defaultEditorSettings()}
     themePreference="light" previewVisible onEditorSettingsChange={update}
-    onMenuLanguageChange={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
+    onMenuLanguageChange={vi.fn()} onOpenOnDeviceModels={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
   const original = screen.getByRole("spinbutton", { name: copy.editorFontSize });
   for (const name of [copy.editor, copy.mediaAndDisplay, copy.application, copy.appearanceAndWriting]) {
     fireEvent.click(screen.getByRole("button", { name }));
