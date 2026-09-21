@@ -27,6 +27,13 @@ writeFileSync(manifestPath, `${JSON.stringify({
   sourceRoot: ".",
 }, null, 2)}\n`, "utf8");
 
+// `ba-package` rejects every `-o <path>` argument, including a path that
+// plainly ends in .json, when it runs inside a restricted sandbox. Record the
+// indicators so a sandboxed run is never reported as a toolchain defect.
+const sandboxIndicators = ["CODEX_SANDBOX", "SANDBOX_NAMED", "APP_SANDBOX_CONTAINER_ID"]
+  .filter((name) => typeof process.env[name] === "string" && process.env[name].length > 0);
+const sandboxed = sandboxIndicators.length > 0;
+
 function run(id, args, expectedOutput) {
   const result = spawnSync("xcrun", ["ba-package", ...args], {
     cwd: root,
@@ -62,6 +69,11 @@ const results = [
     "template-relative-long",
     ["template", "--output-path", "apple-template-long.json"],
     "apple-template-long.json",
+  ),
+  run(
+    "template-absolute-short",
+    ["template", "-o", join(root, "apple-template-absolute.json")],
+    join(root, "apple-template-absolute.json"),
   ),
   run(
     "official-relative-short",
@@ -104,6 +116,15 @@ const allPathInputsFailWithExtension = pathInputResults.every(
   (result) => !result.success &&
     /path extension isn.t [“"]?json/iu.test(`${result.stdout}\n${result.stderr}`),
 );
+// A control case that must succeed in any healthy toolchain: the template
+// written to an absolute .json path. When even that fails, the failure is not
+// about Hazakura's manifest at all.
+const templateOutputFailsWithExtension = results
+  .filter((result) => result.id.startsWith("template-") && result.id !== "template-stdout")
+  .every(
+    (result) => !result.success &&
+      /path extension isn.t [“"]?json/iu.test(`${result.stdout}\n${result.stderr}`),
+  );
 let classification = "requires-manual-review";
 if (resultById["official-relative-short"].success) {
   classification = resultById["package-relative-short"].success
@@ -120,11 +141,25 @@ if (resultById["official-relative-short"].success) {
 ) {
   classification = "long-output-option-incompatibility";
 } else if (allPathInputsFailWithExtension) {
-  classification = "toolchain-path-extension-validation";
+  classification = sandboxed && templateOutputFailsWithExtension
+    ? "restricted-execution-environment"
+    : "toolchain-path-extension-validation";
 }
 const report = {
   schemaVersion: 1,
   workingDirectory: root,
+  execution: {
+    sandboxed,
+    sandboxIndicators,
+    sandboxValues: Object.fromEntries(
+      sandboxIndicators.map((name) => [name, process.env[name]]),
+    ),
+    guidance: classification === "restricted-execution-environment"
+      ? "ba-package rejects even a valid .json output path while it runs inside this " +
+        "sandbox. Re-run the same script from Terminal.app before treating the failure " +
+        "as a toolchain defect."
+      : "Re-run the comparison in a normal shell if any input condition is unverified.",
+  },
   toolchain: {
     xcode: (xcode.stdout || xcode.stderr || "").trim(),
     baPackage: (baPackage.stdout || baPackage.stderr || "").trim(),
@@ -144,6 +179,7 @@ const report = {
     explicitPackageCommandSucceeded: resultById["package-relative-short"].success,
     appleTemplateShortOutputSucceeded: resultById["template-relative-short"].success,
     appleTemplateLongOutputSucceeded: resultById["template-relative-long"].success,
+    appleTemplateAbsoluteOutputSucceeded: resultById["template-absolute-short"].success,
   },
   results,
 };

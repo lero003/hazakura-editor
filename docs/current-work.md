@@ -21,14 +21,17 @@ SettingsとLocal Assist窓を同期し、G2はsigned manifest、safe path、size
 `Ready`にする。モデルをappへ仮同梱したり、Developer用Qwen fixtureを本番idへ昇格したりしない。
 
 [本番候補とasset準備の正本](core-ai-production-models.md)では、巨大なmodel/archiveを
-`.hazakura/coreai-production/`へ生成しGitへ入れない。現ホストには`ba-package`がある一方、
-Xcode 27.0の同toolは相対/絶対、`-o`/`--output-path`、default/明示`package`の全比較と
-`template -o`で公式JSONまで拡張子判定拒否となり、`.aar`作成は修正版toolchain待ち。
+`.hazakura/coreai-production/`へ生成しGitへ入れない。以前はXcode 27.0 `ba-package`の
+拡張子判定不具合として`.aar`作成を保留していたが、この判定は誤りだった。失敗はCodexの
+seatbelt sandbox内だけで再現し、通常shellでは同toolが相対/絶対、`-o`/`--output-path`、
+default/明示`package`の全てで成功する。manifestも実物の`ba-package template`と照合して有効。
+`package`は`sourceRoot`へchdirしてから出力pathを解決するため、絶対pathを渡すよう修正した。
+sandbox外でE4B（5,431,767,284 bytes）と12B（9,148,928,727 bytes）の`.aar`を生成済み。
 `coreai-build`もなくMac AOT済み`.aimodelc`はまだ作れない。`.aar`のローカル生成成功も
 Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡にはしない。
 
 source側は「E4BのApple CDN取得を要求し、検証後にproduction helperへ渡す」形まで進んだ。
-ただし`.aar`は未生成で、Apple CDN upload、署名済みbuild、TestFlight取得・helper load、AOT、
+ローカル`.aar`は生成済みで、Apple CDN upload、署名済みbuild、TestFlight取得・helper load、AOT、
 16 GB機の日本語bake-off、notice最終確認は未完了。再生成された本体・extension両profileは`OSX`、
 Bundle ID、App Group、有効期限をpreflightで通過し、profile内certificateとインストール済みidentityも
 一致した。3.1.0 build 143のApple Distribution署名appとInstaller署名pkgを作成し、entitlement probe、
@@ -51,9 +54,9 @@ TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
 張り直さない修正を追加。「再確認」は会話を保持し、切替・確認中の送信を止める。
 この後の最終値はRust 417件（2 ignored）、frontend 2,646件、surface 129件とbuild / preview probeが成功。
 次は遅延probe中の実ウィンドウ応答・停止受入（隔離QAでは起動導線へ到達できず未確認）。
-G1 / G2はsource実装と回帰テストまで閉じた。次は修正版`ba-package`でE4B `.aar`を生成し、
-署名app/pkg側は準備済み。次は修正版toolchainでasset `.aar`を作り、asset upload / processing、
-app build upload、署名済みInternal TestFlightの一本受入を行う。
+G1 / G2はsource実装と回帰テストまで閉じた。E4B `.aar`はsandbox外の`npm run coreai:models:package`
+で生成済みで、署名app/pkg側も準備済み。次はasset upload / processing、app build upload、
+署名済みInternal TestFlightの一本受入を行う。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
@@ -153,7 +156,8 @@ Core AIは[単体テスト用Qwen3-0.6B](core-ai-test-model.md)を準備し、�
 専用テスト環境のbuilt appで英語起動→設定→保存／衝突→Reader→出力を
 小さく分けて実表示確認する。nativeメニュー、Help、VoiceOver、署名候補は別ゲートのまま。
 Core AIはE4BのApple-hosted source経路まで接続済み。未download・未検証の`selectedId`は
-引き続き受理しない。次の配布ゲートは`.aar`、Apple processing、署名済みTestFlight受入。
+引き続き受理しない。ローカル`.aar`は生成済みで、次の配布ゲートはApple processing、
+署名済みTestFlight受入。
 
 ## 3.0.3 — スクロールバー修正版を実機確認して申請（2026-09-18）
 

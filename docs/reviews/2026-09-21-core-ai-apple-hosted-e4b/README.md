@@ -1,6 +1,6 @@
 # Core AI Apple-hosted E4B handoff
 
-Status: Source-ready; Apple asset upload and TestFlight device acceptance blocked
+Status: Source-ready and locally packaged; Apple asset upload and TestFlight device acceptance blocked
 Scope: Internal TestFlight path for Gemma 4 E4B only
 Authority: Verification record
 Last reviewed: 2026-09-21
@@ -71,7 +71,7 @@ Transporter upload and Apple processing have not been attempted. A local `spctl`
 an App Store validation failure because Gatekeeper evaluates the outside-the-Store Developer ID
 lane; use Transporter or `altool --validate-app` for upload validation.
 
-## `.aar` blocker
+## `.aar` status
 
 `npm run coreai:ba-package:reproduce` isolates packaging from all model scripts. On this host:
 
@@ -81,27 +81,35 @@ Xcode 27.0 (27A266a)
 ba-package 2.0
 ```
 
-`xcrun ba-package template` succeeds to stdout. The 41-byte fixture now exercises the complete CLI
-matrix requested for this follow-up. The following all fail at argument validation with exit 64 and
-`path extension isn’t “json”` before manifest content is evaluated:
+An earlier revision of this record concluded that this toolchain rejects Apple's documented `.json`
+manifest input and blocked the archive on a corrected `ba-package`. That conclusion was wrong: the
+failure depends on the execution context, not the toolchain. The same 41-byte fixture and the same
+absolute `.json` output path fail with exit 64 and `path extension isn’t “json”` while `ba-package`
+runs inside the Codex seatbelt sandbox (`CODEX_SANDBOX=seatbelt`), and succeed from Terminal.app.
+`env -i` with a minimal environment does not change the sandboxed result, so this is not an
+inherited-variable effect either. The reproduction script now records the sandbox indicators and
+classifies that case as `restricted-execution-environment` instead of a toolchain defect. Running
+the same comparison outside the sandbox produces no failure for any CLI form.
 
-- Apple's own template with relative `template -o apple-template.json` and
-  `template --output-path apple-template-long.json`
-- relative and absolute `evaluate manifest.json`
-- Apple's documented default package form `ba-package manifest.json -o smoke.aar`, with relative
-  and absolute paths
-- explicit `package manifest.json` with relative and absolute paths, using both `-o` and
-  `--output-path`
-- the pinned E4B Background Assets manifest
+The manifest schema was checked against the tool itself: `xcrun ba-package template` was saved and
+compared, and the pinned `directorySource` / `directoryDestination` / `sourceRoot` keys are the
+current documented keys. `sourceRoot` resolves relative to the manifest's location, which matches
+the generated layout.
 
-There is no success/failure split by relative versus absolute path, short versus long output option,
-or default versus explicit `package`. This confirms the current failure as a toolchain
-path-extension-validation defect, not an npm wrapper, model-manifest, payload-size, CLI-form, or
-archive-format issue. The production script nevertheless now uses Apple's documented default
-package command with relative paths. No fake `.aar` is created. A corrected Xcode `ba-package` or
-Apple's official compatible packaging tool is required before upload.
+One behavioural detail was worth fixing: `ba-package` changes its working directory to `sourceRoot`
+before it resolves the output path. `buildBaPackageCommands` therefore hands it absolute manifest
+and archive paths; with relative arguments the archive lands inside the payload stage even when
+packaging succeeds, and the following `stat` fails.
 
-Expected output after that toolchain is available:
+Running the packaging step outside the sandbox succeeded for both candidates on 2026-09-21:
+
+| Model | `.aar` | bytes | SHA-256 |
+| --- | --- | --- | --- |
+| Gemma 4 E4B | `dev.hazakura.editor.coreai.gemma4-e4b.v1.aar` | 5,431,767,284 | `e0218e05102ab36d6b2b1a4dd18af009dc24d6e957d1a5dc610258b77012ceac` |
+| Gemma 4 12B | `dev.hazakura.editor.coreai.gemma4-12b.v1.aar` | 9,148,928,727 | `9cf11956c537e10b04eeab53bc2618f4941ce3edee371afdad21bc90d62a3efc` |
+
+Both archives live under `.hazakura/coreai-production/<key>/2026.09.20.1/archives/` together with
+`archive.json` and `UPLOAD-INSTRUCTIONS.md`, and remain untracked:
 
 ```txt
 .hazakura/coreai-production/gemma4-e4b/2026.09.20.1/archives/
@@ -109,6 +117,8 @@ Expected output after that toolchain is available:
 ├── archive.json
 └── UPLOAD-INSTRUCTIONS.md
 ```
+
+Local archive generation is not Apple upload, Apple processing, signed-build, or device evidence.
 
 The App Store Connect asset-pack version is assigned and incremented by Apple at upload time. It is
 not the catalog revision and cannot be reported before a successful upload/processing result.
@@ -119,10 +129,15 @@ not the catalog revision and cannot be reported before a successful upload/proce
   bytes match the production lock. The generated payload resource manifest exactly matches the
   signed runtime resource and its SHA-256 is
   `d46c81f18147a2faf0d066b4ef2d31f72416b75ee544397580815fa2e4fb4af3`.
-- `npm run coreai:ba-package:reproduce`: the minimal fixture reproduces the toolchain defect above;
-  no `.aar` exists.
+- `npm run coreai:ba-package:reproduce`: the minimal fixture fails with
+  `path extension isn’t “json”` inside the Codex sandbox and reports
+  `restricted-execution-environment`; the same script outside the sandbox shows no failure.
+- `npm run coreai:models:package -- --model=gemma4-e4b` and `--model=gemma4-12b` outside the
+  sandbox created both `.aar` files listed above, with `archive.json` digests that match a
+  re-computed SHA-256.
 - `npm run typecheck`, `npm run build:vite`, and `npm test`: pass. Vitest reports 295 files and
-  2,646 tests; the production-model and provisioning-profile scripts report another 14 tests.
+  2,646 tests; the production-model and provisioning-profile scripts report another 15 tests
+  (14 before the sandbox-detection case and the absolute-path argument guard were added).
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and
   `cargo test --manifest-path src-tauri/Cargo.toml`: pass; 417 tests passed and 2 session-dependent
   tests were ignored.
@@ -137,9 +152,10 @@ not the catalog revision and cannot be reported before a successful upload/proce
 
 ## Internal TestFlight acceptance
 
-After a corrected toolchain produces the archive:
+After the archive exists:
 
-1. Run `npm run coreai:models:package -- --model=gemma4-e4b`; retain the `.aar`, `archive.json`,
+1. From a normal shell (outside the Codex sandbox), run
+   `npm run coreai:models:package -- --model=gemma4-e4b`; retain the `.aar`, `archive.json`,
    resource manifest, and digest together.
 2. Upload only `dev.hazakura.editor.coreai.gemma4-e4b.v1.aar` with Transporter, App Store Connect API,
    `iTMSTransporter`, or `altool`. Wait for processing and record the Apple-assigned version.

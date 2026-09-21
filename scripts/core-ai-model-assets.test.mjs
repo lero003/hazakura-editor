@@ -106,21 +106,38 @@ test("Background Assets manifests are on-demand, macOS-only, and contain no netw
   assert.equal(manifest.fileSelectors[0].directoryDestination.startsWith("CoreAIModels/"), true);
 });
 
-test("ba-package uses Apple's documented default package command with relative paths", () => {
+test("ba-package gets absolute paths because it chdirs to the manifest sourceRoot", () => {
   const commands = buildBaPackageCommands(
     "/tmp/hazakura/manifests/background-assets-manifest.json",
     "/tmp/hazakura/archives/model.aar",
   );
   assert.deepEqual(commands, {
     cwd: "/tmp/hazakura",
-    evaluate: ["evaluate", "manifests/background-assets-manifest.json"],
+    evaluate: ["evaluate", "/tmp/hazakura/manifests/background-assets-manifest.json"],
     package: [
-      "manifests/background-assets-manifest.json",
+      "/tmp/hazakura/manifests/background-assets-manifest.json",
       "-o",
-      "archives/model.aar",
+      "/tmp/hazakura/archives/model.aar",
       "--verbose",
     ],
   });
+});
+
+test("ba-package arguments may not escape the version root", () => {
+  assert.throws(
+    () => buildBaPackageCommands(
+      "/tmp/hazakura/manifests/background-assets-manifest.json",
+      "/tmp/outside/model.aar",
+    ),
+    /must stay inside/,
+  );
+  assert.throws(
+    () => buildBaPackageCommands(
+      "/tmp/outside/version/manifests/background-assets-manifest.json",
+      "/tmp/hazakura/archives/model.aar",
+    ),
+    /must stay inside/,
+  );
 });
 
 test("packaging blocker records the exact toolchain failure without claiming an archive", () => {

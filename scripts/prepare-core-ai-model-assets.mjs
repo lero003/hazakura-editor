@@ -11,7 +11,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, join, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -249,9 +249,9 @@ export function formatPackagingBlocker(model, toolchain, details) {
     `- Toolchain: \`${toolchain.replaceAll("\n", " / ")}\`\n\n` +
     `The staged model and manifests remain available and verified. No .aar was created.\n\n` +
     `\`\`\`text\n${details.trim()}\n\`\`\`\n\n` +
-    `Run \`npm run coreai:ba-package:reproduce\` to compare Apple's documented CLI form ` +
-    `with the installed toolchain, then re-run ` +
-    `\`npm run coreai:models:package -- --model=${model.key}\`.\n`;
+    `Run \`npm run coreai:ba-package:reproduce\` to compare the sandboxed and unsandboxed ` +
+    `contexts, then re-run \`npm run coreai:models:package -- --model=${model.key}\` from ` +
+    `Terminal.app so \`ba-package\` runs outside the restricted sandbox.\n`;
 }
 
 function runBaPackage(args, options) {
@@ -262,8 +262,11 @@ function runBaPackage(args, options) {
     const details = error instanceof Error ? error.message : String(error);
     if (/path extension isn.t [“\"]?json/i.test(details)) {
       throw new Error(
-        `The installed ba-package rejects Apple's documented .json manifest input. ` +
-        `Run npm run coreai:ba-package:reproduce to classify the CLI compatibility issue.\n${details}`,
+        `ba-package rejected a path that plainly ends in .json. This reproduces only ` +
+        `inside a restricted execution sandbox (for example the Codex seatbelt sandbox ` +
+        `that sets CODEX_SANDBOX), never from a normal shell. Re-run the packaging step ` +
+        `from Terminal.app, or run npm run coreai:ba-package:reproduce to compare the ` +
+        `sandboxed and unsandboxed contexts.\n${details}`,
       );
     }
     throw error;
@@ -458,27 +461,23 @@ export function buildBackgroundAssetsManifest(model) {
 
 export function buildBaPackageCommands(manifestPath, archivePath) {
   const cwd = dirname(dirname(manifestPath));
-  const manifestArgument = relative(cwd, manifestPath);
-  const archiveArgument = relative(cwd, archivePath);
+  // ba-package changes its working directory to the manifest's `sourceRoot`
+  // before resolving paths, so a relative output argument would land inside
+  // the payload stage instead of the version root. Hand it absolute paths and
+  // keep the containment guard on both of them.
+  const manifestArgument = resolve(manifestPath);
+  const archiveArgument = resolve(archivePath);
   for (const [label, argument] of [
     ["manifest", manifestArgument],
     ["archive", archiveArgument],
   ]) {
-    if (
-      argument.length === 0 ||
-      argument === ".." ||
-      argument.startsWith(`..${sep}`) ||
-      resolve(cwd, argument) !== resolve(label === "manifest" ? manifestPath : archivePath)
-    ) {
+    if (argument === cwd || !argument.startsWith(`${cwd}${sep}`)) {
       throw new Error(`ba-package ${label} path must stay inside ${cwd}.`);
     }
   }
   return {
     cwd,
     evaluate: ["evaluate", manifestArgument],
-    // Apple's managed asset-pack documentation uses the default package
-    // subcommand and short output option. Keep this exact form because some
-    // ba-package 2.0 builds reject equivalent explicit/absolute invocations.
     package: [manifestArgument, "-o", archiveArgument, "--verbose"],
   };
 }

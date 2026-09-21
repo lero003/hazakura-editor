@@ -60,7 +60,9 @@ Completed in this slice:
 
 Still open after local asset completion:
 
-- `.aar` creation for both candidates with a corrected `ba-package` toolchain.
+- `.aar` creation for both candidates. **Correction (2026-09-21):** the blocker recorded below was
+  a restricted-execution-environment effect, not a `ba-package` defect. Both archives now exist;
+  see [the 2026-09-21 Apple-hosted E4B record](../2026-09-21-core-ai-apple-hosted-e4b/README.md).
 
 Final source hygiene:
 
@@ -70,9 +72,10 @@ Final source hygiene:
 
 - The installed Xcode exposes `ba-package` but not `coreai-build`; architecture-specific
   `.aimodelc` AOT output is not available from this host and remains a release blocker.
-- Xcode 27.0 (27A266a) `ba-package 2.0` on this host rejects even Apple's documented
-  `Manifest.json` shape at the extension check. The exact failure is reproduced by `template -o`,
-  `evaluate`, and `package`; no replacement archive is synthesized.
+- Xcode 27.0 (27A266a) `ba-package 2.0` rejects even Apple's documented `Manifest.json` shape at
+  the extension check **while it runs inside the Codex seatbelt sandbox**; the same commands
+  succeed from Terminal.app. This entry originally recorded the failure as a toolchain defect and
+  is corrected here. No replacement archive was synthesized from a different tool.
 - Artifact creation exercises file integrity and the archive tool, not runtime generation quality.
 - The pinned community conversion recipes were inspected and recorded, but Hazakura did not
   re-export either model from the source checkpoint in this slice.

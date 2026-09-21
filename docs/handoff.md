@@ -25,14 +25,15 @@ Last reviewed: 2026-09-21
   native遅延helperテストは成功、遅延中の実ウィンドウ操作は隔離QAで導線へ到達できず未確認。
   再生成されたmacOS用の本体・extension profileと署名identityは検証済み。3.1.0 build 143の
   Apple Distribution署名appとInstaller署名pkg、entitlement probe、deep verify、installer chainを
-  通した。次は修正版`ba-package`でE4B `.aar`を作り、asset/buildをuploadし、Internal TestFlightの
-  CDN→検証→helper loadを実機で受け入れる。
+  通した。E4B `.aar`はsandbox外の`npm run coreai:models:package`で生成済み。次はasset/buildを
+  uploadし、Internal TestFlightのCDN→検証→helper loadを実機で受け入れる。
   2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定。
   `scripts/core-ai-production-models.json`へ変換物revisionとfile digestをlockし、
   `scripts/prepare-core-ai-model-assets.mjs`で取得・検証・resource manifest・Apple-hosted `.aar`を
-  再生成できる。ただし現ホストのXcode 27.0 `ba-package`は相対/絶対、短/長output option、
-  default/明示`package`、`template -o`の全比較で公式JSONまで同じexit 64となり、
-  stage/manifest以降の`.aar`作成は修正版toolchain待ち。product helperは分離した
+  再生成できる。以前は現ホストのXcode 27.0 `ba-package`を拡張子判定不具合と判定したが誤りで、
+  失敗はCodexのseatbelt sandbox内だけで再現する。通常shellでは全CLI形式が成功し、manifestも
+  実物の`ba-package template`と照合して有効。`package`は`sourceRoot`へchdirしてから出力pathを
+  解決するため絶対pathを渡すよう修正し、sandbox外でE4B / 12Bの`.aar`を生成済み。product helperは分離した
   `CoreAIProduction.Package.resolved`のCoreAIKit runtimeで
   E4B PLE / 12B bundleをロードする。詳細は[本番候補準備](core-ai-production-models.md)。
   現ホストは`coreai-build`なしのためAOTも未完了。最初のmobile profileはpreflightで拒否したが、

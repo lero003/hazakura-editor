@@ -52,8 +52,11 @@ source revisionを先にローカルcacheへ解決してoffline化し、recipe�
 
 ## Reproducible preparation
 
-Xcode 27と、Apple公式例のJSON manifestを受け付ける`xcrun ba-package`が利用できるMacで実行する。
-出力は巨大かつ再生成可能なので`.hazakura/coreai-production/`へ置き、Gitには含めない。
+Xcode 27の`xcrun ba-package`が利用できるMacで実行する。`ba-package`は**Codexのseatbelt
+sandbox内では必ず`path extension isn’t “json”`で失敗する**（後述のsandbox finding）ため、
+`package`工程だけはTerminal.appかsandbox外のrunnerで実行する。`download` / `verify`は
+sandbox内でも同じ結果になる。出力は巨大かつ再生成可能なので`.hazakura/coreai-production/`へ置き、
+Gitには含めない。
 
 ```bash
 npm run coreai:models:plan
@@ -89,38 +92,48 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
     ├── <asset-pack-id>.aar              # package成功時だけ
     ├── archive.json                     # package成功時だけ
     ├── UPLOAD-INSTRUCTIONS.md           # package成功時だけ
-    └── PACKAGING-BLOCKED.md             # toolchainが拒否した場合
+    └── PACKAGING-BLOCKED.md             # packageが失敗した場合だけ
 ```
 
 `download`はpinned revisionから取得し、全ファイルのsizeとSHA-256を照合してからstageへ移す。
-`package`は展開後resource manifestを再生成・再検証し、version rootをworking directoryとして
-相対pathで`ba-package evaluate manifests/background-assets-manifest.json`を通す。その後、Appleの
-公式例と同じdefault package形式（`ba-package manifests/background-assets-manifest.json -o
-archives/<asset-pack-id>.aar`）で`.aar`を作る。`archive.json`には最終archiveのsize、SHA-256、
-残release blockerを記録する。
+`package`は展開後resource manifestを再生成・再検証したうえで、manifestとarchiveを**絶対path**で
+`ba-package evaluate <manifest>` / `ba-package <manifest> -o <archive> --verbose`へ渡す。
+`ba-package`はmanifestを読んだ後に`sourceRoot`（stage）へchdirしてから出力pathを解決するため、
+相対pathで渡すとarchiveがstage側へ落ち、生成に成功しても`stat`が失敗する。`archive.json`には
+最終archiveのsize、SHA-256、残release blockerを記録する。
 
-### 2026-09-21 host toolchain result
+### 2026-09-21 sandbox finding（初回判定の訂正）
 
-この作業ホストのXcode 27.0（27A266a）に含まれる`ba-package 2.0`は、Apple公式手順どおりの
-`Manifest.json`と、このリポジトリが生成した`.json`の双方を、`path extension isn’t “json”`として
-引数検証時に拒否する。41 byte fixtureで次を独立比較した。
+以前このホストのXcode 27.0（27A266a）`ba-package 2.0`を「toolchainのpath-extension検証不具合」
+と記録したが、これは誤りだった。同じMac・同じtoolchain・同じ41 byte fixtureで結果は
+**実行コンテキストだけ**で分かれる。
 
-| 入力 | 相対path | 絶対path |
-| --- | --- | --- |
-| `template -o <json>` | exit 64 | 対象外 |
-| `template --output-path <json>` | exit 64 | 対象外 |
-| `evaluate <json>` | exit 64 | exit 64 |
-| default package `<json> -o <aar>` | exit 64 | exit 64 |
-| `package <json> -o <aar>` | exit 64 | exit 64 |
-| `package <json> --output-path <aar>` | exit 64 | exit 64 |
+| 実行コンテキスト | `template` stdout | `template -o <json>` | `evaluate <json>` | package |
+| --- | --- | --- | --- | --- |
+| Codexのseatbelt sandbox（`CODEX_SANDBOX=seatbelt`） | 成功 | exit 64 | exit 64 | exit 64 |
+| Terminal.app / 通常shell | 成功 | 成功 | 成功 | 成功 |
 
-`template`のstdout出力だけは成功するが、Apple自身のtemplateを`template -o apple-template.json`で
-保存する入口も同じエラーになる。したがって、absolute-path処理、`-o`の別名、`package`
-サブコマンドの世代差、Hazakura manifest内容のいずれでもなく、このtoolchainのpath-extension
-検証不具合と判断する。検証済みstageとmanifestまでは保持するが、別形式の偽`.aar`は作らない。
-失敗内容はモデル別`archives/PACKAGING-BLOCKED.md`へ残す。修正版toolchainで同じ
-`npm run coreai:models:package`を再実行し、成功後だけ`.aar`をupload対象とする。
-`npm run coreai:ba-package:reproduce`は全比較をJSON reportへ残す。
+sandbox内では`template -o /abs/path/apple-template-absolute.json`のような明らかな`.json`も同じ
+`path extension isn’t “json”`で拒否され、`env -i`の最小環境でも変わらない。sandbox外では
+相対/絶対、`-o`/`--output-path`、default/明示`package`のいずれも成功する。原因はmanifest内容や
+CLI形式ではなく、このsandbox下で`ba-package`が実行時に参照するシステムサービス／環境の制限で
+ある。`npm run coreai:ba-package:reproduce`はsandbox指標と両コンテキストの比較をJSON reportへ
+残し、sandbox内で失敗した場合は`restricted-execution-environment`として分類する。
+
+manifest schemaも実物で確認した。Apple公式templateを`xcrun ba-package template`から保存して照合し、
+このリポジトリが生成する`directorySource` / `directoryDestination` / `sourceRoot`は現行仕様の
+有効なkeyである（`sourceRoot`はmanifestの位置からの相対path）。
+
+2026-09-21にsandbox外でE4Bと12Bの`.aar`を生成した。
+
+| Model | expanded bytes | `.aar` bytes | SHA-256 |
+| --- | --- | --- | --- |
+| Gemma 4 E4B | 6,807,926,119 | 5,431,767,284 | `e0218e05102ab36d6b2b1a4dd18af009dc24d6e957d1a5dc610258b77012ceac` |
+| Gemma 4 12B | 14,698,432,594 | 9,148,928,727 | `9cf11956c537e10b04eeab53bc2618f4941ce3edee371afdad21bc90d62a3efc` |
+
+これはローカル生成の証跡であり、Apple CDN upload、Apple processing、署名済みbuild、TestFlightでの
+実取得、AOT、品質採用の証跡ではない。次はE4B `.aar`をTransporter等でuploadし、処理完了を
+確認するところから。
 
 ## Locked Apple-hosted asset pack IDs
 
@@ -131,10 +144,11 @@ archives/<asset-pack-id>.aar`）で`.aar`を作る。`archive.json`には最終a
 
 App Store Connect側のrecordとコード側のcatalogはこの完全一致を必須とする。既存IDの中身を
 差し替えず、model revisionまたはpayloadを変える場合は新しいimmutable IDとcatalog versionを使う。
-検証済みstageは合計21,506,358,713 bytes。2026-09-20時点の
+検証済みstageは合計21,506,358,713 bytes。ローカル`.aar`はE4B 5,431,767,284 bytesと
+12B 9,148,928,727 bytesの計14,580,696,011 bytes。2026-09-20時点の
 [Apple-hosted asset pack size limits](https://developer.apple.com/help/app-store-connect/reference/app-uploads/apple-hosted-asset-pack-size-limits)は
-アプリ全体で200 GB / 200 asset packsのため名目上は枠内だが、`.aar`の実サイズ、upload、Apple処理を
-確認した証跡ではない。
+アプリ全体で200 GB / 200 asset packsのため名目上は枠内だが、uploadとApple処理を確認した
+証跡ではない。
 
 ## Activation gates
 
