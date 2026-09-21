@@ -1061,6 +1061,9 @@ retained as the earlier R-1-only checkpoint.
 4. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 5. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
 6. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。
+7. Apple-hosted 以外のモデルソース（Custom Models / ユーザー明示登録の外部 resource folder /
+   `.aimodel`）は v3.1 の **C-3**（オーナー決定 2026-09-22、未着手）。設計は
+   `docs/core-ai-model-source-abstraction.md`。C-1 / C-2 を止めず、`current-work.md` の順で進める。
 
 ## Key Paths
 

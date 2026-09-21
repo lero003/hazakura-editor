@@ -55,3 +55,11 @@ Rustが`sysctl hw.memsize`で物理メモリを読む。rendererへはGiB数値�
   開くUIは未実装
 - **12B catalog接続**: 2026-09-22にApp Storeレーンへ接続済み。Developerレーンは空のまま。
   archive upload / processing、CDN materialization、32 GB対象機TestFlightは未実施
+
+## 6. ローカル / 外部モデルソース（v3.1 C-3、未着手）
+
+Custom Models ディレクトリ、外部 resource folder、`.aimodel` 単体指定を既存の
+オンデバイスモデルページへ足す提案（「ローカルモデルを追加…」「カスタムモデルフォルダを
+Finderで開く」「再スキャン」、ローカル表示、登録解除）は v3.1 の **C-3** として含める
+（オーナー決定 2026-09-22、未着手）。設計とゲートは
+[モデルソース抽象化](core-ai-model-source-abstraction.md)。

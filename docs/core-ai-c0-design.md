@@ -134,6 +134,14 @@ Developer / GitHubレーン限定・カタログ未公開のまま先行した�
 これは本番model entry、Background Assets transport、AOT、manifest/digest、bake-offをGOにした
 判断ではない。以下で古い段階分けと矛盾する箇所は、この追補と実装済み配布前gateを優先する。
 
+**2026-09-22 オーナー追補（C-3）:** v3.1 のスコープに、Apple-hosted 以外のモデルソース
+（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した外部 resource folder、
+`.aimodel` 単体指定）を同じモデル管理・選択・生成経路で扱う **C-3** を加える。これは D6 の
+allowlist 前提を、任意URL取得や自動DLではなく**ユーザーの明示登録に限って**広げるオーナー決定で、
+設計とゲートは `docs/core-ai-model-source-abstraction.md` に固定した。D1–D30 の既存判断
+（System 既定、fail-closed、Rust 単一 registry、no auto-apply、no cloud fallback）は変更しない。
+実装は未着手で、C-1 / C-2 を止めない。
+
 ### Development gate
 
 | Slice | Gate |
@@ -143,6 +151,7 @@ Developer / GitHubレーン限定・カタログ未公開のまま先行した�
 | **Distribution preflight** | **GO, both lanes, empty catalog only.** Bundle the production adapter and expose fail-closed management/selection contracts. Do not publish a model entry or activate Background Assets yet. |
 | **C-1 (production preparation)** | **GO for locked offline artifact preparation only.** Identity、file digest、resource manifest、Apple-hosted `.aar`は再現可能に作る。catalog activationは、maintainer AOT、D19配信接続、G1/G2、release-preflight bake-off完了まで**HOLD**。 |
 | **C-2** | **HOLD** until C-1 plus (4) backend-specific availability (D24) and (5) Rust is the only backend selector (D20). |
+| **C-3 (local / external model sources)** | **v3.1 scope, owner-decided 2026-09-22. Not started.** Allowlist catalog に加え、ユーザーが明示登録したローカル/外部 resource folder / `.aimodel` を扱う。設計は `docs/core-ai-model-source-abstraction.md`。実装は C-1 / C-2 と Apple 側未確定事項の解消後。任意URL取得・自動DL・モデル店は引き続き Non-Goal。 |
 | **Apply** | **Do not touch.** No C-0 PR changes `applyReviewedLocalAssistProposal`. |
 
 | ID | 決定 | 根拠 |

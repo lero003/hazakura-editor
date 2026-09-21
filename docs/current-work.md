@@ -1252,6 +1252,11 @@ focus（`--accent` のoutline）3:1以上と `theme-palette.json` ＝ CSS `--chr
 - 本番のモデルDL・カタログ・開示はv3.1のC-1/C-2ゲート待ち。fixtureベースのC-1配管
   （Developer/GitHubレーン限定・カタログ未公開）は先に進めてよく、本番identityはリリース前に
   カタログ確定・実験を経てpinする。MLX M-0bも停止を維持。
+- **v3.1 追加レーン C-3（オーナー決定 2026-09-22、未着手）:** Apple-hosted 以外のモデルソース
+  （Custom Models ディレクトリ、ユーザー明示登録の外部 resource folder、`.aimodel` 単体指定）を
+  同じモデル管理・選択・生成経路で扱う。設計とゲートは
+  [モデルソース抽象化](core-ai-model-source-abstraction.md) に固定した。C-1 / C-2 を止めず、
+  このキューの順で進める。任意URL取得・自動DL・モデル店は Non-Goal のまま。
 - 新しい書体/行間/永続設定、native別窓、Importの確定前ステージ、画像倍率は別仕様。
 - UI刷新とnative runtime再編・新SDK採用を同じ変更へ混ぜない。
 - 保存済み原稿、既存Apply/Undo/no auto-save、R2-cの完了/取消mutex境界を広げない。

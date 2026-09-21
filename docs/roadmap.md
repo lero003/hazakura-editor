@@ -67,7 +67,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
-| Core AI models | Allowlisted `.aimodel` catalog | 配布adapterと空catalog管理/選択は実装済み。identity、asset pack、manifest/AOT、bake-off後に本番entryを公開 |
+| Core AI models | Allowlisted `.aimodel` catalog + ローカル/外部ソース（C-3） | allowlist配布は実装済みで、identity / asset pack / manifest / AOT / bake-off後に本番entryを公開。ユーザー持ち込みのローカル/外部 resource folder は v3.1 の C-3（オーナー決定 2026-09-22、未着手）— `core-ai-model-source-abstraction.md` |
 | 海外App Store展開 | 英語ローカライズ、製品ページ、対象地域、価格、サポート/Privacy導線 | v3.1。I-0の棚卸しと対象市場決定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published v2.9 hotfix | App Review / daily-use blocker | Only when reproduced |
@@ -82,7 +82,8 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 - App Store lane still excludes Agent Workbench / external CLI agents.
 - Local Assist: no network inference fallback, no tool calling side effects,
   no general chat DB, no workspace-wide agent editing.
-- Core AI (when added): **allowlist only** — no arbitrary model URL, no cloud
+- Core AI: **allowlist catalog + ユーザー明示登録のローカル/外部ソース（C-3、オーナー決定
+  2026-09-22）** — no arbitrary model URL, no automatic download, no cloud
   inference fallback disguised as “local.”
 - Published tags and assets stay immutable.
 
@@ -190,6 +191,13 @@ Conversation / Proposal / Diff / Apply / Undo / CancelとSystem復帰を確認�
 Rust-owned選択契約まで前倒ししたが、公開済みモデルがない間はSystem以外を選べない。基盤の前倒し範囲は
 `docs/v2.9-v3-local-assist-plan.md` と `docs/core-ai-c0-design.md` に固定する。
 
+**v3.1 追加レーン（オーナー決定 2026-09-22、未着手）:** Apple-hosted 以外のモデルソース
+（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した外部 resource folder、
+`.aimodel` 単体指定）を同じ「利用可能な Core AI モデル」として扱う **C-3** を v3.1 に含める。
+これは **allowlist only** の線を意図的に広げるオーナー決定で、設計とゲートは
+`docs/core-ai-model-source-abstraction.md` に固定した。実装は未着手で、C-1 / C-2 を止めず、
+`current-work.md` のキュー順で進める。任意URL取得・自動DL・モデル店は Non-Goal のまま。
+
 MLX のユーザー向け経路は **C-0〜C-2 では Non-Goal** のままにする。
 H-1 隣接の **M-0a** では、Xcode 26 で検証できる System model 再利用と
 Rust-owned / fail-closed な内部 backend wire だけを先に固定してよい。
@@ -218,6 +226,7 @@ v3.0.xの公開状態、タグ、既存アセットは変更しない。
 |---|---|---|
 | **C-1 — 資産ライフサイクル** | allowlist catalogからの明示DL、サイズ/進捗/取消、digest/signature検証、準備、復旧、削除 | 未検証資産をreadyにせず、壊れた/不足した資産から安全に復旧できる |
 | **C-2 — Core AI利用** | Rust-owned `selectedId`、backend別availability、Systemとの切り替え、同じConversation / Proposal / Diff / Applyからの生成 | 選択した検証済みモデルで実際に生成でき、失敗時も本文を変えずSystemと混同しない |
+| **C-3 — ローカル / 外部モデルソース** | Apple-hosted 以外のモデル（Custom Models ディレクトリ、ユーザーが明示登録した外部 resource folder / `.aimodel`）を同じモデル管理・選択・生成経路で扱う。オーナー決定 2026-09-22 | 検証を通ったローカルモデルを登録・選択・生成・登録解除でき、公式モデル経路と System 既定を壊さない |
 | **I-0 — 海外展開の棚卸し** | 現在のUI/Help/a11y文言、App Store情報、WebのPrivacy/Support、対象地域、価格、モデルの権利/地域制限を棚卸し | 最初の対象言語・地域・価格方針と、翻訳/法務/サポートの責任範囲が明記される |
 | **I-1 — 製品ローカライズ** | 英語を第一候補に、主要UI、Help、エラー、Local Assist/Core AIの状態・容量・通信説明、VoiceOver labelを整える | 英語環境で主要導線が日本語へ不意に戻らず、日本語環境とsource正本/保存挙動が同じ |
 | **I-2 — App Store製品ページ** | localized name/subtitle/description/keywords/What's New、英語スクリーンショット、Privacy/Support URL、review notesを用意 | 実装・対応OS・モデルavailabilityを越える主張がなく、英語で購入前後の期待がつながる |
@@ -234,7 +243,9 @@ v3.0.xの公開状態、タグ、既存アセットは変更しない。
 
 ### v3.1のNon-Goals
 
-- 任意URL/import、unsigned model、一般モデルmarketplace、MLX同時導入。
+- 任意URL/import・モデル店・MLX同時導入。ユーザーが明示登録するローカル/外部 resource folder は
+  C-3 として v3.1 に含める（オーナー決定 2026-09-22）が、未検証の自動取り込みや署名なし配布物の
+  自動取得は含めない。
 - cloud inference、network fallback、tool calling、background indexing、auto-apply / auto-save。
 - Agent Workbench / external CLI agentをApp Store laneへ入れること。
 - 機械翻訳だけで公開文言を確定すること、または未確認の全地域販売・法令対応を主張すること。
@@ -301,5 +312,8 @@ Any broader WYSIWYG model, database-like workspace, collaboration feature,
 plugin system, **arbitrary** model runtime, local image-generation platform, or
 automated agent-apply flow needs a fresh product-boundary decision first.
 Allowlisted writing models under Core AI are the narrow exception path above,
-not a general model marketplace. M-0a does not lift this rail; MLX runtime
+not a general model marketplace. 2026-09-22 のオーナー決定で、この例外に
+**ユーザーが明示登録したローカル/外部 resource folder（C-3）** が加わった
+（`docs/core-ai-model-source-abstraction.md`）。任意URL取得・自動DL・市場機能は
+引き続きこの rail の外にある。M-0a does not lift this rail; MLX runtime
 becomes actionable only after the separate M-0b boundary review.

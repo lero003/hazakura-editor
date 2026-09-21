@@ -83,6 +83,7 @@ Active planning surface (intentionally small):
 - `assist-surface-strategy.md` — Assist + later Core AI whitelist intent
 - `core-ai-c0-design.md` — C-0 design and locked Core AI boundary; implementation status is in current-work and core-ai-production-models.
 - `core-ai-production-models.md` — Gemma 4 candidate lock, reproducible Apple-hosted asset preparation, and remaining activation gates.
+- `core-ai-model-source-abstraction.md` — **v3.1 の C-3（オーナー決定 2026-09-22、未着手）**: Apple-hosted 以外のローカル/外部 resource folder を同じモデルとして扱う設計メモ。
 - `core-ai-c0-external-review-2026-08-27.md` — four-lens advisory review of that spike; does not override the queue.
 - `mlx-m0-preflight-design.md` — completed OS-27-before preflight; no MLX runtime
 - `mlx-m0a-external-review-brief.md` — external review packet for `00f179ab..HEAD`

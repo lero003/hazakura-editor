@@ -7,6 +7,14 @@ Last reviewed: 2026-09-22
 
 ## Current State
 
+- **v3.1スコープ更新 — C-3（2026-09-22、オーナー決定・未着手）:** v3.1 に、Apple-hosted 以外の
+  モデルソース（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した外部
+  resource folder、`.aimodel` 単体指定）を同じモデル管理・選択・生成経路で扱う **C-3** を加える。
+  allowlist 前提を「ユーザーの明示登録」に限って広げる決定で、設計とゲートは
+  [モデルソース抽象化](core-ai-model-source-abstraction.md) に固定した。**実装は未着手**で、
+  C-1 / C-2 と現在のTestFlight前レビューを止めない。任意URL取得・自動DL・モデル店は Non-Goal。
+  この決定はローカルモデルの登録・選択・生成・検証済み状態の証跡ではない。
+
 - **TestFlight前 外部レビュー追補（2026-09-22）:** `aac6e900`へのP2 6件を閉じた。
   streaming markerの部分露出/古い最終候補、2画面のcatalog競合、manifest解決中cancel、paused後の
   監視停止、選択中modelの削除失敗、pickerのfocus再取得をそれぞれ回帰テストで固定した。

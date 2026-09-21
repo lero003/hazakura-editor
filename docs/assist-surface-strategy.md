@@ -233,6 +233,12 @@ backend-specific availability and Rust-owned `selectedId`.
 A-3 source apply is merged; a second model backend must still not fork two
 UX stories.
 
+外から持ち込んだモデル（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した
+外部 resource folder、`.aimodel` 単体指定）を allowlist と同じ経路で扱う **C-3** を
+v3.1 に含める（オーナー決定 2026-09-22、未着手）。設計とゲートは
+`docs/core-ai-model-source-abstraction.md`。Allowlisted-only の線を意図的に広げる決定だが、
+任意URL取得・自動DL・モデル店は Non-Goal のまま。
+
 Hazakura Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
 
 ## Store And Distribution Variants
