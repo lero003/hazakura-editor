@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 enum CoreAITestResourceState: Equatable {
@@ -108,25 +109,44 @@ enum CoreAIResourceContract {
             resource.bundle.path,
             resource.modelDirectory.path,
         ]
-        let required = [
+        // Small identity files are hashed by content: a same-size replacement
+        // within the same second must not look like "unchanged".
+        let contentIdentity = [
             resource.root.appendingPathComponent("hazakura-model.json"),
+            resource.root.appendingPathComponent("hazakura-resource-manifest.json"),
             resource.modelDirectory.appendingPathComponent("main.hash"),
-            resource.bundle.appendingPathComponent("tokenizer/tokenizer.json"),
             resource.bundle.appendingPathComponent("tokenizer/tokenizer_config.json"),
             resource.bundle.appendingPathComponent("tokenizer/chat_template.jinja"),
         ]
-        for url in required {
+        for url in contentIdentity {
+            guard let digest = contentDigest(url) else { return nil }
+            parts.append("\(url.lastPathComponent)=\(digest)")
+        }
+        // The verified resource manifest records the SHA-256 of every payload
+        // file (weights, tokenizer.json, tables), so its own digest identifies
+        // them without reading gigabytes on each request. Size and modification
+        // time are kept as an extra, cheap signal.
+        let largeFiles = [
+            resource.modelDirectory.appendingPathComponent("main.mlirb"),
+        ] + (resource.tables.map {
+            [
+                $0.appendingPathComponent("embed_per_layer.i8"),
+                $0.appendingPathComponent("embed_per_layer.scale.f32"),
+            ]
+        } ?? [])
+        for url in largeFiles {
             guard let stamp = fileStamp(url) else { return nil }
             parts.append("\(url.lastPathComponent)=\(stamp)")
         }
         if let tables = resource.tables {
             parts.append(tables.path)
-            for name in ["embed_per_layer.i8", "embed_per_layer.scale.f32"] {
-                guard let stamp = fileStamp(tables.appendingPathComponent(name)) else { return nil }
-                parts.append("\(name)=\(stamp)")
-            }
         }
         return parts.joined(separator: "|")
+    }
+
+    private static func contentDigest(_ url: URL) -> String? {
+        guard let data = try? Data(contentsOf: url, options: [.mappedIfSafe]) else { return nil }
+        return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
     private static func fileStamp(_ url: URL) -> String? {

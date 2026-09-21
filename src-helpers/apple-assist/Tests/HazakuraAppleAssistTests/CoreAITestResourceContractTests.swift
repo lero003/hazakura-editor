@@ -62,6 +62,7 @@ final class CoreAITestResourceContractTests: XCTestCase {
         try JSONSerialization.data(withJSONObject: object).write(
             to: root.appendingPathComponent("hazakura-model.json")
         )
+        try Data("{}".utf8).write(to: root.appendingPathComponent("hazakura-resource-manifest.json"))
         try Data("license".utf8).write(to: root.appendingPathComponent("LICENSE-APACHE-2.0.txt"))
         try Data("notice".utf8).write(to: root.appendingPathComponent("THIRD_PARTY_MODEL_NOTICE.md"))
     }
@@ -164,18 +165,34 @@ final class CoreAITestResourceContractTests: XCTestCase {
         let baseline = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
         XCTAssertTrue(baseline.contains("main.hash="))
 
-        // The verified `.aimodel/main.hash` is the model identity.
+        // The verified `.aimodel/main.hash` is the model identity. Replace it
+        // with the same byte count and the same modification time: only the
+        // content digest can tell that apart.
         let modelHash = resource.modelDirectory.appendingPathComponent("main.hash")
-        try Data("a-different-hash".utf8).write(to: modelHash)
-        let afterHash = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
-        XCTAssertNotEqual(baseline, afterHash)
+        let fixedDate = Date(timeIntervalSince1970: 1_790_000_000)
+        func writeModelHash(_ character: Character) throws {
+            try Data(String(repeating: String(character), count: 32).utf8).write(to: modelHash)
+            try FileManager.default.setAttributes(
+                [.modificationDate: fixedDate],
+                ofItemAtPath: modelHash.path
+            )
+        }
+        try writeModelHash("a")
+        let beforeSwap = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
+        try writeModelHash("b")
+        let afterSwap = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
+        XCTAssertNotEqual(
+            beforeSwap,
+            afterSwap,
+            "same-size, same-second replacement must change the signature"
+        )
 
         // Tokenizer settings decide stopping and prompt formatting.
         let tokenizerConfig = resource.bundle
             .appendingPathComponent("tokenizer/tokenizer_config.json")
         try Data("{\"eos_token\":\"<eos>\"}".utf8).write(to: tokenizerConfig)
         let afterTokenizer = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
-        XCTAssertNotEqual(afterHash, afterTokenizer)
+        XCTAssertNotEqual(afterSwap, afterTokenizer)
 
         // A required input that cannot be read must not look like "unchanged".
         try FileManager.default.removeItem(at: modelHash)

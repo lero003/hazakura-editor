@@ -252,6 +252,9 @@ enum CoreAIRuntime {
         // from a cache: fall back to a fresh load instead of risking a stale
         // engine or tokenizer.
         guard let signature = CoreAIResourceContract.signature(for: resource) else {
+            FileHandle.standardError.write(Data(
+                "hazakura-core-ai-helper: resource signature unavailable; model cache disabled for this request\n".utf8
+            ))
             return try await makeProductionModel(resource: resource, modelId: modelId)
         }
         if let cached = await ProductionModelCache.shared.model(forSignature: signature) {
