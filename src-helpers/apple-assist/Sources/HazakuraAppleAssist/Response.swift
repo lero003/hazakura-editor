@@ -44,4 +44,9 @@ struct AppleAssistUsage: Codable {
     let promptTokens: Int?
     let contextSize: Int?
     let status: String
+    // Core AI reports these from LanguageModelSession.Usage. `outputTokens`
+    // equal to `maximumResponseTokens` means the answer hit the cap.
+    var cachedTokens: Int? = nil
+    var outputTokens: Int? = nil
+    var maximumResponseTokens: Int? = nil
 }

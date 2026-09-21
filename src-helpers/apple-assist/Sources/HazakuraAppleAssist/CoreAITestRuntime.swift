@@ -16,7 +16,11 @@ enum CoreAIRuntime {
     static let modelLoadFailed = "The selected Core AI model failed to load."
     static let generationFailed = "Core AI generation failed."
     static let emptyCandidate = "Core AI returned an empty candidate."
+    // The Developer fixture stays deterministic and short.
     static let maximumResponseTokens = 128
+    // Production Core AI models follow the System contract: a paragraph or
+    // section rewrite easily exceeds the fixture cap, so allow a real answer.
+    static let productionMaximumResponseTokens = 2048
 
     static func probe(backend: AssistBackend, modelPath: String?) async -> AppleAssistAvailabilityResponse {
         guard #available(macOS 27.0, *) else {

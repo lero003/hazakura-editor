@@ -137,6 +137,33 @@ manifest schemaも実物で確認した。Apple公式templateを`xcrun ba-packag
 
 ## Locked Apple-hosted asset pack IDs
 
+### 12B ライセンスの調査結果（2026-09-21）
+
+lock は12Bを`reviewStatus: "manual-review-required"`として保留している。理由は
+「変換リポジトリの model card は Apache-2.0 と宣言しているが、同リポジトリの standalone
+LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。実物を確認した結果は次のとおり。
+
+- **Gemma 4 の重み自体は Apache License 2.0**。Google の "Gemma 4 license" ページの
+  タイトルが "Apache License 2.0" であり、lock の `sourceModelLicense` と一致する
+- 12B の変換物に同梱されている `UPSTREAM-CONVERSION-LICENSE.txt` は
+  「Gemma Terms of Use が適用される」と書いている。これは変換リポジトリ側の記述で、
+  Google の Gemma 4 ライセンス表示と食い違っている
+- Gemma Terms of Use §3.1 は再配布自体を禁止しておらず、条件（§3.2 の利用制限を
+  下流の契約へ組み込み、本契約の写しを渡し、改変したファイルへ改変表示を付ける）を
+  満たせば Distribute できる
+
+つまり**再配布を妨げる条項は無く、残っているのは記述の食い違い**。解禁する場合の作業は:
+
+1. payload に両方のライセンスファイルを残す（現状のまま）
+2. `THIRD_PARTY_MODEL_NOTICE.md` を「重みは Google の Gemma 4 ライセンス = Apache-2.0。
+   変換リポジトリ同梱の LICENSE は来歴として原文のまま保持し、Hazakura はそれを重みの
+   ライセンスとして採用しない」と明記する
+3. lock の `reviewStatus` を reviewed 相当へ更新し、`releaseBlockers` からライセンス項目が
+   外れていることを確認する（AOT・bake-off・catalog 接続は別 gate のまま）
+4. 変換リポジトリへ LICENSE の是正を投げ、修正版 revision を再 pin できれば最も clean
+
+**最終判断はオーナー（必要なら法務）の領分**で、ここでは事実と選択肢のみを記録する。
+
 | Model | Asset pack ID |
 | --- | --- |
 | Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1` |

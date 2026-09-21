@@ -72,3 +72,53 @@ node scripts/evaluate-local-assist.mjs --helper <helper-path> --output <report.j
 
 `maximumResponseTokens` と sampling を本番経路だけ分離して A/B するのが最短。
 テスト経路の決定性は `coreAITestOptions()` を test backend 専用に残して維持する。
+
+## 2026-09-21 実測（E4B 実モデル・ローカル）
+
+stage 済みの E4B を本番 helper に読ませ、`scripts/evaluate-local-assist.mjs` を
+`--backend core_ai --model-id apple:core-ai:gemma-4-e4b-it-int4-v1 --model-path <stage>`
+で実行した（13 fixtures + cancel probe）。この評価スクリプトは Core AI を測れるよう
+`--backend` / `--model-id` / `--model-path` を受け取るようにした。
+
+変更したのは **プロンプト（`buildLivePrompt` を本番経路でも使う）・上限（128 → 2048）・
+usage の記録**。sampling は greedy のまま。
+
+| | 機械チェック失敗 | usage | 1回あたり |
+| --- | --- | --- | --- |
+| 変更前 | 5 / 15（shorten, follow-up×2, quote, proofread-names-quote） | 未記録 | 約 4.7〜6.0 s |
+| 変更後 | 2 / 15（follow-up×2 のみ） | promptTokens / outputTokens / cachedTokens / maximumResponseTokens | 約 6.0〜7.2 s |
+
+`outputTokens` は 16〜29 で上限 2048 には遠く、**打ち切りは起きていなかった**。内容保持の失敗は
+プロンプト契約（リンク・コード・引用・固有名詞を保つ指示と action 別テンプレート）で解消した。
+
+### 残った崩れはランタイム側の疑いが濃い
+
+`follow-up` fixture の実出力:
+
+```txt
+pass1: "新しい展示は土曜から始まるよるよ。雨の日も開館してるから、ぜひ来てねいで。"
+pass2: "新しい展示は土曜から。雨の日も開館してるよいで。"
+sampling 変更時: "新しい展示は土曜からだよ。…ぜひ来てねいで。<eos>"
+```
+
+- `土曜日` が `土曜` に落ち、語尾に `よるよ` / `ねいで` のような断片が付く
+- sampling（top-k 64 / temperature 0.7）に変えても消えず、逆に **`<eos>` が本文へ漏れた**
+- 変換済み bundle の `decoder/tokenizer/tokenizer_config.json` は `"eos_token": "<turn|>"` で、
+  `eos_token_id` を持たない。実際の語彙では `<eos>` は id 1、`<turn|>` は id 106
+  （`<|turn>` 105、`<|channel>` 100 なども存在）
+- `coreai-kit` の `KitExecutor` は `tokenizer.eosTokenId` と一致した時点で生成を止める実装なので、
+  EOS の同定がずれると停止位置と本文末尾がずれる
+
+したがって残りの崩れは、**アプリ側のプロンプトやサンプリングではなく、変換 bundle の
+tokenizer 設定と coreai-kit の停止処理の組み合わせ**を疑うのが妥当。sampling は
+決定性を優先して greedy に戻した（優劣の証拠が無かったため）。
+
+次の候補:
+
+1. `tokenizer_config.json` の `eos_token` を `<eos>`（または `eos_token_id: 1`）に直した bundle で
+   同じ fixture を再実行し、語尾の崩れと `<eos>` 漏れが消えるか確認する。
+   **lock は変換物のファイル digest を固定しているので、bundle を書き換えるなら lock と
+   再現手順の更新が必要**（書き換えは「上流の再現」ではなくなるため、記録の扱いを決める）。
+2. 上流（coreai-kit / 変換リポジトリ）へ報告し、修正版 revision を再 pin する。
+3. 暫定緩和として、`CandidateFormatting` で末尾の特殊トークン（`<eos>` 等）を落とす。
+   語尾の崩れまでは直らないため、あくまで応急処置。

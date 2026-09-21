@@ -321,6 +321,50 @@ enum GenerateCandidate {
             maximumResponseTokens: CoreAIRuntime.maximumResponseTokens
         )
     }
+
+    // Production Core AI runs the same prompt contract as the System model.
+    // Only the Developer fixture needs the compact Qwen-shaped prompt and the
+    // 128-token cap, so keep those separate from the shipping path.
+    @available(macOS 27.0, *)
+    private static func coreAIOptions(for backend: AssistBackend) -> GenerationOptions {
+        switch backend {
+        case .coreAI:
+            return GenerationOptions(
+                samplingMode: .greedy,
+                temperature: 0,
+                maximumResponseTokens: CoreAIRuntime.productionMaximumResponseTokens
+            )
+        case .coreAITest, .systemDefault:
+            return coreAITestOptions()
+        }
+    }
+
+    @available(macOS 27.0, *)
+    private static func coreAIPrompt(for request: AppleAssistRequest, backend: AssistBackend) -> String {
+        switch backend {
+        case .coreAI:
+            return buildLivePrompt(for: request)
+        case .coreAITest, .systemDefault:
+            return CoreAITestPrompt.build(for: request)
+        }
+    }
+
+    @available(macOS 27.0, *)
+    private static func coreAIUsage(
+        _ usage: LanguageModelSession.Usage?,
+        maximumResponseTokens: Int?
+    ) -> AppleAssistUsage? {
+        guard let usage else { return nil }
+        return AppleAssistUsage(
+            instructionTokens: nil,
+            promptTokens: usage.input.totalTokenCount,
+            contextSize: nil,
+            status: "measured",
+            cachedTokens: usage.input.cachedTokenCount,
+            outputTokens: usage.output.totalTokenCount,
+            maximumResponseTokens: maximumResponseTokens
+        )
+    }
     #endif
 
     private static func runCoreAI(
@@ -440,9 +484,10 @@ enum GenerateCandidate {
                 model: model,
                 instructions: Instructions(liveSystemInstructions)
             )
+            let options = coreAIOptions(for: backend)
             let response = try await session.respond(
-                to: Prompt(CoreAITestPrompt.build(for: request)),
-                options: coreAITestOptions()
+                to: Prompt(coreAIPrompt(for: request, backend: backend)),
+                options: options
             )
             let candidate = CandidateFormatting.reviewText(
                 response.content,
@@ -458,7 +503,8 @@ enum GenerateCandidate {
                 operation: request.operation,
                 candidateText: candidate,
                 modelId: backend.modelId,
-                latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
+                usage: coreAIUsage(response.usage, maximumResponseTokens: options.maximumResponseTokens)
             ))
         } catch {
             return .error(CoreAIRuntime.generationError(error))
@@ -478,12 +524,15 @@ enum GenerateCandidate {
                 model: model,
                 instructions: Instructions(liveSystemInstructions)
             )
+            let options = coreAIOptions(for: backend)
             var latestCandidate = ""
+            var latestUsage: LanguageModelSession.Usage?
             let stream = session.streamResponse(
-                to: Prompt(CoreAITestPrompt.build(for: request)),
-                options: coreAITestOptions()
+                to: Prompt(coreAIPrompt(for: request, backend: backend)),
+                options: options
             )
             for try await snapshot in stream {
+                latestUsage = snapshot.usage
                 let candidate = CandidateFormatting.reviewText(
                     snapshot.content,
                     original: request.selectedText
@@ -503,7 +552,8 @@ enum GenerateCandidate {
                 operation: request.operation,
                 candidateText: latestCandidate,
                 modelId: backend.modelId,
-                latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
+                usage: coreAIUsage(latestUsage, maximumResponseTokens: options.maximumResponseTokens)
             ))
         } catch {
             return .error(CoreAIRuntime.generationError(error))

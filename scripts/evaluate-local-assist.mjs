@@ -13,13 +13,21 @@ const helper = value('--helper');
 const output = value('--output');
 const repeats = Number(value('--repeats') ?? 1);
 if (!helper || !output || !Number.isInteger(repeats) || repeats < 1 || repeats > 5) {
-  throw new Error('Usage: node scripts/evaluate-local-assist.mjs --helper PATH --output REPORT.json [--repeats 1..5]');
+  throw new Error('Usage: node scripts/evaluate-local-assist.mjs --helper PATH --output REPORT.json [--repeats 1..5] [--backend system_default|core_ai|core_ai_test] [--model-id ID] [--model-path PATH]');
 }
+// Core AI needs the backend tag, the pinned model id, and the materialized
+// resource directory. The System model keeps the historical default.
+const backend = value('--backend') ?? 'system_default';
+const modelId = value('--model-id');
+const modelPath = value('--model-path');
+const backendPayload = { backend, ...(modelId ? { modelId } : {}), ...(modelPath ? { modelPath } : {}) };
+const expectedModelId = modelId ?? 'apple:foundation-models:system-default';
 const fixtures = JSON.parse(await readFile(new URL('./fixtures/local-assist-evaluation.json', import.meta.url), 'utf8'));
 const report = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   sourceDirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
   os: execFileSync('sw_vers', ['-productVersion'], { encoding: 'utf8' }).trim(),
   sdk: execFileSync('xcrun', ['--show-sdk-version'], { encoding: 'utf8' }).trim(),
+  backend, modelId: expectedModelId, modelPath: modelPath ?? null,
   helperSha256: createHash('sha256').update(await readFile(helper)).digest('hex'), fixtureVersion: 2, repeats, results: [], qualityReview: 'pending human review; checks inspect raw helper text, before app sanitization',
   note: 'Candidate text is from authored fixtures only. Token observations do not enforce a budget. Cold means fresh helper, not cleared OS cache.' };
 let child, lines, pending;
@@ -52,7 +60,7 @@ function record(fixture, result, cycle, phase) {
   const { envelope, elapsedMs, firstTokenMs } = result;
   const candidate = envelope.kind === 'candidate' ? envelope.value.candidateText : null;
   const modelId = envelope.value?.modelId ?? null;
-  const checks = checkEvaluationCandidate(envelope, fixture.preserve, fixture);
+  const checks = checkEvaluationCandidate(envelope, fixture.preserve, fixture, expectedModelId);
   report.results.push({ id: fixture.id, cycle, phase, elapsedMs, firstTokenMs, modelId,
     selectedCodePoints: [...fixture.selectedText].length, outputCodePoints: candidate == null ? null : [...candidate].length,
     usage: envelope.value?.usage ?? null, checks, errorKind: envelope.kind === 'error' ? envelope.value.kind : null,
@@ -67,7 +75,7 @@ try {
   if (probe.envelope.kind !== 'availability' || probe.envelope.value.kind !== 'available') throw new Error('Live model unavailable');
   for (let cycle = 1; cycle <= repeats; cycle++) {
     for (const [index, fixture] of fixtures.entries()) {
-      const payload = { action: 'generate_candidate_streaming', backend: 'system_default', operation: fixture.operation,
+      const payload = { action: 'generate_candidate_streaming', ...backendPayload, operation: fixture.operation,
         actionId: fixture.actionId, selectedText: fixture.selectedText, additionalRequest: fixture.request, measureUsage: true };
       const result = await request(payload);
       const candidate = record(fixture, result, cycle, cycle === 1 && index === 0 ? 'cold' : 'warm');
@@ -82,14 +90,14 @@ try {
   // Exercise the current hard-cancel model: kill only after a partial was observed,
   // await process termination, then start a fresh helper and require a completed draft.
   let sawPartial = false;
-  const cancelled = await request({ action: 'generate_candidate_streaming', backend: 'system_default',
+  const cancelled = await request({ action: 'generate_candidate_streaming', ...backendPayload,
     operation: 'rephrase', selectedText: fixtures[2].selectedText, additionalRequest: '文章を自然にしてください。' }, () => {
       sawPartial = true; child.kill('SIGKILL');
     }).then(() => false, () => true);
   report.cancelProbe = { sawPartial, terminated: cancelled && sawPartial, scope: 'direct helper kill, not native UI cancellation' };
   if (cancelled && sawPartial) {
     lines.close(); start();
-    record(fixtures[0], await request({ action: 'generate_candidate_streaming', backend: 'system_default',
+    record(fixtures[0], await request({ action: 'generate_candidate_streaming', ...backendPayload,
       operation: fixtures[0].operation, selectedText: fixtures[0].selectedText,
       additionalRequest: fixtures[0].request, measureUsage: true }), repeats, 'after-cancel');
   }
