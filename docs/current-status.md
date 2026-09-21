@@ -13,8 +13,7 @@ Last reviewed: 2026-09-22
   下回る場合はdownload開始前に確認する。モデル状態は購読後にsnapshotを取り、後着した古い
   snapshotで進捗を巻き戻さない。12Bが復唱する完全な外側prompt envelopeだけを安全に除去し、
   実モデル18 fixtureは変更前14/18のmarker失敗から変更後18/18全check通過になった。
-  ローカルarchiveは9,148,924,300 bytes / SHA-256
-  `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb`。
+  ローカルarchiveは9,148,924,300 bytes。固定SHA-256は外部レビュー用証跡へ分離した。
   frontend 2,666件、scripts 24件、Rust 424件（2 ignored）、Swift 49件、surface 131件、
   型検査、Vite build、ad-hoc App Store preview build、Vite fixture目視は成功。
   **12B archiveのApple upload / processing、CDN、32 GB対象機TestFlight、VoiceOverは未実施。**

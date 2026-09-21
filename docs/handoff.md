@@ -11,8 +11,7 @@ Last reviewed: 2026-09-22
   確認する。状態購読はsnapshotより先に登録し、取得中のeventを古いsnapshotで巻き戻さない。
   12Bの完全な外側prompt envelopeだけを除去し、本文中markerは維持する。実12B評価は変更前
   14/18の`noInternalMarkers`失敗から変更後18/18全check通過。ローカルarchiveは
-  9,148,924,300 bytes / SHA-256
-  `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb`。
+  9,148,924,300 bytesで、固定SHA-256は外部レビュー用証跡へ分離した。
   frontend 2,666件、scripts 24件、Rust 424件（2 ignored）、Swift 49件、surface 131件、
   App Store preview buildは成功。12BのApple upload / processing、32 GB機TestFlight、
   built appの設定画面、VoiceOverは未確認。[証跡](reviews/2026-09-22-core-ai-12b-catalog/README.md)。
