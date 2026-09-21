@@ -69,6 +69,9 @@ App Store Connectは`assetPackIdentifier`内のピリオドを拒否するため
 ピリオドを禁止した。`.aar`は新IDで再生成済み（旧IDの生成物は削除）。
 疎通とは別の配布UX候補（メモリ警告、保存先・空き容量、ライセンス表示など）は
 [Core AIモデル配布UXバックログ](core-ai-ux-backlog.md)へ分離した。
+16 GB機の実機確認で見つかった編集品質の課題は
+[Core AI編集品質（ハーネス）調査メモ](core-ai-harness-quality.md)に整理した
+（`maximumResponseTokens = 128`、greedy / temperature 0、Qwen用promptの流用が候補）。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
