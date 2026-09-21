@@ -241,6 +241,7 @@ pub fn run() {
             cancel_core_ai_model_download,
             delete_core_ai_model,
             generate_apple_assist_candidate,
+            local_assist_generation_profile,
             prepare_apple_assist_generation,
             finish_apple_assist_generation,
             generate_apple_assist_candidate_streaming,

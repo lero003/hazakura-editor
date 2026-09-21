@@ -53,5 +53,6 @@ same no-auto-apply boundary.
    time to first token, and generation time separately.
 2. Bundle-side fix for `tokenizer_config.json` (`eos_token = "<eos>"` or `eos_token_id: 1`) plus a
    lock/reproduction update, then repeat the same fixtures.
-3. Settings surface for the effective generation profile, sourced from this slice's `usage`
-   record rather than duplicated in the webview.
+3. ~~Settings surface for the effective generation profile, sourced from this slice's `usage`
+   record rather than duplicated in the webview.~~ **Done** in
+   [the generation-profile surface](../2026-09-21-core-ai-generation-profile/README.md).

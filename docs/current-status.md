@@ -7,6 +7,16 @@ Last reviewed: 2026-09-21
 
 ## Current State
 
+- **Core AI生成設定の可視化（2026-09-21）:** helperが返す`usage`をRustが保持し、設定の
+  オンデバイスモデル欄に「生成設定（直近の実行）」（出力上限 / サンプリング要求 /
+  サンプリング実効 / 直近のトークン数 / 直近のモデル）を表示する。値はwebview側の写しでは
+  なくRustの記録から読む。まだCore AIで生成していない起動は空状態を出し、記録はプロセス内のみで
+  保存・送信しない。モデルへ渡すprompt契約・生成オプション・Apply経路は変更していない。
+  Rust 422件（2 ignored）、frontend 2,649件、project script 24件、App Store surface 129件、
+  型検査、Vite build、App Store previewレーンの`npm run build`は成功。実Core AIでの観測と
+  built appでの表示確認は未実施。
+  [証跡](reviews/2026-09-21-core-ai-generation-profile/README.md)。
+
 - **Core AI配布前基盤（2026-09-20）:** App Store / TestFlight buildへmacOS 27+の
   Core AI production adapterを別helperとして同梱し、設定のモデル管理、Local Assist窓の
   選択、Rust-ownedの永続選択を接続した。System helperはmacOS 26互換を維持する。

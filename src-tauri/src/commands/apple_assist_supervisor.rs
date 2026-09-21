@@ -154,6 +154,10 @@ pub(crate) struct AppleAssistHelperStore {
     active_cancel: Mutex<Option<ActiveCancelHandle>>,
     stream_request: Mutex<Option<StreamRequestCancel>>,
     selected_backend: Mutex<AssistBackendSelection>,
+    // The generation settings the helper reported with its last candidate.
+    // Rust owns this so the Settings pane can show what the engine actually
+    // applied without the webview restating any limit or sampler itself.
+    last_generation_profile: Mutex<Option<AssistGenerationProfile>>,
     #[cfg(test)]
     before_stream_arm: Option<Arc<dyn Fn() + Send + Sync>>,
     #[cfg(test)]
@@ -220,6 +224,7 @@ impl Default for AppleAssistHelperStore {
             stream_request: Mutex::new(None),
             // Startup selection is resolved once by CoreAiModelStore.
             selected_backend: Mutex::new(AssistBackendSelection::SystemDefault),
+            last_generation_profile: Mutex::new(None),
             #[cfg(test)]
             before_stream_arm: None,
             #[cfg(test)]
@@ -245,6 +250,26 @@ impl Drop for AppleAssistHelperStore {
 }
 
 impl AppleAssistHelperStore {
+    /// Record what the helper reported about the run it just finished.
+    ///
+    /// `None` means the helper returned no `usage` for that request (the
+    /// System path only reports usage in evaluation mode), so the previous
+    /// observation stays instead of being replaced by an empty one.
+    pub(crate) fn record_generation_profile(&self, profile: Option<AssistGenerationProfile>) {
+        let Some(profile) = profile else { return };
+        *self
+            .last_generation_profile
+            .lock()
+            .expect("generation profile lock") = Some(profile);
+    }
+
+    pub(crate) fn generation_profile(&self) -> Option<AssistGenerationProfile> {
+        self.last_generation_profile
+            .lock()
+            .expect("generation profile lock")
+            .clone()
+    }
+
     pub(crate) fn selected_model_id(&self) -> Result<String, String> {
         self.selected_backend
             .lock()
@@ -1009,6 +1034,66 @@ pub(crate) struct HelperCandidate {
     pub(crate) candidate_text: String,
     pub(crate) model_id: String,
     pub(crate) latency_ms: u64,
+    /// Present when the helper reported how the run was generated. The System
+    /// path only fills this in evaluation mode; the Core AI path always does.
+    #[serde(default)]
+    pub(crate) usage: Option<AssistGenerationUsage>,
+}
+
+/// The helper's `usage` envelope, narrowed to the fields that describe the
+/// generation settings. Mirrors `AppleAssistUsage` in the Swift helper; keep
+/// the two in lockstep.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct AssistGenerationUsage {
+    #[serde(default)]
+    pub(crate) maximum_response_tokens: Option<u64>,
+    #[serde(default)]
+    pub(crate) sampling_requested: Option<String>,
+    #[serde(default)]
+    pub(crate) sampling_effective: Option<String>,
+    #[serde(default)]
+    pub(crate) prompt_tokens: Option<u64>,
+    #[serde(default)]
+    pub(crate) output_tokens: Option<u64>,
+    #[serde(default)]
+    pub(crate) cached_tokens: Option<u64>,
+}
+
+/// A Rust-owned snapshot of the last run's generation settings, ready for the
+/// Settings pane. `from_usage` refuses observations that carry only token
+/// counts, so the pane never presents a run with no settings as an answer.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct AssistGenerationProfile {
+    pub(crate) model_id: String,
+    pub(crate) maximum_response_tokens: Option<u64>,
+    pub(crate) sampling_requested: Option<String>,
+    pub(crate) sampling_effective: Option<String>,
+    pub(crate) prompt_tokens: Option<u64>,
+    pub(crate) output_tokens: Option<u64>,
+    pub(crate) cached_tokens: Option<u64>,
+}
+
+impl AssistGenerationProfile {
+    pub(crate) fn from_usage(model_id: &str, usage: Option<AssistGenerationUsage>) -> Option<Self> {
+        let usage = usage?;
+        let reports_settings = usage.maximum_response_tokens.is_some()
+            || usage.sampling_requested.is_some()
+            || usage.sampling_effective.is_some();
+        if !reports_settings {
+            return None;
+        }
+        Some(Self {
+            model_id: model_id.to_string(),
+            maximum_response_tokens: usage.maximum_response_tokens,
+            sampling_requested: usage.sampling_requested,
+            sampling_effective: usage.sampling_effective,
+            prompt_tokens: usage.prompt_tokens,
+            output_tokens: usage.output_tokens,
+            cached_tokens: usage.cached_tokens,
+        })
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -1316,6 +1401,7 @@ pub(crate) fn store_with_helper_path_and_backend(
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
         selected_backend: Mutex::new(selected_backend),
+        last_generation_profile: Mutex::new(None),
         before_stream_arm: None,
         before_stream_complete: None,
         helper_path_override: Some(path),
@@ -1337,6 +1423,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         active_cancel: Mutex::new(None),
         stream_request: Mutex::new(None),
         selected_backend: Mutex::new(AssistBackendSelection::SystemDefault),
+        last_generation_profile: Mutex::new(None),
         before_stream_arm: None,
         before_stream_complete: None,
         helper_path_override: None,

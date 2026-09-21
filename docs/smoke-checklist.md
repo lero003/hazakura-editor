@@ -924,6 +924,8 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 16. Change display language during generation and during an Apply decision. Confirm completed / failed / cancelled (and Apply discarded) outcomes arrive once, release busy state, and use the current language for new feedback.
 17. Use Recheck after an unavailable result without closing the Local Assist window. Confirm input, conversation, and existing proposal remain; checking / switching is visible and Send / repeated switches are disabled until the new availability result arrives.
 
+18. Open Settings → on-device models before any Core AI run and confirm the "生成設定（直近の実行）" block shows its empty state. Run one Core AI generation, reopen Settings, and confirm the panel reports the requested and effective sampling, the output cap, the last token counts, and the model that ran. The numbers must match the harness report for the same build; a panel that still shows an older model's values means the record is not being refreshed.
+
 Latest light manual note: on 2026-06-21, user-side built-app smoke
 confirmed the dedicated Hazakura Local Assist UI opened, the helper was
 not present in Activity Monitor memory before opening the Local Assist

@@ -39,8 +39,8 @@ use crate::commands::apple_assist_supervisor::{
     probe_availability_via_helper, probe_selected_backend_availability_via_helper,
     resolve_bundled_helper_path, rust_target_triple, store_with_helper_path,
     store_with_helper_path_and_backend, store_without_helper, AppleAssistHelperStore,
-    AssistBackendSelection, HelperAvailability, HelperCandidate, HelperCandidatePartial,
-    WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
+    AssistBackendSelection, AssistGenerationUsage, HelperAvailability, HelperCandidate,
+    HelperCandidatePartial, WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
 };
 
 fn generate_candidate_via_helper(
@@ -74,6 +74,44 @@ fn supervisor_parses_candidate_partial_envelope() {
             candidate_text: "途中結果".to_string(),
         }),
     );
+}
+
+#[test]
+fn supervisor_keeps_the_helper_generation_usage() {
+    // `usage` is what the Settings pane shows, so the camelCase wire names
+    // here must keep matching the Swift helper's `AppleAssistUsage`.
+    let envelope: WireEnvelope = serde_json::from_str(
+        r#"{"kind":"candidate","value":{"operation":"proofread","candidateText":"fixed","modelId":"apple:core-ai:gemma-4-e4b-it-int4-v1","latencyMs":1234,"usage":{"instructionTokens":40,"promptTokens":812,"contextSize":8192,"status":"ok","cachedTokens":640,"outputTokens":24,"maximumResponseTokens":2048,"samplingRequested":"temperature=none(greedy)","samplingEffective":"greedy"}}}"#,
+    )
+    .expect("candidate envelope with usage should parse");
+
+    let WireEnvelope::Candidate(candidate) = envelope else {
+        panic!("expected a candidate envelope");
+    };
+    assert_eq!(
+        candidate.usage,
+        Some(AssistGenerationUsage {
+            maximum_response_tokens: Some(2048),
+            sampling_requested: Some("temperature=none(greedy)".to_string()),
+            sampling_effective: Some("greedy".to_string()),
+            prompt_tokens: Some(812),
+            output_tokens: Some(24),
+            cached_tokens: Some(640),
+        }),
+    );
+}
+
+#[test]
+fn supervisor_accepts_a_candidate_without_usage() {
+    let envelope: WireEnvelope = serde_json::from_str(
+        r#"{"kind":"candidate","value":{"operation":"proofread","candidateText":"fixed","modelId":"fixture:test","latencyMs":0}}"#,
+    )
+    .expect("candidate envelope without usage should parse");
+
+    let WireEnvelope::Candidate(candidate) = envelope else {
+        panic!("expected a candidate envelope");
+    };
+    assert!(candidate.usage.is_none());
 }
 
 // ----------------------------------------------------------------

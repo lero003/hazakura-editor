@@ -5,6 +5,15 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-21
 
+- **Core AI 生成設定の可視化（2026-09-21）:** helper が返す `usage`（要求/実効の
+  サンプリング、出力上限、トークン数）を Rust が保持し、設定のオンデバイスモデル欄へ
+  「生成設定（直近の実行）」として出す。表示は webview 側の写しではなく Rust の記録だけを
+  読む。未観測時の空状態あり、記録はプロセス内のみ。モデルへ渡す内容は不変。
+  Rust 422件（2 ignored）、frontend 2,649件、project script 24件、surface 129件、型検査、
+  Vite build、App Store preview の `npm run build` は成功。**実 Core AI での観測と
+  built app の表示確認は未実施**。
+  [証跡](reviews/2026-09-21-core-ai-generation-profile/README.md)。
+
 - **Core AI E4B配線の作り込み（2026-09-21）:** 追加要望があると action 別の基本指示が
   落ちていた点を直し、要求した生成設定とエンジンへ渡った実効設定を usage に分けて記録し、
   停止トークンの外側除去とロード済みモデルの再利用（アイドルで解放）を入れた。System 経路も

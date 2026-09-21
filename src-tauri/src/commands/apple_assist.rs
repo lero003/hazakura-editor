@@ -25,8 +25,8 @@
 use crate::commands::apple_assist_supervisor::{
     generate_candidate_stream_via_helper, generate_candidate_via_helper,
     probe_availability_via_helper, probe_selected_backend_availability_via_helper,
-    AppleAssistHelperStore, HelperAvailability, HelperCandidate, HelperCandidatePartial,
-    WireEnvelope,
+    AppleAssistHelperStore, AssistGenerationProfile, AssistGenerationUsage, HelperAvailability,
+    HelperCandidate, HelperCandidatePartial, WireEnvelope,
 };
 use crate::distribution::*;
 use crate::security::window_guard::*;
@@ -139,11 +139,20 @@ pub struct AppleAssistResponse {
     pub candidate_text: String,
     pub model_id: String,
     pub latency_ms: u64,
+    /// The helper's own report of how the run was generated. Rust keeps a copy
+    /// for the Settings pane; the webview must not restate these values.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub usage: Option<AssistGenerationUsage>,
 }
 
 pub const APPLE_ASSIST_MAX_SELECTED_CHARS: usize = 4000;
 pub const APPLE_ASSIST_MAX_CONTEXT_CHARS: usize = 8000;
 pub const APPLE_ASSIST_MAX_INSTRUCTION_CHARS: usize = 1000;
+
+/// Emitted after a run reports generation settings, so an open Settings pane
+/// can show the effective sampler without re-reading the helper.
+pub(crate) const LOCAL_ASSIST_GENERATION_PROFILE_CHANGED_EVENT: &str =
+    "local-assist-generation-profile-changed";
 
 #[tauri::command]
 pub(crate) async fn probe_apple_assist_availability<R: tauri::Runtime>(
@@ -245,14 +254,33 @@ pub(crate) fn probe_local_assist_backend_availability_with_helper(
 #[tauri::command]
 pub(crate) fn generate_apple_assist_candidate<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
     request: AppleAssistRequest,
 ) -> Result<AppleAssistResponse, String> {
-    generate_apple_assist_candidate_with_label(
+    let response = generate_apple_assist_candidate_with_label(
         window.label(),
         helper_store.inner().as_ref(),
         request,
-    )
+    )?;
+    publish_generation_profile(&app, helper_store.inner().as_ref(), &response);
+    Ok(response)
+}
+
+/// The generation settings the helper reported for the last run. Rust owns the
+/// record, so the Settings pane shows what the engine applied rather than a
+/// second copy of Hazakura's requested constants.
+///
+/// `None` means no run has reported settings in this session. The value is
+/// process-local and is never persisted.
+#[tauri::command]
+pub(crate) fn local_assist_generation_profile<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+) -> Result<Option<AssistGenerationProfile>, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    Ok(helper_store.generation_profile())
 }
 
 pub(crate) fn generate_apple_assist_candidate_with_label(
@@ -303,18 +331,22 @@ pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>
     validate_request(&request)?;
 
     let helper_store = Arc::clone(helper_store.inner());
-    tauri::async_runtime::spawn_blocking(move || {
+    let worker_store = Arc::clone(&helper_store);
+    let partial_app = app.clone();
+    let response = tauri::async_runtime::spawn_blocking(move || {
         generate_apple_assist_candidate_with_helper_streaming(
-            helper_store.as_ref(),
+            worker_store.as_ref(),
             &request,
             Some(&request_id),
             |partial| {
-                emit_partial_status(&app, &request_id, &request_label, partial);
+                emit_partial_status(&partial_app, &request_id, &request_label, partial);
             },
         )
     })
     .await
-    .map_err(|e| format!("Hazakura Local Assist streaming task failed: {e}"))?
+    .map_err(|e| format!("Hazakura Local Assist streaming task failed: {e}"))??;
+    publish_generation_profile(&app, helper_store.as_ref(), &response);
+    Ok(response)
 }
 
 /// With request_id, cancel only the main window's reserved request, including
@@ -559,7 +591,25 @@ pub(crate) fn map_helper_candidate(value: HelperCandidate) -> Result<AppleAssist
         candidate_text: value.candidate_text,
         model_id: value.model_id,
         latency_ms: value.latency_ms,
+        usage: value.usage,
     })
+}
+
+/// Keep the run's reported generation settings, then tell the Settings pane.
+/// Both generation paths call this so a streaming run and a one-shot run leave
+/// the same record; a run that reports no settings leaves the last one intact.
+fn publish_generation_profile<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    helper_store: &AppleAssistHelperStore,
+    response: &AppleAssistResponse,
+) {
+    let Some(profile) =
+        AssistGenerationProfile::from_usage(&response.model_id, response.usage.clone())
+    else {
+        return;
+    };
+    helper_store.record_generation_profile(Some(profile.clone()));
+    let _ = app.emit(LOCAL_ASSIST_GENERATION_PROFILE_CHANGED_EVENT, profile);
 }
 
 // Stub candidate generation. v0.12 never calls Foundation
@@ -584,5 +634,6 @@ pub(crate) fn generate_apple_assist_candidate_with_stub(
         candidate_text: format!("{}{}", prefix, request.selected_text),
         model_id: "stub:v0.12".to_string(),
         latency_ms: 0,
+        usage: None,
     }
 }

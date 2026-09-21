@@ -285,4 +285,8 @@ node scripts/evaluate-local-assist.mjs \
    反映されない点と `eos_token` 解決を報告する。
 3. 文脈予算（4096）の管理: 入力トークン + 出力上限 + 余裕を tokenizer で数え、
    校正は原文と同程度、要約は小さめにする。長い選択は段落・節単位に分ける。
-4. 設定画面での可視化（実効設定の表示）は、この記録を正本にした次のスライス。
+4. ~~設定画面での可視化（実効設定の表示）~~ **2026-09-21 実装済み**: 設定のオンデバイスモデル欄に
+   「生成設定（直近の実行）」を追加した。値は webview 側の写しではなく、helper が返した `usage` を
+   Rust が保持した記録（`samplingRequested` / `samplingEffective` / `maximumResponseTokens` /
+   トークン数）から表示する。まだ生成していない起動では空状態を出す。
+   [証跡](reviews/2026-09-21-core-ai-generation-profile/README.md)。

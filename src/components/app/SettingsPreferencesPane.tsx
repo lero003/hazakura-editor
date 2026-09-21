@@ -14,6 +14,7 @@ import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { ToggleSwitch } from "../common/ToggleSwitch";
 import { SparklesIcon } from "./Icons";
 import { CoreAiModelManager } from "./CoreAiModelManager";
+import { CoreAiGenerationProfile } from "./CoreAiGenerationProfile";
 
 type SettingsPreferencesPaneProps = {
   appleAssistAvailability?: AppleAssistAvailability;
@@ -349,6 +350,7 @@ export function SettingsPreferencesPane({
               ))}
             </div>
             <CoreAiModelManager language={menuLanguage} />
+            <CoreAiGenerationProfile language={menuLanguage} />
             <p className="field-hint">{copy.assistNotice}</p>
           </>
         ) : null}

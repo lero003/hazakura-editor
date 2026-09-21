@@ -13,7 +13,8 @@
 
 use crate::commands::apple_assist::*;
 use crate::commands::apple_assist_supervisor::{
-    store_without_helper, HelperAvailability, HelperCandidate,
+    store_without_helper, AssistGenerationProfile, AssistGenerationUsage, HelperAvailability,
+    HelperCandidate,
 };
 
 fn request_with(operation: AppleAssistOperation, text: &str) -> AppleAssistRequest {
@@ -242,11 +243,14 @@ fn apple_assist_response_serializes_frontend_camel_case_payload() {
         candidate_text: "better body".to_string(),
         model_id: "apple:foundation-models:system-default".to_string(),
         latency_ms: 42,
+        usage: None,
     };
     let value = serde_json::to_value(response).expect("response should serialize");
     assert_eq!(value["candidateText"], "better body");
     assert_eq!(value["modelId"], "apple:foundation-models:system-default");
     assert_eq!(value["latencyMs"], 42);
+    // The webview only receives the record when the helper reported one.
+    assert!(value.get("usage").is_none());
 }
 
 #[test]
@@ -355,11 +359,80 @@ fn apple_assist_maps_helper_candidate() {
         candidate_text: "fixed".to_string(),
         model_id: "apple:foundation-models:system-default".to_string(),
         latency_ms: 42,
+        usage: None,
     })
     .expect("candidate should map");
     assert_eq!(response.operation, AppleAssistOperation::Proofread);
     assert_eq!(response.candidate_text, "fixed");
     assert_eq!(response.latency_ms, 42);
+    assert!(response.usage.is_none());
+}
+
+#[test]
+fn apple_assist_carries_helper_generation_usage() {
+    // The Settings pane reads the effective generation settings from this
+    // record, so dropping the helper's `usage` here silently empties it.
+    let response = map_helper_candidate(HelperCandidate {
+        operation: "proofread".to_string(),
+        candidate_text: "fixed".to_string(),
+        model_id: "apple:core-ai:gemma-4-e4b-it-int4-v1".to_string(),
+        latency_ms: 42,
+        usage: Some(AssistGenerationUsage {
+            maximum_response_tokens: Some(2048),
+            sampling_requested: Some("temperature=none(greedy)".to_string()),
+            sampling_effective: Some("greedy".to_string()),
+            prompt_tokens: Some(812),
+            output_tokens: Some(24),
+            cached_tokens: Some(640),
+        }),
+    })
+    .expect("candidate should map");
+
+    let profile = AssistGenerationProfile::from_usage(&response.model_id, response.usage)
+        .expect("helper usage with settings must produce a profile");
+    assert_eq!(profile.model_id, "apple:core-ai:gemma-4-e4b-it-int4-v1");
+    assert_eq!(profile.maximum_response_tokens, Some(2048));
+    assert_eq!(profile.sampling_effective.as_deref(), Some("greedy"));
+    assert_eq!(profile.output_tokens, Some(24));
+}
+
+#[test]
+fn apple_assist_generation_profile_ignores_token_only_usage() {
+    // The System path can report token counts without any generation settings.
+    // Showing that as "the effective settings" would be a false claim.
+    let profile = AssistGenerationProfile::from_usage(
+        "apple:foundation-models:system-default",
+        Some(AssistGenerationUsage {
+            prompt_tokens: Some(120),
+            output_tokens: Some(16),
+            ..Default::default()
+        }),
+    );
+    assert!(profile.is_none());
+}
+
+#[test]
+fn helper_store_keeps_the_last_reported_generation_profile() {
+    let store = store_without_helper();
+    store.record_generation_profile(None);
+    assert!(store.generation_profile().is_none());
+
+    let profile = AssistGenerationProfile::from_usage(
+        "apple:core-ai:gemma-4-e4b-it-int4-v1",
+        Some(AssistGenerationUsage {
+            maximum_response_tokens: Some(2048),
+            sampling_effective: Some("greedy".to_string()),
+            ..Default::default()
+        }),
+    )
+    .expect("settings-bearing usage must produce a profile");
+
+    store.record_generation_profile(Some(profile.clone()));
+    assert_eq!(store.generation_profile(), Some(profile.clone()));
+
+    // A later run that reports nothing must not erase the observation.
+    store.record_generation_profile(None);
+    assert_eq!(store.generation_profile(), Some(profile));
 }
 
 #[test]

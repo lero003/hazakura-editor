@@ -5,6 +5,22 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-21
 
+## Core AI 生成設定の可視化（2026-09-21）
+
+前スライスの `usage`（要求した設定と実効設定）を設定画面から見えるようにした。
+値を webview や設定側にもう一度書くと、配線が変わっても画面だけ正しく見えてしまうため、
+表示は helper → Rust の記録だけを読む。設定のオンデバイスモデル欄に
+「生成設定（直近の実行）」（出力上限 / サンプリング要求 / サンプリング実効 /
+直近のトークン数 / 直近のモデル）を追加し、まだ Core AI で生成していない起動では
+空状態を出す。記録はプロセス内のみで、保存も送信もしない。
+
+モデルへ渡す内容は変えていない（prompt 契約・生成オプション・Apply 経路は同じ）。
+検証は Swift helper の distribution ビルド、Rust 422件（2 ignored）、frontend 2,649件、
+project script 24件、App Store surface 129件、型検査、Vite build、
+App Store preview レーンの `npm run build` まで成功。**実 Core AI での観測は未実施**
+（Codex 環境は GPU を渡さないため）。詳細は
+[Core AI generation profile surface](reviews/2026-09-21-core-ai-generation-profile/README.md)。
+
 ## Core AI E4B 配線の作り込み（2026-09-21）
 
 実機（16 GB MacBook Air）で編集品質が崩れるという報告と外部レビューを受け、
@@ -26,7 +42,8 @@ Last reviewed: 2026-09-21
 **E4B の実生成による再測定は未実施**（Codex 環境が GPU を渡さず `noMetalDevice` になるため）。
 オーナーの通常 shell で `scripts/evaluate-local-assist.mjs` を回して秒数と品質を確定する。
 詳細と再測定コマンドは [Core AI編集品質（ハーネス）調査メモ](core-ai-harness-quality.md)。
-設定画面での実効設定表示は、この記録を正本にした次スライス。
+設定画面での実効設定表示は
+[Core AI 生成設定の可視化](reviews/2026-09-21-core-ai-generation-profile/README.md)で実装した。
 証跡は [Core AI E4B wiring slice](reviews/2026-09-21-core-ai-e4b-wiring/README.md)。
 
 ## Core AI 配布前基盤 — TestFlight手前（2026-09-20）

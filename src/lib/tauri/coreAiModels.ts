@@ -4,6 +4,8 @@ import { isTauriRuntime } from "./_runtime";
 
 export const SYSTEM_LOCAL_ASSIST_MODEL_ID = "apple:foundation-models:system-default";
 export const CORE_AI_MODEL_STATE_CHANGED_EVENT = "core-ai-model-state-changed";
+export const LOCAL_ASSIST_GENERATION_PROFILE_CHANGED_EVENT =
+  "local-assist-generation-profile-changed";
 
 export type CoreAiDistributionStatus = "not_published" | "available";
 export type CoreAiModelKind = "system" | "core_ai";
@@ -79,4 +81,37 @@ export async function listenCoreAiModelStateChanges(
   return listen<CoreAiModelCatalog>(CORE_AI_MODEL_STATE_CHANGED_EVENT, (event) => {
     onChange(event.payload);
   });
+}
+
+/**
+ * The generation settings the helper actually reported for the last Local
+ * Assist run. Rust owns this record: it is built from the helper's `usage`
+ * envelope, not from a copy of the numbers in the webview. `null` means this
+ * session has not observed a run that reported usage yet.
+ */
+export type LocalAssistGenerationProfile = {
+  modelId: string;
+  maximumResponseTokens?: number | null;
+  samplingRequested?: string | null;
+  samplingEffective?: string | null;
+  promptTokens?: number | null;
+  outputTokens?: number | null;
+  cachedTokens?: number | null;
+};
+
+export async function getLocalAssistGenerationProfile(): Promise<LocalAssistGenerationProfile | null> {
+  if (!isTauriRuntime()) return null;
+  return invoke<LocalAssistGenerationProfile | null>("local_assist_generation_profile");
+}
+
+export async function listenLocalAssistGenerationProfileChanges(
+  onChange: (profile: LocalAssistGenerationProfile) => void,
+): Promise<UnlistenFn> {
+  if (!isTauriRuntime()) return () => undefined;
+  return listen<LocalAssistGenerationProfile>(
+    LOCAL_ASSIST_GENERATION_PROFILE_CHANGED_EVENT,
+    (event) => {
+      onChange(event.payload);
+    },
+  );
 }

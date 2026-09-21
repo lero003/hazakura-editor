@@ -933,6 +933,16 @@ manifest/digest検証をready判定へ追加してから選択を有効化する
 
 すべて `ensure_label_*`。Download 進捗は専用イベント。proposal status チャネルに混ぜない。開示無しの catalog コマンドは足さない（D12）。
 
+### Rust commands（2026-09-21 追加: 生成設定の観測）
+
+| Command | Window | Lane | 役割 |
+|---|---|---|---|
+| `local_assist_generation_profile` | mainのみ | 両レーン | 直近の生成で helper が報告した要求/実効の生成設定（`samplingRequested` / `samplingEffective` / `maximumResponseTokens` / トークン数 / model id）を返す。プロセス内の記録だけで、保存も path / URL の返却もしない |
+
+生成の両経路（one-shot / streaming）が helper の `usage` を記録し、
+`local-assist-generation-profile-changed` を emit する。設定画面の「生成設定（直近の実行）」は
+この記録だけを表示し、webview 側に数値を写さない。未観測なら `null`。
+
 **H-1b（C-2 直前）** で `generate_apple_assist_candidate_streaming` が Rust 専有の backend / path を helper stdin に載せる。Rust は:
 
 1. TS からは **文章・operation・任意 `menuLanguage` だけ**受け取る。`backend` / catalog id / path / guided フラグは JS に置かない（D20）。
