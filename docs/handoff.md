@@ -29,7 +29,8 @@ Last reviewed: 2026-09-21
   extension署名に`com.apple.application-identifier`が無いとしてApple 90886でTestFlight不適格に
   なったため、署名scriptはprofileからapplication/team identifierを導出してextensionへ署名し、
   署名後に読み返して検証するよう修正した。同一build番号は再uploadできないので差し替えcandidateを
-  作り直し、asset/buildをuploadしてInternal TestFlightのCDN→検証→helper loadを実機で受け入れる。
+  作り直し済み（3.1.0 build 144、App Store entitlement probe通過、未upload）。asset/buildを
+  uploadしてInternal TestFlightのCDN→検証→helper loadを実機で受け入れる。
   `.aar`のTransporter uploadはApp Store Connect側の`-19243`/400 invalid valuesで止まっており、
   `altool --list-asset-packs`での切り分けが次の一手。
   2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定。

@@ -41,7 +41,8 @@ Last reviewed: 2026-09-21
   `codesign -d`で読み返して不一致なら失敗するよう修正した。同じ条件は
   `REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution`も検出する。
   既存bundleへの再署名とprobeで修正を確認済み。同一build番号は再uploadできないため、
-  差し替えcandidateの再作成が必要。`.aar`のTransporter uploadもApp Store Connect側の
+  差し替えcandidate（3.1.0 build 144）を再作成し、App Store entitlement probeまで通過した
+  （未upload）。`.aar`のTransporter uploadもApp Store Connect側の
   `-19243` / 400 invalid valuesで未完了で、`altool --list-asset-packs`による切り分けを
   [E4B handoff](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)へ記録した。
   Apple processingは未実施。`coreai-build`も利用できずAOTは未完了。ローカル`.aar`生成は完了したが、Apple CDN、

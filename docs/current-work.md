@@ -60,7 +60,8 @@ G1 / G2はsource実装と回帰テストまで閉じた。E4B `.aar`はsandbox�
 署名scriptはprofile由来のapplication/team identifierをextensionへ署名し、署名後に読み返して
 検証するよう修正済み（既存bundleへの再署名とApp Store entitlement probeで確認）。
 同一build番号は再uploadできないため、次は差し替えcandidateを作り直し、asset upload / processing、
-app build upload、署名済みInternal TestFlightの一本受入を行う。`.aar`のTransporter uploadは
+app build upload、署名済みInternal TestFlightの一本受入を行う。差し替え候補（3.1.0 build 144）は
+App Store entitlement probeまで通過済みで未upload。`.aar`のTransporter uploadは
 App Store Connect側の`-19243`/400で止まっており、`altool --list-asset-packs`で切り分ける。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）

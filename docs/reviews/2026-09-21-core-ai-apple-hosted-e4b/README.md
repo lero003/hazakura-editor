@@ -1,6 +1,6 @@
 # Core AI Apple-hosted E4B handoff
 
-Status: First TestFlight upload rejected for a nested extension entitlement; fix verified locally, replacement build pending
+Status: First TestFlight upload rejected for a nested extension entitlement; fixed and rebuilt, upload pending
 Scope: Internal TestFlight path for Gemma 4 E4B only
 Authority: Verification record
 Last reviewed: 2026-09-21
@@ -98,7 +98,9 @@ condition. Re-running the fixed signing step on the build 143 bundle produced
 App Store entitlement probe passed. Apple-side acceptance still requires a new upload.
 
 Build 143 cannot be repaired in App Store Connect: the same build number cannot be re-uploaded, so
-a replacement candidate with a higher `CFBundleVersion` is required.
+a replacement candidate with a higher `CFBundleVersion` is required. Build 144 was rebuilt from the
+fixed signing step and passes the full App Store entitlement probe; its path, digest, and source
+commit live in the ignored candidate metadata. It has not been uploaded.
 
 ## `.aar` status
 
