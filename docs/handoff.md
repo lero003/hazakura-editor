@@ -5,6 +5,15 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **外部レビューP2 6件の追補（2026-09-22）:** streaming最終候補を最後のraw snapshotから作り、
+  model catalogの購読/snapshot/操作応答を2画面で共通化した。Background Assetsはserial queueと
+  操作世代で解決中cancelを止め、paused monitorを5秒間隔で維持する。削除失敗は旧選択を復元し、
+  pickerは進捗更新でfocusを奪わない。設定のSystem状態、サイズ、削除確認、折りたたみも整理した。
+  frontend 2,674件、scripts 24件、Rust 427件（2 ignored）、Swift 52件、surface 132件、Vite /
+  App Store preview buildは成功。次はPR #52へpushしてexact HEADのCIと外部再レビューを取り、
+  その後にbuilt app / VoiceOver / sleep-wake / 実Background Assets / 32 GB機TestFlightを確認する。
+  [証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
+
 - **Core AI 12B + モデル管理仕上げ（2026-09-22）:** App Store固定catalogへ12Bを追加し、
   E4Bと同じApple-hosted download / G2検証 / 選択 / 削除経路へ接続した。設定はdownload量、
   展開後使用量、推奨メモリ、license要約を表示し、Rustが読む物理メモリが推奨値未満なら開始前に
@@ -53,7 +62,7 @@ Last reviewed: 2026-09-22
 
 - **オンデバイスモデルを独立ページにする（2026-09-21）:** Preferences ダイアログに
   `models` ページを追加し、モデル一覧（状態・サイズ・資産バージョン・開始/進捗/再開/取消/
-  削除/選択）、保存先の説明、生成設定（直近の実行）、境界の説明を1ページへまとめた。
+  削除/選択）、保存先の説明、直近の生成記録、境界の説明を1ページへまとめた。
   設定本文には入口の1行だけを残す。保存先は選ばせず説明のみ、自動ダウンロードと
   起動時スキャンは不変。変更は frontend / CSS / docs のみで Rust 契約は不変。
   frontend 297 files / 2,654件、project script 24件、App Store surface 130件、型検査、
@@ -64,7 +73,7 @@ Last reviewed: 2026-09-22
 
 - **Core AI 生成設定の可視化（2026-09-21）:** helper が返す `usage`（要求/実効の
   サンプリング、出力上限、トークン数）を Rust が保持し、設定のオンデバイスモデル欄へ
-  「生成設定（直近の実行）」として出す。表示は webview 側の写しではなく Rust の記録だけを
+  「直近の生成記録」として出す。表示は webview 側の写しではなく Rust の記録だけを
   読む。未観測時の空状態あり、記録はプロセス内のみ。モデルへ渡す内容は不変。
   Rust 422件（2 ignored）、frontend 2,649件、project script 24件、surface 129件、型検査、
   Vite build、App Store preview の `npm run build` は成功。**実 Core AI での観測と

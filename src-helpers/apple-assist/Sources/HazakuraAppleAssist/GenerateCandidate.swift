@@ -467,8 +467,7 @@ enum GenerateCandidate {
             )
             let options = coreAIOptions(for: backend)
             let profile = coreAIProfile(for: backend)
-            var latestCandidate = ""
-            var latestRaw = ""
+            var formatter = CandidateStreamFormatter(original: request.selectedText)
             var latestUsage: LanguageModelSession.Usage?
             let stream = session.streamResponse(
                 to: Prompt(coreAIPrompt(for: request, backend: backend)),
@@ -476,17 +475,11 @@ enum GenerateCandidate {
             )
             for try await snapshot in stream {
                 latestUsage = snapshot.usage
-                latestRaw = snapshot.content
-                let candidate = CandidateFormatting.reviewText(
-                    snapshot.content,
-                    original: request.selectedText
-                )
-                if !candidate.isEmpty && candidate != latestCandidate {
-                    latestCandidate = candidate
+                if let candidate = formatter.receive(snapshot.content) {
                     onPartial(AppleAssistPartialResponse(candidateText: candidate))
                 }
             }
-            guard !latestCandidate.isEmpty else {
+            guard let finalCandidate = formatter.finalCandidate() else {
                 return .error(AppleAssistErrorEnvelope(
                     error: CoreAIRuntime.emptyCandidate,
                     kind: "internal"
@@ -494,13 +487,13 @@ enum GenerateCandidate {
             }
             return .ok(AppleAssistResponse(
                 operation: request.operation,
-                candidateText: latestCandidate,
+                candidateText: finalCandidate,
                 modelId: backend.modelId,
                 latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
                 usage: coreAIUsage(
                     latestUsage,
                     profile: profile,
-                    rawCandidateText: request.measureUsage == true ? latestRaw : nil
+                    rawCandidateText: request.measureUsage == true ? formatter.latestRawSnapshot : nil
                 )
             ))
         } catch {

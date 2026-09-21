@@ -148,6 +148,38 @@ describe("AppleAssistWindowApp render", () => {
     expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep input");
   });
 
+  it("does not let a late model-selection response replace a newer catalog event", async () => {
+    const initial = unavailableCoreAiModelCatalog();
+    initial.models.push({
+      id: "apple:core-ai:ready", displayName: "Ready model",
+      kind: "core_ai", status: "ready", selected: false,
+    });
+    vi.mocked(listCoreAiModels).mockResolvedValueOnce(initial);
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    let finishSelection!: (value: typeof initial) => void;
+    vi.mocked(selectLocalAssistModel).mockImplementationOnce(
+      () => new Promise((resolve) => { finishSelection = resolve; }),
+    );
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Ready model" }));
+    await act(async () => {
+      eventListeners.get(CORE_AI_MODEL_STATE_CHANGED_EVENT)?.({ payload: initial });
+      finishSelection({
+        ...initial,
+        selectedModelId: "apple:core-ai:ready",
+        models: initial.models.map((model) => ({
+          ...model, selected: model.id === "apple:core-ai:ready",
+        })),
+      });
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole("button", { name: "Choose model: Apple Intelligence" })).toBeTruthy();
+  });
+
   it("rechecks availability without losing the conversation or typed request", async () => {
     const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
     vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);

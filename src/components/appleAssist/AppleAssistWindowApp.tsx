@@ -22,14 +22,9 @@ import {
   cancelAppleAssistProposal,
 } from "../../lib/tauri";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
+import { useCoreAiModelCatalog } from "../../hooks/app/useCoreAiModelCatalog";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
-import {
-  listCoreAiModels,
-  listenCoreAiModelStateChanges,
-  selectLocalAssistModel,
-  unavailableCoreAiModelCatalog,
-  type CoreAiModelCatalog,
-} from "../../lib/tauri/coreAiModels";
+import { selectLocalAssistModel } from "../../lib/tauri/coreAiModels";
 import {
   buildProposalEvent,
   getLocalAssistAction,
@@ -250,9 +245,8 @@ export function AppleAssistWindowApp() {
   // repeated clicks read as a stuck UI).
   const [cancelling, setCancelling] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
-  const [modelCatalog, setModelCatalog] = useState<CoreAiModelCatalog>(unavailableCoreAiModelCatalog);
+  const { catalog: modelCatalog, runCatalogRequest } = useCoreAiModelCatalog();
   const selectedModelIdRef = useRef(modelCatalog.selectedModelId);
-  selectedModelIdRef.current = modelCatalog.selectedModelId;
   const [availabilityRefreshKey, setAvailabilityRefreshKey] = useState(0);
   const [modelSwitching, setModelSwitching] = useState(false);
   const { availability, available, probed } = useAppleAssistAvailability(true, availabilityRefreshKey);
@@ -305,44 +299,23 @@ export function AppleAssistWindowApp() {
   const displayedTarget = conversation?.pinnedTarget ?? target;
 
   useEffect(() => {
-    let disposed = false;
-    void listCoreAiModels()
-      .then((catalog) => { if (!disposed) setModelCatalog(catalog); })
-      .catch((reason: unknown) => console.warn("Failed to list Core AI models", reason));
-    return () => { disposed = true; };
-  }, []);
-
-  useEffect(() => {
-    let disposed = false;
-    let unlisten: (() => void) | undefined;
-    void listenCoreAiModelStateChanges((catalog) => {
-      if (disposed) return;
-      const selectedChanged = catalog.selectedModelId !== selectedModelIdRef.current;
-      setModelCatalog(catalog);
-      if (selectedChanged) {
-        availabilityReportedRef.current = false;
-        setAvailabilityRefreshKey((current) => current + 1);
-      }
-    }).then((stop) => {
-      if (disposed) stop(); else unlisten = stop;
-    }).catch((reason: unknown) => console.warn("Failed to listen for Core AI model state", reason));
-    return () => { disposed = true; unlisten?.(); };
-  }, []);
+    if (modelCatalog.selectedModelId === selectedModelIdRef.current) return;
+    selectedModelIdRef.current = modelCatalog.selectedModelId;
+    availabilityReportedRef.current = false;
+    setAvailabilityRefreshKey((current) => current + 1);
+  }, [modelCatalog.selectedModelId]);
 
   const selectModel = useCallback(async (modelId: string) => {
     setModelSwitching(true);
     setError(null);
     try {
-      const catalog = await selectLocalAssistModel(modelId);
-      setModelCatalog(catalog);
-      availabilityReportedRef.current = false;
-      setAvailabilityRefreshKey((current) => current + 1);
+      await runCatalogRequest(() => selectLocalAssistModel(modelId));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
       setModelSwitching(false);
     }
-  }, []);
+  }, [runCatalogRequest]);
 
   const recheckAvailability = () => {
     if (busy || modelSwitching || !probed) return;

@@ -940,8 +940,8 @@ manifest/digest検証をready判定へ追加してから選択を有効化する
 | `local_assist_generation_profile` | mainのみ | 両レーン | 直近の生成で helper が報告した要求/実効の生成設定（`samplingRequested` / `samplingEffective` / `maximumResponseTokens` / トークン数 / model id）を返す。プロセス内の記録だけで、保存も path / URL の返却もしない |
 
 生成の両経路（one-shot / streaming）が helper の `usage` を記録し、
-`local-assist-generation-profile-changed` を emit する。設定画面の「生成設定（直近の実行）」は
-この記録だけを表示し、webview 側に数値を写さない。未観測なら `null`。
+`local-assist-generation-profile-changed` を emit する。設定画面の「直近の生成記録」は
+この記録だけを既定で閉じた disclosure に表示し、webview 側に数値を写さない。未観測なら `null`。
 
 **H-1b（C-2 直前）** で `generate_apple_assist_candidate_streaming` が Rust 専有の backend / path を helper stdin に載せる。Rust は:
 

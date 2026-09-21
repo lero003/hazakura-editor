@@ -9,6 +9,8 @@ static NSString *const HZPhaseFailed = @"failed";
 
 @interface HZBackgroundAssetsController : NSObject <BAManagedAssetPackDownloadDelegate>
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSMutableDictionary *> *states;
+@property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *operationGenerations;
+@property(nonatomic, strong) dispatch_queue_t operationQueue;
 @end
 
 @implementation HZBackgroundAssetsController
@@ -19,8 +21,28 @@ static NSString *const HZPhaseFailed = @"failed";
     dispatch_once(&onceToken, ^{
       controller = [[HZBackgroundAssetsController alloc] init];
       controller.states = [NSMutableDictionary dictionary];
+      controller.operationGenerations = [NSMutableDictionary dictionary];
+      controller.operationQueue = dispatch_queue_create("dev.hazakura.editor.background-assets", DISPATCH_QUEUE_SERIAL);
     });
     return controller;
+}
+
+- (NSUInteger)beginOperationForIdentifier:(NSString *)identifier {
+    @synchronized(self) {
+        NSUInteger generation = [self.operationGenerations[identifier] unsignedIntegerValue] + 1;
+        self.operationGenerations[identifier] = @(generation);
+        return generation;
+    }
+}
+
+- (void)invalidateOperationForIdentifier:(NSString *)identifier {
+    (void)[self beginOperationForIdentifier:identifier];
+}
+
+- (BOOL)isCurrentOperationForIdentifier:(NSString *)identifier generation:(NSUInteger)generation {
+    @synchronized(self) {
+        return [self.operationGenerations[identifier] unsignedIntegerValue] == generation;
+    }
 }
 
 - (NSMutableDictionary *)stateForIdentifier:(NSString *)identifier {
@@ -114,37 +136,47 @@ static NSString *const HZPhaseFailed = @"failed";
 - (void)startIdentifier:(NSString *)identifier {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000
     if (@available(macOS 27, *)) {
-        BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
-        manager.delegate = self;
-        [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
-        [manager getManifestWithCompletionHandler:^(BAAssetPackManifest *_Nullable manifest, NSError *_Nullable error) {
-          if (error != nil || manifest == nil) {
-              [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                               error:error.localizedDescription ?: @"Apple-hosted asset manifest is unavailable."
-                             version:nil];
-              return;
-          }
-          BAAssetPack *assetPack = [manifest assetPackWithIdentifier:identifier];
-          if (assetPack == nil) {
-              [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                               error:@"The requested Core AI asset pack is not present in the processed Apple-hosted manifest."
-                             version:nil];
-              return;
-          }
-          [self updateIdentifier:identifier phase:HZPhaseDownloading progress:@0
-                           error:nil version:@(assetPack.version)];
-          [manager ensureLocalAvailabilityOfAssetPack:assetPack
-                                 requireLatestVersion:YES
-                                    completionHandler:^(NSError *_Nullable downloadError) {
-            if (downloadError != nil) {
-                [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                                 error:downloadError.localizedDescription version:@(assetPack.version)];
-            } else {
-                [self updateIdentifier:identifier phase:@"downloaded" progress:@1
-                                 error:nil version:@(assetPack.version)];
-            }
+        dispatch_async(self.operationQueue, ^{
+          NSUInteger generation = [self beginOperationForIdentifier:identifier];
+          BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
+          manager.delegate = self;
+          [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
+          [manager getManifestWithCompletionHandler:^(BAAssetPackManifest *_Nullable manifest, NSError *_Nullable error) {
+            dispatch_async(self.operationQueue, ^{
+              if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
+              if (error != nil || manifest == nil) {
+                  [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                                   error:error.localizedDescription ?: @"Apple-hosted asset manifest is unavailable."
+                                 version:nil];
+                  return;
+              }
+              BAAssetPack *assetPack = [manifest assetPackWithIdentifier:identifier];
+              if (assetPack == nil) {
+                  [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                                   error:@"The requested Core AI asset pack is not present in the processed Apple-hosted manifest."
+                                 version:nil];
+                  return;
+              }
+              if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
+              [self updateIdentifier:identifier phase:HZPhaseDownloading progress:@0
+                               error:nil version:@(assetPack.version)];
+              [manager ensureLocalAvailabilityOfAssetPack:assetPack
+                                     requireLatestVersion:YES
+                                        completionHandler:^(NSError *_Nullable downloadError) {
+                dispatch_async(self.operationQueue, ^{
+                  if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
+                  if (downloadError != nil) {
+                      [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                                       error:downloadError.localizedDescription version:@(assetPack.version)];
+                  } else {
+                      [self updateIdentifier:identifier phase:@"downloaded" progress:@1
+                                       error:nil version:@(assetPack.version)];
+                  }
+                });
+              }];
+            });
           }];
-        }];
+        });
         return;
     }
 #endif
@@ -153,20 +185,33 @@ static NSString *const HZPhaseFailed = @"failed";
 }
 
 - (BOOL)cancelIdentifier:(NSString *)identifier error:(NSError **)error {
-    NSArray<BADownload *> *downloads = [BADownloadManager.sharedManager fetchCurrentDownloads:error];
-    if (downloads == nil) {
-        return NO;
-    }
-    for (BADownload *download in downloads) {
-        if ([download.identifier isEqualToString:identifier]) {
-            BOOL cancelled = [BADownloadManager.sharedManager cancelDownload:download error:error];
-            if (cancelled) {
-                [self updateIdentifier:identifier phase:HZPhasePaused progress:nil error:nil version:nil];
-            }
-            return cancelled;
-        }
-    }
-    return NO;
+    __block BOOL accepted = YES;
+    __block NSError *operationError = nil;
+    dispatch_sync(self.operationQueue, ^{
+      [self invalidateOperationForIdentifier:identifier];
+      [self updateIdentifier:identifier phase:HZPhasePaused progress:nil error:nil version:nil];
+      NSArray<BADownload *> *downloads = [BADownloadManager.sharedManager fetchCurrentDownloads:&operationError];
+      if (downloads == nil) {
+          accepted = NO;
+          [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                           error:operationError.localizedDescription version:nil];
+          return;
+      }
+      for (BADownload *download in downloads) {
+          if ([download.identifier isEqualToString:identifier]) {
+              accepted = [BADownloadManager.sharedManager cancelDownload:download error:&operationError];
+              if (!accepted) {
+                  [self updateIdentifier:identifier phase:HZPhaseDownloading progress:nil
+                                   error:operationError.localizedDescription version:nil];
+              }
+              return;
+          }
+      }
+      // No BADownload exists while the manifest is resolving. Invalidating its
+      // generation is the successful logical cancellation in that state.
+    });
+    if (!accepted && error != NULL) *error = operationError;
+    return accepted;
 }
 
 - (BOOL)removeIdentifier:(NSString *)identifier error:(NSError **)error {

@@ -76,4 +76,41 @@ final class CandidateFormattingTests: XCTestCase {
             XCTAssertEqual(CandidateFormatting.reviewText(text, original: "元の本文"), text)
         }
     }
+
+    func testStreamingFormatterBuffersEveryPromptStartPrefix() {
+        let marker = "<<<HAZAKURA_TEXT_START"
+        for length in 1...marker.count {
+            var formatter = CandidateStreamFormatter(original: "元の本文")
+            XCTAssertNil(
+                formatter.receive(String(marker.prefix(length))),
+                "prefix length \(length) must stay hidden"
+            )
+            XCTAssertNil(formatter.finalCandidate())
+        }
+    }
+
+    func testStreamingFormatterPublishesClosedBodyAndFinalizesFromLatestRawSnapshot() {
+        var formatter = CandidateStreamFormatter(original: "元の本文")
+        XCTAssertNil(formatter.receive("<<<HAZAKURA_TEXT_START"))
+        XCTAssertNil(formatter.receive("<<<HAZAKURA_TEXT_START\n新しい本文"))
+        XCTAssertEqual(
+            formatter.receive("<<<HAZAKURA_TEXT_START\n新しい本文\nHAZAKURA_TEXT_END>>>"),
+            "新しい本文"
+        )
+        XCTAssertEqual(formatter.finalCandidate(), "新しい本文")
+
+        XCTAssertNil(formatter.receive("<<<HAZAKURA_TEXT_STAR"))
+        XCTAssertNil(formatter.finalCandidate(), "a stale closed body must not become the final result")
+    }
+
+    func testStreamingFormatterKeepsOrdinaryAngleBracketTextAndAuthoredMarkers() {
+        var ordinary = CandidateStreamFormatter(original: "元の本文")
+        XCTAssertEqual(ordinary.receive("<section>本文</section>"), "<section>本文</section>")
+        XCTAssertEqual(ordinary.finalCandidate(), "<section>本文</section>")
+
+        let manuscript = "<<<HAZAKURA_TEXT_START\n原稿\nHAZAKURA_TEXT_END>>>"
+        var authored = CandidateStreamFormatter(original: manuscript)
+        XCTAssertEqual(authored.receive(manuscript), manuscript)
+        XCTAssertEqual(authored.finalCandidate(), manuscript)
+    }
 }

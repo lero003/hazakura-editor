@@ -7,6 +7,15 @@ Last reviewed: 2026-09-22
 
 ## Current State
 
+- **TestFlight前 外部レビュー追補（2026-09-22）:** `aac6e900`へのP2 6件を閉じた。
+  streaming markerの部分露出/古い最終候補、2画面のcatalog競合、manifest解決中cancel、paused後の
+  監視停止、選択中modelの削除失敗、pickerのfocus再取得をそれぞれ回帰テストで固定した。
+  設定は現在model / 物理メモリ、ready前の「インストール後」サイズ、Systemの未確認表示、削除確認、
+  既定で閉じた「直近の生成記録」へ更新。frontend 2,674件、scripts 24件、Rust 427件
+  （2 ignored）、Swift 52件、surface 132件、型検査、Vite / App Store preview buildは成功。
+  **PR CI、built appのキーボード/VoiceOver、sleep/wake、実Background Assets、TestFlightは未確認。**
+  [追補証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
+
 - **Core AI 12B source接続（2026-09-22）:** App Storeレーンの固定catalogへGemma 4 12Bを
   追加し、E4Bと同じApple-hosted download / 検証 / 選択 / 削除経路へ接続した。
   設定ではdownload量、展開後使用量、推奨メモリ、license要約を表示し、物理メモリが推奨値を
@@ -50,7 +59,7 @@ Last reviewed: 2026-09-22
 
 - **オンデバイスモデルの独立ページ（2026-09-21）:** モデル管理をPreferencesダイアログの
   独立ページ（`models`）へ移した。モデル一覧（状態・サイズ・資産バージョン・開始/進捗/
-  再開/取消/削除/選択）、保存先が選べないことの説明、生成設定（直近の実行）、扱えるモデルの
+  再開/取消/削除/選択）、保存先が選べないことの説明、直近の生成記録、扱えるモデルの
   境界を1ページに置き、設定本文には入口だけを残す。保存先は選ばせず、自動ダウンロード・
   起動時スキャン・Rust command契約・helperへ渡す内容は不変。frontend 297 files / 2,654件、
   project script 24件、App Store surface 130件、型検査、Vite build、Vite fixtureの実表示
@@ -60,7 +69,7 @@ Last reviewed: 2026-09-22
   [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
 
 - **Core AI生成設定の可視化（2026-09-21）:** helperが返す`usage`をRustが保持し、設定の
-  オンデバイスモデル欄に「生成設定（直近の実行）」（出力上限 / サンプリング要求 /
+  オンデバイスモデル欄に「直近の生成記録」（出力上限 / サンプリング要求 /
   サンプリング実効 / 直近のトークン数 / 直近のモデル）を表示する。値はwebview側の写しでは
   なくRustの記録から読む。まだCore AIで生成していない起動は空状態を出し、記録はプロセス内のみで
   保存・送信しない。モデルへ渡すprompt契約・生成オプション・Apply経路は変更していない。

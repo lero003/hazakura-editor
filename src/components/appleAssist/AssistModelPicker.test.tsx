@@ -72,4 +72,35 @@ describe("AssistModelPicker", () => {
     fireEvent.click(screen.getByRole("menuitemradio"));
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  it("preserves the focused model across progress-only catalog updates", () => {
+    const models = [
+      { id: "system", displayName: "System", kind: "system" as const, status: "ready" as const, selected: true },
+      { id: "core", displayName: "Core", kind: "core_ai" as const, status: "ready" as const, selected: false, progress: 0.1 },
+    ];
+    const { rerender } = render(<AssistModelPicker language="ja" disabled={false}
+      modelId="system" models={models} />);
+    fireEvent.click(screen.getByRole("button", { name: /モデルを選択/ }));
+    const core = screen.getByRole("menuitemradio", { name: "Core" });
+    core.focus();
+
+    rerender(<AssistModelPicker language="ja" disabled={false} modelId="system"
+      models={models.map((model) => model.id === "core" ? { ...model, progress: 0.7 } : model)} />);
+    expect(document.activeElement).toBe(screen.getByRole("menuitemradio", { name: "Core" }));
+  });
+
+  it("relocates focus only when the focused model becomes unavailable", () => {
+    const models = [
+      { id: "system", displayName: "System", kind: "system" as const, status: "ready" as const, selected: true },
+      { id: "core", displayName: "Core", kind: "core_ai" as const, status: "ready" as const, selected: false },
+    ];
+    const { rerender } = render(<AssistModelPicker language="ja" disabled={false}
+      modelId="system" models={models} />);
+    fireEvent.click(screen.getByRole("button", { name: /モデルを選択/ }));
+    screen.getByRole("menuitemradio", { name: "Core" }).focus();
+
+    rerender(<AssistModelPicker language="ja" disabled={false} modelId="system"
+      models={models.map((model) => model.id === "core" ? { ...model, status: "paused" as const } : model)} />);
+    expect(document.activeElement).toBe(screen.getByRole("menuitemradio", { name: "System" }));
+  });
 });

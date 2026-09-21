@@ -66,6 +66,24 @@ pub(crate) enum CoreAiModelStatus {
     NotPublished,
 }
 
+pub(crate) fn monitor_is_terminal(status: CoreAiModelStatus) -> bool {
+    matches!(
+        status,
+        CoreAiModelStatus::Ready
+            | CoreAiModelStatus::NotDownloaded
+            | CoreAiModelStatus::Failed
+            | CoreAiModelStatus::Unsupported
+    )
+}
+
+pub(crate) fn monitor_poll_interval(status: CoreAiModelStatus) -> Duration {
+    if status == CoreAiModelStatus::Paused {
+        Duration::from_secs(5)
+    } else {
+        Duration::from_secs(1)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CoreAiModelSummary {
@@ -311,6 +329,7 @@ pub(crate) struct CoreAiModelStore {
     pending_restore_model_id: Mutex<Option<String>>,
     catalog: Vec<CoreAiCatalogEntry>,
     runtime_states: Mutex<HashMap<String, RuntimeState>>,
+    monitor_generations: Mutex<HashMap<String, u64>>,
     management_error: Mutex<Option<String>>,
     selection_locked: Mutex<bool>,
     transport: Arc<dyn BackgroundAssetTransport>,
@@ -344,6 +363,7 @@ impl CoreAiModelStore {
             pending_restore_model_id: Mutex::new(None),
             catalog,
             runtime_states: Mutex::new(runtime_states),
+            monitor_generations: Mutex::new(HashMap::new()),
             management_error: Mutex::new(None),
             selection_locked: Mutex::new(false),
             transport,
@@ -566,20 +586,29 @@ impl CoreAiModelStore {
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
         let entry = self.catalog_entry(model_id)?;
-        if self
+        let was_selected = self
             .selected_model_id
             .lock()
             .expect("selected model lock")
             .as_str()
-            == model_id
-        {
+            == model_id;
+        if was_selected {
             helper_store
                 .set_selected_backend_after(AssistBackendSelection::SystemDefault, || {
                     self.persist_selection(SYSTEM_MODEL_ID)
                 })?;
             *self.selected_model_id.lock().expect("selected model lock") = SYSTEM_MODEL_ID.into();
         }
-        self.transport.remove(self.asset_pack_id(entry)?)?;
+        if let Err(remove_error) = self.transport.remove(self.asset_pack_id(entry)?) {
+            if was_selected {
+                if let Err(restore_error) = self.select(model_id, helper_store) {
+                    return Err(format!(
+                        "{remove_error} The previous model could not be restored after removal failed: {restore_error}"
+                    ));
+                }
+            }
+            return Err(remove_error);
+        }
         let _ = fs::remove_file(self.validation_receipt_path(entry)?);
         self.set_runtime_state(model_id, RuntimeState::default());
         let pending = self
@@ -604,20 +633,32 @@ impl CoreAiModelStore {
         model_id: String,
         helper_store: Option<Arc<AppleAssistHelperStore>>,
     ) {
+        let generation = {
+            let mut generations = self
+                .monitor_generations
+                .lock()
+                .expect("monitor generations lock");
+            let next = generations.get(&model_id).copied().unwrap_or(0) + 1;
+            generations.insert(model_id.clone(), next);
+            next
+        };
         let store = self.clone();
         std::thread::spawn(move || loop {
-            let terminal = match store.refresh_model(&model_id) {
-                Ok(status) => matches!(
-                    status,
-                    CoreAiModelStatus::Ready
-                        | CoreAiModelStatus::NotDownloaded
-                        | CoreAiModelStatus::Paused
-                        | CoreAiModelStatus::Failed
-                        | CoreAiModelStatus::Unsupported
-                ),
+            if store
+                .monitor_generations
+                .lock()
+                .expect("monitor generations lock")
+                .get(&model_id)
+                .copied()
+                != Some(generation)
+            {
+                break;
+            }
+            let status = match store.refresh_model(&model_id) {
+                Ok(status) => status,
                 Err(error) => {
                     store.set_failure(&model_id, error);
-                    true
+                    CoreAiModelStatus::Failed
                 }
             };
             if store.runtime_status(&model_id) == Some(CoreAiModelStatus::Ready) {
@@ -626,10 +667,10 @@ impl CoreAiModelStore {
                 }
             }
             let _ = app.emit(CORE_AI_MODEL_STATE_CHANGED_EVENT, store.list());
-            if terminal {
+            if monitor_is_terminal(status) {
                 break;
             }
-            std::thread::sleep(Duration::from_secs(1));
+            std::thread::sleep(monitor_poll_interval(status));
         });
     }
 
@@ -1080,11 +1121,11 @@ pub(crate) async fn delete_core_ai_model<R: tauri::Runtime>(
     ensure_apple_assist_allowed_by_distribution()?;
     let owned_store = store.inner().clone();
     let owned_helper = helper_store.inner().clone();
-    let catalog = tauri::async_runtime::spawn_blocking(move || {
+    let result = tauri::async_runtime::spawn_blocking(move || {
         owned_store.delete(&model_id, owned_helper.as_ref())
     })
     .await
-    .map_err(|error| format!("Core AI removal task failed: {error}"))??;
+    .map_err(|error| format!("Core AI removal task failed: {error}"))?;
     emit_catalog(&app, store.inner().as_ref());
-    Ok(catalog)
+    result
 }

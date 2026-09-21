@@ -353,6 +353,13 @@
 .core-ai-model-manager-heading,
 .core-ai-model-row { justify-content: space-between; }
 .core-ai-model-manager-heading p { margin: 0; font-weight: 700; }
+.core-ai-generation-profile > summary { cursor: pointer; font-weight: 700; }
+.core-ai-generation-profile > summary::marker { color: var(--text-muted); }
+.core-ai-generation-profile-summary {
+  display: inline-flex;
+  margin-inline-start: 4px;
+  width: calc(100% - 20px);
+}
 .core-ai-model-manager-heading span,
 .core-ai-model-row span { color: var(--text-muted); font-size: 11px; }
 .core-ai-model-list { display: grid; gap: 6px; }

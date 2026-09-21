@@ -23,6 +23,13 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); mocks.listener = null; });
 
 describe("CoreAiGenerationProfile", () => {
+  it("uses a collapsed last-generation disclosure by default", async () => {
+    mocks.read.mockResolvedValue(null);
+    render(<CoreAiGenerationProfile language="ja" />);
+    const summary = await screen.findByText("直近の生成記録");
+    expect((summary.closest("details") as HTMLDetailsElement).open).toBe(false);
+  });
+
   it("shows the observed effective settings instead of a webview copy", async () => {
     mocks.read.mockResolvedValue({
       modelId: "apple:core-ai:gemma-4-e4b-it-int4-v1",

@@ -21,6 +21,8 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const options = useRef<Array<HTMLButtonElement | null>>([]);
+  const focusedModelId = useRef<string | null>(null);
+  const wasExpanded = useRef(false);
   const menuId = useId();
   const title = getAssistConversationCopy(language).chooseModel;
   const fallbackModelLabel = modelId === "apple:core-ai:qwen3-0.6b-test"
@@ -50,13 +52,26 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
   useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
   useEffect(() => {
     if (!expanded) return;
-    const selectedIndex = Math.max(0, availableModels.findIndex((model) => model.id === selectedId));
-    options.current[selectedIndex]?.focus();
     const outside = (event: PointerEvent) => {
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     };
     window.addEventListener("pointerdown", outside);
     return () => window.removeEventListener("pointerdown", outside);
+  }, [expanded]);
+  useEffect(() => {
+    if (!expanded) {
+      wasExpanded.current = false;
+      focusedModelId.current = null;
+      return;
+    }
+    const preferredId = wasExpanded.current ? focusedModelId.current : selectedId;
+    wasExpanded.current = true;
+    const preferredIndex = availableModels.findIndex((model) => model.id === preferredId && model.status === "ready");
+    const fallbackIndex = availableModels.findIndex((model) => model.id === selectedId && model.status === "ready");
+    const index = preferredIndex >= 0 ? preferredIndex
+      : fallbackIndex >= 0 ? fallbackIndex
+        : availableModels.findIndex((model) => model.status === "ready");
+    if (index >= 0 && document.activeElement !== options.current[index]) options.current[index]?.focus();
   }, [availableModels, expanded, selectedId]);
 
   return <div className="apple-assist-model-picker" ref={root}
@@ -99,6 +114,7 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
           role="menuitemradio" aria-checked={selected} tabIndex={-1}
           disabled={model.status !== "ready"}
           className="apple-assist-model-option"
+          onFocus={() => { focusedModelId.current = model.id; }}
           onClick={() => {
             if (!selected) void onSelect?.(model.id);
             close(true);

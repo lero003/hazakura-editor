@@ -4,8 +4,9 @@ use crate::commands::core_ai_models::{
     CoreAiCatalogEntry, CoreAiDistributionStatus, CoreAiModelKind, CoreAiModelStatus,
     CoreAiModelStore, SYSTEM_MODEL_ID,
 };
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 const TEST_PUBLISHED_MODEL_ID: &str = "apple:core-ai:test-pack";
 const TEST_RESOURCE_MANIFEST: &str = r#"{
@@ -25,6 +26,7 @@ const TEST_RESOURCE_MANIFEST: &str = r#"{
 
 struct PublishedFixtureTransport {
     root: PathBuf,
+    remove_error: Option<String>,
 }
 
 impl BackgroundAssetTransport for PublishedFixtureTransport {
@@ -42,6 +44,44 @@ impl BackgroundAssetTransport for PublishedFixtureTransport {
             error: None,
             asset_pack_version: Some(1),
         })
+    }
+
+    fn start(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn cancel(&self, _asset_pack_id: &str) -> Result<bool, String> {
+        Ok(true)
+    }
+
+    fn remove(&self, _asset_pack_id: &str) -> Result<(), String> {
+        self.remove_error.clone().map_or(Ok(()), Err)
+    }
+
+    fn sha256_file(&self, path: &Path) -> Result<String, String> {
+        if std::fs::read(path).map_err(|error| error.to_string())? == b"hello" {
+            Ok("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824".into())
+        } else {
+            Ok("corrupt".into())
+        }
+    }
+}
+
+struct SequencedFixtureTransport {
+    snapshots: Mutex<VecDeque<BackgroundAssetSnapshot>>,
+}
+
+impl BackgroundAssetTransport for SequencedFixtureTransport {
+    fn snapshot(
+        &self,
+        _asset_pack_id: &str,
+        _relative_path: &str,
+    ) -> Result<BackgroundAssetSnapshot, String> {
+        self.snapshots
+            .lock()
+            .expect("snapshot sequence lock")
+            .pop_front()
+            .ok_or_else(|| "snapshot sequence exhausted".into())
     }
 
     fn start(&self, _asset_pack_id: &str) -> Result<(), String> {
@@ -196,7 +236,10 @@ fn downloaded_pack_requires_exact_manifest_files_sizes_and_sha_before_ready() {
                 "test-pack",
                 TEST_RESOURCE_MANIFEST,
             )],
-            Arc::new(PublishedFixtureTransport { root }),
+            Arc::new(PublishedFixtureTransport {
+                root,
+                remove_error: None,
+            }),
         );
         store.configure(Ok(data_dir.clone()), &helper, None);
 
@@ -215,6 +258,121 @@ fn downloaded_pack_requires_exact_manifest_files_sizes_and_sha_before_ready() {
         }
         std::fs::remove_dir_all(data_dir).unwrap();
     }
+}
+
+#[test]
+fn failed_removal_restores_selected_model_in_helper_store_and_preferences() {
+    let data_dir = temp_data_dir();
+    let root = data_dir.join("materialized-test-pack");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(
+        root.join("hazakura-resource-manifest.json"),
+        TEST_RESOURCE_MANIFEST,
+    )
+    .unwrap();
+    std::fs::write(root.join("model.bin"), b"hello").unwrap();
+    let helper = store_without_helper();
+    let store = CoreAiModelStore::with_test_transport(
+        vec![CoreAiCatalogEntry::published_fixture(
+            TEST_PUBLISHED_MODEL_ID,
+            "test-pack",
+            TEST_RESOURCE_MANIFEST,
+        )],
+        Arc::new(PublishedFixtureTransport {
+            root,
+            remove_error: Some("fixture removal failed".into()),
+        }),
+    );
+    store.configure(Ok(data_dir.clone()), &helper, None);
+    store
+        .refresh_model_for_test(TEST_PUBLISHED_MODEL_ID)
+        .expect("ready fixture");
+    store
+        .select(TEST_PUBLISHED_MODEL_ID, &helper)
+        .expect("select fixture");
+
+    let error = store
+        .delete(TEST_PUBLISHED_MODEL_ID, &helper)
+        .expect_err("remove must fail");
+    assert!(error.contains("fixture removal failed"));
+    assert_eq!(store.list().selected_model_id, TEST_PUBLISHED_MODEL_ID);
+    assert_eq!(helper.selected_model_id().unwrap(), TEST_PUBLISHED_MODEL_ID);
+    assert!(
+        std::fs::read_to_string(data_dir.join("core-ai-selection.json"))
+            .unwrap()
+            .contains(TEST_PUBLISHED_MODEL_ID)
+    );
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn paused_monitor_remains_live_at_a_lower_polling_rate() {
+    use crate::commands::core_ai_models::{monitor_is_terminal, monitor_poll_interval};
+    assert!(!monitor_is_terminal(CoreAiModelStatus::Downloading));
+    assert!(!monitor_is_terminal(CoreAiModelStatus::Paused));
+    assert!(monitor_is_terminal(CoreAiModelStatus::Ready));
+    assert!(
+        monitor_poll_interval(CoreAiModelStatus::Paused)
+            > monitor_poll_interval(CoreAiModelStatus::Downloading)
+    );
+}
+
+#[test]
+fn paused_asset_can_resume_and_become_ready_without_a_ui_resume_action() {
+    use crate::commands::core_ai_models::monitor_is_terminal;
+    let data_dir = temp_data_dir();
+    let root = data_dir.join("materialized-test-pack");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(
+        root.join("hazakura-resource-manifest.json"),
+        TEST_RESOURCE_MANIFEST,
+    )
+    .unwrap();
+    std::fs::write(root.join("model.bin"), b"hello").unwrap();
+    let snapshot = |phase: &str, available: bool, path: Option<PathBuf>| BackgroundAssetSnapshot {
+        supported: true,
+        available,
+        phase: phase.into(),
+        progress: None,
+        path,
+        error: None,
+        asset_pack_version: Some(1),
+    };
+    let transport = SequencedFixtureTransport {
+        snapshots: Mutex::new(VecDeque::from([
+            snapshot("downloading", false, None),
+            snapshot("paused", false, None),
+            snapshot("downloading", false, None),
+            snapshot("downloaded", true, Some(root)),
+        ])),
+    };
+    let helper = store_without_helper();
+    let store = CoreAiModelStore::with_test_transport(
+        vec![CoreAiCatalogEntry::published_fixture(
+            TEST_PUBLISHED_MODEL_ID,
+            "test-pack",
+            TEST_RESOURCE_MANIFEST,
+        )],
+        Arc::new(transport),
+    );
+    store.configure(Ok(data_dir.clone()), &helper, None);
+
+    for expected in [
+        CoreAiModelStatus::Downloading,
+        CoreAiModelStatus::Paused,
+        CoreAiModelStatus::Downloading,
+        CoreAiModelStatus::Ready,
+    ] {
+        let actual = store
+            .refresh_model_for_test(TEST_PUBLISHED_MODEL_ID)
+            .expect("refresh sequence");
+        assert_eq!(actual, expected);
+        assert_eq!(
+            monitor_is_terminal(actual),
+            actual == CoreAiModelStatus::Ready
+        );
+    }
+    std::fs::remove_dir_all(data_dir).unwrap();
 }
 
 #[test]

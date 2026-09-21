@@ -164,6 +164,20 @@ describe("macOS build scripts", () => {
     expect(manifestCall).toBeGreaterThan(guardStart);
     expect(guardEnd).toBeGreaterThan(manifestCall);
   });
+  it("invalidates an in-flight asset manifest before cancel returns", () => {
+    expect(backgroundAssetsBridgeSource).toContain("operationGenerations");
+    expect(backgroundAssetsBridgeSource).toContain("operationQueue");
+    expect(backgroundAssetsBridgeSource).toMatch(
+      /startIdentifier:[\s\S]*beginOperationForIdentifier:identifier/,
+    );
+    expect(backgroundAssetsBridgeSource).toMatch(
+      /cancelIdentifier:[\s\S]*invalidateOperationForIdentifier:identifier/,
+    );
+    const ensureCall = backgroundAssetsBridgeSource.indexOf("ensureLocalAvailabilityOfAssetPack:");
+    const precedingGuard = backgroundAssetsBridgeSource.lastIndexOf("isCurrentOperationForIdentifier", ensureCall);
+    expect(precedingGuard).toBeGreaterThanOrEqual(0);
+    expect(precedingGuard).toBeLessThan(ensureCall);
+  });
   it("uses an overlay macOS titlebar so the web chrome owns the top material", () => {
     const mainWindow = tauriConfig.app?.windows?.[0];
 

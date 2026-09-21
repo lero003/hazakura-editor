@@ -24,6 +24,16 @@ enum CandidateFormatting {
     private static let promptTextStart = "<<<HAZAKURA_TEXT_START"
     private static let promptTextEnd = "HAZAKURA_TEXT_END>>>"
 
+    static func streamingReviewText(_ value: String, original: String) -> String {
+        let stripped = stripOuterControlTokens(value, keepingTokensPresentIn: original)
+        let trimmed = stripped.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !original.contains(promptTextStart), !original.contains(promptTextEnd),
+           !trimmed.isEmpty, promptTextStart.hasPrefix(trimmed) {
+            return ""
+        }
+        return reviewText(value, original: original)
+    }
+
     /// Some `KitLanguageModel` bundles repeat the exact prompt envelope around
     /// an otherwise-correct candidate. Remove only a complete outer pair that
     /// Hazakura supplied. If the manuscript itself contains either marker, keep
@@ -96,5 +106,30 @@ enum CandidateFormatting {
             }
         }
         return text
+    }
+}
+
+struct CandidateStreamFormatter {
+    private let original: String
+    private var latestRaw = ""
+    private var latestPartial = ""
+
+    init(original: String) {
+        self.original = original
+    }
+
+    var latestRawSnapshot: String { latestRaw }
+
+    mutating func receive(_ raw: String) -> String? {
+        latestRaw = raw
+        let candidate = CandidateFormatting.streamingReviewText(raw, original: original)
+        guard !candidate.isEmpty, candidate != latestPartial else { return nil }
+        latestPartial = candidate
+        return candidate
+    }
+
+    func finalCandidate() -> String? {
+        let candidate = CandidateFormatting.streamingReviewText(latestRaw, original: original)
+        return candidate.isEmpty ? nil : candidate
     }
 }

@@ -5,6 +5,21 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## TestFlight前 外部レビュー6件の追補（2026-09-22）
+
+`aac6e900`へのP2 6件を閉じた。streaming marker prefixをbufferして最後のraw snapshotだけを
+最終採用し、設定とLocal Assist窓のmodel catalog同期を共通化してevent後の古い操作応答を捨てる。
+Background Assetsはserial queue + 操作世代でmanifest解決中cancel/retryを無効化し、paused monitorは
+低頻度で継続する。選択中modelの削除失敗は旧選択を復元し、失敗時も実catalogをemitする。
+model pickerは進捗更新でfocusを奪わない。
+
+設定には現在model / 物理メモリ、ready前の「インストール後」サイズ、正直なSystem状態、削除確認を
+追加し、「直近の生成記録」を既定で閉じた。ローカルの全frontend 2,674件、scripts 24件、Rust
+427件（2 ignored）、Swift 52件、surface 132件、型検査、Vite build、App Store preview buildは成功。
+次のゲートはexact HEADのPR CIと外部再レビュー。その後にbuilt appのキーボード/VoiceOver、
+sleep/wake、実Background Assets、32 GB機Internal TestFlightを行う。
+[追補証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
+
 ## Core AI 12B catalog・配布UX・出力復元（2026-09-22）
 
 App Storeレーンの固定catalogへGemma 4 12Bを追加し、E4Bと同じApple-hosted managed
@@ -85,7 +100,7 @@ built app でのメニュー実表示・フォーカス、VoiceOver、最大 Dyn
 モデル管理を Preferences 内の1ペインから独立ページ（`models` モード）へ移した。
 設定本文（アプリケーション）には入口の1行だけを残し、押すと同じダイアログの
 モデルページへ切り替える。ページはモデル一覧（状態・サイズ・資産バージョン・
-開始/進捗/再開/取消/削除/選択）、保存先の説明、生成設定（直近の実行）、
+  開始/進捗/再開/取消/削除/選択）、保存先の説明、直近の生成記録、
 扱えるモデルの境界を1か所にまとめる。選択中でもサイズ・バージョンを落とさない。
 
 保存先は Apple-hosted asset pack がプロセス単位で決めるため、選ばせず説明だけを出す。
@@ -103,7 +118,7 @@ Rust の command 契約と helper へ渡す内容も不変で、変更は fronte
 前スライスの `usage`（要求した設定と実効設定）を設定画面から見えるようにした。
 値を webview や設定側にもう一度書くと、配線が変わっても画面だけ正しく見えてしまうため、
 表示は helper → Rust の記録だけを読む。設定のオンデバイスモデル欄に
-「生成設定（直近の実行）」（出力上限 / サンプリング要求 / サンプリング実効 /
+「直近の生成記録」（出力上限 / サンプリング要求 / サンプリング実効 /
 直近のトークン数 / 直近のモデル）を追加し、まだ Core AI で生成していない起動では
 空状態を出す。記録はプロセス内のみで、保存も送信もしない。
 

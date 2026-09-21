@@ -108,13 +108,17 @@ describe("CoreAiModelManager", () => {
       selectedModelId: "apple:foundation-models:system-default",
       models: [
         { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: true },
-        { id: "apple:core-ai:e4b", displayName: "Gemma 4 E4B", kind: "core_ai", status: "downloading", selected: false, progress: 0.42 },
+        {
+          id: "apple:core-ai:e4b", displayName: "Gemma 4 E4B", kind: "core_ai",
+          status: "downloading", selected: false, progress: 0.42, installedSizeBytes: 6_807_926_119,
+        },
       ],
     };
     mocks.list.mockResolvedValue(downloading);
     mocks.cancel.mockResolvedValue(true);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     expect(await screen.findByText("ダウンロード中 · 42%")).toBeTruthy();
+    expect(screen.getByText("インストール後 約6.8 GB")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
     await waitFor(() => expect(mocks.cancel).toHaveBeenCalledWith("apple:core-ai:e4b"));
 
@@ -151,7 +155,7 @@ describe("CoreAiModelManager", () => {
     expect(await screen.findByText(/推奨メモリ 32 GB/)).toBeTruthy();
     expect(screen.getByText(/このMacは16 GB/)).toBeTruthy();
     expect(screen.getByText(/Apache-2.0.*変換元のライセンス文書/)).toBeTruthy();
-    expect(screen.getByText(/使用量 約14.7 GB/)).toBeTruthy();
+    expect(screen.getByText(/インストール後 約14.7 GB/)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "ダウンロード" }));
     expect(confirm).toHaveBeenCalledOnce();
@@ -201,5 +205,77 @@ describe("CoreAiModelManager", () => {
 
     await waitFor(() => expect(screen.queryByText("未ダウンロード")).toBeNull());
     expect(screen.getByText("ダウンロード中 · 64%")).toBeTruthy();
+  });
+
+  it("does not replace a newer event with a late stale action response", async () => {
+    const ready = {
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: true },
+        { id: "apple:core-ai:e4b", displayName: "Gemma 4 E4B", kind: "core_ai", status: "not_downloaded", selected: false },
+      ],
+    };
+    const staleAction = {
+      ...ready,
+      models: ready.models.map((model) => model.kind === "core_ai"
+        ? { ...model, status: "downloading", progress: 0 }
+        : model),
+    };
+    const newerEvent = {
+      ...ready,
+      models: ready.models.map((model) => model.kind === "core_ai"
+        ? { ...model, status: "downloading", progress: 0.71 }
+        : model),
+    };
+    let resolveDownload: ((value: unknown) => void) | undefined;
+    mocks.list.mockResolvedValue(ready);
+    mocks.download.mockImplementation(() => new Promise((resolve) => { resolveDownload = resolve; }));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "ダウンロード" }));
+    act(() => { mocks.listener?.(newerEvent); });
+    expect(screen.getByText("ダウンロード中 · 71%")).toBeTruthy();
+    act(() => resolveDownload?.(staleAction));
+
+    await waitFor(() => expect(screen.getByText("ダウンロード中 · 71%")).toBeTruthy());
+    expect(screen.queryByText("ダウンロード中 · 0%")).toBeNull();
+  });
+
+  it("falls back to a snapshot when event subscription fails", async () => {
+    mocks.listen.mockRejectedValue(new Error("listener unavailable"));
+    mocks.list.mockResolvedValue({
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      deviceMemoryGb: 24,
+      models: [{
+        id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+        kind: "system", status: "ready", selected: true,
+      }],
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    expect(await screen.findByText(/現在のモデル.*Apple Intelligence/)).toBeTruthy();
+    expect(screen.getByText(/このMacのメモリ.*24 GB/)).toBeTruthy();
+  });
+
+  it("confirms deletion with size, redownload, and selected-model fallback", async () => {
+    const catalog = {
+      distributionStatus: "available",
+      selectedModelId: "apple:core-ai:e4b",
+      models: [{
+        id: "apple:core-ai:e4b", displayName: "Gemma 4 E4B", kind: "core_ai",
+        status: "ready", selected: true, installedSizeBytes: 6_807_926_119,
+      }],
+    };
+    mocks.list.mockResolvedValue(catalog);
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "削除" }));
+
+    expect(confirm).toHaveBeenCalledWith(expect.stringMatching(
+      /Gemma 4 E4B.*約6.8 GB.*再ダウンロード.*Apple Intelligence/,
+    ));
+    expect(mocks.remove).not.toHaveBeenCalled();
+    confirm.mockRestore();
   });
 });

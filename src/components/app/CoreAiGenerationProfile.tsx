@@ -62,11 +62,13 @@ export function CoreAiGenerationProfile({ language }: { language: MenuLanguage }
     { label: copy.model, value: profile.modelId },
   ] : [];
 
-  return <div className="core-ai-model-manager core-ai-generation-profile" aria-label={copy.title}>
-    <div className="core-ai-model-manager-heading">
-      <p>{copy.title}</p>
-      <span>{copy.sessionScope}</span>
-    </div>
+  return <details className="core-ai-model-manager core-ai-generation-profile">
+    <summary>
+      <span className="core-ai-model-manager-heading core-ai-generation-profile-summary">
+        <span>{copy.title}</span>
+        <span>{copy.sessionScope}</span>
+      </span>
+    </summary>
     {profile ? <div className="core-ai-model-list">
       {rows.map((row) => <div className="core-ai-model-row" key={row.label}>
         <div>
@@ -76,7 +78,7 @@ export function CoreAiGenerationProfile({ language }: { language: MenuLanguage }
       </div>)}
     </div> : <p className="field-hint" role="status">{copy.empty}</p>}
     <p className="field-hint">{copy.boundary}</p>
-  </div>;
+  </details>;
 }
 
 type ProfileCopy = ReturnType<typeof profileCopy>;
@@ -90,7 +92,7 @@ function tokenCounts(profile: LocalAssistGenerationProfile, copy: ProfileCopy): 
 
 function profileCopy(language: MenuLanguage) {
   if (language === "en") return {
-    title: "Generation settings (last run)",
+    title: "Last generation record",
     sessionScope: "This session",
     maximumResponseTokens: "Max output",
     samplingRequested: "Sampling (requested)",
@@ -106,7 +108,7 @@ function profileCopy(language: MenuLanguage) {
     boundary: "These values come from this Mac's own run. Nothing is saved or sent.",
   };
   if (language === "kana") return {
-    title: "せいせいの せってい（さいきんの いちど）",
+    title: "さいきんの せいせいきろく",
     sessionScope: "この きどうちゅうの きろく",
     maximumResponseTokens: "しゅつりょくの かぎり",
     samplingRequested: "えらびかた（もとめた もの）",
@@ -122,7 +124,7 @@ function profileCopy(language: MenuLanguage) {
     boundary: "この きろくは この Mac の けっかだけを しめします。ほぞんも そうしんも しません。",
   };
   return {
-    title: "生成設定（直近の実行）",
+    title: "直近の生成記録",
     sessionScope: "この起動中の記録",
     maximumResponseTokens: "出力の上限",
     samplingRequested: "サンプリング（要求）",
