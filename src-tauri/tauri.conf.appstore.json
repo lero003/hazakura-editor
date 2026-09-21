@@ -14,7 +14,7 @@
     "macOS": {
       "entitlements": "./entitlements/mac-app-store.entitlements",
       "infoPlist": "./Info.appstore.plist",
-      "bundleVersion": "144"
+      "bundleVersion": "145"
     }
   }
 }

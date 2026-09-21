@@ -41,12 +41,13 @@ Last reviewed: 2026-09-21
   `codesign -d`で読み返して不一致なら失敗するよう修正した。同じ条件は
   `REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution`も検出する。
   既存bundleへの再署名とprobeで修正を確認済み。同一build番号は再uploadできないため、
-  差し替えcandidate（3.1.0 build 144）を再作成し、App Store entitlement probeまで通過した
-  （未upload）。`.aar`のTransporter uploadもApp Store Connect側の
+  差し替えcandidate（3.1.0 build 144）はAppleの処理まで通り、90886の修正を実証した。
+  `.aar`のTransporter uploadはApp Store Connect側の
   `-19243` / 400 invalid valuesで未完了だったが、`altool`で実APIを叩いて原因を特定した。
   App Store Connectは`assetPackIdentifier`内のピリオドを拒否する（`filter[assetPackIdentifier]`が
   400 PARAMETER_ERROR）。E4B/12Bのasset pack IDを`hazakura-coreai-gemma4-e4b-v1` /
   `hazakura-coreai-gemma4-12b-v1`へ変更し、lockの検証でピリオドを禁止、`.aar`も再生成した。
+  新IDを参照するbuild 145も作成済み（未upload）。
   [E4B handoff](reviews/2026-09-21-core-ai-apple-hosted-e4b/README.md)に記録。
   Apple processingは未実施。`coreai-build`も利用できずAOTは未完了。ローカル`.aar`生成は完了したが、Apple CDN、
   TestFlight実機取得、production helperからのmaterialized path読込、品質採用、App Store出荷を

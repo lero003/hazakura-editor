@@ -99,8 +99,10 @@ App Store entitlement probe passed. Apple-side acceptance still requires a new u
 
 Build 143 cannot be repaired in App Store Connect: the same build number cannot be re-uploaded, so
 a replacement candidate with a higher `CFBundleVersion` is required. Build 144 was rebuilt from the
-fixed signing step and passes the full App Store entitlement probe; its path, digest, and source
-commit live in the ignored candidate metadata. It has not been uploaded.
+fixed signing step, passed the full App Store entitlement probe, and Apple delivered and processed
+it without repeating 90886, so the entitlement fix is confirmed end to end. Build 145 then replaced
+it because the asset pack identifier changed (see below). Candidate paths, digests, and source
+commits live in the ignored candidate metadata.
 
 ## `.aar` status
 
