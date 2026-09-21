@@ -65,6 +65,20 @@ test("selection fails closed for unknown model keys", () => {
   assert.throws(() => selectedModels(lock, ["unknown"]), /Unknown model key/);
 });
 
+test("asset pack identifiers reject periods that App Store Connect refuses", () => {
+  // Verified against the live API on 2026-09-21: a dotted identifier answers
+  // 400 PARAMETER_ERROR for filter[assetPackIdentifier], while a hyphenated one
+  // is accepted. Keep the lock free of identifiers App Store Connect cannot
+  // look up.
+  const dotted = structuredClone(lock);
+  dotted.models[0].assetPackId = "dev.hazakura.editor.coreai.gemma4-e4b.v1";
+  assert.throws(() => validateLock(dotted), /Invalid asset pack id/);
+
+  const hyphenated = structuredClone(lock);
+  hyphenated.models[0].assetPackId = "hazakura-coreai-gemma4-e4b-v1";
+  assert.equal(validateLock(hyphenated).models[0].assetPackId, "hazakura-coreai-gemma4-e4b-v1");
+});
+
 test("download URLs and model metadata stay pinned to the lock", () => {
   const model = lock.models[0];
   const url = sourceDownloadUrl(model, model.files[0]);
@@ -146,7 +160,7 @@ test("packaging blocker records the exact toolchain failure without claiming an 
     "Xcode 27.0\nBuild version 27A266a",
     "Error: path extension isn’t json",
   );
-  assert.match(text, /dev\.hazakura\.editor\.coreai\.gemma4-e4b\.v1/);
+  assert.match(text, /hazakura-coreai-gemma4-e4b-v1/);
   assert.match(text, /27A266a/);
   assert.match(text, /path extension isn’t json/);
   assert.match(text, /No \.aar was created/);

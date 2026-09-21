@@ -88,8 +88,14 @@ export function validateLock(lock) {
     }
     if (modelIds.has(model.modelId)) throw new Error(`Duplicate model id: ${model.modelId}`);
     modelIds.add(model.modelId);
-    if (!/^[A-Za-z0-9.-]+$/.test(model.assetPackId ?? "")) {
-      throw new Error(`Invalid asset pack id: ${model.assetPackId}`);
+    // App Store Connect rejects a period inside the asset pack identifier:
+    // `GET /v1/apps/{id}/backgroundAssets?filter[assetPackIdentifier]=a.b`
+    // answers 400 PARAMETER_ERROR, so the filter lookup can never find the
+    // pack. Hyphens, digits, uppercase, and long names are accepted.
+    if (!/^[A-Za-z0-9-]+$/.test(model.assetPackId ?? "")) {
+      throw new Error(
+        `Invalid asset pack id: ${model.assetPackId} (use letters, digits, and hyphens only)`,
+      );
     }
     if (assetPackIds.has(model.assetPackId)) {
       throw new Error(`Duplicate asset pack id: ${model.assetPackId}`);

@@ -17,7 +17,9 @@ use tauri::Emitter;
 pub(crate) const SYSTEM_MODEL_ID: &str = "apple:foundation-models:system-default";
 pub(crate) const CORE_AI_MODEL_STATE_CHANGED_EVENT: &str = "core-ai-model-state-changed";
 const E4B_MODEL_ID: &str = "apple:core-ai:gemma-4-e4b-it-int4-v1";
-const E4B_ASSET_PACK_ID: &str = "dev.hazakura.editor.coreai.gemma4-e4b.v1";
+// App Store Connect rejects periods in an asset pack identifier, so this uses
+// hyphens only. Keep it identical to the lock and the packaged manifest.
+const E4B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-e4b-v1";
 const E4B_CATALOG_VERSION: &str = "2026.09.20.1";
 const E4B_STORAGE_DIRECTORY: &str = "gemma-4-e4b-it-int4-v1";
 const E4B_RESOURCE_MANIFEST: &str =

@@ -34,8 +34,8 @@ Artifacts are ignored under `.hazakura/coreai-production/` and must not be commi
 
 | Model | Asset pack | Verified expanded bytes | Resource manifest SHA-256 | Local result |
 | --- | --- | ---: | --- | --- |
-| Gemma 4 E4B | `dev.hazakura.editor.coreai.gemma4-e4b.v1` | 6,807,926,119 | `d46c81f18147a2faf0d066b4ef2d31f72416b75ee544397580815fa2e4fb4af3` | source/stage verified; helper load + Japanese diagnostic passed; `.aar` toolchain-blocked |
-| Gemma 4 12B | `dev.hazakura.editor.coreai.gemma4-12b.v1` | 14,698,432,594 | `ef68148765fd970a1f2c3022751caa1758fb58d196a1a6aeffe761e473ba3f8d` | source/stage verified; helper load + Japanese diagnostic passed; `.aar` toolchain-blocked |
+| Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1` | 6,807,926,119 | `d46c81f18147a2faf0d066b4ef2d31f72416b75ee544397580815fa2e4fb4af3` | source/stage verified; helper load + Japanese diagnostic passed; `.aar` toolchain-blocked |
+| Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1` | 14,698,432,594 | `ef68148765fd970a1f2c3022751caa1758fb58d196a1a6aeffe761e473ba3f8d` | source/stage verified; helper load + Japanese diagnostic passed; `.aar` toolchain-blocked |
 
 ## Verification
 

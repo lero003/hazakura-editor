@@ -62,7 +62,10 @@ G1 / G2はsource実装と回帰テストまで閉じた。E4B `.aar`はsandbox�
 同一build番号は再uploadできないため、次は差し替えcandidateを作り直し、asset upload / processing、
 app build upload、署名済みInternal TestFlightの一本受入を行う。差し替え候補（3.1.0 build 144）は
 App Store entitlement probeまで通過済みで未upload。`.aar`のTransporter uploadは
-App Store Connect側の`-19243`/400で止まっており、`altool --list-asset-packs`で切り分ける。
+App Store Connect側の`-19243`/400で止まっていたが、`altool`で実APIを叩いて原因を特定した。
+App Store Connectは`assetPackIdentifier`内のピリオドを拒否するため、E4B/12BのIDを
+`hazakura-coreai-gemma4-e4b-v1` / `hazakura-coreai-gemma4-12b-v1`へ変更し、lockの検証で
+ピリオドを禁止した。`.aar`は新IDで再生成済み（旧IDの生成物は削除）。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 

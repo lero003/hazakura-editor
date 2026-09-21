@@ -12,7 +12,7 @@ Last reviewed: 2026-09-21
 | Main app | `dev.hazakura.editor` |
 | Background Download extension | `dev.hazakura.editor.background-downloader` |
 | Shared App Group | `group.dev.hazakura.editor` |
-| E4B asset pack | `dev.hazakura.editor.coreai.gemma4-e4b.v1` |
+| E4B asset pack | `hazakura-coreai-gemma4-e4b-v1` |
 | Model catalog revision | `2026.09.20.1` |
 
 The app and extension App IDs have already been associated with the same App Group in the
@@ -136,15 +136,15 @@ Running the packaging step outside the sandbox succeeded for both candidates on 
 
 | Model | `.aar` | bytes | SHA-256 |
 | --- | --- | --- | --- |
-| Gemma 4 E4B | `dev.hazakura.editor.coreai.gemma4-e4b.v1.aar` | 5,431,767,284 | `e0218e05102ab36d6b2b1a4dd18af009dc24d6e957d1a5dc610258b77012ceac` |
-| Gemma 4 12B | `dev.hazakura.editor.coreai.gemma4-12b.v1.aar` | 9,148,928,727 | `9cf11956c537e10b04eeab53bc2618f4941ce3edee371afdad21bc90d62a3efc` |
+| Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1.aar` | 5,431,767,276 | `394c5eb92f334294a91ddb360117c5af8862fc36220293b5e56a8d409802aaa8` |
+| Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1.aar` | 9,148,928,738 | `e640bbce53e5675f75c219cd960481fc954c306b93f310d9df8ef3420da964ed` |
 
 Both archives live under `.hazakura/coreai-production/<key>/2026.09.20.1/archives/` together with
 `archive.json` and `UPLOAD-INSTRUCTIONS.md`, and remain untracked:
 
 ```txt
 .hazakura/coreai-production/gemma4-e4b/2026.09.20.1/archives/
-├── dev.hazakura.editor.coreai.gemma4-e4b.v1.aar
+├── hazakura-coreai-gemma4-e4b-v1.aar
 ├── archive.json
 └── UPLOAD-INSTRUCTIONS.md
 ```
@@ -156,8 +156,7 @@ not the catalog revision and cannot be reported before a successful upload/proce
 
 ### First asset pack upload attempt
 
-Uploading `dev.hazakura.editor.coreai.gemma4-e4b.v1.aar` through Transporter failed before the pack
-was accepted:
+Uploading the first `.aar` through Transporter failed before the pack was accepted:
 
 ```txt
 Apple ID “6778637880”のアセットパックのリストを取得できませんでした。 (-19243)
@@ -165,24 +164,44 @@ There is an error with a URL parameter (400)
 Found invalid values: dev.hazakura.editor.coreai.gemma4-e4b.v1（ID: 24aab909-066f-44c6-88bd-0b0df823ebe1）
 ```
 
-Apple's documentation confirms the intended flow: the asset pack is uploaded independently of the
-app build, and the Asset Pack ID plus the app identify it, so the web UI documents no separate
-pre-creation step for Transporter. The local archive, manifest, and digest are unchanged and valid;
-the rejection happened on the App Store Connect side of the upload.
+The root cause is the identifier string, not the archive, the app record, or the account role.
+`altool` reproduced it against the live API on 2026-09-21:
 
-Reproduce the call with `altool` before changing the identifier or rebuilding the archive, because an
-uploaded pack cannot be deleted, only archived:
+```txt
+$ xcrun altool --list-asset-packs --apple-id 6778637880 --api-key <key-id> --api-issuer <issuer-id>
+= Apple ID: 6778637880        (succeeds; the app has no asset packs yet)
 
-```bash
-xcrun altool --list-apps --filter-apple-id 6778637880 --api-key <key-id> --api-issuer <issuer-id>
-xcrun altool --list-asset-packs --apple-id 6778637880 --api-key <key-id> --api-issuer <issuer-id>
+$ xcrun altool --list-asset-pack-versions --apple-id 6778637880 \
+    --asset-pack-identifier dev.hazakura.editor.coreai.gemma4-e4b.v1 ...
+400 PARAMETER_ERROR  Found invalid values: dev.hazakura.editor.coreai.gemma4-e4b.v1
+  source.parameter: filter[assetPackIdentifier]
+
+$ xcrun altool --list-asset-pack-versions --apple-id 6778637880 \
+    --asset-pack-identifier Tutorial ...
+No background asset pack versions found for 'Tutorial'.
 ```
 
-If `--list-asset-packs` returns the same error, the blocker is the app record or the account role
-(Account Holder, Admin, App Manager, or Developer) rather than the asset pack ID. The App Store
-Connect API sequence — create the asset pack record, create a version, upload the archive, commit —
-is the documented alternative when Transporter keeps failing on the first pack. This attempt is not
-recorded as a successful upload.
+App Store Connect rejects a period inside `assetPackIdentifier`. The same probe accepted `Tutorial`,
+`a-b`, and `hazakura-coreai-gemma4-e4b-v1`, and rejected `a.b`, `com.example.tutorial`, and every
+dotted variant of this pack. Hyphens, digits, uppercase, and long names are accepted. Neither
+Apple's Background Assets article nor the App Store Connect OpenAPI specification documents this
+rule; it was established by probing the live filter parameter.
+
+The pack identifier therefore changed to a hyphen-only name, and the lock now rejects periods:
+
+| | Old | New |
+| --- | --- | --- |
+| E4B asset pack | `dev.hazakura.editor.coreai.gemma4-e4b.v1` | `hazakura-coreai-gemma4-e4b-v1` |
+| 12B asset pack | `dev.hazakura.editor.coreai.gemma4-12b.v1` | `hazakura-coreai-gemma4-12b-v1` |
+
+`scripts/core-ai-production-models.json`, `E4B_ASSET_PACK_ID` in
+`src-tauri/src/commands/core_ai_models.rs`, the regenerated archives, and the documentation all use
+the new identifier. The dotted archives were regenerated and the stale ones deleted so the invalid
+identifier cannot be uploaded by accident. The old identifier was never uploaded, so no App Store
+Connect record needs archiving.
+
+The Transporter/iTMSTransporter/`altool` upload path is otherwise unchanged: the pack is uploaded
+independently of the app build, and the Asset Pack ID plus the app identify it.
 
 ## Local verification
 
@@ -218,7 +237,7 @@ After the archive exists:
 1. From a normal shell (outside the Codex sandbox), run
    `npm run coreai:models:package -- --model=gemma4-e4b`; retain the `.aar`, `archive.json`,
    resource manifest, and digest together.
-2. Upload only `dev.hazakura.editor.coreai.gemma4-e4b.v1.aar` with Transporter, App Store Connect API,
+2. Upload only `hazakura-coreai-gemma4-e4b-v1.aar` with Transporter, App Store Connect API,
    `iTMSTransporter`, or `altool`. Wait for processing and record the Apple-assigned version.
 3. Install the regenerated main and extension distribution profiles, then build the signed app/pkg.
    Confirm the nested extension ID, extension point, App Group entitlements, and three `BA*` keys

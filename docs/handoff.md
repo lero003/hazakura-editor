@@ -32,7 +32,9 @@ Last reviewed: 2026-09-21
   作り直し済み（3.1.0 build 144、App Store entitlement probe通過、未upload）。asset/buildを
   uploadしてInternal TestFlightのCDN→検証→helper loadを実機で受け入れる。
   `.aar`のTransporter uploadはApp Store Connect側の`-19243`/400 invalid valuesで止まっており、
-  `altool --list-asset-packs`での切り分けが次の一手。
+  `altool`で実APIを叩いたところ、原因はasset pack IDのピリオドだった（App Store Connectは
+  `assetPackIdentifier`内の`.`を拒否する）。E4B/12BのIDを`hazakura-coreai-gemma4-e4b-v1` /
+  `hazakura-coreai-gemma4-12b-v1`へ変更し、`.aar`を再生成した。次の一手は新IDの`.aar` upload。
   2026-09-20にGemma 4 E4Bを標準候補、Gemma 4 12Bを高品質比較候補としてidentityを固定。
   `scripts/core-ai-production-models.json`へ変換物revisionとfile digestをlockし、
   `scripts/prepare-core-ai-model-assets.mjs`で取得・検証・resource manifest・Apple-hosted `.aar`を

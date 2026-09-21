@@ -139,11 +139,19 @@ manifest schemaも実物で確認した。Apple公式templateを`xcrun ba-packag
 
 | Model | Asset pack ID |
 | --- | --- |
-| Gemma 4 E4B | `dev.hazakura.editor.coreai.gemma4-e4b.v1` |
-| Gemma 4 12B | `dev.hazakura.editor.coreai.gemma4-12b.v1` |
+| Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1` |
+| Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1` |
 
 App Store Connect側のrecordとコード側のcatalogはこの完全一致を必須とする。既存IDの中身を
 差し替えず、model revisionまたはpayloadを変える場合は新しいimmutable IDとcatalog versionを使う。
+
+**識別子にピリオド（`.`）を使わない。** 2026-09-21に実APIで確認した制約で、
+`GET /v1/apps/{id}/backgroundAssets?filter[assetPackIdentifier]=a.b` は
+`400 PARAMETER_ERROR`（Found invalid values）を返す。`Tutorial`、`a-b`、
+`hazakura-coreai-gemma4-e4b-v1` は受理され、`a.b`、`com.example.tutorial`、
+`dev.hazakura.editor.coreai.gemma4-e4b.v1` は拒否された。ハイフン、数字、大文字、
+長い名前は問題ない。この制約はAppleの文書とOpenAPI仕様には書かれていない。
+`validateLock`もピリオド入りIDを拒否する。
 検証済みstageは合計21,506,358,713 bytes。ローカル`.aar`はE4B 5,431,767,284 bytesと
 12B 9,148,928,727 bytesの計14,580,696,011 bytes。2026-09-20時点の
 [Apple-hosted asset pack size limits](https://developer.apple.com/help/app-store-connect/reference/app-uploads/apple-hosted-asset-pack-size-limits)は
