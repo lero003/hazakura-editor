@@ -198,7 +198,7 @@ enum CoreAIRuntime {
 
         /// Seconds to keep an idle model. Only an explicit `0` keeps it for the
         /// helper's lifetime; unset or invalid values use the documented default.
-        private let idleReleaseSeconds: Double? = CoreAIModelIdlePolicy.idleReleaseSeconds(
+        private let idleReleaseNanoseconds: UInt64? = CoreAIModelIdlePolicy.idleReleaseNanoseconds(
             from: ProcessInfo.processInfo.environment["HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS"]
         )
 
@@ -221,10 +221,10 @@ enum CoreAIRuntime {
         }
 
         private func scheduleIdleRelease() {
-            guard let idleReleaseSeconds else { return }
+            guard let idleReleaseNanoseconds else { return }
             let token = idleTracker.schedule()
             Task.detached {
-                try? await Task.sleep(nanoseconds: UInt64(idleReleaseSeconds * 1_000_000_000))
+                try? await Task.sleep(nanoseconds: idleReleaseNanoseconds)
                 await ProductionModelCache.shared.releaseIfIdle(token: token)
             }
         }

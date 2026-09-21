@@ -47,6 +47,27 @@ final class CoreAIModelIdlePolicyTests: XCTestCase {
         )
     }
 
+    /// The boundary must survive the real nanosecond conversion, not just the
+    /// Double comparison: `Double(UInt64.max)` rounds up, so an off-by-a-bit
+    /// bound would trap here instead of returning a value.
+    func testAcceptedValuesAlwaysConvertToNanoseconds() {
+        let maximum = CoreAIModelIdlePolicy.maximumIdleReleaseSeconds
+        XCTAssertNotNil(CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: String(maximum)))
+        XCTAssertEqual(
+            CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: String(maximum * 2)),
+            300 * 1_000_000_000
+        )
+        XCTAssertEqual(
+            CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: "1e100"),
+            300 * 1_000_000_000
+        )
+        XCTAssertEqual(
+            CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: "2.5"),
+            2_500_000_000
+        )
+        XCTAssertNil(CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: "0"))
+    }
+
     func testReschedulingInvalidatesTheEarlierReleaseToken() {
         var tracker = CoreAIModelIdleTracker()
         let first = tracker.schedule()

@@ -67,9 +67,12 @@ function record(fixture, result, cycle, phase) {
   const { envelope, elapsedMs, firstTokenMs } = result;
   const candidate = envelope.kind === 'candidate' ? envelope.value.candidateText : null;
   const modelId = envelope.value?.modelId ?? null;
+  const rawCandidate = envelope.kind === 'candidate' ? envelope.value?.usage?.rawCandidateText ?? null : null;
   const checks = checkEvaluationCandidate(envelope, fixture.preserve, fixture, expectedModelId);
   report.results.push({ id: fixture.id, cycle, phase, elapsedMs, firstTokenMs, modelId,
     selectedCodePoints: [...fixture.selectedText].length, outputCodePoints: candidate == null ? null : [...candidate].length,
+    rawCandidateText: rawCandidate,
+    rawCodePoints: rawCandidate == null ? null : [...rawCandidate].length,
     usage: envelope.value?.usage ?? null, checks, errorKind: envelope.kind === 'error' ? envelope.value.kind : null,
     candidate, reviewCriteria: fixture.review });
   process.stdout.write(`${fixture.id} ${cycle}/${phase}: ${Object.values(checks).every(Boolean) ? 'checks passed' : 'review required'} (${elapsedMs} ms)\n`);

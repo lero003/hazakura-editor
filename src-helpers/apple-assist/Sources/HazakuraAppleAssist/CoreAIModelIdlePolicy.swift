@@ -8,9 +8,23 @@ enum CoreAIModelIdlePolicy {
     /// Documented default when `HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS` is unset.
     static let defaultIdleReleaseSeconds: Double = 300
 
-    /// Largest value that can be converted to nanoseconds without overflowing
-    /// `UInt64` (about 584 years). Anything above it cannot be used by the timer.
-    static let maximumIdleReleaseSeconds: Double = Double(UInt64.max) / 1_000_000_000
+    /// Largest whole second that can be converted to nanoseconds without
+    /// overflowing `UInt64` (about 584 years). Dividing in integer space first
+    /// matters: `Double(UInt64.max)` rounds up to 2^64, so using it as the
+    /// bound would let a boundary value overflow the nanosecond conversion.
+    static let maximumIdleReleaseSeconds: Double = Double(UInt64.max / 1_000_000_000)
+
+    /// Nanoseconds for a validated value, or `nil` when there is no timer.
+    /// `UInt64(exactly:)` keeps the conversion total: an unexpected value can
+    /// never trap the helper.
+    static func idleReleaseNanoseconds(from raw: String?) -> UInt64? {
+        guard let seconds = idleReleaseSeconds(from: raw) else { return nil }
+        return nanoseconds(forSeconds: seconds)
+    }
+
+    static func nanoseconds(forSeconds seconds: Double) -> UInt64? {
+        UInt64(exactly: (seconds * 1_000_000_000).rounded())
+    }
 
     /// `nil` means "keep the model for the helper's lifetime" and is selected
     /// only by an explicit `0`. An unset, empty, unparsable, non-finite, or

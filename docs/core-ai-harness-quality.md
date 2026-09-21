@@ -162,6 +162,49 @@ EOS比較では、bundle の `tokenizer_config.json` の `eos_token` を `<eos>`
 `eos_token_id: 1`）に直した版を作り、同じ fixture・同じ生成条件で
 **整形前の生出力と整形後の候補を分けて**比較する。3/18 の残件は未解決のまま扱う。
 
+### 2026-09-21 EOS比較の結果（production lock は未変更）
+
+レビュー提案どおり、production の lock とアップロード済み `.aar` は触らず、
+`.hazakura/coreai-experiments/eos-token-2026-09-21/` に APFS クローンを作って
+**コピー側の `tokenizer_config.json` だけ**を変更した。生出力を見るために
+`AppleAssistUsage.rawCandidateText`（`measureUsage` 時のみ）を追加した。
+
+| 実験 | 変更 | tokenizer_config.json SHA-256 | 生出力 |
+| --- | --- | --- | --- |
+| baseline | なし（production payload） | `c273475fdd20f9cf…` | — |
+| A | `eos_token` を `<eos>` へ（`eos_token_id` は未変更） | `d41ffe4524975f34…` | **18/18 がbaselineと完全一致** |
+| B | `eos_token` を元に戻し `eos_token_id: 1` を追加 | `5e22cc74342722bc…` | **18/18 がbaselineと完全一致** |
+
+**結論1: `tokenizer_config.json` の `eos_token` / `eos_token_id` は生成に効いていない。**
+どちらの変更でも生出力が1文字も変わらないので、EOS停止の同定はこのファイル経由ではない
+（＝私が以前立てたEOS仮説は棄却）。
+
+**結論2: 語尾の崩れは整形ではなく、モデルの生出力に既に存在する。**
+
+```txt
+follow-up 生出力: "新しい展示は土曜から始るよるさえお！。雨の日もみんなでごお越しくださいねせやえお！！。"
+quote     生出力: "焦パらず、一歩ずつ進んでいこう。…"
+```
+
+整形前から壊れているため、`CandidateFormatting` は原因ではない。なお `<eos>` の本文漏れは
+greedy では再現せず、sampling に変えた時だけ出た（sampling 依存）。
+
+**結論3: 12B（int8）は語尾が崩れないが、prompt の sentinel を復唱する。**
+同じ18 fixture を 12B で実行すると、`<<<HAZAKURA_TEXT_START … HAZAKURA_TEXT_END>>>` を
+そのまま出力へ含めるケースが14/18あった（本文自体は正しい日本語）。
+E4B は sentinel を復唱しない代わりに語尾が崩れる。**失敗の出方がモデルごとに違う**。
+
+### 次の候補（EOSではなく prompt 構造と runtime の chat template）
+
+1. runtime がモデルの chat template を適用しているか（`coreai-kit` の
+   `GemmaPromptRenderer` / `KitExecutor` と `LanguageModelSession` の関係）を確認する
+2. E4B で sentinel を使わない素の prompt（`CoreAITestPrompt` 相当）と、
+   sentinel 付きの `buildLivePrompt` を比べる。12B の復唱が消えるかを見る
+3. 同じ fixture を System モデルでも実行し、prompt 側の期待値を固定する
+
+`eos_token` を production payload へ反映する案は、この結果により**取り下げ**。
+実験コピー（`.hazakura/coreai-experiments/`、Git対象外）は必要になるまで残す。
+
 ## 2026-09-21 追補 — 配線の作り込み（実測は Metal 制約で未完）
 
 外部レビューの指摘に沿って、モデルへ渡す設定・指示・復元の配線を直した。

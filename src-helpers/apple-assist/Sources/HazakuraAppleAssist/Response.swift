@@ -53,4 +53,7 @@ struct AppleAssistUsage: Codable {
     // top-k / top-p, so an unsupported request stays visible instead of silent.
     var samplingRequested: String? = nil
     var samplingEffective: String? = nil
+    /// Maintainer evaluation only: model text before `CandidateFormatting`, so a
+    /// comparison can separate a model artefact from a formatting artefact.
+    var rawCandidateText: String? = nil
 }

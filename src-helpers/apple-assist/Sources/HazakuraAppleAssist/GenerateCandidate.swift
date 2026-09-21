@@ -283,7 +283,8 @@ enum GenerateCandidate {
     @available(macOS 27.0, *)
     private static func coreAIUsage(
         _ usage: LanguageModelSession.Usage?,
-        profile: CoreAIGenerationProfile
+        profile: CoreAIGenerationProfile,
+        rawCandidateText: String? = nil
     ) -> AppleAssistUsage? {
         guard let usage else { return nil }
         return AppleAssistUsage(
@@ -295,7 +296,8 @@ enum GenerateCandidate {
             outputTokens: usage.output.totalTokenCount,
             maximumResponseTokens: profile.maximumResponseTokens,
             samplingRequested: profile.samplingRequested,
-            samplingEffective: profile.samplingEffective
+            samplingEffective: profile.samplingEffective,
+            rawCandidateText: rawCandidateText
         )
     }
     #endif
@@ -423,8 +425,9 @@ enum GenerateCandidate {
                 to: Prompt(coreAIPrompt(for: request, backend: backend)),
                 options: options
             )
+            let rawCandidate = response.content
             let candidate = CandidateFormatting.reviewText(
-                response.content,
+                rawCandidate,
                 original: request.selectedText
             )
             guard !candidate.isEmpty else {
@@ -438,7 +441,11 @@ enum GenerateCandidate {
                 candidateText: candidate,
                 modelId: backend.modelId,
                 latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
-                usage: coreAIUsage(response.usage, profile: profile)
+                usage: coreAIUsage(
+                    response.usage,
+                    profile: profile,
+                    rawCandidateText: request.measureUsage == true ? rawCandidate : nil
+                )
             ))
         } catch {
             return .error(CoreAIRuntime.generationError(error))
@@ -461,6 +468,7 @@ enum GenerateCandidate {
             let options = coreAIOptions(for: backend)
             let profile = coreAIProfile(for: backend)
             var latestCandidate = ""
+            var latestRaw = ""
             var latestUsage: LanguageModelSession.Usage?
             let stream = session.streamResponse(
                 to: Prompt(coreAIPrompt(for: request, backend: backend)),
@@ -468,6 +476,7 @@ enum GenerateCandidate {
             )
             for try await snapshot in stream {
                 latestUsage = snapshot.usage
+                latestRaw = snapshot.content
                 let candidate = CandidateFormatting.reviewText(
                     snapshot.content,
                     original: request.selectedText
@@ -488,7 +497,11 @@ enum GenerateCandidate {
                 candidateText: latestCandidate,
                 modelId: backend.modelId,
                 latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
-                usage: coreAIUsage(latestUsage, profile: profile)
+                usage: coreAIUsage(
+                    latestUsage,
+                    profile: profile,
+                    rawCandidateText: request.measureUsage == true ? latestRaw : nil
+                )
             ))
         } catch {
             return .error(CoreAIRuntime.generationError(error))
