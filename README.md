@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-09-20
+Last reviewed: 2026-09-22
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -30,8 +30,11 @@ Current source version is `3.1.0`. It is an in-progress development version,
 not yet a signed or published
 release candidate. Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
-explicit action, without auto-save. The model picker currently shows Apple Intelligence as its only option.
-Additional model download/switching and MLX runtime are not implemented.
+explicit action, without auto-save. The current App Store development source exposes Apple Intelligence
+plus pinned Apple-hosted Gemma 4 E4B and 12B
+models through a separate settings page, with explicit download, verification, selection, and deletion.
+Those assets have not completed Apple CDN and TestFlight acceptance, so this is not a published-model claim.
+MLX runtime is not implemented.
 
 The `3.0.0` release refreshes the UI/UX across the app (reader spread layout,
 a unified EPUB / PDF / HTML export dialog, daily-flow continuity) and organizes

@@ -3,7 +3,36 @@
 Status: Operational
 Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
-Last reviewed: 2026-09-21
+Last reviewed: 2026-09-22
+
+## Core AI 12B catalog・配布UX・出力復元（2026-09-22）
+
+App Storeレーンの固定catalogへGemma 4 12Bを追加し、E4Bと同じApple-hosted managed
+download / 検証 / 選択 / 削除経路へ接続した。Developerレーンのproduction catalogは空のまま。
+任意URL/path、ローカルimport、cloud fallback、自動download、auto-applyは追加していない。
+
+- 設定のオンデバイスモデルページにdownload量、展開後使用量、推奨メモリ、license要約を表示。
+  Rustが`hw.memsize`を読み、推奨値未満では開始前に確認する（禁止はしない）。12Bは変換元の
+  license原文もpayloadへ保持することを明示する。
+- モデル状態は「購読 → snapshot」にし、snapshot取得中に届いた新しい進捗を古い結果で
+  巻き戻さない。購読失敗時もsnapshot取得は続ける。
+- 12Bが復唱する完全な外側`HAZAKURA_TEXT` envelopeだけを候補整形で除去する。原稿自身が
+  markerを含む場合、前後に別テキストがある場合、不完全な内側markerは残す。stream途中の
+  未完envelopeはUIへ出さない。
+- macOS 27専用Background Assets selectorをSDK compile guardへ入れ、CIのmacOS 26 SDKでも
+  fallback側をコンパイルできるようにした。実際のmacOS 26 SDKでの確認はPR CIを正本とする。
+
+ローカル12B archiveは9,148,924,300 bytes、SHA-256
+`208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb`。production helperで
+18 fixtureを実行し、変更前は14/18で内部markerだけが失敗、変更後は18/18ですべての機械checkが
+通った。これはM4 Max / 128 GBのローカル実行証跡であり、32 GB対象機、Apple upload / processing、
+CDN materialization、TestFlight、VoiceOverの証跡ではない。
+
+検証はfrontend 298 files / 2,666件、project script 24件、Rust 424件（2 ignored）、Swift 49件、
+App Store surface 131件、型検査、Rust format、Vite build、ad-hoc App Store preview build、
+1200 x 820 / 640 x 820のVite fixture目視。次のゲートはPR #52のCIと外部レビュー、その後に
+12B archive upload / processingと32 GB対象機のInternal TestFlight受入。
+[外部レビュー用証跡](reviews/2026-09-22-core-ai-12b-catalog/README.md)。
 
 ## 外部レビュー2巡目 — 見出し着地後の Tab とかなラベル（2026-09-21）
 
@@ -64,8 +93,8 @@ Rust の command 契約と helper へ渡す内容も不変で、変更は fronte
 
 検証は frontend 297 files / 2,654件、project script 24件、App Store surface 130件、
 型検査、Vite build、Vite fixture での実表示（日本語 light / 英語 dark / 未配布の空状態）。
-**built app（WKWebView）と VoiceOver・最大 Dynamic Type は未実施**。ライセンス表示と
-削除時の解放サイズ表示は残り。証跡は
+**built app（WKWebView）と VoiceOver・最大 Dynamic Type は未実施**。2026-09-22にlicense要約と
+展開後使用量を追加済み（notice本文を開くUIは未実装）。証跡は
 [オンデバイスモデルの独立ページ](reviews/2026-09-21-on-device-models-page/README.md)。
 
 ## Core AI 生成設定の可視化（2026-09-21）
@@ -117,8 +146,9 @@ App Store preview レーンの `npm run build` まで成功。**実 Core AI で�
 利用可能モデルの選択を接続し、Rustだけがapp-privateな選択と検証済みpathを保持する。
 frontendから任意path / URL / GGUFを渡す入口、製品内変換、cloud fallbackは追加しない。
 
-2026-09-21に内部TestFlight受入へ進むため、App StoreレーンだけGemma 4 E4Bをproduction
-catalogへ接続した。12BとDeveloperレーンのproduction catalogは未公開のまま。Apple-hosted managed
+2026-09-21に内部TestFlight受入へ進むため、App StoreレーンへGemma 4 E4Bをproduction
+catalog接続し、2026-09-22に12Bも同じ固定catalogへ追加した。Developerレーンのproduction
+catalogは空のまま。Apple-hosted managed
 Background Download extension、`group.dev.hazakura.editor`、3つの`BA*` key、`AssetPackManager`の
 download / progress / cancel / resume / remove / restart復元を実装した。G1はmodel-state eventで
 SettingsとLocal Assist窓を同期し、G2はsigned manifest、safe path、size、全SHA-256検証後だけ
@@ -130,7 +160,7 @@ SettingsとLocal Assist窓を同期し、G2はsigned manifest、safe path、size
 seatbelt sandbox内だけで再現し、通常shellでは同toolが相対/絶対、`-o`/`--output-path`、
 default/明示`package`の全てで成功する。manifestも実物の`ba-package template`と照合して有効。
 `package`は`sourceRoot`へchdirしてから出力pathを解決するため、絶対pathを渡すよう修正した。
-sandbox外でE4B（5,431,767,284 bytes）と12B（9,148,928,727 bytes）の`.aar`を生成済み。
+sandbox外でE4B（5,431,767,276 bytes）と12B（9,148,924,300 bytes）の`.aar`を生成済み。
 `coreai-build`もなくMac AOT済み`.aimodelc`はまだ作れない。`.aar`のローカル生成成功も
 Apple CDN upload、TestFlight取得、品質採用、出荷可能の証跡にはしない。
 

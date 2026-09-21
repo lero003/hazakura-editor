@@ -3,7 +3,7 @@
 Status: Investigation（原因候補と検証計画。結論は未確定）
 Scope: Apple-hosted E4B / 12B を Hazakura の Local Assist 経路で使ったときの出力品質
 Authority: Medium（実装状況の記述は source 準拠。原因は仮説）
-Last reviewed: 2026-09-21
+Last reviewed: 2026-09-22
 
 16 GB MacBook Air（M5）で DL・load・生成は通ったが、編集結果が崩れるという報告への整理。
 **モデル能力そのものより、Developer テスト用のハーネスをそのまま本番へ使っている点を先に疑う。**
@@ -204,6 +204,24 @@ greedy では再現せず、sampling に変えた時だけ出た（sampling 依�
 そのまま出力へ含めるケースが14/18あった（本文自体は正しい日本語）。
 E4B は sentinel を復唱しない代わりに語尾が崩れる。**失敗の出方がモデルごとに違う**。
 
+### 2026-09-22 12B復唱の閉じ方
+
+promptの区切り自体は対象本文と参考文脈を分ける契約なので変更せず、12Bが返した候補の
+**完全な外側pairだけ**を`CandidateFormatting`で除去した。原稿自身がどちらかのmarkerを含む、
+markerの前後に別テキストがある、閉じmarkerが途中にある場合はDiffに残す。stream途中で先頭marker
+だけ届いた場合は空partialを返し、内部markerを一瞬表示しない。
+
+同じproduction helper / 12B / 18 fixtureをM4 Max 128 GBで再実行した結果:
+
+| Run | Result |
+| --- | --- |
+| 変更前 | 14/18が`noInternalMarkers`のみ失敗。内容保持checkは通過 |
+| 変更後 | 18/18ですべての機械check通過（cancel後の再生成を含む） |
+
+これはcandidate復元と機械checkの証跡であり、意味品質の人手採点、32 GB対象機の性能、
+Apple CDN / TestFlight経路、長文の文脈予算を受け入れた証跡ではない。prompt境界A/Bは
+今回の不具合修正には不要になったが、長文品質を比較するときの研究候補として残す。
+
 ### 次の候補（EOSではなく prompt 構造と runtime の chat template）
 
 1. **確定（`coreai-kit@bebe09a0` を pin してソース確認）**: runtime が chat template を
@@ -216,7 +234,8 @@ E4B は sentinel を復唱しない代わりに語尾が崩れる。**失敗の�
    - **12B（`KitLanguageModel`）は chat template を使う。** `KitExecutor` → `TranscriptRenderer`
      に入り、tool なしなら `tokenizer.applyChatTemplate(messages:)` を呼ぶ。
    - 以降の調査は「chat template を使っているか」を確認済みとして、下の prompt 比較へ直行する。
-2. **12B の sentinel 復唱が本命。** prompt 境界の A/B を3条件で比較する。
+2. ~~**12B の sentinel 復唱が本命。** prompt 境界の A/B を3条件で比較する。~~
+   **2026-09-22の出力復元で機械check上は閉じた。** 将来、長文品質を比較するときは次の3条件を使う。
    1. 現行 `<<<HAZAKURA_TEXT_START … HAZAKURA_TEXT_END>>>`
    2. sentinel なし
    3. より普通の構造化境界（例 `<hazakura_text>…</hazakura_text>` / `<hazakura_context>…</hazakura_context>`）

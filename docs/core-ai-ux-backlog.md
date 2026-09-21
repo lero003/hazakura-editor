@@ -1,9 +1,9 @@
 # Core AI モデル配布 UX バックログ
 
-Status: Backlog（未着手の候補。着手の約束ではない）
+Status: Backlog（実装済み項目と未着手候補。未着手項目は着手の約束ではない）
 Scope: Core AI モデルのダウンロード・管理まわりの UX 候補
 Authority: Low（現行ルールの正本ではない。採否は `current-work.md` で決める）
-Last reviewed: 2026-09-21
+Last reviewed: 2026-09-22
 
 E4B の Apple-hosted asset pack と build 145 が通り、実機疎通（CDN → 検証 → helper load）とは
 別に「あるとよい」項目をここへ溜める。着手時は `docs/core-ai-production-models.md` の
@@ -11,12 +11,10 @@ activation gate と `docs/assist-surface-strategy.md` の境界を先に確認�
 
 ## 1. マシンスペックの事前警告
 
-- lock には `acceptanceMemoryGB`（E4B 16 / 12B 32）と `minimumMacOS`（27.0）が既にあり、
-  payload の `hazakura-model.json` にも入っている。**UI ではまだ一切出していない**
-- 例: 物理メモリが `acceptanceMemoryGB` を下回るとき、`CoreAiModelManager` の
-  ダウンロード前に注意を出す。止めるかは要判断（止めない方がよさそう）
-- 判定は Rust 側（`sysctl hw.memsize` 相当）で行い、renderer へは数値だけ渡す。
-  起動時スキャンや自動ダウンロードはしない
+**2026-09-22 実装済み:** lockの`acceptanceMemoryGB`（E4B 16 / 12B 32）を固定catalogへ写し、
+Rustが`sysctl hw.memsize`で物理メモリを読む。rendererへはGiB数値だけを渡す。推奨値未満は
+一覧で注意し、download開始前に確認するが、利用を禁止しない。起動時スキャンや自動downloadは
+追加していない。
 
 ## 2. モデル管理を独立した設定画面にする（本人要望 2026-09-21）
 
@@ -28,15 +26,15 @@ activation gate と `docs/assist-surface-strategy.md` の境界を先に確認�
 設定本文を経由せず直接開ける。
 [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
 
-残り: ライセンス表示（notice / Apache-2.0、12B は upstream conversion license）と
-削除時の解放サイズ表示。
+2026-09-22にlicense要約（Apache-2.0、12Bは変換元license原文同梱）と展開後使用量も追加。
+残りはpayload内notice本文を開くUI。
 
 ## 3. 保存先（ダウンロード先）の扱い
 
 - Apple-hosted asset pack は**保存先を選べない**。`AssetPackManager` がプロセス単位の URL を
   返し、実体はシステム管理（アプリコンテナ配下）。ここに指定 UI を作っても効かない
 - 現実的な代替:
-  - 保存先がシステム管理であること、使用量（E4B は約 5.4 GB / 展開後 6.8 GB）を表示する
+  - ~~保存先がシステム管理であること、使用量を表示する~~ **実装済み**
   - ダウンロード開始前に空き容量不足を警告する
   - 削除（既存の delete → System 切替）を維持し、削除時に解放サイズを示す
 - Developer レーンのローカル配置にはディレクトリ指定の余地があるが、いまは対象外
@@ -52,7 +50,8 @@ activation gate と `docs/assist-surface-strategy.md` の境界を先に確認�
 - **失敗理由の表示**: いまは phase / error をそのまま出す。`BA` のエラーを人間向け文言へ寄せる
 - **進捗の粒度**: `BA` が渡すのは `fractionCompleted` のみ。残り時間や速度は出せない前提で設計する
 - **回線への配慮**: 従量制・低速回線向けの「Wi-Fi のときだけ」や「後で」トグルの余地
-- **ライセンス表示**: payload の `THIRD_PARTY_MODEL_NOTICE.md` と `LICENSE-APACHE-2.0.txt`
-  （12B は `UPSTREAM-CONVERSION-LICENSE.txt` も）を設定画面から読めるようにする
-- **12B は catalog 未接続のまま**: asset pack record は作成済みだが、どの build からも参照しない。
-  ライセンス確認が閉じるまで配布対象にしない
+- **ライセンス本文**: 要約は実装済み。payloadの`THIRD_PARTY_MODEL_NOTICE.md`と
+  `LICENSE-APACHE-2.0.txt`（12Bは`UPSTREAM-CONVERSION-LICENSE.txt`も）を設定画面から
+  開くUIは未実装
+- **12B catalog接続**: 2026-09-22にApp Storeレーンへ接続済み。Developerレーンは空のまま。
+  archive upload / processing、CDN materialization、32 GB対象機TestFlightは未実施

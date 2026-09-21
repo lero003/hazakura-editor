@@ -3,17 +3,29 @@
 Status: Operational
 Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-21
+Last reviewed: 2026-09-22
 
-- **PR #52 の CI 状況（2026-09-21）:** `frontend` job は緑（同名衝突で隠れていた DOM テストの
-  型エラーを直した）。`native` job は**このブランチ固有の理由で赤**:
-  `background_assets_bridge.m` が macOS 27 SDK の selector
-  (`getManifestWithCompletionHandler:` / `assetPackWithIdentifier:`) を使っており、
-  `runs-on: macos-26` の runner では `build.rs` の ObjC コンパイルが落ちる。
-  ブリッジは `240474b6`（Core AI Apple-hosted 取得経路）由来で、feature ブランチのため
-  これまで CI が走っていなかった。**main の CI は緑なので、今マージすると main が赤になる。**
-  手元は macOS 27 SDK のみで、SDK ガードの古い側はローカル検証できない（検証は CI の runner）。
-  [詳細と選択肢](reviews/2026-09-21-review-followup-models-page/README.md)。
+- **Core AI 12B + モデル管理仕上げ（2026-09-22）:** App Store固定catalogへ12Bを追加し、
+  E4Bと同じApple-hosted download / G2検証 / 選択 / 削除経路へ接続した。設定はdownload量、
+  展開後使用量、推奨メモリ、license要約を表示し、Rustが読む物理メモリが推奨値未満なら開始前に
+  確認する。状態購読はsnapshotより先に登録し、取得中のeventを古いsnapshotで巻き戻さない。
+  12Bの完全な外側prompt envelopeだけを除去し、本文中markerは維持する。実12B評価は変更前
+  14/18の`noInternalMarkers`失敗から変更後18/18全check通過。ローカルarchiveは
+  9,148,924,300 bytes / SHA-256
+  `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb`。
+  frontend 2,666件、scripts 24件、Rust 424件（2 ignored）、Swift 49件、surface 131件、
+  App Store preview buildは成功。12BのApple upload / processing、32 GB機TestFlight、
+  built appの設定画面、VoiceOverは未確認。[証跡](reviews/2026-09-22-core-ai-12b-catalog/README.md)。
+
+- **PR #52 native CI修正（2026-09-22）:** macOS 27専用Background Assets selectorをSDK compile
+  guardへ入れ、macOS 26 SDKではunsupported fallbackだけをコンパイルする。手元はmacOS 27 SDK
+  なので、古いSDK側の実証はpush後のPR CIで行う。CIと外部レビューを通すまでmergeしない。
+
+- **PR #52 の旧CI失敗（2026-09-21、修正済み・再実行待ち）:** `frontend` jobは緑、`native`は
+  macOS 27専用Background Assets selectorを`runs-on: macos-26`でコンパイルして失敗していた。
+  2026-09-22にSDK compile guardを追加した。手元にはmacOS 27 SDKしかないため、修正後の
+  macOS 26 SDK実証はpush後のPR CIを正本とする。
+  [元の詳細](reviews/2026-09-21-review-followup-models-page/README.md)。
 
 - **外部レビュー2巡目（2026-09-21）:** `540affc7` への P2/P3 を閉じた。ページ見出し
   （`tabIndex={-1}`）へ着地した後の Tab がヘッダーへ戻っていた問題は、フォーカストラップで
@@ -47,8 +59,8 @@ Last reviewed: 2026-09-21
   起動時スキャンは不変。変更は frontend / CSS / docs のみで Rust 契約は不変。
   frontend 297 files / 2,654件、project script 24件、App Store surface 130件、型検査、
   Vite build、Vite fixture の実表示（日本語 light / 英語 dark / 未配布の空状態）は成功。
-  **built app の表示・VoiceOver・最大 Dynamic Type は未実施**。ライセンス表示と
-  削除時の解放サイズは残り。
+  **built app の表示・VoiceOver・最大 Dynamic Type は未実施**。2026-09-22にlicense要約と
+  展開後使用量を追加済み（notice本文を開くUIは未実装）。
   [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
 
 - **Core AI 生成設定の可視化（2026-09-21）:** helper が返す `usage`（要求/実効の
@@ -73,7 +85,7 @@ Last reviewed: 2026-09-21
 - **Core AI配布前基盤（2026-09-20）:** App Store / TestFlightレーンへCore AI production
   adapterをmacOS 27+専用の別helperとして同梱し、設定のモデル管理とLocal Assistの選択、
   Rust-owned選択状態を接続した。System helperはmacOS 26互換を維持。2026-09-21からApp Store
-  catalogへE4Bだけを接続し、Apple-hosted downloader extension、App Group、`BA*` keys、
+  catalogへE4Bを接続し、2026-09-22に12Bも追加した。Apple-hosted downloader extension、App Group、`BA*` keys、
   `AssetPackManager`、進捗・取消・再開・削除・再起動復元、G1/G2をsource実装した。
   Apple-hosted asset pack upload、AOT、notice最終確認、署名候補/TestFlight実機受入は未完了。Developer固定Qwenを配布catalogへ
   入れず、任意URL/path/GGUFと自動fallbackも足さない。

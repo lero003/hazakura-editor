@@ -3,7 +3,7 @@
 Status: Operational preparation
 Scope: v3.1 Core AI production candidates and Apple-hosted asset preparation
 Authority: High
-Last reviewed: 2026-09-21
+Last reviewed: 2026-09-22
 
 ## Decision
 
@@ -13,7 +13,7 @@ Hazakura Local Assistの最初の本番候補は、同じGemma 4 QAT系から次
 | Lane | Model ID | Target | Locked converted artifact | Expanded model bytes |
 | --- | --- | --- | --- | ---: |
 | Standard | `apple:core-ai:gemma-4-e4b-it-int4-v1` | 16 GB Macでの受入候補 | `mlboydaisuke/gemma-4-E4B-CoreAI@e9ba305a91bf3e62ea83d5652b572b69913c433a` | 6,807,926,119 |
-| Quality comparison | `apple:core-ai:gemma-4-12b-it-int8-v1` | 32 GB以上で先行評価 | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,417,429 |
+| Quality comparison | `apple:core-ai:gemma-4-12b-it-int8-v1` | 32 GB以上で先行評価 | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,433,203 |
 
 完全なfile path、byte size、SHA-256、source revision、runtime kind、asset pack IDは
 [`scripts/core-ai-production-models.json`](../scripts/core-ai-production-models.json)を機械正本とする。
@@ -31,7 +31,8 @@ URLの`main`や可変tagは使わない。Developer用Qwen fixtureは引き続�
   model cardでApache-2.0を示し、独立LICENSEはない。12Bはmodel cardがApache-2.0を示す一方、
   固定revision内の`LICENSE`は旧Gemma Terms表記のままで矛盾するため、その原文も
   `UPSTREAM-CONVERSION-LICENSE.txt`として保存する。外部TestFlight前に権利・noticeを人手で
-  再確認し、どちらの候補も現時点では`manual-review-required`とする。
+  再確認する。E4Bは`manual-review-required`、12Bは原文保持を条件に
+  `reviewed-apache-2.0`として記録済み。
 - GGUFからの逆変換、任意URL/path、製品内変換、cloud fallbackは採用しない。
 
 ## Conversion record
@@ -124,22 +125,22 @@ manifest schemaも実物で確認した。Apple公式templateを`xcrun ba-packag
 このリポジトリが生成する`directorySource` / `directoryDestination` / `sourceRoot`は現行仕様の
 有効なkeyである（`sourceRoot`はmanifestの位置からの相対path）。
 
-2026-09-21にsandbox外でE4Bと12Bの`.aar`を生成した。
+2026-09-22に現在のlockとnoticeからsandbox外でE4Bと12Bの`.aar`を再確認・再生成した。
 
 | Model | expanded bytes | `.aar` bytes | SHA-256 |
 | --- | --- | --- | --- |
-| Gemma 4 E4B | 6,807,926,119 | 5,431,767,284 | `e0218e05102ab36d6b2b1a4dd18af009dc24d6e957d1a5dc610258b77012ceac` |
-| Gemma 4 12B | 14,698,432,594 | 9,148,928,727 | `9cf11956c537e10b04eeab53bc2618f4941ce3edee371afdad21bc90d62a3efc` |
+| Gemma 4 E4B | 6,807,926,119 | 5,431,767,276 | `394c5eb92f334294a91ddb360117c5af8862fc36220293b5e56a8d409802aaa8` |
+| Gemma 4 12B | 14,698,433,203 | 9,148,924,300 | `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb` |
 
 これはローカル生成の証跡であり、Apple CDN upload、Apple processing、署名済みbuild、TestFlightでの
-実取得、AOT、品質採用の証跡ではない。次はE4B `.aar`をTransporter等でuploadし、処理完了を
-確認するところから。
+実取得、AOT、対象メモリ機での品質採用の証跡ではない。次は12B `.aar`をTransporter等で
+uploadし、処理完了と32 GB対象機での取得を確認する。
 
 ## Locked Apple-hosted asset pack IDs
 
 ### 12B ライセンスの調査結果（2026-09-21）
 
-lock は12Bを`reviewStatus: "manual-review-required"`として保留している。理由は
+12Bは当初`reviewStatus: "manual-review-required"`として保留していた。理由は
 「変換リポジトリの model card は Apache-2.0 と宣言しているが、同リポジトリの standalone
 LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。実物を確認した結果は次のとおり。
 
@@ -166,8 +167,7 @@ LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。�
 
 #### 2026-09-21 適用済み（12B）
 
-オーナー判断を受けて、12Bだけ次の調整を入れた（E4Bの payload は既に Apple へ
-アップロード済みなので変更しない）。
+オーナー判断を受けて、12Bだけ次の調整を入れた（E4Bのpayload identityは変更しない）。
 
 - lock の 12B `reviewStatus` を `reviewed-apache-2.0` へ変更し、`convertedArtifactStatement` を
   「重みは Google の Gemma 4 ライセンス = Apache-2.0。変換リポジトリ同梱の LICENSE は
@@ -178,8 +178,8 @@ LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。�
   重みのライセンスとしては採用しない」旨を追記した
 - helper 側 `CoreAIResourceContract` も両 status を受理するようにした
 - 12B の `.aar` を再生成し、`hazakura-coreai-gemma4-12b-v1.aar`
-  （SHA-256 `fa1f052b705dad60e0ddac8cdfdb98ec1c6a309add11edc99dc141de224b682f`）を
-  App Store Connect へアップロードし直す
+  （SHA-256 `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb`）を
+  次のApp Store Connect upload対象にする（2026-09-22時点では未upload）
 
 | Model | Asset pack ID |
 | --- | --- |
@@ -196,16 +196,16 @@ App Store Connect側のrecordとコード側のcatalogはこの完全一致を�
 `dev.hazakura.editor.coreai.gemma4-e4b.v1` は拒否された。ハイフン、数字、大文字、
 長い名前は問題ない。この制約はAppleの文書とOpenAPI仕様には書かれていない。
 `validateLock`もピリオド入りIDを拒否する。
-検証済みstageは合計21,506,358,713 bytes。ローカル`.aar`はE4B 5,431,767,284 bytesと
-12B 9,148,928,727 bytesの計14,580,696,011 bytes。2026-09-20時点の
+検証済みstageは合計21,506,359,322 bytes。ローカル`.aar`はE4B 5,431,767,276 bytesと
+12B 9,148,924,300 bytesの計14,580,691,576 bytes。2026-09-20時点の
 [Apple-hosted asset pack size limits](https://developer.apple.com/help/app-store-connect/reference/app-uploads/apple-hosted-asset-pack-size-limits)は
 アプリ全体で200 GB / 200 asset packsのため名目上は枠内だが、uploadとApple処理を確認した
 証跡ではない。
 
 ## Activation gates
 
-2026-09-21から、内部TestFlightでCDN経路を受け入れるためApp StoreレーンだけE4Bをcatalogへ
-接続した。Developerレーンは引き続き空で、12Bは公開しない。以下は正式リリースまでのgateであり、
+2026-09-21からE4B、2026-09-22から12Bを、内部TestFlightでCDN経路を受け入れるため
+App Storeレーンの固定catalogへ接続した。Developerレーンは引き続き空。以下は正式リリースまでのgateであり、
 catalog entryの存在だけを出荷承認として扱わない。
 
 1. `coreai-build`を含むAppleのAOT toolchainを入手し、対象Mac向け`.aimodelc`を作成・再lockする。

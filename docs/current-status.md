@@ -3,17 +3,27 @@
 Status: Operational
 Scope: v3.1開発状態、v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-21
+Last reviewed: 2026-09-22
 
 ## Current State
 
-- **PR #52 の CI（2026-09-21）:** `frontend` job は緑。`native` job は
-  `background_assets_bridge.m` が macOS 27 SDK の selector を使っており、
-  `runs-on: macos-26` の runner では `build.rs` の ObjC コンパイルが落ちる
-  （`240474b6` 由来。feature ブランチだったためこれまで CI 未実行）。
-  **main の CI は緑なので、このままマージすると main が赤になる。**
-  対応方針（SDK ガード / runner 変更 / 保留）は未決定。
-  [詳細](reviews/2026-09-21-review-followup-models-page/README.md)。
+- **Core AI 12B source接続（2026-09-22）:** App Storeレーンの固定catalogへGemma 4 12Bを
+  追加し、E4Bと同じApple-hosted download / 検証 / 選択 / 削除経路へ接続した。
+  設定ではdownload量、展開後使用量、推奨メモリ、license要約を表示し、物理メモリが推奨値を
+  下回る場合はdownload開始前に確認する。モデル状態は購読後にsnapshotを取り、後着した古い
+  snapshotで進捗を巻き戻さない。12Bが復唱する完全な外側prompt envelopeだけを安全に除去し、
+  実モデル18 fixtureは変更前14/18のmarker失敗から変更後18/18全check通過になった。
+  ローカルarchiveは9,148,924,300 bytes / SHA-256
+  `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb`。
+  frontend 2,666件、scripts 24件、Rust 424件（2 ignored）、Swift 49件、surface 131件、
+  型検査、Vite build、ad-hoc App Store preview build、Vite fixture目視は成功。
+  **12B archiveのApple upload / processing、CDN、32 GB対象機TestFlight、VoiceOverは未実施。**
+  [外部レビュー用証跡](reviews/2026-09-22-core-ai-12b-catalog/README.md)。
+
+- **PR #52 のmacOS 26 SDK対策（2026-09-22）:** macOS 27専用Background Assets selectorを
+  `__MAC_OS_X_VERSION_MAX_ALLOWED >= 270000`でcompile guardし、古いSDKはunsupported fallback
+  だけをコンパイルする。macOS 27 SDKでのRust全体・App Store preview buildは成功。
+  **macOS 26 SDKでの実証はpush後のPR CI待ち**で、CI成功前にmainへ取り込まない。
 
 - **外部レビュー2巡目（2026-09-21）:** `540affc7`へのP2/P3を閉じた。ページ見出しへ
   着地した後のTabがヘッダーへ戻る問題は、フォーカストラップで「ダイアログ内の
@@ -46,7 +56,8 @@ Last reviewed: 2026-09-21
   起動時スキャン・Rust command契約・helperへ渡す内容は不変。frontend 297 files / 2,654件、
   project script 24件、App Store surface 130件、型検査、Vite build、Vite fixtureの実表示
   （日本語light / 英語dark / 未配布の空状態）は成功。built appの表示・VoiceOver・
-  最大Dynamic Typeは未実施で、ライセンス表示と削除時の解放サイズは残り。
+  最大Dynamic Typeは未実施。2026-09-22にlicense要約と展開後使用量を追加したが、notice本文を
+  開くUIは未実装。
   [証跡](reviews/2026-09-21-on-device-models-page/README.md)。
 
 - **Core AI生成設定の可視化（2026-09-21）:** helperが返す`usage`をRustが保持し、設定の
@@ -62,9 +73,9 @@ Last reviewed: 2026-09-21
 - **Core AI配布前基盤（2026-09-20）:** App Store / TestFlight buildへmacOS 27+の
   Core AI production adapterを別helperとして同梱し、設定のモデル管理、Local Assist窓の
   選択、Rust-ownedの永続選択を接続した。System helperはmacOS 26互換を維持する。
-  App StoreレーンだけE4Bをcatalogへ接続し、Apple-hosted managed downloader extension、App Group、
+  App StoreレーンはE4Bをcatalogへ接続し、2026-09-22に12Bも追加した。Apple-hosted managed downloader extension、App Group、
   `BA*` keys、`AssetPackManager` download / progress / cancel / resume / remove / restart復元を追加した。
-  Developer production catalogは空、12Bは未公開。署名候補、Apple upload、TestFlight受入、
+  Developer production catalogは空。署名候補、12B archiveのApple upload、TestFlight受入、
   本番モデル採用の証跡ではない。
   最終のSwift 24件、Rust 417件（2 ignored）、frontend 2,646件、project script 14件、
   App Store surface 129件とローカル`npm run build`は成功。
@@ -83,7 +94,7 @@ Last reviewed: 2026-09-21
   Codexのseatbelt sandbox内だけで再現し、通常shellでは相対/絶対、`-o`/`--output-path`、
   default/明示`package`の全CLI形式が成功する。manifestは実物の`ba-package template`と照合して
   有効で、`package`は`sourceRoot`へのchdir前に出力pathを解決するため絶対pathへ修正した。
-  sandbox外でE4B（5,431,767,284 bytes）と12B（9,148,928,727 bytes）の`.aar`をローカル生成した
+  sandbox外でE4B（5,431,767,276 bytes）と12B（9,148,924,300 bytes）の`.aar`をローカル生成した
   （`.hazakura/coreai-production/`、Git対象外）。再生成profileは両targetとも
   `OSX`、正しいID、App Group、有効期限を満たし、profile内certificateとApple Distribution identityも
   一致した。3.1.0 build 143の署名app/pkg、entitlement probe、deep verify、installer signatureは成功。
