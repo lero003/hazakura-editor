@@ -164,6 +164,23 @@ LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。�
 
 **最終判断はオーナー（必要なら法務）の領分**で、ここでは事実と選択肢のみを記録する。
 
+#### 2026-09-21 適用済み（12B）
+
+オーナー判断を受けて、12Bだけ次の調整を入れた（E4Bの payload は既に Apple へ
+アップロード済みなので変更しない）。
+
+- lock の 12B `reviewStatus` を `reviewed-apache-2.0` へ変更し、`convertedArtifactStatement` を
+  「重みは Google の Gemma 4 ライセンス = Apache-2.0。変換リポジトリ同梱の LICENSE は
+  来歴として原文のまま保持」と書き換えた
+- `validateLock` は既知の review status のみ受け付け、`reviewed-apache-2.0` を名乗る場合は
+  変換リポジトリの LICENSE を payload に残すことを必須にした（回帰テスト付き）
+- `THIRD_PARTY_MODEL_NOTICE.md` に「重みは Apache-2.0、同梱 LICENSE は来歴として保持し、
+  重みのライセンスとしては採用しない」旨を追記した
+- helper 側 `CoreAIResourceContract` も両 status を受理するようにした
+- 12B の `.aar` を再生成し、`hazakura-coreai-gemma4-12b-v1.aar`
+  （SHA-256 `fa1f052b705dad60e0ddac8cdfdb98ec1c6a309add11edc99dc141de224b682f`）を
+  App Store Connect へアップロードし直す
+
 | Model | Asset pack ID |
 | --- | --- |
 | Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1` |

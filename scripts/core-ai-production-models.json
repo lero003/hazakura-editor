@@ -128,8 +128,8 @@
       "licensing": {
         "sourceModelLicense": "Apache-2.0",
         "sourceModelLicenseUrl": "https://ai.google.dev/gemma/docs/gemma_4_license",
-        "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0, but its standalone LICENSE file still states Gemma Terms of Use.",
-        "reviewStatus": "manual-review-required",
+      "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0. Its bundled LICENSE file still carries the Gemma Terms of Use text, while the Gemma 4 weights themselves are Apache-2.0 per Google's Gemma 4 license; that file is retained verbatim for provenance only.",
+      "reviewStatus": "reviewed-apache-2.0",
         "licenseFiles": [
           "LICENSE-APACHE-2.0.txt",
           "UPSTREAM-CONVERSION-LICENSE.txt"

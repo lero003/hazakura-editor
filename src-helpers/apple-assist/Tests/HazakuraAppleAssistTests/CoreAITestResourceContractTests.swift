@@ -73,6 +73,8 @@ final class CoreAITestResourceContractTests: XCTestCase {
         try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
         try Data("{}".utf8).write(to: root.appendingPathComponent("metadata.json"))
         try Data("{}".utf8).write(to: tokenizer.appendingPathComponent("tokenizer.json"))
+        try Data("{}".utf8).write(to: tokenizer.appendingPathComponent("tokenizer_config.json"))
+        try Data("template".utf8).write(to: tokenizer.appendingPathComponent("chat_template.jinja"))
         try Data("{}".utf8).write(to: model.appendingPathComponent("metadata.json"))
         try Data("hash".utf8).write(to: model.appendingPathComponent("main.hash"))
         try Data("model".utf8).write(to: model.appendingPathComponent("main.mlirb"))
@@ -93,6 +95,7 @@ final class CoreAITestResourceContractTests: XCTestCase {
             root: root,
             runtimeKind: .language,
             bundle: bundle,
+            modelDirectory: bundle.appendingPathComponent("writing-model.aimodel", isDirectory: true),
             tables: nil
         )
         XCTAssertEqual(
@@ -125,6 +128,10 @@ final class CoreAITestResourceContractTests: XCTestCase {
         ) else { return XCTFail("Gemma PLE layout must be accepted") }
         XCTAssertEqual(resource.runtimeKind, .gemma4PLE)
         XCTAssertEqual(resource.bundle, decoder)
+        XCTAssertEqual(
+            resource.modelDirectory,
+            decoder.appendingPathComponent("writing-model.aimodel", isDirectory: true)
+        )
         XCTAssertEqual(resource.tables, tables)
 
         try FileManager.default.removeItem(at: tables.appendingPathComponent("embed_per_layer.i8"))
@@ -135,6 +142,44 @@ final class CoreAITestResourceContractTests: XCTestCase {
             ),
             .invalid
         )
+    }
+
+    func testProductionSignatureFollowsTheRealModelHashAndTokenizer() throws {
+        let root = try makeTemporaryDirectory()
+        let bundle = root.appendingPathComponent("bundle", isDirectory: true)
+        try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+        try writeLanguageBundle(at: bundle)
+        try writeProductionMetadata(
+            at: root,
+            runtimeKind: "coreai-kit-language",
+            layout: ["bundle": "bundle"]
+        )
+
+        guard case .ready(let resource) = CoreAIResourceContract.validate(
+            path: root.path,
+            expectedModelId: "apple:core-ai:writing-primary"
+        ) else {
+            return XCTFail("Expected a ready production resource")
+        }
+        let baseline = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
+        XCTAssertTrue(baseline.contains("main.hash="))
+
+        // The verified `.aimodel/main.hash` is the model identity.
+        let modelHash = resource.modelDirectory.appendingPathComponent("main.hash")
+        try Data("a-different-hash".utf8).write(to: modelHash)
+        let afterHash = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
+        XCTAssertNotEqual(baseline, afterHash)
+
+        // Tokenizer settings decide stopping and prompt formatting.
+        let tokenizerConfig = resource.bundle
+            .appendingPathComponent("tokenizer/tokenizer_config.json")
+        try Data("{\"eos_token\":\"<eos>\"}".utf8).write(to: tokenizerConfig)
+        let afterTokenizer = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
+        XCTAssertNotEqual(afterHash, afterTokenizer)
+
+        // A required input that cannot be read must not look like "unchanged".
+        try FileManager.default.removeItem(at: modelHash)
+        XCTAssertNil(CoreAIResourceContract.signature(for: resource))
     }
 
     func testProductionContractRejectsWrongIdentity() throws {

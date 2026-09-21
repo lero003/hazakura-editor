@@ -96,6 +96,10 @@ App Store Connectは`assetPackIdentifier`内のピリオドを拒否するため
 16 GB機の実機確認で見つかった編集品質の課題は
 [Core AI編集品質（ハーネス）調査メモ](core-ai-harness-quality.md)に整理した
 （`maximumResponseTokens = 128`、greedy / temperature 0、Qwen用promptの流用が候補）。
+外部レビューの3件（整形が原稿の`<eos>`を消す / アイドル解放の既定値が効かない /
+キャッシュ署名が`decoder/main.hash`を見ている）は修正済みで、再測定は18 fixture中3件失敗。
+残りはbundleの`eos_token`不一致に起因するとみられ、12Bライセンスも調整済み
+（`reviewed-apache-2.0`、`.aar`再生成）。次は設定画面の作り込みと実機テスト。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 

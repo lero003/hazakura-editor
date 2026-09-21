@@ -25,7 +25,10 @@ test("production model lock pins both selected Gemma candidates", () => {
     assert.equal(model.releaseEligible, false);
     assert.equal(model.conversion.hazakuraReexported, false);
     assert.equal(model.runtimeRequirements.environment.COREAI_CHUNK_THRESHOLD, "1");
-    assert.equal(model.licensing.reviewStatus, "manual-review-required");
+    assert.ok(
+      ["manual-review-required", "reviewed-apache-2.0"].includes(model.licensing.reviewStatus),
+      `${model.key} must declare a known license-review status`,
+    );
     assert.ok(model.licensing.licenseFiles.includes("LICENSE-APACHE-2.0.txt"));
     assert.ok(model.releaseBlockers.length >= 3);
     assert.ok(model.files.every((file) => file.sha256.length === 64));
@@ -34,10 +37,19 @@ test("production model lock pins both selected Gemma candidates", () => {
 
 test("12B preserves the conflicting conversion-repository license statement", () => {
   const model = lock.models.find((candidate) => candidate.key === "gemma4-12b");
+  assert.equal(model.licensing.reviewStatus, "reviewed-apache-2.0");
   assert.equal(model.licensing.additionalLicenseAsset, "gemma-4-12b-conversion-license.txt");
   assert.equal(model.licensing.additionalLicenseSha256.length, 64);
   assert.ok(model.licensing.licenseFiles.includes("UPSTREAM-CONVERSION-LICENSE.txt"));
-  assert.match(model.licensing.convertedArtifactStatement, /standalone LICENSE/);
+  assert.match(model.licensing.convertedArtifactStatement, /Gemma Terms of Use/);
+});
+
+test("a reviewed license status must keep the conflicting upstream file", () => {
+  const stripped = structuredClone(lock);
+  const model = stripped.models.find((candidate) => candidate.key === "gemma4-12b");
+  delete model.licensing.additionalLicenseAsset;
+  delete model.licensing.additionalLicenseDestination;
+  assert.throws(() => validateLock(stripped), /retain the conversion repository/);
 });
 
 test("unsafe and duplicate destinations are rejected", () => {

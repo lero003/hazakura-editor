@@ -2,7 +2,7 @@ import Foundation
 
 enum CandidateFormatting {
     static func reviewText(_ value: String, original: String) -> String {
-        let text = stripOuterControlTokens(value)
+        let text = stripOuterControlTokens(value, keepingTokensPresentIn: original)
         // A source code block is content, not an assistant wrapper.
         guard !original.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") else { return text }
         let lines = text.components(separatedBy: "\n")
@@ -12,7 +12,7 @@ enum CandidateFormatting {
         let body = lines.dropFirst().dropLast()
         // Ambiguous nested/separate fences remain visible for Diff review.
         guard !body.contains(where: { $0.trimmingCharacters(in: .whitespaces).hasPrefix("```") }) else { return text }
-        return stripOuterControlTokens(body.joined(separator: "\n"))
+        return stripOuterControlTokens(body.joined(separator: "\n"), keepingTokensPresentIn: original)
     }
 
     /// The chat control tokens the shipping models can emit. `KitGemmaExecutor`
@@ -26,16 +26,22 @@ enum CandidateFormatting {
         "<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>",
     ]
 
-    /// Strips whole control tokens from the outer edges only, so a manuscript
-    /// that merely mentions a token in its body keeps it. This is a last-resort
-    /// mitigation: the real fix belongs in the conversion bundle's tokenizer
-    /// config and the stop check.
-    static func stripOuterControlTokens(_ value: String) -> String {
+    /// Strips whole control tokens from the outer edges only, and never removes a
+    /// token the manuscript itself contains. The model can legitimately echo
+    /// `<eos>` because the author wrote it, and stripping that would corrupt the
+    /// candidate (or empty it) even though the model was correct. This is a
+    /// last-resort mitigation: the real fix belongs in the conversion bundle's
+    /// tokenizer config and the runtime stop check.
+    static func stripOuterControlTokens(
+        _ value: String,
+        keepingTokensPresentIn original: String = ""
+    ) -> String {
+        let preserved = Set(controlTokens.filter { original.contains($0) })
         var text = value
         var changed = true
         while changed {
             changed = false
-            for token in controlTokens {
+            for token in controlTokens where !preserved.contains(token) {
                 if text.hasPrefix(token) {
                     text.removeFirst(token.count)
                     changed = true

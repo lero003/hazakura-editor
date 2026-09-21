@@ -21,6 +21,12 @@ const defaultLockPath = join(scriptDirectory, "core-ai-production-models.json");
 const defaultOutputRoot = join(repositoryRoot, ".hazakura", "coreai-production");
 const apacheLicensePath = join(scriptDirectory, "assets", "apache-2.0.txt");
 
+// License-review statuses a lock entry may declare. `reviewed-apache-2.0` is
+// allowed only while the conversion repository's own (conflicting) LICENSE file
+// is still shipped verbatim, so the provenance stays visible in the payload.
+const reviewedLicenseStatus = "reviewed-apache-2.0";
+const reviewedLicenseStatuses = new Set(["manual-review-required", reviewedLicenseStatus]);
+
 function parseArguments(argv) {
   const parsed = {
     command: "plan",
@@ -126,10 +132,18 @@ export function validateLock(lock) {
     if (model.runtimeRequirements?.environment?.COREAI_CHUNK_THRESHOLD !== "1") {
       throw new Error(`${model.key} must pin the pipelined runtime threshold.`);
     }
-    if (model.licensing?.reviewStatus !== "manual-review-required" ||
+    if (!reviewedLicenseStatuses.has(model.licensing?.reviewStatus) ||
         !Array.isArray(model.licensing.licenseFiles) ||
         !model.licensing.licenseFiles.includes("LICENSE-APACHE-2.0.txt")) {
-      throw new Error(`${model.key} must retain the manual license-review gate and Apache text.`);
+      throw new Error(`${model.key} must keep a known license-review status and the Apache text.`);
+    }
+    // A reviewed status is only allowed while the conflicting upstream file is
+    // still shipped verbatim, so the provenance of the discrepancy stays visible.
+    if (model.licensing.reviewStatus === reviewedLicenseStatus &&
+        !model.licensing.additionalLicenseAsset) {
+      throw new Error(
+        `${model.key} must retain the conversion repository's LICENSE file to claim ${reviewedLicenseStatus}.`,
+      );
     }
     for (const file of model.licensing.licenseFiles) {
       assertSafeRelativePath(file, `${model.key}.licensing.licenseFiles`);
@@ -364,6 +378,12 @@ function thirdPartyNotice(model) {
     `Source-model license metadata: ${model.licensing.sourceModelLicense}\n` +
     `Source-model license URL: ${model.licensing.sourceModelLicenseUrl}\n` +
     `Converted-artifact statement: ${model.licensing.convertedArtifactStatement}\n\n` +
+    (model.licensing.reviewStatus === reviewedLicenseStatus
+      ? `License review: the Gemma 4 weights are Apache-2.0 (Google's Gemma 4 license). The conversion\n` +
+        `repository ships its own LICENSE file that still carries the Gemma Terms of Use text; it is\n` +
+        `included verbatim as ${model.licensing.additionalLicenseDestination} for provenance and is not\n` +
+        `relied on as the license of the weights.\n\n`
+      : "") +
     `The model files remain subject to their upstream terms. The included license files preserve\n` +
     `the statements observed at the pinned revisions; they are not a Hazakura legal conclusion.\n` +
     `Manual review remains required before external TestFlight or App Store distribution. The\n` +

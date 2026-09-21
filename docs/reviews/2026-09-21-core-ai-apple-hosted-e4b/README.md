@@ -139,7 +139,7 @@ Running the packaging step outside the sandbox succeeded for both candidates on 
 | Model | `.aar` | bytes | SHA-256 |
 | --- | --- | --- | --- |
 | Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1.aar` | 5,431,767,276 | `394c5eb92f334294a91ddb360117c5af8862fc36220293b5e56a8d409802aaa8` |
-| Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1.aar` | 9,148,928,738 | `e640bbce53e5675f75c219cd960481fc954c306b93f310d9df8ef3420da964ed` |
+| Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1.aar` | 9,148,928,735 | `fa1f052b705dad60e0ddac8cdfdb98ec1c6a309add11edc99dc141de224b682f` |
 
 Both archives live under `.hazakura/coreai-production/<key>/2026.09.20.1/archives/` together with
 `archive.json` and `UPLOAD-INSTRUCTIONS.md`, and remain untracked:

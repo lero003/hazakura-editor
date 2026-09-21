@@ -28,6 +28,13 @@ final class CandidateFormattingTests: XCTestCase {
         let text = "トークン <eos> の意味を確認する。"
         XCTAssertEqual(CandidateFormatting.reviewText(text, original: text), text)
     }
+    /// The model can correctly return the manuscript unchanged; the formatter
+    /// must not delete a control token just because it sits at an edge.
+    func testKeepsControlTokensTheManuscriptItselfUsesAtTheEdges() {
+        for text in ["<eos>", "終了マーカーは <eos>", "</s> は終了タグです。"] {
+            XCTAssertEqual(CandidateFormatting.reviewText(text, original: text), text)
+        }
+    }
     func testStripsControlTokensAroundUnwrappedMarkdownPresentation() {
         let text = "```markdown\n本文です。\n```<eos>"
         XCTAssertEqual(CandidateFormatting.reviewText(text, original: "本文です。"), "本文です。")

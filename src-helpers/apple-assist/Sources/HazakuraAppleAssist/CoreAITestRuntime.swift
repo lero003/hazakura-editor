@@ -194,18 +194,13 @@ enum CoreAIRuntime {
         static let shared = ProductionModelCache()
 
         private var entry: (signature: String, model: LoadedProductionModel)?
-        private var generation = 0
+        private var idleTracker = CoreAIModelIdleTracker()
 
-        /// Seconds to keep an idle model. `nil` (0 or unparsable) keeps it for
-        /// the helper's lifetime.
-        private let idleReleaseSeconds: Double? = ProductionModelCache.configuredIdleSeconds(
+        /// Seconds to keep an idle model. Only an explicit `0` keeps it for the
+        /// helper's lifetime; unset or invalid values use the documented default.
+        private let idleReleaseSeconds: Double? = CoreAIModelIdlePolicy.idleReleaseSeconds(
             from: ProcessInfo.processInfo.environment["HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS"]
         )
-
-        static func configuredIdleSeconds(from raw: String?) -> Double? {
-            guard let raw, let seconds = Double(raw), seconds > 0 else { return nil }
-            return seconds
-        }
 
         func model(forSignature signature: String) -> LoadedProductionModel? {
             guard let entry, entry.signature == signature else { return nil }
@@ -221,14 +216,13 @@ enum CoreAIRuntime {
         /// Called by the idle timer with the token it scheduled. A later access
         /// has already moved `generation` past it, so the release is skipped.
         func releaseIfIdle(token: Int) {
-            guard token == generation else { return }
+            guard idleTracker.isCurrent(token) else { return }
             entry = nil
         }
 
         private func scheduleIdleRelease() {
             guard let idleReleaseSeconds else { return }
-            generation += 1
-            let token = generation
+            let token = idleTracker.schedule()
             Task.detached {
                 try? await Task.sleep(nanoseconds: UInt64(idleReleaseSeconds * 1_000_000_000))
                 await ProductionModelCache.shared.releaseIfIdle(token: token)
@@ -254,7 +248,12 @@ enum CoreAIRuntime {
         case .invalid:
             throw CoreAIRuntimeFailure.resourceInvalid
         }
-        let signature = CoreAIResourceContract.signature(for: resource)
+        // A resource whose identity cannot be established must not be served
+        // from a cache: fall back to a fresh load instead of risking a stale
+        // engine or tokenizer.
+        guard let signature = CoreAIResourceContract.signature(for: resource) else {
+            return try await makeProductionModel(resource: resource, modelId: modelId)
+        }
         if let cached = await ProductionModelCache.shared.model(forSignature: signature) {
             return cached
         }
