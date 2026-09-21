@@ -131,3 +131,34 @@ TypeScript の `include` が後者を program から落とす。Linux の CI は
   のコメントを更新。
 - 再発防止として `docs/development-automation.md` の Verification に、同名衝突を避ける
   注意と `--listFiles` での確認方法を書いた。
+
+### PR の CI で見つかったこと: native job は macOS 27 SDK を要求する
+
+同じ PR の `native` job は、**このブランチ固有の理由**で落ちる。ログ:
+
+```txt
+native/background_assets_bridge.m:125:46: error: no visible @interface for 'BAAssetPackManifest' declares the selector 'assetPackWithIdentifier:'
+native/background_assets_bridge.m:118:18: error: no visible @interface for 'BAAssetPackManager' declares the selector 'getManifestWithCompletionHandler:'
+thread 'main' panicked at build.rs:67:5
+Process completed with exit code 101.
+```
+
+- 原因: `background_assets_bridge.m` は `@available(macOS 27, *)` で実行時分岐しているが、
+  呼んでいる `getManifestWithCompletionHandler:` / `assetPackWithIdentifier:` は
+  **macOS 27 SDK の宣言が要る**。CI の runner は `runs-on: macos-26` で、その SDK には
+  この selector が無いため、`build.rs` の ObjC コンパイルで落ちる。
+- 由来: ブリッジは `240474b6`（Core AI の Apple-hosted E4B 取得経路、2026-09-21）で入った。
+  このブランチは feature ブランチだったため、それまで CI が走っていなかった。
+- 影響: `main` の CI は緑（`7c2b5f1e` で success）。**このブランチを今 `main` へ入れると
+  `main` の native job が赤になる。**
+- 注意: 手元には macOS 27 SDK しか無い（`MacOSX27.0.sdk` / `MacOSX27.sdk`）ため、
+  SDK ガードの「古い SDK 側」をローカルでコンパイル検証することはできない。
+  `-D__MAC_OS_X_VERSION_MAX_ALLOWED=260000` の上書きも SDK 側で再定義され効かなかった。
+
+選択肢（未着手。distribution lane の判断が要る）:
+
+1. `#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000` で 27 専用呼び出しを囲み、
+   古い SDK では既存の `@available` else と同じ「unsupported」を返す。検証は CI の
+   macOS 26 runner が担う（ローカルでは 27 側しか確認できない）。
+2. native job を macOS 27 の runner に移す（現時点で GitHub-hosted にあるかは未確認）。
+3. native が赤のまま PR を保留し、App Store / TestFlight 側の作業と同じタイミングで扱う。

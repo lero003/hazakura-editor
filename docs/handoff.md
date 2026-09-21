@@ -5,6 +5,16 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-21
 
+- **PR #52 の CI 状況（2026-09-21）:** `frontend` job は緑（同名衝突で隠れていた DOM テストの
+  型エラーを直した）。`native` job は**このブランチ固有の理由で赤**:
+  `background_assets_bridge.m` が macOS 27 SDK の selector
+  (`getManifestWithCompletionHandler:` / `assetPackWithIdentifier:`) を使っており、
+  `runs-on: macos-26` の runner では `build.rs` の ObjC コンパイルが落ちる。
+  ブリッジは `240474b6`（Core AI Apple-hosted 取得経路）由来で、feature ブランチのため
+  これまで CI が走っていなかった。**main の CI は緑なので、今マージすると main が赤になる。**
+  手元は macOS 27 SDK のみで、SDK ガードの古い側はローカル検証できない（検証は CI の runner）。
+  [詳細と選択肢](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 - **外部レビュー2巡目（2026-09-21）:** `540affc7` への P2/P3 を閉じた。ページ見出し
   （`tabIndex={-1}`）へ着地した後の Tab がヘッダーへ戻っていた問題は、フォーカストラップで
   「ダイアログ内の受け皿」と「ダイアログ外へ抜けた」を区別し、受け皿の DOM 位置から前後へ

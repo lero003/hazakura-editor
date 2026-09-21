@@ -7,6 +7,14 @@ Last reviewed: 2026-09-21
 
 ## Current State
 
+- **PR #52 の CI（2026-09-21）:** `frontend` job は緑。`native` job は
+  `background_assets_bridge.m` が macOS 27 SDK の selector を使っており、
+  `runs-on: macos-26` の runner では `build.rs` の ObjC コンパイルが落ちる
+  （`240474b6` 由来。feature ブランチだったためこれまで CI 未実行）。
+  **main の CI は緑なので、このままマージすると main が赤になる。**
+  対応方針（SDK ガード / runner 変更 / 保留）は未決定。
+  [詳細](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 - **外部レビュー2巡目（2026-09-21）:** `540affc7`へのP2/P3を閉じた。ページ見出しへ
   着地した後のTabがヘッダーへ戻る問題は、フォーカストラップで「ダイアログ内の
   `tabIndex=-1` の受け皿」と「ダイアログ外へ抜けた」を区別し、受け皿のDOM位置から
