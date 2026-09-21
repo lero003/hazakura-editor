@@ -35,6 +35,7 @@ const notPublished: CoreAiModelCatalog = {
 const downloaded: CoreAiModelCatalog = {
   distributionStatus: "available",
   selectedModelId: "apple:core-ai:gemma-4-e4b-it-int4-v1",
+  deviceMemoryGb: 16,
   models: [
     {
       id: "apple:foundation-models:system-default",
@@ -49,7 +50,11 @@ const downloaded: CoreAiModelCatalog = {
       kind: "core_ai",
       status: "ready",
       selected: true,
-      downloadSizeBytes: 5_431_767_284,
+      downloadSizeBytes: 5_431_767_276,
+      installedSizeBytes: 6_807_926_119,
+      recommendedMemoryGb: 16,
+      license: "Apache-2.0",
+      hasUpstreamConversionNotice: false,
       assetPackVersion: 1,
     },
     {
@@ -59,7 +64,11 @@ const downloaded: CoreAiModelCatalog = {
       status: "downloading",
       selected: false,
       progress: 0.42,
-      downloadSizeBytes: 9_148_928_727,
+      downloadSizeBytes: 9_148_924_300,
+      installedSizeBytes: 14_698_433_203,
+      recommendedMemoryGb: 32,
+      license: "Apache-2.0",
+      hasUpstreamConversionNotice: true,
     },
   ],
 };

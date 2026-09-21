@@ -112,16 +112,21 @@ test("resource manifest fixes expanded limits to the verified file set", () => {
   assert.deepEqual(manifest.files, entries);
 });
 
-test("runtime pins the E4B resource manifest used after Apple-hosted materialization", async () => {
-  const runtimeManifest = JSON.parse(await readFile(
-    new URL("../src-tauri/resources/core-ai/gemma4-e4b-resource-manifest.json", import.meta.url),
-    "utf8",
-  ));
-  assert.equal(runtimeManifest.modelId, lock.models[0].modelId);
-  assert.equal(runtimeManifest.catalogVersion, lock.models[0].catalogVersion);
-  assert.equal(runtimeManifest.storageDirectory, lock.models[0].storageDirectory);
-  assert.equal(runtimeManifest.files.length, runtimeManifest.maxEntries);
-  assert.equal(runtimeManifest.expandedBytes, 6807926119);
+test("runtime pins both resource manifests used after Apple-hosted materialization", async () => {
+  for (const [index, filename, expandedBytes] of [
+    [0, "gemma4-e4b-resource-manifest.json", 6807926119],
+    [1, "gemma4-12b-resource-manifest.json", 14698433203],
+  ]) {
+    const runtimeManifest = JSON.parse(await readFile(
+      new URL(`../src-tauri/resources/core-ai/${filename}`, import.meta.url),
+      "utf8",
+    ));
+    assert.equal(runtimeManifest.modelId, lock.models[index].modelId);
+    assert.equal(runtimeManifest.catalogVersion, lock.models[index].catalogVersion);
+    assert.equal(runtimeManifest.storageDirectory, lock.models[index].storageDirectory);
+    assert.equal(runtimeManifest.files.length, runtimeManifest.maxEntries);
+    assert.equal(runtimeManifest.expandedBytes, expandedBytes);
+  }
 });
 
 test("Background Assets manifests are on-demand, macOS-only, and contain no network URL", () => {

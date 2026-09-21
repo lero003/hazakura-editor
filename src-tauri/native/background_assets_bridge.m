@@ -56,6 +56,7 @@ static NSString *const HZPhaseFailed = @"failed";
 }
 
 - (NSDictionary *)snapshotForIdentifier:(NSString *)identifier relativePath:(NSString *)relativePath {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000
     if (@available(macOS 27, *)) {
         BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
         manager.delegate = self;
@@ -97,20 +98,21 @@ static NSString *const HZPhaseFailed = @"failed";
             }
         }
         return result;
-    } else {
-        return @{
-            @"supported" : @NO,
-            @"available" : @NO,
-            @"phase" : @"unsupported",
-            @"progress" : [NSNull null],
-            @"path" : [NSNull null],
-            @"error" : @"Gemma 4 E4B requires macOS 27 or later.",
-            @"assetPackVersion" : [NSNull null],
-        };
     }
+#endif
+    return @{
+        @"supported" : @NO,
+        @"available" : @NO,
+        @"phase" : @"unsupported",
+        @"progress" : [NSNull null],
+        @"path" : [NSNull null],
+        @"error" : @"Core AI managed models require macOS 27 or later.",
+        @"assetPackVersion" : [NSNull null],
+    };
 }
 
 - (void)startIdentifier:(NSString *)identifier {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000
     if (@available(macOS 27, *)) {
         BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
         manager.delegate = self;
@@ -125,7 +127,7 @@ static NSString *const HZPhaseFailed = @"failed";
           BAAssetPack *assetPack = [manifest assetPackWithIdentifier:identifier];
           if (assetPack == nil) {
               [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                               error:@"The E4B asset pack is not present in the processed Apple-hosted manifest."
+                               error:@"The requested Core AI asset pack is not present in the processed Apple-hosted manifest."
                              version:nil];
               return;
           }
@@ -143,10 +145,11 @@ static NSString *const HZPhaseFailed = @"failed";
             }
           }];
         }];
-    } else {
-        [self updateIdentifier:identifier phase:@"unsupported" progress:nil
-                         error:@"Gemma 4 E4B requires macOS 27 or later." version:nil];
+        return;
     }
+#endif
+    [self updateIdentifier:identifier phase:@"unsupported" progress:nil
+                     error:@"Core AI managed models require macOS 27 or later." version:nil];
 }
 
 - (BOOL)cancelIdentifier:(NSString *)identifier error:(NSError **)error {

@@ -26,6 +26,10 @@ export type CoreAiModelSummary = {
   status: CoreAiModelStatus;
   selected: boolean;
   downloadSizeBytes?: number;
+  installedSizeBytes?: number;
+  recommendedMemoryGb?: number;
+  license?: string;
+  hasUpstreamConversionNotice?: boolean;
   progress?: number | null;
   error?: string | null;
   assetPackVersion?: number | null;
@@ -37,6 +41,7 @@ export type CoreAiModelCatalog = {
   models: CoreAiModelSummary[];
   managementError?: string | null;
   selectionLocked?: boolean;
+  deviceMemoryGb?: number;
 };
 
 export function unavailableCoreAiModelCatalog(): CoreAiModelCatalog {

@@ -39,4 +39,41 @@ final class CandidateFormattingTests: XCTestCase {
         let text = "```markdown\n本文です。\n```<eos>"
         XCTAssertEqual(CandidateFormatting.reviewText(text, original: "本文です。"), "本文です。")
     }
+
+    func testStripsExactOuterHazakuraTextEnvelope() {
+        let wrapped = """
+        <<<HAZAKURA_TEXT_START
+        私は昨日、図書館へ行きました。
+        HAZAKURA_TEXT_END>>>
+        """
+        XCTAssertEqual(
+            CandidateFormatting.reviewText(wrapped, original: "私は昨日、図書館に行きました。"),
+            "私は昨日、図書館へ行きました。"
+        )
+    }
+
+    func testKeepsHazakuraMarkersAuthoredByTheUser() {
+        let manuscript = """
+        <<<HAZAKURA_TEXT_START
+        この文字列は原稿の一部です。
+        HAZAKURA_TEXT_END>>>
+        """
+        XCTAssertEqual(CandidateFormatting.reviewText(manuscript, original: manuscript), manuscript)
+    }
+
+    func testHidesAnIncompleteStreamingEnvelopeButKeepsEmbeddedMarkers() {
+        XCTAssertEqual(
+            CandidateFormatting.reviewText(
+                "<<<HAZAKURA_TEXT_START\n本文だけ",
+                original: "元の本文"
+            ),
+            ""
+        )
+        for text in [
+            "前置き\n<<<HAZAKURA_TEXT_START\n本文\nHAZAKURA_TEXT_END>>>",
+            "<<<HAZAKURA_TEXT_START\n本文\nHAZAKURA_TEXT_END>>>\n後書き",
+        ] {
+            XCTAssertEqual(CandidateFormatting.reviewText(text, original: "元の本文"), text)
+        }
+    }
 }

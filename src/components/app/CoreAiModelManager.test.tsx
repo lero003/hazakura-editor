@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CoreAiModelManager } from "./CoreAiModelManager";
 
 const mocks = vi.hoisted(() => ({
@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   download: vi.fn(),
   cancel: vi.fn(),
   remove: vi.fn(),
+  listen: vi.fn(),
   listener: null as null | ((catalog: unknown) => void),
 }));
 
@@ -25,11 +26,15 @@ vi.mock("../../lib/tauri/coreAiModels", () => ({
   startCoreAiModelDownload: mocks.download,
   cancelCoreAiModelDownload: mocks.cancel,
   deleteCoreAiModel: mocks.remove,
-  listenCoreAiModelStateChanges: vi.fn(async (listener: (catalog: unknown) => void) => {
+  listenCoreAiModelStateChanges: mocks.listen,
+}));
+
+beforeEach(() => {
+  mocks.listen.mockImplementation(async (listener: (catalog: unknown) => void) => {
     mocks.listener = listener;
     return () => { mocks.listener = null; };
-  }),
-}));
+  });
+});
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); mocks.listener = null; });
 
@@ -122,5 +127,79 @@ describe("CoreAiModelManager", () => {
       });
     });
     expect(await screen.findByRole("button", { name: "再開" })).toBeTruthy();
+  });
+
+  it("shows model requirements and requires confirmation below the recommended memory", async () => {
+    const catalog = {
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      deviceMemoryGb: 16,
+      models: [
+        { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: true },
+        {
+          id: "apple:core-ai:gemma-4-12b-it-int8-v1", displayName: "Gemma 4 12B",
+          kind: "core_ai", status: "not_downloaded", selected: false,
+          downloadSizeBytes: 9_148_924_300, installedSizeBytes: 14_698_433_203,
+          recommendedMemoryGb: 32, license: "Apache-2.0", hasUpstreamConversionNotice: true,
+        },
+      ],
+    };
+    mocks.list.mockResolvedValue(catalog);
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    expect(await screen.findByText(/推奨メモリ 32 GB/)).toBeTruthy();
+    expect(screen.getByText(/このMacは16 GB/)).toBeTruthy();
+    expect(screen.getByText(/Apache-2.0.*変換元のライセンス文書/)).toBeTruthy();
+    expect(screen.getByText(/使用量 約14.7 GB/)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "ダウンロード" }));
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(mocks.download).not.toHaveBeenCalled();
+    confirm.mockRestore();
+  });
+
+  it("subscribes before reading the initial catalog", async () => {
+    let resolveListen: ((stop: () => void) => void) | undefined;
+    mocks.listen.mockImplementation(
+      () => new Promise<() => void>((resolve) => { resolveListen = resolve; }),
+    );
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [],
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    await waitFor(() => expect(mocks.listen).toHaveBeenCalledTimes(1));
+    expect(mocks.list).not.toHaveBeenCalled();
+    act(() => resolveListen?.(() => undefined));
+    await waitFor(() => expect(mocks.list).toHaveBeenCalledTimes(1));
+  });
+
+  it("does not replace a newer progress event with a late stale snapshot", async () => {
+    const stale = {
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [{
+        id: "apple:core-ai:gemma-4-12b-it-int8-v1", displayName: "Gemma 4 12B",
+        kind: "core_ai", status: "not_downloaded", selected: false,
+      }],
+    };
+    const newer = {
+      ...stale,
+      models: stale.models.map((model) => ({ ...model, status: "downloading", progress: 0.64 })),
+    };
+    let resolveList: ((value: unknown) => void) | undefined;
+    mocks.list.mockImplementation(() => new Promise((resolve) => { resolveList = resolve; }));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    await waitFor(() => expect(mocks.list).toHaveBeenCalledTimes(1));
+    act(() => { mocks.listener?.(newer); });
+    expect(screen.getByText("ダウンロード中 · 64%")).toBeTruthy();
+    act(() => resolveList?.(stale));
+
+    await waitFor(() => expect(screen.queryByText("未ダウンロード")).toBeNull());
+    expect(screen.getByText("ダウンロード中 · 64%")).toBeTruthy();
   });
 });

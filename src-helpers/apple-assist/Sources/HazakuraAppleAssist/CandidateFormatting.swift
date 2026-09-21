@@ -2,7 +2,10 @@ import Foundation
 
 enum CandidateFormatting {
     static func reviewText(_ value: String, original: String) -> String {
-        let text = stripOuterControlTokens(value, keepingTokensPresentIn: original)
+        let text = stripOuterPromptEnvelope(
+            stripOuterControlTokens(value, keepingTokensPresentIn: original),
+            keepingMarkersPresentIn: original
+        )
         // A source code block is content, not an assistant wrapper.
         guard !original.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") else { return text }
         let lines = text.components(separatedBy: "\n")
@@ -12,7 +15,42 @@ enum CandidateFormatting {
         let body = lines.dropFirst().dropLast()
         // Ambiguous nested/separate fences remain visible for Diff review.
         guard !body.contains(where: { $0.trimmingCharacters(in: .whitespaces).hasPrefix("```") }) else { return text }
-        return stripOuterControlTokens(body.joined(separator: "\n"), keepingTokensPresentIn: original)
+        return stripOuterPromptEnvelope(
+            stripOuterControlTokens(body.joined(separator: "\n"), keepingTokensPresentIn: original),
+            keepingMarkersPresentIn: original
+        )
+    }
+
+    private static let promptTextStart = "<<<HAZAKURA_TEXT_START"
+    private static let promptTextEnd = "HAZAKURA_TEXT_END>>>"
+
+    /// Some `KitLanguageModel` bundles repeat the exact prompt envelope around
+    /// an otherwise-correct candidate. Remove only a complete outer pair that
+    /// Hazakura supplied. If the manuscript itself contains either marker, keep
+    /// everything visible in Diff review. While a streamed envelope is still
+    /// incomplete, return an empty partial so internal markers never flash in UI.
+    private static func stripOuterPromptEnvelope(
+        _ value: String,
+        keepingMarkersPresentIn original: String
+    ) -> String {
+        guard !original.contains(promptTextStart), !original.contains(promptTextEnd) else {
+            return value
+        }
+        var text = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        while true {
+            let lines = text.components(separatedBy: "\n")
+            guard lines.first?.trimmingCharacters(in: .whitespacesAndNewlines) == promptTextStart else {
+                return text
+            }
+            guard lines.last?.trimmingCharacters(in: .whitespacesAndNewlines) == promptTextEnd else {
+                let alreadyClosed = lines.dropFirst().contains {
+                    $0.trimmingCharacters(in: .whitespacesAndNewlines) == promptTextEnd
+                }
+                return alreadyClosed ? text : ""
+            }
+            text = lines.dropFirst().dropLast().joined(separator: "\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
     }
 
     /// The chat control tokens the shipping models can emit. `KitGemmaExecutor`

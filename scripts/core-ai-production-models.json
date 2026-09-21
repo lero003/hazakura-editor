@@ -49,7 +49,7 @@
       "releaseBlockers": [
         "Mac AOT artifact has not been produced with coreai-build.",
         "Hazakura Japanese writing bake-off has not passed on a 16 GB Mac.",
-        "Background Assets download and materialization are not connected to the app catalog."
+        "Apple-hosted download and materialization have not passed TestFlight acceptance on the 16 GB target."
       ],
       "layout": {
         "decoder": "decoder",
@@ -128,8 +128,8 @@
       "licensing": {
         "sourceModelLicense": "Apache-2.0",
         "sourceModelLicenseUrl": "https://ai.google.dev/gemma/docs/gemma_4_license",
-      "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0. Its bundled LICENSE file still carries the Gemma Terms of Use text, while the Gemma 4 weights themselves are Apache-2.0 per Google's Gemma 4 license; that file is retained verbatim for provenance only.",
-      "reviewStatus": "reviewed-apache-2.0",
+        "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0. Its bundled LICENSE file still carries the Gemma Terms of Use text, while the Gemma 4 weights themselves are Apache-2.0 per Google's Gemma 4 license; that file is retained verbatim for provenance only.",
+        "reviewStatus": "reviewed-apache-2.0",
         "licenseFiles": [
           "LICENSE-APACHE-2.0.txt",
           "UPSTREAM-CONVERSION-LICENSE.txt"
@@ -159,7 +159,7 @@
       "releaseBlockers": [
         "Mac AOT artifact has not been produced with coreai-build.",
         "Hazakura Japanese writing bake-off has not passed on a 32 GB or larger Mac.",
-        "Background Assets download and materialization are not connected to the app catalog."
+        "The reviewed 12B archive has not been uploaded, processed, and materialized through TestFlight on the 32 GB target."
       ],
       "layout": {
         "bundle": "bundle"

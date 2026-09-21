@@ -31,6 +31,10 @@ const backgroundDownloaderSource = readFileSync(
   "src-native/background-downloader/BackgroundDownloader/DownloaderExtension.swift",
   "utf8",
 );
+const backgroundAssetsBridgeSource = readFileSync(
+  "src-tauri/native/background_assets_bridge.m",
+  "utf8",
+);
 const backgroundDownloaderInfo = readFileSync(
   "src-native/background-downloader/BackgroundDownloader/Info.plist",
   "utf8",
@@ -149,6 +153,17 @@ const appStoreEntitlements = readFileSync(
 const viteConfig = readFileSync("vite.config.ts", "utf8");
 
 describe("macOS build scripts", () => {
+  it("guards macOS 27 Background Assets manifest APIs at compile time", () => {
+    const sdkGuard = "#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000";
+    const manifestCall = backgroundAssetsBridgeSource.indexOf("getManifestWithCompletionHandler:");
+    const guardStart = backgroundAssetsBridgeSource.lastIndexOf(sdkGuard, manifestCall);
+    const prematureGuardEnd = backgroundAssetsBridgeSource.indexOf("#endif", guardStart);
+    const guardEnd = backgroundAssetsBridgeSource.indexOf("#endif", manifestCall);
+    expect(guardStart).toBeGreaterThanOrEqual(0);
+    expect(prematureGuardEnd).toBeGreaterThan(manifestCall);
+    expect(manifestCall).toBeGreaterThan(guardStart);
+    expect(guardEnd).toBeGreaterThan(manifestCall);
+  });
   it("uses an overlay macOS titlebar so the web chrome owns the top material", () => {
     const mainWindow = tauriConfig.app?.windows?.[0];
 

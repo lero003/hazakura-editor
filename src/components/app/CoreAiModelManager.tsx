@@ -26,20 +26,42 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   useEffect(() => {
     let disposed = false;
     let unlisten: (() => void) | undefined;
-    void listCoreAiModels()
-      .then((next) => { if (!disposed) setCatalog(next); })
-      .catch((reason: unknown) => {
+    let generation = 0;
+    void (async () => {
+      let stop: (() => void) | undefined;
+      try {
+        stop = await listenCoreAiModelStateChanges((next) => {
+          generation += 1;
+          if (!disposed) setCatalog(next);
+        });
+      } catch (reason) {
+        console.warn("Failed to listen for Core AI model state", reason);
+      }
+      if (disposed) {
+        stop?.();
+        return;
+      }
+      unlisten = stop;
+      const observedGeneration = generation;
+      try {
+        const next = await listCoreAiModels();
+        if (!disposed && generation === observedGeneration) setCatalog(next);
+      } catch (reason) {
         if (!disposed) setError(reason instanceof Error ? reason.message : String(reason));
-      });
-    void listenCoreAiModelStateChanges((next) => {
-      if (!disposed) setCatalog(next);
-    }).then((stop) => {
-      if (disposed) stop(); else unlisten = stop;
-    }).catch((reason: unknown) => console.warn("Failed to listen for Core AI model state", reason));
+      }
+    })();
     return () => { disposed = true; unlisten?.(); };
   }, []);
 
   const run = async (model: CoreAiModelSummary, action: "select" | "download" | "cancel" | "delete") => {
+    if (action === "download" && isBelowRecommendedMemory(model, catalog)) {
+      const proceed = window.confirm(copy.memoryConfirmation(
+        catalog.deviceMemoryGb!,
+        model.recommendedMemoryGb!,
+        model.displayName,
+      ));
+      if (!proceed) return;
+    }
     setBusyId(model.id);
     setError(null);
     try {
@@ -70,6 +92,15 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
           <div>
             <strong>{model.displayName}</strong>
             <span>{model.selected ? `${copy.selected} · ${status}` : status}</span>
+            {model.kind === "core_ai" && model.recommendedMemoryGb != null ?
+              <span>{copy.recommendedMemory(model.recommendedMemoryGb)}</span> : null}
+            {model.kind === "core_ai" && model.installedSizeBytes != null ?
+              <span>{copy.installedSize(formatSize(model.installedSizeBytes))}</span> : null}
+            {model.kind === "core_ai" && model.license ?
+              <span>{copy.license(model.license, Boolean(model.hasUpstreamConversionNotice))}</span> : null}
+            {isBelowRecommendedMemory(model, catalog) ? <span className="preference-warning" role="status">
+              {copy.memoryWarning(catalog.deviceMemoryGb!, model.recommendedMemoryGb!)}
+            </span> : null}
             {model.status === "downloading" ? <progress
               aria-label={copy.downloadProgress(model.displayName)}
               max={1} value={model.progress ?? undefined}
@@ -111,17 +142,24 @@ function statusLabel(model: CoreAiModelSummary, copy: ManagerCopy): string {
     : copy.ready;
   // サイズと資産バージョンは catalog が持っている値だけを出す（推測で埋めない）。
   const details: string[] = [];
-  if (model.downloadSizeBytes) details.push(formatDownloadSize(model.downloadSizeBytes));
+  if (model.downloadSizeBytes) details.push(copy.downloadSize(formatSize(model.downloadSizeBytes)));
   if (model.assetPackVersion != null) details.push(`v${model.assetPackVersion}`);
   return details.length > 0 ? `${base} · ${details.join(" · ")}` : base;
 }
 
-function formatDownloadSize(bytes: number): string {
-  return new Intl.NumberFormat(undefined, {
-    style: "unit",
-    unit: "megabyte",
-    maximumFractionDigits: 0,
-  }).format(bytes / 1_000_000);
+function formatSize(bytes: number): string {
+  if (bytes >= 1_000_000_000) return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
+  return `${Math.round(bytes / 1_000_000)} MB`;
+}
+
+function isBelowRecommendedMemory(
+  model: CoreAiModelSummary,
+  catalog: CoreAiModelCatalog,
+): boolean {
+  return model.kind === "core_ai"
+    && catalog.deviceMemoryGb != null
+    && model.recommendedMemoryGb != null
+    && catalog.deviceMemoryGb < model.recommendedMemoryGb;
 }
 
 function managerCopy(language: MenuLanguage) {
@@ -129,6 +167,14 @@ function managerCopy(language: MenuLanguage) {
     selected: "Selected", ready: "Ready",
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
     download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete",
+    downloadSize: (size: string) => `Download about ${size}`,
+    installedSize: (size: string) => `Uses about ${size}`,
+    recommendedMemory: (memory: number) => `Recommended memory: ${memory} GB`,
+    license: (license: string, hasNotice: boolean) => hasNotice
+      ? `License: ${license} · upstream conversion license included`
+      : `License: ${license}`,
+    memoryWarning: (current: number, recommended: number) => `This Mac has ${current} GB of memory; ${recommended} GB is recommended. Generation may be slow or unavailable.`,
+    memoryConfirmation: (current: number, recommended: number, name: string) => `${name} recommends ${recommended} GB of memory, but this Mac has ${current} GB. Download anyway?`,
     downloading: (progress?: number | null) => progress == null ? "Downloading" : `Downloading · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `Download progress for ${name}`,
     paused: "Paused", verifying: "Verifying download", failed: "Download unavailable", unsupported: "Requires macOS 27",
@@ -141,6 +187,14 @@ function managerCopy(language: MenuLanguage) {
     selected: "えらんでゐます", ready: "つかへます",
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
     download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす",
+    downloadSize: (size: string) => `いれる おほきさ やく ${size}`,
+    installedSize: (size: string) => `つかふ りょう やく ${size}`,
+    recommendedMemory: (memory: number) => `すすめる めもり ${memory} GB`,
+    license: (license: string, hasNotice: boolean) => hasNotice
+      ? `らいせんす ${license} · へんかんもとの らいせんすぶんしょ つき`
+      : `らいせんす ${license}`,
+    memoryWarning: (current: number, recommended: number) => `この Mac の めもりは ${current} GB です。${recommended} GB を すすめます。うごきが おそい、または つかへない ことが あります。`,
+    memoryConfirmation: (current: number, recommended: number, name: string) => `${name} は ${recommended} GB の めもりを すすめます。この Mac は ${current} GB です。それでも いれますか？`,
     downloading: (progress?: number | null) => progress == null ? "いれてゐます" : `いれてゐます · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}を いれる すすみぐあい`,
     paused: "とめてゐます", verifying: "たしかめてゐます", failed: "いれられませんでした", unsupported: "macOS 27 から つかへます",
@@ -153,6 +207,14 @@ function managerCopy(language: MenuLanguage) {
     selected: "選択中", ready: "利用可能",
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
     download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除",
+    downloadSize: (size: string) => `ダウンロード 約${size}`,
+    installedSize: (size: string) => `使用量 約${size}`,
+    recommendedMemory: (memory: number) => `推奨メモリ ${memory} GB`,
+    license: (license: string, hasNotice: boolean) => hasNotice
+      ? `ライセンス ${license} · 変換元のライセンス文書を同梱`
+      : `ライセンス ${license}`,
+    memoryWarning: (current: number, recommended: number) => `このMacは${current} GBです。${recommended} GBを推奨します。生成が遅い、または利用できない場合があります。`,
+    memoryConfirmation: (current: number, recommended: number, name: string) => `${name}の推奨メモリは${recommended} GBですが、このMacは${current} GBです。それでもダウンロードしますか？`,
     downloading: (progress?: number | null) => progress == null ? "ダウンロード中" : `ダウンロード中 · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}のダウンロード進捗`,
     paused: "一時停止", verifying: "検証中", failed: "ダウンロード失敗", unsupported: "macOS 27以降が必要",

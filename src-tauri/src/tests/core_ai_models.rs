@@ -107,7 +107,7 @@ fn production_catalog_fails_closed_until_a_model_is_published() {
 }
 
 #[test]
-fn app_store_catalog_publishes_only_the_pinned_e4b_asset_pack() {
+fn app_store_catalog_publishes_the_pinned_e4b_and_12b_asset_packs() {
     let developer = CoreAiModelStore::production_catalog_for_lane(false).list();
     assert_eq!(
         developer.distribution_status,
@@ -120,13 +120,35 @@ fn app_store_catalog_publishes_only_the_pinned_e4b_asset_pack() {
         app_store.distribution_status,
         CoreAiDistributionStatus::Available
     );
-    assert_eq!(app_store.models.len(), 2);
+    assert_eq!(app_store.models.len(), 3);
     assert_eq!(
         app_store.models[1].id,
         "apple:core-ai:gemma-4-e4b-it-int4-v1"
     );
     assert_eq!(app_store.models[1].display_name, "Gemma 4 E4B");
     assert_eq!(app_store.models[1].status, CoreAiModelStatus::NotDownloaded);
+    assert_eq!(app_store.models[1].recommended_memory_gb, Some(16));
+    assert_eq!(
+        app_store.models[1].installed_size_bytes,
+        Some(6_807_926_119)
+    );
+    assert_eq!(app_store.models[1].license, Some("Apache-2.0".into()));
+    assert!(!app_store.models[1].has_upstream_conversion_notice);
+
+    assert_eq!(
+        app_store.models[2].id,
+        "apple:core-ai:gemma-4-12b-it-int8-v1"
+    );
+    assert_eq!(app_store.models[2].display_name, "Gemma 4 12B");
+    assert_eq!(app_store.models[2].status, CoreAiModelStatus::NotDownloaded);
+    assert_eq!(app_store.models[2].recommended_memory_gb, Some(32));
+    assert_eq!(app_store.models[2].download_size_bytes, Some(9_148_924_300));
+    assert_eq!(
+        app_store.models[2].installed_size_bytes,
+        Some(14_698_433_203)
+    );
+    assert_eq!(app_store.models[2].license, Some("Apache-2.0".into()));
+    assert!(app_store.models[2].has_upstream_conversion_notice);
 }
 
 #[test]

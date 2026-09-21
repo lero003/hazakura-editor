@@ -26,6 +26,14 @@ const E4B_RESOURCE_MANIFEST: &str =
     include_str!("../../resources/core-ai/gemma4-e4b-resource-manifest.json");
 const E4B_RESOURCE_MANIFEST_SHA256: &str =
     "d46c81f18147a2faf0d066b4ef2d31f72416b75ee544397580815fa2e4fb4af3";
+const TWELVE_B_MODEL_ID: &str = "apple:core-ai:gemma-4-12b-it-int8-v1";
+const TWELVE_B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-12b-v1";
+const TWELVE_B_CATALOG_VERSION: &str = "2026.09.20.1";
+const TWELVE_B_STORAGE_DIRECTORY: &str = "gemma-4-12b-it-int8-v1";
+const TWELVE_B_RESOURCE_MANIFEST: &str =
+    include_str!("../../resources/core-ai/gemma4-12b-resource-manifest.json");
+const TWELVE_B_RESOURCE_MANIFEST_SHA256: &str =
+    "cbb81f30fbff9171e5001acd3305a9b36d1dd06ba6fac607edb7618ac3bd6ac1";
 const PACK_RESOURCE_MANIFEST_FILENAME: &str = "hazakura-resource-manifest.json";
 const STATE_FILENAME: &str = "core-ai-selection.json";
 const MODEL_DIRECTORY: &str = "CoreAIModels";
@@ -67,6 +75,10 @@ pub(crate) struct CoreAiModelSummary {
     pub(crate) status: CoreAiModelStatus,
     pub(crate) selected: bool,
     pub(crate) download_size_bytes: Option<u64>,
+    pub(crate) installed_size_bytes: Option<u64>,
+    pub(crate) recommended_memory_gb: Option<u64>,
+    pub(crate) license: Option<String>,
+    pub(crate) has_upstream_conversion_notice: bool,
     pub(crate) progress: Option<f64>,
     pub(crate) error: Option<String>,
     pub(crate) asset_pack_version: Option<u64>,
@@ -80,6 +92,7 @@ pub(crate) struct CoreAiModelCatalogResponse {
     pub(crate) models: Vec<CoreAiModelSummary>,
     pub(crate) management_error: Option<String>,
     pub(crate) selection_locked: bool,
+    pub(crate) device_memory_gb: Option<u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -89,6 +102,10 @@ pub(crate) struct CoreAiCatalogEntry {
     storage_directory: String,
     published: bool,
     download_size_bytes: Option<u64>,
+    installed_size_bytes: Option<u64>,
+    recommended_memory_gb: Option<u64>,
+    license: Option<String>,
+    has_upstream_conversion_notice: bool,
     asset_pack_id: Option<String>,
     catalog_version: Option<String>,
     resource_manifest: Option<&'static str>,
@@ -104,6 +121,10 @@ impl CoreAiCatalogEntry {
             storage_directory: storage_directory.into(),
             published: true,
             download_size_bytes: Some(1024),
+            installed_size_bytes: Some(1024),
+            recommended_memory_gb: Some(1),
+            license: Some("Apache-2.0".into()),
+            has_upstream_conversion_notice: false,
             asset_pack_id: None,
             catalog_version: None,
             resource_manifest: None,
@@ -123,6 +144,10 @@ impl CoreAiCatalogEntry {
             storage_directory: storage_directory.into(),
             published: true,
             download_size_bytes: Some(5),
+            installed_size_bytes: Some(5),
+            recommended_memory_gb: Some(1),
+            license: Some("Apache-2.0".into()),
+            has_upstream_conversion_notice: false,
             asset_pack_id: Some("dev.hazakura.editor.coreai.test.v1".into()),
             catalog_version: Some("test-v1".into()),
             resource_manifest: Some(resource_manifest),
@@ -136,11 +161,33 @@ impl CoreAiCatalogEntry {
             display_name: "Gemma 4 E4B".into(),
             storage_directory: E4B_STORAGE_DIRECTORY.into(),
             published: true,
-            download_size_bytes: Some(6_807_926_119),
+            download_size_bytes: Some(5_431_767_276),
+            installed_size_bytes: Some(6_807_926_119),
+            recommended_memory_gb: Some(16),
+            license: Some("Apache-2.0".into()),
+            has_upstream_conversion_notice: false,
             asset_pack_id: Some(E4B_ASSET_PACK_ID.into()),
             catalog_version: Some(E4B_CATALOG_VERSION.into()),
             resource_manifest: Some(E4B_RESOURCE_MANIFEST),
             resource_manifest_sha256: Some(E4B_RESOURCE_MANIFEST_SHA256),
+        }
+    }
+
+    fn twelve_b() -> Self {
+        Self {
+            id: TWELVE_B_MODEL_ID.into(),
+            display_name: "Gemma 4 12B".into(),
+            storage_directory: TWELVE_B_STORAGE_DIRECTORY.into(),
+            published: true,
+            download_size_bytes: Some(9_148_924_300),
+            installed_size_bytes: Some(14_698_433_203),
+            recommended_memory_gb: Some(32),
+            license: Some("Apache-2.0".into()),
+            has_upstream_conversion_notice: true,
+            asset_pack_id: Some(TWELVE_B_ASSET_PACK_ID.into()),
+            catalog_version: Some(TWELVE_B_CATALOG_VERSION.into()),
+            resource_manifest: Some(TWELVE_B_RESOURCE_MANIFEST),
+            resource_manifest_sha256: Some(TWELVE_B_RESOURCE_MANIFEST_SHA256),
         }
     }
 
@@ -165,6 +212,45 @@ impl CoreAiCatalogEntry {
     fn relative_asset_path(&self) -> String {
         format!("{MODEL_DIRECTORY}/{}", self.storage_directory)
     }
+}
+
+fn production_catalog() -> Vec<CoreAiCatalogEntry> {
+    vec![CoreAiCatalogEntry::e4b(), CoreAiCatalogEntry::twelve_b()]
+}
+
+#[cfg(target_os = "macos")]
+fn physical_memory_gb() -> Option<u64> {
+    extern "C" {
+        fn sysctlbyname(
+            name: *const std::ffi::c_char,
+            old_value: *mut std::ffi::c_void,
+            old_length: *mut usize,
+            new_value: *mut std::ffi::c_void,
+            new_length: usize,
+        ) -> std::ffi::c_int;
+    }
+
+    let mut bytes = 0_u64;
+    let mut length = std::mem::size_of::<u64>();
+    let result = unsafe {
+        sysctlbyname(
+            c"hw.memsize".as_ptr(),
+            (&mut bytes as *mut u64).cast(),
+            &mut length,
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+    if result == 0 && length == std::mem::size_of::<u64>() {
+        Some(bytes / (1024 * 1024 * 1024))
+    } else {
+        None
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn physical_memory_gb() -> Option<u64> {
+    None
 }
 
 #[derive(Debug, Clone)]
@@ -234,7 +320,7 @@ impl Default for CoreAiModelStore {
     fn default() -> Self {
         Self::with_catalog_and_transport(
             if is_app_store_distribution_lane() {
-                vec![CoreAiCatalogEntry::e4b()]
+                production_catalog()
             } else {
                 Vec::new()
             },
@@ -281,7 +367,7 @@ impl CoreAiModelStore {
     pub(crate) fn production_catalog_for_lane(app_store: bool) -> Self {
         Self::with_catalog_and_transport(
             if app_store {
-                vec![CoreAiCatalogEntry::e4b()]
+                production_catalog()
             } else {
                 Vec::new()
             },
@@ -373,6 +459,10 @@ impl CoreAiModelStore {
             status: CoreAiModelStatus::Ready,
             selected: selected == SYSTEM_MODEL_ID,
             download_size_bytes: None,
+            installed_size_bytes: None,
+            recommended_memory_gb: None,
+            license: None,
+            has_upstream_conversion_notice: false,
             progress: None,
             error: None,
             asset_pack_version: None,
@@ -386,6 +476,10 @@ impl CoreAiModelStore {
                 status: runtime.status,
                 selected: selected == entry.id,
                 download_size_bytes: entry.download_size_bytes,
+                installed_size_bytes: entry.installed_size_bytes,
+                recommended_memory_gb: entry.recommended_memory_gb,
+                license: entry.license.clone(),
+                has_upstream_conversion_notice: entry.has_upstream_conversion_notice,
                 progress: runtime.progress,
                 error: runtime.error,
                 asset_pack_version: runtime.asset_pack_version,
@@ -405,6 +499,7 @@ impl CoreAiModelStore {
                 .expect("model management error lock")
                 .clone(),
             selection_locked: *self.selection_locked.lock().expect("selection locked lock"),
+            device_memory_gb: physical_memory_gb(),
         }
     }
 

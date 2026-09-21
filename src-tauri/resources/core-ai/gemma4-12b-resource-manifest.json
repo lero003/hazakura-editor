@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "modelId": "apple:core-ai:gemma-4-12b-it-int8-v1",
+  "catalogVersion": "2026.09.20.1",
+  "storageDirectory": "gemma-4-12b-it-int8-v1",
+  "expandedBytes": 14698433203,
+  "maxExpandedBytes": 14715210419,
+  "maxEntries": 11,
+  "files": [
+    {
+      "path": "bundle/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/main.hash",
+      "size": 32,
+      "sha256": "78577a26a15408ee32a027730cf07bbc0f47feffe5c989e864e5732dfc7c978c"
+    },
+    {
+      "path": "bundle/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/main.mlirb",
+      "size": 14666226230,
+      "sha256": "8025c288ca3847c427fddc151feb21de51f315ef9392e4939c3cc69af2513bb3"
+    },
+    {
+      "path": "bundle/gemma4_12b_qat_decode_int8lin_msdpa_g8.aimodel/metadata.json",
+      "size": 105,
+      "sha256": "b807a2696caef0c87a2e075235e3982f6f79469bf98808f0223d1a35db022afc"
+    },
+    {
+      "path": "bundle/metadata.json",
+      "size": 650,
+      "sha256": "285e357b345e1d309507931c224f242bfdb90da4caebe49393bd2edea0ca03e3"
+    },
+    {
+      "path": "bundle/tokenizer/chat_template.jinja",
+      "size": 18683,
+      "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4"
+    },
+    {
+      "path": "bundle/tokenizer/tokenizer_config.json",
+      "size": 2103,
+      "sha256": "b9cdb3d623794454ec6bd0caa20c195e63bd9455a3893154c67df0b3e0413643"
+    },
+    {
+      "path": "bundle/tokenizer/tokenizer.json",
+      "size": 32169626,
+      "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f"
+    },
+    {
+      "path": "hazakura-model.json",
+      "size": 2250,
+      "sha256": "5b183e93df10e08e44547f44edc909a932273d6b0192d862d3e16cb9808bdbce"
+    },
+    {
+      "path": "LICENSE-APACHE-2.0.txt",
+      "size": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "THIRD_PARTY_MODEL_NOTICE.md",
+      "size": 1534,
+      "sha256": "98ec6a9a57dc8b7760d8beaa93a847066c8e9153776d984c180e0d05f75b6387"
+    },
+    {
+      "path": "UPSTREAM-CONVERSION-LICENSE.txt",
+      "size": 633,
+      "sha256": "af121411800da8a1ce7b9eb1a3b7406eb30ddefb474311d65bb80119d41de7a2"
+    }
+  ]
+}
