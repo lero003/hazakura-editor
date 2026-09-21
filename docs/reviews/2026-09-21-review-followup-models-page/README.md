@@ -65,3 +65,49 @@ modal が入力を握っているときの既存規則（非 Quit のメニュ�
   built app での手動確認が残る。source test は id の配線と allowlist までしか見ていない。
 - built app でのフォーカス移動、VoiceOver、最大 Dynamic Type も未実施。
 - ライセンス表示、削除時の解放サイズ、マシンスペック事前警告は未着手のまま。
+
+## 2巡目（`540affc7` への指摘）
+
+### P2: 見出し着地後の Tab 順序（修正済み）
+
+見出しは `tabIndex={-1}` なので `getFocusableElements()` の一覧に入らない。
+`trapFocusInElement` は「一覧に無い」を「ダイアログ外へ抜けた」と同じ扱いにしていたため、
+見出しに着地した直後の Tab がヘッダーのページ選択へ戻り、Shift+Tab が本文の最後へ飛んでいた。
+
+一覧に無い場合を **ダイアログ内（`tabIndex=-1` の受け皿）** と **ダイアログ外** に分け、
+前者はその要素の DOM 位置から次の/前の Tab 対象へ進める（端では従来どおり先頭・末尾へ折り返す）。
+ダイアログ外の挙動は変えていない。
+
+回帰テストは2段階で足した。
+
+- `focusTrap.test.ts`: 一覧に無い受け皿の前後移動と、末尾での折り返し。
+- `OnDeviceModelsPane.keyboard.test.tsx`: **実際の `PreferencesDialog` と `useModalKeyboardGuard`**
+  の組み合わせで、見出しへ着地 → Tab で本文の最初の操作対象、着地 → Shift+Tab で
+  見出しの直前（ヘッダーの閉じる）へ入ることを確認する。指摘どおり「着地まで」ではなく
+  「着地した次の一歩」まで見る。
+
+分岐を旧挙動へ戻すと、上記の unit 1件と integration 1件が落ちることを確認した（red → green）。
+
+### P3: かなラベルの誤字（修正済み）
+
+「おんでばいますもでる...」→「おんでばいすもでる...」。`menu.rs` と期待値テストを同時に直した。
+
+### 2巡目の確認
+
+- `cargo test` — 424 passed / 2 ignored、`cargo fmt --check` pass。
+- `npm test` — 298 files / 2,662 tests pass（+1 file / +3 tests）、`test:scripts` 24 pass。
+- `npm run typecheck`、`npm run build:vite` — pass。
+
+### マージ手順の訂正（レビュー指摘）
+
+`gh pr merge --match-head-commit` は「PR の HEAD が指定 SHA と一致すること」を確認するガードで、
+fast-forward を指示するオプションではない。GitHub の通常マージはマージコミットを作り、
+Squash / Rebase merge は SHA を書き換える。**元の SHA を保った厳密な FF-only が要るなら**、
+PR とは別にローカルで
+
+```bash
+git checkout main && git merge --ff-only codex/core-ai-phase1 && git push origin main
+```
+
+のように行う（このブランチは `main` の直系なので FF できる）。PR を使う場合は
+「CI を緑にしてから、どのマージ方式を選ぶか」を別途決める。

@@ -46,4 +46,36 @@ describe("dialog keyboard containment", () => {
     container.querySelector<HTMLElement>("#last")!.focus();
     trapFocusInElement(container, tab()); expect(document.activeElement).toBe(container.querySelector("#first"));
   });
+
+  it("continues from a tabindex=-1 element that is inside the dialog", () => {
+    // ページ見出しのような tabindex=-1 の受け皿は Tab 対象ではないが、
+    // 「ダイアログ外へ抜けた」わけではないので、その位置から前後へ進める。
+    const container = dialog('<button id="close">Close</button><h3 id="heading" tabindex="-1">Heading</h3><button id="body">Body</button>');
+    const heading = container.querySelector<HTMLElement>("#heading")!;
+    const close = container.querySelector<HTMLElement>("#close")!;
+    const body = container.querySelector<HTMLElement>("#body")!;
+
+    heading.focus();
+    const forward = tab(); trapFocusInElement(container, forward);
+    expect(forward.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(body);
+
+    heading.focus();
+    const backward = tab(true); trapFocusInElement(container, backward);
+    expect(backward.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(close);
+  });
+
+  it("wraps around a trailing tabindex=-1 element", () => {
+    const container = dialog('<button id="first">First</button><div id="footer" tabindex="-1">Footer</div>');
+    const footer = container.querySelector<HTMLElement>("#footer")!;
+
+    footer.focus();
+    trapFocusInElement(container, tab());
+    expect(document.activeElement).toBe(container.querySelector("#first"));
+
+    footer.focus();
+    trapFocusInElement(container, tab(true));
+    expect(document.activeElement).toBe(container.querySelector("#first"));
+  });
 });

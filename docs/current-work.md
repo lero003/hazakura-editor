@@ -5,6 +5,28 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-21
 
+## 外部レビュー2巡目 — 見出し着地後の Tab とかなラベル（2026-09-21）
+
+`540affc7` への指摘 P2 1件・P3 1件を閉じた。P1 は指摘なし。
+
+- **P2（フォーカストラップとの噛み合わせ）:** ページ見出しは `tabIndex={-1}` のため
+  `getFocusableElements()` の一覧に入らない。トラップが「一覧に無い」を「ダイアログ外」と
+  同じ扱いにしていたので、着地直後の Tab がヘッダーの選択へ戻り、Shift+Tab が本文の最後へ
+  飛んでいた。一覧に無い場合を **ダイアログ内の受け皿** と **ダイアログ外** に分け、
+  前者はその DOM 位置から前後へ進める（端では従来どおり折り返す）。ダイアログ外の扱いは不変。
+- **P3:** かなメニューの「おんでばいますもでる...」を「おんでばいすもでる...」へ訂正。
+
+回帰テストは unit（`focusTrap.test.ts`）に加え、**実際の `PreferencesDialog` +
+`useModalKeyboardGuard`** の組み合わせで「見出しへ着地 → Tab / Shift+Tab」まで見る
+`OnDeviceModelsPane.keyboard.test.tsx` を追加した。分岐を旧挙動へ戻すとこの2件が落ちることを
+確認済み（red → green）。検証は Rust 424件（2 ignored）、frontend 298 files / 2,662件、
+project script 24件、型検査、Vite build。
+
+**マージ手順の訂正:** `gh pr merge --match-head-commit` は HEAD 一致のガードで
+fast-forward 指定ではない。SHA を保った厳密な FF-only が要る場合はローカルで
+`git merge --ff-only` して `main` を push する（このブランチは `main` の直系）。
+証跡は [外部レビュー追補](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 ## 外部レビュー追補 — 遷移フォーカス・購読競合・メニュー入口（2026-09-21）
 
 外部レビューの P2 2件を閉じ、同時に「設定から独立したシステムメニューの入口」を足した

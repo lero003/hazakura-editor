@@ -7,6 +7,18 @@ Last reviewed: 2026-09-21
 
 ## Current State
 
+- **外部レビュー2巡目（2026-09-21）:** `540affc7`へのP2/P3を閉じた。ページ見出しへ
+  着地した後のTabがヘッダーへ戻る問題は、フォーカストラップで「ダイアログ内の
+  `tabIndex=-1` の受け皿」と「ダイアログ外へ抜けた」を区別し、受け皿のDOM位置から
+  前後へ進めるようにした（端の折り返しとダイアログ外の扱いは不変）。かなメニューの
+  「おんでばいますもでる...」も訂正。回帰テストはunitに加え、実`PreferencesDialog`+
+  `useModalKeyboardGuard`の組み合わせで「着地→Tab」「着地→Shift+Tab」まで見る。
+  旧挙動へ戻すと2件落ちることを確認済み。Rust 424件（2 ignored）、frontend 298 files /
+  2,662件、project script 24件、型検査、Vite buildは成功。built appでのフォーカス実機確認は
+  未実施。**`gh pr merge --match-head-commit`はHEAD一致のガードでfast-forward指定ではない**
+  ため、SHAを保つFF-onlyはローカル`git merge --ff-only`→`main` pushで行う。
+  [証跡](reviews/2026-09-21-review-followup-models-page/README.md)。
+
 - **外部レビュー追補（2026-09-21）:** モデルページのP2 2件を閉じた。ページ切替後は
   見出しへフォーカスを移し（ヘッダーの選択から来たときは選択を維持）、生成設定は
   「購読 → スナップショット」の順にして、取得中に通知が届いたら取得結果を採用しない。

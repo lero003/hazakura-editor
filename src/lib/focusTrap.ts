@@ -10,13 +10,53 @@ export function trapFocusInElement(container: HTMLElement | null, event: Keyboar
   }
   const active = container.ownerDocument.activeElement;
   const index = elements.findIndex((element) => element === active);
-  if (event.shiftKey && index <= 0) {
-    event.preventDefault();
-    elements[elements.length - 1].focus();
-  } else if (!event.shiftKey && (index < 0 || index === elements.length - 1)) {
-    event.preventDefault();
-    elements[0].focus();
+
+  if (index >= 0) {
+    if (event.shiftKey && index === 0) {
+      event.preventDefault();
+      elements[elements.length - 1].focus();
+    } else if (!event.shiftKey && index === elements.length - 1) {
+      event.preventDefault();
+      elements[0].focus();
+    }
+    return;
   }
+
+  // ここから先は active が Tab 移動対象に無い場合。ダイアログ内の tabindex=-1
+  // 要素（見出しなど）にフォーカスがあるときは、その位置から前後の対象へ進める。
+  // ダイアログ外へ抜けているときだけ、先頭/末尾へ戻す。
+  const insideDialog = active instanceof HTMLElement && container.contains(active);
+  if (insideDialog) {
+    const next = event.shiftKey
+      ? previousFocusable(elements, active)
+      : nextFocusable(elements, active);
+    event.preventDefault();
+    (next ?? (event.shiftKey ? elements[elements.length - 1] : elements[0])).focus();
+    return;
+  }
+
+  event.preventDefault();
+  (event.shiftKey ? elements[elements.length - 1] : elements[0]).focus();
+}
+
+/** `active` より後ろにある最初の Tab 対象。無ければ undefined（末尾）。 */
+function nextFocusable(elements: HTMLElement[], active: HTMLElement): HTMLElement | undefined {
+  return elements.find((element) => follows(active, element));
+}
+
+/** `active` より前にある最後の Tab 対象。無ければ undefined（先頭）。 */
+function previousFocusable(elements: HTMLElement[], active: HTMLElement): HTMLElement | undefined {
+  for (let index = elements.length - 1; index >= 0; index -= 1) {
+    if (follows(elements[index], active)) return elements[index];
+  }
+  return undefined;
+}
+
+/** DOM 順で `later` が `earlier` より後ろにあるか。 */
+function follows(earlier: HTMLElement, later: HTMLElement): boolean {
+  return Boolean(
+    earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING,
+  );
 }
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {

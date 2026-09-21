@@ -233,7 +233,7 @@ fn app_menu_exposes_the_on_device_model_page() {
     assert!(source.contains("On-device models..."));
     assert!(source.contains("オンデバイスモデル..."));
     // かなが表示言語のときも読める（未対応だと日本語ラベルへ落ちる）。
-    assert!(source.contains("おんでばいますもでる..."));
+    assert!(source.contains("おんでばいすもでる..."));
 }
 
 #[test]
