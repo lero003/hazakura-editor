@@ -1,6 +1,6 @@
 # Core AI Apple-hosted E4B handoff
 
-Status: Source-ready and locally packaged; Apple asset upload and TestFlight device acceptance blocked
+Status: First TestFlight upload rejected for a nested extension entitlement; fix verified locally, replacement build pending
 Scope: Internal TestFlight path for Gemma 4 E4B only
 Authority: Verification record
 Last reviewed: 2026-09-21
@@ -71,6 +71,35 @@ Transporter upload and Apple processing have not been attempted. A local `spctl`
 an App Store validation failure because Gatekeeper evaluates the outside-the-Store Developer ID
 lane; use Transporter or `altool --validate-app` for upload validation.
 
+### First upload attempt: extension signature (error 90886)
+
+Build 143 uploaded but Apple rejected it for TestFlight:
+
+```txt
+Cannot be used with TestFlight because the signature for the bundle at
+“Hazakura Editor.app/Contents/Extensions/HazakuraBackgroundDownloader.appex” is missing an
+application identifier but has an application identifier in the provisioning profile for the
+bundle. (90886)
+```
+
+The cause was local. `codesign` does not read the embedded provisioning profile, and the
+extension was signed with `BackgroundDownloader.entitlements`, which only listed
+`com.apple.security.app-sandbox` and `com.apple.security.application-groups`. The main app's
+entitlements file already carried `com.apple.application-identifier` and
+`com.apple.developer.team-identifier`; the extension's did not, so the signature did not match
+the profile it embedded.
+
+`scripts/sign-app-store-submit-app.mjs` now derives both values from the profile it validates and
+signs the extension with that merged set, then reads the signed entitlements back with `codesign -d`
+and fails if the application identifier or team identifier is missing or different.
+`REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app-path>` reports the same
+condition. Re-running the fixed signing step on the build 143 bundle produced
+`8BNUB2R9C8.dev.hazakura.editor.background-downloader` in the extension signature, and the full
+App Store entitlement probe passed. Apple-side acceptance still requires a new upload.
+
+Build 143 cannot be repaired in App Store Connect: the same build number cannot be re-uploaded, so
+a replacement candidate with a higher `CFBundleVersion` is required.
+
 ## `.aar` status
 
 `npm run coreai:ba-package:reproduce` isolates packaging from all model scripts. On this host:
@@ -122,6 +151,36 @@ Local archive generation is not Apple upload, Apple processing, signed-build, or
 
 The App Store Connect asset-pack version is assigned and incremented by Apple at upload time. It is
 not the catalog revision and cannot be reported before a successful upload/processing result.
+
+### First asset pack upload attempt
+
+Uploading `dev.hazakura.editor.coreai.gemma4-e4b.v1.aar` through Transporter failed before the pack
+was accepted:
+
+```txt
+Apple ID “6778637880”のアセットパックのリストを取得できませんでした。 (-19243)
+There is an error with a URL parameter (400)
+Found invalid values: dev.hazakura.editor.coreai.gemma4-e4b.v1（ID: 24aab909-066f-44c6-88bd-0b0df823ebe1）
+```
+
+Apple's documentation confirms the intended flow: the asset pack is uploaded independently of the
+app build, and the Asset Pack ID plus the app identify it, so the web UI documents no separate
+pre-creation step for Transporter. The local archive, manifest, and digest are unchanged and valid;
+the rejection happened on the App Store Connect side of the upload.
+
+Reproduce the call with `altool` before changing the identifier or rebuilding the archive, because an
+uploaded pack cannot be deleted, only archived:
+
+```bash
+xcrun altool --list-apps --filter-apple-id 6778637880 --api-key <key-id> --api-issuer <issuer-id>
+xcrun altool --list-asset-packs --apple-id 6778637880 --api-key <key-id> --api-issuer <issuer-id>
+```
+
+If `--list-asset-packs` returns the same error, the blocker is the app record or the account role
+(Account Holder, Admin, App Manager, or Developer) rather than the asset pack ID. The App Store
+Connect API sequence — create the asset pack record, create a version, upload the archive, commit —
+is the documented alternative when Transporter keeps failing on the first pack. This attempt is not
+recorded as a successful upload.
 
 ## Local verification
 

@@ -166,6 +166,15 @@ bundle ID is `dev.hazakura.editor.background-downloader`. The local preview is
 ad-hoc signed and can verify bundle shape only; Apple-hosted downloads require the
 processed asset pack and the signed TestFlight/App Store lane.
 
+The submit signing step repeats the embedded profile's
+`com.apple.application-identifier` and `com.apple.developer.team-identifier` inside the
+extension's own signed entitlements. `codesign` does not read the provisioning profile,
+so an appex whose signature lacks the application identifier is rejected for TestFlight
+with error 90886 even when the profile is embedded correctly. `scripts/sign-app-store-submit-app.mjs`
+derives both values from the profile it validates and fails the build if the signed bundle
+does not carry them; `REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app-path>`
+reports the same condition locally.
+
 Do not add these unless there is a fresh documented reason:
 
 - `com.apple.security.network.server`
@@ -302,6 +311,28 @@ This does not replace signed TestFlight manual smoke. It only pins that
   helper assumptions.
 
 ## Core AI Apple-hosted Asset Activation
+
+### Asset pack upload diagnostics
+
+Apple hosts an asset pack independently of the app build, so the `.aar` upload is a separate
+delivery from the `.pkg`. When Transporter reports an opaque failure for a first asset pack,
+reproduce the call with `altool` instead of guessing from the UI:
+
+```bash
+xcrun altool --list-apps --filter-apple-id <app-apple-id> \
+  --api-key <key-id> --api-issuer <issuer-id>
+xcrun altool --list-asset-packs --apple-id <app-apple-id> \
+  --api-key <key-id> --api-issuer <issuer-id>
+xcrun altool --list-asset-pack-versions --apple-id <app-apple-id> \
+  --asset-pack-identifier <asset-pack-id> --api-key <key-id> --api-issuer <issuer-id>
+xcrun altool --upload-asset-pack <path.aar> --apple-id <app-apple-id> --wait \
+  --api-key <key-id> --api-issuer <issuer-id>
+```
+
+`altool` also accepts `-u <username> -p @keychain:<item>` (or `@env:<VAR>`) with
+`--provider-public-id` when the account has several providers. Keep the asset pack
+identifier unchanged while diagnosing: an uploaded pack cannot be deleted, only archived.
+Record the exact `--list-asset-packs` output before retrying an upload.
 
 The App Store source catalog now contains only the pinned E4B entry so internal
 TestFlight can exercise the CDN path. Developer builds keep the production catalog

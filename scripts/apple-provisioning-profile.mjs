@@ -137,3 +137,56 @@ export function readAndValidateProvisioningProfile(
     expectedAppGroup,
   );
 }
+
+// `codesign` does not read the embedded provisioning profile, so a bundle that
+// carries a profile must repeat the profile's application identifier in its own
+// signature. An extension signed without it is rejected for TestFlight with
+// error 90886 even though the profile is embedded correctly.
+export function profileScopedEntitlements(baseEntitlements, metadata) {
+  if (typeof metadata?.teamId !== "string" || typeof metadata?.bundleId !== "string") {
+    throw new Error("Profile metadata is required to scope signed entitlements.");
+  }
+  return {
+    ...baseEntitlements,
+    "com.apple.application-identifier": `${metadata.teamId}.${metadata.bundleId}`,
+    "com.apple.developer.team-identifier": metadata.teamId,
+  };
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// `codesign -d --entitlements -` prints a human-readable dump on Xcode 27
+// instead of a plist. Read back the scalar string entitlements we assert on.
+export function signedStringEntitlement(codesignDump, key) {
+  const match = String(codesignDump).match(
+    new RegExp(`\\[Key\\] ${escapeRegExp(key)}\\n[ \\t]*\\[Value\\]\\n[ \\t]*\\[String\\] (.*)`),
+  );
+  return match ? match[1].trim() : undefined;
+}
+
+export function validateSignedProfileEntitlements(codesignDump, metadata) {
+  const expectedIdentifier = `${metadata.teamId}.${metadata.bundleId}`;
+  const applicationIdentifier = signedStringEntitlement(
+    codesignDump,
+    "com.apple.application-identifier",
+  );
+  if (applicationIdentifier !== expectedIdentifier) {
+    throw new Error(
+      `Signed ${metadata.bundleId} must carry application identifier ` +
+        `${expectedIdentifier}; found ${applicationIdentifier ?? "(none)"}.`,
+    );
+  }
+  const teamIdentifier = signedStringEntitlement(
+    codesignDump,
+    "com.apple.developer.team-identifier",
+  );
+  if (teamIdentifier !== metadata.teamId) {
+    throw new Error(
+      `Signed ${metadata.bundleId} must carry team identifier ${metadata.teamId}; ` +
+        `found ${teamIdentifier ?? "(none)"}.`,
+    );
+  }
+  return true;
+}

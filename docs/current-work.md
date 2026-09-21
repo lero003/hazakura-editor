@@ -55,8 +55,13 @@ TestFlight/CDN受入は引き続き別ゲート（詳細は上の記録）。
 この後の最終値はRust 417件（2 ignored）、frontend 2,646件、surface 129件とbuild / preview probeが成功。
 次は遅延probe中の実ウィンドウ応答・停止受入（隔離QAでは起動導線へ到達できず未確認）。
 G1 / G2はsource実装と回帰テストまで閉じた。E4B `.aar`はsandbox外の`npm run coreai:models:package`
-で生成済みで、署名app/pkg側も準備済み。次はasset upload / processing、app build upload、
-署名済みInternal TestFlightの一本受入を行う。
+で生成済みで、署名app/pkg側も準備済み。ただしbuild 143はextension署名がprofileの
+`com.apple.application-identifier`を持たずApple 90886でTestFlight不適格になった。
+署名scriptはprofile由来のapplication/team identifierをextensionへ署名し、署名後に読み返して
+検証するよう修正済み（既存bundleへの再署名とApp Store entitlement probeで確認）。
+同一build番号は再uploadできないため、次は差し替えcandidateを作り直し、asset upload / processing、
+app build upload、署名済みInternal TestFlightの一本受入を行う。`.aar`のTransporter uploadは
+App Store Connect側の`-19243`/400で止まっており、`altool --list-asset-packs`で切り分ける。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 

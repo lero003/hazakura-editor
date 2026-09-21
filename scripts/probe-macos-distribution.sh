@@ -186,6 +186,16 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
                 fi
             fi
         done
+        # TestFlight rejects a bundle whose embedded profile carries an
+        # application identifier that the signature does not (error 90886).
+        if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+            if has_entitlement "$EXTENSION" "com.apple.application-identifier"; then
+                echo "extension com.apple.application-identifier entitlement: present"
+            else
+                echo "extension com.apple.application-identifier entitlement: missing"
+                missing_required_entitlement=1
+            fi
+        fi
     fi
 
     for entitlement in \

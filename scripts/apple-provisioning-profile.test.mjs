@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validateProvisioningProfileMetadata } from "./apple-provisioning-profile.mjs";
+import {
+  profileScopedEntitlements,
+  validateProvisioningProfileMetadata,
+  validateSignedProfileEntitlements,
+} from "./apple-provisioning-profile.mjs";
 
 function profile(overrides = {}) {
   return {
@@ -71,4 +75,65 @@ test("rejects mismatched identifiers, missing App Groups, and expired profiles",
     ),
     /expired/,
   );
+});
+
+const extensionMetadata = {
+  teamId: "8BNUB2R9C8",
+  bundleId: "dev.hazakura.editor.background-downloader",
+};
+
+test("scopes signed entitlements to the embedded profile application identifier", () => {
+  const scoped = profileScopedEntitlements(
+    {
+      "com.apple.security.app-sandbox": true,
+      "com.apple.security.application-groups": ["group.dev.hazakura.editor"],
+    },
+    extensionMetadata,
+  );
+  assert.equal(
+    scoped["com.apple.application-identifier"],
+    "8BNUB2R9C8.dev.hazakura.editor.background-downloader",
+  );
+  assert.equal(scoped["com.apple.developer.team-identifier"], "8BNUB2R9C8");
+  assert.deepEqual(scoped["com.apple.security.application-groups"], [
+    "group.dev.hazakura.editor",
+  ]);
+});
+
+test("TestFlight eligibility check requires the signed application identifier", () => {
+  const withoutIdentifier = [
+    "[Dict]",
+    "\t[Key] com.apple.security.app-sandbox",
+    "\t[Value]",
+    "\t\t[Bool] true",
+  ].join("\n");
+  assert.throws(
+    () => validateSignedProfileEntitlements(withoutIdentifier, extensionMetadata),
+    /application identifier/,
+  );
+
+  const wrongTeam = [
+    "[Dict]",
+    "\t[Key] com.apple.application-identifier",
+    "\t[Value]",
+    "\t\t[String] AAAAAAAAAA.dev.hazakura.editor.background-downloader",
+    "\t[Key] com.apple.developer.team-identifier",
+    "\t[Value]",
+    "\t\t[String] AAAAAAAAAA",
+  ].join("\n");
+  assert.throws(
+    () => validateSignedProfileEntitlements(wrongTeam, extensionMetadata),
+    /application identifier/,
+  );
+
+  const signed = [
+    "[Dict]",
+    "\t[Key] com.apple.application-identifier",
+    "\t[Value]",
+    "\t\t[String] 8BNUB2R9C8.dev.hazakura.editor.background-downloader",
+    "\t[Key] com.apple.developer.team-identifier",
+    "\t[Value]",
+    "\t\t[String] 8BNUB2R9C8",
+  ].join("\n");
+  assert.equal(validateSignedProfileEntitlements(signed, extensionMetadata), true);
 });
