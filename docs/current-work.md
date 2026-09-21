@@ -67,6 +67,8 @@ App Store Connect側の`-19243`/400で止まっていたが、`altool`で実API�
 App Store Connectは`assetPackIdentifier`内のピリオドを拒否するため、E4B/12BのIDを
 `hazakura-coreai-gemma4-e4b-v1` / `hazakura-coreai-gemma4-12b-v1`へ変更し、lockの検証で
 ピリオドを禁止した。`.aar`は新IDで再生成済み（旧IDの生成物は削除）。
+疎通とは別の配布UX候補（メモリ警告、保存先・空き容量、ライセンス表示など）は
+[Core AIモデル配布UXバックログ](core-ai-ux-backlog.md)へ分離した。
 
 ## 3.1.0開発版へ移行・リリースノート着手（2026-09-20）
 
