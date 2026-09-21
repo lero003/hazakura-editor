@@ -55,6 +55,10 @@ enum CoreAIModelIdlePolicy {
     private static func isExplicitZero(_ raw: String) -> Bool {
         let body = raw.hasPrefix("+") ? String(raw.dropFirst()) : raw
         guard !body.isEmpty else { return false }
+        // Splitting `.` yields empty components, and `allSatisfy` accepts an
+        // empty sequence, so a separator-only literal would otherwise read as
+        // "every character is a zero". Require at least one digit.
+        guard body.contains("0") else { return false }
         let components = body.split(separator: ".", omittingEmptySubsequences: false)
         guard components.count <= 2 else { return false }
         return components.allSatisfy { component in

@@ -22,6 +22,22 @@ final class CoreAIModelIdlePolicyTests: XCTestCase {
         XCTAssertEqual(CoreAIModelIdlePolicy.idleReleaseSeconds(from: "2.5"), 2.5)
     }
 
+    /// A separator with no digits is unparsable, not an explicit zero request.
+    /// `allSatisfy` accepts the empty components that splitting `.` produces, so
+    /// without a digit check these would silently pin the weights.
+    func testSeparatorOnlyValuesAreNotExplicitZero() {
+        XCTAssertEqual(CoreAIModelIdlePolicy.idleReleaseSeconds(from: "."), 300)
+        XCTAssertEqual(CoreAIModelIdlePolicy.idleReleaseSeconds(from: "+."), 300)
+        XCTAssertEqual(
+            CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: "."),
+            300 * 1_000_000_000
+        )
+        XCTAssertEqual(
+            CoreAIModelIdlePolicy.idleReleaseNanoseconds(from: "+."),
+            300 * 1_000_000_000
+        )
+    }
+
     /// An underflowed or overflowing value is a typo, not an instruction: it must
     /// neither disable the timer nor crash the nanosecond conversion.
     func testValuesTheTimerCannotRepresentFallBackToTheDefault() {

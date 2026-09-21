@@ -24,6 +24,13 @@ Last reviewed: 2026-09-21
 `COREAI_TEST_BACKEND || COREAI_PRODUCT_BACKEND` の共通実装）。テスト都合の設定が本番品質を
 決めている状態で、これが「普通の会話はできるのに編集が崩れる」の第一候補。
 
+> **注（2026-09-21追補で更新）**: 上の表の「いまの値」とこの段落は**追補前の観測**。
+> 追補で live（`.coreAI`）経路は `AssistPrompt.buildLive` へ切り替わり、`CoreAITestPrompt` は
+> `.coreAITest` / `.systemDefault` の分岐に限定された。開発用 fixture プロファイルの
+> `maximumResponseTokens: 128` / `temperature: 0` も同じく test 側だけ。
+> production の生成オプションは `maximumResponseTokens: 2048` / greedy（`temperature: nil`）。
+> 現在値は後述の[配線の作り込み](#2026-09-21-追補--配線の作り込み実測は-metal-制約で未完)を正とする。
+
 ## 原因候補（優先度順）
 
 1. **`maximumResponseTokens = 128` による打ち切り（最有力）**
@@ -119,6 +126,7 @@ tokenizer 設定と coreai-kit の停止処理の組み合わせ**を疑うの�
 
 1. `tokenizer_config.json` の `eos_token` を `<eos>`（または `eos_token_id: 1`）に直した bundle で
    同じ fixture を再実行し、語尾の崩れと `<eos>` 漏れが消えるか確認する。
+   **（当時の仮説。同日夜の EOS 比較で、この経路では生成が変わらないと判明し棄却 — 下の「EOS比較の結果」を参照）**
    **lock は変換物のファイル digest を固定しているので、bundle を書き換えるなら lock と
    再現手順の更新が必要**（書き換えは「上流の再現」ではなくなるため、記録の扱いを決める）。
 2. 上流（coreai-kit / 変換リポジトリ）へ報告し、修正版 revision を再 pin する。
@@ -156,6 +164,8 @@ tokenizer 設定と coreai-kit の停止処理の組み合わせ**を疑うの�
 - 実payload（stage済みE4B）で署名が計算されること（キャッシュ無効ログが出ないこと）を確認
 
 ### 次の検証（EOS設定の比較）
+
+**（当時の計画。同日に実施済みで、仮説は棄却された。以下の本文は記録として残す）**
 
 レビュー提案どおり、順序は **署名修正 → ローカルEOS比較 → payload確定 → build 146 実機確認**。
 EOS比較では、bundle の `tokenizer_config.json` の `eos_token` を `<eos>`（または
@@ -196,10 +206,22 @@ E4B は sentinel を復唱しない代わりに語尾が崩れる。**失敗の�
 
 ### 次の候補（EOSではなく prompt 構造と runtime の chat template）
 
-1. runtime がモデルの chat template を適用しているか（`coreai-kit` の
-   `GemmaPromptRenderer` / `KitExecutor` と `LanguageModelSession` の関係）を確認する
-2. E4B で sentinel を使わない素の prompt（`CoreAITestPrompt` 相当）と、
-   sentinel 付きの `buildLivePrompt` を比べる。12B の復唱が消えるかを見る
+1. **確定（`coreai-kit@bebe09a0` を pin してソース確認）**: runtime が chat template を
+   適用するかはモデルで違う。
+   - **E4B（`KitGemmaModel`）は `chat_template.jinja` を使わない。**
+     `KitGemmaExecutor` が `GemmaPromptRenderer.render()` を呼び、Foundation Models の
+     `Transcript` を Gemma 形式（`<bos>` / `<|turn>system` … `<turn|>` / `<|turn>model`）へ
+     **独自にレンダリング**する。したがって `tokenizer_config.json` の `eos_token` を
+     変えても生成が変わらなかったのは自然で、EOS 仮説の棄却とも整合する。
+   - **12B（`KitLanguageModel`）は chat template を使う。** `KitExecutor` → `TranscriptRenderer`
+     に入り、tool なしなら `tokenizer.applyChatTemplate(messages:)` を呼ぶ。
+   - 以降の調査は「chat template を使っているか」を確認済みとして、下の prompt 比較へ直行する。
+2. **12B の sentinel 復唱が本命。** prompt 境界の A/B を3条件で比較する。
+   1. 現行 `<<<HAZAKURA_TEXT_START … HAZAKURA_TEXT_END>>>`
+   2. sentinel なし
+   3. より普通の構造化境界（例 `<hazakura_text>…</hazakura_text>` / `<hazakura_context>…</hazakura_context>`）
+   境界を消すと対象本文と参考文脈の区別や prompt injection 耐性まで一緒に変わるため、
+   「sentinel が悪い」の切り分けは XML 風との比較で行う。
 3. 同じ fixture を System モデルでも実行し、prompt 側の期待値を固定する
 
 `eos_token` を production payload へ反映する案は、この結果により**取り下げ**。
@@ -254,8 +276,11 @@ node scripts/evaluate-local-assist.mjs \
 
 ### まだ残る候補
 
-1. bundle の `tokenizer_config.json` の `eos_token` を `<eos>`（または `eos_token_id: 1`）へ直した
-   変換物で語尾の崩れと `<eos>` 漏れが消えるかを確認する（lock と再現手順の更新が必要）。
+1. ~~bundle の `tokenizer_config.json` の `eos_token` を `<eos>`（または `eos_token_id: 1`）へ直した
+   変換物で語尾の崩れと `<eos>` 漏れが消えるかを確認する（lock と再現手順の更新が必要）。~~
+   **棄却済み**: 2026-09-21 の EOS 比較で、`eos_token` / `eos_token_id` の変更では生出力が
+   1文字も変わらないことが 18/18 で確認された。残る語尾崩れは prompt 側またはモデル側の
+   問題として扱う。
 2. 上流（coreai-kit / 変換リポジトリ）へ、`samplingMode` が `SamplingConfiguration` に
    反映されない点と `eos_token` 解決を報告する。
 3. 文脈予算（4096）の管理: 入力トークン + 出力上限 + 余裕を tokenizer で数え、
