@@ -47,6 +47,8 @@ production lock、任意URL/pathを受けない境界、明示Applyは変更し�
   `xcrun clang -fsyntax-only`し成功。
 - `npm run build` — App Store preview appとBackground Downloader extensionのbuild、埋め込み、
   ad-hoc署名検証が成功。既存のSwift deprecated API / x86_64 / Vite chunk警告は残る。
+- 実装commit `a16b0971`のPR #52 Quality run `35664620124` — frontend / nativeとも成功。
+  確認時のmerge stateは`CLEAN`。PRの最新check-runはGitHubを正本とする。
 - 本物の`PreferencesDialog` / `OnDeviceModelsPane`と模擬IPCのVite fixtureを狭い日本語画面で確認。
   要約行、System表示、12B警告、ready前後のサイズ文言、折りたたみ/展開に重なりなし。
 
@@ -56,7 +58,6 @@ production lock、任意URL/pathを受けない境界、明示Applyは変更し�
 
 ## 未確認
 
-- PR CI（この変更をpushした後のexact HEAD）。
 - built app / WKWebViewでの設定表示、削除確認、model pickerの実キーボード操作。
 - VoiceOver、最大文字サイズ、sleep/wakeを挟むpaused自動復帰。
 - 実Background Assetsのmanifest解決中cancel/retry、削除失敗、CDN materialization。

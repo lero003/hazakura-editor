@@ -13,7 +13,9 @@ Last reviewed: 2026-09-22
   設定は現在model / 物理メモリ、ready前の「インストール後」サイズ、Systemの未確認表示、削除確認、
   既定で閉じた「直近の生成記録」へ更新。frontend 2,674件、scripts 24件、Rust 427件
   （2 ignored）、Swift 52件、surface 132件、型検査、Vite / App Store preview buildは成功。
-  **PR CI、built appのキーボード/VoiceOver、sleep/wake、実Background Assets、TestFlightは未確認。**
+  実装commit `a16b0971`のPR #52 Quality run `35664620124`はfrontend / nativeとも成功し、
+  merge stateは`CLEAN`。**built appのキーボード/VoiceOver、sleep/wake、実Background Assets、
+  TestFlightは未確認。**
   [追補証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
 
 - **Core AI 12B source接続（2026-09-22）:** App Storeレーンの固定catalogへGemma 4 12Bを

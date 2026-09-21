@@ -10,8 +10,9 @@ Last reviewed: 2026-09-22
   操作世代で解決中cancelを止め、paused monitorを5秒間隔で維持する。削除失敗は旧選択を復元し、
   pickerは進捗更新でfocusを奪わない。設定のSystem状態、サイズ、削除確認、折りたたみも整理した。
   frontend 2,674件、scripts 24件、Rust 427件（2 ignored）、Swift 52件、surface 132件、Vite /
-  App Store preview buildは成功。次はPR #52へpushしてexact HEADのCIと外部再レビューを取り、
-  その後にbuilt app / VoiceOver / sleep-wake / 実Background Assets / 32 GB機TestFlightを確認する。
+  App Store preview buildは成功。実装commit `a16b0971`のPR #52 Quality run `35664620124`も
+  frontend / nativeとも成功し、merge stateは`CLEAN`。次は外部再レビューを取り、その後に
+  built app / VoiceOver / sleep-wake / 実Background Assets / 32 GB機TestFlightを確認する。
   [証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
 
 - **Core AI 12B + モデル管理仕上げ（2026-09-22）:** App Store固定catalogへ12Bを追加し、

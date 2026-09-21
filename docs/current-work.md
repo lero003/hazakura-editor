@@ -16,8 +16,10 @@ model pickerは進捗更新でfocusを奪わない。
 設定には現在model / 物理メモリ、ready前の「インストール後」サイズ、正直なSystem状態、削除確認を
 追加し、「直近の生成記録」を既定で閉じた。ローカルの全frontend 2,674件、scripts 24件、Rust
 427件（2 ignored）、Swift 52件、surface 132件、型検査、Vite build、App Store preview buildは成功。
-次のゲートはexact HEADのPR CIと外部再レビュー。その後にbuilt appのキーボード/VoiceOver、
-sleep/wake、実Background Assets、32 GB機Internal TestFlightを行う。
+実装commit `a16b0971`のPR #52 Quality run `35664620124`はfrontend / nativeとも成功し、
+merge stateは`CLEAN`。PRの最新check-runはGitHubを正本とする。次のゲートは外部再レビュー。
+その後にbuilt appのキーボード/VoiceOver、sleep/wake、実Background Assets、
+32 GB機Internal TestFlightを行う。
 [追補証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
 
 ## Core AI 12B catalog・配布UX・出力復元（2026-09-22）
