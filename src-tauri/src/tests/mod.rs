@@ -17,6 +17,7 @@ mod apple_assist_supervisor;
 mod backup;
 mod book_scope;
 mod common;
+mod core_ai_local_models;
 mod core_ai_models;
 mod encoding;
 mod external_links;

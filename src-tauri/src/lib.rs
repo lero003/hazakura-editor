@@ -9,6 +9,7 @@ pub(crate) mod commands {
     pub(crate) mod apple_assist_target;
     pub(crate) mod background_assets;
     pub(crate) mod book_scope;
+    pub(crate) mod core_ai_local_models;
     pub(crate) mod core_ai_models;
     pub(crate) mod export;
     pub(crate) mod external_links;
