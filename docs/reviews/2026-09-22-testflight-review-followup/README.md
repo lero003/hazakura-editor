@@ -68,6 +68,9 @@ production lock、任意URL/pathを受けない境界、明示Applyは変更し�
   `swift test`はsandbox外で実行した（各smokeの出力を確認）。
 - PR #52は`e18c102d`時点でQuality run `35665281992`がfrontend / nativeとも成功し、
   merge stateは`CLEAN`。**マージ前の最終確認は最新HEADのcheck-runをGitHubで見る。**
+- 証跡commit `325833fb`をPR #52へpushし、Quality run `35670541634`がfrontend（3m4s）/
+  native（3m43s）とも成功、merge stateは`CLEAN`。GitHubの脆弱性通知2件（moderate、
+  default branch）はDependabotの既知項目で、この差分の変更ではない。
 
 ## 未確認
 

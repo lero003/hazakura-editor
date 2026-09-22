@@ -23,7 +23,8 @@ merge stateは`CLEAN`。PRの最新check-runはGitHubを正本とする。次の
 外部再レビュー後、2026-09-22に同じ全ゲートをローカルで再実行して同じ結果を確認し、
 PR #52は`e18c102d`時点のQuality run `35665281992`もfrontend / nativeとも成功した。
 Swift helperのbuild / testはCodex seatbelt内でmodule cacheを作れないためsandbox外で実行した。
-マージ前に最新HEADのcheck-runをGitHubで確認する。
+証跡commit `325833fb`のQuality run `35670541634`はfrontend / nativeとも成功し、
+merge stateは`CLEAN`。マージ前に最新HEADのcheck-runをGitHubで確認する。
 [追補証跡](reviews/2026-09-22-testflight-review-followup/README.md)。
 
 ## Core AI 12B catalog・配布UX・出力復元（2026-09-22）
