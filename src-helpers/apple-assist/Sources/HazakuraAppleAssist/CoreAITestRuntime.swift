@@ -174,7 +174,7 @@ enum CoreAIRuntime {
     #endif
 
     #if COREAI_PRODUCT_BACKEND && !FIXTURE_MODE
-    enum LoadedCoreAIModel {
+    enum LoadedCoreAIModel: Sendable {
         case gemma4(KitGemmaModel)
         case language(KitLanguageModel)
     }
@@ -190,45 +190,13 @@ enum CoreAIRuntime {
     /// when a different model or resource signature is requested, and after an
     /// idle period so a 16 GB machine does not hold the weights indefinitely.
     @available(macOS 27.0, *)
-    actor CoreAIModelCache {
-        static let shared = CoreAIModelCache()
-
-        private var entry: (signature: String, model: LoadedCoreAIModel)?
-        private var idleTracker = CoreAIModelIdleTracker()
-
-        /// Seconds to keep an idle model. Only an explicit `0` keeps it for the
-        /// helper's lifetime; unset or invalid values use the documented default.
-        private let idleReleaseNanoseconds: UInt64? = CoreAIModelIdlePolicy.idleReleaseNanoseconds(
+    private static let modelCache = CoreAIModelCacheStorage<LoadedCoreAIModel>(
+        // Seconds to keep an idle model. Only an explicit `0` keeps it for the
+        // helper's lifetime; unset or invalid values use the documented default.
+        idleReleaseNanoseconds: CoreAIModelIdlePolicy.idleReleaseNanoseconds(
             from: ProcessInfo.processInfo.environment["HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS"]
         )
-
-        func model(forSignature signature: String) -> LoadedCoreAIModel? {
-            guard let entry, entry.signature == signature else { return nil }
-            scheduleIdleRelease()
-            return entry.model
-        }
-
-        func store(_ model: LoadedCoreAIModel, forSignature signature: String) {
-            entry = (signature, model)
-            scheduleIdleRelease()
-        }
-
-        /// Called by the idle timer with the token it scheduled. A later access
-        /// has already moved `generation` past it, so the release is skipped.
-        func releaseIfIdle(token: Int) {
-            guard idleTracker.isCurrent(token) else { return }
-            entry = nil
-        }
-
-        private func scheduleIdleRelease() {
-            guard let idleReleaseNanoseconds else { return }
-            let token = idleTracker.schedule()
-            Task.detached {
-                try? await Task.sleep(nanoseconds: idleReleaseNanoseconds)
-                await CoreAIModelCache.shared.releaseIfIdle(token: token)
-            }
-        }
-    }
+    )
 
     @available(macOS 27.0, *)
     static func loadSelectedModel(
@@ -263,21 +231,15 @@ enum CoreAIRuntime {
         case .invalid:
             throw CoreAIRuntimeFailure.resourceInvalid
         }
-        // A resource whose identity cannot be established must not be served
-        // from a cache: fall back to a fresh load instead of risking a stale
-        // engine or tokenizer.
-        guard let signature = CoreAIResourceContract.signature(for: resource) else {
+        let signature = CoreAIResourceContract.signature(for: resource)
+        if signature == nil {
             FileHandle.standardError.write(Data(
-                "hazakura-core-ai-helper: resource signature unavailable; model cache disabled for this request\n".utf8
+                "hazakura-core-ai-helper: resource signature unavailable; cached model released and cache disabled for this request\n".utf8
             ))
-            return try await makeProductionModel(resource: resource, modelId: modelId)
         }
-        if let cached = await CoreAIModelCache.shared.model(forSignature: signature) {
-            return cached
+        return try await loadCachedCoreAIModel(signature: signature, cache: modelCache) {
+            try await makeProductionModel(resource: resource, modelId: modelId)
         }
-        let model = try await makeProductionModel(resource: resource, modelId: modelId)
-        await CoreAIModelCache.shared.store(model, forSignature: signature)
-        return model
     }
 
     @available(macOS 27.0, *)
@@ -298,18 +260,15 @@ enum CoreAIRuntime {
             throw CoreAIRuntimeFailure.resourceInvalid
         }
         let runtimeModelId = resource.modelId ?? registryModelId
-        guard let signature = CoreAILocalResourceContract.signature(for: resource) else {
+        let signature = CoreAILocalResourceContract.signature(for: resource)
+        if signature == nil {
             FileHandle.standardError.write(Data(
-                "hazakura-core-ai-helper: local resource signature unavailable; model cache disabled for this request\n".utf8
+                "hazakura-core-ai-helper: local resource signature unavailable; cached model released and cache disabled for this request\n".utf8
             ))
-            return try await makeLocalModel(resource: resource, modelId: runtimeModelId)
         }
-        if let cached = await CoreAIModelCache.shared.model(forSignature: signature) {
-            return cached
+        return try await loadCachedCoreAIModel(signature: signature, cache: modelCache) {
+            try await makeLocalModel(resource: resource, modelId: runtimeModelId)
         }
-        let model = try await makeLocalModel(resource: resource, modelId: runtimeModelId)
-        await CoreAIModelCache.shared.store(model, forSignature: signature)
-        return model
     }
 
     @available(macOS 27.0, *)

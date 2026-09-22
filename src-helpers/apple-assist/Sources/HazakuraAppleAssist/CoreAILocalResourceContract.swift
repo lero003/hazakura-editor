@@ -530,10 +530,11 @@ private struct LanguageBundleMetadata: Decodable {
             tokenizer = try container.decode(String.self, forKey: .tokenizer)
             vocabSize = try container.decode(Int.self, forKey: .vocabSize)
             maxContextLength = try container.decode(Int.self, forKey: .maxContextLength)
-            embeddedTokenizer = try container.decodeIfPresent(
-                Bool.self,
-                forKey: .embeddedTokenizer
-            ) ?? true
+            if container.contains(.embeddedTokenizer) {
+                embeddedTokenizer = try container.decode(Bool.self, forKey: .embeddedTokenizer)
+            } else {
+                embeddedTokenizer = true
+            }
         }
     }
 

@@ -328,6 +328,70 @@
       ]
     },
     {
+      "id": "embedded-tokenizer-omitted",
+      "description": "omitting embedded_tokenizer keeps the loader default of true",
+      "select": ".",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-language" },
+      "entries": [
+        {
+          "path": "metadata.json",
+          "kind": "file",
+          "contents": "{\"metadata_version\":\"0.2\",\"kind\":\"llm\",\"name\":\"Default embedded tokenizer\",\"assets\":{\"main\":\"local.aimodel\"},\"language\":{\"tokenizer\":\"local\",\"vocab_size\":1,\"max_context_length\":128}}"
+        },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "embedded-tokenizer-true",
+      "description": "an explicit true embedded_tokenizer is accepted",
+      "select": ".",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-language" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "embedded-tokenizer-null",
+      "description": "an explicit null is not the same as omitting embedded_tokenizer",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "malformed-bundle-metadata" },
+      "entries": [
+        {
+          "path": "metadata.json",
+          "kind": "file",
+          "contents": "{\"metadata_version\":\"0.2\",\"kind\":\"llm\",\"name\":\"Null embedded tokenizer\",\"assets\":{\"main\":\"local.aimodel\"},\"language\":{\"tokenizer\":\"local\",\"vocab_size\":1,\"max_context_length\":128,\"embedded_tokenizer\":null}}"
+        },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "embedded-tokenizer-wrong-type",
+      "description": "embedded_tokenizer must be a JSON boolean when present",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "malformed-bundle-metadata" },
+      "entries": [
+        {
+          "path": "metadata.json",
+          "kind": "file",
+          "contents": "{\"metadata_version\":\"0.2\",\"kind\":\"llm\",\"name\":\"String embedded tokenizer\",\"assets\":{\"main\":\"local.aimodel\"},\"language\":{\"tokenizer\":\"local\",\"vocab_size\":1,\"max_context_length\":128,\"embedded_tokenizer\":\"true\"}}"
+        },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
       "id": "malformed-language-metadata",
       "description": "bundle metadata must be readable as language metadata",
       "select": ".",
