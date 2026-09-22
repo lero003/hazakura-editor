@@ -1,6 +1,6 @@
 # Core AI モデルソース抽象化（ローカル `.aimodel` / resource folder）
 
-Status: v3.1 スコープ（オーナー決定 2026-09-22）。実装中 — スライス1（Rust解決・検証層）完了
+Status: v3.1 スコープ（オーナー決定 2026-09-22）。実装中 — スライス2（app-managed検出・一覧表示）完了
 Scope: v3.1 の C-3 レーン — Apple-hosted 以外のモデルソースを Hazakura で扱う設計とゲート
 Authority: Medium（設計詳細の正本。v3.1 のスコープ判断は `roadmap.md`、キューは `current-work.md`）
 Last reviewed: 2026-09-22
@@ -9,8 +9,8 @@ Last reviewed: 2026-09-22
 
 これは、オーナーが受け取った外部意見（2026-09-22、`.aimodel` のオープン配布を見据えた
 モデルソース抽象化）を、**現行構造と突き合わせて v3.1 のレーンとして整理した計画メモ**である。
-オーナー決定（2026-09-22）により **v3.1 に含める**。スライス1として依存の無い Rust 解決・
-検証層だけを実装した。ここに書いた着手順・型は実装時の出発点で、**この文書の記載は
+オーナー決定（2026-09-22）により **v3.1 に含める**。スライス1で Rust / Swift のローカル契約、
+スライス2で app-managed Custom Models の検出・一覧表示まで実装した。ここに書いた着手順・型は実装時の出発点で、**この文書の記載は
 完了・検証済みを意味しない**。
 
 - 現行の実装境界の正本は `core-ai-c0-design.md`（C-0 / C-1 / C-2 の gate）。
@@ -37,8 +37,13 @@ Last reviewed: 2026-09-22
 - **ローカル契約の正本:** Rust `src-tauri/src/commands/core_ai_local_models.rs` /
   Swift `src-helpers/apple-assist/Sources/HazakuraAppleAssist/CoreAILocalResourceContract.swift`。
   production 契約（`CoreAIResourceContract`）は公式 Apple-hosted bundle 専用のまま変更しない。
-- **未接続:** catalog / IPC / frontend への露出、登録・選択・生成、security-scoped
-  bookmark、helper のローカル backend 経路、Custom Models の保存場所は次のスライス。
+- **スライス2 完了:** `app_data_dir()/CoreAICustomModels` の候補を既存 `CoreAiModelStore` / IPC /
+  frontend へ接続した。summary の `source` / `errorCode` と `detected` 状態で、正常・異常候補を
+  同じ一覧へ読み取り専用で表示する。Apple-hosted の管理操作は変えず、ローカル候補の操作は
+  frontend に出さず Rust 側でも拒否する。
+  [証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)。
+- **未接続:** ローカルモデルの選択・生成、security-scoped bookmark、helper のローカル backend、
+  Custom Models フォルダを作成 / Finderで開く / 明示再スキャンする UI。
   したがって本レーンは「ローカルモデルを登録して使える」完了状態ではない。
 
 ### オーナー決定（2026-09-22）
@@ -146,8 +151,8 @@ Custom Models/
    └─ tokenizer/
 ```
 
-- 保存場所は**未決**。候補は既存 `app_data_dir()` 配下か `group.dev.hazakura.editor` 配下。
-  既存 Background Assets の保存領域と無理に混在させない。
+- スライス2の app-managed 保存場所は既存 `app_data_dir()` 配下の `CoreAICustomModels` とした。
+  Background Assets の `CoreAIModels` とは分離する。ディレクトリ作成と Finder で開く UI は未実装。
 - アプリ起動時・モデル管理画面表示時の軽量な再検出は可。重い specialize 等は**勝手に実行しない**。
 - ユーザー自身が置いたファイルは、この段階では**アプリから削除しない**設計を優先する。
 
@@ -258,7 +263,8 @@ Hazakura Custom Models
    （`core-ai-production-models.md` § Activation gates）。ローカルモデルに AOT が要るか。
 3. **helper への security-scoped 権限の渡し方**。既存 import は「コピー」方式。
    外部モデルを helper から直接読むのか、container へ stage するのか。
-4. **Custom Models の保存場所**。`app_data_dir()` か App Group か。Background Assets との分離。
+4. **Custom Models の将来の共有要否**。スライス2は `app_data_dir()/CoreAICustomModels` とした。
+   Background Download extension と共有する要件が出た場合だけ App Group 移行を再検討する。
 5. **`.aimodel` の実体**（ファイルか bundle か）と、bundle 成立判定の条件。
 6. **検証の分担**。どれを Rust、どれを helper で行い、registry を二重化しないか。
 7. **対応 OS / SDK**。Core AI は macOS 27+ 前提で、System helper（macOS 26 互換）を壊さない
@@ -266,7 +272,7 @@ Hazakura Custom Models
 
 ## v3.1 内の位置づけと先行ゲート
 
-レーン名: **C-3 — ローカル / 外部モデルソース**（v3.1、オーナー決定 2026-09-22、未着手）。
+レーン名: **C-3 — ローカル / 外部モデルソース**（v3.1、オーナー決定 2026-09-22、スライス2まで実装）。
 
 1. 先行する現行 v3.1 の続き（12B archive の Apple upload / processing、32 GB 対象機 TestFlight、
    built app のキーボード / VoiceOver、外部再レビュー）を `current-work.md` の順で進める。
@@ -274,6 +280,8 @@ Hazakura Custom Models
 2. Apple 側 resource 慣例と AOT の確定度、helper への security-scoped 権限の渡し方を
    実装前に確認する。未確定なら「未確定のまま固定しない」方針を明記する。
 3. Core AI helper / Rust registry を二重化せず、既存の単一 registry を拡張する。
+   スライス2で app-managed の検出表示はこの形へ接続済み。次は helper のローカル backend と
+   権限境界を固定してから選択・生成へ進む。
 
 ## 実装時の検証項目（受け入れ）
 

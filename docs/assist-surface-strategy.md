@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-22
 
 ## Purpose
 
@@ -235,7 +235,8 @@ UX stories.
 
 外から持ち込んだモデル（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した
 外部 resource folder、`.aimodel` 単体指定）を allowlist と同じ経路で扱う **C-3** を
-v3.1 に含める（オーナー決定 2026-09-22、未着手）。設計とゲートは
+v3.1 に含める（オーナー決定 2026-09-22）。app-managed Custom Models は既存 registry / UI への
+検出表示まで実装し、選択・生成・外部登録は未接続。設計とゲートは
 `docs/core-ai-model-source-abstraction.md`。Allowlisted-only の線を意図的に広げる決定だが、
 任意URL取得・自動DL・モデル店は Non-Goal のまま。
 

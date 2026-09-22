@@ -5,6 +5,23 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## C-3 Custom Models を既存モデル一覧へ統合（2026-09-22）
+
+C-3 スライス2として、`app_data_dir()/CoreAICustomModels` 直下の候補を既存の
+`CoreAiModelStore` と「オンデバイスモデル」ページへ接続した。別 registry は作らず、summary に
+`source` / `errorCode` と `detected` 状態を追加する。正常な bundle は「ローカル・検出済み」、
+壊れた bundle は共通 contract の安定 code を日本語 / 英語 / かなへ変換して表示する。
+
+Apple-hosted の download / select / cancel / delete は `source` で従来どおりに限定し、
+ローカル ID は Rust 側でも全管理操作を拒否する。この段階では **検出・表示のみ**で、選択、
+helper への path 引き渡し、実生成、外部 resource folder の bookmark、Custom Models フォルダを
+開く / 再スキャンする UI は未接続。
+
+検証は frontend 2,676件、scripts 24件、Rust 455件（2 ignored）、App Store surface 132件、
+型検査、Vite build、Rust fmt、`git diff --check` が成功。
+[証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)。次のゲートは helper の
+ローカル backend と権限境界を固定し、選択・生成へ接続するスライス。
+
 ## C-3 外部レビュー是正 — ローカル契約の分離と symlink / scan（2026-09-22）
 
 スライス1への外部レビュー P1/P2 を閉じた。P1 は「Rust の検証が helper の契約と一致する」と
@@ -28,7 +45,8 @@ Last reviewed: 2026-09-22
 
 検証は `cargo fmt --check`、`cargo test`（452 passed / 2 ignored、モジュール内25件）、
 `swift test`（57 passed、新規5件）。Swift は Codex seatbelt 内で module cache を作れないため
-sandbox 外で実行した。**ローカル backend 経路、bookmark、Custom Models の保存場所は次のゲート**。
+sandbox 外で実行した。後続のスライス2で app-managed の保存場所と検出表示まで接続したが、
+**ローカル backend 経路と外部 bookmark は引き続き次のゲート**。
 [証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)。
 
 ## C-3 ローカルモデル解決・検証層（2026-09-22）
@@ -42,11 +60,11 @@ resource root / language bundle / `*.aimodel` 指定を受け、`metadata.json`�
 必須。symlink、bundle 外の `layout`、`..` は安全側で拒否する。
 `scan_custom_models_directory` は直下の候補を解決し、壊れた候補も理由付きで返す。
 
-これは**検証層のみ**で、catalog / IPC / UI へは未接続。ユーザー向け文言は frontend が
+これは**この時点では検証層のみ**で、catalog / IPC / UI へは未接続だった。ユーザー向け文言は frontend が
 所有する前提で、エラーは `missing-tokenizer` などの安定 `code` を持つ。
 `cargo fmt --check`、`cargo test --manifest-path src-tauri/Cargo.toml`（447 passed /
-2 ignored、新規20件）は成功。次のゲートは store / IPC / UI 接続と、security-scoped
-bookmark を helper へどう渡すかの確定。
+2 ignored、新規20件）は成功。当時の次ゲートだった store / IPC / UI のうち、app-managed の
+検出表示は上記スライス2で接続済み。security-scoped bookmark と helper の権限境界は未確定。
 [証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)。
 
 ## TestFlight前 外部レビュー6件の追補（2026-09-22）
@@ -1301,10 +1319,11 @@ focus（`--accent` のoutline）3:1以上と `theme-palette.json` ＝ CSS `--chr
 - 本番のモデルDL・カタログ・開示はv3.1のC-1/C-2ゲート待ち。fixtureベースのC-1配管
   （Developer/GitHubレーン限定・カタログ未公開）は先に進めてよく、本番identityはリリース前に
   カタログ確定・実験を経てpinする。MLX M-0bも停止を維持。
-- **v3.1 追加レーン C-3（オーナー決定 2026-09-22、未着手）:** Apple-hosted 以外のモデルソース
+- **v3.1 追加レーン C-3（オーナー決定 2026-09-22、スライス2まで実装）:** Apple-hosted 以外のモデルソース
   （Custom Models ディレクトリ、ユーザー明示登録の外部 resource folder、`.aimodel` 単体指定）を
   同じモデル管理・選択・生成経路で扱う。設計とゲートは
   [モデルソース抽象化](core-ai-model-source-abstraction.md) に固定した。C-1 / C-2 を止めず、
+  app-managed Custom Models は既存 registry / UI へ検出表示まで接続した。選択・生成・外部登録は
   このキューの順で進める。任意URL取得・自動DL・モデル店は Non-Goal のまま。
 - 新しい書体/行間/永続設定、native別窓、Importの確定前ステージ、画像倍率は別仕様。
 - UI刷新とnative runtime再編・新SDK採用を同じ変更へ混ぜない。
