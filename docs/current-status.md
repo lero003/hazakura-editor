@@ -3,9 +3,16 @@
 Status: Operational
 Scope: v3.1開発状態、v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
 
 ## Current State
+
+- **E4B v2はローカル候補（2026-09-23）:** 元QAT checkpointからprovider PLE版を再変換し、
+  Rust/Swiftのruntime契約、配布helper patch、固定manifestを更新。PLE3ファイルは元checkpointから
+  独立再生成してSHA-256一致。6例×3回＋取消後の実helper評価は全件成功。
+  `.aar`はローカル作成済み。サイズとSHA-256は下記の検証資料に記録。
+  **v2 E4BはApple未配布のためcatalogで`not_published`**。16 GB実機、AOT、Apple処理、
+  TestFlightと外部レビューは未完了。[検証・残ゲート](reviews/2026-09-23-core-ai-e4b-v2/README.md)。
 
 - **実機フィードバック対応（2026-09-22）:** Local Assistを14px本文 / 13px補助表示へ縮小。
   常設の「再確認」を撤去し、選択時の自動probe・上部状態・同一モデル再選択による復帰へ変更。

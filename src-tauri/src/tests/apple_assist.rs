@@ -375,7 +375,7 @@ fn apple_assist_carries_helper_generation_usage() {
     let response = map_helper_candidate(HelperCandidate {
         operation: "proofread".to_string(),
         candidate_text: "fixed".to_string(),
-        model_id: "apple:core-ai:gemma-4-e4b-it-int4-v1".to_string(),
+        model_id: "apple:core-ai:gemma-4-e4b-it-int4-provider-v2".to_string(),
         latency_ms: 42,
         usage: Some(AssistGenerationUsage {
             maximum_response_tokens: Some(2048),
@@ -390,7 +390,10 @@ fn apple_assist_carries_helper_generation_usage() {
 
     let profile = AssistGenerationProfile::from_usage(&response.model_id, response.usage)
         .expect("helper usage with settings must produce a profile");
-    assert_eq!(profile.model_id, "apple:core-ai:gemma-4-e4b-it-int4-v1");
+    assert_eq!(
+        profile.model_id,
+        "apple:core-ai:gemma-4-e4b-it-int4-provider-v2"
+    );
     assert_eq!(profile.maximum_response_tokens, Some(2048));
     assert_eq!(profile.sampling_effective.as_deref(), Some("greedy"));
     assert_eq!(profile.output_tokens, Some(24));
@@ -418,7 +421,7 @@ fn helper_store_keeps_the_last_reported_generation_profile() {
     assert!(store.generation_profile().is_none());
 
     let profile = AssistGenerationProfile::from_usage(
-        "apple:core-ai:gemma-4-e4b-it-int4-v1",
+        "apple:core-ai:gemma-4-e4b-it-int4-provider-v2",
         Some(AssistGenerationUsage {
             maximum_response_tokens: Some(2048),
             sampling_effective: Some("greedy".to_string()),

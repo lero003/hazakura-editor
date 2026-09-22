@@ -3,7 +3,7 @@
 Status: Operational preparation
 Scope: v3.1 Core AI production candidates and Apple-hosted asset preparation
 Authority: High
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
 
 ## Decision
 
@@ -12,7 +12,7 @@ Hazakura Local Assistの最初の本番候補は、同じGemma 4 QAT系から次
 
 | Lane | Model ID | Target | Locked converted artifact | Expanded model bytes |
 | --- | --- | --- | --- | ---: |
-| Standard | `apple:core-ai:gemma-4-e4b-it-int4-v1` | 16 GB Macでの受入候補 | `mlboydaisuke/gemma-4-E4B-CoreAI@e9ba305a91bf3e62ea83d5652b572b69913c433a` | 6,807,926,119 |
+| Standard | `apple:core-ai:gemma-4-e4b-it-int4-provider-v2` | 16 GB Macでの受入候補 | Hazakura再変換、`john-rocky/coreai-model-zoo@347393ede35fd25e9e59203dba562e5ee4d268bb` | 6,808,842,583 |
 | Quality comparison | `apple:core-ai:gemma-4-12b-it-int8-v1` | 32 GB以上で先行評価 | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,433,203 |
 
 完全なfile path、byte size、SHA-256、source revision、runtime kind、asset pack IDは
@@ -27,29 +27,32 @@ URLの`main`や可変tagは使わない。Developer用Qwen fixtureは引き続�
 - product helperは`john-rocky/coreai-kit`をcommit SHAで固定し、その依存graphを
   `src-helpers/apple-assist/CoreAIProduction.Package.resolved`へ分離した。Developer Qwen testは
   Apple公式`coreai-models` lockを維持する。
-- model archiveにはApache-2.0本文とrevision付きprovenance noticeを含める。E4Bの変換repoは
-  model cardでApache-2.0を示し、独立LICENSEはない。12Bはmodel cardがApache-2.0を示す一方、
+- model archiveにはApache-2.0本文とrevision付きprovenance noticeを含める。E4B v2は
+  Googleの固定checkpointからHazakuraが再変換し、変換コードと各出力ファイルのSHA-256を記録する。
+  12Bはmodel cardがApache-2.0を示す一方、
   固定revision内の`LICENSE`は旧Gemma Terms表記のままで矛盾するため、その原文も
   `UPSTREAM-CONVERSION-LICENSE.txt`として保存する。外部TestFlight前に権利・noticeを人手で
   再確認する。E4Bは`manual-review-required`、12Bは原文保持を条件に
   `reviewed-apache-2.0`として記録済み。
 - GGUFからの逆変換、任意URL/path、製品内変換、cloud fallbackは採用しない。
+- product helperの`coreai-kit`は固定revisionに
+  [`core-ai-kit-gemma-provider.patch`](../scripts/patches/core-ai-kit-gemma-provider.patch)を適用してbuildする。
+  providerのruntime kindは`coreai-kit-gemma4-ple-provider`で、旧static PLEとは別契約。
 
 ## Conversion record
 
 `scripts/core-ai-production-models.json`には、固定した`coreai-model-zoo` revisionで確認した
-community export commandも保存する。E4BはQAT checkpointからPLE tableを抽出した後、
-`int4lin --tbl --max-ctx 4096`でdecode bundleを作る。12Bは`int8lin --metal-sdpa
+export commandを保存する。E4B v2は元QAT checkpointを固定SHA-256で検証し、PLE行テーブルを
+per-row int8 symmetric absmaxで再生成する。decoderは`int4lin --lin-sym --max-ctx 4096`
+で再変換し、PLEはtokenごとにproviderから渡す。12Bは`int8lin --metal-sdpa
 --max-ctx 4096`で、16-head full-attention向けcustom Metal kernelを含むbundleを作る。
 両方ともpipelined S=1 graphなので`COREAI_CHUNK_THRESHOLD=1`が必要だが、今回固定した
 CoreAIKit runtimeがengine生成前に設定する。12BのHazakura loaderは`.pipelined`を明示する。
 
-今回の`.aar`は、communityが公開した変換済みartifactをimmutable revisionとfile SHA-256で
-再取得・検証して作る。Hazakura自身による元checkpointからのfull re-exportはまだ実行しておらず、
-lockの`conversion.hazakuraReexported`も`false`である。community exporterは変換結果のbyte一致を
-保証せず、元checkpoint revisionを直接受け取る引数もない。そのためclean re-export時は、lockした
-source revisionを先にローカルcacheへ解決してoffline化し、recipeの数値gateと`zoo_verify.py`で
-評価する。この未実施を、変換を独立再現済みとは扱わない。
+E4B v2の再変換は[`reexport-core-ai-e4b-v2.mjs`](../scripts/reexport-core-ai-e4b-v2.mjs)が
+元checkpoint、変換ツール、PLE入力と出力ファイルをSHA-256で固定する。PLE生成コードを
+元checkpointから再実行し、`embed_per_layer.i8`、scale、`meta.json`の3件が既存pinと
+byte一致した。12Bは引き続きcommunity公開artifactの固定revisionを使う。
 
 ## Reproducible preparation
 
@@ -60,6 +63,7 @@ sandbox内でも同じ結果になる。出力は巨大かつ再生成可能な�
 Gitには含めない。
 
 ```bash
+npm run coreai:e4b-v2:reexport -- --execute
 npm run coreai:models:plan
 npm run coreai:models:download -- --model=gemma4-e4b
 npm run coreai:models:package -- --model=gemma4-e4b
@@ -67,6 +71,12 @@ npm run coreai:models:package -- --model=gemma4-e4b
 npm run coreai:models:download -- --model=gemma4-12b
 npm run coreai:models:package -- --model=gemma4-12b
 ```
+
+再変換は固定source checkpointと固定toolchainをローカルに用意してからofflineで実行する。
+PLEテーブルが無ければ元checkpointから生成し、既存の中間ファイルがある場合も固定hashと照合する。
+新E4B `.aar`はローカル作成済み（5,519,729,626 bytes、SHA-256
+`74b864c22c21a697ce63713e27d44c0a1261f06eb7bb506041a3975d2a962e1e`）。
+Apple側のasset pack recordには未アップロードで、catalogは`not_published`を返す。
 
 一括処理は次のとおり。中断したdownloadは`.partial`からresumeする。
 `aria2c`が利用可能なら固定URLを8 rangeで取得し、無い環境では`curl`へ自動fallbackする。
@@ -96,7 +106,8 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
     └── PACKAGING-BLOCKED.md             # packageが失敗した場合だけ
 ```
 
-`download`はpinned revisionから取得し、全ファイルのsizeとSHA-256を照合してからstageへ移す。
+E4B v2の`download`はローカル再変換資産を全ファイルのsizeとSHA-256で照合してstageへ移す。
+12Bはpinned revisionから取得する。
 `package`は展開後resource manifestを再生成・再検証したうえで、manifestとarchiveを**絶対path**で
 `ba-package evaluate <manifest>` / `ba-package <manifest> -o <archive> --verbose`へ渡す。
 `ba-package`はmanifestを読んだ後に`sourceRoot`（stage）へchdirしてから出力pathを解決するため、
@@ -125,7 +136,8 @@ manifest schemaも実物で確認した。Apple公式templateを`xcrun ba-packag
 このリポジトリが生成する`directorySource` / `directoryDestination` / `sourceRoot`は現行仕様の
 有効なkeyである（`sourceRoot`はmanifestの位置からの相対path）。
 
-2026-09-22に現在のlockとnoticeからsandbox外でE4Bと12Bの`.aar`を再確認・再生成した。
+以下は**2026-09-22の旧E4B v1**と12Bのローカル生成履歴。E4B v2の値は上部の表と
+新しいarchive recordを正とする。
 
 | Model | expanded bytes | `.aar` bytes | SHA-256 |
 | --- | --- | --- | --- |
@@ -183,7 +195,7 @@ LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。�
 
 | Model | Asset pack ID |
 | --- | --- |
-| Gemma 4 E4B | `hazakura-coreai-gemma4-e4b-v1` |
+| Gemma 4 E4B v2 | `hazakura-coreai-gemma4-e4b-v2` |
 | Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1` |
 
 App Store Connect側のrecordとコード側のcatalogはこの完全一致を必須とする。既存IDの中身を

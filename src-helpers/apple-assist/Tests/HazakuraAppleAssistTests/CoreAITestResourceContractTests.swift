@@ -145,6 +145,37 @@ final class CoreAITestResourceContractTests: XCTestCase {
         )
     }
 
+    func testProductionProviderRequiresMetadataAndTracksItsContents() throws {
+        let root = try makeTemporaryDirectory()
+        let decoder = root.appendingPathComponent("decoder", isDirectory: true)
+        let tables = root.appendingPathComponent("tables", isDirectory: true)
+        try FileManager.default.createDirectory(at: decoder, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tables, withIntermediateDirectories: true)
+        try writeLanguageBundle(at: decoder)
+        try Data("table".utf8).write(to: tables.appendingPathComponent("embed_per_layer.i8"))
+        try Data("scale".utf8).write(to: tables.appendingPathComponent("embed_per_layer.scale.f32"))
+        try writeProductionMetadata(
+            at: root,
+            runtimeKind: "coreai-kit-gemma4-ple-provider",
+            layout: ["decoder": "decoder", "tables": "tables"]
+        )
+
+        XCTAssertEqual(
+            CoreAIResourceContract.validate(path: root.path, expectedModelId: "apple:core-ai:writing-primary"),
+            .invalid
+        )
+        let metadata = tables.appendingPathComponent("meta.json")
+        try Data("{\"V\":262144,\"PLD\":10752}".utf8).write(to: metadata)
+        guard case .ready(let resource) = CoreAIResourceContract.validate(
+            path: root.path,
+            expectedModelId: "apple:core-ai:writing-primary"
+        ) else { return XCTFail("Provider resource should be ready") }
+        XCTAssertEqual(resource.runtimeKind, .gemma4PLEProvider)
+        let signature = try XCTUnwrap(CoreAIResourceContract.signature(for: resource))
+        try Data("{\"V\":262144,\"PLD\":10753}".utf8).write(to: metadata)
+        XCTAssertNotEqual(signature, CoreAIResourceContract.signature(for: resource))
+    }
+
     func testProductionSignatureFollowsTheRealModelHashAndTokenizer() throws {
         let root = try makeTemporaryDirectory()
         let bundle = root.appendingPathComponent("bundle", isDirectory: true)

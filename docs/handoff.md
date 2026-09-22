@@ -3,7 +3,14 @@
 Status: Operational
 Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
+
+- **E4B v2（2026-09-23）:** v1 static PLE graphでの日本語崩れを切り分け、固定QAT checkpointから
+  per-token PLE provider版を再変換。元重み、テーブル、decoder、runtime patchをpinした。
+  PLEテーブルは元checkpointから再生成して3ファイルともSHA一致。実helperの6例×3回＋取消後は成功。
+  新IDの`.aar`はローカル作成済みだがApple未処理で、Rust catalogは`not_published`。
+  16 GB実機memory/品質、AOT、Apple-hosted配信、TestFlightは未受入。
+  [外部レビュー資料](reviews/2026-09-23-core-ai-e4b-v2/README.md)から再開する。
 
 - **実機フィードバック（2026-09-22）:** Local Assistの文字を一段縮小し、再確認ボタンを撤去。
   モデル選択時の自動probeを上部で短く示す。同一選択でも再probe、失敗理由・入力とのaria関連は維持。

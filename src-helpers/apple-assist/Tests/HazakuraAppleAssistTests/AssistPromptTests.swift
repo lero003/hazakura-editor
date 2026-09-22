@@ -22,10 +22,17 @@ final class AssistPromptTests: XCTestCase {
 
     func testAdditionalRequestRefinesTheOperationInsteadOfReplacingIt() {
         let prompt = AssistPrompt.buildLive(for: request(additionalRequest: "もっと丁寧な言い方にしてください。"))
-        XCTAssertTrue(prompt.contains("基本操作:\n誤字脱字、助詞、文法ミス、表記ゆれだけを直してください。"))
+        XCTAssertTrue(prompt.contains(
+            "基本操作:\n誤字脱字、助詞、文法ミス、明らかな表記ゆれだけを直してください。"
+                + "修正箇所がなければ、対象本文を一字一句そのまま返してください。"
+        ))
         XCTAssertTrue(prompt.contains("追加のご要望:\nもっと丁寧な言い方にしてください。"))
         // The keep rules survive an additional request.
         XCTAssertTrue(prompt.contains("変えない: 意味、文体、数値、固有名詞、見出し、リンク、コード、引用、表。"))
+        XCTAssertTrue(prompt.contains(
+            "表記を保つ: 漢数字と算用数字、半角と全角、句読点を相互に置き換えない。"
+        ))
+        XCTAssertTrue(prompt.contains("空白と改行も、修正に必要な箇所以外は保つ。"))
     }
 
     func testWithoutAnAdditionalRequestTheSlotSaysSo() {
@@ -56,11 +63,15 @@ final class AssistPromptTests: XCTestCase {
         XCTAssertNotEqual(proofread, summarize)
         XCTAssertTrue(proofread.contains("表記ゆれ"))
         XCTAssertTrue(summarize.contains("新しい情報は足さない"))
+        XCTAssertTrue(AssistPrompt.scopeRules(forActionId: "rewrite_natural", operation: "rephrase")
+            .contains("引用ブロック（> で始まる行）は記号と本文を一字一句保ち"))
     }
 
     func testMissingActionIdFallsBackToTheOperationTemplate() {
         let proofread = AssistPrompt.buildLive(for: request(operation: "proofread", actionId: nil))
-        XCTAssertTrue(proofread.contains("誤字脱字、助詞、文法ミス、表記ゆれだけを直してください。"))
+        XCTAssertTrue(proofread.contains(
+            "修正箇所がなければ、対象本文を一字一句そのまま返してください。"
+        ))
         let summarize = AssistPrompt.buildLive(for: request(operation: "summarize", actionId: nil))
         XCTAssertTrue(summarize.contains("本文を3〜5行で要約してください。"))
     }

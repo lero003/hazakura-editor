@@ -278,14 +278,16 @@ enum CoreAIRuntime {
     ) async throws -> LoadedCoreAIModel {
         do {
             switch resource.runtimeKind {
-            case .gemma4PLE:
+            case .gemma4PLE, .gemma4PLEProvider:
                 guard let tables = resource.tables else {
                     throw CoreAIRuntimeFailure.resourceInvalid
                 }
                 return .gemma4(try await KitGemmaModel(
                     decoderBundleAt: resource.bundle,
                     tablesAt: tables,
-                    modelID: modelId
+                    modelID: modelId,
+                    pleMode: resource.runtimeKind == .gemma4PLEProvider
+                        ? .perTokenProvider : .staticInputs
                 ))
             case .language:
                 return .language(try await KitLanguageModel(
@@ -309,14 +311,16 @@ enum CoreAIRuntime {
     ) async throws -> LoadedCoreAIModel {
         do {
             switch resource.runtimeKind {
-            case .gemma4Ple:
+            case .gemma4Ple, .gemma4PleProvider:
                 guard let tables = resource.tables else {
                     throw CoreAIRuntimeFailure.resourceInvalid
                 }
                 return .gemma4(try await KitGemmaModel(
                     decoderBundleAt: resource.bundle,
                     tablesAt: tables,
-                    modelID: modelId
+                    modelID: modelId,
+                    pleMode: resource.runtimeKind == .gemma4PleProvider
+                        ? .perTokenProvider : .staticInputs
                 ))
             case .language:
                 return .language(try await KitLanguageModel(

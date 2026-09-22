@@ -48,6 +48,18 @@ restore_resolved_file() {
 trap restore_resolved_file EXIT
 cp "$CORE_AI_RESOLVED" "$ACTIVE_RESOLVED"
 
+echo "==> resolve pinned Core AI dependencies and apply provider runtime patch"
+HAZAKURA_COREAI_DISTRIBUTION_BUILD=1 \
+CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/coreai-distribution-clang-module-cache" \
+SWIFTPM_MODULECACHE_OVERRIDE="$HELPER_DIR/.build/coreai-distribution-swiftpm-module-cache" \
+  swift package resolve \
+    --package-path "$HELPER_DIR" \
+    --scratch-path "$HELPER_DIR/.build/coreai-distribution" \
+    --disable-sandbox \
+    --force-resolved-versions
+"$REPO_ROOT/scripts/apply-core-ai-kit-provider-patch.sh" \
+  "$HELPER_DIR/.build/coreai-distribution/checkouts/coreai-kit"
+
 echo "==> swift build (distribution Core AI adapter, arm64)"
 HAZAKURA_COREAI_DISTRIBUTION_BUILD=1 \
 CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/coreai-distribution-clang-module-cache" \

@@ -147,7 +147,7 @@ fn production_catalog_fails_closed_until_a_model_is_published() {
 }
 
 #[test]
-fn app_store_catalog_publishes_the_pinned_e4b_and_12b_asset_packs() {
+fn app_store_catalog_holds_e4b_v2_until_its_asset_pack_is_published() {
     let developer = CoreAiModelStore::production_catalog_for_lane(false).list();
     assert_eq!(
         developer.distribution_status,
@@ -163,14 +163,21 @@ fn app_store_catalog_publishes_the_pinned_e4b_and_12b_asset_packs() {
     assert_eq!(app_store.models.len(), 3);
     assert_eq!(
         app_store.models[1].id,
-        "apple:core-ai:gemma-4-e4b-it-int4-v1"
+        "apple:core-ai:gemma-4-e4b-it-int4-provider-v2"
     );
     assert_eq!(app_store.models[1].display_name, "Gemma 4 E4B");
-    assert_eq!(app_store.models[1].status, CoreAiModelStatus::NotDownloaded);
+    assert_eq!(app_store.models[1].status, CoreAiModelStatus::NotPublished);
+    assert_eq!(
+        CoreAiModelStore::production_catalog_for_lane(true)
+            .refresh_model_for_test("apple:core-ai:gemma-4-e4b-it-int4-provider-v2")
+            .expect("unpublished model should not query Apple-hosted assets"),
+        CoreAiModelStatus::NotPublished
+    );
     assert_eq!(app_store.models[1].recommended_memory_gb, Some(16));
+    assert_eq!(app_store.models[1].download_size_bytes, Some(5_519_729_626));
     assert_eq!(
         app_store.models[1].installed_size_bytes,
-        Some(6_807_926_119)
+        Some(6_808_842_583)
     );
     assert_eq!(app_store.models[1].license, Some("Apache-2.0".into()));
     assert!(!app_store.models[1].has_upstream_conversion_notice);
@@ -189,6 +196,31 @@ fn app_store_catalog_publishes_the_pinned_e4b_and_12b_asset_packs() {
     );
     assert_eq!(app_store.models[2].license, Some("Apache-2.0".into()));
     assert!(app_store.models[2].has_upstream_conversion_notice);
+}
+
+#[test]
+fn unpublished_e4b_selection_restores_system_and_cannot_start_download() {
+    let data_dir = temp_data_dir();
+    std::fs::create_dir_all(&data_dir).unwrap();
+    let model_id = "apple:core-ai:gemma-4-e4b-it-int4-provider-v2";
+    std::fs::write(
+        data_dir.join("core-ai-selection.json"),
+        format!(r#"{{"selectedModelId":"{model_id}"}}"#),
+    )
+    .unwrap();
+
+    let helper = store_without_helper();
+    let store = CoreAiModelStore::production_catalog_for_lane(true);
+    store.configure(Ok(data_dir.clone()), &helper, None);
+
+    assert_eq!(store.list().selected_model_id, SYSTEM_MODEL_ID);
+    assert_eq!(helper.selected_model_id().unwrap(), SYSTEM_MODEL_ID);
+    assert!(store.start_download(model_id).is_err());
+    let persisted: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(data_dir.join("core-ai-selection.json")).unwrap())
+            .unwrap();
+    assert_eq!(persisted["selectedModelId"], SYSTEM_MODEL_ID);
+    std::fs::remove_dir_all(data_dir).unwrap();
 }
 
 #[test]

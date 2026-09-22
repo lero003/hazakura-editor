@@ -23,7 +23,7 @@
     "assets.main must stay inside the bundle and resolve to the same single *.aimodel directory that the contract verifies.",
     "A bundle requires metadata.json, tokenizer/tokenizer.json, and exactly one *.aimodel directory.",
     "The *.aimodel directory requires metadata.json, main.hash and main.mlirb.",
-    "The gemma4-ple runtime additionally requires tables/embed_per_layer.i8 and tables/embed_per_layer.scale.f32.",
+    "Both gemma4-ple runtimes require tables/embed_per_layer.i8 and tables/embed_per_layer.scale.f32; the provider runtime also requires tables/meta.json.",
     "Licence files are not required for local sources; the local gate reports unknown instead of guessing."
   ],
   "cases": [
@@ -63,6 +63,47 @@
           "path": "hazakura-model.json",
           "kind": "file",
           "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:gemma4-ple\",\"displayName\":\"Local Gemma\",\"runtimeKind\":\"coreai-kit-gemma4-ple\",\"layout\":{\"decoder\":\"decoder\",\"tables\":\"tables\"}}"
+        },
+        { "path": "decoder/metadata.json", "kind": "file" },
+        { "path": "decoder/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "decoder/local.aimodel/metadata.json", "kind": "file" },
+        { "path": "decoder/local.aimodel/main.hash", "kind": "file" },
+        { "path": "decoder/local.aimodel/main.mlirb", "kind": "file" },
+        { "path": "tables/embed_per_layer.i8", "kind": "file" },
+        { "path": "tables/embed_per_layer.scale.f32", "kind": "file" }
+      ]
+    },
+    {
+      "id": "described-gemma4-ple-provider",
+      "description": "Hazakura-described per-token PLE layout with provider metadata",
+      "select": ".",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-gemma4-ple-provider" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:gemma4-provider\",\"runtimeKind\":\"coreai-kit-gemma4-ple-provider\",\"layout\":{\"decoder\":\"decoder\",\"tables\":\"tables\"}}"
+        },
+        { "path": "decoder/metadata.json", "kind": "file" },
+        { "path": "decoder/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "decoder/local.aimodel/metadata.json", "kind": "file" },
+        { "path": "decoder/local.aimodel/main.hash", "kind": "file" },
+        { "path": "decoder/local.aimodel/main.mlirb", "kind": "file" },
+        { "path": "tables/embed_per_layer.i8", "kind": "file" },
+        { "path": "tables/embed_per_layer.scale.f32", "kind": "file" },
+        { "path": "tables/meta.json", "kind": "file" }
+      ]
+    },
+    {
+      "id": "provider-missing-meta",
+      "description": "per-token PLE runtime without its row dimensions",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "missing-tables" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:gemma4-provider\",\"runtimeKind\":\"coreai-kit-gemma4-ple-provider\",\"layout\":{\"decoder\":\"decoder\",\"tables\":\"tables\"}}"
         },
         { "path": "decoder/metadata.json", "kind": "file" },
         { "path": "decoder/tokenizer/tokenizer.json", "kind": "file" },

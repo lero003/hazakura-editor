@@ -372,6 +372,9 @@ describe("macOS build scripts", () => {
     expect(appleAssistHelperDistributionScript).toContain(
       "--force-resolved-versions",
     );
+    expect(appleAssistHelperDistributionScript).toContain(
+      "apply-core-ai-kit-provider-patch.sh",
+    );
     expect(appleAssistResolved).toContain(
       '"revision" : "3f109efd54273391f9fd9f5f5b3d8c6e99836d55"',
     );
@@ -443,7 +446,7 @@ describe("macOS build scripts", () => {
 
   it("keeps live helper fallback request templates simple for small local models", () => {
     for (const expectedTemplate of [
-      "誤字脱字、助詞、文法ミス、表記ゆれだけを直してください。",
+      "誤字脱字、助詞、文法ミス、明らかな表記ゆれだけを直してください。",
       "意味を変えずに、読みやすい自然な文にしてください。",
       "意味を保ったまま短くしてください。",
       "本文を3〜5行で要約してください。",
@@ -455,6 +458,7 @@ describe("macOS build scripts", () => {
     // Each action keeps its own change/preserve rules instead of one shared set.
     for (const expectedScope of [
       "変えない: 意味、文体、数値、固有名詞、見出し、リンク、コード、引用、表。",
+      "表記を保つ: 漢数字と算用数字、半角と全角、句読点を相互に置き換えない。",
       "変えない: 事実、数値、固有名詞、条件、例外。新しい情報は足さない。",
     ]) {
       expect(appleAssistPromptSwift).toContain(expectedScope);

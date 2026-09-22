@@ -9,6 +9,7 @@ enum CoreAITestResourceState: Equatable {
 
 enum CoreAIProductionRuntimeKind: String, Decodable, Equatable {
     case gemma4PLE = "coreai-kit-gemma4-ple"
+    case gemma4PLEProvider = "coreai-kit-gemma4-ple-provider"
     case language = "coreai-kit-language"
 }
 
@@ -111,13 +112,16 @@ enum CoreAIResourceContract {
         ]
         // Small identity files are hashed by content: a same-size replacement
         // within the same second must not look like "unchanged".
-        let contentIdentity = [
+        var contentIdentity = [
             resource.root.appendingPathComponent("hazakura-model.json"),
             resource.root.appendingPathComponent("hazakura-resource-manifest.json"),
             resource.modelDirectory.appendingPathComponent("main.hash"),
             resource.bundle.appendingPathComponent("tokenizer/tokenizer_config.json"),
             resource.bundle.appendingPathComponent("tokenizer/chat_template.jinja"),
         ]
+        if resource.runtimeKind == .gemma4PLEProvider, let tables = resource.tables {
+            contentIdentity.append(tables.appendingPathComponent("meta.json"))
+        }
         for url in contentIdentity {
             guard let digest = contentDigest(url) else { return nil }
             parts.append("\(url.lastPathComponent)=\(digest)")
@@ -185,12 +189,14 @@ enum CoreAIResourceContract {
         }
 
         switch metadata.runtimeKind {
-        case .gemma4PLE:
+        case .gemma4PLE, .gemma4PLEProvider:
             guard let decoder = safeDirectory(metadata.layout.decoder, under: root),
                   let tables = safeDirectory(metadata.layout.tables, under: root),
                   let decoderModel = languageModelDirectory(decoder),
                   regularFile(tables.appendingPathComponent("embed_per_layer.i8")),
-                  regularFile(tables.appendingPathComponent("embed_per_layer.scale.f32")) else {
+                  regularFile(tables.appendingPathComponent("embed_per_layer.scale.f32")),
+                  (metadata.runtimeKind != .gemma4PLEProvider ||
+                   regularFile(tables.appendingPathComponent("meta.json"))) else {
                 return .invalid
             }
             return .ready(CoreAIProductionResource(

@@ -76,8 +76,11 @@ enum GenerateCandidate {
                 let response = try await session.respond(
                     to: Prompt(AssistPrompt.buildLive(for: request))
                 )
-                let candidate = CandidateFormatting.reviewText(response.content, original: request.selectedText)
-                guard !candidate.isEmpty else {
+                let formattedCandidate = CandidateFormatting.reviewText(
+                    response.content,
+                    original: request.selectedText
+                )
+                guard !formattedCandidate.isEmpty else {
                     return .error(
                         AppleAssistErrorEnvelope(
                             error: "Foundation Models returned an empty candidate.",
@@ -85,6 +88,10 @@ enum GenerateCandidate {
                         )
                     )
                 }
+                let candidate = ProofreadCandidateProtection.finalCandidate(
+                    formattedCandidate,
+                    for: request
+                )
                 return .ok(
                     AppleAssistResponse(
                         operation: request.operation,
@@ -161,7 +168,12 @@ enum GenerateCandidate {
                     let candidate = CandidateFormatting.reviewText(snapshot.content, original: request.selectedText)
                     if !candidate.isEmpty && candidate != latestCandidate {
                         latestCandidate = candidate
-                        onPartial(AppleAssistPartialResponse(candidateText: candidate))
+                        if let protectedCandidate = ProofreadCandidateProtection.partialCandidate(
+                            candidate,
+                            for: request
+                        ) {
+                            onPartial(AppleAssistPartialResponse(candidateText: protectedCandidate))
+                        }
                     }
                 }
                 guard !latestCandidate.isEmpty else {
@@ -172,10 +184,14 @@ enum GenerateCandidate {
                         )
                     )
                 }
+                let candidate = ProofreadCandidateProtection.finalCandidate(
+                    latestCandidate,
+                    for: request
+                )
                 return .ok(
                     AppleAssistResponse(
                         operation: request.operation,
-                        candidateText: latestCandidate,
+                        candidateText: candidate,
                         modelId: backend.modelId,
                         latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000),
                         usage: usage
@@ -421,16 +437,20 @@ enum GenerateCandidate {
                 options: options
             )
             let rawCandidate = response.content
-            let candidate = CandidateFormatting.reviewText(
+            let formattedCandidate = CandidateFormatting.reviewText(
                 rawCandidate,
                 original: request.selectedText
             )
-            guard !candidate.isEmpty else {
+            guard !formattedCandidate.isEmpty else {
                 return .error(AppleAssistErrorEnvelope(
                     error: CoreAIRuntime.emptyCandidate,
                     kind: "internal"
                 ))
             }
+            let candidate = ProofreadCandidateProtection.finalCandidate(
+                formattedCandidate,
+                for: request
+            )
             return .ok(AppleAssistResponse(
                 operation: request.operation,
                 candidateText: candidate,
@@ -470,16 +490,24 @@ enum GenerateCandidate {
             )
             for try await snapshot in stream {
                 latestUsage = snapshot.usage
-                if let candidate = formatter.receive(snapshot.content) {
-                    onPartial(AppleAssistPartialResponse(candidateText: candidate))
+                if let candidate = formatter.receive(snapshot.content),
+                   let protectedCandidate = ProofreadCandidateProtection.partialCandidate(
+                       candidate,
+                       for: request
+                   ) {
+                    onPartial(AppleAssistPartialResponse(candidateText: protectedCandidate))
                 }
             }
-            guard let finalCandidate = formatter.finalCandidate() else {
+            guard let formattedCandidate = formatter.finalCandidate() else {
                 return .error(AppleAssistErrorEnvelope(
                     error: CoreAIRuntime.emptyCandidate,
                     kind: "internal"
                 ))
             }
+            let finalCandidate = ProofreadCandidateProtection.finalCandidate(
+                formattedCandidate,
+                for: request
+            )
             return .ok(AppleAssistResponse(
                 operation: request.operation,
                 candidateText: finalCandidate,

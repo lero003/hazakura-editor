@@ -3,7 +3,22 @@
 Status: Operational
 Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
+
+## Core AI E4B v2 候補（2026-09-23）
+
+旧E4Bの日本語崩れはstatic PLE graphで再現し、元QAT checkpointのeager実行、
+PLEだけint8化したeager実行、provider型Core AI graphでは再現しなかった。static graphは
+decoderをfp16へ戻しても崩れたため、decoder量子化だけが原因という仮説は棄却。
+固定checkpointからsymmetric int4 decoderとper-token PLEテーブルを再変換し、元重み・
+ツール・出力ファイルをpinした。`coreai-kit-gemma4-ple-provider`をRust/Swiftの契約へ追加し、
+寸法・ファイル長を確認してからmmapするhelper patchを配布buildへ組み込んだ。
+
+v2の実helper / stageで日本語・Markdown・引用の6例×3回と取消後の再依頼が全件成功。
+校正時の漢数字→算用数字変換は候補採用前に元文へ戻す。`.aar`はローカル生成済みだが、
+新しいasset pack IDはApple未処理のためE4B行を`not_published`に固定した。
+次は[外部レビュー資料](reviews/2026-09-23-core-ai-e4b-v2/README.md)で実装差分を確認し、
+16 GB実機のmemory/品質、AOT、Apple-hosted取得・TestFlightを別ゲートで受け入れる。
 
 ## 実機フィードバック対応（2026-09-22）
 

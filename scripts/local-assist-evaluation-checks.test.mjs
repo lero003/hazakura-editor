@@ -28,6 +28,12 @@ test('proofreading flags numbers, links, quotes, tables and fenced-code changes 
     assert.equal(check(complete(changed), [], fixture).proofreadProtectedSpans, false);
   }
 });
+test('proofreading also protects Japanese numerals', () => {
+  const source = '九月十八日に資料を三部用意しました。';
+  const fixture = { selectedText: source, actionId: 'proofread_only' };
+  assert.equal(check(complete(source), [], fixture).proofreadProtectedSpans, true);
+  assert.equal(check(complete('9月18日に資料を3部用意しました。'), [], fixture).proofreadProtectedSpans, false);
+});
 test('flags leaked chat control tokens separately from other checks', () => {
   assert.equal(check(complete('本文です。'), ['本文']).noControlTokens, true);
   for (const leaked of ['本文です。<eos>', '<bos>本文です。', '本文です。<turn|>', '本文です。<|turn>']) {
@@ -36,4 +42,17 @@ test('flags leaked chat control tokens separately from other checks', () => {
     assert.equal(result.preserved, true);
     assert.equal(result.noControlTokens, false);
   }
+});
+test('expectedExact is optional and compares the full candidate when present', () => {
+  assert.equal(check(complete('日本の春'), [], {}).expectedExact, true);
+  assert.equal(check(
+    complete('日本の春です'),
+    [],
+    { expectedExact: '日本の春' },
+  ).expectedExact, false);
+  assert.equal(check(
+    complete('日本の春'),
+    [],
+    { expectedExact: '日本の春' },
+  ).expectedExact, true);
 });

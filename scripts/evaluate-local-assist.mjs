@@ -11,9 +11,11 @@ const args = process.argv.slice(2);
 const value = (key) => { const i = args.indexOf(key); return i < 0 ? undefined : args[i + 1]; };
 const helper = value('--helper');
 const output = value('--output');
+const fixturePath = value('--fixtures');
+const requireAllChecks = args.includes('--require-all-checks');
 const repeats = Number(value('--repeats') ?? 1);
 if (!helper || !output || !Number.isInteger(repeats) || repeats < 1 || repeats > 5) {
-  throw new Error('Usage: node scripts/evaluate-local-assist.mjs --helper PATH --output REPORT.json [--repeats 1..5] [--backend system_default|core_ai|core_ai_test] [--model-id ID] [--model-path PATH]');
+  throw new Error('Usage: node scripts/evaluate-local-assist.mjs --helper PATH --output REPORT.json [--fixtures PATH] [--require-all-checks] [--repeats 1..5] [--backend system_default|core_ai|core_ai_test] [--model-id ID] [--model-path PATH]');
 }
 // Core AI needs the backend tag, the pinned model id, and the materialized
 // resource directory. The System model keeps the historical default.
@@ -22,7 +24,11 @@ const modelId = value('--model-id');
 const modelPath = value('--model-path');
 const backendPayload = { backend, ...(modelId ? { modelId } : {}), ...(modelPath ? { modelPath } : {}) };
 const expectedModelId = modelId ?? 'apple:foundation-models:system-default';
-const fixtures = JSON.parse(await readFile(new URL('./fixtures/local-assist-evaluation.json', import.meta.url), 'utf8'));
+const fixtureSource = fixturePath
+  ? resolve(fixturePath)
+  : new URL('./fixtures/local-assist-evaluation.json', import.meta.url);
+const fixtureBytes = await readFile(fixtureSource);
+const fixtures = JSON.parse(fixtureBytes.toString('utf8'));
 // `request` feeds `additionalRequest`. An empty request exercises the
 // action-template branch, which an all-fixtures-have-requests set never reached.
 const fixtureCoverage = {
@@ -34,7 +40,10 @@ const report = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 
   os: execFileSync('sw_vers', ['-productVersion'], { encoding: 'utf8' }).trim(),
   sdk: execFileSync('xcrun', ['--show-sdk-version'], { encoding: 'utf8' }).trim(),
   backend, modelId: expectedModelId, modelPath: modelPath ?? null,
-  helperSha256: createHash('sha256').update(await readFile(helper)).digest('hex'), fixtureVersion: 2, repeats, results: [], qualityReview: 'pending human review; checks inspect raw helper text, before app sanitization',
+  helperSha256: createHash('sha256').update(await readFile(helper)).digest('hex'), fixtureVersion: 3, repeats, results: [], qualityReview: 'pending human review; checks inspect the helper candidate after helper formatting/protection and before app UI; rawCandidateText is recorded separately',
+  fixtureSource: fixturePath ?? 'scripts/fixtures/local-assist-evaluation.json',
+  fixtureSha256: createHash('sha256').update(fixtureBytes).digest('hex'),
+  requireAllChecks,
   fixtureCoverage,
   note: 'Candidate text is from authored fixtures only. Token observations do not enforce a budget. Cold means a fresh helper whose model is not loaded yet; warm means the same helper reusing the loaded model, not a cleared OS cache.' };
 let child, lines, pending;
@@ -111,7 +120,11 @@ try {
       operation: fixtures[0].operation, selectedText: fixtures[0].selectedText,
       additionalRequest: fixtures[0].request, measureUsage: true }), repeats, 'after-cancel');
   }
-  report.protocolPassed = report.cancelProbe.terminated && report.results.every((r) => r.checks.completed && r.checks.liveModel && r.checks.withinFollowUpLimit);
+  report.mechanicalChecksPassed = report.results.every(
+    (result) => Object.values(result.checks).every(Boolean),
+  );
+  report.protocolPassed = report.cancelProbe.terminated && report.results.every((r) => r.checks.completed && r.checks.liveModel && r.checks.withinFollowUpLimit)
+    && (!requireAllChecks || report.mechanicalChecksPassed);
   if (!report.protocolPassed) process.exitCode = 1;
 } catch (error) {
   report.failure = String(error); process.exitCode = 1;

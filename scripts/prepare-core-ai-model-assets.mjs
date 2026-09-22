@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import {
   copyFile,
+  lstat,
   mkdir,
   readFile,
   rename,
@@ -126,8 +127,25 @@ export function validateLock(lock) {
     if (!Array.isArray(model.conversion?.commands) || model.conversion.commands.length === 0) {
       throw new Error(`${model.key} must record its conversion commands.`);
     }
-    if (model.conversion.hazakuraReexported !== false) {
-      throw new Error(`${model.key} must not claim an unverified Hazakura re-export.`);
+    const artifactSource = model.artifactSource ?? { kind: "hugging-face" };
+    if (artifactSource.kind === "hugging-face") {
+      if (model.conversion.hazakuraReexported !== false) {
+        throw new Error(
+          `${model.key} may claim hazakuraReexported only with a local-reexport artifact source.`,
+        );
+      }
+    } else if (artifactSource.kind === "local-reexport") {
+      assertSafeRelativePath(artifactSource.root, `${model.key}.artifactSource.root`);
+      if (!artifactSource.root.startsWith("reexports/")) {
+        throw new Error(`${model.key}.artifactSource.root must stay under reexports/.`);
+      }
+      if (model.conversion.hazakuraReexported !== true) {
+        throw new Error(
+          `${model.key} local-reexport artifacts must set conversion.hazakuraReexported=true.`,
+        );
+      }
+    } else {
+      throw new Error(`${model.key} has an unknown artifact source kind.`);
     }
     if (model.runtimeRequirements?.environment?.COREAI_CHUNK_THRESHOLD !== "1") {
       throw new Error(`${model.key} must pin the pipelined runtime threshold.`);
@@ -193,9 +211,45 @@ export function selectedModels(lock, modelKeys) {
 }
 
 export function sourceDownloadUrl(model, file) {
+  if (model.artifactSource?.kind === "local-reexport") {
+    throw new Error(`${model.key} uses a local re-export and has no download URL.`);
+  }
   const repo = model.convertedRepository.split("/").map(encodeURIComponent).join("/");
   const source = file.source.split("/").map(encodeURIComponent).join("/");
   return `https://huggingface.co/${repo}/resolve/${model.convertedRevision}/${source}?download=true`;
+}
+
+export function localArtifactPath(outputRoot, model, file) {
+  if (model.artifactSource?.kind !== "local-reexport") {
+    throw new Error(`${model.key} does not use a local re-export.`);
+  }
+  const root = resolve(outputRoot, model.artifactSource.root);
+  const path = resolve(root, file.source);
+  if (path === root || !path.startsWith(`${root}${sep}`)) {
+    throw new Error(`${model.key} local artifact escapes its source root.`);
+  }
+  return path;
+}
+
+export async function assertNoSymlinkComponents(boundary, target) {
+  const resolvedBoundary = resolve(boundary);
+  const resolvedTarget = resolve(target);
+  if (resolvedTarget !== resolvedBoundary &&
+      !resolvedTarget.startsWith(`${resolvedBoundary}${sep}`)) {
+    throw new Error(`Local artifact path escapes its boundary: ${resolvedTarget}`);
+  }
+  const components = resolvedTarget === resolvedBoundary
+    ? []
+    : resolvedTarget.slice(resolvedBoundary.length + 1).split(sep);
+  let current = resolvedBoundary;
+  for (const component of [null, ...components]) {
+    if (component !== null) current = join(current, component);
+    const details = await lstat(current).catch(() => null);
+    if (!details) throw new Error(`Missing local artifact component: ${current}`);
+    if (details.isSymbolicLink()) {
+      throw new Error(`Local re-export artifacts may not contain symlinks: ${current}`);
+    }
+  }
 }
 
 export function modelPayloadRoot(outputRoot, model) {
@@ -337,6 +391,12 @@ export function buildDownloadCommand(hasAria2, url, partialPath) {
 }
 
 async function downloadFile(model, file, outputRoot) {
+  if (model.artifactSource?.kind === "local-reexport") {
+    const path = localArtifactPath(outputRoot, model, file);
+    await assertNoSymlinkComponents(outputRoot, path);
+    await verifyFile(path, file);
+    return path;
+  }
   const cachePath = join(outputRoot, "downloads", model.key, model.convertedRevision, file.source);
   await mkdir(dirname(cachePath), { recursive: true });
   const existing = await stat(cachePath).catch(() => null);
@@ -369,10 +429,17 @@ async function downloadFile(model, file, outputRoot) {
 }
 
 function thirdPartyNotice(model) {
+  const convertedArtifact = model.artifactSource?.kind === "local-reexport"
+    ? "Hazakura local re-export (file identities are pinned in the model lock)"
+    : `${model.convertedRepository}@${model.convertedRevision}`;
+  const conversionCode = model.artifactSource?.kind === "local-reexport"
+    ? `Conversion code: ${model.convertedRepository}@${model.convertedRevision}\n`
+    : "";
   return `# Third-party model notice\n\n` +
     `${model.displayName} is an Apple Core AI format conversion of ${model.sourceModel}.\n\n` +
     `Source model revision: ${model.sourceModelRevision}\n` +
-    `Converted artifact: ${model.convertedRepository}@${model.convertedRevision}\n` +
+    `Converted artifact: ${convertedArtifact}\n` +
+    conversionCode +
     `Conversion recipe: coreai-model-zoo@347393ede35fd25e9e59203dba562e5ee4d268bb\n` +
     `Runtime integration: coreai-kit@bebe09a050c144034c169af2074fda47fb7ba326\n\n` +
     `Source-model license metadata: ${model.licensing.sourceModelLicense}\n` +
@@ -614,7 +681,9 @@ function printPlan(models, outputRoot) {
     process.stdout.write(
       `${model.key}\n` +
       `  model id: ${model.modelId}\n` +
-      `  source: ${model.convertedRepository}@${model.convertedRevision}\n` +
+      `  source: ${model.artifactSource?.kind === "local-reexport"
+        ? model.artifactSource.root
+        : `${model.convertedRepository}@${model.convertedRevision}`}\n` +
       `  locked files: ${model.files.length}\n` +
       `  locked bytes: ${sourceBytes}\n` +
       `  asset pack: ${model.assetPackId}\n` +

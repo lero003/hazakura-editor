@@ -27,6 +27,10 @@ export function checkEvaluationCandidate(
     proofreadProtectedSpans: text && (fixture.actionId !== 'proofread_only' || protectedSpansEqual(fixture.selectedText ?? '', candidate)),
     noInternalMarkers: text && !/HAZAKURA_(TEXT|CONTEXT|ORIGINAL)_(START|END)/.test(candidate),
     noControlTokens: text && !CONTROL_TOKEN_PATTERN.test(candidate),
+    expectedExact: text && (
+      typeof fixture.expectedExact !== 'string'
+      || candidate === fixture.expectedExact
+    ),
   };
 }
 
@@ -34,7 +38,7 @@ export function checkEvaluationCandidate(
 // fixture.preserve carries proper names and facts that must survive verbatim.
 function protectedSpansEqual(original, candidate) {
   const patterns = [
-    /\p{N}+(?:[.,]\p{N}+)*/gu,
+    /[\p{N}〇零一二三四五六七八九十百千万億兆壱弐参肆伍陸漆捌玖拾佰仟萬]+(?:[.,][\p{N}〇零一二三四五六七八九十百千万億兆壱弐参肆伍陸漆捌玖拾佰仟萬]+)*/gu,
     /https?:\/\/[^\s)<>]+/g,
     /^```[^\n]*\n[\s\S]*?^```[ \t]*$/gm,
     /^~~~[^\n]*\n[\s\S]*?^~~~[ \t]*$/gm,

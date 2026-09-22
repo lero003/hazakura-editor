@@ -63,9 +63,11 @@ const OPTIONAL_TOKENIZER_FILES: [&str; 4] = [
 ];
 const MODEL_DIRECTORY_FILES: [&str; 3] = ["metadata.json", "main.hash", "main.mlirb"];
 const GEMMA4_PLE_TABLE_FILES: [&str; 2] = ["embed_per_layer.i8", "embed_per_layer.scale.f32"];
+const GEMMA4_PROVIDER_METADATA: &str = "meta.json";
 
 const DESCRIPTOR_SCHEMA_VERSION: u32 = 1;
 pub(crate) const RUNTIME_KIND_GEMMA4_PLE: &str = "coreai-kit-gemma4-ple";
+pub(crate) const RUNTIME_KIND_GEMMA4_PLE_PROVIDER: &str = "coreai-kit-gemma4-ple-provider";
 pub(crate) const RUNTIME_KIND_LANGUAGE: &str = "coreai-kit-language";
 
 /// Runtime shape of a resolved local bundle. Mirrors the helper's
@@ -73,6 +75,7 @@ pub(crate) const RUNTIME_KIND_LANGUAGE: &str = "coreai-kit-language";
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum CoreAiLocalModelRuntimeKind {
     Gemma4Ple,
+    Gemma4PleProvider,
     Language,
 }
 
@@ -80,6 +83,7 @@ impl CoreAiLocalModelRuntimeKind {
     pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::Gemma4Ple => RUNTIME_KIND_GEMMA4_PLE,
+            Self::Gemma4PleProvider => RUNTIME_KIND_GEMMA4_PLE_PROVIDER,
             Self::Language => RUNTIME_KIND_LANGUAGE,
         }
     }
@@ -404,12 +408,13 @@ fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelR
     }
     let runtime_kind = match descriptor.runtime_kind.as_str() {
         RUNTIME_KIND_GEMMA4_PLE => CoreAiLocalModelRuntimeKind::Gemma4Ple,
+        RUNTIME_KIND_GEMMA4_PLE_PROVIDER => CoreAiLocalModelRuntimeKind::Gemma4PleProvider,
         RUNTIME_KIND_LANGUAGE => CoreAiLocalModelRuntimeKind::Language,
         _ => return Err(LocalModelResolutionError::UnknownRuntimeKind),
     };
 
     let (bundle, tables) = match runtime_kind {
-        CoreAiLocalModelRuntimeKind::Gemma4Ple => {
+        CoreAiLocalModelRuntimeKind::Gemma4Ple | CoreAiLocalModelRuntimeKind::Gemma4PleProvider => {
             let decoder = require_directory(
                 root,
                 descriptor.layout.decoder.as_deref(),
@@ -422,6 +427,13 @@ fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelR
             )?;
             for table in GEMMA4_PLE_TABLE_FILES {
                 require_file(&tables, table, LocalModelResolutionError::MissingTables)?;
+            }
+            if runtime_kind == CoreAiLocalModelRuntimeKind::Gemma4PleProvider {
+                require_file(
+                    &tables,
+                    GEMMA4_PROVIDER_METADATA,
+                    LocalModelResolutionError::MissingTables,
+                )?;
             }
             (decoder, Some(tables))
         }

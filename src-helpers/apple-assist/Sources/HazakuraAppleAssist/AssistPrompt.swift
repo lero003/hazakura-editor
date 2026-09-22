@@ -44,7 +44,8 @@ enum AssistPrompt {
     static func baseInstruction(forActionId actionId: String, operation: String) -> String {
         switch actionId {
         case "proofread_only":
-            return "誤字脱字、助詞、文法ミス、表記ゆれだけを直してください。"
+            return "誤字脱字、助詞、文法ミス、明らかな表記ゆれだけを直してください。"
+                + "修正箇所がなければ、対象本文を一字一句そのまま返してください。"
         case "rewrite_natural":
             return "意味を変えずに、読みやすい自然な文にしてください。"
         case "shorten":
@@ -73,9 +74,12 @@ enum AssistPrompt {
         case "proofread_only":
             return "変えてよい: 誤字脱字、助詞、文法ミス、表記ゆれ。"
                 + "\n変えない: 意味、文体、数値、固有名詞、見出し、リンク、コード、引用、表。"
+                + "\n表記を保つ: 漢数字と算用数字、半角と全角、句読点を相互に置き換えない。"
+                + "\n空白と改行も、修正に必要な箇所以外は保つ。"
         case "rewrite_natural":
             return "変えてよい: 語順、語彙、文の区切り。"
                 + "\n変えない: 出来事、事実、数値、固有名詞、否定、条件、例外、見出し、リンク、コード、引用。"
+                + "\nMarkdownの引用ブロック（> で始まる行）は記号と本文を一字一句保ち、説明文だけ直す。"
         case "shorten":
             return "変えてよい: 冗長な言い回しの削除、文の統合。"
                 + "\n変えない: 意味、事実、数値、固有名詞、条件、例外、リンク、コード、引用。"
@@ -122,7 +126,8 @@ enum AssistPrompt {
         case "summarize":
             return "本文を短く要約してください。新しい情報は足さないでください。"
         case "proofread":
-            return "誤字脱字、文法ミス、表記ゆれだけ直してください。"
+            return "誤字脱字、助詞、文法ミス、明らかな表記ゆれだけを直してください。"
+                + "修正箇所がなければ、対象本文を一字一句そのまま返してください。"
         case "rephrase":
             return "意味を変えずに、読みやすくしてください。"
         default:
@@ -138,6 +143,8 @@ enum AssistPrompt {
         case "proofread":
             return "変えてよい: 誤字脱字、助詞、文法ミス、表記ゆれ。"
                 + "\n変えない: 意味、文体、数値、固有名詞。"
+                + "\n表記を保つ: 漢数字と算用数字、半角と全角、句読点を相互に置き換えない。"
+                + "\n空白と改行も、修正に必要な箇所以外は保つ。"
         default:
             return "変えてよい: 語順、語彙、文の区切り。"
                 + "\n変えない: 出来事、事実、数値、固有名詞、否定、条件、例外。"

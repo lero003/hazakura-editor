@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
+  assertNoSymlinkComponents,
   buildBackgroundAssetsManifest,
   buildBaPackageCommands,
   buildDownloadCommand,
   buildModelMetadata,
   buildResourceManifest,
   formatPackagingBlocker,
+  localArtifactPath,
   selectedModels,
   sourceDownloadUrl,
   validateLock,
@@ -23,7 +27,7 @@ test("production model lock pins both selected Gemma candidates", () => {
   for (const model of lock.models) {
     assert.equal(model.convertedRevision.length, 40);
     assert.equal(model.releaseEligible, false);
-    assert.equal(model.conversion.hazakuraReexported, false);
+    assert.equal(model.conversion.hazakuraReexported, model.key === "gemma4-e4b");
     assert.equal(model.runtimeRequirements.environment.COREAI_CHUNK_THRESHOLD, "1");
     assert.ok(
       ["manual-review-required", "reviewed-apache-2.0"].includes(model.licensing.reviewStatus),
@@ -92,11 +96,64 @@ test("asset pack identifiers reject periods that App Store Connect refuses", () 
 });
 
 test("download URLs and model metadata stay pinned to the lock", () => {
-  const model = lock.models[0];
-  const url = sourceDownloadUrl(model, model.files[0]);
-  assert.match(url, new RegExp(model.convertedRevision));
+  const remoteModel = lock.models[1];
+  const url = sourceDownloadUrl(remoteModel, remoteModel.files[0]);
+  assert.match(url, new RegExp(remoteModel.convertedRevision));
   assert.doesNotMatch(url, /\/resolve\/main\//);
-  assert.equal(buildModelMetadata(model).runtimeKind, "coreai-kit-gemma4-ple");
+  assert.equal(buildModelMetadata(lock.models[0]).runtimeKind, "coreai-kit-gemma4-ple-provider");
+});
+
+test("a Hazakura re-export resolves only inside the dedicated local artifact root", () => {
+  const local = structuredClone(lock);
+  const validated = validateLock(local).models[0];
+  assert.equal(
+    localArtifactPath("/tmp/coreai-production", validated, validated.files[0]),
+    `/tmp/coreai-production/reexports/gemma4-e4b-v2/2026.09.22.1/payload-input/${validated.files[0].source}`,
+  );
+  assert.throws(() => sourceDownloadUrl(validated, validated.files[0]), /local re-export/i);
+
+  const escaping = structuredClone(local);
+  escaping.models[0].artifactSource.root = "../outside";
+  assert.throws(() => validateLock(escaping), /unsafe component/);
+
+  const wrongRoot = structuredClone(local);
+  wrongRoot.models[0].artifactSource.root = "gemma4-e4b-v2/2026.09.22.1";
+  assert.throws(() => validateLock(wrongRoot), /reexports\//);
+});
+
+test("Hazakura re-export claims and artifact source kind must agree", () => {
+  const falseClaim = structuredClone(lock);
+  falseClaim.models[1].conversion.hazakuraReexported = true;
+  assert.throws(() => validateLock(falseClaim), /local-reexport/);
+
+  const missingClaim = structuredClone(lock);
+  missingClaim.models[1].artifactSource = {
+    kind: "local-reexport",
+    root: "reexports/gemma4-e4b-v2/2026.09.22.1",
+  };
+  assert.throws(() => validateLock(missingClaim), /hazakuraReexported/);
+
+  const unknown = structuredClone(lock);
+  unknown.models[0].artifactSource = { kind: "network-mirror" };
+  assert.throws(() => validateLock(unknown), /artifact source kind/);
+});
+
+test("local re-export artifacts reject symlinks in every path component", async () => {
+  const root = await mkdtemp(join(tmpdir(), "hazakura-coreai-local-source-"));
+  try {
+    const real = join(root, "real");
+    await mkdir(real);
+    await writeFile(join(real, "model.bin"), "fixture", "utf8");
+    await symlink(real, join(root, "linked"));
+
+    await assert.doesNotReject(assertNoSymlinkComponents(root, join(real, "model.bin")));
+    await assert.rejects(
+      assertNoSymlinkComponents(root, join(root, "linked", "model.bin")),
+      /may not contain symlinks/,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("resource manifest fixes expanded limits to the verified file set", () => {
@@ -114,7 +171,7 @@ test("resource manifest fixes expanded limits to the verified file set", () => {
 
 test("runtime pins both resource manifests used after Apple-hosted materialization", async () => {
   for (const [index, filename, expandedBytes] of [
-    [0, "gemma4-e4b-resource-manifest.json", 6807926119],
+    [0, "gemma4-e4b-resource-manifest.json", 6808842583],
     [1, "gemma4-12b-resource-manifest.json", 14698433203],
   ]) {
     const runtimeManifest = JSON.parse(await readFile(
@@ -177,7 +234,7 @@ test("packaging blocker records the exact toolchain failure without claiming an 
     "Xcode 27.0\nBuild version 27A266a",
     "Error: path extension isn’t json",
   );
-  assert.match(text, /hazakura-coreai-gemma4-e4b-v1/);
+  assert.match(text, /hazakura-coreai-gemma4-e4b-v2/);
   assert.match(text, /27A266a/);
   assert.match(text, /path extension isn’t json/);
   assert.match(text, /No \.aar was created/);

@@ -41,7 +41,7 @@ vi.mock("../../lib/tauri/coreAiModels", () => ({
         selected: true,
       },
       {
-        id: "apple:core-ai:gemma-4-e4b-it-int4-v1",
+        id: "apple:core-ai:gemma-4-e4b-it-int4-provider-v2",
         displayName: "Gemma 4 E4B",
         kind: "core_ai",
         status: "not_downloaded",

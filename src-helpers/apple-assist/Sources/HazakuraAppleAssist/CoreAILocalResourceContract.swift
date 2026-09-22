@@ -25,6 +25,7 @@ enum CoreAILocalModelErrorCode: String, Error, Equatable {
 
 enum CoreAILocalModelRuntimeKind: String, Equatable {
     case gemma4Ple = "coreai-kit-gemma4-ple"
+    case gemma4PleProvider = "coreai-kit-gemma4-ple-provider"
     case language = "coreai-kit-language"
 }
 
@@ -110,12 +111,15 @@ enum CoreAILocalResourceContract {
             resource.modelDirectory.path,
             resource.modelId ?? "descriptor-model-id:none",
         ]
-        let contentIdentity = [
+        var contentIdentity = [
             resource.bundle.appendingPathComponent(languageBundleDescriptor),
             resource.modelDirectory.appendingPathComponent("metadata.json"),
             resource.modelDirectory.appendingPathComponent("main.hash"),
             resource.bundle.appendingPathComponent(tokenizerFile),
         ]
+        if resource.runtimeKind == .gemma4PleProvider, let tables = resource.tables {
+            contentIdentity.append(tables.appendingPathComponent("meta.json"))
+        }
         for url in contentIdentity {
             guard let digest = contentDigest(url) else { return nil }
             parts.append("\(url.path)=\(digest)")
@@ -233,7 +237,7 @@ enum CoreAILocalResourceContract {
         let bundle: URL
         let tables: URL?
         switch runtimeKind {
-        case .gemma4Ple:
+        case .gemma4Ple, .gemma4PleProvider:
             let decoderResult = requireDirectory(
                 root,
                 descriptor.layout.decoder,
@@ -254,6 +258,14 @@ enum CoreAILocalResourceContract {
                 if case let .failure(error) = requireFile(tablesURL, table, missing: .missingTables) {
                     return .error(error)
                 }
+            }
+            if runtimeKind == .gemma4PleProvider,
+               case let .failure(error) = requireFile(
+                tablesURL,
+                "meta.json",
+                missing: .missingTables
+               ) {
+                return .error(error)
             }
             bundle = decoder
             tables = tablesURL

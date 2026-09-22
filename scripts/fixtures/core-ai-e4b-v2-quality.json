@@ -1,0 +1,61 @@
+[
+  {
+    "id": "exact-short-japanese",
+    "operation": "proofread",
+    "actionId": "proofread_only",
+    "selectedText": "日本の春",
+    "request": "",
+    "preserve": ["日本", "春"],
+    "expectedExact": "日本の春",
+    "review": "短い日本語を壊さず、そのまま返す"
+  },
+  {
+    "id": "exact-single-kanji",
+    "operation": "proofread",
+    "actionId": "proofread_only",
+    "selectedText": "桜",
+    "request": "",
+    "preserve": ["桜"],
+    "expectedExact": "桜",
+    "review": "単語だけの入力を反復・崩壊させない"
+  },
+  {
+    "id": "exact-production-regression",
+    "operation": "proofread",
+    "actionId": "proofread_only",
+    "selectedText": "会議は九月十八日に開かれました。資料は三部用意し、会場は第一会議室です。",
+    "request": "",
+    "preserve": ["九月十八日", "三部", "第一会議室"],
+    "expectedExact": "会議は九月十八日に開かれました。資料は三部用意し、会場は第一会議室です。",
+    "review": "実機で再現した語中への不要な文字列の混入を再発させない"
+  },
+  {
+    "id": "exact-common-sentence",
+    "operation": "proofread",
+    "actionId": "proofread_only",
+    "selectedText": "今日は穏やかな一日でした。窓から涼しい風が入っています。",
+    "request": "",
+    "preserve": ["穏やか", "涼しい風"],
+    "expectedExact": "今日は穏やかな一日でした。窓から涼しい風が入っています。",
+    "review": "自然な日本語の無変更校正で語尾や助詞を壊さない"
+  },
+  {
+    "id": "exact-markdown-japanese",
+    "operation": "proofread",
+    "actionId": "proofread_only",
+    "selectedText": "## 春の予定\n\n- 四月三日: 花見\n- 四月十日: 読書会",
+    "request": "",
+    "preserve": ["## 春の予定", "四月三日", "四月十日"],
+    "expectedExact": "## 春の予定\n\n- 四月三日: 花見\n- 四月十日: 読書会",
+    "review": "日本語とMarkdown構造を同時に保持する"
+  },
+  {
+    "id": "preserve-markdown-quote",
+    "operation": "rephrase",
+    "actionId": "rewrite_natural",
+    "selectedText": "> 焦らず、一歩ずつ進もう。\n\n先生の言葉を思い出し、私はノートを開いた。",
+    "request": "引用をそのまま残して、説明部分だけ自然にしてください。",
+    "preserve": ["> 焦らず、一歩ずつ進もう。"],
+    "review": "引用の記号と本文を保持し、説明文だけを編集する"
+  }
+]

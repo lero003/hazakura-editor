@@ -17,16 +17,16 @@ use tauri::Emitter;
 
 pub(crate) const SYSTEM_MODEL_ID: &str = "apple:foundation-models:system-default";
 pub(crate) const CORE_AI_MODEL_STATE_CHANGED_EVENT: &str = "core-ai-model-state-changed";
-const E4B_MODEL_ID: &str = "apple:core-ai:gemma-4-e4b-it-int4-v1";
+const E4B_MODEL_ID: &str = "apple:core-ai:gemma-4-e4b-it-int4-provider-v2";
 // App Store Connect rejects periods in an asset pack identifier, so this uses
 // hyphens only. Keep it identical to the lock and the packaged manifest.
-const E4B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-e4b-v1";
-const E4B_CATALOG_VERSION: &str = "2026.09.20.1";
-const E4B_STORAGE_DIRECTORY: &str = "gemma-4-e4b-it-int4-v1";
+const E4B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-e4b-v2";
+const E4B_CATALOG_VERSION: &str = "2026.09.22.1";
+const E4B_STORAGE_DIRECTORY: &str = "gemma-4-e4b-it-int4-provider-v2";
 const E4B_RESOURCE_MANIFEST: &str =
     include_str!("../../resources/core-ai/gemma4-e4b-resource-manifest.json");
 const E4B_RESOURCE_MANIFEST_SHA256: &str =
-    "d46c81f18147a2faf0d066b4ef2d31f72416b75ee544397580815fa2e4fb4af3";
+    "c108e80513371336afff45ff298617e72c023629ee78880dcab874a36ced04c9";
 const TWELVE_B_MODEL_ID: &str = "apple:core-ai:gemma-4-12b-it-int8-v1";
 const TWELVE_B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-12b-v1";
 const TWELVE_B_CATALOG_VERSION: &str = "2026.09.20.1";
@@ -93,6 +93,7 @@ pub(crate) fn monitor_is_terminal(status: CoreAiModelStatus) -> bool {
             | CoreAiModelStatus::NotDownloaded
             | CoreAiModelStatus::Failed
             | CoreAiModelStatus::Unsupported
+            | CoreAiModelStatus::NotPublished
     )
 }
 
@@ -202,9 +203,9 @@ impl CoreAiCatalogEntry {
             id: E4B_MODEL_ID.into(),
             display_name: "Gemma 4 E4B".into(),
             storage_directory: E4B_STORAGE_DIRECTORY.into(),
-            published: true,
-            download_size_bytes: Some(5_431_767_276),
-            installed_size_bytes: Some(6_807_926_119),
+            published: false,
+            download_size_bytes: Some(5_519_729_626),
+            installed_size_bytes: Some(6_808_842_583),
             recommended_memory_gb: Some(16),
             license: Some("Apache-2.0".into()),
             has_upstream_conversion_notice: false,
@@ -468,7 +469,10 @@ impl CoreAiModelStore {
             } else {
                 self.persist_selection(SYSTEM_MODEL_ID)?;
             }
-        } else if self.catalog_entry(&selected).is_err() {
+        } else if self
+            .catalog_entry(&selected)
+            .map_or(true, |entry| !entry.published)
+        {
             self.persist_selection(SYSTEM_MODEL_ID)?;
         } else if self.selection_for(&selected).is_ok() {
             self.apply_selection(&selected, helper_store)?;
@@ -489,7 +493,7 @@ impl CoreAiModelStore {
         for model_id in self
             .catalog
             .iter()
-            .filter(|entry| entry.asset_pack_id.is_some())
+            .filter(|entry| entry.published && entry.asset_pack_id.is_some())
             .map(|entry| entry.id.clone())
         {
             self.spawn_monitor(app.clone(), model_id, Some(helper_store.clone()));
@@ -714,6 +718,16 @@ impl CoreAiModelStore {
 
     fn refresh_model(&self, model_id: &str) -> Result<CoreAiModelStatus, String> {
         let entry = self.catalog_entry(model_id)?;
+        if !entry.published {
+            self.set_runtime_state(
+                model_id,
+                RuntimeState {
+                    status: CoreAiModelStatus::NotPublished,
+                    ..RuntimeState::default()
+                },
+            );
+            return Ok(CoreAiModelStatus::NotPublished);
+        }
         let snapshot = self
             .transport
             .snapshot(self.asset_pack_id(entry)?, &entry.relative_asset_path())?;
@@ -1012,6 +1026,12 @@ impl CoreAiModelStore {
     }
 
     fn runtime_state(&self, entry: &CoreAiCatalogEntry) -> RuntimeState {
+        if !entry.published {
+            return RuntimeState {
+                status: CoreAiModelStatus::NotPublished,
+                ..RuntimeState::default()
+            };
+        }
         if entry.asset_pack_id.is_none() {
             let path = self.fixture_model_path(entry);
             let ready = path

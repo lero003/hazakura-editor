@@ -32,7 +32,7 @@ describe("CoreAiGenerationProfile", () => {
 
   it("shows the observed effective settings instead of a webview copy", async () => {
     mocks.read.mockResolvedValue({
-      modelId: "apple:core-ai:gemma-4-e4b-it-int4-v1",
+      modelId: "apple:core-ai:gemma-4-e4b-it-int4-provider-v2",
       maximumResponseTokens: 512,
       samplingRequested: "temperature=0.7, topK=64",
       samplingEffective: "temperature=0.7, dropped by engine: topK=64",
@@ -49,7 +49,7 @@ describe("CoreAiGenerationProfile", () => {
     expect(screen.getByText(/temperature=0.7, topK=64/)).toBeTruthy();
     expect(screen.getByText(/dropped by engine: topK=64/)).toBeTruthy();
     expect(screen.getByText(/812/)).toBeTruthy();
-    expect(screen.getByText(/gemma-4-e4b-it-int4-v1/)).toBeTruthy();
+    expect(screen.getByText(/gemma-4-e4b-it-int4-provider-v2/)).toBeTruthy();
   });
 
   it("stays honest when nothing has been observed yet", async () => {
@@ -88,7 +88,7 @@ describe("CoreAiGenerationProfile", () => {
       () => new Promise<() => void>((resolve) => { resolveListen = resolve; }),
     );
     mocks.read.mockResolvedValue({
-      modelId: "apple:core-ai:gemma-4-e4b-it-int4-v1",
+      modelId: "apple:core-ai:gemma-4-e4b-it-int4-provider-v2",
       maximumResponseTokens: 2048,
       samplingRequested: "temperature=none(greedy)",
       samplingEffective: "greedy",
@@ -119,7 +119,7 @@ describe("CoreAiGenerationProfile", () => {
       cachedTokens: null,
     };
     const stale = {
-      modelId: "apple:core-ai:gemma-4-e4b-it-int4-v1",
+      modelId: "apple:core-ai:gemma-4-e4b-it-int4-provider-v2",
       maximumResponseTokens: 2048,
       samplingRequested: "temperature=none(greedy)",
       samplingEffective: "greedy",

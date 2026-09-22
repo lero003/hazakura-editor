@@ -1,0 +1,238 @@
+diff --git a/Sources/CoreAIKit/Gemma/GemmaRuntime.swift b/Sources/CoreAIKit/Gemma/GemmaRuntime.swift
+index b2338bb..0000000 100644
+--- a/Sources/CoreAIKit/Gemma/GemmaRuntime.swift
++++ b/Sources/CoreAIKit/Gemma/GemmaRuntime.swift
+@@ -37,6 +37,98 @@ public enum KitGemmaError: Error, LocalizedError {
+     }
+ }
+ 
++public enum GemmaPLEMode: Sendable {
++    case staticInputs
++    case perTokenProvider
++}
++
++private final class GemmaPLERowTable: @unchecked Sendable {
++    private let base: UnsafeRawPointer
++    private let length: Int
++    private let scales: [Float]
++    let vocabCount: Int
++    private let rowElements: Int
++    private let embeddingScale: Float
++
++    init(directory: URL) throws {
++        let metadataURL = directory.appendingPathComponent("meta.json")
++        guard let metadataSize = try? metadataURL.resourceValues(forKeys: [.fileSizeKey]).fileSize,
++            metadataSize > 0, metadataSize <= 64 * 1024 else {
++            throw KitGemmaError.bufferAllocationFailed("meta.json")
++        }
++        let metadata = try JSONSerialization.jsonObject(with: Data(contentsOf: metadataURL))
++            as? [String: Any]
++        guard let vocab = metadata?["V"] as? Int, vocab > 0,
++            let rowElements = metadata?["PLD"] as? Int, rowElements > 0
++        else {
++            throw KitGemmaError.missingTableFile("meta.json")
++        }
++        let (tableBytes, overflow) = vocab.multipliedReportingOverflow(by: rowElements)
++        let (_, rowByteOverflow) = rowElements.multipliedReportingOverflow(
++            by: MemoryLayout<Float16>.size)
++        guard !overflow, !rowByteOverflow else {
++            throw KitGemmaError.bufferAllocationFailed("embed_per_layer.i8")
++        }
++        self.vocabCount = vocab
++        self.rowElements = rowElements
++        self.embeddingScale = 16  // sqrt(256), Gemma 4's per-layer embedding width.
++        let (scaleBytes, scaleOverflow) = vocab.multipliedReportingOverflow(
++            by: MemoryLayout<Float>.size)
++        let scaleURL = directory.appendingPathComponent("embed_per_layer.scale.f32")
++        guard !scaleOverflow,
++            let scaleFileBytes = try? scaleURL.resourceValues(forKeys: [.fileSizeKey]).fileSize,
++            scaleFileBytes == scaleBytes else {
++            throw KitGemmaError.bufferAllocationFailed("embed_per_layer.scale.f32")
++        }
++        let scaleData = try Data(contentsOf: scaleURL)
++        guard scaleData.count == scaleBytes else {
++            throw KitGemmaError.bufferAllocationFailed("embed_per_layer.scale.f32")
++        }
++        self.scales = scaleData.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
++        guard scales.count == vocab, scales.allSatisfy({ $0.isFinite && $0 > 0 }) else {
++            throw KitGemmaError.bufferAllocationFailed("embed_per_layer.scale.f32")
++        }
++
++        let tableURL = directory.appendingPathComponent("embed_per_layer.i8")
++        let fd = open(tableURL.path, O_RDONLY)
++        guard fd >= 0 else {
++            throw KitGemmaError.missingTableFile("embed_per_layer.i8")
++        }
++        defer { close(fd) }
++        var fileInfo = stat()
++        guard fstat(fd, &fileInfo) == 0, fileInfo.st_size == tableBytes else {
++            throw KitGemmaError.bufferAllocationFailed("embed_per_layer.i8")
++        }
++        length = tableBytes
++        let mapped = mmap(nil, length, PROT_READ, MAP_PRIVATE, fd, 0)
++        guard let mapped, mapped != MAP_FAILED else {
++            throw KitGemmaError.bufferAllocationFailed("embed_per_layer.i8")
++        }
++        madvise(mapped, length, MADV_RANDOM)
++        base = UnsafeRawPointer(mapped)
++    }
++
++    deinit {
++        _ = munmap(UnsafeMutableRawPointer(mutating: base), length)
++    }
++
++    func fill(token: Int32, destination: UnsafeMutableRawPointer, byteCount: Int) {
++        let tokenIndex = Int(token)
++        guard tokenIndex >= 0, tokenIndex < scales.count,
++            byteCount == rowElements * MemoryLayout<Float16>.size
++        else {
++            memset(destination, 0, byteCount)
++            return
++        }
++        let row = base.advanced(by: tokenIndex * rowElements).assumingMemoryBound(to: Int8.self)
++        let output = destination.assumingMemoryBound(to: Float16.self)
++        let scale = scales[tokenIndex] * embeddingScale
++        for index in 0..<rowElements {
++            output[index] = Float16(Float(row[index]) * scale)
++        }
++    }
++}
++
+ /// Owns a Gemma 4 model's engine + tokenizer + the two static PLE table buffers, for the
+ /// engine's lifetime. One runtime assumes serial use (one `LanguageModelSession` at a time) —
+ /// the underlying engine traps on concurrent generate calls, same as the text path.
+@@ -51,6 +143,7 @@ public final class GemmaRuntime: @unchecked Sendable {
+     /// Owned static-input buffers (the PLE tables), kept alive for the engine's lifetime.
+     /// Bound unchanged on every encode — never rewritten after load.
+     private let tableBuffers: [String: StaticInputBuffer]
++    private let providerTable: GemmaPLERowTable?
+ 
+     /// Loads a Gemma 4 `…_tbl` decode bundle and binds its two PLE tables from `tablesURL`
+     /// (the paired `gemma4_gather_raw` directory holding `embed_per_layer.i8` +
+@@ -59,7 +152,8 @@ public final class GemmaRuntime: @unchecked Sendable {
+         decoderBundleAt decoderURL: URL,
+         tablesAt tablesURL: URL,
+         arch: GemmaArchitecture = .gemma4,
+-        engineVariant: EngineVariant = .pipelined
++        engineVariant: EngineVariant = .pipelined,
++        pleMode: GemmaPLEMode = .staticInputs
+     ) async throws {
+         // The `…_tbl` graph is S=1 (input_ids is static [1,1]); chunked prefill feeds a
+         // multi-token query the S=1 graph rejects, so chunking must stay off.
+@@ -72,6 +166,22 @@ public final class GemmaRuntime: @unchecked Sendable {
+             throw KitGemmaError.noMetalDevice
+         }
+ 
++        let usesProvider = pleMode == .perTokenProvider
++        var providerTable: GemmaPLERowTable?
++        var provider: PerTokenInputProvider?
++        var buffers: [String: StaticInputBuffer] = [:]
++        if usesProvider {
++            let table = try GemmaPLERowTable(directory: tablesURL)
++            providerTable = table
++            provider = { name, token, _, destination, byteCount in
++                guard name == "ple_tokens" else {
++                    memset(destination, 0, byteCount)
++                    return
++                }
++                table.fill(token: token, destination: destination, byteCount: byteCount)
++            }
++        }
++
+         // OWNED vs FILE-BACKED tables is a speed/footprint trade measured on device
+         // (iPhone 17 Pro, E2B): owned `MTLBuffer`s decode ~30 tok/s; COW-mmap decodes
+         // ~9 tok/s because file-backed no-copy buffers pay a per-encode residency tax
+@@ -83,35 +193,40 @@ public final class GemmaRuntime: @unchecked Sendable {
+         // location — ModelHost stages a side-loaded model out of the read-only signed
+         // .app into a writable cache before load, because COW-mmap of a file inside
+         // the signed bundle regressed.
+-        var tableFiles: [(input: String, url: URL)] = []
+-        for (input, file) in arch.staticInputFiles {
+-            let url = tablesURL.appendingPathComponent(file)
+-            guard FileManager.default.fileExists(atPath: url.path) else {
+-                throw KitGemmaError.missingTableFile(file)
++        if !usesProvider {
++            var tableFiles: [(input: String, url: URL)] = []
++            for (input, file) in arch.staticInputFiles {
++                let url = tablesURL.appendingPathComponent(file)
++                guard FileManager.default.fileExists(atPath: url.path) else {
++                    throw KitGemmaError.missingTableFile(file)
++                }
++                tableFiles.append((input, url))
+             }
+-            tableFiles.append((input, url))
+-        }
+-        let totalBytes = tableFiles.reduce(0) { sum, entry in
+-            sum + ((try? entry.url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+-        }
+-        var buffers: [String: StaticInputBuffer] = [:]
+-        if Self.shouldOwnTables(totalBytes: totalBytes) {
+-            do {
+-                for (input, url) in tableFiles {
+-                    buffers[input] = StaticInputBuffer(try Self.ownedBuffer(url: url, device: device))
++            let totalBytes = tableFiles.reduce(0) { sum, entry in
++                sum + ((try? entry.url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
++            }
++            if Self.shouldOwnTables(totalBytes: totalBytes) {
++                do {
++                    for (input, url) in tableFiles {
++                        buffers[input] = StaticInputBuffer(
++                            try Self.ownedBuffer(url: url, device: device))
++                    }
++                } catch {
++                    buffers = [:]
+                 }
+-            } catch {
+-                // Allocation failed under pressure — drop the copies and fall back to
+-                // the file-backed mapping (slower, but loads).
+-                buffers = [:]
+             }
+-        }
+-        if buffers.isEmpty {
+-            for (input, url) in tableFiles {
+-                buffers[input] = StaticInputBuffer(try Self.mappedBuffer(url: url, device: device))
++            if buffers.isEmpty {
++                for (input, url) in tableFiles {
++                    buffers[input] = StaticInputBuffer(
++                        try Self.mappedBuffer(url: url, device: device))
++                }
+             }
+         }
+         self.tableBuffers = buffers
++        self.providerTable = providerTable
+ 
+         let bundle = try LanguageBundle(at: decoderURL)
++        if let providerTable, providerTable.vocabCount != bundle.vocabSize {
++            throw KitGemmaError.bufferAllocationFailed("meta.json")
++        }
+         self.modelName = bundle.name
+@@ -133,6 +248,7 @@ public final class GemmaRuntime: @unchecked Sendable {
+             modelURL: modelURL,
+             options: EngineOptions(
+                 variant: engineVariant.factoryOverride,
++                perTokenInputProvider: provider,
+                 staticInputBuffers: buffers))
+ 
+         self.tokenizer = try await bundle.loadTokenizer()
+diff --git a/Sources/CoreAIKit/Gemma/KitGemmaModel.swift b/Sources/CoreAIKit/Gemma/KitGemmaModel.swift
+index 24b298e..0000000 100644
+--- a/Sources/CoreAIKit/Gemma/KitGemmaModel.swift
++++ b/Sources/CoreAIKit/Gemma/KitGemmaModel.swift
+@@ -127,10 +127,15 @@ public struct KitGemmaModel: LanguageModel {
+         decoderBundleAt decoderURL: URL,
+         tablesAt tablesURL: URL,
+         arch: GemmaArchitecture = .gemma4,
+-        modelID: String? = nil
++        modelID: String? = nil,
++        pleMode: GemmaPLEMode = .staticInputs
+     ) async throws {
+         let runtime = try await GemmaRuntime(
+-            decoderBundleAt: decoderURL, tablesAt: tablesURL, arch: arch)
++            decoderBundleAt: decoderURL,
++            tablesAt: tablesURL,
++            arch: arch,
++            pleMode: pleMode
++        )
+         self.init(runtime: runtime, modelID: modelID ?? decoderURL.standardizedFileURL.path)
+     }
+ 

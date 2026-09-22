@@ -1,9 +1,21 @@
 # Core AI 編集品質（ハーネス）調査メモ
 
-Status: Investigation（原因候補と検証計画。結論は未確定）
+Status: v1 investigation / v2 local candidate
 Scope: Apple-hosted E4B / 12B を Hazakura の Local Assist 経路で使ったときの出力品質
 Authority: Medium（実装状況の記述は source 準拠。原因は仮説）
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
+
+## E4B v2追補（2026-09-23）
+
+旧E4Bのstatic PLE graphは、int4/int8/fp16 decoderを変えても日本語の語中崩れが残った。
+元QAT checkpointのeager実行とint8 PLEだけを加えたeager実行、pipelined eager、
+per-token PLE provider型Core AI実行では同じ症状を再現しなかった。この比較から
+static table graph経路が主因と判断し、v2はprovider型へ変更した。
+固定helper/stageで6例×3回と取消後を評価し、候補の保持チェックは全件成功した。
+校正時にraw出力が漢数字を算用数字へ正規化する例は残るため、保護対象の数値表記が
+変わった候補は元文へ戻す。これは校正結果の安全側処理であり、自由な書き換え品質の保証ではない。
+旧E4BのEOS変更だけでは改善しなかった観測は維持する。詳細は
+[E4B v2外部レビュー資料](reviews/2026-09-23-core-ai-e4b-v2/README.md)。
 
 ## 最新の再現確認（2026-09-22）
 

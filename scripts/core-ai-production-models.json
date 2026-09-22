@@ -8,36 +8,40 @@
   "models": [
     {
       "key": "gemma4-e4b",
-      "modelId": "apple:core-ai:gemma-4-e4b-it-int4-v1",
-      "catalogVersion": "2026.09.20.1",
+      "modelId": "apple:core-ai:gemma-4-e4b-it-int4-provider-v2",
+      "catalogVersion": "2026.09.22.1",
       "displayName": "Gemma 4 E4B",
-      "storageDirectory": "gemma-4-e4b-it-int4-v1",
-      "assetPackId": "hazakura-coreai-gemma4-e4b-v1",
-      "runtimeKind": "coreai-kit-gemma4-ple",
+      "storageDirectory": "gemma-4-e4b-it-int4-provider-v2",
+      "assetPackId": "hazakura-coreai-gemma4-e4b-v2",
+      "runtimeKind": "coreai-kit-gemma4-ple-provider",
       "sourceModel": "google/gemma-4-E4B-it-qat-q4_0-unquantized",
       "sourceModelRevision": "476025a01dbf99361c062bbeca3d6a76bb4c4566",
-      "convertedRepository": "mlboydaisuke/gemma-4-E4B-CoreAI",
-      "convertedRevision": "e9ba305a91bf3e62ea83d5652b572b69913c433a",
-      "quantization": "Core AI int4lin from the official QAT checkpoint",
+      "convertedRepository": "john-rocky/coreai-model-zoo",
+      "convertedRevision": "347393ede35fd25e9e59203dba562e5ee4d268bb",
+      "artifactSource": {
+        "kind": "local-reexport",
+        "root": "reexports/gemma4-e4b-v2/2026.09.22.1/payload-input"
+      },
+      "quantization": "Core AI symmetric int4lin from the official QAT checkpoint with per-token PLE provider",
       "licensing": {
         "sourceModelLicense": "Apache-2.0",
         "sourceModelLicenseUrl": "https://ai.google.dev/gemma/docs/gemma_4_license",
-        "convertedArtifactStatement": "The pinned conversion repository model card declares Apache-2.0 and contains no standalone LICENSE file.",
+        "convertedArtifactStatement": "Hazakura re-exported this candidate from the pinned source checkpoint using the pinned coreai-model-zoo conversion code; it is not a prebuilt third-party artifact.",
         "reviewStatus": "manual-review-required",
         "licenseFiles": [
           "LICENSE-APACHE-2.0.txt"
         ]
       },
       "conversion": {
-        "recipe": "gemma-4-e4b documented table-input variant",
+        "recipe": "gemma-4-e4b symmetric int4 decode with per-token PLE provider",
         "commands": [
-          "python3 ondevice/export_gemma4_gather_raw.py --hf-id google/gemma-4-E4B-it-qat-q4_0-unquantized --out <tables-dir>",
-          "python3 conversion/export_gemma4_decode_pipelined.py int4lin --hf-id google/gemma-4-E4B-it-qat-q4_0-unquantized --tbl --raw-dir <tables-dir> --max-ctx 4096"
+          "python3 conversion/export_gemma4_decode_pipelined.py int4lin --hf-id google/gemma-4-E4B-it-qat-q4_0-unquantized --revision 476025a01dbf99361c062bbeca3d6a76bb4c4566 --local-files-only --lin-sym --max-ctx 4096 --out-dir <exports-dir>",
+          "npm run coreai:e4b-v2:reexport -- --execute"
         ],
-        "hazakuraReexported": false
+        "hazakuraReexported": true
       },
       "runtimeRequirements": {
-        "engine": "coreai-pipelined with Gemma PLE static inputs",
+        "engine": "coreai-pipelined with Gemma PLE per-token provider",
         "environment": {
           "COREAI_CHUNK_THRESHOLD": "1"
         }
@@ -48,7 +52,7 @@
       "releaseEligible": false,
       "releaseBlockers": [
         "Mac AOT artifact has not been produced with coreai-build.",
-        "Hazakura Japanese writing bake-off has not passed on a 16 GB Mac.",
+        "Japanese writing quality and memory have not been accepted on a 16 GB Mac.",
         "Apple-hosted download and materialization have not passed TestFlight acceptance on the 16 GB target."
       ],
       "layout": {
@@ -57,58 +61,70 @@
       },
       "files": [
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.hash",
-          "destination": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.hash",
+          "source": "decoder/gemma4_e4b_qat_decode_int4linsym.aimodel/main.hash",
+          "destination": "decoder/gemma4_e4b_qat_decode_int4linsym.aimodel/main.hash",
           "size": 32,
-          "sha256": "cbbda8eafdbbdc8ae9ea83ef131950829b8306226951ca4b0644946c803941db"
+          "sha256": "acaa33bbaa209650625b9c0909f12ffea1544457eeb5b8ca049083400e11f892"
         },
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.mlirb",
-          "destination": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/main.mlirb",
-          "size": 3956099192,
-          "sha256": "37581be8c9756f33a8639c32536a4d5d760f2c2b2fba1ee0fe98885d3b83dc09"
+          "source": "decoder/gemma4_e4b_qat_decode_int4linsym.aimodel/main.mlirb",
+          "destination": "decoder/gemma4_e4b_qat_decode_int4linsym.aimodel/main.mlirb",
+          "size": 3957013772,
+          "sha256": "e43dd56383eb2b21088e0a166330b656384a5f0380cea714aafedd2edafa9def"
         },
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/metadata.json",
-          "destination": "decoder/gemma4_e4b_qat_decode_int4lin_tbl.aimodel/metadata.json",
+          "source": "decoder/gemma4_e4b_qat_decode_int4linsym.aimodel/metadata.json",
+          "destination": "decoder/gemma4_e4b_qat_decode_int4linsym.aimodel/metadata.json",
           "size": 105,
-          "sha256": "d623df0677f44cfaf90cc49ddc7d4377b6c2015f8f09a75f0dd00b9bc9ca4243"
+          "sha256": "828b689f54264e4f44064f44a89643194de03a943bffa07bf72fecb358d262f4"
         },
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/metadata.json",
+          "source": "decoder/metadata.json",
           "destination": "decoder/metadata.json",
-          "size": 640,
-          "sha256": "560cd7ffe9ba2d2cdd5d0aabba580a0ac47a2da401f8e7c1aee82c58901ae566"
+          "size": 638,
+          "sha256": "929218de84239c9f4c48092cf2e166504ca4d828da43a81d3a2408d3472b60b7"
         },
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/tokenizer/chat_template.jinja",
+          "source": "decoder/tokenizer/chat_template.jinja",
           "destination": "decoder/tokenizer/chat_template.jinja",
           "size": 18569,
           "sha256": "0a2c8073c878ab1da004bee933a998606537bbb62016310352c7285c3f01c5b5"
         },
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/tokenizer/tokenizer.json",
+          "source": "decoder/tokenizer/generation_config.json",
+          "destination": "decoder/tokenizer/generation_config.json",
+          "size": 203,
+          "sha256": "b69207f9be617e982d13cc273cce6fd88c98dda99a4bdc5e2d52ffe0a0d9f0a9"
+        },
+        {
+          "source": "decoder/tokenizer/tokenizer_config.json",
+          "destination": "decoder/tokenizer/tokenizer_config.json",
+          "size": 3729,
+          "sha256": "3ab5c7b94dc97d65ca7064496fa69b88ff875378e1cb7ee3e43070c3a8170999"
+        },
+        {
+          "source": "decoder/tokenizer/tokenizer.json",
           "destination": "decoder/tokenizer/tokenizer.json",
           "size": 32169626,
           "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f"
         },
         {
-          "source": "gpu-pipelined/gemma4_e4b_qat_decode_int4lin_tbl/tokenizer/tokenizer_config.json",
-          "destination": "decoder/tokenizer/tokenizer_config.json",
-          "size": 2744,
-          "sha256": "c273475fdd20f9cf8ee67b949dc1a5ac6afb096c974de93cb47e52c870229ee8"
-        },
-        {
-          "source": "ios-frontend/gemma4_e4b_qat_gather_raw/embed_per_layer.i8",
+          "source": "tables/embed_per_layer.i8",
           "destination": "tables/embed_per_layer.i8",
           "size": 2818572288,
           "sha256": "891f77177b4ab317e5562b6684c5f7825cd5795a9c4b26f97af121ebf4bb7ccb"
         },
         {
-          "source": "ios-frontend/gemma4_e4b_qat_gather_raw/embed_per_layer.scale.f32",
+          "source": "tables/embed_per_layer.scale.f32",
           "destination": "tables/embed_per_layer.scale.f32",
           "size": 1048576,
           "sha256": "512d9d0a2b089ae37594ce80e848a08e1b5a6b3f40014a32333e6d191a9b6131"
+        },
+        {
+          "source": "tables/meta.json",
+          "destination": "tables/meta.json",
+          "size": 390,
+          "sha256": "c35f5a2974d24ec75ffcf17fa35a458c88d72712f65e0a0457e6ff706537deb5"
         }
       ]
     },

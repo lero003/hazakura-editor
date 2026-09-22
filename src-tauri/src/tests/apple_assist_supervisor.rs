@@ -81,7 +81,7 @@ fn supervisor_keeps_the_helper_generation_usage() {
     // `usage` is what the Settings pane shows, so the camelCase wire names
     // here must keep matching the Swift helper's `AppleAssistUsage`.
     let envelope: WireEnvelope = serde_json::from_str(
-        r#"{"kind":"candidate","value":{"operation":"proofread","candidateText":"fixed","modelId":"apple:core-ai:gemma-4-e4b-it-int4-v1","latencyMs":1234,"usage":{"instructionTokens":40,"promptTokens":812,"contextSize":8192,"status":"ok","cachedTokens":640,"outputTokens":24,"maximumResponseTokens":2048,"samplingRequested":"temperature=none(greedy)","samplingEffective":"greedy"}}}"#,
+        r#"{"kind":"candidate","value":{"operation":"proofread","candidateText":"fixed","modelId":"apple:core-ai:gemma-4-e4b-it-int4-provider-v2","latencyMs":1234,"usage":{"instructionTokens":40,"promptTokens":812,"contextSize":8192,"status":"ok","cachedTokens":640,"outputTokens":24,"maximumResponseTokens":2048,"samplingRequested":"temperature=none(greedy)","samplingEffective":"greedy"}}}"#,
     )
     .expect("candidate envelope with usage should parse");
 

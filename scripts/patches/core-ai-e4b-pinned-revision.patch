@@ -1,0 +1,28 @@
+diff --git a/conversion/export_gemma4_decode_pipelined.py b/conversion/export_gemma4_decode_pipelined.py
+index 5842801..660cc51 100644
+--- a/conversion/export_gemma4_decode_pipelined.py
++++ b/conversion/export_gemma4_decode_pipelined.py
+@@ -146,6 +146,10 @@ def main() -> None:
+                          "meta.json)")
+     ap.add_argument("--hf-id", default=DEFAULT_HF_ID,
+                     help="checkpoint id (E2B/E4B, base or QAT-unquantized)")
++    ap.add_argument("--revision",
++                    help="immutable Hugging Face revision for the source checkpoint")
++    ap.add_argument("--local-files-only", action="store_true",
++                    help="resolve the pinned checkpoint from the local cache only")
+     ap.add_argument("--lin-sym", action="store_true",
+                     help="linear modes: plain absmax symmetric (no clipping) — the "
+                          "QAT-grid-aligned variant (q4_0 = per-block-32 absmax)")
+@@ -156,7 +160,11 @@ def main() -> None:
+             + ("sym" if args.lin_sym else "") + ("_tbl" if args.tbl else ""))
+ 
+     model_dir = snapshot_download(
+-        args.hf_id, allow_patterns=["*.safetensors", "*.safetensors.index.json", "*.json"])
++        args.hf_id,
++        revision=args.revision,
++        local_files_only=args.local_files_only,
++        allow_patterns=["*.safetensors", "*.safetensors.index.json", "*.json", "*.jinja"],
++    )
+     print(f"loading {args.hf_id} (fp16) ...")
+     causal = Gemma4ForCausalLM.from_local(model_dir, dtype=DTYPE).eval()
+     cfg = causal.config
