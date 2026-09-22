@@ -135,6 +135,13 @@ describe("editor tab close affordance CSS", () => {
     expect(lowerSection).toMatch(/border-top:\s*1px solid var\(--border\)/);
   });
 
+  it("gives restored Core AI model row focus an explicit ring in every theme", () => {
+    const focus = ruleBody(dialogsCss, ".core-ai-model-row:focus-visible");
+
+    expect(focus).toMatch(/outline:\s*2px solid var\(--accent\)/);
+    expect(focus).toMatch(/outline-offset:\s*2px/);
+  });
+
   it("keeps the EPUB scope note more specific than generic dialog paragraphs", () => {
     const note = ruleBody(
       dialogsCss,

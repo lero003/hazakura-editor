@@ -6,8 +6,9 @@ Authority: Medium
 Last reviewed: 2026-09-22
 
 - **モデル設定は実機レビュー待ち（2026-09-22）:** local選択を設定・Assist pickerで統一。
-  local消失時のSystem復帰、設定で「使う」が消えた後のfocusを修正。frontend 2,682件、scripts 24件、
-  surface 132件、型検査、App Store preview build / distribution probe成功。ローカルad-hoc previewは
+  local消失時のSystem復帰、設定で「使う」が消えた後のfocusを修正。再レビューの通常テーマfocus枠と
+  消失localの3言語表示も修正。frontend 2,686件、scripts 24件、surface 132件、型検査、
+  App Store preview build / distribution probeはローカルで成功。CIの独立確認ではない。ローカルad-hoc previewは
   3.1.0。次はオーナーが実操作・VoiceOver・実モデルmemoryを確認する。
   [範囲と手順](reviews/2026-09-22-model-settings-self-review/README.md)。sandbox / TestFlightは別ゲート。
 

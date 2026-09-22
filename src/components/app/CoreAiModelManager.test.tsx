@@ -106,6 +106,33 @@ describe("CoreAiModelManager", () => {
     expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
   });
 
+  it.each([
+    ["ja", "現在のモデル：ローカルモデルが見つかりません", "使う", "現在のモデル：Apple Intelligence"],
+    ["en", "Current model: Local model unavailable", "Use", "Current model: Apple Intelligence"],
+    ["kana", "いまの もでる：ろーかるもでるが ありません", "つかふ", "いまの もでる：Apple Intelligence"],
+  ] as const)("localizes a missing selected local model and permits System recovery in %s", async (language, missing, use, restored) => {
+    const systemId = "apple:foundation-models:system-default";
+    const missingId = "local:app-managed:MyQwen";
+    const system = {
+      id: systemId, displayName: "Apple Intelligence", kind: "system",
+      source: "apple_hosted", status: "ready", selected: false,
+    };
+    const catalog = {
+      distributionStatus: "not_published", selectedModelId: missingId, models: [system],
+    };
+    mocks.list.mockResolvedValue(catalog);
+    mocks.select.mockResolvedValue({
+      ...catalog, selectedModelId: systemId, models: [{ ...system, selected: true }],
+    });
+
+    const { container } = render(<CoreAiModelManager label="Models" language={language} />);
+    expect(await screen.findByText(missing)).toBeTruthy();
+    expect(container.textContent).not.toContain(missingId);
+    fireEvent.click(screen.getByRole("button", { name: use }));
+    await waitFor(() => expect(mocks.select).toHaveBeenCalledWith(systemId));
+    expect(await screen.findByText(restored)).toBeTruthy();
+  });
+
   it("localizes a broken local bundle reason and does not offer retry", async () => {
     mocks.list.mockResolvedValue({
       distributionStatus: "not_published",

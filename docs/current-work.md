@@ -9,8 +9,10 @@ Last reviewed: 2026-09-22
 
 設定とAssist pickerのlocal選択条件を統一し、選択中local folder消失時もSystemへ戻せるようにした。
 設定の「使う」が消えた後は同じモデル行へfocusを戻し、別操作へ移動済みなら奪わない。
-保存先・配布状況の旧説明も3言語で修正。frontend 2,682件、scripts 24件、surface 132件、型検査、
-App Store preview buildとdistribution probeは成功。3.1.0のローカルad-hoc previewを作成した。
+再レビュー（`36b7842a`）のP2/P3として、通常テーマのモデル行focus枠と消失localの3言語表示も修正。
+保存先・配布状況の旧説明も3言語で修正。frontend 2,686件、scripts 24件、surface 132件、型検査、
+App Store preview buildとdistribution probeはローカルで成功（CIの独立確認ではない）。
+3.1.0のローカルad-hoc previewを再作成した。
 次はオーナー実機レビュー。操作項目と証跡は
 [モデル設定自己レビュー](reviews/2026-09-22-model-settings-self-review/README.md)。
 VoiceOver、実モデルmemory、sandbox / TestFlightは未確認。

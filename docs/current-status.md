@@ -8,8 +8,9 @@ Last reviewed: 2026-09-22
 ## Current State
 
 - **モデル設定の自己レビュー（2026-09-22）:** local modelをAssist pickerでも選択できるようにし、
-  選択中local folder消失時のSystem復帰と、設定選択後のfocus喪失を修正した。frontend 2,682件、
-  scripts 24件、surface 132件、型検査、App Store preview build / distribution probe成功。
+  選択中local folder消失時のSystem復帰と、設定選択後のfocus喪失を修正した。再レビューの
+  通常テーマfocus枠・消失localの内部ID表示も是正。frontend 2,686件、scripts 24件、surface 132件、
+  型検査、App Store preview build / distribution probeはローカルで成功（CIとは別の証跡）。
   ローカルad-hoc preview 3.1.0でオーナー実機レビューへ進める。実操作・VoiceOver・
   実モデルmemory・sandbox / TestFlight受入は未確認。
   [自己レビューと実機確認項目](reviews/2026-09-22-model-settings-self-review/README.md)。

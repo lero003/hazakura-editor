@@ -69,7 +69,10 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
 
   return <div className="core-ai-model-manager" aria-label={label}>
     <p className="field-hint">{copy.currentModel(
-      catalog.models.find((model) => model.selected)?.displayName ?? catalog.selectedModelId,
+        catalog.models.find((model) => model.selected)?.displayName
+          ?? (catalog.selectedModelId.startsWith("local:app-managed:")
+            ? copy.missingLocalModel
+            : catalog.selectedModelId),
     )} {catalog.deviceMemoryGb == null ? null : `· ${copy.deviceMemory(catalog.deviceMemoryGb)}`}</p>
     {catalog.distributionStatus === "not_published" ?
       <p className="field-hint" role="status">{copy.notPublished}</p> : null}
@@ -174,6 +177,7 @@ function managerCopy(language: MenuLanguage) {
   if (language === "en") return {
     selected: "Selected", ready: "Ready", systemStatus: "System default / availability not checked",
     localBadge: "Local", localDetected: "Detected (can be selected)",
+    missingLocalModel: "Local model unavailable",
     localUnavailable: "Unavailable", localReason: (code: string) => localModelReason("en", code),
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
     download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete",
@@ -201,6 +205,7 @@ function managerCopy(language: MenuLanguage) {
   if (language === "kana") return {
     selected: "えらんでゐます", ready: "つかへます", systemStatus: "しすてむの ひょうじゅん / つかへるかは まだ たしかめてゐません",
     localBadge: "ろーかる", localDetected: "みつけました（えらべます）",
+    missingLocalModel: "ろーかるもでるが ありません",
     localUnavailable: "つかへません", localReason: (code: string) => localModelReason("kana", code),
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
     download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす",
@@ -228,6 +233,7 @@ function managerCopy(language: MenuLanguage) {
   return {
     selected: "選択中", ready: "利用可能", systemStatus: "システム標準 / 利用状況未確認",
     localBadge: "ローカル", localDetected: "検出済み（選択できます）",
+    missingLocalModel: "ローカルモデルが見つかりません",
     localUnavailable: "利用不可", localReason: (code: string) => localModelReason("ja", code),
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
     download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除",
