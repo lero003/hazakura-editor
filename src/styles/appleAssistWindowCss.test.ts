@@ -53,7 +53,8 @@ describe("apple-assist-window.css", () => {
   it("uses readable label sizes and a multiline resizable request field", () => {
     const sizes = [...css.matchAll(/font-size:\s*([\d.]+)px/g)].map((match) => Number(match[1]));
     expect(sizes.length).toBeGreaterThan(0);
-    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(14);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(13);
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(14);
     const textarea = ruleBody(css, ".apple-assist-window-textarea");
     expect(textarea).toMatch(/min-height:\s*5rem/);
     expect(textarea).toMatch(/resize:\s*vertical/);

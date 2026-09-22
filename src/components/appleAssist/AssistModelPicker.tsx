@@ -125,7 +125,7 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
           className="apple-assist-model-option"
           onFocus={() => { focusedModelId.current = model.id; }}
           onClick={() => {
-            if (!selected) void onSelect?.(model.id);
+            if (!outsideCatalog || missingLocal) void onSelect?.(model.id);
             close(true);
           }}>
           <span>{model.displayName}</span><span aria-hidden="true">{selected ? "✓" : isCoreAiModelSelectable(model) ? "" : "—"}</span>

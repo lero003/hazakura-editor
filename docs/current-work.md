@@ -5,6 +5,15 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## 実機フィードバック対応（2026-09-22）
+
+Local Assistの文字サイズを一段縮小し、「再確認」をモデル選択時の自動probeと上部の短い状態表示へ変更。
+同じモデルの選び直しでも再probeし、会話・入力は保持する。frontend 2,686件、scripts 24件、
+surface 132件、型検査、Vite、ブラウザー表示確認は成功。E4Bは固定18件で文章崩れを再現し、
+前回保存結果とraw / candidateが全件一致。表示後処理の問題ではないが、モデル / runtimeの原因は未確定。
+**機械チェック成功を文章品質の合格としない。** 次はユーザーの再現例と旧版を固定し、token列のdecodeと
+promptを分離比較する。[証跡と残課題](reviews/2026-09-22-assist-device-feedback/README.md)。
+
 ## 審査・掲載文の準備（2026-09-22）
 
 [3.1掲載文パケット](releases/3.1.0-app-store-listing-copy.md)に日本語説明・副題・画像案をまとめ、

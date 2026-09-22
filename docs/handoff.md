@@ -5,6 +5,14 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **実機フィードバック（2026-09-22）:** Local Assistの文字を一段縮小し、再確認ボタンを撤去。
+  モデル選択時の自動probeを上部で短く示す。同一選択でも再probe、失敗理由・入力とのaria関連は維持。
+  UIテストとブラウザー表示は確認済み。E4Bは固定18件が以前のraw / candidateと完全一致したが、
+  日本語崩れは残る。15/18の機械チェック成功を品質合格と読まない。
+  次はユーザー再現例・旧版の固定と、生成tokenの逐次 / 全体decode、promptの隔離比較。
+  [証跡](reviews/2026-09-22-assist-device-feedback/README.md)。ad-hoc previewは再ビルド・probe成功。
+  build 146の署名pkgへ今回UIは未反映。
+
 - **審査・掲載文は準備済み草案（2026-09-22）:** [3.1掲載文パケット](releases/3.1.0-app-store-listing-copy.md)が入口。
   日英What's New、英語審査メモ、説明・副題・Keywords、画像案と未受入ゲートを整理。
   Connectへの保存・送信は未実施。署名pkgは`8dffa835`から作成済み（候補詳細はignoredのlatest.json）。

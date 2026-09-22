@@ -306,6 +306,12 @@ export function AppleAssistWindowApp() {
   }, [modelCatalog.selectedModelId]);
 
   const selectModel = useCallback(async (modelId: string) => {
+    if (busy || modelSwitching || !probed) return;
+    if (modelId === selectedModelIdRef.current) {
+      availabilityReportedRef.current = false;
+      setAvailabilityRefreshKey((current) => current + 1);
+      return;
+    }
     setModelSwitching(true);
     setError(null);
     try {
@@ -315,13 +321,7 @@ export function AppleAssistWindowApp() {
     } finally {
       setModelSwitching(false);
     }
-  }, [runCatalogRequest]);
-
-  const recheckAvailability = () => {
-    if (busy || modelSwitching || !probed) return;
-    availabilityReportedRef.current = false;
-    setAvailabilityRefreshKey((current) => current + 1);
-  };
+  }, [busy, modelSwitching, probed, runCatalogRequest]);
 
   useEffect(() => {
     activeRequestIdRef.current = activeRequestId;
@@ -891,15 +891,21 @@ export function AppleAssistWindowApp() {
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
         {/* Keep the target visible; expanded help retains the processing and apply/save boundary. */}
-        {conversation ? <div className="apple-assist-window-toolbar">
-          <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
+        {conversation || !available || modelSwitching ? <div className="apple-assist-window-toolbar">
+          {/* Keep failures visible outside collapsed help, with no reserved ready-state panel. */}
+          {!available || modelSwitching ? <p className="apple-assist-model-status"
+            id="apple-assist-availability" role="status">
+            {modelSwitching || !probed ? <span className="apple-assist-window-spinner" aria-hidden="true" /> : null}
+            <span>{modelSwitching ? ui.switching : !probed ? ui.checking : availability.kind === "disabled" ? ui.disabled : availability.kind === "unsupported" ? ui.unsupported : ui.unavailable}</span>
+          </p> : null}
+          {conversation ? <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
             onClick={() => {
               setConversation(null); conversationRef.current = null;
               clearReviewNavigation();
               reviewIdentityRef.current = null; setReviewIdentity(null);
               setStreamPreview(""); setStreamOriginalText(""); setError(null);
               setSentRequests([]); clearFeedback(); setStatus(copy.newConversationStatus);
-            }}>{copy.newConversationButton}</button>
+            }}>{copy.newConversationButton}</button> : null}
         </div> : null}
         <details className="apple-assist-target-details">
           <summary>
@@ -955,25 +961,9 @@ export function AppleAssistWindowApp() {
         )}</div>
         <div className="apple-assist-composer">
           <label htmlFor="apple-assist-rough-request" className="apple-assist-window-label">{ui.composer}</label>
-          {/* 外部レビュー R8: 使えない理由と復帰方法を畳んだヘルプの中だけに置かない。
-              今の状態と必要な操作を composer の直前へ1行で出し、無効な入力欄と結びつける。
-              詳細（但し書き・利用条件）はヘルプに残す。 */}
-          <div className="apple-assist-availability-row">
-          {available && !modelSwitching ? null : (
-            <p
-              className="apple-assist-state-note"
-              id="apple-assist-availability"
-              role="status"
-            >
-              {modelSwitching ? ui.switching : !probed ? ui.checking : availability.kind === "disabled" ? ui.disabled : availability.kind === "unsupported" ? ui.unsupported : ui.unavailable}
-            </p>
-          )}
-            <button type="button" className="apple-assist-recheck"
-              disabled={busy || modelSwitching || !probed} onClick={recheckAvailability}>{ui.recheck}</button>
-          </div>
           <textarea id="apple-assist-rough-request" className="apple-assist-window-textarea"
             lang={DOCUMENT_CONTENT_LANG}
-            aria-describedby={available ? undefined : "apple-assist-availability"}
+            aria-describedby={available && !modelSwitching ? undefined : "apple-assist-availability"}
             value={requestText} onChange={(event) => { setRequestText(event.target.value); setError(null); }}
             rows={3} placeholder={copy.placeholder} disabled={busy || modelSwitching || !available}
             onKeyDown={(event) => {

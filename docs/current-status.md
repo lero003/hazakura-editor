@@ -7,6 +7,12 @@ Last reviewed: 2026-09-22
 
 ## Current State
 
+- **実機フィードバック対応（2026-09-22）:** Local Assistを14px本文 / 13px補助表示へ縮小。
+  常設の「再確認」を撤去し、選択時の自動probe・上部状態・同一モデル再選択による復帰へ変更。
+  frontend 2,686件と表示用ブラウザー確認は成功。E4Bの日本語崩れはhelper生出力で再現し未解決。
+  固定18件は以前の保存結果と一致。直近変更による退行はその範囲で未検出だが、品質受入ではない。
+  [検証境界と次の調査](reviews/2026-09-22-assist-device-feedback/README.md)。
+
 - **3.1審査資料は草案（2026-09-22）:** [掲載文パケット](releases/3.1.0-app-store-listing-copy.md)と
   [リリースノート / 審査メモ](releases/3.1.0-app-store-release-notes.md)を現行実装へ更新。
   英語JSONも3.1化し、未適用を維持。`8dffa835`からの署名universal app/pkgはローカル検証済み。

@@ -145,8 +145,11 @@ describe("AppleAssistWindowApp render", () => {
     vi.mocked(probeAppleAssistAvailability).mockImplementationOnce(() => new Promise((resolve) => { finishProbe = resolve; }));
     await act(async () => { finishSelection({ ...catalog, selectedModelId: model.id }); });
     expect(screen.getByText("Checking availability…")).toBeTruthy();
+    expect(screen.getByText("Checking availability…").closest("header")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Check again" })).toBeNull();
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
     await act(async () => { finishProbe({ kind: "available", modelId: model.id }); });
+    expect(document.getElementById("apple-assist-availability")).toBeNull();
     expect(screen.getByRole("button", { name: `Choose model: ${model.displayName}` }).hasAttribute("disabled")).toBe(false);
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(false);
     expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep input");
@@ -184,7 +187,7 @@ describe("AppleAssistWindowApp render", () => {
     expect(screen.getByRole("button", { name: "Choose model: Apple Intelligence" })).toBeTruthy();
   });
 
-  it("rechecks availability without losing the conversation or typed request", async () => {
+  it("rechecks a reselected model without losing the conversation or typed request", async () => {
     const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
     vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);
     vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available" });
@@ -197,14 +200,17 @@ describe("AppleAssistWindowApp render", () => {
     await act(async () => { eventListeners.get(APPLE_ASSIST_PROPOSAL_STATUS_EVENT)!({ payload: { ...request, phase: "completed", candidateText: "Retained draft", emittedAtMs: 1 } }); });
     let resolveProbe!: (value: { kind: "unavailable"; reason: string }) => void;
     vi.mocked(probeAppleAssistAvailability).mockImplementationOnce(() => new Promise((resolve) => { resolveProbe = resolve; }));
-    fireEvent.click(screen.getByRole("button", { name: "Check again" }));
-    expect(screen.getByRole("button", { name: "Check again" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Apple Intelligence" }));
+    expect(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
     expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep this request");
     expect(screen.getByTestId("apple-assist-conversation-state")).toBeTruthy();
     await act(async () => { resolveProbe({ kind: "unavailable", reason: "temporary failure" }); });
     vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available" });
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Check again" })); });
+    fireEvent.click(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }));
+    await act(async () => { fireEvent.click(screen.getByRole("menuitemradio", { name: "Apple Intelligence" })); });
+    expect(selectLocalAssistModel).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(false);
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send request" })); });
     expect(vi.mocked(requestAppleAssistProposal).mock.calls.at(-1)![0].proposalText).toBe("Retained draft");
@@ -463,11 +469,12 @@ describe("AppleAssistWindowApp render", () => {
     expect(requestAppleAssistProposal).not.toHaveBeenCalled();
   });
 
-  it("shows one actionable availability note beside the disabled composer", async () => {
+  it("shows one actionable availability note at the top linked to the disabled composer", async () => {
     vi.mocked(useAppleAssistAvailability).mockReturnValue({ availability: { kind: "disabled" }, available: false, probed: true });
     render(<AppleAssistWindowApp />);
     await act(async () => { await Promise.resolve(); });
     expect(screen.getByRole("status").textContent).toContain("Assist Settings");
+    expect(screen.getByRole("status").closest("header")).toBeTruthy();
     expect(screen.getByRole("textbox").getAttribute("aria-describedby")).toBe("apple-assist-availability");
     expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("log").textContent).toBe("");

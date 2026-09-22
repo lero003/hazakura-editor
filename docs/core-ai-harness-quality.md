@@ -5,6 +5,17 @@ Scope: Apple-hosted E4B / 12B を Hazakura の Local Assist 経路で使った�
 Authority: Medium（実装状況の記述は source 準拠。原因は仮説）
 Last reviewed: 2026-09-22
 
+## 最新の再現確認（2026-09-22）
+
+実機報告を受けてproduction E4Bを通常GPU環境で再評価した。18件すべての生出力とcandidateが
+以前の保存結果（`894ab769`のreport）と一致し、「休休」「筆記具具」等の崩れも再現。
+機械チェック15/18成功でも日本語の自然さは未合格である。Hazakuraの整形より前の問題だが、
+CoreAIKitの逐次decode / prompt / モデルの切り分けは未完了。
+[最新証跡と比較対象](reviews/2026-09-22-assist-device-feedback/README.md)を参照。
+以下の初期観測は履歴であり、productionの現在値は`AssistPrompt.buildLive` / 2048 tokens / greedy。
+
+## 初期観測（2026-09-21、改善前）
+
 16 GB MacBook Air（M5）で DL・load・生成は通ったが、編集結果が崩れるという報告への整理。
 **モデル能力そのものより、Developer テスト用のハーネスをそのまま本番へ使っている点を先に疑う。**
 
