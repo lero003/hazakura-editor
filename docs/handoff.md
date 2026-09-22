@@ -5,6 +5,17 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **C-3 複数スライス外部レビュー是正（2026-09-22）:** `2fd9df12` でloader metadataを
+  local contractへ取り込み、`assets.main` を検証済み単一 `.aimodel` と完全一致させた。
+  `../` / 途中symlink / 別model参照を拒否し、`embedded_tokenizer=false` はloader生成前に
+  `external-tokenizer-not-allowed` とする。cache identityはbundle / `.aimodel` metadata、
+  Tokenizer補助設定とその非存在を含み、大きなpayloadは秒未満mtime + file identityを見る。
+  layoutの欠落 / 空文字codeもRust / Swiftで統一し、共有fixtureは31ケース。frontend 2,677件、
+  scripts 24件、Rust 456件（2 ignored）、Swift 61件、surface 132件、型検査、Vite、production
+  distribution helper build、Rust fmt、diff checkは成功。実local model / built app / VoiceOver /
+  TestFlightは未確認。次は同じ資料で外部再レビューし、bookmark / helper権限境界へ進む前に閉じる。
+  [外部再レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)。
+
 - **C-3 app-managed local backend 接続（2026-09-22）:** スライス3として、検証済み
   `CoreAICustomModels` 候補を Rust-owned selection、再起動復元、availability、通常 / streaming
   生成へ接続した。Rust は ID から path を復元せず毎回 scan 結果へ照合し、helper は

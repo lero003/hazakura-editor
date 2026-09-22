@@ -5,6 +5,26 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## C-3 複数スライス外部レビュー是正（2026-09-22）
+
+スライス1〜3への外部レビュー P1/P2/P3 を `2fd9df12` で閉じた。local contract はbundle
+`metadata.json` のloader必須fieldをRust / Swift双方で読み、`assets.main` がbundle内の安全な
+pathで、検証済みの単一 `.aimodel` と完全一致する場合だけreadyにする。`../`、途中symlink、
+別のnested model参照を共有fixtureで拒否する。
+
+`language.embedded_tokenizer=false` は `external-tokenizer-not-allowed` としてloader生成前に拒否し、
+local modelがHugging Face tokenizer fallbackへ進まないよう固定した。cache identityにはbundleと
+`.aimodel` の両metadata、tokenizer本体とloaderが読む補助設定、その非存在をcontent identityとして
+追加した。大きなpayload / tablesはsizeに加えて秒未満mtimeとfile identityを見る。
+`layout.bundle` / `decoder` / `tables` は欠落を `missing-bundle-directory`、空文字を `unsafe-path` に
+Rust / Swiftで統一した。共有fixtureは31ケース。
+
+検証は frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、Swift 61件、App Store surface
+132件、型検査、Vite build、Rust fmt、production Core AI distribution helper build、
+`git diff --check` が成功。**実 local modelのload / 生成、built app、VoiceOver / キーボード、
+TestFlightは未確認**。次は同じ[外部レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)
+で再レビューし、指摘を閉じてからexternal local sourceのbookmark / helper権限境界へ進む。
+
 ## C-3 Custom Models を選択・helper 実行経路へ接続（2026-09-22）
 
 C-3 スライス3として、スライス1/2で検証・一覧表示まで進めた app-managed local model を、
@@ -16,8 +36,8 @@ C-3 スライス3として、スライス1/2で検証・一覧表示まで進め
   `CoreAIKit` の `KitGemmaModel` / `KitLanguageModel` へ渡す。Apple-hosted 用の licence / notice /
   signed manifest 契約は緩めていない。
 - local model は production と同じ prompt / generation profile / Proposal → Diff → 明示 Apply 経路を使う。
-  キャッシュは tokenizer / `main.hash` / descriptor の content digest と大きな payload の size / mtime で
-  同一性を確認し、署名を作れない場合は request ごとに fresh load する。
+  キャッシュは上記レビュー是正後のmetadata / tokenizer設定 / payload identityで同一性を確認し、
+  署名を作れない場合は request ごとに fresh load する。
 - 選択は Rust-owned ID だけを永続化する。再起動時に bundle が消えた、または壊れた場合は System へ
   fail closed し、保存値も修復する。生成中の切替拒否と保存失敗時の旧 backend 維持は既存契約を再利用する。
 - UI は `detected` な local model にだけ「使う」を出す。download / cancel / retry / delete は引き続き
