@@ -5,6 +5,16 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **C-3 再レビュー追加是正（2026-09-22）:** 前回4件のクローズ確認後に見つかったP2/P3を
+  `a7d19487` で閉じた。署名不一致・取得不能ではreplacement factory前に旧cache entryを解放し、
+  同一署名だけを再利用する。replacement失敗後も旧entryを保持しないことをダミーmodelで固定した。
+  `embedded_tokenizer` は省略時のみtrueを既定にし、明示`null` / 型不正をRust / Swift共通の
+  `malformed-bundle-metadata`とした。共有fixtureは35ケース。frontend 2,677件、scripts 24件、
+  Rust 456件（2 ignored）、Swift XCTest 61件 + Swift Testing 4件、surface 132件、型検査、Vite、
+  production distribution helper build、Rust fmt、diff checkは成功。実local modelのmemory / swap、
+  load / 生成、built app、VoiceOver、TestFlightは未確認。次は同じ資料で外部再レビューする。
+  [外部再レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)。
+
 - **C-3 複数スライス外部レビュー是正（2026-09-22）:** `2fd9df12` でloader metadataを
   local contractへ取り込み、`assets.main` を検証済み単一 `.aimodel` と完全一致させた。
   `../` / 途中symlink / 別model参照を拒否し、`embedded_tokenizer=false` はloader生成前に

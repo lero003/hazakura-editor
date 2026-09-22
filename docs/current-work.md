@@ -5,6 +5,26 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## C-3 再レビュー追加是正 — cache解放順序とTokenizer null契約（2026-09-22）
+
+前回4件のクローズ確認後に見つかった追加P2/P3を `a7d19487` で閉じた。
+
+- **P2（再ロード時の旧モデル保持）:** cache hit / miss / invalidationをCore AI型から独立した
+  `CoreAIModelCacheStorage` へ抽出した。署名不一致または署名取得不能では、重いmodel factoryを
+  開始する前に旧entryを解放する。同一署名だけを再利用し、replacement loadが失敗しても旧entryを
+  保持し直さない。production / app-managed local の両経路が同じ関数を使う。
+- **P3（`embedded_tokenizer: null`）:** 既定値trueはfield省略時だけに限定した。明示`true`は受理、
+  `false`は`external-tokenizer-not-allowed`、`null`と型不正は`malformed-bundle-metadata`で、
+  Rust / Swift共通35ケースfixtureに固定した。
+
+回帰テストはダミーmodelとfactoryを使い、同一署名ではfactoryを再実行しないこと、署名不一致と
+取得不能ではfactory開始前に旧参照が外れること、replacement失敗後も旧参照が残らないことを確認した。
+検証は frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、Swift XCTest 61件 +
+Swift Testing 4件、App Store surface 132件、型検査、Vite build、Rust fmt、production Core AI
+distribution helper build、`git diff --check` が成功。**実local modelでのmemory / swap測定、実load / 生成、
+built app、VoiceOver / キーボード、TestFlightは未確認**。次は
+[同じ外部レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)で再レビューする。
+
 ## C-3 複数スライス外部レビュー是正（2026-09-22）
 
 スライス1〜3への外部レビュー P1/P2/P3 を `2fd9df12` で閉じた。local contract はbundle

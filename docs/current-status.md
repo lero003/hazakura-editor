@@ -14,9 +14,12 @@ Last reviewed: 2026-09-22
   [モデルソース抽象化](core-ai-model-source-abstraction.md) に固定した。1本目のスライスとして
   Rust のローカル bundle 解決・構造検証（`core_ai_local_models.rs`）を追加し、外部レビュー
   P1/P2 の是正で**ローカル契約を Swift `CoreAILocalResourceContract` と分離**した。
-  複数スライスの外部レビュー是正 `2fd9df12` まで含め、両言語は共通 fixture spec
-  `local-model-contract-cases.json` の31ケースを通す。bundle `metadata.json` の `assets.main` は
+  複数スライスの初回レビュー是正 `2fd9df12` と再レビュー追加是正 `a7d19487` まで含め、両言語は
+  共通 fixture spec `local-model-contract-cases.json` の35ケースを通す。bundle `metadata.json` の `assets.main` は
   検証済み `.aimodel` との完全一致を必須にし、`embedded_tokenizer=false` はloader生成前に拒否する。
+  `embedded_tokenizer` の既定値trueはfield省略時だけで、明示`null`と型不正はRust / Swiftとも
+  `malformed-bundle-metadata`にする。cacheは同一署名だけを再利用し、署名不一致または取得不能なら
+  replacement modelの生成前に旧entryを解放する。replacement load失敗後も旧entryを保持し直さない。
   symlink は root 配下の全 component を拒否し、
   scan は壊れた候補も理由付きで返す。スライス2では `app_data_dir()/CoreAICustomModels` を
   app-managed の保存場所として既存 `CoreAiModelStore` / IPC / UI へ接続し、正常候補を
@@ -29,7 +32,7 @@ Last reviewed: 2026-09-22
   C-1 / C-2 と現在のTestFlight前レビューを止めない。任意URL取得・自動DL・モデル店は Non-Goal。
   source 上は選択・生成経路へ接続済みだが、実 local model の load / 生成、built app、VoiceOver、
   TestFlight の証跡ではない。最新検証は frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、
-  Swift 61件、surface 132件と production distribution helper build が成功。
+  Swift XCTest 61件 + Swift Testing 4件、surface 132件と production distribution helper build が成功。
   [初回証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)、
   [レビュー是正証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)、
   [registry / UI 接続証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)、
