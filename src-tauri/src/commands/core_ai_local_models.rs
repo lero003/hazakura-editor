@@ -1,17 +1,33 @@
-//! C-3: resolution and validation for non Apple-hosted Core AI model sources.
+//! C-3: the **local** Core AI model contract - resolution and validation for
+//! non Apple-hosted model sources.
 //!
-//! Apple-hosted models arrive through Background Assets and are verified against
-//! a signed resource manifest (see `core_ai_models.rs`, gate G2). Local sources
-//! (Hazakura's Custom Models directory and user-selected resource folders) have
-//! no Hazakura-signed manifest, so this module applies the structural contract
-//! the Core AI helper already enforces at load time
-//! (`CoreAITestResourceContract` / `CoreAIResourceContract`): one resource root,
-//! one `*.aimodel` directory carrying `metadata.json` / `main.hash` /
-//! `main.mlirb`, and a tokenizer next to it.
+//! Two different contracts exist in this repository and they must not be
+//! conflated:
+//!
+//! * `CoreAIResourceContract` (Swift, `CoreAITestResourceContract.swift`) is the
+//!   *production* gate. It verifies official Apple-hosted bundles against a
+//!   Hazakura-signed resource manifest, a fixed `modelId`, a reviewed licence
+//!   status, and the licence / notice files that ship with an official model.
+//! * The rules in this module are the *local* gate. A local bundle is chosen by
+//!   the user (Hazakura's Custom Models directory, a resource folder, or a
+//!   `.aimodel` directory). It has no Hazakura signature and no reviewed licence
+//!   status, so the local gate checks structure and identity only and reports
+//!   "unknown" instead of guessing a licence.
+//!
+//! The same local rules are implemented for the helper in
+//! `CoreAILocalResourceContract.swift`, and both implementations are driven by
+//! the shared fixture spec at
+//! `src-tauri/resources/core-ai/local-model-contract-cases.json`. A bundle must
+//! not be valid on one side and invalid on the other.
+//!
+//! Passing this gate means "a well-formed Core AI resource bundle the local path
+//! may adopt". It is *not* permission to generate: the local backend wiring is a
+//! later C-3 slice, and this gate replaces neither the production contract nor
+//! the signed-manifest verification in `core_ai_models.rs` (gate G2).
 //!
 //! This module only inspects. It never writes to, repairs, converts, downloads,
-//! or deletes anything under the inspected path, and it never guesses a missing
-//! tokenizer or follows a symlink to paper over a broken bundle.
+//! or deletes anything under the inspected path. Symlinks inside the resource
+//! root are rejected at every path component, not only at the final element.
 //!
 //! User-facing copy is intentionally absent here. Callers surface
 //! [`LocalModelResolutionError::code`] so the wording stays in the frontend and
@@ -24,11 +40,17 @@
 use serde::Deserialize;
 use std::collections::HashSet;
 use std::fs;
+use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 /// Hazakura's own descriptor for a converted Core AI bundle. Kept identical to
 /// the filename the asset tooling writes and the helper reads.
-const MODEL_DESCRIPTOR_FILENAME: &str = "hazakura-model.json";
+pub(crate) const MODEL_DESCRIPTOR_FILENAME: &str = "hazakura-model.json";
+/// Shared fixture spec that both this module's tests and the Swift helper tests
+/// consume. Exported so the test suite reads exactly one source of truth.
+pub(crate) const CONTRACT_CASES: &str =
+    include_str!("../../resources/core-ai/local-model-contract-cases.json");
+
 /// Directory that `layout.decoder` / `layout.bundle` points at inside a bundle.
 const MODEL_DIRECTORY_EXTENSION: &str = "aimodel";
 const LANGUAGE_BUNDLE_DESCRIPTOR: &str = "metadata.json";
@@ -37,8 +59,8 @@ const MODEL_DIRECTORY_FILES: [&str; 3] = ["metadata.json", "main.hash", "main.ml
 const GEMMA4_PLE_TABLE_FILES: [&str; 2] = ["embed_per_layer.i8", "embed_per_layer.scale.f32"];
 
 const DESCRIPTOR_SCHEMA_VERSION: u32 = 1;
-const RUNTIME_KIND_GEMMA4_PLE: &str = "coreai-kit-gemma4-ple";
-const RUNTIME_KIND_LANGUAGE: &str = "coreai-kit-language";
+pub(crate) const RUNTIME_KIND_GEMMA4_PLE: &str = "coreai-kit-gemma4-ple";
+pub(crate) const RUNTIME_KIND_LANGUAGE: &str = "coreai-kit-language";
 
 /// Runtime shape of a resolved local bundle. Mirrors the helper's
 /// `CoreAIProductionRuntimeKind`.
@@ -57,17 +79,18 @@ impl CoreAiLocalModelRuntimeKind {
     }
 }
 
-/// Why a candidate path is not a usable Core AI model bundle. Every variant has
-/// a stable `code` so the frontend owns the wording.
+/// Why a candidate path is not a usable local Core AI bundle. Every variant has
+/// a stable `code`; the Swift `CoreAILocalModelErrorCode` uses the same strings
+/// so the shared fixture spec can assert both languages at once.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum LocalModelResolutionError {
     /// The selected path does not exist.
     RootMissing,
     /// The selected path exists but is not a directory.
     RootNotDirectory,
-    /// No `hazakura-model.json` and no language-bundle descriptor was found.
+    /// No `hazakura-model.json` and no language-bundle `metadata.json` was found.
     MissingDescriptor,
-    /// `hazakura-model.json` is not valid JSON.
+    /// `hazakura-model.json` is not valid JSON, or lacks an identity.
     MalformedDescriptor,
     /// `hazakura-model.json` has a schema version this build does not read.
     UnsupportedDescriptor,
@@ -85,7 +108,7 @@ pub(crate) enum LocalModelResolutionError {
     MissingTokenizer,
     /// A Gemma4 PLE bundle is missing its embedding tables.
     MissingTables,
-    /// A path escapes the bundle, or a symlink was encountered.
+    /// A path escapes the bundle, or a symlink was found inside it.
     UnsafePath,
     /// The filesystem refused a read while validating.
     Unreadable,
@@ -155,10 +178,10 @@ impl std::fmt::Display for LocalModelResolutionError {
     }
 }
 
-/// A local bundle that passed the structural contract and is safe to hand to the
-/// Core AI helper. Contains no digests: unlike Apple-hosted assets these sources
-/// are not covered by a signed manifest, and the helper re-verifies the shape at
-/// load time.
+/// A local bundle that passed the local contract. Contains no digests: unlike
+/// Apple-hosted assets these sources are not covered by a signed manifest. The
+/// helper re-runs [`Self`]'s rules through `CoreAILocalResourceContract` before
+/// loading, so both sides agree on what "valid" means.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ResolvedLocalModel {
     /// Canonical directory that owns the bundle (contains `hazakura-model.json`
@@ -172,7 +195,7 @@ pub(crate) struct ResolvedLocalModel {
     pub(crate) model_directory: PathBuf,
     /// Embedding tables for the Gemma4 PLE runtime.
     pub(crate) tables: Option<PathBuf>,
-    /// `modelId` from `hazakura-model.json`. `None` for a bare language bundle,
+    /// `modelId` from `hazakura-model.json`. `None` for a bare language resource,
     /// because the identity is unknown rather than guessed.
     pub(crate) model_id: Option<String>,
     /// `displayName` from `hazakura-model.json`. `None` when unknown.
@@ -203,13 +226,15 @@ pub(crate) struct CustomModelCandidate {
 /// Resolve a user-selected or app-managed path into a validated local model.
 ///
 /// Accepts a resource root, a language bundle directory, or a `*.aimodel`
-/// directory whose parent is a language bundle. Rejects symlinked roots so a
-/// selection cannot silently redirect validation at a different location.
+/// directory whose parent is a language bundle. Symlinks are rejected both for
+/// the selected root and for every component inside the resource root: a
+/// selection cannot redirect validation elsewhere, and a bundle cannot hide a
+/// missing or external resource behind a link.
 pub(crate) fn resolve_local_model_root(
     path: &Path,
 ) -> Result<ResolvedLocalModel, LocalModelResolutionError> {
     let metadata = fs::symlink_metadata(path).map_err(|error| {
-        if error.kind() == std::io::ErrorKind::NotFound {
+        if error.kind() == ErrorKind::NotFound {
             LocalModelResolutionError::RootMissing
         } else {
             LocalModelResolutionError::Unreadable
@@ -233,29 +258,39 @@ pub(crate) fn resolve_local_model_root(
         return resolve_bundle(&parent);
     }
 
-    if is_regular_file(&root.join(MODEL_DESCRIPTOR_FILENAME)) {
-        return resolve_described_root(&root);
+    // A symlink at the descriptor path is reported as unsafe rather than "missing",
+    // so a bundle cannot avoid inspection by linking its descriptor away.
+    match probe_kind(&root.join(MODEL_DESCRIPTOR_FILENAME))? {
+        PathKind::File => return resolve_described_root(&root),
+        PathKind::Symlink => return Err(LocalModelResolutionError::UnsafePath),
+        PathKind::Other => {}
     }
-    if is_regular_file(&root.join(LANGUAGE_BUNDLE_DESCRIPTOR)) {
-        validate_language_bundle(&root)?;
-        let model_directory = single_model_directory(&root)?;
-        validate_model_directory(&model_directory)?;
-        return Ok(ResolvedLocalModel {
-            resource_root: root.clone(),
-            runtime_kind: CoreAiLocalModelRuntimeKind::Language,
-            bundle: root,
-            model_directory,
-            tables: None,
-            model_id: None,
-            display_name: None,
-        });
+    match probe_kind(&root.join(LANGUAGE_BUNDLE_DESCRIPTOR))? {
+        PathKind::File => {
+            validate_language_bundle(&root)?;
+            let model_directory = single_model_directory(&root)?;
+            validate_model_directory(&model_directory)?;
+            return Ok(ResolvedLocalModel {
+                resource_root: root.clone(),
+                runtime_kind: CoreAiLocalModelRuntimeKind::Language,
+                bundle: root,
+                model_directory,
+                tables: None,
+                model_id: None,
+                display_name: None,
+            });
+        }
+        PathKind::Symlink => return Err(LocalModelResolutionError::UnsafePath),
+        PathKind::Other => {}
     }
     Err(LocalModelResolutionError::MissingDescriptor)
 }
 
-/// Scan an app-managed Custom Models directory. Each immediate subdirectory is
-/// one candidate. Missing directories and unreadable roots yield an empty list
-/// rather than an error, because absence simply means "no custom models yet".
+/// Scan an app-managed Custom Models directory. Each immediate subdirectory or
+/// symlink is one candidate. A symlinked entry is handed to the resolver so it is
+/// reported as `unsafe-path` instead of being dropped. Missing directories and
+/// unreadable roots yield an empty list rather than an error, because absence
+/// simply means "no custom models yet".
 pub(crate) fn scan_custom_models_directory(root: &Path) -> Vec<CustomModelCandidate> {
     let metadata = match fs::symlink_metadata(root) {
         Ok(metadata) => metadata,
@@ -268,19 +303,28 @@ pub(crate) fn scan_custom_models_directory(root: &Path) -> Vec<CustomModelCandid
         Ok(entries) => entries,
         Err(_) => return Vec::new(),
     };
-    let mut names: Vec<String> = entries
-        .flatten()
-        .filter_map(|entry| {
-            if !entry.file_type().ok()?.is_dir() {
-                return None;
-            }
-            let name = entry.file_name().to_string_lossy().into_owned();
-            if name.starts_with('.') {
-                return None;
-            }
-            Some(name)
-        })
-        .collect();
+
+    let mut names: Vec<String> = Vec::new();
+    for entry in entries {
+        // An entry error carries no name, so it cannot be attributed to a
+        // candidate. Named entries are never dropped: unknown kinds are handed
+        // to the resolver, which reports `unreadable` for them.
+        let Ok(entry) = entry else { continue };
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if name.starts_with('.') {
+            continue;
+        }
+        let kind = entry
+            .file_type()
+            .or_else(|_| fs::symlink_metadata(entry.path()).map(|metadata| metadata.file_type()));
+        let include = match kind {
+            Ok(file_type) => file_type.is_dir() || file_type.is_symlink(),
+            Err(_) => true,
+        };
+        if include {
+            names.push(name);
+        }
+    }
     names.sort();
 
     let mut seen = HashSet::new();
@@ -301,15 +345,14 @@ pub(crate) fn scan_custom_models_directory(root: &Path) -> Vec<CustomModelCandid
 }
 
 fn resolve_bundle(bundle: &Path) -> Result<ResolvedLocalModel, LocalModelResolutionError> {
-    validate_language_bundle(bundle)?;
-    let model_directory = single_model_directory(bundle)?;
+    let root = fs::canonicalize(bundle).map_err(|_| LocalModelResolutionError::Unreadable)?;
+    validate_language_bundle(&root)?;
+    let model_directory = single_model_directory(&root)?;
     validate_model_directory(&model_directory)?;
-    let resource_root =
-        fs::canonicalize(bundle).map_err(|_| LocalModelResolutionError::Unreadable)?;
     Ok(ResolvedLocalModel {
-        resource_root,
+        resource_root: root.clone(),
         runtime_kind: CoreAiLocalModelRuntimeKind::Language,
-        bundle: bundle.to_path_buf(),
+        bundle: root,
         model_directory,
         tables: None,
         model_id: None,
@@ -318,8 +361,13 @@ fn resolve_bundle(bundle: &Path) -> Result<ResolvedLocalModel, LocalModelResolut
 }
 
 fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelResolutionError> {
-    let data = fs::read(root.join(MODEL_DESCRIPTOR_FILENAME))
-        .map_err(|_| LocalModelResolutionError::MalformedDescriptor)?;
+    let data = fs::read(root.join(MODEL_DESCRIPTOR_FILENAME)).map_err(|error| {
+        if error.kind() == ErrorKind::NotFound {
+            LocalModelResolutionError::MissingDescriptor
+        } else {
+            LocalModelResolutionError::Unreadable
+        }
+    })?;
     let descriptor: HazakuraModelDescriptor = serde_json::from_slice(&data)
         .map_err(|_| LocalModelResolutionError::MalformedDescriptor)?;
     if descriptor.schema_version != DESCRIPTOR_SCHEMA_VERSION {
@@ -336,17 +384,27 @@ fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelR
 
     let (bundle, tables) = match runtime_kind {
         CoreAiLocalModelRuntimeKind::Gemma4Ple => {
-            let decoder = resolve_relative_directory(descriptor.layout.decoder.as_deref(), root)?;
-            let tables = resolve_relative_directory(descriptor.layout.tables.as_deref(), root)?;
+            let decoder = require_directory(
+                root,
+                descriptor.layout.decoder.as_deref(),
+                LocalModelResolutionError::MissingBundleDirectory,
+            )?;
+            let tables = require_directory(
+                root,
+                descriptor.layout.tables.as_deref(),
+                LocalModelResolutionError::MissingBundleDirectory,
+            )?;
             for table in GEMMA4_PLE_TABLE_FILES {
-                if !is_regular_file(&tables.join(table)) {
-                    return Err(LocalModelResolutionError::MissingTables);
-                }
+                require_file(&tables, table, LocalModelResolutionError::MissingTables)?;
             }
             (decoder, Some(tables))
         }
         CoreAiLocalModelRuntimeKind::Language => {
-            let bundle = resolve_relative_directory(descriptor.layout.bundle.as_deref(), root)?;
+            let bundle = require_directory(
+                root,
+                descriptor.layout.bundle.as_deref(),
+                LocalModelResolutionError::MissingBundleDirectory,
+            )?;
             (bundle, None)
         }
     };
@@ -368,12 +426,16 @@ fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelR
 }
 
 fn validate_language_bundle(bundle: &Path) -> Result<(), LocalModelResolutionError> {
-    if !is_regular_file(&bundle.join(LANGUAGE_BUNDLE_DESCRIPTOR)) {
-        return Err(LocalModelResolutionError::MissingDescriptor);
-    }
-    if !is_regular_file(&bundle.join(TOKENIZER_FILE)) {
-        return Err(LocalModelResolutionError::MissingTokenizer);
-    }
+    require_file(
+        bundle,
+        LANGUAGE_BUNDLE_DESCRIPTOR,
+        LocalModelResolutionError::MissingDescriptor,
+    )?;
+    require_file(
+        bundle,
+        TOKENIZER_FILE,
+        LocalModelResolutionError::MissingTokenizer,
+    )?;
     Ok(())
 }
 
@@ -406,56 +468,89 @@ fn single_model_directory(bundle: &Path) -> Result<PathBuf, LocalModelResolution
 
 fn validate_model_directory(directory: &Path) -> Result<(), LocalModelResolutionError> {
     for file in MODEL_DIRECTORY_FILES {
-        if !is_regular_file(&directory.join(file)) {
-            return Err(LocalModelResolutionError::IncompleteModelDirectory);
-        }
+        require_file(
+            directory,
+            file,
+            LocalModelResolutionError::IncompleteModelDirectory,
+        )?;
     }
     Ok(())
 }
 
-fn resolve_relative_directory(
-    relative: Option<&str>,
+/// Classify one path component without following links.
+fn probe_kind(path: &Path) -> Result<PathKind, LocalModelResolutionError> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() => Ok(PathKind::Symlink),
+        Ok(metadata) if metadata.is_file() => Ok(PathKind::File),
+        Ok(_) => Ok(PathKind::Other),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(PathKind::Other),
+        Err(_) => Err(LocalModelResolutionError::Unreadable),
+    }
+}
+
+enum PathKind {
+    File,
+    Symlink,
+    Other,
+}
+
+/// Walk `relative` from a trusted `root`, rejecting a symlink at *any*
+/// component. Returns the joined path; the caller still has to check the type of
+/// the final component, because the missing-path error differs per call site.
+fn walk_from_root(
     root: &Path,
+    relative: &str,
+    missing: LocalModelResolutionError,
 ) -> Result<PathBuf, LocalModelResolutionError> {
-    let relative = relative.unwrap_or_default();
-    if relative.is_empty()
-        || relative.starts_with('/')
-        || relative
-            .split('/')
-            .any(|component| component == ".." || component.is_empty())
-    {
+    if relative.is_empty() || relative.starts_with('/') {
         return Err(LocalModelResolutionError::UnsafePath);
     }
-    let candidate = root.join(relative);
-    let metadata = match fs::symlink_metadata(&candidate) {
-        Ok(metadata) => metadata,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            return Err(LocalModelResolutionError::MissingBundleDirectory)
+    let mut current = root.to_path_buf();
+    for component in relative.split('/') {
+        if component.is_empty() || component == "." || component == ".." {
+            return Err(LocalModelResolutionError::UnsafePath);
         }
-        Err(_) => return Err(LocalModelResolutionError::Unreadable),
-    };
-    if metadata.file_type().is_symlink() {
-        return Err(LocalModelResolutionError::UnsafePath);
+        current.push(component);
+        match fs::symlink_metadata(&current) {
+            Ok(metadata) if metadata.file_type().is_symlink() => {
+                return Err(LocalModelResolutionError::UnsafePath)
+            }
+            Ok(_) => {}
+            Err(error) if error.kind() == ErrorKind::NotFound => return Err(missing),
+            Err(_) => return Err(LocalModelResolutionError::Unreadable),
+        }
     }
-    if !metadata.is_dir() {
-        return Err(LocalModelResolutionError::MissingBundleDirectory);
+    Ok(current)
+}
+
+fn require_file(
+    root: &Path,
+    relative: &str,
+    missing: LocalModelResolutionError,
+) -> Result<PathBuf, LocalModelResolutionError> {
+    let path = walk_from_root(root, relative, missing)?;
+    match fs::symlink_metadata(&path) {
+        Ok(metadata) if metadata.is_file() => Ok(path),
+        Ok(_) => Err(missing),
+        Err(_) => Err(missing),
     }
-    let canonical =
-        fs::canonicalize(&candidate).map_err(|_| LocalModelResolutionError::Unreadable)?;
-    if !canonical.starts_with(root) {
-        return Err(LocalModelResolutionError::UnsafePath);
+}
+
+fn require_directory(
+    root: &Path,
+    relative: Option<&str>,
+    missing: LocalModelResolutionError,
+) -> Result<PathBuf, LocalModelResolutionError> {
+    let path = walk_from_root(root, relative.unwrap_or_default(), missing)?;
+    match fs::symlink_metadata(&path) {
+        Ok(metadata) if metadata.is_dir() => Ok(path),
+        Ok(_) => Err(missing),
+        Err(_) => Err(missing),
     }
-    Ok(canonical)
 }
 
 fn is_model_directory_name(path: &Path) -> bool {
     path.extension().and_then(|extension| extension.to_str()) == Some(MODEL_DIRECTORY_EXTENSION)
-}
-
-fn is_regular_file(path: &Path) -> bool {
-    fs::symlink_metadata(path)
-        .map(|metadata| metadata.is_file())
-        .unwrap_or(false)
 }
 
 #[derive(Debug, Deserialize)]

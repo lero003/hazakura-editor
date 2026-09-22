@@ -1,7 +1,8 @@
 use crate::commands::core_ai_local_models::{
     resolve_local_model_root, scan_custom_models_directory, CoreAiLocalModelRuntimeKind,
-    LocalModelResolutionError,
+    LocalModelResolutionError, CONTRACT_CASES,
 };
+use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 fn temp_root(label: &str) -> PathBuf {
@@ -24,13 +25,16 @@ fn write_file(path: &Path) {
     std::fs::write(path, b"fixture").expect("fixture file");
 }
 
+fn write_model_directory(directory: &Path) {
+    for file in ["metadata.json", "main.hash", "main.mlirb"] {
+        write_file(&directory.join(file));
+    }
+}
+
 fn write_language_bundle(bundle: &Path, model_directory_name: &str) {
     write_file(&bundle.join("metadata.json"));
     write_file(&bundle.join("tokenizer/tokenizer.json"));
-    let model_directory = bundle.join(model_directory_name);
-    for file in ["metadata.json", "main.hash", "main.mlirb"] {
-        write_file(&model_directory.join(file));
-    }
+    write_model_directory(&bundle.join(model_directory_name));
 }
 
 fn write_descriptor(root: &Path, contents: &str) {
@@ -155,10 +159,7 @@ fn rejects_a_gemma4_ple_bundle_without_tables() {
 fn rejects_a_bundle_without_its_tokenizer() {
     let root = temp_root("no-tokenizer");
     write_file(&root.join("metadata.json"));
-    let model_directory = root.join("local.aimodel");
-    for file in ["metadata.json", "main.hash", "main.mlirb"] {
-        write_file(&model_directory.join(file));
-    }
+    write_model_directory(&root.join("local.aimodel"));
 
     assert_eq!(
         resolve_local_model_root(&root).unwrap_err(),
@@ -306,40 +307,92 @@ fn rejects_a_folder_without_any_descriptor() {
 }
 
 #[cfg(unix)]
-#[test]
-fn rejects_a_symlinked_model_directory() {
+mod symlinks {
+    use super::*;
     use std::os::unix::fs::symlink;
 
-    let root = temp_root("symlinked-model-dir");
-    write_file(&root.join("metadata.json"));
-    write_file(&root.join("tokenizer/tokenizer.json"));
-    let real = root.join("real-model");
-    for file in ["metadata.json", "main.hash", "main.mlirb"] {
-        write_file(&real.join(file));
+    #[test]
+    fn rejects_a_symlinked_root() {
+        let root = temp_root("symlinked-root");
+        let real = temp_root("symlinked-root-target");
+        write_language_bundle(&real, "local.aimodel");
+        let link = root.join("linked-root");
+        symlink(&real, &link).expect("symlink");
+
+        assert_eq!(
+            resolve_local_model_root(&link).unwrap_err(),
+            LocalModelResolutionError::UnsafePath
+        );
     }
-    symlink(&real, root.join("linked.aimodel")).expect("symlink");
 
-    assert_eq!(
-        resolve_local_model_root(&root).unwrap_err(),
-        LocalModelResolutionError::UnsafePath
-    );
-}
+    #[test]
+    fn rejects_a_symlinked_model_directory() {
+        let root = temp_root("symlinked-model-dir");
+        write_file(&root.join("metadata.json"));
+        write_file(&root.join("tokenizer/tokenizer.json"));
+        write_model_directory(&root.join("real-model"));
+        symlink(root.join("real-model"), root.join("linked.aimodel")).expect("symlink");
 
-#[cfg(unix)]
-#[test]
-fn rejects_a_symlinked_root() {
-    use std::os::unix::fs::symlink;
+        assert_eq!(
+            resolve_local_model_root(&root).unwrap_err(),
+            LocalModelResolutionError::UnsafePath
+        );
+    }
 
-    let root = temp_root("symlinked-root");
-    let real = temp_root("symlinked-root-target");
-    write_language_bundle(&real, "local.aimodel");
-    let link = root.join("linked-root");
-    symlink(&real, &link).expect("symlink");
+    #[test]
+    fn rejects_a_symlinked_tokenizer_directory() {
+        let root = temp_root("symlinked-tokenizer");
+        write_file(&root.join("metadata.json"));
+        write_file(&root.join("real-tokenizer/tokenizer.json"));
+        write_model_directory(&root.join("local.aimodel"));
+        symlink(root.join("real-tokenizer"), root.join("tokenizer")).expect("symlink");
 
-    assert_eq!(
-        resolve_local_model_root(&link).unwrap_err(),
-        LocalModelResolutionError::UnsafePath
-    );
+        assert_eq!(
+            resolve_local_model_root(&root).unwrap_err(),
+            LocalModelResolutionError::UnsafePath
+        );
+    }
+
+    #[test]
+    fn rejects_a_symlinked_model_file() {
+        let root = temp_root("symlinked-model-file");
+        write_file(&root.join("metadata.json"));
+        write_file(&root.join("tokenizer/tokenizer.json"));
+        write_file(&root.join("local.aimodel/metadata.json"));
+        write_file(&root.join("local.aimodel/main.mlirb"));
+        write_file(&root.join("outside.hash"));
+        symlink(
+            root.join("outside.hash"),
+            root.join("local.aimodel/main.hash"),
+        )
+        .expect("symlink");
+
+        assert_eq!(
+            resolve_local_model_root(&root).unwrap_err(),
+            LocalModelResolutionError::UnsafePath
+        );
+    }
+
+    #[test]
+    fn rejects_a_symlinked_layout_directory() {
+        let root = temp_root("symlinked-layout");
+        write_descriptor(
+            &root,
+            r#"{
+              "schemaVersion": 1,
+              "modelId": "local:test:linked",
+              "runtimeKind": "coreai-kit-language",
+              "layout": { "bundle": "bundle" }
+            }"#,
+        );
+        write_language_bundle(&root.join("real-bundle"), "local.aimodel");
+        symlink(root.join("real-bundle"), root.join("bundle")).expect("symlink");
+
+        assert_eq!(
+            resolve_local_model_root(&root).unwrap_err(),
+            LocalModelResolutionError::UnsafePath
+        );
+    }
 }
 
 #[test]
@@ -363,6 +416,28 @@ fn scan_lists_candidates_sorted_and_flags_broken_entries() {
     );
 }
 
+#[cfg(unix)]
+#[test]
+fn scan_reports_a_symlinked_candidate_instead_of_dropping_it() {
+    use std::os::unix::fs::symlink;
+
+    let custom = temp_root("custom-symlink");
+    write_language_bundle(&custom.join("Alpha"), "alpha.aimodel");
+    let real = temp_root("custom-symlink-target");
+    write_language_bundle(&real, "real.aimodel");
+    symlink(&real, custom.join("Linked")).expect("symlink");
+
+    let candidates = scan_custom_models_directory(&custom);
+
+    assert_eq!(candidates.len(), 2);
+    assert_eq!(candidates[0].directory_name, "Alpha");
+    assert_eq!(candidates[1].directory_name, "Linked");
+    assert_eq!(
+        candidates[1].outcome.as_ref().unwrap_err(),
+        &LocalModelResolutionError::UnsafePath
+    );
+}
+
 #[test]
 fn scan_returns_empty_for_a_missing_or_non_directory_root() {
     let root = temp_root("scan-absent");
@@ -372,4 +447,124 @@ fn scan_returns_empty_for_a_missing_or_non_directory_root() {
     let file = root.join("not-a-directory");
     write_file(&file);
     assert!(scan_custom_models_directory(&file).is_empty());
+}
+
+/// The Rust and Swift local contracts are asserted against one shared fixture
+/// spec. Adding a case here requires both languages to agree on the outcome.
+#[test]
+fn contract_cases_match_the_shared_spec() {
+    let spec: ContractSpec = serde_json::from_str(CONTRACT_CASES).expect("shared spec parses");
+    assert_eq!(spec.schema_version, 1);
+    assert!(!spec.cases.is_empty());
+
+    for case in &spec.cases {
+        if case.platform.as_deref() == Some("unix") && !cfg!(unix) {
+            continue;
+        }
+        let root = temp_root(&format!("spec-{}", case.id));
+        materialize(&root, &case.entries);
+        let selected = if case.select == "." {
+            root.clone()
+        } else {
+            root.join(&case.select)
+        };
+        let result = resolve_local_model_root(&selected);
+
+        match case.expect.outcome.as_str() {
+            "ready" => {
+                let model = result.unwrap_or_else(|error| {
+                    panic!("{}: expected ready, got {}", case.id, error.code())
+                });
+                assert_eq!(
+                    model.runtime_kind.as_str(),
+                    case.expect.runtime_kind.as_deref().unwrap_or_default(),
+                    "{}: runtime kind",
+                    case.id
+                );
+            }
+            "error" => {
+                let error = result.err().unwrap_or_else(|| {
+                    panic!(
+                        "{}: expected error {}, resolved instead",
+                        case.id,
+                        case.expect.code.as_deref().unwrap_or_default()
+                    )
+                });
+                assert_eq!(
+                    error.code(),
+                    case.expect.code.as_deref().unwrap_or_default(),
+                    "{}: error code",
+                    case.id
+                );
+            }
+            other => panic!("{}: unknown expected outcome {other}", case.id),
+        }
+    }
+}
+
+fn materialize(root: &Path, entries: &[SpecEntry]) {
+    for entry in entries {
+        let path = root.join(&entry.path);
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).expect("fixture parent");
+        }
+        match entry.kind.as_str() {
+            "dir" => std::fs::create_dir_all(&path).expect("fixture dir"),
+            "file" => std::fs::write(
+                &path,
+                entry.contents.clone().unwrap_or_else(|| "fixture".into()),
+            )
+            .expect("fixture file"),
+            "symlink" => {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::symlink;
+                    symlink(entry.target.as_deref().expect("symlink target"), &path)
+                        .expect("fixture symlink");
+                }
+                #[cfg(not(unix))]
+                panic!("symlink fixtures are unix-only");
+            }
+            other => panic!("unknown entry kind {other}"),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ContractSpec {
+    schema_version: u32,
+    cases: Vec<ContractCase>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ContractCase {
+    id: String,
+    #[serde(default)]
+    platform: Option<String>,
+    select: String,
+    expect: ExpectedOutcome,
+    #[serde(default)]
+    entries: Vec<SpecEntry>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ExpectedOutcome {
+    outcome: String,
+    #[serde(default)]
+    code: Option<String>,
+    #[serde(default)]
+    runtime_kind: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct SpecEntry {
+    path: String,
+    kind: String,
+    #[serde(default)]
+    target: Option<String>,
+    #[serde(default)]
+    contents: Option<String>,
 }

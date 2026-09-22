@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "contract": "core-ai-local-model",
+  "description": [
+    "Shared fixture spec for the local Core AI model contract.",
+    "Rust (src-tauri/src/commands/core_ai_local_models.rs) and Swift",
+    "(src-helpers/apple-assist/Sources/HazakuraAppleAssist/CoreAILocalResourceContract.swift)",
+    "materialize these cases into a temporary directory and must produce the same",
+    "normalized outcome. A bundle must never be valid on one side and invalid on the other."
+  ],
+  "outcomes": {
+    "ready": "the path resolved to a usable local resource",
+    "error": "the path was rejected; `code` is the shared error code"
+  },
+  "rules": [
+    "The selected path itself is rejected when it is missing, a symlink, or not a directory.",
+    "A selected *.aimodel directory resolves through its parent resource root.",
+    "Only the path that leads to the resource root may contain symlinks; every component inside the root must be a real directory or file.",
+    "A root with hazakura-model.json is validated through schemaVersion, modelId, runtimeKind and layout.",
+    "A root with a language-bundle metadata.json is validated structurally with runtimeKind coreai-kit-language.",
+    "A bundle requires metadata.json, tokenizer/tokenizer.json, and exactly one *.aimodel directory.",
+    "The *.aimodel directory requires metadata.json, main.hash and main.mlirb.",
+    "The gemma4-ple runtime additionally requires tables/embed_per_layer.i8 and tables/embed_per_layer.scale.f32.",
+    "Licence files are not required for local sources; the local gate reports unknown instead of guessing."
+  ],
+  "cases": [
+    {
+      "id": "language-resource-root",
+      "description": "bare language resource selected by its resource root",
+      "select": ".",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-language" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "language-resource-selected-by-aimodel",
+      "description": "the same resource selected through its .aimodel directory",
+      "select": "local.aimodel",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-language" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "described-gemma4-ple",
+      "description": "Hazakura-described gemma4-ple layout with embedding tables",
+      "select": ".",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-gemma4-ple" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:gemma4-ple\",\"displayName\":\"Local Gemma\",\"runtimeKind\":\"coreai-kit-gemma4-ple\",\"layout\":{\"decoder\":\"decoder\",\"tables\":\"tables\"}}"
+        },
+        { "path": "decoder/metadata.json", "kind": "file" },
+        { "path": "decoder/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "decoder/gemma.aimodel/metadata.json", "kind": "file" },
+        { "path": "decoder/gemma.aimodel/main.hash", "kind": "file" },
+        { "path": "decoder/gemma.aimodel/main.mlirb", "kind": "file" },
+        { "path": "tables/embed_per_layer.i8", "kind": "file" },
+        { "path": "tables/embed_per_layer.scale.f32", "kind": "file" }
+      ]
+    },
+    {
+      "id": "described-language",
+      "description": "Hazakura-described language layout without tables",
+      "select": ".",
+      "expect": { "outcome": "ready", "runtimeKind": "coreai-kit-language" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:language\",\"runtimeKind\":\"coreai-kit-language\",\"layout\":{\"bundle\":\"bundle\"}}"
+        },
+        { "path": "bundle/metadata.json", "kind": "file" },
+        { "path": "bundle/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "bundle/local.aimodel/metadata.json", "kind": "file" },
+        { "path": "bundle/local.aimodel/main.hash", "kind": "file" },
+        { "path": "bundle/local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "missing-tables",
+      "description": "gemma4-ple bundle whose embedding tables are absent",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "missing-tables" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:gemma4-ple\",\"runtimeKind\":\"coreai-kit-gemma4-ple\",\"layout\":{\"decoder\":\"decoder\",\"tables\":\"tables\"}}"
+        },
+        { "path": "decoder/metadata.json", "kind": "file" },
+        { "path": "decoder/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "decoder/gemma.aimodel/metadata.json", "kind": "file" },
+        { "path": "decoder/gemma.aimodel/main.hash", "kind": "file" },
+        { "path": "decoder/gemma.aimodel/main.mlirb", "kind": "file" },
+        { "path": "tables", "kind": "dir" }
+      ]
+    },
+    {
+      "id": "missing-tokenizer",
+      "description": "language bundle without the tokenizer that decides prompt formatting",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "missing-tokenizer" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "multiple-model-directories",
+      "description": "two .aimodel directories make the main asset ambiguous",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "multiple-model-directories" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "first.aimodel/metadata.json", "kind": "file" },
+        { "path": "first.aimodel/main.hash", "kind": "file" },
+        { "path": "first.aimodel/main.mlirb", "kind": "file" },
+        { "path": "second.aimodel/metadata.json", "kind": "file" },
+        { "path": "second.aimodel/main.hash", "kind": "file" },
+        { "path": "second.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "incomplete-model-directory",
+      "description": ".aimodel directory missing main.mlirb",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "incomplete-model-directory" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" }
+      ]
+    },
+    {
+      "id": "missing-model-directory",
+      "description": "bundle with a tokenizer but no .aimodel directory",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "missing-model-directory" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" }
+      ]
+    },
+    {
+      "id": "layout-escapes-root",
+      "description": "descriptor layout points outside the resource root",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unsafe-path" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:escape\",\"runtimeKind\":\"coreai-kit-language\",\"layout\":{\"bundle\":\"../outside\"}}"
+        }
+      ]
+    },
+    {
+      "id": "symlinked-tokenizer-directory",
+      "description": "the tokenizer directory itself is a symlink",
+      "platform": "unix",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unsafe-path" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "real-tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "tokenizer", "kind": "symlink", "target": "real-tokenizer" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "symlinked-aimodel-directory",
+      "description": "the .aimodel directory is a symlink to a real directory",
+      "platform": "unix",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unsafe-path" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "real-model/metadata.json", "kind": "file" },
+        { "path": "real-model/main.hash", "kind": "file" },
+        { "path": "real-model/main.mlirb", "kind": "file" },
+        { "path": "local.aimodel", "kind": "symlink", "target": "real-model" }
+      ]
+    },
+    {
+      "id": "symlinked-model-file",
+      "description": "a required model file is a symlink pointing outside the bundle",
+      "platform": "unix",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unsafe-path" },
+      "entries": [
+        { "path": "metadata.json", "kind": "file" },
+        { "path": "tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "local.aimodel/metadata.json", "kind": "file" },
+        { "path": "local.aimodel/main.mlirb", "kind": "file" },
+        { "path": "outside.hash", "kind": "file" },
+        { "path": "local.aimodel/main.hash", "kind": "symlink", "target": "../../outside.hash" }
+      ]
+    },
+    {
+      "id": "symlinked-layout-directory",
+      "description": "a descriptor layout directory is a symlink",
+      "platform": "unix",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unsafe-path" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:linked\",\"runtimeKind\":\"coreai-kit-language\",\"layout\":{\"bundle\":\"bundle\"}}"
+        },
+        { "path": "real-bundle/metadata.json", "kind": "file" },
+        { "path": "real-bundle/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "real-bundle/local.aimodel/metadata.json", "kind": "file" },
+        { "path": "real-bundle/local.aimodel/main.hash", "kind": "file" },
+        { "path": "real-bundle/local.aimodel/main.mlirb", "kind": "file" },
+        { "path": "bundle", "kind": "symlink", "target": "real-bundle" }
+      ]
+    },
+    {
+      "id": "unsupported-schema",
+      "description": "descriptor schema version this build does not read",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unsupported-descriptor" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":2,\"modelId\":\"local:test:schema\",\"runtimeKind\":\"coreai-kit-language\",\"layout\":{\"bundle\":\"bundle\"}}"
+        },
+        { "path": "bundle/metadata.json", "kind": "file" },
+        { "path": "bundle/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "bundle/local.aimodel/metadata.json", "kind": "file" },
+        { "path": "bundle/local.aimodel/main.hash", "kind": "file" },
+        { "path": "bundle/local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "unknown-runtime-kind",
+      "description": "descriptor names a Core AI runtime this build does not support",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "unknown-runtime-kind" },
+      "entries": [
+        {
+          "path": "hazakura-model.json",
+          "kind": "file",
+          "contents": "{\"schemaVersion\":1,\"modelId\":\"local:test:unknown\",\"runtimeKind\":\"coreai-kit-unknown\",\"layout\":{\"bundle\":\"bundle\"}}"
+        },
+        { "path": "bundle/metadata.json", "kind": "file" },
+        { "path": "bundle/tokenizer/tokenizer.json", "kind": "file" },
+        { "path": "bundle/local.aimodel/metadata.json", "kind": "file" },
+        { "path": "bundle/local.aimodel/main.hash", "kind": "file" },
+        { "path": "bundle/local.aimodel/main.mlirb", "kind": "file" }
+      ]
+    },
+    {
+      "id": "malformed-descriptor",
+      "description": "descriptor is not valid JSON",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "malformed-descriptor" },
+      "entries": [{ "path": "hazakura-model.json", "kind": "file", "contents": "{ not json" }]
+    },
+    {
+      "id": "missing-root",
+      "description": "the selected location does not exist",
+      "select": "absent",
+      "expect": { "outcome": "error", "code": "root-missing" },
+      "entries": [{ "path": "metadata.json", "kind": "file" }]
+    },
+    {
+      "id": "file-selected-as-root",
+      "description": "a .aimodel file was selected instead of a directory",
+      "select": "model.aimodel",
+      "expect": { "outcome": "error", "code": "root-not-a-directory" },
+      "entries": [{ "path": "model.aimodel", "kind": "file" }]
+    },
+    {
+      "id": "no-descriptor",
+      "description": "folder with neither hazakura-model.json nor metadata.json",
+      "select": ".",
+      "expect": { "outcome": "error", "code": "missing-descriptor" },
+      "entries": [{ "path": "readme.txt", "kind": "file" }]
+    }
+  ]
+}
