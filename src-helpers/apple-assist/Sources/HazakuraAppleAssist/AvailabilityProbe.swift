@@ -18,7 +18,7 @@ enum AvailabilityProbe {
         modelPath: String? = nil
     ) async -> AppleAssistAvailabilityResponse {
         switch backend {
-        case .coreAI, .coreAITest:
+        case .coreAI, .coreAILocal, .coreAITest:
             return await CoreAIRuntime.probe(backend: backend, modelPath: modelPath)
         case .systemDefault:
             break

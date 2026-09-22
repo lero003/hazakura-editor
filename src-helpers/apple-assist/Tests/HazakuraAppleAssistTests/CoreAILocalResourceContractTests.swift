@@ -44,6 +44,30 @@ final class CoreAILocalResourceContractTests: XCTestCase {
         XCTAssertEqual(resource.resourceRoot.resolvingSymlinksInPath(), root.resolvingSymlinksInPath())
     }
 
+    func testLocalResourceSignatureChangesWithTokenizerOrModelIdentity() throws {
+        let root = try languageResource()
+        let first = try XCTUnwrap(CoreAILocalResourceContract.resolve(path: root.path).resource)
+        let baseline = try XCTUnwrap(CoreAILocalResourceContract.signature(for: first))
+
+        try write("changed tokenizer", to: root.appendingPathComponent("tokenizer/tokenizer.json"))
+        let tokenizerChanged = try XCTUnwrap(
+            CoreAILocalResourceContract.resolve(path: root.path).resource
+        )
+        let tokenizerSignature = try XCTUnwrap(
+            CoreAILocalResourceContract.signature(for: tokenizerChanged)
+        )
+        XCTAssertNotEqual(tokenizerSignature, baseline)
+
+        try write("changed hash", to: root.appendingPathComponent("local.aimodel/main.hash"))
+        let modelChanged = try XCTUnwrap(
+            CoreAILocalResourceContract.resolve(path: root.path).resource
+        )
+        XCTAssertNotEqual(
+            CoreAILocalResourceContract.signature(for: modelChanged),
+            tokenizerSignature
+        )
+    }
+
     /// The production gate and the local gate must stay distinct. A local bundle
     /// has no reviewed licence or notice evidence, so the production contract
     /// rejects it while the local contract accepts it as a structural bundle.

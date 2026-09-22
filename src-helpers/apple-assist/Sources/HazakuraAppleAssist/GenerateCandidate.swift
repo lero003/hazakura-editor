@@ -55,11 +55,11 @@ enum GenerateCandidate {
             )
         )
         #else
-        if case .coreAI = backend {
+        switch backend {
+        case .coreAI, .coreAILocal, .coreAITest:
             return await runCoreAI(request, backend: backend, modelPath: modelPath)
-        }
-        if case .coreAITest = backend {
-            return await runCoreAI(request, backend: backend, modelPath: modelPath)
+        case .systemDefault:
+            break
         }
         if #available(macOS 26.0, *) {
             if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
@@ -130,21 +130,16 @@ enum GenerateCandidate {
             )
         )
         #else
-        if case .coreAI = backend {
+        switch backend {
+        case .coreAI, .coreAILocal, .coreAITest:
             return await runCoreAIStreaming(
                 request,
                 backend: backend,
                 modelPath: modelPath,
                 onPartial: onPartial
             )
-        }
-        if case .coreAITest = backend {
-            return await runCoreAIStreaming(
-                request,
-                backend: backend,
-                modelPath: modelPath,
-                onPartial: onPartial
-            )
+        case .systemDefault:
+            break
         }
         if #available(macOS 26.0, *) {
             if let error = SystemAssistRuntime.generationAvailabilityError(for: backend) {
@@ -236,7 +231,7 @@ enum GenerateCandidate {
     @available(macOS 27.0, *)
     private static func coreAIOptions(for backend: AssistBackend) -> GenerationOptions {
         switch backend {
-        case .coreAI:
+        case .coreAI, .coreAILocal:
             return generationOptions(for: .production)
         case .coreAITest, .systemDefault:
             return coreAITestOptions()
@@ -246,7 +241,7 @@ enum GenerateCandidate {
     @available(macOS 27.0, *)
     private static func coreAIProfile(for backend: AssistBackend) -> CoreAIGenerationProfile {
         switch backend {
-        case .coreAI:
+        case .coreAI, .coreAILocal:
             return .production
         case .coreAITest, .systemDefault:
             return .developerFixture
@@ -273,7 +268,7 @@ enum GenerateCandidate {
     @available(macOS 27.0, *)
     private static func coreAIPrompt(for request: AppleAssistRequest, backend: AssistBackend) -> String {
         switch backend {
-        case .coreAI:
+        case .coreAI, .coreAILocal:
             return AssistPrompt.buildLive(for: request)
         case .coreAITest, .systemDefault:
             return CoreAITestPrompt.build(for: request)
@@ -324,7 +319,7 @@ enum GenerateCandidate {
             }
             #elseif COREAI_PRODUCT_BACKEND
             do {
-                let model = try await CoreAIRuntime.loadProductionModel(
+                let model = try await CoreAIRuntime.loadSelectedModel(
                     modelPath: modelPath,
                     backend: backend
                 )
@@ -374,7 +369,7 @@ enum GenerateCandidate {
             }
             #elseif COREAI_PRODUCT_BACKEND
             do {
-                let model = try await CoreAIRuntime.loadProductionModel(
+                let model = try await CoreAIRuntime.loadSelectedModel(
                     modelPath: modelPath,
                     backend: backend
                 )

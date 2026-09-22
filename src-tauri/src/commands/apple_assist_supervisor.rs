@@ -49,6 +49,7 @@ pub(crate) const CORE_AI_TEST_PROBE_TIMEOUT: Duration = Duration::from_secs(60);
 pub(crate) const GENERATE_TIMEOUT: Duration = Duration::from_secs(360);
 const SYSTEM_DEFAULT_BACKEND: &str = "system_default";
 const CORE_AI_BACKEND: &str = "core_ai";
+const CORE_AI_LOCAL_BACKEND: &str = "core_ai_local";
 const CORE_AI_TEST_BACKEND: &str = "core_ai_test";
 const CORE_AI_TEST_BACKEND_ENV: &str = "HAZAKURA_LOCAL_ASSIST_TEST_BACKEND";
 
@@ -56,6 +57,10 @@ const CORE_AI_TEST_BACKEND_ENV: &str = "HAZAKURA_LOCAL_ASSIST_TEST_BACKEND";
 pub(crate) enum AssistBackendSelection {
     SystemDefault,
     CoreAi {
+        model_id: String,
+        model_path: PathBuf,
+    },
+    CoreAiLocal {
         model_id: String,
         model_path: PathBuf,
     },
@@ -111,6 +116,18 @@ impl AssistBackendSelection {
                         .ok_or("Core AI model path is not valid UTF-8.")?,
                 ),
             )),
+            Self::CoreAiLocal {
+                model_id,
+                model_path,
+            } => Ok((
+                CORE_AI_LOCAL_BACKEND,
+                Some(model_id.as_str()),
+                Some(
+                    model_path
+                        .to_str()
+                        .ok_or("Local Core AI model path is not valid UTF-8.")?,
+                ),
+            )),
             Self::CoreAiTest { model_path } => Ok((
                 CORE_AI_TEST_BACKEND,
                 Some("apple:core-ai:qwen3-0.6b-test"),
@@ -128,6 +145,7 @@ impl AssistBackendSelection {
         match self {
             Self::SystemDefault => Ok("apple:foundation-models:system-default".into()),
             Self::CoreAi { model_id, .. } => Ok(model_id.clone()),
+            Self::CoreAiLocal { model_id, .. } => Ok(model_id.clone()),
             Self::CoreAiTest { .. } => Ok("apple:core-ai:qwen3-0.6b-test".into()),
             Self::Invalid(reason) => Err(reason.clone()),
         }
@@ -511,7 +529,9 @@ impl AppleAssistHelperStore {
         // `docs/archive/planning/apple-local-assist-helper-path-design.md`
         // for the historical resolved-path design.
         match selection {
-            AssistBackendSelection::CoreAi { .. } => resolve_bundled_core_ai_helper_path(),
+            AssistBackendSelection::CoreAi { .. } | AssistBackendSelection::CoreAiLocal { .. } => {
+                resolve_bundled_core_ai_helper_path()
+            }
             // The Developer-only fixture command predates the distribution
             // sidecar and intentionally replaces the local helper artifact.
             AssistBackendSelection::CoreAiTest { .. }
@@ -531,9 +551,9 @@ impl AppleAssistHelperStore {
             }
         }
         match backend {
-            AssistBackendSelection::CoreAi { .. } | AssistBackendSelection::CoreAiTest { .. } => {
-                CORE_AI_TEST_PROBE_TIMEOUT
-            }
+            AssistBackendSelection::CoreAi { .. }
+            | AssistBackendSelection::CoreAiLocal { .. }
+            | AssistBackendSelection::CoreAiTest { .. } => CORE_AI_TEST_PROBE_TIMEOUT,
             AssistBackendSelection::SystemDefault | AssistBackendSelection::Invalid(_) => {
                 PROBE_TIMEOUT
             }

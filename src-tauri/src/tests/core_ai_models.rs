@@ -732,7 +732,7 @@ fn create_broken_local_bundle(data_dir: &std::path::Path, directory_name: &str) 
 }
 
 #[test]
-fn local_custom_models_are_detected_but_not_manageable() {
+fn local_custom_models_can_be_selected_and_restored_but_not_managed_as_downloads() {
     let data_dir = temp_data_dir();
     let helper = store_without_helper();
     let store = CoreAiModelStore::with_fixture_catalog(vec![CoreAiCatalogEntry::fixture(
@@ -760,13 +760,52 @@ fn local_custom_models_are_detected_but_not_manageable() {
     assert_eq!(local.error_code, None);
     assert_eq!(local.error, None);
 
-    // Detected local models stay out of the Apple-hosted management path.
-    assert!(store.select(&local.id, &helper).is_err());
+    // The Apple-hosted entry still behaves normally, then the local selection
+    // persists only its stable id (never its absolute path).
+    assert!(store.select("apple:core-ai:fixture", &helper).is_ok());
+    assert!(store.select(&local.id, &helper).is_ok());
+    assert_eq!(helper.selected_model_id().unwrap(), local.id);
+    assert!(store.list().models[2].selected);
+
+    let restored_helper = store_without_helper();
+    let restored = CoreAiModelStore::default();
+    restored.configure(Ok(data_dir.clone()), &restored_helper, None);
+    assert_eq!(restored_helper.selected_model_id().unwrap(), local.id);
+    assert_eq!(restored.list().selected_model_id, local.id);
+
+    // Local models never enter the Apple-hosted asset-management path.
     assert!(store.start_download(&local.id).is_err());
     assert!(store.cancel_download(&local.id).is_err());
     assert!(store.delete(&local.id, &helper).is_err());
-    // The Apple-hosted entry still behaves normally.
-    assert!(store.select("apple:core-ai:fixture", &helper).is_ok());
+
+    // A saved local selection is revalidated on restart. If the user changes
+    // the bundle into an invalid shape while the app is closed, startup falls
+    // back to the System model and repairs the persisted preference.
+    std::fs::remove_file(
+        data_dir.join("CoreAICustomModels/MyQwen/bundle/tokenizer/tokenizer.json"),
+    )
+    .unwrap();
+    let repaired_helper = store_without_helper();
+    let repaired = CoreAiModelStore::default();
+    repaired.configure(Ok(data_dir.clone()), &repaired_helper, None);
+    assert_eq!(
+        repaired_helper.selected_model_id().unwrap(),
+        SYSTEM_MODEL_ID
+    );
+    assert_eq!(repaired.list().selected_model_id, SYSTEM_MODEL_ID);
+
+    std::fs::write(
+        data_dir.join("CoreAICustomModels/MyQwen/bundle/tokenizer/tokenizer.json"),
+        "{}",
+    )
+    .unwrap();
+    let confirmed_helper = store_without_helper();
+    let confirmed = CoreAiModelStore::default();
+    confirmed.configure(Ok(data_dir.clone()), &confirmed_helper, None);
+    assert_eq!(
+        confirmed_helper.selected_model_id().unwrap(),
+        SYSTEM_MODEL_ID
+    );
 
     std::fs::remove_dir_all(data_dir).unwrap();
 }
@@ -788,6 +827,7 @@ fn broken_local_bundle_is_reported_with_its_contract_code() {
     // The frontend owns the wording; Rust only reports the contract code.
     assert_eq!(local.error_code.as_deref(), Some("missing-tokenizer"));
     assert_eq!(local.error, None);
+    assert!(store.select(&local.id, &helper).is_err());
 
     std::fs::remove_dir_all(data_dir).unwrap();
 }

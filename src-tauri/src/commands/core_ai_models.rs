@@ -81,9 +81,8 @@ pub(crate) enum CoreAiModelStatus {
     Failed,
     Unsupported,
     NotPublished,
-    /// A local bundle passed the local contract. It is detected and usable as a
-    /// resource, but this build cannot generate from it yet (the helper local
-    /// backend path lands in a later C-3 slice).
+    /// A local bundle passed the local contract and can be selected. It remains
+    /// distinct from `Ready`, which is an Apple-hosted download state.
     Detected,
 }
 
@@ -463,7 +462,13 @@ impl CoreAiModelStore {
         if selected == SYSTEM_MODEL_ID {
             return Ok(());
         }
-        if self.catalog_entry(&selected).is_err() {
+        if selected.starts_with(LOCAL_MODEL_ID_PREFIX) {
+            if self.selection_for(&selected).is_ok() {
+                self.apply_selection(&selected, helper_store)?;
+            } else {
+                self.persist_selection(SYSTEM_MODEL_ID)?;
+            }
+        } else if self.catalog_entry(&selected).is_err() {
             self.persist_selection(SYSTEM_MODEL_ID)?;
         } else if self.selection_for(&selected).is_ok() {
             self.apply_selection(&selected, helper_store)?;
@@ -559,7 +564,6 @@ impl CoreAiModelStore {
         helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
-        self.ensure_not_a_local_model(model_id)?;
         let selection = self.selection_for(model_id)?;
         {
             let mut selected = self.selected_model_id.lock().expect("selected model lock");
@@ -579,7 +583,7 @@ impl CoreAiModelStore {
         model_id: &str,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
-        self.ensure_not_a_local_model(model_id)?;
+        self.ensure_apple_hosted_management_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let asset_pack_id = self.asset_pack_id(entry)?;
         if self.runtime_state(entry).status == CoreAiModelStatus::Ready {
@@ -599,7 +603,7 @@ impl CoreAiModelStore {
 
     pub(crate) fn cancel_download(&self, model_id: &str) -> Result<bool, String> {
         self.ensure_management_available()?;
-        self.ensure_not_a_local_model(model_id)?;
+        self.ensure_apple_hosted_management_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let cancelled = self.transport.cancel(self.asset_pack_id(entry)?)?;
         if cancelled {
@@ -618,7 +622,7 @@ impl CoreAiModelStore {
         helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
-        self.ensure_not_a_local_model(model_id)?;
+        self.ensure_apple_hosted_management_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let was_selected = self
             .selected_model_id
@@ -875,13 +879,13 @@ impl CoreAiModelStore {
         Ok(())
     }
 
-    /// Local models are detected and validated, but this build cannot select,
-    /// download, or delete them yet. Refusing here keeps a crafted model id from
-    /// reaching the Apple-hosted management path.
-    fn ensure_not_a_local_model(&self, model_id: &str) -> Result<(), String> {
+    /// Local models are selectable, but remain outside Apple-hosted asset
+    /// lifecycle operations. Refusing here keeps a crafted local id from
+    /// reaching the download and deletion path.
+    fn ensure_apple_hosted_management_model(&self, model_id: &str) -> Result<(), String> {
         if model_id.starts_with(LOCAL_MODEL_ID_PREFIX) {
             return Err(
-                "Custom models are detected only. This build cannot select, download, or delete them."
+                "Custom models are selectable, but cannot be downloaded, cancelled, or deleted by Hazakura."
                     .into(),
             );
         }
@@ -953,6 +957,29 @@ impl CoreAiModelStore {
     fn selection_for(&self, model_id: &str) -> Result<AssistBackendSelection, String> {
         if model_id == SYSTEM_MODEL_ID {
             return Ok(AssistBackendSelection::SystemDefault);
+        }
+        if model_id.starts_with(LOCAL_MODEL_ID_PREFIX) {
+            let root = self.custom_models_root()?;
+            let candidate = scan_custom_models_directory(&root)
+                .into_iter()
+                .find(|candidate| {
+                    format!("{LOCAL_MODEL_ID_PREFIX}{}", candidate.directory_name) == model_id
+                })
+                .ok_or_else(|| {
+                    "The selected local Core AI model is not in Hazakura's Custom Models directory."
+                        .to_string()
+                })?;
+            let model = candidate.outcome.map_err(|error| {
+                format!(
+                    "The selected local Core AI model is invalid ({}): {}",
+                    error.code(),
+                    error.message()
+                )
+            })?;
+            return Ok(AssistBackendSelection::CoreAiLocal {
+                model_id: model_id.to_string(),
+                model_path: model.resource_root,
+            });
         }
         let entry = self.catalog_entry(model_id)?;
         if self.runtime_state(entry).status != CoreAiModelStatus::Ready {

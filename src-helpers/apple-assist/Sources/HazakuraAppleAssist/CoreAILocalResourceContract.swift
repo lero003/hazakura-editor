@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 /// Error codes shared with the Rust local model resolver. The strings are part
@@ -74,9 +75,9 @@ enum CoreAILocalModelResolution: Equatable {
 /// `src-tauri/resources/core-ai/local-model-contract-cases.json`. A bundle must
 /// not be valid on one side and invalid on the other.
 ///
-/// Passing this gate means "a well-formed Core AI resource bundle the local path
-/// may adopt". It is not permission to generate; the local backend wiring is a
-/// later C-3 slice.
+/// Passing this gate means "a well-formed Core AI resource bundle the local
+/// backend may adopt". It does not turn the bundle into a signed production
+/// resource or establish licence provenance.
 enum CoreAILocalResourceContract {
     private static let descriptorFilename = "hazakura-model.json"
     private static let languageBundleDescriptor = "metadata.json"
@@ -87,6 +88,53 @@ enum CoreAILocalResourceContract {
         "embed_per_layer.scale.f32",
     ]
     private static let descriptorSchemaVersion = 1
+
+    /// Cache identity for a resource that already passed `resolve`. Small
+    /// identity files are hashed by content; large payloads use a cheap
+    /// size/mtime stamp so a normal request never re-reads model weights.
+    /// Returning `nil` disables caching for the request.
+    static func signature(for resource: CoreAILocalModelResource) -> String? {
+        var parts = [
+            resource.resourceRoot.path,
+            resource.runtimeKind.rawValue,
+            resource.bundle.path,
+            resource.modelDirectory.path,
+            resource.modelId ?? "descriptor-model-id:none",
+        ]
+        let contentIdentity = [
+            resource.modelDirectory.appendingPathComponent("main.hash"),
+            resource.bundle.appendingPathComponent(tokenizerFile),
+        ]
+        for url in contentIdentity {
+            guard let digest = contentDigest(url) else { return nil }
+            parts.append("\(url.path)=\(digest)")
+        }
+
+        let descriptor = resource.resourceRoot.appendingPathComponent(descriptorFilename)
+        switch probe(descriptor) {
+        case .file:
+            guard let digest = contentDigest(descriptor) else { return nil }
+            parts.append("descriptor=\(digest)")
+        case .missing:
+            parts.append("descriptor=none")
+        default:
+            return nil
+        }
+
+        let largeFiles = [
+            resource.modelDirectory.appendingPathComponent("main.mlirb"),
+        ] + (resource.tables.map {
+            [
+                $0.appendingPathComponent("embed_per_layer.i8"),
+                $0.appendingPathComponent("embed_per_layer.scale.f32"),
+            ]
+        } ?? [])
+        for url in largeFiles {
+            guard let stamp = fileStamp(url) else { return nil }
+            parts.append("\(url.path)=\(stamp)")
+        }
+        return parts.joined(separator: "|")
+    }
 
     /// Resolve a user-selected or app-managed path into a validated local model.
     ///
@@ -361,6 +409,22 @@ enum CoreAILocalResourceContract {
         if values.isDirectory == true { return .directory }
         if values.isRegularFile == true { return .file }
         return .other
+    }
+
+    private static func contentDigest(_ url: URL) -> String? {
+        guard let data = try? Data(contentsOf: url, options: [.mappedIfSafe]) else { return nil }
+        return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
+    private static func fileStamp(_ url: URL) -> String? {
+        guard let values = try? url.resourceValues(forKeys: [
+            .fileSizeKey,
+            .contentModificationDateKey,
+        ]), let size = values.fileSize,
+           let modified = values.contentModificationDate else {
+            return nil
+        }
+        return "\(size):\(Int(modified.timeIntervalSince1970))"
     }
 }
 

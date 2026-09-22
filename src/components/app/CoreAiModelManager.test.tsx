@@ -66,8 +66,8 @@ describe("CoreAiModelManager", () => {
     expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
   });
 
-  it("shows a detected app-managed local model without Apple-hosted actions", async () => {
-    mocks.list.mockResolvedValue({
+  it("allows a detected app-managed local model to be selected without asset actions", async () => {
+    const catalog = {
       distributionStatus: "not_published",
       selectedModelId: "apple:foundation-models:system-default",
       models: [
@@ -80,13 +80,23 @@ describe("CoreAiModelManager", () => {
           kind: "core_ai", source: "app_managed_local", status: "detected", selected: false,
         },
       ],
+    };
+    mocks.list.mockResolvedValue(catalog);
+    mocks.select.mockResolvedValue({
+      ...catalog,
+      selectedModelId: "local:app-managed:MyQwen",
+      models: catalog.models.map((model) => ({
+        ...model,
+        selected: model.id === "local:app-managed:MyQwen",
+      })),
     });
 
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
     expect(await screen.findByText("My Qwen 3 · ローカル")).toBeTruthy();
-    expect(screen.getByText("検出済み（生成はまだ利用できません）")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "使う" })).toBeNull();
+    expect(screen.getByText("検出済み（選択できます）")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "使う" }));
+    await waitFor(() => expect(mocks.select).toHaveBeenCalledWith("local:app-managed:MyQwen"));
     expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
     expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
   });

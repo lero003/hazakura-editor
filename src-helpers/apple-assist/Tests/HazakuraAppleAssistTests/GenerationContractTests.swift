@@ -21,6 +21,26 @@ final class GenerationContractTests: XCTestCase {
         XCTAssertEqual(AssistBackend.coreAITest.modelId, "apple:core-ai:qwen3-0.6b-test")
     }
 
+    func testBackendResolverAcceptsOnlyAppManagedLocalIdentityForLocalCoreAI() {
+        guard case .coreAILocal(let modelId) = AssistBackend.resolve(
+            wireValue: "core_ai_local",
+            modelId: "local:app-managed:My Qwen"
+        ) else {
+            return XCTFail("core_ai_local must resolve an app-managed local identity")
+        }
+        XCTAssertEqual(modelId, "local:app-managed:My Qwen")
+        XCTAssertEqual(AssistBackend.coreAILocal(modelId: modelId).modelId, modelId)
+        XCTAssertNil(AssistBackend.resolve(wireValue: "core_ai_local", modelId: nil))
+        XCTAssertNil(AssistBackend.resolve(
+            wireValue: "core_ai_local",
+            modelId: "apple:core-ai:writing-primary"
+        ))
+        XCTAssertNil(AssistBackend.resolve(
+            wireValue: "core_ai_local",
+            modelId: "local:app-managed:bad\nidentity"
+        ))
+    }
+
     func testLegacyRequestAndResponseOmitUsage() throws {
         let request = try JSONDecoder().decode(AppleAssistRequest.self, from: Data("{\"operation\":\"proofread\",\"selectedText\":\"text\"}".utf8))
         XCTAssertNil(request.measureUsage)

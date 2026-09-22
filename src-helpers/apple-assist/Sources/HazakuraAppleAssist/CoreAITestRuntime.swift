@@ -33,7 +33,7 @@ enum CoreAIRuntime {
         }
         #elseif COREAI_PRODUCT_BACKEND && !FIXTURE_MODE
         do {
-            _ = try await loadProductionModel(modelPath: modelPath, backend: backend)
+            _ = try await loadSelectedModel(modelPath: modelPath, backend: backend)
             return AppleAssistAvailabilityResponse(kind: "available", reason: nil)
         } catch let failure as CoreAIRuntimeFailure {
             return unavailable(message(for: failure))
@@ -174,7 +174,7 @@ enum CoreAIRuntime {
     #endif
 
     #if COREAI_PRODUCT_BACKEND && !FIXTURE_MODE
-    enum LoadedProductionModel {
+    enum LoadedCoreAIModel {
         case gemma4(KitGemmaModel)
         case language(KitLanguageModel)
     }
@@ -190,10 +190,10 @@ enum CoreAIRuntime {
     /// when a different model or resource signature is requested, and after an
     /// idle period so a 16 GB machine does not hold the weights indefinitely.
     @available(macOS 27.0, *)
-    actor ProductionModelCache {
-        static let shared = ProductionModelCache()
+    actor CoreAIModelCache {
+        static let shared = CoreAIModelCache()
 
-        private var entry: (signature: String, model: LoadedProductionModel)?
+        private var entry: (signature: String, model: LoadedCoreAIModel)?
         private var idleTracker = CoreAIModelIdleTracker()
 
         /// Seconds to keep an idle model. Only an explicit `0` keeps it for the
@@ -202,13 +202,13 @@ enum CoreAIRuntime {
             from: ProcessInfo.processInfo.environment["HAZAKURA_CORE_AI_IDLE_RELEASE_SECONDS"]
         )
 
-        func model(forSignature signature: String) -> LoadedProductionModel? {
+        func model(forSignature signature: String) -> LoadedCoreAIModel? {
             guard let entry, entry.signature == signature else { return nil }
             scheduleIdleRelease()
             return entry.model
         }
 
-        func store(_ model: LoadedProductionModel, forSignature signature: String) {
+        func store(_ model: LoadedCoreAIModel, forSignature signature: String) {
             entry = (signature, model)
             scheduleIdleRelease()
         }
@@ -225,16 +225,31 @@ enum CoreAIRuntime {
             let token = idleTracker.schedule()
             Task.detached {
                 try? await Task.sleep(nanoseconds: idleReleaseNanoseconds)
-                await ProductionModelCache.shared.releaseIfIdle(token: token)
+                await CoreAIModelCache.shared.releaseIfIdle(token: token)
             }
         }
     }
 
     @available(macOS 27.0, *)
-    static func loadProductionModel(
+    static func loadSelectedModel(
         modelPath: String?,
         backend: AssistBackend
-    ) async throws -> LoadedProductionModel {
+    ) async throws -> LoadedCoreAIModel {
+        switch backend {
+        case .coreAI:
+            return try await loadProductionModel(modelPath: modelPath, backend: backend)
+        case .coreAILocal:
+            return try await loadLocalModel(modelPath: modelPath, backend: backend)
+        case .systemDefault, .coreAITest:
+            throw CoreAIRuntimeFailure.resourceInvalid
+        }
+    }
+
+    @available(macOS 27.0, *)
+    private static func loadProductionModel(
+        modelPath: String?,
+        backend: AssistBackend
+    ) async throws -> LoadedCoreAIModel {
         guard case .coreAI(let modelId) = backend else {
             throw CoreAIRuntimeFailure.resourceInvalid
         }
@@ -257,11 +272,43 @@ enum CoreAIRuntime {
             ))
             return try await makeProductionModel(resource: resource, modelId: modelId)
         }
-        if let cached = await ProductionModelCache.shared.model(forSignature: signature) {
+        if let cached = await CoreAIModelCache.shared.model(forSignature: signature) {
             return cached
         }
         let model = try await makeProductionModel(resource: resource, modelId: modelId)
-        await ProductionModelCache.shared.store(model, forSignature: signature)
+        await CoreAIModelCache.shared.store(model, forSignature: signature)
+        return model
+    }
+
+    @available(macOS 27.0, *)
+    private static func loadLocalModel(
+        modelPath: String?,
+        backend: AssistBackend
+    ) async throws -> LoadedCoreAIModel {
+        guard case .coreAILocal(let registryModelId) = backend else {
+            throw CoreAIRuntimeFailure.resourceInvalid
+        }
+        let resource: CoreAILocalModelResource
+        switch CoreAILocalResourceContract.resolve(path: modelPath) {
+        case .ready(let value):
+            resource = value
+        case .error(.rootMissing):
+            throw CoreAIRuntimeFailure.resourceMissing
+        case .error:
+            throw CoreAIRuntimeFailure.resourceInvalid
+        }
+        let runtimeModelId = resource.modelId ?? registryModelId
+        guard let signature = CoreAILocalResourceContract.signature(for: resource) else {
+            FileHandle.standardError.write(Data(
+                "hazakura-core-ai-helper: local resource signature unavailable; model cache disabled for this request\n".utf8
+            ))
+            return try await makeLocalModel(resource: resource, modelId: runtimeModelId)
+        }
+        if let cached = await CoreAIModelCache.shared.model(forSignature: signature) {
+            return cached
+        }
+        let model = try await makeLocalModel(resource: resource, modelId: runtimeModelId)
+        await CoreAIModelCache.shared.store(model, forSignature: signature)
         return model
     }
 
@@ -269,10 +316,41 @@ enum CoreAIRuntime {
     private static func makeProductionModel(
         resource: CoreAIProductionResource,
         modelId: String
-    ) async throws -> LoadedProductionModel {
+    ) async throws -> LoadedCoreAIModel {
         do {
             switch resource.runtimeKind {
             case .gemma4PLE:
+                guard let tables = resource.tables else {
+                    throw CoreAIRuntimeFailure.resourceInvalid
+                }
+                return .gemma4(try await KitGemmaModel(
+                    decoderBundleAt: resource.bundle,
+                    tablesAt: tables,
+                    modelID: modelId
+                ))
+            case .language:
+                return .language(try await KitLanguageModel(
+                    bundleAt: resource.bundle,
+                    engineVariant: .pipelined,
+                    modelID: modelId
+                ))
+            }
+        } catch let failure as CoreAIRuntimeFailure {
+            throw failure
+        } catch {
+            logModelLoadFailure(error)
+            throw CoreAIRuntimeFailure.modelLoadFailed
+        }
+    }
+
+    @available(macOS 27.0, *)
+    private static func makeLocalModel(
+        resource: CoreAILocalModelResource,
+        modelId: String
+    ) async throws -> LoadedCoreAIModel {
+        do {
+            switch resource.runtimeKind {
+            case .gemma4Ple:
                 guard let tables = resource.tables else {
                     throw CoreAIRuntimeFailure.resourceInvalid
                 }

@@ -68,6 +68,10 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
         const source = model.source ?? "apple_hosted";
         const isLocal = source === "app_managed_local";
         const busy = busyId !== null || Boolean(catalog.managementError) || Boolean(catalog.selectionLocked);
+        const canSelect = !model.selected && (
+          (source === "apple_hosted" && model.status === "ready") ||
+          (isLocal && model.status === "detected")
+        );
         // 選択状態は状態行の先頭に置き、選択中でもサイズ・バージョンを落とさない。
         const status = statusLabel(model, copy);
         return <div className="core-ai-model-row" key={model.id}>
@@ -95,7 +99,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
             {!isLocal && model.error ? <span className="preference-warning" role="status">{model.error}</span> : null}
           </div>
           <div className="core-ai-model-actions">
-            {source === "apple_hosted" && model.status === "ready" && !model.selected ?
+            {canSelect ?
               <button type="button" disabled={busy} onClick={() => void run(model, "select")}>{copy.select}</button> : null}
             {source === "apple_hosted" && model.kind === "core_ai" && model.status === "not_downloaded" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{copy.download}</button> : null}
@@ -156,7 +160,7 @@ function isBelowRecommendedMemory(
 function managerCopy(language: MenuLanguage) {
   if (language === "en") return {
     selected: "Selected", ready: "Ready", systemStatus: "System default / availability not checked",
-    localBadge: "Local", localDetected: "Detected (generation is not available yet)",
+    localBadge: "Local", localDetected: "Detected (can be selected)",
     localUnavailable: "Unavailable", localReason: (code: string) => localModelReason("en", code),
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
     download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete",
@@ -179,11 +183,11 @@ function managerCopy(language: MenuLanguage) {
     notPublished: "No Core AI model has been published for download yet. This build includes the adapter and management controls. Apple Intelligence is the default model.",
     developerOverride: "A Developer test backend is selected for this session. Restart without the test override to manage models.",
     managementUnavailable: "Model management is unavailable. You can continue editing documents. Resolve the following error and restart the app:",
-    boundary: "Apple-hosted models and bundles in Hazakura's Custom Models folder are listed here. Local bundles are detected read-only for now; URL and GGUF imports are not accepted.",
+    boundary: "Apple-hosted models and validated bundles in Hazakura's Custom Models folder are listed here. Local bundles can be selected for Local Assist; URL and GGUF imports are not accepted.",
   };
   if (language === "kana") return {
     selected: "えらんでゐます", ready: "つかへます", systemStatus: "しすてむの ひょうじゅん / つかへるかは まだ たしかめてゐません",
-    localBadge: "ろーかる", localDetected: "みつけました（まだ ぶんを つくれません）",
+    localBadge: "ろーかる", localDetected: "みつけました（えらべます）",
     localUnavailable: "つかへません", localReason: (code: string) => localModelReason("kana", code),
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
     download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす",
@@ -206,11 +210,11 @@ function managerCopy(language: MenuLanguage) {
     notPublished: "Core AI の もでるは まだ くばってゐません。この あぷりには うけいれと かんりの しくみだけが あり、はじめは Apple Intelligence を つかひます。",
     developerOverride: "ためすための もでるを えらんでゐます。もでるを かんりするには、ためすための していを はづして あぷりを ひらきなほして ください。",
     managementUnavailable: "もでるを かんりできません。ぶんしょは そのまま かきつづけられます。つぎの げんいんを なおして あぷりを ひらきなほして ください：",
-    boundary: "Apple から くばる もでると Hazakura の Custom Models ふぉるだに ある もでるを ここに だします。ろーかるの もでるは いまは みつけるだけです。URL と GGUF は うけつけません。",
+    boundary: "Apple から くばる もでると Hazakura の Custom Models ふぉるだで たしかめた もでるを ここに だします。ろーかるの もでるは Local Assist で えらべます。URL と GGUF は うけつけません。",
   };
   return {
     selected: "選択中", ready: "利用可能", systemStatus: "システム標準 / 利用状況未確認",
-    localBadge: "ローカル", localDetected: "検出済み（生成はまだ利用できません）",
+    localBadge: "ローカル", localDetected: "検出済み（選択できます）",
     localUnavailable: "利用不可", localReason: (code: string) => localModelReason("ja", code),
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
     download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除",
@@ -233,7 +237,7 @@ function managerCopy(language: MenuLanguage) {
     notPublished: "Core AI モデルはまだ配布されていません。このビルドには実行アダプタと管理画面だけが入り、標準では Apple Intelligence を使います。",
     developerOverride: "Developer用のテストモデル指定が有効です。モデルを管理するには、テスト指定を外してアプリを再起動してください。",
     managementUnavailable: "モデル管理を利用できません。文書の編集は続けられます。次の原因を解消してアプリを再起動してください：",
-    boundary: "Apple 経由のモデルと Hazakura の Custom Models フォルダで検出したモデルを表示します。ローカルモデルは現在読み取り専用の検出のみで、URL と GGUF の持ち込みは受け付けません。",
+    boundary: "Apple 経由のモデルと Hazakura の Custom Models フォルダで検証したモデルを表示します。ローカルモデルは Local Assist で選択できます。URL と GGUF の持ち込みは受け付けません。",
   };
 }
 

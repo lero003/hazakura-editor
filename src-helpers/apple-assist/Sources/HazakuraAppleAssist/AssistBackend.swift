@@ -3,10 +3,12 @@ import Foundation
 enum AssistBackend {
     case systemDefault
     case coreAI(modelId: String)
+    case coreAILocal(modelId: String)
     case coreAITest
 
     static let systemDefaultWireValue = "system_default"
     static let coreAIWireValue = "core_ai"
+    static let coreAILocalWireValue = "core_ai_local"
     static let coreAITestWireValue = "core_ai_test"
 
     static func resolve(wireValue: String?, modelId: String? = nil) -> AssistBackend? {
@@ -27,6 +29,18 @@ enum AssistBackend {
                 return nil
             }
             return .coreAI(modelId: modelId)
+        case coreAILocalWireValue:
+            let prefix = "local:app-managed:"
+            guard let modelId,
+                  modelId.hasPrefix(prefix),
+                  modelId.count > prefix.count,
+                  modelId.count <= 320,
+                  modelId.unicodeScalars.allSatisfy({
+                      !CharacterSet.controlCharacters.contains($0)
+                  }) else {
+                return nil
+            }
+            return .coreAILocal(modelId: modelId)
         case coreAITestWireValue:
             return .coreAITest
         default:
@@ -39,6 +53,8 @@ enum AssistBackend {
         case .systemDefault:
             return "apple:foundation-models:system-default"
         case .coreAI(let modelId):
+            return modelId
+        case .coreAILocal(let modelId):
             return modelId
         case .coreAITest:
             return "apple:core-ai:qwen3-0.6b-test"

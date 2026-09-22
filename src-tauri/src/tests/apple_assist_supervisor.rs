@@ -628,6 +628,57 @@ done
     std::fs::remove_file(&script).ok();
 }
 
+#[test]
+fn supervisor_injects_app_managed_local_backend_identity_and_path() {
+    let script = std::env::temp_dir().join("hazakura-apple-assist-local-coreai-wire.sh");
+    let model_path = std::env::temp_dir().join("CoreAICustomModels/MyQwen");
+    let expected_path = model_path.display().to_string();
+    let body = format!(
+        r###"#!/bin/sh
+while IFS= read -r request; do
+    case "$request" in
+        *'"backend":"core_ai_local"'*'"modelId":"local:app-managed:MyQwen"'*'"modelPath":"{expected_path}"'*) ;;
+        *)
+            printf '%s\n' '{{"kind":"error","value":{{"error":"missing local Core AI selection","kind":"backend_test_failure"}}}}'
+            continue
+            ;;
+    esac
+    case "$request" in
+        *'"action":"probe_availability"'*)
+            printf '%s\n' '{{"kind":"availability","value":{{"kind":"available","reason":null}}}}'
+            ;;
+        *'"action":"generate_candidate"'*)
+            printf '%s\n' '{{"kind":"candidate","value":{{"operation":"summarize","candidateText":"generated","modelId":"local:app-managed:MyQwen","latencyMs":0}}}}'
+            ;;
+    esac
+done
+"###
+    );
+    std::fs::write(&script, body).expect("write local Core AI wire helper script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod local Core AI wire helper script");
+
+    {
+        let store = store_with_helper_path_and_backend(
+            script.clone(),
+            AssistBackendSelection::CoreAiLocal {
+                model_id: "local:app-managed:MyQwen".into(),
+                model_path,
+            },
+        );
+        let probed = probe_selected_backend_availability_via_helper(&store)
+            .expect("selected backend probe must include local Core AI path");
+        assert_eq!(probed.0, "local:app-managed:MyQwen");
+        assert!(matches!(probed.1, WireEnvelope::Availability(_)));
+
+        let generated = generate_candidate_via_helper(&store, "summarize", "body", None, None)
+            .expect("generation must include local Core AI selection");
+        assert!(matches!(generated, WireEnvelope::Candidate(_)));
+    }
+
+    std::fs::remove_file(&script).ok();
+}
+
 // ----------------------------------------------------------------
 // Timeout tests (slice 11).
 // ----------------------------------------------------------------
