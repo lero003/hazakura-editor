@@ -56,6 +56,19 @@ production lock、任意URL/pathを受けない境界、明示Applyは変更し�
 時間切れし、終了待ちになったため中断した。落ちた4 files / 116 testsは単独で全件成功し、
 全frontendは`--maxWorkers=1`で成功した。これは成功した安定条件と分けて記録する。
 
+## 外部再レビュー後のブランチ状態
+
+- 2026-09-22にローカルで上記ゲートを再実行し、同じ結果を確認した（frontend 298 files /
+  2,674 tests、`test:scripts` 24 tests、Rust 427 passed / 2 ignored、Swift 52 tests、
+  surface 132 tests、`typecheck` / `build:vite` / `cargo fmt --check` / `git diff --check`）。
+  Objective-C bridgeはmacOS 26 deployment target、macOS 27 SDK、`-Werror`で
+  `xcrun clang -fsyntax-only`が成功した。
+- Swift toolchainはCodex seatbelt内だとmodule cacheを作れずsandbox-execが拒否されるため、
+  `build:apple-assist-helper:fixture` / `build:import-assist-helper:fixture`と
+  `swift test`はsandbox外で実行した（各smokeの出力を確認）。
+- PR #52は`e18c102d`時点でQuality run `35665281992`がfrontend / nativeとも成功し、
+  merge stateは`CLEAN`。**マージ前の最終確認は最新HEADのcheck-runをGitHubで見る。**
+
 ## 未確認
 
 - built app / WKWebViewでの設定表示、削除確認、model pickerの実キーボード操作。
