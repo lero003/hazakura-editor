@@ -56,7 +56,7 @@ helper への権限受け渡しは未着手である。
 
 - 正常系4件: language bundle（root指定 / `.aimodel`指定）、Hazakura記述の
   `gemma4-ple` と `language`
-- 異常系11件: tables欠落、tokenizer欠落、`.aimodel` 2個、`main.mlirb` 欠落、
+- 異常系12件: tables欠落、tokenizer欠落、`.aimodel` 2個、`main.mlirb` 欠落、
   `.aimodel` なし、`layout` の root 外脱出、未対応 `schemaVersion`、未知 `runtimeKind`、
   壊れた JSON、存在しない root、ファイル選択、descriptor なし
 - unix系2件: `.aimodel` symlink、root symlink

@@ -23,12 +23,23 @@ Last reviewed: 2026-09-22
 - **スライス1 完了:** `src-tauri/src/commands/core_ai_local_models.rs` に依存の無い解決・
   検証層を追加した。`resolve_local_model_root`（resource root / language bundle /
   `*.aimodel` 指定）と `scan_custom_models_directory`（Custom Models 直下の候補解決。
-  壊れた候補も理由付きで返す）を備え、symlink、bundle 外の `layout`、`..`、
-  tokenizer / tables 欠落、`.aimodel` の重複を安全側で拒否する。`cargo test` で新規20件。
+  壊れた候補も理由付きで返す）を備え、bundle 外の `layout`、`..`、tokenizer / tables 欠落、
+  `.aimodel` の重複を安全側で拒否する。
   [証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)。
+- **スライス1 外部レビュー是正 完了（2026-09-22）:** production 契約とローカル契約を分離した。
+  ローカル bundle は署名 manifest も licence / notice も reviewed `modelId` も持たないため、
+  `CoreAIResourceContract`（production）を流用してはならない。`hazakura-model.json` の無い
+  bare language resource もローカルでは正規の入力であり、production helper の入力ではない。
+  ルールの正本は次の2実装で、**共通 fixture spec**
+  `src-tauri/resources/core-ai/local-model-contract-cases.json`（20ケース）を Rust と Swift の
+  両テストが読む。symlink は root 配下の全 component を拒否する。
+  [是正証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)。
+- **ローカル契約の正本:** Rust `src-tauri/src/commands/core_ai_local_models.rs` /
+  Swift `src-helpers/apple-assist/Sources/HazakuraAppleAssist/CoreAILocalResourceContract.swift`。
+  production 契約（`CoreAIResourceContract`）は公式 Apple-hosted bundle 専用のまま変更しない。
 - **未接続:** catalog / IPC / frontend への露出、登録・選択・生成、security-scoped
-  bookmark、helper への権限受け渡し、Custom Models の保存場所は次のスライス。したがって
-  本レーンは「ローカルモデルを登録して使える」完了状態ではない。
+  bookmark、helper のローカル backend 経路、Custom Models の保存場所は次のスライス。
+  したがって本レーンは「ローカルモデルを登録して使える」完了状態ではない。
 
 ### オーナー決定（2026-09-22）
 

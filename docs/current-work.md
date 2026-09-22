@@ -5,6 +5,32 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## C-3 外部レビュー是正 — ローカル契約の分離と symlink / scan（2026-09-22）
+
+スライス1への外部レビュー P1/P2 を閉じた。P1 は「Rust の検証が helper の契約と一致する」と
+いう主張の誤りで、production helper は licence / notice / `expectedModelId` 一致まで要求し、
+`hazakura-model.json` の無い bare language bundle も受理しない。訂正として production 契約へ
+寄せるのではなく、**ローカル用 contract を分離**した。
+
+- Swift に `CoreAILocalResourceContract` を追加し、Rust の `core_ai_local_models` と同じルールで
+  bare language resource / Hazakura記述 local resource を検証する。
+- `src-tauri/resources/core-ai/local-model-contract-cases.json` を共通 fixture spec とし、
+  Rust（`include_str!`）と Swift（`#filePath` から探索）の両テストが同じ20ケースを通す。
+  片側だけ変えるともう片方が落ちる。
+- production 契約が licence を要求し、local 契約が licence なしで ready になることを Swift の
+  回帰テストで固定した。
+- symlink は最終要素だけでなく、root から対象までの**全 component** を拒否する。
+  tokenizer ディレクトリ symlink、`layout` ディレクトリ symlink、bundle 内から外を指す
+  symlink を拒否するテストを追加。
+- Custom Models scan は symlink 候補と種別不明の候補を resolver へ渡し、`unsafe-path` /
+  `unreadable` として報告する（黙って消さない）。
+- descriptor の read 失敗は `unreadable`、JSON parse 失敗は `malformed-descriptor` に分離。
+
+検証は `cargo fmt --check`、`cargo test`（452 passed / 2 ignored、モジュール内25件）、
+`swift test`（57 passed、新規5件）。Swift は Codex seatbelt 内で module cache を作れないため
+sandbox 外で実行した。**ローカル backend 経路、bookmark、Custom Models の保存場所は次のゲート**。
+[証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)。
+
 ## C-3 ローカルモデル解決・検証層（2026-09-22）
 
 v3.1 追加レーン C-3 の1本目のスライス。Apple-hosted 以外のモデルソースを扱う前に、

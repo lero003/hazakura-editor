@@ -5,6 +5,18 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **C-3 外部レビュー是正（2026-09-22）:** スライス1の「Rust は helper と同じ契約」という主張を
+  訂正した。production helper は licence / notice / `expectedModelId` 一致を要求し、bare
+  language bundle も受理しないため、production 契約へ寄せず**ローカル契約を分離**した。Swift に
+  `CoreAILocalResourceContract` を追加し、`src-tauri/resources/core-ai/local-model-contract-cases.json`
+  を共通 fixture spec として Rust（`include_str!`）と Swift（`#filePath` 探索）の両テストが
+  同じ20ケースを通す。symlink は root 配下の全 component で拒否し、Custom Models scan は
+  symlink / 種別不明の候補も `unsafe-path` / `unreadable` として報告する。descriptor の read 失敗と
+  JSON parse 失敗も分離した。検証は `cargo test`（452 passed / 2 ignored、モジュール内25件）と
+  `swift test`（57 passed、新規5件）。Swift は sandbox 外で実行した。**helper のローカル backend
+  経路、security-scoped bookmark、Custom Models の保存場所は未接続**。
+  [証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)。
+
 - **C-3 ローカルモデル解決・検証層（2026-09-22）:** v3.1 追加レーンの1本目。Rust へ
   `core_ai_local_models.rs` を追加し、resource root / language bundle / `*.aimodel` 指定から
   canonical な `ResolvedLocalModel` を返す。`metadata.json`、`tokenizer/tokenizer.json`、
