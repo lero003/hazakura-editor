@@ -5,6 +5,24 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## C-3 ローカルモデル解決・検証層（2026-09-22）
+
+v3.1 追加レーン C-3 の1本目のスライス。Apple-hosted 以外のモデルソースを扱う前に、
+ローカル bundle の解決と構造検証を Rust へ追加した。`resolve_local_model_root` は
+resource root / language bundle / `*.aimodel` 指定を受け、`metadata.json`、
+`tokenizer/tokenizer.json`、単一の `*.aimodel`（`metadata.json` / `main.hash` /
+`main.mlirb`）を必須にする。`hazakura-model.json` がある場合は `schemaVersion` /
+`modelId` / `runtimeKind` / `layout` を読み、`gemma4-ple` では embedding tables も
+必須。symlink、bundle 外の `layout`、`..` は安全側で拒否する。
+`scan_custom_models_directory` は直下の候補を解決し、壊れた候補も理由付きで返す。
+
+これは**検証層のみ**で、catalog / IPC / UI へは未接続。ユーザー向け文言は frontend が
+所有する前提で、エラーは `missing-tokenizer` などの安定 `code` を持つ。
+`cargo fmt --check`、`cargo test --manifest-path src-tauri/Cargo.toml`（447 passed /
+2 ignored、新規20件）は成功。次のゲートは store / IPC / UI 接続と、security-scoped
+bookmark を helper へどう渡すかの確定。
+[証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)。
+
 ## TestFlight前 外部レビュー6件の追補（2026-09-22）
 
 `aac6e900`へのP2 6件を閉じた。streaming marker prefixをbufferして最後のraw snapshotだけを

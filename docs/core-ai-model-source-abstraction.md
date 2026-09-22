@@ -1,6 +1,6 @@
 # Core AI モデルソース抽象化（ローカル `.aimodel` / resource folder）
 
-Status: v3.1 スコープ（オーナー決定 2026-09-22）。未着手
+Status: v3.1 スコープ（オーナー決定 2026-09-22）。実装中 — スライス1（Rust解決・検証層）完了
 Scope: v3.1 の C-3 レーン — Apple-hosted 以外のモデルソースを Hazakura で扱う設計とゲート
 Authority: Medium（設計詳細の正本。v3.1 のスコープ判断は `roadmap.md`、キューは `current-work.md`）
 Last reviewed: 2026-09-22
@@ -9,13 +9,26 @@ Last reviewed: 2026-09-22
 
 これは、オーナーが受け取った外部意見（2026-09-22、`.aimodel` のオープン配布を見据えた
 モデルソース抽象化）を、**現行構造と突き合わせて v3.1 のレーンとして整理した計画メモ**である。
-オーナー決定（2026-09-22）により **v3.1 に含める**。ただし**まだ1行も実装していない**。
-ここに書いた着手順・型は実装時の出発点で、完了・検証済みを意味しない。
+オーナー決定（2026-09-22）により **v3.1 に含める**。スライス1として依存の無い Rust 解決・
+検証層だけを実装した。ここに書いた着手順・型は実装時の出発点で、**この文書の記載は
+完了・検証済みを意味しない**。
 
 - 現行の実装境界の正本は `core-ai-c0-design.md`（C-0 / C-1 / C-2 の gate）。
 - 本番候補 identity と asset 準備の正本は `core-ai-production-models.md`。
 - この文書がそれらと衝突したら、**現行の正本が優先**する。
 - 実装の順序・着手判断は `current-work.md` と `roadmap.md` で決める。
+
+### 実装の現況（2026-09-22）
+
+- **スライス1 完了:** `src-tauri/src/commands/core_ai_local_models.rs` に依存の無い解決・
+  検証層を追加した。`resolve_local_model_root`（resource root / language bundle /
+  `*.aimodel` 指定）と `scan_custom_models_directory`（Custom Models 直下の候補解決。
+  壊れた候補も理由付きで返す）を備え、symlink、bundle 外の `layout`、`..`、
+  tokenizer / tables 欠落、`.aimodel` の重複を安全側で拒否する。`cargo test` で新規20件。
+  [証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)。
+- **未接続:** catalog / IPC / frontend への露出、登録・選択・生成、security-scoped
+  bookmark、helper への権限受け渡し、Custom Models の保存場所は次のスライス。したがって
+  本レーンは「ローカルモデルを登録して使える」完了状態ではない。
 
 ### オーナー決定（2026-09-22）
 

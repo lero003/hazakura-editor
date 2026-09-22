@@ -5,6 +5,17 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **C-3 ローカルモデル解決・検証層（2026-09-22）:** v3.1 追加レーンの1本目。Rust へ
+  `core_ai_local_models.rs` を追加し、resource root / language bundle / `*.aimodel` 指定から
+  canonical な `ResolvedLocalModel` を返す。`metadata.json`、`tokenizer/tokenizer.json`、
+  単一 `*.aimodel`（`metadata.json`/`main.hash`/`main.mlirb`）を必須にし、`hazakura-model.json`
+  があれば `schemaVersion`/`modelId`/`runtimeKind`/`layout` を読む。`gemma4-ple` は tables も必須。
+  symlink、bundle 外 `layout`、`..`、tokenizer/tables 欠落、`.aimodel` 重複を安全側で拒否し、
+  `scan_custom_models_directory` は壊れた候補も理由付きで返す。`cargo fmt --check`、
+  `cargo test`（447 passed / 2 ignored、新規20件）は成功。**catalog / IPC / UI へは未接続**で、
+  security-scoped bookmark と helper への権限受け渡し、Custom Models の保存場所は次のゲート。
+  [証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)。
+
 - **外部レビューP2 6件の追補（2026-09-22）:** streaming最終候補を最後のraw snapshotから作り、
   model catalogの購読/snapshot/操作応答を2画面で共通化した。Background Assetsはserial queueと
   操作世代で解決中cancelを止め、paused monitorを5秒間隔で維持する。削除失敗は旧選択を復元し、

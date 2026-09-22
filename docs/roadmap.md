@@ -67,7 +67,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
-| Core AI models | Allowlisted `.aimodel` catalog + ローカル/外部ソース（C-3） | allowlist配布は実装済みで、identity / asset pack / manifest / AOT / bake-off後に本番entryを公開。ユーザー持ち込みのローカル/外部 resource folder は v3.1 の C-3（オーナー決定 2026-09-22、未着手）— `core-ai-model-source-abstraction.md` |
+| Core AI models | Allowlisted `.aimodel` catalog + ローカル/外部ソース（C-3） | allowlist配布は実装済みで、identity / asset pack / manifest / AOT / bake-off後に本番entryを公開。ユーザー持ち込みのローカル/外部 resource folder は v3.1 の C-3（オーナー決定 2026-09-22、検証層のみ実装・未接続）— `core-ai-model-source-abstraction.md` |
 | 海外App Store展開 | 英語ローカライズ、製品ページ、対象地域、価格、サポート/Privacy導線 | v3.1。I-0の棚卸しと対象市場決定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published v2.9 hotfix | App Review / daily-use blocker | Only when reproduced |
@@ -191,11 +191,12 @@ Conversation / Proposal / Diff / Apply / Undo / CancelとSystem復帰を確認�
 Rust-owned選択契約まで前倒ししたが、公開済みモデルがない間はSystem以外を選べない。基盤の前倒し範囲は
 `docs/v2.9-v3-local-assist-plan.md` と `docs/core-ai-c0-design.md` に固定する。
 
-**v3.1 追加レーン（オーナー決定 2026-09-22、未着手）:** Apple-hosted 以外のモデルソース
+**v3.1 追加レーン（オーナー決定 2026-09-22、検証層のみ実装）:** Apple-hosted 以外のモデルソース
 （Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した外部 resource folder、
 `.aimodel` 単体指定）を同じ「利用可能な Core AI モデル」として扱う **C-3** を v3.1 に含める。
 これは **allowlist only** の線を意図的に広げるオーナー決定で、設計とゲートは
-`docs/core-ai-model-source-abstraction.md` に固定した。実装は未着手で、C-1 / C-2 を止めず、
+`docs/core-ai-model-source-abstraction.md` に固定した。Rust のローカル bundle 解決・検証層だけを
+実装した段階で、登録・選択・生成や catalog / UI 接続は未着手。C-1 / C-2 を止めず、
 `current-work.md` のキュー順で進める。任意URL取得・自動DL・モデル店は Non-Goal のまま。
 
 MLX のユーザー向け経路は **C-0〜C-2 では Non-Goal** のままにする。
