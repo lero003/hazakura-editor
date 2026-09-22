@@ -119,11 +119,14 @@ describe("AppleAssistWindowApp render", () => {
     expect(vi.mocked(probeAppleAssistAvailability)).toHaveBeenCalledTimes(2);
   });
 
-  it("gates duplicate model actions and sending from selection until the new probe completes", async () => {
+  it.each([
+    { id: "apple:core-ai:ready", displayName: "Ready model", source: "apple_hosted" as const, status: "ready" as const },
+    { id: "local:app-managed:Local", displayName: "Local model", source: "app_managed_local" as const, status: "detected" as const },
+  ])("gates actions until the new $source model probe completes", async (model) => {
     const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
     vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);
     const catalog = unavailableCoreAiModelCatalog();
-    catalog.models.push({ id: "apple:core-ai:ready", displayName: "Ready model", kind: "core_ai", status: "ready", selected: false });
+    catalog.models.push({ ...model, kind: "core_ai", selected: false });
     vi.mocked(listCoreAiModels).mockResolvedValueOnce(catalog);
     vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({ kind: "available", modelId: catalog.selectedModelId });
     Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
@@ -133,17 +136,18 @@ describe("AppleAssistWindowApp render", () => {
     let finishSelection!: (value: typeof catalog) => void;
     vi.mocked(selectLocalAssistModel).mockImplementationOnce(() => new Promise((resolve) => { finishSelection = resolve; }));
     fireEvent.click(screen.getByRole("button", { name: "Choose model: Apple Intelligence" }));
-    fireEvent.click(screen.getByRole("menuitemradio", { name: "Ready model" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: model.displayName }));
+    expect(vi.mocked(selectLocalAssistModel)).toHaveBeenCalledWith(model.id);
     expect(screen.getByText("Switching model…")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Choose model:/ }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
     let finishProbe!: (value: { kind: "available"; modelId: string }) => void;
     vi.mocked(probeAppleAssistAvailability).mockImplementationOnce(() => new Promise((resolve) => { finishProbe = resolve; }));
-    await act(async () => { finishSelection({ ...catalog, selectedModelId: "apple:core-ai:ready" }); });
+    await act(async () => { finishSelection({ ...catalog, selectedModelId: model.id }); });
     expect(screen.getByText("Checking availability…")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
-    await act(async () => { finishProbe({ kind: "available", modelId: "apple:core-ai:ready" }); });
-    expect(screen.getByRole("button", { name: "Choose model: Ready model" }).hasAttribute("disabled")).toBe(false);
+    await act(async () => { finishProbe({ kind: "available", modelId: model.id }); });
+    expect(screen.getByRole("button", { name: `Choose model: ${model.displayName}` }).hasAttribute("disabled")).toBe(false);
     expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(false);
     expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("Keep input");
   });

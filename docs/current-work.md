@@ -5,6 +5,16 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## モデル設定・切替の自己レビュー（2026-09-22）
+
+設定とAssist pickerのlocal選択条件を統一し、選択中local folder消失時もSystemへ戻せるようにした。
+設定の「使う」が消えた後は同じモデル行へfocusを戻し、別操作へ移動済みなら奪わない。
+保存先・配布状況の旧説明も3言語で修正。frontend 2,682件、scripts 24件、surface 132件、型検査、
+App Store preview buildとdistribution probeは成功。3.1.0のローカルad-hoc previewを作成した。
+次はオーナー実機レビュー。操作項目と証跡は
+[モデル設定自己レビュー](reviews/2026-09-22-model-settings-self-review/README.md)。
+VoiceOver、実モデルmemory、sandbox / TestFlightは未確認。
+
 ## C-3 再レビュー追加是正 — cache解放順序とTokenizer null契約（2026-09-22）
 
 前回4件のクローズ確認後に見つかった追加P2/P3を `a7d19487` で閉じた。

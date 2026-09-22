@@ -5,6 +5,12 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **モデル設定は実機レビュー待ち（2026-09-22）:** local選択を設定・Assist pickerで統一。
+  local消失時のSystem復帰、設定で「使う」が消えた後のfocusを修正。frontend 2,682件、scripts 24件、
+  surface 132件、型検査、App Store preview build / distribution probe成功。ローカルad-hoc previewは
+  3.1.0。次はオーナーが実操作・VoiceOver・実モデルmemoryを確認する。
+  [範囲と手順](reviews/2026-09-22-model-settings-self-review/README.md)。sandbox / TestFlightは別ゲート。
+
 - **C-3 再レビュー追加是正（2026-09-22）:** 前回4件のクローズ確認後に見つかったP2/P3を
   `a7d19487` で閉じた。署名不一致・取得不能ではreplacement factory前に旧cache entryを解放し、
   同一署名だけを再利用する。replacement失敗後も旧entryを保持しないことをダミーmodelで固定した。

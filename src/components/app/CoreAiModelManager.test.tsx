@@ -95,8 +95,13 @@ describe("CoreAiModelManager", () => {
 
     expect(await screen.findByText("My Qwen 3 · ローカル")).toBeTruthy();
     expect(screen.getByText("検出済み（選択できます）")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "使う" }));
+    const select = screen.getByRole("button", { name: "使う" });
+    select.focus();
+    fireEvent.click(select);
     await waitFor(() => expect(mocks.select).toHaveBeenCalledWith("local:app-managed:MyQwen"));
+    await waitFor(() => expect(document.activeElement).toBe(
+      screen.getByRole("group", { name: "My Qwen 3" }),
+    ));
     expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
     expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
   });
@@ -124,6 +129,29 @@ describe("CoreAiModelManager", () => {
     expect(screen.getByText("実行に必要なTokenizerが見つかりません。")).toBeTruthy();
     expect(screen.queryByText("missing-tokenizer")).toBeNull();
     expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
+  });
+
+  it("does not steal focus when a selection finishes after the user moves away", async () => {
+    const catalog = {
+      distributionStatus: "available", selectedModelId: "system",
+      models: [
+        { id: "system", displayName: "System", kind: "system", status: "ready", selected: true },
+        { id: "local:app-managed:Local", displayName: "Local", kind: "core_ai", source: "app_managed_local", status: "detected", selected: false },
+      ],
+    };
+    let finish!: (value: typeof catalog) => void;
+    mocks.list.mockResolvedValue(catalog);
+    mocks.select.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    render(<><CoreAiModelManager label="Models" language="en" /><button>Other setting</button></>);
+    const select = await screen.findByRole("button", { name: "Use" });
+    select.focus();
+    fireEvent.click(select);
+    const other = screen.getByRole("button", { name: "Other setting" });
+    other.focus();
+    await act(async () => finish({ ...catalog, models: catalog.models.map((model) => ({
+      ...model, selected: model.id === "local:app-managed:Local",
+    })) }));
+    expect(document.activeElement).toBe(other);
   });
 
   it("explains that local models cannot use an external tokenizer", async () => {

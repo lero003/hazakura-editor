@@ -5,6 +5,47 @@ import { AssistModelPicker } from "./AssistModelPicker";
 afterEach(cleanup);
 
 describe("AssistModelPicker", () => {
+  const localModels = [
+    { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system" as const, status: "ready" as const, selected: true },
+    { id: "local:app-managed:Local", displayName: "Local model", kind: "core_ai" as const, source: "app_managed_local" as const, status: "detected" as const, selected: false },
+    { id: "local:app-managed:Broken", displayName: "Broken model", kind: "core_ai" as const, source: "app_managed_local" as const, status: "failed" as const, selected: false },
+  ];
+
+  it("selects detected local models by keyboard while skipping broken bundles", () => {
+    const onSelect = vi.fn();
+    render(<AssistModelPicker language="en" disabled={false}
+      modelId={localModels[0].id} models={localModels} onSelect={onSelect} />);
+    fireEvent.keyDown(screen.getByRole("button"), { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "Apple Intelligence" }), { key: "ArrowDown" });
+    const local = screen.getByRole("menuitemradio", { name: "Local model" });
+    expect(document.activeElement).toBe(local);
+    expect(local.hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("menuitemradio", { name: "Broken model" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.click(local);
+    expect(onSelect).toHaveBeenCalledWith(localModels[1].id);
+  });
+
+  it("focuses the selected local model and preserves it across catalog updates", () => {
+    const props = { language: "en" as const, disabled: false, modelId: localModels[1].id };
+    const { rerender } = render(<AssistModelPicker {...props} models={localModels} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(document.activeElement).toBe(screen.getByRole("menuitemradio", { name: "Local model" }));
+    rerender(<AssistModelPicker {...props} models={localModels.map((model) => ({ ...model }))} />);
+    expect(document.activeElement).toBe(screen.getByRole("menuitemradio", { name: "Local model" }));
+  });
+
+  it("keeps System selectable when the selected local folder disappears", () => {
+    const onSelect = vi.fn();
+    render(<AssistModelPicker language="en" disabled={false}
+      modelId={localModels[1].id} models={[localModels[0]]} onSelect={onSelect} />);
+    fireEvent.click(screen.getByRole("button"));
+    const system = screen.getByRole("menuitemradio", { name: "Apple Intelligence" });
+    expect(document.activeElement).toBe(system);
+    expect(screen.getByRole("menuitemradio", { checked: true }).hasAttribute("disabled")).toBe(true);
+    fireEvent.click(system);
+    expect(onSelect).toHaveBeenCalledWith(localModels[0].id);
+  });
+
   it("opens even with one model, marks it selected and returns focus on selection", () => {
     render(<AssistModelPicker language="ja" disabled={false} />);
     const trigger = screen.getByRole("button", { name: /モデルを選択/ });

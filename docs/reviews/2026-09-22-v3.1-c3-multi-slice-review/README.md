@@ -5,6 +5,9 @@ Scope: local Core AI contract、Custom Models registry、選択・helper実行�
 Review range: `ac4fc79f..HEAD`
 Latest implementation commit: `a7d19487`
 
+設定・Assist pickerの自己レビュー追補と最新の実機確認項目は
+[モデル設定自己レビュー](../2026-09-22-model-settings-self-review/README.md)を参照。
+
 ## レビュー対象
 
 C-3 を小分けにした次の実装を、今回はまとめてレビューしてほしい。

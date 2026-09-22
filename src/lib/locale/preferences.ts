@@ -107,7 +107,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         onDeviceModels: "この Mac の もでる",
         openOnDeviceModels: "もでるを かんりする",
         onDeviceModelsStorage:
-          "もでるは Apple から くばられ、この Mac の あぷりりょういきにだけ ほぞんされます。ほぞんばしょは えらべません。この Mac の なかだけで はたらき、そとへは おくりません。",
+          "Apple から いれる もでるは、この Mac の あぷりりょういきに ほぞんします。ほぞんばしょは えらべません。Custom Models ふぉるだに おいた ろーかるもでるも つかへます。そとの ふぉるだの とうろくは まだ できません。せいせいは この Mac の なかで おこなひます。",
       typePreviewCaption: "この せっていで の みえかた",
       typePreviewSample: "朝の 余白。ことばに、しずかな あひだを。",
       appleAssistStatusAvailable: "この Mac で つかえます。さぶんを みてから てきよう します。",
@@ -203,7 +203,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         onDeviceModels: "オンデバイスモデル",
         openOnDeviceModels: "モデルを管理する",
         onDeviceModelsStorage:
-          "モデルは Apple 経由で配布され、この Mac のアプリ領域にだけ保存されます。保存先は選べません。この Mac のなかだけで動作し、外部へは送信しません。",
+          "Apple 経由でダウンロードするモデルは、この Mac のアプリ領域に保存します。保存先は選べません。Custom Models フォルダに配置したローカルモデルも利用できます。外部フォルダの登録にはまだ対応していません。生成はこの Mac 内で行います。",
         typePreviewCaption: "この設定での見え方",
         typePreviewSample: "朝の余白。ことばに、静かなあいだを。",
         appleAssistStatusAvailable:
@@ -297,7 +297,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         onDeviceModels: "On-device models",
         openOnDeviceModels: "Manage models",
         onDeviceModelsStorage:
-          "Models come from Apple's distribution and are stored only in this Mac's app area. You cannot choose the location. They run on this Mac only, and nothing is sent out.",
+          "Models downloaded from Apple are stored in this Mac's app area. You cannot choose the location. Local bundles in the Custom Models folder can also be used. External folder registration is not yet supported. Generation runs on this Mac.",
         typePreviewCaption: "How this setting reads",
         typePreviewSample: "A quiet morning. Words, with room to breathe.",
         appleAssistStatusAvailable:

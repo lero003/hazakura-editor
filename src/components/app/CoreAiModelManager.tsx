@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { MenuLanguage } from "../../types";
 import { useCoreAiModelCatalog } from "../../hooks/app/useCoreAiModelCatalog";
+import { isCoreAiModelSelectable } from "../../lib/coreAiModelSelection";
 import {
   cancelCoreAiModelDownload,
   deleteCoreAiModel,
-  listCoreAiModels,
   selectLocalAssistModel,
   startCoreAiModelDownload,
   type CoreAiModelCatalog,
@@ -19,10 +19,21 @@ import {
 export function CoreAiModelManager({ label, language }: { label: string; language: MenuLanguage }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const focusedAction = useRef<{ control: HTMLElement; row: HTMLElement } | null>(null);
   const copy = managerCopy(language);
   const { catalog, refreshCatalog, runCatalogRequest } = useCoreAiModelCatalog((reason) => {
     setError(reason instanceof Error ? reason.message : String(reason));
   });
+
+  useLayoutEffect(() => {
+    const previous = focusedAction.current;
+    if (previous && !previous.control.isConnected) {
+      focusedAction.current = null;
+      if (previous.row.isConnected && document.activeElement === document.body) {
+        previous.row.focus();
+      }
+    }
+  }, [catalog]);
 
   const run = async (model: CoreAiModelSummary, action: "select" | "download" | "cancel" | "delete") => {
     if (action === "download" && isBelowRecommendedMemory(model, catalog)) {
@@ -68,13 +79,15 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
         const source = model.source ?? "apple_hosted";
         const isLocal = source === "app_managed_local";
         const busy = busyId !== null || Boolean(catalog.managementError) || Boolean(catalog.selectionLocked);
-        const canSelect = !model.selected && (
-          (source === "apple_hosted" && model.status === "ready") ||
-          (isLocal && model.status === "detected")
-        );
+        const canSelect = !model.selected && isCoreAiModelSelectable(model);
         // 選択状態は状態行の先頭に置き、選択中でもサイズ・バージョンを落とさない。
         const status = statusLabel(model, copy);
-        return <div className="core-ai-model-row" key={model.id}>
+        return <div className="core-ai-model-row" key={model.id}
+          role="group" aria-label={model.displayName} tabIndex={-1}
+          onFocusCapture={(event) => {
+            focusedAction.current = event.target instanceof HTMLButtonElement
+              ? { control: event.target, row: event.currentTarget } : null;
+          }}>
           <div>
             <strong>{model.displayName}{isLocal ? ` · ${copy.localBadge}` : ""}</strong>
             <span>{model.selected ? `${copy.selected} · ${status}` : status}</span>
@@ -180,7 +193,7 @@ function managerCopy(language: MenuLanguage) {
     downloading: (progress?: number | null) => progress == null ? "Downloading" : `Downloading · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `Download progress for ${name}`,
     paused: "Paused", verifying: "Verifying download", failed: "Download unavailable", unsupported: "Requires macOS 27",
-    notPublished: "No Core AI model has been published for download yet. This build includes the adapter and management controls. Apple Intelligence is the default model.",
+    notPublished: "No Core AI model has been published for download yet. Validated local bundles in Custom Models can still be selected.",
     developerOverride: "A Developer test backend is selected for this session. Restart without the test override to manage models.",
     managementUnavailable: "Model management is unavailable. You can continue editing documents. Resolve the following error and restart the app:",
     boundary: "Apple-hosted models and validated bundles in Hazakura's Custom Models folder are listed here. Local bundles can be selected for Local Assist; URL and GGUF imports are not accepted.",
@@ -207,7 +220,7 @@ function managerCopy(language: MenuLanguage) {
     downloading: (progress?: number | null) => progress == null ? "いれてゐます" : `いれてゐます · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}を いれる すすみぐあい`,
     paused: "とめてゐます", verifying: "たしかめてゐます", failed: "いれられませんでした", unsupported: "macOS 27 から つかへます",
-    notPublished: "Core AI の もでるは まだ くばってゐません。この あぷりには うけいれと かんりの しくみだけが あり、はじめは Apple Intelligence を つかひます。",
+    notPublished: "Core AI の もでるは まだ くばってゐません。Custom Models の なかで たしかめた ろーかるもでるは えらべます。",
     developerOverride: "ためすための もでるを えらんでゐます。もでるを かんりするには、ためすための していを はづして あぷりを ひらきなほして ください。",
     managementUnavailable: "もでるを かんりできません。ぶんしょは そのまま かきつづけられます。つぎの げんいんを なおして あぷりを ひらきなほして ください：",
     boundary: "Apple から くばる もでると Hazakura の Custom Models ふぉるだで たしかめた もでるを ここに だします。ろーかるの もでるは Local Assist で えらべます。URL と GGUF は うけつけません。",
@@ -234,7 +247,7 @@ function managerCopy(language: MenuLanguage) {
     downloading: (progress?: number | null) => progress == null ? "ダウンロード中" : `ダウンロード中 · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}のダウンロード進捗`,
     paused: "一時停止", verifying: "検証中", failed: "ダウンロード失敗", unsupported: "macOS 27以降が必要",
-    notPublished: "Core AI モデルはまだ配布されていません。このビルドには実行アダプタと管理画面だけが入り、標準では Apple Intelligence を使います。",
+    notPublished: "Core AI モデルはまだ配布されていません。Custom Models 内で検証したローカルモデルは選択できます。",
     developerOverride: "Developer用のテストモデル指定が有効です。モデルを管理するには、テスト指定を外してアプリを再起動してください。",
     managementUnavailable: "モデル管理を利用できません。文書の編集は続けられます。次の原因を解消してアプリを再起動してください：",
     boundary: "Apple 経由のモデルと Hazakura の Custom Models フォルダで検証したモデルを表示します。ローカルモデルは Local Assist で選択できます。URL と GGUF の持ち込みは受け付けません。",

@@ -7,6 +7,13 @@ Last reviewed: 2026-09-22
 
 ## Current State
 
+- **モデル設定の自己レビュー（2026-09-22）:** local modelをAssist pickerでも選択できるようにし、
+  選択中local folder消失時のSystem復帰と、設定選択後のfocus喪失を修正した。frontend 2,682件、
+  scripts 24件、surface 132件、型検査、App Store preview build / distribution probe成功。
+  ローカルad-hoc preview 3.1.0でオーナー実機レビューへ進める。実操作・VoiceOver・
+  実モデルmemory・sandbox / TestFlight受入は未確認。
+  [自己レビューと実機確認項目](reviews/2026-09-22-model-settings-self-review/README.md)。
+
 - **v3.1スコープ更新 — C-3（2026-09-22、オーナー決定・app-managed 選択接続まで実装）:** v3.1 に、Apple-hosted 以外の
   モデルソース（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した外部
   resource folder、`.aimodel` 単体指定）を同じモデル管理・選択・生成経路で扱う **C-3** を加える。

@@ -12,7 +12,7 @@ export type CoreAiModelKind = "system" | "core_ai";
 /**
  * Where a model came from. `app_managed_local` means Rust detected a bundle in
  * the Custom Models directory and validated it with the local contract; those
- * entries are read-only until the local backend path lands.
+ * entries can be selected but are not managed as downloaded assets.
  */
 export type CoreAiModelSource = "apple_hosted" | "app_managed_local";
 export type CoreAiModelStatus =

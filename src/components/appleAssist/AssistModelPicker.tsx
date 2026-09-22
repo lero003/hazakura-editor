@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { MenuLanguage } from "../../types";
 import { getAssistConversationCopy } from "../../lib/locale/assistConversation";
+import { isCoreAiModelSelectable } from "../../lib/coreAiModelSelection";
 import { ChevronIcon } from "../app/Icons";
 import {
   SYSTEM_LOCAL_ASSIST_MODEL_ID,
@@ -8,8 +9,8 @@ import {
   type CoreAiModelSummary,
 } from "../../lib/tauri/coreAiModels";
 
-// Only signed-catalog ids can be selected. A native Developer test id absent
-// from that catalog is disclosed as a read-only row, never as another choice.
+// Only native-catalog ids can be selected. A missing local resource still lets
+// the user switch back to System; a Developer override stays read-only.
 export function AssistModelPicker({ language, disabled, modelId, models, onSelect }: {
   language: MenuLanguage;
   disabled: boolean;
@@ -32,12 +33,20 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
       : "On-device model";
   const outsideCatalog = modelId && modelId !== SYSTEM_LOCAL_ASSIST_MODEL_ID
     && !models?.some((model) => model.id === modelId);
-  const availableModels = outsideCatalog
+  const missingLocal = outsideCatalog && modelId.startsWith("local:app-managed:");
+  const catalogModels = models?.length ? models : unavailableCoreAiModelCatalog().models;
+  const availableModels: CoreAiModelSummary[] = missingLocal
+    ? [...catalogModels, {
+      id: modelId, displayName: language === "en" ? "Local model unavailable"
+        : language === "kana" ? "ろーかるもでるが ありません" : "ローカルモデルが見つかりません",
+      kind: "core_ai", source: "app_managed_local", status: "failed", selected: true,
+    }]
+    : outsideCatalog
     ? [{
       id: modelId, displayName: fallbackModelLabel, kind: "core_ai" as const,
       status: "ready" as const, selected: true,
     }]
-    : models?.length ? models : unavailableCoreAiModelCatalog().models;
+    : catalogModels;
   const selectedModel = availableModels.find((model) => model.id === modelId)
     ?? availableModels.find((model) => model.selected)
     ?? availableModels[0];
@@ -66,11 +75,11 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
     }
     const preferredId = wasExpanded.current ? focusedModelId.current : selectedId;
     wasExpanded.current = true;
-    const preferredIndex = availableModels.findIndex((model) => model.id === preferredId && model.status === "ready");
-    const fallbackIndex = availableModels.findIndex((model) => model.id === selectedId && model.status === "ready");
+    const preferredIndex = availableModels.findIndex((model) => model.id === preferredId && isCoreAiModelSelectable(model));
+    const fallbackIndex = availableModels.findIndex((model) => model.id === selectedId && isCoreAiModelSelectable(model));
     const index = preferredIndex >= 0 ? preferredIndex
       : fallbackIndex >= 0 ? fallbackIndex
-        : availableModels.findIndex((model) => model.status === "ready");
+        : availableModels.findIndex(isCoreAiModelSelectable);
     if (index >= 0 && document.activeElement !== options.current[index]) options.current[index]?.focus();
   }, [availableModels, expanded, selectedId]);
 
@@ -112,14 +121,14 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
         const selected = model.id === selectedId;
         return <button key={model.id} ref={(node) => { options.current[index] = node; }} type="button"
           role="menuitemradio" aria-checked={selected} tabIndex={-1}
-          disabled={model.status !== "ready"}
+          disabled={!isCoreAiModelSelectable(model)}
           className="apple-assist-model-option"
           onFocus={() => { focusedModelId.current = model.id; }}
           onClick={() => {
             if (!selected) void onSelect?.(model.id);
             close(true);
           }}>
-          <span>{model.displayName}</span><span aria-hidden="true">{selected ? "✓" : model.status === "ready" ? "" : "—"}</span>
+          <span>{model.displayName}</span><span aria-hidden="true">{selected ? "✓" : isCoreAiModelSelectable(model) ? "" : "—"}</span>
         </button>;
       })}
     </div> : null}
