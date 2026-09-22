@@ -65,12 +65,14 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
     {catalog.selectionLocked ? <p className="field-hint" role="status">{copy.developerOverride}</p> : null}
     <div className="core-ai-model-list">
       {catalog.models.map((model) => {
+        const source = model.source ?? "apple_hosted";
+        const isLocal = source === "app_managed_local";
         const busy = busyId !== null || Boolean(catalog.managementError) || Boolean(catalog.selectionLocked);
         // 選択状態は状態行の先頭に置き、選択中でもサイズ・バージョンを落とさない。
         const status = statusLabel(model, copy);
         return <div className="core-ai-model-row" key={model.id}>
           <div>
-            <strong>{model.displayName}</strong>
+            <strong>{model.displayName}{isLocal ? ` · ${copy.localBadge}` : ""}</strong>
             <span>{model.selected ? `${copy.selected} · ${status}` : status}</span>
             {model.kind === "core_ai" && model.recommendedMemoryGb != null ?
               <span>{copy.recommendedMemory(model.recommendedMemoryGb)}</span> : null}
@@ -88,18 +90,20 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
               aria-label={copy.downloadProgress(model.displayName)}
               max={1} value={model.progress ?? undefined}
             /> : null}
-            {model.error ? <span className="preference-warning" role="status">{model.error}</span> : null}
+            {isLocal && model.errorCode ?
+              <span className="preference-warning" role="status">{copy.localReason(model.errorCode)}</span> : null}
+            {!isLocal && model.error ? <span className="preference-warning" role="status">{model.error}</span> : null}
           </div>
           <div className="core-ai-model-actions">
-            {model.status === "ready" && !model.selected ?
+            {source === "apple_hosted" && model.status === "ready" && !model.selected ?
               <button type="button" disabled={busy} onClick={() => void run(model, "select")}>{copy.select}</button> : null}
-            {model.kind === "core_ai" && model.status === "not_downloaded" ?
+            {source === "apple_hosted" && model.kind === "core_ai" && model.status === "not_downloaded" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{copy.download}</button> : null}
-            {model.kind === "core_ai" && (model.status === "paused" || model.status === "failed") ?
+            {source === "apple_hosted" && model.kind === "core_ai" && (model.status === "paused" || model.status === "failed") ?
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{model.status === "paused" ? copy.resume : copy.retry}</button> : null}
-            {model.kind === "core_ai" && model.status === "downloading" ?
+            {source === "apple_hosted" && model.kind === "core_ai" && model.status === "downloading" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "cancel")}>{copy.cancel}</button> : null}
-            {model.kind === "core_ai" && model.status === "ready" ?
+            {source === "apple_hosted" && model.kind === "core_ai" && model.status === "ready" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "delete")}>{copy.delete}</button> : null}
           </div>
         </div>;
@@ -115,7 +119,10 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
 
 type ManagerCopy = ReturnType<typeof managerCopy>;
 function statusLabel(model: CoreAiModelSummary, copy: ManagerCopy): string {
+  const isLocal = model.source === "app_managed_local";
   const base = model.kind === "system" ? copy.systemStatus
+    : isLocal && model.status === "detected" ? copy.localDetected
+    : isLocal ? copy.localUnavailable
     : model.status === "not_downloaded" ? copy.notDownloaded
     : model.status === "not_published" ? copy.notPublishedShort
     : model.status === "downloading" ? copy.downloading(model.progress)
@@ -149,6 +156,8 @@ function isBelowRecommendedMemory(
 function managerCopy(language: MenuLanguage) {
   if (language === "en") return {
     selected: "Selected", ready: "Ready", systemStatus: "System default / availability not checked",
+    localBadge: "Local", localDetected: "Detected (generation is not available yet)",
+    localUnavailable: "Unavailable", localReason: (code: string) => localModelReason("en", code),
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
     download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete",
     downloadSize: (size: string) => `Download about ${size}`,
@@ -170,10 +179,12 @@ function managerCopy(language: MenuLanguage) {
     notPublished: "No Core AI model has been published for download yet. This build includes the adapter and management controls. Apple Intelligence is the default model.",
     developerOverride: "A Developer test backend is selected for this session. Restart without the test override to manage models.",
     managementUnavailable: "Model management is unavailable. You can continue editing documents. Resolve the following error and restart the app:",
-    boundary: "Models can only come from Hazakura's Apple-hosted catalog. URLs, local model paths, and GGUF imports are not accepted.",
+    boundary: "Apple-hosted models and bundles in Hazakura's Custom Models folder are listed here. Local bundles are detected read-only for now; URL and GGUF imports are not accepted.",
   };
   if (language === "kana") return {
     selected: "えらんでゐます", ready: "つかへます", systemStatus: "しすてむの ひょうじゅん / つかへるかは まだ たしかめてゐません",
+    localBadge: "ろーかる", localDetected: "みつけました（まだ ぶんを つくれません）",
+    localUnavailable: "つかへません", localReason: (code: string) => localModelReason("kana", code),
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
     download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす",
     downloadSize: (size: string) => `いれる おほきさ やく ${size}`,
@@ -195,10 +206,12 @@ function managerCopy(language: MenuLanguage) {
     notPublished: "Core AI の もでるは まだ くばってゐません。この あぷりには うけいれと かんりの しくみだけが あり、はじめは Apple Intelligence を つかひます。",
     developerOverride: "ためすための もでるを えらんでゐます。もでるを かんりするには、ためすための していを はづして あぷりを ひらきなほして ください。",
     managementUnavailable: "もでるを かんりできません。ぶんしょは そのまま かきつづけられます。つぎの げんいんを なおして あぷりを ひらきなほして ください：",
-    boundary: "Hazakura が Apple から くばる もでるだけを つかひます。URL、Mac の みち、GGUF は うけつけません。",
+    boundary: "Apple から くばる もでると Hazakura の Custom Models ふぉるだに ある もでるを ここに だします。ろーかるの もでるは いまは みつけるだけです。URL と GGUF は うけつけません。",
   };
   return {
     selected: "選択中", ready: "利用可能", systemStatus: "システム標準 / 利用状況未確認",
+    localBadge: "ローカル", localDetected: "検出済み（生成はまだ利用できません）",
+    localUnavailable: "利用不可", localReason: (code: string) => localModelReason("ja", code),
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
     download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除",
     downloadSize: (size: string) => `ダウンロード 約${size}`,
@@ -220,6 +233,60 @@ function managerCopy(language: MenuLanguage) {
     notPublished: "Core AI モデルはまだ配布されていません。このビルドには実行アダプタと管理画面だけが入り、標準では Apple Intelligence を使います。",
     developerOverride: "Developer用のテストモデル指定が有効です。モデルを管理するには、テスト指定を外してアプリを再起動してください。",
     managementUnavailable: "モデル管理を利用できません。文書の編集は続けられます。次の原因を解消してアプリを再起動してください：",
-    boundary: "Hazakura が Apple 経由で配布するカタログ内モデルだけを扱います。URL、ローカルパス、GGUF の持ち込みは受け付けません。",
+    boundary: "Apple 経由のモデルと Hazakura の Custom Models フォルダで検出したモデルを表示します。ローカルモデルは現在読み取り専用の検出のみで、URL と GGUF の持ち込みは受け付けません。",
   };
+}
+
+function localModelReason(language: MenuLanguage, code: string): string {
+  const messages = language === "en" ? {
+    "root-missing": "The model folder no longer exists.",
+    "root-not-a-directory": "The model location is not a folder.",
+    "missing-descriptor": "No Core AI model metadata was found.",
+    "malformed-descriptor": "hazakura-model.json is not valid JSON.",
+    "unsupported-descriptor": "This hazakura-model.json version is not supported.",
+    "unknown-runtime-kind": "This Core AI runtime is not supported.",
+    "missing-bundle-directory": "The model bundle folder named by the metadata is missing.",
+    "missing-model-directory": "No .aimodel folder was found.",
+    "multiple-model-directories": "More than one .aimodel folder was found.",
+    "incomplete-model-directory": "The .aimodel folder is incomplete.",
+    "missing-tokenizer": "The tokenizer required to run this model is missing.",
+    "missing-tables": "The embedding tables required to run this model are missing.",
+    "unsafe-path": "The model contains a symbolic link or a path outside its folder.",
+    unreadable: "The model folder could not be read.",
+  } : language === "kana" ? {
+    "root-missing": "もでるの ふぉるだが ありません。",
+    "root-not-a-directory": "もでるの ばしょが ふぉるだでは ありません。",
+    "missing-descriptor": "Core AI もでるの じょうほうが ありません。",
+    "malformed-descriptor": "hazakura-model.json を よめません。",
+    "unsupported-descriptor": "この hazakura-model.json の かたちは つかへません。",
+    "unknown-runtime-kind": "この Core AI の うごかしかたは つかへません。",
+    "missing-bundle-directory": "じょうほうに かかれた もでるの ふぉるだが ありません。",
+    "missing-model-directory": ".aimodel ふぉるだが ありません。",
+    "multiple-model-directories": ".aimodel ふぉるだが ふたつ いじょう あります。",
+    "incomplete-model-directory": ".aimodel ふぉるだの なかみが たりません。",
+    "missing-tokenizer": "うごかすための Tokenizer が ありません。",
+    "missing-tables": "うごかすための embedding tables が ありません。",
+    "unsafe-path": "もでるの なかに symlink または そとの ばしょを さす みちが あります。",
+    unreadable: "もでるの ふぉるだを よめません。",
+  } : {
+    "root-missing": "モデルフォルダが見つかりません。",
+    "root-not-a-directory": "モデルの場所がフォルダではありません。",
+    "missing-descriptor": "Core AI モデルのメタデータが見つかりません。",
+    "malformed-descriptor": "hazakura-model.json を正しいJSONとして読み取れません。",
+    "unsupported-descriptor": "この hazakura-model.json のバージョンには対応していません。",
+    "unknown-runtime-kind": "この Core AI ランタイムには対応していません。",
+    "missing-bundle-directory": "メタデータで指定されたモデルフォルダが見つかりません。",
+    "missing-model-directory": ".aimodel フォルダが見つかりません。",
+    "multiple-model-directories": ".aimodel フォルダが複数あり、使用するモデルを特定できません。",
+    "incomplete-model-directory": ".aimodel フォルダに必要なファイルが揃っていません。",
+    "missing-tokenizer": "実行に必要なTokenizerが見つかりません。",
+    "missing-tables": "実行に必要なembedding tablesが見つかりません。",
+    "unsafe-path": "モデル内にシンボリックリンクまたはフォルダ外を指すパスがあります。",
+    unreadable: "モデルフォルダを読み取れません。",
+  };
+  return messages[code as keyof typeof messages] ?? (language === "en"
+    ? "The local model could not be validated."
+    : language === "kana"
+      ? "ろーかるの もでるを たしかめられません。"
+      : "ローカルモデルを検証できませんでした。");
 }

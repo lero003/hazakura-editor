@@ -9,6 +9,12 @@ export const LOCAL_ASSIST_GENERATION_PROFILE_CHANGED_EVENT =
 
 export type CoreAiDistributionStatus = "not_published" | "available";
 export type CoreAiModelKind = "system" | "core_ai";
+/**
+ * Where a model came from. `app_managed_local` means Rust detected a bundle in
+ * the Custom Models directory and validated it with the local contract; those
+ * entries are read-only until the local backend path lands.
+ */
+export type CoreAiModelSource = "apple_hosted" | "app_managed_local";
 export type CoreAiModelStatus =
   | "ready"
   | "not_downloaded"
@@ -17,12 +23,15 @@ export type CoreAiModelStatus =
   | "verifying"
   | "failed"
   | "unsupported"
-  | "not_published";
+  | "not_published"
+  | "detected";
 
 export type CoreAiModelSummary = {
   id: string;
   displayName: string;
   kind: CoreAiModelKind;
+  /** Absent in older payloads, which only ever listed Apple-hosted models. */
+  source?: CoreAiModelSource;
   status: CoreAiModelStatus;
   selected: boolean;
   downloadSizeBytes?: number;
@@ -32,6 +41,8 @@ export type CoreAiModelSummary = {
   hasUpstreamConversionNotice?: boolean;
   progress?: number | null;
   error?: string | null;
+  /** Stable code for a frontend-owned message; local entries use this instead of `error`. */
+  errorCode?: string | null;
   assetPackVersion?: number | null;
 };
 
@@ -52,6 +63,7 @@ export function unavailableCoreAiModelCatalog(): CoreAiModelCatalog {
       id: SYSTEM_LOCAL_ASSIST_MODEL_ID,
       displayName: "Apple Intelligence",
       kind: "system",
+      source: "apple_hosted",
       status: "ready",
       selected: true,
     }],

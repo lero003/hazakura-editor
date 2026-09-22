@@ -1,8 +1,8 @@
 use crate::commands::apple_assist_supervisor::{store_without_helper, AssistBackendSelection};
 use crate::commands::background_assets::{BackgroundAssetSnapshot, BackgroundAssetTransport};
 use crate::commands::core_ai_models::{
-    CoreAiCatalogEntry, CoreAiDistributionStatus, CoreAiModelKind, CoreAiModelStatus,
-    CoreAiModelStore, SYSTEM_MODEL_ID,
+    CoreAiCatalogEntry, CoreAiDistributionStatus, CoreAiModelKind, CoreAiModelSource,
+    CoreAiModelStatus, CoreAiModelStore, SYSTEM_MODEL_ID,
 };
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
@@ -693,4 +693,112 @@ fn absent_override_restores_normally_but_invalid_developer_override_fails_closed
         .contains("Unsupported Local Assist test backend"));
     assert!(store.list().selection_locked);
     assert!(!data_dir.exists());
+}
+
+/// A Hazakura-described local bundle: `hazakura-model.json` plus a nested
+/// language bundle. Used to check that local detection reports the declared
+/// display name and keeps the Apple-hosted catalog untouched.
+fn create_described_local_bundle(
+    data_dir: &std::path::Path,
+    directory_name: &str,
+    display_name: &str,
+) {
+    let root = data_dir.join("CoreAICustomModels").join(directory_name);
+    let bundle = root.join("bundle");
+    std::fs::create_dir_all(bundle.join("local.aimodel")).unwrap();
+    std::fs::create_dir_all(bundle.join("tokenizer")).unwrap();
+    std::fs::write(
+        root.join("hazakura-model.json"),
+        format!(
+            r#"{{"schemaVersion":1,"modelId":"local:custom:{directory_name}","displayName":"{display_name}","runtimeKind":"coreai-kit-language","layout":{{"bundle":"bundle"}}}}"#
+        ),
+    )
+    .unwrap();
+    std::fs::write(bundle.join("metadata.json"), "{}").unwrap();
+    std::fs::write(bundle.join("tokenizer/tokenizer.json"), "{}").unwrap();
+    for file in ["metadata.json", "main.hash", "main.mlirb"] {
+        std::fs::write(bundle.join("local.aimodel").join(file), "x").unwrap();
+    }
+}
+
+/// A folder that looks like a custom model but fails the local contract.
+fn create_broken_local_bundle(data_dir: &std::path::Path, directory_name: &str) {
+    let root = data_dir.join("CoreAICustomModels").join(directory_name);
+    std::fs::create_dir_all(root.join("local.aimodel")).unwrap();
+    std::fs::write(root.join("metadata.json"), "{}").unwrap();
+    for file in ["metadata.json", "main.hash", "main.mlirb"] {
+        std::fs::write(root.join("local.aimodel").join(file), "x").unwrap();
+    }
+}
+
+#[test]
+fn local_custom_models_are_detected_but_not_manageable() {
+    let data_dir = temp_data_dir();
+    let helper = store_without_helper();
+    let store = CoreAiModelStore::with_fixture_catalog(vec![CoreAiCatalogEntry::fixture(
+        "apple:core-ai:fixture",
+        "Fixture",
+        "fixture",
+    )]);
+    store.configure(Ok(data_dir.clone()), &helper, None);
+    create_ready_fixture(&data_dir, "fixture");
+    create_described_local_bundle(&data_dir, "MyQwen", "My Qwen 3");
+
+    let catalog = store.list();
+
+    // System, the Apple-hosted fixture, then the detected local bundle.
+    assert_eq!(catalog.models.len(), 3);
+    assert_eq!(catalog.models[1].source, CoreAiModelSource::AppleHosted);
+    let local = &catalog.models[2];
+    // The id is namespaced by the folder, so it cannot collide with `apple:` ids.
+    assert_eq!(local.id, "local:app-managed:MyQwen");
+    assert_eq!(local.display_name, "My Qwen 3");
+    assert_eq!(local.kind, CoreAiModelKind::CoreAi);
+    assert_eq!(local.source, CoreAiModelSource::AppManagedLocal);
+    assert_eq!(local.status, CoreAiModelStatus::Detected);
+    assert!(!local.selected);
+    assert_eq!(local.error_code, None);
+    assert_eq!(local.error, None);
+
+    // Detected local models stay out of the Apple-hosted management path.
+    assert!(store.select(&local.id, &helper).is_err());
+    assert!(store.start_download(&local.id).is_err());
+    assert!(store.cancel_download(&local.id).is_err());
+    assert!(store.delete(&local.id, &helper).is_err());
+    // The Apple-hosted entry still behaves normally.
+    assert!(store.select("apple:core-ai:fixture", &helper).is_ok());
+
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn broken_local_bundle_is_reported_with_its_contract_code() {
+    let data_dir = temp_data_dir();
+    let helper = store_without_helper();
+    let store = CoreAiModelStore::default();
+    store.configure(Ok(data_dir.clone()), &helper, None);
+    create_broken_local_bundle(&data_dir, "Broken");
+
+    let catalog = store.list();
+
+    assert_eq!(catalog.models.len(), 2);
+    let local = &catalog.models[1];
+    assert_eq!(local.source, CoreAiModelSource::AppManagedLocal);
+    assert_eq!(local.status, CoreAiModelStatus::Failed);
+    // The frontend owns the wording; Rust only reports the contract code.
+    assert_eq!(local.error_code.as_deref(), Some("missing-tokenizer"));
+    assert_eq!(local.error, None);
+
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn local_detection_is_absent_while_the_data_dir_is_uninitialized() {
+    let store = CoreAiModelStore::default();
+
+    assert_eq!(store.list().models.len(), 1);
+    assert_eq!(
+        store.list().models[0].source,
+        CoreAiModelSource::AppleHosted
+    );
 }

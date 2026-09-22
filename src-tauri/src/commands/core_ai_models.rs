@@ -2,6 +2,7 @@ use crate::commands::apple_assist_supervisor::{AppleAssistHelperStore, AssistBac
 use crate::commands::background_assets::{
     BackgroundAssetTransport, PlatformBackgroundAssetTransport,
 };
+use crate::commands::core_ai_local_models::scan_custom_models_directory;
 use crate::distribution::{
     ensure_apple_assist_allowed_by_distribution, is_app_store_distribution_lane,
 };
@@ -38,6 +39,12 @@ const PACK_RESOURCE_MANIFEST_FILENAME: &str = "hazakura-resource-manifest.json";
 const STATE_FILENAME: &str = "core-ai-selection.json";
 const MODEL_DIRECTORY: &str = "CoreAIModels";
 const VALIDATION_DIRECTORY: &str = "core-ai-validation";
+/// Hazakura-managed directory the user drops local Core AI bundles into. It is
+/// kept apart from the Background Assets materialization in `CoreAIModels/`.
+const CUSTOM_MODELS_DIRECTORY: &str = "CoreAICustomModels";
+/// Id namespace for detected local models. `local:` cannot collide with the
+/// `apple:core-ai:` ids that Apple-hosted catalog entries use.
+pub(crate) const LOCAL_MODEL_ID_PREFIX: &str = "local:app-managed:";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -53,6 +60,16 @@ pub(crate) enum CoreAiModelKind {
     CoreAi,
 }
 
+/// Where a model came from. The local contract (`core_ai_local_models.rs`) owns
+/// validation for non Apple-hosted sources; this enum only labels the origin so
+/// the model list can tell them apart.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum CoreAiModelSource {
+    AppleHosted,
+    AppManagedLocal,
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum CoreAiModelStatus {
@@ -64,6 +81,10 @@ pub(crate) enum CoreAiModelStatus {
     Failed,
     Unsupported,
     NotPublished,
+    /// A local bundle passed the local contract. It is detected and usable as a
+    /// resource, but this build cannot generate from it yet (the helper local
+    /// backend path lands in a later C-3 slice).
+    Detected,
 }
 
 pub(crate) fn monitor_is_terminal(status: CoreAiModelStatus) -> bool {
@@ -90,6 +111,7 @@ pub(crate) struct CoreAiModelSummary {
     pub(crate) id: String,
     pub(crate) display_name: String,
     pub(crate) kind: CoreAiModelKind,
+    pub(crate) source: CoreAiModelSource,
     pub(crate) status: CoreAiModelStatus,
     pub(crate) selected: bool,
     pub(crate) download_size_bytes: Option<u64>,
@@ -99,6 +121,9 @@ pub(crate) struct CoreAiModelSummary {
     pub(crate) has_upstream_conversion_notice: bool,
     pub(crate) progress: Option<f64>,
     pub(crate) error: Option<String>,
+    /// Stable code for a localized message owned by the frontend. Local entries
+    /// use it instead of `error`, whose English text is for logs only.
+    pub(crate) error_code: Option<String>,
     pub(crate) asset_pack_version: Option<u64>,
 }
 
@@ -476,6 +501,7 @@ impl CoreAiModelStore {
             id: SYSTEM_MODEL_ID.into(),
             display_name: "Apple Intelligence".into(),
             kind: CoreAiModelKind::System,
+            source: CoreAiModelSource::AppleHosted,
             status: CoreAiModelStatus::Ready,
             selected: selected == SYSTEM_MODEL_ID,
             download_size_bytes: None,
@@ -485,6 +511,7 @@ impl CoreAiModelStore {
             has_upstream_conversion_notice: false,
             progress: None,
             error: None,
+            error_code: None,
             asset_pack_version: None,
         }];
         models.extend(self.catalog.iter().map(|entry| {
@@ -493,6 +520,7 @@ impl CoreAiModelStore {
                 id: entry.id.clone(),
                 display_name: entry.display_name.clone(),
                 kind: CoreAiModelKind::CoreAi,
+                source: CoreAiModelSource::AppleHosted,
                 status: runtime.status,
                 selected: selected == entry.id,
                 download_size_bytes: entry.download_size_bytes,
@@ -502,9 +530,11 @@ impl CoreAiModelStore {
                 has_upstream_conversion_notice: entry.has_upstream_conversion_notice,
                 progress: runtime.progress,
                 error: runtime.error,
+                error_code: None,
                 asset_pack_version: runtime.asset_pack_version,
             }
         }));
+        models.extend(self.local_model_summaries(&selected));
         CoreAiModelCatalogResponse {
             distribution_status: if self.catalog.iter().any(|entry| entry.published) {
                 CoreAiDistributionStatus::Available
@@ -529,6 +559,7 @@ impl CoreAiModelStore {
         helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
+        self.ensure_not_a_local_model(model_id)?;
         let selection = self.selection_for(model_id)?;
         {
             let mut selected = self.selected_model_id.lock().expect("selected model lock");
@@ -548,6 +579,7 @@ impl CoreAiModelStore {
         model_id: &str,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
+        self.ensure_not_a_local_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let asset_pack_id = self.asset_pack_id(entry)?;
         if self.runtime_state(entry).status == CoreAiModelStatus::Ready {
@@ -567,6 +599,7 @@ impl CoreAiModelStore {
 
     pub(crate) fn cancel_download(&self, model_id: &str) -> Result<bool, String> {
         self.ensure_management_available()?;
+        self.ensure_not_a_local_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let cancelled = self.transport.cancel(self.asset_pack_id(entry)?)?;
         if cancelled {
@@ -585,6 +618,7 @@ impl CoreAiModelStore {
         helper_store: &AppleAssistHelperStore,
     ) -> Result<CoreAiModelCatalogResponse, String> {
         self.ensure_management_available()?;
+        self.ensure_not_a_local_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let was_selected = self
             .selected_model_id
@@ -839,6 +873,70 @@ impl CoreAiModelStore {
             return Err("Model management is locked by the Developer test backend override. Restart without the override to manage models.".into());
         }
         Ok(())
+    }
+
+    /// Local models are detected and validated, but this build cannot select,
+    /// download, or delete them yet. Refusing here keeps a crafted model id from
+    /// reaching the Apple-hosted management path.
+    fn ensure_not_a_local_model(&self, model_id: &str) -> Result<(), String> {
+        if model_id.starts_with(LOCAL_MODEL_ID_PREFIX) {
+            return Err(
+                "Custom models are detected only. This build cannot select, download, or delete them."
+                    .into(),
+            );
+        }
+        Ok(())
+    }
+
+    /// Detected models under `app_data_dir()/CoreAICustomModels`. Read-only: the
+    /// app never deletes or repairs what the user placed there, and a broken
+    /// folder is reported rather than hidden.
+    fn local_model_summaries(&self, selected: &str) -> Vec<CoreAiModelSummary> {
+        let root = match self.custom_models_root() {
+            Ok(root) => root,
+            Err(_) => return Vec::new(),
+        };
+        scan_custom_models_directory(&root)
+            .into_iter()
+            .map(|candidate| {
+                let (display_name, status, error_code) = match candidate.outcome {
+                    Ok(model) => (
+                        model
+                            .display_name
+                            .unwrap_or_else(|| candidate.directory_name.clone()),
+                        CoreAiModelStatus::Detected,
+                        None,
+                    ),
+                    Err(code) => (
+                        candidate.directory_name.clone(),
+                        CoreAiModelStatus::Failed,
+                        Some(code.code().to_string()),
+                    ),
+                };
+                let id = format!("{LOCAL_MODEL_ID_PREFIX}{}", candidate.directory_name);
+                CoreAiModelSummary {
+                    id: id.clone(),
+                    display_name,
+                    kind: CoreAiModelKind::CoreAi,
+                    source: CoreAiModelSource::AppManagedLocal,
+                    status,
+                    selected: selected == id,
+                    download_size_bytes: None,
+                    installed_size_bytes: None,
+                    recommended_memory_gb: None,
+                    license: None,
+                    has_upstream_conversion_notice: false,
+                    progress: None,
+                    error: None,
+                    error_code,
+                    asset_pack_version: None,
+                }
+            })
+            .collect()
+    }
+
+    fn custom_models_root(&self) -> Result<PathBuf, String> {
+        Ok(self.data_dir()?.join(CUSTOM_MODELS_DIRECTORY))
     }
 
     fn apply_selection(

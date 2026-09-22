@@ -66,6 +66,56 @@ describe("CoreAiModelManager", () => {
     expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
   });
 
+  it("shows a detected app-managed local model without Apple-hosted actions", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        {
+          id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+          kind: "system", source: "apple_hosted", status: "ready", selected: true,
+        },
+        {
+          id: "local:app-managed:MyQwen", displayName: "My Qwen 3",
+          kind: "core_ai", source: "app_managed_local", status: "detected", selected: false,
+        },
+      ],
+    });
+
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    expect(await screen.findByText("My Qwen 3 · ローカル")).toBeTruthy();
+    expect(screen.getByText("検出済み（生成はまだ利用できません）")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "使う" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
+  });
+
+  it("localizes a broken local bundle reason and does not offer retry", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        {
+          id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+          kind: "system", source: "apple_hosted", status: "ready", selected: true,
+        },
+        {
+          id: "local:app-managed:Broken", displayName: "Broken",
+          kind: "core_ai", source: "app_managed_local", status: "failed", selected: false,
+          errorCode: "missing-tokenizer",
+        },
+      ],
+    });
+
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    expect(await screen.findByText("Broken · ローカル")).toBeTruthy();
+    expect(screen.getByText("実行に必要なTokenizerが見つかりません。")).toBeTruthy();
+    expect(screen.queryByText("missing-tokenizer")).toBeNull();
+    expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
+  });
+
   it("explains the Developer override without offering to replace it with System", async () => {
     mocks.list.mockResolvedValue({
       distributionStatus: "not_published", selectedModelId: "apple:core-ai:qwen3-0.6b-test",
