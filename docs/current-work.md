@@ -5,6 +5,33 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## C-3 Custom Models を選択・helper 実行経路へ接続（2026-09-22）
+
+C-3 スライス3として、スライス1/2で検証・一覧表示まで進めた app-managed local model を、
+既存 Local Assist の選択・availability probe・通常生成・streaming 生成へ接続した。
+
+- Rust は `local:app-managed:<directory-name>` から path を組み立てず、選択時と再起動復元時に
+  `CoreAICustomModels` を再走査し、同じ ID の**検証済み候補**だけを canonical root として採用する。
+- helper wire に `core_ai_local` を追加した。Swift は `CoreAILocalResourceContract` を再実行してから
+  `CoreAIKit` の `KitGemmaModel` / `KitLanguageModel` へ渡す。Apple-hosted 用の licence / notice /
+  signed manifest 契約は緩めていない。
+- local model は production と同じ prompt / generation profile / Proposal → Diff → 明示 Apply 経路を使う。
+  キャッシュは tokenizer / `main.hash` / descriptor の content digest と大きな payload の size / mtime で
+  同一性を確認し、署名を作れない場合は request ごとに fresh load する。
+- 選択は Rust-owned ID だけを永続化する。再起動時に bundle が消えた、または壊れた場合は System へ
+  fail closed し、保存値も修復する。生成中の切替拒否と保存失敗時の旧 backend 維持は既存契約を再利用する。
+- UI は `detected` な local model にだけ「使う」を出す。download / cancel / retry / delete は引き続き
+  Apple-hosted 専用で、壊れた local candidate は理由表示だけに留める。
+
+検証は frontend 2,676件、scripts 24件、Rust 456件（2 ignored）、Swift 59件、App Store surface
+132件、型検査、Vite build、Rust fmt、production Core AI distribution helper build、
+`git diff --check` が成功。distribution build は `COREAI_PRODUCT_BACKEND` の型接続を確認したが、
+**このスライスでは実 local model の load / 生成、built app、VoiceOver / キーボード、TestFlight は未確認**。
+
+スライス1〜3をまとめた[外部レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)を
+用意した。次の実装ゲートは外部 resource folder の security-scoped bookmark / helper 権限境界で、
+Custom Models フォルダを開く / 明示再スキャンする UI も未接続。
+
 ## C-3 Custom Models を既存モデル一覧へ統合（2026-09-22）
 
 C-3 スライス2として、`app_data_dir()/CoreAICustomModels` 直下の候補を既存の
@@ -45,8 +72,8 @@ helper への path 引き渡し、実生成、外部 resource folder の bookmar
 
 検証は `cargo fmt --check`、`cargo test`（452 passed / 2 ignored、モジュール内25件）、
 `swift test`（57 passed、新規5件）。Swift は Codex seatbelt 内で module cache を作れないため
-sandbox 外で実行した。後続のスライス2で app-managed の保存場所と検出表示まで接続したが、
-**ローカル backend 経路と外部 bookmark は引き続き次のゲート**。
+sandbox 外で実行した。後続のスライス2で app-managed の保存場所と検出表示、スライス3で
+ローカル backend の選択・生成経路まで接続した。**外部 bookmark は引き続き次のゲート**。
 [証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)。
 
 ## C-3 ローカルモデル解決・検証層（2026-09-22）
@@ -1319,12 +1346,12 @@ focus（`--accent` のoutline）3:1以上と `theme-palette.json` ＝ CSS `--chr
 - 本番のモデルDL・カタログ・開示はv3.1のC-1/C-2ゲート待ち。fixtureベースのC-1配管
   （Developer/GitHubレーン限定・カタログ未公開）は先に進めてよく、本番identityはリリース前に
   カタログ確定・実験を経てpinする。MLX M-0bも停止を維持。
-- **v3.1 追加レーン C-3（オーナー決定 2026-09-22、スライス2まで実装）:** Apple-hosted 以外のモデルソース
+- **v3.1 追加レーン C-3（オーナー決定 2026-09-22、スライス3まで実装）:** Apple-hosted 以外のモデルソース
   （Custom Models ディレクトリ、ユーザー明示登録の外部 resource folder、`.aimodel` 単体指定）を
   同じモデル管理・選択・生成経路で扱う。設計とゲートは
   [モデルソース抽象化](core-ai-model-source-abstraction.md) に固定した。C-1 / C-2 を止めず、
-  app-managed Custom Models は既存 registry / UI へ検出表示まで接続した。選択・生成・外部登録は
-  このキューの順で進める。任意URL取得・自動DL・モデル店は Non-Goal のまま。
+  app-managed Custom Models は既存 registry / UI / helper の選択・生成経路へ接続した。外部登録と
+  security-scoped bookmark は次の独立スライス。任意URL取得・自動DL・モデル店は Non-Goal のまま。
 - 新しい書体/行間/永続設定、native別窓、Importの確定前ステージ、画像倍率は別仕様。
 - UI刷新とnative runtime再編・新SDK採用を同じ変更へ混ぜない。
 - 保存済み原稿、既存Apply/Undo/no auto-save、R2-cの完了/取消mutex境界を広げない。

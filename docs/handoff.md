@@ -5,13 +5,25 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **C-3 app-managed local backend 接続（2026-09-22）:** スライス3として、検証済み
+  `CoreAICustomModels` 候補を Rust-owned selection、再起動復元、availability、通常 / streaming
+  生成へ接続した。Rust は ID から path を復元せず毎回 scan 結果へ照合し、helper は
+  `core_ai_local` を受けて `CoreAILocalResourceContract` を再検証してから `CoreAIKit` へ渡す。
+  local model は production prompt / generation profile を使い、Apple-hosted の signed contract と
+  asset lifecycle は変更しない。保存候補が消失・破損した再起動では System へ戻して保存値も修復する。
+  frontend 2,676件、scripts 24件、Rust 456件（2 ignored）、Swift 59件、surface 132件、型検査、
+  Vite / production distribution helper build、Rust fmt、diff check は成功。実 local model の load / 生成、
+  built app、VoiceOver、TestFlight は未確認。外部 resource folder / bookmark は次スライス。
+  [スライス1〜3 外部レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)。
+
 - **C-3 Custom Models registry / UI 統合（2026-09-22）:** スライス2として
   `app_data_dir()/CoreAICustomModels` の候補を既存 `CoreAiModelStore` とモデル管理ページへ接続した。
   summary の `source` / `errorCode` と `detected` 状態で、正常候補は「ローカル・検出済み」、
   壊れた候補はローカライズした contract 理由を表示する。ローカル候補は検出・表示のみで、
   frontend に Apple-hosted 用操作を出さず Rust 側でも select / download / cancel / delete を拒否する。
   frontend 2,676件、scripts 24件、Rust 455件（2 ignored）、surface 132件、型検査、Vite build、
-  Rust fmt は成功。**helper のローカル backend、選択・生成、外部 bookmark、フォルダ操作 UI は未接続**。
+  Rust fmt は成功。この時点では helper のローカル backend、選択・生成、外部 bookmark、フォルダ操作
+  UI は未接続だった。選択・生成は後続スライス3で接続済み（先頭項目）。
   [証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)。
 
 - **C-3 外部レビュー是正（2026-09-22）:** スライス1の「Rust は helper と同じ契約」という主張を
@@ -34,8 +46,9 @@ Last reviewed: 2026-09-22
   symlink、bundle 外 `layout`、`..`、tokenizer/tables 欠落、`.aimodel` 重複を安全側で拒否し、
   `scan_custom_models_directory` は壊れた候補も理由付きで返す。`cargo fmt --check`、
   `cargo test`（447 passed / 2 ignored、新規20件）は成功。この時点では catalog / IPC / UI と
-  保存場所が未接続だったが、後続スライス2で app-managed の保存場所と検出表示まで接続した。
-  security-scoped bookmark と helper への権限受け渡しは引き続き未接続。
+  保存場所が未接続だったが、後続スライス2で app-managed の保存場所と検出表示、スライス3で
+  選択・helper 経路まで接続した。外部 resource folder の security-scoped bookmark と helper への
+  sandbox 権限受け渡しは引き続き未接続。
   [証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)。
 
 - **外部レビューP2 6件の追補（2026-09-22）:** streaming最終候補を最後のraw snapshotから作り、
@@ -1094,9 +1107,9 @@ retained as the earlier R-1-only checkpoint.
 4. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 5. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
 6. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。
-7. Apple-hosted 以外のモデルソースは v3.1 の **C-3**。Custom Models は既存 registry / UI への
-   検出表示まで接続済み。次は helper のローカル backend と権限境界を固定し、選択・生成を接続する。
-   外部 resource folder / `.aimodel` の bookmark はその後。設計は
+7. Apple-hosted 以外のモデルソースは v3.1 の **C-3**。Custom Models は既存 registry / UI /
+   helper の選択・生成経路まで接続済み。次は外部 resource folder / `.aimodel` の bookmark と
+   helper 権限境界を独立スライスで固定する。設計は
    `docs/core-ai-model-source-abstraction.md`。C-1 / C-2 を止めず、`current-work.md` の順で進める。
 
 ## Key Paths

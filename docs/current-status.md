@@ -7,7 +7,7 @@ Last reviewed: 2026-09-22
 
 ## Current State
 
-- **v3.1スコープ更新 — C-3（2026-09-22、オーナー決定・検出表示まで実装）:** v3.1 に、Apple-hosted 以外の
+- **v3.1スコープ更新 — C-3（2026-09-22、オーナー決定・app-managed 選択接続まで実装）:** v3.1 に、Apple-hosted 以外の
   モデルソース（Hazakura 管理の Custom Models ディレクトリ、ユーザーが明示登録した外部
   resource folder、`.aimodel` 単体指定）を同じモデル管理・選択・生成経路で扱う **C-3** を加える。
   allowlist 前提を「ユーザーの明示登録」に限って広げる決定で、設計とゲートは
@@ -18,14 +18,20 @@ Last reviewed: 2026-09-22
   452 passed / 2 ignored、`swift test` 57 passed）。symlink は root 配下の全 component を拒否し、
   scan は壊れた候補も理由付きで返す。スライス2では `app_data_dir()/CoreAICustomModels` を
   app-managed の保存場所として既存 `CoreAiModelStore` / IPC / UI へ接続し、正常候補を
-  `detected`、壊れた候補を安定 `errorCode` 付きで一覧へ出す。Apple-hosted の管理操作は維持し、
-  ローカル候補には操作を出さず Rust 側でも拒否する。ただし helper のローカル backend、選択・生成、
-  外部 resource folder の security-scoped bookmark、フォルダを開く / 再スキャンする UI は未接続。
+  `detected`、壊れた候補を安定 `errorCode` 付きで一覧へ出す。スライス3では検証済み候補だけを
+  Rust-owned ID で選択・復元し、`core_ai_local` wire から helper の local contract を再検証して
+  `CoreAIKit` の production prompt / generation profile / cache 経路へ接続した。起動時に bundle が
+  消失・破損していれば System へ fail closed する。Apple-hosted の download / cancel / delete は維持し、
+  local model を asset 管理へ入れない。外部 resource folder の security-scoped bookmark、フォルダを
+  開く / 再スキャンする UI は未接続。
   C-1 / C-2 と現在のTestFlight前レビューを止めない。任意URL取得・自動DL・モデル店は Non-Goal。
-  このスライスはローカルモデルの選択・生成・実ロード済み状態の証跡ではない。
+  source 上は選択・生成経路へ接続済みだが、実 local model の load / 生成、built app、VoiceOver、
+  TestFlight の証跡ではない。最新検証は frontend 2,676件、scripts 24件、Rust 456件（2 ignored）、
+  Swift 59件、surface 132件と production distribution helper build が成功。
   [初回証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)、
   [レビュー是正証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)、
-  [registry / UI 接続証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)。
+  [registry / UI 接続証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)、
+  [スライス1〜3 外部レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)。
 
 - **TestFlight前 外部レビュー追補（2026-09-22）:** `aac6e900`へのP2 6件を閉じた。
   streaming markerの部分露出/古い最終候補、2画面のcatalog競合、manifest解決中cancel、paused後の
