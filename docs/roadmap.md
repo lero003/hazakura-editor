@@ -15,9 +15,9 @@ v3.1は、検証済みCore AIモデルをLocal Assistから実際に利用でき
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |
-| ソース版 | 3.1.0。I-0の言語境界・英語復旧面、Local Assist表示整理、Core AIの配布前adapter・空catalog管理/選択を実装済み。本番モデルasset、海外ストア設定、署名候補の実機受入は未完了で、まだリリース候補ではない。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
+| ソース版 | 3.1.0。言語境界・英語復旧面、Local Assist表示、E4B/12B catalogとモデル管理、app-managed localの選択・生成接続を実装。署名済みローカルpkgは作成済みだが、配信・実機受入・海外ストア設定は未完了。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | Core AIの配布前build形は接続済み。本番catalogは空のまま、identity・権利・manifest/AOT・Apple-hosted asset pack・bake-offを閉じる。Connect上の地域・価格・契約と署名候補の英語受け入れも未完了 — `docs/current-work.md` |
+| 現行キュー | 同じ署名候補で実機確認と出荷範囲を確定。Core AIの権利・AOT・Apple-hosted配信・品質、C-3外部folder境界、Connectの地域・価格・契約・英語受入を閉じる。審査・掲載文は未適用の草案 — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 

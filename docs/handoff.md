@@ -5,6 +5,11 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-22
 
+- **審査・掲載文は準備済み草案（2026-09-22）:** [3.1掲載文パケット](releases/3.1.0-app-store-listing-copy.md)が入口。
+  日英What's New、英語審査メモ、説明・副題・Keywords、画像案と未受入ゲートを整理。
+  Connectへの保存・送信は未実施。署名pkgは`8dffa835`から作成済み（候補詳細はignoredのlatest.json）。
+  次はオーナー実機受入と出荷範囲決定。配信未受入のCore AI追記を自動で掲載しない。
+
 - **モデル設定は実機レビュー待ち（2026-09-22）:** local選択を設定・Assist pickerで統一。
   local消失時のSystem復帰、設定で「使う」が消えた後のfocusを修正。再レビューの通常テーマfocus枠と
   消失localの3言語表示も修正。frontend 2,686件、scripts 24件、surface 132件、型検査、

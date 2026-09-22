@@ -26,9 +26,9 @@ Last reviewed: 2026-09-22
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current source version is `3.1.0`. It is an in-progress development version,
-not yet a signed or published
-release candidate. Local Assist opens in a separate native
+Current source version is `3.1.0`. A signed local package has been prepared,
+but device acceptance, model delivery, and App Store submission remain pending.
+Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. The current App Store development source exposes Apple Intelligence
 plus pinned Apple-hosted Gemma 4 E4B and 12B
@@ -45,6 +45,8 @@ beginning with English product and storefront localization.
 See the [roadmap](docs/roadmap.md), [v3 product plan](docs/v3-product-completion-plan.md), and
 [Local Assist plan](docs/v2.9-v3-local-assist-plan.md). Production Core AI distribution and selection,
 signed-candidate acceptance, and App Store rollout remain incomplete milestones.
+Draft release notes, review notes, and listing copy are collected in the
+[3.1 submission copy packet](docs/releases/3.1.0-app-store-listing-copy.md); these have not been applied in App Store Connect.
 
 ## Mac App Store
 

@@ -5,6 +5,15 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-22
 
+## 審査・掲載文の準備（2026-09-22）
+
+[3.1掲載文パケット](releases/3.1.0-app-store-listing-copy.md)に日本語説明・副題・画像案をまとめ、
+[リリースノート](releases/3.1.0-app-store-release-notes.md)に日英What's New、英語App Review Notes、
+TestFlight確認項目を整理した。英語JSONも3.1へ更新、全て未適用の草案。
+`8dffa835`からの署名pkg作成は別途成功したが、Apple側送信・実機受入・審査は未実施。
+候補情報はGit対象外の`docs/internal/app-store-candidates/latest.json`を参照する。
+次は同じ候補の実機確認と出荷範囲決定。Core AI配信の告知は配信・品質受入後だけ採用する。
+
 ## モデル設定・切替の自己レビュー（2026-09-22）
 
 設定とAssist pickerのlocal選択条件を統一し、選択中local folder消失時もSystemへ戻せるようにした。

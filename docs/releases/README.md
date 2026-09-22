@@ -3,12 +3,13 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-20
+Last reviewed: 2026-09-22
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
 Current development release-preparation tree: `3.1.0`;
-`3.1.0-app-store-release-notes.md`. It is a working draft, not a signed candidate.
+`3.1.0-app-store-release-notes.md` and `3.1.0-app-store-listing-copy.md`.
+Copy remains a draft. A local signed package exists separately; device and distribution acceptance remain open.
 Older source-planning tree: `2.8.0` (`2.8.0-source-tag.release.md`,
 `2.8.0-app-store-release-notes.md`, plan `../v2.8-plan.md`).
 
@@ -19,9 +20,11 @@ Latest GitHub source / local-app tag:
 
 Current development draft:
 
-- `3.1.0` — `3.1.0-app-store-release-notes.md` (Local Assist surface polish and
-  language/recovery improvements are implemented; production Core AI distribution/selection,
-  international rollout gates, signed-candidate acceptance, and final copy remain open)
+- `3.1.0` — [release notes and App Review notes](3.1.0-app-store-release-notes.md),
+  [Japanese listing copy and submission entry point](3.1.0-app-store-listing-copy.md),
+  [English metadata](../international-launch/app-store-en-US.json).
+  Local Assist/model management and language/recovery changes are implemented; production model
+  delivery, device acceptance, international rollout, and owner approval of copy remain open.
 
 Prior App Store submission candidate:
 

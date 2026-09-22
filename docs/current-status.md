@@ -7,6 +7,12 @@ Last reviewed: 2026-09-22
 
 ## Current State
 
+- **3.1審査資料は草案（2026-09-22）:** [掲載文パケット](releases/3.1.0-app-store-listing-copy.md)と
+  [リリースノート / 審査メモ](releases/3.1.0-app-store-release-notes.md)を現行実装へ更新。
+  英語JSONも3.1化し、未適用を維持。`8dffa835`からの署名universal app/pkgはローカル検証済み。
+  これはTestFlight・審査・配信受入ではなく、実機確認と出荷範囲の決定が残る。
+  候補build/path/SHAはGit対象外の`docs/internal/app-store-candidates/latest.json`に記録。
+
 - **モデル設定の自己レビュー（2026-09-22）:** local modelをAssist pickerでも選択できるようにし、
   選択中local folder消失時のSystem復帰と、設定選択後のfocus喪失を修正した。再レビューの
   通常テーマfocus枠・消失localの内部ID表示も是正。frontend 2,686件、scripts 24件、surface 132件、
