@@ -714,7 +714,11 @@ fn create_described_local_bundle(
         ),
     )
     .unwrap();
-    std::fs::write(bundle.join("metadata.json"), "{}").unwrap();
+    std::fs::write(
+        bundle.join("metadata.json"),
+        r#"{"metadata_version":"0.2","kind":"llm","name":"Local fixture","assets":{"main":"local.aimodel"},"language":{"tokenizer":"local","vocab_size":1,"max_context_length":128,"embedded_tokenizer":true}}"#,
+    )
+    .unwrap();
     std::fs::write(bundle.join("tokenizer/tokenizer.json"), "{}").unwrap();
     for file in ["metadata.json", "main.hash", "main.mlirb"] {
         std::fs::write(bundle.join("local.aimodel").join(file), "x").unwrap();
@@ -725,7 +729,11 @@ fn create_described_local_bundle(
 fn create_broken_local_bundle(data_dir: &std::path::Path, directory_name: &str) {
     let root = data_dir.join("CoreAICustomModels").join(directory_name);
     std::fs::create_dir_all(root.join("local.aimodel")).unwrap();
-    std::fs::write(root.join("metadata.json"), "{}").unwrap();
+    std::fs::write(
+        root.join("metadata.json"),
+        r#"{"metadata_version":"0.2","kind":"llm","name":"Broken fixture","assets":{"main":"local.aimodel"},"language":{"tokenizer":"local","vocab_size":1,"max_context_length":128,"embedded_tokenizer":true}}"#,
+    )
+    .unwrap();
     for file in ["metadata.json", "main.hash", "main.mlirb"] {
         std::fs::write(root.join("local.aimodel").join(file), "x").unwrap();
     }

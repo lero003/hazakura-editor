@@ -68,6 +68,67 @@ final class CoreAILocalResourceContractTests: XCTestCase {
         )
     }
 
+    func testLocalResourceSignatureTracksLoaderMetadataAndTokenizerSettings() throws {
+        let root = try languageResource()
+        let resource = try XCTUnwrap(CoreAILocalResourceContract.resolve(path: root.path).resource)
+        let baseline = try XCTUnwrap(CoreAILocalResourceContract.signature(for: resource))
+
+        try write(
+            languageMetadata(modelName: "local.aimodel", name: "Other fixture"),
+            to: root.appendingPathComponent("metadata.json")
+        )
+        let bundleMetadataChanged = try XCTUnwrap(
+            CoreAILocalResourceContract.signature(for: resource)
+        )
+        XCTAssertNotEqual(bundleMetadataChanged, baseline)
+
+        try write("model metadata B", to: root.appendingPathComponent("local.aimodel/metadata.json"))
+        let modelMetadataChanged = try XCTUnwrap(
+            CoreAILocalResourceContract.signature(for: resource)
+        )
+        XCTAssertNotEqual(modelMetadataChanged, bundleMetadataChanged)
+
+        let tokenizerConfig = root.appendingPathComponent("tokenizer/tokenizer_config.json")
+        try write(#"{"eos_token":"<eos>"}"#, to: tokenizerConfig)
+        let tokenizerConfigAdded = try XCTUnwrap(
+            CoreAILocalResourceContract.signature(for: resource)
+        )
+        XCTAssertNotEqual(tokenizerConfigAdded, modelMetadataChanged)
+
+        try write(#"{"eos_token":"<end>"}"#, to: tokenizerConfig)
+        XCTAssertNotEqual(
+            CoreAILocalResourceContract.signature(for: resource),
+            tokenizerConfigAdded
+        )
+    }
+
+    func testLocalResourceSignatureKeepsSubsecondModelPayloadIdentity() throws {
+        let root = try languageResource()
+        let resource = try XCTUnwrap(CoreAILocalResourceContract.resolve(path: root.path).resource)
+        let payload = root.appendingPathComponent("local.aimodel/main.mlirb")
+        let second = 1_790_000_000.0
+
+        try write("AAAA", to: payload)
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: second + 0.125)],
+            ofItemAtPath: payload.path
+        )
+        let beforeSwap = try XCTUnwrap(CoreAILocalResourceContract.signature(for: resource))
+
+        try write("BBBB", to: payload)
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: second + 0.875)],
+            ofItemAtPath: payload.path
+        )
+        let afterSwap = try XCTUnwrap(CoreAILocalResourceContract.signature(for: resource))
+
+        XCTAssertNotEqual(
+            beforeSwap,
+            afterSwap,
+            "same-size payload replacements within one second must change the signature"
+        )
+    }
+
     /// The production gate and the local gate must stay distinct. A local bundle
     /// has no reviewed licence or notice evidence, so the production contract
     /// rejects it while the local contract accepts it as a structural bundle.
@@ -78,7 +139,10 @@ final class CoreAILocalResourceContractTests: XCTestCase {
             to: root.appendingPathComponent("hazakura-model.json")
         )
         let bundle = root.appendingPathComponent("bundle", isDirectory: true)
-        try write("{}", to: bundle.appendingPathComponent("metadata.json"))
+        try write(
+            languageMetadata(modelName: "local.aimodel"),
+            to: bundle.appendingPathComponent("metadata.json")
+        )
         try write("{}", to: bundle.appendingPathComponent("tokenizer/tokenizer.json"))
         try write("{}", to: bundle.appendingPathComponent("local.aimodel/metadata.json"))
         try write("hash", to: bundle.appendingPathComponent("local.aimodel/main.hash"))
@@ -99,7 +163,10 @@ final class CoreAILocalResourceContractTests: XCTestCase {
 
     func testRejectsASymlinkedTokenizerDirectory() throws {
         let root = try makeTemporaryDirectory()
-        try write("{}", to: root.appendingPathComponent("metadata.json"))
+        try write(
+            languageMetadata(modelName: "local.aimodel"),
+            to: root.appendingPathComponent("metadata.json")
+        )
         try write("{}", to: root.appendingPathComponent("real-tokenizer/tokenizer.json"))
         try FileManager.default.createSymbolicLink(
             atPath: root.appendingPathComponent("tokenizer").path,
@@ -121,7 +188,11 @@ final class CoreAILocalResourceContractTests: XCTestCase {
 
         for testCase in spec.cases {
             let root = try makeTemporaryDirectory()
-            try materialize(testCase.entries, at: root)
+            try materialize(
+                testCase.entries,
+                at: root,
+                defaultLanguageMetadata: spec.defaultLanguageMetadata
+            )
             let selected = testCase.select == "."
                 ? root
                 : root.appendingPathComponent(testCase.select)
@@ -146,7 +217,10 @@ final class CoreAILocalResourceContractTests: XCTestCase {
 
     private func languageResource() throws -> URL {
         let root = try makeTemporaryDirectory()
-        try write("{}", to: root.appendingPathComponent("metadata.json"))
+        try write(
+            languageMetadata(modelName: "local.aimodel"),
+            to: root.appendingPathComponent("metadata.json")
+        )
         try write("{}", to: root.appendingPathComponent("tokenizer/tokenizer.json"))
         try writeModelDirectory(root.appendingPathComponent("local.aimodel"))
         return root
@@ -158,14 +232,31 @@ final class CoreAILocalResourceContractTests: XCTestCase {
         try write("model", to: directory.appendingPathComponent("main.mlirb"))
     }
 
-    private func materialize(_ entries: [SpecEntry], at root: URL) throws {
+    private func languageMetadata(
+        modelName: String,
+        name: String = "Local fixture",
+        embeddedTokenizer: Bool = true
+    ) -> String {
+        #"{"metadata_version":"0.2","kind":"llm","name":"\#(name)","assets":{"main":"\#(modelName)"},"language":{"tokenizer":"local","vocab_size":1,"max_context_length":128,"embedded_tokenizer":\#(embeddedTokenizer)}}"#
+    }
+
+    private func materialize(
+        _ entries: [SpecEntry],
+        at root: URL,
+        defaultLanguageMetadata: String
+    ) throws {
         for entry in entries {
             let path = root.appendingPathComponent(entry.path)
             switch entry.kind {
             case "dir":
                 try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true)
             case "file":
-                try write(entry.contents ?? "fixture", to: path)
+                let isBundleMetadata = entry.path.hasSuffix("metadata.json")
+                    && !entry.path.contains(".aimodel/metadata.json")
+                try write(
+                    entry.contents ?? (isBundleMetadata ? defaultLanguageMetadata : "fixture"),
+                    to: path
+                )
             case "symlink":
                 guard let target = entry.target else {
                     throw SpecError.missingSymlinkTarget(entry.path)
@@ -208,6 +299,7 @@ final class CoreAILocalResourceContractTests: XCTestCase {
 
 private struct ContractSpec: Decodable {
     let schemaVersion: Int
+    let defaultLanguageMetadata: String
     let cases: [ContractCase]
 }
 

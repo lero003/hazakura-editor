@@ -8,13 +8,16 @@ enum CoreAILocalModelErrorCode: String, Error, Equatable {
     case rootNotDirectory = "root-not-a-directory"
     case missingDescriptor = "missing-descriptor"
     case malformedDescriptor = "malformed-descriptor"
+    case malformedBundleMetadata = "malformed-bundle-metadata"
     case unsupportedDescriptor = "unsupported-descriptor"
     case unknownRuntimeKind = "unknown-runtime-kind"
     case missingBundleDirectory = "missing-bundle-directory"
     case missingModelDirectory = "missing-model-directory"
     case multipleModelDirectories = "multiple-model-directories"
+    case modelDirectoryMismatch = "model-directory-mismatch"
     case incompleteModelDirectory = "incomplete-model-directory"
     case missingTokenizer = "missing-tokenizer"
+    case externalTokenizerNotAllowed = "external-tokenizer-not-allowed"
     case missingTables = "missing-tables"
     case unsafePath = "unsafe-path"
     case unreadable = "unreadable"
@@ -82,6 +85,12 @@ enum CoreAILocalResourceContract {
     private static let descriptorFilename = "hazakura-model.json"
     private static let languageBundleDescriptor = "metadata.json"
     private static let tokenizerFile = "tokenizer/tokenizer.json"
+    private static let optionalTokenizerFiles = [
+        "tokenizer/config.json",
+        "tokenizer/tokenizer_config.json",
+        "tokenizer/chat_template.jinja",
+        "tokenizer/chat_template.json",
+    ]
     private static let modelDirectoryFiles = ["metadata.json", "main.hash", "main.mlirb"]
     private static let gemma4PleTableFiles = [
         "embed_per_layer.i8",
@@ -102,12 +111,27 @@ enum CoreAILocalResourceContract {
             resource.modelId ?? "descriptor-model-id:none",
         ]
         let contentIdentity = [
+            resource.bundle.appendingPathComponent(languageBundleDescriptor),
+            resource.modelDirectory.appendingPathComponent("metadata.json"),
             resource.modelDirectory.appendingPathComponent("main.hash"),
             resource.bundle.appendingPathComponent(tokenizerFile),
         ]
         for url in contentIdentity {
             guard let digest = contentDigest(url) else { return nil }
             parts.append("\(url.path)=\(digest)")
+        }
+
+        for relative in optionalTokenizerFiles {
+            let url = resource.bundle.appendingPathComponent(relative)
+            switch probe(url) {
+            case .file:
+                guard let digest = contentDigest(url) else { return nil }
+                parts.append("\(relative)=\(digest)")
+            case .missing:
+                parts.append("\(relative)=none")
+            default:
+                return nil
+            }
         }
 
         let descriptor = resource.resourceRoot.appendingPathComponent(descriptorFilename)
@@ -175,16 +199,10 @@ enum CoreAILocalResourceContract {
     }
 
     private static func resolveBundle(_ bundle: URL) -> CoreAILocalModelResolution {
-        if case let .failure(error) = validateLanguageBundle(bundle) {
-            return .error(error)
-        }
         let modelDirectory: URL
-        switch singleModelDirectory(bundle) {
+        switch resolveModelDirectory(in: bundle) {
         case let .failure(error): return .error(error)
         case let .success(url): modelDirectory = url
-        }
-        if case let .failure(error) = validateModelDirectory(modelDirectory) {
-            return .error(error)
         }
         return .ready(CoreAILocalModelResource(
             resourceRoot: bundle,
@@ -252,16 +270,10 @@ enum CoreAILocalResourceContract {
             }
         }
 
-        if case let .failure(error) = validateLanguageBundle(bundle) {
-            return .error(error)
-        }
         let modelDirectory: URL
-        switch singleModelDirectory(bundle) {
+        switch resolveModelDirectory(in: bundle) {
         case let .failure(error): return .error(error)
         case let .success(url): modelDirectory = url
-        }
-        if case let .failure(error) = validateModelDirectory(modelDirectory) {
-            return .error(error)
         }
         let displayName = descriptor.displayName?
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -278,18 +290,69 @@ enum CoreAILocalResourceContract {
 
     private static func validateLanguageBundle(
         _ bundle: URL
-    ) -> Result<Void, CoreAILocalModelErrorCode> {
-        if case let .failure(error) = requireFile(
+    ) -> Result<String, CoreAILocalModelErrorCode> {
+        let metadataURL: URL
+        switch requireFile(
             bundle,
             languageBundleDescriptor,
             missing: .missingDescriptor
         ) {
-            return .failure(error)
+        case let .failure(error): return .failure(error)
+        case let .success(url): metadataURL = url
+        }
+        guard let data = try? Data(contentsOf: metadataURL) else { return .failure(.unreadable) }
+        guard let metadata = try? JSONDecoder().decode(LanguageBundleMetadata.self, from: data),
+              metadata.metadataVersion == "0.2",
+              metadata.kind == "llm",
+              metadata.language.vocabSize > 0,
+              metadata.language.maxContextLength > 0 else {
+            return .failure(.malformedBundleMetadata)
+        }
+        guard metadata.language.embeddedTokenizer else {
+            return .failure(.externalTokenizerNotAllowed)
         }
         if case let .failure(error) = requireFile(bundle, tokenizerFile, missing: .missingTokenizer) {
             return .failure(error)
         }
-        return .success(())
+        for relative in optionalTokenizerFiles {
+            switch probe(bundle.appendingPathComponent(relative)) {
+            case .file, .missing: break
+            case .symlink: return .failure(.unsafePath)
+            default: return .failure(.unreadable)
+            }
+        }
+        return .success(metadata.assets.main)
+    }
+
+    private static func resolveModelDirectory(
+        in bundle: URL
+    ) -> Result<URL, CoreAILocalModelErrorCode> {
+        let declaredPath: String
+        switch validateLanguageBundle(bundle) {
+        case let .failure(error): return .failure(error)
+        case let .success(path): declaredPath = path
+        }
+        let verified: URL
+        switch singleModelDirectory(bundle) {
+        case let .failure(error): return .failure(error)
+        case let .success(url): verified = url
+        }
+        if case let .failure(error) = validateModelDirectory(verified) {
+            return .failure(error)
+        }
+        let declared: URL
+        switch requireDirectory(
+            bundle,
+            declaredPath,
+            missing: .modelDirectoryMismatch
+        ) {
+        case let .failure(error): return .failure(error)
+        case let .success(url): declared = url
+        }
+        guard declared.path == verified.path else {
+            return .failure(.modelDirectoryMismatch)
+        }
+        return .success(verified)
     }
 
     private static func validateModelDirectory(
@@ -417,14 +480,14 @@ enum CoreAILocalResourceContract {
     }
 
     private static func fileStamp(_ url: URL) -> String? {
-        guard let values = try? url.resourceValues(forKeys: [
-            .fileSizeKey,
-            .contentModificationDateKey,
-        ]), let size = values.fileSize,
-           let modified = values.contentModificationDate else {
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = (attributes[.size] as? NSNumber)?.uint64Value,
+              let modified = attributes[.modificationDate] as? Date else {
             return nil
         }
-        return "\(size):\(Int(modified.timeIntervalSince1970))"
+        let fileNumber = (attributes[.systemFileNumber] as? NSNumber)
+            .map { String($0.uint64Value) } ?? "unknown"
+        return "\(size):\(modified.timeIntervalSince1970.bitPattern):\(fileNumber)"
     }
 }
 
@@ -442,4 +505,46 @@ private struct HazakuraLocalModelDescriptor: Decodable {
     let displayName: String?
     let runtimeKind: String
     let layout: Layout
+}
+
+private struct LanguageBundleMetadata: Decodable {
+    struct Assets: Decodable {
+        let main: String
+    }
+
+    struct Language: Decodable {
+        let tokenizer: String
+        let vocabSize: Int
+        let maxContextLength: Int
+        let embeddedTokenizer: Bool
+
+        enum CodingKeys: String, CodingKey {
+            case tokenizer
+            case vocabSize = "vocab_size"
+            case maxContextLength = "max_context_length"
+            case embeddedTokenizer = "embedded_tokenizer"
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            tokenizer = try container.decode(String.self, forKey: .tokenizer)
+            vocabSize = try container.decode(Int.self, forKey: .vocabSize)
+            maxContextLength = try container.decode(Int.self, forKey: .maxContextLength)
+            embeddedTokenizer = try container.decodeIfPresent(
+                Bool.self,
+                forKey: .embeddedTokenizer
+            ) ?? true
+        }
+    }
+
+    let metadataVersion: String
+    let kind: String
+    let name: String
+    let assets: Assets
+    let language: Language
+
+    enum CodingKeys: String, CodingKey {
+        case metadataVersion = "metadata_version"
+        case kind, name, assets, language
+    }
 }

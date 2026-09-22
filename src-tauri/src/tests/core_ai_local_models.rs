@@ -19,10 +19,23 @@ fn temp_root(label: &str) -> PathBuf {
 }
 
 fn write_file(path: &Path) {
+    write_contents(path, "fixture");
+}
+
+fn write_contents(path: &Path, contents: &str) {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).expect("fixture parent");
     }
-    std::fs::write(path, b"fixture").expect("fixture file");
+    std::fs::write(path, contents).expect("fixture file");
+}
+
+fn write_language_metadata(bundle: &Path, model_directory_name: &str) {
+    write_contents(
+        &bundle.join("metadata.json"),
+        &format!(
+            r#"{{"metadata_version":"0.2","kind":"llm","name":"Local fixture","assets":{{"main":"{model_directory_name}"}},"language":{{"tokenizer":"local","vocab_size":1,"max_context_length":128,"embedded_tokenizer":true}}}}"#
+        ),
+    );
 }
 
 fn write_model_directory(directory: &Path) {
@@ -32,7 +45,7 @@ fn write_model_directory(directory: &Path) {
 }
 
 fn write_language_bundle(bundle: &Path, model_directory_name: &str) {
-    write_file(&bundle.join("metadata.json"));
+    write_language_metadata(bundle, model_directory_name);
     write_file(&bundle.join("tokenizer/tokenizer.json"));
     write_model_directory(&bundle.join(model_directory_name));
 }
@@ -158,7 +171,7 @@ fn rejects_a_gemma4_ple_bundle_without_tables() {
 #[test]
 fn rejects_a_bundle_without_its_tokenizer() {
     let root = temp_root("no-tokenizer");
-    write_file(&root.join("metadata.json"));
+    write_language_metadata(&root, "local.aimodel");
     write_model_directory(&root.join("local.aimodel"));
 
     assert_eq!(
@@ -182,7 +195,7 @@ fn rejects_a_bundle_with_two_aimodel_directories() {
 #[test]
 fn rejects_an_incomplete_aimodel_directory() {
     let root = temp_root("incomplete-model");
-    write_file(&root.join("metadata.json"));
+    write_language_metadata(&root, "local.aimodel");
     write_file(&root.join("tokenizer/tokenizer.json"));
     write_file(&root.join("local.aimodel/metadata.json"));
     write_file(&root.join("local.aimodel/main.hash"));
@@ -196,7 +209,7 @@ fn rejects_an_incomplete_aimodel_directory() {
 #[test]
 fn rejects_a_bundle_without_an_aimodel_directory() {
     let root = temp_root("no-model-dir");
-    write_file(&root.join("metadata.json"));
+    write_language_metadata(&root, "local.aimodel");
     write_file(&root.join("tokenizer/tokenizer.json"));
 
     assert_eq!(
@@ -328,7 +341,7 @@ mod symlinks {
     #[test]
     fn rejects_a_symlinked_model_directory() {
         let root = temp_root("symlinked-model-dir");
-        write_file(&root.join("metadata.json"));
+        write_language_metadata(&root, "linked.aimodel");
         write_file(&root.join("tokenizer/tokenizer.json"));
         write_model_directory(&root.join("real-model"));
         symlink(root.join("real-model"), root.join("linked.aimodel")).expect("symlink");
@@ -342,7 +355,7 @@ mod symlinks {
     #[test]
     fn rejects_a_symlinked_tokenizer_directory() {
         let root = temp_root("symlinked-tokenizer");
-        write_file(&root.join("metadata.json"));
+        write_language_metadata(&root, "local.aimodel");
         write_file(&root.join("real-tokenizer/tokenizer.json"));
         write_model_directory(&root.join("local.aimodel"));
         symlink(root.join("real-tokenizer"), root.join("tokenizer")).expect("symlink");
@@ -356,7 +369,7 @@ mod symlinks {
     #[test]
     fn rejects_a_symlinked_model_file() {
         let root = temp_root("symlinked-model-file");
-        write_file(&root.join("metadata.json"));
+        write_language_metadata(&root, "local.aimodel");
         write_file(&root.join("tokenizer/tokenizer.json"));
         write_file(&root.join("local.aimodel/metadata.json"));
         write_file(&root.join("local.aimodel/main.mlirb"));
@@ -400,7 +413,7 @@ fn scan_lists_candidates_sorted_and_flags_broken_entries() {
     let custom = temp_root("custom-models");
     write_language_bundle(&custom.join("Alpha"), "alpha.aimodel");
     // Beta has a descriptor but no tokenizer, so it must be reported, not hidden.
-    write_file(&custom.join("Beta/metadata.json"));
+    write_language_metadata(&custom.join("Beta"), "local.aimodel");
     write_language_bundle(&custom.join(".Hidden"), "hidden.aimodel");
     write_file(&custom.join("notes.txt"));
 
@@ -462,7 +475,7 @@ fn contract_cases_match_the_shared_spec() {
             continue;
         }
         let root = temp_root(&format!("spec-{}", case.id));
-        materialize(&root, &case.entries);
+        materialize(&root, &case.entries, &spec.default_language_metadata);
         let selected = if case.select == "." {
             root.clone()
         } else {
@@ -502,7 +515,7 @@ fn contract_cases_match_the_shared_spec() {
     }
 }
 
-fn materialize(root: &Path, entries: &[SpecEntry]) {
+fn materialize(root: &Path, entries: &[SpecEntry], default_language_metadata: &str) {
     for entry in entries {
         let path = root.join(&entry.path);
         if let Some(parent) = path.parent() {
@@ -510,11 +523,18 @@ fn materialize(root: &Path, entries: &[SpecEntry]) {
         }
         match entry.kind.as_str() {
             "dir" => std::fs::create_dir_all(&path).expect("fixture dir"),
-            "file" => std::fs::write(
-                &path,
-                entry.contents.clone().unwrap_or_else(|| "fixture".into()),
-            )
-            .expect("fixture file"),
+            "file" => {
+                let contents = entry.contents.clone().unwrap_or_else(|| {
+                    if entry.path.ends_with("metadata.json")
+                        && !entry.path.contains(".aimodel/metadata.json")
+                    {
+                        default_language_metadata.into()
+                    } else {
+                        "fixture".into()
+                    }
+                });
+                std::fs::write(&path, contents).expect("fixture file");
+            }
             "symlink" => {
                 #[cfg(unix)]
                 {
@@ -534,6 +554,7 @@ fn materialize(root: &Path, entries: &[SpecEntry]) {
 #[serde(rename_all = "camelCase")]
 struct ContractSpec {
     schema_version: u32,
+    default_language_metadata: String,
     cases: Vec<ContractCase>,
 }
 

@@ -55,6 +55,12 @@ pub(crate) const CONTRACT_CASES: &str =
 const MODEL_DIRECTORY_EXTENSION: &str = "aimodel";
 const LANGUAGE_BUNDLE_DESCRIPTOR: &str = "metadata.json";
 const TOKENIZER_FILE: &str = "tokenizer/tokenizer.json";
+const OPTIONAL_TOKENIZER_FILES: [&str; 4] = [
+    "tokenizer/config.json",
+    "tokenizer/tokenizer_config.json",
+    "tokenizer/chat_template.jinja",
+    "tokenizer/chat_template.json",
+];
 const MODEL_DIRECTORY_FILES: [&str; 3] = ["metadata.json", "main.hash", "main.mlirb"];
 const GEMMA4_PLE_TABLE_FILES: [&str; 2] = ["embed_per_layer.i8", "embed_per_layer.scale.f32"];
 
@@ -92,6 +98,8 @@ pub(crate) enum LocalModelResolutionError {
     MissingDescriptor,
     /// `hazakura-model.json` is not valid JSON, or lacks an identity.
     MalformedDescriptor,
+    /// The language-bundle `metadata.json` cannot be decoded as loader metadata.
+    MalformedBundleMetadata,
     /// `hazakura-model.json` has a schema version this build does not read.
     UnsupportedDescriptor,
     /// `hazakura-model.json` names a runtime kind this build does not read.
@@ -102,10 +110,14 @@ pub(crate) enum LocalModelResolutionError {
     MissingModelDirectory,
     /// More than one `*.aimodel` directory was found; the main asset is ambiguous.
     MultipleModelDirectories,
+    /// `metadata.json` points the loader at a different model than the verified one.
+    ModelDirectoryMismatch,
     /// The `*.aimodel` directory is missing `metadata.json`, `main.hash`, or `main.mlirb`.
     IncompleteModelDirectory,
     /// The tokenizer that decides prompt formatting and stopping is missing.
     MissingTokenizer,
+    /// Local models must never fall back to downloading a tokenizer.
+    ExternalTokenizerNotAllowed,
     /// A Gemma4 PLE bundle is missing its embedding tables.
     MissingTables,
     /// A path escapes the bundle, or a symlink was found inside it.
@@ -121,13 +133,16 @@ impl LocalModelResolutionError {
             Self::RootNotDirectory => "root-not-a-directory",
             Self::MissingDescriptor => "missing-descriptor",
             Self::MalformedDescriptor => "malformed-descriptor",
+            Self::MalformedBundleMetadata => "malformed-bundle-metadata",
             Self::UnsupportedDescriptor => "unsupported-descriptor",
             Self::UnknownRuntimeKind => "unknown-runtime-kind",
             Self::MissingBundleDirectory => "missing-bundle-directory",
             Self::MissingModelDirectory => "missing-model-directory",
             Self::MultipleModelDirectories => "multiple-model-directories",
+            Self::ModelDirectoryMismatch => "model-directory-mismatch",
             Self::IncompleteModelDirectory => "incomplete-model-directory",
             Self::MissingTokenizer => "missing-tokenizer",
+            Self::ExternalTokenizerNotAllowed => "external-tokenizer-not-allowed",
             Self::MissingTables => "missing-tables",
             Self::UnsafePath => "unsafe-path",
             Self::Unreadable => "unreadable",
@@ -144,6 +159,9 @@ impl LocalModelResolutionError {
                 "The folder has no hazakura-model.json or language-bundle metadata.json."
             }
             Self::MalformedDescriptor => "hazakura-model.json could not be read as JSON.",
+            Self::MalformedBundleMetadata => {
+                "The language-bundle metadata.json is not valid loader metadata."
+            }
             Self::UnsupportedDescriptor => {
                 "hazakura-model.json uses a schema version this build does not support."
             }
@@ -159,11 +177,17 @@ impl LocalModelResolutionError {
             Self::MultipleModelDirectories => {
                 "More than one .aimodel directory was found, so the main model asset is ambiguous."
             }
+            Self::ModelDirectoryMismatch => {
+                "The loader metadata points at a different model than the verified .aimodel directory."
+            }
             Self::IncompleteModelDirectory => {
                 "The .aimodel directory is missing metadata.json, main.hash, or main.mlirb."
             }
             Self::MissingTokenizer => {
                 "The tokenizer resource required to run the model is missing."
+            }
+            Self::ExternalTokenizerNotAllowed => {
+                "Local models must use the tokenizer embedded in their bundle."
             }
             Self::MissingTables => "The Gemma4 embedding tables are missing.",
             Self::UnsafePath => "The model bundle contains a symlink or a path outside the bundle.",
@@ -267,9 +291,10 @@ pub(crate) fn resolve_local_model_root(
     }
     match probe_kind(&root.join(LANGUAGE_BUNDLE_DESCRIPTOR))? {
         PathKind::File => {
-            validate_language_bundle(&root)?;
+            let declared_model_path = validate_language_bundle(&root)?;
             let model_directory = single_model_directory(&root)?;
             validate_model_directory(&model_directory)?;
+            validate_declared_model_directory(&root, &declared_model_path, &model_directory)?;
             return Ok(ResolvedLocalModel {
                 resource_root: root.clone(),
                 runtime_kind: CoreAiLocalModelRuntimeKind::Language,
@@ -346,9 +371,10 @@ pub(crate) fn scan_custom_models_directory(root: &Path) -> Vec<CustomModelCandid
 
 fn resolve_bundle(bundle: &Path) -> Result<ResolvedLocalModel, LocalModelResolutionError> {
     let root = fs::canonicalize(bundle).map_err(|_| LocalModelResolutionError::Unreadable)?;
-    validate_language_bundle(&root)?;
+    let declared_model_path = validate_language_bundle(&root)?;
     let model_directory = single_model_directory(&root)?;
     validate_model_directory(&model_directory)?;
+    validate_declared_model_directory(&root, &declared_model_path, &model_directory)?;
     Ok(ResolvedLocalModel {
         resource_root: root.clone(),
         runtime_kind: CoreAiLocalModelRuntimeKind::Language,
@@ -409,9 +435,10 @@ fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelR
         }
     };
 
-    validate_language_bundle(&bundle)?;
+    let declared_model_path = validate_language_bundle(&bundle)?;
     let model_directory = single_model_directory(&bundle)?;
     validate_model_directory(&model_directory)?;
+    validate_declared_model_directory(&bundle, &declared_model_path, &model_directory)?;
     Ok(ResolvedLocalModel {
         resource_root: root.to_path_buf(),
         runtime_kind,
@@ -425,18 +452,51 @@ fn resolve_described_root(root: &Path) -> Result<ResolvedLocalModel, LocalModelR
     })
 }
 
-fn validate_language_bundle(bundle: &Path) -> Result<(), LocalModelResolutionError> {
-    require_file(
+fn validate_language_bundle(bundle: &Path) -> Result<String, LocalModelResolutionError> {
+    let metadata_path = require_file(
         bundle,
         LANGUAGE_BUNDLE_DESCRIPTOR,
         LocalModelResolutionError::MissingDescriptor,
     )?;
+    let data = fs::read(metadata_path).map_err(|_| LocalModelResolutionError::Unreadable)?;
+    let metadata: LanguageBundleMetadata = serde_json::from_slice(&data)
+        .map_err(|_| LocalModelResolutionError::MalformedBundleMetadata)?;
+    if metadata.metadata_version != "0.2"
+        || metadata.kind != "llm"
+        || metadata.language.vocab_size == 0
+        || metadata.language.max_context_length == 0
+    {
+        return Err(LocalModelResolutionError::MalformedBundleMetadata);
+    }
+    if !metadata.language.embedded_tokenizer {
+        return Err(LocalModelResolutionError::ExternalTokenizerNotAllowed);
+    }
     require_file(
         bundle,
         TOKENIZER_FILE,
         LocalModelResolutionError::MissingTokenizer,
     )?;
-    Ok(())
+    for relative in OPTIONAL_TOKENIZER_FILES {
+        validate_optional_file(bundle, relative)?;
+    }
+    Ok(metadata.assets.main)
+}
+
+fn validate_declared_model_directory(
+    bundle: &Path,
+    declared_path: &str,
+    verified: &Path,
+) -> Result<(), LocalModelResolutionError> {
+    let declared = require_directory(
+        bundle,
+        Some(declared_path),
+        LocalModelResolutionError::ModelDirectoryMismatch,
+    )?;
+    if declared == verified {
+        Ok(())
+    } else {
+        Err(LocalModelResolutionError::ModelDirectoryMismatch)
+    }
 }
 
 fn single_model_directory(bundle: &Path) -> Result<PathBuf, LocalModelResolutionError> {
@@ -541,11 +601,25 @@ fn require_directory(
     relative: Option<&str>,
     missing: LocalModelResolutionError,
 ) -> Result<PathBuf, LocalModelResolutionError> {
-    let path = walk_from_root(root, relative.unwrap_or_default(), missing)?;
+    let relative = relative.ok_or(missing)?;
+    let path = walk_from_root(root, relative, missing)?;
     match fs::symlink_metadata(&path) {
         Ok(metadata) if metadata.is_dir() => Ok(path),
         Ok(_) => Err(missing),
         Err(_) => Err(missing),
+    }
+}
+
+fn validate_optional_file(root: &Path, relative: &str) -> Result<(), LocalModelResolutionError> {
+    let path = root.join(relative);
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() => {
+            Err(LocalModelResolutionError::UnsafePath)
+        }
+        Ok(metadata) if metadata.is_file() => Ok(()),
+        Ok(_) => Err(LocalModelResolutionError::Unreadable),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
+        Err(_) => Err(LocalModelResolutionError::Unreadable),
     }
 }
 
@@ -573,4 +647,35 @@ struct HazakuraModelLayout {
     tables: Option<String>,
     #[serde(default)]
     bundle: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct LanguageBundleMetadata {
+    metadata_version: String,
+    kind: String,
+    #[allow(dead_code)]
+    name: String,
+    assets: LanguageBundleAssets,
+    language: LanguageBundleLanguage,
+}
+
+#[derive(Debug, Deserialize)]
+struct LanguageBundleAssets {
+    main: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct LanguageBundleLanguage {
+    #[allow(dead_code)]
+    tokenizer: String,
+    #[allow(dead_code)]
+    vocab_size: usize,
+    #[allow(dead_code)]
+    max_context_length: usize,
+    #[serde(default = "default_true")]
+    embedded_tokenizer: bool,
+}
+
+fn default_true() -> bool {
+    true
 }

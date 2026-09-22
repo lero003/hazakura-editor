@@ -126,6 +126,29 @@ describe("CoreAiModelManager", () => {
     expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
   });
 
+  it("explains that local models cannot use an external tokenizer", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        {
+          id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+          kind: "system", source: "apple_hosted", status: "ready", selected: true,
+        },
+        {
+          id: "local:app-managed:RemoteTokenizer", displayName: "Remote Tokenizer",
+          kind: "core_ai", source: "app_managed_local", status: "failed", selected: false,
+          errorCode: "external-tokenizer-not-allowed",
+        },
+      ],
+    });
+
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    expect(await screen.findByText("ローカルモデルにはTokenizerを同梱する必要があります。")).toBeTruthy();
+    expect(screen.queryByText("external-tokenizer-not-allowed")).toBeNull();
+  });
+
   it("explains the Developer override without offering to replace it with System", async () => {
     mocks.list.mockResolvedValue({
       distributionStatus: "not_published", selectedModelId: "apple:core-ai:qwen3-0.6b-test",
