@@ -12,7 +12,8 @@ Last reviewed: 2026-09-24
   旧版をReady扱いしない。Local Assistの`busy` probeは65秒の期限まで再試行する。
   frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、native回帰テスト、型検査、
   Vite、App Store surface 132件、Rust fmt、`npm run build`が成功。**build 153はこの修正を
-  含まない。次の署名済み候補でTestFlight受入が必要。**
+  含まない。** clean source `fa678ba2`からbuild 154の署名済みpkgを作成し、ローカル署名・
+  digestを確認。TestFlight受入は未実施。
 
 - **3.1初回配布方針とP2是正（2026-09-23、source検証中）:** App Storeの初回モデル一覧は
   Gemma 4 12Bのみ。最低16 GB・推奨24 GBを表示する。E4B v2の資産と評価は履歴として保持し、

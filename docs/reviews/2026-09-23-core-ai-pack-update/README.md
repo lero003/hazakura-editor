@@ -13,7 +13,10 @@ ensure完了後の遷移を模擬し、macOSのnative CIで実行する。
 `busy` probeは65秒の全体期限まで上限8秒間隔で再試行する。20秒後の復帰・モデル変更・unmount・
 期限到達をfrontendテストで確認。frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、
 native回帰テスト、型検査、Vite、App Store surface 132件、Rust fmt、`npm run build`は成功。
-実Background Assets配信は未試験。build 153のpkgには修正が入らず、次の署名済み候補が受入対象。
+実Background Assets配信は未試験。build 153のpkgには修正が入らない。clean source
+`fa678ba2`から署名済みbuild 154 pkgを作成し、profile・署名・digestをローカル確認した。
+候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を参照。
+build 154がTestFlight受入対象。
 
 ## 対象
 

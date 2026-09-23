@@ -12,8 +12,10 @@ Last reviewed: 2026-09-24
 約15.5秒で終了せず、最大8秒間隔で65秒の期限までprobeを続ける。native callback回帰テスト、
 frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、型検査、Vite、App Store surface
 132件、Rust fmt、`npm run build`が成功。ローカルの模擬通知とad-hocプレビューの結果であり、
-実Apple配信・TestFlightの確認ではない。**build 153は追補を含まない。** 次の署名済み候補で
-12B取得中の再起動、複数画面の初回probe、外部フォルダの通常・streaming生成を受け入れる。
+実Apple配信・TestFlightの確認ではない。**build 153は追補を含まない。** clean source
+`fa678ba2`からbuild 154の署名済みpkgを作成し、profile・署名・digestをローカル確認した。
+候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を参照。
+build 154で12B取得中の再起動、複数画面の初回probe、外部フォルダの通常・streaming生成を受け入れる。
 
 ## 2026-09-23 現行のCore AI配布判断と確認ゲート
 

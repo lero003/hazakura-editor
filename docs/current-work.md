@@ -19,8 +19,10 @@ Local Assistの`busy` probeは従来約15.5秒で打ち切っていた。500 ms�
 期限到達をfrontendテストで固定した。`npm test`はfrontend 2710件・scripts 31件、
 Rust 477件pass / 3件ignored、native reconnectテスト、型検査、Vite build、
 App Store surface 132件、Rust fmt、`npm run build`が成功。これは実Background Assetsと
-署名済みTestFlightの受入ではない。build 153の署名済みpkgは今回の2件を含まないため、
-次の署名済み候補でダウンロード中の再起動と複数画面の初回probeを受け入れる。
+署名済みTestFlightの受入ではない。build 153のpkgは今回の2件を含まない。
+clean source `fa678ba2`から3.1.0 build 154の署名済みpkgを作成し、profile・署名・pkg digestを
+ローカル確認した。候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を
+正本とする。build 154をTestFlightから入れ、ダウンロード中の再起動と複数画面の初回probeを受け入れる。
 
 ## 3.1初回配布と外部レビュー是正（2026-09-23、source検証中）
 
