@@ -305,16 +305,16 @@ describe("getAppleAssistWindowCopy", () => {
     const en = getAppleAssistWindowCopy("en");
     expect(en.selectionTooLongError).toMatch(/4000/);
     expect(en.contextTooLongError).toMatch(/8000/);
-    expect(en.disabledStatus).toMatch(/Assist Settings|restart/);
-    expect(en.unsupportedStatus).toMatch(/macOS 26/);
+    expect(en.disabledStatus).toMatch(/Core AI model/);
+    expect(en.unsupportedStatus).toMatch(/model management/);
     expect(en.guardrailError).toMatch(/guardrail|refused/i);
     expect(en.throttledError).toMatch(/rate|busy/i);
 
     const ja = getAppleAssistWindowCopy("ja");
     expect(ja.selectionTooLongError).toMatch(/4000/);
     expect(ja.contextTooLongError).toMatch(/8000/);
-    expect(ja.disabledStatus).toMatch(/アシスト設定|再起動/);
-    expect(ja.unsupportedStatus).toMatch(/macOS 26|M1|Apple Intelligence|対応言語/);
+    expect(ja.disabledStatus).toMatch(/Core AIモデル/);
+    expect(ja.unsupportedStatus).toMatch(/モデル管理/);
   });
 });
 

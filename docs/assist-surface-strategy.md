@@ -94,6 +94,14 @@ Hazakura Local Assist is a **preview** local writing-help surface. It is a possi
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
+This applies to the **System** model. Local Assist's separately selected Core AI
+backend checks its own verified resource and actual model load. Apple Intelligence
+may be off when that Core AI probe succeeds; Core AI still requires a supported
+macOS 27+ Apple silicon host. Downloading a pack does not itself select a model
+or turn on Local Assist: the user chooses the model and the Assist surface, and
+the latter takes effect after restart. Neither backend falls back to the other
+or to a network inference service without a user choice.
+
 References:
 
 - [Foundation Models](https://developer.apple.com/documentation/foundationmodels/)

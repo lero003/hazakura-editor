@@ -629,9 +629,11 @@ can answer these public-safe points before submission:
 - The App Store lane includes Hazakura Local Assist only as an on-device,
   availability-gated writing companion. It omits Agent Workbench, CLI
   Agent launch, dev mode, arbitrary command execution, external AI/API
-  calls, and network inference fallback. The current build includes a Core AI
-  adapter but no published model pack; settings say so and Apple Intelligence
-  remains the only selectable model. Local Assist is not started on app launch;
+  calls, and network inference fallback. The current catalog exposes Gemma 4 12B
+  as an explicit Apple-hosted download. A downloaded and verified Core AI model
+  can be selected for Local Assist independently of the System model's Apple
+  Intelligence setting, subject to a successful runtime probe on macOS 27+
+  Apple silicon. Download alone does not select or enable it. Local Assist is not started on app launch;
   the helper is launched only after an explicit Local Assist user action.
   Generated text remains an unsaved draft edit that can be reviewed or
   discarded before saving. The Developer / GitHub lane remains separate.

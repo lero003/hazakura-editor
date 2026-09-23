@@ -117,7 +117,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       appleAssistStatusAvailable: "この Mac で つかえます。さぶんを みてから てきよう します。",
       appleAssistStatusUnavailable: (reason) =>
         `いま つかえません: ${reason}`,
-      appleAssistStatusDisabled: "この せっしょんでは むこうです。",
+      appleAssistStatusDisabled: "Apple Intelligence の もでるは つかえません。ほかの もでるを えらぶか、Apple Intelligence を ゆうこうに してください。",
       appleAssistStatusUnsupported: "この かんきょうでは つかえません。",
       appleAssistStatusUnprobed: "じょうたいは まだ かくにんできてゐません。",
       autoBackup: "うつしのこし",
@@ -216,7 +216,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           "この Mac で利用できます。提案は差分で確認してから明示的に適用します。",
         appleAssistStatusUnavailable: (reason) =>
           `現在は利用できません: ${reason}`,
-        appleAssistStatusDisabled: "このアプリセッションでは無効です。",
+        appleAssistStatusDisabled: "Apple Intelligenceモデルは利用できません。モデル管理で利用可能なCore AIモデルを選ぶか、Apple Intelligenceを有効にしてください。",
         appleAssistStatusUnsupported: "この環境では利用できません。",
         appleAssistStatusUnprobed: "状態はまだ確認できていません。",
         autoBackup: "自動バックアップ",
@@ -312,7 +312,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           "Available on this Mac. Review the diff, then apply explicitly.",
         appleAssistStatusUnavailable: (reason) =>
           `Currently unavailable: ${reason}`,
-        appleAssistStatusDisabled: "Disabled in this app session.",
+        appleAssistStatusDisabled: "The Apple Intelligence model is unavailable. Select an available Core AI model in model management or turn on Apple Intelligence.",
         appleAssistStatusUnsupported: "Not supported in this environment.",
         appleAssistStatusUnprobed: "Availability has not been confirmed yet.",
         autoBackup: "Auto-backup",

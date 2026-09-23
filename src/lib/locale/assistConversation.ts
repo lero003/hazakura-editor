@@ -11,9 +11,6 @@ export function getAssistConversationCopy(language: MenuLanguage) {
     pinned: "たいしょう こてい", chooseModel: "モデルを えらぶ",
     checking: "りようできるか かくにんしています…",
     switching: "モデルを きりかえています…",
-    disabled: "アシストせっていで ゆうこうにし、アプリを ひらきなおしてください。",
-    unsupported: "このMacでは つかえません。「つかいかた」で りようじょうけんを かくにんしてください。",
-    unavailable: "いまは つかえません。モデルを えらびなおすか、「つかいかた」で りゆうを かくにんしてください。",
     scope: { selection: "えらんだ ぶん", paragraph: "だんらく", block: "コード", section: "しょう", document: "ふみぜんたい" },
     characters: (count: number) => `${count}もじ`,
   };
@@ -26,9 +23,6 @@ export function getAssistConversationCopy(language: MenuLanguage) {
     pinned: "Target pinned", chooseModel: "Choose model",
     checking: "Checking availability…",
     switching: "Switching model…",
-    disabled: "Enable Local Assist in Assist Settings, then restart the app.",
-    unsupported: "Unavailable on this Mac. Open Usage and requirements to check compatibility.",
-    unavailable: "Temporarily unavailable. Select a model again or check Usage and requirements for details.",
     scope: { selection: "Selection", paragraph: "Paragraph", block: "Code block", section: "Section", document: "Document" },
     characters: (count: number) => `${count} chars`,
   };
@@ -41,9 +35,6 @@ export function getAssistConversationCopy(language: MenuLanguage) {
     pinned: "対象を固定", chooseModel: "モデルを選択",
     checking: "利用できるか確認しています…",
     switching: "モデルを切り替えています…",
-    disabled: "アシスト設定で有効にし、アプリを再起動してください。",
-    unsupported: "このMacでは利用できません。「使い方・利用条件」で対応環境を確認してください。",
-    unavailable: "現在利用できません。モデルを選び直すか、「使い方・利用条件」で理由を確認してください。",
     scope: { selection: "選択範囲", paragraph: "段落", block: "コード", section: "章", document: "文書全体" },
     characters: (count: number) => `${count}文字`,
   };

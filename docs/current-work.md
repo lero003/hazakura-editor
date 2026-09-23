@@ -5,6 +5,22 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-24
 
+## 3.1外部レビュー追補 — Local Assistのモデル別可用性（2026-09-24、source検証済み）
+
+Apple Intelligence OFF時の`disabled`はSystemモデルの可用性であり、Local Assist全体を
+無効にする条件ではない。既存のnative経路は選択されたCore AIモデルを別probeで読み込む。
+今回、アシスト設定からモデル管理へ進める導線、Systemモデルが無効な時のモデル別案内、
+選択モデルのID・状態・pack version変更時の再probeを追加した。未選択モデルのDL進捗は
+再probeしない。ダウンロードだけでモデル選択やLocal Assistの有効化は行わず、ユーザーが
+Local Assistを選び再起動し、モデル管理で利用可能なCore AIモデルを選ぶ。macOS 27以降の
+Apple Silicon Macで選択モデルのprobeが成功した場合だけ生成操作を使えるようにする。
+Systemモデルに戻してApple IntelligenceがOFFなら`disabled`に戻る。
+
+frontend 2716件・scripts 31件、型検査、Vite build、App Store surface 134件、
+ローカル`npm run build`を通した。
+Apple Intelligenceを実際にOFFにした署名済みTestFlightでの
+12B取得・選択・通常/streaming生成・System復帰は未実施。**build 154のpkgはこの追補を含まない。**
+
 ## 3.1外部レビュー追補 — 取得再開とprobe待機（2026-09-24、source検証済み）
 
 `352a0ffc`固定の外部レビューでP2を2件確認した。Background Assetsの取得中にアプリを

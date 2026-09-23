@@ -13,6 +13,11 @@ export type AgentWorkbenchCopy = {
   appleSectionLabel: string;
   applePreviewLabel: string;
   appleDescription: string;
+  appleManageModels: string;
+  appleAvailabilityCheckingLabel: string;
+  appleAvailabilityCheckingDetail: string;
+  appleAvailabilityAfterRestartLabel: string;
+  appleAvailabilityAfterRestartDetail: string;
   appleAvailabilityAvailableLabel: string;
   appleAvailabilityDisabledLabel: string;
   appleAvailabilityUnavailableLabel: string;
@@ -64,13 +69,18 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         appleSectionLabel: "Hazakura Local Assist について",
         applePreviewLabel: "プレビュー",
         appleDescription:
-          "Apple Intelligence 対応の Mac で使える、プレビュー版のローカル AI 文章支援です。利用には目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しい条件は Apple 公式の Apple Intelligence 案内を確認してください。",
+          "選択したオンデバイスモデルで文章の提案を作ります。Apple IntelligenceモデルにはApple Intelligenceの有効化が必要です。ダウンロード済みのCore AIモデルを選ぶ場合は不要ですが、macOS 27以降のApple Silicon Macでモデルを読み込める必要があります。",
+        appleManageModels: "オンデバイスモデルを管理",
+        appleAvailabilityCheckingLabel: "確認中",
+        appleAvailabilityCheckingDetail: "選択中のモデルを利用できるか確認しています。",
+        appleAvailabilityAfterRestartLabel: "再起動後に確認",
+        appleAvailabilityAfterRestartDetail: "Local Assistを選んで再起動すると、選択中のモデルを確認します。モデル管理から先にCore AIモデルを選べます。",
         appleAvailabilityAvailableLabel: "利用できます",
         appleAvailabilityDisabledLabel: "無効です",
         appleAvailabilityUnavailableLabel: "利用できません",
         appleAvailabilityUnsupportedLabel: "この環境では使えません",
         appleFixtureStatus:
-          "Hazakura Local Assist は現在利用できません。",
+          "Apple IntelligenceがOFFです。モデル管理で利用可能なCore AIモデルを選ぶか、Apple Intelligenceを有効にしてください。",
         appleLiveStatus:
           "この Mac では Hazakura Local Assist を利用できます。",
         appleUnavailablePrefix:
@@ -82,7 +92,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "外部 AI サービスには情報を送りません。コードレビューや複数ファイルの解析、長文全体の大きな再構成には向きません。",
           "編集案は未保存の変更として扱い、保存前に差分で確認できます。",
           "プレビュー機能のため、出力品質は安定しないことがあります。",
-          "Apple Intelligence の対応状況は macOS、Mac のモデル、言語、地域によって変わることがあります。",
+          "Apple Intelligenceモデルの対応状況はmacOS、Macのモデル、言語、地域によって変わることがあります。",
           "自動保存、背景での書き換え、ワークスペース全体の解析は行いません。",
         ],
         modeHeading: "モード",
@@ -135,13 +145,18 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         appleSectionLabel: "Hazakura Local Assist status and notes",
         applePreviewLabel: "Preview",
         appleDescription:
-          "Preview local AI writing assistance for Macs that can use Apple Intelligence. As a guide, it needs macOS 26 or later, an Apple silicon Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.",
+          "Preview writing assistance using the selected on-device model. The Apple Intelligence model requires Apple Intelligence to be on. A downloaded Core AI model can work with it off when the model loads on an Apple silicon Mac running macOS 27 or later.",
+        appleManageModels: "Manage on-device models",
+        appleAvailabilityCheckingLabel: "Checking",
+        appleAvailabilityCheckingDetail: "Checking whether the selected model can run on this Mac.",
+        appleAvailabilityAfterRestartLabel: "Checked after restart",
+        appleAvailabilityAfterRestartDetail: "Select Local Assist and restart to check the selected model. You can choose a Core AI model in model management first.",
         appleAvailabilityAvailableLabel: "Available",
         appleAvailabilityDisabledLabel: "Disabled",
         appleAvailabilityUnavailableLabel: "Not available",
         appleAvailabilityUnsupportedLabel: "Unsupported",
         appleFixtureStatus:
-          "Hazakura Local Assist is not currently available.",
+          "Apple Intelligence is off. Select an available Core AI model in model management or turn on Apple Intelligence.",
         appleLiveStatus:
           "Hazakura Local Assist is available on this Mac as a preview feature.",
         appleUnavailablePrefix:
@@ -153,7 +168,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "It does not send information to external AI services, and it is not suited for code review, multi-file analysis, or large document restructuring.",
           "Draft edits are kept unsaved and remain reviewable through diff before you save.",
           "Because this is a preview feature, output quality may vary.",
-          "Apple Intelligence availability may vary by macOS version, Mac model, language, and region.",
+          "Apple Intelligence model availability may vary by macOS version, Mac model, language, and region.",
           "No auto-save, background rewriting, or broad workspace analysis is performed.",
         ],
         modeHeading: "Mode",

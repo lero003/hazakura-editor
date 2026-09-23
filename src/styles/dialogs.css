@@ -152,6 +152,10 @@
   grid-template-columns: 0.82fr 1fr;
 }
 
+.apple-assist-manage-models-button {
+  align-self: flex-start;
+}
+
 .agent-workbench-settings .preference-section:nth-child(3) {
   border-top: 1px solid var(--border);
   grid-column: 1 / -1;

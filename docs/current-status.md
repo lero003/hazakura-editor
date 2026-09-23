@@ -7,6 +7,14 @@ Last reviewed: 2026-09-24
 
 ## Current State
 
+- **Local Assistのモデル別可用性（2026-09-24、source検証済み）:** Systemモデルは
+  Apple Intelligenceの有効化を要する。選択済みCore AIモデルは独立にprobeし、macOS 27+
+  Apple Siliconで実際に読み込めればApple Intelligence OFFでもLocal Assistから利用できる。
+  アシスト設定にモデル管理への入口を置き、モデル変更・pack Readyで自動再確認する。
+  DLだけでは選択・有効化しない。frontend 2716件・scripts 31件、型検査、Vite、
+  App Store surface 134件とローカル`npm run build`は通過。
+  署名済みTestFlightでのApple Intelligence OFF受入は未実施。**build 154はこの追補を含まない。**
+
 - **外部レビューP2追補（2026-09-24、source検証済み）:** Background Assets取得中に再起動した
   プロセスは通知・snapshotから最新版のensure completionへ再接続する。旧版通知と操作世代を照合し、
   旧版をReady扱いしない。Local Assistの`busy` probeは65秒の期限まで再試行する。

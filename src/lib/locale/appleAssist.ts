@@ -42,7 +42,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
       availabilityAvailable: "この Mac で はざくら ろーかる あしす とが つかえます。",
       availabilityUnavailablePrefix:
         "はざくら ろーかる あしす とは いま つかえません: ",
-      availabilityDisabled: "はざくら ろーかる あしす とは この せっしょで むこうです。",
+      availabilityDisabled: "Apple Intelligence の もでるは つかえません。つかえる Core AI もでるを えらべます。",
       availabilityUnsupported:
         "はざくら ろーかる あしす とは この はんきょうで ひょうじ できません。",
     };
@@ -57,15 +57,15 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
           "生成が終わると編集できます。本文は見えますが、いまは書き込めません。",
         summarizeLabel: "選択範囲を要約",
         summarizeHint:
-          "Apple のオンデバイス機能で、選択した文章を要約します。差分を確認してから明示的に適用してください。",
+          "選択中のオンデバイスモデルで文章を要約します。差分を確認してから明示的に適用してください。",
         rephraseLabel: "選択範囲を言い換え",
         rephraseHint:
-          "Apple のオンデバイス機能で、選択した文章を別の表現に書き換えます。差分を確認してから明示的に適用してください。",
+          "選択中のオンデバイスモデルで文章を言い換えます。差分を確認してから明示的に適用してください。",
         availabilityAvailable: "この Mac で Hazakura Local Assist が使えます。",
         availabilityUnavailablePrefix:
           "Hazakura Local Assist は現在使えません: ",
         availabilityDisabled:
-          "Hazakura Local Assist はこのアプリセッションでは無効です。",
+          "Apple Intelligenceモデルは利用できません。モデル管理で利用可能なCore AIモデルを選べます。",
         availabilityUnsupported:
           "Hazakura Local Assist はこの環境では使えません。",
       }
@@ -77,15 +77,15 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
           "Editing resumes when generation finishes. The document stays visible, but you cannot type yet.",
         summarizeLabel: "Summarize selection",
         summarizeHint:
-          "Generate a summary of the selected text using Apple's on-device model. Output is never auto-applied; review the diff before applying it explicitly.",
+          "Generate a summary of the selected text using the selected on-device model. Output is never auto-applied; review the diff before applying it explicitly.",
         rephraseLabel: "Rephrase selection",
         rephraseHint:
-          "Generate a rephrasing of the selected text using Apple's on-device model. Output is never auto-applied; review the diff before applying it explicitly.",
+          "Generate a rephrasing of the selected text using the selected on-device model. Output is never auto-applied; review the diff before applying it explicitly.",
         availabilityAvailable: "Hazakura Local Assist is available on this Mac.",
         availabilityUnavailablePrefix:
           "Hazakura Local Assist is currently unavailable: ",
         availabilityDisabled:
-          "Hazakura Local Assist is disabled in this app session.",
+          "The Apple Intelligence model is unavailable. You can select an available Core AI model in model management.",
         availabilityUnsupported:
           "Hazakura Local Assist is not supported in this environment.",
       };

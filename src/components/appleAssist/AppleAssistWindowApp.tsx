@@ -247,9 +247,14 @@ export function AppleAssistWindowApp() {
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const { catalog: modelCatalog, runCatalogRequest } = useCoreAiModelCatalog();
   const selectedModelIdRef = useRef(modelCatalog.selectedModelId);
+  const selectedModel = modelCatalog.models.find((model) => model.id === modelCatalog.selectedModelId);
+  const selectedModelSignature = `${modelCatalog.selectedModelId}:${selectedModel?.status ?? "missing"}:${selectedModel?.assetPackVersion ?? "none"}`;
+  const selectedModelSignatureRef = useRef(selectedModelSignature);
   const [availabilityRefreshKey, setAvailabilityRefreshKey] = useState(0);
   const [modelSwitching, setModelSwitching] = useState(false);
-  const { availability, available, probed } = useAppleAssistAvailability(true, availabilityRefreshKey);
+  // This window already follows the catalog directly; avoid a second probe
+  // subscription for the same model-change event.
+  const { availability, available, probed } = useAppleAssistAvailability(true, availabilityRefreshKey, false);
   const { feedback, pushFeedback, clearFeedback } = useOperationFeedback();
   const [sentRequests, setSentRequests] = useState<Array<{ id: string; at: number; text: string }>>([]);
   const followChatRef = useRef(true);
@@ -299,11 +304,12 @@ export function AppleAssistWindowApp() {
   const displayedTarget = conversation?.pinnedTarget ?? target;
 
   useEffect(() => {
-    if (modelCatalog.selectedModelId === selectedModelIdRef.current) return;
+    if (selectedModelSignature === selectedModelSignatureRef.current) return;
+    selectedModelSignatureRef.current = selectedModelSignature;
     selectedModelIdRef.current = modelCatalog.selectedModelId;
     availabilityReportedRef.current = false;
     setAvailabilityRefreshKey((current) => current + 1);
-  }, [modelCatalog.selectedModelId]);
+  }, [modelCatalog.selectedModelId, selectedModelSignature]);
 
   const selectModel = useCallback(async (modelId: string) => {
     if (busy || modelSwitching || !probed) return;
@@ -896,7 +902,7 @@ export function AppleAssistWindowApp() {
           {!available || modelSwitching ? <p className="apple-assist-model-status"
             id="apple-assist-availability" role="status">
             {modelSwitching || !probed ? <span className="apple-assist-window-spinner" aria-hidden="true" /> : null}
-            <span>{modelSwitching ? ui.switching : !probed ? ui.checking : availability.kind === "disabled" ? ui.disabled : availability.kind === "unsupported" ? ui.unsupported : ui.unavailable}</span>
+            <span>{modelSwitching ? ui.switching : !probed ? ui.checking : availabilityMessage}</span>
           </p> : null}
           {conversation ? <button type="button" className="apple-assist-window-new-conversation" disabled={busy}
             onClick={() => {
@@ -1379,7 +1385,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
-        "この せっしょんでは はざくら ろーかる あしす とは むこうです。あしすと せっていで はざくら ろーかる あしす と (ぷれびゅー) を えらび、あぷりを さいきどうして ください。",
+        "Apple Intelligence の もでるは つかえません。もでるの かんりで つかえる Core AI もでるを えらぶか、Apple Intelligence を ゆうこうに してください。",
       emptyRequestError:
         "まずは おねがいの ないようを かいてください。",
       generatingButton: "おねがい中...",
@@ -1390,9 +1396,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       failedStatus:
         "おねがいに しっぱいしました。下の めっせーじを みてください。",
       guardrailError:
-        "あっぷる ふぁうんでーしょん もでるず が この おねがいを うけつけませんでした。べつの おねがいで さいしこう してください。",
+        "えらんだ もでるが この おねがいを うけつけませんでした。べつの おねがいで さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
-        `はざくら ろーかる あしす とは つかえません: ${reason}。めやすは macOS 26 いこう、M1 いこうの Mac、あっぷる いんてりじぇんす の ゆうこうか、たいおう げんご / ちいき です。くわしくは あっぷる こうしき の Apple Intelligence あんないを かくにん してください。`,
+        `Apple Intelligence の もでるを つかえません: ${reason}。もでるの かんりで つかえる Core AI もでるを えらぶことも できます。`,
       coreAIModelUnavailable: "えらんだ もでるを つかえません。もでるの かんりで ようすを たしかめ、ひつようなら べつの もでるを えらんで ください。",
       externalFolderUnavailable: "とうろくした もでるの ふぉるだを つかえません。もでるの かんりで たしかめ、よめない ときは ふぉるだを えらびなほして ください。",
       localCoreAITestUnavailable: (reason) =>
@@ -1411,9 +1417,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       readyStatus:
         "じゅんび できました。よくつかう おねがいを えらぶか、おねがいの ないようを かいてください。",
       roughRequestLabel: "おねがいの ないよう",
-      modelUnavailableError: "この Mac では いま モデルを つかえません。Apple Intelligence の せっていと じゅんびを かくにんしてください。ふみは かわっていません。",
+      modelUnavailableError: "えらんだ もでるを いま つかえません。もでるの かんりで じょうたいを かくにん してください。ふみは かわっていません。",
       proposalFormatError: "あんの かたちを かくにんできませんでした。ふみは かわっていません。もういちど たのんでください。",
-      modelLanguageError: "モデルが いまの げんごに たいおうしていません。Apple Intelligence の げんごせっていを かくにんしてください。",
+      modelLanguageError: "えらんだ もでるが いまの げんごに たいおうしていません。もでるか げんごを かくにん してください。",
       generationTimeoutError: "じかんないに あんを つくれませんでした。たいしょうを ちいさくするか、あとで もういちど たのんでください。",
       proposalTooLongError:
         "できた あんが、つづけて たのめる じょうげん（4000 もじ）を こえたため、うけとれませんでした。まえの あんが あれば のこしています。みじかい あんを たのむか、たいしょうを ちいさく えらびなおしてください。",
@@ -1434,12 +1440,12 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       targetSection: (chars) => `しょう (${chars} もじ)`,
       targetSelection: (chars) => `えらんだ ところ (${chars} もじ)`,
       throttledError:
-        "あっぷる ふぁうんでーしょん もでるず が れーと せいげん ちゅう です。すこし まって から さいしこう してください。",
+        "えらんだ もでるが こんでいます。すこし まって から さいしこう してください。",
       // 内部エラーの全文は出さない（利用者には短い一般の案内だけ）。
       unknownError: (_raw) =>
         "つくるのに しっぱい しました。たいしょうを かくにんするか、もういちど おねがい してください。",
       unsupportedStatus:
-        "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
+        "この Mac では えらんだ もでるを つかえません。もでるの かんりで つかえる もでるを かくにん してください。",
       checkingAvailabilityStatus:
         "この Mac で はざくら ろーかる あしす と が つかえるか かくにん しています...",
       workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
@@ -1536,7 +1542,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
-        "このセッションでは Hazakura Local Assist は無効です。アシスト設定で「Hazakura Local Assist (プレビュー)」を選び、アプリを再起動してください。",
+        "Apple Intelligenceモデルは利用できません。モデル管理で利用可能なCore AIモデルを選ぶか、Apple Intelligenceを有効にしてください。",
       emptyRequestError:
         "まずは依頼内容を入力してください。",
       generatingButton: "依頼中...",
@@ -1547,9 +1553,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       failedStatus:
         "依頼に失敗しました。下のメッセージを確認してください。",
       guardrailError:
-        "Apple Foundation Models がこの依頼を受け付けませんでした。別の依頼内容で再試行してください。",
+        "選択中のモデルがこの依頼を受け付けませんでした。別の依頼内容で再試行してください。",
       localRuntimeUnavailable: (reason) =>
-        `Hazakura Local Assist は使えません: ${reason}。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しくは Apple 公式の Apple Intelligence 案内を確認してください。`,
+        `Apple Intelligenceモデルを利用できません: ${reason}。モデル管理で利用可能なCore AIモデルを選ぶこともできます。`,
       coreAIModelUnavailable: "選択中のモデルを使えません。モデル管理で状態を確認し、必要なら別のモデルに切り替えてください。",
       externalFolderUnavailable: "登録したモデルフォルダを使えません。モデル管理で状態を確認し、アクセス権が切れていたらフォルダを選び直してください。",
       localCoreAITestUnavailable: (reason) =>
@@ -1568,9 +1574,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       readyStatus:
         "準備できました。よく使う依頼を選ぶか、依頼内容を入力してください。",
       roughRequestLabel: "依頼内容",
-      modelUnavailableError: "このMacでは現在モデルを利用できません。Apple Intelligenceの設定とモデルの準備状況を確認してください。本文は変更されていません。",
+      modelUnavailableError: "選択中のモデルを現在利用できません。モデル管理で状態を確認してください。本文は変更されていません。",
       proposalFormatError: "案の形式を確認できませんでした。本文は変更していません。もう一度依頼してください。",
-      modelLanguageError: "モデルが現在の言語に対応していません。Apple Intelligenceの言語設定を確認してください。",
+      modelLanguageError: "選択中のモデルが現在の言語に対応していません。モデルまたは言語を確認してください。",
       generationTimeoutError: "制限時間内に生成を完了できませんでした。対象範囲を小さくするか、時間を置いて再依頼してください。",
       proposalTooLongError:
         "生成された案が追加指示の上限（4000文字）を超えたため、受け付けませんでした。前の完成案があれば保持しています。短い案を依頼するか、対象範囲を小さく選び直してください。",
@@ -1591,12 +1597,12 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       targetSection: (chars) => `章 (${chars} 文字)`,
       targetSelection: (chars) => `選択範囲 (${chars} 文字)`,
       throttledError:
-        "Apple Foundation Models がレート制限中です。少し待ってから再試行してください。",
+        "選択中のモデルが混み合っています。少し待ってから再試行してください。",
       // 内部エラーの全文は出さない（利用者には短い一般の案内だけ）。
       unknownError: (_raw) =>
         "Hazakura Local Assist の生成に失敗しました。対象を確認するか、もう一度依頼してください。",
       unsupportedStatus:
-        "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
+        "このMacでは選択中のモデルを利用できません。モデル管理で利用可能なモデルを確認してください。",
       checkingAvailabilityStatus:
         "このMacでHazakura Local Assistを利用できるか確認しています…",
       workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
@@ -1692,7 +1698,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
-      "Hazakura Local Assist is disabled in this app session. Open Assist Settings, choose 'Hazakura Local Assist (Preview)', then restart the app.",
+      "The Apple Intelligence model is unavailable. Select an available Core AI model in model management or turn on Apple Intelligence.",
     emptyRequestError:
       "Type a request first.",
     generatingButton: "Sending...",
@@ -1703,9 +1709,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     failedStatus:
       "Request failed. Check the message below.",
     guardrailError:
-      "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
+      "The selected model refused this request. Try a different request.",
     localRuntimeUnavailable: (reason) =>
-      `Hazakura Local Assist is unavailable: ${reason}. As a guide, it needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.`,
+      `The Apple Intelligence model is unavailable: ${reason}. You can also select an available Core AI model in model management.`,
     coreAIModelUnavailable: "The selected model is unavailable. Check its status in model management or switch to another model.",
     externalFolderUnavailable: "The registered model folder is unavailable. Check it in model management and select the folder again if access has expired.",
     localCoreAITestUnavailable: (reason) =>
@@ -1723,9 +1729,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     readyStatus:
       "Ready. Pick a preset or type a request.",
     roughRequestLabel: "Request",
-    modelUnavailableError: "The model is currently unavailable on this Mac. Check Apple Intelligence settings and model readiness. Your document is unchanged.",
+    modelUnavailableError: "The selected model is currently unavailable. Check its status in model management. Your document is unchanged.",
     proposalFormatError: "The proposal format could not be verified. The document is unchanged. Please try again.",
-    modelLanguageError: "The model does not support the current language. Check the Apple Intelligence language settings.",
+    modelLanguageError: "The selected model does not support the current language. Check the model or language settings.",
     generationTimeoutError: "Generation did not finish in time. Select a smaller target or try again later.",
     proposalTooLongError:
       "The generated draft exceeds the 4000-character follow-up limit and was not accepted. Any previous completed draft is kept. Ask for a shorter draft or select a smaller target.",
@@ -1746,12 +1752,12 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     targetSection: (chars) => `Section (${chars} chars)`,
     targetSelection: (chars) => `Selection (${chars} chars)`,
     throttledError:
-      "Apple Foundation Models is rate limited or busy with another request. Try again shortly.",
+      "The selected model is busy. Try again shortly.",
     // 内部エラーの全文は出さない（利用者には短い一般の案内だけ）。
     unknownError: (_raw) =>
       "Hazakura Local Assist could not generate a proposal. Check the target or try again.",
     unsupportedStatus:
-      "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on for this Mac, and a supported language and region.",
+      "The selected model cannot be used on this Mac. Check available models in model management.",
     checkingAvailabilityStatus:
       "Checking whether Hazakura Local Assist is available on this Mac...",
     workingLocally: "Working locally on this Mac (no third-party AI service)",

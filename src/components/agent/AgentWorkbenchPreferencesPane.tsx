@@ -18,6 +18,7 @@ type AgentWorkbenchPreferencesPaneProps = {
   active: boolean;
   activeSession: boolean;
   appleAssistAvailability: AppleAssistAvailability;
+  appleAssistAvailabilityProbed: boolean;
   assistSurfaceActive: AssistSurfacePreference;
   assistSurfacePreference: AssistSurfacePreference;
   consent: boolean;
@@ -26,6 +27,7 @@ type AgentWorkbenchPreferencesPaneProps = {
   onAssistSurfacePreferenceChange: (surface: AssistSurfacePreference) => void;
   onConsentChange: (enabled: boolean) => void;
   onModePreferenceChange: (enabled: boolean) => void;
+  onOpenOnDeviceModels: () => void;
   onProviderChange: (provider: AgentWorkbenchProvider) => void;
   onRestart: () => void;
   provider: AgentWorkbenchProvider;
@@ -40,6 +42,7 @@ export function AgentWorkbenchPreferencesPane({
   active,
   activeSession,
   appleAssistAvailability,
+  appleAssistAvailabilityProbed,
   assistSurfaceActive,
   assistSurfacePreference,
   consent,
@@ -48,6 +51,7 @@ export function AgentWorkbenchPreferencesPane({
   onAssistSurfacePreferenceChange,
   onConsentChange,
   onModePreferenceChange,
+  onOpenOnDeviceModels,
   onProviderChange,
   onRestart,
   provider,
@@ -70,10 +74,17 @@ export function AgentWorkbenchPreferencesPane({
     externalCliAllowed && assistSurfacePreference === "external-cli";
   const assistSurfaceRestartRequired =
     assistSurfaceActive !== assistSurfacePreference;
-  const appleAvailabilityPresentation = getAppleAssistAvailabilityPresentation(
-    copy,
-    appleAssistAvailability,
-  );
+  const appleAvailabilityPresentation = appleAssistAvailabilityProbed
+    ? getAppleAssistAvailabilityPresentation(copy, appleAssistAvailability)
+    : {
+        detail: assistSurfaceActive === "apple-local"
+          ? copy.appleAvailabilityCheckingDetail
+          : copy.appleAvailabilityAfterRestartDetail,
+        label: assistSurfaceActive === "apple-local"
+          ? copy.appleAvailabilityCheckingLabel
+          : copy.appleAvailabilityAfterRestartLabel,
+        tone: "unsupported" as const,
+      };
 
   return (
     <div className="agent-workbench-settings">
@@ -139,6 +150,9 @@ export function AgentWorkbenchPreferencesPane({
             </span>
           </div>
           <p className="preference-note">{copy.appleDescription}</p>
+          <button className="apple-assist-manage-models-button" type="button" onClick={onOpenOnDeviceModels}>
+            {copy.appleManageModels}
+          </button>
           <ul className="agent-consent-list">
             {copy.appleNotes.map((item) => (
               <li key={item}>{item}</li>

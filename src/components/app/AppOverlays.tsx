@@ -635,6 +635,7 @@ export function AppOverlays({
               active={agentWorkbenchActive}
               activeSession={activeAgentSession}
               appleAssistAvailability={appleAssistAvailability}
+              appleAssistAvailabilityProbed={appleAssistAvailabilityProbed ?? false}
               assistSurfaceActive={assistSurfaceActive}
               assistSurfacePreference={assistSurfacePreference}
               consent={agentWorkbenchConsent}
@@ -642,6 +643,7 @@ export function AppOverlays({
               modePreference={agentWorkbenchPreference}
               onConsentChange={setAgentWorkbenchConsent}
               onModePreferenceChange={setAgentWorkbenchPreference}
+              onOpenOnDeviceModels={() => setPreferencesDialogMode("models")}
               onProviderChange={setAgentWorkbenchProvider}
               onRestart={() => void restartAppForAgentMode()}
               onAssistSurfacePreferenceChange={setAssistSurfacePreference}

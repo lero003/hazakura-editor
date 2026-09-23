@@ -43,6 +43,18 @@ it("states what Local Assist never does, next to the availability card (ja)", ()
   expect(screen.getAllByRole("status", { name: copy.appleAssistStatusLabel })).toHaveLength(1);
 });
 
+it("points an unavailable System model to a selectable Core AI model", () => {
+  const copy = getPreferencesCopy("ja");
+  render(<SettingsPreferencesPane copy={copy} lModeCopy={getLModeCopy("ja")} menuLanguage="ja"
+    editorSettings={defaultEditorSettings()}
+    appleAssistAvailability={{ kind: "disabled", modelId: "apple:foundation-models:system-default" }}
+    appleAssistAvailabilityProbed themePreference="light" previewVisible
+    onEditorSettingsChange={vi.fn()} onMenuLanguageChange={vi.fn()}
+    onOpenOnDeviceModels={vi.fn()} onPreviewVisibleChange={vi.fn()} onThemePreferenceChange={vi.fn()} />);
+  expect(screen.getByRole("status", { name: copy.appleAssistStatusLabel }).textContent)
+    .toContain("Core AIモデルを選ぶ");
+});
+
 it("shows one preview surface for the type-size settings (モック16)", () => {
   probe.mockResolvedValue({ kind: "available" });
   const copy = getPreferencesCopy("ja");

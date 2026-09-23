@@ -8,6 +8,9 @@ import type { AppleAssistAvailability } from "../../lib/tauri";
 const probeAppleAssistAvailability: Mock<
   () => Promise<AppleAssistAvailability>
 > = vi.fn();
+const modelEvents = vi.hoisted(() => ({
+  listener: null as null | ((catalog: import("../../lib/tauri/coreAiModels").CoreAiModelCatalog) => void),
+}));
 vi.mock("../../lib/tauri", async () => {
   const actual = await vi.importActual<typeof import("../../lib/tauri")>(
     "../../lib/tauri",
@@ -17,12 +20,23 @@ vi.mock("../../lib/tauri", async () => {
     probeAppleAssistAvailability: () => probeAppleAssistAvailability(),
   };
 });
+vi.mock("../../lib/tauri/coreAiModels", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/coreAiModels")>("../../lib/tauri/coreAiModels");
+  return {
+    ...actual,
+    listenCoreAiModelStateChanges: vi.fn(async (listener: typeof modelEvents.listener) => {
+      modelEvents.listener = listener;
+      return () => { modelEvents.listener = null; };
+    }),
+  };
+});
 
 import { useAppleAssistAvailability } from "./useAppleAssistAvailability";
 
 describe("useAppleAssistAvailability", () => {
   beforeEach(() => {
     probeAppleAssistAvailability.mockReset();
+    modelEvents.listener = null;
   });
 
   afterEach(() => {
@@ -88,6 +102,63 @@ describe("useAppleAssistAvailability", () => {
     });
     expect(result.current.available).toBe(true);
     expect(result.current.probed).toBe(true);
+  });
+
+  it("recovers from Apple Intelligence off when a selected downloaded model probes ready", async () => {
+    probeAppleAssistAvailability
+      .mockResolvedValueOnce({ kind: "disabled", modelId: "apple:foundation-models:system-default" })
+      .mockResolvedValueOnce({ kind: "available", modelId: "apple:core-ai:gemma4-12b" });
+    const { result } = renderHook(() => useAppleAssistAvailability());
+    await waitFor(() => expect(result.current.availability.kind).toBe("disabled"));
+    await waitFor(() => expect(modelEvents.listener).not.toBeNull());
+
+    await act(async () => modelEvents.listener?.({
+      distributionStatus: "available",
+      selectedModelId: "apple:core-ai:gemma4-12b",
+      models: [{
+        id: "apple:core-ai:gemma4-12b", displayName: "Gemma 4 12B", kind: "core_ai",
+        source: "apple_hosted", status: "ready", selected: true,
+      }],
+    }));
+    await waitFor(() => expect(result.current.availability).toEqual({
+      kind: "available", modelId: "apple:core-ai:gemma4-12b",
+    }));
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(2);
+
+    probeAppleAssistAvailability.mockResolvedValueOnce({
+      kind: "disabled", modelId: "apple:foundation-models:system-default",
+    });
+    await act(async () => modelEvents.listener?.({
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [{
+        id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+        kind: "system", status: "ready", selected: true,
+      }],
+    }));
+    await waitFor(() => expect(result.current.availability).toEqual({
+      kind: "disabled", modelId: "apple:foundation-models:system-default",
+    }));
+  });
+
+  it("does not re-probe the disabled System model for unrelated download progress", async () => {
+    probeAppleAssistAvailability.mockResolvedValue({
+      kind: "disabled", modelId: "apple:foundation-models:system-default",
+    });
+    const { result } = renderHook(() => useAppleAssistAvailability());
+    await waitFor(() => expect(result.current.probed).toBe(true));
+    await waitFor(() => expect(modelEvents.listener).not.toBeNull());
+    const catalog = {
+      distributionStatus: "available" as const,
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system" as const, status: "ready" as const, selected: true },
+        { id: "apple:core-ai:gemma4-12b", displayName: "Gemma 4 12B", kind: "core_ai" as const, status: "downloading" as const, selected: false, progress: 0.1 },
+      ],
+    };
+    await act(async () => modelEvents.listener?.(catalog));
+    await act(async () => modelEvents.listener?.({ ...catalog, models: [catalog.models[0], { ...catalog.models[1], progress: 0.8 }] }));
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(1);
   });
 
   it("does not retain old-model availability while a changed model is being probed", async () => {

@@ -2,7 +2,7 @@ import { requestLocalAssistReview } from "../../lib/tauri/localAssistReview";
 import { LOCAL_ASSIST_REVIEW_RESULT_EVENT } from "../../features/editor/localAssistReviewIdentity";
 vi.mock("../../lib/tauri/localAssistReview", () => ({ requestLocalAssistReview: vi.fn(async () => undefined) }));
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
-import { act, fireEvent, render, screen, cleanup } from "@testing-library/react";
+import { act, fireEvent, render, screen, cleanup, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppleAssistWindowApp, getAppleAssistWindowCopy } from "./AppleAssistWindowApp";
 import { listen } from "@tauri-apps/api/event";
@@ -117,6 +117,50 @@ describe("AppleAssistWindowApp render", () => {
 
     expect(screen.getByRole("button", { name: "Choose model: Gemma 4 E4B" })).toBeTruthy();
     expect(vi.mocked(probeAppleAssistAvailability)).toHaveBeenCalledTimes(2);
+  });
+
+  it("rechecks the selected model when its downloaded pack becomes ready", async () => {
+    const actualHook = await vi.importActual<typeof import("../../hooks/agent/useAppleAssistAvailability")>("../../hooks/agent/useAppleAssistAvailability");
+    vi.mocked(useAppleAssistAvailability).mockImplementation(actualHook.useAppleAssistAvailability);
+    const catalog = unavailableCoreAiModelCatalog();
+    vi.mocked(listCoreAiModels).mockResolvedValueOnce(catalog);
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({
+      kind: "disabled", modelId: catalog.selectedModelId,
+    });
+    Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+    render(<AppleAssistWindowApp />);
+    await act(async () => { await Promise.resolve(); });
+
+    const selected = {
+      ...catalog,
+      selectedModelId: "apple:core-ai:gemma4-12b",
+      models: [{
+        id: "apple:core-ai:gemma4-12b", displayName: "Gemma 4 12B", kind: "core_ai" as const,
+        source: "apple_hosted" as const, status: "verifying" as const,
+        selected: true, assetPackVersion: 2,
+      }],
+    };
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({
+      kind: "unavailable", modelId: selected.selectedModelId, reason: "verifying",
+    });
+    await act(async () => {
+      eventListeners.get(CORE_AI_MODEL_STATE_CHANGED_EVENT)?.({ payload: selected });
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Try it" } });
+
+    vi.mocked(probeAppleAssistAvailability).mockResolvedValueOnce({
+      kind: "available", modelId: selected.selectedModelId,
+    });
+    await act(async () => {
+      eventListeners.get(CORE_AI_MODEL_STATE_CHANGED_EVENT)?.({ payload: {
+        ...selected, models: selected.models.map((model) => ({ ...model, status: "ready" })),
+      } });
+      await Promise.resolve();
+    });
+    expect(vi.mocked(probeAppleAssistAvailability)).toHaveBeenCalledTimes(3);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Send request" }).hasAttribute("disabled")).toBe(false));
   });
 
   it.each([
@@ -473,7 +517,7 @@ describe("AppleAssistWindowApp render", () => {
     vi.mocked(useAppleAssistAvailability).mockReturnValue({ availability: { kind: "disabled" }, available: false, probed: true });
     render(<AppleAssistWindowApp />);
     await act(async () => { await Promise.resolve(); });
-    expect(screen.getByRole("status").textContent).toContain("Assist Settings");
+    expect(screen.getByRole("status").textContent).toContain("Core AI model");
     expect(screen.getByRole("status").closest("header")).toBeTruthy();
     expect(screen.getByRole("textbox").getAttribute("aria-describedby")).toBe("apple-assist-availability");
     expect(screen.getByRole("textbox").hasAttribute("disabled")).toBe(true);
