@@ -81,6 +81,11 @@ Core AI helperの`generate_candidate`を実E4B v2のresource rootとapp-managed�
 Rust IPC、外部bookmark受け渡し、配布用profileを含む試験ではない。
 この試験は128 GB Mac上のローカルad-hoc sandboxとhelper単体に限る。外部bookmark付きnon-streaming IPC、
 実外部ディスク切断、TestFlightのproduction profile / App Group / Background Assetsは未受入。
+2026-09-23の呼出し元監査では、現行の製品画面はstreamingコマンドだけを呼ぶ。
+non-streamingコマンドと旧`useAppleAssistCandidate` hookは残るが、後者に製品画面からの呼出しはない。
+Rustの両生成経路は共通の`prepare_helper_model_access`を、Swift helperの両actionは共通の
+`ScopedModelFolder`を使う。これはsource上の権限処理の共通性であり、実行成功の証拠ではない。
+署名済み候補の通常生成を合格判定するには、同じ候補でnon-streaming IPCを実行する手段も必要。
 更新後のfrontend 2702件、scripts 31件、型検査、Vite build、App Store surface 132件は成功。
 
 ## 署名済み候補の残ゲート
