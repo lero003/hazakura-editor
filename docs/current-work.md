@@ -35,6 +35,8 @@ Core AI helper単体へ渡し、通常macOS権限で校正候補を取得した�
 build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean sourceからbuild 151署名pkgを
 作成し、app / extensionのbuild番号、署名、pkg digestを通常macOS権限で確認した。
 同一配布候補のTestFlight受入は残る。[build 151と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
+現行の製品画面はstreamingのみを呼ぶため、外部bookmark付き通常生成の受入には
+同じ署名候補でnon-streaming IPCを実行する手段も必要。
 
 ## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
 
