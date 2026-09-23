@@ -65,7 +65,7 @@ describe("CoreAiModelManager", () => {
     expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
   });
 
-  it("registers a chosen model folder and only unregisters its listing", async () => {
+  it("registers, selects, and unregisters an external folder without deleting its files", async () => {
     const system = { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
       kind: "system", source: "apple_hosted", status: "ready", selected: true };
     const external = { id: "local:external:1", displayName: "My Model", kind: "core_ai",
@@ -75,6 +75,11 @@ describe("CoreAiModelManager", () => {
     mocks.list.mockResolvedValue(initial);
     mocks.pickFolder.mockResolvedValue("/chosen/model");
     mocks.register.mockResolvedValue(added);
+    mocks.select.mockResolvedValue({
+      ...added,
+      selectedModelId: external.id,
+      models: [{ ...system, selected: false }, { ...external, selected: true }],
+    });
     mocks.unregister.mockResolvedValue(initial);
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
@@ -83,6 +88,9 @@ describe("CoreAiModelManager", () => {
     await waitFor(() => expect(mocks.register).toHaveBeenCalledWith("/chosen/model"));
     expect(await screen.findByRole("group", { name: "My Model" })).toBeTruthy();
     expect(screen.getByRole("group", { name: "My Model" }).textContent).toContain("検出済み（選択できます）");
+    fireEvent.click(screen.getByRole("button", { name: "使う" }));
+    await waitFor(() => expect(mocks.select).toHaveBeenCalledWith(external.id));
+    expect(await screen.findByText("現在のモデル：My Model")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "一覧から外す" }));
     await waitFor(() => expect(mocks.unregister).toHaveBeenCalledWith(external.id));
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("元のファイルは削除しません"));

@@ -160,6 +160,48 @@ describe("useAppleAssistAvailability", () => {
     expect(result.current.available).toBe(false);
   });
 
+  it("retries a transient native busy probe before reporting unavailable", async () => {
+    vi.useFakeTimers();
+    probeAppleAssistAvailability
+      .mockRejectedValueOnce(new Error("Local Assist is busy. Check availability again after the current operation finishes."))
+      .mockResolvedValueOnce({ kind: "available", modelId: "local:external:e4b" });
+
+    const { result } = renderHook(() => useAppleAssistAvailability());
+    await act(async () => { await Promise.resolve(); });
+    expect(result.current.probed).toBe(false);
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(1);
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(2);
+    expect(result.current.availability).toEqual({ kind: "available", modelId: "local:external:e4b" });
+    expect(result.current.probed).toBe(true);
+  });
+
+  it("stops retrying a busy probe when its screen unmounts", async () => {
+    vi.useFakeTimers();
+    probeAppleAssistAvailability.mockRejectedValue(
+      new Error("Local Assist is busy. Check availability again after the current operation finishes."),
+    );
+    const { unmount } = renderHook(() => useAppleAssistAvailability());
+    await act(async () => { await Promise.resolve(); });
+    unmount();
+    await act(async () => { await vi.advanceTimersByTimeAsync(65_000); });
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(1);
+  });
+
+  it("eventually reports a sustained busy probe instead of checking forever", async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    probeAppleAssistAvailability.mockRejectedValue(
+      new Error("Local Assist is busy. Check availability again after the current operation finishes."),
+    );
+    const { result } = renderHook(() => useAppleAssistAvailability());
+    await act(async () => { await vi.advanceTimersByTimeAsync(16_000); });
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(6);
+    expect(result.current.probed).toBe(true);
+    expect(result.current.availability.kind).toBe("unavailable");
+  });
+
   it("allows the eager Core AI model probe to use its native timeout budget", async () => {
     vi.useFakeTimers();
     probeAppleAssistAvailability.mockImplementation(

@@ -14,12 +14,17 @@ Last reviewed: 2026-09-23
   古い監視の状態反映防止を追加し、 focused Rust / UI回帰テストを通した。
   外部登録の永続bookmarkとhelperへの一時的なimplicit bookmarkも分離した。
   clean source `6e76b443`から署名済み3.1.0 build 149 pkgを作成し、署名・entitlementを
-  ローカル確認した。同じ候補のTestFlight install、実モデル生成・復元・切断時の復旧は未受入。
+  ローカル確認した。後続の隔離ad-hoc sandboxでは外部E4B v2の登録・選択・再起動復元・
+  streaming生成、試験用clone移動後の失効表示・System復帰・再指定後の生成を実操作で確認。
+  `external_local`選択ボタン欠落と起動直後の一時`busy`残留を修正し、build 150へ更新中。
+  元E4Bの15ファイルは生成前後のSHA-256が一致した。同じ配布候補のTestFlight install、
+  non-streaming生成・取消・切替・実ディスク切断は未受入。
 
 - **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
   起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。
   プレビューだけApple-hosted transportを呼ばず、現行catalogの12B取得はTestFlightで試す案内へ変更。
-  `npm run build`後の別IDコピーは署名検証と1280×820表示窓のsmokeに成功。
+  `npm run build`後の別IDコピーは署名検証と1280×820表示窓のsmokeに成功。後続ビルドの
+  元bundle ID `.app`も`open -n`で起動し、ウィンドウ表示を確認した。
   submitビルドのplatform経路はsource上維持。TestFlight取得の再検証ではない。
 
 - **Core AI更新経路と設定（2026-09-23、source変更）:** build 147で12B pack v2のmanifestが
@@ -90,9 +95,10 @@ Last reviewed: 2026-09-23
   Rustとhelperでの再解決・再検証、登録解除までsource接続した。Local Assistのモデルメニューから
   管理ページにも移れる。Custom Modelsフォルダを開く / 明示再スキャンする UI は未接続。
   C-1 / C-2 と現在のTestFlight前レビューを止めない。任意URL取得・自動DL・モデル店は Non-Goal。
-  source 上は選択・生成経路へ接続済みだが、外部フォルダの実登録・bookmark復元・helperでの
-  実 local model の load / 生成、built app、VoiceOver、
-  TestFlight の証跡ではない。スライス3時点の検証は frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、
+  スライス3時点ではsource接続だけであり、外部フォルダの実登録・bookmark復元・helperでの
+  実 local model の load / 生成、built app、VoiceOver、TestFlight の証跡はなかった。
+  後続の隔離ad-hoc sandbox実操作の到達範囲は冒頭を参照。スライス3時点の検証は
+  frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、
   Swift XCTest 61件 + Swift Testing 4件、surface 132件と production distribution helper build が成功。
   2026-09-23の外部フォルダ追加後はfrontend全体とfocused、Rust 467件pass / 3 ignored、
   Swift XCTest 66件 + Swift Testing 4件、型検査、Vite、surface 132件、配布用helper buildを確認。

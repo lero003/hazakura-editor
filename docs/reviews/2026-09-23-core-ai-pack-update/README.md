@@ -1,6 +1,6 @@
 # Core AI pack更新とモデル設定の表示確認
 
-Status: source / fixture確認。実Background Assets・TestFlight受入ではない。
+Status: source / fixture / 隔離ad-hoc sandbox確認。実Background Assets・TestFlight受入ではない。
 Date: 2026-09-23
 
 ## 対象
@@ -49,10 +49,33 @@ Rust fmt、`npm run build:vite`、`npm run smoke:app-store-surface`（132件）�
 最終buildの別bundle ID隔離コピーは、開始画面と新規・既存ファイルを開くボタンまで表示した。
 これはad-hocローカルプレビューであり、Apple配信モデルの取得はプレビュー内で利用不可と示す。
 
+## 外部フォルダの隔離sandbox実操作
+
+初回smokeで外部E4B v2 resource rootは登録・復元できたが、`detected`行に「使う」が出ず、
+Local Assistの選択肢も無効だった。`external_local`を`app_managed_local`と同じ選択判定へ修正し、
+両画面の失敗先行テストを追加した。起動直後に本体とLocal Assistのprobeが重なるとnative helperが
+一時的な`busy`を返し、選び直すまで利用不可のまま残ることも再現した。busyだけを最大5回・
+計15.5秒の範囲で再試行し、他のエラーはそのまま表示する回帰テストを加えた。
+
+修正後の`npm run build`から別bundle IDの隔離コピーを作り、Background AssetsのInfoキー・extension・
+App Group entitlementを外して、親アプリと3 helperをad-hoc sandbox署名した。これは配布pkgとは
+別のローカル試験形状。実E4B v2フォルダを登録して「使う」で選択し、完全終了後も選択を復元した。
+短文のLocal Assist要求は`generate_apple_assist_candidate_streaming`経路でDiff提案を返し、
+本文への自動適用はなかった。元フォルダ15ファイルのSHA-256は生成前後で一致した。
+
+APFS cloneの試験用フォルダを選択後に移動すると、一覧は「利用不可」と再指定の案内を表示した。
+再起動後はSystemへ戻り、失効登録を残した。失効登録を解除して移動先を選び直すと、再び
+E4Bのstreaming生成がDiff提案まで成功した。元のE4Bフォルダの登録解除後も元ファイルは残った。
+`npm run build`の元bundle IDの`.app`も`open -n`で起動し、ウィンドウ表示を確認した。
+この試験は128 GB Mac上のローカルad-hoc sandboxに限る。non-streaming IPC、生成中の取消・切替、
+実外部ディスク切断、TestFlightのproduction profile / App Group / Background Assetsは未受入。
+更新後のfrontend 2702件、scripts 31件、型検査、Vite build、App Store surface 132件は成功。
+
 ## 署名済み候補の残ゲート
 
 App Groupを含む別のmacOS配布用profileとApple Distribution / Installer identityを通常のmacOS
-権限で確認し、`6e76b443`のclean sourceから3.1.0 build 149の署名済みpkgを作成した。app / extension /
+権限で確認し、`6e76b443`のclean sourceから3.1.0 build 149の署名済みpkgを作成した。上記UI修正前の
+候補であり、更新後のsourceはbuild 150へ進める。app / extension /
 3 helperの署名とentitlement、pkg署名、SHA-256をローカル検証した。候補のパスとdigestはignoredの
 `docs/internal/app-store-candidates/latest.json`に記録した。制限付きshellのkeychain照会が0件でも、
 通常のmacOS権限では有効なidentityを確認できたため、先の不足判定は誤りだった。

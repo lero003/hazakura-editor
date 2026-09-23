@@ -24,6 +24,11 @@ resource rootの選び直しを促す。署名済みsandboxでの通常/streamin
 clean source `6e76b443`から署名済み3.1.0 build 149 pkgを作成し、app / extension /
 helperのentitlementとpkg署名・SHA-256を確認した。配布用profileのため`.app`単体の
 ローカル起動はmacOSが拒否する。TestFlight installと上記受入は未実施。
+その後、隔離ad-hoc sandboxでは外部E4B v2の登録・選択・再起動復元・streaming生成を実操作で確認した。
+`external_local`の選択ボタン欠落を修正し、起動直後のnative probe競合による一時`busy`は
+限定再試行する。試験用cloneを移動すると失効表示・再起動後System復帰となり、移動先を
+再登録・選択すると生成が復帰した。元フォルダ15ファイルのSHA-256は不変。
+build 149はこのUI修正を含まず、build 150へ更新中。同一配布候補のTestFlight受入は残る。
 [build 149と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
 
 ## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
@@ -33,7 +38,8 @@ helperのentitlementとpkg署名・SHA-256を確認した。配布用profileの�
 再現し、親appとextensionのbuild番号を揃えても変わらなかった。プレビュービルドだけ専用の
 Background Assets transportへ切り替え、Apple配信モデルを「このプレビューでは取得できません」と
 表示する。submitビルドは従来のplatform transportを使う。修正後の`npm run build`は成功し、
-同じ生成物の別IDコピーを起動して1280×820の表示窓を確認した。元のbundle IDでの起動、
+同じ生成物の別IDコピーを起動して1280×820の表示窓を確認した。後続の`npm run build`では
+元のbundle IDも`open -n`で起動し、ウィンドウ表示を確認した。
 Apple配信モデル取得、署名済みTestFlightの動作はこのsmokeの範囲外。frontend 2698件、
 scripts 31件、Rust 473件pass / 3件ignored、App Store surface 132件、型検査、
 distribution probe、Rust fmt、diff checkは成功。
@@ -46,14 +52,16 @@ Core AI resource folderを登録し、検証済みモデルを既存の単一reg
 解決する。登録解除は元ファイルを削除せず、選択中ならSystemへ戻す。失効・破損した登録は理由付きで
 一覧に残す。任意URL取得・GGUF・自動ダウンロードは追加していない。
 
-sourceの型検査、契約テスト、helper fixtureは実モデルのロード・署名済みsandboxでの権限継承を
-証明しない。次は署名済みappで登録→選択→生成→再起動→復元→登録解除、失効時の再指定を確認する。
+sourceの型検査、契約テスト、helper fixtureだけでは実モデルのロード・署名済みsandboxでの権限継承を
+証明しない。隔離ad-hoc sandboxでの実操作結果は上記を参照。同一配布候補では登録→選択→生成→
+再起動→復元→登録解除と失効時の再指定をまだ受け入れていない。
 Local Assistのキーボード/VoiceOver、Custom Modelsフォルダを開く導線も残る。
 確認した範囲はfrontend全体と追加したfocusedテスト、Rust 467件pass / 3件ignored、Swift
 XCTest 66件 + Swift Testing 4件、型検査、Vite build、App Store surface 132件、配布用helper build。
 bookmark実登録の単体テストは制限付き実行環境で`Operation not permitted`となり、上の実機ゲートへ残す。
 App Store sandboxプレビューではCore AI helperも`com.apple.security.inherit`で再署名するよう
 smokeを修正し、3 helperと親アプリのad-hoc署名検証を通した。実フォルダを読めることの証明ではない。
+後続の隔離ad-hoc sandbox実操作で外部E4Bの読取・streaming生成まで確認した（冒頭の記録）。
 
 ## Core AI pack更新とモデル設定（2026-09-23、source検証済み）
 

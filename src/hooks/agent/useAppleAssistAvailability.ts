@@ -6,6 +6,7 @@ import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../.
 // native supervisor's 60 second Core AI budget; the System probe still ends
 // at its native 10 second timeout.
 const APPLE_ASSIST_PROBE_UI_TIMEOUT_MS = 65_000;
+const BUSY_PROBE_RETRY_DELAYS_MS = [500, 1_000, 2_000, 4_000, 8_000] as const;
 
 // `useAppleAssistAvailability` is the on-device counterpart to
 // `useAgentProviderAvailability`. It is intentionally a single
@@ -52,6 +53,7 @@ export function useAppleAssistAvailability(
     let disposed = false;
     let settled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
     if (!enabled) {
       // `enabled` controls whether this hook may perform the explicit probe;
@@ -75,6 +77,9 @@ export function useAppleAssistAvailability(
         return;
       }
       settled = true;
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
+      }
       setAvailability({
         kind: "unavailable",
         reason: "Hazakura Local Assist availability probe timed out.",
@@ -82,38 +87,54 @@ export function useAppleAssistAvailability(
       setProbed(true);
     }, APPLE_ASSIST_PROBE_UI_TIMEOUT_MS);
 
-    probeAppleAssistAvailability()
-      .then((snapshot) => {
-        if (!disposed && !settled) {
-          settled = true;
-          if (timeoutId) {
-            clearTimeout(timeoutId);
+    const probe = (retryIndex: number) => {
+      if (disposed || settled) return;
+      probeAppleAssistAvailability()
+        .then((snapshot) => {
+          if (!disposed && !settled) {
+            settled = true;
+            if (timeoutId) clearTimeout(timeoutId);
+            setAvailability(snapshot);
+            setProbed(true);
           }
-          setAvailability(snapshot);
-          setProbed(true);
-        }
-      })
-      .catch((err: unknown) => {
-        console.warn("Failed to probe Hazakura Local Assist availability", err);
-        if (!disposed && !settled) {
-          settled = true;
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
+        })
+        .catch((err: unknown) => {
+          if (disposed || settled) return;
           const reason = err instanceof Error ? err.message : String(err);
+          // The main window and the companion can probe the same native helper
+          // on startup. Its non-blocking lock reports busy while the first
+          // probe is running; retry that transient condition without making
+          // the user reselect a model. Other failures still surface at once.
+          if (
+            reason.startsWith("Local Assist is busy.") &&
+            retryIndex < BUSY_PROBE_RETRY_DELAYS_MS.length
+          ) {
+            retryTimeoutId = setTimeout(() => {
+              retryTimeoutId = null;
+              probe(retryIndex + 1);
+            }, BUSY_PROBE_RETRY_DELAYS_MS[retryIndex]);
+            return;
+          }
+          console.warn("Failed to probe Hazakura Local Assist availability", err);
+          settled = true;
+          if (timeoutId) clearTimeout(timeoutId);
           // IPC / parse / network failure: safest UX is
           // "unavailable with a reason" so the user understands
           // the feature is not working right now without us
           // claiming the platform is fundamentally unsupported.
           setAvailability({ kind: "unavailable", reason });
           setProbed(true);
-        }
-      });
+        });
+    };
+    probe(0);
 
     return () => {
       disposed = true;
       if (timeoutId) {
         clearTimeout(timeoutId);
+      }
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
       }
     };
   }, [enabled, refreshKey]);

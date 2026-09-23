@@ -44,6 +44,19 @@ describe("AssistModelPicker", () => {
     expect(onSelect).toHaveBeenCalledWith(localModels[1].id);
   });
 
+  it("offers a detected registered external folder in Local Assist", () => {
+    const onSelect = vi.fn();
+    const external = { id: "local:external:1", displayName: "Gemma 4 E4B", kind: "core_ai" as const,
+      source: "external_local" as const, status: "detected" as const, selected: false };
+    render(<AssistModelPicker language="ja" disabled={false}
+      modelId={localModels[0].id} models={[localModels[0], external]} onSelect={onSelect} />);
+    fireEvent.click(screen.getByRole("button", { name: /モデルを選択/ }));
+    const option = screen.getByRole("menuitemradio", { name: "Gemma 4 E4B" });
+    expect(option.hasAttribute("disabled")).toBe(false);
+    fireEvent.click(option);
+    expect(onSelect).toHaveBeenCalledWith(external.id);
+  });
+
   it("focuses the selected local model and preserves it across catalog updates", () => {
     const props = { language: "en" as const, disabled: false, modelId: localModels[1].id };
     const { rerender } = render(<AssistModelPicker {...props} models={localModels} />);

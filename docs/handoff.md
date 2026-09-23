@@ -17,13 +17,20 @@ Last reviewed: 2026-09-23
 同一候補での受入待ち。clean source `6e76b443`から3.1.0 build 149の署名済みpkgを
 作成し、署名・entitlement・digestを確認した。配布用profileの`.app`単体起動はmacOSに
 拒否されるため、TestFlight install後に上記を受け入れる。source・ローカルテストを
-TestFlight受入としない。
+TestFlight受入としない。build 149は後続の外部model選択UI修正を含まない。隔離ad-hoc sandboxでは
+実E4B v2の登録・選択・再起動復元・streaming提案生成、元15ファイルのSHA-256不変を確認。
+試験用cloneを移動すると失効表示となり、再起動後Systemへ復帰。移動先の再登録と生成も成功した。
+`external_local`を`detected`で選択できるよう直し、起動直後のhelper `busy`競合だけ限定再試行する。
+frontend 2702件、scripts 31件、型検査、Vite、App Store surface 132件は通過。
+build 150の署名候補を作ってからupload承認を待つ。non-streaming IPC、取消・切替、実外部ディスク
+切断、TestFlightのproduction profile / App Group / Background Assetsはなお未受入。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
   `BAAssetPackManager.sharedManager`へ入り`SIGTRAP`。別IDコピーでも再現し、extensionとの
   build番号一致でも解消しなかった。preview専用transportがApple-hosted取得を利用不可として返し、
   画面ではTestFlight案内を表示。submitコマンドにはpreview flagを付けない。
-  修正後`npm run build`と別IDコピーの1280×820起動smokeが成功。frontend 2698件、
+  修正後`npm run build`と別IDコピーの1280×820起動smokeが成功。後続の元bundle ID `.app`も
+  `open -n`でウィンドウ表示を確認。frontend 2698件、
   scripts 31件、Rust 473件pass / 3 ignored、surface 132件、distribution probeも成功。
   TestFlight取得・実モデルは未検証。
 
@@ -35,9 +42,9 @@ TestFlight受入としない。
   App Store surface 132件、配布用helper buildが通った。bookmark実登録の無署名テストは
   制限付き実行環境の`Operation not permitted`で失敗し、製品不具合とは判定しない。
   App Store sandboxプレビューの署名smokeにCore AI helperを追加し、3 helperのinherit entitlementと
-  親アプリのad-hoc署名を確認。署名済みappでの実フォルダ読取は引き続き未確認。
-  **署名済みsandboxでの実登録・helperロード・再起動復元、実モデル生成、VoiceOverは未受入。**
-  次はそれらを実機で確認し、失効時のフォルダ再指定とCustom ModelsのFinder導線を整える。
+  親アプリのad-hoc署名を確認。後続の隔離ad-hoc sandbox実操作では外部E4Bの読取・
+  streaming生成・再起動復元まで進んだ（冒頭）。**配布署名済みTestFlight、non-streaming生成、
+  取消・切替、VoiceOverは未受入。** 次は同一配布候補で確認し、Custom ModelsのFinder導線を整える。
 
 - **pack更新 / モデル設定（2026-09-23、source検証済み）:** build 147で12B pack v2が旧manifest
   全文一致に失敗したとの実機報告。Rustはpack内manifestの固定identity / runtime契約、safe path、
