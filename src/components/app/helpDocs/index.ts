@@ -55,11 +55,11 @@ export const localDataDisclosure: HelpDoc = {
   id: "local-data-disclosure",
   title: "Local Data Disclosure",
   kicker: "Help",
-  boundaryNoteTitle: "In-app technical disclosure",
+  boundaryNoteTitle: "Local data details",
   boundaryNoteBody:
-    "This is the in-app technical disclosure. The Privacy Policy is a separate public-copy draft for website and App Store metadata review.",
+    "This page describes local files, models, and optional network actions in more detail than the Privacy Policy.",
   footerNote:
-    "This document is an in-app reference reflecting the current app code and distribution-lane boundary. Use the Privacy Policy Help page for public-copy review.",
+    "For the shorter privacy summary and contact information, open Privacy Policy in Help.",
   source: localDataDisclosureMd,
   sections: [
     { testId: "help-doc-section-files", title: "Files you choose" },
@@ -78,11 +78,11 @@ export const privacyPolicy: HelpDoc = {
   id: "privacy-policy",
   title: "Privacy Policy",
   kicker: "Help",
-  boundaryNoteTitle: "Public policy draft",
+  boundaryNoteTitle: "Privacy summary",
   boundaryNoteBody:
-    "This is the App Store / public-copy draft for the app's privacy policy. It is separate from the more technical Local Data Disclosure.",
+    "This page explains the app's data handling. Local Data Disclosure provides additional technical detail.",
   footerNote:
-    "This in-app draft is the companion to the public Privacy Policy at https://hazakura.dev/hazakura-editor/privacy/. App Store metadata still needs field-by-field review before submission.",
+    "Public Privacy Policy: https://hazakura.dev/hazakura-editor/privacy/.",
   source: privacyPolicyMd,
   sections: [
     { testId: "help-doc-section-overview", title: "Overview" },
@@ -101,11 +101,11 @@ export const openSourceAcknowledgements: HelpDoc = {
   id: "open-source-acknowledgements",
   title: "Open Source Acknowledgements",
   kicker: "Help",
-  boundaryNoteTitle: "Acknowledgements draft",
+  boundaryNoteTitle: "License overview",
   boundaryNoteBody:
-    "This page lists the primary open source libraries used by the app. It is a submission-prep acknowledgement, not a replacement for a final legal license packet.",
+    "This page summarizes primary open source libraries. The app bundle includes a separate THIRD_PARTY_NOTICES.md file.",
   footerNote:
-    "Before public submission, regenerate or review the complete dependency license packet from package-lock.json and src-tauri/Cargo.lock.",
+    "See the bundled THIRD_PARTY_NOTICES.md for dependency notices and license text.",
   source: openSourceAcknowledgementsMd,
   sections: [
     { testId: "help-doc-section-javascript", title: "JavaScript and UI" },
@@ -148,9 +148,8 @@ export const aboutHazakuraEditor: HelpDoc = {
   kicker: "Help",
   boundaryNoteTitle: "App identity",
   boundaryNoteBody:
-    "About keeps product identity, support direction, and distribution-lane wording in one small Help document.",
-  footerNote:
-    `The current package version is ${APP_VERSION}. Release, signing, and App Store status must be checked against the current build before publication claims are made.`,
+    "Find the app version, supported workflows, and where to get help.",
+  footerNote: `Hazakura Editor ${APP_VERSION}. Include this version when contacting support.`,
   source: aboutMd.replaceAll("{{APP_VERSION}}", APP_VERSION),
   sections: [
     { testId: "help-doc-section-app", title: "App" },

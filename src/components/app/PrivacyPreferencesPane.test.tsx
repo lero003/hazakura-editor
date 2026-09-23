@@ -282,6 +282,17 @@ describe("PrivacyPreferencesPane", () => {
     expect(text).not.toContain("XHR");
   });
 
+  it("describes the shipped model choices without the old unpublished-model claim", () => {
+    renderPane(privacyPolicy);
+
+    const text = getSectionBodyText("help-doc-section-assist");
+    expect(text).toContain("Gemma 4 12B");
+    expect(text).toContain("compatible Core AI resource folder");
+    expect(text).toContain("Apple Intelligence is turned off");
+    expect(text).not.toContain("no published Core AI model pack");
+    expect(text).not.toContain("only selectable model");
+  });
+
   it("can render the Open Source Acknowledgements Help document", () => {
     renderPane(openSourceAcknowledgements);
 
@@ -360,7 +371,8 @@ describe("PrivacyPreferencesPane", () => {
     const text = getSectionBodyText("help-doc-section-network");
     expect(text).toContain("bundled helpers");
     expect(text).toContain("Apple's asset-hosting service");
-    expect(text).toContain("no such model is published in the current build");
+    expect(text).toContain("Gemma 4 12B");
+    expect(text).not.toContain("no such model is published in the current build");
     expect(text).toContain(
       "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",
     );

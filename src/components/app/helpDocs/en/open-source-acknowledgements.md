@@ -28,4 +28,4 @@ The macOS app also uses platform APIs provided by Apple and the operating system
 
 ## License scope
 
-The full dependency set is tracked in `package-lock.json` and `src-tauri/Cargo.lock`. Before public submission, regenerate or review the complete third-party license packet from the current lockfiles.
+The app bundle includes `THIRD_PARTY_NOTICES.md` for dependency notices and license text. This Help page is a short overview.
