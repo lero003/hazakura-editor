@@ -16,7 +16,8 @@ Last reviewed: 2026-09-23
   clean source `6e76b443`から署名済み3.1.0 build 149 pkgを作成し、署名・entitlementを
   ローカル確認した。後続の隔離ad-hoc sandboxでは外部E4B v2の登録・選択・再起動復元・
   streaming生成、試験用clone移動後の失効表示・System復帰・再指定後の生成を実操作で確認。
-  `external_local`選択ボタン欠落と起動直後の一時`busy`残留を修正し、build 150へ更新中。
+  `external_local`選択ボタン欠落と起動直後の一時`busy`残留を修正。clean source
+  `df33a65a`からbuild 151署名pkgを作成し、app / extension番号一致、署名、digestを確認。
   元E4Bの15ファイルは生成前後のSHA-256が一致した。同じ配布候補のTestFlight install、
   non-streaming生成・取消・切替・実ディスク切断は未受入。
 

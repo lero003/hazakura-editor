@@ -73,16 +73,17 @@ E4Bのstreaming生成がDiff提案まで成功した。元のE4Bフォルダの�
 
 ## 署名済み候補の残ゲート
 
-App Groupを含む別のmacOS配布用profileとApple Distribution / Installer identityを通常のmacOS
-権限で確認し、`6e76b443`のclean sourceから3.1.0 build 149の署名済みpkgを作成した。上記UI修正前の
-候補であり、更新後のsourceはbuild 150へ進める。app / extension /
-3 helperの署名とentitlement、pkg署名、SHA-256をローカル検証した。候補のパスとdigestはignoredの
-`docs/internal/app-store-candidates/latest.json`に記録した。制限付きshellのkeychain照会が0件でも、
-通常のmacOS権限では有効なidentityを確認できたため、先の不足判定は誤りだった。
+App Groupを含むmacOS配布用profileとApple Distribution / Installer identityを通常のmacOS
+権限で確認した。旧UIのclean source `6e76b443`からbuild 149、修正後のclean source
+`df33a65a`から3.1.0 build 151の署名済みpkgを作成した。後者は候補作成ツールのApp Store
+surface smoke、app / extensionのbuild番号151一致、appと3 helperの署名・entitlement、
+pkg署名、SHA-256一致を通常macOS権限で確認。現行候補のパスとdigestはignoredの
+`docs/internal/app-store-candidates/latest.json`を正本とする。制限付きshellの信頼評価は
+`untrusted`と出たが、通常macOS権限では署名検証が成功した。
 
-配布用profileを埋め込んだ`.app`をローカルから直接起動すると、macOSはproduction profileを
+build 149の配布用profileを埋め込んだ`.app`をローカルから直接起動すると、macOSはproduction profileを
 ローカル実行用と認めず、`No matching profile found`として拒否した。これはpkgの署名・形状検証と
-別のゲートであり、外部フォルダの実権限受け渡しやApple配信取得を確認できていない。
+別のゲートであり、build 151でも配布形状での外部フォルダ実操作やApple配信取得を確認できていない。
 App Store Connectへのupload・Apple側の処理・TestFlight installは未実施。同じpkgをTestFlightで
 インストールした後、次を確認する。
 

@@ -22,7 +22,8 @@ TestFlight受入としない。build 149は後続の外部model選択UI修正を
 試験用cloneを移動すると失効表示となり、再起動後Systemへ復帰。移動先の再登録と生成も成功した。
 `external_local`を`detected`で選択できるよう直し、起動直後のhelper `busy`競合だけ限定再試行する。
 frontend 2702件、scripts 31件、型検査、Vite、App Store surface 132件は通過。
-build 150の署名候補を作ってからupload承認を待つ。non-streaming IPC、取消・切替、実外部ディスク
+clean source `df33a65a`からbuild 151署名pkgを作成し、app / extension番号一致と署名・digestを確認。
+App Store Connectへのuploadはオーナー承認待ち。non-streaming IPC、取消・切替、実外部ディスク
 切断、TestFlightのproduction profile / App Group / Background Assetsはなお未受入。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで

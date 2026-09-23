@@ -28,8 +28,9 @@ helperのentitlementとpkg署名・SHA-256を確認した。配布用profileの�
 `external_local`の選択ボタン欠落を修正し、起動直後のnative probe競合による一時`busy`は
 限定再試行する。試験用cloneを移動すると失効表示・再起動後System復帰となり、移動先を
 再登録・選択すると生成が復帰した。元フォルダ15ファイルのSHA-256は不変。
-build 149はこのUI修正を含まず、build 150へ更新中。同一配布候補のTestFlight受入は残る。
-[build 149と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
+build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean sourceからbuild 151署名pkgを
+作成し、app / extensionのbuild番号、署名、pkg digestを通常macOS権限で確認した。
+同一配布候補のTestFlight受入は残る。[build 151と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
 
 ## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
 
