@@ -67,7 +67,12 @@ APFS cloneの試験用フォルダを選択後に移動すると、一覧は「�
 再起動後はSystemへ戻り、失効登録を残した。失効登録を解除して移動先を選び直すと、再び
 E4Bのstreaming生成がDiff提案まで成功した。元のE4Bフォルダの登録解除後も元ファイルは残った。
 `npm run build`の元bundle IDの`.app`も`open -n`で起動し、ウィンドウ表示を確認した。
-この試験は128 GB Mac上のローカルad-hoc sandboxに限る。non-streaming IPC、生成中の取消・切替、
+最終sourceから作り直した隔離プレビューでは、保存済みの外部E4B選択を手動で選び直さずに
+streaming生成がDiff提案まで通った。3,600字の生成中に「Stop generating」を押すと
+「Request cancelled. The document was not changed.」と表示され、本文は元の3,600字のまま。
+Apple Intelligenceへ切り替えた後にE4Bへ戻すと再び利用可になり、同じ長文の生成が
+Diff提案まで完了した。元本文は未適用で、校正前の内容のままだった。
+この試験は128 GB Mac上のローカルad-hoc sandboxに限る。non-streaming IPC、生成中のモデル切替、
 実外部ディスク切断、TestFlightのproduction profile / App Group / Background Assetsは未受入。
 更新後のfrontend 2702件、scripts 31件、型検査、Vite build、App Store surface 132件は成功。
 

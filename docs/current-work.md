@@ -28,6 +28,8 @@ helperのentitlementとpkg署名・SHA-256を確認した。配布用profileの�
 `external_local`の選択ボタン欠落を修正し、起動直後のnative probe競合による一時`busy`は
 限定再試行する。試験用cloneを移動すると失効表示・再起動後System復帰となり、移動先を
 再登録・選択すると生成が復帰した。元フォルダ15ファイルのSHA-256は不変。
+最終sourceの隔離プレビューでは3,600字のstreaming生成を途中で停止し、本文不変更の案内を確認。
+その後Apple Intelligenceへ切り替え、E4Bへ戻すと利用可となり、再生成がDiff提案まで完了した。
 build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean sourceからbuild 151署名pkgを
 作成し、app / extensionのbuild番号、署名、pkg digestを通常macOS権限で確認した。
 同一配布候補のTestFlight受入は残る。[build 151と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。

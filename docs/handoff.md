@@ -21,9 +21,11 @@ TestFlight受入としない。build 149は後続の外部model選択UI修正を
 実E4B v2の登録・選択・再起動復元・streaming提案生成、元15ファイルのSHA-256不変を確認。
 試験用cloneを移動すると失効表示となり、再起動後Systemへ復帰。移動先の再登録と生成も成功した。
 `external_local`を`detected`で選択できるよう直し、起動直後のhelper `busy`競合だけ限定再試行する。
+最終sourceの隔離プレビューで3,600字のstreaming生成を停止し、本文不変更を画面で確認。
+Apple Intelligenceへ切替→E4Bに戻した後の再生成もDiff提案まで完了した。
 frontend 2702件、scripts 31件、型検査、Vite、App Store surface 132件は通過。
 clean source `df33a65a`からbuild 151署名pkgを作成し、app / extension番号一致と署名・digestを確認。
-App Store Connectへのuploadはオーナー承認待ち。non-streaming IPC、取消・切替、実外部ディスク
+App Store Connectへのuploadはオーナー承認待ち。non-streaming IPC、生成中のモデル切替、実外部ディスク
 切断、TestFlightのproduction profile / App Group / Background Assetsはなお未受入。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
