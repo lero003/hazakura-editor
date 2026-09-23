@@ -10,7 +10,14 @@ static NSString *const HZPhaseFailed = @"failed";
 @interface HZBackgroundAssetsController : NSObject <BAManagedAssetPackDownloadDelegate>
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSMutableDictionary *> *states;
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *operationGenerations;
+@property(nonatomic, strong) NSMutableSet<NSString *> *activeIdentifiers;
+@property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *requestedVersions;
+@property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *confirmedVersions;
 @property(nonatomic, strong) dispatch_queue_t operationQueue;
+- (void)completeEnsureForIdentifier:(NSString *)identifier
+                         generation:(NSUInteger)generation
+                            version:(NSNumber *)version
+                              error:(NSError *_Nullable)error;
 @end
 
 @implementation HZBackgroundAssetsController
@@ -22,6 +29,9 @@ static NSString *const HZPhaseFailed = @"failed";
       controller = [[HZBackgroundAssetsController alloc] init];
       controller.states = [NSMutableDictionary dictionary];
       controller.operationGenerations = [NSMutableDictionary dictionary];
+      controller.activeIdentifiers = [NSMutableSet set];
+      controller.requestedVersions = [NSMutableDictionary dictionary];
+      controller.confirmedVersions = [NSMutableDictionary dictionary];
       controller.operationQueue = dispatch_queue_create("dev.hazakura.editor.background-assets", DISPATCH_QUEUE_SERIAL);
     });
     return controller;
@@ -77,34 +87,93 @@ static NSString *const HZPhaseFailed = @"failed";
     }
 }
 
+- (BOOL)acceptsDelegateAssetPack:(BAAssetPack *)assetPack {
+    @synchronized(self) {
+        NSString *identifier = assetPack.identifier;
+        NSNumber *eventVersion = @(assetPack.version);
+        NSNumber *requested = self.requestedVersions[identifier];
+        if (requested != nil && ![requested isEqualToNumber:eventVersion]) return NO;
+        NSNumber *confirmed = self.confirmedVersions[identifier];
+        if (confirmed != nil && assetPack.version < confirmed.unsignedIntegerValue) return NO;
+        NSString *phase = [self stateForIdentifier:identifier][@"phase"];
+        if (![self.activeIdentifiers containsObject:identifier]) {
+            if ([phase isEqual:HZPhasePaused] || [phase isEqual:HZPhaseFailed]) return NO;
+            if ([phase isEqual:@"downloaded"] && [confirmed isEqualToNumber:eventVersion]) return NO;
+        }
+        return YES;
+    }
+}
+
+- (BOOL)reattachIfDownloadingIdentifier:(NSString *)identifier {
+    @synchronized(self) {
+        NSString *phase = [self stateForIdentifier:identifier][@"phase"];
+        if (![phase isEqual:HZPhaseDownloading] || [self.activeIdentifiers containsObject:identifier]) return NO;
+        // A delegate notification from an earlier process has no completion
+        // handler here. Bind a new ensure request to the current manifest.
+        [self startIdentifier:identifier];
+        return YES;
+    }
+}
+
+- (void)completeEnsureForIdentifier:(NSString *)identifier
+                         generation:(NSUInteger)generation
+                            version:(NSNumber *)version
+                              error:(NSError *_Nullable)error {
+    @synchronized(self) {
+        if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
+        [self.activeIdentifiers removeObject:identifier];
+        [self.requestedVersions removeObjectForKey:identifier];
+        if (error != nil) {
+            [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                             error:error.localizedDescription version:version];
+        } else {
+            self.confirmedVersions[identifier] = version;
+            [self updateIdentifier:identifier phase:@"downloaded" progress:@1 error:nil version:version];
+        }
+    }
+}
+
 - (NSDictionary *)snapshotForIdentifier:(NSString *)identifier relativePath:(NSString *)relativePath {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000
     if (@available(macOS 27, *)) {
         BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
         manager.delegate = self;
-        BOOL available = [manager assetPackIsAvailableLocallyWithIdentifier:identifier];
-        NSMutableDictionary *result;
+        NSString *currentPhase;
         @synchronized(self) {
-            result = [[self stateForIdentifier:identifier] mutableCopy];
+            currentPhase = [self stateForIdentifier:identifier][@"phase"];
         }
-        result[@"supported"] = @YES;
-        result[@"available"] = @(available);
-        result[@"path"] = [NSNull null];
-        if (!available && [result[@"phase"] isEqual:HZPhaseNotDownloaded]) {
+        if ([currentPhase isEqual:HZPhaseNotDownloaded]) {
+            // An old version can remain available during a new download.
+            // Inspect active downloads even when the pack ID is locally present.
             NSError *downloadsError = nil;
             NSArray<BADownload *> *downloads = [BADownloadManager.sharedManager fetchCurrentDownloads:&downloadsError];
             for (BADownload *download in downloads ?: @[]) {
                 if ([download.identifier isEqualToString:identifier]) {
-                    result[@"phase"] = download.state == BADownloadStateFailed
-                        ? HZPhaseFailed
-                        : HZPhaseDownloading;
+                    @synchronized(self) {
+                        if ([[self stateForIdentifier:identifier][@"phase"] isEqual:HZPhaseNotDownloaded]) {
+                            [self updateIdentifier:identifier
+                                            phase:download.state == BADownloadStateFailed ? HZPhaseFailed : HZPhaseDownloading
+                                         progress:nil error:nil version:nil];
+                        }
+                    }
                     break;
                 }
             }
             if (downloadsError != nil) {
-                result[@"error"] = downloadsError.localizedDescription;
+                @synchronized(self) {
+                    [self stateForIdentifier:identifier][@"error"] = downloadsError.localizedDescription;
+                }
             }
         }
+        [self reattachIfDownloadingIdentifier:identifier];
+        NSMutableDictionary *result;
+        @synchronized(self) {
+            result = [[self stateForIdentifier:identifier] mutableCopy];
+        }
+        BOOL available = [manager assetPackIsAvailableLocallyWithIdentifier:identifier];
+        result[@"supported"] = @YES;
+        result[@"available"] = @(available);
+        result[@"path"] = [NSNull null];
         // An older version may still be locally available while an update is
         // resolving or downloading. Keep the operation phase so the Rust
         // monitor cannot verify the old path as if it were the requested one.
@@ -145,8 +214,13 @@ static NSString *const HZPhaseFailed = @"failed";
         // The monitor starts immediately after this method returns. Publish
         // resolving and invalidate an earlier request before queueing the
         // asynchronous manifest request.
-        NSUInteger generation = [self beginOperationForIdentifier:identifier];
-        [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
+        NSUInteger generation;
+        @synchronized(self) {
+            generation = [self beginOperationForIdentifier:identifier];
+            [self.activeIdentifiers addObject:identifier];
+            [self.requestedVersions removeObjectForKey:identifier];
+            [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
+        }
         dispatch_async(self.operationQueue, ^{
           BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
           manager.delegate = self;
@@ -154,33 +228,36 @@ static NSString *const HZPhaseFailed = @"failed";
             dispatch_async(self.operationQueue, ^{
               if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
               if (error != nil || manifest == nil) {
-                  [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                                   error:error.localizedDescription ?: @"Apple-hosted asset manifest is unavailable."
-                                 version:nil];
+                  @synchronized(self) {
+                      [self.activeIdentifiers removeObject:identifier];
+                      [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                                       error:error.localizedDescription ?: @"Apple-hosted asset manifest is unavailable."
+                                     version:nil];
+                  }
                   return;
               }
               BAAssetPack *assetPack = [manifest assetPackWithIdentifier:identifier];
               if (assetPack == nil) {
-                  [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                                   error:@"The requested Core AI asset pack is not present in the processed Apple-hosted manifest."
-                                 version:nil];
+                  @synchronized(self) {
+                      [self.activeIdentifiers removeObject:identifier];
+                      [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                                       error:@"The requested Core AI asset pack is not present in the processed Apple-hosted manifest."
+                                     version:nil];
+                  }
                   return;
               }
               if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
-              [self updateIdentifier:identifier phase:HZPhaseDownloading progress:@0
-                               error:nil version:@(assetPack.version)];
+              @synchronized(self) {
+                  self.requestedVersions[identifier] = @(assetPack.version);
+                  [self updateIdentifier:identifier phase:HZPhaseDownloading progress:@0
+                                   error:nil version:@(assetPack.version)];
+              }
               [manager ensureLocalAvailabilityOfAssetPack:assetPack
                                      requireLatestVersion:YES
                                         completionHandler:^(NSError *_Nullable downloadError) {
                 dispatch_async(self.operationQueue, ^{
-                  if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
-                  if (downloadError != nil) {
-                      [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                                       error:downloadError.localizedDescription version:@(assetPack.version)];
-                  } else {
-                      [self updateIdentifier:identifier phase:@"downloaded" progress:@1
-                                       error:nil version:@(assetPack.version)];
-                  }
+                  [self completeEnsureForIdentifier:identifier generation:generation
+                                            version:@(assetPack.version) error:downloadError];
                 });
               }];
             });
@@ -198,7 +275,11 @@ static NSString *const HZPhaseFailed = @"failed";
     __block NSError *operationError = nil;
     dispatch_sync(self.operationQueue, ^{
       [self invalidateOperationForIdentifier:identifier];
-      [self updateIdentifier:identifier phase:HZPhasePaused progress:nil error:nil version:nil];
+      @synchronized(self) {
+          [self.activeIdentifiers removeObject:identifier];
+          [self.requestedVersions removeObjectForKey:identifier];
+          [self updateIdentifier:identifier phase:HZPhasePaused progress:nil error:nil version:nil];
+      }
       NSArray<BADownload *> *downloads = [BADownloadManager.sharedManager fetchCurrentDownloads:&operationError];
       if (downloads == nil) {
           accepted = NO;
@@ -245,6 +326,10 @@ static NSString *const HZPhaseFailed = @"failed";
             return NO;
         }
         @synchronized(self) {
+            [self invalidateOperationForIdentifier:identifier];
+            [self.activeIdentifiers removeObject:identifier];
+            [self.requestedVersions removeObjectForKey:identifier];
+            [self.confirmedVersions removeObjectForKey:identifier];
             [self.states removeObjectForKey:identifier];
         }
         return YES;
@@ -258,32 +343,50 @@ static NSString *const HZPhaseFailed = @"failed";
 }
 
 - (void)downloadOfAssetPackBegan:(BAAssetPack *)assetPack {
-    [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading progress:@0 error:nil version:@(assetPack.version)];
+    @synchronized(self) {
+        if (![self acceptsDelegateAssetPack:assetPack]) return;
+        [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading progress:@0 error:nil version:@(assetPack.version)];
+    }
 }
 
 - (void)downloadOfAssetPackPaused:(BAAssetPack *)assetPack {
-    [self updateIdentifier:assetPack.identifier phase:HZPhasePaused progress:nil error:nil version:@(assetPack.version)];
+    @synchronized(self) {
+        if (![self acceptsDelegateAssetPack:assetPack]) return;
+        [self updateIdentifier:assetPack.identifier phase:HZPhasePaused progress:nil error:nil version:@(assetPack.version)];
+    }
 }
 
 - (void)downloadOfAssetPack:(BAAssetPack *)assetPack hasProgress:(NSProgress *)progress {
-    [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading
-                   progress:@(progress.fractionCompleted) error:nil version:@(assetPack.version)];
+    @synchronized(self) {
+        if (![self acceptsDelegateAssetPack:assetPack]) return;
+        [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading
+                       progress:@(progress.fractionCompleted) error:nil version:@(assetPack.version)];
+    }
 }
 
 - (void)downloadOfAssetPackFinished:(BAAssetPack *)assetPack {
-    // The delegate can finish before ensureLocalAvailability's completion.
-    // Only that completion may mark a requested version ready to resolve.
     @synchronized(self) {
+        if (![self acceptsDelegateAssetPack:assetPack]) return;
         NSString *phase = [self stateForIdentifier:assetPack.identifier][@"phase"];
-        if ([phase isEqualToString:HZPhaseDownloading]) {
-            [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading progress:@1 error:nil version:@(assetPack.version)];
+        if ([phase isEqualToString:HZPhaseDownloading] || [phase isEqualToString:HZPhaseNotDownloaded]) {
+            if ([phase isEqualToString:HZPhaseNotDownloaded]) {
+                [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading
+                             progress:@1 error:nil version:@(assetPack.version)];
+            }
+            if ([self reattachIfDownloadingIdentifier:assetPack.identifier]) return;
+            // Delegate finish can precede this process's ensure completion.
+            [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading
+                         progress:@1 error:nil version:@(assetPack.version)];
         }
     }
 }
 
 - (void)downloadOfAssetPack:(BAAssetPack *)assetPack failedWithError:(NSError *)error {
-    [self updateIdentifier:assetPack.identifier phase:HZPhaseFailed progress:nil
-                     error:error.localizedDescription version:@(assetPack.version)];
+    @synchronized(self) {
+        if (![self acceptsDelegateAssetPack:assetPack]) return;
+        [self updateIdentifier:assetPack.identifier phase:HZPhaseFailed progress:nil
+                         error:error.localizedDescription version:@(assetPack.version)];
+    }
 }
 
 @end

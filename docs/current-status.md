@@ -3,9 +3,16 @@
 Status: Operational
 Scope: v3.1開発状態、v3.0公開状態、実装証跡
 Authority: High
-Last reviewed: 2026-09-23
+Last reviewed: 2026-09-24
 
 ## Current State
+
+- **外部レビューP2追補（2026-09-24、source検証済み）:** Background Assets取得中に再起動した
+  プロセスは通知・snapshotから最新版のensure completionへ再接続する。旧版通知と操作世代を照合し、
+  旧版をReady扱いしない。Local Assistの`busy` probeは65秒の期限まで再試行する。
+  frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、native回帰テスト、型検査、
+  Vite、App Store surface 132件、Rust fmt、`npm run build`が成功。**build 153はこの修正を
+  含まない。次の署名済み候補でTestFlight受入が必要。**
 
 - **3.1初回配布方針とP2是正（2026-09-23、source検証中）:** App Storeの初回モデル一覧は
   Gemma 4 12Bのみ。最低16 GB・推奨24 GBを表示する。E4B v2の資産と評価は履歴として保持し、

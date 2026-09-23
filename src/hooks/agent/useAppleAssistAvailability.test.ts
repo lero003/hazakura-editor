@@ -189,7 +189,39 @@ describe("useAppleAssistAvailability", () => {
     expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(1);
   });
 
-  it("eventually reports a sustained busy probe instead of checking forever", async () => {
+  it("recovers without reselection when an earlier model probe finishes after 20 seconds", async () => {
+    vi.useFakeTimers();
+    let firstProbeStillLoading = true;
+    probeAppleAssistAvailability.mockImplementation(() => firstProbeStillLoading
+      ? Promise.reject(new Error("Local Assist is busy. Check availability again after the current operation finishes."))
+      : Promise.resolve({ kind: "available", modelId: "local:external:e4b" }));
+    setTimeout(() => { firstProbeStillLoading = false; }, 20_000);
+
+    const { result } = renderHook(() => useAppleAssistAvailability());
+    await act(async () => { await vi.advanceTimersByTimeAsync(16_000); });
+    expect(result.current.probed).toBe(false);
+    await act(async () => { await vi.advanceTimersByTimeAsync(8_000); });
+    expect(result.current.availability).toEqual({ kind: "available", modelId: "local:external:e4b" });
+    expect(result.current.probed).toBe(true);
+  });
+
+  it("stops the old model's busy retries when the selected model changes", async () => {
+    vi.useFakeTimers();
+    probeAppleAssistAvailability
+      .mockRejectedValueOnce(new Error("Local Assist is busy. Check availability again after the current operation finishes."))
+      .mockResolvedValue({ kind: "available", modelId: "local:new-model" });
+    const { result, rerender } = renderHook(
+      ({ refreshKey }) => useAppleAssistAvailability(true, refreshKey),
+      { initialProps: { refreshKey: 0 } },
+    );
+    await act(async () => { await Promise.resolve(); });
+    rerender({ refreshKey: 1 });
+    await act(async () => { await vi.advanceTimersByTimeAsync(65_000); });
+    expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(2);
+    expect(result.current.availability).toEqual({ kind: "available", modelId: "local:new-model" });
+  });
+
+  it("keeps retrying a sustained busy probe until the overall deadline", async () => {
     vi.useFakeTimers();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     probeAppleAssistAvailability.mockRejectedValue(
@@ -198,8 +230,11 @@ describe("useAppleAssistAvailability", () => {
     const { result } = renderHook(() => useAppleAssistAvailability());
     await act(async () => { await vi.advanceTimersByTimeAsync(16_000); });
     expect(probeAppleAssistAvailability).toHaveBeenCalledTimes(6);
+    expect(result.current.probed).toBe(false);
+    await act(async () => { await vi.advanceTimersByTimeAsync(49_000); });
     expect(result.current.probed).toBe(true);
     expect(result.current.availability.kind).toBe("unavailable");
+    expect(probeAppleAssistAvailability.mock.calls.length).toBeGreaterThan(6);
   });
 
   it("allows the eager Core AI model probe to use its native timeout budget", async () => {

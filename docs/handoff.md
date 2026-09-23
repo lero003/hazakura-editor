@@ -3,7 +3,17 @@
 Status: Operational
 Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-23
+Last reviewed: 2026-09-24
+
+## 2026-09-24 外部レビューP2追補
+
+`352a0ffc`への2件の指摘をsourceで修正。Background Assetsの再起動後に届く進捗・完了通知を
+最新版のensureへ再接続し、旧版通知と古い操作世代ではReadyにしない。Local Assistの`busy`は
+約15.5秒で終了せず、最大8秒間隔で65秒の期限までprobeを続ける。native callback回帰テスト、
+frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、型検査、Vite、App Store surface
+132件、Rust fmt、`npm run build`が成功。ローカルの模擬通知とad-hocプレビューの結果であり、
+実Apple配信・TestFlightの確認ではない。**build 153は追補を含まない。** 次の署名済み候補で
+12B取得中の再起動、複数画面の初回probe、外部フォルダの通常・streaming生成を受け入れる。
 
 ## 2026-09-23 現行のCore AI配布判断と確認ゲート
 

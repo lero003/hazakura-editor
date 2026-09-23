@@ -3,7 +3,24 @@
 Status: Operational
 Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
-Last reviewed: 2026-09-23
+Last reviewed: 2026-09-24
+
+## 3.1外部レビュー追補 — 取得再開とprobe待機（2026-09-24、source検証済み）
+
+`352a0ffc`固定の外部レビューでP2を2件確認した。Background Assetsの取得中にアプリを
+再起動すると、旧プロセスの`ensureLocalAvailability` completionを受け取れず、finished通知だけでは
+`downloading`から進めない。native bridgeは起動後の進行中downloadを、旧版がローカルにある場合も
+検出し、通知またはsnapshotを契機に現行manifestの最新版へensureを再接続する。要求中versionと
+操作世代を照合し、旧版の通知だけでは検証へ進めない。native回帰テストは新controllerの
+progress→finished、finishedのみ、旧版finishedの無視、ensure完了後の`downloaded`を確認した。
+
+Local Assistの`busy` probeは従来約15.5秒で打ち切っていた。500 msから最大8秒の間隔で
+65秒の全体期限まで再試行し、20秒後に先行probeが終わる例、画面終了・モデル変更時の中断、
+期限到達をfrontendテストで固定した。`npm test`はfrontend 2710件・scripts 31件、
+Rust 477件pass / 3件ignored、native reconnectテスト、型検査、Vite build、
+App Store surface 132件、Rust fmt、`npm run build`が成功。これは実Background Assetsと
+署名済みTestFlightの受入ではない。build 153の署名済みpkgは今回の2件を含まないため、
+次の署名済み候補でダウンロード中の再起動と複数画面の初回probeを受け入れる。
 
 ## 3.1初回配布と外部レビュー是正（2026-09-23、source検証中）
 

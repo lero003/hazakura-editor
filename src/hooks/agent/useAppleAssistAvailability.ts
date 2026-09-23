@@ -106,13 +106,12 @@ export function useAppleAssistAvailability(
           // probe is running; retry that transient condition without making
           // the user reselect a model. Other failures still surface at once.
           if (
-            reason.startsWith("Local Assist is busy.") &&
-            retryIndex < BUSY_PROBE_RETRY_DELAYS_MS.length
+            reason.startsWith("Local Assist is busy.")
           ) {
             retryTimeoutId = setTimeout(() => {
               retryTimeoutId = null;
               probe(retryIndex + 1);
-            }, BUSY_PROBE_RETRY_DELAYS_MS[retryIndex]);
+            }, BUSY_PROBE_RETRY_DELAYS_MS[Math.min(retryIndex, BUSY_PROBE_RETRY_DELAYS_MS.length - 1)]);
             return;
           }
           console.warn("Failed to probe Hazakura Local Assist availability", err);

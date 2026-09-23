@@ -3,6 +3,18 @@
 Status: source / fixture / 隔離ad-hoc sandbox確認。実Background Assets・TestFlight受入ではない。
 Date: 2026-09-23
 
+## 2026-09-24 外部レビュー追補
+
+`352a0ffc`への追加P2 2件をsourceで是正した。再起動後に旧プロセスの
+`ensureLocalAvailability` completionを失った場合、進行中downloadやdelegate通知から最新版の
+ensureへ再接続する。要求versionと操作世代を保ち、旧版finishedだけではReadyにしない。
+`src-tauri/native/background_assets_bridge_reconnect_test.m`は再起動相当のcontroller、旧版通知、
+ensure完了後の遷移を模擬し、macOSのnative CIで実行する。
+`busy` probeは65秒の全体期限まで上限8秒間隔で再試行する。20秒後の復帰・モデル変更・unmount・
+期限到達をfrontendテストで確認。frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、
+native回帰テスト、型検査、Vite、App Store surface 132件、Rust fmt、`npm run build`は成功。
+実Background Assets配信は未試験。build 153のpkgには修正が入らず、次の署名済み候補が受入対象。
+
 ## 対象
 
 - 同じasset pack IDで互換な新versionを取得する。旧版が利用可能でも最新版の取得完了まで検証しない。
