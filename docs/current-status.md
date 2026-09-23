@@ -20,8 +20,9 @@ Last reviewed: 2026-09-23
   `df33a65a`からbuild 151署名pkgを作成し、app / extension番号一致、署名、digestを確認。
   元E4Bの15ファイルは生成前後のSHA-256が一致した。最終sourceの隔離プレビューでは
   3,600字のstreaming生成を停止し本文不変更を確認。その後Systemへ切替→E4Bへ戻して
-  再生成がDiff提案まで完了した。同じ配布候補のTestFlight install、non-streaming生成、
-  生成中のモデル切替、実ディスク切断は未受入。
+  再生成がDiff提案まで完了した。別の生成中にはモデル選択が無効、停止後に復帰した。
+  helper単体の通常生成も実E4B v2で候補を返した。同じ配布候補のTestFlight install、
+  外部bookmark付きnon-streaming IPC、実ディスク切断は未受入。
 
 - **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
   起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。

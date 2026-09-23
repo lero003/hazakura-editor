@@ -30,6 +30,8 @@ helperのentitlementとpkg署名・SHA-256を確認した。配布用profileの�
 再登録・選択すると生成が復帰した。元フォルダ15ファイルのSHA-256は不変。
 最終sourceの隔離プレビューでは3,600字のstreaming生成を途中で停止し、本文不変更の案内を確認。
 その後Apple Intelligenceへ切り替え、E4Bへ戻すと利用可となり、再生成がDiff提案まで完了した。
+別の3,600字生成中はモデル選択が無効、停止後は再び選択可能だった。通常生成は実E4B v2を
+Core AI helper単体へ渡し、通常macOS権限で校正候補を取得した（外部bookmark経路は通していない）。
 build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean sourceからbuild 151署名pkgを
 作成し、app / extensionのbuild番号、署名、pkg digestを通常macOS権限で確認した。
 同一配布候補のTestFlight受入は残る。[build 151と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。

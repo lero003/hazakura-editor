@@ -23,9 +23,11 @@ TestFlight受入としない。build 149は後続の外部model選択UI修正を
 `external_local`を`detected`で選択できるよう直し、起動直後のhelper `busy`競合だけ限定再試行する。
 最終sourceの隔離プレビューで3,600字のstreaming生成を停止し、本文不変更を画面で確認。
 Apple Intelligenceへ切替→E4Bに戻した後の再生成もDiff提案まで完了した。
+別の3,600字生成中はモデル選択が無効、停止後に復帰。Rustの生成予約中選択拒否テストも再実行して通過。
+通常macOS権限のCore AI helper単体は実E4B v2のnon-streaming校正候補を返した。
 frontend 2702件、scripts 31件、型検査、Vite、App Store surface 132件は通過。
 clean source `df33a65a`からbuild 151署名pkgを作成し、app / extension番号一致と署名・digestを確認。
-App Store Connectへのuploadはオーナー承認待ち。non-streaming IPC、生成中のモデル切替、実外部ディスク
+App Store Connectへのuploadはオーナー承認待ち。外部bookmark付きnon-streaming IPC、実外部ディスク
 切断、TestFlightのproduction profile / App Group / Background Assetsはなお未受入。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
@@ -46,8 +48,8 @@ App Store Connectへのuploadはオーナー承認待ち。non-streaming IPC、�
   制限付き実行環境の`Operation not permitted`で失敗し、製品不具合とは判定しない。
   App Store sandboxプレビューの署名smokeにCore AI helperを追加し、3 helperのinherit entitlementと
   親アプリのad-hoc署名を確認。後続の隔離ad-hoc sandbox実操作では外部E4Bの読取・
-  streaming生成・再起動復元まで進んだ（冒頭）。**配布署名済みTestFlight、non-streaming生成、
-  取消・切替、VoiceOverは未受入。** 次は同一配布候補で確認し、Custom ModelsのFinder導線を整える。
+  streaming生成・再起動復元まで進んだ（冒頭）。**配布署名済みTestFlightでの外部bookmark付き
+  non-streaming生成、取消・切替、VoiceOverは未受入。** 次は同一配布候補で確認し、Custom ModelsのFinder導線を整える。
 
 - **pack更新 / モデル設定（2026-09-23、source検証済み）:** build 147で12B pack v2が旧manifest
   全文一致に失敗したとの実機報告。Rustはpack内manifestの固定identity / runtime契約、safe path、

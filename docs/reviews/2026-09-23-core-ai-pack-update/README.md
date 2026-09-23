@@ -72,7 +72,14 @@ streaming生成がDiff提案まで通った。3,600字の生成中に「Stop gen
 「Request cancelled. The document was not changed.」と表示され、本文は元の3,600字のまま。
 Apple Intelligenceへ切り替えた後にE4Bへ戻すと再び利用可になり、同じ長文の生成が
 Diff提案まで完了した。元本文は未適用で、校正前の内容のままだった。
-この試験は128 GB Mac上のローカルad-hoc sandboxに限る。non-streaming IPC、生成中のモデル切替、
+別の3,600字生成中はモデル選択UIが無効となり、停止後に再び選択可能だった。
+Rustの生成予約中選択拒否・保存値不変更テストも単独で再実行して通過した。
+Core AI helperの`generate_candidate`を実E4B v2のresource rootとapp-managedテストIDで
+通常macOS権限から直接呼び、
+`candidate` envelopeと`were`→`was`の短文校正を確認した。制限付き実行環境では
+`noMetalDevice`で失敗したため、通常権限で再実行した。これはhelper単体のnormal経路であり、
+Rust IPC、外部bookmark受け渡し、配布用profileを含む試験ではない。
+この試験は128 GB Mac上のローカルad-hoc sandboxとhelper単体に限る。外部bookmark付きnon-streaming IPC、
 実外部ディスク切断、TestFlightのproduction profile / App Group / Background Assetsは未受入。
 更新後のfrontend 2702件、scripts 31件、型検査、Vite build、App Store surface 132件は成功。
 
