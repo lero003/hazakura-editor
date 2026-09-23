@@ -29,6 +29,9 @@ frontend 2702件、scripts 31件、型検査、Vite、App Store surface 132件�
 clean source `df33a65a`からbuild 151署名pkgを作成し、app / extension番号一致と署名・digestを確認。
 App Store Connectへのuploadはオーナー承認待ち。外部bookmark付きnon-streaming IPC、実外部ディスク
 切断、TestFlightのproduction profile / App Group / Background Assetsはなお未受入。
+通常生成IPCのhelper待機をTauriのblocking workerへ移した。Rust全体473件pass / 3 ignored、
+最終調整後の関連80件pass、`npm run build`と元bundle IDの1280×820起動smokeが成功。
+build 151にはこの変更が入らないため、次の配布候補はclean sourceから再作成する。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
   `BAAssetPackManager.sharedManager`へ入り`SIGTRAP`。別IDコピーでも再現し、extensionとの

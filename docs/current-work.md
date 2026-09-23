@@ -37,6 +37,10 @@ build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean
 同一配布候補のTestFlight受入は残る。[build 151と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
 現行の製品画面はstreamingのみを呼ぶため、外部bookmark付き通常生成の受入には
 同じ署名候補でnon-streaming IPCを実行する手段も必要。
+通常生成IPCはhelper応答を同期コマンド内で待っていたため、Tauriの非同期コマンドから
+blocking workerへ移した。既存のwindow / distribution / request検証とprofile記録を維持する。
+Rust全体473件pass / 3件ignoredの後、最終調整で関連80件pass。製品画面からの通常生成呼出しと
+署名済み候補での外部bookmark受入は引き続き未確認。
 
 ## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
 
@@ -50,6 +54,9 @@ Background Assets transportへ切り替え、Apple配信モデルを「このプ
 Apple配信モデル取得、署名済みTestFlightの動作はこのsmokeの範囲外。frontend 2698件、
 scripts 31件、Rust 473件pass / 3件ignored、App Store surface 132件、型検査、
 distribution probe、Rust fmt、diff checkは成功。
+通常生成IPCの非同期化後も`npm run build`を再実行し、同じ生成物の元bundle IDをmacOSの
+通常権限で`open -n`して1280×820の表示窓を確認した。制限付きshellではプロセス一覧取得と
+Launch Services起動が失敗したが、bundle内実行ファイルと署名は有効だった。
 
 ## C-3 外部モデルフォルダとLocal Assist導線（2026-09-23、source接続）
 

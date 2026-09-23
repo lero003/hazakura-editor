@@ -23,12 +23,16 @@ Last reviewed: 2026-09-23
   再生成がDiff提案まで完了した。別の生成中にはモデル選択が無効、停止後に復帰した。
   helper単体の通常生成も実E4B v2で候補を返した。同じ配布候補のTestFlight install、
   外部bookmark付きnon-streaming IPC、実ディスク切断は未受入。
+  通常生成IPCのhelper待機をblocking workerへ移し、UIスレッドを塞がない経路に変更。
+  Rust全体473件pass / 3 ignored、最終調整後の関連80件pass。build 151はこの変更を含まない。
 
 - **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
   起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。
   プレビューだけApple-hosted transportを呼ばず、現行catalogの12B取得はTestFlightで試す案内へ変更。
   `npm run build`後の別IDコピーは署名検証と1280×820表示窓のsmokeに成功。後続ビルドの
   元bundle ID `.app`も`open -n`で起動し、ウィンドウ表示を確認した。
+  通常生成IPCの非同期化後に再ビルドした元bundle IDでも、通常macOS権限の起動smokeで
+  1280×820の表示窓を確認した。
   submitビルドのplatform経路はsource上維持。TestFlight取得の再検証ではない。
 
 - **Core AI更新経路と設定（2026-09-23、source変更）:** build 147で12B pack v2のmanifestが

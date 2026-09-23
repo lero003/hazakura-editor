@@ -252,18 +252,21 @@ pub(crate) fn probe_local_assist_backend_availability_with_helper(
 }
 
 #[tauri::command]
-pub(crate) fn generate_apple_assist_candidate<R: tauri::Runtime>(
+pub(crate) async fn generate_apple_assist_candidate<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
     request: AppleAssistRequest,
 ) -> Result<AppleAssistResponse, String> {
-    let response = generate_apple_assist_candidate_with_label(
-        window.label(),
-        helper_store.inner().as_ref(),
-        request,
-    )?;
-    publish_generation_profile(&app, helper_store.inner().as_ref(), &response);
+    let label = window.label().to_owned();
+    let helper_store = Arc::clone(helper_store.inner());
+    let worker_store = Arc::clone(&helper_store);
+    let response = tauri::async_runtime::spawn_blocking(move || {
+        generate_apple_assist_candidate_with_label(&label, worker_store.as_ref(), request)
+    })
+    .await
+    .map_err(|e| format!("Hazakura Local Assist generation task failed: {e}"))??;
+    publish_generation_profile(&app, helper_store.as_ref(), &response);
     Ok(response)
 }
 
