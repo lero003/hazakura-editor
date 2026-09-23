@@ -14,7 +14,10 @@ Last reviewed: 2026-09-23
 外部フォルダは本体の永続bookmarkとhelper用implicit bookmarkを分離し、`.aimodel`だけの
 選択を親フォルダの権限と取り違えない。実際の署名済みsandboxでの通常/streaming生成、
 完全終了後の選択復元、取消/切替、移動/切断の説明と再指定、登録解除後の元ファイル保持は
-同一候補での受入待ち。source・ローカルテストをTestFlight受入としない。
+同一候補での受入待ち。clean source `6e76b443`から3.1.0 build 149の署名済みpkgを
+作成し、署名・entitlement・digestを確認した。配布用profileの`.app`単体起動はmacOSに
+拒否されるため、TestFlight install後に上記を受け入れる。source・ローカルテストを
+TestFlight受入としない。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
   `BAAssetPackManager.sharedManager`へ入り`SIGTRAP`。別IDコピーでも再現し、extensionとの

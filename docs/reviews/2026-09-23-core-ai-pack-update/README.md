@@ -51,10 +51,17 @@ Rust fmt、`npm run build:vite`、`npm run smoke:app-store-surface`（132件）�
 
 ## 署名済み候補の残ゲート
 
-現地の配布用provisioning profileに必要なApp Groupが含まれず、有効なcodesigning identityもないため、
-同じ署名済みsandbox候補を作成できなかった。ad-hocのsandbox署名形状は検証したが、実フォルダへの
-権限受け渡しは証明していない。更新したprofileとApple Distribution identityを用意した後、
-同一候補で次を確認する。
+App Groupを含む別のmacOS配布用profileとApple Distribution / Installer identityを通常のmacOS
+権限で確認し、`6e76b443`のclean sourceから3.1.0 build 149の署名済みpkgを作成した。app / extension /
+3 helperの署名とentitlement、pkg署名、SHA-256をローカル検証した。候補のパスとdigestはignoredの
+`docs/internal/app-store-candidates/latest.json`に記録した。制限付きshellのkeychain照会が0件でも、
+通常のmacOS権限では有効なidentityを確認できたため、先の不足判定は誤りだった。
+
+配布用profileを埋め込んだ`.app`をローカルから直接起動すると、macOSはproduction profileを
+ローカル実行用と認めず、`No matching profile found`として拒否した。これはpkgの署名・形状検証と
+別のゲートであり、外部フォルダの実権限受け渡しやApple配信取得を確認できていない。
+App Store Connectへのupload・Apple側の処理・TestFlight installは未実施。同じpkgをTestFlightで
+インストールした後、次を確認する。
 
 1. 外部フォルダ登録・選択後、通常生成とstreaming生成が成功し、元ファイルが変わらない。
 2. アプリとhelperの完全終了後、フォルダを選び直さず選択を復元して生成できる。

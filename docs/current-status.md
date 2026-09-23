@@ -13,7 +13,8 @@ Last reviewed: 2026-09-23
   検証失敗時のApple資産の削除→再取得、pack version・ファイル実体に結び付く検証記録、
   古い監視の状態反映防止を追加し、 focused Rust / UI回帰テストを通した。
   外部登録の永続bookmarkとhelperへの一時的なimplicit bookmarkも分離した。
-  同じ署名済み候補での実モデル生成・復元・切断時の復旧は未受入。
+  clean source `6e76b443`から署名済み3.1.0 build 149 pkgを作成し、署名・entitlementを
+  ローカル確認した。同じ候補のTestFlight install、実モデル生成・復元・切断時の復旧は未受入。
 
 - **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
   起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。

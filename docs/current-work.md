@@ -21,6 +21,10 @@ manifest検証を緩めず失敗として残す。同サイズでmtimeを戻し�
 一時的なimplicit bookmarkを生成・送信する。`.aimodel`単体選択では親の権限を仮定せず、
 resource rootの選び直しを促す。署名済みsandboxでの通常/streaming生成、再起動復元、
 取消・切替、移動・切断、登録解除の同一候補受入は引き続き未実施。
+clean source `6e76b443`から署名済み3.1.0 build 149 pkgを作成し、app / extension /
+helperのentitlementとpkg署名・SHA-256を確認した。配布用profileのため`.app`単体の
+ローカル起動はmacOSが拒否する。TestFlight installと上記受入は未実施。
+[build 149と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
 
 ## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
 
