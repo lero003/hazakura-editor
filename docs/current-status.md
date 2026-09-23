@@ -7,6 +7,12 @@ Last reviewed: 2026-09-24
 
 ## Current State
 
+- **Background Assetsのpause先行P2追補（2026-09-24、source検証済み）:** 再起動後の
+  delegate-observed pauseからprogress / finishedで最新版ensureへ再接続する。明示的な
+  取消・削除は別に記録し、遅延通知とsnapshotからの再接続を拒否する。nativeの失敗先行回帰
+  テスト、Rust 477件pass / 3 ignored、Rust fmt、ローカル`npm run build`を通過。
+  実Background AssetsとTestFlightは未確認。**build 154の署名済みpkgはこの修正を含まない。**
+
 - **Local Assistのモデル別可用性（2026-09-24、source検証済み）:** Systemモデルは
   Apple Intelligenceの有効化を要する。選択済みCore AIモデルは独立にprobeし、macOS 27+
   Apple Siliconで実際に読み込めればApple Intelligence OFFでもLocal Assistから利用できる。

@@ -11,6 +11,7 @@ static NSString *const HZPhaseFailed = @"failed";
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSMutableDictionary *> *states;
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *operationGenerations;
 @property(nonatomic, strong) NSMutableSet<NSString *> *activeIdentifiers;
+@property(nonatomic, strong) NSMutableSet<NSString *> *explicitlyStoppedIdentifiers;
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *requestedVersions;
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *confirmedVersions;
 @property(nonatomic, strong) dispatch_queue_t operationQueue;
@@ -30,6 +31,7 @@ static NSString *const HZPhaseFailed = @"failed";
       controller.states = [NSMutableDictionary dictionary];
       controller.operationGenerations = [NSMutableDictionary dictionary];
       controller.activeIdentifiers = [NSMutableSet set];
+      controller.explicitlyStoppedIdentifiers = [NSMutableSet set];
       controller.requestedVersions = [NSMutableDictionary dictionary];
       controller.confirmedVersions = [NSMutableDictionary dictionary];
       controller.operationQueue = dispatch_queue_create("dev.hazakura.editor.background-assets", DISPATCH_QUEUE_SERIAL);
@@ -47,6 +49,27 @@ static NSString *const HZPhaseFailed = @"failed";
 
 - (void)invalidateOperationForIdentifier:(NSString *)identifier {
     (void)[self beginOperationForIdentifier:identifier];
+}
+
+- (NSUInteger)beginStartForIdentifier:(NSString *)identifier {
+    @synchronized(self) {
+        NSUInteger generation = [self beginOperationForIdentifier:identifier];
+        [self.explicitlyStoppedIdentifiers removeObject:identifier];
+        [self.activeIdentifiers addObject:identifier];
+        [self.requestedVersions removeObjectForKey:identifier];
+        [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
+        return generation;
+    }
+}
+
+- (void)beginExplicitCancellationForIdentifier:(NSString *)identifier {
+    @synchronized(self) {
+        [self invalidateOperationForIdentifier:identifier];
+        [self.activeIdentifiers removeObject:identifier];
+        [self.requestedVersions removeObjectForKey:identifier];
+        [self.explicitlyStoppedIdentifiers addObject:identifier];
+        [self updateIdentifier:identifier phase:HZPhasePaused progress:nil error:nil version:nil];
+    }
 }
 
 - (BOOL)isCurrentOperationForIdentifier:(NSString *)identifier generation:(NSUInteger)generation {
@@ -95,9 +118,12 @@ static NSString *const HZPhaseFailed = @"failed";
         if (requested != nil && ![requested isEqualToNumber:eventVersion]) return NO;
         NSNumber *confirmed = self.confirmedVersions[identifier];
         if (confirmed != nil && assetPack.version < confirmed.unsignedIntegerValue) return NO;
+        // A delegate-observed pause may resume without another user action.
+        // Only an explicit cancellation must reject delayed callbacks.
+        if ([self.explicitlyStoppedIdentifiers containsObject:identifier]) return NO;
         NSString *phase = [self stateForIdentifier:identifier][@"phase"];
         if (![self.activeIdentifiers containsObject:identifier]) {
-            if ([phase isEqual:HZPhasePaused] || [phase isEqual:HZPhaseFailed]) return NO;
+            if ([phase isEqual:HZPhaseFailed]) return NO;
             if ([phase isEqual:@"downloaded"] && [confirmed isEqualToNumber:eventVersion]) return NO;
         }
         return YES;
@@ -107,7 +133,8 @@ static NSString *const HZPhaseFailed = @"failed";
 - (BOOL)reattachIfDownloadingIdentifier:(NSString *)identifier {
     @synchronized(self) {
         NSString *phase = [self stateForIdentifier:identifier][@"phase"];
-        if (![phase isEqual:HZPhaseDownloading] || [self.activeIdentifiers containsObject:identifier]) return NO;
+        if (![phase isEqual:HZPhaseDownloading] || [self.activeIdentifiers containsObject:identifier]
+            || [self.explicitlyStoppedIdentifiers containsObject:identifier]) return NO;
         // A delegate notification from an earlier process has no completion
         // handler here. Bind a new ensure request to the current manifest.
         [self startIdentifier:identifier];
@@ -138,11 +165,12 @@ static NSString *const HZPhaseFailed = @"failed";
     if (@available(macOS 27, *)) {
         BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
         manager.delegate = self;
-        NSString *currentPhase;
+        BOOL inspectDownloads;
         @synchronized(self) {
-            currentPhase = [self stateForIdentifier:identifier][@"phase"];
+            inspectDownloads = [[self stateForIdentifier:identifier][@"phase"] isEqual:HZPhaseNotDownloaded]
+                && ![self.explicitlyStoppedIdentifiers containsObject:identifier];
         }
-        if ([currentPhase isEqual:HZPhaseNotDownloaded]) {
+        if (inspectDownloads) {
             // An old version can remain available during a new download.
             // Inspect active downloads even when the pack ID is locally present.
             NSError *downloadsError = nil;
@@ -150,7 +178,8 @@ static NSString *const HZPhaseFailed = @"failed";
             for (BADownload *download in downloads ?: @[]) {
                 if ([download.identifier isEqualToString:identifier]) {
                     @synchronized(self) {
-                        if ([[self stateForIdentifier:identifier][@"phase"] isEqual:HZPhaseNotDownloaded]) {
+                        if ([[self stateForIdentifier:identifier][@"phase"] isEqual:HZPhaseNotDownloaded]
+                            && ![self.explicitlyStoppedIdentifiers containsObject:identifier]) {
                             [self updateIdentifier:identifier
                                             phase:download.state == BADownloadStateFailed ? HZPhaseFailed : HZPhaseDownloading
                                          progress:nil error:nil version:nil];
@@ -214,13 +243,7 @@ static NSString *const HZPhaseFailed = @"failed";
         // The monitor starts immediately after this method returns. Publish
         // resolving and invalidate an earlier request before queueing the
         // asynchronous manifest request.
-        NSUInteger generation;
-        @synchronized(self) {
-            generation = [self beginOperationForIdentifier:identifier];
-            [self.activeIdentifiers addObject:identifier];
-            [self.requestedVersions removeObjectForKey:identifier];
-            [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
-        }
+        NSUInteger generation = [self beginStartForIdentifier:identifier];
         dispatch_async(self.operationQueue, ^{
           BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
           manager.delegate = self;
@@ -274,25 +297,26 @@ static NSString *const HZPhaseFailed = @"failed";
     __block BOOL accepted = YES;
     __block NSError *operationError = nil;
     dispatch_sync(self.operationQueue, ^{
-      [self invalidateOperationForIdentifier:identifier];
-      @synchronized(self) {
-          [self.activeIdentifiers removeObject:identifier];
-          [self.requestedVersions removeObjectForKey:identifier];
-          [self updateIdentifier:identifier phase:HZPhasePaused progress:nil error:nil version:nil];
-      }
+      [self beginExplicitCancellationForIdentifier:identifier];
       NSArray<BADownload *> *downloads = [BADownloadManager.sharedManager fetchCurrentDownloads:&operationError];
       if (downloads == nil) {
           accepted = NO;
-          [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
-                           error:operationError.localizedDescription version:nil];
+          @synchronized(self) {
+              [self.explicitlyStoppedIdentifiers removeObject:identifier];
+              [self updateIdentifier:identifier phase:HZPhaseFailed progress:nil
+                               error:operationError.localizedDescription version:nil];
+          }
           return;
       }
       for (BADownload *download in downloads) {
           if ([download.identifier isEqualToString:identifier]) {
               accepted = [BADownloadManager.sharedManager cancelDownload:download error:&operationError];
               if (!accepted) {
-                  [self updateIdentifier:identifier phase:HZPhaseDownloading progress:nil
-                                   error:operationError.localizedDescription version:nil];
+                  @synchronized(self) {
+                      [self.explicitlyStoppedIdentifiers removeObject:identifier];
+                      [self updateIdentifier:identifier phase:HZPhaseDownloading progress:nil
+                                       error:operationError.localizedDescription version:nil];
+                  }
               }
               return;
           }
@@ -328,6 +352,8 @@ static NSString *const HZPhaseFailed = @"failed";
         @synchronized(self) {
             [self invalidateOperationForIdentifier:identifier];
             [self.activeIdentifiers removeObject:identifier];
+            // A removed pack must also ignore callbacks already in flight.
+            [self.explicitlyStoppedIdentifiers addObject:identifier];
             [self.requestedVersions removeObjectForKey:identifier];
             [self.confirmedVersions removeObjectForKey:identifier];
             [self.states removeObjectForKey:identifier];
@@ -368,8 +394,9 @@ static NSString *const HZPhaseFailed = @"failed";
     @synchronized(self) {
         if (![self acceptsDelegateAssetPack:assetPack]) return;
         NSString *phase = [self stateForIdentifier:assetPack.identifier][@"phase"];
-        if ([phase isEqualToString:HZPhaseDownloading] || [phase isEqualToString:HZPhaseNotDownloaded]) {
-            if ([phase isEqualToString:HZPhaseNotDownloaded]) {
+        if ([phase isEqualToString:HZPhaseDownloading] || [phase isEqualToString:HZPhaseNotDownloaded]
+            || [phase isEqualToString:HZPhasePaused]) {
+            if (![phase isEqualToString:HZPhaseDownloading]) {
                 [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading
                              progress:@1 error:nil version:@(assetPack.version)];
             }

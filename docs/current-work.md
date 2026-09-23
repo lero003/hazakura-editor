@@ -5,6 +5,24 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-24
 
+## 3.1外部レビュー追補 — pause先行の取得再接続（2026-09-24、source検証済み）
+
+`fa678ba2`からの追加レビューで、再起動直後にdelegateのpause通知が先着すると、後続の
+progress / finished通知を拒否して取得が一時停止表示に残るP2を確認した。native bridgeは
+delegateから観測したpauseとユーザーの明示的な取消を分け、前者の再開通知から現行manifestの
+最新版ensureへ再接続する。pause後にfinishedだけ届く順序も扱う。明示的な取消・削除後は
+遅延通知とsnapshotからの再接続を抑止し、ユーザーの再試行で解除する。旧version通知と古い
+ensure completionの拒否は維持する。
+
+native回帰テストはpause→progress→finished、pause→began→finished、pause→finished、
+明示的な取消後の遅延通知・completion拒否、再試行と旧version拒否を確認した。
+最初のケースは修正前に失敗し、修正後に
+通過。Rust 477件pass / 3件ignored、Rust fmt、ローカル`npm run build`のApp Storeプレビューも
+通過。実Background Assetsの通知順と署名済みTestFlightは未確認。**build 154の署名済みpkgは
+この修正と上記のモデル別可用性変更を含まない。** 次の署名済み候補で12B取得中の再起動、
+一時停止→再開、取消後の遅延通知、複数画面の初回probe、Apple Intelligence OFFでの
+Local Assist、外部フォルダの通常・streaming生成を受け入れる。
+
 ## 3.1外部レビュー追補 — Local Assistのモデル別可用性（2026-09-24、source検証済み）
 
 Apple Intelligence OFF時の`disabled`はSystemモデルの可用性であり、Local Assist全体を
@@ -38,7 +56,7 @@ App Store surface 132件、Rust fmt、`npm run build`が成功。これは実Bac
 署名済みTestFlightの受入ではない。build 153のpkgは今回の2件を含まない。
 clean source `fa678ba2`から3.1.0 build 154の署名済みpkgを作成し、profile・署名・pkg digestを
 ローカル確認した。候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を
-正本とする。build 154をTestFlightから入れ、ダウンロード中の再起動と複数画面の初回probeを受け入れる。
+正本とする。build 154は当時の受入候補だったが、後続のpause先行P2修正は含まない。
 
 ## 3.1初回配布と外部レビュー是正（2026-09-23、source検証中）
 

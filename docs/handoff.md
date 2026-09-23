@@ -5,6 +5,16 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-24
 
+## 2026-09-24 Background Assetsのpause先行P2
+
+再起動後のcontrollerにdelegateのpauseが先着すると後続通知を拒否する経路を修正。
+delegate-observed pauseはprogress / finishedから最新版ensureへ再接続し、ユーザーの
+明示的な取消・削除は遅延通知とsnapshot再接続を抑止する。再試行で抑止を解除し、
+旧versionと古いcompletionは引き続き拒否。pause先行の失敗先行native回帰テスト、
+Rust 477件pass / 3 ignored、Rust fmt、ローカル`npm run build`は通過。
+**build 154の署名済みpkgはこの修正を含まない。** 実Background AssetsとTestFlightは
+未確認。次の署名済み候補で取得中再起動・pause→再開・取消後の遅延通知を受け入れる。
+
 ## 2026-09-24 Local Assistのモデル別可用性
 
 SystemモデルのApple Intelligence OFFは`disabled`。Core AIは選択したモデルの実読み込みで
@@ -26,7 +36,7 @@ frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、型検査、Vit
 実Apple配信・TestFlightの確認ではない。**build 153は追補を含まない。** clean source
 `fa678ba2`からbuild 154の署名済みpkgを作成し、profile・署名・digestをローカル確認した。
 候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を参照。
-build 154で12B取得中の再起動、複数画面の初回probe、外部フォルダの通常・streaming生成を受け入れる。
+build 154は当時の受入候補だったが、後続のpause先行P2修正は含まない。
 
 ## 2026-09-23 現行のCore AI配布判断と確認ゲート
 
