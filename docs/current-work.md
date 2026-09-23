@@ -15,10 +15,19 @@ decoderをfp16へ戻しても崩れたため、decoder量子化だけが原因�
 寸法・ファイル長を確認してからmmapするhelper patchを配布buildへ組み込んだ。
 
 v2の実helper / stageで日本語・Markdown・引用の6例×3回と取消後の再依頼が全件成功。
-校正時の漢数字→算用数字変換は候補採用前に元文へ戻す。`.aar`はローカル生成済みだが、
-新しいasset pack IDはApple未処理のためE4B行を`not_published`に固定した。
-次は[外部レビュー資料](reviews/2026-09-23-core-ai-e4b-v2/README.md)で実装差分を確認し、
-16 GB実機のmemory/品質、AOT、Apple-hosted取得・TestFlightを別ゲートで受け入れる。
+校正時の漢数字→算用数字変換は候補採用前に元文へ戻す。`.aar`はローカル生成済み。
+オーナーはv2のTestFlight配信成功を報告したが、この作業ではApple側を独立確認していない。
+build 146のアプリ本体は旧v1を参照し、現行sourceのv2 catalogは`not_published`のまま。
+16 GB実機のmemory/品質、AOT、v2を参照する新アプリbuildでの取得・生成を別ゲートで受け入れる。
+編集promptを外したE4B v2 / 12Bの短い直接会話は
+[会話probe](reviews/2026-09-23-core-ai-direct-chat/README.md)で確認済み（編集品質の合格ではない）。
+
+同じ校正対象で参考文脈だけを変えた[文脈probe](reviews/2026-09-23-core-ai-context-probe/README.md)では、
+参考文脈中の「青い栞を赤い栞に変更」という命令をE4B v2 / 12Bとも生出力へ取り込んだ。
+短い入力でも起き、単なる文字数問題ではない。8,000字文脈は両モデルで生成エラーになった。
+校正9件を文脈あり/なしでE4B v2・12B・Systemに通し、各9組で候補が一致し保持チェックも通った。
+初回校正では文脈を送らず、追加依頼では固定原文と依頼履歴を残し、隣接本文だけ省く。
+他の操作・固定prompt・samplerは変更しない。実原稿/実機品質と他操作の文脈量は未受入。
 
 ## 実機フィードバック対応（2026-09-22）
 

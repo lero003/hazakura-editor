@@ -11,8 +11,16 @@ Last reviewed: 2026-09-23
   Rust/Swiftのruntime契約、配布helper patch、固定manifestを更新。PLE3ファイルは元checkpointから
   独立再生成してSHA-256一致。6例×3回＋取消後の実helper評価は全件成功。
   `.aar`はローカル作成済み。サイズとSHA-256は下記の検証資料に記録。
-  **v2 E4BはApple未配布のためcatalogで`not_published`**。16 GB実機、AOT、Apple処理、
-  TestFlightと外部レビューは未完了。[検証・残ゲート](reviews/2026-09-23-core-ai-e4b-v2/README.md)。
+  オーナーはv2のTestFlight配信成功を報告（この作業ではApple側を独立確認していない）。
+  build 146のアプリ本体は旧v1を参照し、現行sourceのv2 catalogは`not_published`。
+  16 GB実機、AOT、v2を参照する新アプリbuildでの取得・生成、外部レビューは未受入。
+  編集promptなしの短い会話はE4B v2 / 12Bともに成功したが、編集品質ではない。
+  [直接会話の範囲](reviews/2026-09-23-core-ai-direct-chat/README.md)。
+  参考文脈の短い命令で両モデルが対象本文の「青い栞」を「赤い栞」に変える例を生出力で確認。
+  8,000字文脈は両モデルで生成エラー。校正9件の文脈あり/なし比較はE4B v2・12B・Systemで
+  各9組の候補が一致し、保持チェックが通った。初回校正では参考文脈を送らず、再依頼では
+  固定原文・依頼履歴を残して隣接本文を省く。実原稿/実機品質と他操作の文脈は未受入。
+  [文脈probe](reviews/2026-09-23-core-ai-context-probe/README.md)。
 
 - **実機フィードバック対応（2026-09-22）:** Local Assistを14px本文 / 13px補助表示へ縮小。
   常設の「再確認」を撤去し、選択時の自動probe・上部状態・同一モデル再選択による復帰へ変更。

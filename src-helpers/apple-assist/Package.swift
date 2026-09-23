@@ -57,6 +57,8 @@ let helperSwiftSettings: [SwiftSetting] = [
 ] + (coreAIBackendBuild ? [.define("COREAI_BACKEND")] : [])
   + (coreAITestBuild ? [.define("COREAI_TEST_BACKEND")] : [])
   + (coreAIDistributionBuild ? [.define("COREAI_PRODUCT_BACKEND")] : [])
+let testDependencies: [Target.Dependency] = ["HazakuraAppleAssist"]
+  + (coreAIDistributionBuild ? [.product(name: "CoreAIKit", package: "coreai-kit")] : [])
 
 let package = Package(
     name: "HazakuraAppleAssist",
@@ -71,7 +73,7 @@ let package = Package(
         ),
         .testTarget(
             name: "HazakuraAppleAssistTests",
-            dependencies: ["HazakuraAppleAssist"]
+            dependencies: testDependencies
         )
     ]
 )

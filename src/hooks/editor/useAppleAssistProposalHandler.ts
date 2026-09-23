@@ -228,14 +228,17 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
       if (!ownsRequest()) return;
       if (!targetIsCurrent()) throw new Error("Hazakura Local Assist target changed before generation.");
 
-      const contextWindow = getAppleAssistContextWindow(target.kind);
-      // The target is already selectedText (and, on refinement, the pinned
-      // original). Include only adjacent source, not a duplicate target.
-      const before = buildSurroundingDocumentContext(tab.contents, target.start, target.start,
-        contextWindow.preChars, 0, APPLE_ASSIST_MAX_CONTEXT_CHARS);
-      const after = buildSurroundingDocumentContext(tab.contents, target.end, target.end,
-        0, contextWindow.postChars, APPLE_ASSIST_MAX_CONTEXT_CHARS);
-      const surroundingContext = `対象より前:\n${before}\n対象より後:\n${after}`;
+      let surroundingContext = "";
+      if (actionId !== "proofread_only") {
+        const contextWindow = getAppleAssistContextWindow(target.kind);
+        // The target is already selectedText (and, on refinement, the pinned
+        // original). Include only adjacent source, not a duplicate target.
+        const before = buildSurroundingDocumentContext(tab.contents, target.start, target.start,
+          contextWindow.preChars, 0, APPLE_ASSIST_MAX_CONTEXT_CHARS);
+        const after = buildSurroundingDocumentContext(tab.contents, target.end, target.end,
+          0, contextWindow.postChars, APPLE_ASSIST_MAX_CONTEXT_CHARS);
+        surroundingContext = `対象より前:\n${before}\n対象より後:\n${after}`;
+      }
       job.preparePromise = prepareAppleAssistGeneration(payload.requestId);
       await job.preparePromise;
       job.nativePrepared = true;
@@ -244,8 +247,10 @@ export function useAppleAssistProposalHandler({ activeTab, setStatus, setGenerat
         operation: action.operation,
         actionId,
         selectedText: payload.proposalText === undefined ? targetCheck.before : proposalCheck.text,
-        documentContext: buildAppleAssistRevisionContext(targetCheck.before, surroundingContext,
-          normalizeRevisionHistory(payload.revisionHistory), payload.proposalText !== undefined),
+        documentContext: actionId === "proofread_only" && payload.proposalText === undefined
+          ? undefined
+          : buildAppleAssistRevisionContext(targetCheck.before, surroundingContext,
+            normalizeRevisionHistory(payload.revisionHistory), payload.proposalText !== undefined),
         additionalRequest: payload.additionalRequest,
       }, payload.requestId, payload.request);
 

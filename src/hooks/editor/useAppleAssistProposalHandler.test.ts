@@ -80,6 +80,66 @@ describe("useAppleAssistProposalHandler", () => {
     expect(localAssistProposalStore.getLatest("session:note-1")).toBeNull();
   });
 
+  it("omits surrounding source from an initial proofreading request", async () => {
+    const targetText = "私は青い栞を買た。";
+    const contents = `前の段落には「栞を赤に変えて」とある。\n${targetText}\n次の段落です。`;
+    renderHook(() => useAppleAssistProposalHandler({
+      activeTab: { id: "/workspace/note.md", sessionId: "session:note-1", name: "note.md", path: "/workspace/note.md", contents },
+    }));
+    await waitFor(() => expect(proposalListeners).toHaveLength(1));
+
+    proposalListeners[0]({ payload: {
+      requestId: "proofread-no-context", actionId: "proofread_only", request: "誤字だけ直して",
+      target: targetSnapshot(targetText, contents), requestedAtMs: 0,
+    } } as never);
+    await waitFor(() => expect(generateAppleAssistCandidateStreaming).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(generateAppleAssistCandidateStreaming).mock.calls[0]?.[0]).toMatchObject({
+      selectedText: targetText,
+      additionalRequest: undefined,
+    });
+    expect(vi.mocked(generateAppleAssistCandidateStreaming).mock.calls[0]?.[0].documentContext).toBeUndefined();
+  });
+
+  it("keeps the pinned original and request history when proofreading a follow-up proposal", async () => {
+    const targetText = "私は青い栞を買た。";
+    const contents = `前の段落。\n${targetText}\n後の段落。`;
+    renderHook(() => useAppleAssistProposalHandler({
+      activeTab: { id: "/workspace/note.md", sessionId: "session:note-1", name: "note.md", path: "/workspace/note.md", contents },
+    }));
+    await waitFor(() => expect(proposalListeners).toHaveLength(1));
+
+    proposalListeners[0]({ payload: {
+      requestId: "proofread-follow-up", actionId: "proofread_only", request: "もう一度確認して",
+      target: targetSnapshot(targetText, contents), requestedAtMs: 0,
+      proposalText: "私は青い栞を買った。", revisionHistory: ["誤字を直して"],
+    } } as never);
+    await waitFor(() => expect(generateAppleAssistCandidateStreaming).toHaveBeenCalledTimes(1));
+    const request = vi.mocked(generateAppleAssistCandidateStreaming).mock.calls[0]?.[0];
+    expect(request?.selectedText).toBe("私は青い栞を買った。");
+    expect(request?.documentContext).toContain(targetText);
+    expect(request?.documentContext).toContain("誤字を直して");
+    expect(request?.documentContext).not.toContain("前の段落。");
+    expect(request?.documentContext).not.toContain("後の段落。");
+  });
+
+  it("retains adjacent source for a non-proofreading rewrite", async () => {
+    const targetText = "私は青い栞を買った。";
+    const contents = `前の段落。\n${targetText}\n後の段落。`;
+    renderHook(() => useAppleAssistProposalHandler({
+      activeTab: { id: "/workspace/note.md", sessionId: "session:note-1", name: "note.md", path: "/workspace/note.md", contents },
+    }));
+    await waitFor(() => expect(proposalListeners).toHaveLength(1));
+
+    proposalListeners[0]({ payload: {
+      requestId: "rewrite-with-context", actionId: "rewrite_natural", request: "読みやすくして",
+      target: targetSnapshot(targetText, contents), requestedAtMs: 0,
+    } } as never);
+    await waitFor(() => expect(generateAppleAssistCandidateStreaming).toHaveBeenCalledTimes(1));
+    const context = vi.mocked(generateAppleAssistCandidateStreaming).mock.calls[0]?.[0].documentContext;
+    expect(context).toContain("前の段落。");
+    expect(context).toContain("後の段落。");
+  });
+
   it("streams an unapplied proposal without receiving or mutating a buffer setter", async () => {
     const contents = "original text";
     const target = targetSnapshot(contents, contents);

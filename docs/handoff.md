@@ -5,11 +5,27 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-23
 
+- **Core AI参考文脈probe（2026-09-23）:** 同じ短い校正対象で文脈だけ変えると、
+  E4B v2 / 12Bとも参考文脈内の「青い栞を赤い栞に変更」という命令を生出力へ取り込んだ。
+  事実だけの参考文脈では保持。12Bは複合文脈でも再現、E4Bは命令単独時に再現。
+  8,000字文脈は両モデルで生成エラー。校正9件の文脈なし/ありA/BはE4B v2・12B・Systemで
+  各9組の候補が一致、保持チェック全通過。初回校正の文脈を省き、追加依頼では固定原文/履歴だけ維持。
+  他操作の文脈/実原稿/実機品質は未受入。[詳細](reviews/2026-09-23-core-ai-context-probe/README.md)。
+
+- **Core AI直接会話（2026-09-23）:** E4B v2と12Bを編集prompt/formatterなしでmacOS
+  `LanguageModelSession`へ渡し、同じ日本語4ターンで短い会話と合言葉の記憶を確認。
+  Apple標準`llm-runner`でも12Bはpipelined/warmup offで一問に回答した。
+  [直接会話の証跡](reviews/2026-09-23-core-ai-direct-chat/README.md)。これは編集品質や
+  TestFlight受入ではない。現行build 146のアプリ本体は旧E4B v1 IDのまま。オーナーは
+  v2のTestFlight配信成功を報告したが、この作業ではApple側を独立確認していない。
+  v2 catalogはsourceで`not_published`。
+  新しいアプリbuildの前にApple処理と配布判断を確認する。
+
 - **E4B v2（2026-09-23）:** v1 static PLE graphでの日本語崩れを切り分け、固定QAT checkpointから
   per-token PLE provider版を再変換。元重み、テーブル、decoder、runtime patchをpinした。
   PLEテーブルは元checkpointから再生成して3ファイルともSHA一致。実helperの6例×3回＋取消後は成功。
-  新IDの`.aar`はローカル作成済みだがApple未処理で、Rust catalogは`not_published`。
-  16 GB実機memory/品質、AOT、Apple-hosted配信、TestFlightは未受入。
+  新IDの`.aar`はローカル作成済みで、Rust catalogは`not_published`。
+  16 GB実機memory/品質、AOT、v2を参照する新アプリbuildでの取得・生成は未受入。
   [外部レビュー資料](reviews/2026-09-23-core-ai-e4b-v2/README.md)から再開する。
 
 - **実機フィードバック（2026-09-22）:** Local Assistの文字を一段縮小し、再確認ボタンを撤去。
