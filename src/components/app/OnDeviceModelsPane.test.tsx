@@ -29,12 +29,12 @@ describe("OnDeviceModelsPane", () => {
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
   });
 
-  it("keeps the storage explanation out of a user-chosen folder", () => {
-    // 保存先は Apple-hosted asset pack がプロセス単位で決めるため、選ばせる UI を作らない。
+  it("keeps Apple-hosted storage fixed while offering explicit local folder registration", () => {
     render(<OnDeviceModelsPane copy={getPreferencesCopy("en")} language="en" />);
 
-    expect(screen.getByText(/You cannot choose the location/)).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Choose|Browse|Save to/i })).toBeNull();
+    expect(screen.getByText(/their location cannot be changed/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add model folder…" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Save to/i })).toBeNull();
   });
 
   it("takes focus to the page heading when the Settings body entry opens it", async () => {

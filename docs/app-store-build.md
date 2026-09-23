@@ -153,7 +153,7 @@ Allowed:
 - `com.apple.security.application-groups` with only
   `group.dev.hazakura.editor` for the main app and Background Download extension
 
-The Hazakura Local Assist helper is re-signed after the App Store submit
+The Local Assist, Core AI, and import helpers are re-signed after the App Store submit
 bundle is built, using `src-tauri/entitlements/app-store-helper.plist`
 with `com.apple.security.app-sandbox` and
 `com.apple.security.inherit`. The app bundle is then re-signed so the
@@ -296,6 +296,13 @@ uses ad-hoc signatures and no provisioning profile so
 `npm run smoke:macos-sandbox-preview` for a local sandbox-entitlement
 probe, and use `npm run build:app-store-submit` plus `productbuild` for
 the signed TestFlight / App Store Connect lane.
+The ad-hoc preview compiles with `HAZAKURA_BACKGROUND_ASSETS_LOCAL_PREVIEW=1`:
+it retains the catalog and extension for UI and package inspection, while the
+Rust transport reports Apple-hosted downloads unavailable without entering
+`BAAssetPackManager`. A 2026-09-23 launch crash showed that calling its shared
+manager from this ad-hoc signed preview traps during startup refresh.
+The submit command does not set this preview flag. Its Background Assets path
+still requires separate signed TestFlight verification.
 
 Run the lightweight App Store surface smoke before submission-facing
 builds or metadata review:
@@ -334,9 +341,9 @@ xcrun altool --upload-asset-pack <path.aar> --apple-id <app-apple-id> --wait \
 identifier unchanged while diagnosing: an uploaded pack cannot be deleted, only archived.
 Record the exact `--list-asset-packs` output before retrying an upload.
 
-The App Store source catalog now contains only the pinned E4B entry so internal
-TestFlight can exercise the CDN path. Developer builds keep the production catalog
-empty, and 12B remains deferred. Before treating E4B as release-ready, complete all
+The App Store source catalog now contains only Gemma 4 12B for the first release
+candidate. Developer builds keep the production catalog empty; E4B remains an
+evaluation artifact outside the download UI. Before treating 12B as release-ready, complete all
 of the following in the same release line:
 
 1. Review the pinned production model identity, license/provenance, download and
@@ -446,10 +453,10 @@ on `com.apple.application-identifier`; otherwise App Store Connect can
 accept the upload but mark the build ineligible for TestFlight with
 warning 90886.
 
-Check nested helper sidecar signing (both must carry sandbox + inherit):
+Check nested helper sidecar signing (all three must carry sandbox + inherit):
 
 ```bash
-for helper in hazakura-local-assist-helper hazakura-import-assist-helper; do
+for helper in hazakura-local-assist-helper hazakura-core-ai-helper hazakura-import-assist-helper; do
   test -x "$APP/Contents/MacOS/$helper"
   codesign -dv --verbose=4 "$APP/Contents/MacOS/$helper"
   codesign -d --entitlements - "$APP/Contents/MacOS/$helper" 2>/dev/null \

@@ -8,6 +8,9 @@ const mocks = vi.hoisted(() => ({
   download: vi.fn(),
   cancel: vi.fn(),
   remove: vi.fn(),
+  register: vi.fn(),
+  unregister: vi.fn(),
+  pickFolder: vi.fn(),
   listen: vi.fn(),
   listener: null as null | ((catalog: unknown) => void),
 }));
@@ -26,8 +29,12 @@ vi.mock("../../lib/tauri/coreAiModels", () => ({
   startCoreAiModelDownload: mocks.download,
   cancelCoreAiModelDownload: mocks.cancel,
   deleteCoreAiModel: mocks.remove,
+  registerExternalCoreAiModel: mocks.register,
+  unregisterExternalCoreAiModel: mocks.unregister,
   listenCoreAiModelStateChanges: mocks.listen,
 }));
+
+vi.mock("../../lib/tauri/dialog", () => ({ pickCoreAiModelFolder: mocks.pickFolder }));
 
 beforeEach(() => {
   mocks.listen.mockImplementation(async (listener: (catalog: unknown) => void) => {
@@ -39,6 +46,58 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); mocks.listener = null; });
 
 describe("CoreAiModelManager", () => {
+  it("explains that Apple-hosted downloads need TestFlight in a local preview", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [{
+        id: "apple:core-ai:gemma4-e4b", displayName: "Gemma 4 E4B",
+        kind: "core_ai", source: "apple_hosted", status: "unsupported",
+        errorCode: "local-preview", selected: false,
+      }],
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    const row = await screen.findByRole("group", { name: "Gemma 4 E4B" });
+    expect(row.textContent).toContain("このプレビューでは取得できません");
+    expect(row.textContent).toContain("TestFlight版");
+    expect(row.textContent).not.toContain("macOS 27以降が必要");
+    expect(screen.queryByRole("button", { name: "ダウンロード" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
+  });
+
+  it("registers a chosen model folder and only unregisters its listing", async () => {
+    const system = { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+      kind: "system", source: "apple_hosted", status: "ready", selected: true };
+    const external = { id: "local:external:1", displayName: "My Model", kind: "core_ai",
+      source: "external_local", status: "detected", selected: false };
+    const initial = { distributionStatus: "not_published", selectedModelId: system.id, models: [system] };
+    const added = { ...initial, models: [system, external] };
+    mocks.list.mockResolvedValue(initial);
+    mocks.pickFolder.mockResolvedValue("/chosen/model");
+    mocks.register.mockResolvedValue(added);
+    mocks.unregister.mockResolvedValue(initial);
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    await screen.findByText("Apple Intelligence");
+    fireEvent.click(screen.getByRole("button", { name: "モデルフォルダを追加…" }));
+    await waitFor(() => expect(mocks.register).toHaveBeenCalledWith("/chosen/model"));
+    expect(await screen.findByRole("group", { name: "My Model" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "My Model" }).textContent).toContain("検出済み（選択できます）");
+    fireEvent.click(screen.getByRole("button", { name: "一覧から外す" }));
+    await waitFor(() => expect(mocks.unregister).toHaveBeenCalledWith(external.id));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("元のファイルは削除しません"));
+    confirm.mockRestore();
+  });
+
+  it("explains a folder missing its tokenizer without exposing the native error first", async () => {
+    mocks.list.mockResolvedValue({ distributionStatus: "not_published",
+      selectedModelId: "apple:foundation-models:system-default", models: [] });
+    mocks.pickFolder.mockResolvedValue("/chosen/incomplete");
+    mocks.register.mockRejectedValue("local-model:missing-tokenizer");
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(screen.getByRole("button", { name: "モデルフォルダを追加…" }));
+    expect((await screen.findByRole("alert")).textContent).toContain("実行に必要なTokenizerが見つかりません");
+  });
   it("reports startup storage errors and disables model management only", async () => {
     mocks.list.mockResolvedValue({
       distributionStatus: "available", selectedModelId: "apple:foundation-models:system-default",
@@ -46,7 +105,9 @@ describe("CoreAiModelManager", () => {
       models: [{ id: "apple:core-ai:future", displayName: "Future", kind: "core_ai", status: "not_downloaded", selected: false }],
     });
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
-    expect((await screen.findByRole("alert")).textContent).toContain("permission denied");
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("permission denied");
+    expect(alert.querySelector("details")?.open).toBe(false);
     expect(screen.getByRole("alert").textContent).toContain("文書の編集は続けられます");
     expect(screen.getByRole("button", { name: "ダウンロード" }).hasAttribute("disabled")).toBe(true);
   });
@@ -93,7 +154,8 @@ describe("CoreAiModelManager", () => {
 
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
-    expect(await screen.findByText("My Qwen 3 · ローカル")).toBeTruthy();
+    expect(await screen.findByText("My Qwen 3")).toBeTruthy();
+    expect(screen.getByText("ローカル")).toBeTruthy();
     expect(screen.getByText("検出済み（選択できます）")).toBeTruthy();
     const select = screen.getByRole("button", { name: "使う" });
     select.focus();
@@ -152,7 +214,8 @@ describe("CoreAiModelManager", () => {
 
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
-    expect(await screen.findByText("Broken · ローカル")).toBeTruthy();
+    expect(await screen.findByText("Broken")).toBeTruthy();
+    expect(screen.getByText("ローカル")).toBeTruthy();
     expect(screen.getByText("実行に必要なTokenizerが見つかりません。")).toBeTruthy();
     expect(screen.queryByText("missing-tokenizer")).toBeNull();
     expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
@@ -240,6 +303,75 @@ describe("CoreAiModelManager", () => {
     await waitFor(() => expect(mocks.download).toHaveBeenCalledWith("apple:core-ai:writing-primary"));
   });
 
+  it("lets a ready model check for a newer pack without an app update", async () => {
+    const catalog = {
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: true },
+        { id: "apple:core-ai:12b", displayName: "Gemma 4 12B", kind: "core_ai", status: "ready", selected: false, canRemove: true },
+      ],
+    };
+    mocks.list.mockResolvedValue(catalog);
+    mocks.download.mockResolvedValue(catalog);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "更新を確認" }));
+    await waitFor(() => expect(mocks.download).toHaveBeenCalledWith("apple:core-ai:12b"));
+  });
+
+  it("shows recovery in plain language and keeps the raw failure in details", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [
+        { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system", status: "ready", selected: true },
+        { id: "apple:core-ai:12b", displayName: "Gemma 4 12B", kind: "core_ai", status: "failed", selected: false,
+          canRemove: true, assetPackVersion: 2, errorCode: "verification-failed",
+          error: "The downloaded E4B resource manifest does not match the signed catalog." },
+      ],
+    });
+    mocks.remove.mockResolvedValue({
+      distributionStatus: "available", selectedModelId: "apple:foundation-models:system-default", models: [],
+    });
+    mocks.download.mockResolvedValue({
+      distributionStatus: "available", selectedModelId: "apple:foundation-models:system-default", models: [],
+    });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    expect(await screen.findByText(/ダウンロードしたモデルの検証に失敗しました/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
+    const details = screen.getByText("技術情報").closest("details");
+    expect(details).toBeTruthy();
+    expect(details?.open).toBe(false);
+    expect(details?.textContent).toContain("E4B resource manifest");
+    expect(details?.textContent).toContain("取得対象の版 v2");
+    fireEvent.click(screen.getByRole("button", { name: "削除して再取得" }));
+    await waitFor(() => expect(mocks.download).toHaveBeenCalledWith("apple:core-ai:12b"));
+    expect(mocks.remove).toHaveBeenCalledWith("apple:core-ai:12b");
+    expect(mocks.remove.mock.invocationCallOrder[0]).toBeLessThan(mocks.download.mock.invocationCallOrder[0]);
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("削除して再取得"));
+    confirm.mockRestore();
+  });
+
+  it("offers retry for a transport failure without deleting a model", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default",
+      models: [{
+        id: "apple:core-ai:12b", displayName: "Gemma 4 12B", kind: "core_ai",
+        source: "apple_hosted", status: "failed", selected: false,
+        errorCode: "download-failed", canRemove: false, error: "Network unavailable",
+      }],
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    expect(await screen.findByText(/モデルのダウンロードに失敗しました/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "再試行" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "削除して再取得" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
+  });
+
   it("tracks progress events and supports cancel then resume", async () => {
     const downloading = {
       distributionStatus: "available",
@@ -282,7 +414,8 @@ describe("CoreAiModelManager", () => {
           id: "apple:core-ai:gemma-4-12b-it-int8-v1", displayName: "Gemma 4 12B",
           kind: "core_ai", status: "not_downloaded", selected: false,
           downloadSizeBytes: 9_148_924_300, installedSizeBytes: 14_698_433_203,
-          recommendedMemoryGb: 32, license: "Apache-2.0", hasUpstreamConversionNotice: true,
+          minimumMemoryGb: 16, recommendedMemoryGb: 24,
+          license: "Apache-2.0", hasUpstreamConversionNotice: true,
         },
       ],
     };
@@ -290,7 +423,8 @@ describe("CoreAiModelManager", () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
-    expect(await screen.findByText(/推奨メモリ 32 GB/)).toBeTruthy();
+    expect(await screen.findByText(/最低メモリ 16 GB/)).toBeTruthy();
+    expect(screen.getByText(/推奨メモリ 24 GB/)).toBeTruthy();
     expect(screen.getByText(/このMacは16 GB/)).toBeTruthy();
     expect(screen.getByText(/Apache-2.0.*変換元のライセンス文書/)).toBeTruthy();
     expect(screen.getByText(/インストール後 約14.7 GB/)).toBeTruthy();

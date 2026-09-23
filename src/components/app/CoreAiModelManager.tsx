@@ -2,11 +2,14 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { MenuLanguage } from "../../types";
 import { useCoreAiModelCatalog } from "../../hooks/app/useCoreAiModelCatalog";
 import { isCoreAiModelSelectable } from "../../lib/coreAiModelSelection";
+import { pickCoreAiModelFolder } from "../../lib/tauri/dialog";
 import {
   cancelCoreAiModelDownload,
   deleteCoreAiModel,
+  registerExternalCoreAiModel,
   selectLocalAssistModel,
   startCoreAiModelDownload,
+  unregisterExternalCoreAiModel,
   type CoreAiModelCatalog,
   type CoreAiModelSummary,
 } from "../../lib/tauri/coreAiModels";
@@ -19,6 +22,7 @@ import {
 export function CoreAiModelManager({ label, language }: { label: string; language: MenuLanguage }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const focusedAction = useRef<{ control: HTMLElement; row: HTMLElement } | null>(null);
   const copy = managerCopy(language);
   const { catalog, refreshCatalog, runCatalogRequest } = useCoreAiModelCatalog((reason) => {
@@ -35,13 +39,27 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
     }
   }, [catalog]);
 
-  const run = async (model: CoreAiModelSummary, action: "select" | "download" | "cancel" | "delete") => {
-    if (action === "download" && isBelowRecommendedMemory(model, catalog)) {
-      const proceed = window.confirm(copy.memoryConfirmation(
-        catalog.deviceMemoryGb!,
-        model.recommendedMemoryGb!,
-        model.displayName,
-      ));
+  const addFolder = async () => {
+    setError(null);
+    try {
+      const path = await pickCoreAiModelFolder();
+      if (!path) return;
+      setBusyId("register");
+      const before = new Set(catalog.models.map((model) => model.id));
+      const next = await runCatalogRequest(() => registerExternalCoreAiModel(path));
+      setNotice(next.models.some((model) => !before.has(model.id)) ? copy.folderAdded : copy.folderAlreadyAdded);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const run = async (model: CoreAiModelSummary, action: "select" | "download" | "cancel" | "delete" | "recover" | "unregister") => {
+    if (action === "download" && model.status !== "ready" && isBelowRecommendedMemory(model, catalog)) {
+      const proceed = window.confirm(isBelowMinimumMemory(model, catalog)
+        ? copy.minimumMemoryConfirmation(catalog.deviceMemoryGb!, model.minimumMemoryGb!, model.displayName)
+        : copy.memoryConfirmation(catalog.deviceMemoryGb!, model.recommendedMemoryGb!, model.displayName));
       if (!proceed) return;
     }
     if (action === "delete" && !window.confirm(copy.deleteConfirmation(
@@ -49,8 +67,11 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
       model.installedSizeBytes == null ? null : formatSize(model.installedSizeBytes),
       model.selected,
     ))) return;
+    if (action === "recover" && !window.confirm(copy.recoverConfirmation(model.displayName))) return;
+    if (action === "unregister" && !window.confirm(copy.unregisterConfirmation(model.displayName, model.selected))) return;
     setBusyId(model.id);
     setError(null);
+    setNotice(null);
     try {
       if (action === "select") await runCatalogRequest(() => selectLocalAssistModel(model.id));
       if (action === "download") await runCatalogRequest(() => startCoreAiModelDownload(model.id));
@@ -60,6 +81,11 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
         if (!cancelled) throw new Error(copy.cancelFailed);
       }
       if (action === "delete") await runCatalogRequest(() => deleteCoreAiModel(model.id));
+      if (action === "recover") {
+        await runCatalogRequest(() => deleteCoreAiModel(model.id));
+        await runCatalogRequest(() => startCoreAiModelDownload(model.id));
+      }
+      if (action === "unregister") await runCatalogRequest(() => unregisterExternalCoreAiModel(model.id));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
@@ -68,22 +94,24 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   };
 
   return <div className="core-ai-model-manager" aria-label={label}>
-    <p className="field-hint">{copy.currentModel(
+    <div className="core-ai-current-model">
+      <strong>{copy.currentModel(
         catalog.models.find((model) => model.selected)?.displayName
-          ?? (catalog.selectedModelId.startsWith("local:app-managed:")
+          ?? (catalog.selectedModelId.startsWith("local:")
             ? copy.missingLocalModel
             : catalog.selectedModelId),
-    )} {catalog.deviceMemoryGb == null ? null : `· ${copy.deviceMemory(catalog.deviceMemoryGb)}`}</p>
+      )}</strong>
+      {catalog.deviceMemoryGb == null ? null : <span>{copy.deviceMemory(catalog.deviceMemoryGb)}</span>}
+    </div>
     {catalog.distributionStatus === "not_published" ?
       <p className="field-hint" role="status">{copy.notPublished}</p> : null}
     {catalog.selectionLocked ? <p className="field-hint" role="status">{copy.developerOverride}</p> : null}
     <div className="core-ai-model-list">
       {catalog.models.map((model) => {
         const source = model.source ?? "apple_hosted";
-        const isLocal = source === "app_managed_local";
+        const isLocal = source === "app_managed_local" || source === "external_local";
         const busy = busyId !== null || Boolean(catalog.managementError) || Boolean(catalog.selectionLocked);
         const canSelect = !model.selected && isCoreAiModelSelectable(model);
-        // 選択状態は状態行の先頭に置き、選択中でもサイズ・バージョンを落とさない。
         const status = statusLabel(model, copy);
         return <div className="core-ai-model-row" key={model.id}
           role="group" aria-label={model.displayName} tabIndex={-1}
@@ -91,20 +119,32 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
             focusedAction.current = event.target instanceof HTMLButtonElement
               ? { control: event.target, row: event.currentTarget } : null;
           }}>
-          <div>
-            <strong>{model.displayName}{isLocal ? ` · ${copy.localBadge}` : ""}</strong>
-            <span>{model.selected ? `${copy.selected} · ${status}` : status}</span>
-            {model.kind === "core_ai" && model.recommendedMemoryGb != null ?
-              <span>{copy.recommendedMemory(model.recommendedMemoryGb)}</span> : null}
-            {model.kind === "core_ai" && model.installedSizeBytes != null ? <span>{
-              model.status === "ready"
-                ? copy.installedSize(formatSize(model.installedSizeBytes))
-                : copy.installSize(formatSize(model.installedSizeBytes))
-            }</span> : null}
-            {model.kind === "core_ai" && model.license ?
-              <span>{copy.license(model.license, Boolean(model.hasUpstreamConversionNotice))}</span> : null}
+          <div className="core-ai-model-row-main">
+            <div className="core-ai-model-row-heading">
+              <strong>{model.displayName}</strong>
+              {isLocal ? <span className="core-ai-model-source">{copy.localBadge}</span> : null}
+              {model.selected ? <span className="core-ai-model-selected">{copy.selected}</span> : null}
+            </div>
+            <span className={`core-ai-model-status${model.status === "failed" ? " is-error" : ""}`}>{status}</span>
+            {model.kind === "system" ? <span className="core-ai-model-fact">{copy.systemDescription}</span> : null}
+            {model.kind === "core_ai" ? <div className="core-ai-model-facts">
+              {model.downloadSizeBytes != null && model.status !== "ready" ?
+                <span>{copy.downloadSize(formatSize(model.downloadSizeBytes))}</span> : null}
+              {model.installedSizeBytes != null ? <span>{
+                model.status === "ready"
+                  ? copy.installedSize(formatSize(model.installedSizeBytes))
+                  : copy.installSize(formatSize(model.installedSizeBytes))
+              }</span> : null}
+              {model.minimumMemoryGb != null ?
+                <span>{copy.minimumMemory(model.minimumMemoryGb)}</span> : null}
+              {model.recommendedMemoryGb != null ?
+                <span>{copy.recommendedMemory(model.recommendedMemoryGb)}</span> : null}
+              {model.license ? <span>{copy.licenseShort(model.license)}</span> : null}
+            </div> : null}
             {isBelowRecommendedMemory(model, catalog) ? <span className="preference-warning" role="status">
-              {copy.memoryWarning(catalog.deviceMemoryGb!, model.recommendedMemoryGb!)}
+              {isBelowMinimumMemory(model, catalog)
+                ? copy.minimumMemoryWarning(catalog.deviceMemoryGb!, model.minimumMemoryGb!)
+                : copy.memoryWarning(catalog.deviceMemoryGb!, model.recommendedMemoryGb!)}
             </span> : null}
             {model.status === "downloading" ? <progress
               aria-label={copy.downloadProgress(model.displayName)}
@@ -112,35 +152,69 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
             /> : null}
             {isLocal && model.errorCode ?
               <span className="preference-warning" role="status">{copy.localReason(model.errorCode)}</span> : null}
-            {!isLocal && model.error ? <span className="preference-warning" role="status">{model.error}</span> : null}
+            {!isLocal && model.errorCode === "local-preview" ?
+              <span className="field-hint" role="status">{copy.previewHint}</span> : null}
+            {!isLocal && model.status === "failed" ? <span className="preference-warning" role="status">
+              {model.errorCode === "verification-failed" ? copy.verificationFailure : copy.downloadFailure}
+              {model.errorCode === "verification-failed" && model.canRemove ? ` ${copy.recoveryHint}` : null}
+            </span> : null}
           </div>
           <div className="core-ai-model-actions">
             {canSelect ?
               <button type="button" disabled={busy} onClick={() => void run(model, "select")}>{copy.select}</button> : null}
             {source === "apple_hosted" && model.kind === "core_ai" && model.status === "not_downloaded" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{copy.download}</button> : null}
-            {source === "apple_hosted" && model.kind === "core_ai" && (model.status === "paused" || model.status === "failed") ?
+            {source === "apple_hosted" && model.kind === "core_ai" && (model.status === "paused" || (model.status === "failed" && model.errorCode !== "verification-failed")) ?
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{model.status === "paused" ? copy.resume : copy.retry}</button> : null}
+            {source === "apple_hosted" && model.kind === "core_ai" && model.status === "failed" && model.errorCode === "verification-failed" && model.canRemove ?
+              <button type="button" disabled={busy} onClick={() => void run(model, "recover")}>{copy.recover}</button> : null}
+            {source === "apple_hosted" && model.kind === "core_ai" && model.status === "ready" ?
+              <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{copy.checkForUpdates}</button> : null}
             {source === "apple_hosted" && model.kind === "core_ai" && model.status === "downloading" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "cancel")}>{copy.cancel}</button> : null}
             {source === "apple_hosted" && model.kind === "core_ai" && model.status === "ready" ?
-              <button type="button" disabled={busy} onClick={() => void run(model, "delete")}>{copy.delete}</button> : null}
+              <button className="core-ai-model-remove" type="button" disabled={busy} onClick={() => void run(model, "delete")}>{copy.delete}</button> : null}
+            {source === "external_local" ?
+              <button type="button" disabled={busy} onClick={() => void run(model, "unregister")}>{copy.unregister}</button> : null}
           </div>
+          {model.kind === "core_ai" && (model.error || model.assetPackVersion != null || model.license) ?
+            <details className="core-ai-model-details">
+              <summary>{copy.technicalDetails}</summary>
+              {model.license ? <span>{copy.license(model.license, Boolean(model.hasUpstreamConversionNotice))}</span> : null}
+              {model.assetPackVersion != null ? <span>{copy.deliveryVersion(model.assetPackVersion)}</span> : null}
+              {model.error ? <code>{model.error}</code> : null}
+            </details> : null}
         </div>;
       })}
     </div>
-    {catalog.managementError ? <p className="preference-warning" role="alert">
-      {copy.managementUnavailable} {catalog.managementError}
-    </p> : null}
-    {error ? <p className="preference-warning" role="alert">{error}</p> : null}
-    <p className="field-hint">{copy.boundary}</p>
+    <div className="core-ai-local-actions">
+      <button type="button" disabled={busyId !== null || Boolean(catalog.managementError) || Boolean(catalog.selectionLocked)}
+        onClick={() => void addFolder()}>{copy.addFolder}</button>
+      <span className="field-hint">{copy.addFolderHint}</span>
+    </div>
+    {notice ? <p role="status" className="field-hint">{notice}</p> : null}
+    {catalog.managementError ? <div className="preference-warning" role="alert">
+      {copy.managementUnavailable}
+      <details className="core-ai-model-details"><summary>{copy.technicalDetails}</summary><code>{catalog.managementError}</code></details>
+    </div> : null}
+    {error ? <div className="preference-warning" role="alert">
+      {actionErrorMessage(error, copy)}
+      <details className="core-ai-model-details"><summary>{copy.technicalDetails}</summary><code>{error}</code></details>
+    </div> : null}
   </div>;
 }
 
 type ManagerCopy = ReturnType<typeof managerCopy>;
+function actionErrorMessage(error: string, copy: ManagerCopy): string {
+  if (error.startsWith("local-model:")) return copy.localReason(error.slice("local-model:".length));
+  if (error.startsWith("model-bookmark:select-resource-root")) return copy.selectResourceRoot;
+  if (error.startsWith("model-bookmark:")) return copy.folderPermissionFailed;
+  return copy.operationFailed;
+}
+
 function statusLabel(model: CoreAiModelSummary, copy: ManagerCopy): string {
-  const isLocal = model.source === "app_managed_local";
-  const base = model.kind === "system" ? copy.systemStatus
+  const isLocal = model.source === "app_managed_local" || model.source === "external_local";
+  return model.kind === "system" ? copy.systemStatus
     : isLocal && model.status === "detected" ? copy.localDetected
     : isLocal ? copy.localUnavailable
     : model.status === "not_downloaded" ? copy.notDownloaded
@@ -149,13 +223,9 @@ function statusLabel(model: CoreAiModelSummary, copy: ManagerCopy): string {
     : model.status === "paused" ? copy.paused
     : model.status === "verifying" ? copy.verifying
     : model.status === "failed" ? copy.failed
+    : model.status === "unsupported" && model.errorCode === "local-preview" ? copy.previewUnavailable
     : model.status === "unsupported" ? copy.unsupported
     : copy.ready;
-  // サイズと資産バージョンは catalog が持っている値だけを出す（推測で埋めない）。
-  const details: string[] = [];
-  if (model.downloadSizeBytes) details.push(copy.downloadSize(formatSize(model.downloadSizeBytes)));
-  if (model.assetPackVersion != null) details.push(`v${model.assetPackVersion}`);
-  return details.length > 0 ? `${base} · ${details.join(" · ")}` : base;
 }
 
 function formatSize(bytes: number): string {
@@ -173,95 +243,163 @@ function isBelowRecommendedMemory(
     && catalog.deviceMemoryGb < model.recommendedMemoryGb;
 }
 
+function isBelowMinimumMemory(model: CoreAiModelSummary, catalog: CoreAiModelCatalog): boolean {
+  return model.kind === "core_ai"
+    && catalog.deviceMemoryGb != null
+    && model.minimumMemoryGb != null
+    && catalog.deviceMemoryGb < model.minimumMemoryGb;
+}
+
 function managerCopy(language: MenuLanguage) {
   if (language === "en") return {
-    selected: "Selected", ready: "Ready", systemStatus: "System default / availability not checked",
+    selected: "Selected", ready: "Ready", systemStatus: "Built-in model",
+    systemDescription: "No download needed. Availability is checked when you use it.",
     localBadge: "Local", localDetected: "Detected (can be selected)",
+    addFolder: "Add model folder…", addFolderHint: "Select a Core AI resource folder. Its files stay where they are.",
+    selectResourceRoot: "Select the folder containing the model and tokenizer, then try again.",
+    folderPermissionFailed: "This Mac could not grant access to that model folder. Choose it again.",
+    folderAdded: "Model folder added. Choose Use to switch Local Assist to it.",
+    folderAlreadyAdded: "This model folder is already listed.",
+    unregister: "Remove from list",
+    unregisterConfirmation: (name: string, selected: boolean) => `Remove ${name} from this list? The model files will stay in their folder.${selected ? " Apple Intelligence will become the current model." : ""}`,
     missingLocalModel: "Local model unavailable",
     localUnavailable: "Unavailable", localReason: (code: string) => localModelReason("en", code),
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
-    download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete",
+    download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete", recover: "Delete and download again",
+    checkForUpdates: "Check for updates", technicalDetails: "Technical details",
+    deliveryVersion: (version: number) => `Requested pack version v${version}`,
+    verificationFailure: "The downloaded model failed verification.",
+    downloadFailure: "The model download failed.",
+    operationFailed: "Couldn't complete that model action. Check the status and try again.",
+    recoveryHint: "Delete the downloaded copy and download it again.",
+    recoverConfirmation: (name: string) => `Delete the downloaded copy of ${name} and download it again? Apple Intelligence will be used until the new copy is ready.`,
     downloadSize: (size: string) => `Download about ${size}`,
     installedSize: (size: string) => `Uses about ${size}`,
     installSize: (size: string) => `About ${size} after installation`,
     currentModel: (name: string) => `Current model: ${name}`,
     deviceMemory: (memory: number) => `This Mac: ${memory} GB memory`,
+    minimumMemory: (memory: number) => `Minimum memory: ${memory} GB`,
     recommendedMemory: (memory: number) => `Recommended memory: ${memory} GB`,
     license: (license: string, hasNotice: boolean) => hasNotice
       ? `License: ${license} · upstream conversion license included`
       : `License: ${license}`,
+    licenseShort: (license: string) => `License: ${license}`,
     memoryWarning: (current: number, recommended: number) => `This Mac has ${current} GB of memory; ${recommended} GB is recommended. Generation may be slow or unavailable.`,
+    minimumMemoryWarning: (current: number, minimum: number) => `This Mac has ${current} GB of memory; this model needs at least ${minimum} GB and may be unavailable.`,
     memoryConfirmation: (current: number, recommended: number, name: string) => `${name} recommends ${recommended} GB of memory, but this Mac has ${current} GB. Download anyway?`,
+    minimumMemoryConfirmation: (current: number, minimum: number, name: string) => `${name} needs at least ${minimum} GB of memory, but this Mac has ${current} GB. Download anyway?`,
     deleteConfirmation: (name: string, size: string | null, selected: boolean) => `Delete ${name}?${size ? ` This removes about ${size}.` : ""} You can download it again later.${selected ? " Apple Intelligence will become the current model." : ""}`,
     cancelFailed: "The download could not be stopped. Check its current status and try again.",
     downloading: (progress?: number | null) => progress == null ? "Downloading" : `Downloading · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `Download progress for ${name}`,
     paused: "Paused", verifying: "Verifying download", failed: "Download unavailable", unsupported: "Requires macOS 27",
+    previewUnavailable: "Unavailable in this preview", previewHint: "Try Apple-hosted model downloads in the TestFlight build.",
     notPublished: "No Core AI model has been published for download yet. Validated local bundles in Custom Models can still be selected.",
     developerOverride: "A Developer test backend is selected for this session. Restart without the test override to manage models.",
     managementUnavailable: "Model management is unavailable. You can continue editing documents. Resolve the following error and restart the app:",
-    boundary: "Apple-hosted models and validated bundles in Hazakura's Custom Models folder are listed here. Local bundles can be selected for Local Assist; URL and GGUF imports are not accepted.",
+    boundary: "Apple-hosted models and validated local Core AI folders are listed here. Choose a local model in Local Assist. URL and GGUF imports are not accepted.",
   };
   if (language === "kana") return {
-    selected: "えらんでゐます", ready: "つかへます", systemStatus: "しすてむの ひょうじゅん / つかへるかは まだ たしかめてゐません",
+    selected: "えらんでゐます", ready: "つかへます", systemStatus: "Mac に はじめから ある もでる",
+    systemDescription: "いれる ひつようは ありません。つかふときに うごくかを たしかめます。",
     localBadge: "ろーかる", localDetected: "みつけました（えらべます）",
+    addFolder: "もでるの ふぉるだを たす…", addFolderHint: "Core AI の もでるの ふぉるだを えらびます。なかみは そのままに します。",
+    selectResourceRoot: "もでると Tokenizer が はいった ふぉるだを えらんで、もういちど ためして ください。",
+    folderPermissionFailed: "この ふぉるだを よむ きょかが とれませんでした。もういちど えらんで ください。",
+    folderAdded: "もでるを たしました。「つかふ」で Local Assist の もでるを きりかへられます。",
+    folderAlreadyAdded: "この もでるは すでに あります。",
+    unregister: "いちらんから はづす",
+    unregisterConfirmation: (name: string, selected: boolean) => `${name}を いちらんから はづしますか？ もとの ふぁいるは のこります。${selected ? " Apple Intelligence に もどします。" : ""}`,
     missingLocalModel: "ろーかるもでるが ありません",
     localUnavailable: "つかへません", localReason: (code: string) => localModelReason("kana", code),
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
-    download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす",
+    download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす", recover: "けして いれなほす",
+    checkForUpdates: "あたらしい ばんを たしかめる", technicalDetails: "くはしい じょうほう",
+    deliveryVersion: (version: number) => `とりよせる ばん v${version}`,
+    verificationFailure: "いれた もでるを たしかめられませんでした。",
+    downloadFailure: "もでるを いれられませんでした。",
+    operationFailed: "もでるの そうさを おへられませんでした。ようすを たしかめて、もういちど ためしてください。",
+    recoveryHint: "いれた ものを けして、いれなほせます。",
+    recoverConfirmation: (name: string) => `${name}を けして いれなほしますか？ あたらしい ものが できるまでは Apple Intelligenceを つかひます。`,
     downloadSize: (size: string) => `いれる おほきさ やく ${size}`,
     installedSize: (size: string) => `つかふ りょう やく ${size}`,
     installSize: (size: string) => `いれたあとの おほきさ やく ${size}`,
     currentModel: (name: string) => `いまの もでる：${name}`,
     deviceMemory: (memory: number) => `この Mac の めもり：${memory} GB`,
+    minimumMemory: (memory: number) => `ひつような めもり ${memory} GB いじょう`,
     recommendedMemory: (memory: number) => `すすめる めもり ${memory} GB`,
     license: (license: string, hasNotice: boolean) => hasNotice
       ? `らいせんす ${license} · へんかんもとの らいせんすぶんしょ つき`
       : `らいせんす ${license}`,
+    licenseShort: (license: string) => `らいせんす ${license}`,
     memoryWarning: (current: number, recommended: number) => `この Mac の めもりは ${current} GB です。${recommended} GB を すすめます。うごきが おそい、または つかへない ことが あります。`,
+    minimumMemoryWarning: (current: number, minimum: number) => `この Mac の めもりは ${current} GB です。この もでるには ${minimum} GB いじょう ひつようで、つかへない ことが あります。`,
     memoryConfirmation: (current: number, recommended: number, name: string) => `${name} は ${recommended} GB の めもりを すすめます。この Mac は ${current} GB です。それでも いれますか？`,
+    minimumMemoryConfirmation: (current: number, minimum: number, name: string) => `${name} には ${minimum} GB いじょうの めもりが ひつようです。この Mac は ${current} GB です。それでも いれますか？`,
     deleteConfirmation: (name: string, size: string | null, selected: boolean) => `${name}を けしますか？${size ? ` やく ${size}を けします。` : ""} あとで また いれられます。${selected ? " Apple Intelligenceを つかふように もどします。" : ""}`,
     cancelFailed: "いれるのを とめられませんでした。いまの ようすを たしかめて もういちど ためしてください。",
     downloading: (progress?: number | null) => progress == null ? "いれてゐます" : `いれてゐます · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}を いれる すすみぐあい`,
     paused: "とめてゐます", verifying: "たしかめてゐます", failed: "いれられませんでした", unsupported: "macOS 27 から つかへます",
+    previewUnavailable: "この ためす ばんでは いれられません", previewHint: "Apple からの もでるは TestFlight ばんで ためして ください。",
     notPublished: "Core AI の もでるは まだ くばってゐません。Custom Models の なかで たしかめた ろーかるもでるは えらべます。",
     developerOverride: "ためすための もでるを えらんでゐます。もでるを かんりするには、ためすための していを はづして あぷりを ひらきなほして ください。",
     managementUnavailable: "もでるを かんりできません。ぶんしょは そのまま かきつづけられます。つぎの げんいんを なおして あぷりを ひらきなほして ください：",
-    boundary: "Apple から くばる もでると Hazakura の Custom Models ふぉるだで たしかめた もでるを ここに だします。ろーかるの もでるは Local Assist で えらべます。URL と GGUF は うけつけません。",
+    boundary: "Apple から くばる もでると、たしかめた ろーかるの Core AI ふぉるだを ここに だします。Local Assist で えらべます。URL と GGUF は うけつけません。",
   };
   return {
-    selected: "選択中", ready: "利用可能", systemStatus: "システム標準 / 利用状況未確認",
+    selected: "選択中", ready: "利用可能", systemStatus: "Mac標準のモデル",
+    systemDescription: "ダウンロード不要。使用時に利用できるか確認します。",
     localBadge: "ローカル", localDetected: "検出済み（選択できます）",
+    addFolder: "モデルフォルダを追加…", addFolderHint: "Core AI のモデルが入ったフォルダを選びます。元のファイルは移動しません。",
+    selectResourceRoot: "モデルとTokenizerが入ったフォルダを選んで、もう一度お試しください。",
+    folderPermissionFailed: "モデルフォルダの読み取り許可を得られませんでした。フォルダを選び直してください。",
+    folderAdded: "モデルフォルダを追加しました。「使う」を押すと Local Assist に切り替わります。",
+    folderAlreadyAdded: "このモデルフォルダはすでに一覧にあります。",
+    unregister: "一覧から外す",
+    unregisterConfirmation: (name: string, selected: boolean) => `${name}を一覧から外しますか？元のファイルは削除しません。${selected ? " Apple Intelligenceに切り替わります。" : ""}`,
     missingLocalModel: "ローカルモデルが見つかりません",
     localUnavailable: "利用不可", localReason: (code: string) => localModelReason("ja", code),
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
-    download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除",
+    download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除", recover: "削除して再取得",
+    checkForUpdates: "更新を確認", technicalDetails: "技術情報",
+    deliveryVersion: (version: number) => `取得対象の版 v${version}`,
+    verificationFailure: "ダウンロードしたモデルの検証に失敗しました。",
+    downloadFailure: "モデルのダウンロードに失敗しました。",
+    operationFailed: "モデルの操作を完了できませんでした。状態を確認して、もう一度お試しください。",
+    recoveryHint: "取得済みのデータを削除して、ダウンロードし直せます。",
+    recoverConfirmation: (name: string) => `${name}を削除して再取得しますか？新しいモデルの準備ができるまでは Apple Intelligence を使います。`,
     downloadSize: (size: string) => `ダウンロード 約${size}`,
     installedSize: (size: string) => `使用量 約${size}`,
     installSize: (size: string) => `インストール後 約${size}`,
     currentModel: (name: string) => `現在のモデル：${name}`,
     deviceMemory: (memory: number) => `このMacのメモリ：${memory} GB`,
+    minimumMemory: (memory: number) => `最低メモリ ${memory} GB`,
     recommendedMemory: (memory: number) => `推奨メモリ ${memory} GB`,
     license: (license: string, hasNotice: boolean) => hasNotice
       ? `ライセンス ${license} · 変換元のライセンス文書を同梱`
       : `ライセンス ${license}`,
+    licenseShort: (license: string) => `ライセンス ${license}`,
     memoryWarning: (current: number, recommended: number) => `このMacは${current} GBです。${recommended} GBを推奨します。生成が遅い、または利用できない場合があります。`,
+    minimumMemoryWarning: (current: number, minimum: number) => `このMacは${current} GBです。このモデルには最低${minimum} GBが必要で、利用できない場合があります。`,
     memoryConfirmation: (current: number, recommended: number, name: string) => `${name}の推奨メモリは${recommended} GBですが、このMacは${current} GBです。それでもダウンロードしますか？`,
+    minimumMemoryConfirmation: (current: number, minimum: number, name: string) => `${name}には最低${minimum} GBのメモリが必要ですが、このMacは${current} GBです。それでもダウンロードしますか？`,
     deleteConfirmation: (name: string, size: string | null, selected: boolean) => `${name}を削除しますか？${size ? ` 約${size}を削除します。` : ""}後から再ダウンロードできます。${selected ? " Apple Intelligenceを現在のモデルに戻します。" : ""}`,
     cancelFailed: "ダウンロードを停止できませんでした。現在の状態を確認して、もう一度お試しください。",
     downloading: (progress?: number | null) => progress == null ? "ダウンロード中" : `ダウンロード中 · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}のダウンロード進捗`,
-    paused: "一時停止", verifying: "検証中", failed: "ダウンロード失敗", unsupported: "macOS 27以降が必要",
+    paused: "一時停止", verifying: "検証中", failed: "利用できません", unsupported: "macOS 27以降が必要",
+    previewUnavailable: "このプレビューでは取得できません", previewHint: "Apple経由のモデル取得はTestFlight版でお試しください。",
     notPublished: "Core AI モデルはまだ配布されていません。Custom Models 内で検証したローカルモデルは選択できます。",
     developerOverride: "Developer用のテストモデル指定が有効です。モデルを管理するには、テスト指定を外してアプリを再起動してください。",
     managementUnavailable: "モデル管理を利用できません。文書の編集は続けられます。次の原因を解消してアプリを再起動してください：",
-    boundary: "Apple 経由のモデルと Hazakura の Custom Models フォルダで検証したモデルを表示します。ローカルモデルは Local Assist で選択できます。URL と GGUF の持ち込みは受け付けません。",
+    boundary: "Apple 経由のモデルと、検証済みのローカル Core AI フォルダを表示します。Local Assist でも切り替えられます。URL と GGUF の持ち込みは受け付けません。",
   };
 }
 
 function localModelReason(language: MenuLanguage, code: string): string {
   const messages = language === "en" ? {
+    "bookmark-inaccessible": "Access to this model folder has expired. Remove it from the list, then select the folder again.",
     "root-missing": "The model folder no longer exists.",
     "root-not-a-directory": "The model location is not a folder.",
     "missing-descriptor": "No Core AI model metadata was found.",
@@ -280,6 +418,7 @@ function localModelReason(language: MenuLanguage, code: string): string {
     "unsafe-path": "The model contains a symbolic link or a path outside its folder.",
     unreadable: "The model folder could not be read.",
   } : language === "kana" ? {
+    "bookmark-inaccessible": "もでるの ふぉるだを よめません。いちらんから はづして、もういちど えらんで ください。",
     "root-missing": "もでるの ふぉるだが ありません。",
     "root-not-a-directory": "もでるの ばしょが ふぉるだでは ありません。",
     "missing-descriptor": "Core AI もでるの じょうほうが ありません。",
@@ -298,6 +437,7 @@ function localModelReason(language: MenuLanguage, code: string): string {
     "unsafe-path": "もでるの なかに symlink または そとの ばしょを さす みちが あります。",
     unreadable: "もでるの ふぉるだを よめません。",
   } : {
+    "bookmark-inaccessible": "モデルフォルダへのアクセス権が失われました。一覧から外して、フォルダをもう一度選んでください。",
     "root-missing": "モデルフォルダが見つかりません。",
     "root-not-a-directory": "モデルの場所がフォルダではありません。",
     "missing-descriptor": "Core AI モデルのメタデータが見つかりません。",

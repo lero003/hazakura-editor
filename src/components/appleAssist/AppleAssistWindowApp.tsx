@@ -24,7 +24,7 @@ import {
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import { useCoreAiModelCatalog } from "../../hooks/app/useCoreAiModelCatalog";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
-import { selectLocalAssistModel } from "../../lib/tauri/coreAiModels";
+import { openLocalAssistModelSettings, selectLocalAssistModel } from "../../lib/tauri/coreAiModels";
 import {
   buildProposalEvent,
   getLocalAssistAction,
@@ -975,7 +975,10 @@ export function AppleAssistWindowApp() {
             <AssistModelPicker language={menuLanguage}
               disabled={busy || modelSwitching || !probed || Boolean(modelCatalog.managementError) || Boolean(modelCatalog.selectionLocked)}
               modelId={availability.modelId ?? modelCatalog.selectedModelId}
-              models={modelCatalog.models} onSelect={selectModel} />
+              models={modelCatalog.models} onSelect={selectModel}
+              onManage={() => openLocalAssistModelSettings().catch((reason) => {
+                setError(reason instanceof Error ? reason.message : String(reason));
+              })} />
             <button type="button" className="apple-assist-window-apply"
               onClick={() => { if (busy) void cancelGeneration(); else void applyRoughRequest(); }}
               disabled={busy ? cancelling : modelSwitching || !available || requestText.trim().length === 0}>
@@ -1042,6 +1045,8 @@ export type AppleAssistWindowCopy = {
   failedStatus: string;
   guardrailError: string;
   localRuntimeUnavailable: (reason: string) => string;
+  coreAIModelUnavailable: string;
+  externalFolderUnavailable: string;
   localCoreAITestUnavailable: (reason: string) => string;
   longRunningStatus: string;
   modeLabel: string;
@@ -1258,6 +1263,12 @@ export function renderAvailabilityMessage(
     if (availability.modelId === "apple:core-ai:qwen3-0.6b-test") {
       return copy.localCoreAITestUnavailable(availability.reason);
     }
+    if (availability.modelId?.startsWith("local:external:")) {
+      return copy.externalFolderUnavailable;
+    }
+    if (availability.modelId?.startsWith("local:") || availability.modelId?.startsWith("apple:core-ai:")) {
+      return copy.coreAIModelUnavailable;
+    }
     return copy.localRuntimeUnavailable(availability.reason);
   }
   if (availability.kind === "disabled") {
@@ -1382,6 +1393,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "あっぷる ふぁうんでーしょん もでるず が この おねがいを うけつけませんでした。べつの おねがいで さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
         `はざくら ろーかる あしす とは つかえません: ${reason}。めやすは macOS 26 いこう、M1 いこうの Mac、あっぷる いんてりじぇんす の ゆうこうか、たいおう げんご / ちいき です。くわしくは あっぷる こうしき の Apple Intelligence あんないを かくにん してください。`,
+      coreAIModelUnavailable: "えらんだ もでるを つかえません。もでるの かんりで ようすを たしかめ、ひつようなら べつの もでるを えらんで ください。",
+      externalFolderUnavailable: "とうろくした もでるの ふぉるだを つかえません。もでるの かんりで たしかめ、よめない ときは ふぉるだを えらびなほして ください。",
       localCoreAITestUnavailable: (reason) =>
         `Core AI どうさ かくにん もでるを つかえません: ${reason}。macOS 27、Apple Silicon、こてい てすと りそーす、もでるの よみこみを かくにん してください。`,
       longRunningStatus:
@@ -1537,6 +1550,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "Apple Foundation Models がこの依頼を受け付けませんでした。別の依頼内容で再試行してください。",
       localRuntimeUnavailable: (reason) =>
         `Hazakura Local Assist は使えません: ${reason}。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しくは Apple 公式の Apple Intelligence 案内を確認してください。`,
+      coreAIModelUnavailable: "選択中のモデルを使えません。モデル管理で状態を確認し、必要なら別のモデルに切り替えてください。",
+      externalFolderUnavailable: "登録したモデルフォルダを使えません。モデル管理で状態を確認し、アクセス権が切れていたらフォルダを選び直してください。",
       localCoreAITestUnavailable: (reason) =>
         `Core AI 動作確認モデルを利用できません: ${reason}。macOS 27、Apple Silicon、固定テストリソース、モデルの読み込み状態を確認してください。`,
       longRunningStatus:
@@ -1691,6 +1706,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
       `Hazakura Local Assist is unavailable: ${reason}. As a guide, it needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.`,
+    coreAIModelUnavailable: "The selected model is unavailable. Check its status in model management or switch to another model.",
+    externalFolderUnavailable: "The registered model folder is unavailable. Check it in model management and select the folder again if access has expired.",
     localCoreAITestUnavailable: (reason) =>
       `The Core AI test model is unavailable: ${reason}. Check macOS 27, Apple Silicon, the fixed test resource, and model loading.`,
     longRunningStatus:

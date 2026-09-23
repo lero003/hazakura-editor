@@ -46,6 +46,8 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "generatingInMain",
   "guardrailError",
   "localCoreAITestUnavailable",
+  "coreAIModelUnavailable",
+  "externalFolderUnavailable",
   "localRuntimeUnavailable",
   "longRunningStatus",
   "modeLabel",
@@ -401,6 +403,16 @@ describe("renderAvailabilityMessage", () => {
     expect(message).toContain("Core AI");
     expect(message).toContain("固定テストリソース");
     expect(message).not.toContain("Apple Intelligence の有効化");
+  });
+
+  it("points a registered folder failure to model management in Japanese", () => {
+    const message = renderAvailabilityMessage({
+      kind: "unavailable", reason: "Model folder access expired.", modelId: "local:external:1",
+    }, true, copy);
+    expect(message).toContain("モデル管理");
+    expect(message).toContain("フォルダを選び直");
+    expect(message).not.toContain("Apple Intelligence の有効化");
+    expect(message).not.toContain("Model folder access expired");
   });
 });
 

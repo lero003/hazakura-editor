@@ -31,7 +31,7 @@ but device acceptance, model delivery, and App Store submission remain pending.
 Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. The current App Store development source exposes Apple Intelligence
-plus pinned Apple-hosted Gemma 4 E4B and 12B
+plus pinned Apple-hosted Gemma 4 12B (minimum 16 GB, recommended 24 GB)
 models through a separate settings page, with explicit download, verification, selection, and deletion.
 Those assets have not completed Apple CDN and TestFlight acceptance, so this is not a published-model claim.
 MLX runtime is not implemented.
@@ -265,8 +265,10 @@ src-tauri/target/release/bundle/macos/Hazakura Editor.app
 ```
 
 This local bundle uses the App Store preview shape, including the bundled
-Hazakura Local Assist helper, but skips
-App Store sandbox entitlements so it can launch for development smoke.
+Hazakura Local Assist helper, but skips App Store sandbox entitlements so it can
+launch for development smoke. Apple-hosted model downloads are unavailable in
+this ad-hoc preview and appear as such in model settings; test those downloads
+in a TestFlight build.
 Use `npm run build:app-store-submit` for the signed App Store submission
 lane and `npm run smoke:macos-sandbox-preview` for the local sandbox
 entitlement probe.

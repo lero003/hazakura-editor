@@ -26,6 +26,8 @@ export type PreferencesCopy = {
   onDeviceModels: string;
   openOnDeviceModels: string;
   onDeviceModelsStorage: string;
+  onDeviceModelsIntro: string;
+  onDeviceModelsStorageLabel: string;
   /** 文字サイズ設定の結果を1箇所で確かめる面（モック16）。 */
   typePreviewCaption: string;
   typePreviewSample: string;
@@ -106,8 +108,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         assistNotice: "つくった ないようは、かならず もとの ぶんと みくらべて ください。",
         onDeviceModels: "この Mac の もでる",
         openOnDeviceModels: "もでるを かんりする",
+        onDeviceModelsIntro: "この Mac で つかふ もでるを えらびます。Apple から いれたり、じぶんの Core AI ふぉるだを たしたり できます。",
+        onDeviceModelsStorageLabel: "しまふ ばしょと くはしいこと",
         onDeviceModelsStorage:
-          "Apple から いれる もでるは、この Mac の あぷりりょういきに ほぞんします。ほぞんばしょは えらべません。Custom Models ふぉるだに おいた ろーかるもでるも つかへます。そとの ふぉるだの とうろくは まだ できません。せいせいは この Mac の なかで おこなひます。",
+          "Apple から いれる もでるは、この Mac の あぷりりょういきに ほぞんします。ほぞんばしょは えらべません。Custom Models や、じぶんで えらんだ ふぉるだの Core AI もでるも つかへます。もとの ふぁいるは そのままです。せいせいは この Mac の なかで おこなひます。",
       typePreviewCaption: "この せっていで の みえかた",
       typePreviewSample: "朝の 余白。ことばに、しずかな あひだを。",
       appleAssistStatusAvailable: "この Mac で つかえます。さぶんを みてから てきよう します。",
@@ -202,8 +206,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         assistNotice: "生成内容の正確さや表現は、必ず原文と見比べて確認してください。",
         onDeviceModels: "オンデバイスモデル",
         openOnDeviceModels: "モデルを管理する",
+        onDeviceModelsIntro: "このMacで使うモデルを選びます。Apple配布モデルのダウンロード・更新や、手元の Core AI モデルの追加ができます。",
+        onDeviceModelsStorageLabel: "保存先と詳しい情報",
         onDeviceModelsStorage:
-          "Apple 経由でダウンロードするモデルは、この Mac のアプリ領域に保存します。保存先は選べません。Custom Models フォルダに配置したローカルモデルも利用できます。外部フォルダの登録にはまだ対応していません。生成はこの Mac 内で行います。",
+          "Apple 経由でダウンロードするモデルは、この Mac のアプリ領域に保存します。保存先は選べません。Custom Models や選択したフォルダ内の Core AI モデルも利用できます。元のファイルは移動・削除しません。生成はこの Mac 内で行います。",
         typePreviewCaption: "この設定での見え方",
         typePreviewSample: "朝の余白。ことばに、静かなあいだを。",
         appleAssistStatusAvailable:
@@ -296,8 +302,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         assistNotice: "Check the generated wording against your original text before you rely on it.",
         onDeviceModels: "On-device models",
         openOnDeviceModels: "Manage models",
+        onDeviceModelsIntro: "Choose the model used on this Mac. Download Apple-hosted models or add a local Core AI model folder.",
+        onDeviceModelsStorageLabel: "Storage and details",
         onDeviceModelsStorage:
-          "Models downloaded from Apple are stored in this Mac's app area. You cannot choose the location. Local bundles in the Custom Models folder can also be used. External folder registration is not yet supported. Generation runs on this Mac.",
+          "Models downloaded from Apple are stored in this Mac's app area; their location cannot be changed. Core AI models in Custom Models or a folder you select can also be used. Original files stay in place. Generation runs on this Mac.",
         typePreviewCaption: "How this setting reads",
         typePreviewSample: "A quiet morning. Words, with room to breathe.",
         appleAssistStatusAvailable:

@@ -1,50 +1,50 @@
 use crate::commands::apple_assist_supervisor::{AppleAssistHelperStore, AssistBackendSelection};
 use crate::commands::background_assets::{
-    BackgroundAssetTransport, PlatformBackgroundAssetTransport,
+    BackgroundAssetTransport, LocalPreviewBackgroundAssetTransport,
+    PlatformBackgroundAssetTransport, LOCAL_PREVIEW_ASSET_ERROR,
 };
-use crate::commands::core_ai_local_models::scan_custom_models_directory;
+use crate::commands::core_ai_local_models::{
+    resolve_local_model_root, scan_custom_models_directory,
+};
+use crate::commands::security_bookmarks::{
+    create_read_only_model_bookmark, resolve_model_bookmark,
+};
 use crate::distribution::{
     ensure_apple_assist_allowed_by_distribution, is_app_store_distribution_lane,
 };
 use crate::security::window_guard::{ensure_label_is_main, ensure_label_is_main_or_apple_assist};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
+#[cfg(unix)]
+use std::os::unix::fs::MetadataExt;
 use std::path::{Component, Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::Emitter;
+use tauri::Manager;
 
 pub(crate) const SYSTEM_MODEL_ID: &str = "apple:foundation-models:system-default";
 pub(crate) const CORE_AI_MODEL_STATE_CHANGED_EVENT: &str = "core-ai-model-state-changed";
-const E4B_MODEL_ID: &str = "apple:core-ai:gemma-4-e4b-it-int4-provider-v2";
-// App Store Connect rejects periods in an asset pack identifier, so this uses
-// hyphens only. Keep it identical to the lock and the packaged manifest.
-const E4B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-e4b-v2";
-const E4B_CATALOG_VERSION: &str = "2026.09.22.1";
-const E4B_STORAGE_DIRECTORY: &str = "gemma-4-e4b-it-int4-provider-v2";
-const E4B_RESOURCE_MANIFEST: &str =
-    include_str!("../../resources/core-ai/gemma4-e4b-resource-manifest.json");
-const E4B_RESOURCE_MANIFEST_SHA256: &str =
-    "c108e80513371336afff45ff298617e72c023629ee78880dcab874a36ced04c9";
 const TWELVE_B_MODEL_ID: &str = "apple:core-ai:gemma-4-12b-it-int8-v1";
 const TWELVE_B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-12b-v1";
-const TWELVE_B_CATALOG_VERSION: &str = "2026.09.20.1";
 const TWELVE_B_STORAGE_DIRECTORY: &str = "gemma-4-12b-it-int8-v1";
-const TWELVE_B_RESOURCE_MANIFEST: &str =
-    include_str!("../../resources/core-ai/gemma4-12b-resource-manifest.json");
-const TWELVE_B_RESOURCE_MANIFEST_SHA256: &str =
-    "cbb81f30fbff9171e5001acd3305a9b36d1dd06ba6fac607edb7618ac3bd6ac1";
+const TWELVE_B_RUNTIME_KIND: &str = "coreai-kit-language";
 const PACK_RESOURCE_MANIFEST_FILENAME: &str = "hazakura-resource-manifest.json";
+const MAX_PACK_RESOURCE_MANIFEST_BYTES: u64 = 512 * 1024;
+const MAX_PACK_FILES: usize = 256;
+const MAX_PACK_EXPANDED_BYTES: u64 = 64 * 1024 * 1024 * 1024;
 const STATE_FILENAME: &str = "core-ai-selection.json";
 const MODEL_DIRECTORY: &str = "CoreAIModels";
 const VALIDATION_DIRECTORY: &str = "core-ai-validation";
 /// Hazakura-managed directory the user drops local Core AI bundles into. It is
 /// kept apart from the Background Assets materialization in `CoreAIModels/`.
 const CUSTOM_MODELS_DIRECTORY: &str = "CoreAICustomModels";
+const EXTERNAL_MODELS_FILENAME: &str = "core-ai-external-models.json";
 /// Id namespace for detected local models. `local:` cannot collide with the
 /// `apple:core-ai:` ids that Apple-hosted catalog entries use.
 pub(crate) const LOCAL_MODEL_ID_PREFIX: &str = "local:app-managed:";
+pub(crate) const EXTERNAL_MODEL_ID_PREFIX: &str = "local:external:";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -68,6 +68,7 @@ pub(crate) enum CoreAiModelKind {
 pub(crate) enum CoreAiModelSource {
     AppleHosted,
     AppManagedLocal,
+    ExternalLocal,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -116,6 +117,7 @@ pub(crate) struct CoreAiModelSummary {
     pub(crate) selected: bool,
     pub(crate) download_size_bytes: Option<u64>,
     pub(crate) installed_size_bytes: Option<u64>,
+    pub(crate) minimum_memory_gb: Option<u64>,
     pub(crate) recommended_memory_gb: Option<u64>,
     pub(crate) license: Option<String>,
     pub(crate) has_upstream_conversion_notice: bool,
@@ -125,6 +127,7 @@ pub(crate) struct CoreAiModelSummary {
     /// use it instead of `error`, whose English text is for logs only.
     pub(crate) error_code: Option<String>,
     pub(crate) asset_pack_version: Option<u64>,
+    pub(crate) can_remove: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -146,13 +149,12 @@ pub(crate) struct CoreAiCatalogEntry {
     published: bool,
     download_size_bytes: Option<u64>,
     installed_size_bytes: Option<u64>,
+    minimum_memory_gb: Option<u64>,
     recommended_memory_gb: Option<u64>,
     license: Option<String>,
     has_upstream_conversion_notice: bool,
     asset_pack_id: Option<String>,
-    catalog_version: Option<String>,
-    resource_manifest: Option<&'static str>,
-    resource_manifest_sha256: Option<&'static str>,
+    runtime_kind: Option<&'static str>,
 }
 
 impl CoreAiCatalogEntry {
@@ -165,22 +167,17 @@ impl CoreAiCatalogEntry {
             published: true,
             download_size_bytes: Some(1024),
             installed_size_bytes: Some(1024),
+            minimum_memory_gb: None,
             recommended_memory_gb: Some(1),
             license: Some("Apache-2.0".into()),
             has_upstream_conversion_notice: false,
             asset_pack_id: None,
-            catalog_version: None,
-            resource_manifest: None,
-            resource_manifest_sha256: None,
+            runtime_kind: None,
         }
     }
 
     #[cfg(test)]
-    pub(crate) fn published_fixture(
-        id: &str,
-        storage_directory: &str,
-        resource_manifest: &'static str,
-    ) -> Self {
+    pub(crate) fn published_fixture(id: &str, storage_directory: &str) -> Self {
         Self {
             id: id.into(),
             display_name: "Published fixture".into(),
@@ -188,31 +185,12 @@ impl CoreAiCatalogEntry {
             published: true,
             download_size_bytes: Some(5),
             installed_size_bytes: Some(5),
+            minimum_memory_gb: None,
             recommended_memory_gb: Some(1),
             license: Some("Apache-2.0".into()),
             has_upstream_conversion_notice: false,
             asset_pack_id: Some("dev.hazakura.editor.coreai.test.v1".into()),
-            catalog_version: Some("test-v1".into()),
-            resource_manifest: Some(resource_manifest),
-            resource_manifest_sha256: Some("test-resource-manifest-sha256"),
-        }
-    }
-
-    fn e4b() -> Self {
-        Self {
-            id: E4B_MODEL_ID.into(),
-            display_name: "Gemma 4 E4B".into(),
-            storage_directory: E4B_STORAGE_DIRECTORY.into(),
-            published: false,
-            download_size_bytes: Some(5_519_729_626),
-            installed_size_bytes: Some(6_808_842_583),
-            recommended_memory_gb: Some(16),
-            license: Some("Apache-2.0".into()),
-            has_upstream_conversion_notice: false,
-            asset_pack_id: Some(E4B_ASSET_PACK_ID.into()),
-            catalog_version: Some(E4B_CATALOG_VERSION.into()),
-            resource_manifest: Some(E4B_RESOURCE_MANIFEST),
-            resource_manifest_sha256: Some(E4B_RESOURCE_MANIFEST_SHA256),
+            runtime_kind: None,
         }
     }
 
@@ -224,13 +202,12 @@ impl CoreAiCatalogEntry {
             published: true,
             download_size_bytes: Some(9_148_924_300),
             installed_size_bytes: Some(14_698_433_203),
-            recommended_memory_gb: Some(32),
+            minimum_memory_gb: Some(16),
+            recommended_memory_gb: Some(24),
             license: Some("Apache-2.0".into()),
             has_upstream_conversion_notice: true,
             asset_pack_id: Some(TWELVE_B_ASSET_PACK_ID.into()),
-            catalog_version: Some(TWELVE_B_CATALOG_VERSION.into()),
-            resource_manifest: Some(TWELVE_B_RESOURCE_MANIFEST),
-            resource_manifest_sha256: Some(TWELVE_B_RESOURCE_MANIFEST_SHA256),
+            runtime_kind: Some(TWELVE_B_RUNTIME_KIND),
         }
     }
 
@@ -242,12 +219,8 @@ impl CoreAiCatalogEntry {
         if !matches!(components.next(), Some(Component::Normal(_))) || components.next().is_some() {
             return Err("Core AI catalog contains an invalid storage directory.".into());
         }
-        if self.asset_pack_id.is_some()
-            != (self.catalog_version.is_some()
-                && self.resource_manifest.is_some()
-                && self.resource_manifest_sha256.is_some())
-        {
-            return Err("Core AI catalog contains an incomplete Background Assets entry.".into());
+        if self.asset_pack_id.as_deref() == Some("") {
+            return Err("Core AI catalog contains an empty asset pack id.".into());
         }
         Ok(())
     }
@@ -258,7 +231,7 @@ impl CoreAiCatalogEntry {
 }
 
 fn production_catalog() -> Vec<CoreAiCatalogEntry> {
-    vec![CoreAiCatalogEntry::e4b(), CoreAiCatalogEntry::twelve_b()]
+    vec![CoreAiCatalogEntry::twelve_b()]
 }
 
 #[cfg(target_os = "macos")]
@@ -303,6 +276,7 @@ struct RuntimeState {
     error: Option<String>,
     materialized_path: Option<PathBuf>,
     asset_pack_version: Option<u64>,
+    failure_kind: Option<&'static str>,
 }
 
 impl Default for RuntimeState {
@@ -313,6 +287,7 @@ impl Default for RuntimeState {
             error: None,
             materialized_path: None,
             asset_pack_version: None,
+            failure_kind: None,
         }
     }
 }
@@ -323,20 +298,67 @@ struct CoreAiSelectionState {
     selected_model_id: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RegisteredExternalModel {
+    id: String,
+    display_name: String,
+    bookmark: Vec<u8>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ValidationReceipt {
     model_id: String,
-    catalog_version: String,
+    asset_pack_version: Option<u64>,
     resource_manifest_sha256: String,
+    materialized_root: String,
+    file_stamps: Vec<VerifiedFileStamp>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+struct VerifiedFileStamp {
+    path: String,
+    size: u64,
+    modified_ns: Option<u128>,
+    changed_ns: Option<i128>,
+    device: Option<u64>,
+    inode: Option<u64>,
+}
+
+fn verified_file_stamp(path: String, metadata: &fs::Metadata) -> VerifiedFileStamp {
+    let modified_ns = metadata
+        .modified()
+        .ok()
+        .and_then(|value| value.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|value| value.as_nanos());
+    #[cfg(unix)]
+    let (changed_ns, device, inode) = (
+        Some(i128::from(metadata.ctime()) * 1_000_000_000 + i128::from(metadata.ctime_nsec())),
+        Some(metadata.dev()),
+        Some(metadata.ino()),
+    );
+    #[cfg(not(unix))]
+    let (changed_ns, device, inode) = (None, None, None);
+    VerifiedFileStamp {
+        path,
+        size: metadata.len(),
+        modified_ns,
+        changed_ns,
+        device,
+        inode,
+    }
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ResourceManifest {
+    schema_version: u64,
     model_id: String,
     catalog_version: String,
     storage_directory: String,
+    expanded_bytes: u64,
+    max_expanded_bytes: u64,
     max_entries: usize,
     files: Vec<ResourceManifestFile>,
 }
@@ -348,9 +370,18 @@ struct ResourceManifestFile {
     sha256: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProductionDescriptorIdentity {
+    schema_version: u64,
+    model_id: String,
+    runtime_kind: String,
+}
+
 pub(crate) struct CoreAiModelStore {
     data_dir: Mutex<Option<PathBuf>>,
     selected_model_id: Mutex<String>,
+    external_models: Mutex<Vec<RegisteredExternalModel>>,
     pending_restore_model_id: Mutex<Option<String>>,
     catalog: Vec<CoreAiCatalogEntry>,
     runtime_states: Mutex<HashMap<String, RuntimeState>>,
@@ -362,14 +393,35 @@ pub(crate) struct CoreAiModelStore {
 
 impl Default for CoreAiModelStore {
     fn default() -> Self {
-        Self::with_catalog_and_transport(
+        let transport: Arc<dyn BackgroundAssetTransport> =
+            if cfg!(hazakura_background_assets_local_preview) {
+                Arc::new(LocalPreviewBackgroundAssetTransport)
+            } else {
+                Arc::new(PlatformBackgroundAssetTransport)
+            };
+        let store = Self::with_catalog_and_transport(
             if is_app_store_distribution_lane() {
                 production_catalog()
             } else {
                 Vec::new()
             },
-            Arc::new(PlatformBackgroundAssetTransport),
-        )
+            transport,
+        );
+        if cfg!(hazakura_background_assets_local_preview) {
+            for entry in &store.catalog {
+                if entry.published && entry.asset_pack_id.is_some() {
+                    store.set_runtime_state(
+                        &entry.id,
+                        RuntimeState {
+                            status: CoreAiModelStatus::Unsupported,
+                            error: Some(LOCAL_PREVIEW_ASSET_ERROR.into()),
+                            ..RuntimeState::default()
+                        },
+                    );
+                }
+            }
+        }
+        store
     }
 }
 
@@ -385,6 +437,7 @@ impl CoreAiModelStore {
         Self {
             data_dir: Mutex::new(None),
             selected_model_id: Mutex::new(SYSTEM_MODEL_ID.into()),
+            external_models: Mutex::new(Vec::new()),
             pending_restore_model_id: Mutex::new(None),
             catalog,
             runtime_states: Mutex::new(runtime_states),
@@ -453,6 +506,8 @@ impl CoreAiModelStore {
         fs::create_dir_all(&data_dir)
             .map_err(|error| format!("Failed to prepare Core AI app data: {error}"))?;
         *self.data_dir.lock().expect("Core AI data dir lock") = Some(data_dir);
+        *self.external_models.lock().expect("external models lock") =
+            self.read_external_models()?;
         if overridden {
             return Ok(());
         }
@@ -463,7 +518,9 @@ impl CoreAiModelStore {
         if selected == SYSTEM_MODEL_ID {
             return Ok(());
         }
-        if selected.starts_with(LOCAL_MODEL_ID_PREFIX) {
+        if selected.starts_with(LOCAL_MODEL_ID_PREFIX)
+            || selected.starts_with(EXTERNAL_MODEL_ID_PREFIX)
+        {
             if self.selection_for(&selected).is_ok() {
                 self.apply_selection(&selected, helper_store)?;
             } else {
@@ -515,6 +572,7 @@ impl CoreAiModelStore {
             selected: selected == SYSTEM_MODEL_ID,
             download_size_bytes: None,
             installed_size_bytes: None,
+            minimum_memory_gb: None,
             recommended_memory_gb: None,
             license: None,
             has_upstream_conversion_notice: false,
@@ -522,9 +580,11 @@ impl CoreAiModelStore {
             error: None,
             error_code: None,
             asset_pack_version: None,
+            can_remove: false,
         }];
         models.extend(self.catalog.iter().map(|entry| {
             let runtime = self.runtime_state(entry);
+            let preview_unavailable = runtime.error.as_deref() == Some(LOCAL_PREVIEW_ASSET_ERROR);
             CoreAiModelSummary {
                 id: entry.id.clone(),
                 display_name: entry.display_name.clone(),
@@ -534,16 +594,23 @@ impl CoreAiModelStore {
                 selected: selected == entry.id,
                 download_size_bytes: entry.download_size_bytes,
                 installed_size_bytes: entry.installed_size_bytes,
+                minimum_memory_gb: entry.minimum_memory_gb,
                 recommended_memory_gb: entry.recommended_memory_gb,
                 license: entry.license.clone(),
                 has_upstream_conversion_notice: entry.has_upstream_conversion_notice,
                 progress: runtime.progress,
                 error: runtime.error,
-                error_code: None,
+                error_code: if preview_unavailable {
+                    Some("local-preview".into())
+                } else {
+                    runtime.failure_kind.map(str::to_string)
+                },
                 asset_pack_version: runtime.asset_pack_version,
+                can_remove: runtime.materialized_path.is_some(),
             }
         }));
         models.extend(self.local_model_summaries(&selected));
+        models.extend(self.external_model_summaries(&selected));
         CoreAiModelCatalogResponse {
             distribution_status: if self.catalog.iter().any(|entry| entry.published) {
                 CoreAiDistributionStatus::Available
@@ -590,15 +657,15 @@ impl CoreAiModelStore {
         self.ensure_apple_hosted_management_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
         let asset_pack_id = self.asset_pack_id(entry)?;
-        if self.runtime_state(entry).status == CoreAiModelStatus::Ready {
-            return Ok(self.list());
-        }
+        let previous_path = self.runtime_state(entry).materialized_path;
+        self.next_monitor_generation(model_id);
         self.transport.start(asset_pack_id)?;
         self.set_runtime_state(
             model_id,
             RuntimeState {
                 status: CoreAiModelStatus::Downloading,
                 progress: Some(0.0),
+                materialized_path: previous_path,
                 ..RuntimeState::default()
             },
         );
@@ -628,12 +695,14 @@ impl CoreAiModelStore {
         self.ensure_management_available()?;
         self.ensure_apple_hosted_management_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
+        self.next_monitor_generation(model_id);
         let was_selected = self
             .selected_model_id
             .lock()
             .expect("selected model lock")
             .as_str()
             == model_id;
+        let previous_backend = was_selected.then(|| helper_store.selected_backend_for_restore());
         if was_selected {
             helper_store
                 .set_selected_backend_after(AssistBackendSelection::SystemDefault, || {
@@ -643,11 +712,15 @@ impl CoreAiModelStore {
         }
         if let Err(remove_error) = self.transport.remove(self.asset_pack_id(entry)?) {
             if was_selected {
-                if let Err(restore_error) = self.select(model_id, helper_store) {
+                if let Err(restore_error) = helper_store.set_selected_backend_after(
+                    previous_backend.expect("selected model has a previous backend"),
+                    || self.persist_selection(model_id),
+                ) {
                     return Err(format!(
                         "{remove_error} The previous model could not be restored after removal failed: {restore_error}"
                     ));
                 }
+                *self.selected_model_id.lock().expect("selected model lock") = model_id.into();
             }
             return Err(remove_error);
         }
@@ -675,118 +748,181 @@ impl CoreAiModelStore {
         model_id: String,
         helper_store: Option<Arc<AppleAssistHelperStore>>,
     ) {
-        let generation = {
-            let mut generations = self
-                .monitor_generations
-                .lock()
-                .expect("monitor generations lock");
-            let next = generations.get(&model_id).copied().unwrap_or(0) + 1;
-            generations.insert(model_id.clone(), next);
-            next
-        };
+        let generation = self.next_monitor_generation(&model_id);
         let store = self.clone();
         std::thread::spawn(move || loop {
-            if store
-                .monitor_generations
-                .lock()
-                .expect("monitor generations lock")
-                .get(&model_id)
-                .copied()
-                != Some(generation)
-            {
+            let Some((status, selection_synced)) =
+                store.refresh_monitored(&model_id, generation, helper_store.as_deref(), || {
+                    let _ = app.emit(CORE_AI_MODEL_STATE_CHANGED_EVENT, store.list());
+                })
+            else {
                 break;
-            }
-            let status = match store.refresh_model(&model_id) {
-                Ok(status) => status,
-                Err(error) => {
-                    store.set_failure(&model_id, error);
-                    CoreAiModelStatus::Failed
-                }
             };
-            if store.runtime_status(&model_id) == Some(CoreAiModelStatus::Ready) {
-                if let Some(helper) = helper_store.as_deref() {
-                    let _ = store.restore_pending_selection(&model_id, helper);
-                }
-            }
-            let _ = app.emit(CORE_AI_MODEL_STATE_CHANGED_EVENT, store.list());
-            if monitor_is_terminal(status) {
+            if monitor_is_terminal(status) && selection_synced {
                 break;
             }
             std::thread::sleep(monitor_poll_interval(status));
         });
     }
 
-    fn refresh_model(&self, model_id: &str) -> Result<CoreAiModelStatus, String> {
+    fn next_monitor_generation(&self, model_id: &str) -> u64 {
+        let mut generations = self
+            .monitor_generations
+            .lock()
+            .expect("monitor generations lock");
+        let next = generations.get(model_id).copied().unwrap_or(0) + 1;
+        generations.insert(model_id.into(), next);
+        next
+    }
+
+    fn refresh_monitored(
+        &self,
+        model_id: &str,
+        generation: u64,
+        helper_store: Option<&AppleAssistHelperStore>,
+        on_commit: impl FnOnce(),
+    ) -> Option<(CoreAiModelStatus, bool)> {
+        if self
+            .monitor_generations
+            .lock()
+            .expect("monitor generations lock")
+            .get(model_id)
+            .copied()
+            != Some(generation)
+        {
+            return None;
+        }
+        // Snapshot acquisition and hashing can take seconds. Neither operation
+        // may mutate shared runtime state before the generation is rechecked.
+        let previous = self
+            .catalog_entry(model_id)
+            .ok()
+            .map(|entry| self.runtime_state(entry))
+            .unwrap_or_default();
+        let result = self.compute_runtime_state(model_id);
+        let generations = self
+            .monitor_generations
+            .lock()
+            .expect("monitor generations lock");
+        if generations.get(model_id).copied() != Some(generation) {
+            return None;
+        }
+        let state = match result {
+            Ok(state) => state,
+            Err(error) => RuntimeState {
+                status: CoreAiModelStatus::Failed,
+                error: Some(error),
+                materialized_path: previous.materialized_path,
+                asset_pack_version: previous.asset_pack_version,
+                failure_kind: Some("download-failed"),
+                ..RuntimeState::default()
+            },
+        };
+        let status = state.status;
+        self.set_runtime_state(model_id, state);
+        let selection_synced = if status == CoreAiModelStatus::Ready {
+            helper_store.map_or(true, |helper| {
+                self.sync_ready_selection(model_id, helper).is_ok()
+            })
+        } else {
+            true
+        };
+        on_commit();
+        drop(generations);
+        Some((status, selection_synced))
+    }
+
+    #[cfg(test)]
+    pub(crate) fn next_monitor_generation_for_test(&self, model_id: &str) -> u64 {
+        self.next_monitor_generation(model_id)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn refresh_monitored_for_test(
+        &self,
+        model_id: &str,
+        generation: u64,
+        helper_store: &AppleAssistHelperStore,
+    ) -> Option<(CoreAiModelStatus, bool)> {
+        self.refresh_monitored(model_id, generation, Some(helper_store), || {})
+    }
+
+    fn compute_runtime_state(&self, model_id: &str) -> Result<RuntimeState, String> {
         let entry = self.catalog_entry(model_id)?;
         if !entry.published {
-            self.set_runtime_state(
-                model_id,
-                RuntimeState {
-                    status: CoreAiModelStatus::NotPublished,
-                    ..RuntimeState::default()
-                },
-            );
-            return Ok(CoreAiModelStatus::NotPublished);
+            return Ok(RuntimeState {
+                status: CoreAiModelStatus::NotPublished,
+                ..RuntimeState::default()
+            });
         }
         let snapshot = self
             .transport
             .snapshot(self.asset_pack_id(entry)?, &entry.relative_asset_path())?;
         if !snapshot.supported {
-            self.set_runtime_state(
-                model_id,
-                RuntimeState {
-                    status: CoreAiModelStatus::Unsupported,
-                    error: snapshot.error,
-                    asset_pack_version: snapshot.asset_pack_version,
-                    ..RuntimeState::default()
-                },
-            );
-            return Ok(CoreAiModelStatus::Unsupported);
+            return Ok(RuntimeState {
+                status: CoreAiModelStatus::Unsupported,
+                error: snapshot.error,
+                asset_pack_version: snapshot.asset_pack_version,
+                ..RuntimeState::default()
+            });
         }
-        if snapshot.available {
-            let path = snapshot.path.ok_or_else(|| {
-                "Background Assets reported E4B as downloaded without a materialized path."
-                    .to_string()
-            })?;
-            self.set_runtime_state(
-                model_id,
-                RuntimeState {
-                    status: CoreAiModelStatus::Verifying,
-                    progress: Some(1.0),
-                    asset_pack_version: snapshot.asset_pack_version,
-                    ..RuntimeState::default()
-                },
-            );
-            self.verify_materialized_model(entry, &path)?;
-            self.set_runtime_state(
-                model_id,
-                RuntimeState {
-                    status: CoreAiModelStatus::Ready,
-                    progress: Some(1.0),
-                    materialized_path: Some(path),
-                    asset_pack_version: snapshot.asset_pack_version,
-                    error: None,
-                },
-            );
-            return Ok(CoreAiModelStatus::Ready);
-        }
-        let status = match snapshot.phase.as_str() {
-            "resolving" | "downloading" => CoreAiModelStatus::Downloading,
-            "paused" => CoreAiModelStatus::Paused,
-            "failed" => CoreAiModelStatus::Failed,
-            _ => CoreAiModelStatus::NotDownloaded,
-        };
-        self.set_runtime_state(
-            model_id,
-            RuntimeState {
+        // A previous pack version can remain available while Apple downloads
+        // the requested update. Wait for ensureLocalAvailability to finish
+        // before resolving and verifying its materialized path.
+        if matches!(
+            snapshot.phase.as_str(),
+            "resolving" | "downloading" | "paused" | "failed"
+        ) {
+            let previous_path = self.runtime_state(entry).materialized_path;
+            let status = match snapshot.phase.as_str() {
+                "resolving" | "downloading" => CoreAiModelStatus::Downloading,
+                "paused" => CoreAiModelStatus::Paused,
+                _ => CoreAiModelStatus::Failed,
+            };
+            return Ok(RuntimeState {
                 status,
                 progress: snapshot.progress.map(|value| value.clamp(0.0, 1.0)),
                 error: snapshot.error,
-                materialized_path: None,
+                materialized_path: previous_path,
                 asset_pack_version: snapshot.asset_pack_version,
-            },
-        );
-        Ok(status)
+                failure_kind: (status == CoreAiModelStatus::Failed).then_some("download-failed"),
+                ..RuntimeState::default()
+            });
+        }
+        if snapshot.available {
+            let path = snapshot.path.ok_or_else(|| {
+                "Background Assets reported a Core AI model as downloaded without a materialized path."
+                    .to_string()
+            })?;
+            if let Err(error) =
+                self.verify_materialized_model(entry, &path, snapshot.asset_pack_version)
+            {
+                return Ok(RuntimeState {
+                    status: CoreAiModelStatus::Failed,
+                    error: Some(error),
+                    materialized_path: Some(path),
+                    asset_pack_version: snapshot.asset_pack_version,
+                    failure_kind: Some("verification-failed"),
+                    ..RuntimeState::default()
+                });
+            }
+            return Ok(RuntimeState {
+                status: CoreAiModelStatus::Ready,
+                progress: Some(1.0),
+                materialized_path: Some(path),
+                asset_pack_version: snapshot.asset_pack_version,
+                error: None,
+                failure_kind: None,
+            });
+        }
+        Ok(RuntimeState {
+            status: CoreAiModelStatus::NotDownloaded,
+            progress: snapshot.progress.map(|value| value.clamp(0.0, 1.0)),
+            error: snapshot.error,
+            materialized_path: None,
+            asset_pack_version: snapshot.asset_pack_version,
+            failure_kind: None,
+        })
     }
 
     #[cfg(test)]
@@ -794,8 +930,17 @@ impl CoreAiModelStore {
         &self,
         model_id: &str,
     ) -> Result<CoreAiModelStatus, String> {
-        match self.refresh_model(model_id) {
-            Ok(status) => Ok(status),
+        match self.compute_runtime_state(model_id) {
+            Ok(state) => {
+                let status = state.status;
+                let error = state.error.clone();
+                self.set_runtime_state(model_id, state);
+                if status == CoreAiModelStatus::Failed {
+                    Err(error.unwrap_or_else(|| "Core AI model verification failed.".into()))
+                } else {
+                    Ok(status)
+                }
+            }
             Err(error) => {
                 self.set_failure(model_id, error.clone());
                 Err(error)
@@ -807,57 +952,127 @@ impl CoreAiModelStore {
         &self,
         entry: &CoreAiCatalogEntry,
         root: &Path,
+        asset_pack_version: Option<u64>,
     ) -> Result<(), String> {
-        let expected_manifest = entry
-            .resource_manifest
-            .ok_or_else(|| "Core AI entry has no resource manifest.".to_string())?;
-        let packaged_manifest = fs::read(root.join(PACK_RESOURCE_MANIFEST_FILENAME))
-            .map_err(|error| format!("The E4B resource manifest is missing: {error}"))?;
-        if packaged_manifest != expected_manifest.as_bytes() {
-            return Err(
-                "The downloaded E4B resource manifest does not match the signed catalog.".into(),
-            );
-        }
-        let manifest: ResourceManifest = serde_json::from_str(expected_manifest)
-            .map_err(|error| format!("The signed E4B resource manifest is invalid: {error}"))?;
-        if manifest.model_id != entry.id
-            || manifest.storage_directory != entry.storage_directory
-            || Some(manifest.catalog_version.as_str()) != entry.catalog_version.as_deref()
-            || manifest.files.len() != manifest.max_entries
+        let manifest_path = root.join(PACK_RESOURCE_MANIFEST_FILENAME);
+        let manifest_metadata = fs::symlink_metadata(&manifest_path)
+            .map_err(|error| format!("Core AI resource manifest is missing: {error}"))?;
+        if !manifest_metadata.is_file()
+            || manifest_metadata.file_type().is_symlink()
+            || manifest_metadata.len() > MAX_PACK_RESOURCE_MANIFEST_BYTES
         {
-            return Err("The signed E4B resource manifest identity is inconsistent.".into());
+            return Err("Core AI resource manifest is not a bounded regular file.".into());
         }
-        let receipt_is_valid = self.read_validation_receipt(entry).unwrap_or(false);
+        let packaged_manifest = fs::read(&manifest_path)
+            .map_err(|error| format!("Core AI resource manifest cannot be read: {error}"))?;
+        let manifest: ResourceManifest = serde_json::from_slice(&packaged_manifest)
+            .map_err(|error| format!("Core AI resource manifest is invalid: {error}"))?;
+        if manifest.schema_version != 1
+            || manifest.model_id != entry.id
+            || manifest.storage_directory != entry.storage_directory
+            || manifest.catalog_version.trim().is_empty()
+            || manifest.catalog_version.len() > 80
+            || manifest.files.is_empty()
+            || manifest.files.len() != manifest.max_entries
+            || manifest.files.len() > MAX_PACK_FILES
+            || manifest.expanded_bytes > manifest.max_expanded_bytes
+            || manifest.max_expanded_bytes > MAX_PACK_EXPANDED_BYTES
+        {
+            return Err("Core AI resource manifest is incompatible with this model.".into());
+        }
+        let mut listed_paths = HashSet::new();
+        let mut listed_bytes = 0_u64;
+        let mut file_stamps = Vec::with_capacity(manifest.files.len());
         for file in &manifest.files {
             validate_relative_path(&file.path)?;
-            let path = root.join(&file.path);
-            let metadata = fs::symlink_metadata(&path)
-                .map_err(|error| format!("E4B is missing {}: {error}", file.path))?;
-            if metadata.file_type().is_symlink() || !metadata.is_file() {
-                return Err(format!(
-                    "E4B contains an unsafe non-file entry: {}",
-                    file.path
-                ));
+            if !listed_paths.insert(file.path.as_str())
+                || file.sha256.len() != 64
+                || !file.sha256.bytes().all(|byte| byte.is_ascii_hexdigit())
+            {
+                return Err(
+                    "Core AI resource manifest contains a duplicate or invalid file entry.".into(),
+                );
             }
+            listed_bytes = listed_bytes
+                .checked_add(file.size)
+                .ok_or_else(|| "Core AI resource manifest file sizes overflow.".to_string())?;
+            let metadata = regular_pack_file_metadata(root, &file.path)?;
             if metadata.len() != file.size {
                 return Err(format!(
-                    "E4B file size mismatch for {}: expected {}, got {}.",
+                    "Core AI file size mismatch for {}: expected {}, got {}.",
                     file.path,
                     file.size,
                     metadata.len()
                 ));
             }
-            if !receipt_is_valid && self.transport.sha256_file(&path)? != file.sha256 {
-                return Err(format!("E4B SHA-256 mismatch for {}.", file.path));
+            file_stamps.push(verified_file_stamp(file.path.clone(), &metadata));
+        }
+        if listed_bytes != manifest.expanded_bytes {
+            return Err("Core AI resource manifest expanded size is inconsistent.".into());
+        }
+        ensure_pack_file_set(root, &listed_paths)?;
+        let manifest_sha256 = self.transport.sha256_file(&manifest_path)?;
+        let receipt_is_valid = self
+            .read_validation_receipt(
+                entry,
+                asset_pack_version,
+                &manifest_sha256,
+                root,
+                &file_stamps,
+            )
+            .unwrap_or(false);
+        if !receipt_is_valid {
+            for file in &manifest.files {
+                if !self
+                    .transport
+                    .sha256_file(&root.join(&file.path))?
+                    .eq_ignore_ascii_case(&file.sha256)
+                {
+                    return Err(format!("Core AI SHA-256 mismatch for {}.", file.path));
+                }
+            }
+            // A model changed during hashing must not acquire a trusted receipt.
+            for (file, stamp) in manifest.files.iter().zip(&file_stamps) {
+                let metadata = regular_pack_file_metadata(root, &file.path)?;
+                if verified_file_stamp(file.path.clone(), &metadata) != *stamp {
+                    return Err(format!(
+                        "Core AI file changed during verification: {}.",
+                        file.path
+                    ));
+                }
+            }
+        }
+        if let Some(expected_runtime_kind) = entry.runtime_kind {
+            if !listed_paths.contains("hazakura-model.json") {
+                return Err(
+                    "Core AI model descriptor is not covered by the resource manifest.".into(),
+                );
+            }
+            let descriptor: ProductionDescriptorIdentity = serde_json::from_slice(
+                &fs::read(root.join("hazakura-model.json"))
+                    .map_err(|error| format!("Core AI model descriptor cannot be read: {error}"))?,
+            )
+            .map_err(|error| format!("Core AI model descriptor is invalid: {error}"))?;
+            if descriptor.schema_version != 1
+                || descriptor.model_id != entry.id
+                || descriptor.runtime_kind != expected_runtime_kind
+            {
+                return Err("Core AI model descriptor is incompatible with this app.".into());
             }
         }
         if !receipt_is_valid {
-            self.write_validation_receipt(entry)?;
+            self.write_validation_receipt(
+                entry,
+                asset_pack_version,
+                &manifest_sha256,
+                root,
+                file_stamps,
+            )?;
         }
         Ok(())
     }
 
-    fn restore_pending_selection(
+    fn sync_ready_selection(
         &self,
         model_id: &str,
         helper_store: &AppleAssistHelperStore,
@@ -867,15 +1082,31 @@ impl CoreAiModelStore {
             .lock()
             .expect("pending restore lock")
             .clone();
-        if pending.as_deref() != Some(model_id) {
+        if pending.as_deref() == Some(model_id) {
+            self.apply_selection(model_id, helper_store)?;
+            *self
+                .pending_restore_model_id
+                .lock()
+                .expect("pending restore lock") = None;
             return Ok(());
         }
-        self.apply_selection(model_id, helper_store)?;
-        *self
-            .pending_restore_model_id
-            .lock()
-            .expect("pending restore lock") = None;
+        let selected = self.selected_model_id.lock().expect("selected model lock");
+        if selected.as_str() == model_id {
+            let desired = self.selection_for(model_id)?;
+            if helper_store.selected_backend_for_restore() != desired {
+                helper_store.set_selected_backend(desired)?;
+            }
+        }
         Ok(())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn sync_ready_selection_for_test(
+        &self,
+        model_id: &str,
+        helper_store: &AppleAssistHelperStore,
+    ) -> Result<(), String> {
+        self.sync_ready_selection(model_id, helper_store)
     }
 
     fn ensure_management_available(&self) -> Result<(), String> {
@@ -897,7 +1128,9 @@ impl CoreAiModelStore {
     /// lifecycle operations. Refusing here keeps a crafted local id from
     /// reaching the download and deletion path.
     fn ensure_apple_hosted_management_model(&self, model_id: &str) -> Result<(), String> {
-        if model_id.starts_with(LOCAL_MODEL_ID_PREFIX) {
+        if model_id.starts_with(LOCAL_MODEL_ID_PREFIX)
+            || model_id.starts_with(EXTERNAL_MODEL_ID_PREFIX)
+        {
             return Err(
                 "Custom models are selectable, but cannot be downloaded, cancelled, or deleted by Hazakura."
                     .into(),
@@ -941,6 +1174,7 @@ impl CoreAiModelStore {
                     selected: selected == id,
                     download_size_bytes: None,
                     installed_size_bytes: None,
+                    minimum_memory_gb: None,
                     recommended_memory_gb: None,
                     license: None,
                     has_upstream_conversion_notice: false,
@@ -948,9 +1182,219 @@ impl CoreAiModelStore {
                     error: None,
                     error_code,
                     asset_pack_version: None,
+                    can_remove: false,
                 }
             })
             .collect()
+    }
+
+    fn external_model_summaries(&self, selected: &str) -> Vec<CoreAiModelSummary> {
+        self.external_models
+            .lock()
+            .expect("external models lock")
+            .iter()
+            .map(|entry| {
+                let result = resolve_model_bookmark(&entry.bookmark)
+                    .map_err(|_| "bookmark-inaccessible".to_string())
+                    .and_then(|scope| {
+                        resolve_local_model_root(&scope.path)
+                            .map_err(|error| error.code().to_string())
+                    });
+                let (display_name, status, error_code) = match result {
+                    Ok(model) => (
+                        model
+                            .display_name
+                            .unwrap_or_else(|| entry.display_name.clone()),
+                        CoreAiModelStatus::Detected,
+                        None,
+                    ),
+                    Err(code) => (
+                        entry.display_name.clone(),
+                        CoreAiModelStatus::Failed,
+                        Some(code),
+                    ),
+                };
+                CoreAiModelSummary {
+                    id: entry.id.clone(),
+                    display_name,
+                    kind: CoreAiModelKind::CoreAi,
+                    source: CoreAiModelSource::ExternalLocal,
+                    status,
+                    selected: selected == entry.id,
+                    download_size_bytes: None,
+                    installed_size_bytes: None,
+                    minimum_memory_gb: None,
+                    recommended_memory_gb: None,
+                    license: None,
+                    has_upstream_conversion_notice: false,
+                    progress: None,
+                    error: None,
+                    error_code,
+                    asset_pack_version: None,
+                    can_remove: false,
+                }
+            })
+            .collect()
+    }
+
+    pub(crate) fn register_external_model(
+        &self,
+        path: &Path,
+    ) -> Result<CoreAiModelCatalogResponse, String> {
+        self.ensure_management_available()?;
+        let model = resolve_local_model_root(path)
+            .map_err(|error| format!("local-model:{}", error.code()))?;
+        // Picking only `*.aimodel` does not grant access to its parent bundle
+        // and sibling tokenizer. Require the resource root itself in the picker.
+        if fs::canonicalize(path).ok().as_deref() != Some(model.resource_root.as_path()) {
+            return Err("model-bookmark:select-resource-root".into());
+        }
+        let identity = model.identity_key();
+        if scan_custom_models_directory(&self.custom_models_root()?)
+            .into_iter()
+            .any(|candidate| {
+                candidate
+                    .outcome
+                    .is_ok_and(|existing| existing.identity_key() == identity)
+            })
+        {
+            return Ok(self.list());
+        }
+        let bookmark = create_read_only_model_bookmark(&model.resource_root).map_err(|error| {
+            if path != model.resource_root {
+                "model-bookmark:select-resource-root".to_string()
+            } else {
+                format!("model-bookmark:access-denied: {error}")
+            }
+        })?;
+        if bookmark.is_empty() || bookmark.len() > 64 * 1024 {
+            return Err("model-bookmark:access-denied: bookmark data is invalid".into());
+        }
+        let mut entries = self.external_models.lock().expect("external models lock");
+        for entry in entries.iter() {
+            let Ok(scope) = resolve_model_bookmark(&entry.bookmark) else {
+                continue;
+            };
+            if resolve_local_model_root(&scope.path)
+                .is_ok_and(|existing| existing.identity_key() == identity)
+            {
+                drop(entries);
+                return Ok(self.list());
+            }
+        }
+        let created_ns = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(|_| "The system clock cannot create a model registration id.".to_string())?
+            .as_nanos();
+        let mut suffix = 0_u64;
+        let id = loop {
+            let candidate = format!(
+                "{EXTERNAL_MODEL_ID_PREFIX}{created_ns:x}-{:x}-{suffix:x}",
+                std::process::id()
+            );
+            if entries.iter().all(|entry| entry.id != candidate) {
+                break candidate;
+            }
+            suffix = suffix
+                .checked_add(1)
+                .ok_or_else(|| "Too many registered Core AI models.".to_string())?;
+        };
+        entries.push(RegisteredExternalModel {
+            id,
+            display_name: model.display_name.unwrap_or_else(|| {
+                model
+                    .resource_root
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .into_owned()
+            }),
+            bookmark,
+        });
+        if let Err(error) = self.persist_external_models(&entries) {
+            entries.pop();
+            return Err(error);
+        }
+        drop(entries);
+        Ok(self.list())
+    }
+
+    pub(crate) fn unregister_external_model(
+        &self,
+        model_id: &str,
+        helper_store: &AppleAssistHelperStore,
+    ) -> Result<CoreAiModelCatalogResponse, String> {
+        self.ensure_management_available()?;
+        if !model_id.starts_with(EXTERNAL_MODEL_ID_PREFIX) {
+            return Err("Only registered external model folders can be unregistered.".into());
+        }
+        let was_selected = self
+            .selected_model_id
+            .lock()
+            .expect("selected model lock")
+            .as_str()
+            == model_id;
+        let previous_backend = was_selected.then(|| helper_store.selected_backend_for_restore());
+        if was_selected {
+            self.select(SYSTEM_MODEL_ID, helper_store)?;
+        }
+        let mut entries = self.external_models.lock().expect("external models lock");
+        let Some(index) = entries.iter().position(|entry| entry.id == model_id) else {
+            return Err("The registered model folder was not found.".into());
+        };
+        let removed = entries.remove(index);
+        if let Err(error) = self.persist_external_models(&entries) {
+            entries.insert(index, removed);
+            drop(entries);
+            if let Some(previous) = previous_backend {
+                helper_store
+                    .set_selected_backend_after(previous, || self.persist_selection(model_id))?;
+                *self.selected_model_id.lock().expect("selected model lock") = model_id.into();
+            }
+            return Err(error);
+        }
+        drop(entries);
+        Ok(self.list())
+    }
+
+    fn external_models_path(&self) -> Result<PathBuf, String> {
+        Ok(self.data_dir()?.join(EXTERNAL_MODELS_FILENAME))
+    }
+
+    fn read_external_models(&self) -> Result<Vec<RegisteredExternalModel>, String> {
+        let data = match fs::read(self.external_models_path()?) {
+            Ok(data) => data,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(error) => return Err(format!("Cannot read registered model folders: {error}")),
+        };
+        let entries: Vec<RegisteredExternalModel> = serde_json::from_slice(&data)
+            .map_err(|error| format!("Cannot read registered model folders: {error}"))?;
+        let mut ids = HashSet::new();
+        if entries.iter().any(|entry| {
+            !entry.id.starts_with(EXTERNAL_MODEL_ID_PREFIX)
+                || entry.id.len() <= EXTERNAL_MODEL_ID_PREFIX.len()
+                || entry.id.len() > 160
+                || !entry.id[EXTERNAL_MODEL_ID_PREFIX.len()..]
+                    .bytes()
+                    .all(|byte| byte.is_ascii_hexdigit() || byte == b'-')
+                || !ids.insert(&entry.id)
+                || entry.bookmark.is_empty()
+                || entry.bookmark.len() > 64 * 1024
+        }) {
+            return Err("Registered model folder data is invalid.".into());
+        }
+        Ok(entries)
+    }
+
+    fn persist_external_models(&self, entries: &[RegisteredExternalModel]) -> Result<(), String> {
+        let path = self.external_models_path()?;
+        let temporary = path.with_extension("json.tmp");
+        let data = serde_json::to_vec(entries)
+            .map_err(|error| format!("Cannot encode registered model folders: {error}"))?;
+        fs::write(&temporary, data)
+            .map_err(|error| format!("Cannot save registered model folders: {error}"))?;
+        fs::rename(&temporary, path)
+            .map_err(|error| format!("Cannot save registered model folders: {error}"))
     }
 
     fn custom_models_root(&self) -> Result<PathBuf, String> {
@@ -963,8 +1407,9 @@ impl CoreAiModelStore {
         helper_store: &AppleAssistHelperStore,
     ) -> Result<(), String> {
         let selection = self.selection_for(model_id)?;
+        let mut selected = self.selected_model_id.lock().expect("selected model lock");
         helper_store.set_selected_backend(selection)?;
-        *self.selected_model_id.lock().expect("selected model lock") = model_id.into();
+        *selected = model_id.into();
         Ok(())
     }
 
@@ -993,6 +1438,31 @@ impl CoreAiModelStore {
             return Ok(AssistBackendSelection::CoreAiLocal {
                 model_id: model_id.to_string(),
                 model_path: model.resource_root,
+                model_bookmark: None,
+            });
+        }
+        if model_id.starts_with(EXTERNAL_MODEL_ID_PREFIX) {
+            let bookmark = self
+                .external_models
+                .lock()
+                .expect("external models lock")
+                .iter()
+                .find(|entry| entry.id == model_id)
+                .ok_or_else(|| "The registered model folder was not found.".to_string())?
+                .bookmark
+                .clone();
+            let scope = resolve_model_bookmark(&bookmark)?;
+            let model = resolve_local_model_root(&scope.path).map_err(|error| {
+                format!(
+                    "The registered Core AI model is unavailable ({}): {}",
+                    error.code(),
+                    error.message()
+                )
+            })?;
+            return Ok(AssistBackendSelection::CoreAiLocal {
+                model_id: model_id.to_string(),
+                model_path: model.resource_root,
+                model_bookmark: Some(bookmark),
             });
         }
         let entry = self.catalog_entry(model_id)?;
@@ -1056,28 +1526,27 @@ impl CoreAiModelStore {
             .unwrap_or_default()
     }
 
-    fn runtime_status(&self, model_id: &str) -> Option<CoreAiModelStatus> {
-        self.catalog_entry(model_id)
-            .ok()
-            .map(|entry| self.runtime_state(entry).status)
-    }
     fn set_runtime_state(&self, model_id: &str, state: RuntimeState) {
         self.runtime_states
             .lock()
             .expect("runtime states lock")
             .insert(model_id.into(), state);
     }
+    #[cfg(test)]
     fn set_failure(&self, model_id: &str, error: String) {
-        let version = self
+        let previous_state = self
             .catalog_entry(model_id)
             .ok()
-            .and_then(|entry| self.runtime_state(entry).asset_pack_version);
+            .map(|entry| self.runtime_state(entry))
+            .unwrap_or_default();
         self.set_runtime_state(
             model_id,
             RuntimeState {
                 status: CoreAiModelStatus::Failed,
                 error: Some(error),
-                asset_pack_version: version,
+                materialized_path: previous_state.materialized_path,
+                asset_pack_version: previous_state.asset_pack_version,
+                failure_kind: Some("download-failed"),
                 ..RuntimeState::default()
             },
         );
@@ -1116,34 +1585,63 @@ impl CoreAiModelStore {
             .join(format!("{}.json", entry.storage_directory)))
     }
 
-    fn read_validation_receipt(&self, entry: &CoreAiCatalogEntry) -> Result<bool, String> {
+    fn read_validation_receipt(
+        &self,
+        entry: &CoreAiCatalogEntry,
+        asset_pack_version: Option<u64>,
+        manifest_sha256: &str,
+        root: &Path,
+        file_stamps: &[VerifiedFileStamp],
+    ) -> Result<bool, String> {
         let data = match fs::read(self.validation_receipt_path(entry)?) {
             Ok(data) => data,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
-            Err(error) => return Err(format!("Failed to read E4B validation receipt: {error}")),
+            Err(error) => {
+                return Err(format!(
+                    "Failed to read Core AI validation receipt: {error}"
+                ))
+            }
         };
         let receipt: ValidationReceipt = serde_json::from_slice(&data)
-            .map_err(|error| format!("Failed to decode E4B validation receipt: {error}"))?;
-        Ok(receipt.model_id == entry.id
-            && Some(receipt.catalog_version.as_str()) == entry.catalog_version.as_deref()
-            && Some(receipt.resource_manifest_sha256.as_str()) == entry.resource_manifest_sha256)
+            .map_err(|error| format!("Failed to decode Core AI validation receipt: {error}"))?;
+        Ok(asset_pack_version.is_some()
+            && receipt.model_id == entry.id
+            && receipt.asset_pack_version == asset_pack_version
+            && receipt.resource_manifest_sha256 == manifest_sha256
+            && receipt.materialized_root == root.to_string_lossy().as_ref()
+            && file_stamps.iter().all(|stamp| {
+                stamp.modified_ns.is_some()
+                    && stamp.changed_ns.is_some()
+                    && stamp.device.is_some()
+                    && stamp.inode.is_some()
+            })
+            && receipt.file_stamps == file_stamps)
     }
 
-    fn write_validation_receipt(&self, entry: &CoreAiCatalogEntry) -> Result<(), String> {
+    fn write_validation_receipt(
+        &self,
+        entry: &CoreAiCatalogEntry,
+        asset_pack_version: Option<u64>,
+        manifest_sha256: &str,
+        root: &Path,
+        file_stamps: Vec<VerifiedFileStamp>,
+    ) -> Result<(), String> {
         let path = self.validation_receipt_path(entry)?;
         fs::create_dir_all(
             path.parent()
-                .ok_or_else(|| "E4B validation receipt has no parent directory.".to_string())?,
+                .ok_or_else(|| "Core AI validation receipt has no parent directory.".to_string())?,
         )
-        .map_err(|error| format!("Failed to prepare E4B validation receipt: {error}"))?;
+        .map_err(|error| format!("Failed to prepare Core AI validation receipt: {error}"))?;
         let data = serde_json::to_vec_pretty(&ValidationReceipt {
             model_id: entry.id.clone(),
-            catalog_version: entry.catalog_version.clone().unwrap_or_default(),
-            resource_manifest_sha256: entry.resource_manifest_sha256.unwrap_or_default().into(),
+            asset_pack_version,
+            resource_manifest_sha256: manifest_sha256.into(),
+            materialized_root: root.to_string_lossy().into_owned(),
+            file_stamps,
         })
-        .map_err(|error| format!("Failed to encode E4B validation receipt: {error}"))?;
+        .map_err(|error| format!("Failed to encode Core AI validation receipt: {error}"))?;
         fs::write(path, data)
-            .map_err(|error| format!("Failed to save E4B validation receipt: {error}"))
+            .map_err(|error| format!("Failed to save Core AI validation receipt: {error}"))
     }
 
     fn read_persisted_selection(&self) -> Result<Option<String>, String> {
@@ -1173,21 +1671,113 @@ impl CoreAiModelStore {
 }
 
 fn validate_relative_path(path: &str) -> Result<(), String> {
-    let mut count = 0;
-    for component in Path::new(path).components() {
-        match component {
-            Component::Normal(_) => count += 1,
-            _ => return Err(format!("Resource manifest contains an unsafe path: {path}")),
+    if path.is_empty() {
+        return Err("Resource manifest contains an empty path.".into());
+    }
+    if path.starts_with('/')
+        || path.contains('\\')
+        || path.contains('\0')
+        || path
+            .split('/')
+            .any(|part| part.is_empty() || part == "." || part == "..")
+    {
+        return Err(format!("Resource manifest contains an unsafe path: {path}"));
+    }
+    Ok(())
+}
+
+fn regular_pack_file_metadata(root: &Path, relative_path: &str) -> Result<fs::Metadata, String> {
+    let mut current = root.to_path_buf();
+    let parts: Vec<_> = relative_path.split('/').collect();
+    for (index, part) in parts.iter().enumerate() {
+        current.push(part);
+        let metadata = fs::symlink_metadata(&current)
+            .map_err(|error| format!("Core AI is missing {relative_path}: {error}"))?;
+        if metadata.file_type().is_symlink()
+            || (index + 1 == parts.len() && !metadata.is_file())
+            || (index + 1 < parts.len() && !metadata.is_dir())
+        {
+            return Err(format!("Core AI contains an unsafe entry: {relative_path}"));
+        }
+        if index + 1 == parts.len() {
+            return Ok(metadata);
         }
     }
-    if count == 0 {
-        return Err("Resource manifest contains an empty path.".into());
+    Err("Core AI resource path is empty.".into())
+}
+
+fn ensure_pack_file_set(root: &Path, listed_paths: &HashSet<&str>) -> Result<(), String> {
+    let mut directories = vec![root.to_path_buf()];
+    let mut observed_files = HashSet::new();
+    let mut observed_entries = 0_usize;
+    while let Some(directory) = directories.pop() {
+        for entry in fs::read_dir(&directory)
+            .map_err(|error| format!("Core AI directory cannot be read: {error}"))?
+        {
+            let entry =
+                entry.map_err(|error| format!("Core AI directory entry is invalid: {error}"))?;
+            observed_entries += 1;
+            if observed_entries > MAX_PACK_FILES * 4 {
+                return Err("Core AI resource contains too many entries.".into());
+            }
+            let path = entry.path();
+            let metadata = fs::symlink_metadata(&path)
+                .map_err(|error| format!("Core AI entry cannot be inspected: {error}"))?;
+            if metadata.file_type().is_symlink() {
+                return Err("Core AI resource contains a symbolic link.".into());
+            }
+            if metadata.is_dir() {
+                directories.push(path);
+            } else if metadata.is_file() {
+                let relative = path
+                    .strip_prefix(root)
+                    .map_err(|_| "Core AI resource escaped its root.".to_string())?
+                    .to_str()
+                    .ok_or_else(|| "Core AI resource path is not UTF-8.".to_string())?
+                    .to_string();
+                if relative == PACK_RESOURCE_MANIFEST_FILENAME {
+                    continue;
+                }
+                if !listed_paths.contains(relative.as_str()) {
+                    return Err(format!("Core AI resource has an unlisted file: {relative}"));
+                }
+                observed_files.insert(relative);
+            } else {
+                return Err("Core AI resource contains an unsupported file type.".into());
+            }
+        }
+    }
+    if observed_files.len() != listed_paths.len() {
+        return Err("Core AI resource manifest does not cover all files.".into());
     }
     Ok(())
 }
 
 fn emit_catalog<R: tauri::Runtime>(app: &tauri::AppHandle<R>, store: &CoreAiModelStore) {
     let _ = app.emit(CORE_AI_MODEL_STATE_CHANGED_EVENT, store.list());
+}
+
+#[tauri::command]
+pub(crate) fn open_local_assist_model_settings<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+) -> Result<(), String> {
+    crate::security::window_guard::ensure_label_is_apple_assist(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    let main = window
+        .app_handle()
+        .get_webview_window(crate::security::window_guard::MAIN_WINDOW_LABEL)
+        .ok_or_else(|| "The main editor window is unavailable.".to_string())?;
+    main.show().map_err(|error| error.to_string())?;
+    main.unminimize().map_err(|error| error.to_string())?;
+    main.set_focus().map_err(|error| error.to_string())?;
+    window
+        .app_handle()
+        .emit_to(
+            crate::security::window_guard::MAIN_WINDOW_LABEL,
+            crate::types::MENU_ACTION_EVENT,
+            crate::types::MENU_ON_DEVICE_MODELS,
+        )
+        .map_err(|error| format!("Cannot open model settings: {error}"))
 }
 
 #[tauri::command]
@@ -1211,6 +1801,46 @@ pub(crate) fn select_local_assist_model<R: tauri::Runtime>(
     ensure_label_is_main_or_apple_assist(window.label())?;
     ensure_apple_assist_allowed_by_distribution()?;
     let catalog = store.select(&model_id, helper_store.inner().as_ref())?;
+    emit_catalog(&app, store.inner().as_ref());
+    Ok(catalog)
+}
+
+#[tauri::command]
+pub(crate) async fn register_external_core_ai_model<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    store: tauri::State<'_, Arc<CoreAiModelStore>>,
+    path: String,
+) -> Result<CoreAiModelCatalogResponse, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    let owned_store = store.inner().clone();
+    let catalog = tauri::async_runtime::spawn_blocking(move || {
+        owned_store.register_external_model(Path::new(&path))
+    })
+    .await
+    .map_err(|error| format!("Core AI model registration failed: {error}"))??;
+    emit_catalog(&app, store.inner().as_ref());
+    Ok(catalog)
+}
+
+#[tauri::command]
+pub(crate) async fn unregister_external_core_ai_model<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    store: tauri::State<'_, Arc<CoreAiModelStore>>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+    model_id: String,
+) -> Result<CoreAiModelCatalogResponse, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    let owned_store = store.inner().clone();
+    let owned_helper = helper_store.inner().clone();
+    let catalog = tauri::async_runtime::spawn_blocking(move || {
+        owned_store.unregister_external_model(&model_id, owned_helper.as_ref())
+    })
+    .await
+    .map_err(|error| format!("Core AI model registration removal failed: {error}"))??;
     emit_catalog(&app, store.inner().as_ref());
     Ok(catalog)
 }

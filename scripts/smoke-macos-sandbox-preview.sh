@@ -14,6 +14,7 @@ TMP_ROOT="$(mktemp -d)"
 APP="$TMP_ROOT/Hazakura Editor.app"
 HELPERS=(
     "$APP/Contents/MacOS/hazakura-local-assist-helper"
+    "$APP/Contents/MacOS/hazakura-core-ai-helper"
     "$APP/Contents/MacOS/hazakura-import-assist-helper"
 )
 HELPER_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/app-store-helper.plist"

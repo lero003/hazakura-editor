@@ -7,13 +7,14 @@ Last reviewed: 2026-09-23
 
 ## Decision
 
-Hazakura Local Assistの最初の本番候補は、同じGemma 4 QAT系から次の二つに固定する。
-これは配布物を再現可能に作るためのidentity lockであり、製品catalogへの公開承認ではない。
+3.1初回のApple配信catalogはGemma 4 12Bのみ（最低メモリ16 GB、推奨24 GB）。
+E4B v2は評価・再現用のidentity lockとして維持し、現行の配布一覧には載せない。
+以下の二つのlockは配布物を再現するための記録で、両方の公開承認ではない。
 
 | Lane | Model ID | Target | Locked converted artifact | Expanded model bytes |
 | --- | --- | --- | --- | ---: |
-| Standard | `apple:core-ai:gemma-4-e4b-it-int4-provider-v2` | 16 GB Macでの受入候補 | Hazakura再変換、`john-rocky/coreai-model-zoo@347393ede35fd25e9e59203dba562e5ee4d268bb` | 6,808,842,583 |
-| Quality comparison | `apple:core-ai:gemma-4-12b-it-int8-v1` | 32 GB以上で先行評価 | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,433,203 |
+| 保留候補 | `apple:core-ai:gemma-4-e4b-it-int4-provider-v2` | 過去の16 GB評価候補 | Hazakura再変換、`john-rocky/coreai-model-zoo@347393ede35fd25e9e59203dba562e5ee4d268bb` | 6,808,842,583 |
+| 初回配布候補 | `apple:core-ai:gemma-4-12b-it-int8-v1` | 最低16 GB、推奨24 GB。対象機受入は別ゲート | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,433,203 |
 
 完全なfile path、byte size、SHA-256、source revision、runtime kind、asset pack IDは
 [`scripts/core-ai-production-models.json`](../scripts/core-ai-production-models.json)を機械正本とする。
@@ -76,7 +77,9 @@ npm run coreai:models:package -- --model=gemma4-12b
 PLEテーブルが無ければ元checkpointから生成し、既存の中間ファイルがある場合も固定hashと照合する。
 新E4B `.aar`はローカル作成済み（5,519,729,626 bytes、SHA-256
 `74b864c22c21a697ce63713e27d44c0a1261f06eb7bb506041a3975d2a962e1e`）。
-Apple側のasset pack recordには未アップロードで、catalogは`not_published`を返す。
+オーナー提示のApp Store Connect画面にはE4B v2のasset pack recordが表示され、TestFlight配信も
+報告された。Apple APIからの独立照合と新buildでの実取得は未実施。source catalogは一時的に
+明示ダウンロード対象へ変更したが、現行の初回配布方針では除外した。
 
 一括処理は次のとおり。中断したdownloadは`.partial`からresumeする。
 `aria2c`が利用可能なら固定URLを8 rangeで取得し、無い環境では`curl`へ自動fallbackする。
@@ -145,8 +148,9 @@ manifest schemaも実物で確認した。Apple公式templateを`xcrun ba-packag
 | Gemma 4 12B | 14,698,433,203 | 9,148,924,300 | `208bc19246665964a6fb910503ee1e2e20ff4830d378901d9a651a50837a10eb` |
 
 これはローカル生成の証跡であり、Apple CDN upload、Apple processing、署名済みbuild、TestFlightでの
-実取得、AOT、対象メモリ機での品質採用の証跡ではない。次は12B `.aar`をTransporter等で
-uploadし、処理完了と32 GB対象機での取得を確認する。
+実取得、AOT、対象メモリ機での品質採用の証跡ではない。オーナーは12B pack version 2への
+上げ直しを報告したが、このローカルSHAとApple上のv2のbyte一致、processing、CDN経由の実取得は
+独立確認していない。次は新アプリbuildでの取得と32 GB対象機での生成を確認する。
 
 ## Locked Apple-hosted asset pack IDs
 
@@ -198,8 +202,14 @@ LICENSE ファイルは Gemma Terms of Use のまま」という食い違い。�
 | Gemma 4 E4B v2 | `hazakura-coreai-gemma4-e4b-v2` |
 | Gemma 4 12B | `hazakura-coreai-gemma4-12b-v1` |
 
-App Store Connect側のrecordとコード側のcatalogはこの完全一致を必須とする。既存IDの中身を
-差し替えず、model revisionまたはpayloadを変える場合は新しいimmutable IDとcatalog versionを使う。
+App Store Connect側のrecordとコード側のcatalogはこのIDの完全一致を必須とする。同じmodel ID・
+runtime kind・resource layout契約で動く更新は、**同じasset pack IDの新しいpack version**として配信する。
+アプリはpack内resource manifestの全文、catalog version、ファイル別SHAをコンパイル時に固定せず、
+取得後にpack内manifestのidentity・schema・サイズ上限・safe path・全ファイルのsize / SHA-256を検証する。
+manifestとpayloadの組をApple-managed packの配信経路に依存して受け入れるため、独立したアプリ署名との
+byte一致は保証しない。runtime契約やmodel IDが非互換に変わるときは新しいIDとアプリ側対応が必要。
+[Appleのversioning資料](https://developer.apple.com/documentation/AppStoreConnectAPI/managing-apple-hosted-background-assets)も
+同一packの内容更新をアプリ本体とは別に扱う。更新取得はユーザーの明示操作とし、最新版の取得完了後に検証する。
 
 **識別子にピリオド（`.`）を使わない。** 2026-09-21に実APIで確認した制約で、
 `GET /v1/apps/{id}/backgroundAssets?filter[assetPackIdentifier]=a.b` は
@@ -216,15 +226,17 @@ App Store Connect側のrecordとコード側のcatalogはこの完全一致を�
 
 ## Activation gates
 
-2026-09-21からE4B、2026-09-22から12Bを、内部TestFlightでCDN経路を受け入れるため
-App Storeレーンの固定catalogへ接続した。Developerレーンは引き続き空。以下は正式リリースまでのgateであり、
+以前はE4Bと12Bを内部TestFlightのCDN確認用catalogへ接続した。現行の初回配布catalogは12Bのみ、
+Developerレーンは引き続き空。以下は正式リリースまでのgateであり、
 catalog entryの存在だけを出荷承認として扱わない。
 
 1. `coreai-build`を含むAppleのAOT toolchainを入手し、対象Mac向け`.aimodelc`を作成・再lockする。
 2. Standard/quality候補を日本語原稿で比較し、16 GB / 32 GBの対象機でload、初回specialize、
    peak memory、生成品質、cancel後の再開を受け入れる。
 3. **実装済み、TestFlight受入待ち:** G1としてSettingsとLocal Assist窓をmodel-state eventで同期する。
-4. **実装済み、TestFlight受入待ち:** G2としてsigned manifest、safe path、size、全SHA-256検証後だけ`Ready`にする。
+4. **source実装済み、TestFlight受入待ち:** G2として固定model ID / runtime契約に合うApple-managed
+   packのmanifest、safe path、size、全SHA-256を検証した後だけ`Ready`にする。同一IDの互換更新は
+   manifest全文のアプリ埋め込み一致を要求せず、旧版が残る間は最新版の完了を待つ。
 5. **source実装済み、署名profile待ち:** Background Download extension、shared App Group、`BA*` keys、
    `AssetPackManager` transportを同じbuild形へ接続する。
 6. App Store Connectへ`.aar`をuploadしてApple処理完了を確認し、そのpackを使う同一buildを

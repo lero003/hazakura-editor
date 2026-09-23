@@ -21,7 +21,7 @@ final class GenerationContractTests: XCTestCase {
         XCTAssertEqual(AssistBackend.coreAITest.modelId, "apple:core-ai:qwen3-0.6b-test")
     }
 
-    func testBackendResolverAcceptsOnlyAppManagedLocalIdentityForLocalCoreAI() {
+    func testBackendResolverAcceptsRegisteredLocalIdentitiesOnly() {
         guard case .coreAILocal(let modelId) = AssistBackend.resolve(
             wireValue: "core_ai_local",
             modelId: "local:app-managed:My Qwen"
@@ -30,6 +30,12 @@ final class GenerationContractTests: XCTestCase {
         }
         XCTAssertEqual(modelId, "local:app-managed:My Qwen")
         XCTAssertEqual(AssistBackend.coreAILocal(modelId: modelId).modelId, modelId)
+        guard case .coreAILocal(let externalId) = AssistBackend.resolve(
+            wireValue: "core_ai_local", modelId: "local:external:1"
+        ) else {
+            return XCTFail("core_ai_local must resolve a registered external identity")
+        }
+        XCTAssertEqual(externalId, "local:external:1")
         XCTAssertNil(AssistBackend.resolve(wireValue: "core_ai_local", modelId: nil))
         XCTAssertNil(AssistBackend.resolve(
             wireValue: "core_ai_local",

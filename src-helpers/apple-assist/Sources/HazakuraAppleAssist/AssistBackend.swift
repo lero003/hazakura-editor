@@ -30,10 +30,9 @@ enum AssistBackend {
             }
             return .coreAI(modelId: modelId)
         case coreAILocalWireValue:
-            let prefix = "local:app-managed:"
+            let prefixes = ["local:app-managed:", "local:external:"]
             guard let modelId,
-                  modelId.hasPrefix(prefix),
-                  modelId.count > prefix.count,
+                  prefixes.contains(where: { modelId.hasPrefix($0) && modelId.count > $0.count }),
                   modelId.count <= 320,
                   modelId.unicodeScalars.allSatisfy({
                       !CharacterSet.controlCharacters.contains($0)

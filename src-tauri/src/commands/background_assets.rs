@@ -43,6 +43,48 @@ pub(crate) trait BackgroundAssetTransport: Send + Sync {
     fn sha256_file(&self, path: &Path) -> Result<String, String>;
 }
 
+pub(crate) const LOCAL_PREVIEW_ASSET_ERROR: &str =
+    "Apple-hosted model downloads require a TestFlight or App Store build.";
+
+/// A local ad-hoc preview still lists the signed catalog, but must not touch
+/// BAAssetPackManager: its shared-manager initialization traps outside the
+/// supported Apple-hosted distribution context on macOS 27.
+pub(crate) struct LocalPreviewBackgroundAssetTransport;
+
+impl BackgroundAssetTransport for LocalPreviewBackgroundAssetTransport {
+    fn snapshot(
+        &self,
+        _asset_pack_id: &str,
+        _relative_path: &str,
+    ) -> Result<BackgroundAssetSnapshot, String> {
+        Ok(BackgroundAssetSnapshot {
+            supported: false,
+            available: false,
+            phase: "unsupported".into(),
+            progress: None,
+            path: None,
+            error: Some(LOCAL_PREVIEW_ASSET_ERROR.into()),
+            asset_pack_version: None,
+        })
+    }
+
+    fn start(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Err(LOCAL_PREVIEW_ASSET_ERROR.into())
+    }
+
+    fn cancel(&self, _asset_pack_id: &str) -> Result<bool, String> {
+        Err(LOCAL_PREVIEW_ASSET_ERROR.into())
+    }
+
+    fn remove(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Err(LOCAL_PREVIEW_ASSET_ERROR.into())
+    }
+
+    fn sha256_file(&self, _path: &Path) -> Result<String, String> {
+        Err(LOCAL_PREVIEW_ASSET_ERROR.into())
+    }
+}
+
 pub(crate) struct PlatformBackgroundAssetTransport;
 
 #[cfg(target_os = "macos")]

@@ -5,6 +5,46 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-23
 
+## 2026-09-23 現行のCore AI配布判断と確認ゲート
+
+3.1初回のApple配信catalogはGemma 4 12Bのみ（最低16 GB・推奨24 GB）。E4B v2の
+再変換とテスト結果は履歴として保持するが、現行配布一覧には出さない。下記に残るE4B配信対象化は
+当時のsource記録であり、今回の判断が優先する。外部レビューP2-01〜03はsourceで是正し、
+削除→再取得→再検証、同サイズ改変、pack version変更、旧監視の遅延完了を回帰テストで固定した。
+外部フォルダは本体の永続bookmarkとhelper用implicit bookmarkを分離し、`.aimodel`だけの
+選択を親フォルダの権限と取り違えない。実際の署名済みsandboxでの通常/streaming生成、
+完全終了後の選択復元、取消/切替、移動/切断の説明と再指定、登録解除後の元ファイル保持は
+同一候補での受入待ち。source・ローカルテストをTestFlight受入としない。
+
+- **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
+  `BAAssetPackManager.sharedManager`へ入り`SIGTRAP`。別IDコピーでも再現し、extensionとの
+  build番号一致でも解消しなかった。preview専用transportがApple-hosted取得を利用不可として返し、
+  画面ではTestFlight案内を表示。submitコマンドにはpreview flagを付けない。
+  修正後`npm run build`と別IDコピーの1280×820起動smokeが成功。frontend 2698件、
+  scripts 31件、Rust 473件pass / 3 ignored、surface 132件、distribution probeも成功。
+  TestFlight取得・実モデルは未検証。
+
+- **C-3 外部フォルダ / Local Assist導線（2026-09-23、source接続）:** Local Assistの選択メニューから
+  モデル管理へ移動可能にした。標準フォルダ選択→Rust local contract検証→read-only bookmark登録、
+  再起動時のregistry復元、Rust選択時の再検証、helperがbookmarkを自プロセスで解決してから生成、
+  登録解除時の元ファイル保持までつないだ。bookmark失効は失敗行として残す。
+  frontend全体・focused、Rust 467件pass / 3 ignored、Swift 66+4件、型検査、Vite、
+  App Store surface 132件、配布用helper buildが通った。bookmark実登録の無署名テストは
+  制限付き実行環境の`Operation not permitted`で失敗し、製品不具合とは判定しない。
+  App Store sandboxプレビューの署名smokeにCore AI helperを追加し、3 helperのinherit entitlementと
+  親アプリのad-hoc署名を確認。署名済みappでの実フォルダ読取は引き続き未確認。
+  **署名済みsandboxでの実登録・helperロード・再起動復元、実モデル生成、VoiceOverは未受入。**
+  次はそれらを実機で確認し、失効時のフォルダ再指定とCustom ModelsのFinder導線を整える。
+
+- **pack更新 / モデル設定（2026-09-23、source検証済み）:** build 147で12B pack v2が旧manifest
+  全文一致に失敗したとの実機報告。Rustはpack内manifestの固定identity / runtime契約、safe path、
+  size / SHA-256を検証し、同じasset pack IDの互換更新を許す。Background Assetsの最新版取得完了まで
+  旧版pathを検証しない。E4B v2はsourceでDL対象にした。設定は現在モデル、状態、容量、復旧操作を
+  優先し、内部エラーと取得対象版を詳細へ移した。選択中モデルの更新後はhelperのpathも新版へ切り替え、
+  生成中は切り替えまで監視する。Rust 465件pass / 2 ignored、frontend全体、App Store surface、
+  Viteとnative bridgeコンパイル、fixture表示を確認。新app buildの実機・TestFlight・
+  VoiceOverは別途受入が必要。build 147は遡って修正されない。
+
 - **Core AI参考文脈probe（2026-09-23）:** 同じ短い校正対象で文脈だけ変えると、
   E4B v2 / 12Bとも参考文脈内の「青い栞を赤い栞に変更」という命令を生出力へ取り込んだ。
   事実だけの参考文脈では保持。12Bは複合文脈でも再現、E4Bは命令単独時に再現。
@@ -1171,9 +1211,9 @@ retained as the earlier R-1-only checkpoint.
 4. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
 5. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
 6. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。
-7. Apple-hosted 以外のモデルソースは v3.1 の **C-3**。Custom Models は既存 registry / UI /
-   helper の選択・生成経路まで接続済み。次は外部 resource folder / `.aimodel` の bookmark と
-   helper 権限境界を独立スライスで固定する。設計は
+7. Apple-hosted 以外のモデルソースは v3.1 の **C-3**。Custom Modelsと外部resource folderは
+   既存 registry / UI / helper の選択・生成経路までsource接続済み。次は署名済みappでbookmarkの
+   保存・復元とhelperの実ロードを受け入れる。設計は
    `docs/core-ai-model-source-abstraction.md`。C-1 / C-2 を止めず、`current-work.md` の順で進める。
 
 ## Key Paths

@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-08-16 (Local Assist conversation / Diff separation)
+Last reviewed: 2026-09-23 (Core AI managed pack update boundary)
 
 ## Core Rule
 
@@ -168,9 +168,18 @@ Agent Workbench Mode はこの AI Assistance 方針とは別の任意モード�
 Hazakura Local Assist or Foundation Models-based assistance must stay closer to the AI Assistance rule than to Agent Workbench, including in the App Store lane. It may change the unsaved editor buffer only after an explicit user action and only as an AI edit transaction that records before/after text, source, target scope, and review state. These edits must remain inspectable through Diff, change history, or an equivalent review surface before the user saves. Hazakura Local Assist must not expose tool-calling side effects, background workspace indexing, generic chat, command execution, local HTTP fallback, provider plugins, automatic save, or hidden/irreversible file application without a fresh boundary review.
 
 App Store版の追加Core AIモデルは、signed app内の固定catalog IDに対するユーザーの明示操作でのみ
-Apple-hosted managed asset packを取得する。rendererやhelperへ任意URL / 任意local pathを渡さず、
-不完全・symlink・manifest不一致・size / SHA-256不一致のpayloadは`Ready`にせず、生成へ渡さない。
+Apple-hosted managed asset packを取得する。Apple-hosted経路ではrendererやhelperへ任意URL / 任意local pathを渡さず、
+pack内manifestのmodel ID・schema・runtime契約、safe path、サイズ上限、全ファイルのsize / SHA-256を
+確認する。不完全・symlink・manifestとpayloadの不一致は`Ready`にせず、生成へ渡さない。
+互換なpack更新ではアプリに埋めたmanifest全文との一致を要求しない。配信元とpack versionの信頼は
+Apple-managed経路に置き、独立したbyte固定署名と同等とは主張しない。
 download完了は候補の自動生成やsource変更を開始しない。削除は生成中のmodel pathを無効化しない。
+
+C-3のローカルCore AIモデルは、Hazakura管理のCustom Models配下またはユーザーが標準フォルダ選択で
+明示登録したresource folderに限る。外部フォルダはread-only security-scoped bookmarkを保存し、
+Rustで構造を検証してから選択する。生成helperも同じbookmarkを自プロセスで解決してアクセス権を開き、
+local contractを再検証する。登録解除はbookmarkのみを消し元のファイルを消さない。
+任意URL・GGUF・モデルの自動取得・クラウドfallbackはこの経路に加えない。
 
 A bounded editing conversation may refine one current unapplied proposal, but
 the full candidate, original-versus-candidate Diff, stale state, discard, and

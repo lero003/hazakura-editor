@@ -5,6 +5,25 @@ import { AssistModelPicker } from "./AssistModelPicker";
 afterEach(cleanup);
 
 describe("AssistModelPicker", () => {
+  it("opens model management from the Local Assist model menu", async () => {
+    const onManage = vi.fn();
+    render(<AssistModelPicker language="ja" disabled={false} onManage={onManage} />);
+    fireEvent.click(screen.getByRole("button", { name: /モデルを選択/ }));
+    const manage = screen.getByRole("menuitem", { name: "モデルを追加・管理…" });
+    fireEvent.keyDown(screen.getByRole("menuitemradio"), { key: "End" });
+    expect(document.activeElement).toBe(manage);
+    fireEvent.click(manage);
+    expect(onManage).toHaveBeenCalledOnce();
+  });
+  it("keeps a missing registered folder visible while allowing a switch to System", () => {
+    const onSelect = vi.fn();
+    render(<AssistModelPicker language="ja" disabled={false} modelId="local:external:missing"
+      onSelect={onSelect} />);
+    fireEvent.click(screen.getByRole("button", { name: /ローカルモデルが見つかりません/ }));
+    expect(screen.getByRole("menuitemradio", { name: "ローカルモデルが見つかりません" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Apple Intelligence" }));
+    expect(onSelect).toHaveBeenCalledWith("apple:foundation-models:system-default");
+  });
   const localModels = [
     { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence", kind: "system" as const, status: "ready" as const, selected: true },
     { id: "local:app-managed:Local", displayName: "Local model", kind: "core_ai" as const, source: "app_managed_local" as const, status: "detected" as const, selected: false },

@@ -1,9 +1,9 @@
 # Core AI モデルソース抽象化（ローカル `.aimodel` / resource folder）
 
-Status: v3.1 スコープ（オーナー決定 2026-09-22）。実装中 — スライス3（app-managed選択・helper接続）完了
+Status: v3.1 スコープ（オーナー決定 2026-09-22）。外部フォルダ登録・helper bookmark経路はsource接続済み、署名済みapp受入待ち
 Scope: v3.1 の C-3 レーン — Apple-hosted 以外のモデルソースを Hazakura で扱う設計とゲート
 Authority: Medium（設計詳細の正本。v3.1 のスコープ判断は `roadmap.md`、キューは `current-work.md`）
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
 
 ## この文書の位置づけ
 
@@ -19,7 +19,7 @@ Last reviewed: 2026-09-22
 - この文書がそれらと衝突したら、**現行の正本が優先**する。
 - 実装の順序・着手判断は `current-work.md` と `roadmap.md` で決める。
 
-### 実装の現況（2026-09-22）
+### 実装の現況（2026-09-23）
 
 - **スライス1 完了:** `src-tauri/src/commands/core_ai_local_models.rs` に依存の無い解決・
   検証層を追加した。`resolve_local_model_root`（resource root / language bundle /
@@ -48,9 +48,13 @@ Last reviewed: 2026-09-22
   再検証する。production prompt / generation profile / cache を共有するが、Apple-hosted の production
   contract と asset lifecycle は共有しない。消失・破損した保存選択は起動時に System へ修復する。
   [スライス1〜3レビュー資料](reviews/2026-09-22-v3.1-c3-multi-slice-review/README.md)。
-- **未接続:** security-scoped bookmark と外部 resource folder の登録・登録解除、
-  Custom Models フォルダを作成 / Finderで開く / 明示再スキャンする UI、実 local model の受入。
-  したがって本レーンは「ローカルモデルを登録して使える」完了状態ではない。
+- **外部フォルダ経路をsource接続:** モデル管理でフォルダを明示選択し、Rustでlocal contractを検証、
+  read-only security-scoped bookmarkを保存する。登録解除はbookmarkだけを消す。選択時にRustが再検証し、
+  生成時にはhelperが同じbookmarkを解決・アクセス開始してからlocal contractを再検証する。
+  Local Assistのモデル選択メニューから管理ページへ移れる。bookmark失効・bundle破損は利用不可で一覧に残す。
+- **未受入:** 署名済みsandboxアプリでの実フォルダ登録・再起動後の復元・helper実生成、
+  VoiceOver/キーボード、TestFlight。Custom ModelsフォルダのFinder表示・明示再スキャンUIも未接続。
+  source接続と実機での「登録して使える」受入は区別する。
 
 ### オーナー決定（2026-09-22）
 
@@ -92,30 +96,31 @@ Installed / Available Model
 CoreAIKit model loader
 ```
 
-## 現状構造の調査（2026-09-22 時点）
+## 構造の調査（2026-09-22）と接続更新（2026-09-23）
 
 着手前に「今どうなっているか」を実装で確認した結果。抽象化はここを土台にする。
 
 | 層 | 実体 | いまの振る舞い |
 |---|---|---|
-| モデル registry | `src-tauri/src/commands/core_ai_models.rs` の `CoreAiModelStore` | catalog はコンパイル時定数（E4B / 12B）。`CoreAiModelSummary` が frontend 契約。model ごとの `RuntimeState`（status / progress / `materialized_path` / asset pack version）を持つ |
+| モデル registry | `src-tauri/src/commands/core_ai_models.rs` の `CoreAiModelStore` | 初回配布catalogは12Bのみ（E4Bは評価履歴）。`CoreAiModelSummary` が frontend 契約。model ごとの `RuntimeState`（status / progress / `materialized_path` / asset pack version）を持つ |
 | 選択状態 | 同ファイル `CoreAiSelectionState` | `core-ai-selection.json` に `selectedModelId` を永続。既定は `apple:foundation-models:system-default` |
 | 取得 transport | `src-tauri/src/commands/background_assets.rs` の `BackgroundAssetTransport` | Apple-hosted `.aar` を materialize し、その絶対 path を `materialized_path` に保持する |
 | 検証 | `core_ai_models.rs` の `ResourceManifest` / `ResourceManifestFile` | 相対 path の safety、`max_entries`、サイズ、SHA-256 を確認してから `Ready` にする（G2） |
-| helper への引き渡し | `src-helpers/apple-assist/Sources/HazakuraAppleAssist/main.swift` | Rust が stdin の `modelPath` を渡す。backend は Rust が唯一選択し、app-managed local は `core_ai_local` と stable ID を渡す |
+| helper への引き渡し | `apple_assist_supervisor.rs` / `src-helpers/apple-assist/Sources/HazakuraAppleAssist/main.swift` | Rust が stdin の `modelPath` を渡す。外部モデルでは本体で永続bookmarkを復元し、helper用implicit bookmarkを一時生成して渡す。helperが自プロセスで解決・アクセス開始する。backendはRustが唯一選択する |
 | helper 側の解決 | `CoreAITestResourceContract.swift` / `CoreAILocalResourceContract.swift` / `CoreAITestRuntime.swift` | Apple-hosted と local の契約を分けて再検証し、`CoreAIKit` の runtime loader へ渡す |
-| 保存先 | `src-tauri/src/lib.rs`（`app_data_dir()`） | 現行はアプリコンテナ配下（`CoreAIModels` / `core-ai-selection.json` / `core-ai-validation`） |
+| 保存先 | `src-tauri/src/lib.rs`（`app_data_dir()`） | Apple資産・選択状態と、外部登録bookmarkの`core-ai-external-models.json`をアプリ領域に置く。外部モデルの実ファイルは元フォルダに残す |
 | App Group | `src-tauri/Info.appstore.plist`、`src-tauri/entitlements/*` | `group.dev.hazakura.editor` は Background Download extension 側で使う。モデル保管場所としての共用は現状ない |
 | 権限の先例 | `src-tauri/src/commands/security_bookmarks.rs`、`src-tauri/src/import_assist/stage.rs` | security-scoped bookmark の作成 / 解決は Rust が持つ。import は「main が scope を持ち、**nested helper は sandbox しか継承しない**ので container temp へコピーする」方式 |
 
 分かったこと:
 
 - スライス3までは **Apple CDN の materialized path** と **app-managed Custom Models の検証済み
-  canonical path** だけを helper に渡す。外部 path はまだ受け付けない。
+  canonical path** だけだった。2026-09-23から外部登録はbookmarkをhelperへ渡し、helper側でも
+  scopeを開いてlocal contractを再検証する。
 - Rust がモデル registry・選択・path の単一 authority になっている。抽象化はここを広げる形が自然で、
   **Swift / Rust / frontend に別 registry を作らない**（`core-ai-c0-design.md` D20 と同じ思想）。
-- 外部ディレクトリを helper にそのまま読ませられるかは**未検証**。既存の import は
-  「helper へは権限を渡さずコピーする」先例で、これは本レーンの前提を左右する。
+- 外部ディレクトリをhelperが署名済みsandboxでそのまま読めるかは**未受入**。source経路と
+  通常helperビルドは確認したが、実モデルの登録・復元・ロードは別の実機ゲート。
 
 ## 目標構造
 
@@ -136,7 +141,7 @@ CoreAIKit model loader
 
 `Apple catalog → Background Assets → .aar → 展開後 resource folder → helper` は現行のまま維持する。
 
-- E4B / 12B の download / cancel / resume / delete / 低メモリ警告 / license 表示は壊さない。
+- 現行12Bの download / cancel / resume / delete / 低メモリ警告 / license 表示は壊さない。E4Bの評価資産は配布一覧から外して保持する。
 - `.aar` は「公式モデルの delivery mechanism」という位置づけを明文化するだけに留める。
 - ローカル `.aar` を一般のモデル bundle として独自展開する実装は**しない**。
 
@@ -246,7 +251,8 @@ Hazakura Custom Models
 
 - Safe Editor 主面、Markdown/text source 正本、proposal-first / Diff / 明示 Apply / no auto-save。
 - System 既定 backend、fail-closed、Rust 単一 registry、`selectedId` の Rust 所有。
-- G1（複数窓同期）と G2（signed manifest / safe path / size / SHA-256 検証後に Ready）。
+- G1（複数窓同期）と G2（Apple-managed pack内manifestの固定identity / runtime契約、
+  safe path / size / SHA-256 検証後に Ready）。互換なpack versionのmanifest全文はappにpinしない。
 - 自動ダウンロード・起動時スキャンなし、明示操作、App Store lane の開示整合。
 - ローカル `.aar` の独自展開、GGUF 直接読み込み、クラウド fallback は行わない。
 
@@ -287,8 +293,8 @@ Hazakura Custom Models
 2. Apple 側 resource 慣例と AOT の確定度、helper への security-scoped 権限の渡し方を
    実装前に確認する。未確定なら「未確定のまま固定しない」方針を明記する。
 3. Core AI helper / Rust registry を二重化せず、既存の単一 registry を拡張する。
-   スライス3で app-managed の選択・helper 経路まで接続済み。次は外部 resource folder の
-   security-scoped bookmark と helper 権限境界を独立スライスで固定する。
+   app-managed と外部フォルダの選択・helper 経路までsource接続済み。次は署名済みsandboxアプリで
+   bookmarkの保存・復元とhelperの実ロードを受け入れる。
 
 ## 実装時の検証項目（受け入れ）
 

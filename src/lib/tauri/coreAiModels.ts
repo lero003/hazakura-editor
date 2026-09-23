@@ -13,8 +13,9 @@ export type CoreAiModelKind = "system" | "core_ai";
  * Where a model came from. `app_managed_local` means Rust detected a bundle in
  * the Custom Models directory and validated it with the local contract; those
  * entries can be selected but are not managed as downloaded assets.
+ * `external_local` is a user-registered folder backed by a security-scoped bookmark.
  */
-export type CoreAiModelSource = "apple_hosted" | "app_managed_local";
+export type CoreAiModelSource = "apple_hosted" | "app_managed_local" | "external_local";
 export type CoreAiModelStatus =
   | "ready"
   | "not_downloaded"
@@ -36,6 +37,7 @@ export type CoreAiModelSummary = {
   selected: boolean;
   downloadSizeBytes?: number;
   installedSizeBytes?: number;
+  minimumMemoryGb?: number;
   recommendedMemoryGb?: number;
   license?: string;
   hasUpstreamConversionNotice?: boolean;
@@ -44,6 +46,8 @@ export type CoreAiModelSummary = {
   /** Stable code for a frontend-owned message; local entries use this instead of `error`. */
   errorCode?: string | null;
   assetPackVersion?: number | null;
+  /** Apple-managed payload is present and may be removed, including after verification fails. */
+  canRemove?: boolean;
 };
 
 export type CoreAiModelCatalog = {
@@ -77,6 +81,18 @@ export async function listCoreAiModels(): Promise<CoreAiModelCatalog> {
 
 export async function selectLocalAssistModel(modelId: string): Promise<CoreAiModelCatalog> {
   return invoke<CoreAiModelCatalog>("select_local_assist_model", { modelId });
+}
+
+export async function openLocalAssistModelSettings(): Promise<void> {
+  await invoke("open_local_assist_model_settings");
+}
+
+export async function registerExternalCoreAiModel(path: string): Promise<CoreAiModelCatalog> {
+  return invoke<CoreAiModelCatalog>("register_external_core_ai_model", { path });
+}
+
+export async function unregisterExternalCoreAiModel(modelId: string): Promise<CoreAiModelCatalog> {
+  return invoke<CoreAiModelCatalog>("unregister_external_core_ai_model", { modelId });
 }
 
 export async function startCoreAiModelDownload(modelId: string): Promise<CoreAiModelCatalog> {

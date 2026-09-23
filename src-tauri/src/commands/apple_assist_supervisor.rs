@@ -20,6 +20,8 @@
 
 #![allow(dead_code)]
 
+use crate::commands::core_ai_local_models::resolve_local_model_root;
+use crate::commands::security_bookmarks::{resolve_model_bookmark, ScopedModelBookmark};
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
@@ -63,6 +65,7 @@ pub(crate) enum AssistBackendSelection {
     CoreAiLocal {
         model_id: String,
         model_path: PathBuf,
+        model_bookmark: Option<Vec<u8>>,
     },
     CoreAiTest {
         model_path: PathBuf,
@@ -119,6 +122,7 @@ impl AssistBackendSelection {
             Self::CoreAiLocal {
                 model_id,
                 model_path,
+                ..
             } => Ok((
                 CORE_AI_LOCAL_BACKEND,
                 Some(model_id.as_str()),
@@ -149,6 +153,57 @@ impl AssistBackendSelection {
             Self::CoreAiTest { .. } => Ok("apple:core-ai:qwen3-0.6b-test".into()),
             Self::Invalid(reason) => Err(reason.clone()),
         }
+    }
+
+    fn model_bookmark(&self) -> Option<&[u8]> {
+        match self {
+            Self::CoreAiLocal { model_bookmark, .. } => model_bookmark.as_deref(),
+            _ => None,
+        }
+    }
+}
+
+struct HelperModelAccess {
+    transfer_bookmark: Option<Vec<u8>>,
+    // Keep the app's persistent scope open through the complete helper round-trip.
+    _scope: Option<ScopedModelBookmark>,
+}
+
+fn prepare_helper_model_access(
+    selection: &AssistBackendSelection,
+) -> Result<HelperModelAccess, String> {
+    let Some(bookmark) = selection.model_bookmark() else {
+        return Ok(HelperModelAccess {
+            transfer_bookmark: None,
+            _scope: None,
+        });
+    };
+    #[cfg(target_os = "macos")]
+    {
+        let scope = resolve_model_bookmark(bookmark)?;
+        let model = resolve_local_model_root(&scope.path).map_err(|error| {
+            format!(
+                "The registered model folder is unavailable ({}): {}",
+                error.code(),
+                error.message()
+            )
+        })?;
+        if model.resource_root != scope.path {
+            return Err("Select the complete model resource folder again.".into());
+        }
+        let transfer_bookmark = scope.implicit_bookmark_for_helper()?;
+        if transfer_bookmark.is_empty() || transfer_bookmark.len() > 64 * 1024 {
+            return Err("The helper model folder permission is invalid.".into());
+        }
+        Ok(HelperModelAccess {
+            transfer_bookmark: Some(transfer_bookmark),
+            _scope: Some(scope),
+        })
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = bookmark;
+        Err("External Core AI model folders require macOS.".into())
     }
 }
 
@@ -293,6 +348,13 @@ impl AppleAssistHelperStore {
             .lock()
             .expect("selected backend lock")
             .model_id()
+    }
+
+    pub(crate) fn selected_backend_for_restore(&self) -> AssistBackendSelection {
+        self.selected_backend
+            .lock()
+            .expect("selected backend lock")
+            .clone()
     }
 
     pub(crate) fn set_selected_backend(
@@ -993,6 +1055,8 @@ enum WireRequest<'a> {
         model_id: Option<&'a str>,
         #[serde(skip_serializing_if = "Option::is_none")]
         model_path: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_bookmark: Option<&'a [u8]>,
     },
     #[serde(rename_all = "camelCase")]
     GenerateCandidate {
@@ -1001,6 +1065,8 @@ enum WireRequest<'a> {
         model_id: Option<&'a str>,
         #[serde(skip_serializing_if = "Option::is_none")]
         model_path: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_bookmark: Option<&'a [u8]>,
         operation: &'a str,
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -1019,6 +1085,8 @@ enum WireRequest<'a> {
         model_id: Option<&'a str>,
         #[serde(skip_serializing_if = "Option::is_none")]
         model_path: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        model_bookmark: Option<&'a [u8]>,
         operation: &'a str,
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -1191,6 +1259,7 @@ fn probe_backend_availability_via_helper(
     });
     let selected_model_id = selection.model_id()?;
     let (backend, model_id, model_path) = selection.wire_values()?;
+    let helper_access = prepare_helper_model_access(&selection)?;
     if guard.is_none() {
         store.spawn_locked(&mut guard, &selection)?;
     }
@@ -1203,6 +1272,7 @@ fn probe_backend_availability_via_helper(
             backend,
             model_id,
             model_path,
+            model_bookmark: helper_access.transfer_bookmark.as_deref(),
         },
         timeout,
     );
@@ -1259,13 +1329,16 @@ pub(crate) fn generate_candidate_via_helper(
         );
     }
 
+    // Selection updates lock `inner` first. Pin the backend under that same
+    // lock so a switch cannot slip between bookmark preparation and dispatch.
+    let mut guard = store.inner.lock().expect("helper store lock");
     let selection = store
         .selected_backend
         .lock()
         .expect("selected backend lock")
         .clone();
     let (backend, model_id, model_path) = selection.wire_values()?;
-    let mut guard = store.inner.lock().expect("helper store lock");
+    let helper_access = prepare_helper_model_access(&selection)?;
     if guard.is_none() {
         store.spawn_locked(&mut guard, &selection)?;
     }
@@ -1278,6 +1351,7 @@ pub(crate) fn generate_candidate_via_helper(
             backend,
             model_id,
             model_path,
+            model_bookmark: helper_access.transfer_bookmark.as_deref(),
             operation,
             selected_text,
             document_context,
@@ -1338,13 +1412,14 @@ where
         );
     }
 
+    let mut guard = store.inner.lock().expect("helper store lock");
     let selection = store
         .selected_backend
         .lock()
         .expect("selected backend lock")
         .clone();
     let (backend, model_id, model_path) = selection.wire_values()?;
-    let mut guard = store.inner.lock().expect("helper store lock");
+    let helper_access = prepare_helper_model_access(&selection)?;
     if guard.is_none() {
         store.spawn_locked(&mut guard, &selection)?;
     }
@@ -1357,6 +1432,7 @@ where
             backend,
             model_id,
             model_path,
+            model_bookmark: helper_access.transfer_bookmark.as_deref(),
             operation,
             selected_text,
             document_context,

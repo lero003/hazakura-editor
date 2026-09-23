@@ -3,6 +3,13 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn main() {
+    // Ad-hoc App Store previews contain the extension for packaging checks,
+    // but cannot use Apple-hosted asset packs without distribution context.
+    println!("cargo:rerun-if-env-changed=HAZAKURA_BACKGROUND_ASSETS_LOCAL_PREVIEW");
+    println!("cargo:rustc-check-cfg=cfg(hazakura_background_assets_local_preview)");
+    if env::var("HAZAKURA_BACKGROUND_ASSETS_LOCAL_PREVIEW").as_deref() == Ok("1") {
+        println!("cargo:rustc-cfg=hazakura_background_assets_local_preview");
+    }
     #[cfg(target_os = "macos")]
     build_background_assets_bridge();
     tauri_build::build();

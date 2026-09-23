@@ -219,6 +219,12 @@ describe("macOS build scripts", () => {
     expect(packageJson.scripts["build:tauri:app-store-preview"]).toContain(
       "--config src-tauri/tauri.conf.appstore-preview.json",
     );
+    expect(packageJson.scripts["build:tauri:app-store-preview"]).toContain(
+      "HAZAKURA_BACKGROUND_ASSETS_LOCAL_PREVIEW=1",
+    );
+    expect(packageJson.scripts["build:tauri:app-store-submit"]).not.toContain(
+      "HAZAKURA_BACKGROUND_ASSETS_LOCAL_PREVIEW",
+    );
     expect(appStorePreviewConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStorePreviewConfigJson.build?.beforeBuildCommand).toBe(
       "npm run build:apple-assist-helper:distribution && npm run build:import-assist-helper:live && npm run build:vite",
@@ -782,6 +788,9 @@ describe("macOS build scripts", () => {
     );
     expect(macosSandboxPreviewSmokeScript).toContain(
       "App Store preview helper must carry com.apple.security.inherit",
+    );
+    expect(macosSandboxPreviewSmokeScript).toContain(
+      '"$APP/Contents/MacOS/hazakura-core-ai-helper"',
     );
     expect(macosSandboxPreviewSmokeScript).toContain(
       "src-tauri/target/release/bundle/macos/Hazakura Editor.app",

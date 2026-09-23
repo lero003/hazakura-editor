@@ -11,17 +11,19 @@ import {
 
 // Only native-catalog ids can be selected. A missing local resource still lets
 // the user switch back to System; a Developer override stays read-only.
-export function AssistModelPicker({ language, disabled, modelId, models, onSelect }: {
+export function AssistModelPicker({ language, disabled, modelId, models, onSelect, onManage }: {
   language: MenuLanguage;
   disabled: boolean;
   modelId?: string;
   models?: CoreAiModelSummary[];
   onSelect?: (modelId: string) => void | Promise<void>;
+  onManage?: () => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const options = useRef<Array<HTMLButtonElement | null>>([]);
+  const manageOption = useRef<HTMLButtonElement>(null);
   const focusedModelId = useRef<string | null>(null);
   const wasExpanded = useRef(false);
   const menuId = useId();
@@ -33,13 +35,13 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
       : "On-device model";
   const outsideCatalog = modelId && modelId !== SYSTEM_LOCAL_ASSIST_MODEL_ID
     && !models?.some((model) => model.id === modelId);
-  const missingLocal = outsideCatalog && modelId.startsWith("local:app-managed:");
+  const missingLocal = outsideCatalog && modelId.startsWith("local:");
   const catalogModels = models?.length ? models : unavailableCoreAiModelCatalog().models;
   const availableModels: CoreAiModelSummary[] = missingLocal
     ? [...catalogModels, {
       id: modelId, displayName: language === "en" ? "Local model unavailable"
         : language === "kana" ? "ろーかるもでるが ありません" : "ローカルモデルが見つかりません",
-      kind: "core_ai", source: "app_managed_local", status: "failed", selected: true,
+      kind: "core_ai", source: modelId.startsWith("local:external:") ? "external_local" : "app_managed_local", status: "failed", selected: true,
     }]
     : outsideCatalog
     ? [{
@@ -73,6 +75,7 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
       focusedModelId.current = null;
       return;
     }
+    if (document.activeElement === manageOption.current) return;
     const preferredId = wasExpanded.current ? focusedModelId.current : selectedId;
     wasExpanded.current = true;
     const preferredIndex = availableModels.findIndex((model) => model.id === preferredId && isCoreAiModelSelectable(model));
@@ -99,7 +102,7 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
           setOpen(true);
           return;
         }
-        const enabledOptions = options.current.filter((option): option is HTMLButtonElement => Boolean(option && !option.disabled));
+        const enabledOptions = [...options.current, manageOption.current].filter((option): option is HTMLButtonElement => Boolean(option && !option.disabled));
         if (!enabledOptions.length) return;
         const current = enabledOptions.indexOf(document.activeElement as HTMLButtonElement);
         const next = event.key === "Home" ? 0 : event.key === "End" ? enabledOptions.length - 1
@@ -112,6 +115,7 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
       aria-haspopup="menu" aria-expanded={expanded} aria-controls={expanded ? menuId : undefined}
       aria-label={`${title}: ${modelLabel}`} disabled={disabled}
       onClick={() => setOpen(!expanded)}>
+      <span className="apple-assist-model-prefix" aria-hidden="true">{language === "en" ? "Model:" : language === "kana" ? "もでる：" : "モデル："}</span>
       <span>{modelLabel}</span>
       <span className="apple-assist-model-chevron" aria-hidden="true"><ChevronIcon expanded /></span>
     </button>
@@ -131,6 +135,11 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
           <span>{model.displayName}</span><span aria-hidden="true">{selected ? "✓" : isCoreAiModelSelectable(model) ? "" : "—"}</span>
         </button>;
       })}
+      {onManage ? <button ref={manageOption} type="button" role="menuitem" tabIndex={-1}
+        className="apple-assist-model-option apple-assist-model-manage"
+        onClick={() => { close(false); void onManage(); }}>
+        {language === "en" ? "Add or manage models…" : language === "kana" ? "もでるを たす・かんりする…" : "モデルを追加・管理…"}
+      </button> : null}
     </div> : null}
   </div>;
 }

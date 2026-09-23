@@ -105,6 +105,7 @@ Historical smoke logs and old per-release notes are archived in `docs/archive/op
 Use Vite / browser smoke only for frontend-only rendering checks that do not require Tauri runtime APIs. The browser surface cannot prove native app behavior that depends on `@tauri-apps/api` `invoke`, native dialogs, window/menu integration, bundled sidecar helpers, filesystem permissions, app launch state, or macOS signing / bundle metadata.
 
 When a checklist item covers file open/save, workspace folders, app menus, close/quit handling, L Mode behavior, or Hazakura Local Assist behavior that must be judged inside the packaged desktop shell, run `npm run build` and launch `src-tauri/target/release/bundle/macos/Hazakura Editor.app`. This local smoke bundle is helper-enabled and launchable, but it is not the signed App Store sandbox submit artifact. Use the signed TestFlight build for App Store-lane proof, and use the Developer / GitHub bundle for Agent Workbench checks. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
+Apple-hosted model downloads are unavailable in the ad-hoc `npm run build` preview; its model rows explain that TestFlight is required for download testing.
 
 For a repeatable local packaged-app launch/window proof, run:
 

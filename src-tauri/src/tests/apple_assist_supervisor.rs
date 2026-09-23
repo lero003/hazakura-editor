@@ -664,6 +664,7 @@ done
             AssistBackendSelection::CoreAiLocal {
                 model_id: "local:app-managed:MyQwen".into(),
                 model_path,
+                model_bookmark: None,
             },
         );
         let probed = probe_selected_backend_availability_via_helper(&store)
@@ -677,6 +678,39 @@ done
     }
 
     std::fs::remove_file(&script).ok();
+}
+
+#[test]
+fn supervisor_refuses_invalid_stored_external_bookmark_before_helper_request() {
+    let script = std::env::temp_dir().join(format!(
+        "hazakura-coreai-external-wire-{}.sh",
+        std::process::id()
+    ));
+    let body = r###"#!/bin/sh
+while IFS= read -r request; do
+    case "$request" in
+        *'"backend":"core_ai_local"'*'"modelId":"local:external:1"'*'"modelBookmark":[1,2,3]'*) ;;
+        *) printf '%s\n' '{"kind":"error","value":{"error":"missing external model bookmark","kind":"backend_test_failure"}}'; continue ;;
+    esac
+    case "$request" in
+        *'"action":"probe_availability"'*) printf '%s\n' '{"kind":"availability","value":{"kind":"available","reason":null}}' ;;
+        *'"action":"generate_candidate"'*) printf '%s\n' '{"kind":"candidate","value":{"operation":"summarize","candidateText":"generated","modelId":"local:external:1","latencyMs":0}}' ;;
+    esac
+done
+"###;
+    std::fs::write(&script, body).unwrap();
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+    let store = store_with_helper_path_and_backend(
+        script.clone(),
+        AssistBackendSelection::CoreAiLocal {
+            model_id: "local:external:1".into(),
+            model_path: std::env::temp_dir().join("external-coreai-model"),
+            model_bookmark: Some(vec![1, 2, 3]),
+        },
+    );
+    assert!(probe_selected_backend_availability_via_helper(&store).is_err());
+    assert!(generate_candidate_via_helper(&store, "summarize", "body", None, None).is_err());
+    std::fs::remove_file(script).ok();
 }
 
 // ----------------------------------------------------------------

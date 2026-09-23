@@ -188,6 +188,11 @@ export async function pickWorkspaceFolder(): Promise<string | null> {
   return typeof selected === "string" ? selected : null;
 }
 
+export async function pickCoreAiModelFolder(): Promise<string | null> {
+  const selected = await open({ multiple: false, directory: true });
+  return typeof selected === "string" ? selected : null;
+}
+
 /** Explicit portable Book recipe (JSON). Never auto-loaded by the app. */
 export async function pickBookRecipeFile(): Promise<string | null> {
   const selected = await open({

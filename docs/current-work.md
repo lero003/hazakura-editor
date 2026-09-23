@@ -5,6 +5,69 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-23
 
+## 3.1初回配布と外部レビュー是正（2026-09-23、source検証中）
+
+初回のApple配信catalogはGemma 4 12Bだけにする。最低メモリ16 GB、推奨24 GBを表示し、
+E4B v2は生成資産・評価履歴を残すがアプリの配布一覧には出さない。以下の旧記録にある
+「E4Bを取得対象にした」は、その時点のsource状態であり現行方針ではない。
+
+外部レビューのP2-01〜03に対し、検証失敗時の「削除して再取得」、検証記録のpack version・
+ファイル実体への結合、監視世代の確認と状態反映の一体化を追加した。Rustは取得失敗と検証失敗を
+別コードで返し、復旧操作はApple資産の削除後に再取得する。再取得で修復しない配布物の不整合は
+manifest検証を緩めず失敗として残す。同サイズでmtimeを戻した改変、pack version変更、
+旧監視の遅延完了、削除→取得→再検証を回帰テストで固定した。
+
+外部フォルダは本体の永続bookmarkをhelperへそのまま渡さず、利用時に本体でscopeを復元して
+一時的なimplicit bookmarkを生成・送信する。`.aimodel`単体選択では親の権限を仮定せず、
+resource rootの選び直しを促す。署名済みsandboxでの通常/streaming生成、再起動復元、
+取消・切替、移動・切断、登録解除の同一候補受入は引き続き未実施。
+
+## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
+
+従来のApp Store ad-hocプレビューは、起動時のモデル状態更新から
+`BAAssetPackManager.sharedManager`へ入り、macOS 27で`SIGTRAP`終了した。別bundle IDへ複製しても
+再現し、親appとextensionのbuild番号を揃えても変わらなかった。プレビュービルドだけ専用の
+Background Assets transportへ切り替え、Apple配信モデルを「このプレビューでは取得できません」と
+表示する。submitビルドは従来のplatform transportを使う。修正後の`npm run build`は成功し、
+同じ生成物の別IDコピーを起動して1280×820の表示窓を確認した。元のbundle IDでの起動、
+Apple配信モデル取得、署名済みTestFlightの動作はこのsmokeの範囲外。frontend 2698件、
+scripts 31件、Rust 473件pass / 3件ignored、App Store surface 132件、型検査、
+distribution probe、Rust fmt、diff checkは成功。
+
+## C-3 外部モデルフォルダとLocal Assist導線（2026-09-23、source接続）
+
+Local Assistのモデル選択メニューからオンデバイスモデル管理へ進める。管理画面では標準フォルダ選択で
+Core AI resource folderを登録し、検証済みモデルを既存の単一registryから選択できる。
+外部フォルダの権限はread-only security-scoped bookmarkを保存し、Rustと生成helperの各プロセスで
+解決する。登録解除は元ファイルを削除せず、選択中ならSystemへ戻す。失効・破損した登録は理由付きで
+一覧に残す。任意URL取得・GGUF・自動ダウンロードは追加していない。
+
+sourceの型検査、契約テスト、helper fixtureは実モデルのロード・署名済みsandboxでの権限継承を
+証明しない。次は署名済みappで登録→選択→生成→再起動→復元→登録解除、失効時の再指定を確認する。
+Local Assistのキーボード/VoiceOver、Custom Modelsフォルダを開く導線も残る。
+確認した範囲はfrontend全体と追加したfocusedテスト、Rust 467件pass / 3件ignored、Swift
+XCTest 66件 + Swift Testing 4件、型検査、Vite build、App Store surface 132件、配布用helper build。
+bookmark実登録の単体テストは制限付き実行環境で`Operation not permitted`となり、上の実機ゲートへ残す。
+App Store sandboxプレビューではCore AI helperも`com.apple.security.inherit`で再署名するよう
+smokeを修正し、3 helperと親アプリのad-hoc署名検証を通した。実フォルダを読めることの証明ではない。
+
+## Core AI pack更新とモデル設定（2026-09-23、source検証済み）
+
+build 147では12Bのpack versionがv2に変わっても、アプリに固定した旧resource manifest全文との
+不一致で失敗する実機報告があった。旧E4B v1を入れて削除したMacで、E4B v2が「未公開」、
+12Bは再試行後も失敗と表示された。sourceではE4B v2の配信フラグを有効にし、12Bとともに
+同一asset pack IDの互換版更新を明示的に確認できるよう変更中。Appleの最新版取得が完了するまで
+旧版pathを`Ready`検証へ進めず、pack内manifestのidentity / runtime kind、safe path、
+size / SHA-256を検証する。選択中モデルは新pack検証後にhelperのpathも切り替え、生成中は
+切り替え可能になるまで監視を続ける。モデル設定は状態・操作・容量をカードに分け、内部エラーと版情報を
+折りたたみへ移し、失敗時の再試行 / 削除、利用可能時の更新確認を示す。
+旧build 147の挙動はこのsource変更だけでは変わらず、新しいアプリbuildの配布が一度必要。
+その後の互換pack更新は同じIDとruntime契約ならアプリ更新なしで取得できる設計。
+Apple CDN、対象Mac、TestFlight、VoiceOverによる受入は未実施。
+Rust 465件pass / 2 ignored、frontend全体・モデル画面focused・App Store surface、
+型検査、Vite build、macOS 27 SDKでのnative bridgeコンパイル、通常幅 / 600px幅 / dark fixture表示が成功。
+[表示fixtureと検証範囲](reviews/2026-09-23-core-ai-pack-update/README.md)。
+
 ## Core AI E4B v2 候補（2026-09-23）
 
 旧E4Bの日本語崩れはstatic PLE graphで再現し、元QAT checkpointのeager実行、
@@ -17,7 +80,7 @@ decoderをfp16へ戻しても崩れたため、decoder量子化だけが原因�
 v2の実helper / stageで日本語・Markdown・引用の6例×3回と取消後の再依頼が全件成功。
 校正時の漢数字→算用数字変換は候補採用前に元文へ戻す。`.aar`はローカル生成済み。
 オーナーはv2のTestFlight配信成功を報告したが、この作業ではApple側を独立確認していない。
-build 146のアプリ本体は旧v1を参照し、現行sourceのv2 catalogは`not_published`のまま。
+build 146のアプリ本体は旧v1を参照した。現在のsourceではv2を明示取得対象へ変更した（上記）。
 16 GB実機のmemory/品質、AOT、v2を参照する新アプリbuildでの取得・生成を別ゲートで受け入れる。
 編集promptを外したE4B v2 / 12Bの短い直接会話は
 [会話probe](reviews/2026-09-23-core-ai-direct-chat/README.md)で確認済み（編集品質の合格ではない）。

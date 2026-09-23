@@ -64,6 +64,7 @@ struct IncomingRequest: Decodable {
     let backend: String?
     let modelId: String?
     let modelPath: String?
+    let modelBookmark: [UInt8]?
     let measureUsage: Bool?
 }
 
@@ -80,6 +81,28 @@ func emit(_ envelope: WireEnvelope) {
     }
     print(line)
     fflush(stdout)
+}
+
+private final class ScopedModelFolder {
+    let url: URL
+
+    init(bookmark: [UInt8]) throws {
+        guard !bookmark.isEmpty && bookmark.count <= 64 * 1024 else {
+            throw NSError(domain: "HazakuraCoreAI", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Saved model folder permission is invalid."])
+        }
+        var stale = false
+        // The app keeps an explicit bookmark for persistence and sends this
+        // helper a fresh implicit bookmark for this one request.
+        url = try URL(resolvingBookmarkData: Data(bookmark), options: [],
+                      relativeTo: nil, bookmarkDataIsStale: &stale)
+        guard !stale, url.startAccessingSecurityScopedResource() else {
+            throw NSError(domain: "HazakuraCoreAI", code: 2,
+                          userInfo: [NSLocalizedDescriptionKey: "Model folder access expired. Select the folder again."])
+        }
+    }
+
+    func close() { url.stopAccessingSecurityScopedResource() }
 }
 
 func dispatch(_ raw: String) async {
@@ -104,6 +127,34 @@ func dispatch(_ raw: String) async {
         return
     }
 
+    if request.backend == AssistBackend.coreAILocalWireValue,
+       request.modelId?.hasPrefix("local:external:") == true,
+       request.modelBookmark == nil {
+        emit(.error(AppleAssistErrorEnvelope(
+            error: "Registered model folder permission is missing.", kind: "validation"
+        )))
+        return
+    }
+
+    let scopedFolder: ScopedModelFolder?
+    if let bookmark = request.modelBookmark {
+        guard request.backend == AssistBackend.coreAILocalWireValue,
+              request.modelId?.hasPrefix("local:external:") == true else {
+            emit(.error(AppleAssistErrorEnvelope(error: "Model folder permission is not valid for this backend.", kind: "validation")))
+            return
+        }
+        do {
+            scopedFolder = try ScopedModelFolder(bookmark: bookmark)
+        } catch {
+            emit(.error(AppleAssistErrorEnvelope(error: error.localizedDescription, kind: "unavailable")))
+            return
+        }
+    } else {
+        scopedFolder = nil
+    }
+    defer { scopedFolder?.close() }
+    let modelPath = scopedFolder?.url.path ?? request.modelPath
+
     switch request.action {
     case "probe_availability":
         guard let backend = AssistBackend.resolve(
@@ -120,7 +171,7 @@ func dispatch(_ raw: String) async {
         }
         emit(.availability(await AvailabilityProbe.probe(
             backend: backend,
-            modelPath: request.modelPath
+            modelPath: modelPath
         )))
     case "generate_candidate", "generate_candidate_streaming":
         guard let operation = request.operation,
@@ -159,7 +210,7 @@ func dispatch(_ raw: String) async {
             switch await GenerateCandidate.runStreaming(
                 req,
                 backend: backend,
-                modelPath: request.modelPath,
+                modelPath: modelPath,
                 onPartial: { partial in
                     emit(.candidatePartial(partial))
                 }
@@ -173,7 +224,7 @@ func dispatch(_ raw: String) async {
             switch await GenerateCandidate.run(
                 req,
                 backend: backend,
-                modelPath: request.modelPath
+                modelPath: modelPath
             ) {
             case .ok(let response):
                 emit(.candidate(response))

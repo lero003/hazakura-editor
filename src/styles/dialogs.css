@@ -335,24 +335,23 @@
 
 .core-ai-model-manager {
   display: grid;
-  gap: 10px;
-  padding: 12px;
+  gap: 14px;
+}
+
+.core-ai-current-model {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-muted);
 }
 
-.core-ai-model-manager-heading,
-.core-ai-model-row,
-.core-ai-model-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.core-ai-model-manager-heading,
-.core-ai-model-row { justify-content: space-between; }
-.core-ai-model-manager-heading p { margin: 0; font-weight: 700; }
+.core-ai-current-model strong { font-size: 13px; }
+.core-ai-current-model span { color: var(--text-muted); font-size: 12px; }
+.core-ai-current-model span:last-child { margin-inline-start: auto; }
 .core-ai-generation-profile > summary { cursor: pointer; font-weight: 700; }
 .core-ai-generation-profile > summary::marker { color: var(--text-muted); }
 .core-ai-generation-profile-summary {
@@ -360,15 +359,55 @@
   margin-inline-start: 4px;
   width: calc(100% - 20px);
 }
-.core-ai-model-manager-heading span,
-.core-ai-model-row span { color: var(--text-muted); font-size: 11px; }
-.core-ai-model-list { display: grid; gap: 6px; }
-.core-ai-model-row { padding-block: 6px; border-top: 1px solid var(--border); }
+.core-ai-model-list { display: grid; gap: 10px; }
+.core-ai-local-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.core-ai-local-actions .field-hint { margin: 0; }
+.core-ai-model-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
 .core-ai-model-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.core-ai-model-row > div:first-child { display: grid; gap: 2px; min-width: 0; }
-.core-ai-model-row progress { width: min(260px, 100%); accent-color: var(--accent); }
-.core-ai-model-actions { flex: 0 0 auto; }
-.core-ai-model-actions button { padding: 5px 9px; white-space: nowrap; }
+.core-ai-model-row-main { display: grid; gap: 7px; min-width: 0; }
+.core-ai-model-row-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 8px; }
+.core-ai-model-row-heading strong { font-size: 14px; }
+.core-ai-model-source,
+.core-ai-model-selected {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  padding: 2px 7px;
+}
+.core-ai-model-source { background: var(--surface-muted); color: var(--text-muted); }
+.core-ai-model-selected { background: var(--accent-soft); color: var(--accent); }
+.core-ai-model-status { color: var(--text-muted); font-size: 12px; font-weight: 650; }
+.core-ai-model-status.is-error { color: var(--accent); }
+.core-ai-model-fact { color: var(--text-muted); font-size: 12px; }
+.core-ai-model-facts { display: flex; flex-wrap: wrap; gap: 5px 12px; }
+.core-ai-model-facts span { color: var(--text-muted); font-size: 12px; }
+.core-ai-model-row progress { width: min(300px, 100%); accent-color: var(--accent); }
+.core-ai-model-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+.core-ai-model-actions button { padding: 6px 10px; white-space: nowrap; }
+.core-ai-model-actions .core-ai-model-remove { color: var(--text-muted); }
+.core-ai-model-details,
+.core-ai-manager-details { color: var(--text-muted); font-size: 12px; }
+.core-ai-model-details { grid-column: 1 / -1; }
+.core-ai-model-details summary,
+.core-ai-manager-details summary { cursor: pointer; width: fit-content; }
+.core-ai-model-details > span,
+.core-ai-model-details > code { display: block; margin-top: 6px; overflow-wrap: anywhere; }
+.core-ai-manager-details > p { margin-top: 7px; }
+
+@media (max-width: 680px) {
+  .core-ai-model-row { grid-template-columns: minmax(0, 1fr); }
+  .core-ai-model-actions { justify-content: flex-start; }
+  .core-ai-current-model span:last-child { margin-inline-start: 0; }
+}
 
 .preference-note {
   background: var(--surface-muted);

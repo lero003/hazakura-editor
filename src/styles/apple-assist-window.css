@@ -774,6 +774,7 @@
 .apple-assist-model-trigger:hover:not(:disabled),
 .apple-assist-model-trigger[aria-expanded="true"] { background: var(--bg-elev-hover); }
 .apple-assist-model-trigger:disabled { opacity: .5; cursor: not-allowed; }
+.apple-assist-model-prefix { color: var(--text-muted); font-size: 13px; font-weight: 500; }
 .apple-assist-model-chevron { display: flex; color: var(--text-muted); }
 .apple-assist-model-menu {
   position: absolute; z-index: 10; inset-inline-end: 0; bottom: calc(100% + 8px);
@@ -790,3 +791,4 @@
 }
 .apple-assist-model-option:hover, .apple-assist-model-option:focus-visible { background: var(--bg-elev); }
 .apple-assist-model-option:disabled { color: var(--text-muted); cursor: not-allowed; opacity: .7; }
+.apple-assist-model-manage { border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; margin-top: 4px; padding-top: 10px; }

@@ -105,7 +105,13 @@ static NSString *const HZPhaseFailed = @"failed";
                 result[@"error"] = downloadsError.localizedDescription;
             }
         }
-        if (available) {
+        // An older version may still be locally available while an update is
+        // resolving or downloading. Keep the operation phase so the Rust
+        // monitor cannot verify the old path as if it were the requested one.
+        NSString *phase = result[@"phase"];
+        BOOL canResolvePath = [phase isEqualToString:HZPhaseNotDownloaded]
+            || [phase isEqualToString:@"downloaded"];
+        if (available && canResolvePath) {
             NSError *error = nil;
             NSURL *URL = [manager URLForPath:relativePath error:&error];
             BOOL isDirectory = NO;
@@ -136,11 +142,14 @@ static NSString *const HZPhaseFailed = @"failed";
 - (void)startIdentifier:(NSString *)identifier {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 270000
     if (@available(macOS 27, *)) {
+        // The monitor starts immediately after this method returns. Publish
+        // resolving and invalidate an earlier request before queueing the
+        // asynchronous manifest request.
+        NSUInteger generation = [self beginOperationForIdentifier:identifier];
+        [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
         dispatch_async(self.operationQueue, ^{
-          NSUInteger generation = [self beginOperationForIdentifier:identifier];
           BAAssetPackManager *manager = BAAssetPackManager.sharedManager;
           manager.delegate = self;
-          [self updateIdentifier:identifier phase:@"resolving" progress:nil error:nil version:nil];
           [manager getManifestWithCompletionHandler:^(BAAssetPackManifest *_Nullable manifest, NSError *_Nullable error) {
             dispatch_async(self.operationQueue, ^{
               if (![self isCurrentOperationForIdentifier:identifier generation:generation]) return;
@@ -262,7 +271,14 @@ static NSString *const HZPhaseFailed = @"failed";
 }
 
 - (void)downloadOfAssetPackFinished:(BAAssetPack *)assetPack {
-    [self updateIdentifier:assetPack.identifier phase:@"downloaded" progress:@1 error:nil version:@(assetPack.version)];
+    // The delegate can finish before ensureLocalAvailability's completion.
+    // Only that completion may mark a requested version ready to resolve.
+    @synchronized(self) {
+        NSString *phase = [self stateForIdentifier:assetPack.identifier][@"phase"];
+        if ([phase isEqualToString:HZPhaseDownloading]) {
+            [self updateIdentifier:assetPack.identifier phase:HZPhaseDownloading progress:@1 error:nil version:@(assetPack.version)];
+        }
+    }
 }
 
 - (void)downloadOfAssetPack:(BAAssetPack *)assetPack failedWithError:(NSError *)error {

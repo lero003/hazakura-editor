@@ -7,12 +7,35 @@ Last reviewed: 2026-09-23
 
 ## Current State
 
+- **3.1初回配布方針とP2是正（2026-09-23、source検証中）:** App Storeの初回モデル一覧は
+  Gemma 4 12Bのみ。最低16 GB・推奨24 GBを表示する。E4B v2の資産と評価は履歴として保持し、
+  現行catalogからは除外した。下記の「E4B v2を明示DL対象」の記述は変更時点の記録。
+  検証失敗時のApple資産の削除→再取得、pack version・ファイル実体に結び付く検証記録、
+  古い監視の状態反映防止を追加し、 focused Rust / UI回帰テストを通した。
+  外部登録の永続bookmarkとhelperへの一時的なimplicit bookmarkも分離した。
+  同じ署名済み候補での実モデル生成・復元・切断時の復旧は未受入。
+
+- **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
+  起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。
+  プレビューだけApple-hosted transportを呼ばず、現行catalogの12B取得はTestFlightで試す案内へ変更。
+  `npm run build`後の別IDコピーは署名検証と1280×820表示窓のsmokeに成功。
+  submitビルドのplatform経路はsource上維持。TestFlight取得の再検証ではない。
+
+- **Core AI更新経路と設定（2026-09-23、source変更）:** build 147で12B pack v2のmanifestが
+  アプリ固定の旧manifestと一致せず失敗する実機報告を受け、互換版は同じasset pack IDで更新可能な
+  経路へ変更した。取得したpack内manifestの固定identity / runtime契約と全ファイルを検証し、
+  最新版取得中は旧版を先に`Ready`扱いしない。E4B v2はsourceで明示DL対象へ変更。
+  選択中モデルの更新が検証されたらhelperのpathも新版へ切り替える。
+  設定は状態・操作・容量を見やすく分け、失敗時の復旧操作と更新確認を追加した。
+  **build 147自体は未修正。新buildのApple CDN / TestFlight / 実機 / VoiceOver受入は未実施。**
+  [表示fixtureと検証範囲](reviews/2026-09-23-core-ai-pack-update/README.md)。
+
 - **E4B v2はローカル候補（2026-09-23）:** 元QAT checkpointからprovider PLE版を再変換し、
   Rust/Swiftのruntime契約、配布helper patch、固定manifestを更新。PLE3ファイルは元checkpointから
   独立再生成してSHA-256一致。6例×3回＋取消後の実helper評価は全件成功。
   `.aar`はローカル作成済み。サイズとSHA-256は下記の検証資料に記録。
   オーナーはv2のTestFlight配信成功を報告（この作業ではApple側を独立確認していない）。
-  build 146のアプリ本体は旧v1を参照し、現行sourceのv2 catalogは`not_published`。
+  build 146のアプリ本体は旧v1を参照した。現行sourceのv2配信フラグは上記で有効化した。
   16 GB実機、AOT、v2を参照する新アプリbuildでの取得・生成、外部レビューは未受入。
   編集promptなしの短い会話はE4B v2 / 12Bともに成功したが、編集品質ではない。
   [直接会話の範囲](reviews/2026-09-23-core-ai-direct-chat/README.md)。
@@ -62,12 +85,18 @@ Last reviewed: 2026-09-23
   Rust-owned ID で選択・復元し、`core_ai_local` wire から helper の local contract を再検証して
   `CoreAIKit` の production prompt / generation profile / cache 経路へ接続した。起動時に bundle が
   消失・破損していれば System へ fail closed する。Apple-hosted の download / cancel / delete は維持し、
-  local model を asset 管理へ入れない。外部 resource folder の security-scoped bookmark、フォルダを
-  開く / 再スキャンする UI は未接続。
+  local model を asset 管理へ入れない。外部 resource folder は明示フォルダ選択、read-only bookmark保存、
+  Rustとhelperでの再解決・再検証、登録解除までsource接続した。Local Assistのモデルメニューから
+  管理ページにも移れる。Custom Modelsフォルダを開く / 明示再スキャンする UI は未接続。
   C-1 / C-2 と現在のTestFlight前レビューを止めない。任意URL取得・自動DL・モデル店は Non-Goal。
-  source 上は選択・生成経路へ接続済みだが、実 local model の load / 生成、built app、VoiceOver、
-  TestFlight の証跡ではない。最新検証は frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、
+  source 上は選択・生成経路へ接続済みだが、外部フォルダの実登録・bookmark復元・helperでの
+  実 local model の load / 生成、built app、VoiceOver、
+  TestFlight の証跡ではない。スライス3時点の検証は frontend 2,677件、scripts 24件、Rust 456件（2 ignored）、
   Swift XCTest 61件 + Swift Testing 4件、surface 132件と production distribution helper build が成功。
+  2026-09-23の外部フォルダ追加後はfrontend全体とfocused、Rust 467件pass / 3 ignored、
+  Swift XCTest 66件 + Swift Testing 4件、型検査、Vite、surface 132件、配布用helper buildを確認。
+  App Store sandboxプレビューではCore AI helperを含む3 helperのinherit署名と親appのad-hoc署名が通った。
+  上記の実機受入は引き続き別ゲート。
   [初回証跡](reviews/2026-09-22-v3.1-c3-local-model-resolution/README.md)、
   [レビュー是正証跡](reviews/2026-09-22-v3.1-c3-local-contract-followup/README.md)、
   [registry / UI 接続証跡](reviews/2026-09-22-v3.1-c3-custom-model-catalog/README.md)、
