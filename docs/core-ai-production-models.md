@@ -115,6 +115,8 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
 の1本だけ。ファイルの更新時刻は9月22日05:33（このMacのローカル時刻）で、実測の
 size / SHA-256は同じ場所の`archive.json`および下表と一致した。ファイル名とasset pack IDの
 `v1`はApple側のrecordを指し、オーナー報告のpack version `v2`とは別の番号である。
+stageの11ファイルも全件のsize / SHA-256、2つのresource manifest、model ID / runtime kindを
+読み取り専用で照合し、すべて一致した。
 このローカル照合だけでは、Appleへ上げ直した`v2`のbytesがこの`.aar`と同一かは証明できない。
 
 E4B v2の`download`はローカル再変換資産を全ファイルのsizeとSHA-256で照合してstageへ移す。
