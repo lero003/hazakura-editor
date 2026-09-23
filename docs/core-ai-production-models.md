@@ -109,6 +109,14 @@ npm run coreai:models:prepare -- --model=gemma4-e4b
     └── PACKAGING-BLOCKED.md             # packageが失敗した場合だけ
 ```
 
+`<catalog-version>` は生成日でもApp Store Connectのpack versionでもない。
+2026-09-23のローカル確認では、12Bの`.aar`は
+`.hazakura/coreai-production/gemma4-12b/2026.09.20.1/archives/hazakura-coreai-gemma4-12b-v1.aar`
+の1本だけ。ファイルの更新時刻は9月22日05:33（このMacのローカル時刻）で、実測の
+size / SHA-256は同じ場所の`archive.json`および下表と一致した。ファイル名とasset pack IDの
+`v1`はApple側のrecordを指し、オーナー報告のpack version `v2`とは別の番号である。
+このローカル照合だけでは、Appleへ上げ直した`v2`のbytesがこの`.aar`と同一かは証明できない。
+
 E4B v2の`download`はローカル再変換資産を全ファイルのsizeとSHA-256で照合してstageへ移す。
 12Bはpinned revisionから取得する。
 `package`は展開後resource manifestを再生成・再検証したうえで、manifestとarchiveを**絶対path**で
