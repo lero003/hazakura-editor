@@ -90,9 +90,11 @@ export async function probeAppleAssistAvailability(): Promise<AppleAssistAvailab
 
 export async function generateAppleAssistCandidate(
   request: AppleAssistRequest,
+  requestId?: string,
 ): Promise<AppleAssistResponse> {
   return invoke<AppleAssistResponse>("generate_apple_assist_candidate", {
     request,
+    ...(requestId === undefined ? {} : { requestId }),
   });
 }
 

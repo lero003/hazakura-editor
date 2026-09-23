@@ -11,6 +11,10 @@ const mocks = vi.hoisted(() => ({
   register: vi.fn(),
   unregister: vi.fn(),
   pickFolder: vi.fn(),
+  generateCandidate: vi.fn(),
+  prepareGeneration: vi.fn(),
+  finishGeneration: vi.fn(),
+  stopGeneration: vi.fn(),
   listen: vi.fn(),
   listener: null as null | ((catalog: unknown) => void),
 }));
@@ -35,8 +39,21 @@ vi.mock("../../lib/tauri/coreAiModels", () => ({
 }));
 
 vi.mock("../../lib/tauri/dialog", () => ({ pickCoreAiModelFolder: mocks.pickFolder }));
+vi.mock("../../lib/tauri/appleAssist", () => ({
+  generateAppleAssistCandidate: mocks.generateCandidate,
+  prepareAppleAssistGeneration: mocks.prepareGeneration,
+  finishAppleAssistGeneration: mocks.finishGeneration,
+  stopAppleAssistGeneration: mocks.stopGeneration,
+}));
 
 beforeEach(() => {
+  mocks.generateCandidate.mockReset();
+  mocks.prepareGeneration.mockReset();
+  mocks.finishGeneration.mockReset();
+  mocks.stopGeneration.mockReset();
+  mocks.prepareGeneration.mockResolvedValue(undefined);
+  mocks.finishGeneration.mockResolvedValue(undefined);
+  mocks.stopGeneration.mockResolvedValue(true);
   mocks.listen.mockImplementation(async (listener: (catalog: unknown) => void) => {
     mocks.listener = listener;
     return () => { mocks.listener = null; };
@@ -46,6 +63,129 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); mocks.listener = null; });
 
 describe("CoreAiModelManager", () => {
+  it("runs an explicit normal generation check for the selected external model without document text", async () => {
+    const externalId = "local:external:1";
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published",
+      selectedModelId: externalId,
+      models: [{ id: externalId, displayName: "My Model", kind: "core_ai",
+        source: "external_local", status: "detected", selected: true }],
+    });
+    mocks.generateCandidate.mockResolvedValue({
+      operation: "rephrase", candidateText: "春風が心地よいです。", modelId: externalId, latencyMs: 100,
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "短い例文で試す" }));
+    await waitFor(() => expect(mocks.generateCandidate).toHaveBeenCalledWith(
+      { operation: "rephrase", selectedText: "春の風が心地よいです。" },
+      expect.stringMatching(/^model-check-/),
+    ));
+    expect(mocks.prepareGeneration).toHaveBeenCalledWith(expect.stringMatching(/^model-check-/));
+    expect(await screen.findByText("このモデルで生成できました。文書は変更していません。")).toBeTruthy();
+    expect(screen.getByText("春風が心地よいです。")).toBeTruthy();
+    await waitFor(() => expect(mocks.finishGeneration).toHaveBeenCalledWith(expect.stringMatching(/^model-check-/)));
+    expect(mocks.stopGeneration).not.toHaveBeenCalled();
+  });
+
+  it("stops a model check before dispatch without starting normal generation", async () => {
+    const externalId = "local:external:1";
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published", selectedModelId: externalId,
+      models: [{ id: externalId, displayName: "My Model", kind: "core_ai",
+        source: "external_local", status: "detected", selected: true }],
+    });
+    let completePrepare!: () => void;
+    mocks.prepareGeneration.mockImplementation(() => new Promise<void>((resolve) => { completePrepare = resolve; }));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "短い例文で試す" }));
+    fireEvent.click(await screen.findByRole("button", { name: "確認を中止" }));
+    await act(async () => completePrepare());
+    await waitFor(() => expect(mocks.finishGeneration).toHaveBeenCalledWith(expect.stringMatching(/^model-check-/)));
+    expect(mocks.generateCandidate).not.toHaveBeenCalled();
+    expect(await screen.findByText("確認を中止しました。文書は変更していません。")).toBeTruthy();
+  });
+
+  it("stops an in-flight normal model check by its request id", async () => {
+    const externalId = "local:external:1";
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published", selectedModelId: externalId,
+      models: [{ id: externalId, displayName: "My Model", kind: "core_ai",
+        source: "external_local", status: "detected", selected: true }],
+    });
+    let rejectGeneration!: (reason: Error) => void;
+    mocks.generateCandidate.mockImplementation(() => new Promise((_resolve, reject) => { rejectGeneration = reject; }));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "短い例文で試す" }));
+    await waitFor(() => expect(mocks.generateCandidate).toHaveBeenCalledOnce());
+    const requestId = mocks.generateCandidate.mock.calls[0]?.[1] as string;
+    fireEvent.click(screen.getByRole("button", { name: "確認を中止" }));
+    await waitFor(() => expect(mocks.stopGeneration).toHaveBeenCalledWith(requestId));
+    await act(async () => rejectGeneration(new Error("Hazakura Local Assist generation cancelled by user.")));
+    expect(await screen.findByText("確認を中止しました。文書は変更していません。")).toBeTruthy();
+    await waitFor(() => expect(mocks.finishGeneration).toHaveBeenCalledWith(requestId));
+    expect(screen.queryByText("このモデルで生成できました。文書は変更していません。")).toBeNull();
+  });
+
+  it("does not report success when generation came from a different selected model", async () => {
+    const externalId = "local:external:1";
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published", selectedModelId: externalId,
+      models: [{ id: externalId, displayName: "My Model", kind: "core_ai",
+        source: "external_local", status: "detected", selected: true }],
+    });
+    mocks.generateCandidate.mockResolvedValue({
+      operation: "rephrase", candidateText: "春風が心地よいです。", modelId: "local:external:other", latencyMs: 100,
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "短い例文で試す" }));
+    expect(await screen.findByText("このモデルで生成できませんでした。文書は変更していません。")).toBeTruthy();
+    expect(screen.queryByText("このモデルで生成できました。文書は変更していません。")).toBeNull();
+  });
+
+  it("clears an old check result after switching models and back", async () => {
+    const externalId = "local:external:1";
+    const systemId = "apple:foundation-models:system-default";
+    const models = [
+      { id: externalId, displayName: "My Model", kind: "core_ai",
+        source: "external_local", status: "detected" },
+      { id: systemId, displayName: "Apple Intelligence", kind: "system",
+        source: "apple_hosted", status: "ready" },
+    ];
+    const catalogFor = (selectedModelId: string) => ({
+      distributionStatus: "not_published", selectedModelId,
+      models: models.map((model) => ({ ...model, selected: model.id === selectedModelId })),
+    });
+    mocks.list.mockResolvedValue(catalogFor(externalId));
+    mocks.generateCandidate.mockResolvedValue({
+      operation: "rephrase", candidateText: "春風が心地よいです。", modelId: externalId, latencyMs: 100,
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "短い例文で試す" }));
+    expect(await screen.findByText("このモデルで生成できました。文書は変更していません。")).toBeTruthy();
+    await act(async () => mocks.listener?.(catalogFor(systemId)));
+    await act(async () => mocks.listener?.(catalogFor(externalId)));
+    expect(screen.queryByText("このモデルで生成できました。文書は変更していません。")).toBeNull();
+  });
+
+  it("cancels an in-flight check when the model manager closes", async () => {
+    const externalId = "local:external:1";
+    mocks.list.mockResolvedValue({
+      distributionStatus: "not_published", selectedModelId: externalId,
+      models: [{ id: externalId, displayName: "My Model", kind: "core_ai",
+        source: "external_local", status: "detected", selected: true }],
+    });
+    let rejectGeneration!: (reason: Error) => void;
+    mocks.generateCandidate.mockImplementation(() => new Promise((_resolve, reject) => { rejectGeneration = reject; }));
+    const view = render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: "短い例文で試す" }));
+    await waitFor(() => expect(mocks.generateCandidate).toHaveBeenCalledOnce());
+    const requestId = mocks.generateCandidate.mock.calls[0]?.[1] as string;
+    view.unmount();
+    await waitFor(() => expect(mocks.stopGeneration).toHaveBeenCalledWith(requestId));
+    await act(async () => rejectGeneration(new Error("Hazakura Local Assist generation cancelled by user.")));
+    await waitFor(() => expect(mocks.finishGeneration).toHaveBeenCalledWith(requestId));
+  });
+
   it("explains that Apple-hosted downloads need TestFlight in a local preview", async () => {
     mocks.list.mockResolvedValue({
       distributionStatus: "available",
@@ -163,12 +303,14 @@ describe("CoreAiModelManager", () => {
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
     expect(await screen.findByText("My Qwen 3")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "短い例文で試す" })).toBeNull();
     expect(screen.getByText("ローカル")).toBeTruthy();
     expect(screen.getByText("検出済み（選択できます）")).toBeTruthy();
     const select = screen.getByRole("button", { name: "使う" });
     select.focus();
     fireEvent.click(select);
     await waitFor(() => expect(mocks.select).toHaveBeenCalledWith("local:app-managed:MyQwen"));
+    expect(await screen.findByRole("button", { name: "短い例文で試す" })).toBeTruthy();
     await waitFor(() => expect(document.activeElement).toBe(
       screen.getByRole("group", { name: "My Qwen 3" }),
     ));

@@ -1,8 +1,14 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MenuLanguage } from "../../types";
 import { useCoreAiModelCatalog } from "../../hooks/app/useCoreAiModelCatalog";
 import { isCoreAiModelSelectable } from "../../lib/coreAiModelSelection";
 import { pickCoreAiModelFolder } from "../../lib/tauri/dialog";
+import {
+  finishAppleAssistGeneration,
+  generateAppleAssistCandidate,
+  prepareAppleAssistGeneration,
+  stopAppleAssistGeneration,
+} from "../../lib/tauri/appleAssist";
 import {
   cancelCoreAiModelDownload,
   deleteCoreAiModel,
@@ -14,6 +20,21 @@ import {
   type CoreAiModelSummary,
 } from "../../lib/tauri/coreAiModels";
 
+const MODEL_CHECK_TEXT = "春の風が心地よいです。";
+type ModelCheckJob = {
+  requestId: string;
+  modelId: string;
+  preparePromise: Promise<void>;
+  cancelled: boolean;
+  stopPromise?: Promise<void>;
+};
+type ModelCheckResult = {
+  modelId: string;
+  kind: "success" | "cancelled" | "error";
+  sample?: string;
+  error?: string;
+};
+
 /**
  * オンデバイスモデルの一覧と操作。見出しは持たず、ページ側が「オンデバイスモデル」の
  * 見出しと保存先の説明を出す（同じ文言を2か所に置かない）。`label` はこの領域の
@@ -23,11 +44,23 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [checkingModelId, setCheckingModelId] = useState<string | null>(null);
+  const [checkStopping, setCheckStopping] = useState(false);
+  const [checkResult, setCheckResult] = useState<ModelCheckResult | null>(null);
+  const checkJob = useRef<ModelCheckJob | null>(null);
+  const checkSequence = useRef(0);
+  const mounted = useRef(true);
   const focusedAction = useRef<{ control: HTMLElement; row: HTMLElement } | null>(null);
   const copy = managerCopy(language);
   const { catalog, refreshCatalog, runCatalogRequest } = useCoreAiModelCatalog((reason) => {
     setError(reason instanceof Error ? reason.message : String(reason));
   });
+  const catalogRef = useRef(catalog);
+  catalogRef.current = catalog;
+
+  useEffect(() => {
+    setCheckResult(null);
+  }, [catalog.selectedModelId]);
 
   useLayoutEffect(() => {
     const previous = focusedAction.current;
@@ -38,6 +71,93 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
       }
     }
   }, [catalog]);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      const job = checkJob.current;
+      if (!job) return;
+      job.cancelled = true;
+      job.stopPromise ??= job.preparePromise
+        .then(() => stopAppleAssistGeneration(job.requestId))
+        .then(() => undefined)
+        .catch(() => undefined);
+    };
+  }, []);
+
+  const stopCheck = async (modelId: string) => {
+    const job = checkJob.current;
+    if (!job || job.modelId !== modelId || job.cancelled) return;
+    job.cancelled = true;
+    setCheckStopping(true);
+    job.stopPromise = job.preparePromise
+      .then(() => stopAppleAssistGeneration(job.requestId))
+      .then(() => undefined)
+      .catch(() => undefined);
+    await job.stopPromise;
+  };
+
+  const checkModel = async (model: CoreAiModelSummary) => {
+    if (checkJob.current || !model.selected || model.kind !== "core_ai" || !isCoreAiModelSelectable(model)) return;
+    const requestId = `model-check-${Date.now()}-${++checkSequence.current}`;
+    const job: ModelCheckJob = {
+      requestId,
+      modelId: model.id,
+      preparePromise: prepareAppleAssistGeneration(requestId),
+      cancelled: false,
+    };
+    checkJob.current = job;
+    setBusyId(model.id);
+    setCheckingModelId(model.id);
+    setCheckStopping(false);
+    setCheckResult(null);
+    setError(null);
+    setNotice(null);
+    let prepared = false;
+    try {
+      await job.preparePromise;
+      prepared = true;
+      if (job.cancelled) {
+        if (mounted.current) setCheckResult({ modelId: model.id, kind: "cancelled" });
+        return;
+      }
+      const response = await generateAppleAssistCandidate(
+        { operation: "rephrase", selectedText: MODEL_CHECK_TEXT },
+        requestId,
+      );
+      if (!mounted.current) return;
+      if (job.cancelled) {
+        setCheckResult({ modelId: model.id, kind: "cancelled" });
+        return;
+      }
+      if (response.modelId !== model.id || catalogRef.current.selectedModelId !== model.id ||
+          !catalogRef.current.models.some((entry) => entry.id === model.id && entry.selected)) {
+        throw new Error("Local Assist model changed during the check.");
+      }
+      if (typeof response.candidateText !== "string" || !response.candidateText.trim()) {
+        throw new Error("Local Assist returned no text for the model check.");
+      }
+      const characters = Array.from(response.candidateText.trim());
+      const sample = characters.slice(0, 320).join("") + (characters.length > 320 ? "…" : "");
+      setCheckResult({ modelId: model.id, kind: "success", sample });
+    } catch (reason) {
+      if (!mounted.current) return;
+      const error = reason instanceof Error ? reason.message : String(reason);
+      setCheckResult(job.cancelled || error.includes("cancelled by user")
+        ? { modelId: model.id, kind: "cancelled" }
+        : { modelId: model.id, kind: "error", error });
+    } finally {
+      await job.stopPromise;
+      if (prepared) await finishAppleAssistGeneration(requestId).catch(() => undefined);
+      if (checkJob.current === job) checkJob.current = null;
+      if (mounted.current) {
+        setCheckingModelId(null);
+        setCheckStopping(false);
+        setBusyId(null);
+      }
+    }
+  };
 
   const addFolder = async () => {
     setError(null);
@@ -176,7 +296,24 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
               <button className="core-ai-model-remove" type="button" disabled={busy} onClick={() => void run(model, "delete")}>{copy.delete}</button> : null}
             {source === "external_local" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "unregister")}>{copy.unregister}</button> : null}
+            {model.kind === "core_ai" && model.selected && isCoreAiModelSelectable(model) ?
+              <button type="button"
+                disabled={checkingModelId === model.id ? checkStopping : busy}
+                onClick={() => void (checkingModelId === model.id ? stopCheck(model.id) : checkModel(model))}>
+                {checkingModelId === model.id ? copy.stopCheck : copy.checkModel}
+              </button> : null}
           </div>
+          {model.kind === "core_ai" && model.selected && isCoreAiModelSelectable(model) ?
+            <span className="field-hint core-ai-model-check-hint">{copy.checkHint}</span> : null}
+          {checkingModelId === model.id ?
+            <span className="field-hint core-ai-model-check-result" role="status">{copy.checking}</span> : null}
+          {checkResult?.modelId === model.id && model.selected ?
+            <div className="core-ai-model-check-result" role={checkResult.kind === "error" ? "alert" : "status"}>
+              <span>{checkResult.kind === "success" ? copy.checkSucceeded
+                : checkResult.kind === "cancelled" ? copy.checkCancelled : copy.checkFailed}</span>
+              {checkResult.sample ? <blockquote>{checkResult.sample}</blockquote> : null}
+              {checkResult.error ? <details className="core-ai-model-details"><summary>{copy.technicalDetails}</summary><code>{checkResult.error}</code></details> : null}
+            </div> : null}
           {model.kind === "core_ai" && (model.error || model.assetPackVersion != null || model.license) ?
             <details className="core-ai-model-details">
               <summary>{copy.technicalDetails}</summary>
@@ -253,6 +390,12 @@ function isBelowMinimumMemory(model: CoreAiModelSummary, catalog: CoreAiModelCat
 function managerCopy(language: MenuLanguage) {
   if (language === "en") return {
     selected: "Selected", ready: "Ready", systemStatus: "Built-in model",
+    checkModel: "Try a short sample", stopCheck: "Stop check",
+    checkHint: "Uses only a fixed sample sentence. Your open document is not sent or changed.",
+    checking: "Checking this model…",
+    checkSucceeded: "This model generated text. Your document was not changed.",
+    checkCancelled: "Check stopped. Your document was not changed.",
+    checkFailed: "This model could not generate text. Your document was not changed.",
     systemDescription: "No download needed. Availability is checked when you use it.",
     localBadge: "Local", localDetected: "Detected (can be selected)",
     addFolder: "Add model folder…", addFolderHint: "Select a Core AI resource folder. Its files stay where they are.",
@@ -301,6 +444,12 @@ function managerCopy(language: MenuLanguage) {
   };
   if (language === "kana") return {
     selected: "えらんでゐます", ready: "つかへます", systemStatus: "Mac に はじめから ある もでる",
+    checkModel: "みじかい ぶんで ためす", stopCheck: "たしかめるのを とめる",
+    checkHint: "きまった みじかい ぶんだけを つかひます。ひらいてゐる ぶんしょは つかはず、かへません。",
+    checking: "もでるを たしかめてゐます…",
+    checkSucceeded: "この もでるで ぶんを つくれました。ぶんしょは かへてゐません。",
+    checkCancelled: "たしかめるのを とめました。ぶんしょは かへてゐません。",
+    checkFailed: "この もでるで ぶんを つくれませんでした。ぶんしょは かへてゐません。",
     systemDescription: "いれる ひつようは ありません。つかふときに うごくかを たしかめます。",
     localBadge: "ろーかる", localDetected: "みつけました（えらべます）",
     addFolder: "もでるの ふぉるだを たす…", addFolderHint: "Core AI の もでるの ふぉるだを えらびます。なかみは そのままに します。",
@@ -349,6 +498,12 @@ function managerCopy(language: MenuLanguage) {
   };
   return {
     selected: "選択中", ready: "利用可能", systemStatus: "Mac標準のモデル",
+    checkModel: "短い例文で試す", stopCheck: "確認を中止",
+    checkHint: "固定の短文だけで試します。開いている文書は使わず、変更しません。",
+    checking: "モデルを確認しています…",
+    checkSucceeded: "このモデルで生成できました。文書は変更していません。",
+    checkCancelled: "確認を中止しました。文書は変更していません。",
+    checkFailed: "このモデルで生成できませんでした。文書は変更していません。",
     systemDescription: "ダウンロード不要。使用時に利用できるか確認します。",
     localBadge: "ローカル", localDetected: "検出済み（選択できます）",
     addFolder: "モデルフォルダを追加…", addFolderHint: "Core AI のモデルが入ったフォルダを選びます。元のファイルは移動しません。",

@@ -26,7 +26,13 @@ Last reviewed: 2026-09-23
   通常生成IPCのhelper待機をblocking workerへ移し、UIスレッドを塞がない経路に変更。
   Rust全体473件pass / 3 ignored、最終調整後の関連80件pass。build 151はこの変更を含まない。
   clean source `76d38284`からbuild 152署名pkgを作成し、app / extension番号一致、pkg署名と
-  digestを確認。Apple送信・TestFlight installは未実施。
+  digestを確認。後続の選択済みモデル用「短い例文で試す」は、固定文だけを通常生成IPCへ渡し、
+  request IDで取消・画面終了を扱う。応答モデルを照合し、文書は使わず変更しない。
+  frontend 2708件、scripts 31件、Rust 477件pass / 3 ignored、App Store surface 132件、
+  型検査、Vite build、Rust fmtと600px表示fixtureを確認。build 152にこの導線は含まれない。
+  このsourceの`npm run build`も成功し、元bundle IDのプレビュー`.app`はmacOSで
+  1153×739の表示窓を確認した（実モデル試用は未実施）。
+  Apple送信・TestFlight installと同一署名候補の外部bookmark付き通常生成は未実施。
 
 - **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
   起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。

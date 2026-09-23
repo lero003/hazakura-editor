@@ -257,12 +257,18 @@ pub(crate) async fn generate_apple_assist_candidate<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
     request: AppleAssistRequest,
+    request_id: Option<String>,
 ) -> Result<AppleAssistResponse, String> {
     let label = window.label().to_owned();
     let helper_store = Arc::clone(helper_store.inner());
     let worker_store = Arc::clone(&helper_store);
     let response = tauri::async_runtime::spawn_blocking(move || {
-        generate_apple_assist_candidate_with_label(&label, worker_store.as_ref(), request)
+        generate_apple_assist_candidate_with_label_scoped(
+            &label,
+            worker_store.as_ref(),
+            request,
+            request_id.as_deref(),
+        )
     })
     .await
     .map_err(|e| format!("Hazakura Local Assist generation task failed: {e}"))??;
@@ -286,15 +292,25 @@ pub(crate) fn local_assist_generation_profile<R: tauri::Runtime>(
     Ok(helper_store.generation_profile())
 }
 
+#[cfg(test)]
 pub(crate) fn generate_apple_assist_candidate_with_label(
     label: &str,
     helper_store: &AppleAssistHelperStore,
     request: AppleAssistRequest,
 ) -> Result<AppleAssistResponse, String> {
+    generate_apple_assist_candidate_with_label_scoped(label, helper_store, request, None)
+}
+
+fn generate_apple_assist_candidate_with_label_scoped(
+    label: &str,
+    helper_store: &AppleAssistHelperStore,
+    request: AppleAssistRequest,
+    request_id: Option<&str>,
+) -> Result<AppleAssistResponse, String> {
     ensure_label_is_main(label)?;
     ensure_apple_assist_allowed_by_distribution()?;
     validate_request(&request)?;
-    generate_apple_assist_candidate_with_helper(helper_store, &request)
+    generate_apple_assist_candidate_with_helper(helper_store, &request, request_id)
 }
 
 #[tauri::command]
@@ -446,6 +462,7 @@ pub(crate) fn validate_request(request: &AppleAssistRequest) -> Result<(), Strin
 pub(crate) fn generate_apple_assist_candidate_with_helper(
     helper_store: &AppleAssistHelperStore,
     request: &AppleAssistRequest,
+    request_id: Option<&str>,
 ) -> Result<AppleAssistResponse, String> {
     #[cfg(target_os = "macos")]
     {
@@ -457,6 +474,7 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
             request.instruction.as_deref(),
             request.action_id.as_deref(),
             request.additional_request.as_deref(),
+            request_id,
         )? {
             WireEnvelope::Candidate(value) => map_helper_candidate(value),
             WireEnvelope::Error(error) => Err(error.error),

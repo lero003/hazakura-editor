@@ -36,13 +36,20 @@ build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean
 作成し、app / extensionのbuild番号、署名、pkg digestを通常macOS権限で確認した。
 通常生成IPCの非同期化を含むclean source `76d38284`からbuild 152署名pkgを作成し、
 app / extensionの番号一致、署名、digestを確認。build 151は旧候補となった。
-同一配布候補のTestFlight受入は残る。[build 152と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
-現行の製品画面はstreamingのみを呼ぶため、外部bookmark付き通常生成の受入には
-同じ署名候補でnon-streaming IPCを実行する手段も必要。
+build 152は後続の通常生成UIを含まない旧候補。同一配布候補のTestFlight受入は残る。
+[候補と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
 通常生成IPCはhelper応答を同期コマンド内で待っていたため、Tauriの非同期コマンドから
 blocking workerへ移した。既存のwindow / distribution / request検証とprofile記録を維持する。
 Rust全体473件pass / 3件ignoredの後、最終調整で関連80件pass。製品画面からの通常生成呼出しと
-署名済み候補での外部bookmark受入は引き続き未確認。
+署名済み候補での外部bookmark受入はこの時点では未確認。
+後続で、選択済みのCore AIモデル行に「短い例文で試す」を追加した。固定短文を
+通常生成IPCに渡し、元文書を使わず変更もしない。応答のmodel IDと選択中IDを照合してから
+短い出力を表示し、生成中の取消はrequest IDに限定する。画面を閉じる時も取り消す。
+古い結果がモデル切替後に再表示されないようにした。frontend 2708件、scripts 31件、
+Rust 477件pass / 3件ignored、App Store surface 132件、型検査、Vite build、Rust fmtを確認。
+fixtureの600px幅で試用結果の表示を目視確認した。実モデルを通す同一署名済み候補の受入は残る。
+このsourceの`npm run build`は成功し、生成した元bundle IDの`.app`をmacOSで起動して
+1153×739の表示窓を確認した。固定短文の実モデル生成はこの起動smokeには含まれない。
 
 ## `npm run build` の起動クラッシュ（2026-09-23、ローカル修正）
 

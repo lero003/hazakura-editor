@@ -1322,7 +1322,11 @@ pub(crate) fn generate_candidate_via_helper(
     instruction: Option<&str>,
     action_id: Option<&str>,
     additional_request: Option<&str>,
+    request_id: Option<&str>,
 ) -> Result<WireEnvelope, String> {
+    if let Some(id) = request_id {
+        store.stream_request_flag(id)?;
+    }
     if store.is_in_cooldown() {
         return Err(
             "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
@@ -1344,23 +1348,49 @@ pub(crate) fn generate_candidate_via_helper(
     }
 
     let timeout = store.effective_generate_timeout();
-    let result = AppleAssistHelperStore::round_trip_locked(
-        store,
-        guard.as_mut().expect("just spawned"),
-        &WireRequest::GenerateCandidate {
-            backend,
-            model_id,
-            model_path,
-            model_bookmark: helper_access.transfer_bookmark.as_deref(),
-            operation,
-            selected_text,
-            document_context,
-            instruction,
-            action_id,
-            additional_request,
-        },
-        timeout,
-    );
+    let request = WireRequest::GenerateCandidate {
+        backend,
+        model_id,
+        model_path,
+        model_bookmark: helper_access.transfer_bookmark.as_deref(),
+        operation,
+        selected_text,
+        document_context,
+        instruction,
+        action_id,
+        additional_request,
+    };
+    let mut unexpected_partial = false;
+    let mut result = if request_id.is_some() {
+        AppleAssistHelperStore::round_trip_stream_locked(
+            store,
+            guard.as_mut().expect("just spawned"),
+            &request,
+            timeout,
+            |_| unexpected_partial = true,
+            request_id,
+        )
+    } else {
+        AppleAssistHelperStore::round_trip_locked(
+            store,
+            guard.as_mut().expect("just spawned"),
+            &request,
+            timeout,
+        )
+    };
+    if request_id.is_some_and(|id| store.complete_native_stream_request(id)) {
+        result = Err("Hazakura Local Assist generation cancelled by user.".into());
+    } else if unexpected_partial
+        && !result
+            .as_ref()
+            .err()
+            .is_some_and(|error| error.contains("cancelled by user"))
+    {
+        result = Err(
+            "Hazakura Local Assist helper returned partial output for non-streaming generation."
+                .into(),
+        );
+    }
 
     match &result {
         Ok(WireEnvelope::Candidate(_)) => store.record_success(),

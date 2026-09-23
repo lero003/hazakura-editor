@@ -394,6 +394,16 @@
 .core-ai-model-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
 .core-ai-model-actions button { padding: 6px 10px; white-space: nowrap; }
 .core-ai-model-actions .core-ai-model-remove { color: var(--text-muted); }
+.core-ai-model-check-hint,
+.core-ai-model-check-result { grid-column: 1 / -1; }
+.core-ai-model-check-result { display: grid; gap: 6px; overflow-wrap: anywhere; }
+.core-ai-model-check-result blockquote {
+  margin: 0;
+  padding: 8px 10px;
+  border-inline-start: 2px solid var(--accent);
+  background: var(--surface-muted);
+  white-space: pre-wrap;
+}
 .core-ai-model-details,
 .core-ai-manager-details { color: var(--text-muted); font-size: 12px; }
 .core-ai-model-details { grid-column: 1 / -1; }

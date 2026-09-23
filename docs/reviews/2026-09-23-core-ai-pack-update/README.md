@@ -14,15 +14,18 @@ Date: 2026-09-23
 
 `./node_modules/.bin/vite --host 127.0.0.1 --port 1420`で起動し、
 `fixture.html`を開く。`?ready=1&theme=dark`は12Bを利用可能にしたダーク表示。
+`?local=1`は外部モデル選択中の固定例文試用を模擬する。
 IPCは模擬であり、実際のダウンロード・削除・生成はしない。現行fixtureは12Bのみ・
 最低16 GB/推奨24 GB・検証失敗時の「削除して再取得」を表示する。ブラウザーの
 アクセシビリティツリーで、E4B行がなく、12Bの情報と復旧操作が見えることを確認した。
+`?local=1`を600px幅で操作し、試用結果がカード内に収まることも確認した。
 
 以下のPNGは**方針変更前**のE4B/12B表示を撮った履歴画像であり、現行fixtureの見た目ではない。
 
 - [変更前の失敗表示](01-models-ja-recovery.png): 12Bで再試行と削除を別々に出していた。現行は一つの復旧操作に変更。
 - [利用可能時の更新確認](02-models-ja-ready-dark.png): 「更新を確認」と選択操作を分ける。
 - [600px幅](03-models-ja-narrow.png): 操作ボタンはカード本文の下へ移り、横にはみ出さない。
+- [ローカルモデルの試用・600px幅](04-models-ja-local-check-narrow.png): IPCを模擬した結果表示。実モデル生成の証跡ではない。
 
 ## 検証境界
 
@@ -89,7 +92,14 @@ Rustの両生成経路は共通の`prepare_helper_model_access`を、Swift helpe
 更新後のfrontend 2702件、scripts 31件、型検査、Vite build、App Store surface 132件は成功。
 後続で通常生成IPCのhelper待機をblocking workerへ移し、Tauriの同期コマンドによるUI停止を避けた。
 Rust全体473件pass / 3 ignored、最終調整後の関連80件pass、`npm run build`と元bundle IDの
-1280×820起動smokeが成功。製品画面からのnon-streaming呼出しは引き続き存在しない。
+1280×820起動smokeが成功。その後、選択済みCore AIモデル行から固定短文だけで
+non-streaming IPCを実行する導線を追加した。元文書は渡さず変更しない。request ID付きの
+予約・取消をnormal経路にも通し、画面終了時に停止する。応答モデル照合と空出力拒否を行う。
+取消前dispatch、実行中取消、正常完了、切替後の古い結果消去を回帰テストで確認した。
+frontend 2708件、scripts 31件、Rust 477件pass / 3 ignored、App Store surface 132件、
+型検査、Vite build、Rust fmtが成功。fixtureの結果表示は実外部bookmark生成の証拠ではない。
+このsourceの`npm run build`も成功し、元bundle IDのプレビュー`.app`はmacOSで
+1153×739の表示窓まで起動した。固定例文の実モデル生成は行っていない。
 
 ## 署名済み候補の残ゲート
 
@@ -103,6 +113,8 @@ pkg署名、SHA-256一致を通常macOS権限で確認。現行候補のパス�
 通常生成IPCの変更を含むclean source `76d38284`からbuild 152を作成し、旧build 151を
 置き換えた。候補作成ツールでApp Store surface 132件、app / extensionのbuild番号152一致、
 app・helper・pkg署名、SHA-256一致を確認した。候補メタデータはビルド前のsource cleanを記録。
+build 152には後続の製品画面からの通常生成試用が含まれないため、同一候補受入には
+このsourceから新しい署名済み候補を作る必要がある。
 
 build 149の配布用profileを埋め込んだ`.app`をローカルから直接起動すると、macOSはproduction profileを
 ローカル実行用と認めず、`No matching profile found`として拒否した。これはpkgの署名・形状検証と

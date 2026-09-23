@@ -33,7 +33,13 @@ App Store Connectへのuploadはオーナー承認待ち。外部bookmark付きn
 最終調整後の関連80件pass、`npm run build`と元bundle IDの1280×820起動smokeが成功。
 build 151にはこの変更が入らず、配布候補から外した。
 clean source `76d38284`からbuild 152署名pkgを作成し、app / extension番号一致、pkg署名・
-digestを通常macOS権限で確認した。build 151は旧候補。Apple送信・TestFlight installは未実施。
+digestを通常macOS権限で確認した。build 151は旧候補。後続で選択済みCore AI行に
+固定短文の通常生成試用を追加し、request IDでの取消・画面終了、応答model ID照合、
+モデル切替後の古い結果消去を実装した。frontend 2708件、scripts 31件、Rust 477件pass /
+3 ignored、App Store surface 132件、型検査、Vite build、Rust fmt、600px fixture表示を確認。
+build 152はこの導線を含まない。Apple送信・TestFlight installは未実施。
+このsourceの`npm run build`で作った元bundle IDのプレビュー`.app`も起動し、
+macOSの1153×739表示窓を確認した。実モデル生成の証拠ではない。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
   `BAAssetPackManager.sharedManager`へ入り`SIGTRAP`。別IDコピーでも再現し、extensionとの

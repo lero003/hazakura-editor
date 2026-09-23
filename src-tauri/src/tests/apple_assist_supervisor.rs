@@ -58,6 +58,7 @@ fn generate_candidate_via_helper(
         instruction,
         None,
         None,
+        None,
     )
 }
 
@@ -1299,6 +1300,138 @@ fn scoped_cancel_before_worker_dispatch_never_spawns_helper() {
     assert!(store.inner_is_empty());
     store.finish_stream_request("pending");
     assert!(!store.cancel_stream_request("pending"));
+}
+
+#[test]
+fn scoped_normal_cancel_before_worker_dispatch_never_spawns_helper() {
+    let store = store_without_helper();
+    store.prepare_stream_request("normal-pending").unwrap();
+    assert!(store.cancel_stream_request("normal-pending"));
+    let err = generate_candidate_via_helper_impl(
+        &store,
+        "rephrase",
+        "短い確認文です。",
+        None,
+        None,
+        None,
+        None,
+        Some("normal-pending"),
+    )
+    .unwrap_err();
+    assert!(err.contains("cancelled by user"), "{err}");
+    assert!(store.inner_is_empty());
+    store.finish_stream_request("normal-pending");
+    assert!(!store.cancel_stream_request("normal-pending"));
+}
+
+#[test]
+fn scoped_normal_cancel_survives_worker_pre_arm_gap() {
+    let Some(slow) = sleep_helper_script_or_skip("scoped-normal-pre-arm") else {
+        return;
+    };
+    let entered = std::sync::Arc::new(std::sync::Barrier::new(2));
+    let resume = std::sync::Arc::new(std::sync::Barrier::new(2));
+    let a = entered.clone();
+    let b = resume.clone();
+    let store = std::sync::Arc::new(store_with_helper_path(slow).with_before_stream_arm(
+        std::sync::Arc::new(move || {
+            a.wait();
+            b.wait();
+        }),
+    ));
+    store.prepare_stream_request("normal-old").unwrap();
+    let worker_store = store.clone();
+    let worker = tauri::async_runtime::spawn_blocking(move || {
+        generate_candidate_via_helper_impl(
+            &worker_store,
+            "rephrase",
+            "春の風が心地よいです。",
+            None,
+            None,
+            None,
+            None,
+            Some("normal-old"),
+        )
+    });
+    entered.wait();
+    assert!(!store.stream_is_armed_for_test());
+    assert!(store.cancel_stream_request("normal-old"));
+    resume.wait();
+    let err = tauri::async_runtime::block_on(worker).unwrap().unwrap_err();
+    assert!(err.contains("cancelled by user"), "{err}");
+    assert!(store.inner_is_empty());
+    assert_eq!(store.consecutive_failures_for_test(), 0);
+    store.finish_stream_request("normal-old");
+}
+
+#[test]
+fn scoped_normal_cancel_kills_in_flight_helper_without_counting_failure() {
+    let Some(slow) = sleep_helper_script_or_skip("scoped-normal-active") else {
+        return;
+    };
+    let store = std::sync::Arc::new(
+        store_with_helper_path(slow).with_timeout_override(std::time::Duration::from_secs(30)),
+    );
+    store.prepare_stream_request("normal-active").unwrap();
+    let worker_store = store.clone();
+    let worker = tauri::async_runtime::spawn_blocking(move || {
+        generate_candidate_via_helper_impl(
+            &worker_store,
+            "rephrase",
+            "春の風が心地よいです。",
+            None,
+            None,
+            None,
+            None,
+            Some("normal-active"),
+        )
+    });
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+    while !store.stream_is_armed_for_test() && std::time::Instant::now() < deadline {
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+    assert!(
+        store.stream_is_armed_for_test(),
+        "normal request did not arm"
+    );
+    assert!(store.cancel_stream_request("normal-active"));
+    let err = tauri::async_runtime::block_on(worker).unwrap().unwrap_err();
+    assert!(err.contains("cancelled by user"), "{err}");
+    assert!(store.inner_is_empty());
+    assert_eq!(store.consecutive_failures_for_test(), 0);
+    store.finish_stream_request("normal-active");
+}
+
+#[test]
+fn scoped_normal_generation_completes_and_disarms_its_cancel_handle() {
+    let script = std::env::temp_dir().join(format!(
+        "hazakura-normal-scoped-success-{}.sh",
+        std::process::id()
+    ));
+    let body = "#!/bin/sh\n\
+                read -r _request\n\
+                printf '%s\\n' '{\"kind\":\"candidate\",\"value\":{\"operation\":\"rephrase\",\"candidateText\":\"春風が心地よいです。\",\"modelId\":\"fixture:system\",\"latencyMs\":1}}'\n";
+    std::fs::write(&script, body).expect("write scoped normal helper");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod scoped normal helper");
+    let store = store_with_helper_path(script.clone());
+    store.prepare_stream_request("normal-success").unwrap();
+    let result = generate_candidate_via_helper_impl(
+        &store,
+        "rephrase",
+        "春の風が心地よいです。",
+        None,
+        None,
+        None,
+        None,
+        Some("normal-success"),
+    )
+    .expect("scoped normal candidate");
+    assert!(matches!(result, WireEnvelope::Candidate(_)));
+    assert!(!store.cancel_stream_request("normal-success"));
+    store.finish_stream_request("normal-success");
+    assert_eq!(store.consecutive_failures_for_test(), 0);
+    std::fs::remove_file(script).ok();
 }
 
 // A persistent process reports its per-process sequence number so a successful
