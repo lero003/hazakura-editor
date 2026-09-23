@@ -168,10 +168,16 @@ describe("macOS build scripts", () => {
     expect(backgroundAssetsBridgeSource).toContain("operationGenerations");
     expect(backgroundAssetsBridgeSource).toContain("operationQueue");
     expect(backgroundAssetsBridgeSource).toMatch(
-      /startIdentifier:[\s\S]*beginOperationForIdentifier:identifier/,
+      /- \(NSUInteger\)beginStartForIdentifier:[\s\S]*beginOperationForIdentifier:identifier/,
     );
     expect(backgroundAssetsBridgeSource).toMatch(
-      /cancelIdentifier:[\s\S]*invalidateOperationForIdentifier:identifier/,
+      /- \(void\)startIdentifier:[\s\S]*beginStartForIdentifier:identifier/,
+    );
+    expect(backgroundAssetsBridgeSource).toMatch(
+      /- \(void\)beginExplicitCancellationForIdentifier:[\s\S]*invalidateOperationForIdentifier:identifier/,
+    );
+    expect(backgroundAssetsBridgeSource).toMatch(
+      /- \(BOOL\)cancelIdentifier:[\s\S]*beginExplicitCancellationForIdentifier:identifier/,
     );
     const ensureCall = backgroundAssetsBridgeSource.indexOf("ensureLocalAvailabilityOfAssetPack:");
     const precedingGuard = backgroundAssetsBridgeSource.lastIndexOf("isCurrentOperationForIdentifier", ensureCall);

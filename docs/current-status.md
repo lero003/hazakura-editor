@@ -7,6 +7,14 @@ Last reviewed: 2026-09-24
 
 ## Current State
 
+- **Core AIモデル管理とLocal Assist一覧の仕上げ（2026-09-24、source検証済み）:**
+  ダウンロード後のSHA-256中に`Verifying`を世代照合付きで通知し、不定進捗と案内を表示。
+  再取得の確認文を選択状態に合わせ、更新操作名を実際の取得動作に合わせた。Local Assist
+  一覧には選択不可の理由・進捗を表示し、読み上げ名にも含める。frontend 2719件・
+  scripts 31件、Rust 480件pass / 3 ignored、App Store surface 134件、Rust fmt、
+  ローカル`npm run build`が通過。実配信・TestFlight・VoiceOverは未確認。
+  **build 154の署名済みpkgはこの変更を含まない。**
+
 - **Background Assetsのpause先行P2追補（2026-09-24、source検証済み）:** 再起動後の
   delegate-observed pauseからprogress / finishedで最新版ensureへ再接続する。明示的な
   取消・削除は別に記録し、遅延通知とsnapshotからの再接続を拒否する。nativeの失敗先行回帰

@@ -20,7 +20,7 @@ describe("AssistModelPicker", () => {
     render(<AssistModelPicker language="ja" disabled={false} modelId="local:external:missing"
       onSelect={onSelect} />);
     fireEvent.click(screen.getByRole("button", { name: /ローカルモデルが見つかりません/ }));
-    expect(screen.getByRole("menuitemradio", { name: "ローカルモデルが見つかりません" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitemradio", { name: "ローカルモデルが見つかりません：フォルダを確認" }).hasAttribute("disabled")).toBe(true);
     fireEvent.click(screen.getByRole("menuitemradio", { name: "Apple Intelligence" }));
     expect(onSelect).toHaveBeenCalledWith("apple:foundation-models:system-default");
   });
@@ -39,7 +39,7 @@ describe("AssistModelPicker", () => {
     const local = screen.getByRole("menuitemradio", { name: "Local model" });
     expect(document.activeElement).toBe(local);
     expect(local.hasAttribute("disabled")).toBe(false);
-    expect(screen.getByRole("menuitemradio", { name: "Broken model" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitemradio", { name: "Broken model: Check model folder" }).hasAttribute("disabled")).toBe(true);
     fireEvent.click(local);
     expect(onSelect).toHaveBeenCalledWith(localModels[1].id);
   });
@@ -129,7 +129,7 @@ describe("AssistModelPicker", () => {
       ]}
       onSelect={onSelect} />);
     fireEvent.click(screen.getByRole("button", { name: /モデルを選択/ }));
-    expect(screen.getByRole("menuitemradio", { name: "Future model" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitemradio", { name: "Future model：未公開" }).hasAttribute("disabled")).toBe(true);
     fireEvent.click(screen.getByRole("menuitemradio", { name: "Hazakura Core AI" }));
     expect(onSelect).toHaveBeenCalledWith("apple:core-ai:writing-primary");
   });
@@ -144,6 +144,27 @@ describe("AssistModelPicker", () => {
     expect(screen.getAllByRole("menuitemradio")).toHaveLength(1);
     fireEvent.click(screen.getByRole("menuitemradio"));
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("shows why catalog models cannot be selected, including progress in the spoken name", () => {
+    const models = [
+      localModels[0],
+      { id: "apple:core-ai:12b", displayName: "Gemma 4 12B", kind: "core_ai" as const,
+        source: "apple_hosted" as const, status: "downloading" as const, selected: false, progress: 0.62 },
+      { id: "apple:core-ai:checking", displayName: "Checking model", kind: "core_ai" as const,
+        source: "apple_hosted" as const, status: "verifying" as const, selected: false },
+      { id: "local:external:missing", displayName: "External model", kind: "core_ai" as const,
+        source: "external_local" as const, status: "failed" as const, selected: false,
+        errorCode: "bookmark-inaccessible" },
+    ];
+    render(<AssistModelPicker language="ja" disabled={false} modelId={localModels[0].id}
+      models={models} onManage={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /モデルを選択/ }));
+
+    expect(screen.getByRole("menuitemradio", { name: "Gemma 4 12B：ダウンロード中 62%" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitemradio", { name: "Checking model：検証中" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitemradio", { name: "External model：フォルダを確認" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitem", { name: "モデルを追加・管理…" })).toBeTruthy();
   });
 
   it("preserves the focused model across progress-only catalog updates", () => {

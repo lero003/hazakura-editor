@@ -780,7 +780,7 @@ impl CoreAiModelStore {
         model_id: &str,
         generation: u64,
         helper_store: Option<&AppleAssistHelperStore>,
-        on_commit: impl FnOnce(),
+        on_commit: impl Fn(),
     ) -> Option<(CoreAiModelStatus, bool)> {
         if self
             .monitor_generations
@@ -792,14 +792,33 @@ impl CoreAiModelStore {
         {
             return None;
         }
-        // Snapshot acquisition and hashing can take seconds. Neither operation
-        // may mutate shared runtime state before the generation is rechecked.
+        // Snapshot acquisition and hashing can take seconds. Publish the
+        // intermediate phase only for this operation generation, then recheck
+        // it again before committing the completed verification.
         let previous = self
             .catalog_entry(model_id)
             .ok()
             .map(|entry| self.runtime_state(entry))
             .unwrap_or_default();
-        let result = self.compute_runtime_state(model_id);
+        let result = self.compute_runtime_state_with_verifying(model_id, |path, version| {
+            let generations = self
+                .monitor_generations
+                .lock()
+                .expect("monitor generations lock");
+            if generations.get(model_id).copied() != Some(generation) {
+                return;
+            }
+            self.set_runtime_state(
+                model_id,
+                RuntimeState {
+                    status: CoreAiModelStatus::Verifying,
+                    materialized_path: Some(path.to_path_buf()),
+                    asset_pack_version: version,
+                    ..RuntimeState::default()
+                },
+            );
+            on_commit();
+        });
         let generations = self
             .monitor_generations
             .lock()
@@ -847,7 +866,27 @@ impl CoreAiModelStore {
         self.refresh_monitored(model_id, generation, Some(helper_store), || {})
     }
 
+    #[cfg(test)]
+    pub(crate) fn refresh_monitored_with_notify_for_test(
+        &self,
+        model_id: &str,
+        generation: u64,
+        helper_store: &AppleAssistHelperStore,
+        on_commit: impl Fn(),
+    ) -> Option<(CoreAiModelStatus, bool)> {
+        self.refresh_monitored(model_id, generation, Some(helper_store), on_commit)
+    }
+
+    #[cfg(test)]
     fn compute_runtime_state(&self, model_id: &str) -> Result<RuntimeState, String> {
+        self.compute_runtime_state_with_verifying(model_id, |_, _| {})
+    }
+
+    fn compute_runtime_state_with_verifying(
+        &self,
+        model_id: &str,
+        on_verifying: impl FnOnce(&Path, Option<u64>),
+    ) -> Result<RuntimeState, String> {
         let entry = self.catalog_entry(model_id)?;
         if !entry.published {
             return Ok(RuntimeState {
@@ -894,6 +933,7 @@ impl CoreAiModelStore {
                 "Background Assets reported a Core AI model as downloaded without a materialized path."
                     .to_string()
             })?;
+            on_verifying(&path, snapshot.asset_pack_version);
             if let Err(error) =
                 self.verify_materialized_model(entry, &path, snapshot.asset_pack_version)
             {

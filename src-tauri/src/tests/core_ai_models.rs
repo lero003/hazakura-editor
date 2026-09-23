@@ -121,9 +121,54 @@ struct SequencedFixtureTransport {
 
 struct BlockingOldSnapshotTransport {
     root: PathBuf,
+    old_snapshot_available: bool,
     calls: AtomicU64,
     old_entered: Sender<()>,
     release_old: Mutex<Receiver<()>>,
+}
+
+struct BlockingHashTransport {
+    root: PathBuf,
+    hash_entered: Sender<()>,
+    release_hash: Mutex<Receiver<()>>,
+}
+
+impl BackgroundAssetTransport for BlockingHashTransport {
+    fn snapshot(
+        &self,
+        _asset_pack_id: &str,
+        _relative_path: &str,
+    ) -> Result<BackgroundAssetSnapshot, String> {
+        Ok(BackgroundAssetSnapshot {
+            supported: true,
+            available: true,
+            phase: "downloaded".into(),
+            progress: Some(1.0),
+            path: Some(self.root.clone()),
+            error: None,
+            asset_pack_version: Some(2),
+        })
+    }
+    fn start(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn cancel(&self, _asset_pack_id: &str) -> Result<bool, String> {
+        Ok(true)
+    }
+    fn remove(&self, _asset_pack_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn sha256_file(&self, path: &Path) -> Result<String, String> {
+        if path.file_name().is_some_and(|name| name == "model.bin") {
+            self.hash_entered.send(()).unwrap();
+            self.release_hash.lock().unwrap().recv().unwrap();
+        }
+        PublishedFixtureTransport {
+            root: self.root.clone(),
+            remove_error: None,
+        }
+        .sha256_file(path)
+    }
 }
 
 impl BackgroundAssetTransport for BlockingOldSnapshotTransport {
@@ -135,6 +180,17 @@ impl BackgroundAssetTransport for BlockingOldSnapshotTransport {
         if self.calls.fetch_add(1, Ordering::SeqCst) == 0 {
             self.old_entered.send(()).unwrap();
             self.release_old.lock().unwrap().recv().unwrap();
+            if self.old_snapshot_available {
+                return Ok(BackgroundAssetSnapshot {
+                    supported: true,
+                    available: true,
+                    phase: "downloaded".into(),
+                    progress: Some(1.0),
+                    path: Some(self.root.clone()),
+                    error: None,
+                    asset_pack_version: Some(1),
+                });
+            }
             return Ok(BackgroundAssetSnapshot {
                 supported: true,
                 available: false,
@@ -1080,6 +1136,7 @@ fn stale_monitor_cannot_roll_back_new_ready_state_or_selection_restore() {
     let (release_tx, release_rx) = mpsc::channel();
     let transport = Arc::new(BlockingOldSnapshotTransport {
         root,
+        old_snapshot_available: false,
         calls: AtomicU64::new(0),
         old_entered: entered_tx,
         release_old: Mutex::new(release_rx),
@@ -1113,6 +1170,195 @@ fn stale_monitor_cannot_roll_back_new_ready_state_or_selection_restore() {
     assert_eq!(store.list().models[1].status, CoreAiModelStatus::Ready);
     assert_eq!(store.list().selected_model_id, TEST_PUBLISHED_MODEL_ID);
     assert_eq!(helper.selected_model_id().unwrap(), TEST_PUBLISHED_MODEL_ID);
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn stale_snapshot_cannot_publish_verifying_after_a_new_download_starts() {
+    let data_dir = temp_data_dir();
+    let root = data_dir.join("materialized-test-pack");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(
+        root.join("hazakura-resource-manifest.json"),
+        TEST_RESOURCE_MANIFEST,
+    )
+    .unwrap();
+    std::fs::write(root.join("model.bin"), b"hello").unwrap();
+    let (entered_tx, entered_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let helper = Arc::new(store_without_helper());
+    let store = Arc::new(CoreAiModelStore::with_test_transport(
+        vec![CoreAiCatalogEntry::published_fixture(
+            TEST_PUBLISHED_MODEL_ID,
+            "test-pack",
+        )],
+        Arc::new(BlockingOldSnapshotTransport {
+            root,
+            old_snapshot_available: true,
+            calls: AtomicU64::new(0),
+            old_entered: entered_tx,
+            release_old: Mutex::new(release_rx),
+        }),
+    ));
+    store.configure(Ok(data_dir.clone()), &helper, None);
+    store.start_download(TEST_PUBLISHED_MODEL_ID).unwrap();
+    let old_generation = store.next_monitor_generation_for_test(TEST_PUBLISHED_MODEL_ID);
+    let notifications = Arc::new(Mutex::new(Vec::new()));
+    let old_store = store.clone();
+    let old_helper = helper.clone();
+    let old_notifications = notifications.clone();
+    let old = std::thread::spawn(move || {
+        old_store.refresh_monitored_with_notify_for_test(
+            TEST_PUBLISHED_MODEL_ID,
+            old_generation,
+            &old_helper,
+            || {
+                old_notifications
+                    .lock()
+                    .unwrap()
+                    .push(old_store.list().models[1].status)
+            },
+        )
+    });
+    entered_rx
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .unwrap();
+    store.start_download(TEST_PUBLISHED_MODEL_ID).unwrap();
+    release_tx.send(()).unwrap();
+    assert_eq!(old.join().unwrap(), None);
+    assert!(notifications.lock().unwrap().is_empty());
+    assert_eq!(
+        store.list().models[1].status,
+        CoreAiModelStatus::Downloading
+    );
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn model_verification_is_visible_while_payload_hash_is_running() {
+    let data_dir = temp_data_dir();
+    let root = data_dir.join("materialized-test-pack");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(
+        root.join("hazakura-resource-manifest.json"),
+        TEST_RESOURCE_MANIFEST,
+    )
+    .unwrap();
+    std::fs::write(root.join("model.bin"), b"hello").unwrap();
+    let (entered_tx, entered_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let helper = Arc::new(store_without_helper());
+    let store = Arc::new(CoreAiModelStore::with_test_transport(
+        vec![CoreAiCatalogEntry::published_fixture(
+            TEST_PUBLISHED_MODEL_ID,
+            "test-pack",
+        )],
+        Arc::new(BlockingHashTransport {
+            root,
+            hash_entered: entered_tx,
+            release_hash: Mutex::new(release_rx),
+        }),
+    ));
+    store.configure(Ok(data_dir.clone()), &helper, None);
+    store.start_download(TEST_PUBLISHED_MODEL_ID).unwrap();
+    let generation = store.next_monitor_generation_for_test(TEST_PUBLISHED_MODEL_ID);
+    let notifications = Arc::new(Mutex::new(Vec::new()));
+    let worker_store = store.clone();
+    let worker_helper = helper.clone();
+    let worker_notifications = notifications.clone();
+    let worker = std::thread::spawn(move || {
+        worker_store.refresh_monitored_with_notify_for_test(
+            TEST_PUBLISHED_MODEL_ID,
+            generation,
+            &worker_helper,
+            || {
+                worker_notifications
+                    .lock()
+                    .unwrap()
+                    .push(worker_store.list().models[1].status)
+            },
+        )
+    });
+    entered_rx
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .unwrap();
+    let while_hashing = store.list().models[1].clone();
+    let while_hashing_notifications = notifications.lock().unwrap().clone();
+    release_tx.send(()).unwrap();
+    assert_eq!(
+        worker.join().unwrap(),
+        Some((CoreAiModelStatus::Ready, true))
+    );
+    assert_eq!(while_hashing.status, CoreAiModelStatus::Verifying);
+    assert_eq!(while_hashing.progress, None);
+    assert_eq!(while_hashing_notifications, [CoreAiModelStatus::Verifying]);
+    assert_eq!(
+        *notifications.lock().unwrap(),
+        [CoreAiModelStatus::Verifying, CoreAiModelStatus::Ready]
+    );
+    std::fs::remove_dir_all(data_dir).unwrap();
+}
+
+#[test]
+fn stale_hash_result_cannot_replace_a_new_download_after_verifying_was_published() {
+    let data_dir = temp_data_dir();
+    let root = data_dir.join("materialized-test-pack");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(
+        root.join("hazakura-resource-manifest.json"),
+        TEST_RESOURCE_MANIFEST,
+    )
+    .unwrap();
+    std::fs::write(root.join("model.bin"), b"hello").unwrap();
+    let (entered_tx, entered_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let helper = Arc::new(store_without_helper());
+    let store = Arc::new(CoreAiModelStore::with_test_transport(
+        vec![CoreAiCatalogEntry::published_fixture(
+            TEST_PUBLISHED_MODEL_ID,
+            "test-pack",
+        )],
+        Arc::new(BlockingHashTransport {
+            root,
+            hash_entered: entered_tx,
+            release_hash: Mutex::new(release_rx),
+        }),
+    ));
+    store.configure(Ok(data_dir.clone()), &helper, None);
+    store.start_download(TEST_PUBLISHED_MODEL_ID).unwrap();
+    let old_generation = store.next_monitor_generation_for_test(TEST_PUBLISHED_MODEL_ID);
+    let notifications = Arc::new(Mutex::new(Vec::new()));
+    let old_store = store.clone();
+    let old_helper = helper.clone();
+    let old_notifications = notifications.clone();
+    let old = std::thread::spawn(move || {
+        old_store.refresh_monitored_with_notify_for_test(
+            TEST_PUBLISHED_MODEL_ID,
+            old_generation,
+            &old_helper,
+            || {
+                old_notifications
+                    .lock()
+                    .unwrap()
+                    .push(old_store.list().models[1].status)
+            },
+        )
+    });
+    entered_rx
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .unwrap();
+    assert_eq!(store.list().models[1].status, CoreAiModelStatus::Verifying);
+    store.start_download(TEST_PUBLISHED_MODEL_ID).unwrap();
+    release_tx.send(()).unwrap();
+    assert_eq!(old.join().unwrap(), None);
+    assert_eq!(
+        store.list().models[1].status,
+        CoreAiModelStatus::Downloading
+    );
+    assert_eq!(
+        *notifications.lock().unwrap(),
+        [CoreAiModelStatus::Verifying]
+    );
     std::fs::remove_dir_all(data_dir).unwrap();
 }
 

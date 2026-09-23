@@ -399,6 +399,7 @@
 .core-ai-model-actions button { padding: 6px 10px; white-space: nowrap; }
 .core-ai-model-actions .core-ai-model-remove { color: var(--text-muted); }
 .core-ai-model-check-hint,
+.core-ai-model-update-hint,
 .core-ai-model-check-result { grid-column: 1 / -1; }
 .core-ai-model-check-result { display: grid; gap: 6px; overflow-wrap: anywhere; }
 .core-ai-model-check-result blockquote {

@@ -5,6 +5,17 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-24
 
+## 2026-09-24 Core AIモデル管理の仕上げ
+
+ダウンロード完了後の検証中に`Verifying`を通知。SHA-256開始前の途中通知と終了後の確定は
+操作世代を照合し、UIは不定進捗と編集継続を示す。再取得の確認文は選択中かで変え、
+選択中ならSystemへ切り替わり再取得後に手動で選び直す旨を明示する。更新ボタンは
+「更新を確認して取得」に変更。Local Assist一覧は選択不可の理由を見た目と読み上げ名に
+含める。frontend 2719件・scripts 31件、Rust 480件pass / 3 ignored、App Store surface
+134件、Rust fmt、ローカル`npm run build`が通過。**build 154の署名済みpkgは含まない。**
+次の署名済み候補で実Background Assetsの検証時間と画面遷移、再取得・更新、
+VoiceOverでの一覧読み上げを受け入れる。
+
 ## 2026-09-24 Background Assetsのpause先行P2
 
 再起動後のcontrollerにdelegateのpauseが先着すると後続通知を拒否する経路を修正。

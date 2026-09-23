@@ -466,7 +466,8 @@ describe("CoreAiModelManager", () => {
     mocks.download.mockResolvedValue(catalog);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "更新を確認" }));
+    expect(await screen.findByText("新しい版がある場合はダウンロードします。")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "更新を確認して取得" }));
     await waitFor(() => expect(mocks.download).toHaveBeenCalledWith("apple:core-ai:12b"));
   });
 
@@ -501,8 +502,45 @@ describe("CoreAiModelManager", () => {
     await waitFor(() => expect(mocks.download).toHaveBeenCalledWith("apple:core-ai:12b"));
     expect(mocks.remove).toHaveBeenCalledWith("apple:core-ai:12b");
     expect(mocks.remove.mock.invocationCallOrder[0]).toBeLessThan(mocks.download.mock.invocationCallOrder[0]);
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("削除して再取得"));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("現在選択しているモデルは変更しません"));
+    expect(confirm.mock.calls[0][0]).not.toContain("Apple Intelligenceに切り替え");
     confirm.mockRestore();
+  });
+
+  it("explains that recovering the selected model switches selection until the user chooses it again", async () => {
+    const modelId = "apple:core-ai:12b";
+    mocks.list.mockResolvedValue({
+      distributionStatus: "available", selectedModelId: modelId,
+      models: [{ id: modelId, displayName: "Gemma 4 12B", kind: "core_ai", source: "apple_hosted",
+        status: "failed", selected: true, canRemove: true, errorCode: "verification-failed" }],
+    });
+    mocks.remove.mockResolvedValue({ distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default", models: [] });
+    mocks.download.mockResolvedValue({ distributionStatus: "available",
+      selectedModelId: "apple:foundation-models:system-default", models: [] });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "削除して再取得" }));
+    await waitFor(() => expect(mocks.download).toHaveBeenCalledWith(modelId));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("選択をApple Intelligenceに切り替えて再取得します"));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("再取得後は「使う」で選び直してください"));
+    expect(mocks.select).not.toHaveBeenCalled();
+    confirm.mockRestore();
+  });
+
+  it("shows indeterminate verification progress and keeps download cancellation unavailable", async () => {
+    mocks.list.mockResolvedValue({
+      distributionStatus: "available", selectedModelId: "apple:foundation-models:system-default",
+      models: [{ id: "apple:core-ai:12b", displayName: "Gemma 4 12B", kind: "core_ai",
+        source: "apple_hosted", status: "verifying", selected: false, progress: null }],
+    });
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+
+    expect(await screen.findByText("検証中")).toBeTruthy();
+    expect(screen.getByText("ダウンロードが完了しました。モデルの整合性を確認しています。この画面を閉じても、文書の編集は続けられます。")).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: "Gemma 4 12Bを検証中" }).hasAttribute("value")).toBe(false);
+    expect(screen.queryByRole("button", { name: "キャンセル" })).toBeNull();
   });
 
   it("offers retry for a transport failure without deleting a model", async () => {

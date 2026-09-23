@@ -187,7 +187,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
       model.installedSizeBytes == null ? null : formatSize(model.installedSizeBytes),
       model.selected,
     ))) return;
-    if (action === "recover" && !window.confirm(copy.recoverConfirmation(model.displayName))) return;
+    if (action === "recover" && !window.confirm(copy.recoverConfirmation(model.displayName, model.selected))) return;
     if (action === "unregister" && !window.confirm(copy.unregisterConfirmation(model.displayName, model.selected))) return;
     setBusyId(model.id);
     setError(null);
@@ -270,6 +270,10 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
               aria-label={copy.downloadProgress(model.displayName)}
               max={1} value={model.progress ?? undefined}
             /> : null}
+            {model.status === "verifying" ? <>
+              <progress aria-label={copy.verificationProgress(model.displayName)} max={1} />
+              <span className="field-hint" role="status">{copy.verifyingHint}</span>
+            </> : null}
             {isLocal && model.errorCode ?
               <span className="preference-warning" role="status">{copy.localReason(model.errorCode)}</span> : null}
             {!isLocal && model.errorCode === "local-preview" ?
@@ -303,6 +307,8 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
                 {checkingModelId === model.id ? copy.stopCheck : copy.checkModel}
               </button> : null}
           </div>
+          {source === "apple_hosted" && model.kind === "core_ai" && model.status === "ready" ?
+            <span className="field-hint core-ai-model-update-hint">{copy.checkForUpdatesHint}</span> : null}
           {model.kind === "core_ai" && model.selected && isCoreAiModelSelectable(model) ?
             <span className="field-hint core-ai-model-check-hint">{copy.checkHint}</span> : null}
           {checkingModelId === model.id ?
@@ -409,13 +415,15 @@ function managerCopy(language: MenuLanguage) {
     localUnavailable: "Unavailable", localReason: (code: string) => localModelReason("en", code),
     notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
     download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete", recover: "Delete and download again",
-    checkForUpdates: "Check for updates", technicalDetails: "Technical details",
+    checkForUpdates: "Check for updates and download", checkForUpdatesHint: "Downloads a newer version if one is available.", technicalDetails: "Technical details",
     deliveryVersion: (version: number) => `Requested pack version v${version}`,
     verificationFailure: "The downloaded model failed verification.",
     downloadFailure: "The model download failed.",
     operationFailed: "Couldn't complete that model action. Check the status and try again.",
     recoveryHint: "Delete the downloaded copy and download it again.",
-    recoverConfirmation: (name: string) => `Delete the downloaded copy of ${name} and download it again? Apple Intelligence will be used until the new copy is ready.`,
+    recoverConfirmation: (name: string, selected: boolean) => selected
+      ? `Delete ${name}, switch the selected model to Apple Intelligence, and download it again? When the download finishes, choose Use to select ${name} again.`
+      : `Delete ${name} and download it again? Your currently selected model will not change.`,
     downloadSize: (size: string) => `Download about ${size}`,
     installedSize: (size: string) => `Uses about ${size}`,
     installSize: (size: string) => `About ${size} after installation`,
@@ -435,6 +443,8 @@ function managerCopy(language: MenuLanguage) {
     cancelFailed: "The download could not be stopped. Check its current status and try again.",
     downloading: (progress?: number | null) => progress == null ? "Downloading" : `Downloading · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `Download progress for ${name}`,
+    verificationProgress: (name: string) => `Verifying ${name}`,
+    verifyingHint: "Download complete. Checking the model files. You can close this page and continue editing documents.",
     paused: "Paused", verifying: "Verifying download", failed: "Download unavailable", unsupported: "Requires macOS 27",
     previewUnavailable: "Unavailable in this preview", previewHint: "Try Apple-hosted model downloads in the TestFlight build.",
     notPublished: "No Core AI model has been published for download yet. Validated local bundles in Custom Models can still be selected.",
@@ -463,13 +473,15 @@ function managerCopy(language: MenuLanguage) {
     localUnavailable: "つかへません", localReason: (code: string) => localModelReason("kana", code),
     notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
     download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす", recover: "けして いれなほす",
-    checkForUpdates: "あたらしい ばんを たしかめる", technicalDetails: "くはしい じょうほう",
+    checkForUpdates: "あたらしい ばんを たしかめて いれる", checkForUpdatesHint: "あたらしい ばんが あれば、いれます。", technicalDetails: "くはしい じょうほう",
     deliveryVersion: (version: number) => `とりよせる ばん v${version}`,
     verificationFailure: "いれた もでるを たしかめられませんでした。",
     downloadFailure: "もでるを いれられませんでした。",
     operationFailed: "もでるの そうさを おへられませんでした。ようすを たしかめて、もういちど ためしてください。",
     recoveryHint: "いれた ものを けして、いれなほせます。",
-    recoverConfirmation: (name: string) => `${name}を けして いれなほしますか？ あたらしい ものが できるまでは Apple Intelligenceを つかひます。`,
+    recoverConfirmation: (name: string, selected: boolean) => selected
+      ? `${name}を けして、えらぶ もでるを Apple Intelligence に きりかへて いれなほしますか？いれたあとは「つかふ」で えらびなほしてください。`
+      : `${name}を けして いれなほしますか？いま えらんでゐる もでるは かへません。`,
     downloadSize: (size: string) => `いれる おほきさ やく ${size}`,
     installedSize: (size: string) => `つかふ りょう やく ${size}`,
     installSize: (size: string) => `いれたあとの おほきさ やく ${size}`,
@@ -489,6 +501,8 @@ function managerCopy(language: MenuLanguage) {
     cancelFailed: "いれるのを とめられませんでした。いまの ようすを たしかめて もういちど ためしてください。",
     downloading: (progress?: number | null) => progress == null ? "いれてゐます" : `いれてゐます · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}を いれる すすみぐあい`,
+    verificationProgress: (name: string) => `${name}を たしかめてゐます`,
+    verifyingHint: "いれおはりました。もでるの なかみを たしかめてゐます。この がめんを とぢても、ぶんしょを かきつづけられます。",
     paused: "とめてゐます", verifying: "たしかめてゐます", failed: "いれられませんでした", unsupported: "macOS 27 から つかへます",
     previewUnavailable: "この ためす ばんでは いれられません", previewHint: "Apple からの もでるは TestFlight ばんで ためして ください。",
     notPublished: "Core AI の もでるは まだ くばってゐません。Custom Models の なかで たしかめた ろーかるもでるは えらべます。",
@@ -517,13 +531,15 @@ function managerCopy(language: MenuLanguage) {
     localUnavailable: "利用不可", localReason: (code: string) => localModelReason("ja", code),
     notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
     download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除", recover: "削除して再取得",
-    checkForUpdates: "更新を確認", technicalDetails: "技術情報",
+    checkForUpdates: "更新を確認して取得", checkForUpdatesHint: "新しい版がある場合はダウンロードします。", technicalDetails: "技術情報",
     deliveryVersion: (version: number) => `取得対象の版 v${version}`,
     verificationFailure: "ダウンロードしたモデルの検証に失敗しました。",
     downloadFailure: "モデルのダウンロードに失敗しました。",
     operationFailed: "モデルの操作を完了できませんでした。状態を確認して、もう一度お試しください。",
     recoveryHint: "取得済みのデータを削除して、ダウンロードし直せます。",
-    recoverConfirmation: (name: string) => `${name}を削除して再取得しますか？新しいモデルの準備ができるまでは Apple Intelligence を使います。`,
+    recoverConfirmation: (name: string, selected: boolean) => selected
+      ? `${name}を削除し、選択をApple Intelligenceに切り替えて再取得しますか？再取得後は「使う」で選び直してください。`
+      : `${name}を削除して再取得しますか？現在選択しているモデルは変更しません。`,
     downloadSize: (size: string) => `ダウンロード 約${size}`,
     installedSize: (size: string) => `使用量 約${size}`,
     installSize: (size: string) => `インストール後 約${size}`,
@@ -543,6 +559,8 @@ function managerCopy(language: MenuLanguage) {
     cancelFailed: "ダウンロードを停止できませんでした。現在の状態を確認して、もう一度お試しください。",
     downloading: (progress?: number | null) => progress == null ? "ダウンロード中" : `ダウンロード中 · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}のダウンロード進捗`,
+    verificationProgress: (name: string) => `${name}を検証中`,
+    verifyingHint: "ダウンロードが完了しました。モデルの整合性を確認しています。この画面を閉じても、文書の編集は続けられます。",
     paused: "一時停止", verifying: "検証中", failed: "利用できません", unsupported: "macOS 27以降が必要",
     previewUnavailable: "このプレビューでは取得できません", previewHint: "Apple経由のモデル取得はTestFlight版でお試しください。",
     notPublished: "Core AI モデルはまだ配布されていません。Custom Models 内で検証したローカルモデルは選択できます。",

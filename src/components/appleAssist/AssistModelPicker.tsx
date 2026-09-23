@@ -123,16 +123,21 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
       <p className="apple-assist-model-heading" aria-hidden="true">{title}</p>
       {availableModels.map((model, index) => {
         const selected = model.id === selectedId;
+        const selectable = isCoreAiModelSelectable(model);
+        const unavailableReason = selectable ? null : modelUnavailableReason(model, language);
         return <button key={model.id} ref={(node) => { options.current[index] = node; }} type="button"
           role="menuitemradio" aria-checked={selected} tabIndex={-1}
-          disabled={!isCoreAiModelSelectable(model)}
+          aria-label={unavailableReason ? `${model.displayName}${language === "en" ? ": " : "："}${unavailableReason}` : undefined}
+          disabled={!selectable}
           className="apple-assist-model-option"
           onFocus={() => { focusedModelId.current = model.id; }}
           onClick={() => {
             if (!outsideCatalog || missingLocal) void onSelect?.(model.id);
             close(true);
           }}>
-          <span>{model.displayName}</span><span aria-hidden="true">{selected ? "✓" : isCoreAiModelSelectable(model) ? "" : "—"}</span>
+          <span>{model.displayName}</span>
+          {unavailableReason ? <span className="apple-assist-model-option-status">{unavailableReason}</span> : null}
+          {selected ? <span aria-hidden="true">✓</span> : null}
         </button>;
       })}
       {onManage ? <button ref={manageOption} type="button" role="menuitem" tabIndex={-1}
@@ -142,4 +147,37 @@ export function AssistModelPicker({ language, disabled, modelId, models, onSelec
       </button> : null}
     </div> : null}
   </div>;
+}
+
+function modelUnavailableReason(model: CoreAiModelSummary, language: MenuLanguage): string {
+  const copy = language === "en" ? {
+    notDownloaded: "Not downloaded", downloading: "Downloading", paused: "Paused",
+    verifying: "Verifying", folder: "Check model folder", verificationFailed: "Verification failed",
+    downloadFailed: "Download failed", notPublished: "Not published",
+    unsupported: "Unavailable on this Mac", preview: "Unavailable in this preview", unavailable: "Unavailable",
+  } : language === "kana" ? {
+    notDownloaded: "まだ いれてゐません", downloading: "いれてゐます", paused: "とめてゐます",
+    verifying: "たしかめてゐます", folder: "ふぉるだを たしかめる", verificationFailed: "たしかめられませんでした",
+    downloadFailed: "いれられませんでした", notPublished: "まだ くばってゐません",
+    unsupported: "この Mac では つかへません", preview: "この ばんでは いれられません", unavailable: "つかへません",
+  } : {
+    notDownloaded: "未ダウンロード", downloading: "ダウンロード中", paused: "一時停止",
+    verifying: "検証中", folder: "フォルダを確認", verificationFailed: "検証に失敗",
+    downloadFailed: "取得に失敗", notPublished: "未公開",
+    unsupported: "このMacでは利用不可", preview: "この版では取得不可", unavailable: "利用不可",
+  };
+  if (model.source === "app_managed_local" || model.source === "external_local") return copy.folder;
+  if (model.status === "not_downloaded") return copy.notDownloaded;
+  if (model.status === "downloading") {
+    return model.progress == null || !Number.isFinite(model.progress) ? copy.downloading
+      : `${copy.downloading} ${Math.round(Math.max(0, Math.min(1, model.progress)) * 100)}%`;
+  }
+  if (model.status === "paused") return copy.paused;
+  if (model.status === "verifying") return copy.verifying;
+  if (model.status === "failed") return model.errorCode === "verification-failed"
+    ? copy.verificationFailed : copy.downloadFailed;
+  if (model.status === "not_published") return copy.notPublished;
+  if (model.status === "unsupported") return model.errorCode === "local-preview"
+    ? copy.preview : copy.unsupported;
+  return copy.unavailable;
 }
