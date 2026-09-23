@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-20 (3.1.0 development version; no candidate yet)
+Last reviewed: 2026-09-23 (3.1.0 build 152 local candidate)
 
 ## Purpose
 
@@ -21,9 +21,8 @@ The App Store lane is a reviewable safe Markdown editor build. It omits:
 - dev mode
 - arbitrary command execution
 - external AI/API calls
-- general network-required features; a future user-initiated Apple-hosted model
-  download is the only planned Local Assist acquisition path and is not active
-  while the production catalog is empty
+- general network-required features; the only Local Assist acquisition path is
+  an explicit Apple-hosted model download in the signed distribution lane
 
 The App Store lane may include Hazakura Local Assist as an on-device,
 availability-gated writing companion. Its output must stay explicit,
@@ -41,11 +40,11 @@ System helper and a separate macOS 27+ Core AI adapter. It does not bundle
 model weights. Gemma 4 E4B and Gemma 4 12B preparation identities, converted
 revisions, file digests, and Apple-hosted asset-pack identifiers are pinned in
 `scripts/core-ai-production-models.json`; see `docs/core-ai-production-models.md`.
-The production catalog remains deliberately empty until distribution rights,
-AOT results, Background Assets integration, Japanese-writing acceptance, and
-the G1/G2 runtime gates are approved. In this state the UI must
-show that Core AI models are not published, keep Apple Intelligence selected,
-and refuse download, delete, or Core AI selection requests.
+The current App Store source catalog lists Gemma 4 12B only. The ad-hoc local
+preview shows the catalog but disables Apple-hosted acquisition because its
+`BAAssetPackManager` startup path traps outside the supported distribution
+context. The signed submit lane retains the platform transport. Asset download,
+selection, and generation still require TestFlight acceptance before release.
 
 The Developer / GitHub lane remains separate and may include optional
 Agent Workbench behind its existing boundary.
@@ -59,11 +58,10 @@ Agent Workbench behind its existing boundary.
   coverage remain unverified here. See `docs/releases/3.0.0-source-tag.release.md`.
   Prior published line: `2.9.0` (owner-reported 2026-09-09).
 - Current source / Developer version: `3.1.0`. Its draft submission copy is in
-  `docs/releases/3.1.0-app-store-release-notes.md`. This development version has no
-  signed candidate, TestFlight submission, App Store submission, or publication record.
-  The Core AI distribution adapter and empty-catalog management/selection
-  contract are present, but production model assets, Apple-hosted download,
-  and international-release acceptance remain incomplete.
+  `docs/releases/3.1.0-app-store-release-notes.md`. A local signed build 152
+  candidate exists from clean source `76d38284`; TestFlight upload, App Store
+  submission, and publication are unverified. The first App Store catalog lists
+  12B only; Apple-hosted acquisition and generation require TestFlight acceptance.
   The prior `3.0.3` submission copy remains in
   `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted by the owner,
   who reported submitting it 2026-09-18; signed local package build 140, while
@@ -80,9 +78,8 @@ Agent Workbench behind its existing boundary.
   longer carry the artifact path or SHA-256; tracked release docs name the
   submitted candidate's build number, and `latest.json` stays the place for
   local artifact provenance (not as proof of the public build number).
-  As of 2026-09-18 that file still described 2.9.0 / build 125 (the 3.0.x
-  packages were built without the candidate wrapper), so it is stale until
-  the next wrapper run.
+  As of 2026-09-23 the latest local entry is 3.1.0 / build 152. It is a
+  package artifact record, not TestFlight or App Store acceptance.
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -314,7 +311,7 @@ npm run smoke:app-store-surface
 This does not replace signed TestFlight manual smoke. It only pins that
   the App Store lane keeps CLI Agent / Agent Workbench commands and visible
   dev badges out of the source-tested surface while allowing the Apple
-  Local Assist window, empty-catalog model-management state, settings, and
+  Local Assist window, model-management state, settings, and
   helper assumptions.
 
 ## Core AI Apple-hosted Asset Activation
@@ -617,9 +614,8 @@ Keep the final reviewer note in ignored local files, but make sure it
 can answer these public-safe points before submission:
 
 - `com.apple.security.network.client` is present so the Tauri/WebKit runtime
-  can load bundled app assets under App Sandbox. The current empty-catalog
-  build does not activate model downloads. After an Apple-hosted pack is
-  published, explain that acquisition as a user-initiated Apple-hosted asset
+  can load bundled app assets under App Sandbox. The signed 3.1 candidate lists
+  Gemma 4 12B; explain its acquisition as a user-initiated Apple-hosted asset
   download and keep inference on-device; do not describe it as an AI network
   fallback. Pair the note with observed TestFlight behavior for the actual
   candidate.

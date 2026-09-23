@@ -25,6 +25,8 @@ Last reviewed: 2026-09-23
   外部bookmark付きnon-streaming IPC、実ディスク切断は未受入。
   通常生成IPCのhelper待機をblocking workerへ移し、UIスレッドを塞がない経路に変更。
   Rust全体473件pass / 3 ignored、最終調整後の関連80件pass。build 151はこの変更を含まない。
+  clean source `76d38284`からbuild 152署名pkgを作成し、app / extension番号一致、pkg署名と
+  digestを確認。Apple送信・TestFlight installは未実施。
 
 - **ローカル`npm run build`起動修正（2026-09-23）:** ad-hoc App Storeプレビューで
   起動時の`BAAssetPackManager.sharedManager`が`SIGTRAP`終了することを別IDコピーでも再現。

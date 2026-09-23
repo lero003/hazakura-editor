@@ -87,6 +87,9 @@ Rustの両生成経路は共通の`prepare_helper_model_access`を、Swift helpe
 `ScopedModelFolder`を使う。これはsource上の権限処理の共通性であり、実行成功の証拠ではない。
 署名済み候補の通常生成を合格判定するには、同じ候補でnon-streaming IPCを実行する手段も必要。
 更新後のfrontend 2702件、scripts 31件、型検査、Vite build、App Store surface 132件は成功。
+後続で通常生成IPCのhelper待機をblocking workerへ移し、Tauriの同期コマンドによるUI停止を避けた。
+Rust全体473件pass / 3 ignored、最終調整後の関連80件pass、`npm run build`と元bundle IDの
+1280×820起動smokeが成功。製品画面からのnon-streaming呼出しは引き続き存在しない。
 
 ## 署名済み候補の残ゲート
 
@@ -97,6 +100,9 @@ surface smoke、app / extensionのbuild番号151一致、appと3 helperの署名
 pkg署名、SHA-256一致を通常macOS権限で確認。現行候補のパスとdigestはignoredの
 `docs/internal/app-store-candidates/latest.json`を正本とする。制限付きshellの信頼評価は
 `untrusted`と出たが、通常macOS権限では署名検証が成功した。
+通常生成IPCの変更を含むclean source `76d38284`からbuild 152を作成し、旧build 151を
+置き換えた。候補作成ツールでApp Store surface 132件、app / extensionのbuild番号152一致、
+app・helper・pkg署名、SHA-256一致を確認した。候補メタデータはビルド前のsource cleanを記録。
 
 build 149の配布用profileを埋め込んだ`.app`をローカルから直接起動すると、macOSはproduction profileを
 ローカル実行用と認めず、`No matching profile found`として拒否した。これはpkgの署名・形状検証と

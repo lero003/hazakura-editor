@@ -31,7 +31,9 @@ App Store Connectへのuploadはオーナー承認待ち。外部bookmark付きn
 切断、TestFlightのproduction profile / App Group / Background Assetsはなお未受入。
 通常生成IPCのhelper待機をTauriのblocking workerへ移した。Rust全体473件pass / 3 ignored、
 最終調整後の関連80件pass、`npm run build`と元bundle IDの1280×820起動smokeが成功。
-build 151にはこの変更が入らないため、次の配布候補はclean sourceから再作成する。
+build 151にはこの変更が入らず、配布候補から外した。
+clean source `76d38284`からbuild 152署名pkgを作成し、app / extension番号一致、pkg署名・
+digestを通常macOS権限で確認した。build 151は旧候補。Apple送信・TestFlight installは未実施。
 
 - **`npm run build`起動クラッシュ修正（2026-09-23）:** 旧ad-hocプレビューは起動時refreshで
   `BAAssetPackManager.sharedManager`へ入り`SIGTRAP`。別IDコピーでも再現し、extensionとの

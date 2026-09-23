@@ -34,7 +34,9 @@ helperのentitlementとpkg署名・SHA-256を確認した。配布用profileの�
 Core AI helper単体へ渡し、通常macOS権限で校正候補を取得した（外部bookmark経路は通していない）。
 build 149はこのUI修正を含まない。修正コミット`df33a65a`のclean sourceからbuild 151署名pkgを
 作成し、app / extensionのbuild番号、署名、pkg digestを通常macOS権限で確認した。
-同一配布候補のTestFlight受入は残る。[build 151と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
+通常生成IPCの非同期化を含むclean source `76d38284`からbuild 152署名pkgを作成し、
+app / extensionの番号一致、署名、digestを確認。build 151は旧候補となった。
+同一配布候補のTestFlight受入は残る。[build 152と残ゲート](reviews/2026-09-23-core-ai-pack-update/README.md)。
 現行の製品画面はstreamingのみを呼ぶため、外部bookmark付き通常生成の受入には
 同じ署名候補でnon-streaming IPCを実行する手段も必要。
 通常生成IPCはhelper応答を同期コマンド内で待っていたため、Tauriの非同期コマンドから
