@@ -17,6 +17,8 @@ app/extension番号・署名・notice・digestを確認。候補path/digestはig
 `docs/internal/app-store-candidates/latest.json`を参照。156のApple送信・TestFlight・実機・
 審査は未確認。公式サイトは現状維持だが、公開Privacyの任意画像通信とCore AI説明の
 実装との差は掲載前に訂正する。
+最初のbuild 156試行は既定main profileのApp Group不足で停止し、build番号は復元された。
+検証済みのmain/extension profileを環境変数で明示して再実行した。
 
 ## 2026-09-24 Core AIモデル管理の仕上げ
 

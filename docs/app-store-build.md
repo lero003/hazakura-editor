@@ -125,6 +125,12 @@ APPLE_SIGNING_IDENTITY="Apple Distribution: <Name> (<TEAM_ID>)" \
   npm run build:app-store-submit
 ```
 
+Do not assume a file under the default profile name is current. The first
+build 156 attempt stopped because the default main-app profile lacked the App
+Group; a validated current main/extension pair selected through the two
+environment variables produced the signed candidate. Recheck both profiles
+before the next build rather than changing tracked signing settings.
+
 Place account-specific submission notes under ignored local paths such
 as:
 
