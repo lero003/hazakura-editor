@@ -3,7 +3,7 @@
   "publish_ready": false,
   "locale": "en-US",
   "reviewed_on": "2026-09-24",
-  "source_commit": "97ec7c002a534141c66dae46eebe54aa504e1f09",
+  "source_commit": "3e4ea5388f64dc53ca17bc16ea4911c8028a51d5",
   "usage_note": "Manual copy source, not an App Store Connect API payload. source_commit identifies the reviewed app and Help baseline; this metadata revision is separate. Copy only individual metadata values after the release gates pass.",
   "metadata": {
     "name": "Hazakura Editor",
