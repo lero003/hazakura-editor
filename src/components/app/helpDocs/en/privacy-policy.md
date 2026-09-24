@@ -16,7 +16,7 @@ Hazakura Editor stores local preferences such as theme, tab state, editor settin
 
 ## Hazakura Local Assist
 
-Hazakura Local Assist is an optional on-device writing companion. You can choose the Apple Intelligence system model, explicitly download the listed Gemma 4 12B Core AI model, or add a compatible Core AI resource folder from this Mac. A model must be available and pass the app's checks before you can use it. The Apple Intelligence model requires Apple Intelligence to be enabled; a compatible Core AI model can work while Apple Intelligence is turned off on a supported Apple silicon Mac running macOS 27 or later. Downloading or adding a model does not enable Local Assist or select that model for you. The app does not send your document or Local Assist requests to external AI services. You review each proposal and explicitly apply it in the main window; applied text remains unsaved until you save it.
+Hazakura Local Assist is an optional on-device writing companion. You can choose the Apple Intelligence system model, explicitly download the listed Gemma 4 E4B Core AI model, or add a compatible Core AI resource folder from this Mac. A model must be available and pass the app's checks before you can use it. The Apple Intelligence model requires Apple Intelligence to be enabled; a compatible Core AI model can work while Apple Intelligence is turned off on a supported Apple silicon Mac running macOS 27 or later. Downloading or adding a model does not enable Local Assist or select that model for you. The app does not send your document or Local Assist requests to external AI services. You review each proposal and explicitly apply it in the main window; applied text remains unsaved until you save it.
 
 ## Network, analytics, and cloud services
 

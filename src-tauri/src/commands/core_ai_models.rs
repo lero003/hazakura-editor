@@ -29,7 +29,10 @@ pub(crate) const CORE_AI_MODEL_STATE_CHANGED_EVENT: &str = "core-ai-model-state-
 const TWELVE_B_MODEL_ID: &str = "apple:core-ai:gemma-4-12b-it-int8-v1";
 const TWELVE_B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-12b-v1";
 const TWELVE_B_STORAGE_DIRECTORY: &str = "gemma-4-12b-it-int8-v1";
-const TWELVE_B_RUNTIME_KIND: &str = "coreai-kit-language";
+const E4B_MODEL_ID: &str = "apple:core-ai:gemma-4-e4b-it-int4-provider-v2";
+const E4B_ASSET_PACK_ID: &str = "hazakura-coreai-gemma4-e4b-v2";
+const E4B_STORAGE_DIRECTORY: &str = "gemma-4-e4b-it-int4-provider-v2";
+const E4B_RUNTIME_KIND: &str = "coreai-kit-gemma4-ple-provider";
 const PACK_RESOURCE_MANIFEST_FILENAME: &str = "hazakura-resource-manifest.json";
 const MAX_PACK_RESOURCE_MANIFEST_BYTES: u64 = 512 * 1024;
 const MAX_PACK_FILES: usize = 256;
@@ -147,6 +150,7 @@ pub(crate) struct CoreAiCatalogEntry {
     display_name: String,
     storage_directory: String,
     published: bool,
+    retired: bool,
     download_size_bytes: Option<u64>,
     installed_size_bytes: Option<u64>,
     minimum_memory_gb: Option<u64>,
@@ -165,6 +169,7 @@ impl CoreAiCatalogEntry {
             display_name: display_name.into(),
             storage_directory: storage_directory.into(),
             published: true,
+            retired: false,
             download_size_bytes: Some(1024),
             installed_size_bytes: Some(1024),
             minimum_memory_gb: None,
@@ -183,6 +188,7 @@ impl CoreAiCatalogEntry {
             display_name: "Published fixture".into(),
             storage_directory: storage_directory.into(),
             published: true,
+            retired: false,
             download_size_bytes: Some(5),
             installed_size_bytes: Some(5),
             minimum_memory_gb: None,
@@ -194,20 +200,39 @@ impl CoreAiCatalogEntry {
         }
     }
 
-    fn twelve_b() -> Self {
+    fn e4b() -> Self {
+        Self {
+            id: E4B_MODEL_ID.into(),
+            display_name: "Gemma 4 E4B".into(),
+            storage_directory: E4B_STORAGE_DIRECTORY.into(),
+            published: true,
+            retired: false,
+            download_size_bytes: Some(5_519_729_626),
+            installed_size_bytes: Some(6_808_842_583),
+            minimum_memory_gb: Some(16),
+            recommended_memory_gb: None,
+            license: Some("Apache-2.0".into()),
+            has_upstream_conversion_notice: false,
+            asset_pack_id: Some(E4B_ASSET_PACK_ID.into()),
+            runtime_kind: Some(E4B_RUNTIME_KIND),
+        }
+    }
+
+    fn retired_twelve_b() -> Self {
         Self {
             id: TWELVE_B_MODEL_ID.into(),
             display_name: "Gemma 4 12B".into(),
             storage_directory: TWELVE_B_STORAGE_DIRECTORY.into(),
-            published: true,
-            download_size_bytes: Some(9_148_924_300),
+            published: false,
+            retired: true,
+            download_size_bytes: None,
             installed_size_bytes: Some(14_698_433_203),
-            minimum_memory_gb: Some(16),
-            recommended_memory_gb: Some(24),
+            minimum_memory_gb: None,
+            recommended_memory_gb: None,
             license: Some("Apache-2.0".into()),
             has_upstream_conversion_notice: true,
             asset_pack_id: Some(TWELVE_B_ASSET_PACK_ID.into()),
-            runtime_kind: Some(TWELVE_B_RUNTIME_KIND),
+            runtime_kind: None,
         }
     }
 
@@ -231,7 +256,41 @@ impl CoreAiCatalogEntry {
 }
 
 fn production_catalog() -> Vec<CoreAiCatalogEntry> {
-    vec![CoreAiCatalogEntry::twelve_b()]
+    vec![
+        CoreAiCatalogEntry::e4b(),
+        CoreAiCatalogEntry::retired_twelve_b(),
+    ]
+}
+
+#[cfg(test)]
+mod production_catalog_tests {
+    use super::*;
+
+    #[test]
+    fn e4b_delivery_identity_matches_the_pinned_model_lock() {
+        let lock: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../scripts/core-ai-production-models.json"
+        ))
+        .unwrap();
+        let e4b_lock = lock["models"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|model| model["key"] == "gemma4-e4b")
+            .unwrap();
+        let e4b = CoreAiCatalogEntry::e4b();
+        assert_eq!(e4b.id, e4b_lock["modelId"].as_str().unwrap());
+        assert_eq!(
+            e4b.storage_directory,
+            e4b_lock["storageDirectory"].as_str().unwrap()
+        );
+        assert_eq!(
+            e4b.asset_pack_id.as_deref(),
+            e4b_lock["assetPackId"].as_str()
+        );
+        assert_eq!(e4b.runtime_kind, e4b_lock["runtimeKind"].as_str());
+        assert_eq!(e4b.installed_size_bytes, Some(6_808_842_583));
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -473,6 +532,13 @@ impl CoreAiModelStore {
         )
     }
 
+    #[cfg(test)]
+    pub(crate) fn production_catalog_with_test_transport(
+        transport: Arc<dyn BackgroundAssetTransport>,
+    ) -> Self {
+        Self::with_catalog_and_transport(production_catalog(), transport)
+    }
+
     pub(crate) fn configure(
         &self,
         data_dir: Result<PathBuf, String>,
@@ -582,33 +648,44 @@ impl CoreAiModelStore {
             asset_pack_version: None,
             can_remove: false,
         }];
-        models.extend(self.catalog.iter().map(|entry| {
-            let runtime = self.runtime_state(entry);
-            let preview_unavailable = runtime.error.as_deref() == Some(LOCAL_PREVIEW_ASSET_ERROR);
-            CoreAiModelSummary {
-                id: entry.id.clone(),
-                display_name: entry.display_name.clone(),
-                kind: CoreAiModelKind::CoreAi,
-                source: CoreAiModelSource::AppleHosted,
-                status: runtime.status,
-                selected: selected == entry.id,
-                download_size_bytes: entry.download_size_bytes,
-                installed_size_bytes: entry.installed_size_bytes,
-                minimum_memory_gb: entry.minimum_memory_gb,
-                recommended_memory_gb: entry.recommended_memory_gb,
-                license: entry.license.clone(),
-                has_upstream_conversion_notice: entry.has_upstream_conversion_notice,
-                progress: runtime.progress,
-                error: runtime.error,
-                error_code: if preview_unavailable {
-                    Some("local-preview".into())
-                } else {
-                    runtime.failure_kind.map(str::to_string)
-                },
-                asset_pack_version: runtime.asset_pack_version,
-                can_remove: runtime.materialized_path.is_some(),
-            }
-        }));
+        models.extend(
+            self.catalog
+                .iter()
+                .filter(|entry| {
+                    entry.published || (entry.retired && self.retired_model_is_present(entry))
+                })
+                .map(|entry| {
+                    let runtime = self.runtime_state(entry);
+                    let preview_unavailable =
+                        runtime.error.as_deref() == Some(LOCAL_PREVIEW_ASSET_ERROR);
+                    CoreAiModelSummary {
+                        id: entry.id.clone(),
+                        display_name: entry.display_name.clone(),
+                        kind: CoreAiModelKind::CoreAi,
+                        source: CoreAiModelSource::AppleHosted,
+                        status: runtime.status,
+                        selected: selected == entry.id,
+                        download_size_bytes: entry.download_size_bytes,
+                        installed_size_bytes: entry.installed_size_bytes,
+                        minimum_memory_gb: entry.minimum_memory_gb,
+                        recommended_memory_gb: entry.recommended_memory_gb,
+                        license: entry.license.clone(),
+                        has_upstream_conversion_notice: entry.has_upstream_conversion_notice,
+                        progress: runtime.progress,
+                        error: runtime.error,
+                        error_code: if entry.retired {
+                            Some("retired-model".into())
+                        } else if preview_unavailable {
+                            Some("local-preview".into())
+                        } else {
+                            runtime.failure_kind.map(str::to_string)
+                        },
+                        asset_pack_version: runtime.asset_pack_version,
+                        can_remove: runtime.materialized_path.is_some()
+                            || (entry.retired && self.retired_model_is_present(entry)),
+                    }
+                }),
+        );
         models.extend(self.local_model_summaries(&selected));
         models.extend(self.external_model_summaries(&selected));
         CoreAiModelCatalogResponse {
@@ -695,6 +772,12 @@ impl CoreAiModelStore {
         self.ensure_management_available()?;
         self.ensure_apple_hosted_management_model(model_id)?;
         let entry = self.catalog_entry(model_id)?;
+        if entry.retired && !self.retired_model_is_present(entry) {
+            return Err("The retired Core AI model is no longer installed.".into());
+        }
+        let asset_pack_id = entry.asset_pack_id.as_deref().ok_or_else(|| {
+            "Apple-hosted model removal is not configured for this catalog entry.".to_string()
+        })?;
         self.next_monitor_generation(model_id);
         let was_selected = self
             .selected_model_id
@@ -710,7 +793,7 @@ impl CoreAiModelStore {
                 })?;
             *self.selected_model_id.lock().expect("selected model lock") = SYSTEM_MODEL_ID.into();
         }
-        if let Err(remove_error) = self.transport.remove(self.asset_pack_id(entry)?) {
+        if let Err(remove_error) = self.transport.remove(asset_pack_id) {
             if was_selected {
                 if let Err(restore_error) = helper_store.set_selected_backend_after(
                     previous_backend.expect("selected model has a previous backend"),
@@ -1564,6 +1647,13 @@ impl CoreAiModelStore {
             .get(&entry.id)
             .cloned()
             .unwrap_or_default()
+    }
+
+    fn retired_model_is_present(&self, entry: &CoreAiCatalogEntry) -> bool {
+        entry.retired
+            && self
+                .validation_receipt_path(entry)
+                .is_ok_and(|path| path.is_file())
     }
 
     fn set_runtime_state(&self, model_id: &str, state: RuntimeState) {

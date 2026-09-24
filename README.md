@@ -31,9 +31,10 @@ but device acceptance, model delivery, and App Store submission remain pending.
 Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. The current App Store development source exposes Apple Intelligence
-plus pinned Apple-hosted Gemma 4 12B (minimum 16 GB, recommended 24 GB)
-models through a separate settings page, with explicit download, verification, selection, and deletion.
-Those assets have not completed Apple CDN and TestFlight acceptance, so this is not a published-model claim.
+plus pinned Apple-hosted Gemma 4 E4B v2 (minimum 16 GB) through a separate settings page,
+with explicit download, verification, selection, and deletion. The owner reported timeouts
+with the earlier 12B catalog on a 16 GB Mac; verified old 12B downloads can still be removed.
+E4B v2 has not completed acceptance in the same signed TestFlight candidate, so this is not a published-model claim.
 MLX runtime is not implemented.
 
 The `3.0.0` release refreshes the UI/UX across the app (reader spread layout,

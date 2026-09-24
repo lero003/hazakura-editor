@@ -286,7 +286,7 @@ describe("PrivacyPreferencesPane", () => {
     renderPane(privacyPolicy);
 
     const text = getSectionBodyText("help-doc-section-assist");
-    expect(text).toContain("Gemma 4 12B");
+    expect(text).toContain("Gemma 4 E4B");
     expect(text).toContain("compatible Core AI resource folder");
     expect(text).toContain("Apple Intelligence is turned off");
     expect(text).not.toContain("no published Core AI model pack");
@@ -371,7 +371,7 @@ describe("PrivacyPreferencesPane", () => {
     const text = getSectionBodyText("help-doc-section-network");
     expect(text).toContain("bundled helpers");
     expect(text).toContain("Apple's asset-hosting service");
-    expect(text).toContain("Gemma 4 12B");
+    expect(text).toContain("Gemma 4 E4B");
     expect(text).not.toContain("no such model is published in the current build");
     expect(text).toContain(
       "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",

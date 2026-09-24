@@ -3,18 +3,26 @@
 Status: Operational preparation
 Scope: v3.1 Core AI production candidates and Apple-hosted asset preparation
 Authority: High
-Last reviewed: 2026-09-23
+Last reviewed: 2026-09-24
 
 ## Decision
 
-3.1初回のApple配信catalogはGemma 4 12Bのみ（最低メモリ16 GB、推奨24 GB）。
-E4B v2は評価・再現用のidentity lockとして維持し、現行の配布一覧には載せない。
-以下の二つのlockは配布物を再現するための記録で、両方の公開承認ではない。
+build 155の16 GB Mac実機確認で、オーナーはHazakuraの12B生成がタイムアウトすると報告した。
+3.1の次のApp Store source catalogはGemma 4 E4B v2を明示取得対象とし、12Bの新規取得を外す。
+以前に検証済みの12Bを取得した端末では、旧版の削除行だけを残す。選択済み12BはSystemへ戻す。
+E4B v2自体の同一署名候補での16 GB TestFlight受入、AOT、権利の確認は未完了であり、
+このsource変更を公開承認とは扱わない。以下の二つのlockは配布物を再現するための記録で、
+両方の公開承認ではない。
 
 | Lane | Model ID | Target | Locked converted artifact | Expanded model bytes |
 | --- | --- | --- | --- | ---: |
-| 保留候補 | `apple:core-ai:gemma-4-e4b-it-int4-provider-v2` | 過去の16 GB評価候補 | Hazakura再変換、`john-rocky/coreai-model-zoo@347393ede35fd25e9e59203dba562e5ee4d268bb` | 6,808,842,583 |
-| 初回配布候補 | `apple:core-ai:gemma-4-12b-it-int8-v1` | 最低16 GB、推奨24 GB。対象機受入は別ゲート | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,433,203 |
+| 次のsource catalog候補、受入待ち | `apple:core-ai:gemma-4-e4b-it-int4-provider-v2` | 最低16 GBと表示。対象機の性能・品質は未受入 | Hazakura再変換、`john-rocky/coreai-model-zoo@347393ede35fd25e9e59203dba562e5ee4d268bb` | 6,808,842,583 |
+| 新規取得を停止 | `apple:core-ai:gemma-4-12b-it-int8-v1` | build 155の16 GB実機でタイムアウト（オーナー報告） | `mlboydaisuke/Gemma-4-12B-CoreAI@266c04582d62be179cfbb04d45260c87dc648eec` | 14,698,433,203 |
+
+オーナーはOsaurusで12Bが軽快に動くとも報告した。[Osaurusの公式資料](https://github.com/osaurus-ai/osaurus/blob/main/docs/FEATURES.md)
+にはMLX推論経路がある。モデルの量子化・読み込み方式・prompt・計測条件はHazakuraの
+Core AI配布物と同一とは確認していない。12Bのパラメータ数だけをタイムアウト原因とせず、
+MLX版との比較は別の性能調査に残す。
 
 完全なfile path、byte size、SHA-256、source revision、runtime kind、asset pack IDは
 [`scripts/core-ai-production-models.json`](../scripts/core-ai-production-models.json)を機械正本とする。
@@ -78,8 +86,8 @@ PLEテーブルが無ければ元checkpointから生成し、既存の中間フ�
 新E4B `.aar`はローカル作成済み（5,519,729,626 bytes、SHA-256
 `74b864c22c21a697ce63713e27d44c0a1261f06eb7bb506041a3975d2a962e1e`）。
 オーナー提示のApp Store Connect画面にはE4B v2のasset pack recordが表示され、TestFlight配信も
-報告された。Apple APIからの独立照合と新buildでの実取得は未実施。source catalogは一時的に
-明示ダウンロード対象へ変更したが、現行の初回配布方針では除外した。
+報告された。Apple APIからの独立照合と次の署名済みbuildでの実取得は未実施。12Bの16 GB実機
+タイムアウト報告を受け、E4B v2を次のsource catalog候補へ戻した。
 
 一括処理は次のとおり。中断したdownloadは`.partial`からresumeする。
 `aria2c`が利用可能なら固定URLを8 rangeで取得し、無い環境では`curl`へ自動fallbackする。
@@ -236,8 +244,8 @@ byte一致は保証しない。runtime契約やmodel IDが非互換に変わる�
 
 ## Activation gates
 
-以前はE4Bと12Bを内部TestFlightのCDN確認用catalogへ接続した。現行の初回配布catalogは12Bのみ、
-Developerレーンは引き続き空。以下は正式リリースまでのgateであり、
+以前はE4Bと12Bを内部TestFlightのCDN確認用catalogへ接続し、後に12Bだけへ絞った。
+次のsource候補はE4B v2へ戻す。Developerレーンは引き続き空。以下は正式リリースまでのgateであり、
 catalog entryの存在だけを出荷承認として扱わない。
 
 1. `coreai-build`を含むAppleのAOT toolchainを入手し、対象Mac向け`.aimodelc`を作成・再lockする。

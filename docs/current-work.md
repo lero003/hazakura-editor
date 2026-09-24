@@ -5,6 +5,21 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-24
 
+## 3.1配布モデル切替 — 12B実機タイムアウト後のE4B v2候補（2026-09-24、source検証済み）
+
+オーナーはbuild 155の16 GB Macで、Hazakuraの12Bがタイムアウトして生成できないと報告。
+Osaurusでは12Bが軽快に動くとも報告しており、12B一般の性能限界とは断定しない。
+HazakuraのCore AI変換・推論経路とMLX系実行経路の比較は別調査に残す。
+
+次のApp Store source catalogはE4B v2 `hazakura-coreai-gemma4-e4b-v2`を明示取得対象にする。
+12Bは新規取得・選択を終了する。既存の検証記録がある12Bは削除のみ可能にし、前版で12Bを
+選択していた場合はSystemへ戻す。旧packを黙って削除しない。英語HelpとApp Review Notesの
+モデル名・容量はE4B v2に合わせる。**build 156の署名済みpkgは12B catalogなので審査候補から外す。**
+Rust 482件pass / 3件ignored、frontend 2721件、scripts 31件、型検査、Vite、
+App Store surface 134件、Rust fmtと英語metadata文字数検査が通過した。
+E4B v2の16 GB実機での取得→検証→短い例文→通常/streaming生成、AOT、権利・noticeの確認は
+まだ終わっていない。E4Bを使う次の署名候補をTestFlightで受け入れてから審査へ進む。
+
 ## 3.1英語掲載と審査候補（2026-09-24、ローカル署名確認済み）
 
 build 155はオーナー報告でTestFlight配信済み。機能の実機受入はオーナーが155で進める。
@@ -93,11 +108,10 @@ clean source `fa678ba2`から3.1.0 build 154の署名済みpkgを作成し、pro
 ローカル確認した。候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を
 正本とする。build 154は当時の受入候補だったが、後続のpause先行P2修正は含まない。
 
-## 3.1初回配布と外部レビュー是正（2026-09-23、source検証中）
+## 旧方針: 3.1初回配布と外部レビュー是正（2026-09-23、履歴）
 
-初回のApple配信catalogはGemma 4 12Bだけにする。最低メモリ16 GB、推奨24 GBを表示し、
-E4B v2は生成資産・評価履歴を残すがアプリの配布一覧には出さない。以下の旧記録にある
-「E4Bを取得対象にした」は、その時点のsource状態であり現行方針ではない。
+この時点ではApple配信catalogをGemma 4 12Bだけにし、最低メモリ16 GB・推奨24 GBを表示した。
+E4B v2は配布一覧から外していた。2026-09-24の16 GB実機報告を受け、冒頭のE4B切替方針が優先する。
 
 外部レビューのP2-01〜03に対し、検証失敗時の「削除して再取得」、検証記録のpack version・
 ファイル実体への結合、監視世代の確認と状態反映の一体化を追加した。Rustは取得失敗と検証失敗を

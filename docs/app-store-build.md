@@ -40,7 +40,7 @@ System helper and a separate macOS 27+ Core AI adapter. It does not bundle
 model weights. Gemma 4 E4B and Gemma 4 12B preparation identities, converted
 revisions, file digests, and Apple-hosted asset-pack identifiers are pinned in
 `scripts/core-ai-production-models.json`; see `docs/core-ai-production-models.md`.
-The current App Store source catalog lists Gemma 4 12B only. The ad-hoc local
+The next App Store source catalog lists Gemma 4 E4B v2 for explicit download. The ad-hoc local
 preview shows the catalog but disables Apple-hosted acquisition because its
 `BAAssetPackManager` startup path traps outside the supported distribution
 context. The signed submit lane retains the platform transport. Asset download,
@@ -61,8 +61,10 @@ Agent Workbench behind its existing boundary.
   `docs/releases/3.1.0-app-store-release-notes.md`. A local signed build 156
   candidate exists from clean source `3e4ea538`; its TestFlight upload, App Store
   submission, and publication are unverified. The owner reports build 155
-  distributed through TestFlight for functional device testing. The first App Store catalog lists
-  12B only; Apple-hosted acquisition and generation require TestFlight acceptance.
+  distributed through TestFlight for functional device testing. On a 16 GB Mac,
+  the owner reports that its 12B generation times out. The next source catalog
+  switches to E4B v2; Apple-hosted acquisition and generation require new
+  TestFlight acceptance before App Review. The local build 156 package still lists 12B.
   The prior `3.0.3` submission copy remains in
   `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted by the owner,
   who reported submitting it 2026-09-18; signed local package build 140, while
@@ -345,9 +347,10 @@ xcrun altool --upload-asset-pack <path.aar> --apple-id <app-apple-id> --wait \
 identifier unchanged while diagnosing: an uploaded pack cannot be deleted, only archived.
 Record the exact `--list-asset-packs` output before retrying an upload.
 
-The App Store source catalog now contains only Gemma 4 12B for the first release
-candidate. Developer builds keep the production catalog empty; E4B remains an
-evaluation artifact outside the download UI. Before treating 12B as release-ready, complete all
+The next App Store source catalog offers Gemma 4 E4B v2. Developer builds keep
+the production catalog empty. Existing verified 12B downloads remain visible
+only for explicit removal; 12B cannot be downloaded or selected again. Before
+treating E4B as release-ready, complete all
 of the following in the same release line:
 
 1. Review the pinned production model identity, license/provenance, download and
@@ -622,7 +625,7 @@ can answer these public-safe points before submission:
 
 - `com.apple.security.network.client` is present so the Tauri/WebKit runtime
   can load bundled app assets under App Sandbox. The signed 3.1 candidate lists
-  Gemma 4 12B; explain its acquisition as a user-initiated Apple-hosted asset
+  Gemma 4 E4B v2 in the next candidate; explain its acquisition as a user-initiated Apple-hosted asset
   download and keep inference on-device; do not describe it as an AI network
   fallback. Pair the note with observed TestFlight behavior for the actual
   candidate.
@@ -636,7 +639,7 @@ can answer these public-safe points before submission:
 - The App Store lane includes Hazakura Local Assist only as an on-device,
   availability-gated writing companion. It omits Agent Workbench, CLI
   Agent launch, dev mode, arbitrary command execution, external AI/API
-  calls, and network inference fallback. The current catalog exposes Gemma 4 12B
+  calls, and network inference fallback. The next catalog exposes Gemma 4 E4B v2
   as an explicit Apple-hosted download. A downloaded and verified Core AI model
   can be selected for Local Assist independently of the System model's Apple
   Intelligence setting, subject to a successful runtime probe on macOS 27+

@@ -5,6 +5,17 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-24
 
+## 2026-09-24 3.1配布モデルのE4B v2切替
+
+build 155の16 GB MacでHazakuraの12Bがタイムアウトするというオーナーの実機報告を受け、
+次のApp Store source catalogをE4B v2へ変更。12Bは新規取得・選択を止め、以前に検証した
+packがある端末には削除行だけを残す。前版で12Bを選択していたらSystemへ戻す。
+build 156 pkgは12B catalogを含むため審査候補から外す。E4B v2の16 GB TestFlightでの
+取得・検証・生成、AOT、権利とnoticeの確認を終えるまで審査受入としない。
+Osaurusの12Bが軽快というオーナー報告はMLX系との実行条件差の調査として残す。
+Rust 482件pass / 3 ignored、frontend 2721件、scripts 31件、型検査、Vite、
+App Store surface 134件、fmt、英語metadata文字数検査が通過。
+
 ## 2026-09-24 3.1英語掲載と審査候補
 
 build 155はオーナー報告でTestFlight配信済み。機能実機確認は155で進行中。
@@ -64,11 +75,10 @@ frontend 2710件・scripts 31件、Rust 477件pass / 3 ignored、型検査、Vit
 候補のpathとSHA-256はignoredの`docs/internal/app-store-candidates/latest.json`を参照。
 build 154は当時の受入候補だったが、後続のpause先行P2修正は含まない。
 
-## 2026-09-23 現行のCore AI配布判断と確認ゲート
+## 2026-09-23 当時のCore AI配布判断と確認ゲート（履歴）
 
-3.1初回のApple配信catalogはGemma 4 12Bのみ（最低16 GB・推奨24 GB）。E4B v2の
-再変換とテスト結果は履歴として保持するが、現行配布一覧には出さない。下記に残るE4B配信対象化は
-当時のsource記録であり、今回の判断が優先する。外部レビューP2-01〜03はsourceで是正し、
+この時点の初回Apple配信catalogはGemma 4 12Bのみ（最低16 GB・推奨24 GB）だった。
+2026-09-24のE4B切替方針が優先する。外部レビューP2-01〜03はsourceで是正し、
 削除→再取得→再検証、同サイズ改変、pack version変更、旧監視の遅延完了を回帰テストで固定した。
 外部フォルダは本体の永続bookmarkとhelper用implicit bookmarkを分離し、`.aimodel`だけの
 選択を親フォルダの権限と取り違えない。実際の署名済みsandboxでの通常/streaming生成、

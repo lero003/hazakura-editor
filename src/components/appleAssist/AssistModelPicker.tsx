@@ -153,17 +153,17 @@ function modelUnavailableReason(model: CoreAiModelSummary, language: MenuLanguag
   const copy = language === "en" ? {
     notDownloaded: "Not downloaded", downloading: "Downloading", paused: "Paused",
     verifying: "Verifying", folder: "Check model folder", verificationFailed: "Verification failed",
-    downloadFailed: "Download failed", notPublished: "Not published",
+    downloadFailed: "Download failed", notPublished: "Not published", retired: "No longer offered",
     unsupported: "Unavailable on this Mac", preview: "Unavailable in this preview", unavailable: "Unavailable",
   } : language === "kana" ? {
     notDownloaded: "まだ いれてゐません", downloading: "いれてゐます", paused: "とめてゐます",
     verifying: "たしかめてゐます", folder: "ふぉるだを たしかめる", verificationFailed: "たしかめられませんでした",
-    downloadFailed: "いれられませんでした", notPublished: "まだ くばってゐません",
+    downloadFailed: "いれられませんでした", notPublished: "まだ くばってゐません", retired: "くばるのを おへました",
     unsupported: "この Mac では つかへません", preview: "この ばんでは いれられません", unavailable: "つかへません",
   } : {
     notDownloaded: "未ダウンロード", downloading: "ダウンロード中", paused: "一時停止",
     verifying: "検証中", folder: "フォルダを確認", verificationFailed: "検証に失敗",
-    downloadFailed: "取得に失敗", notPublished: "未公開",
+    downloadFailed: "取得に失敗", notPublished: "未公開", retired: "配布終了",
     unsupported: "このMacでは利用不可", preview: "この版では取得不可", unavailable: "利用不可",
   };
   if (model.source === "app_managed_local" || model.source === "external_local") return copy.folder;
@@ -176,6 +176,7 @@ function modelUnavailableReason(model: CoreAiModelSummary, language: MenuLanguag
   if (model.status === "verifying") return copy.verifying;
   if (model.status === "failed") return model.errorCode === "verification-failed"
     ? copy.verificationFailed : copy.downloadFailed;
+  if (model.errorCode === "retired-model") return copy.retired;
   if (model.status === "not_published") return copy.notPublished;
   if (model.status === "unsupported") return model.errorCode === "local-preview"
     ? copy.preview : copy.unsupported;

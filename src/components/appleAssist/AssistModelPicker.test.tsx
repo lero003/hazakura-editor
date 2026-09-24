@@ -153,6 +153,9 @@ describe("AssistModelPicker", () => {
         source: "apple_hosted" as const, status: "downloading" as const, selected: false, progress: 0.62 },
       { id: "apple:core-ai:checking", displayName: "Checking model", kind: "core_ai" as const,
         source: "apple_hosted" as const, status: "verifying" as const, selected: false },
+      { id: "apple:core-ai:retired", displayName: "Old model", kind: "core_ai" as const,
+        source: "apple_hosted" as const, status: "not_published" as const, selected: false,
+        errorCode: "retired-model" },
       { id: "local:external:missing", displayName: "External model", kind: "core_ai" as const,
         source: "external_local" as const, status: "failed" as const, selected: false,
         errorCode: "bookmark-inaccessible" },
@@ -163,6 +166,7 @@ describe("AssistModelPicker", () => {
 
     expect(screen.getByRole("menuitemradio", { name: "Gemma 4 12B：ダウンロード中 62%" }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("menuitemradio", { name: "Checking model：検証中" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("menuitemradio", { name: "Old model：配布終了" }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("menuitemradio", { name: "External model：フォルダを確認" }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("menuitem", { name: "モデルを追加・管理…" })).toBeTruthy();
   });

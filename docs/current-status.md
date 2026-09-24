@@ -7,11 +7,20 @@ Last reviewed: 2026-09-24
 
 ## Current State
 
+- **3.1の配布モデル切替（2026-09-24、source検証済み）:** build 155の16 GB Macで
+  Hazakuraの12Bがタイムアウトするとオーナーが報告。次のApp Store source catalogは
+  Gemma 4 E4B v2へ切り替える。12Bは新規取得・選択を止め、検証済み旧packは明示削除のみ残す。
+  build 156の署名pkgは12B catalogなので審査候補から外す。E4Bの16 GB TestFlight受入、
+  AOT、権利確認は未完了。Rust 482件pass / 3 ignored、frontend 2721件、scripts 31件、
+  型検査、Vite、App Store surface 134件、fmt、英語metadata検査は通過。
+  Osaurusの12B実行は別のMLX系経路で、性能比較は未実施。
+
 - **3.1英語掲載・審査候補（2026-09-24）:** build 155はオーナー報告でTestFlight配信済みで、
   機能の実機受入は進行中。英語Helpの旧モデル・外部フォルダ説明を修正し、英語掲載文と
   App Review Notesを更新した。clean source `3e4ea538`からbuild 156署名済みpkgを作成。
   App/extensionのbuild番号、署名、notice、SHA-256、`sourceDirty: false`をローカル確認。
-  審査用は156を使う予定だが、156のTestFlight配信、実機確認、Connect掲載、審査は未確認。
+  156のTestFlight配信、実機確認、Connect掲載、審査は未確認。後続のモデル切替により
+  156を審査候補から外した。
   公式サイトは現状維持。公開Privacyの任意画像通信とCore AIの説明は訂正待ち。
 
 - **Core AIモデル管理とLocal Assist一覧の仕上げ（2026-09-24、source検証済み）:**
@@ -44,9 +53,9 @@ Last reviewed: 2026-09-24
   含まない。** clean source `fa678ba2`からbuild 154の署名済みpkgを作成し、ローカル署名・
   digestを確認。TestFlight受入は未実施。
 
-- **3.1初回配布方針とP2是正（2026-09-23、source検証中）:** App Storeの初回モデル一覧は
-  Gemma 4 12Bのみ。最低16 GB・推奨24 GBを表示する。E4B v2の資産と評価は履歴として保持し、
-  現行catalogからは除外した。下記の「E4B v2を明示DL対象」の記述は変更時点の記録。
+- **当時の3.1初回配布方針とP2是正（2026-09-23、履歴）:** この時点のApp Storeモデル一覧は
+  Gemma 4 12Bのみで、最低16 GB・推奨24 GBを表示していた。後続の16 GB実機結果を受けた
+  冒頭のE4B切替方針が優先する。
   検証失敗時のApple資産の削除→再取得、pack version・ファイル実体に結び付く検証記録、
   古い監視の状態反映防止を追加し、 focused Rust / UI回帰テストを通した。
   外部登録の永続bookmarkとhelperへの一時的なimplicit bookmarkも分離した。

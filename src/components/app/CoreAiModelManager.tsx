@@ -182,11 +182,13 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
         : copy.memoryConfirmation(catalog.deviceMemoryGb!, model.recommendedMemoryGb!, model.displayName));
       if (!proceed) return;
     }
-    if (action === "delete" && !window.confirm(copy.deleteConfirmation(
-      model.displayName,
-      model.installedSizeBytes == null ? null : formatSize(model.installedSizeBytes),
-      model.selected,
-    ))) return;
+    if (action === "delete" && !window.confirm(model.errorCode === "retired-model"
+      ? copy.retiredDeleteConfirmation(model.displayName)
+      : copy.deleteConfirmation(
+        model.displayName,
+        model.installedSizeBytes == null ? null : formatSize(model.installedSizeBytes),
+        model.selected,
+      ))) return;
     if (action === "recover" && !window.confirm(copy.recoverConfirmation(model.displayName, model.selected))) return;
     if (action === "unregister" && !window.confirm(copy.unregisterConfirmation(model.displayName, model.selected))) return;
     setBusyId(model.id);
@@ -251,7 +253,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
               {model.downloadSizeBytes != null && model.status !== "ready" ?
                 <span>{copy.downloadSize(formatSize(model.downloadSizeBytes))}</span> : null}
               {model.installedSizeBytes != null ? <span>{
-                model.status === "ready"
+                model.status === "ready" || model.errorCode === "retired-model"
                   ? copy.installedSize(formatSize(model.installedSizeBytes))
                   : copy.installSize(formatSize(model.installedSizeBytes))
               }</span> : null}
@@ -296,7 +298,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
               <button type="button" disabled={busy} onClick={() => void run(model, "download")}>{copy.checkForUpdates}</button> : null}
             {source === "apple_hosted" && model.kind === "core_ai" && model.status === "downloading" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "cancel")}>{copy.cancel}</button> : null}
-            {source === "apple_hosted" && model.kind === "core_ai" && model.status === "ready" ?
+            {source === "apple_hosted" && model.kind === "core_ai" && (model.status === "ready" || model.errorCode === "retired-model" && model.canRemove) ?
               <button className="core-ai-model-remove" type="button" disabled={busy} onClick={() => void run(model, "delete")}>{copy.delete}</button> : null}
             {source === "external_local" ?
               <button type="button" disabled={busy} onClick={() => void run(model, "unregister")}>{copy.unregister}</button> : null}
@@ -361,6 +363,7 @@ function statusLabel(model: CoreAiModelSummary, copy: ManagerCopy): string {
     : isLocal && model.status === "detected" ? copy.localDetected
     : isLocal ? copy.localUnavailable
     : model.status === "not_downloaded" ? copy.notDownloaded
+    : model.errorCode === "retired-model" ? copy.retired
     : model.status === "not_published" ? copy.notPublishedShort
     : model.status === "downloading" ? copy.downloading(model.progress)
     : model.status === "paused" ? copy.paused
@@ -413,7 +416,7 @@ function managerCopy(language: MenuLanguage) {
     unregisterConfirmation: (name: string, selected: boolean) => `Remove ${name} from this list? The model files will stay in their folder.${selected ? " Apple Intelligence will become the current model." : ""}`,
     missingLocalModel: "Local model unavailable",
     localUnavailable: "Unavailable", localReason: (code: string) => localModelReason("en", code),
-    notDownloaded: "Not downloaded", notPublishedShort: "Not published", select: "Use",
+    notDownloaded: "Not downloaded", notPublishedShort: "Not published", retired: "No longer offered · remove this copy", select: "Use",
     download: "Download", resume: "Resume", retry: "Retry", cancel: "Cancel", delete: "Delete", recover: "Delete and download again",
     checkForUpdates: "Check for updates and download", checkForUpdatesHint: "Downloads a newer version if one is available.", technicalDetails: "Technical details",
     deliveryVersion: (version: number) => `Requested pack version v${version}`,
@@ -440,6 +443,7 @@ function managerCopy(language: MenuLanguage) {
     memoryConfirmation: (current: number, recommended: number, name: string) => `${name} recommends ${recommended} GB of memory, but this Mac has ${current} GB. Download anyway?`,
     minimumMemoryConfirmation: (current: number, minimum: number, name: string) => `${name} needs at least ${minimum} GB of memory, but this Mac has ${current} GB. Download anyway?`,
     deleteConfirmation: (name: string, size: string | null, selected: boolean) => `Delete ${name}?${size ? ` This removes about ${size}.` : ""} You can download it again later.${selected ? " Apple Intelligence will become the current model." : ""}`,
+    retiredDeleteConfirmation: (name: string) => `Delete the old ${name} download? This version can no longer be downloaded in Hazakura.`,
     cancelFailed: "The download could not be stopped. Check its current status and try again.",
     downloading: (progress?: number | null) => progress == null ? "Downloading" : `Downloading · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `Download progress for ${name}`,
@@ -471,7 +475,7 @@ function managerCopy(language: MenuLanguage) {
     unregisterConfirmation: (name: string, selected: boolean) => `${name}を いちらんから はづしますか？ もとの ふぁいるは のこります。${selected ? " Apple Intelligence に もどします。" : ""}`,
     missingLocalModel: "ろーかるもでるが ありません",
     localUnavailable: "つかへません", localReason: (code: string) => localModelReason("kana", code),
-    notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", select: "つかふ",
+    notDownloaded: "まだ いれてゐません", notPublishedShort: "まだ くばってゐません", retired: "くばるのを おへました · けせます", select: "つかふ",
     download: "いれる", resume: "つづける", retry: "もういちど", cancel: "とめる", delete: "けす", recover: "けして いれなほす",
     checkForUpdates: "あたらしい ばんを たしかめて いれる", checkForUpdatesHint: "あたらしい ばんが あれば、いれます。", technicalDetails: "くはしい じょうほう",
     deliveryVersion: (version: number) => `とりよせる ばん v${version}`,
@@ -498,6 +502,7 @@ function managerCopy(language: MenuLanguage) {
     memoryConfirmation: (current: number, recommended: number, name: string) => `${name} は ${recommended} GB の めもりを すすめます。この Mac は ${current} GB です。それでも いれますか？`,
     minimumMemoryConfirmation: (current: number, minimum: number, name: string) => `${name} には ${minimum} GB いじょうの めもりが ひつようです。この Mac は ${current} GB です。それでも いれますか？`,
     deleteConfirmation: (name: string, size: string | null, selected: boolean) => `${name}を けしますか？${size ? ` やく ${size}を けします。` : ""} あとで また いれられます。${selected ? " Apple Intelligenceを つかふように もどします。" : ""}`,
+    retiredDeleteConfirmation: (name: string) => `ふるい ${name} を けしますか？この ばんは もう いれなほせません。`,
     cancelFailed: "いれるのを とめられませんでした。いまの ようすを たしかめて もういちど ためしてください。",
     downloading: (progress?: number | null) => progress == null ? "いれてゐます" : `いれてゐます · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}を いれる すすみぐあい`,
@@ -529,7 +534,7 @@ function managerCopy(language: MenuLanguage) {
     unregisterConfirmation: (name: string, selected: boolean) => `${name}を一覧から外しますか？元のファイルは削除しません。${selected ? " Apple Intelligenceに切り替わります。" : ""}`,
     missingLocalModel: "ローカルモデルが見つかりません",
     localUnavailable: "利用不可", localReason: (code: string) => localModelReason("ja", code),
-    notDownloaded: "未ダウンロード", notPublishedShort: "未公開", select: "使う",
+    notDownloaded: "未ダウンロード", notPublishedShort: "未公開", retired: "配布を終了 · このコピーを削除できます", select: "使う",
     download: "ダウンロード", resume: "再開", retry: "再試行", cancel: "キャンセル", delete: "削除", recover: "削除して再取得",
     checkForUpdates: "更新を確認して取得", checkForUpdatesHint: "新しい版がある場合はダウンロードします。", technicalDetails: "技術情報",
     deliveryVersion: (version: number) => `取得対象の版 v${version}`,
@@ -556,6 +561,7 @@ function managerCopy(language: MenuLanguage) {
     memoryConfirmation: (current: number, recommended: number, name: string) => `${name}の推奨メモリは${recommended} GBですが、このMacは${current} GBです。それでもダウンロードしますか？`,
     minimumMemoryConfirmation: (current: number, minimum: number, name: string) => `${name}には最低${minimum} GBのメモリが必要ですが、このMacは${current} GBです。それでもダウンロードしますか？`,
     deleteConfirmation: (name: string, size: string | null, selected: boolean) => `${name}を削除しますか？${size ? ` 約${size}を削除します。` : ""}後から再ダウンロードできます。${selected ? " Apple Intelligenceを現在のモデルに戻します。" : ""}`,
+    retiredDeleteConfirmation: (name: string) => `旧${name}のダウンロードを削除しますか？この版は再ダウンロードできません。`,
     cancelFailed: "ダウンロードを停止できませんでした。現在の状態を確認して、もう一度お試しください。",
     downloading: (progress?: number | null) => progress == null ? "ダウンロード中" : `ダウンロード中 · ${Math.round(progress * 100)}%`,
     downloadProgress: (name: string) => `${name}のダウンロード進捗`,

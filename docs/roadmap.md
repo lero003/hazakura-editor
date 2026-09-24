@@ -15,7 +15,7 @@ v3.1は、検証済みCore AIモデルをLocal Assistから実際に利用でき
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |
-| ソース版 | 3.1.0。言語境界・英語復旧面、Local Assist表示、初回12BのみのApple catalog（最低16 GB・推奨24 GB）、モデル管理、localの選択・生成接続を実装。署名済みローカルpkgは作成済みだが、現行sourceでの配信・実機受入・海外ストア設定は未完了。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
+| ソース版 | 3.1.0。言語境界・英語復旧面、Local Assist表示、E4B v2を明示取得対象とするApple catalog、モデル管理、localの選択・生成接続を実装。12B版build 155は16 GB実機でタイムアウト（オーナー報告）。E4B候補の配信・実機受入・海外ストア設定は未完了。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
 | 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
 | 現行キュー | 同じ署名候補で実機確認と出荷範囲を確定。Core AIの権利・AOT・Apple-hosted配信・品質、C-3外部folder境界、Connectの地域・価格・契約・英語受入を閉じる。審査・掲載文は未適用の草案 — `docs/current-work.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
@@ -67,7 +67,7 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
 | Distribution evidence | Full TestFlight / VoiceOver matrix | Release gate or regression |
-| Core AI models | 初回12BのApple catalog + ローカル/外部ソース（C-3） | allowlist配布はsource実装済み。identity / asset pack / manifest / AOT / bake-offと同じ署名候補の受入後に公開。外部登録/bookmarkのsource接続は済み、実モデル受入は未完了 — `core-ai-model-source-abstraction.md` |
+| Core AI models | E4B v2のApple catalog + ローカル/外部ソース（C-3） | allowlist配布はsource実装済み。identity / asset pack / manifest / AOT / bake-offと同じ署名候補の受入後に公開。旧12Bの新規取得は停止。外部登録/bookmarkのsource接続は済み、実モデル受入は未完了 — `core-ai-model-source-abstraction.md` |
 | 海外App Store展開 | 英語ローカライズ、製品ページ、対象地域、価格、サポート/Privacy導線 | v3.1。I-0の棚卸しと対象市場決定後 |
 | MLX Advanced Backend | M-0a は System 境界のみ完了。M-0b は macOS 27+ / Apple Silicon の上級者向け custom local models | M-0a は H-1 隣接で検証済み。M-0b runtime は C-2 後、v3.x / v4 目安 |
 | Published v2.9 hotfix | App Review / daily-use blocker | Only when reproduced |

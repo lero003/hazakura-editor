@@ -205,6 +205,28 @@ describe("CoreAiModelManager", () => {
     expect(screen.queryByRole("button", { name: "再試行" })).toBeNull();
   });
 
+  it("offers removal but never a new download for a retired 12B pack", async () => {
+    const oldId = "apple:core-ai:gemma-4-12b-it-int8-v1";
+    const system = { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
+      kind: "system", source: "apple_hosted", status: "ready", selected: true };
+    const old = { id: oldId, displayName: "Gemma 4 12B", kind: "core_ai", source: "apple_hosted",
+      status: "not_published", errorCode: "retired-model", selected: false,
+      installedSizeBytes: 14_698_433_203, canRemove: true };
+    const catalog = { distributionStatus: "available", selectedModelId: system.id,
+      models: [system, old] };
+    mocks.list.mockResolvedValue(catalog);
+    mocks.remove.mockResolvedValue({ ...catalog, models: [system] });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    const row = await screen.findByRole("group", { name: "Gemma 4 12B" });
+    expect(row.textContent).toContain("配布を終了");
+    expect(row.querySelectorAll("button")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "削除" }));
+    await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith(oldId));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("再ダウンロードできません"));
+    confirm.mockRestore();
+  });
+
   it("registers, selects, and unregisters an external folder without deleting its files", async () => {
     const system = { id: "apple:foundation-models:system-default", displayName: "Apple Intelligence",
       kind: "system", source: "apple_hosted", status: "ready", selected: true };
