@@ -71,7 +71,7 @@ The next draft can begin with what you learn from this one.
 
 | 項目 | 候補URL | 必須確認 |
 |---|---|---|
-| Marketing URL | `https://hazakura.dev/hazakura-editor/` | 英語または日英併記の製品紹介、購入ボタン、実機画像 |
+| Marketing URL | `https://hazakura.dev/hazakura-editor/` | 今回は日本語維持も可。購入導線と実機情報の正確さを確認 |
 | Support URL | `https://hazakura.dev/hazakura-editor/support/` | 実際に連絡できる方法、英語FAQ、不具合報告方法 |
 | Privacy Policy URL | `https://hazakura.dev/hazakura-editor/privacy/` | アプリ固有の処理と任意通信、問い合わせ/サイトのデータ取扱い |
 
@@ -185,7 +185,7 @@ For Local Assist issues, please also tell us whether the app shows
 an availability message. You do not need to send your private writing.
 ```
 
-公開する前に、製品・サポート・プライバシーの各ページから英語で相互に移動できること、メール等が受信できることを検査する。プライバシーポリシー全体はこの短いFAQで代用せず、実際のサイト運用とアプリ処理に合わせて日英整合させる。
+公開する前に、製品・サポート・プライバシーの各ページ間の導線と、メール等が受信できることを検査する。製品ページは日本語のままでもよい。プライバシーポリシー全体はこの短いFAQで代用せず、任意のリモート画像通信とCore AIの扱いを実際のアプリ処理に合わせる。
 
 ## 3. GitHub・外部告知の設定案
 
