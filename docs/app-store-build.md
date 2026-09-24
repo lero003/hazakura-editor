@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-23 (3.1.0 build 152 local candidate)
+Last reviewed: 2026-09-24 (3.1.0 build 156 local candidate)
 
 ## Purpose
 
@@ -58,9 +58,10 @@ Agent Workbench behind its existing boundary.
   coverage remain unverified here. See `docs/releases/3.0.0-source-tag.release.md`.
   Prior published line: `2.9.0` (owner-reported 2026-09-09).
 - Current source / Developer version: `3.1.0`. Its draft submission copy is in
-  `docs/releases/3.1.0-app-store-release-notes.md`. A local signed build 152
-  candidate exists from clean source `76d38284`; TestFlight upload, App Store
-  submission, and publication are unverified. The first App Store catalog lists
+  `docs/releases/3.1.0-app-store-release-notes.md`. A local signed build 156
+  candidate exists from clean source `3e4ea538`; its TestFlight upload, App Store
+  submission, and publication are unverified. The owner reports build 155
+  distributed through TestFlight for functional device testing. The first App Store catalog lists
   12B only; Apple-hosted acquisition and generation require TestFlight acceptance.
   The prior `3.0.3` submission copy remains in
   `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted by the owner,
@@ -78,7 +79,7 @@ Agent Workbench behind its existing boundary.
   longer carry the artifact path or SHA-256; tracked release docs name the
   submitted candidate's build number, and `latest.json` stays the place for
   local artifact provenance (not as proof of the public build number).
-  As of 2026-09-23 the latest local entry is 3.1.0 / build 152. It is a
+  As of 2026-09-24 the latest local entry is 3.1.0 / build 156. It is a
   package artifact record, not TestFlight or App Store acceptance.
 - App Store category: `Productivity`
 - Public Privacy Policy URL:

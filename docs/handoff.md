@@ -5,6 +5,19 @@ Scope: v3.1開発とv3.0公開後の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-09-24
 
+## 2026-09-24 3.1英語掲載と審査候補
+
+build 155はオーナー報告でTestFlight配信済み。機能実機確認は155で進行中。
+英語Helpの旧説明（Core AI未配布・外部folder不可）と提出準備用のUI文言を修正。
+en-US掲載文とApp Review Notesを12Bのみのcatalog、macOS 27+ Core AI条件、
+Apple Intelligence OFF時の独立可用性、外部resource folder登録に合わせた。
+Help実Markdownテスト23件、frontend 2720件・scripts 31件、型検査、Vite、surface 134件、
+metadata検査14 self-testsが成功。clean source `3e4ea538`からbuild 156署名済みpkgを作成し、
+app/extension番号・署名・notice・digestを確認。候補path/digestはignoredの
+`docs/internal/app-store-candidates/latest.json`を参照。156のApple送信・TestFlight・実機・
+審査は未確認。公式サイトは現状維持だが、公開Privacyの任意画像通信とCore AI説明の
+実装との差は掲載前に訂正する。
+
 ## 2026-09-24 Core AIモデル管理の仕上げ
 
 ダウンロード完了後の検証中に`Verifying`を通知。SHA-256開始前の途中通知と終了後の確定は

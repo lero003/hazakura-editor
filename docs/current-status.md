@@ -7,6 +7,13 @@ Last reviewed: 2026-09-24
 
 ## Current State
 
+- **3.1英語掲載・審査候補（2026-09-24）:** build 155はオーナー報告でTestFlight配信済みで、
+  機能の実機受入は進行中。英語Helpの旧モデル・外部フォルダ説明を修正し、英語掲載文と
+  App Review Notesを更新した。clean source `3e4ea538`からbuild 156署名済みpkgを作成。
+  App/extensionのbuild番号、署名、notice、SHA-256、`sourceDirty: false`をローカル確認。
+  審査用は156を使う予定だが、156のTestFlight配信、実機確認、Connect掲載、審査は未確認。
+  公式サイトは現状維持。公開Privacyの任意画像通信とCore AIの説明は訂正待ち。
+
 - **Core AIモデル管理とLocal Assist一覧の仕上げ（2026-09-24、source検証済み）:**
   ダウンロード後のSHA-256中に`Verifying`を世代照合付きで通知し、不定進捗と案内を表示。
   再取得の確認文を選択状態に合わせ、更新操作名を実際の取得動作に合わせた。Local Assist

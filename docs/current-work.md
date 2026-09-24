@@ -5,6 +5,21 @@ Scope: v3.1開発キューとv3.0公開後の記録
 Authority: High
 Last reviewed: 2026-09-24
 
+## 3.1英語掲載と審査候補（2026-09-24、ローカル署名確認済み）
+
+build 155はオーナー報告でTestFlight配信済み。機能の実機受入はオーナーが155で進める。
+英語Helpに残っていた「配信モデルなし」「外部フォルダ不可」の旧説明と提出準備用の表示を直し、
+en-US掲載文・審査Notesを現行の12B catalogとモデル別可用性に合わせた。
+Helpの実Markdownテスト23件、frontend 2720件・scripts 31件、型検査、Vite、
+App Store surface 134件、英語metadata検査14 self-testsを通過。
+
+clean source `3e4ea538`から3.1.0 build 156の署名済みpkgを作成した。
+App/extensionのbuild番号156、アプリ・pkg署名、同梱notice、SHA-256を確認し、
+`latest.json`は`sourceDirty: false`。これはAppleへの送信・TestFlight導入・実機受入・
+審査通過ではない。155の機能確認結果を156へ自動で移さず、審査に使う同じ156で
+Help/英語表示と最終導線を確認する。公式サイトは今回は現状のまま。公開Privacyの
+任意リモート画像とCore AIの説明は実装と食い違うため、掲載前に訂正が必要。
+
 ## 3.1出荷前仕上げ — モデルの待機状態と操作案内（2026-09-24、source検証済み）
 
 `d930267d`固定の外部レビューで挙がった4点を反映。Background Assetsが取得済みになり、
