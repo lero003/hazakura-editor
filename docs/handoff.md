@@ -15,6 +15,10 @@ build 156 pkgは12B catalogを含むため審査候補から外す。E4B v2の16
 Osaurusの12Bが軽快というオーナー報告はMLX系との実行条件差の調査として残す。
 Rust 482件pass / 3 ignored、frontend 2721件、scripts 31件、型検査、Vite、
 App Store surface 134件、fmt、英語metadata文字数検査が通過。
+clean source `adda8bbf`からbuild 157署名済みpkgを作成し、app/extension build番号157、
+アプリ・pkg署名、notice、SHA-256、`sourceDirty: false`を確認。候補のpathとhashは
+ignoredの`docs/internal/app-store-candidates/latest.json`にある。Apple送信・TestFlight
+配信・16 GB実機受入は未実施。
 
 ## 2026-09-24 3.1英語掲載と審査候補
 

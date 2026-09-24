@@ -13,6 +13,9 @@ Last reviewed: 2026-09-24
   build 156の署名pkgは12B catalogなので審査候補から外す。E4Bの16 GB TestFlight受入、
   AOT、権利確認は未完了。Rust 482件pass / 3 ignored、frontend 2721件、scripts 31件、
   型検査、Vite、App Store surface 134件、fmt、英語metadata検査は通過。
+  clean source `adda8bbf`からbuild 157署名pkgを作成し、app/extensionのbuild番号、
+  アプリ・pkg署名、notice、SHA-256、`sourceDirty: false`をローカル確認。
+  build 157のApple送信・TestFlight・実機受入・審査は未確認。
   Osaurusの12B実行は別のMLX系経路で、性能比較は未実施。
 
 - **3.1英語掲載・審査候補（2026-09-24）:** build 155はオーナー報告でTestFlight配信済みで、

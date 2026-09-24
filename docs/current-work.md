@@ -11,14 +11,17 @@ Last reviewed: 2026-09-24
 Osaurusでは12Bが軽快に動くとも報告しており、12B一般の性能限界とは断定しない。
 HazakuraのCore AI変換・推論経路とMLX系実行経路の比較は別調査に残す。
 
-次のApp Store source catalogはE4B v2 `hazakura-coreai-gemma4-e4b-v2`を明示取得対象にする。
+build 157のApp Store source catalogはE4B v2 `hazakura-coreai-gemma4-e4b-v2`を明示取得対象にする。
 12Bは新規取得・選択を終了する。既存の検証記録がある12Bは削除のみ可能にし、前版で12Bを
 選択していた場合はSystemへ戻す。旧packを黙って削除しない。英語HelpとApp Review Notesの
 モデル名・容量はE4B v2に合わせる。**build 156の署名済みpkgは12B catalogなので審査候補から外す。**
 Rust 482件pass / 3件ignored、frontend 2721件、scripts 31件、型検査、Vite、
 App Store surface 134件、Rust fmtと英語metadata文字数検査が通過した。
+clean source `adda8bbf`から3.1.0 build 157の署名済みpkgをローカル作成。
+App/extensionのbuild番号157、アプリ・pkg署名、同梱notice、SHA-256を確認し、
+`latest.json`は`sourceDirty: false`。Appleへの送信・TestFlight配信・実機受入ではない。
 E4B v2の16 GB実機での取得→検証→短い例文→通常/streaming生成、AOT、権利・noticeの確認は
-まだ終わっていない。E4Bを使う次の署名候補をTestFlightで受け入れてから審査へ進む。
+まだ終わっていない。同じbuild 157をTestFlightで受け入れてから審査へ進む。
 
 ## 3.1英語掲載と審査候補（2026-09-24、ローカル署名確認済み）
 
@@ -31,8 +34,8 @@ App Store surface 134件、英語metadata検査14 self-testsを通過。
 clean source `3e4ea538`から3.1.0 build 156の署名済みpkgを作成した。
 App/extensionのbuild番号156、アプリ・pkg署名、同梱notice、SHA-256を確認し、
 `latest.json`は`sourceDirty: false`。これはAppleへの送信・TestFlight導入・実機受入・
-審査通過ではない。155の機能確認結果を156へ自動で移さず、審査に使う同じ156で
-Help/英語表示と最終導線を確認する。公式サイトは今回は現状のまま。公開Privacyの
+審査通過ではない。後続のE4B切替により156を審査候補から外した。
+公式サイトは今回は現状のまま。公開Privacyの
 任意リモート画像とCore AIの説明は実装と食い違うため、掲載前に訂正が必要。
 
 ## 3.1出荷前仕上げ — モデルの待機状態と操作案内（2026-09-24、source検証済み）
