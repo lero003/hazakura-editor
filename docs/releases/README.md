@@ -3,13 +3,16 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-25
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Current development release-preparation tree: `3.1.0`;
-`3.1.0-app-store-release-notes.md` and `3.1.0-app-store-listing-copy.md`.
-Copy remains a draft. A local signed package exists separately; device and distribution acceptance remain open.
+Current development candidate: `3.2.0` dependency update; see
+`3.2.0-dependency-acceptance-draft.md`. v3.1 passed Apple review and is
+published by owner report. Its release-preparation documents are
+`3.1.0-app-store-release-notes.md`, `3.1.0-app-store-listing-copy.md`,
+and `3.1.0-app-store-listing-copy.en-US.md`.
+The repository does not independently identify which draft copy was used in Connect.
 Older source-planning tree: `2.8.0` (`2.8.0-source-tag.release.md`,
 `2.8.0-app-store-release-notes.md`, plan `../v2.8-plan.md`).
 
@@ -18,13 +21,21 @@ Latest GitHub source / local-app tag:
 - `v3.0.0` — `3.0.0-source-tag.release.md` (source-only repository checkpoint;
   no binary assets; prior `v2.3.0` and `v2.0.0` remain immutable)
 
-Current development draft:
+Current candidate:
+
+- `3.2.0` — [dependency and device acceptance draft](3.2.0-dependency-acceptance-draft.md).
+  Source/tests and local previews are partial evidence; a signed submit build
+  and same-build device acceptance remain open.
+
+v3.1 release-preparation history:
 
 - `3.1.0` — [release notes and App Review notes](3.1.0-app-store-release-notes.md),
   [Japanese listing copy and submission entry point](3.1.0-app-store-listing-copy.md),
-  [English metadata](../international-launch/app-store-en-US.json).
-  Local Assist/model management and language/recovery changes are implemented; production model
-  delivery, device acceptance, international rollout, and owner approval of copy remain open.
+  [English listing copy](3.1.0-app-store-listing-copy.en-US.md),
+  [English metadata JSON](../international-launch/app-store-en-US.json).
+  Local Assist/model management and language/recovery changes were implemented.
+  Publication is owner-reported; this repository did not recheck the published
+  build or which copy was applied.
 
 Prior App Store submission candidate:
 
@@ -45,6 +56,9 @@ Prior submission copy:
   duplicate-name labels, and localized diagnostics; owner-reported as submitted)
 
 Published store baseline:
+
+- `3.1.0` — Apple review passed and public (2026-09-25 owner report;
+  published build/source provenance not independently checked here).
 
 - `3.0.0` — `3.0.0-source-tag.release.md` and
   `3.0.0-app-store-release-notes.md` (v3 UI alignment with the 24-screen mock plus the
@@ -77,9 +91,11 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- **`3.0.3` is the current App Store submission candidate**; the owner
-  device-accepted it (WKWebView, no problems reported) and reports they are
-  submitting it on 2026-09-18. The App Store Connect result is not recorded here. See
+- **`3.1.0` is published** by owner report (2026-09-25). The exact published
+  build and which listing copy was used are not independently verified here.
+  See the v3.1 release-preparation files above.
+- `3.0.3` was the prior submission candidate; the owner device-accepted it
+  (WKWebView, no problems reported) before the v3.1 publication report. See
   `3.0.3-app-store-release-notes.md`.
 - `3.0.2` submission copy was prepared but is superseded by `3.0.3`. See
   `3.0.2-app-store-release-notes.md`.
@@ -154,12 +170,14 @@ Latest App Store status:
 
 Latest App Store release-note evidence:
 
-- `3.0.3-app-store-release-notes.md` is the submission copy for the current
-  bug-fix patch on the 3.0 line (device-accepted 2026-09-18).
+- `3.1.0-app-store-release-notes.md` is the v3.1 preparation copy. Publication
+  is owner-reported; the exact published build and copy remain unverified here.
+- `3.0.3-app-store-release-notes.md` is the prior bug-fix submission copy on
+  the 3.0 line (device-accepted 2026-09-18).
 - `3.0.2-app-store-release-notes.md` is the prior prepared submission copy for a
   bug-fix patch on the 3.0 line.
-- `3.0.1-app-store-release-notes.md` is the prepared submission copy for the
-  current quality patch on the published `3.0.0`.
+- `3.0.1-app-store-release-notes.md` is the earlier quality-patch submission
+  copy on the published `3.0.0` line.
 - `3.0.0-app-store-release-notes.md` records the published `3.0.0` App Store
   copy (owner-reported 2026-09-14).
 - `2.6.2-app-store-release-notes.md` records the published `2.6.2` App Store

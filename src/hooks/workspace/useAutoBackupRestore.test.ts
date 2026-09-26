@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useAutoBackupRestore } from "./useAutoBackupRestore";
+import type { AutoBackupEntry } from "../../lib/tauri/autoBackup";
 
 const listAutoBackups = vi.fn();
 const readAutoBackup = vi.fn();
@@ -56,6 +57,55 @@ describe("useAutoBackupRestore", () => {
     expect(result.current.error).toContain("disk gone");
     expect(result.current.backups).toEqual([]);
     expect(result.current.loading).toBe(false);
+  });
+
+  it.each(["success", "failure"])("ignores an older list %s while the new document is still loading", async outcome => {
+    let resolveOld!: (entries: AutoBackupEntry[]) => void;
+    let rejectOld!: (error: Error) => void;
+    let resolveNew!: (entries: AutoBackupEntry[]) => void;
+    listAutoBackups.mockReturnValueOnce(new Promise<AutoBackupEntry[]>((res, rej) => { resolveOld = res; rejectOld = rej; }))
+      .mockReturnValueOnce(new Promise<AutoBackupEntry[]>(res => { resolveNew = res; }));
+    const { result } = renderHook(() => useAutoBackupRestore());
+    let oldLoad!: Promise<void>;
+    let newLoad!: Promise<void>;
+    act(() => { oldLoad = result.current.loadBackups({ workspaceRoot: "/r", filePath: "/r/old.md" }); });
+    act(() => { newLoad = result.current.loadBackups({ workspaceRoot: "/r", filePath: "/r/new.md" }); });
+    await act(async () => {
+      if (outcome === "success") resolveOld([{ name: "old.bak", path: "old.bak", size: 3, modifiedAtMs: 1 }]);
+      else rejectOld(new Error("old failure"));
+      await oldLoad;
+    });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.backups).toEqual([]);
+    expect(result.current.error).toBeNull();
+    const latest = [{ name: "new.bak", path: "new.bak", size: 4, modifiedAtMs: 2 }];
+    await act(async () => { resolveNew(latest); await newLoad; });
+    expect(result.current.backups).toEqual(latest);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it.each([null, "/other"])("invalidates a pending list when workspace becomes %s", async workspaceRoot => {
+    let resolve!: (entries: AutoBackupEntry[]) => void;
+    listAutoBackups.mockReturnValueOnce(new Promise<AutoBackupEntry[]>(res => { resolve = res; }));
+    const { result } = renderHook(() => useAutoBackupRestore());
+    let loading!: Promise<void>;
+    act(() => { loading = result.current.loadBackups({ workspaceRoot: "/r", filePath: "/r/note.md" }); });
+    await act(async () => { await result.current.loadBackups({ workspaceRoot, filePath: "/r/note.md" }); });
+    await act(async () => { resolve([{ name: "old.bak", path: "old.bak", size: 3, modifiedAtMs: 1 }]); await loading; });
+    expect(result.current.backups).toEqual([]);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it("clears the previous document list as soon as a new load starts", async () => {
+    listAutoBackups.mockResolvedValueOnce([{ name: "old.bak", path: "old.bak", size: 3, modifiedAtMs: 1 }]);
+    const { result } = renderHook(() => useAutoBackupRestore());
+    await act(async () => { await result.current.loadBackups({ workspaceRoot: "/r", filePath: "/r/old.md" }); });
+    let resolve!: (entries: AutoBackupEntry[]) => void;
+    listAutoBackups.mockReturnValueOnce(new Promise<AutoBackupEntry[]>(res => { resolve = res; }));
+    let loading!: Promise<void>;
+    act(() => { loading = result.current.loadBackups({ workspaceRoot: "/r", filePath: "/r/new.md" }); });
+    expect(result.current.backups).toEqual([]);
+    await act(async () => { resolve([]); await loading; });
   });
 
   it("clears the list when the file is not inside the workspace", async () => {

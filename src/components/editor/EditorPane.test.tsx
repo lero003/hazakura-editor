@@ -33,6 +33,10 @@ import type {
 } from "../../features/editor/documentViewState";
 import { parseMarkdownStructure } from "../../features/editor/markdownStructure";
 
+const editorPresentationSource = readFileSync(
+  `${process.cwd()}/src/features/editor/editorPresentation.ts`,
+  "utf8",
+);
 const editorPaneSource = readFileSync(
   `${process.cwd()}/src/components/editor/EditorPane.tsx`,
   "utf8",
@@ -193,6 +197,67 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it.each([
+    ["bold", "**本文**"],
+    ["italic", "*本文*"],
+    ["code", "`本文`"],
+    ["strikethrough", "~~本文~~"],
+    ["link", "[本文](url)"],
+    ["image", "![本文](url)"],
+  ] as const)("formats a Japanese selection with %s and one Undo", async (format, expected) => {
+    const ref = createRef<EditorPaneHandle>();
+    const { container } = render(renderEditorPane({ ref, value: "本文" }));
+    const content = container.querySelector(".cm-content") as HTMLElement;
+    const view = EditorView.findFromDOM(content)!;
+
+    act(() => {
+      view.dispatch({ selection: { anchor: 0, head: 2 } });
+      ref.current?.applyMarkdownFormat(format);
+    });
+    expect(ref.current?.getActiveDocument()?.text).toBe(expected);
+    expect(ref.current?.getSelectionText()).toBe(
+      format === "link" || format === "image" ? "url" : "本文",
+    );
+
+    fireEvent.keyDown(content, { ctrlKey: true, key: "z" });
+    await waitFor(() => expect(ref.current?.getActiveDocument()?.text).toBe("本文"));
+  });
+
+  it("indents selected lines without including the line at the exclusive end", () => {
+    const ref = createRef<EditorPaneHandle>();
+    const { container } = render(renderEditorPane({ ref, value: "one\ntwo\nthree" }));
+    const content = container.querySelector(".cm-content") as HTMLElement;
+    const view = EditorView.findFromDOM(content)!;
+    act(() => view.dispatch({ selection: { anchor: 0, head: 8 } }));
+
+    fireEvent.keyDown(content, { key: "Tab" });
+    expect(ref.current?.getActiveDocument()?.text).toBe("  one\n  two\nthree");
+    fireEvent.keyDown(content, { key: "Tab", shiftKey: true });
+    expect(ref.current?.getActiveDocument()?.text).toBe("one\ntwo\nthree");
+  });
+
+  it("inserts a localized table as one undoable edit", async () => {
+    const ref = createRef<EditorPaneHandle>();
+    const { container } = render(renderEditorPane({ ref, value: "本文" }));
+    act(() => ref.current?.insertTable(2, ["項目", "内容"]));
+    expect(ref.current?.getActiveDocument()?.text).toBe(
+      "| 項目 | 内容 |\n| --- | --- |\n|   |   |\n本文",
+    );
+    fireEvent.keyDown(container.querySelector(".cm-content")!, { ctrlKey: true, key: "z" });
+    await waitFor(() => expect(ref.current?.getActiveDocument()?.text).toBe("本文"));
+  });
+
+  it("blocks formatting, table insertion and Tab indentation while read-only", () => {
+    const ref = createRef<EditorPaneHandle>();
+    const { container } = render(renderEditorPane({ ref, value: "本文", readOnly: true }));
+    act(() => {
+      ref.current?.applyMarkdownFormat("bold");
+      ref.current?.insertTable(2);
+    });
+    fireEvent.keyDown(container.querySelector(".cm-content")!, { key: "Tab" });
+    expect(ref.current?.getActiveDocument()?.text).toBe("本文");
   });
 
   it.each(["ja", "en"] as const)(
@@ -385,10 +450,10 @@ describe("EditorPane", () => {
   });
 
   it("suppresses the default CodeMirror focused outline while adding a subtle focus signal", () => {
-    expect(editorPaneSource).toMatch(
+    expect(editorPresentationSource).toMatch(
       /"&\.cm-focused"\s*:\s*{[^}]*outline:\s*"none"/s,
     );
-    expect(editorPaneSource).toMatch(
+    expect(editorPresentationSource).toMatch(
       /"&\.cm-focused"\s*:\s*{[^}]*boxShadow:\s*"inset 0 1px 0 color-mix\(in srgb, var\(--accent\) 40%, transparent\)"/s,
     );
   });

@@ -227,6 +227,26 @@ fn open_workspace_image_rejects_paths_outside_root() {
 }
 
 #[test]
+fn remote_image_client_forbids_http_and_redirects_with_bounded_reads() {
+    let agent = remote_image_agent();
+    let config = agent.config();
+    let timeouts = config.timeouts();
+
+    assert!(config.https_only());
+    assert_eq!(config.max_redirects(), 0);
+    assert_eq!(timeouts.connect, Some(Duration::from_secs(8)));
+    assert_eq!(timeouts.recv_response, Some(Duration::from_secs(12)));
+    assert_eq!(timeouts.recv_body, Some(Duration::from_secs(12)));
+    assert_eq!(timeouts.global, Some(Duration::from_secs(32)));
+
+    let error = agent
+        .get("http://127.0.0.1/image.png")
+        .call()
+        .expect_err("http must fail before a connection is attempted");
+    assert!(matches!(error, ureq::Error::RequireHttpsOnly(_)));
+}
+
+#[test]
 fn open_workspace_image_rejects_supported_extension_with_non_image_bytes() {
     let dir = unique_test_dir("workspace_image_non_image");
     fs::create_dir_all(&dir).expect("create test dir");

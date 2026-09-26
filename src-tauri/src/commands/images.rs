@@ -6,6 +6,7 @@ use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use ureq::ResponseExt;
 
 #[tauri::command]
 pub(crate) fn open_workspace_image<R: tauri::Runtime>(
@@ -105,38 +106,34 @@ pub(crate) fn fetch_remote_image_with_label(
         return Err("Remote image URLs with credentials are not allowed.".to_string());
     }
 
-    let agent = ureq::AgentBuilder::new()
-        .timeout_connect(Duration::from_secs(8))
-        .timeout_read(Duration::from_secs(12))
-        // Redirects are disabled so an https URL cannot make a native request
-        // through an intermediate http hop before the final URL is checked.
-        .redirects(0)
-        .build();
+    let agent = remote_image_agent();
 
     let response = agent
         .get(trimmed)
-        .set(
+        .header(
             "User-Agent",
             "HazakuraEditor/1.13 (local preview image fetch)",
         )
-        .set(
+        .header(
             "Accept",
             "image/png,image/jpeg,image/gif,image/webp,image/*;q=0.8",
         )
         .call()
         .map_err(|err| format!("Remote image fetch failed: {err}"))?;
 
-    if let Some(message) = remote_image_redirect_error(response.status()) {
+    if let Some(message) = remote_image_redirect_error(response.status().as_u16()) {
         return Err(message);
     }
 
-    let final_url = response.get_url().to_string();
+    let final_url = response.get_uri().to_string();
     if !final_url.to_ascii_lowercase().starts_with("https://") {
         return Err("Remote image redirected away from https.".to_string());
     }
 
     let content_type = response
-        .header("Content-Type")
+        .headers()
+        .get("Content-Type")
+        .and_then(|value| value.to_str().ok())
         .unwrap_or("")
         .to_ascii_lowercase();
     if !content_type.is_empty()
@@ -150,6 +147,7 @@ pub(crate) fn fetch_remote_image_with_label(
 
     let mut bytes: Vec<u8> = Vec::new();
     response
+        .into_body()
         .into_reader()
         .take(MAX_IMAGE_PREVIEW_BYTES + 1)
         .read_to_end(&mut bytes)
@@ -171,6 +169,20 @@ pub(crate) fn fetch_remote_image_with_label(
         data_url: format!("data:{mime_type};base64,{}", encode_base64(&bytes)),
         size: bytes.len() as u64,
     })
+}
+
+pub(crate) fn remote_image_agent() -> ureq::Agent {
+    // Redirects are disabled so an https URL cannot make a native request
+    // through an intermediate http hop before the final URL is checked.
+    let config = ureq::Agent::config_builder()
+        .timeout_global(Some(Duration::from_secs(32)))
+        .timeout_connect(Some(Duration::from_secs(8)))
+        .timeout_recv_response(Some(Duration::from_secs(12)))
+        .timeout_recv_body(Some(Duration::from_secs(12)))
+        .max_redirects(0)
+        .https_only(true)
+        .build();
+    ureq::Agent::new_with_config(config)
 }
 
 pub(crate) fn remote_image_redirect_error(status: u16) -> Option<String> {

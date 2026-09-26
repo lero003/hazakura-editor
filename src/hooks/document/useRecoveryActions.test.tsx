@@ -190,6 +190,50 @@ describe("useRecoveryActions", () => {
     );
   });
 
+  it.each(["success", "failure"])("preserves a completed save when an older reopen returns %s", async (outcome) => {
+    const tab = makeTab();
+    let resolve!: (file: TextFileDocument) => void;
+    let reject!: (error: Error) => void;
+    tauriApi.openTextFile.mockReturnValue(new Promise<TextFileDocument>((res, rej) => { resolve = res; reject = rej; }));
+    const h = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(h.options));
+    const reopening = result.current.reopenTabFromDisk(tab.id);
+    const saved = { ...tab, lastSavedContents: tab.contents, fingerprint: "new-save", saveStatus: "saved" as const, error: null };
+    h.replaceTabs([saved]);
+    await act(async () => {
+      if (outcome === "success") resolve(makeTextFileDocument());
+      else reject(new Error("old failure"));
+      await reopening;
+    });
+    expect(h.getTabs()).toEqual([saved]);
+    expect(h.options.setActiveTabId).not.toHaveBeenCalled();
+  });
+
+  it("does not reopen while a save is pending", async () => {
+    const tab = makeTab({ saveStatus: "saving" });
+    tauriApi.openTextFile.mockResolvedValue(makeTextFileDocument());
+    const h = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(h.options));
+    await act(async () => { await result.current.reopenTabFromDisk(tab.id); });
+    expect(tauriApi.openTextFile).not.toHaveBeenCalled();
+    expect(h.getTabs()).toEqual([tab]);
+  });
+
+  it("honors the latest explicit encoding choice when reads finish out of order", async () => {
+    const tab = makeTab({ contents: "saved", saveStatus: "idle" });
+    let resolveFirst!: (file: TextFileDocument) => void;
+    let resolveSecond!: (file: TextFileDocument) => void;
+    tauriApi.openTextFile.mockReturnValueOnce(new Promise<TextFileDocument>(resolve => { resolveFirst = resolve; }))
+      .mockReturnValueOnce(new Promise<TextFileDocument>(resolve => { resolveSecond = resolve; }));
+    const h = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(h.options));
+    const first = result.current.reopenTabFromDisk(tab.id, "shift-jis");
+    const second = result.current.reopenTabFromDisk(tab.id, "euc-jp");
+    await act(async () => { resolveFirst(makeTextFileDocument({ contents: "first choice", encoding: "shift-jis" })); await first; });
+    await act(async () => { resolveSecond(makeTextFileDocument({ contents: "second choice", encoding: "euc-jp" })); await second; });
+    expect(h.getTabs()[0]).toMatchObject({ contents: "second choice", encoding: "euc-jp" });
+  });
+
   it("does not attach a reopen failure to a renamed tab", async () => {
     const tab = makeTab();
     let rejectOpen: (reason: unknown) => void = () => {};

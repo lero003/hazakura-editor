@@ -1,15 +1,20 @@
 # 英語スクリーンショット・Web・告知の制作指示
 
-Status: Proposal — 素材未制作・Web未公開
+Status: Proposal — 英語画像候補5枚をローカル制作済み・Web未公開
 Scope: 海外向け購入導線と公開用文案
 Authority: Advisory
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-24
 
 設定・根拠・出荷条件は[販売設定ガイド](README.md)。以下の英語は新規の制作文案で、公開済みサイトからの引用ではない。アプリの追加機能を約束するものではない。
 
 ## 1. スクリーンショット
 
-Mac App Storeの受入寸法は **1280×800 / 1440×900 / 2560×1600 / 2880×1800**（16:10）。1〜10枚、JPEG/PNG、アルファ・透明度なしを守る。今回は **2880×1800の5枚** を制作案とする。既存READMEの1280×820を無理に変形せず、英語UIの実際の提出候補から規定に合う構図で撮り直す。[Apple公式仕様](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)
+2026-09-24: 英語UIと架空の英語原稿を用いた5枚の画像候補をローカルで制作した。
+制作物はGit対象外の `.hazakura/private/app-store-3.1-en-2026-09-24/final/` に保管。
+実際の画像見出し・並びは[英語版掲載文パケット](../releases/3.1.0-app-store-listing-copy.en-US.md)を参照。
+以下の表は制作前の構図案として残す。署名済み提出ビルドとの一致は未確認。
+
+Mac App Storeの受入寸法は **1280×800 / 1440×900 / 2560×1600 / 2880×1800**（16:10）。1〜10枚、JPEG/PNG、アルファ・透明度なしを守る。今回は **2880×1800の5枚** を制作した。既存READMEの1280×820を無理に変形せず、英語UIのローカルプレビューを撮影した。提出前に同じ署名済み候補のUI・機能と一致するか確認する。[Apple公式仕様](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)
 
 デスクトップの個人情報、実原稿、ファイル名、ユーザー名、通知を含めない。入力済みの公開可能なサンプルで撮る。UI文字を後から英語に塗り替えたり、未実装のボタンを加えたりしない。キャッチコピー用の余白を作る場合も、実際のUIを主役にし、縦横比と可読性を保つ。加工後のファイルも寸法・透過・文字の読める大きさを検査する。
 

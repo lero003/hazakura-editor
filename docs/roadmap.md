@@ -3,41 +3,70 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-26
 
 ## Current Position
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
-v3.1は、検証済みCore AIモデルをLocal Assistから実際に利用できるようにすることと、
-英語を入口に海外のApp Storeで見つけ、購入し、使い続けられる状態を同じ版で整える。
+v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。次のv3.2.0は
+依存関係更新を主題とし、同一候補の実機受け入れを最終ゲートにする。
+v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品方向として採用する
+（2026-09-26オーナー決定）。LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 
 | 対象 | 状態 |
 |---|---|
-| 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |
-| ソース版 | 3.1.0。言語境界・英語復旧面、Local Assist表示、E4B v2を明示取得対象とするApple catalog、モデル管理、localの選択・生成接続を実装。12B版build 155は16 GB実機でタイムアウト（オーナー報告）。E4B候補の配信・実機受入・海外ストア設定は未完了。3.0.1・3.0.2・3.0.3は`main`上の不具合修正履歴として維持する。 |
-| 配布証跡 | 公開build/source対応と個別実機試験は独立未確認。過去候補と区別 |
-| 現行キュー | 同じ署名候補で実機確認と出荷範囲を確定。Core AIの権利・AOT・Apple-hosted配信・品質、C-3外部folder境界、Connectの地域・価格・契約・英語受入を閉じる。審査・掲載文は未適用の草案 — `docs/current-work.md` |
+| 公開版 | v3.1（2026-09-25オーナー報告。公開build/source対応はこの作業で未再確認） |
+| ソース版 | 3.2.0候補。依存更新は検証中で、署名済み提出物はまだない。 |
+| 配布証跡 | v3.1公開はオーナー報告。過去の候補build検証と個別実機試験は区別する |
+| 現行キュー | v3.2.0依存関係更新と同一候補の実機受け入れ — `docs/releases/3.2.0-dependency-acceptance-draft.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
 候補ごとのbuild情報は `docs/internal/app-store-candidates/latest.json` を参照する。
 公開版との同一性は候補記録だけから推定しない。
 
-## Phase Decision — 2026-09-09
+## Phase Decision — 2026-09-09（2026-09-26追補）
 
 | 版 | 主題 | 完了の目安 |
 |---|---|---|
 | v2.9 | 公開済みの日常品質とSystem-only改善 | 保存・復旧等の修正履歴を維持。公開報告から未記録の個別試験を合格にしない |
 | **v3.0** | **UI/UX刷新・アプリの完成度・Local Assist architecture整理** | 編集→読書→提案確認→出力と失敗/復旧の一貫性、全テーマ/狭幅/実機、System共通契約とAFM評価 |
 | **v3.1** | **Core AIの実利用・海外App Store展開** | allowlistモデルを明示入手・検証・選択・生成・削除できるC-1/C-2と、英語を入口にした製品/ストア情報・対象地域・価格・サポート導線の受け入れ |
-| v3.2以降 | 文章品質の追加機能、明示章参照、読む・届ける追加機能 | 需要で選ぶ候補。v3.0の既存画面整理と区別 |
+| **v3.2.0** | **依存関係更新** | npm/Rustの更新、CIとローカルbuild、同一候補の実機受け入れ。Core AI SwiftPM runtime pinは維持 |
+| v3.2後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
 
 添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。
 モデル管理はv3.1に維持し、v3.0ではSystem経路で共通基盤を検証する。
 海外展開はモデル配布とは別レーンで先行できるが、v3.1の公開判定では同じ提出候補へ合流する。
 PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
 AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
+
+## v3.2後 — メモと縦書き（2026-09-26 方針採用）
+
+利用者が **読み返して気づきを残し、日をまたいで直し、自分の方針で原稿を仕上げる**
+ことを次の製品価値にする。以下は採用した方向性であり、機能の実装・出荷を示さない。
+v3.2の依存更新・実機受け入れを先に完了し、具体的な版番号とUI・保存方式は個別設計で決める。
+
+| テーマ | 利用者に届ける価値 | 最初の範囲 |
+|---|---|---|
+| 見直しメモ | 通読中の気づきへ戻り、修正を終えられる | 単一原稿のReaderで手動メモ、未解決一覧、原文への復帰、完了・削除 |
+| 再開メモ | 日が空いても次にすることを思い出せる | 原稿ごとに「次にやること」を短く残し、既存の位置復帰とともに参照 |
+| 編集ルールメモ | 文章の目的・語り口・表記・例外を自分の言葉で残せる | 自由記述のひな形を用意し、利用者が書き足す。AIなしで作成・編集・参照できる |
+| 縦書き | 日本語の原稿を縦書きで読み返し、刊行物へ届ける | 単一原稿の縦書きReaderから開始。原文復帰と横書き切替を受け入れた後、既存EPUBの縦書き出力へ進む |
+| AIによるメモ作成支援（条件付き） | 編集ルールを言葉にする負担を減らせる | 明示依頼と選んだ原稿・メモを基にひな形や内容の候補を作り、利用者が確認・編集して採用 |
+
+メモ系は見直しメモを起点に、再開メモ、編集ルールのひな形へ小さく進める。
+表記ルールは **メモとして書き育てるフォーマット** を中心とし、自動検査・矯正エンジンは
+今回の採用範囲に含めない。AIでメモを作ることと、そのメモを本文の推敲へ使うことは
+別スライスとし、どちらも実原稿品質の評価後に明示操作・候補確認・採用の流れへ接続する。
+縦書きはLLM拡張を待つ条件を外し、メモ系とは独立して設計・受け入れできる柱にする。
+
+メモの保存場所、ファイル移動・外部編集時の扱い、持ち運びと削除は実装前に固定する。
+本文やfrontmatter、書き出しへメモを黙って混ぜず、原文との対応を失った見直しメモは
+再指定を促す。AIはメモや本文を自動更新せず、原稿を自動収集しない。
+具体例と到達点は[執筆体験の計画詳細](post-v3.1-writing-completion-draft.md)を参照する。
+DOCX、読み上げ、仕上げ前の確認は引き続き別の検討候補。
 
 ## Established Foundation
 
@@ -62,7 +91,6 @@ Explicit multi-file Book Scope, suggestions, whole-book Reader/export, Help.
 
 | Bucket | Examples | When to touch |
 |--------|----------|----------------|
-| 縦書き | Vertical reading / export | After Assist depth and horizontal Book stay stable |
 | anydoc | Office → Markdown import library | After written evaluation + real import demand |
 | Residual Book depth | B-2 display TOC, B-3 suggestion reasons | Daily friction or dedicated Book line |
 | Residual polish | Reference の行番号表示サイズ、Tab overflow, status TTL, dep cadence | Reproduced friction or cheap adjacent change |
@@ -125,7 +153,7 @@ These boundaries stay active across roadmap changes:
 | **v2.5** | Workspace control + delivery clarity | **Released / closed** — `docs/v2.5-plan.md` |
 | **v2.6** | Local Assist conversation + Diff review | **A-1–A-4 source candidate merged; physical gate pending** — `docs/v2.6-plan.md` |
 | Core AI models | Allowlisted writing on-device models | **Later** (after Assist UX) |
-| 縦書き | Vertical reading / export layer | **Parked** (after AI progress) |
+| 縦書き | Vertical reading / export layer | 当時はAI進展後へ保留。2026-09-26に上記のv3.2後方針へ昇格 |
 | v2.8 | 別窓Writing Companion | 公開報告済み（2026-09-08）。詳細な配布証跡は別 |
 | **v3.0** | UI/UX刷新・読書見開き・書き出し形式ナビ・Local Assist LA-1a | **公開（2026-09-14オーナー報告。ストアページで3.0.0を確認）** |
 
@@ -139,8 +167,8 @@ Goal achieved in outline: user-selected Book Scope without project analyzer
 behavior. Design SoT remains
 `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
-**縦書き** was listed as a later Book pillar; it is now **explicitly behind**
-the Local Assist milestone （今回の版別方針でも維持）。
+**縦書き** は当時Local Assist後のBook柱として保留していたが、2026-09-26の
+オーナー決定でv3.2後の採用方針へ移した。LLM拡張は着手の前提にしない。
 
 Residual Book practicalization (display TOC clarity, suggestion
 explainability, …) may return as a dedicated line after v2.5 workspace work,

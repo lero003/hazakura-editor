@@ -17,12 +17,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "index.html"),
-        "apple-assist": resolve(__dirname, "apple-assist.html"),
+        main: resolve(import.meta.dirname, "index.html"),
+        "apple-assist": resolve(import.meta.dirname, "apple-assist.html"),
         ...(appStoreLane
           ? {}
           : {
-              agent: resolve(__dirname, "agent.html"),
+              agent: resolve(import.meta.dirname, "agent.html"),
             }),
       },
     },

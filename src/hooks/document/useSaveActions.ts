@@ -266,7 +266,7 @@ export function useSaveActions({
 
         setTabs((currentTabs) =>
           currentTabs.map((candidate) =>
-            candidate.id === tabId
+            candidate.id === tabId && candidate.sessionId === tab.sessionId
               ? {
                   ...candidate,
                   saveStatus: message.includes("Save conflict")

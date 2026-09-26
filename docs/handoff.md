@@ -1,9 +1,70 @@
 # Handoff
 
 Status: Operational
-Scope: v3.1開発とv3.0公開後の引き継ぎ
+Scope: v3.2依存更新候補、次期メモ・縦書き方針、v3.1以前の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-24
+Last reviewed: 2026-09-26
+
+## v3.2品質強化・責務の整理（2026-09-26）
+
+保存・外部変更監視・開き直し・バックアップ一覧の遅延応答を、セッション・保存基準・
+要求世代で防ぐ。Reactの状態更新内部でも入力や保存との競合を照合する。
+AppShellからL Modeの表示復元、Assist候補レビュー・破棄確認、終了処理を分離。
+EditorPaneから編集コマンド・装飾、書き出しからPDF/HTML生成とEPUBのZIP・章・リンク・
+目次処理を分離した。エディタのライフサイクル、書き出し対象や画像許可の所有者は維持。
+メニュー終了はAssist停止を待ち、メニュー・OS終了とも停止待ち後に未保存状態を再確認する。
+
+frontend 2,783件 / 305 files、scripts 31件、Rust 483件pass / 3 ignored、型検査、
+Vite、App Store surface 134件、fmt、ローカルApp Store ad-hocプレビューbuildと
+静的sandbox smokeが通過。抽出した関数と元コードの照合、終了競合のred→green、
+日本語書式→Undo、L Mode復元、本番Assistレビューhookの統合テストを含む。
+[変更点と実機再確認項目](releases/3.2.0-quality-hardening.md)を参照。
+
+既存の依存更新・計画文書等の差分を保持し、コミット・pushは未実施。
+オーナーの簡単な実機試験は問題なしとの報告だが、修正後候補の実機・IME・VoiceOver・
+書き出し・TestFlightは未実施。既存のbundleサイズ・Rust dead_code警告も残る。
+次はL Modeの出入り、書き出しの章/リンク/画像、Assist生成中の終了を含め、同一候補を実機で受け入れる。
+
+## 次期製品方向 — メモと縦書き（2026-09-26）
+
+オーナー決定を `roadmap.md` と `post-v3.1-writing-completion-draft.md` へ反映した。
+見直しメモ → 再開メモ → 編集ルールのひな形をメモ系の基本順とし、
+縦書きReader → 縦書きEPUBも採用する。縦書きはLLM拡張を前提にしない。
+編集ルールは自由記述のフォーマットへ注意・表記・例外を書き足すもの。
+AIによるひな形・内容の候補作成は、メモを本文推敲に使う機能と分け、品質再評価後に扱う。
+本文・メモの自動更新や、表記を強制する検査エンジンを採用したわけではない。
+
+直近はv3.2候補の実機受け入れを優先。次のメモ設計で保存・原稿との紐付け・移動・削除・
+位置の再指定を決める。版割り・出荷日は未確定。今回は計画文書のみで、機能実装や実機検証は行っていない。
+文書検証は `git diff --check`、未追跡の計画詳細を含む追加差分の空白・リンク・公開文言の衛生確認が通過。
+
+## 2026-09-25 v3.2.0依存更新候補
+
+v3.1は審査通過・公開済み（オーナー報告）。source版を3.2.0へ進め、npm/Rust依存を
+まとめて更新した。`@codemirror/view` 6.43.13はexact pin、Core AI SwiftPM runtime
+revisionは維持。`ureq` 3へのHTTPS画像fetch移行と`window-vibrancy` 0.8を含む。
+macOS 27のrelease proc-macro読み込み問題は`Cargo.toml`のbuild-overrideで回避し、
+Swift helperの出力場所は`swift build --show-bin-path`から取得する。
+GitHubの依存更新PR #46/#48/#49/#51はすべてローカル候補へ同版以上で反映済み。
+PR自体はopenで、`main`には未反映。v3.2候補のCIは未実行。Node 26は現時点で
+Currentのため、CIはLTSのNode 24と`@types/node` 24を維持する。
+SwiftPMの上流HEADは現pinからCore AI modelsで12 commit、CoreAIKitで145 commit進み、
+推論コードやcatalogに変更がある。新版が故障すると確認したわけではなく、
+配布モデル適合の実機評価を今回から分けた。
+
+`npm ci`、frontend 2,721件・scripts 31件、型検査、Vite、App Store surface 134件、
+Rust 483件pass / 3件ignored、fmt、npm/Rust監査の脆弱性0件、両レーンの
+v3.2.0プレビュー、ad-hoc sandbox署名smokeが通過。隔離Developerアプリでは
+長い日本語原稿の描画・L Mode・保存・Readerを一部実操作した。Readerからの初回復帰で
+位置が先頭に見えたが、再起動後の章199復帰は2回成功。再現性を確認する。
+同じ隔離アプリで長文EPUB/PDF出力、HTTPS画像の表示とEPUB同梱、HTTP画像拒否を確認。
+画像通信設定は試験後にOFFへ戻した。
+`THIRD_PARTY_NOTICES.md`はv3.2のnpmとmacOS両architectureのCargo lock解決集合で更新。
+残りはIME未確定入力、VoiceOver、画像/PDFの端ケース、ファイル衝突・復元、Assist、
+Swift graphのlicense text確認、署名済みTestFlightのAssist/Background Assets、
+macOS 26/Intelの実機受け入れ。
+App Store `bundleVersion`は公開済みbuildを照合してから新規採番する。
+[候補と実機マトリクス](releases/3.2.0-dependency-acceptance-draft.md)を参照。
 
 ## 2026-09-24 3.1配布モデルのE4B v2切替
 
@@ -1304,16 +1365,12 @@ retained as the earlier R-1-only checkpoint.
 
 ## Next For Agents
 
-1. I-0bの静的棚卸しを前提に、専用テスト環境のbuilt appで英語の主要導線を画面単位に確認する。
-2. I-0のオーナー判断（地域・価格・契約・公開URL）を推測で閉じない。bundle言語宣言はbuilt app／署名候補確認後。
-3. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
-4. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
-5. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
-6. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。
-7. Apple-hosted 以外のモデルソースは v3.1 の **C-3**。Custom Modelsと外部resource folderは
-   既存 registry / UI / helper の選択・生成経路までsource接続済み。次は署名済みappでbookmarkの
-   保存・復元とhelperの実ロードを受け入れる。設計は
-   `docs/core-ai-model-source-abstraction.md`。C-1 / C-2 を止めず、`current-work.md` の順で進める。
+1. `docs/current-work.md` とv3.2依存受け入れドラフトを読み、現行候補の実機受け入れを優先する。
+2. ソース試験、候補CI、実モデル、IME/VoiceOver、旧OS、署名済みTestFlightの証跡を区別する。
+3. v3.2後はメモ系と縦書きを個別設計する。詳細は `docs/post-v3.1-writing-completion-draft.md`。
+4. AIによるメモ作成・メモを使った推敲は品質再評価後。Core AI / MLX / anydocの別ゲートを守り、
+   背景index・永続チャットへ広げない。モデルソースの設計は `docs/core-ai-model-source-abstraction.md`。
+5. 公開済み版・タグ・アセットは変更せず、新しい提出・公開は別工程として扱う。
 
 ## Key Paths
 

@@ -3,15 +3,16 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-09-20
+Last reviewed: 2026-09-26
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（オーナー報告・ストアページで確認）。
-開発版は3.1.0（Core AIの実利用 + 英語を入口にした海外App Store展開）へ移行し、
-公開後のフィードバックと残課題は `current-work.md` で扱う。
-`current-work.md` → `v3-product-completion-plan.md` → `v2.9-v3-local-assist-plan.md` の順に読む。
+Agent entry rules live in `AGENTS.md`。v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。
+開発版は3.2.0の依存更新候補。`current-work.md` → `current-status.md` →
+`releases/3.2.0-dependency-acceptance-draft.md` の順に読む。
 過去の候補・実機未確認・GitHub公開は別証跡として保持する。
+v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
+`post-v3.1-writing-completion-draft.md` に方向性と未確定の詳細を分けて記録する。
 
 ## Current Canonical Docs
 
@@ -22,8 +23,8 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `core-ai-production-models.md`: **v3.1 production model identities, pinned asset recipe, and activation gates**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **v3.1 I-0から始める現行キュー**とv3.0公開後の記録。
-- `roadmap.md`: **v2.9–v3.1の版別方針**（v3.1のCore AI + 海外App Store展開を含む）。
+- `current-work.md`: **v3.2依存更新の現行キュー**とv3.1以前の候補記録。
+- `roadmap.md`: **v3.2依存更新と、採用したメモ系・縦書きの方向性**。
 - `v3-product-completion-plan.md`: **v3全体計画**。添付UI資料の採否・着手順・完成判定。
 - `v2.9-v3-local-assist-plan.md`: **current technical plan** for Local Assist / AFM / Core AI.
 - `v2.8-plan.md`: published-line planning history; unshipped U-3/U-4/G-1 moved to the next plan.
@@ -52,7 +53,9 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
-- `releases/3.1.0-app-store-release-notes.md`: 3.1.0のApp Store掲載文・受入項目の作業草案。
+- `releases/3.2.0-dependency-acceptance-draft.md`: v3.2の更新範囲、検証結果、実機受け入れ。
+- `releases/3.1.0-app-store-release-notes.md`: 3.1.0公開前の掲載文・受入項目の記録。
+- `releases/3.1.0-app-store-listing-copy.en-US.md`: 英語のConnect入力欄別の掲載文パケット。転記値の正本は `international-launch/app-store-en-US.json`。
 - `release-pre-check.md`: last-mile release hygiene.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
@@ -62,9 +65,10 @@ Agent entry rules live in `AGENTS.md`。v3.0.0は2026-09-14に公開された（
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v2.9–v3.1の版別方針**（v3.1はCore AI + 海外App Store展開）
-- `current-work.md` — 3.1.0開発版とリリース準備。I-1とbundle宣言はI-0判断後。C-1本番/C-2はゲート待ち
-- `releases/3.1.0-app-store-release-notes.md` — 実装済み範囲だけを載せた作業草案。署名候補・提出・公開ではない
+- `roadmap.md` — **v3.2依存更新と、採用したメモ系・縦書きの方向性**
+- `post-v3.1-writing-completion-draft.md` — **メモ系・縦書きの計画詳細**。方向性は採用、UI・保存方式・版割りは未確定。AIによるメモ作成・推敲は品質再評価後
+- `current-work.md` — 3.2.0候補の現行作業とv3.1以前の履歴
+- `releases/3.2.0-dependency-acceptance-draft.md` — 自動ゲート・実機受け入れの作業表
 - `v3-product-completion-plan.md` — v3全体とUI刷新の計画
 - `v2.9-v3-local-assist-plan.md` — active technical plan, attachment reconciliation and acceptance
 - `v2.8-plan.md` — historical writing-companion plan

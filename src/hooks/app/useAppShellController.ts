@@ -1,28 +1,10 @@
+import { useAppCloseActions } from "./useAppCloseActions";
+import { useLModeActions } from "../editor/useLModeActions";
+import { useLocalAssistReviewActions } from "../editor/useLocalAssistReviewActions";
 import { useSaveConflictSurface } from "../document/useSaveConflictSurface";
 import { useExportDrafts } from "../document/useExportDrafts";
 import { useBackupReviewActions } from "../workspace/useBackupReviewActions";
 import { usePreviewSurface } from "../editor/usePreviewSurface";
-// `useAppShellController` is the Phase 3 single orchestrator hook
-// that bundles the ~40 leaf hooks App.tsx used to call individually
-// into one place. It returns a flat object that satisfies
-// `AppShellProps` so App.tsx can be reduced to a 2-line
-// `const props = useAppShellController(); return <AppShell {...props} />;`.
-//
-// The controller preserves the exact leaf-hook call order and
-// arguments that the pre-refactor App.tsx used (verified by
-// re-running `npm run typecheck`, `npm run build:vite`, and
-// `cargo test` after the move), so behavior is unchanged. Each
-// section is labeled with the feature it owns and the inline
-// `// section: <feature>` comment marks the boundary, but the
-// controller is one function (not six) because the cross-feature
-// dependency graph (doc → workspace → diff; chrome owns refs /
-// dialogs / i18n; review + agent are leaves) is tangled enough that
-// splitting into 6 controllers would require threading a large
-// shared "context" object through every call, which would just
-// relocate the surface to the controller args. Keeping it as one
-// function lets the React hook order stay obvious and the
-// dependency wiring stay in one place.
-
 import {
   useCallback,
   useEffect,
@@ -40,7 +22,6 @@ import {
 } from "../../lib/tauri";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
-import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useOkfReview } from "../okf/useOkfReview";
@@ -63,30 +44,14 @@ import { useDocumentPreviewController } from "../document/useDocumentPreviewCont
 import { usePinExternalImagesAction } from "../document/usePinExternalImagesAction";
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
-import {
-  applyReviewedLocalAssistProposal,
-  emitLocalAssistApplyStatus,
-  type ApplyReviewedProposalResult,
-} from "../editor/useAppleAssistApplyHandler";
 import { useAppleAssistProposalHandler } from "../editor/useAppleAssistProposalHandler";
 import { stopAppleAssistGeneration } from "../../lib/tauri";
-import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
-import {
-  localAssistProposalStore,
-  type LocalAssistProposal,
-} from "../../features/editor/localAssistProposal";
-import {
-  replaceTabsBufferBySessionId,
-  updateTabsById,
-} from "../../features/editor/editorTabs";
+import { updateTabsById } from "../../features/editor/editorTabs";
 import {
   assertTabEditable,
   isAppleAssistTabLocked,
 } from "../../features/editor/appleAssistEditGuard";
-import {
-  isLModeEnabledForDocument,
-  isLModeSupportedDocument,
-} from "../../features/editor/lMode/documentSupport";
+import { isLModeEnabledForDocument } from "../../features/editor/lMode/documentSupport";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -98,13 +63,10 @@ import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useAppShellSideEffectsController } from "./useAppShellSideEffectsController";
 import { useAutoBackupRestore } from "../workspace/useAutoBackupRestore";
-import {
-  persistWorkspaceStateSnapshot,
-  shouldPersistWorkspaceSessionOnQuit,
-} from "../workspace/useWorkspaceStatePersistence";
-import { exitApp } from "../../lib/tauri/window";
 import type { AppleAssistGenerationLock, EditorTab } from "../../types";
 
+// Compose feature hooks into the flat AppShellProps surface. Keep cross-feature
+// wiring here; state transitions and commands belong to their owning hooks.
 export function useAppShellController() {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
 
@@ -192,10 +154,6 @@ export function useAppShellController() {
       // in-flight Promise settles.
     }
   }, []);
-  const [pendingAssistDiscard, setPendingAssistDiscard] = useState<{
-    sessionId: string;
-    beforeBuffer: string;
-  } | null>(null);
   // Q-STR-2: single editability gate for Local Assist generation.
   const rejectIfAppleAssistLocksTab = useCallback(
     (tab: Pick<EditorTab, "id" | "path"> | null | undefined): boolean => {
@@ -649,89 +607,13 @@ export function useAppShellController() {
     selectionInfo,
   });
 
-  // v2.6 B2: the main window owns the unapplied-proposal review surface, so
-  // Apply/Discard now happen here rather than through the detached window's
-  // `APPLY_AI_EDIT_TRANSACTION_EVENT`. `applyReviewedLocalAssistProposal`
-  // revalidates the pinned target, rewrites the unsaved buffer once, and
-  // clears older post-apply review state so the reviewed proposal is not
-  // presented to the user a second time.
-  const applyLocalAssistProposal = useCallback(
-    async (proposal: LocalAssistProposal): Promise<ApplyReviewedProposalResult> => {
-      if (!activeTab) {
-        return { ok: false, error: "Hazakura Local Assist apply failed: no active tab." };
-      }
-      // v2.6 B2.1: never apply/discard while a generation is in flight for
-      // this tab, otherwise a stale candidate could land mid-generation.
-      if (rejectIfAppleAssistLocksTab(activeTab)) {
-        return {
-          ok: false,
-          error: "Hazakura Local Assist apply rejected: a generation is in progress for this document.",
-        };
-      }
-      const result = await applyReviewedLocalAssistProposal({
-        proposal,
-        activeTab: {
-          id: activeTab.id,
-          sessionId: activeTab.sessionId,
-          name: activeTab.name,
-          path: activeTab.path,
-          contents: activeTab.contents,
-        },
-        setActiveTabContents: (next: string, sessionId: string) => {
-          setTabs((currentTabs) =>
-            replaceTabsBufferBySessionId(currentTabs, sessionId, next),
-          );
-        },
-        setStatus,
-      });
-      if (result.ok) {
-        localAssistProposalStore.clear(activeTab.sessionId);
-        await emitLocalAssistApplyStatus(
-          "completed",
-          "Hazakura Local Assist applied the reviewed proposal.",
-          proposal.requestId,
-          proposal.request,
-          proposal.conversationId,
-          { shouldApplyToDocument: true, documentSessionId: proposal.target.activeDocumentSessionId },
-        );
-      } else {
-        // v2.6 B2.1: surface the stale/no-op rejection instead of leaving the
-        // user with a silently-unchanged Diff.
-        setStatus(result.error);
-        await emitLocalAssistApplyStatus(
-          "failed",
-          result.error,
-          proposal.requestId,
-          proposal.request,
-          proposal.conversationId,
-          { documentSessionId: proposal.target.activeDocumentSessionId },
-        );
-      }
-      return result;
-    },
-    [activeTab, rejectIfAppleAssistLocksTab, setStatus, setTabs],
-  );
-
-  const discardLocalAssistProposal = useCallback(
-    async (proposal: LocalAssistProposal) => {
-      if (!activeTab) {
-        return;
-      }
-      if (rejectIfAppleAssistLocksTab(activeTab)) {
-        return;
-      }
-      localAssistProposalStore.clear(activeTab.sessionId);
-      await emitLocalAssistApplyStatus(
-        "discarded",
-        "Hazakura Local Assist proposal discarded.",
-        proposal.requestId,
-        proposal.request,
-        proposal.conversationId,
-        { documentSessionId: proposal.target.activeDocumentSessionId },
-      );
-    },
-    [activeTab, rejectIfAppleAssistLocksTab],
-  );
+  const {
+    applyLocalAssistProposal, discardLocalAssistProposal,
+    pendingAssistDiscard, discardAppleAssistEdit,
+    cancelDiscardAppleAssistEdit, confirmPendingAssistDiscard,
+  } = useLocalAssistReviewActions({
+    activeTab, rejectIfAppleAssistLocksTab, setActiveTabId, setStatus, setTabs, tabs,
+  });
 
   // v2.6 A-1: generation-only Local Assist path. The proposal handler
   // shares target validation and streaming with the legacy apply path but
@@ -854,82 +736,14 @@ export function useAppShellController() {
   // dialog through the central focus / keyboard-guard pool.
   const pendingAssistDiscardOpen = pendingAssistDiscard !== null;
 
-  // v0.17 app-store-quality: save-restore-regression slice 1.4
-  // — wrap the existing `requestAppCloseConfirmation` and
-  // `cancelPendingAppClose` so the app-exit ref is flipped
-  // and reset through the same dialog callbacks the
-  // window-close path already uses. The wrapper is the only
-  // place the ref is mutated outside of `useTabCloseFlow`'s
-  // `finally` block.
-  const onAppExitNeedsConfirmation = useCallback(() => {
-    appExitInProgressRef.current = true;
-    requestAppCloseConfirmation();
-  }, [requestAppCloseConfirmation]);
-  const cancelPendingAppCloseAndExitFlag = useCallback(() => {
-    appExitInProgressRef.current = false;
-    cancelPendingAppClose();
-  }, [cancelPendingAppClose]);
-
-  const persistWorkspaceSession = useCallback(() => {
-    const latestTabs = tabsRef.current;
-    if (
-      !shouldPersistWorkspaceSessionOnQuit({
-        restoreComplete,
-        tabs: latestTabs,
-        workspaceRootPath,
-      })
-    ) {
-      return;
-    }
-
-    const latestActiveTab =
-      latestTabs.find((tab) => tab.id === activeTabId) ?? activeTab ?? null;
-
-    persistWorkspaceStateSnapshot({
-      activeTab: latestActiveTab,
-      tabs: latestTabs,
-      workspaceRootPath,
-    });
-  }, [activeTab, activeTabId, restoreComplete, tabsRef, workspaceRootPath]);
-
-  const requestAppQuit = useCallback(() => {
-    if (dirtyTabCount === 0) {
-      persistWorkspaceSession();
-      void exitApp();
-      return;
-    }
-
-    appExitInProgressRef.current = true;
-    requestAppCloseConfirmation();
-  }, [
-    appExitInProgressRef,
-    dirtyTabCount,
-    persistWorkspaceSession,
-    requestAppCloseConfirmation,
-  ]);
-
-  // Stop any in-flight Local Assist generation before the app exits
-  // or the window closes through the save/discard dialog flow. The
-  // persist step stays synchronous; the shutdown runs first.
-  const onBeforeExitWithAssistShutdown = useCallback(async () => {
-    await stopActiveAppleAssistGeneration();
-    persistWorkspaceSession();
-  }, [persistWorkspaceSession, stopActiveAppleAssistGeneration]);
-
-  useAppExitConfirmation({
-    appExitInProgressRef,
-    dirtyTabCount,
-    onBeforeExit: onBeforeExitWithAssistShutdown,
-    onNeedsConfirmation: onAppExitNeedsConfirmation,
+  const {
+    cancelPendingAppCloseAndExitFlag, requestAppQuit,
+    onBeforeWindowCloseWithAssistShutdown,
+  } = useAppCloseActions({
+    activeTab, activeTabId, appExitInProgressRef, cancelPendingAppClose,
+    dirtyTabCount, requestAppCloseConfirmation, restoreComplete,
+    stopActiveAppleAssistGeneration, tabsRef, workspaceRootPath,
   });
-
-  // Same shutdown-before-persist hook for the save/discard → close
-  // dialog flow (window hide, not app exit). Distinct from the exit
-  // path so the two close destinations stay explicit.
-  const onBeforeWindowCloseWithAssistShutdown = useCallback(async () => {
-    await stopActiveAppleAssistGeneration();
-    persistWorkspaceSession();
-  }, [persistWorkspaceSession, stopActiveAppleAssistGeneration]);
 
   // section: tab bar controller
   const {
@@ -1267,110 +1081,13 @@ export function useAppShellController() {
     epubExportSettingsOpen ||
     pdfExportSettingsOpen || htmlExportSettingsOpen;
 
-  // L Mode (えるモード) is Markdown-only. CSS/HTML remount switches the
-  // parser and drops undo history; refuse non-Markdown with a status note.
-  const toggleLMode = useCallback(() => {
-    setEditorSettings((current) => {
-      if (current.lModeEnabled) {
-        return { ...current, lModeEnabled: false };
-      }
-      const key = activeTab?.path || activeTab?.name || "";
-      if (!isLModeSupportedDocument(key)) {
-        setStatus(
-          "L Mode is for Markdown writing. Open a .md file to use L Mode.",
-        );
-        return current;
-      }
-      return { ...current, lModeEnabled: true };
-    });
-  }, [activeTab?.name, activeTab?.path, setEditorSettings, setStatus]);
-
-  const exitLMode = useCallback(() => {
-    setEditorSettings((current) => ({
-      ...current,
-      lModeEnabled: false,
-    }));
-  }, [setEditorSettings]);
-
-  // Leave L Mode when the active document is not Markdown so CSS/HTML
-  // never remount through the Markdown parser while L Mode stays on.
-  useEffect(() => {
-    if (!editorSettings.lModeEnabled) {
-      return;
-    }
-    const key = activeTab?.path || activeTab?.name || "";
-    if (!isLModeSupportedDocument(key)) {
-      setEditorSettings((current) =>
-        current.lModeEnabled ? { ...current, lModeEnabled: false } : current,
-      );
-      setStatus("L Mode left because this file is not Markdown.");
-    }
-  }, [
-    activeTab?.name,
-    activeTab?.path,
-    editorSettings.lModeEnabled,
-    setEditorSettings,
-    setStatus,
-  ]);
-
-  // Escape hatch surfaced in the L Mode action rail. This
-  // returns a local diff snapshot so L Mode can show a small
-  // review window without opening the normal edit surface's
-  // right pane.
-  const reviewChangesFromLMode = useCallback(async () => {
-    if (!activeTab) {
-      return null;
-    }
-    return prepareReviewTabAgainstDisk(activeTab);
-  }, [activeTab, prepareReviewTabAgainstDisk]);
-  const exitLModeToWorkspace = useCallback(() => {
-    exitLMode();
-  }, [exitLMode]);
-
-  // T-1 L Mode continuity: snapshot side-pane mode on entry and restore
-  // on exit. Compare anchors are intentionally kept in memory (not
-  // cleared) so returning from L Mode does not discard a review setup.
-  const lModeSurfaceSnapshotRef = useRef<{
-    sidePaneOpen: boolean;
-    rightPaneMode: typeof rightPaneMode;
-  } | null>(null);
-  const wasLModeEnabledRef = useRef(editorSettings.lModeEnabled);
-  const sidePaneOpenRef = useRef(sidePaneOpen);
-  const rightPaneModeRef = useRef(rightPaneMode);
-  sidePaneOpenRef.current = sidePaneOpen;
-  rightPaneModeRef.current = rightPaneMode;
-
-  useEffect(() => {
-    const wasEnabled = wasLModeEnabledRef.current;
-    const isEnabled = editorSettings.lModeEnabled;
-
-    if (!wasEnabled && isEnabled) {
-      lModeSurfaceSnapshotRef.current = {
-        sidePaneOpen: sidePaneOpenRef.current,
-        rightPaneMode: rightPaneModeRef.current,
-      };
-      setSidePaneOpen(false);
-      if (referenceCompare) {
-        setStatus(sidePaneCopy.lModeReferenceRetainedStatus);
-      }
-    } else if (wasEnabled && !isEnabled) {
-      const snapshot = lModeSurfaceSnapshotRef.current;
-      lModeSurfaceSnapshotRef.current = null;
-      if (snapshot) {
-        setSidePaneOpen(snapshot.sidePaneOpen);
-        setRightPaneMode(snapshot.rightPaneMode);
-      }
-    }
-
-    wasLModeEnabledRef.current = isEnabled;
-  }, [
-    editorSettings.lModeEnabled,
-    referenceCompare,
-    setRightPaneMode,
-    setSidePaneOpen,
-    setStatus,
-    sidePaneCopy.lModeReferenceRetainedStatus,
-  ]);
+  const { toggleLMode, exitLModeToWorkspace, reviewChangesFromLMode } = useLModeActions({
+    activeTab, editorSettings, prepareReviewTabAgainstDisk,
+    referenceCompareActive: referenceCompare !== null,
+    referenceRetainedStatus: sidePaneCopy.lModeReferenceRetainedStatus,
+    rightPaneMode, setEditorSettings, setRightPaneMode, setSidePaneOpen,
+    setStatus, sidePaneOpen,
+  });
 
   // section: document safety actions
   const {
@@ -1691,64 +1408,6 @@ export function useAppShellController() {
     closeGlobalSearchWithoutFocus();
     focusEditorSoon();
   }, [closeGlobalSearchWithoutFocus, focusEditorSoon]);
-
-  // v1.3 Hazakura Local Assist discard handling is defined here,
-  // ahead of the `useAppShellSideEffectsController` call below, so
-  // the `keyboardFocus` object can reference `cancelDiscardAppleAssistEdit`
-  // for the Escape route without a use-before-declaration error.
-  //
-  // When the user hand-edits the buffer after an assist apply
-  // (current contents differ from the transaction's
-  // `afterBuffer`), a blind revert to `beforeBuffer` would
-  // destroy those edits. In that case we open a confirmation
-  // dialog instead of reverting immediately; only a confirmed
-  // discard reverts all the way back to `beforeBuffer`.
-  const confirmDiscardAppleAssistEdit = useCallback(
-    (sessionId: string, beforeBuffer: string) => {
-      setTabs((currentTabs) =>
-        replaceTabsBufferBySessionId(currentTabs, sessionId, beforeBuffer),
-      );
-      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
-      if (targetTab) {
-        setActiveTabId(targetTab.id);
-      }
-      aiEditTransactionStore.clear(sessionId);
-      setStatus("Hazakura Local Assist edit discarded");
-    },
-    [setActiveTabId, setStatus, setTabs, tabs],
-  );
-
-  const discardAppleAssistEdit = useCallback(
-    (sessionId: string, beforeBuffer: string, afterBuffer: string) => {
-      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
-      if (!targetTab) {
-        setStatus("Hazakura Local Assist discard failed");
-        return;
-      }
-      // No hand-edits since the assist was applied: safe to revert now.
-      if (targetTab.contents === afterBuffer) {
-        confirmDiscardAppleAssistEdit(sessionId, beforeBuffer);
-        return;
-      }
-      // The buffer changed after the apply. Confirm before discarding so
-      // the user does not silently lose hand-edits along with the assist.
-      setPendingAssistDiscard({ sessionId, beforeBuffer });
-    },
-    [confirmDiscardAppleAssistEdit, setStatus, tabs],
-  );
-
-  const cancelDiscardAppleAssistEdit = useCallback(() => {
-    setPendingAssistDiscard(null);
-  }, []);
-
-  const confirmPendingAssistDiscard = useCallback(() => {
-    if (!pendingAssistDiscard) return;
-    confirmDiscardAppleAssistEdit(
-      pendingAssistDiscard.sessionId,
-      pendingAssistDiscard.beforeBuffer,
-    );
-    setPendingAssistDiscard(null);
-  }, [confirmDiscardAppleAssistEdit, pendingAssistDiscard]);
 
   // section: app side effects (menu integration + runtime effects)
   const conflictDialogTab = !otherBlockingDialog && !commandPaletteVisible && !globalSearchVisible && !okfReviewVisible && !quickOpenVisible && !restoreBackupDialogOpen

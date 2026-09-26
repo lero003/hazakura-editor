@@ -5,7 +5,7 @@
 // hook is intentionally a leaf (not a controller) so the dialog
 // state and the load state can be tested independently.
 
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   listAutoBackups,
   readAutoBackup,
@@ -31,31 +31,29 @@ export function useAutoBackupRestore(): UseAutoBackupRestoreResult {
   const [backups, setBackups] = useState<AutoBackupEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const loadSequence = useRef(0);
+  useLayoutEffect(() => () => { loadSequence.current++; }, []);
 
   const loadBackups = useCallback(
     async (input: WorkspaceRelativePathInput) => {
+      const sequence = ++loadSequence.current;
       const { workspaceRoot } = input;
-      if (!workspaceRoot) {
-        setBackups([]);
-        setError(null);
-        setLoading(false);
-        return;
-      }
+      setBackups([]);
       setLoading(true);
       setError(null);
       try {
+        if (!workspaceRoot) return;
         const relativePath = workspaceRelativePath(input);
-        if (!relativePath) {
-          setBackups([]);
-          return;
-        }
+        if (!relativePath) return;
         const entries = await listAutoBackups(workspaceRoot, relativePath);
+        if (sequence !== loadSequence.current) return;
         setBackups(entries);
       } catch (err) {
+        if (sequence !== loadSequence.current) return;
         setError(String(err));
         setBackups([]);
       } finally {
-        setLoading(false);
+        if (sequence === loadSequence.current) setLoading(false);
       }
     },
     [],

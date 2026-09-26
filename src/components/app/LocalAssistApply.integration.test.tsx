@@ -1,4 +1,5 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { LocalAssistSidebar } from "./LocalAssistSidebar";
 import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
@@ -10,10 +11,7 @@ import {
   localAssistProposalStore,
   type LocalAssistProposal,
 } from "../../features/editor/localAssistProposal";
-import {
-  applyReviewedLocalAssistProposal,
-  emitLocalAssistApplyStatus,
-} from "../../hooks/editor/useAppleAssistApplyHandler";
+import { useLocalAssistReviewActions } from "../../hooks/editor/useLocalAssistReviewActions";
 import type { AppleAssistTargetSnapshot, EditorTab } from "../../types";
 import type { EditorPaneHandle } from "../editor/EditorPane";
 
@@ -75,14 +73,19 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-/**
- * 依頼書の受入範囲の指摘への対応: 確認用 fixture の `onApply` は「成功を返すだけ」で、
- * 本番の提案消費（ストアからの削除）を通していなかった。ここでは本番の単一ライタ
- * `applyReviewedLocalAssistProposal` と本番のストアを使って、適用→消費→完了通知まで
- * 一本で通す。
- */
+// Use the production review hook, including its session-aware writer and
+// proposal consumption, rather than reproducing the orchestration here.
 it("applies through the real single writer, consumes the proposal, and leaves nothing to apply twice", async () => {
-  const writes: { text: string; sessionId: string }[] = [];
+  const writes = vi.fn();
+  const { result } = renderHook(() => {
+    const [tabs, setTabs] = useState([tab]);
+    const actions = useLocalAssistReviewActions({
+      activeTab: tabs[0], tabs, setActiveTabId: vi.fn(), setStatus: vi.fn(),
+      rejectIfAppleAssistLocksTab: () => false,
+      setTabs: (next) => { writes(); setTabs(next); },
+    });
+    return { ...actions, tabs };
+  });
 
   render(
     <>
@@ -99,34 +102,9 @@ it("applies through the real single writer, consumes the proposal, and leaves no
         }
         fontSize={16}
         menuLanguage="ja"
-        // useAppShellController の本番の合成（単一ライタ → 消費 → 完了通知）を
-        // そのまま写す。フック自体はシェル全体を要求するためここで組む。
-        onApply={async (reviewed) => {
-          const result = await applyReviewedLocalAssistProposal({
-            proposal: reviewed,
-            activeTab: tab,
-            setActiveTabContents: (text, sessionId) => {
-              writes.push({ text, sessionId });
-            },
-          });
-          if (result.ok) {
-            localAssistProposalStore.clear(tab.sessionId);
-            await emitLocalAssistApplyStatus(
-              "completed",
-              "Hazakura Local Assist applied the reviewed proposal.",
-              reviewed.requestId,
-              reviewed.request,
-              reviewed.conversationId,
-              {
-                shouldApplyToDocument: true,
-                documentSessionId: reviewed.target.activeDocumentSessionId,
-              },
-            );
-          }
-          return result;
-        }}
+        onApply={(proposal) => result.current.applyLocalAssistProposal(proposal)}
         onClose={vi.fn()}
-        onDiscard={vi.fn()}
+        onDiscard={(proposal) => result.current.discardLocalAssistProposal(proposal)}
         onOpenFile={vi.fn()}
         onSelectTab={vi.fn()}
         open
@@ -160,8 +138,9 @@ it("applies through the real single writer, consumes the proposal, and leaves no
   });
 
   // 本番の単一ライタが1回だけ書き、提案を消費する。
-  await waitFor(() => expect(writes).toHaveLength(1));
-  expect(writes[0]).toEqual({ text: "整えた本文", sessionId: SESSION });
+  await waitFor(() => expect(writes).toHaveBeenCalledOnce());
+  expect(result.current.tabs[0].contents).toBe("整えた本文");
+  expect(result.current.tabs[0].sessionId).toBe(SESSION);
   expect(localAssistProposalStore.getLatest(SESSION)).toBeNull();
 
   // 消費後はレビュー面そのものが消える（同じ案を二度反映できない）。
@@ -175,15 +154,9 @@ it("applies through the real single writer, consumes the proposal, and leaves no
   );
 
   // 消費後にもう一度同じ提案を流しても、単一ライタが拒否して文書は書かれない。
-  const second = await applyReviewedLocalAssistProposal({
-    proposal,
-    activeTab: tab,
-    setActiveTabContents: (text, sessionId) => {
-      writes.push({ text, sessionId });
-    },
-  });
+  const second = await result.current.applyLocalAssistProposal(proposal);
   expect(second.ok).toBe(false);
-  expect(writes).toHaveLength(1);
+  expect(writes).toHaveBeenCalledOnce();
 });
 
 it("keeps the review surface while a proposal is still present", async () => {

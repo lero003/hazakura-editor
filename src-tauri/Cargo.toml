@@ -1,6 +1,6 @@
 [package]
 name = "hazakura-editor"
-version = "3.1.0"
+version = "3.2.0"
 description = "Markdown-safe editor prototype"
 authors = ["Hazakura Lab"]
 edition = "2021"
@@ -21,7 +21,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 # Bounded https image fetch for Theme G remote Preview / export materialize.
 # Keep default features (TLS) so App Store network.client can reach https hosts.
-ureq = "2.12"
+ureq = "3.4"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block2 = "0.6.2"
@@ -29,7 +29,14 @@ objc2 = "0.6.4"
 objc2-foundation = { version = "0.3.2", features = ["NSArray", "NSData", "NSError", "NSString", "NSURL"] }
 # Native macOS vibrancy (NSVisualEffectView) for the v0.25 native-feeling
 # shell. macOS-only: guarded by cfg so other platforms stay unaffected.
-window-vibrancy = "0.7"
+window-vibrancy = "0.8"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
+
+# On macOS 27, release-profile proc-macro dylibs without debug information can
+# have a misaligned LINKEDIT string pool and fail to load during compilation.
+# This only changes host build scripts/proc-macros, not the shipped app binary.
+[profile.release.build-override]
+debug = 2
+codegen-units = 256

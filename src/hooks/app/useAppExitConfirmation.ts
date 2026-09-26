@@ -26,7 +26,8 @@ type UseAppExitConfirmationOptions = {
   // window-close path uses, with the ref deciding whether
   // the final action is `exitApp` or `hideMainWindow`.
   onNeedsConfirmation: () => void;
-  onBeforeExit?: () => void | Promise<void>;
+  // Returning false vetoes exit when preparation discovers new unsaved work.
+  onBeforeExit?: () => void | boolean | Promise<void | boolean>;
 };
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4
@@ -84,8 +85,8 @@ export function useAppExitConfirmation({
         // the app, nothing in the buffer would be lost.
         // Run any before-exit hook (e.g. stopping an in-flight
         // Local Assist generation) before the process exits.
-        void Promise.resolve(onBeforeExitRef.current?.()).then(() => {
-          void exitApp();
+        void Promise.resolve(onBeforeExitRef.current?.()).then((canExit) => {
+          if (canExit !== false) void exitApp();
         });
         return;
       }

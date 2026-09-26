@@ -253,7 +253,7 @@ describe("macOS build scripts", () => {
       'process.env.VITE_HAZAKURA_DISTRIBUTION_LANE === "app-store"',
     );
     expect(viteConfig).toContain(
-      '"apple-assist": resolve(__dirname, "apple-assist.html")',
+      '"apple-assist": resolve(import.meta.dirname, "apple-assist.html")',
     );
     expect(viteConfig.indexOf('"apple-assist":')).toBeLessThan(
       viteConfig.indexOf("...(appStoreLane"),
@@ -858,13 +858,13 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `3.0.0` is published",
+        "Hazakura Editor `3.1.0` passed review and is published",
         `Current source version is \`${packageJson.version}\``,
-        "The published App Store version is `3.0.0`",
+        "The published App Store version is `3.1.0`",
         "latest published GitHub source / local-app tag is [v3.0.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `3.0.0`",
+        "Published App Store version: `3.1.0`",
         `Current source / Developer version: \`${packageJson.version}\``,
         "GitHub source tag: `v3.0.0`",
       ],
@@ -890,7 +890,7 @@ describe("macOS build scripts", () => {
       ],
       "docs/roadmap.md": [
         `| ソース版 | ${packageJson.version}`,
-        "| 公開版 | v3.0（2026-09-14オーナー報告。ストアページで3.0.0を確認） |",
+        "| 公開版 | v3.1（2026-09-25オーナー報告。公開build/source対応はこの作業で未再確認） |",
         "## Phase Decision — 2026-09-09",
         "**v3.0**",
         "**v3.1**",

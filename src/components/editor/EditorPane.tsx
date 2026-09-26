@@ -5,29 +5,14 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import {
-  historyField,
-  selectCharLeft,
-  selectCharRight,
-  selectLineDown,
-  selectLineUp,
-} from "@codemirror/commands";
+import { historyField } from "@codemirror/commands";
 import {
   Compartment,
-  EditorSelection,
   EditorState,
-  Prec,
   type Extension,
-  type Range,
-  StateEffect,
-  StateField,
-  type Text,
 } from "@codemirror/state";
 import {
-  Decoration,
-  type DecorationSet,
   EditorView,
-  keymap,
   rectangularSelection,
   crosshairCursor,
 } from "@codemirror/view";
@@ -53,22 +38,31 @@ import {
   type HeadingLevelChangeDirection,
 } from "../../features/editor/markdownStructureEdits";
 
+import {
+  applyMarkdownFormat,
+  editorKeyboardShortcuts,
+  editorTabIndentation,
+  insertTableAtCursor,
+  type MarkdownFormat,
+} from "../../features/editor/editorEditingCommands";
+import {
+  editorReadOnlyExtensions,
+  editorTheme,
+  getEditorWrappingExtensions,
+  invisibleCharactersField,
+  searchHighlightField,
+  setSearchMatchesEffect,
+} from "../../features/editor/editorPresentation";
+export type { MarkdownFormat } from "../../features/editor/editorEditingCommands";
+export { getEditorWrappingExtensions } from "../../features/editor/editorPresentation";
+
 type SearchMatch = { from: number; to: number };
-type DecoratedSearchMatch = SearchMatch & { active: boolean };
 export type EditorSelectionInfo = {
   line: number;
   column: number;
   selectedCharacters: number;
   selectedLines: number;
 };
-export type MarkdownFormat =
-  | "bold"
-  | "italic"
-  | "code"
-  | "link"
-  | "strikethrough"
-  | "image";
-
 type EditorPaneProps = {
   documentKey: string;
   editorSessionKey: string;
@@ -139,88 +133,6 @@ export type EditorPaneHandle = {
   // editor view is not mounted.
   getActiveDocument: () => { text: string; from: number; to: number } | null;
 };
-
-const setSearchMatchesEffect =
-  StateEffect.define<readonly DecoratedSearchMatch[]>();
-
-const editorKeyboardShortcuts = Prec.highest(keymap.of([
-  { key: "Shift-ArrowLeft", run: selectCharLeft },
-  { key: "Shift-ArrowRight", run: selectCharRight },
-  { key: "Shift-ArrowUp", run: selectLineUp },
-  { key: "Shift-ArrowDown", run: selectLineDown },
-]));
-
-const editorTabIndentation = Prec.highest(
-  EditorView.domEventHandlers({
-    keydown(event, view) {
-      if (
-        event.key !== "Tab" ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        // 読み取り専用（編集ロック中）は Tab を奪わない。ブラウザの
-        // フォーカス移動に任せ、キーボードだけで抜けられるようにする。
-        view.state.readOnly
-      ) {
-        return false;
-      }
-
-      event.preventDefault();
-
-      if (event.shiftKey) {
-        outdentSelectedLines(view);
-      } else {
-        indentSelection(view);
-      }
-
-      return true;
-    },
-  }),
-);
-
-// `EditorView.editable` は DOM から直接編集できるかの設定で、API 経由の
-// `dispatch({ changes })` は止めない。標準編集コマンドと自作コマンドが参照する
-// `EditorState.readOnly` も必ず一緒に立てる（自作 dispatch は個別の検査も要る）。
-function editorReadOnlyExtensions(readOnly: boolean): Extension {
-  return [
-    EditorState.readOnly.of(readOnly),
-    EditorView.editable.of(!readOnly),
-  ];
-}
-
-const invisibleCharactersField = StateField.define<DecorationSet>({
-  create(state) {
-    return buildInvisibleDecorations(state.doc);
-  },
-  update(decorations, transaction) {
-    if (transaction.docChanged) {
-      return buildInvisibleDecorations(transaction.state.doc);
-    }
-
-    return decorations.map(transaction.changes);
-  },
-  provide: (field) => EditorView.decorations.from(field),
-});
-
-const searchHighlightField = StateField.define<DecorationSet>({
-  create() {
-    return Decoration.none;
-  },
-  update(highlights, transaction) {
-    for (const effect of transaction.effects) {
-      if (effect.is(setSearchMatchesEffect)) {
-        return buildSearchDecorations(effect.value);
-      }
-    }
-
-    if (transaction.docChanged) {
-      return highlights.map(transaction.changes);
-    }
-
-    return highlights;
-  },
-  provide: (field) => EditorView.decorations.from(field),
-});
 
 const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   function EditorPane(
@@ -295,11 +207,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // test breaks.
   const mountedKindRef = useRef<EditorLanguageKind | null>(null);
   const mountedEditorSessionKeyRef = useRef<string | null>(null);
-  // L Mode ON/OFF の変化で再マウントを駆動する。CodeMirror 6.43.3+ で
-  // 入った tile tree（行仮想化・描画範囲計算の中核）破損問題への二重防御。
-  // 通常 edit での入力・選択中の破損は @codemirror/view を 6.43.2 に
-  // pin して根を止める（package.json overrides）。L Mode 切替は重い
-  // decoration 差し替え経路なので、pin 後も remount を維持する。
+  // L Mode ON/OFF の変化で再マウントを駆動する。CodeMirror 6.43.3 で
+  // 観測された tile tree（行仮想化・描画範囲計算の中核）破損への防御。
+  // 当時は 6.43.2 pin で通常 edit を守った。v3.2候補の新しいpinでも
+  // L Mode切替の重い decoration 差し替え経路は remount を維持する。
   // 詳細は docs/current-work.md の当該事象記録を参照。
   const mountedLModeEnabledRef = useRef<boolean | null>(null);
 
@@ -606,7 +517,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // editing.
     //
     // For `.md` (kind stays `markdown`), we ALSO re-mount on L Mode toggle.
-    // Even with @codemirror/view pinned to 6.43.2 (see package.json),
+    // Even with @codemirror/view pinned (see package.json),
     // swapping L Mode's heavy decoration set via Compartment reconfigure
     // remains a high-risk path for tile-tree corruption
     // ("特定行より下が描画されない" / wrong caret / lines vanishing on type).
@@ -1305,60 +1216,6 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
 export default EditorPane;
 
-function indentSelection(view: EditorView) {
-  const indent = " ".repeat(view.state.tabSize);
-
-  if (view.state.selection.ranges.every((range) => range.empty)) {
-    view.dispatch(
-      view.state.changeByRange((range) => ({
-        changes: { from: range.from, insert: indent },
-        range: EditorSelection.cursor(range.from + indent.length),
-      })),
-    );
-    return;
-  }
-
-  const changes = selectedLineNumbers(view.state).map((lineNumber) => ({
-    from: view.state.doc.line(lineNumber).from,
-    insert: indent,
-  }));
-
-  if (changes.length > 0) {
-    view.dispatch({ changes });
-  }
-}
-
-function outdentSelectedLines(view: EditorView) {
-  const changes = selectedLineNumbers(view.state)
-    .map((lineNumber) => {
-      const line = view.state.doc.line(lineNumber);
-
-      if (line.text.startsWith("\t")) {
-        return { from: line.from, to: line.from + 1 };
-      }
-
-      const leadingSpaces = line.text.match(/^ +/)?.[0].length ?? 0;
-      const removableSpaces = Math.min(leadingSpaces, view.state.tabSize);
-
-      return removableSpaces > 0
-        ? { from: line.from, to: line.from + removableSpaces }
-        : null;
-    })
-    .filter((change): change is { from: number; to: number } => change !== null);
-
-  if (changes.length > 0) {
-    view.dispatch({ changes });
-  }
-}
-
-function applyMarkdownFormat(view: EditorView, format: MarkdownFormat) {
-  view.dispatch(
-    view.state.changeByRange((range) =>
-      markdownFormatChange(view.state.doc, range.from, range.to, format),
-    ),
-  );
-}
-
 function clampScrollRatio(ratio: number): number {
   if (!Number.isFinite(ratio)) {
     return 0;
@@ -1418,217 +1275,6 @@ export function isScrollerPointerOnScrollbar(
     event.clientY >= rect.bottom - effectiveHorizontalScrollbarHeight;
 
   return isVerticalScrollbar || isHorizontalScrollbar;
-}
-
-function insertTableAtCursor(
-  view: EditorView,
-  columns: number,
-  headerLabels?: readonly string[],
-) {
-  const header =
-    "|" +
-    Array.from({ length: columns }, (_, i) => {
-      const label = headerLabels?.[i]?.trim() || `Col ${i + 1}`;
-      return ` ${label} `;
-    }).join("|") +
-    "|";
-  const separator =
-    "|" + Array.from({ length: columns }, () => " --- ").join("|") + "|";
-  const row =
-    "|" + Array.from({ length: columns }, () => "   ").join("|") + "|";
-  const table = `${header}\n${separator}\n${row}\n`;
-
-  view.dispatch({
-    changes: {
-      from: view.state.selection.main.from,
-      to: view.state.selection.main.to,
-      insert: table,
-    },
-  });
-}
-
-function markdownFormatChange(
-  doc: Text,
-  from: number,
-  to: number,
-  format: MarkdownFormat,
-) {
-  const selectedText = doc.sliceString(from, to);
-
-  switch (format) {
-    case "bold":
-      return wrapMarkdownSelection(from, to, selectedText, "**", "**");
-    case "italic":
-      return wrapMarkdownSelection(from, to, selectedText, "*", "*");
-    case "code":
-      return wrapMarkdownSelection(from, to, selectedText, "`", "`");
-    case "strikethrough":
-      return wrapMarkdownSelection(from, to, selectedText, "~~", "~~");
-    case "link":
-      return linkMarkdownSelection(from, to, selectedText);
-    case "image":
-      return imageMarkdownSelection(from, to, selectedText);
-  }
-}
-
-function wrapMarkdownSelection(
-  from: number,
-  to: number,
-  selectedText: string,
-  before: string,
-  after: string,
-) {
-  if (from === to) {
-    return {
-      changes: { from, to, insert: `${before}${after}` },
-      range: EditorSelection.cursor(from + before.length),
-    };
-  }
-
-  return {
-    changes: { from, to, insert: `${before}${selectedText}${after}` },
-    range: EditorSelection.range(from + before.length, to + before.length),
-  };
-}
-
-function linkMarkdownSelection(from: number, to: number, selectedText: string) {
-  if (from === to) {
-    return {
-      changes: { from, to, insert: "[text](url)" },
-      range: EditorSelection.range(from + 1, from + 5),
-    };
-  }
-
-  const replacement = `[${selectedText}](url)`;
-  const urlStart = from + selectedText.length + 3;
-
-  return {
-    changes: { from, to, insert: replacement },
-    range: EditorSelection.range(urlStart, urlStart + 3),
-  };
-}
-
-function imageMarkdownSelection(from: number, to: number, selectedText: string) {
-  if (from === to) {
-    return {
-      changes: { from, to, insert: "![alt](url)" },
-      range: EditorSelection.range(from + 2, from + 5),
-    };
-  }
-
-  const replacement = `![${selectedText}](url)`;
-  const urlStart = from + selectedText.length + 4;
-
-  return {
-    changes: { from, to, insert: replacement },
-    range: EditorSelection.range(urlStart, urlStart + 3),
-  };
-}
-
-function selectedLineNumbers(state: EditorState) {
-  const lineNumbers = new Set<number>();
-
-  for (const range of state.selection.ranges) {
-    const inclusiveTo = range.empty
-      ? range.to
-      : Math.max(range.from, range.to - 1);
-    const startLine = state.doc.lineAt(range.from);
-    const endLine = state.doc.lineAt(inclusiveTo);
-
-    for (
-      let lineNumber = startLine.number;
-      lineNumber <= endLine.number;
-      lineNumber += 1
-    ) {
-      lineNumbers.add(lineNumber);
-    }
-  }
-
-  return Array.from(lineNumbers).sort((a, b) => a - b);
-}
-
-function editorTheme(theme: "light" | "dark", fontSize: number) {
-  const safeFontSize = Math.min(Math.max(fontSize, 12), 22);
-
-  return EditorView.theme(
-    {
-      "&": {
-        backgroundColor: "var(--cm-bg)",
-        color: "var(--cm-fg)",
-        height: "100%",
-        fontSize: `${safeFontSize}px`,
-      },
-      ".cm-scroller": {
-        fontFamily:
-          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-      },
-      ".cm-content": {
-        caretColor: "var(--cm-caret)",
-        padding: "18px 0",
-      },
-      ".cm-line": {
-        padding: "0 22px",
-      },
-      ".cm-gutters": {
-        backgroundColor: "var(--cm-gutter-bg)",
-        borderRight: "1px solid var(--cm-gutter-border)",
-        color: "var(--cm-gutter-fg)",
-        fontSize: "0.78em",
-      },
-      ".cm-activeLine": {
-        backgroundColor: "var(--cm-active-line-bg)",
-      },
-      ".cm-activeLineGutter": {
-        backgroundColor: "var(--cm-active-gutter-bg)",
-      },
-      ".cm-selectionLayer .cm-selectionBackground": {
-        backgroundColor: "var(--cm-selection-bg)",
-        opacity: "1",
-      },
-      "&.cm-focused .cm-selectionLayer .cm-selectionBackground": {
-        backgroundColor: "var(--cm-selection-bg)",
-      },
-      "&.cm-focused": {
-        // Focus shown as a single accent underline at the top edge of the
-        // editor, not a four-sided inset ring: under the v0.25 transparent
-        // shell a full inset box-shadow reads as an unnatural border around
-        // the whole editor pane.
-        boxShadow: "inset 0 1px 0 color-mix(in srgb, var(--accent) 40%, transparent)",
-        outline: "none",
-      },
-      ".cm-content ::selection": {
-        backgroundColor: "var(--cm-selection-bg)",
-      },
-      ".cm-searchMatch": {
-        backgroundColor: "var(--cm-search-match-bg)",
-        borderRadius: "3px",
-      },
-      ".cm-searchMatch-active": {
-        backgroundColor: "var(--cm-search-match-active-bg)",
-        boxShadow: "var(--cm-search-match-active-shadow)",
-      },
-      ".cm-invisible-space": {
-        backgroundImage: "var(--cm-invisible-space)",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      },
-      ".cm-invisible-tab": {
-        backgroundColor: "var(--cm-invisible-tab)",
-        borderRadius: "3px",
-      },
-      ".cm-trailing-space": {
-        backgroundColor: "var(--cm-trailing-space)",
-      },
-    },
-    { dark: theme === "dark" },
-  );
-}
-
-export function getEditorWrappingExtensions(
-  wrapLines: boolean,
-  lModeEnabled: boolean,
-): Extension[] {
-  return wrapLines || lModeEnabled ? [EditorView.lineWrapping] : [];
 }
 
 // "Effectively empty" for the L Mode placeholder means the
@@ -1829,65 +1475,4 @@ function keepBottomAfterScrollbarDrag(
   };
 
   win.requestAnimationFrame(settle);
-}
-
-function buildInvisibleDecorations(doc: Text): DecorationSet {
-  const decorations: Range<Decoration>[] = [];
-  const maxDecorations = 20000;
-
-  for (
-    let lineNumber = 1;
-    lineNumber <= doc.lines && decorations.length < maxDecorations;
-    lineNumber += 1
-  ) {
-    const line = doc.line(lineNumber);
-    const trailingWhitespaceStart = line.text.search(/[ \t]+$/);
-
-    for (
-      let index = 0;
-      index < line.text.length && decorations.length < maxDecorations;
-      index += 1
-    ) {
-      const char = line.text[index];
-
-      if (char !== " " && char !== "\t") {
-        continue;
-      }
-
-      const isTrailing =
-        trailingWhitespaceStart !== -1 && index >= trailingWhitespaceStart;
-      const className = [
-        char === "\t" ? "cm-invisible-tab" : "cm-invisible-space",
-        isTrailing ? "cm-trailing-space" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      decorations.push(
-        Decoration.mark({ class: className }).range(
-          line.from + index,
-          line.from + index + 1,
-        ),
-      );
-    }
-  }
-
-  return Decoration.set(decorations, true);
-}
-
-function buildSearchDecorations(
-  matches: readonly DecoratedSearchMatch[],
-): DecorationSet {
-  return Decoration.set(
-    matches
-      .filter((match) => match.from >= 0 && match.to > match.from)
-      .map((match) =>
-        Decoration.mark({
-          class: match.active
-            ? "cm-searchMatch cm-searchMatch-active"
-            : "cm-searchMatch",
-        }).range(match.from, match.to),
-      ),
-    true,
-  );
 }

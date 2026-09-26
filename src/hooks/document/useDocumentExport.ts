@@ -19,10 +19,7 @@ import {
 import {
   DEFAULT_PDF_MARGIN_PRESET,
   extractPdfLeadingCoverHtml,
-  formatPdfPointValue,
   PDF_A4_PAGE_HEIGHT_POINTS,
-  PDF_A4_PAGE_WIDTH_POINTS,
-  pdfMarginCss,
   pdfScreenPageLayout,
   preparePdfExportTables,
   type PdfMarginPreset,
@@ -31,7 +28,8 @@ import {
   embedAndStampPdfImages,
   preparePdfImagesForCapture,
 } from "../../features/document/pdfExportImages";
-import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
+import { buildPdfExportHtml } from "../../features/document/pdfExportHtml";
+import { buildHtmlExportHtml, htmlExportCssVars } from "../../features/document/htmlExportHtml";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
 import {
   inlineMarkdownImagesWithResult,
@@ -521,7 +519,6 @@ export function useDocumentExport({
       rendered = preparePdfExportTables(inlined.html);
 
       const pdfLayout = pdfScreenPageLayout(preset);
-      const pdfPoint = formatPdfPointValue;
       const coverMaxHeightPx = Math.max(
         320,
         Math.floor(
@@ -562,295 +559,19 @@ export function useDocumentExport({
         rendered,
         coverMaxHeightPx,
       );
-      const hasCover = coverHtml.length > 0;
 
-      const standaloneHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(scope === "book" ? workspaceLabel(workspaceRootPath) : (tabForExport?.name ?? request.documentName))}</title>
-<style>
-  :root {
-    --bg: #ffffff;
-    --text: #1d1d1f;
-    --text-muted: #6e6e73;
-    --accent: #b3416a;
-    --accent-soft: rgba(179, 65, 106, 0.12);
-    --border: #d2d2d7;
-    --surface: #ffffff;
-    --surface-muted: #f5f5f7;
-    --surface-strong: #ffffff;
-    --status-bg: #1c2420;
-    --status-text: #f0f7f3;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --pdf-page-width: ${PDF_A4_PAGE_WIDTH_POINTS}px;
-    --pdf-page-height: ${PDF_A4_PAGE_HEIGHT_POINTS}px;
-    --pdf-margin-block: ${pdfPoint(pdfLayout.marginBlockPoints)}px;
-    --pdf-margin-inline: ${pdfPoint(pdfLayout.marginInlinePoints)}px;
-    --pdf-content-width: ${pdfPoint(pdfLayout.contentWidthPoints)}px;
-    --pdf-content-height: ${pdfPoint(pdfLayout.contentHeightPoints)}px;
-    --pdf-column-gap: ${pdfPoint(pdfLayout.columnGapPoints)}px;
-  }
-  html {
-    background: #ffffff;
-    min-height: var(--pdf-page-height);
-    /* Grow horizontally with cover + multicol columns for createPDF. */
-    min-width: max-content;
-  }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    font-family: var(--font-ui);
-    margin: 0;
-    min-height: var(--pdf-page-height);
-    height: var(--pdf-page-height);
-    padding: 0;
-    position: relative;
-    width: max-content;
-  }
-  .pdf-export-background {
-    background: #ffffff;
-    height: 100%;
-    inset: 0;
-    pointer-events: none;
-    position: absolute;
-    width: 100%;
-    z-index: 0;
-  }
-  /* Dedicated first A4 page for leading cover image (outside multicol). */
-  .pdf-export-cover-page {
-    background: #ffffff;
-    box-sizing: border-box;
-    display: flex;
-    flex: 0 0 var(--pdf-page-width);
-    align-items: center;
-    justify-content: center;
-    height: var(--pdf-page-height);
-    margin: 0;
-    padding: var(--pdf-margin-block) var(--pdf-margin-inline);
-    position: relative;
-    width: var(--pdf-page-width);
-    z-index: 1;
-  }
-  .pdf-export-cover-page p {
-    margin: 0;
-    width: 100%;
-  }
-  .pdf-export-cover-page img {
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    display: block;
-    height: auto;
-    margin: 0 auto;
-    /* Numeric px also set inline on the cover <img>; keep a CSS fallback. */
-    max-height: ${coverMaxHeightPx}px;
-    max-width: 100%;
-    object-fit: contain;
-    width: auto;
-  }
-  ${getMarkdownPreviewCss()}
-  /* WKWebView.createPDF captures the screen layout rather than paged-media
-     @page rules. A one-page-high multi-column flow makes every 595-point
-     horizontal slice an A4 page with the selected margins already present.
-     --pdf-content-height already reserves bottom safety so the last line
-     boxes stay inside the capture rect (see PDF_CONTENT_BOTTOM_SAFETY_POINTS). */
-  .markdown-preview {
-    background: #ffffff;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    /* border-box so bottom padding shrinks column flow height. */
-    box-sizing: border-box;
-    color: #000000;
-    column-fill: auto;
-    column-gap: var(--pdf-column-gap);
-    column-width: var(--pdf-content-width);
-    flex: 0 0 auto;
-    font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
-    font-size: 11pt;
-    height: var(--pdf-content-height);
-    line-height: 1.45;
-    margin: var(--pdf-margin-block) var(--pdf-margin-inline);
-    max-width: none;
-    overflow: visible;
-    padding: 0 0 2.25em;
-    position: relative;
-    width: var(--pdf-content-width);
-    z-index: 1;
-  }
-  .markdown-preview .pdf-export-tail-guard {
-    display: block;
-    height: 3em;
-    margin: 0;
-    padding: 0;
-    visibility: hidden;
-  }
-  /* Put the break on non-empty chapter content. WebKit may discard an empty
-     multicol break marker, which would pack short chapters onto one page. */
-  .book-scope-pdf-chapter {
-    break-inside: auto;
-  }
-  .book-scope-pdf-chapter--next {
-    -webkit-column-break-before: always;
-    break-before: column;
-  }
-  .markdown-preview h1,
-  .markdown-preview h2,
-  .markdown-preview h3,
-  .markdown-preview h4 {
-    break-after: avoid;
-    color: #000000;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  .markdown-preview pre,
-  .markdown-preview blockquote {
-    break-inside: avoid;
-  }
-  /* Body images: prefer inline styles stamped after embed. Keep CSS as
-     fallback; break-inside:auto so tall images do not vanish in multicol. */
-  .markdown-preview img {
-    border: 0;
-    border-radius: 0;
-    break-inside: auto;
-    box-shadow: none;
-    display: block;
-    height: auto;
-    margin: 10px auto 16px;
-    max-height: ${imageMaxHeightPx}px;
-    max-width: 100%;
-    object-fit: contain;
-    width: auto;
-  }
-  .markdown-preview pre {
-    background: var(--status-bg);
-    border-left: 2px solid #999999;
-    box-sizing: border-box;
-    color: var(--status-text);
-    display: inline-block;
-    max-width: 100%;
-    overflow: visible;
-    padding: 16px;
-    white-space: pre-wrap;
-    width: 100%;
-  }
-  .markdown-preview pre code {
-    background: transparent;
-    color: inherit;
-  }
-  .markdown-preview .markdown-table-frame {
-    break-inside: auto;
-    max-width: 100%;
-    overflow: visible;
-  }
-  .markdown-preview .markdown-table-frame table {
-    display: block;
-    min-width: 0;
-    width: 100%;
-  }
-  .markdown-preview .markdown-table-frame thead,
-  .markdown-preview .markdown-table-frame tbody {
-    display: block;
-  }
-  .markdown-preview .markdown-table-frame tr {
-    break-inside: avoid;
-    display: grid;
-    grid-template-columns: repeat(var(--pdf-table-columns), minmax(0, 1fr));
-  }
-  .markdown-preview .markdown-table-frame th,
-  .markdown-preview .markdown-table-frame td {
-    box-sizing: border-box;
-    min-width: 0;
-    overflow-wrap: anywhere;
-    white-space: normal;
-  }
-  .markdown-preview a { color: inherit; text-decoration: underline; }
-  .markdown-preview a[href^="http"]::after {
-    content: " (" attr(href) ")";
-    color: #555555;
-    font-size: 0.85em;
-  }
-  @media print {
-    .book-scope-pdf-chapter--next { break-before: page; page-break-before: always; }
-    @page { margin: ${pdfMarginCss(preset)}; }
-    html { min-height: 0; min-width: 0; }
-    body {
-      background: #ffffff;
-      color: #000000;
-      margin: 0;
-      min-height: 0;
-      padding: 0;
-      width: auto;
-    }
-    .markdown-preview {
-      color: #000000;
-      column-fill: balance;
-      column-gap: normal;
-      column-width: auto;
-      font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
-      font-size: 11pt;
-      height: auto;
-      line-height: 1.45;
-      margin: 0;
-      max-width: none;
-      padding: 0;
-      width: auto;
-    }
-    .markdown-preview h1,
-    .markdown-preview h2,
-    .markdown-preview h3,
-    .markdown-preview h4 {
-      color: #000000;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      page-break-after: avoid;
-    }
-    .markdown-preview pre,
-    .markdown-preview blockquote,
-    .markdown-preview img { page-break-inside: avoid; }
-    .markdown-preview pre {
-      background: var(--status-bg);
-      border-left: 2px solid #999999;
-      box-sizing: border-box;
-      color: var(--status-text);
-      display: inline-block;
-      max-width: 100%;
-      overflow: visible;
-      padding: 16px;
-      white-space: pre-wrap;
-      width: 100%;
-    }
-    .markdown-preview pre code {
-      background: transparent;
-      color: inherit;
-    }
-    .markdown-preview .markdown-table-frame { page-break-inside: auto; }
-    .markdown-preview a { color: inherit; text-decoration: underline; }
-    .markdown-preview a[href^="http"]::after {
-      content: " (" attr(href) ")";
-      font-size: 0.85em;
-      color: #555555;
-    }
-  }
-</style>
-</head>
-<body>
-<div class="pdf-export-background" aria-hidden="true"></div>
-${
-  hasCover
-    ? `<div class="pdf-export-cover-page">${coverHtml}</div>`
-    : ""
-}
-<div class="markdown-preview">
-${bodyHtml}
-${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&#8203;</p>'}
-</div>
-</body>
-</html>`;
+      const standaloneHtml = buildPdfExportHtml({
+        title: scope === "book"
+          ? workspaceLabel(workspaceRootPath)
+          : (tabForExport?.name ?? request.documentName),
+        scope,
+        preset,
+        layout: pdfLayout,
+        coverHtml,
+        bodyHtml,
+        coverMaxHeightPx,
+        imageMaxHeightPx,
+      });
 
       if (isTauriRuntime()) {
         const destPath = await saveDialog({
@@ -960,115 +681,11 @@ ${scope === "book" ? "" : '<p class="pdf-export-tail-guard" aria-hidden="true">&
       htmlEmbed.failedPaths = [...new Set([...inlined.failures, ...htmlEmbed.failedPaths])];
       bodyHtml = htmlEmbed.html;
 
-      const root = document.documentElement;
-      const cs = getComputedStyle(root);
-      const cssVars = [
-        "--bg",
-        "--text",
-        "--text-muted",
-        "--accent",
-        "--accent-soft",
-        "--border",
-        "--surface",
-        "--surface-muted",
-        "--surface-strong",
-        "--status-bg",
-        "--status-text",
-        "--font-mono",
-        "--font-ui",
-        "--shadow-sm",
-        "--shadow-md",
-      ]
-        .map((v) => `  ${v}: ${cs.getPropertyValue(v)};`)
-        .join("\n");
-
-      // The body content is wrapped in a `.markdown-preview`
-      // container so the inlined preview CSS (sourced from
-      // `styles/preview.css`) applies with the same selectors
-      // the live preview pane uses. Saving with a different
-      // class would force a parallel stylesheet to be kept in
-      // sync.
-      const standaloneHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(tabForExport.name)}</title>
-<style>
-:root {
-${cssVars}
-}
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-ui, system-ui, sans-serif);
-  margin: 0;
-  padding: 0;
-}
-${getMarkdownPreviewCss()}
-
-/* The preview CSS above is screen-first; the print block
-   below tightens type, hides backgrounds, and stops tables /
-   code blocks from splitting across pages. Mirrors the
-   in-app PDF export path so a saved file printed later
-   matches what the user saw in the browser. */
-@media print {
-  @page { margin: 18mm 16mm; }
-  body {
-    background: #ffffff;
-    color: #000000;
-    margin: 0;
-    padding: 0;
-  }
-  .markdown-preview {
-    color: #000000;
-    font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
-    font-size: 11pt;
-    line-height: 1.45;
-    max-width: none;
-    padding: 0;
-  }
-  .markdown-preview h1,
-  .markdown-preview h2,
-  .markdown-preview h3,
-  .markdown-preview h4 {
-    color: #000000;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    page-break-after: avoid;
-  }
-  .markdown-preview pre,
-  .markdown-preview blockquote,
-  .markdown-preview .markdown-table-frame,
-  .markdown-preview img {
-    page-break-inside: avoid;
-  }
-  .markdown-preview pre,
-  .markdown-preview code,
-  .markdown-preview .markdown-table-frame th {
-    background: transparent;
-  }
-  .markdown-preview pre {
-    border-left: 2px solid #999999;
-    padding: 0 0 0 8px;
-  }
-  .markdown-preview a {
-    color: inherit;
-    text-decoration: underline;
-  }
-  .markdown-preview a[href^="http"]::after {
-    content: " (" attr(href) ")";
-    font-size: 0.85em;
-    color: #555555;
-  }
-}
-</style>
-</head>
-<body>
-<div class="markdown-preview">
-${bodyHtml}
-</div>
-</body>
-</html>`;
+      const standaloneHtml = buildHtmlExportHtml({
+        title: tabForExport.name,
+        bodyHtml,
+        cssVars: htmlExportCssVars(getComputedStyle(document.documentElement)),
+      });
 
       // HTML currently uses the editable-text writer. Check the completed
       // artifact, including base64 images and CSS, before requesting any write.
@@ -1309,14 +926,6 @@ ${bodyHtml}
     exportPdf,
     pdfExportRequest,
   };
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
 }
 
 function formatEpubModifiedDate(date: Date): string {

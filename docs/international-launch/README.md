@@ -11,10 +11,11 @@ Last reviewed: 2026-09-24
 
 これは設定変更の実施記録ではない。App Store Connectの認証済み画面、販売国、現行価格、契約、プライバシー回答は未確認。2026-09-24の公開URL確認では製品ページは日本語、SupportとPrivacyの本文は英語だがHTMLの言語宣言は`ja`だった。オーナーは今回、英語掲載文を優先し、公式製品サイトの日本語維持を許容している。公開Privacyの任意通信・Core AIの記述はアプリ実装と再照合が必要。
 
-- [英語掲載文案](app-store-en-US.json): 手動転記用。APIへの送信形式ではない。`metadata` の各値だけを対応欄へ貼る。
-- [スクリーンショット・Web・告知案](screenshots-and-web.md): 実画像は別途撮影。Web変更も別作業。
+- [英語版3.1掲載文パケット](../releases/3.1.0-app-store-listing-copy.en-US.md): Connectの入力欄ごとに英語全文を示す転記用文書。
+- [英語掲載文JSON](app-store-en-US.json): 上記の転記値の正本。APIへの送信形式ではない。`metadata` の各値だけを対応欄へ貼る。
+- [スクリーンショット・Web・告知案](screenshots-and-web.md): 英語画像5枚はローカルで制作済み。提出ビルドとの照合とWeb変更は別作業。
 - [文字数検査](validate_metadata.py): `python3 docs/international-launch/validate_metadata.py`。通信・アップロードは行わない。
-- [3.1掲載文パケット](../releases/3.1.0-app-store-listing-copy.md): 日本語説明・画像案・審査メモへの入口。英語JSONも3.1へ更新済みだが、未適用のproposalを維持する。
+- [日本語版3.1掲載文パケット](../releases/3.1.0-app-store-listing-copy.md): 日本語説明・画像案・審査メモへの入口。日英の文案は未適用のproposalを維持する。
 
 買い切り、販売価格、対象国は提案であり承認済み設定ではない。既存の日本向け価格・販売国を勝手に変更しない。マージしてもストア、Web、アプリ本体の挙動は変わらない。
 

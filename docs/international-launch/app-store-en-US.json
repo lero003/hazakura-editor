@@ -4,7 +4,7 @@
   "locale": "en-US",
   "reviewed_on": "2026-09-24",
   "source_commit": "e0cef0742e5fde6af44b609942c5b70da680baf0",
-  "usage_note": "Manual copy source, not an App Store Connect API payload. source_commit identifies the reviewed app and Help baseline; this metadata revision is separate. Copy only individual metadata values after the release gates pass.",
+  "usage_note": "Manual copy source, not an App Store Connect API payload. The matching human-readable packet is docs/releases/3.1.0-app-store-listing-copy.en-US.md. source_commit identifies the reviewed app and Help baseline; this metadata revision is separate. Copy only individual metadata values after the release gates pass.",
   "metadata": {
     "name": "Hazakura Editor",
     "subtitle": "Markdown to EPUB & PDF",

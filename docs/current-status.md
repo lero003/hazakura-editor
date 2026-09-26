@@ -1,11 +1,34 @@
 # Current Status
 
 Status: Operational
-Scope: v3.1開発状態、v3.0公開状態、実装証跡
+Scope: v3.2依存更新候補、次期方針、v3.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-09-24
+Last reviewed: 2026-09-26
 
 ## Current State
+
+- **公開版v3.1（2026-09-25、オーナー報告）:** Apple審査を通過し公開済み。
+  この作業ではストアのbuild/source対応や個別実機試験を再確認していない。
+  以下のv3.1出荷前の候補記録は作成当時の証跡として読む。
+- **次版v3.2.0（依存更新候補、未公開）:** npm/Rust依存をまとめて更新し、
+  CodeMirror viewの旧表示不具合、HTTPS画像、ネイティブ画面を含む
+  [同一候補の実機受け入れ](releases/3.2.0-dependency-acceptance-draft.md)を公開ゲートとする。
+  SwiftPMのCore AI配布runtime revisionは今回維持。LLM機能とMLX runtimeは保留。
+  source版は3.2.0候補。App Storeのbuild番号は提出候補を決める際に新規採番する。
+
+- **v3.2品質強化（2026-09-26、source検証済み）:** 保存・外部変更監視・開き直し・
+  バックアップ一覧の古い応答による上書きと、Assist停止待ち前後の終了競合を修正。
+  AppShell、EditorPane、PDF/HTML/EPUBの責務を分離した。
+  frontend 2,783件・scripts 31件、Rust 483件pass / 3 ignored、型検査、Vite、
+  App Store surface 134件、ローカルApp Store ad-hocプレビューbuildと静的sandbox smokeが通過。
+  [検証範囲と残項目](releases/3.2.0-quality-hardening.md)を参照。
+  オーナー報告の簡単な実機試験は問題なし。修正後候補の実機・TestFlight受入は未実施。
+
+- **v3.2後の製品方向（2026-09-26、方針採用のみ）:** 見直し・再開・編集ルールのメモと
+  縦書きをロードマップへ採用。編集ルールは自由記述のひな形に注意や例外を書き足す形を中心にする。
+  AIによるメモ案の作成は品質再評価後の候補。縦書きReaderからEPUBへ段階化し、LLM拡張を待たない。
+  機能実装・UI/保存設計・実機受け入れはこれからで、版割り・出荷日は未確定。
+  [採用方針](roadmap.md)と[計画詳細](post-v3.1-writing-completion-draft.md)を参照。
 
 - **3.1の配布モデル切替（2026-09-24、source検証済み）:** build 155の16 GB Macで
   Hazakuraの12Bがタイムアウトするとオーナーが報告。次のApp Store source catalogは
@@ -1651,8 +1674,9 @@ physical Assist UI claim.
 
 ## Next Safe Actions
 
-1. `docs/current-work.md` を読み、公開後の次のスライス（残課題の判断、またはv3.1準備）を選ぶ。
+1. `docs/current-work.md` を読み、現行v3.2の依存更新候補と実機受け入れを優先する。
 2. v3.0のSystem共通基盤とv3.1のC-1/C-2を区別し、`docs/core-ai-c0-design.md` のゲートを守る。
 3. 実モデル、native窓、IME/VoiceOver、旧OS/署名済みbundleは各実装時に該当範囲を検証。
-4. 縦書き・anydoc・MLX runtime・背景index・永続チャットは主キューへ混ぜない。
+4. メモ系と縦書きはv3.2後の採用方針として個別設計する。anydoc・MLX runtimeは別評価。
+   背景index・永続チャットへは広げない。
 5. 公開済み版やタグ（`v3.0.0`を含む）を変更せず、新しい提出・公開は別工程とする。

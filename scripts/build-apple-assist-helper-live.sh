@@ -84,7 +84,11 @@ build_arch() {
     echo "==> swift build (live Foundation Models mode, $swift_arch)"
     swift_build_with_sandbox_fallback "$swift_arch"
 
-    local built="$HELPER_DIR/.build/${swift_arch}-apple-macosx/release/HazakuraAppleAssist"
+    local bin_dir
+    bin_dir="$(CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/clang-module-cache" \
+        SWIFTPM_MODULECACHE_OVERRIDE="$HELPER_DIR/.build/swiftpm-module-cache" \
+        swift build -c release --arch "$swift_arch" --show-bin-path)"
+    local built="$bin_dir/HazakuraAppleAssist"
     if [ ! -x "$built" ]; then
         echo "error: build did not produce $built" >&2
         exit 1

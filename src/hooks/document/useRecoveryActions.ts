@@ -2,7 +2,11 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useLayoutEffect,
+  useRef,
 } from "react";
+import { flushSync } from "react-dom";
+import { hasSameDocumentIoBaseline } from "../../features/editor/documentIoBaseline";
 import { openTextFile } from "../../lib/tauri";
 import {
   createEditorTab,
@@ -45,52 +49,59 @@ export function useRecoveryActions({
   setTabs,
   tabsRef,
 }: UseRecoveryActionsOptions) {
+  const reopenRequests = useRef(new Map<string, symbol>());
+  useLayoutEffect(() => () => { reopenRequests.current.clear(); }, []);
+
   const reopenTabFromDisk = useCallback(
     async (tabId: string, encoding?: TextEncoding) => {
       const tab = tabsRef.current.find((candidate) => candidate.id === tabId);
+      if (!tab?.path || tab.saveStatus === "saving") return;
 
-      if (!tab) {
-        return;
-      }
-
-      if (encoding && (!tab.path || isDirty(tab))) {
+      if (encoding && isDirty(tab)) {
         setStatus("文字コードを指定して開き直す前に、未保存の編集を別名で保存してください");
         return;
       }
+      const request = Symbol();
+      reopenRequests.current.set(tab.sessionId, request);
+      const isLatestRequest = () => reopenRequests.current.get(tab.sessionId) === request;
+      const isCurrent = (candidate: EditorTab) =>
+        isLatestRequest() && hasSameDocumentIoBaseline(candidate, tab) &&
+        candidate.contents === tab.contents && candidate.encoding === tab.encoding &&
+        candidate.line_ending === tab.line_ending;
+      const commit = (update: (candidate: EditorTab) => EditorTab): boolean => {
+        let applied = false;
+        flushSync(() => setTabs((currentTabs) => currentTabs.map((candidate) => {
+          if (!isCurrent(candidate)) return candidate;
+          applied = true;
+          return update(candidate);
+        })));
+        return applied;
+      };
       setStatus("Reopening from disk...");
 
       try {
         const file = encoding ? await openTextFile(tab.path, encoding) : await openTextFile(tab.path);
-        const latestTab = tabsRef.current.find(
-          (candidate) => candidate.id === tabId,
-        );
-        if (!latestTab || latestTab.sessionId !== tab.sessionId || latestTab.path !== tab.path || latestTab.contents !== tab.contents || latestTab.encoding !== tab.encoding || latestTab.line_ending !== tab.line_ending) {
+        if (!isLatestRequest()) return;
+        const reopenedTab = createEditorTab(file);
+        if (!commit(() => reopenedTab)) {
           setStatus("Reopen skipped; document changed");
           return;
         }
-        const reopenedTab = createEditorTab(file);
-
-        setTabs((currentTabs) =>
-          updateTabsById(currentTabs, tabId, () => reopenedTab),
-        );
         setActiveTabId(reopenedTab.id);
         setStatus("Reopened from disk");
       } catch (err) {
-        const latestTab = tabsRef.current.find(
-          (candidate) => candidate.id === tabId,
-        );
-        if (!latestTab || latestTab.sessionId !== tab.sessionId || latestTab.path !== tab.path || latestTab.contents !== tab.contents || latestTab.encoding !== tab.encoding || latestTab.line_ending !== tab.line_ending) {
+        if (!isLatestRequest()) return;
+        if (!commit((candidate) => ({
+          ...candidate,
+          error: `Reopen failed: ${String(err)}`,
+          saveStatus: "conflict",
+        }))) {
           setStatus("Reopen skipped; document changed");
           return;
         }
-        setTabs((currentTabs) =>
-          updateTabsById(currentTabs, tabId, (candidate) => ({
-            ...candidate,
-            error: `Reopen failed: ${String(err)}`,
-            saveStatus: "conflict",
-          })),
-        );
         setStatus("Reopen failed");
+      } finally {
+        if (isLatestRequest()) reopenRequests.current.delete(tab.sessionId);
       }
     },
     [setActiveTabId, setStatus, setTabs, tabsRef],

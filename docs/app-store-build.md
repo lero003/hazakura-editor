@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-24 (3.1.0 build 157 local candidate)
+Last reviewed: 2026-09-25 (v3.2.0 dependency candidate)
 
 ## Purpose
 
@@ -43,8 +43,9 @@ revisions, file digests, and Apple-hosted asset-pack identifiers are pinned in
 The current App Store source catalog lists Gemma 4 E4B v2 for explicit download. The ad-hoc local
 preview shows the catalog but disables Apple-hosted acquisition because its
 `BAAssetPackManager` startup path traps outside the supported distribution
-context. The signed submit lane retains the platform transport. Asset download,
-selection, and generation still require TestFlight acceptance before release.
+context. The signed submit lane retains the platform transport. The v3.2
+dependency candidate requires fresh acceptance on the same signed TestFlight
+build before its release.
 
 The Developer / GitHub lane remains separate and may include optional
 Agent Workbench behind its existing boundary.
@@ -53,24 +54,16 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `3.0.0` (2026-09-14; the store listing shows
-  version 3.0.0). Exact released-build provenance, build number, and rollout
-  coverage remain unverified here. See `docs/releases/3.0.0-source-tag.release.md`.
-  Prior published line: `2.9.0` (owner-reported 2026-09-09).
-- Current source / Developer version: `3.1.0`. Its draft submission copy is in
-  `docs/releases/3.1.0-app-store-release-notes.md`. A local signed build 157
-  candidate exists from clean source `adda8bbf`; its TestFlight upload, App Store
-  submission, and publication are unverified. The owner reports build 155
-  distributed through TestFlight for functional device testing. On a 16 GB Mac,
-  the owner reports that its 12B generation times out. Build 157 switches the source catalog
-  to E4B v2; Apple-hosted acquisition and generation require new
-  TestFlight acceptance before App Review. The local build 156 package still lists 12B.
-  The prior `3.0.3` submission copy remains in
-  `docs/releases/3.0.3-app-store-release-notes.md` (device-accepted by the owner,
-  who reported submitting it 2026-09-18; signed local package build 140, while
-  `latest.json` was not refreshed). System-only boundaries remain in
-  `docs/v2.9-v3-local-assist-plan.md`.
-  Earlier v2.7 packages remain historical candidates, not an active submission queue.
+- Published App Store version: `3.1.0` (2026-09-25 owner report: Apple review
+  passed and the version is public). Exact released-build provenance, build
+  number, and rollout coverage remain unverified here. Prior `3.0.0` is recorded
+  in `docs/releases/3.0.0-source-tag.release.md`.
+- Current source / Developer version: `3.2.0`. This is a dependency-update
+  candidate; its same-build device and signed TestFlight acceptance are pending.
+  The submit config's `bundleVersion` still reflects the prior local counter.
+  Check the published build number and assign a new candidate number before
+  signing a v3.2 submission package. Local 3.1 build 157 from clean source
+  `adda8bbf` is historical package evidence, not proof of the published build.
   GitHub source tag: `v3.0.0` (source-only repository checkpoint, created 2026-09-14;
   prior `v2.3.0` and `v2.0.0` remain immutable).
 - Latest local App Store package candidate metadata (version, build

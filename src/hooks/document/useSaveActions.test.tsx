@@ -152,6 +152,19 @@ describe("useSaveActions", () => {
     expect(removeStoredDraft).toHaveBeenCalledWith(tab.path);
   });
 
+  it.each(["Save conflict: changed", "Write failed"])("does not attach an old save failure to a reopened tab: %s", async (message) => {
+    let reject!: (error: Error) => void;
+    fileApi.saveTextFile.mockReturnValue(new Promise((_, rej) => { reject = rej; }));
+    const tab = makeTab();
+    const h = setup([tab]);
+    const saving = h.result.current.saveTabById(tab.id);
+    const reopened = makeTab({ sessionId: "new-session", contents: "new contents", lastSavedContents: "new contents" });
+    h.replaceTabs([reopened]);
+    await act(async () => { reject(new Error(message)); expect(await saving).toBe(false); });
+    expect(h.getTabs()).toEqual([reopened]);
+    expect(removeStoredDraft).not.toHaveBeenCalled();
+  });
+
   it("keeps the tab dirty and preserves its draft when the buffer changes during save", async () => {
     const tab = makeTab({ contents: "draft", lastSavedContents: "saved" });
     let resolveSave: (value: SavedFileState) => void = () => {};
