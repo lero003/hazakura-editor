@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-25
+Last reviewed: 2026-09-26
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -26,6 +26,8 @@ Current candidate:
 - `3.2.0` — [dependency and device acceptance draft](3.2.0-dependency-acceptance-draft.md).
   Source/tests and local previews are partial evidence; a signed submit build
   and same-build device acceptance remain open.
+  [External review brief](../reviews/2026-09-26-v3.2-external-review-brief.md)
+  isolates the v3.2 code diff and its remaining release gates.
 
 v3.1 release-preparation history:
 

@@ -10,6 +10,8 @@ This directory separates current guidance from historical material. Use current 
 Agent entry rules live in `AGENTS.md`。v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。
 開発版は3.2.0の依存更新候補。`current-work.md` → `current-status.md` →
 `releases/3.2.0-dependency-acceptance-draft.md` の順に読む。
+source候補は`main`へ統合済み。第三者レビューには
+`reviews/2026-09-26-v3.2-external-review-brief.md`の固定差分と残ゲートを使う。
 過去の候補・実機未確認・GitHub公開は別証跡として保持する。
 v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
 `post-v3.1-writing-completion-draft.md` に方向性と未確定の詳細を分けて記録する。
@@ -54,6 +56,7 @@ v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
 - `releases/3.2.0-dependency-acceptance-draft.md`: v3.2の更新範囲、検証結果、実機受け入れ。
+- `reviews/2026-09-26-v3.2-external-review-brief.md`: v3.2固有の固定コード差分、検証証跡、外部レビュー依頼。
 - `releases/3.1.0-app-store-release-notes.md`: 3.1.0公開前の掲載文・受入項目の記録。
 - `releases/3.1.0-app-store-listing-copy.en-US.md`: 英語のConnect入力欄別の掲載文パケット。転記値の正本は `international-launch/app-store-en-US.json`。
 - `release-pre-check.md`: last-mile release hygiene.

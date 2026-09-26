@@ -7,6 +7,13 @@ Last reviewed: 2026-09-26
 
 ## v3.2品質強化・責務の整理（2026-09-26）
 
+source候補`5ba2a9a6`を`main`へ統合・pushし、旧作業ブランチを削除した。
+旧依存更新PR 4件も閉鎖済み。レビュー対象を切り出した
+[外部レビュー依頼](reviews/2026-09-26-v3.2-external-review-brief.md)と
+[実機受け入れマトリクス](releases/3.2.0-dependency-acceptance-draft.md)を次の入口とする。
+[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
+frontend・nativeとも成功。修正後候補の実機・署名済み配布は未受け入れ。
+
 保存・外部変更監視・開き直し・バックアップ一覧の遅延応答を、セッション・保存基準・
 要求世代で防ぐ。Reactの状態更新内部でも入力や保存との競合を照合する。
 AppShellからL Modeの表示復元、Assist候補レビュー・破棄確認、終了処理を分離。
@@ -20,7 +27,7 @@ Vite、App Store surface 134件、fmt、ローカルApp Store ad-hocプレビュ
 日本語書式→Undo、L Mode復元、本番Assistレビューhookの統合テストを含む。
 [変更点と実機再確認項目](releases/3.2.0-quality-hardening.md)を参照。
 
-既存の依存更新・計画文書等の差分を保持し、コミット・pushは未実施。
+依存更新・計画文書等の差分は品質強化とともにコミットし、`main`へpushした。
 オーナーの簡単な実機試験は問題なしとの報告だが、修正後候補の実機・IME・VoiceOver・
 書き出し・TestFlightは未実施。既存のbundleサイズ・Rust dead_code警告も残る。
 次はL Modeの出入り、書き出しの章/リンク/画像、Assist生成中の終了を含め、同一候補を実機で受け入れる。
@@ -39,6 +46,8 @@ AIによるひな形・内容の候補作成は、メモを本文推敲に使う
 文書検証は `git diff --check`、未追跡の計画詳細を含む追加差分の空白・リンク・公開文言の衛生確認が通過。
 
 ## 2026-09-25 v3.2.0依存更新候補
+
+この節は当時の候補記録であり、現在のGit状態は冒頭を参照。
 
 v3.1は審査通過・公開済み（オーナー報告）。source版を3.2.0へ進め、npm/Rust依存を
 まとめて更新した。`@codemirror/view` 6.43.13はexact pin、Core AI SwiftPM runtime
