@@ -2,6 +2,7 @@ import {
   type ComponentProps,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -106,7 +107,9 @@ export function LModeActionRail({
     reviewChangesButtonRef.current?.focus();
   }, []);
 
-  useEffect(() => {
+  // The sheet is keyboard-visible as soon as it commits, so Escape must be
+  // installed before a key event can reach the newly rendered surface.
+  useLayoutEffect(() => {
     if (!workspaceOpen && !changeReview) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
