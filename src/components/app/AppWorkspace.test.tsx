@@ -795,7 +795,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(reader.closest("[hidden], [inert]")).toBeNull();
     expect(container.querySelector(".workspace-reading-focus")).toBeTruthy();
     expect(screen.getByTestId("editor-main-pane")).toBe(editor);
-    expect(onReadingOverlayChange).toHaveBeenLastCalledWith(true);
+    await waitFor(() => expect(onReadingOverlayChange).toHaveBeenLastCalledWith(true));
     fireEvent.click(screen.getByRole("button", { name: "Edit this chapter" }));
     await waitFor(() => expect(openWorkspaceFile).toHaveBeenCalledWith(bookTab.path, { isCurrent: expect.any(Function) }));
     if (success) {
