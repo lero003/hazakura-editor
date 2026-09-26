@@ -26,11 +26,14 @@ Reader復帰の初回位置だけ追加確認中。結果と残ゲートは上�
 frontend 2,783件、scripts 31件、Rust 483件pass / 3 ignored、型検査、Vite、
 App Store surface 134件、ローカルApp Store ad-hocプレビューbuild・静的sandbox smokeが通過。
 変更と検証は[品質強化・整理の記録](releases/3.2.0-quality-hardening.md)を参照。
-source候補は`5ba2a9a6`まで`main`へ統合・push済み。旧作業ブランチは削除し、
+source候補は`main`へ統合・push済み。追加のUI競合修正`2ee96b16`までローカルで確認。
+旧作業ブランチは削除し、
 旧依存更新PR 4件は重複更新として閉じた。外部レビュー対象とCI・残ゲートは
 [v3.2外部レビュー依頼](reviews/2026-09-26-v3.2-external-review-brief.md)に集約する。
-同commitの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
-frontend・nativeとも成功。実機・署名済み配布の受け入れは別ゲート。
+`5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
+frontend・nativeとも成功。後続CIのL Mode Escape競合を修正し、
+[最新CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を確認する。
+実機・署名済み配布の受け入れは別ゲート。
 
 オーナーの簡単な実機テストでは問題なしとの報告あり。修正後候補については、
 実機IME・VoiceOver・TestFlight、L Modeの出入り、書き出しの章・リンク・画像、

@@ -16,10 +16,13 @@ Last reviewed: 2026-09-26
   SwiftPMのCore AI配布runtime revisionは今回維持。LLM機能とMLX runtimeは保留。
   source版は3.2.0候補、App Store source設定のbuild番号は158。
   公開済みbuildとの照合と提出用の採番・署名・配信は別途確認する。
-  source候補`5ba2a9a6`は`main`へ統合・push済み。旧作業ブランチを削除し、
+  source候補は`main`へ統合・push済みで、追加のUI競合修正`2ee96b16`までローカルで確認。
+  旧作業ブランチを削除し、
   旧依存更新PR 4件は重複として閉鎖。外部レビュー用の[対象・証跡・残ゲート](reviews/2026-09-26-v3.2-external-review-brief.md)を参照。
-  同commitの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
-  frontend・nativeとも成功。実機と署名済み配布のゲートは引き続き未完了。
+  `5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
+  frontend・nativeとも成功。後続CIで見つかったL ModeのEscape登録競合は`2ee96b16`で修正し、
+  [最新CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を確認する。
+  実機と署名済み配布のゲートは引き続き未完了。
 
 - **v3.2品質強化（2026-09-26、source検証済み）:** 保存・外部変更監視・開き直し・
   バックアップ一覧の古い応答による上書きと、Assist停止待ち前後の終了競合を修正。

@@ -7,12 +7,15 @@ Last reviewed: 2026-09-26
 
 ## v3.2品質強化・責務の整理（2026-09-26）
 
-source候補`5ba2a9a6`を`main`へ統合・pushし、旧作業ブランチを削除した。
+source候補を`main`へ統合・pushし、旧作業ブランチを削除した。
+後続CIで見つかったL ModeのEscape登録競合を`2ee96b16`で修正し、
+ローカル全テスト・型検査/Vite・App Store surfaceが通過。
 旧依存更新PR 4件も閉鎖済み。レビュー対象を切り出した
 [外部レビュー依頼](reviews/2026-09-26-v3.2-external-review-brief.md)と
 [実機受け入れマトリクス](releases/3.2.0-dependency-acceptance-draft.md)を次の入口とする。
-[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
-frontend・nativeとも成功。修正後候補の実機・署名済み配布は未受け入れ。
+`5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
+frontend・nativeとも成功。最終コードの[Quality CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を
+commit照合で確認する。修正後候補の実機・署名済み配布は未受け入れ。
 
 保存・外部変更監視・開き直し・バックアップ一覧の遅延応答を、セッション・保存基準・
 要求世代で防ぐ。Reactの状態更新内部でも入力や保存との競合を照合する。
