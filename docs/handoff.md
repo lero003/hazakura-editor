@@ -1,9 +1,19 @@
 # Handoff
 
 Status: Operational
-Scope: v3.2依存更新候補、次期メモ・縦書き方針、v3.1以前の引き継ぎ
+Scope: v3.2.1ワークスペース更新、次期メモ・縦書き方針、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-12
+
+## 現行候補 — v3.2.1ワークスペース一覧更新
+
+外部の追加・削除・名前変更を、アプリ復帰時とファイル一覧表示中の10秒間隔で取り直す。
+rootと展開中のフォルダに限定し、同じpath/kindの既存子一覧と展開状態を保つ。
+名前変更・削除確認中と非表示時は停止。workspace切替・古い応答・一覧取得失敗で現在の
+snapshotや原稿を消さない。手動更新も追加し、本文の外部変更／衝突処理は維持する。
+版数と検証は[3.2.1の記録](releases/3.2.1-workspace-refresh.md)、pkgのsource/build/SHA-256は
+ignoredの候補記録を参照する。同期フォルダ・スリープ復帰・VoiceOverの実機確認と
+TestFlight送信／受け入れは次のゲート。
 
 ## v3.2品質強化・責務の整理（2026-09-26）
 
@@ -15,7 +25,8 @@ source候補を`main`へ統合・pushし、旧作業ブランチを削除した�
 [実機受け入れマトリクス](releases/3.2.0-dependency-acceptance-draft.md)を次の入口とする。
 `5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
 frontend・nativeとも成功。最終コードの[Quality CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を
-commit照合で確認する。修正後候補の実機・署名済み配布は未受け入れ。
+commit照合で確認する。TestFlight配信成功はオーナー報告で、配信build/sourceの
+照合と修正後候補の実機受け入れは未完了。候補記録と配信buildの対応も要確認。
 
 保存・外部変更監視・開き直し・バックアップ一覧の遅延応答を、セッション・保存基準・
 要求世代で防ぐ。Reactの状態更新内部でも入力や保存との競合を照合する。
@@ -31,8 +42,8 @@ Vite、App Store surface 134件、fmt、ローカルApp Store ad-hocプレビュ
 [変更点と実機再確認項目](releases/3.2.0-quality-hardening.md)を参照。
 
 依存更新・計画文書等の差分は品質強化とともにコミットし、`main`へpushした。
-オーナーの簡単な実機試験は問題なしとの報告だが、修正後候補の実機・IME・VoiceOver・
-書き出し・TestFlightは未実施。既存のbundleサイズ・Rust dead_code警告も残る。
+オーナーの簡単な実機試験は問題なしとの報告だが、修正後候補のIME・VoiceOver・
+書き出し等のTestFlight操作受け入れは未実施。既存のbundleサイズ・Rust dead_code警告も残る。
 次はL Modeの出入り、書き出しの章/リンク/画像、Assist生成中の終了を含め、同一候補を実機で受け入れる。
 
 ## 次期製品方向 — メモと縦書き（2026-09-26）

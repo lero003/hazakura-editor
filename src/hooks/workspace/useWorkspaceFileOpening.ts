@@ -2,6 +2,7 @@ import { useFileOpening } from "../document/useFileOpening";
 import { useWorkspaceFileOps } from "./useWorkspaceFileOps";
 import { useWorkspaceOpening } from "./useWorkspaceOpening";
 import { useWorkspaceTreeLoader } from "./useWorkspaceTreeLoader";
+import { useWorkspaceAutoRefresh } from "./useWorkspaceAutoRefresh";
 
 type UseWorkspaceFileOpeningOptions = {
 } & Omit<Parameters<typeof useFileOpening>[0], "refreshWorkspaceTree">
@@ -15,11 +16,18 @@ export function useWorkspaceFileOpening(options: UseWorkspaceFileOpeningOptions)
     onStatus: options.setStatus,
     setWorkspaceTree: options.setWorkspaceTree,
     workspaceRootPath: options.workspaceRootPath,
+    workspaceTree: options.workspaceTree,
   });
   const workspaceActions = useWorkspaceOpening(options);
   const fileOpsActions = useWorkspaceFileOps({
     ...options,
     reloadWorkspaceParent: treeActions.reloadWorkspaceParent,
+  });
+  useWorkspaceAutoRefresh({
+    enabled: Boolean(options.workspaceRootPath) && treeActions.isWorkspaceTreeVisible &&
+      !fileOpsActions.renamingPath && !fileOpsActions.pendingRename && !fileOpsActions.pendingTrash,
+    refresh: treeActions.refreshWorkspaceTreeAutomatically,
+    cancel: treeActions.cancelAutomaticWorkspaceRefresh,
   });
   const fileActions = useFileOpening({
     ...options,

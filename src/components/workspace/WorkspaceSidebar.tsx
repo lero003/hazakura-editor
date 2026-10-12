@@ -24,6 +24,7 @@ import {
   OpenFolderIcon,
   PanelLeftCloseIcon,
   PlusIcon,
+  RefreshIcon,
   SearchIcon,
   TrashIcon,
 } from "../app/Icons";
@@ -64,6 +65,10 @@ type WorkspaceSidebarProps = {
   onCreateOkfScaffoldBookLike: () => void;
   onCollapse?: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onWorkspaceDirectoryExpanded?: (path: string, expanded: boolean) => void;
+  onWorkspaceTreeVisibilityChange?: (visible: boolean) => void;
+  onRefreshWorkspace?: () => void | Promise<void>;
+  treeVisible?: boolean;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onMoveToTrash: (path: string, name: string, isDirectory: boolean) => void;
   onOpenContextMenu: (
@@ -117,6 +122,10 @@ export function WorkspaceSidebar({
   onCreateOkfScaffoldBookLike,
   onCollapse,
   onLoadDirectory,
+  onWorkspaceDirectoryExpanded,
+  onWorkspaceTreeVisibilityChange,
+  onRefreshWorkspace,
+  treeVisible = true,
   onMoveEntry,
   onMoveToTrash,
   onOpenContextMenu,
@@ -143,6 +152,14 @@ export function WorkspaceSidebar({
       ? bookScopeNodes
       : documentBookScopeNodes(bookScopeChapterRelativePaths);
   const [sidebarView, setSidebarView] = useState<"files" | "book">("files");
+  const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => {
+    // L Mode keeps the main sidebar mounted but hidden; only its visible
+    // drawer should report the active file-list surface.
+    if (!treeVisible) return;
+    onWorkspaceTreeVisibilityChange?.(sidebarView === "files" && !!workspaceTree);
+    return () => onWorkspaceTreeVisibilityChange?.(false);
+  }, [onWorkspaceTreeVisibilityChange, sidebarView, treeVisible, !!workspaceTree]);
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const newMenuRef = useRef<HTMLDivElement | null>(null);
   const newMenuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -296,6 +313,23 @@ export function WorkspaceSidebar({
             ) : null}
           </div>
           <div className="workspace-header-actions">
+            {workspaceRootPath && sidebarView === "files" && onRefreshWorkspace ? (
+              <button
+                aria-label={fileOpsCopy.refreshWorkspace}
+                aria-busy={refreshing}
+                className="workspace-open-button"
+                disabled={refreshing || renamingPath !== null}
+                onClick={async () => {
+                  setRefreshing(true);
+                  try { await onRefreshWorkspace(); }
+                  finally { setRefreshing(false); }
+                }}
+                title={fileOpsCopy.refreshWorkspace}
+                type="button"
+              >
+                <RefreshIcon />
+              </button>
+            ) : null}
             {workspaceRootPath ? (
               <div className="workspace-new-menu" ref={newMenuRef}>
                 <button
@@ -430,6 +464,7 @@ export function WorkspaceSidebar({
           compareSelectionEnabled={compareSelectionEnabled}
           onClearCompareSelection={onClearCompareSelection}
           onLoadDirectory={onLoadDirectory}
+          onDirectoryExpanded={treeVisible ? onWorkspaceDirectoryExpanded : undefined}
           onMoveEntry={onMoveEntry}
           onOpenContextMenu={onOpenContextMenu}
           onOpenFile={onOpenFile}

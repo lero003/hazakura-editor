@@ -59,6 +59,7 @@ function TreeEntry({
   entry,
   loadingLabel,
   onLoadDirectory,
+  onDirectoryExpanded,
   onMoveEntry,
   onOpenContextMenu,
   onOpenFile,
@@ -85,6 +86,7 @@ function TreeEntry({
   requestRename: (path: string) => void;
   onClearRenaming: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onDirectoryExpanded?: (path: string, expanded: boolean) => void;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -121,6 +123,11 @@ function TreeEntry({
   }, [entry.name, isRenaming]);
 
   const isDirectory = entry.kind === "directory";
+  useEffect(() => {
+    if (!isDirectory || !onDirectoryExpanded) return;
+    onDirectoryExpanded(entry.path, expanded);
+    return () => onDirectoryExpanded(entry.path, false);
+  }, [entry.path, expanded, isDirectory, onDirectoryExpanded]);
 
   // Defer a single click by a short window so a double click can
   // cancel the open and enter rename instead. Without this, the
@@ -359,6 +366,7 @@ function TreeEntry({
               loadingLabel={loadingLabel}
               key={child.path}
               onLoadDirectory={onLoadDirectory}
+              onDirectoryExpanded={onDirectoryExpanded}
               onMoveEntry={onMoveEntry}
               onOpenContextMenu={onOpenContextMenu}
               onOpenFile={onOpenFile}
@@ -461,6 +469,7 @@ export function WorkspaceTree({
   loadingLabel,
   onClearCompareSelection,
   onLoadDirectory,
+  onDirectoryExpanded,
   onMoveEntry,
   onOpenContextMenu,
   onOpenFile,
@@ -483,6 +492,7 @@ export function WorkspaceTree({
   loadingLabel: string;
   onClearCompareSelection: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onDirectoryExpanded?: (path: string, expanded: boolean) => void;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -546,6 +556,7 @@ export function WorkspaceTree({
         entry={entry}
         loadingLabel={loadingLabel}
         onLoadDirectory={onLoadDirectory}
+        onDirectoryExpanded={onDirectoryExpanded}
         onMoveEntry={onMoveEntry}
         onOpenContextMenu={onOpenContextMenu}
         onOpenFile={onOpenFile}

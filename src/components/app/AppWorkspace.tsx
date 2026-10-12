@@ -224,6 +224,9 @@ type AppWorkspaceProps = {
   onApplyBackup?: (request: BackupRestoreRequest) => void;
   onApproveLocalImageParent: (resolvedPath: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
+  onWorkspaceDirectoryExpanded?: (path: string, expanded: boolean) => void;
+  onWorkspaceTreeVisibilityChange?: (visible: boolean) => void;
+  onRefreshWorkspace?: () => Promise<void>;
   lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
@@ -378,6 +381,9 @@ export function AppWorkspace({
   jumpToHeading,
   changeHeadingLevel,
   loadWorkspaceDirectory,
+  onWorkspaceDirectoryExpanded,
+  onWorkspaceTreeVisibilityChange,
+  onRefreshWorkspace,
   lModeCopy,
   onApplyBackup,
   onApproveLocalImageParent,
@@ -859,6 +865,10 @@ export function AppWorkspace({
             }
           }}
           onLoadDirectory={loadWorkspaceDirectory}
+          onWorkspaceDirectoryExpanded={onWorkspaceDirectoryExpanded}
+          onWorkspaceTreeVisibilityChange={onWorkspaceTreeVisibilityChange}
+          onRefreshWorkspace={onRefreshWorkspace}
+          treeVisible={!editorSettings.lModeEnabled && !readingOverlayActive}
           onMoveEntry={onMoveEntry}
           onMoveToTrash={onMoveToTrash}
           onOpenContextMenu={openWorkspaceContextMenu}

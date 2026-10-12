@@ -3,23 +3,23 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-12
 
 ## Current Position
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
-v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。次のv3.2.0は
-依存関係更新を主題とし、同一候補の実機受け入れを最終ゲートにする。
+v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。v3.2.0の依存更新に続き、
+v3.2.1で外部変更後のワークスペース一覧更新を扱う。同一候補の実機受け入れを最終ゲートにする。
 v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品方向として採用する
 （2026-09-26オーナー決定）。LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.1（2026-09-25オーナー報告。公開build/source対応はこの作業で未再確認） |
-| ソース版 | 3.2.0候補。依存更新は検証中で、署名済み提出物はまだない。 |
+| ソース版 | 3.2.1候補。ワークスペース一覧の外部変更追従。pkg作成と実機・公開の受け入れは区別する。 |
 | 配布証跡 | v3.1公開はオーナー報告。過去の候補build検証と個別実機試験は区別する |
-| 現行キュー | v3.2.0依存関係更新と同一候補の実機受け入れ — `docs/releases/3.2.0-dependency-acceptance-draft.md` |
+| 現行キュー | v3.2.1ワークスペース更新と同一候補の実機受け入れ。依存更新の残ゲートは `docs/releases/3.2.0-dependency-acceptance-draft.md` |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
@@ -34,6 +34,7 @@ v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品�
 | **v3.0** | **UI/UX刷新・アプリの完成度・Local Assist architecture整理** | 編集→読書→提案確認→出力と失敗/復旧の一貫性、全テーマ/狭幅/実機、System共通契約とAFM評価 |
 | **v3.1** | **Core AIの実利用・海外App Store展開** | allowlistモデルを明示入手・検証・選択・生成・削除できるC-1/C-2と、英語を入口にした製品/ストア情報・対象地域・価格・サポート導線の受け入れ |
 | **v3.2.0** | **依存関係更新** | npm/Rustの更新、CIとローカルbuild、同一候補の実機受け入れ。Core AI SwiftPM runtime pinは維持 |
+| **v3.2.1** | **ワークスペース一覧の外部変更追従** | アプリ復帰と表示中10秒間隔・手動更新で直下と展開中フォルダを確認。展開・選択・スクロールと未保存原稿を維持し、古い応答を拒否 |
 | v3.2後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
 
 添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。

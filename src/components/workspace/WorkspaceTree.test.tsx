@@ -67,6 +67,22 @@ function entry(
 }
 
 describe("workspace tree bounded listing", () => {
+  it("reports expanded directories and unregisters them on collapse or unmount", async () => {
+    vi.useFakeTimers();
+    const onDirectoryExpanded = vi.fn();
+    const { view } = renderTree({ onDirectoryExpanded });
+    expect(onDirectoryExpanded).toHaveBeenCalledWith(rootPath, true);
+    expect(onDirectoryExpanded).toHaveBeenCalledWith(sourceDirPath, false);
+    fireEvent.click(screen.getByRole("button", { name: "source" }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(onDirectoryExpanded).toHaveBeenLastCalledWith(sourceDirPath, true);
+    fireEvent.click(screen.getByRole("button", { name: "source" }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(onDirectoryExpanded).toHaveBeenLastCalledWith(sourceDirPath, false);
+    view.unmount();
+    expect(onDirectoryExpanded).toHaveBeenCalledWith(rootPath, false);
+  });
+
   it("shows the exact hidden entry count when the backend caps a folder", () => {
     const cappedTree = entry("workspace", rootPath, "directory", [], {
       children_truncated: true,
@@ -111,6 +127,7 @@ function makeDataTransfer(path: string): DataTransfer {
 }
 
 type RenderTreeOverrides = {
+  onDirectoryExpanded?: (path: string, expanded: boolean) => void;
   activePath?: string | null;
   compareSourcePath?: string | null;
   compareTargetPath?: string | null;
@@ -169,6 +186,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       entry={overrides.entry ?? makeTree()}
       onClearCompareSelection={onClearCompareSelection}
       onLoadDirectory={onLoadDirectory}
+      onDirectoryExpanded={overrides.onDirectoryExpanded}
       onMoveEntry={onMoveEntry}
       onOpenContextMenu={onOpenContextMenu}
       onOpenFile={onOpenFile}

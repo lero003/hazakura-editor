@@ -2014,6 +2014,26 @@ describe("proposal review visibility (07 P1)", () => {
 });
 
 describe("reading surface from the top navigation intent", () => {
+  it("pauses workspace refresh while the reader hides the file list", async () => {
+    const onWorkspaceTreeVisibilityChange = vi.fn();
+    const props = makeWorkspaceProps({
+      activeContents: "# Chapter\n\nbody",
+      activeTab: bookTab,
+      activeDocumentLineCount: 3,
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory"),
+      onWorkspaceTreeVisibilityChange,
+    });
+    const view = render(<AppWorkspace {...props} />);
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(true);
+    view.rerender(<AppWorkspace {...props} readingFocusIntent={{ open: true, token: 1 }} />);
+    await screen.findByTestId("ebook-focus-pane");
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(false);
+    view.rerender(<AppWorkspace {...props} readingFocusIntent={{ open: false, token: 2 }} />);
+    await waitFor(() => expect(screen.queryByTestId("ebook-focus-pane")).toBeNull());
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(true);
+  });
+
   it("opens the full-width reading surface even when the preview columns are off", async () => {
     // 実機指摘②: 上部ナビの「読む」は右ペインの電子書籍ではなく、全幅の読書面を開く。
     // 読書面はプレビュー列の設定に依存させない（依存させると「読む」が無反応になる）。

@@ -407,6 +407,9 @@ export function AppShell(props: AppShellProps) {
                 }
               },
               onLoadDirectory: props.loadWorkspaceDirectory,
+              onWorkspaceDirectoryExpanded: props.onWorkspaceDirectoryExpanded,
+              onWorkspaceTreeVisibilityChange: props.onWorkspaceTreeVisibilityChange,
+              onRefreshWorkspace: props.onRefreshWorkspace,
               onMoveEntry: props.onMoveEntry,
               onMoveToTrash: props.onMoveToTrash,
               onOpenContextMenu: props.openWorkspaceContextMenu,

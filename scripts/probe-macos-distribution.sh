@@ -271,8 +271,10 @@ fi
 
 echo
 echo "== Gatekeeper assessment =="
-if spctl -a -vv -t open "$APP" 2>&1; then
+if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
+    echo "spctl: skipped for App Store lane (local Gatekeeper assessment is not an App Store validation gate)"
+elif spctl -a -vv -t open "$APP" 2>&1; then
     echo "spctl: accepted"
 else
-    echo "spctl: rejected or inconclusive (not an App Store Connect validation gate; use Transporter or altool)"
+    echo "spctl: rejected or inconclusive"
 fi

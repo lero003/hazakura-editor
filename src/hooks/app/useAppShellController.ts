@@ -668,6 +668,8 @@ export function useAppShellController() {
     importSourceAsMarkdownDraft,
     importSourcePathAsMarkdownDraft,
     loadWorkspaceDirectory,
+    onWorkspaceDirectoryExpanded,
+    onWorkspaceTreeVisibilityChange,
     moveWorkspacePath,
     openExternalFilePaths,
     openFile,
@@ -716,8 +718,17 @@ export function useAppShellController() {
     tabs,
     workspaceRootPath,
     onWorkspaceEntryRekey: bookScope.remapBookScopeWorkspaceEntry,
+    workspaceTree,
     onWorkspaceEntryRemoved: bookScope.removeBookScopeWorkspaceEntry,
   });
+
+  const onRefreshWorkspace = useCallback(async () => {
+    try {
+      await refreshWorkspaceTree();
+    } catch (err) {
+      setGlobalError(String(err));
+    }
+  }, [refreshWorkspaceTree]);
 
   // v0.18 accessibility follow-up: the move-to-trash dialog
   // is a modal-shaped surface, so the controller composes the
@@ -1749,6 +1760,9 @@ export function useAppShellController() {
     lineEndingAriaLabel: editorChromeCopy.lineEndings,
     lineEndingLabel: editorChromeCopy.lineEnding,
     loadWorkspaceDirectory,
+    onWorkspaceDirectoryExpanded,
+    onWorkspaceTreeVisibilityChange,
+    onRefreshWorkspace,
     menuLanguage,
     onCheckAgentGate: requestAgentLaunchGateCheck,
     onDiscardAppleAssistEdit: discardAppleAssistEdit,

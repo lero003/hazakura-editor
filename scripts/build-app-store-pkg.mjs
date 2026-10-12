@@ -147,6 +147,9 @@ try {
   candidateComplete = true;
   console.log(sha256);
   console.log(`PKG_PATH=${pkgPath}`);
+  console.log(
+    "Candidate metadata is not updated by build:app-store-pkg; use release:candidate to record source provenance.",
+  );
 } catch (error) {
   if (!candidateComplete) {
     writeFileSync(appStoreConfigPath, originalAppStoreConfigContents);

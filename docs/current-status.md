@@ -1,28 +1,37 @@
 # Current Status
 
 Status: Operational
-Scope: v3.2依存更新候補、次期方針、v3.1公開報告、過去の実装証跡
+Scope: v3.2.1ワークスペース更新候補、次期方針、過去の実装証跡
 Authority: High
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-12
 
 ## Current State
+
+- **現行source候補v3.2.1（2026-10-12）:** ワークスペース一覧の外部変更をアプリ復帰時と
+  表示中の10秒間隔で反映し、手動更新も追加する。対象はrootと展開中のフォルダ。
+  本文・未保存編集の保護は既存の外部変更／衝突処理を維持する。
+  詳細と検証範囲は[3.2.1の記録](releases/3.2.1-workspace-refresh.md)。
+  署名pkgの版数・build・SHA-256・sourceはignoredの候補記録を確認する。
+  Apple送信・TestFlight・実機受け入れ・公開はこの作業の完了と区別する。
 
 - **公開版v3.1（2026-09-25、オーナー報告）:** Apple審査を通過し公開済み。
   この作業ではストアのbuild/source対応や個別実機試験を再確認していない。
   以下のv3.1出荷前の候補記録は作成当時の証跡として読む。
-- **次版v3.2.0（依存更新候補、未公開）:** npm/Rust依存をまとめて更新し、
+- **v3.2.0の基盤（依存更新・品質強化の記録）:** npm/Rust依存をまとめて更新し、
   CodeMirror viewの旧表示不具合、HTTPS画像、ネイティブ画面を含む
   [同一候補の実機受け入れ](releases/3.2.0-dependency-acceptance-draft.md)を公開ゲートとする。
   SwiftPMのCore AI配布runtime revisionは今回維持。LLM機能とMLX runtimeは保留。
-  source版は3.2.0候補、App Store source設定のbuild番号は158。
-  公開済みbuildとの照合と提出用の採番・署名・配信は別途確認する。
+  現行3.2.1候補はこの基盤を引き継ぐ。App Store build番号は署名pkg作成時に採番し、
+  公開済みbuildと提出候補のsource対応を別途照合する。
   source候補は`main`へ統合・push済みで、追加のUI競合修正`2ee96b16`までローカルで確認。
   旧作業ブランチを削除し、
   旧依存更新PR 4件は重複として閉鎖。外部レビュー用の[対象・証跡・残ゲート](reviews/2026-09-26-v3.2-external-review-brief.md)を参照。
   `5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
   frontend・nativeとも成功。後続CIで見つかったL ModeのEscape登録競合は`2ee96b16`で修正し、
   [最新CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を確認する。
-  実機と署名済み配布のゲートは引き続き未完了。
+  v3.2候補のTestFlight配信成功はオーナー報告。ローカルpkg署名は確認したが、
+  Apple側のbuild/source対応と修正後候補の実機受け入れは未照合。
+  候補記録と配信buildの対応も未照合。
 
 - **v3.2品質強化（2026-09-26、source検証済み）:** 保存・外部変更監視・開き直し・
   バックアップ一覧の古い応答による上書きと、Assist停止待ち前後の終了競合を修正。
@@ -30,7 +39,7 @@ Last reviewed: 2026-09-26
   frontend 2,783件・scripts 31件、Rust 483件pass / 3 ignored、型検査、Vite、
   App Store surface 134件、ローカルApp Store ad-hocプレビューbuildと静的sandbox smokeが通過。
   [検証範囲と残項目](releases/3.2.0-quality-hardening.md)を参照。
-  オーナー報告の簡単な実機試験は問題なし。修正後候補の実機・TestFlight受入は未実施。
+  オーナー報告の簡単な実機試験は問題なし。TestFlight配信と個別の操作受け入れは区別する。
 
 - **v3.2後の製品方向（2026-09-26、方針採用のみ）:** 見直し・再開・編集ルールのメモと
   縦書きをロードマップへ採用。編集ルールは自由記述のひな形に注意や例外を書き足す形を中心にする。

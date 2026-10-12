@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-09-25
+Last reviewed: 2026-10-12
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -26,8 +26,8 @@ Last reviewed: 2026-09-25
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current source version is `3.2.0`, a dependency-update candidate. Its device
-acceptance and App Store submission remain pending.
+Current source version is `3.2.1`, a workspace-refresh candidate following the
+v3.2 dependency update. Its device acceptance and App Store submission remain pending.
 Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. The current App Store development source exposes Apple Intelligence
@@ -42,7 +42,8 @@ The `3.0.0` release refreshed the UI/UX across the app (reader spread layout,
 a unified EPUB / PDF / HTML export dialog, daily-flow continuity) and organized
 the Local Assist architecture around the on-device System backend. The owner
 reports that **v3.1** passed Apple review and is published. The v3.2 source
-updates dependencies; it does not add a new LLM feature or MLX runtime.
+updates dependencies; v3.2.1 adds bounded workspace-list refresh after external changes.
+It does not add a new LLM feature or MLX runtime.
 See the [roadmap](docs/roadmap.md), [v3 product plan](docs/v3-product-completion-plan.md), and
 [v3.2 dependency acceptance draft](docs/releases/3.2.0-dependency-acceptance-draft.md).
 The [3.1 submission copy packet](docs/releases/3.1.0-app-store-listing-copy.md)
@@ -321,7 +322,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `3.2.0` across npm, Tauri, and Cargo metadata. It is a dependency-update candidate, not a signed App Store submission. The owner reports Mac App Store `3.1.0` publication on 2026-09-25; exact released-build provenance is separate. The latest published GitHub source / local-app tag is [v3.0.0](https://github.com/lero003/hazakura-editor/tree/v3.0.0) (source-only tag, no binary assets). Prior checkpoints: [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0), [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `3.2.1` across npm, Tauri, and Cargo metadata. It is a workspace-refresh candidate following the dependency update; package generation and device/App Store acceptance are recorded separately. The owner reports Mac App Store `3.1.0` publication on 2026-09-25; exact released-build provenance is separate. The latest published GitHub source / local-app tag is [v3.0.0](https://github.com/lero003/hazakura-editor/tree/v3.0.0) (source-only tag, no binary assets). Prior checkpoints: [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0), [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `3.1.0` by owner report; rollout coverage was not checked here. Prior store releases remain historical.
 - Release notes: [3.1.0 App Store record](docs/releases/3.1.0-app-store-release-notes.md), [3.0.3 App Store submission copy](docs/releases/3.0.3-app-store-release-notes.md), [3.0.2 App Store submission copy](docs/releases/3.0.2-app-store-release-notes.md), [3.0.1 App Store submission copy](docs/releases/3.0.1-app-store-release-notes.md), [3.0.0 release record](docs/releases/3.0.0-source-tag.release.md), and [3.0.0 App Store notes](docs/releases/3.0.0-app-store-release-notes.md). Older records remain under [docs/releases](docs/releases/README.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

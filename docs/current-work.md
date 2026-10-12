@@ -1,15 +1,25 @@
 # Current Work
 
 Status: Operational
-Scope: v3.2依存更新キュー、次期メモ・縦書き方針、v3.1以前の記録
+Scope: v3.2.1ワークスペース更新、次期メモ・縦書き方針、過去の記録
 Authority: High
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-12
 
-## 現行キュー — v3.2.0依存関係更新と品質強化（2026-09-26）
+## 現行キュー — v3.2.1ワークスペース一覧更新（2026-10-12）
+
+ロードマップのメモ・縦書きへ進む前に、外部で加わったファイルの追加・削除・名前変更を
+開き直さず一覧へ反映する。アプリ復帰時と、ファイル一覧表示中の10秒間隔で、rootと展開中の
+フォルダだけを取り直す。展開状態・選択・表示位置を保ち、名前変更・確認操作中は停止する。
+本文・未保存編集は既存の外部変更／衝突処理を維持する。複数Macでは同期済みのローカル変更が対象。
+版数・検証・残る実機項目は[3.2.1の記録](releases/3.2.1-workspace-refresh.md)を参照する。
+署名pkgの最新version/build/source/SHA-256はignoredの候補記録を確認する。
+TestFlightへの送信と実機受け入れは別ゲート。
+
+## 基盤 — v3.2.0依存関係更新と品質強化（2026-09-26の記録）
 
 v3.1はApple審査を通過して公開済み（オーナー報告）。下のv3.1節は当時の
 source・候補・未完了ゲートの履歴であり、現在の公開状態を示すものではない。
-次版はnpm/Rustの依存関係更新を主題とする。通常の互換更新とメジャー更新を
+v3.2.0ではnpm/Rustの依存関係更新を主題とした。通常の互換更新とメジャー更新を
 個別に検証し、最終的には同一候補のmacOS実機受け入れで判断する。
 具体的な更新対象・例外・受け入れ項目は
 [v3.2依存受け入れドラフト](releases/3.2.0-dependency-acceptance-draft.md)。
@@ -33,10 +43,10 @@ source候補は`main`へ統合・push済み。追加のUI競合修正`2ee96b16`�
 `5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
 frontend・nativeとも成功。後続CIのL Mode Escape競合を修正し、
 [最新CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を確認する。
-実機・署名済み配布の受け入れは別ゲート。
+TestFlight配信成功はオーナー報告。配信build/sourceの照合と実機受け入れは別ゲート。
 
 オーナーの簡単な実機テストでは問題なしとの報告あり。修正後候補については、
-実機IME・VoiceOver・TestFlight、L Modeの出入り、書き出しの章・リンク・画像、
+TestFlight上の実機IME・VoiceOver、L Modeの出入り、書き出しの章・リンク・画像、
 終了時のAssist停止と未保存確認を上記マトリクスに沿って受け入れる。
 
 ## v3.2後の方向 — メモと縦書き（2026-09-26、方針採用）
