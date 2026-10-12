@@ -257,6 +257,10 @@ function TreeEntry({
 
       try {
         await onLoadDirectory(entry.path);
+      } catch {
+        // The loader reports the failure. Leave this row collapsed so the
+        // user can retry, and consume the event handler's rejected promise.
+        return;
       } finally {
         setLoading(false);
       }
@@ -417,6 +421,10 @@ function RenameInput({
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    // The editor's shortcuts must never handle keys used to edit a name.
+    // Enter/Escape belong to the IME while Japanese input is being composed.
+    event.stopPropagation();
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === "Enter") {
       event.preventDefault();
       const value = (draft ?? "").trim();
@@ -432,9 +440,6 @@ function RenameInput({
       onCancel();
       return;
     }
-    // Stop propagation so the keyboard shortcut handlers (e.g.
-    // Cmd+N, Cmd+O) don't fire while the user is typing.
-    event.stopPropagation();
   };
 
   // The rename row is a plain <div> (not a <button>), so a
@@ -547,6 +552,7 @@ export function WorkspaceTree({
       }}
     >
       <TreeEntry
+        key={entry.path}
         activePath={activePath}
         compareSourcePath={compareSourcePath}
         compareTargetPath={compareTargetPath}

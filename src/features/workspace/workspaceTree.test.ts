@@ -34,4 +34,9 @@ describe("workspace tree refresh", () => {
     const current = directory("/book", [file("/book/index.md")]);
     expect(replaceWorkspaceTreeEntry(current, directory("/book/gone", [file("/book/gone/one.md")]))).toBe(current);
   });
+
+  it("ignores an old directory response after its parent replaced it with a file", () => {
+    const current = directory("/book", [file("/book/chapters")]);
+    expect(replaceWorkspaceTreeEntry(current, directory("/book/chapters", [file("/book/chapters/old.md")]))).toBe(current);
+  });
 });

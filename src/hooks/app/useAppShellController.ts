@@ -691,6 +691,7 @@ export function useAppShellController() {
     cancelPendingTrash,
   } = useWorkspaceFileOpening({
     activeTab,
+    rejectIfLocked: rejectIfAppleAssistLocksTab,
     clearImagePreview,
     onNewFileActivated: focusEditorSoon,
     pairImportAssistReference: async (sourcePath, editorSessionId) => {

@@ -44,6 +44,22 @@ describe("useWorkspaceTreeLoader", () => {
     expect(listWorkspaceDirectory).not.toHaveBeenCalled();
   });
 
+  it("does not restore a folder when its older listing arrives after the parent replaced it with a file", async () => {
+    const child = deferred<WorkspaceTreeEntry>();
+    listWorkspaceTree.mockResolvedValue(dir("/book", [file("/book/chapters")]));
+    listWorkspaceDirectory.mockReturnValue(child.promise);
+    const hook = setup(dir("/book", [dir("/book/chapters")]));
+    act(() => hook.result.current.onWorkspaceDirectoryExpanded("/book/chapters", true));
+    let refresh!: Promise<void>;
+    await act(async () => { refresh = hook.result.current.refreshWorkspaceTree(); });
+    expect(hook.result.current.tree?.children[0].kind).toBe("file");
+    await act(async () => {
+      child.resolve(dir("/book/chapters", [file("/book/chapters/old.md")]));
+      await refresh;
+    });
+    expect(hook.result.current.tree?.children[0].kind).toBe("file");
+  });
+
   it("only checks the root when the root row is collapsed", async () => {
     const hook = setup(dir("/book", [dir("/book/chapters")]));
     listWorkspaceTree.mockResolvedValue(dir("/book", [dir("/book/chapters", [], false)]));

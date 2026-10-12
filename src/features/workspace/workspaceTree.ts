@@ -35,7 +35,9 @@ export function replaceWorkspaceTreeEntry(
   replacement: WorkspaceTreeEntry,
 ): WorkspaceTreeEntry {
   if (tree.path === replacement.path) {
-    return mergeWorkspaceTreeEntry(tree, replacement);
+    // Only the parent listing can change an entry's kind. A delayed child
+    // listing must not restore a folder that the parent now reports as a file.
+    return tree.kind === replacement.kind ? mergeWorkspaceTreeEntry(tree, replacement) : tree;
   }
 
   const children = tree.children.map((child) => replaceWorkspaceTreeEntry(child, replacement));

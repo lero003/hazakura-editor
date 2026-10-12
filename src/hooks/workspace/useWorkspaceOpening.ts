@@ -2,6 +2,8 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useLayoutEffect,
+  useRef,
 } from "react";
 import {
   createSecurityScopedBookmark,
@@ -45,12 +47,30 @@ export function useWorkspaceOpening({
   setWorkspaceRootPath,
   setWorkspaceTree,
 }: UseWorkspaceOpeningOptions) {
-  const openWorkspacePath = useCallback(
+  const operationRef = useRef(0);
+  const mountedRef = useRef(false);
+  useLayoutEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      operationRef.current += 1;
+    };
+  }, []);
+  const beginOperation = useCallback(() => {
+    const operation = ++operationRef.current;
+    return () => mountedRef.current && operationRef.current === operation;
+  }, []);
+
+  // A picker, bookmark fallback, and reauthorization belong to one user action.
+  // Checking only the path would let an earlier A result publish after A → B → A.
+  const openWorkspacePathForOperation = useCallback(
     async (
       path: string,
-      workspaceBookmark?: number[] | null,
-      recentPathToReplace?: string,
+      workspaceBookmark: number[] | null | undefined,
+      recentPathToReplace: string | undefined,
+      isCurrent: () => boolean,
     ): Promise<boolean> => {
+      if (!isCurrent()) return false;
       setGlobalError(null);
       setStatus("Reading folder...");
 
@@ -60,17 +80,21 @@ export function useWorkspaceOpening({
         try {
           tree = await listWorkspaceTree(path);
         } catch (pathError) {
+          if (!isCurrent()) return false;
           if (!workspaceBookmark || workspaceBookmark.length === 0) {
             throw pathError;
           }
           resolvedPath = await resolveSecurityScopedBookmark(workspaceBookmark);
+          if (!isCurrent()) return false;
           tree = await listWorkspaceTree(resolvedPath);
         }
+        if (!isCurrent()) return false;
         const freshBookmark = await createSecurityScopedBookmark(
           resolvedPath,
         ).catch(
           () => null,
         );
+        if (!isCurrent()) return false;
         const bookmark = freshBookmark ?? workspaceBookmark ?? null;
         writeWorkspaceRootBookmark(resolvedPath, bookmark);
         setWorkspaceTree(tree);
@@ -95,6 +119,7 @@ export function useWorkspaceOpening({
         setStatus("Folder opened");
         return true;
       } catch (err) {
+        if (!isCurrent()) return false;
         setGlobalError(String(err));
         setStatus("Folder open failed");
         return false;
@@ -113,41 +138,61 @@ export function useWorkspaceOpening({
     ],
   );
 
-  const openWorkspace = useCallback(async (recentPathToReplace?: string) => {
+  const openWorkspacePath = useCallback((
+    path: string,
+    workspaceBookmark?: number[] | null,
+    recentPathToReplace?: string,
+  ) => openWorkspacePathForOperation(path, workspaceBookmark, recentPathToReplace, beginOperation()),
+  [beginOperation, openWorkspacePathForOperation]);
+
+  const openWorkspaceForOperation = useCallback(async (
+    recentPathToReplace: string | undefined,
+    isCurrent: () => boolean,
+  ) => {
+    if (!isCurrent()) return;
     setGlobalError(null);
     setStatus("Choosing folder...");
 
     try {
       const path = await pickWorkspaceFolder();
+      if (!isCurrent()) return;
 
       if (!path) {
         setStatus("Folder open cancelled");
         return;
       }
 
-      await openWorkspacePath(path, undefined, recentPathToReplace);
+      await openWorkspacePathForOperation(path, undefined, recentPathToReplace, isCurrent);
     } catch (err) {
+      if (!isCurrent()) return;
       setGlobalError(String(err));
       setStatus("Folder open failed");
     }
-  }, [openWorkspacePath, setGlobalError, setStatus]);
+  }, [openWorkspacePathForOperation, setGlobalError, setStatus]);
+
+  const openWorkspace = useCallback((recentPathToReplace?: string) =>
+    openWorkspaceForOperation(recentPathToReplace, beginOperation()),
+  [beginOperation, openWorkspaceForOperation]);
 
   const reopenRecentWorkspace = useCallback(
     async (path: string) => {
+      const isCurrent = beginOperation();
+      if (!isCurrent()) return;
       const recent = readStoredRecentFolders().find(
         (entry) => entry.path === path,
       );
-      if (await openWorkspacePath(path, recent?.workspaceBookmark)) {
+      if (await openWorkspacePathForOperation(path, recent?.workspaceBookmark, undefined, isCurrent)) {
         return;
       }
+      if (!isCurrent()) return;
 
       // Old recent entries only stored a path. In App Sandbox that path is
       // useful as history but is not an authorization grant; ask once through
       // the standard picker, then persist the fresh bookmark for next time.
       setStatus("Reauthorization required");
-      await openWorkspace(path);
+      await openWorkspaceForOperation(path, isCurrent);
     },
-    [openWorkspace, openWorkspacePath, setStatus],
+    [beginOperation, openWorkspaceForOperation, openWorkspacePathForOperation, setStatus],
   );
 
   /**
@@ -156,36 +201,27 @@ export function useWorkspaceOpening({
    * standard folder picker for reauthorization.
    */
   const reopenPersistedWorkspace = useCallback(async () => {
+    const isCurrent = beginOperation();
+    if (!isCurrent()) return;
     const persisted = readPersistedWorkspaceState();
     const path = persisted?.workspaceRootPath;
 
     if (!path) {
-      await openWorkspace();
+      await openWorkspaceForOperation(undefined, isCurrent);
       return;
     }
 
     setGlobalError(null);
     setStatus("Reopening folder...");
 
-    if (await openWorkspacePath(path)) {
+    if (await openWorkspacePathForOperation(path, persisted.workspaceRootBookmark, undefined, isCurrent)) {
       return;
     }
-
-    const bookmark = persisted.workspaceRootBookmark;
-    if (bookmark && bookmark.length > 0) {
-      try {
-        const resolvedPath = await resolveSecurityScopedBookmark(bookmark);
-        if (await openWorkspacePath(resolvedPath)) {
-          return;
-        }
-      } catch {
-        // Fall through to the explicit picker reauthorization path.
-      }
-    }
+    if (!isCurrent()) return;
 
     setStatus("Reauthorization required");
-    await openWorkspace();
-  }, [openWorkspace, openWorkspacePath, setGlobalError, setStatus]);
+    await openWorkspaceForOperation(undefined, isCurrent);
+  }, [beginOperation, openWorkspaceForOperation, openWorkspacePathForOperation, setGlobalError, setStatus]);
 
   return {
     openWorkspace,
