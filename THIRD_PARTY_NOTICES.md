@@ -118,7 +118,6 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 | `@lezer/markdown@1.6.4` | `MIT` |
 | `@marijn/find-cluster-break@1.0.3` | `MIT` |
 | `@tauri-apps/api@2.11.1` | `Apache-2.0 OR MIT` |
-| `@tauri-apps/plugin-dialog@2.7.3` | `MIT OR Apache-2.0` |
 | `@types/trusted-types@2.0.7` | `MIT` |
 | `@xterm/addon-fit@0.11.0` | `MIT` |
 | `@xterm/xterm@6.0.0` | `MIT` |

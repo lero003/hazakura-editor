@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { save as saveDialog } from "../../lib/tauri/nativeDialog";
 import {
   isTauriRuntime,
   exportPdfFile,
