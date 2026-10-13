@@ -1,22 +1,29 @@
 # Handoff
 
 Status: Operational
-Scope: v3.2.1ワークスペース更新、次期メモ・縦書き方針、過去の引き継ぎ
+Scope: v3.3依存整理の外部レビュー、メモ・縦書き方針、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-10-12
+Last reviewed: 2026-10-14
 
-## 現行候補 — v3.2.1ワークスペース一覧更新
+## 現行候補 — v3.3依存の初期整理（2026-10-14）
 
-外部の追加・削除・名前変更を、アプリ復帰時とファイル一覧表示中の10秒間隔で取り直す。
-rootと展開中のフォルダに限定し、同じpath/kindの既存子一覧と展開状態を保つ。
-名前変更・削除確認中と非表示時は停止。workspace切替・古い応答・一覧取得失敗で現在の
-snapshotや原稿を消さない。手動更新も追加し、本文の外部変更／衝突処理は維持する。
-版数と検証は[3.2.1の記録](releases/3.2.1-workspace-refresh.md)、pkgのsource/build/SHA-256は
-ignoredの候補記録を参照する。同期フォルダ・スリープ復帰・VoiceOverの実機確認と
-TestFlight送信／受け入れは次のゲート。
-選択・再認可とfile opsにも要求世代を適用し、切替時に旧確認を取り消す。実行済みの改名・移動・削除は
-保持中の旧タブへ反映する。Assist対象と子孫は操作直前のロックで保護し、Trashは登録caseからDiffを解除。
-IME変換、一覧の取得失敗とroot切替の回帰テストを追加した。詳細の検証件数は3.2.1記録を参照する。
+v3.2.1はオーナー報告でテスト問題なし・App Store公開済み。source版は3.3.0。
+実利用CodeMirror/Lezerの直接宣言と未使用 `codemirror` 束の除去を実装し、view 6.43.13と
+全残存npm package metadataを維持。新testはruntime/type-onlyを区別し、未宣言と束の再混入を検出する。
+PDFKitとRustの自作7件比較は現行二経路維持で閉じた。window-vibrancy、Core AI pin/patchは維持。
+
+外部レビューは `5e3310aa..codex/v3.3-dependency-autonomy` が対象。先行する3.2.1コミットと混ぜない。
+[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)に検証、測定の範囲、PDFの再開条件を集約した。
+frontend 2,844件・scripts 31件、Rust 483 pass / 3 ignored、型検査・surface 134件、
+両lane preview buildと署名・同梱noticeの確認が通過。全frontendは4 workersで通過。
+開始時から存在するApp Store設定のbuild counter変更は保持し、このスライスのコミットから除外する。
+次は外部レビュー指摘の反映と、同一候補の長文日本語・IME未確定入力・Undo・L Mode・VoiceOver受け入れ。
+署名候補と公開は別ゲート。初期整理を受け入れたら見直しメモへ戻る。
+
+## 公開報告 — v3.2.1
+
+2026-10-14にオーナーがテスト問題なし・App Store公開済みと報告。
+[当時の変更と検証](releases/3.2.1-workspace-refresh.md)を参照。公開build/sourceの対応は独立未照合。
 
 ## v3.2品質強化・責務の整理（2026-09-26）
 
@@ -58,7 +65,7 @@ Vite、App Store surface 134件、fmt、ローカルApp Store ad-hocプレビュ
 AIによるひな形・内容の候補作成は、メモを本文推敲に使う機能と分け、品質再評価後に扱う。
 本文・メモの自動更新や、表記を強制する検査エンジンを採用したわけではない。
 
-直近はv3.2候補の実機受け入れを優先。次のメモ設計で保存・原稿との紐付け・移動・削除・
+直近はv3.3初期整理の外部レビューと実機受け入れを優先。次のメモ設計で保存・原稿との紐付け・移動・削除・
 位置の再指定を決める。版割り・出荷日は未確定。今回は計画文書のみで、機能実装や実機検証は行っていない。
 文書検証は `git diff --check`、未追跡の計画詳細を含む追加差分の空白・リンク・公開文言の衛生確認が通過。
 

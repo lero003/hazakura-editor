@@ -3,18 +3,17 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-14
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Agent entry rules live in `AGENTS.md`。v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。
-開発版は3.2.0の依存更新候補。`current-work.md` → `current-status.md` →
-`releases/3.2.0-dependency-acceptance-draft.md` の順に読む。
-source候補は`main`へ統合済み。第三者レビューには
-`reviews/2026-09-26-v3.2-external-review-brief.md`の固定差分と残ゲートを使う。
-過去の候補・実機未確認・GitHub公開は別証跡として保持する。
-v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
-`post-v3.1-writing-completion-draft.md` に方向性と未確定の詳細を分けて記録する。
+Agent entry rules live in `AGENTS.md`。v3.2.1はテスト問題なし・App Store公開済み
+（2026-10-14オーナー報告）。開発版3.3.0は依存初期整理の外部レビュー候補。
+`current-work.md` → `current-status.md` → `releases/3.3.0-dependency-autonomy.md` の順に読む。
+レビューは基準 `5e3310aa` からの差分を使い、先行する3.2.1コミットと区別する。
+過去の候補・実機・GitHub公開は個別の証跡として保持する。
+初期範囲と保留条件は `dependency-autonomy-plan.md`、メモ系・縦書きの採用方針は
+`roadmap.md` と `post-v3.1-writing-completion-draft.md` を参照する。
 
 ## Current Canonical Docs
 
@@ -25,8 +24,8 @@ v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `core-ai-production-models.md`: **v3.1 production model identities, pinned asset recipe, and activation gates**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **v3.2依存更新の現行キュー**とv3.1以前の候補記録。
-- `roadmap.md`: **v3.2依存更新と、採用したメモ系・縦書きの方向性**。
+- `current-work.md`: **v3.3依存初期整理の外部レビュー・受け入れ**と過去の候補記録。
+- `roadmap.md`: **v3.3依存初期整理、採用したメモ系・縦書きの方向性**。
 - `v3-product-completion-plan.md`: **v3全体計画**。添付UI資料の採否・着手順・完成判定。
 - `v2.9-v3-local-assist-plan.md`: **current technical plan** for Local Assist / AFM / Core AI.
 - `v2.8-plan.md`: published-line planning history; unshipped U-3/U-4/G-1 moved to the next plan.
@@ -55,6 +54,8 @@ v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
+- `releases/3.3.0-dependency-autonomy.md`: v3.3変更・検証・PDF判断・外部レビュー範囲。
+- `releases/3.2.1-workspace-refresh.md`: v3.2.1の公開報告、変更と当時のsource検証。
 - `releases/3.2.0-dependency-acceptance-draft.md`: v3.2の更新範囲、検証結果、実機受け入れ。
 - `reviews/2026-09-26-v3.2-external-review-brief.md`: v3.2固有の固定コード差分、検証証跡、外部レビュー依頼。
 - `releases/3.1.0-app-store-release-notes.md`: 3.1.0公開前の掲載文・受入項目の記録。
@@ -68,9 +69,10 @@ v3.2後のメモ系・縦書きは採用方針。`roadmap.md` と
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **v3.2依存更新と、採用したメモ系・縦書きの方向性**
+- `roadmap.md` — **現行v3.3依存初期整理、採用したメモ系・縦書きの方向性**
+- `dependency-autonomy-plan.md` — **v3.3初期計画**。棚卸し→CodeMirror構成整理→PDF二経路の判断。初期範囲・検証・中止条件。実装結果は3.3.0記録へ
 - `post-v3.1-writing-completion-draft.md` — **メモ系・縦書きの計画詳細**。方向性は採用、UI・保存方式・版割りは未確定。AIによるメモ作成・推敲は品質再評価後
-- `current-work.md` — 3.2.0候補の現行作業とv3.1以前の履歴
+- `current-work.md` — 3.3候補の外部レビュー・受け入れ、過去の履歴
 - `releases/3.2.0-dependency-acceptance-draft.md` — 自動ゲート・実機受け入れの作業表
 - `v3-product-completion-plan.md` — v3全体とUI刷新の計画
 - `v2.9-v3-local-assist-plan.md` — active technical plan, attachment reconciliation and acceptance

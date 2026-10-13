@@ -1,29 +1,32 @@
 # Current Status
 
 Status: Operational
-Scope: v3.2.1ワークスペース更新候補、次期方針、過去の実装証跡
+Scope: v3.3依存初期整理候補、v3.2.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-10-12
+Last reviewed: 2026-10-14
 
 ## Current State
 
-- **現行source候補v3.2.1（2026-10-12）:** ワークスペース一覧の外部変更をアプリ復帰時と
-  表示中の10秒間隔で反映し、手動更新も追加する。対象はrootと展開中のフォルダ。
-  本文・未保存編集の保護は既存の外部変更／衝突処理を維持する。
-  詳細と検証範囲は[3.2.1の記録](releases/3.2.1-workspace-refresh.md)。
-  再点検では選択・再認可・ファイル操作の切替競合、Assistロックを回避する改名・移動・削除、
-  削除後のDiff残留、日本語の名前入力と一覧の取得失敗・root切替を修正した。
-  署名pkgの版数・build・SHA-256・sourceはignoredの候補記録を確認する。
-  Apple送信・TestFlight・実機受け入れ・公開はこの作業の完了と区別する。
+- **現行source v3.3.0（2026-10-14、外部レビュー候補）:** CodeMirror/Lezerの実利用を直接宣言し、
+  未使用の `codemirror` 束を除去。npm解決集合は184件から183件へ減り、残る全package metadataと
+  view 6.43.13 pinを維持した。runtime6件とtype-only1件を補ったため、直接宣言件数は増える。
+  新しい依存契約テストで未宣言と束の再混入を検出する。PDF二経路は自作7件の比較から維持。
+  変更・検証結果・再開条件は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
+  ローカルfrontend 2,844件・scripts 31件、Rust 483 pass / 3 ignored、App Store surface 134件、
+  型検査・両lane preview buildが通過。v3.3の実機受け入れ・署名submit候補・公開は未実施。
+  メモ・縦書きは初期整理の受け入れ後に戻る。
 
-- **公開版v3.1（2026-09-25、オーナー報告）:** Apple審査を通過し公開済み。
-  この作業ではストアのbuild/source対応や個別実機試験を再確認していない。
-  以下のv3.1出荷前の候補記録は作成当時の証跡として読む。
+- **公開版v3.2.1（2026-10-14、オーナー報告）:** テスト問題なし・App Store公開済み。
+  ワークスペース一覧の外部変更追従と競合修正を含む。当時のsource検証は
+  [3.2.1の記録](releases/3.2.1-workspace-refresh.md)。公開build/sourceの対応、rolloutと
+  個別の実機試験全項目は、この作業では独立照合していない。
+  以下のv3.2以前の候補記録は作成当時の証跡として読む。
+
 - **v3.2.0の基盤（依存更新・品質強化の記録）:** npm/Rust依存をまとめて更新し、
   CodeMirror viewの旧表示不具合、HTTPS画像、ネイティブ画面を含む
   [同一候補の実機受け入れ](releases/3.2.0-dependency-acceptance-draft.md)を公開ゲートとする。
   SwiftPMのCore AI配布runtime revisionは今回維持。LLM機能とMLX runtimeは保留。
-  現行3.2.1候補はこの基盤を引き継ぐ。App Store build番号は署名pkg作成時に採番し、
+  当時の3.2.1候補はこの基盤を引き継ぐ。App Store build番号は署名pkg作成時に採番し、
   公開済みbuildと提出候補のsource対応を別途照合する。
   source候補は`main`へ統合・push済みで、追加のUI競合修正`2ee96b16`までローカルで確認。
   旧作業ブランチを削除し、

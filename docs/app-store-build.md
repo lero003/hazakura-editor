@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-10-12 (v3.2.1 workspace-refresh candidate)
+Last reviewed: 2026-10-14 (v3.3 dependency-autonomy review candidate)
 
 ## Purpose
 
@@ -43,8 +43,8 @@ revisions, file digests, and Apple-hosted asset-pack identifiers are pinned in
 The current App Store source catalog lists Gemma 4 E4B v2 for explicit download. The ad-hoc local
 preview shows the catalog but disables Apple-hosted acquisition because its
 `BAAssetPackManager` startup path traps outside the supported distribution
-context. The signed submit lane retains the platform transport. The v3.2
-dependency candidate requires fresh acceptance on the same signed TestFlight
+context. The signed submit lane retains the platform transport. The v3.3
+dependency-autonomy candidate requires acceptance on the same signed TestFlight
 build before its release.
 
 The Developer / GitHub lane remains separate and may include optional
@@ -54,17 +54,15 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `3.1.0` (2026-09-25 owner report: Apple review
-  passed and the version is public). Exact released-build provenance, build
-  number, and rollout coverage remain unverified here. Prior `3.0.0` is recorded
-  in `docs/releases/3.0.0-source-tag.release.md`.
-- Current source / Developer version: `3.2.1`. This is a workspace-refresh
-  candidate following the dependency update; its same-build device and signed
-  TestFlight acceptance are pending.
-  The submit config's `bundleVersion` still reflects the prior local counter.
+- Published App Store version: `3.2.1` (2026-10-14 owner report: testing passed
+  and the version is public). Exact released-build provenance, build number,
+  and rollout coverage remain unverified here.
+- Current source / Developer version: `3.3.0`. This is a dependency-autonomy
+  review candidate; its device and signed TestFlight acceptance are pending.
+  The submit config's `bundleVersion` reflects a local counter.
   Check the published build number and assign a new candidate number before
-  signing a v3.2.1 submission package. Local 3.1 build 157 from clean source
-  `adda8bbf` is historical package evidence, not proof of the published build.
+  signing a v3.3 submission package. Local 3.2.1 package records are historical
+  evidence and do not prove which build is public.
   GitHub source tag: `v3.0.0` (source-only repository checkpoint, created 2026-09-14;
   prior `v2.3.0` and `v2.0.0` remain immutable).
 - Latest local App Store package candidate metadata (version, build
@@ -623,6 +621,10 @@ approved until the signing, local smoke, App Store Connect upload, Apple
 validation, metadata, and App Review evidence all exist.
 
 ## Reviewer Note Prompts
+
+The signed-version/build wording below is a historical v3.1 submission example.
+For v3.3, use only the actual signed candidate identity and evidence after its
+acceptance; do not copy the historical build number into new review notes.
 
 Keep the final reviewer note in ignored local files, but make sure it
 can answer these public-safe points before submission:

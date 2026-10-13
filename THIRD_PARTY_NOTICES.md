@@ -3,10 +3,11 @@
 Status: Draft
 Scope: hazakura editor dependency, bundled-helper, and asset provenance notes
 Authority: Medium
-Last reviewed: 2026-09-25
+Last reviewed: 2026-10-14
 
 This file is a distribution-prep draft, not legal advice. The dependency
-inventory below reflects the v3.2.0 candidate lockfiles. Before submitting
+JavaScript inventory below reflects the v3.3.0 review candidate lockfile;
+the unchanged Cargo inventory was collected for v3.2.0. Before submitting
 the final App Store or Developer ID package, preserve required upstream
 license texts and notices and review the exact signed package.
 
@@ -53,6 +54,12 @@ shoulders of open source software.
     `x86_64-apple-darwin`; the union is listed below.
   - Core AI Swift package pins remain unchanged; their license-text review is
     a separate final-package gate.
+- 2026-10-14 v3.3 refresh:
+  - Removed the unused `codemirror@6.0.2` wrapper from the JavaScript inventory.
+  - The remaining resolved JavaScript versions and license metadata are unchanged.
+    Direct declarations now cover product CodeMirror/Lezer imports; `@lezer/common`
+    is directly declared for type checking and also remains a transitive runtime package.
+  - Cargo dependency versions and Core AI Swift pins remain unchanged.
 
 ## Important Policy Notes
 
@@ -109,7 +116,6 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 | `@types/trusted-types@2.0.7` | `MIT` |
 | `@xterm/addon-fit@0.11.0` | `MIT` |
 | `@xterm/xterm@6.0.0` | `MIT` |
-| `codemirror@6.0.2` | `MIT` |
 | `crelt@1.0.7` | `MIT` |
 | `dompurify@3.4.16` | `(MPL-2.0 OR Apache-2.0); project policy chooses Apache-2.0` |
 | `marked@18.0.14` | `MIT` |

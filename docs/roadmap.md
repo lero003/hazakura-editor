@@ -3,30 +3,32 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-10-12
+Last reviewed: 2026-10-14
 
 ## Current Position
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
-v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。v3.2.0の依存更新に続き、
-v3.2.1で外部変更後のワークスペース一覧更新を扱う。同一候補の実機受け入れを最終ゲートにする。
-v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品方向として採用する
-（2026-09-26オーナー決定）。LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
+v3.2.1はテスト問題なし・App Store公開済み（2026-10-14オーナー報告）。
+新機能より先に、v3.3で依存の自律化を初期整理する。CodeMirrorの直接宣言・不要な束の除去を実装し、
+PDF二経路は比較結果から維持する。全依存の撤去は前提にしない。
+メモ系と縦書きは採用方針を維持し、初期整理の受け入れ後に戻る。
+LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 
 | 対象 | 状態 |
 |---|---|
-| 公開版 | v3.1（2026-09-25オーナー報告。公開build/source対応はこの作業で未再確認） |
-| ソース版 | 3.2.1候補。ワークスペース一覧の外部変更追従。pkg作成と実機・公開の受け入れは区別する。 |
-| 配布証跡 | v3.1公開はオーナー報告。過去の候補build検証と個別実機試験は区別する |
-| 現行キュー | v3.2.1ワークスペース更新と同一候補の実機受け入れ。依存更新の残ゲートは `docs/releases/3.2.0-dependency-acceptance-draft.md` |
+| 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
+| ソース版 | 3.3.0。CodeMirror/Lezerの宣言整理と不要な束の除去。外部レビュー候補 |
+| 配布証跡 | v3.2.1公開とテスト問題なしはオーナー報告。個別のsource・候補・実機証跡は区別する |
+| 現行キュー | v3.3の外部レビューと同一候補の実機受け入れ。`releases/3.3.0-dependency-autonomy.md` |
+| 初期判断 | npm解決集合を一件削減。PDFKit / pdf-extractは維持、window-vibrancyは保留 |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
-候補ごとのbuild情報は `docs/internal/app-store-candidates/latest.json` を参照する。
+署名候補ごとのbuild情報は `docs/internal/app-store-candidates/latest.json` を参照する。
 公開版との同一性は候補記録だけから推定しない。
 
-## Phase Decision — 2026-09-09（2026-09-26追補）
+## Phase Decision — 2026-09-09（2026-10-14追補）
 
 | 版 | 主題 | 完了の目安 |
 |---|---|---|
@@ -35,7 +37,8 @@ v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品�
 | **v3.1** | **Core AIの実利用・海外App Store展開** | allowlistモデルを明示入手・検証・選択・生成・削除できるC-1/C-2と、英語を入口にした製品/ストア情報・対象地域・価格・サポート導線の受け入れ |
 | **v3.2.0** | **依存関係更新** | npm/Rustの更新、CIとローカルbuild、同一候補の実機受け入れ。Core AI SwiftPM runtime pinは維持 |
 | **v3.2.1** | **ワークスペース一覧の外部変更追従** | アプリ復帰と表示中10秒間隔・手動更新で直下と展開中フォルダを確認。展開・選択・スクロールと未保存原稿を維持し、古い応答を拒否 |
-| v3.2後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
+| **v3.3** | **依存の自律化・初期整理** | 棚卸し、CodeMirrorの実利用に沿う依存宣言整理、PDF二経路の維持／限定／除去の判断。全撤去・自作を完了条件にしない。詳細は `dependency-autonomy-plan.md` |
+| 初期整理後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
 
 添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。
 モデル管理はv3.1に維持し、v3.0ではSystem経路で共通基盤を検証する。
@@ -43,11 +46,25 @@ v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品�
 PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
 AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
 
-## v3.2後 — メモと縦書き（2026-09-26 方針採用）
+## 現行 — v3.3依存の自律化・初期整理（2026-10-14）
+
+製品の仕様・修正・保守を自分たちで制御できる範囲を、小さく増やす。
+オーナーの実装依頼に基づきsource版を3.3.0へ進め、実利用モジュールの直接宣言と
+不要な `codemirror` 束の除去を実装した。view 6.43.13と他の実効版を維持する。
+PDFKit / pdf-extractは自作7件の比較とhelper不在時の契約から維持し、初期評価を閉じる。
+
+初期整理は新機能より先に行うが、PDF削除や全依存の自前化をメモ・縦書きの前提にしない。
+window-vibrancyの置換、パーサー・sanitize・通信・AI・React/Tauri/CodeMirror本体の再実装は
+初期範囲から外す。保守更新は継続する。
+[変更と検証](releases/3.3.0-dependency-autonomy.md)と[初期計画](dependency-autonomy-plan.md)を参照。
+v3.3の外部レビューと同一候補の実機受け入れ・配布判断はこれから。
+
+## 初期整理後 — メモと縦書き（2026-09-26 方針採用）
 
 利用者が **読み返して気づきを残し、日をまたいで直し、自分の方針で原稿を仕上げる**
 ことを次の製品価値にする。以下は採用した方向性であり、機能の実装・出荷を示さない。
-v3.2の依存更新・実機受け入れを先に完了し、具体的な版番号とUI・保存方式は個別設計で決める。
+v3.3の依存初期整理を受け入れた後、
+具体的な版番号とUI・保存方式は個別設計で決める。
 
 | テーマ | 利用者に届ける価値 | 最初の範囲 |
 |---|---|---|
@@ -317,6 +334,7 @@ Operational checklists:
 |------|------|
 | Next slice | `docs/current-work.md` |
 | Implementation truth | `docs/current-status.md` |
+| Dependency autonomy / v3.3 plan | `docs/dependency-autonomy-plan.md` |
 | v2.9–v3.1 plan | `docs/v2.9-v3-local-assist-plan.md` |
 | v2.6 plan | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |
