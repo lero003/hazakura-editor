@@ -1,7 +1,7 @@
 # Handoff
 
 Status: Operational
-Scope: v3.3依存整理の外部レビュー、メモ・縦書き方針、過去の引き継ぎ
+Scope: v3.3背景効果の依存集約、レビュー・受け入れ、過去の引き継ぎ
 Authority: Medium
 Last reviewed: 2026-10-14
 
@@ -10,14 +10,23 @@ Last reviewed: 2026-10-14
 v3.2.1はオーナー報告でテスト問題なし・App Store公開済み。source版は3.3.0。
 実利用CodeMirror/Lezerの直接宣言と未使用 `codemirror` 束の除去を実装し、view 6.43.13と
 全残存npm package metadataを維持。新testはruntime/type-onlyを区別し、未宣言と束の再混入を検出する。
-PDFKitとRustの自作7件比較は現行二経路維持で閉じた。window-vibrancy、Core AI pin/patchは維持。
+PDFKitとRustの自作7件比較は現行二経路維持で閉じた。Core AI pin/patchは維持。
 
-外部レビューは `5e3310aa..codex/v3.3-dependency-autonomy` が対象。先行する3.2.1コミットと混ぜない。
+固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし・受け入れ可能とのオーナー提供報告。
+レビュー側のテスト/build再実行・CI成功・実機受け入れの証明ではない。
+追加依頼でmain窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を除去した。
+Sidebar/Active、radius未指定、macOS/main限定、起動時一回、best-effortを維持。
+Tauri経由0.6.0は残す。lockは0.8.1一件を除去し、残存版/source/checksumを維持。
+macOS両architectureの解決集合は303→301件。notice集合・license分類を再照合した。
+追加レビューは `995df92c..codex/v3.3-dependency-autonomy` が対象。先行3.2.1・初回整理と混ぜない。
 [3.3.0の記録](releases/3.3.0-dependency-autonomy.md)に検証、測定の範囲、PDFの再開条件を集約した。
-frontend 2,844件・scripts 31件、Rust 483 pass / 3 ignored、型検査・surface 134件、
-両lane preview buildと署名・同梱noticeの確認が通過。全frontendは4 workersで通過。
+初回 `995df92c` のfrontend 2,844件・scripts 31件は4 workersで通過。
+追加スライスでもRust 483 pass / 3 ignored、fmt、surface 134件・編集依存契約9件、
+型検査を含む両lane preview buildと署名・同梱noticeの確認が通過。全frontendの再実行はしていない。
+同じsourceの専用IDプレビューで両laneの起動・一時原稿・サイドバー・zoom・フォーカス復帰を確認。
+暗色の既定表示のみで、全テーマ・透明度低減・同一署名候補の外観受け入れは未実施。
 開始時から存在するApp Store設定のbuild counter変更は保持し、このスライスのコミットから除外する。
-次は外部レビュー指摘の反映と、同一候補の長文日本語・IME未確定入力・Undo・L Mode・VoiceOver受け入れ。
+次は追加差分の外部レビューと、同一候補の窓の外観・長文日本語・IME未確定入力・Undo・L Mode・VoiceOver受け入れ。
 署名候補と公開は別ゲート。初期整理を受け入れたら見直しメモへ戻る。
 
 ## 公開報告 — v3.2.1

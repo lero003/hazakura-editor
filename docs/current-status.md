@@ -11,8 +11,11 @@ Last reviewed: 2026-10-14
   未使用の `codemirror` 束を除去。npm解決集合は184件から183件へ減り、残る全package metadataと
   view 6.43.13 pinを維持した。runtime6件とtype-only1件を補ったため、直接宣言件数は増える。
   新しい依存契約テストで未宣言と束の再混入を検出する。PDF二経路は自作7件の比較から維持。
+  初回の固定差分 `5e3310aa..995df92c` は外部静的レビューで指摘なし（テスト再実行・CI・実機とは別）。
+  追加依頼でmain窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を除去。
+  Tauri経由0.6.0は維持し、macOS解決集合の和は303→301件。追加検証は3.3.0記録を参照。
   変更・検証結果・再開条件は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
-  ローカルfrontend 2,844件・scripts 31件、Rust 483 pass / 3 ignored、App Store surface 134件、
+  初回候補のローカルfrontend 2,844件・scripts 31件、Rust 483 pass / 3 ignored、App Store surface 134件、
   型検査・両lane preview buildが通過。v3.3の実機受け入れ・署名submit候補・公開は未実施。
   メモ・縦書きは初期整理の受け入れ後に戻る。
 

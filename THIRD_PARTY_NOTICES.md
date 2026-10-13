@@ -7,7 +7,7 @@ Last reviewed: 2026-10-14
 
 This file is a distribution-prep draft, not legal advice. The dependency
 JavaScript inventory below reflects the v3.3.0 review candidate lockfile;
-the unchanged Cargo inventory was collected for v3.2.0. Before submitting
+the Cargo inventory reflects the v3.3 window-effects consolidation. Before submitting
 the final App Store or Developer ID package, preserve required upstream
 license texts and notices and review the exact signed package.
 
@@ -59,7 +59,13 @@ shoulders of open source software.
   - The remaining resolved JavaScript versions and license metadata are unchanged.
     Direct declarations now cover product CodeMirror/Lezer imports; `@lezer/common`
     is directly declared for type checking and also remains a transitive runtime package.
-  - Cargo dependency versions and Core AI Swift pins remain unchanged.
+  - Removed the direct `window-vibrancy@0.8.1` dependency after switching
+    the main window to Tauri's standard effects API. Locked Cargo metadata
+    for both macOS architectures confirms `window-vibrancy@0.6.0` remains
+    through Tauri; the remaining resolved versions and license metadata are unchanged.
+    The unused `objc2-quartz-core@0.3.2` feature path also leaves the macOS
+    inventory, while the crate remains in the all-target lockfile.
+  - Core AI Swift pins remain unchanged.
 
 ## Important Policy Notes
 
@@ -151,7 +157,7 @@ resolved crates rather than collapsed into a single family.
 | `Apache-2.0 AND ISC` | 1 |
 | `Apache-2.0 AND MIT` | 1 |
 | `Apache-2.0 OR ISC OR MIT` | 1 |
-| `Apache-2.0 OR MIT` | 33 |
+| `Apache-2.0 OR MIT` | 32 |
 | `Apache-2.0/MIT` | 1 |
 | `BSD-3-Clause` | 3 |
 | `BSD-3-Clause AND MIT` | 1 |
@@ -170,7 +176,7 @@ resolved crates rather than collapsed into a single family.
 | `Unlicense OR MIT` | 5 |
 | `Unlicense/MIT` | 2 |
 | `Zlib` | 2 |
-| `Zlib OR Apache-2.0 OR MIT` | 9 |
+| `Zlib OR Apache-2.0 OR MIT` | 8 |
 
 ### `(Apache-2.0 OR MIT) AND BSD-3-Clause` (1)
 
@@ -204,7 +210,7 @@ resolved crates rather than collapsed into a single family.
 
 - `rustls@0.23.45`
 
-### `Apache-2.0 OR MIT` (33)
+### `Apache-2.0 OR MIT` (32)
 
 - `autocfg@1.5.1`, `bit-set@0.8.0`, `bit-vec@0.8.0`, `cargo_toml@0.22.3`, `ctor-proc-macro@0.0.7`,
   `ctor@0.8.0`, `dtor-proc-macro@0.0.6`, `dtor@0.3.0`, `equivalent@1.0.2`, `fastrand@2.5.0`,
@@ -213,7 +219,7 @@ resolved crates rather than collapsed into a single family.
   `tauri-codegen@2.6.3`, `tauri-macros@2.6.3`, `tauri-plugin-dialog@2.7.3`, `tauri-plugin-fs@2.5.2`,
   `tauri-plugin@2.6.3`, `tauri-runtime-wry@2.11.4`, `tauri-runtime@2.11.3`, `tauri-utils@2.9.3`,
   `tauri@2.11.6`, `utf8_iter@1.0.4`, `uuid@1.26.1`, `window-vibrancy@0.6.0`,
-  `window-vibrancy@0.8.1`, `wry@0.55.1`, `zeroize@1.9.0`
+  `wry@0.55.1`, `zeroize@1.9.0`
 
 ### `Apache-2.0/MIT` (1)
 
@@ -338,11 +344,11 @@ resolved crates rather than collapsed into a single family.
 
 - `foldhash@0.2.0`, `zlib-rs@0.6.8`
 
-### `Zlib OR Apache-2.0 OR MIT` (9)
+### `Zlib OR Apache-2.0 OR MIT` (8)
 
 - `dispatch2@0.3.1`, `objc2-app-kit@0.3.2`, `objc2-core-foundation@0.3.2`,
   `objc2-core-graphics@0.3.2`, `objc2-exception-helper@0.1.1`, `objc2-io-surface@0.3.2`,
-  `objc2-quartz-core@0.3.2`, `objc2-web-kit@0.3.2`, `tinyvec@1.13.3`
+  `objc2-web-kit@0.3.2`, `tinyvec@1.13.3`
 
 ## Development / Build Tool Licenses To Keep Visible
 
