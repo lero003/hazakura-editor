@@ -16,11 +16,12 @@ fn main() {
 }
 
 #[cfg(target_os = "macos")]
-fn build_background_assets_bridge() {
+fn build_foundation_bridge(name: &str, frameworks: &[&str]) {
     let output_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR"));
-    let source = PathBuf::from("native/background_assets_bridge.m");
-    let object = output_dir.join("background_assets_bridge.o");
-    let archive = output_dir.join("libhazakura_background_assets.a");
+    let source = PathBuf::from(format!("native/{name}_bridge.m"));
+    let header = PathBuf::from(format!("native/{name}_bridge.h"));
+    let object = output_dir.join(format!("{name}_bridge.o"));
+    let archive = output_dir.join(format!("libhazakura_{name}.a"));
     let module_cache = output_dir.join("clang-module-cache");
     let target = env::var("TARGET").expect("TARGET");
     let clang_target = if target.starts_with("aarch64-") {
@@ -28,10 +29,12 @@ fn build_background_assets_bridge() {
     } else if target.starts_with("x86_64-") {
         "x86_64-apple-macos26.0"
     } else {
-        panic!("Unsupported macOS target for Background Assets bridge: {target}");
+        panic!("Unsupported macOS target for {name} bridge: {target}");
     };
-
     println!("cargo:rerun-if-changed={}", source.display());
+    if header.exists() {
+        println!("cargo:rerun-if-changed={}", header.display());
+    }
     run(
         Command::new("xcrun").args([
             "clang",
@@ -43,27 +46,32 @@ fn build_background_assets_bridge() {
             &format!("-fmodules-cache-path={}", module_cache.display()),
             "-Werror",
             "-c",
-            source.to_str().expect("bridge source path"),
+            source.to_str().expect("source path"),
             "-o",
-            object.to_str().expect("bridge object path"),
+            object.to_str().expect("object path"),
         ]),
-        "compile Background Assets bridge",
+        &format!("compile {name} bridge"),
     );
     run(
         Command::new("xcrun").args([
             "libtool",
             "-static",
             "-o",
-            archive.to_str().expect("bridge archive path"),
-            object.to_str().expect("bridge object path"),
+            archive.to_str().expect("archive path"),
+            object.to_str().expect("object path"),
         ]),
-        "archive Background Assets bridge",
+        &format!("archive {name} bridge"),
     );
-
     println!("cargo:rustc-link-search=native={}", output_dir.display());
-    println!("cargo:rustc-link-lib=static=hazakura_background_assets");
-    println!("cargo:rustc-link-lib=framework=BackgroundAssets");
-    println!("cargo:rustc-link-lib=framework=Foundation");
+    println!("cargo:rustc-link-lib=static=hazakura_{name}");
+    for framework in frameworks {
+        println!("cargo:rustc-link-lib=framework={framework}");
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn build_background_assets_bridge() {
+    build_foundation_bridge("background_assets", &["BackgroundAssets", "Foundation"]);
 }
 
 #[cfg(target_os = "macos")]
