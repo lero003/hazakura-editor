@@ -131,7 +131,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
 
     if ext == "pdf" {
         // Prefer PDFKit (live helper) for Japanese text-layer quality.
-        // pdf-extract is fallback only — it often drops CJK and collapses pages.
+        // The in-process PDFKit path also works without the nested helper.
         let mut best: Option<Vec<ImportPageText>> = None;
 
         // Q-IMP-2: stage into container temp before nested helper paths.
@@ -144,12 +144,12 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             }
             Ok(_) => {}
             Err(err) => {
-                // Keep going to pure-Rust fallback; surface only if both fail.
+                // Keep going to native fallback; surface only if both fail.
                 let _ = err;
             }
         }
 
-        // In-process pdf-extract can still read the original user path.
+        // In-process PDFKit can still read the original user path.
         match extract_pdf_text_layer(path) {
             Ok(Some(pages)) => {
                 best = Some(match best.take() {
@@ -757,10 +757,8 @@ mod tests {
 
     #[test]
     fn import_text_layer_pdf_without_helper() {
-        // A small real-world-ish PDF is hard to hand-author for every
-        // pdf-extract version; this test pins the *control flow*: when
-        // extract_pdf_text_layer returns pages, we never require the helper.
-        // Integration against real PDFs is manual / product smoke.
+        // Invalid input must report a PDF error. The tests below cover full
+        // valid-PDF imports when the helper is missing or extraction fails.
         let dir = std::env::temp_dir();
         let path = dir.join(format!("hazakura-flow-{}.pdf", std::process::id()));
         fs::write(&path, b"%PDF-1.4 not fully valid").expect("write");
@@ -827,6 +825,66 @@ mod tests {
             "Japanese text layer missing; sample: {}",
             draft.markdown.chars().take(400).collect::<String>()
         );
+        assert!(!draft.used_ocr);
+    }
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn valid_text_pdf_imports_when_helper_is_missing() {
+        let _env_guard = IMPORT_ASSIST_HELPER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let path = super::super::pdf_text::tests::fixture_pdf(
+            "missing-helper",
+            &["Valid PDF imports without a helper."],
+        );
+        let before = fs::read(&path).expect("read fixture");
+        let absent = path.with_extension("missing-helper");
+        // SAFETY: every helper override test holds the process-global mutex.
+        unsafe { std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &absent) };
+        let result = import_source_path_to_markdown(&path);
+        unsafe { std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER") };
+        assert_eq!(before, fs::read(&path).expect("read unchanged source"));
+        let _ = fs::remove_file(&path);
+        let draft = result.expect("native fallback imports valid PDF");
+        assert!(draft
+            .markdown
+            .contains("Valid PDF imports without a helper."));
+        assert_eq!(draft.page_count, 1);
+        assert!(!draft.used_ocr);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn valid_text_pdf_imports_when_helper_extraction_fails() {
+        let _env_guard = IMPORT_ASSIST_HELPER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let path = super::super::pdf_text::tests::fixture_pdf(
+            "failing-helper",
+            &["Native fallback keeps the original text."],
+        );
+        let before = fs::read(&path).expect("read fixture");
+        let helper = path.with_extension("helper.sh");
+        fs::write(&helper, br##"#!/bin/sh
+read request
+case "$request" in
+*probe*) printf '%s\n' '{"kind":"probe","value":{"pdfKit":true,"vision":true,"fixture":false}}' ;;
+*) printf '%s\n' '{"kind":"error","value":{"error":"Synthetic extraction failure","kind":"pdf_extract_failed"}}' ;;
+esac
+"##).expect("write fixed test helper");
+        fs::set_permissions(&helper, fs::Permissions::from_mode(0o700)).expect("make executable");
+        // SAFETY: every helper override test holds the process-global mutex.
+        unsafe { std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper) };
+        let result = import_source_path_to_markdown(&path);
+        unsafe { std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER") };
+        assert_eq!(before, fs::read(&path).expect("read unchanged source"));
+        let _ = fs::remove_file(&path);
+        let _ = fs::remove_file(&helper);
+        let draft = result.expect("native fallback survives helper extraction failure");
+        assert!(draft
+            .markdown
+            .contains("Native fallback keeps the original text."));
+        assert_eq!(draft.page_count, 1);
         assert!(!draft.used_ocr);
     }
 }
