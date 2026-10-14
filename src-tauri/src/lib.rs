@@ -18,6 +18,7 @@ pub(crate) mod commands {
     pub(crate) mod import_assist;
     pub(crate) mod okf;
     pub(crate) mod reference_compare;
+    mod remote_image_transport;
     pub(crate) mod search;
     pub(crate) mod security_bookmarks;
     pub(crate) mod workspace;

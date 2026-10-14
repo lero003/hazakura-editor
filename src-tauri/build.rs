@@ -12,6 +12,8 @@ fn main() {
     }
     #[cfg(target_os = "macos")]
     build_background_assets_bridge();
+    #[cfg(target_os = "macos")]
+    build_foundation_bridge("remote_image", &["Foundation"]);
     tauri_build::build();
 }
 
