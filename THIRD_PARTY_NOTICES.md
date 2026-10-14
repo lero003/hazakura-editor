@@ -7,7 +7,7 @@ Last reviewed: 2026-10-14
 
 This file is a distribution-prep draft, not legal advice. The dependency
 JavaScript inventory below reflects the v3.3.0 review candidate lockfile;
-the Cargo inventory reflects the v3.3 window-effects consolidation. Before submitting
+the Cargo inventory reflects the v3.3 dependency reduction candidate. Before submitting
 the final App Store or Developer ID package, preserve required upstream
 license texts and notices and review the exact signed package.
 
@@ -65,6 +65,15 @@ shoulders of open source software.
     through Tauri; the remaining resolved versions and license metadata are unchanged.
     The unused `objc2-quartz-core@0.3.2` feature path also leaves the macOS
     inventory, while the crate remains in the all-target lockfile.
+  - Removed the npm dialog wrapper; the Rust dialog plugin and ACL remain.
+  - Disabled unused Tauri platform defaults, narrowed Foundation API features, and
+    disabled asset compression. HTTPS image transport uses macOS NSURLSession;
+    in-process PDF text extraction uses PDFKit alongside the PDFKit helper path.
+    The macOS normal/build resolved union is 254 crates; the JavaScript runtime
+    inventory is 32 packages. These are conservative inventories, not binary linkage counts.
+    Remaining versions, sources, and checksums are unchanged.
+  - Regenerate these two inventories with `python3 scripts/update-dependency-notices.py --write`
+    after any independent rollback.
   - Core AI Swift pins remain unchanged.
 
 ## Important Policy Notes
@@ -124,8 +133,8 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 | `crelt@1.0.7` | `MIT` |
 | `dompurify@3.4.16` | `(MPL-2.0 OR Apache-2.0); project policy chooses Apache-2.0` |
 | `marked@18.0.14` | `MIT` |
-| `react@19.3.0` | `MIT` |
 | `react-dom@19.3.0` | `MIT` |
+| `react@19.3.0` | `MIT` |
 | `scheduler@0.28.0` | `MIT` |
 | `style-mod@4.1.3` | `MIT` |
 | `w3c-keyname@2.2.8` | `MIT` |
@@ -153,29 +162,20 @@ resolved crates rather than collapsed into a single family.
 | `0BSD OR MIT OR Apache-2.0` | 1 |
 | `Apache-2.0` | 1 |
 | `Apache-2.0 / MIT` | 1 |
-| `Apache-2.0 AND ISC` | 1 |
 | `Apache-2.0 AND MIT` | 1 |
-| `Apache-2.0 OR ISC OR MIT` | 1 |
-| `Apache-2.0 OR MIT` | 32 |
-| `Apache-2.0/MIT` | 1 |
-| `BSD-3-Clause` | 3 |
-| `BSD-3-Clause AND MIT` | 1 |
-| `BSD-3-Clause/MIT` | 1 |
+| `Apache-2.0 OR MIT` | 31 |
 | `CC0-1.0 OR MIT-0 OR Apache-2.0` | 1 |
-| `CDLA-Permissive-2.0` | 1 |
-| `ISC` | 2 |
-| `MIT` | 48 |
-| `MIT / Apache-2.0` | 1 |
-| `MIT OR Apache-2.0` | 142 |
+| `MIT` | 41 |
+| `MIT OR Apache-2.0` | 120 |
 | `MIT OR Apache-2.0 OR Zlib` | 1 |
 | `MIT OR Zlib OR Apache-2.0` | 2 |
-| `MIT/Apache-2.0` | 17 |
+| `MIT/Apache-2.0` | 14 |
 | `MPL-2.0` | 5 |
 | `Unicode-3.0` | 18 |
 | `Unlicense OR MIT` | 5 |
 | `Unlicense/MIT` | 2 |
 | `Zlib` | 2 |
-| `Zlib OR Apache-2.0 OR MIT` | 8 |
+| `Zlib OR Apache-2.0 OR MIT` | 6 |
 
 ### `(Apache-2.0 OR MIT) AND BSD-3-Clause` (1)
 
@@ -197,110 +197,69 @@ resolved crates rather than collapsed into a single family.
 
 - `fnv@1.0.7`
 
-### `Apache-2.0 AND ISC` (1)
-
-- `ring@0.17.14`
-
 ### `Apache-2.0 AND MIT` (1)
 
 - `dpi@0.1.2`
 
-### `Apache-2.0 OR ISC OR MIT` (1)
+### `Apache-2.0 OR MIT` (31)
 
-- `rustls@0.23.45`
-
-### `Apache-2.0 OR MIT` (32)
-
-- `autocfg@1.5.1`, `bit-set@0.8.0`, `bit-vec@0.8.0`, `cargo_toml@0.22.3`, `ctor-proc-macro@0.0.7`,
-  `ctor@0.8.0`, `dtor-proc-macro@0.0.6`, `dtor@0.3.0`, `equivalent@1.0.2`, `fastrand@2.5.0`,
-  `idna_adapter@1.2.2`, `indexmap@1.9.3`, `indexmap@2.14.2`, `muda@0.19.3`,
-  `multiversion_no_op@1.0.0`, `pin-project-lite@0.2.17`, `rustc-hash@2.1.3`, `tauri-build@2.6.3`,
-  `tauri-codegen@2.6.3`, `tauri-macros@2.6.3`, `tauri-plugin-dialog@2.7.3`, `tauri-plugin-fs@2.5.2`,
-  `tauri-plugin@2.6.3`, `tauri-runtime-wry@2.11.4`, `tauri-runtime@2.11.3`, `tauri-utils@2.9.3`,
-  `tauri@2.11.6`, `utf8_iter@1.0.4`, `uuid@1.26.1`, `window-vibrancy@0.6.0`,
-  `wry@0.55.1`, `zeroize@1.9.0`
-
-### `Apache-2.0/MIT` (1)
-
-- `postscript@0.14.1`
-
-### `BSD-3-Clause` (3)
-
-- `alloc-no-stdlib@2.0.4`, `alloc-stdlib@0.2.4`, `subtle@2.6.1`
-
-### `BSD-3-Clause AND MIT` (1)
-
-- `brotli@8.0.4`
-
-### `BSD-3-Clause/MIT` (1)
-
-- `brotli-decompressor@5.0.3`
+- `autocfg@1.5.1`, `bit-set@0.8.0`, `bit-vec@0.8.0`, `cargo_toml@0.22.3`,
+  `ctor-proc-macro@0.0.7`, `ctor@0.8.0`, `dtor-proc-macro@0.0.6`, `dtor@0.3.0`,
+  `equivalent@1.0.2`, `fastrand@2.5.0`, `idna_adapter@1.2.2`, `indexmap@1.9.3`,
+  `indexmap@2.14.2`, `muda@0.19.3`, `multiversion_no_op@1.0.0`, `pin-project-lite@0.2.17`,
+  `rustc-hash@2.1.3`, `tauri-build@2.6.3`, `tauri-codegen@2.6.3`, `tauri-macros@2.6.3`,
+  `tauri-plugin-dialog@2.7.3`, `tauri-plugin-fs@2.5.2`, `tauri-plugin@2.6.3`,
+  `tauri-runtime-wry@2.11.4`, `tauri-runtime@2.11.3`, `tauri-utils@2.9.3`, `tauri@2.11.6`,
+  `utf8_iter@1.0.4`, `uuid@1.26.1`, `window-vibrancy@0.6.0`, `wry@0.55.1`
 
 ### `CC0-1.0 OR MIT-0 OR Apache-2.0` (1)
 
 - `dunce@1.0.5`
 
-### `CDLA-Permissive-2.0` (1)
+### `MIT` (41)
 
-- `webpki-roots@1.0.9`
+- `block2@0.6.2`, `bytes@1.12.1`, `cargo_metadata@0.19.2`, `cfb@0.7.3`, `darling@0.24.1`,
+  `darling_core@0.24.1`, `darling_macro@0.24.1`, `derive_more-impl@2.1.1`, `derive_more@2.1.1`,
+  `dom_query@0.27.0`, `embed-resource@3.0.11`, `generic-array@0.14.7`, `ico@0.5.0`,
+  `infer@0.19.0`, `mio@1.2.3`, `new_debug_unreachable@1.0.6`, `objc2-encode@4.1.0`,
+  `objc2-foundation@0.3.2`, `objc2@0.6.4`, `phf@0.13.1`, `phf_codegen@0.13.1`,
+  `phf_generator@0.13.1`, `phf_macros@0.13.1`, `phf_shared@0.13.1`, `plist@1.10.1`,
+  `precomputed-hash@0.1.1`, `quick-xml@0.42.0`, `rfd@0.16.0`, `schemars@0.8.22`,
+  `schemars@0.9.0`, `schemars@1.2.2`, `schemars_derive@0.8.22`, `simd-adler32@0.3.10`,
+  `strsim@0.11.1`, `synstructure@0.14.0`, `tauri-winres@0.3.6`, `tokio@1.53.1`,
+  `urlpattern@0.3.0`, `winnow@0.7.15`, `winnow@1.0.4`, `zmij@1.0.23`
 
-### `ISC` (2)
+### `MIT OR Apache-2.0` (120)
 
-- `rustls-webpki@0.103.15`, `untrusted@0.9.0`
-
-### `MIT` (48)
-
-- `adobe-cmap-parser@0.4.1`, `block2@0.6.2`, `bytes@1.12.1`, `cargo_metadata@0.19.2`, `cfb@0.7.3`,
-  `darling@0.24.1`, `darling_core@0.24.1`, `darling_macro@0.24.1`, `derive_more-impl@2.1.1`,
-  `derive_more@2.1.1`, `dom_query@0.27.0`, `ecb@0.1.2`, `embed-resource@3.0.11`,
-  `generic-array@0.14.7`, `ico@0.5.0`, `infer@0.19.0`, `lopdf@0.42.0`, `mio@1.2.3`,
-  `new_debug_unreachable@1.0.6`, `nom@8.0.0`, `objc2-encode@4.1.0`, `objc2-foundation@0.3.2`,
-  `objc2@0.6.4`, `pdf-extract@0.12.1`, `phf@0.13.1`, `phf_codegen@0.13.1`, `phf_generator@0.13.1`,
-  `phf_macros@0.13.1`, `phf_shared@0.13.1`, `plist@1.10.1`, `pom@1.1.0`, `precomputed-hash@0.1.1`,
-  `quick-xml@0.42.0`, `rfd@0.16.0`, `schemars@0.8.22`, `schemars@0.9.0`, `schemars@1.2.2`,
-  `schemars_derive@0.8.22`, `simd-adler32@0.3.10`, `strsim@0.11.1`, `synstructure@0.14.0`,
-  `tauri-winres@0.3.6`, `tokio@1.53.1`, `type1-encoding-parser@0.1.1`, `urlpattern@0.3.0`,
-  `winnow@0.7.15`, `winnow@1.0.4`, `zmij@1.0.23`
-
-### `MIT / Apache-2.0` (1)
-
-- `euclid@0.20.14`
-
-### `MIT OR Apache-2.0` (142)
-
-- `aes@0.8.4`, `anyhow@1.0.104`, `base64@0.21.7`, `base64@0.22.1`, `base64@0.23.1`, `bitflags@2.13.2`,
-  `block-buffer@0.10.4`, `block-padding@0.3.3`, `camino@1.2.6`, `cargo-platform@0.1.9`, `cbc@0.1.2`,
-  `cc@1.5.0`, `cff-parser@0.2.0`, `cfg-if@1.0.5`, `chacha20@0.10.2`, `chrono@0.4.45`,
-  `cipher@0.4.4`, `cookie@0.18.2`, `core-foundation-sys@0.8.7`, `core-foundation@0.10.1`,
-  `core-graphics-types@0.2.0`, `core-graphics@0.25.0`, `cpufeatures@0.2.17`, `cpufeatures@0.3.1`,
-  `crc32fast@1.5.2`, `crossbeam-channel@0.5.17`, `crossbeam-utils@0.8.23`, `crypto-common@0.1.7`,
+- `anyhow@1.0.104`, `base64@0.21.7`, `base64@0.22.1`, `base64@0.23.1`, `bitflags@2.13.2`,
+  `block-buffer@0.10.4`, `camino@1.2.6`, `cargo-platform@0.1.9`, `cc@1.5.0`, `cfg-if@1.0.5`,
+  `chrono@0.4.45`, `cookie@0.18.2`, `core-foundation-sys@0.8.7`, `core-foundation@0.10.1`,
+  `core-graphics-types@0.2.0`, `core-graphics@0.25.0`, `cpufeatures@0.2.17`, `crc32fast@1.5.2`,
+  `crossbeam-channel@0.5.17`, `crossbeam-utils@0.8.23`, `crypto-common@0.1.7`,
   `defmt-macros@1.1.1`, `defmt-parser@1.0.0`, `defmt@1.1.1`, `deranged@0.5.8`, `digest@0.10.7`,
   `dirs-sys@0.5.0`, `dirs@6.0.0`, `displaydoc@0.2.7`, `dtoa@1.0.11`, `dyn-clone@1.0.20`,
   `embed_plist@1.2.2`, `erased-serde@0.4.10`, `fdeflate@0.3.7`, `find-msvc-tools@0.1.14`,
-  `flate2@1.1.10`, `form_urlencoded@1.2.2`, `getrandom@0.2.17`, `getrandom@0.3.4`,
-  `getrandom@0.4.3`, `glob@0.3.4`, `hashbrown@0.12.3`, `hashbrown@0.17.1`, `heck@0.5.0`,
-  `hex@0.4.3`, `html5ever@0.38.0`, `http@1.5.0`, `httparse@1.10.1`, `iana-time-zone@0.1.65`,
-  `idna@1.1.0`, `inout@0.1.4`, `itoa@1.0.18`, `jsonptr@0.6.3`, `keyboard-types@0.7.0`,
-  `libc@0.2.189`, `lock_api@0.4.14`, `log@0.4.34`, `markup5ever@0.38.0`, `md-5@0.10.6`,
-  `mime@0.3.17`, `num-conv@0.2.2`, `num-traits@0.2.19`, `once_cell@1.21.4`, `parking_lot@0.12.5`,
-  `parking_lot_core@0.9.12`, `percent-encoding@2.3.2`, `png@0.17.16`, `png@0.18.1`,
-  `powerfmt@0.2.0`, `proc-macro2@1.0.107`, `quote@1.0.47`, `rand@0.10.3`, `rand_core@0.10.1`,
-  `ref-cast-impl@1.0.27`, `ref-cast@1.0.27`, `regex-automata@0.4.18`, `regex-syntax@0.8.11`,
-  `regex@1.13.1`, `rustc_version@0.4.1`, `rustls-pki-types@1.15.1`, `rustversion@1.0.23`,
-  `scopeguard@1.2.0`, `semver@1.0.28`, `serde-untagged@0.1.9`, `serde@1.0.229`,
-  `serde_core@1.0.229`, `serde_derive@1.0.229`, `serde_derive_internals@0.29.1`,
-  `serde_json@1.0.151`, `serde_repr@0.1.21`, `serde_spanned@1.1.1`, `serde_with@3.23.0`,
-  `serde_with_macros@3.23.0`, `serialize-to-javascript-impl@0.1.2`, `serialize-to-javascript@0.1.2`,
-  `servo_arc@0.4.3`, `sha2@0.10.9`, `shlex@2.0.1`, `simdutf8@0.1.5`, `siphasher@1.0.4`,
-  `smallvec@1.16.2`, `socket2@0.6.5`, `stable_deref_trait@1.2.1`, `string_cache@0.9.0`,
+  `flate2@1.1.10`, `form_urlencoded@1.2.2`, `getrandom@0.3.4`, `getrandom@0.4.3`, `glob@0.3.4`,
+  `hashbrown@0.12.3`, `hashbrown@0.17.1`, `heck@0.5.0`, `hex@0.4.3`, `html5ever@0.38.0`,
+  `http@1.5.0`, `iana-time-zone@0.1.65`, `idna@1.1.0`, `itoa@1.0.18`, `jsonptr@0.6.3`,
+  `keyboard-types@0.7.0`, `libc@0.2.189`, `lock_api@0.4.14`, `log@0.4.34`, `markup5ever@0.38.0`,
+  `mime@0.3.17`, `num-conv@0.2.2`, `num-traits@0.2.19`, `once_cell@1.21.4`,
+  `parking_lot@0.12.5`, `parking_lot_core@0.9.12`, `percent-encoding@2.3.2`, `png@0.17.16`,
+  `png@0.18.1`, `powerfmt@0.2.0`, `proc-macro2@1.0.107`, `quote@1.0.47`, `ref-cast-impl@1.0.27`,
+  `ref-cast@1.0.27`, `regex-automata@0.4.18`, `regex-syntax@0.8.11`, `regex@1.13.1`,
+  `rustc_version@0.4.1`, `rustversion@1.0.23`, `scopeguard@1.2.0`, `semver@1.0.28`,
+  `serde-untagged@0.1.9`, `serde@1.0.229`, `serde_core@1.0.229`, `serde_derive@1.0.229`,
+  `serde_derive_internals@0.29.1`, `serde_json@1.0.151`, `serde_repr@0.1.21`,
+  `serde_spanned@1.1.1`, `serde_with@3.23.0`, `serde_with_macros@3.23.0`,
+  `serialize-to-javascript-impl@0.1.2`, `serialize-to-javascript@0.1.2`, `servo_arc@0.4.3`,
+  `sha2@0.10.9`, `shlex@2.0.1`, `simdutf8@0.1.5`, `siphasher@1.0.4`, `smallvec@1.16.2`,
+  `socket2@0.6.5`, `stable_deref_trait@1.2.1`, `string_cache@0.9.0`,
   `string_cache_codegen@0.6.1`, `swift-rs@1.0.8`, `syn@2.0.119`, `syn@3.0.6`, `tendril@0.5.1`,
   `thiserror-impl@1.0.69`, `thiserror-impl@2.0.21`, `thiserror@1.0.69`, `thiserror@2.0.21`,
   `time-core@0.1.9`, `time-macros@0.2.32`, `time@0.3.55`, `toml@0.9.12+spec-1.1.0`,
   `toml@1.1.6+spec-1.1.0`, `toml_datetime@0.7.5+spec-1.1.0`, `toml_datetime@1.1.1+spec-1.1.0`,
-  `toml_parser@1.1.3+spec-1.1.0`, `toml_writer@1.1.2+spec-1.1.0`, `tray-icon@0.24.2`,
-  `ttf-parser@0.25.1`, `typeid@1.0.3`, `typenum@1.20.1`, `unicode-bidi@0.3.18`,
-  `unicode-normalization@0.1.25`, `unicode-segmentation@1.13.3`, `ureq-proto@0.6.4`, `ureq@3.4.2`,
-  `url@2.5.8`, `utf8-zero@0.8.1`, `web_atoms@0.2.6`, `weezl@0.1.12`
+  `toml_parser@1.1.3+spec-1.1.0`, `toml_writer@1.1.2+spec-1.1.0`, `typeid@1.0.3`,
+  `typenum@1.20.1`, `unicode-segmentation@1.13.3`, `url@2.5.8`, `web_atoms@0.2.6`
 
 ### `MIT OR Apache-2.0 OR Zlib` (1)
 
@@ -310,13 +269,12 @@ resolved crates rather than collapsed into a single family.
 
 - `miniz_oxide@0.8.9`, `miniz_oxide@0.9.1`
 
-### `MIT/Apache-2.0` (17)
+### `MIT/Apache-2.0` (14)
 
 - `bitflags@1.3.2`, `bs58@0.5.1`, `core_detect@1.0.0`, `foreign-types-macros@0.2.4`,
   `foreign-types-shared@0.3.1`, `foreign-types@0.5.0`, `ident_case@1.0.1`, `json-patch@3.0.1`,
-  `rangemap@1.8.0`, `stringprep@0.1.5`, `unic-char-property@0.9.0`, `unic-char-range@0.9.0`,
-  `unic-common@0.9.0`, `unic-ucd-ident@0.9.0`, `unic-ucd-version@0.9.0`, `unicode-properties@0.1.4`,
-  `version_check@0.9.5`
+  `unic-char-property@0.9.0`, `unic-char-range@0.9.0`, `unic-common@0.9.0`,
+  `unic-ucd-ident@0.9.0`, `unic-ucd-version@0.9.0`, `version_check@0.9.5`
 
 ### `MPL-2.0` (5)
 
@@ -327,9 +285,9 @@ resolved crates rather than collapsed into a single family.
 
 - `icu_collections@2.3.0`, `icu_locale_core@2.3.0`, `icu_normalizer@2.3.0`,
   `icu_normalizer_data@2.3.0`, `icu_properties@2.3.0`, `icu_properties_data@2.3.0`,
-  `icu_provider@2.3.1`, `litemap@0.8.3`, `potential_utf@0.1.6`, `tinystr@0.8.4`, `writeable@0.6.4`,
-  `yoke-derive@0.8.3`, `yoke@0.8.3`, `zerofrom-derive@0.1.8`, `zerofrom@0.1.8`, `zerotrie@0.2.5`,
-  `zerovec-derive@0.11.6`, `zerovec@0.11.8`
+  `icu_provider@2.3.1`, `litemap@0.8.3`, `potential_utf@0.1.6`, `tinystr@0.8.4`,
+  `writeable@0.6.4`, `yoke-derive@0.8.3`, `yoke@0.8.3`, `zerofrom-derive@0.1.8`,
+  `zerofrom@0.1.8`, `zerotrie@0.2.5`, `zerovec-derive@0.11.6`, `zerovec@0.11.8`
 
 ### `Unlicense OR MIT` (5)
 
@@ -343,11 +301,10 @@ resolved crates rather than collapsed into a single family.
 
 - `foldhash@0.2.0`, `zlib-rs@0.6.8`
 
-### `Zlib OR Apache-2.0 OR MIT` (8)
+### `Zlib OR Apache-2.0 OR MIT` (6)
 
 - `dispatch2@0.3.1`, `objc2-app-kit@0.3.2`, `objc2-core-foundation@0.3.2`,
-  `objc2-core-graphics@0.3.2`, `objc2-exception-helper@0.1.1`, `objc2-io-surface@0.3.2`,
-  `objc2-web-kit@0.3.2`, `tinyvec@1.13.3`
+  `objc2-exception-helper@0.1.1`, `objc2-web-kit@0.3.2`, `tinyvec@1.13.3`
 
 ## Development / Build Tool Licenses To Keep Visible
 

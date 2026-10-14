@@ -1,25 +1,35 @@
 # Current Work
 
 Status: Operational
-Scope: v3.3背景効果の依存集約、レビュー・受け入れ、過去の記録
+Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の記録
 Authority: High
 Last reviewed: 2026-10-14
 
-## 現行キュー — v3.3依存の初期整理（2026-10-14）
+## 現行キュー — v3.3依存削減の追加候補（2026-10-14）
 
-オーナー報告でv3.2.1はテスト問題なし・App Store公開済み。v3.3の実装とGitHub pushが承認された。
-source版を3.3.0へ進め、実利用のCodeMirror/Lezerを直接宣言し、未使用の `codemirror` 束を除去した。
-既存解決版とview 6.43.13 pinを維持。未宣言・束の再混入を検出する依存契約テストを追加した。
+オーナー報告でv3.2.1はテスト問題なし・App Store公開済み。source候補は3.3.0。
+初回のCodeMirror/Lezer宣言整理と未使用 `codemirror` 除去、および背景効果のTauri集約に続き、
+広めの受け入れ試験と個別撤回を前提に、さらに依存を減らす依頼を受けた。
+固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし。今回の追加差分はその対象外。
 
-固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし・受け入れ可能との報告。
-レビュー側のテスト再実行・同SHAのCI・実機受け入れとは区別する。
-追加依頼で、main窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を除去する。
-Sidebar/Activeとbest-effortを維持し、Tauri経由0.6.0は残す。新しいFFIは加えない。
-PDFは自作7件の経路別比較から現行二経路を維持する。OCR・helper不在・特殊フォントの証拠不足を
-再開条件として記録し、この初期評価を閉じる。基盤の再実装はキューに入れない。
-[変更・検証・PDF判断・外部レビュー対象](releases/3.3.0-dependency-autonomy.md)を入口にする。
-追加差分をレビューし、同一v3.3候補の長文日本語・IME・Undo・L Mode・窓の外観と配布受け入れを行う。
-初期整理を受け入れたら見直しメモへ進む。縦書きも独立した柱として維持する。
+基準 `25f21528` から、npm dialogを公式IPCのローカル入口へ集約し、Tauriの不要なplatform defaults、
+Foundationの未使用featureとasset圧縮を外した。HTTPS画像はNSURLSession、PDF抽出のRust parserは
+in-process PDFKitへ移した。Rust dialog plugin・ACL、helper経路、view 6.43.13、Core AI pin/patchは維持。
+macOS両architectureの保守的なCargo runtime/build解決集合は301→254件、npm lock集合は183→182件。
+圧縮を外すと同じsourceのarm64 Developer appは約1.8 MB増える。PDFの独立parser多様性も減る。
+[変更・検証・比較の意味・個別撤回](releases/3.3.0-dependency-autonomy.md)を正本とする。
+
+frontend 2,864件・scripts 31件、Rust 491 pass / 3 ignored、型検査、surface 134件、
+native HTTP/PDF、実HTTPS、OCR pipelineのローカル試験が通過した。
+両laneの隔離arm64 ad-hoc appをbuild・起動し、Developerの選択・保存・書き出し・Workspace・
+remote画像のon/off・L Mode・Readerを実操作した。StoreでもSave AsとHTML/PDF/EPUB書き出しが成功。
+書き出し内容と個別rollbackの照合も完了。6変更を一つずつ復帰し、解決集合・noticeを確認した。
+platform/URLSessionの文脈競合の解決手順と、片側撤回後のcompile結果は候補記録に固定した。
+隔離Store appはBackground Download extension未同梱で、正式な配布packageの試験ではない。
+
+次は追加差分を外部レビューへ渡す。同一署名候補のIME・VoiceOver、
+Intel/macOS 26、sandboxの外部PDF取込、配布受け入れ、同SHAのCIは別ゲート。
+依存削減を受け入れた後に見直しメモへ戻る。縦書きも独立した柱として維持する。
 
 ## 公開済み — v3.2.1ワークスペース一覧更新
 
@@ -64,7 +74,7 @@ TestFlight上の実機IME・VoiceOver、L Modeの出入り、書き出しの章�
 ## v3.2後の方向 — メモと縦書き（2026-09-26、方針採用）
 
 オーナー決定で、見直しメモ・再開メモ・編集ルールメモと縦書きをロードマップへ採用した。
-v3.3の初期整理を受け入れた後、メモ系は単一原稿の見直しメモを起点に、再開メモ、
+v3.3の依存削減を受け入れた後、メモ系は単一原稿の見直しメモを起点に、再開メモ、
 自由記述の編集ルールひな形へ進める。表記の決め事もメモとして書き足す形にする。
 縦書きは単一原稿のReaderから既存EPUBの縦書き出力へ段階化し、LLM拡張を前提にしない。
 

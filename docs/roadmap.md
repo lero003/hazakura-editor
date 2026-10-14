@@ -10,8 +10,9 @@ Last reviewed: 2026-10-14
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
 v3.2.1はテスト問題なし・App Store公開済み（2026-10-14オーナー報告）。
-新機能より先に、v3.3で依存の自律化を初期整理する。CodeMirrorの直接宣言・不要な束の除去を実装し、
-PDF二経路は比較結果から維持する。初回レビュー後の追加として背景効果をTauri標準APIへ集約する。
+新機能より先に、v3.3で依存の自律化を進める。初回のCodeMirror宣言整理・背景効果の集約に続き、
+dialog入口・Tauri/Foundationのfeature・HTTPS画像・PDF抽出を追加削減した。
+PDFはhelperとin-processの二経路を残してPDFKitへ集約し、広めの試験と個別撤回を確認する。
 全依存の撤去は前提にしない。
 メモ系と縦書きは採用方針を維持し、初期整理の受け入れ後に戻る。
 LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
@@ -19,10 +20,10 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
-| ソース版 | 3.3.0。CodeMirror/Lezer整理、背景効果のTauri標準APIへの集約。追加差分のレビュー候補 |
+| ソース版 | 3.3.0。初回整理に追加削減を実装。macOS Cargoの保守的な解決集合301→254件。追加レビュー候補 |
 | 配布証跡 | v3.2.1公開とテスト問題なしはオーナー報告。個別のsource・候補・実機証跡は区別する |
 | 現行キュー | 初回レビューは指摘なし。追加差分のレビューと同一候補の実機受け入れ。`releases/3.3.0-dependency-autonomy.md` |
-| 初期判断 | npmの未使用束と直接window-vibrancy 0.8.1を除去。PDF二経路とTauri経由0.6.0は維持 |
+| 採用判断 | Tauri経由window-vibrancy 0.6.0を維持。HTTPS画像/PDFはOS APIへ移し、native bridgeの保守を担う。圧縮無効化は約1.8 MB増との交換条件 |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
@@ -47,20 +48,23 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
 AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
 
-## 現行 — v3.3依存の自律化・初期整理（2026-10-14）
+## 現行 — v3.3依存の自律化・追加削減（2026-10-14）
 
 製品の仕様・修正・保守を自分たちで制御できる範囲を、小さく増やす。
 オーナーの実装依頼に基づきsource版を3.3.0へ進め、実利用モジュールの直接宣言と
 不要な `codemirror` 束の除去を実装した。view 6.43.13と他の実効版を維持する。
-PDFKit / pdf-extractは自作7件の比較とhelper不在時の契約から維持し、初期評価を閉じる。
 固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なしとの報告を受けた。
-追加依頼で、main窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を外す。
+追加依頼で、main窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を外した。
 Sidebar/Activeを維持し、Tauri経由0.6.0は残す。
+続く追加削減ではnpm dialogを固定IPC adapterへ集約し、Tauri platform defaults/Foundation featureを絞り、
+asset圧縮を外した。HTTPS画像はNSURLSession、PDFはhelperとin-processのPDFKitへ集約した。
+PDF維持の初期判断は履歴に残し、20 fixture、helper不在/失敗、Vision OCR等の追加試験から採用を見直した。
+保守的なmacOS Cargo集合は301→254件。圧縮無効化の容量増、timeout差、独立parser多様性の低下を記録した。
+6変更の個別撤回を照合し、共有行の競合解決手順も固定した。
 
 初期整理は新機能より先に行うが、PDF削除や全依存の自前化をメモ・縦書きの前提にしない。
-window-vibrancyの自前化、パーサー・sanitize・通信・AI・React/Tauri/CodeMirror本体の再実装は
-初期範囲から外す。保守更新は継続する。
-[変更と検証](releases/3.3.0-dependency-autonomy.md)と[初期計画](dependency-autonomy-plan.md)を参照。
+パーサー・sanitize・TLS暗号処理・AI・React/Tauri/CodeMirror本体は自作しない。保守更新は継続する。
+[変更と検証](releases/3.3.0-dependency-autonomy.md)と[計画・採否](dependency-autonomy-plan.md)を参照。
 追加差分のレビューと同一候補の実機受け入れ・配布判断はこれから。
 
 ## 初期整理後 — メモと縦書き（2026-09-26 方針採用）

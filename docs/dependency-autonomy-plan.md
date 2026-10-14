@@ -1,47 +1,49 @@
-# 依存の自律化 — v3.3初期計画
+# 依存の自律化 — v3.3計画と追加削減
 
-Status: Active plan; initial review accepted, native-effects follow-up
+Status: Active plan; initial review accepted, additional reduction candidate
 Scope: 新機能に先行する依存整理、比較評価、採否の条件
 Authority: Advisory（採用・実装状態の正本は roadmap / current-work / current-status）
 Last reviewed: 2026-10-14
 
 ## 1. 結論と今回の到達点
 
-**v3.3の主題は「依存の自律化・初期整理」。2026-10-14のオーナー依頼で実装へ進んだ。**
-新機能を加える前に、必要な依存を自分たちで選び、修正する場所と方法を把握する。
-初期範囲は **棚卸し → CodeMirrorの依存宣言整理 → PDF二経路の比較と採否判断**。
-初回差分の外部レビュー後の追加依頼で、Tauri標準APIへの背景効果集約を一件だけ試す。
-CodeMirror本体やパーサーを自作する計画にはしない。
+**v3.3の主題は依存の自律化。初回整理のレビュー後、受け入れ試験と個別撤回を前提に追加削減した。**
+新機能を加える前に、必要な依存を選び、修正する場所と方法を把握する。
+CodeMirror本体・sanitize・PDF parser・TLS暗号処理を自作する計画にはしない。
+OS APIへ移した部分は、外部package依存をOS/SDKと専用bridgeの保守へ交換する。
 
 | 区分 | 到達点 |
 |---|---|
-| 棚卸し | 2026-10-13にsource・宣言・主要lock経路を照合し、優先順位と保留条件を記録 |
-| 実装 | 既存解決版を維持し、実利用CodeMirror/Lezerを直接宣言。未使用 `codemirror` 束を除去 |
-| PDF判断 | 自作7件の経路別比較から二経路を維持。OCR等の未確認を再開条件として初期評価を閉じた |
-| 版とレビュー | source版は3.3.0。固定範囲5e3310aa..995df92cの外部静的レビューは指摘なし。実機・配布は別ゲート |
-| 追加実装 | 直接window-vibrancy 0.8.1をTauri標準APIへ集約。0.6.0は推移依存として維持 |
-| 条件付きの追加 | PDF分岐の改善が必要になった場合、互換契約と失敗条件を固定して別スライスで評価 |
-| 範囲外 | 新機能、基盤の再実装、全vendor化、公開タグ・App Store upload |
+| 初回整理 | 既存解決版を維持し、実利用CodeMirror/Lezerを直接宣言。未使用 `codemirror` 束を除去 |
+| 初回レビュー | 固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし。追加差分は対象外 |
+| 背景効果 | 直接window-vibrancy 0.8.1をTauri標準APIへ集約。0.6.0は推移依存として維持 |
+| 追加feature整理 | Tauriの不要platform defaults、Foundation未使用feature、asset圧縮を外す。圧縮は容量との交換条件を記録 |
+| 追加入口整理 | npm dialogを公式IPC adapterへ集約。Rust pluginとACLは維持 |
+| HTTP/PDF | ureq→NSURLSession、pdf-extract→in-process PDFKit。契約と失敗試験を固定し、helperとnativeの二経路を残す |
+| 件数 | 追加基準 `25f21528` からmacOS Cargoの保守的なruntime/build集合301→254、npm lock集合183→182 |
+| 受け入れ | 自動検証・実HTTPS・native PDF/OCR・隔離app操作、出力内容と個別rollbackを照合。追加外部レビューと同一署名候補の受け入れは未完 |
+| 範囲外 | 新機能、全面native化、全vendor化、公開タグ・App Store upload |
 
-実装結果と実行した検証の正本は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
-依存数・容量の削減ノルマは置かない。維持する理由を説明できることも成果とする。
+実装結果、基準、測定の意味、個別撤回と未確認の正本は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
+件数削減と配布容量・性能・品質は別に評価し、保守責務や救済経路の損失も採否に含める。
 
 ## 2. 既存ロードマップとの順序
 
-今回のオーナー希望「新機能を加えていく前に」を、初期の依存整理を先に行う順序として反映する。
+今回のオーナー希望「新機能を加えていく前に」を、依存整理を先に行う順序として反映する。
 メモ・縦書きの採用方針は維持する。
 
-1. **v3.2.1のテスト問題なし・App Store公開済みは2026-10-14のオーナー報告。** 先行候補の履歴を保持する。
-2. 棚卸し・比較設計を基に、v3.3でCodeMirror構成を一件だけ整理する（実装済み）。
-3. PDFは維持判断で初期評価を閉じる。品質・fallbackの不足は再開条件へ残す。
-4. 初回外部レビューは指摘なし。追加依頼で背景効果の重複を整理し、追加差分をレビューする。
-   同一v3.3候補の編集・外観・配布受け入れは別途行う。
-5. 初期整理を受け入れた後、見直しメモを起点に製品開発へ戻る。縦書きは独立した柱として維持する。
+1. v3.2.1のテスト問題なし・App Store公開済みは2026-10-14のオーナー報告。先行候補の履歴を保持する。
+2. CodeMirror宣言整理を実装し、初回の固定差分は外部静的レビューで指摘なし。
+3. 背景効果をTauriへ集約。続く追加依頼で、広めの試験と個別撤回を条件に削減候補を拡大する。
+4. 対象ごとにred→green、graph/容量比較、native境界、両laneを確認し、独立commitで採否を記録する。
+   PDFの初期維持判断は履歴として保持し、追加のhelper不在/失敗・OCR等の証跡からPDFKit案を評価した。
+5. 個別rollback照合は完了。次は追加差分の外部レビューと同一署名候補の編集・配布受け入れを行う。
+6. 依存削減を受け入れた後、見直しメモを起点に製品開発へ戻る。縦書きは独立した柱として維持する。
 
-全依存の撤去、PDF依存の削除、window-vibrancyの自前化を、新機能着手の必須条件にしない。
-比較対象や例外を際限なく増やさず、候補ごとに下記の終了条件で区切る。
+全依存の撤去やOS APIの自前実装を、新機能着手の必須条件にしない。
+候補を際限なく増やさず、採用・維持・保留と再開条件で区切る。
 緊急の安全性修正・保守更新はこの順番を待たずに扱う。
-v3.2.1の実機・配布状態は[現状](current-status.md)と[3.2.1記録](releases/3.2.1-workspace-refresh.md)を参照する。
+v3.2.1の状態は[現状](current-status.md)と[3.2.1記録](releases/3.2.1-workspace-refresh.md)を参照する。
 
 ## 3. 根拠と確認範囲
 
@@ -61,7 +63,7 @@ v3.2.1の実機・配布状態は[現状](current-status.md)と[3.2.1記録](rel
 PDF比較と採否判断は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)を参照する。
 全推移依存・全呼出しの安全性監査や脆弱性監査を完了したという意味ではない。
 
-## 4. 優先順位
+## 4. 初期の優先順位（2026-10-13、履歴）
 
 | 順序 | 対象・判断 | この順にする理由 | 今ならどこまでやるか | 終了条件 |
 |---|---|---|---|---|
@@ -99,7 +101,7 @@ App Store / Developer / test / buildは重なり得る。宣言されている�
 | Core AI Swiftパッケージ | `apple-assist/Package.swift`のtest / distribution条件分岐 | Core AI test / 配布helper | revision pinとモデル互換性評価を維持 |
 | PDFKit / Vision / Foundation Models等 | OS frameworkと専用helper | macOS native / fixtureは代替応答 | 外部package削減後もOS/SDK依存は残る。自前化とは区別 |
 
-実装前のnpm宣言はruntime 14件・dev 10件。変更後は3.3.0記録を参照。件数は削減目標ではない。
+実装前のnpm宣言はruntime 14件・dev 10件。この棚卸し表は当時の分類で、追加後の採否・件数は3.3.0記録を参照する。
 SwiftはSystem既定で外部packageなし、Core AI testで `apple/coreai-models`、
 productionで `john-rocky/coreai-kit` を条件付きで利用する。
 Import AssistのSwift packageは外部package宣言なしでPDFKit / Visionを利用する。
@@ -145,7 +147,10 @@ HTML/CSSは拡張子別編集やMarkdownの構成に実利用があり、同時�
 **保留条件:** 無関係な更新が必要、lock差分を説明できない、編集・IME・Undo・L Modeに回帰がある。
 先にエディタエンジンを自作する回避策は採らない。
 
-## 7. 二件目 — PDF二経路の必要性を判断する
+## 7. 初期PDF比較の設計（履歴）
+
+この節は初回 `5e3310aa` 基準の設計・読解。現行追加候補はpdf-extractをin-process PDFKitへ移し、
+helper不在/失敗とOCRの追加試験を実施した。[現行の採否・契約・留保](releases/3.3.0-dependency-autonomy.md)を参照する。
 
 [pdf_text.rs](../src-tauri/src/import_assist/pdf_text.rs)のコメントはRust経路をfallbackと説明するが、
 [helper.rs](../src-tauri/src/import_assist/helper.rs)の実際の流れは次のとおり。
@@ -199,14 +204,14 @@ Import helperはOCR・PDF参照描画にも利用する。pdf-extractの除去�
 **中止条件:** 必要な取込品質を失う、広い互換対策やhelper/OS対応の再設計が必要、
 例外を説明できない。Rustを残すか、判断を保留し、独自PDFパーサーは作らない。
 
-## 8. 初期範囲から外すものと再開条件
+## 8. 維持対象・初期保留の再評価条件
 
 | 対象 | 維持・保留の理由 | 再開条件 |
 |---|---|---|
 | window-vibrancyの自前化 | 直接0.8.1はレビュー後の追加でTauri標準APIへ集約した。0.6.0は推移依存として維持し、自作FFIは加えない | Tauri経路で解けない再現する不具合と移行利益がある場合だけ再評価。今回の詳細・外観の残ゲートは3.3.0記録 |
 | yaml / marked | 外部文書の解釈と本文保全の互換性を担う | 現行設定・拡張・限定パッチでは解けない具体的要件と互換fixtureがある |
 | DOMPurify / TLS・暗号 | 安全基盤の責務が大きい | 通常の依存自律化の再実装対象にはしない。具体的問題を独立レビューで扱う |
-| ureqのOS API化 | HTTPS、redirect拒否、上限、timeout等の契約を移す必要がある | 測定された利益と比較可能な契約がある |
+| ureqのOS API化 | 追加依頼でNSURLSession案を採用候補にした。HTTPS/redirect/MIME/上限/TLS拒否を試験し、timeout差は明示 | 特定HTTPS環境に回帰があれば、この変更だけを戻す。追加外部レビューと同一署名候補の受け入れを行う |
 | encoding_rs / serde / serde_json | 文字コード・形式・protocolの基盤 | 未使用feature等に具体的根拠がある場合だけ局所整理 |
 | React / Tauri / CodeMirror本体、全面native化 | 製品全体・IME・Undo・描画・配布の再開発になる | 製品要件を阻む再現可能な制約と、小試作で確認した移行利益がある |
 | Core AI / tokenizer等 | モデル・生成停止・prompt・配布との互換性が必要 | 既存モデル/runtime評価レーンが再開したとき。今回の依存整理とは分離 |
@@ -233,8 +238,9 @@ license/noticeを記録する。コードの由来や保守責務はvendor化や
 実装開始時は現行の[AGENTS.md](../AGENTS.md)と[開発手順](development-automation.md)を再確認し、
 Habitatを更新する。依存・設定変更の確認ルールは、その時点のオーナーの依頼・承認範囲に従う。
 2026-10-13の文書依頼と、2026-10-14の実装・GitHub push依頼を区別する。
-後者でこの初期スライスの依存・版番号・Git変更は承認された。
+後者で初期スライスの依存・版番号・Git変更は承認された。
 初回の外部静的レビュー結果と、追加依存整理の依頼も2026-10-14に受領した。
+その後の依頼で、広めの受け入れ試験と個別撤回を前提に、リスクが過大でない候補をできるだけ減らす方針へ進んだ。
 
 | 変更 | 必要な検証（実行結果は3.3.0記録を参照） |
 |---|---|
@@ -283,7 +289,7 @@ XtermもVite設定でAgent entryが除外される事実と、配布物から完
 - 現行方針: [roadmap](roadmap.md)、[current-work](current-work.md)、[current-status](current-status.md)、[security boundary](security-boundary.md)。
 - 宣言・解決: [package.json](../package.json)、[package-lock.json](../package-lock.json)、[Cargo.toml](../src-tauri/Cargo.toml)、[Cargo.lock](../src-tauri/Cargo.lock)、[Apple Assist Package.swift](../src-helpers/apple-assist/Package.swift)、[Import Assist Package.swift](../src-helpers/import-assist/Package.swift)。
 - CodeMirror: [base setup](../src/features/editor/editorBaseSetup.ts)、[既存test](../src/features/editor/editorBaseSetup.test.ts)、[theme](../src/features/editor/codeMirrorTheme.ts)、[L Mode decoration](../src/features/editor/lMode/contentDecorations.ts)。
-- PDF: [helper選択](../src-tauri/src/import_assist/helper.rs)、[Rust抽出](../src-tauri/src/import_assist/pdf_text.rs)、[command境界](../src-tauri/src/commands/import_assist.rs)。
+- PDF: [helper選択](../src-tauri/src/import_assist/helper.rs)、[native抽出入口](../src-tauri/src/import_assist/pdf_text.rs)、[command境界](../src-tauri/src/commands/import_assist.rs)。
 - レーン・外観: [Vite設定](../vite.config.ts)、[Agent terminal](../src/components/agent/AgentTerminalView.tsx)、[native entry](../src-tauri/src/lib.rs)。
 - CodeMirrorの構成方針は[公式System Guide](https://codemirror.net/docs/guide/)を参照。今回本文取得は403、公式検索結果とlocal実装で構成を照合した。
 - YAMLのアンカー・alias・スカラー・型解決は[YAML 1.2.2仕様](https://yaml.org/spec/1.2.2/)を参照。小さな利用フィールド数だけを再実装の根拠にしない。

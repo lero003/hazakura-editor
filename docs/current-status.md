@@ -1,23 +1,27 @@
 # Current Status
 
 Status: Operational
-Scope: v3.3依存初期整理候補、v3.2.1公開報告、過去の実装証跡
+Scope: v3.3依存削減候補、v3.2.1公開報告、過去の実装証跡
 Authority: High
 Last reviewed: 2026-10-14
 
 ## Current State
 
-- **現行source v3.3.0（2026-10-14、外部レビュー候補）:** CodeMirror/Lezerの実利用を直接宣言し、
-  未使用の `codemirror` 束を除去。npm解決集合は184件から183件へ減り、残る全package metadataと
-  view 6.43.13 pinを維持した。runtime6件とtype-only1件を補ったため、直接宣言件数は増える。
-  新しい依存契約テストで未宣言と束の再混入を検出する。PDF二経路は自作7件の比較から維持。
-  初回の固定差分 `5e3310aa..995df92c` は外部静的レビューで指摘なし（テスト再実行・CI・実機とは別）。
-  追加依頼でmain窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を除去。
-  Tauri経由0.6.0は維持し、macOS解決集合の和は303→301件。追加検証は3.3.0記録を参照。
-  変更・検証結果・再開条件は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
-  初回候補のローカルfrontend 2,844件・scripts 31件、Rust 483 pass / 3 ignored、App Store surface 134件、
-  型検査・両lane preview buildが通過。v3.3の実機受け入れ・署名submit候補・公開は未実施。
-  メモ・縦書きは初期整理の受け入れ後に戻る。
+- **現行source v3.3.0（2026-10-14、追加レビュー候補）:** 初回のCodeMirror/Lezer宣言整理と
+  未使用 `codemirror` 除去、背景効果のTauri集約に続き、基準 `25f21528` から依存削減を追加した。
+  npm dialogを公式IPCのローカルadapterへ集約し、Rust plugin/ACLは維持。Tauriの不要なplatform defaults、
+  Foundationの未使用feature、asset圧縮を外し、ureqをNSURLSession、pdf-extractをin-process PDFKitへ移した。
+  macOS両architectureの保守的なCargo runtime/build解決集合は301→254件、npm lock集合は183→182件。
+  残る依存の版・取得元を維持し、新規packageは加えていない。view 6.43.13とCore AI pin/patchは維持。
+  圧縮無効化でarm64 Developer appは約1.8 MB増える。PDFはhelperとin-processの二経路を残すが、
+  独立Rust parserの多様性は減る。個別撤回・詳細は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
+  追加候補のローカルfrontend 2,864件・scripts 31件、Rust 491 pass / 3 ignored、surface 134件、型検査、
+  native HTTP/PDF・実HTTPS・OCR pipelineが通過。両laneの隔離arm64 ad-hoc appをbuild・起動し、
+  Developerの保存・書き出し等、StoreのSave As、HTML/PDF/EPUB、日本語PDF下書き、Undo・未保存Cancel等を実操作した。
+  書き出し内容と6変更の個別復帰を照合。競合解決手順を記録し、URLSession/PDFKit片側撤回後のcompileも通過。
+  隔離Store appはextension未同梱で正式packageではない。
+  初回の外部レビュー「指摘なし」は固定範囲 `5e3310aa..995df92c` のみ。追加差分の外部レビュー・同SHAのCI、
+  同一署名候補のIME/VoiceOver、Intel/macOS 26、TestFlight・公開は未確認。メモ・縦書きは受け入れ後に戻る。
 
 - **公開版v3.2.1（2026-10-14、オーナー報告）:** テスト問題なし・App Store公開済み。
   ワークスペース一覧の外部変更追従と競合修正を含む。当時のsource検証は
