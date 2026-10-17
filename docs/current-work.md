@@ -34,6 +34,17 @@ macOS 26.6.2/Apple SiliconのCIでcodec比較は成功したが、GUI・TestFlig
 撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の撤回試験とは区別する。
 [全体の変更・前回の個別撤回](releases/3.3.0-dependency-autonomy.md)を保持し、受け入れ後は見直しメモ・縦書きへ戻る。
 
+## 品質 — 挙動を変えないリファクタリング・スライス（2026-10-17）
+
+v3.3依存削減の受け入れ候補（`049813ea` / build 164）のbasisを変えずに、未参照コード削除・
+Tauri購読の共通フック化・lMode循環import解消・プレビュー重複統合・分離窓の共通化・
+未使用検出の有効化を小さなcommitで積んだ。Rust側はhelper transportの共有化と
+invoke/権限の静的テスト追加。依存宣言・保存形式・境界・文言は変更していない。
+
+frontend 2,907件 / 312 files、scripts 31件、型検査、両lane Vite buildと境界検査が通過。
+実機確認（分離窓テーマ、IME/L Mode、Reader）とsurface 134件の一括実行は未実施。
+延期したスライスと見送り理由は[レビュー依頼文](reviews/2026-10-17-refactor-slices-review-request.md)に記載する。
+
 ## 公開済み — v3.2.1ワークスペース一覧更新
 
 2026-10-14にオーナーがテスト問題なし・App Store公開済みと報告。
