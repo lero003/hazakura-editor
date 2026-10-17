@@ -2,6 +2,7 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody as ruleBodyFromCss } from "../test-support/css";
 
 const chromeCss = readFileSync(
   `${process.cwd()}/src/styles/workspace-chrome.css`,
@@ -9,11 +10,7 @@ const chromeCss = readFileSync(
 );
 
 function ruleBody(selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    chromeCss.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))
-      ?.groups?.body ?? ""
-  );
+  return ruleBodyFromCss(chromeCss, selector);
 }
 
 describe("workspace-chrome.css", () => {

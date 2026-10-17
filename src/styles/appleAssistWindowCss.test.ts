@@ -1,22 +1,11 @@
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody, stripCssComments } from "../test-support/css";
 
 const appleAssistWindowCss = fs.readFileSync(
   `${process.cwd()}/src/styles/apple-assist-window.css`,
   "utf8",
 );
-
-function stripCssComments(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, "");
-}
-
-function ruleBody(css: string, selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    css.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))?.groups
-      ?.body ?? ""
-  );
-}
 
 describe("apple-assist-window.css", () => {
   const css = stripCssComments(appleAssistWindowCss);

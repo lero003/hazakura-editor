@@ -2,6 +2,7 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody as ruleBodyFromCss } from "../test-support/css";
 
 const workspaceCss = readFileSync(
   `${process.cwd()}/src/styles/workspace.css`,
@@ -17,12 +18,7 @@ const themesCss = readFileSync(
 );
 
 function ruleBody(selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    workspaceCss.match(
-      new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"),
-    )?.groups?.body ?? ""
-  );
+  return ruleBodyFromCss(workspaceCss, selector);
 }
 
 describe("workspace.css", () => {

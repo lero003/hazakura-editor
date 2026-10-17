@@ -2,6 +2,7 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { stripCssComments } from "../test-support/css";
 
 const filesWithMotionTransitions = [
   "src/styles/lMode.css",
@@ -12,10 +13,6 @@ const filesWithMotionTransitions = [
 
 function readProjectFile(path: string): string {
   return readFileSync(`${process.cwd()}/${path}`, "utf8");
-}
-
-function stripCssComments(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, "");
 }
 
 function transitionValues(css: string): string[] {

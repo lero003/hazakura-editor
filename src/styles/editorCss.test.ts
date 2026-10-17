@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody } from "../test-support/css";
 
 const editorCss = readFileSync(
   `${process.cwd()}/src/styles/editor.css`,
@@ -25,14 +26,6 @@ const workspaceCss = readFileSync(
   `${process.cwd()}/src/styles/workspace.css`,
   "utf8",
 );
-
-function ruleBody(css: string, selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    css.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))
-      ?.groups?.body ?? ""
-  );
-}
 
 describe("editor tab close affordance CSS", () => {
   it("keeps tab close controls visually distinct from dirty dots", () => {

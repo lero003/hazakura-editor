@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LModeClasses, LModeChipLabels } from "../features/editor/lMode/classes";
+import { stripCssComments } from "../test-support/css";
 
 const lModeCss = readFileSync(
   `${process.cwd()}/src/styles/lMode.css`,
@@ -22,10 +23,6 @@ const a11yCss = readFileSync(
 // don't accidentally match prose inside /* ... */. Block
 // comments cannot be nested in CSS, so a single non-greedy
 // pass is enough.
-function stripCssComments(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, "");
-}
-
 describe("lMode.css", () => {
   it("keeps CSS blocks balanced so later L Mode rules still apply", () => {
     const openBraces = (lModeCss.match(/{/g) ?? []).length;
