@@ -5,7 +5,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { closePdfReference } from "../../lib/tauri";
+import { closePdfReference } from "../../lib/tauri/pdfReference";
 import { localizeCompareError } from "../../lib/utils";
 import { revealReferenceTextDiff } from "../../features/referenceCompare/revealReferenceTextDiff";
 import type { EditorTab, MenuLanguage, RightPaneMode } from "../../types";

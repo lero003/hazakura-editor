@@ -1,12 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  createSecurityScopedBookmark,
-  listWorkspaceTree,
-  pickWorkspaceFolder,
-  resolveSecurityScopedBookmark,
-  setMainActiveWorkspace,
-} from "../../lib/tauri";
+import { createSecurityScopedBookmark, listWorkspaceTree, resolveSecurityScopedBookmark } from "../../lib/tauri/workspace";
+import { pickWorkspaceFolder } from "../../lib/tauri/dialog";
+import { setMainActiveWorkspace } from "../../lib/tauri/agent";
 import {
   readPersistedWorkspaceState,
   readStoredRecentFolders,
@@ -14,13 +10,17 @@ import {
 } from "../../lib/storage";
 import { useWorkspaceOpening } from "./useWorkspaceOpening";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/workspace", () => ({
   createSecurityScopedBookmark: vi.fn(),
   listWorkspaceTree: vi.fn(),
-  pickWorkspaceFolder: vi.fn(),
   resolveSecurityScopedBookmark: vi.fn(),
-  setMainActiveWorkspace: vi.fn(),
 }));
+vi.mock("../../lib/tauri/dialog", () => ({
+  pickWorkspaceFolder: vi.fn(),
+}));
+vi.mock("../../lib/tauri/agent", () => ({
+  setMainActiveWorkspace: vi.fn(),
+}))
 
 vi.mock("../../lib/storage", () => ({
   readPersistedWorkspaceState: vi.fn(),

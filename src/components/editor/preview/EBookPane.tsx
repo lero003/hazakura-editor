@@ -47,11 +47,7 @@ import {
   ebookProgressText,
   resolveMeasurement,
 } from "./ebookProgress";
-import {
-  fetchRemoteImage,
-  openLocalImageUnderRoots,
-  openWorkspaceImage,
-} from "../../../lib/tauri";
+import { fetchRemoteImage, openLocalImageUnderRoots, openWorkspaceImage } from "../../../lib/tauri/workspace";
 import type { MenuLanguage } from "../../../types";
 import { isJapaneseMenuLanguage } from "../../../types";
 import { DOCUMENT_CONTENT_LANG } from "../../../features/app/documentLanguage";

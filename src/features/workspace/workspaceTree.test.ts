@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { replaceWorkspaceTreeEntry } from "./workspaceTree";
 
 export function directory(path: string, children: WorkspaceTreeEntry[] = [], loaded = true): WorkspaceTreeEntry {

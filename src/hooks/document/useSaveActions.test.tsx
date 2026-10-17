@@ -2,7 +2,7 @@ import { useEditorTabState } from "../editor/useEditorTabState";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isDirty } from "../../features/editor/editorTabs";
-import type { SavedFileState, TextFileDocument } from "../../lib/tauri";
+import { type SavedFileState, type TextFileDocument } from "../../lib/tauri/files";
 import { removeStoredDraft } from "../../lib/storage";
 import type { EditorTab } from "../../types";
 import { useSaveActions } from "./useSaveActions";
@@ -14,12 +14,16 @@ const fileApi = vi.hoisted(() => ({
   saveTextFileAs: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/workspace", () => ({
   createSecurityScopedBookmark: fileApi.createSecurityScopedBookmark,
+}));
+vi.mock("../../lib/tauri/dialog", () => ({
   pickSaveAsTextFilePath: fileApi.pickSaveAsTextFilePath,
+}));
+vi.mock("../../lib/tauri/files", () => ({
   saveTextFile: fileApi.saveTextFile,
   saveTextFileAs: fileApi.saveTextFileAs,
-}));
+}))
 
 const storage = vi.hoisted(() => ({
   removeStoredDraft: vi.fn(),

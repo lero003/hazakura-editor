@@ -44,21 +44,23 @@ const epubApi = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   exportPdfFile: tauriApi.exportPdfFile,
-  fetchRemoteImage: tauriApi.fetchRemoteImage,
-  isTauriRuntime: tauriApi.isTauriRuntime,
   openImageFile: tauriApi.openImageFile,
-  openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
-  openWorkspaceImage: tauriApi.openWorkspaceImage,
+  openTextFile: filesApi.openTextFile,
   revealPathInFileManager: tauriApi.revealPathInFileManager,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
 }));
-
-vi.mock("../../lib/tauri/files", () => ({
-  openTextFile: filesApi.openTextFile,
+vi.mock("../../lib/tauri/workspace", () => ({
+  fetchRemoteImage: tauriApi.fetchRemoteImage,
+  openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
+  openWorkspaceImage: tauriApi.openWorkspaceImage,
 }));
+vi.mock("../../lib/tauri/_runtime", () => ({
+  isTauriRuntime: tauriApi.isTauriRuntime,
+}))
+
 
 vi.mock("../../features/document/epubExport", () => ({
   buildEpubBetaArchive: epubApi.buildEpubBetaArchive,

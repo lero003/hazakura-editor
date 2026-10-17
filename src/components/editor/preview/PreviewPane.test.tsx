@@ -7,14 +7,14 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { openWorkspaceImage } from "../../../lib/tauri";
+import { openWorkspaceImage } from "../../../lib/tauri/workspace";
 import PreviewPane from "./PreviewPane";
 
-vi.mock("../../../lib/tauri", () => ({
+vi.mock("../../../lib/tauri/workspace", () => ({
   fetchRemoteImage: vi.fn(),
   openLocalImageUnderRoots: vi.fn(),
   openWorkspaceImage: vi.fn(),
-}));
+}))
 
 type ObserverCallback = ConstructorParameters<typeof IntersectionObserver>[0];
 

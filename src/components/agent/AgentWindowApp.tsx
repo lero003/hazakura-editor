@@ -1,13 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getAgentWorkbenchSessionState,
-  resizeAgentWorkbenchTerminal,
-  setAgentWindowTheme,
-  stopAgentWorkbenchSession,
-  writeAgentWorkbenchSessionInput,
-  type AgentWorkbenchProvider,
-  type AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { getAgentWorkbenchSessionState, resizeAgentWorkbenchTerminal, setAgentWindowTheme, stopAgentWorkbenchSession, writeAgentWorkbenchSessionInput, type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {

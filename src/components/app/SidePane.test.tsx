@@ -8,7 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSidePaneCopy } from "../../lib/locale";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
 import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
 import {
   markdownStructureItems,

@@ -6,7 +6,8 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getRecoveryCopy, getSafeEditorCopy } from "../../lib/locale";
+import { getRecoveryCopy } from "../../lib/locale/recovery";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
 import type { DraftRecord } from "../../types";
 import { StartPanel } from "./StartPanel";
 

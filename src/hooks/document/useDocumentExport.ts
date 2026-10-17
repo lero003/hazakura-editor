@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { save as saveDialog } from "../../lib/tauri/nativeDialog";
-import {
-  isTauriRuntime,
-  exportPdfFile,
-  fetchRemoteImage,
-  openImageFile,
-  openLocalImageUnderRoots,
-  openWorkspaceImage,
-  revealPathInFileManager,
-  saveBinaryFileAs,
-  saveTextFileAs,
-} from "../../lib/tauri";
+import { isTauriRuntime } from "../../lib/tauri/_runtime";
+import { exportPdfFile, openImageFile, revealPathInFileManager, saveBinaryFileAs, saveTextFileAs } from "../../lib/tauri/files";
+import { fetchRemoteImage, openLocalImageUnderRoots, openWorkspaceImage } from "../../lib/tauri/workspace";
 import {
   buildEpubBetaArchiveWithReport,
   defaultEpubExportSettings,

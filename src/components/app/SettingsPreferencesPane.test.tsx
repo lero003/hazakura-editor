@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
-import { getLModeCopy, getPreferencesCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getPreferencesCopy } from "../../lib/locale/preferences";
 import { defaultEditorSettings } from "../../lib/editorSettingsDefaults";
 import {
   AUTO_BACKUP_USER_CHOICE_STORAGE_KEY,

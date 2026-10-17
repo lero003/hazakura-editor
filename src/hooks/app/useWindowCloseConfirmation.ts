@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { hideMainWindow, onCurrentWindowCloseRequested } from "../../lib/tauri";
+import { hideMainWindow, onCurrentWindowCloseRequested } from "../../lib/tauri/window";
 import { useTauriSubscription } from "./useTauriSubscription";
 
 type RefValue<T> = {

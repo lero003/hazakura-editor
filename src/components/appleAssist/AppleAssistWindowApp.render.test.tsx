@@ -18,12 +18,8 @@ import {
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
   MENU_LANGUAGE_STORAGE_KEY,
 } from "../../types";
-import {
-  requestAppleAssistProposal,
-  cancelAppleAssistProposal,
-  getMainAppleAssistTarget,
-  probeAppleAssistAvailability,
-} from "../../lib/tauri";
+import { requestAppleAssistProposal, cancelAppleAssistProposal, getMainAppleAssistTarget } from "../../lib/tauri/agent";
+import { probeAppleAssistAvailability } from "../../lib/tauri/appleAssist";
 
 const eventListeners = new Map<string, (event: { payload: unknown }) => void>();
 let delayRegistration = false;
@@ -37,24 +33,18 @@ vi.mock("@tauri-apps/api/event", () => ({
   }),
 }));
 
-vi.mock("../../lib/tauri", async () => {
-  const actual = await vi.importActual<typeof import("../../lib/tauri")>(
-    "../../lib/tauri",
-  );
+vi.mock("../../lib/tauri/appleAssist", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/appleAssist")>("../../lib/tauri/appleAssist");
   return {
     ...actual,
     probeAppleAssistAvailability: vi.fn(async () => ({ kind: "available" as const })),
-    getMainAppleAssistTarget: vi.fn(async () => ({
-      kind: "paragraph" as const,
-      start: 0,
-      end: 8,
-      text: "original",
-      label: "",
-      activeDocumentPath: "/workspace/note.md",
-      activeDocumentName: "note.md",
-      activeDocumentSessionId: "session:note-1",
-      capturedAtMs: 0,
-    })),
+  };
+});
+vi.mock("../../lib/tauri/agent", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/agent")>("../../lib/tauri/agent");
+  return {
+    ...actual,
+    getMainAppleAssistTarget: vi.fn(async () => ({ kind: "paragraph" as const, start: 0, end: 8, text: "original", label: "", activeDocumentPath: "/workspace/note.md", activeDocumentName: "note.md", activeDocumentSessionId: "session:note-1", capturedAtMs: 0, })),
     requestAppleAssistProposal: vi.fn(async () => undefined),
     cancelAppleAssistProposal: vi.fn(async () => undefined),
     setAppleAssistWindowTheme: vi.fn(async () => undefined),

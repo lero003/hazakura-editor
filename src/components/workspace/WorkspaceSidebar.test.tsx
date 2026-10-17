@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSafeEditorCopy, getWorkspaceFileOpsCopy } from "../../lib/locale";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 const workspaceTree: WorkspaceTreeEntry = {

@@ -8,18 +8,13 @@ import type {
   RefObject,
   SetStateAction,
 } from "react";
-import type {
-  AgentWorkbenchCopy,
-  LModeCopy,
-  PreferencesCopy,
-  RecoveryCopy,
-} from "../../lib/locale";
-import type {
-  AgentWorkbenchProvider,
-  AgentWorkbenchSession,
-  AppleAssistAvailability,
-  WorkspaceTreeEntry,
-} from "../../lib/tauri";
+import { type AgentWorkbenchCopy } from "../../lib/locale/agentWorkbench";
+import { type LModeCopy } from "../../lib/locale/lMode";
+import { type PreferencesCopy } from "../../lib/locale/preferences";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
+import { type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import type {
   AssistSurfacePreference,
   CompareAnchor,

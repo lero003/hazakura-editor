@@ -8,10 +8,10 @@ const tauriApi = vi.hoisted(() => ({
   saveAutoBackup: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/autoBackup", () => ({
   pruneAutoBackups: tauriApi.pruneAutoBackups,
   saveAutoBackup: tauriApi.saveAutoBackup,
-}));
+}))
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {

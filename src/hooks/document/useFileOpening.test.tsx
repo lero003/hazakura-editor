@@ -1,30 +1,32 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  confirmImportMarkdownDraft,
-  createTextFile,
-  createSecurityScopedBookmark,
-  importSourceToMarkdown,
-  openExternalUrl,
-  openTextFile,
-  pickImportSourceFile,
-  pickMarkdownFile,
-  pickNewMarkdownFilePath,
-} from "../../lib/tauri";
+import { confirmImportMarkdownDraft, pickImportSourceFile, pickMarkdownFile, pickNewMarkdownFilePath } from "../../lib/tauri/dialog";
+import { createTextFile, openTextFile } from "../../lib/tauri/files";
+import { createSecurityScopedBookmark } from "../../lib/tauri/workspace";
+import { importSourceToMarkdown } from "../../lib/tauri/importAssist";
+import { openExternalUrl } from "../../lib/tauri/external";
 import { writePersistedFileBookmark } from "../../lib/storage";
 import { useFileOpening } from "./useFileOpening";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/dialog", () => ({
   confirmImportMarkdownDraft: vi.fn(),
-  createTextFile: vi.fn(),
-  createSecurityScopedBookmark: vi.fn(),
-  importSourceToMarkdown: vi.fn(),
-  openExternalUrl: vi.fn(),
-  openTextFile: vi.fn(),
   pickImportSourceFile: vi.fn(),
   pickMarkdownFile: vi.fn(),
   pickNewMarkdownFilePath: vi.fn(),
 }));
+vi.mock("../../lib/tauri/files", () => ({
+  createTextFile: vi.fn(),
+  openTextFile: vi.fn(),
+}));
+vi.mock("../../lib/tauri/workspace", () => ({
+  createSecurityScopedBookmark: vi.fn(),
+}));
+vi.mock("../../lib/tauri/importAssist", () => ({
+  importSourceToMarkdown: vi.fn(),
+}));
+vi.mock("../../lib/tauri/external", () => ({
+  openExternalUrl: vi.fn(),
+}))
 
 vi.mock("../../lib/storage", () => ({
   readStoredDrafts: vi.fn(() => []),

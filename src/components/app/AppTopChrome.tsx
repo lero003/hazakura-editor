@@ -6,10 +6,8 @@ import type {
 import { DocumentMetaBar } from "./DocumentMetaBar";
 import { EditorQuickSettingsMenu } from "./EditorQuickSettingsMenu";
 import { TabBar } from "../editor/TabBar";
-import type {
-  LModeCopy,
-  SidePaneCopy,
-} from "../../lib/locale";
+import { type LModeCopy } from "../../lib/locale/lMode";
+import { type SidePaneCopy } from "../../lib/locale/sidePane";
 import type {
   EditorTab,
   EditorSettings,
@@ -18,7 +16,7 @@ import type {
   RightPaneMode,
   AssistSurfacePreference,
 } from "../../types";
-import type { AppleAssistAvailability } from "../../lib/tauri";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type AppTopChromeProps = {

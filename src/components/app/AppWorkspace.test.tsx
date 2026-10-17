@@ -9,16 +9,14 @@ import {
 import { createRef, type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppWorkspace } from "./AppWorkspace";
-import {
-  getAppleAssistCopy,
-  getLModeCopy,
-  getSafeEditorCopy,
-  getSidePaneCopy,
-  getSlashMenuCopy,
-  getWorkspaceFileOpsCopy,
-} from "../../lib/locale";
+import { getAppleAssistCopy } from "../../lib/locale/appleAssist";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
+import { getSlashMenuCopy } from "../../lib/locale/slashMenu";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import type { EditorPaneHandle } from "../editor/EditorPane";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 import type { EditorSettings, EditorTab } from "../../types";
 import type {

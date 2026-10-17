@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { draftStorageKey } from "../../features/document/pathlessDraftRecovery";
-import type { RecoveryCopy } from "../../lib/locale";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
 import type { DraftRecord, EditorTab } from "../../types";
 import { confirm } from "../../lib/tauri/nativeDialog";
 

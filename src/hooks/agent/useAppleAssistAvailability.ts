@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../../lib/tauri";
+import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import { listenCoreAiModelStateChanges } from "../../lib/tauri/coreAiModels";
 import { useTauriSubscription } from "../app/useTauriSubscription";
 

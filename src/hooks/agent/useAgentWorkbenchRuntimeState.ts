@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AgentWorkbenchSession } from "../../lib/tauri";
+import { type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import type { AgentLaunchGateState, AgentTerminalSize } from "../../types";
 import { isActiveAgentSession } from "../../features/agent/agentWorkbench";
 

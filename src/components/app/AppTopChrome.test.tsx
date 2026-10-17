@@ -1,11 +1,9 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
-import {
-  getLModeCopy,
-  getSidePaneCopy,
-  getWorkspaceFileOpsCopy,
-} from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import { defaultEditorSettings } from "../../lib/editorSettingsDefaults";
 import type { EditorTab } from "../../types";
 

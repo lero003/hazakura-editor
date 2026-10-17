@@ -6,7 +6,8 @@ import type {
 } from "react";
 import { FindReplaceBar } from "../find/FindReplaceBar";
 import { RecoveryMessages } from "./RecoveryMessages";
-import type { EditorChromeCopy, RecoveryCopy } from "../../lib/locale";
+import { type EditorChromeCopy } from "../../lib/locale/editorChrome";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
 import type { DraftRecord, EditorTab, SearchOptions } from "../../types";
 
 type AppDocumentFeedbackProps = {

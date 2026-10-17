@@ -5,7 +5,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { openImageFile, openWorkspaceImage } from "../../lib/tauri";
+import { openImageFile } from "../../lib/tauri/files";
+import { openWorkspaceImage } from "../../lib/tauri/workspace";
 import { isPathInsideDirectory } from "../../lib/utils";
 import type { CompareViewState, EditorTab, ImagePreviewState } from "../../types";
 

@@ -7,7 +7,7 @@ import {
 import { trapFocusInElement } from "../../lib/focusTrap";
 import { isImeComposing } from "../../lib/keyboard";
 import { getQuickOpenCopy } from "../../lib/locale/quickOpen";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import type { MenuLanguage } from "../../types";
 
 type QuickOpenProps = {

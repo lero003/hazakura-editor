@@ -3,11 +3,13 @@ import { act, renderHook, cleanup } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { useCommandPaletteController } from "./useCommandPaletteController";
 import { useFileOpening } from "../document/useFileOpening";
-import { openTextFile, type TextFileDocument } from "../../lib/tauri";
-import { getLModeCopy } from "../../lib/locale";
+import { openTextFile, type TextFileDocument } from "../../lib/tauri/files";
+import { getLModeCopy } from "../../lib/locale/lMode";
 import type { EditorTab } from "../../types";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-vi.mock("../../lib/tauri", () => ({ openTextFile: vi.fn() }));
+vi.mock("../../lib/tauri/files", () => ({
+  openTextFile: vi.fn(),
+}))
 vi.mock("../../lib/storage", () => ({ readStoredDrafts: () => [], upsertDraftRecord: vi.fn() }));
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
 const file = (path: string): TextFileDocument => ({ path, name: path.split("/").at(-1)!, contents: "line\n".repeat(30), encoding: "utf-8", line_ending: "lf", size: 150, modified_ms: null, fingerprint: path, large_file_warning: false });

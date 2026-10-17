@@ -5,17 +5,11 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
-import {
-  confirmImportMarkdownDraft,
-  createSecurityScopedBookmark,
-  createTextFile,
-  importSourceToMarkdown,
-  openExternalUrl,
-  openTextFile,
-  pickImportSourceFile,
-  pickMarkdownFile,
-  pickNewMarkdownFilePath,
-} from "../../lib/tauri";
+import { confirmImportMarkdownDraft, pickImportSourceFile, pickMarkdownFile, pickNewMarkdownFilePath } from "../../lib/tauri/dialog";
+import { createSecurityScopedBookmark } from "../../lib/tauri/workspace";
+import { createTextFile, openTextFile } from "../../lib/tauri/files";
+import { importSourceToMarkdown } from "../../lib/tauri/importAssist";
+import { openExternalUrl } from "../../lib/tauri/external";
 import {
   createEditorTab,
   createUntitledEditorTab,

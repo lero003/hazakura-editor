@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { markdownStructureItems, parseMarkdownStructure } from "../../features/editor/markdownStructure";
 import { analyzeMarkdownStructure } from "../../features/editor/markdownStructureAdvisories";
-import { getSidePaneCopy } from "../../lib/locale";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
 import { OutlinePane } from "./OutlinePane";
 
 afterEach(cleanup);

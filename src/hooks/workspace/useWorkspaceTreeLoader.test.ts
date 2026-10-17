@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { useWorkspaceTreeLoader } from "./useWorkspaceTreeLoader";
 
 const { listWorkspaceTree, listWorkspaceDirectory } = vi.hoisted(() => ({ listWorkspaceTree: vi.fn(), listWorkspaceDirectory: vi.fn() }));
-vi.mock("../../lib/tauri", () => ({ listWorkspaceTree, listWorkspaceDirectory }));
+vi.mock("../../lib/tauri/workspace", () => ({
+  listWorkspaceTree,
+  listWorkspaceDirectory,
+}))
 const dir = (path: string, children: WorkspaceTreeEntry[] = [], loaded = true): WorkspaceTreeEntry => ({ path, name: path.split("/").pop()!, kind: "directory", children, children_loaded: loaded, children_truncated: false });
 const file = (path: string): WorkspaceTreeEntry => ({ ...dir(path), kind: "file" });
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>((done) => { resolve = done; }); return { resolve, promise }; }

@@ -11,16 +11,10 @@ import type {
   ReferenceCompareState,
   ReferenceFollowMode,
 } from "../../features/referenceCompare/types";
-import {
-  closePdfReference,
-  createSecurityScopedBookmark,
-  getReferenceFileMetadata,
-  openImageFile,
-  openPdfReference,
-  openTextFile,
-  openWorkspaceImage,
-  pickReferenceFile,
-} from "../../lib/tauri";
+import { closePdfReference, getReferenceFileMetadata, openPdfReference } from "../../lib/tauri/pdfReference";
+import { createSecurityScopedBookmark, openWorkspaceImage } from "../../lib/tauri/workspace";
+import { openImageFile, openTextFile } from "../../lib/tauri/files";
+import { pickReferenceFile } from "../../lib/tauri/dialog";
 import {
   isTextReferenceWithinBudget,
 } from "../../features/referenceCompare/textReferenceBudget";

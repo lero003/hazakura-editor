@@ -8,16 +8,16 @@ import {
 } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { openWorkspaceImage } from "../../../lib/tauri";
+import { openWorkspaceImage } from "../../../lib/tauri/workspace";
 import {
   getEBookPageOffset,
   measureEBookPageCount,
 } from "./ebookPagination";
 import EBookPane from "./EBookPane";
 
-vi.mock("../../../lib/tauri", () => ({
+vi.mock("../../../lib/tauri/workspace", () => ({
   openWorkspaceImage: vi.fn(),
-}));
+}))
 
 vi.mock("./ebookPagination", () => ({
   getEBookPageOffset: vi.fn((pageIndex: number) => pageIndex * 320),

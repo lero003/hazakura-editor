@@ -1,40 +1,45 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  closePdfReference,
-  getReferenceFileMetadata,
-  openImageFile,
-  openPdfReference,
-  openTextFile,
-  pickReferenceFile,
-} from "../../lib/tauri";
+import { closePdfReference, getReferenceFileMetadata, openPdfReference } from "../../lib/tauri/pdfReference";
+import { openImageFile, openTextFile } from "../../lib/tauri/files";
+import { pickReferenceFile } from "../../lib/tauri/dialog";
 import {
   __resetPdfOpenQueueForTests,
   useReferenceCompareActions,
 } from "./useReferenceCompareActions";
 import type { EditorTab } from "../../types";
 
-vi.mock("../../lib/tauri", async () => {
-  const actual = await vi.importActual<typeof import("../../lib/tauri")>(
-    "../../lib/tauri",
-  );
+vi.mock("../../lib/tauri/files", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/files")>("../../lib/tauri/files");
   return {
     ...actual,
     openTextFile: vi.fn(),
     openImageFile: vi.fn(),
+  };
+});
+vi.mock("../../lib/tauri/workspace", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/workspace")>("../../lib/tauri/workspace");
+  return {
+    ...actual,
     openWorkspaceImage: vi.fn(),
+    createSecurityScopedBookmark: vi.fn().mockResolvedValue(null),
+  };
+});
+vi.mock("../../lib/tauri/pdfReference", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/pdfReference")>("../../lib/tauri/pdfReference");
+  return {
+    ...actual,
     openPdfReference: vi.fn(),
     closePdfReference: vi.fn().mockResolvedValue(undefined),
-    getReferenceFileMetadata: vi.fn().mockResolvedValue({
-      path: "/ws/x",
-      size: 1,
-      modified_ms: 1,
-      fingerprint: "fp-meta",
-      large_file_warning: false,
-    }),
+    getReferenceFileMetadata: vi.fn().mockResolvedValue({ path: "/ws/x", size: 1, modified_ms: 1, fingerprint: "fp-meta", large_file_warning: false, }),
+  };
+});
+vi.mock("../../lib/tauri/dialog", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/dialog")>("../../lib/tauri/dialog");
+  return {
+    ...actual,
     pickReferenceFile: vi.fn(),
     pickMarkdownFile: vi.fn(),
-    createSecurityScopedBookmark: vi.fn().mockResolvedValue(null),
   };
 });
 

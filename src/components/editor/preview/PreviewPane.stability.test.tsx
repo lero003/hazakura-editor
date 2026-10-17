@@ -12,9 +12,11 @@ vi.mock("../../../features/editor/previewRenderDebounce", () => ({
     return () => clearTimeout(timer);
   },
 }));
-vi.mock("../../../lib/tauri", () => ({
-  fetchRemoteImage: vi.fn(), openLocalImageUnderRoots: vi.fn(), openWorkspaceImage: vi.fn(),
-}));
+vi.mock("../../../lib/tauri/workspace", () => ({
+  fetchRemoteImage: vi.fn(),
+  openLocalImageUnderRoots: vi.fn(),
+  openWorkspaceImage: vi.fn(),
+}))
 
 beforeEach(() => {
   vi.useFakeTimers();

@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { isSupportedImageFile } from "../../lib/utils";
 import {
   ChevronIcon,

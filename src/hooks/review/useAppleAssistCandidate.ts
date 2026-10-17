@@ -1,10 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import {
-  generateAppleAssistCandidate,
-  type AppleAssistOperation,
-  APPLE_ASSIST_V0_12_OPERATIONS,
-} from "../../lib/tauri";
-import type { ReviewDeskCopy } from "../../lib/locale";
+import { generateAppleAssistCandidate, type AppleAssistOperation, APPLE_ASSIST_V0_12_OPERATIONS } from "../../lib/tauri/appleAssist";
+import { type ReviewDeskCopy } from "../../lib/locale/reviewDesk";
 
 // `useAppleAssistCandidate` is the thin bridge between Apple
 // Local Assist and the existing Review Desk candidate flow. It

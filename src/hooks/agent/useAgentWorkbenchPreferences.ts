@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type SetStateAction } from "react";
-import type { AgentWorkbenchProvider } from "../../lib/tauri";
+import { type AgentWorkbenchProvider } from "../../lib/tauri/agent";
 import {
   isExternalCliAssistSurfaceAllowed,
   normalizeAssistSurfacePreferenceForDistribution,

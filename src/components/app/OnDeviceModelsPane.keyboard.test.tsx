@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { OnDeviceModelsPane } from "./OnDeviceModelsPane";
-import { getPreferencesCopy } from "../../lib/locale";
+import { getPreferencesCopy } from "../../lib/locale/preferences";
 import { useModalKeyboardGuard } from "../../hooks/app/useModalKeyboardGuard";
 
 // jsdom は layout を持たない。実 focus trap は client rect を見るため、

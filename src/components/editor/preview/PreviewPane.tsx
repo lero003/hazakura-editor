@@ -23,11 +23,7 @@ import {
   usePreviewMediaAccessKey,
 } from "./previewMediaActions";
 import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
-import {
-  fetchRemoteImage,
-  openLocalImageUnderRoots,
-  openWorkspaceImage,
-} from "../../../lib/tauri";
+import { fetchRemoteImage, openLocalImageUnderRoots, openWorkspaceImage } from "../../../lib/tauri/workspace";
 import { loadPreviewImagesNearViewport } from "./previewImageLoader";
 import {
   applyCachedPreviewImages,

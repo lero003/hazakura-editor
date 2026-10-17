@@ -1,6 +1,7 @@
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { markdownPathForImportedImage } from "../../features/editor/markdownImageReferences";
-import { importImageFromPath, isTauriRuntime } from "../../lib/tauri";
+import { importImageFromPath } from "../../lib/tauri/workspace";
+import { isTauriRuntime } from "../../lib/tauri/_runtime";
 import { useTauriSubscription } from "./useTauriSubscription";
 
 const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp)$/i;

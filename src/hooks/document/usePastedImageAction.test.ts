@@ -1,11 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { savePastedImage } from "../../lib/tauri";
+import { savePastedImage } from "../../lib/tauri/workspace";
 import { usePastedImageAction } from "./usePastedImageAction";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/workspace", () => ({
   savePastedImage: vi.fn(),
-}));
+}))
 
 describe("usePastedImageAction", () => {
   it("returns an image path relative to a nested active document", async () => {

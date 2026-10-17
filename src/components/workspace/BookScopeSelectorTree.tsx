@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { isBookScopeMarkdownPath } from "../../features/bookScope";
 import { workspaceRelativePath } from "../../hooks/workspace/workspaceRelativePath";
 

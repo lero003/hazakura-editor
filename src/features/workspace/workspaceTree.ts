@@ -1,4 +1,4 @@
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 
 function mergeWorkspaceTreeEntry(
   current: WorkspaceTreeEntry,

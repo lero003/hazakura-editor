@@ -5,13 +5,9 @@ import {
   useCallback,
   useRef,
 } from "react";
-import {
-  createSecurityScopedBookmark,
-  pickSaveAsTextFilePath,
-  saveTextFile,
-  saveTextFileAs,
-  type SavedFileState,
-} from "../../lib/tauri";
+import { createSecurityScopedBookmark } from "../../lib/tauri/workspace";
+import { pickSaveAsTextFilePath } from "../../lib/tauri/dialog";
+import { saveTextFile, saveTextFileAs, type SavedFileState } from "../../lib/tauri/files";
 import { createEditorTab, isDirty } from "../../features/editor/editorTabs";
 import { removeStoredDraft, writePersistedFileBookmark } from "../../lib/storage";
 import { suggestedSaveAsPath } from "../../lib/utils";

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import type { AgentProviderAvailability } from "../../lib/tauri";
+import { type AgentProviderAvailability } from "../../lib/tauri/agent";
 
 // Mock the Tauri runtime bridge so the hook does not actually
 // touch IPC. The mock is hoisted via vi.mock at module scope so
@@ -10,10 +10,8 @@ import type { AgentProviderAvailability } from "../../lib/tauri";
 const listAgentProviderAvailability: Mock<
   () => Promise<AgentProviderAvailability[]>
 > = vi.fn();
-vi.mock("../../lib/tauri", async () => {
-  const actual = await vi.importActual<typeof import("../../lib/tauri")>(
-    "../../lib/tauri",
-  );
+vi.mock("../../lib/tauri/agent", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/agent")>("../../lib/tauri/agent");
   return {
     ...actual,
     listAgentProviderAvailability: () => listAgentProviderAvailability(),

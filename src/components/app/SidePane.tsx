@@ -11,7 +11,7 @@ import {
 // useCallback retained for preview scroll handlers below.
 import type { PreviewViewState } from "../../features/editor/documentViewState";
 import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy";
-import type { SidePaneCopy } from "../../lib/locale";
+import { type SidePaneCopy } from "../../lib/locale/sidePane";
 import type {
   CompareAnchor,
   CompareCase,

@@ -9,7 +9,7 @@ import type {
   ResolvedTheme,
 } from "../../types";
 import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
-import type { LModeCopy } from "../../lib/locale";
+import { type LModeCopy } from "../../lib/locale/lMode";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { CrtBootSequence } from "./CrtBootSequence";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";

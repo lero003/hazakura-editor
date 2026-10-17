@@ -23,15 +23,17 @@ const okfApi = vi.hoisted(() => ({
   createOkfScaffold: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   createTextFile: workspaceApi.createTextFile,
+  openTextFile: workspaceApi.openTextFile,
+}));
+vi.mock("../../lib/tauri/workspace", () => ({
   createTextFolder: workspaceApi.createTextFolder,
   listWorkspaceDirectory: workspaceApi.listWorkspaceDirectory,
   moveWorkspaceEntry: workspaceApi.moveWorkspaceEntry,
   moveWorkspaceEntryToTrash: workspaceApi.moveWorkspaceEntryToTrash,
-  openTextFile: workspaceApi.openTextFile,
   renameWorkspaceEntry: workspaceApi.renameWorkspaceEntry,
-}));
+}))
 
 vi.mock("../../lib/tauri/okf", () => ({
   createOkfScaffold: okfApi.createOkfScaffold,

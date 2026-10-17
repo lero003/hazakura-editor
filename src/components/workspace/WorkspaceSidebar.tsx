@@ -7,7 +7,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import {
   documentBookScopeNodes,
   type BookScopeNode,
@@ -19,7 +19,8 @@ import type {
   BookScopeUnavailableEntry,
 } from "../../lib/tauri/bookScope";
 import type { MenuLanguage } from "../../types";
-import type { SafeEditorCopy, WorkspaceFileOpsCopy } from "../../lib/locale";
+import { type SafeEditorCopy } from "../../lib/locale/safeEditor";
+import { type WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import {
   OpenFolderIcon,
   PanelLeftCloseIcon,

@@ -8,9 +8,9 @@ type MenuListener = Parameters<typeof listen<string>>[1];
 
 const menuListeners: MenuListener[] = [];
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/_runtime", () => ({
   isTauriRuntime: () => true,
-}));
+}))
 
 vi.mock("../../lib/distributionLane", () => ({
   isExternalCliAssistSurfaceAllowed: () => true,

@@ -15,12 +15,7 @@ import {
 } from "../../features/app/documentLanguage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import {
-  getMainAppleAssistTarget,
-  requestAppleAssistProposal,
-  setAppleAssistWindowTheme,
-  cancelAppleAssistProposal,
-} from "../../lib/tauri";
+import { getMainAppleAssistTarget, requestAppleAssistProposal, setAppleAssistWindowTheme, cancelAppleAssistProposal } from "../../lib/tauri/agent";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import {
   applyDetachedWindowThemeToDocument,

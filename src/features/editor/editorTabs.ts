@@ -1,4 +1,4 @@
-import type { TextFileDocument } from "../../lib/tauri";
+import { type TextFileDocument } from "../../lib/tauri/files";
 import type { EditorTab } from "../../types";
 import { normalizeTextLineEndings } from "../../lib/utils";
 

@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { DocumentMetaBar } from "./DocumentMetaBar";
 import type { EditorTab } from "../../types";
 import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
-import { getLModeCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
 
 afterEach(cleanup);
 

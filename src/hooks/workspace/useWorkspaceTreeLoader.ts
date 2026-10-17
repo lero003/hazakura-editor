@@ -6,8 +6,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { listWorkspaceDirectory, listWorkspaceTree } from "../../lib/tauri";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { listWorkspaceDirectory, listWorkspaceTree } from "../../lib/tauri/workspace";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import {
   displayedWorkspaceDirectories,
   replaceWorkspaceTreeEntry,

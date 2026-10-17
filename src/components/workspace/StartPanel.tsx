@@ -5,7 +5,8 @@ import { formatRecentOpenedAt } from "../../features/workspace/recentOpenedAtLab
 import { resolveStartPanelReturningContext } from "../../features/workspace/startPanelReturning";
 import { readPersistedWorkspaceState } from "../../lib/storage";
 import { confirm } from "../../lib/tauri/nativeDialog";
-import type { RecoveryCopy, SafeEditorCopy } from "../../lib/locale";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
+import { type SafeEditorCopy } from "../../lib/locale/safeEditor";
 import { buildRecentDisplayEntries } from "../../lib/utils";
 import type { DraftRecord, MenuLanguage, RecentEntry } from "../../types";
 

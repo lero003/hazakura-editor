@@ -4,11 +4,8 @@ import type {
   EditorPaneHandle,
   MarkdownFormat,
 } from "../../components/editor/EditorPane";
-import {
-  commandPaletteEntry,
-  type CommandPaletteCopy,
-  type LModeCopy,
-} from "../../lib/locale";
+import { commandPaletteEntry, type CommandPaletteCopy } from "../../lib/locale/commandPalette";
+import { type LModeCopy } from "../../lib/locale/lMode";
 import type {
   EditorSettings,
   EditorTab,

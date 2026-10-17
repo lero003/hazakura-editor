@@ -3,10 +3,8 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import {
-  requestAppRestart,
-  type AgentWorkbenchProvider,
-} from "../../lib/tauri";
+import { requestAppRestart } from "../../lib/tauri/app";
+import { type AgentWorkbenchProvider } from "../../lib/tauri/agent";
 import type {
   AgentLaunchGateState,
   AssistSurfacePreference,

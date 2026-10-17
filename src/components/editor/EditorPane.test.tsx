@@ -24,7 +24,8 @@ import {
   type EditorPaneHandle,
 } from "./EditorPane";
 import EditorPane from "./EditorPane";
-import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getSlashMenuCopy } from "../../lib/locale/slashMenu";
 import { findTextMatches } from "../../hooks/find/useFindMatches";
 import type { SlashCommand } from "../../types/slash";
 import type {

@@ -1,11 +1,11 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { updateAppMenuState } from "../../lib/tauri";
+import { updateAppMenuState } from "../../lib/tauri/menu";
 import { useAppMenuStateSync } from "./useAppMenuStateSync";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/menu", () => ({
   updateAppMenuState: vi.fn(),
-}));
+}))
 
 describe("useAppMenuStateSync", () => {
   beforeEach(() => {

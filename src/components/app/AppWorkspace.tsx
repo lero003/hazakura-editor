@@ -57,23 +57,16 @@ import {
   type PreviewViewState,
 } from "../../features/editor/documentViewState";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
-import type {
-  AppleAssistCopy,
-  LModeCopy,
-  RecoveryCopy,
-  SafeEditorCopy,
-  SidePaneCopy,
-  SlashMenuCopy,
-} from "../../lib/locale";
-import type {
-  AgentWorkbenchOutputChunk,
-  AgentWorkbenchProvider,
-  AgentWorkbenchSession,
-  BookScopeChapter,
-  BookScopeUnavailableEntry,
-  WorkspaceTreeEntry,
-} from "../../lib/tauri";
-import { openTextFile } from "../../lib/tauri";
+import { type AppleAssistCopy } from "../../lib/locale/appleAssist";
+import { type LModeCopy } from "../../lib/locale/lMode";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
+import { type SafeEditorCopy } from "../../lib/locale/safeEditor";
+import { type SidePaneCopy } from "../../lib/locale/sidePane";
+import { type SlashMenuCopy } from "../../lib/locale/slashMenu";
+import { type AgentWorkbenchOutputChunk, type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
+import { type BookScopeChapter, type BookScopeUnavailableEntry } from "../../lib/tauri/bookScope";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
+import { openTextFile } from "../../lib/tauri/files";
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,
@@ -196,7 +189,7 @@ type AppWorkspaceProps = {
   editorSettings: EditorSettings;
   onReadingFontSizeChange?: (size: number) => void;
   editorTheme: BaseTheme;
-  fileOpsCopy: import("../../lib/locale").WorkspaceFileOpsCopy;
+  fileOpsCopy: import("../../lib/locale/workspaceFileOps").WorkspaceFileOpsCopy;
   findMatches: TextMatch[];
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   handleEditorChange: (nextValue: string) => void;

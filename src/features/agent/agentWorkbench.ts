@@ -2,12 +2,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type {
-  AgentWorkbenchOutputChunk,
-  AgentWorkbenchPreflight,
-  AgentWorkbenchProvider,
-  AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { type AgentWorkbenchOutputChunk, type AgentWorkbenchPreflight, type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import {
   type AgentLaunchGateState,
   AGENT_WORKBENCH_PROVIDERS,

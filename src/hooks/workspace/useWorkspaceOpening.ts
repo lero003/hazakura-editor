@@ -5,14 +5,9 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
-import {
-  createSecurityScopedBookmark,
-  listWorkspaceTree,
-  pickWorkspaceFolder,
-  resolveSecurityScopedBookmark,
-  setMainActiveWorkspace,
-  type WorkspaceTreeEntry,
-} from "../../lib/tauri";
+import { createSecurityScopedBookmark, listWorkspaceTree, resolveSecurityScopedBookmark, type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
+import { pickWorkspaceFolder } from "../../lib/tauri/dialog";
+import { setMainActiveWorkspace } from "../../lib/tauri/agent";
 import {
   readPersistedWorkspaceState,
   readStoredRecentFolders,

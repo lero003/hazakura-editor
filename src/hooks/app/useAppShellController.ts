@@ -14,11 +14,8 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import {
-  openAgentWindow,
-  openAppleAssistWindow,
-  toggleAppleAssistWindow,
-} from "../../lib/tauri";
+import { openAgentWindow } from "../../lib/tauri/agent";
+import { openAppleAssistWindow, toggleAppleAssistWindow } from "../../lib/tauri/localAssistSurface";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
@@ -40,7 +37,7 @@ import { usePinExternalImagesAction } from "../document/usePinExternalImagesActi
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistProposalHandler } from "../editor/useAppleAssistProposalHandler";
-import { stopAppleAssistGeneration } from "../../lib/tauri";
+import { stopAppleAssistGeneration } from "../../lib/tauri/appleAssist";
 import { updateTabsById } from "../../features/editor/editorTabs";
 import {
   assertTabEditable,

@@ -6,16 +6,9 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  createTextFile,
-  createTextFolder,
-  listWorkspaceDirectory,
-  moveWorkspaceEntry,
-  moveWorkspaceEntryToTrash,
-  openTextFile,
-  renameWorkspaceEntry,
-} from "../../lib/tauri";
-import type { TextFileDocument } from "../../lib/tauri";
+import { createTextFile, openTextFile } from "../../lib/tauri/files";
+import { createTextFolder, listWorkspaceDirectory, moveWorkspaceEntry, moveWorkspaceEntryToTrash, renameWorkspaceEntry } from "../../lib/tauri/workspace";
+import { type TextFileDocument } from "../../lib/tauri/files";
 import { createOkfScaffold } from "../../lib/tauri/okf";
 import {
   getOkfScaffoldTemplate,

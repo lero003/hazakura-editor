@@ -2,10 +2,8 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-import {
-  getCommandPaletteCopy,
-  type LModeCopy,
-} from "../../lib/locale";
+import { getCommandPaletteCopy } from "../../lib/locale/commandPalette";
+import { type LModeCopy } from "../../lib/locale/lMode";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { openedSearchMatchStatus } from "../../lib/statusMessages";
 import type {

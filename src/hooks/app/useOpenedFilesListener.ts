@@ -1,9 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
-import {
-  drainOpenedFiles,
-  isTauriRuntime,
-  OPENED_FILES_EVENT,
-} from "../../lib/tauri";
+import { drainOpenedFiles, OPENED_FILES_EVENT } from "../../lib/tauri/files";
+import { isTauriRuntime } from "../../lib/tauri/_runtime";
 import { useTauriSubscription } from "./useTauriSubscription";
 
 type UseOpenedFilesListenerOptions = {

@@ -2,7 +2,7 @@ import { createRef, type RefObject } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
-import { getWorkspaceFileOpsCopy } from "../../lib/locale";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 
 afterEach(cleanup);
 

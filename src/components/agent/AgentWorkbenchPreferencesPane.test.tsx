@@ -6,7 +6,7 @@ import {
   cleanup,
 } from "@testing-library/react";
 import { AgentWorkbenchPreferencesPane } from "./AgentWorkbenchPreferencesPane";
-import { getAgentWorkbenchCopy } from "../../lib/locale";
+import { getAgentWorkbenchCopy } from "../../lib/locale/agentWorkbench";
 
 const baseProps = {
   active: false,

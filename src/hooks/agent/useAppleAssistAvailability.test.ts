@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { AppleAssistAvailability } from "../../lib/tauri";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 
 // Mock the Tauri runtime bridge. The mock is hoisted via
 // vi.mock at module scope so the dynamic import in the hook
@@ -11,10 +11,8 @@ const probeAppleAssistAvailability: Mock<
 const modelEvents = vi.hoisted(() => ({
   listener: null as null | ((catalog: import("../../lib/tauri/coreAiModels").CoreAiModelCatalog) => void),
 }));
-vi.mock("../../lib/tauri", async () => {
-  const actual = await vi.importActual<typeof import("../../lib/tauri")>(
-    "../../lib/tauri",
-  );
+vi.mock("../../lib/tauri/appleAssist", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/appleAssist")>("../../lib/tauri/appleAssist");
   return {
     ...actual,
     probeAppleAssistAvailability: () => probeAppleAssistAvailability(),

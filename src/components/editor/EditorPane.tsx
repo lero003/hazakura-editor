@@ -30,7 +30,7 @@ import {
 } from "../../features/editor/documentViewState";
 import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
 import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
-import type { LModeCopy } from "../../lib/locale";
+import { type LModeCopy } from "../../lib/locale/lMode";
 import type { SlashCommand } from "../../types/slash";
 import type { MarkdownStructureHeading } from "../../features/editor/markdownStructure";
 import {
