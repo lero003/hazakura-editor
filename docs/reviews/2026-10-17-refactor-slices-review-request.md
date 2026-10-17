@@ -19,8 +19,14 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
   - `c0aa90cd` lModeの循環importをcontextモジュールへ分離
   - `2dee3d35` プレビューのmedia access重複を共通モジュールへ統合
   - `52c01c5f` 分離窓のテーマ初期化とLocal Assist copy表を共有モジュールへ分離
-  - `41050cc8` 未使用検出を有効化し未使用のimport/変数を整理
-  - Rust側（`src-tauri/**`、`src/buildScripts.test.ts`）は別commit。範囲は本資料末尾の「Rust側」を参照。
+  - `41050cc8` 未使用検出を有効化し未使用のimport/変数を整理（**Rust側のIPC surfaceテスト追加も
+    このcommitに同梱**。frontendとRustを並行で進めたため）
+  - `29bda2a0` CSSテストの共通ヘルパをtest-supportへ集約
+  - `84de61e1` useTauriSubscriptionのライフサイクル契約テストを追加
+  - `2515b68c` helper RPC transportを共通モジュールへ集約（Rust / R2・R5）
+  - `e1d0962b` アプリメニュー構築をサブメニュー単位に分割（Rust / R4）
+  - `a4dbd6bd` Core AIモデルストアを責務別モジュールへ分割（Rust / R3）
+  - `3aa51605` テスト専用の重複ヘルパを削除しcapability記述を実態へ合わせる（Rust / R1・次点）
 - 製品版・配布設定・依存宣言（`package.json` / `Cargo.toml` / lockfile）は変更していません。
   新しい依存も追加していません。
 - 判断の正本は `docs/current-status.md` / `docs/current-work.md`、境界は `docs/security-boundary.md`
@@ -77,9 +83,9 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 - **実機確認は未実施**。テーマ適用、IME/折り返し、L Mode、Reader、書き出し、ウィンドウ購読の
   実挙動は自動テストのみです。特に分離窓（Agent / Local Assist）のテーマ追従は
   描画テストが薄く、手動確認が必要です。
-- `npm run smoke:app-store-surface`（surface 134件）は本変更後の一括実行をしていません
-  （`npm test` に含まれる10ファイルは通過しています）。
+- `npm run smoke:app-store-surface`（surface 137件）成功。`npm test` に含まれる10ファイルも通過。
 - 署名build、TestFlight、Intel、macOS 26 GUI、VoiceOverは対象外です。
+- **メニューバーの実機smokeは未実施**（Rust R4の分割）。分離窓のテーマ追従も手動確認が必要です。
 - 残スライス（下記）は未実施です。
 
 ## 見送り・延期した提案と理由
@@ -108,8 +114,27 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 - `capabilities/agent-window.json` の説明文を実態（gate対象コマンド）に修正。
   `src/buildScripts.test.ts` に「frontendのinvoke名 ⊆ `generate_handler!` 登録名」
   「未使用コマンドは明示allowlistのみ」「allowlist名は登録済み」の静的テストを追加。
-- 検証: `cargo fmt --check`、`cargo test --locked` の結果は本資料の最終更新時に追記します
-  （PTYを確保できない環境依存の失敗が4件出ており、変更箇所との関連を切り分け中）。
+- 検証（この変更の後、レビュー側で再実行可能）:
+  - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`: 成功。
+  - `cargo test --locked --manifest-path src-tauri/Cargo.toml`: **511 passed / 4 failed / 4 ignored**。
+    失敗4件はすべて `tests::agent_workbench::*_pty_*` 系で、`"Cannot open provider PTY master."`。
+    この環境では `python3 -c "import pty; pty.openpty()"` も `out of pty devices` で失敗し、
+    **PTYを確保できない実行環境の制約**です（変更前から同一）。
+  - `npx vitest run src/buildScripts.test.ts`: 31件成功（IPC surfaceテスト3件を含む）。
+  - `npx tsc --noEmit`: エラーなし。
+- 独立スポットチェック: `menu.rs` の `MenuItem::with_id` ID集合は分割前後で完全一致、
+  supervisorのユーザー可視エラー文字列（`cancelled by user` 11箇所、`timed out after` 等）は保持、
+  移動した文字列（target triple・watchdog名）は `helper_transport.rs` に存在。
+- **要手動確認**: `tests/menu.rs` は純粋関数のみを対象にしており、メニュービルダー自体は
+  自動テスト対象外です。File / Edit / View / Window / Help / アプリメニュー、テーマ切替、
+  言語（ja / kana / en）の実機smokeが必要です。
+- **要判断（挙動変更ではありません）**: frontend の未参照コード削除で
+  `openMainAgentPane()` / `requestApplyAiEditTransaction()` のwrapperが消えた結果、
+  Rustの `open_main_agent_pane` / `request_apply_ai_edit_transaction` は
+  frontendから到達不能になりました。どちらのwrapperも削除前から参照ゼロだったため
+  挙動は変わっていませんが、Rust側は登録・ラベルゲートとも健在です。
+  `src/buildScripts.test.ts` はこの2件を理由コメント付きallowlistとして明示し、
+  wrapper復活時もstale名検査で落ちない形にしています。**復活させるか退役させるかは別判断**です。
 
 ## レビュアーに求める判定
 
