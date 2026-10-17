@@ -11,7 +11,6 @@ import {
   parseMarkdownStructure,
 } from "../../features/editor/markdownStructure";
 import { analyzeMarkdownStructure } from "../../features/editor/markdownStructureAdvisories";
-import { clampScrollRatio } from "../../features/editor/editorScrollPhysics";
 // Re-exported for the existing outline tests and callers.
 export { clampScrollRatio } from "../../features/editor/editorScrollPhysics";
 
