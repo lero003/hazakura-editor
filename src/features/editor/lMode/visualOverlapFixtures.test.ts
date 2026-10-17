@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readProjectFile } from "../../../test-support/source";
 
 // v0.14 visual-overlap fixture. `docs/l-mode-plan.md`
 // flags the L Mode content max-width, the content
@@ -19,10 +19,7 @@ import { describe, expect, it } from "vitest";
 // directly and assert the source-of-truth formulas
 // before computing the numerical headroom.
 
-const lModeCss = readFileSync(
-  `${process.cwd()}/src/styles/lMode.css`,
-  "utf8",
-);
+const lModeCss = readProjectFile("src/styles/lMode.css");
 
 function ruleBody(css: string, selector: RegExp): string {
   return css

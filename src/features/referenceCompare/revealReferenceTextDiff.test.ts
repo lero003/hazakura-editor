@@ -1,9 +1,9 @@
-import { readFileSync } from "node:fs";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { bindExclusiveSidePaneOpen } from "../workspace/rightPaneExclusive";
 import { useReferenceCompareState } from "../../hooks/referenceCompare/useReferenceCompareState";
 import { revealReferenceTextDiff } from "./revealReferenceTextDiff";
+import { readProjectFile } from "../../test-support/source";
 
 describe("revealReferenceTextDiff", () => {
   it("opens Diff from a loaded text Reference and restores it without a picker", () => {
@@ -62,10 +62,7 @@ describe("revealReferenceTextDiff", () => {
 
   it("does not discard the loaded Reference from the in-pane Diff action", () => {
     // The in-pane Diff handler lives in the Reference Compare surface hook.
-    const source = readFileSync(
-      `${process.cwd()}/src/hooks/referenceCompare/useReferenceCompareSurface.ts`,
-      "utf8",
-    );
+    const source = readProjectFile("src/hooks/referenceCompare/useReferenceCompareSurface.ts");
     const start = source.indexOf("const showReferenceTextDiff");
     const end = source.indexOf("const handlePdfPageIndexChange");
     const body = source.slice(start, end);

@@ -3,11 +3,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { ruleBody as ruleBodyFromCss } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
-const chromeCss = readFileSync(
-  `${process.cwd()}/src/styles/workspace-chrome.css`,
-  "utf8",
-);
+const chromeCss = readProjectFile("src/styles/workspace-chrome.css");
 
 function ruleBody(selector: string): string {
   return ruleBodyFromCss(chromeCss, selector);
@@ -22,7 +20,7 @@ describe("workspace-chrome.css", () => {
     );
     // 実機判断: 信号機の位置は**指定しない**（macOS標準）。指定するとテーマ切替で窓の外観が
     // 変わったときに組み直しで失われ、ボタンが動いて見えた。標準なら常に同じ場所へ戻る。
-    const conf = readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8");
+    const conf = readProjectFile("src-tauri/tauri.conf.json");
     expect(conf).not.toMatch(/"trafficLightPosition"/);
     // macOS標準の信号機は左から約20px・12px玉×3＋8px間隔＝右端 約72px。
     // 文書名の 96px はそこから約24px空ける（モックの「次の要素まで24px」と同じリズム）。

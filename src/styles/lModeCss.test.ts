@@ -1,23 +1,17 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LModeClasses, LModeChipLabels } from "../features/editor/lMode/classes";
 import { stripCssComments } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
-const lModeCss = readFileSync(
-  `${process.cwd()}/src/styles/lMode.css`,
-  "utf8",
-);
+const lModeCss = readProjectFile("src/styles/lMode.css");
 
 // a11y.css is read here for the cross-file drift tests below.
 // The block-comment stripping is the same as for lMode.css:
 // `[\s\S]*?` is non-greedy and a single pass is enough since
 // CSS block comments cannot be nested.
-const a11yCss = readFileSync(
-  `${process.cwd()}/src/styles/a11y.css`,
-  "utf8",
-);
+const a11yCss = readProjectFile("src/styles/a11y.css");
 
 // Strip block comments from a CSS string so test assertions
 // don't accidentally match prose inside /* ... */. Block

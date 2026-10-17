@@ -1,12 +1,9 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readProjectFile } from "../test-support/source";
 
-const previewCss = readFileSync(
-  `${process.cwd()}/src/styles/preview.css`,
-  "utf8",
-);
+const previewCss = readProjectFile("src/styles/preview.css");
 
 describe("status bar CSS", () => {
   /** hover / focus-within のチップ面（両テストで同じ規則を見る）。 */

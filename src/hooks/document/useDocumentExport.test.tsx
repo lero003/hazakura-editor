@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
-import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useDocumentExport } from "./useDocumentExport";
 import type { EditorTab } from "../../types";
+import { readProjectFile } from "../../test-support/source";
 
 const dialogApi = vi.hoisted(() => ({
   save: vi.fn(),
@@ -119,10 +119,7 @@ vi.mock("../../features/editor/markdown", () => ({
   },
 }));
 
-const useDocumentExportSource = readFileSync(
-  `${process.cwd()}/src/hooks/document/useDocumentExport.ts`,
-  "utf8",
-);
+const useDocumentExportSource = readProjectFile("src/hooks/document/useDocumentExport.ts");
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {

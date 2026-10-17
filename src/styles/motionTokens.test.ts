@@ -1,8 +1,8 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { stripCssComments } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
 const filesWithMotionTransitions = [
   "src/styles/lMode.css",
@@ -10,10 +10,6 @@ const filesWithMotionTransitions = [
   "src/styles/apple-assist-review.css",
   "src/styles/find.css",
 ] as const;
-
-function readProjectFile(path: string): string {
-  return readFileSync(`${process.cwd()}/${path}`, "utf8");
-}
 
 function transitionValues(css: string): string[] {
   return [...stripCssComments(css).matchAll(/transition\s*:\s*(?<value>[^;{}]+);/g)].map(
