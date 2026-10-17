@@ -1,5 +1,8 @@
 import { BOOK_READER_POSITION_STORAGE_KEY } from "../../types";
 import { normalizeBookScopeRelativePath } from "./model";
+import { clampScrollRatio } from "../editor/editorScrollPhysics";
+// Re-exported for the existing reader-position tests and callers.
+export { clampScrollRatio } from "../editor/editorScrollPhysics";
 
 export const BOOK_READER_POSITION_STORAGE_VERSION = 1;
 export const MAX_PERSISTED_BOOK_READER_POSITIONS = 8;
@@ -23,10 +26,6 @@ const EMPTY_REGISTRY: BookReaderPositionRegistry = {
   workspaces: [],
 };
 
-export function clampScrollRatio(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
-}
 
 export function readBookReaderPositionRegistry(): BookReaderPositionRegistry {
   const raw = window.localStorage.getItem(BOOK_READER_POSITION_STORAGE_KEY);

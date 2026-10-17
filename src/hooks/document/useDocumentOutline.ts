@@ -11,6 +11,9 @@ import {
   parseMarkdownStructure,
 } from "../../features/editor/markdownStructure";
 import { analyzeMarkdownStructure } from "../../features/editor/markdownStructureAdvisories";
+import { clampScrollRatio } from "../../features/editor/editorScrollPhysics";
+// Re-exported for the existing outline tests and callers.
+export { clampScrollRatio } from "../../features/editor/editorScrollPhysics";
 
 type UseDocumentOutlineOptions = {
   activeContents: string;
@@ -133,10 +136,3 @@ function getMarkdownHeadingContext(
   };
 }
 
-export function clampScrollRatio(ratio: number): number {
-  if (!Number.isFinite(ratio)) {
-    return 0;
-  }
-
-  return Math.min(Math.max(ratio, 0), 1);
-}
