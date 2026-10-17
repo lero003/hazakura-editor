@@ -68,7 +68,12 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
    重複していた「章を開いてからディスクと突き合わせる」処理を
    `features/workspace/chapterReviewHandler.ts` の `createChapterReviewHandler` へ集約。
    request/queue の ref は**サイトごとに専有のまま**渡す（両サイドバーは同時にマウントされ得るため）。
-9. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+9. **PDF/EPUB書き出しプロローグの一本化** — `useDocumentExport.ts` で形式ごとに複製されて
+   いた開始プロローグ（attempt/切替の取得、preflight、stale判定、R6の同一tick切替）を
+   `beginFormatExport(format, copy, options)` に統合。差は形式名と status 文言3種のみで、
+   文言は6リテラルとも機械照合で**前後完全一致**（`PDF_EXPORT_COPY` / `EPUB_EXPORT_COPY` に定数化）。
+   HTMLは preflight を持たず同一tickで枠を閉じる別フローなので対象外。
+10. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
