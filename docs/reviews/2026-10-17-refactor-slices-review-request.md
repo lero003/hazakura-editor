@@ -88,7 +88,12 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
     副産物として、`useDocumentExport.test.tsx` に**同じ `lib/tauri/files` を二重に mock していて
     後勝ちで片方が無効化されていた**既存の取りこぼしを発見し、1つに統合した（バレル時代は
     barrel mock と per-module mock が別モジュールとして共存していたため表面化していなかった）。
-12. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+12. **テストのプロジェクトファイル読み取り共通化** — `process.cwd()` 前提の
+    `readFileSync` が14テストファイル・30箇所に散在していたため、
+    `src/test-support/source.ts` の `readProjectFile` へ集約。実装ソースの構造を
+    意図的に検証するテスト（lane/build、エディタ拡張構成、分離窓のcopy契約）であることを
+    ヘルパのコメントに明記し、移設時に更新すべき箇所を1つにした。
+13. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
