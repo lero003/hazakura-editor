@@ -101,6 +101,13 @@ Practical rule: if hazakura editor ships `encoding_rs`, the notice bundle must
 carry both the chosen Apache-2.0 or MIT side for the crate code and the
 BSD-3-Clause WHATWG-data notice.
 
+### Native dialog compatibility adapter
+
+Default-path and button-result compatibility in `src-tauri/src/commands/native_dialog.rs`
+is adapted from tauri-plugin-dialog 2.7.3, Copyright 2019-2023 Tauri Programme
+within The Commons Conservancy, under Apache-2.0 OR MIT. The package itself is
+no longer bundled; the source attribution and applicable license texts are retained.
+
 ## Runtime JavaScript Dependencies
 
 Derived from `package-lock.json`, excluding packages marked dev-only.
@@ -163,7 +170,7 @@ resolved crates rather than collapsed into a single family.
 | `Apache-2.0` | 1 |
 | `Apache-2.0 / MIT` | 1 |
 | `Apache-2.0 AND MIT` | 1 |
-| `Apache-2.0 OR MIT` | 31 |
+| `Apache-2.0 OR MIT` | 28 |
 | `CC0-1.0 OR MIT-0 OR Apache-2.0` | 1 |
 | `MIT` | 41 |
 | `MIT OR Apache-2.0` | 120 |
@@ -201,14 +208,13 @@ resolved crates rather than collapsed into a single family.
 
 - `dpi@0.1.2`
 
-### `Apache-2.0 OR MIT` (31)
+### `Apache-2.0 OR MIT` (28)
 
 - `autocfg@1.5.1`, `bit-set@0.8.0`, `bit-vec@0.8.0`, `cargo_toml@0.22.3`,
   `ctor-proc-macro@0.0.7`, `ctor@0.8.0`, `dtor-proc-macro@0.0.6`, `dtor@0.3.0`,
   `equivalent@1.0.2`, `fastrand@2.5.0`, `idna_adapter@1.2.2`, `indexmap@1.9.3`,
   `indexmap@2.14.2`, `muda@0.19.3`, `multiversion_no_op@1.0.0`, `pin-project-lite@0.2.17`,
   `rustc-hash@2.1.3`, `tauri-build@2.6.3`, `tauri-codegen@2.6.3`, `tauri-macros@2.6.3`,
-  `tauri-plugin-dialog@2.7.3`, `tauri-plugin-fs@2.5.2`, `tauri-plugin@2.6.3`,
   `tauri-runtime-wry@2.11.4`, `tauri-runtime@2.11.3`, `tauri-utils@2.9.3`, `tauri@2.11.6`,
   `utf8_iter@1.0.4`, `uuid@1.26.1`, `window-vibrancy@0.6.0`, `wry@0.55.1`
 

@@ -1,8 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
-// Desktop protocol subset checked against @tauri-apps/plugin-dialog 2.7.3.
-// The official Rust plugin and its dialog capability still own native dialogs,
-// OS access and permissions. Recheck this IPC contract when that plugin changes.
+// Fixed-purpose native commands are restricted to the main window in Rust.
+// They use the same rfd backend for OS dialogs and user-selected access.
 // Paths and extension filters pass through unchanged; normalization belongs to
 // the existing callers. Preserve the upstream shallow freeze of open/save options.
 type DialogFilter = { name: string; extensions: string[] };
@@ -35,12 +34,12 @@ export async function open(
   options: OpenDialogOptions = {},
 ): Promise<string | string[] | null> {
   Object.freeze(options);
-  return invoke<string | string[] | null>("plugin:dialog|open", { options });
+  return invoke<string | string[] | null>("open_native_dialog", { options });
 }
 
 export async function save(options: SaveDialogOptions = {}): Promise<string | null> {
   Object.freeze(options);
-  return invoke<string | null>("plugin:dialog|save", { options });
+  return invoke<string | null>("save_native_dialog", { options });
 }
 
 export async function confirm(
@@ -52,7 +51,7 @@ export async function confirm(
   const buttons = settings?.okLabel || settings?.cancelLabel
     ? { OkCancelCustom: [acceptedLabel, settings.cancelLabel ?? "Cancel"] }
     : "OkCancel";
-  const selected = await invoke<string>("plugin:dialog|message", {
+  const selected = await invoke<string>("confirm_native_dialog", {
     message,
     title: settings?.title,
     kind: settings?.kind,

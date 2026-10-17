@@ -10,7 +10,7 @@ describe("native dialog IPC contract", () => {
   it("opens with empty options and preserves cancellation", async () => {
     ipc.invoke.mockResolvedValueOnce(null);
     await expect(open()).resolves.toBeNull();
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|open", { options: {} });
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("open_native_dialog", { options: {} });
   });
 
   it("passes file and folder selection options without rewriting paths or filters", async () => {
@@ -26,7 +26,7 @@ describe("native dialog IPC contract", () => {
     const selected = ["/tmp/原稿.md", "/tmp/別稿.markdown"];
     ipc.invoke.mockResolvedValueOnce(selected);
     await expect(open(options)).resolves.toEqual(selected);
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|open", { options });
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("open_native_dialog", { options });
     expect(Object.isFrozen(options)).toBe(true);
     expect(Object.isFrozen(options.filters)).toBe(false);
   });
@@ -39,7 +39,7 @@ describe("native dialog IPC contract", () => {
   it("saves with empty options and preserves cancellation", async () => {
     ipc.invoke.mockResolvedValueOnce(null);
     await expect(save()).resolves.toBeNull();
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|save", { options: {} });
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("save_native_dialog", { options: {} });
   });
 
   it("passes save options without appending or stripping extensions", async () => {
@@ -51,14 +51,14 @@ describe("native dialog IPC contract", () => {
     };
     ipc.invoke.mockResolvedValueOnce("/tmp/本.hazakura-book.json.json");
     await expect(save(options)).resolves.toBe("/tmp/本.hazakura-book.json.json");
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|save", { options });
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("save_native_dialog", { options });
     expect(Object.isFrozen(options)).toBe(true);
   });
 
   it.each(["Ok", "Cancel", "Yes", "", null])("confirms only an exact Ok result: %s", async (result) => {
     ipc.invoke.mockResolvedValueOnce(result);
     await expect(confirm("変更を破棄しますか？")).resolves.toBe(result === "Ok");
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|message", {
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("confirm_native_dialog", {
       message: "変更を破棄しますか？", title: undefined, kind: undefined, buttons: "OkCancel",
     });
   });
@@ -66,7 +66,7 @@ describe("native dialog IPC contract", () => {
   it("preserves title and severity for the existing confirmation flows", async () => {
     ipc.invoke.mockResolvedValueOnce("Ok");
     await expect(confirm("通信しますか？", { title: "画像を固定", kind: "warning" })).resolves.toBe(true);
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|message", {
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("confirm_native_dialog", {
       message: "通信しますか？", title: "画像を固定", kind: "warning", buttons: "OkCancel",
     });
   });
@@ -74,7 +74,7 @@ describe("native dialog IPC contract", () => {
   it("accepts a string title without changing the default buttons", async () => {
     ipc.invoke.mockResolvedValueOnce("Cancel");
     await expect(confirm("続けますか？", "確認")).resolves.toBe(false);
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|message", {
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("confirm_native_dialog", {
       message: "続けますか？", title: "確認", kind: undefined, buttons: "OkCancel",
     });
   });
@@ -87,7 +87,7 @@ describe("native dialog IPC contract", () => {
   ] as const)("preserves custom confirmation labels: %j", async (options, labels, result, accepted) => {
     ipc.invoke.mockResolvedValueOnce(result);
     await expect(confirm("続けますか？", options)).resolves.toBe(accepted);
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|message", {
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("confirm_native_dialog", {
       message: "続けますか？", title: undefined, kind: undefined,
       buttons: { OkCancelCustom: [...labels] },
     });
@@ -96,7 +96,7 @@ describe("native dialog IPC contract", () => {
   it("retains the upstream empty-label default-button semantics", async () => {
     ipc.invoke.mockResolvedValueOnce("Ok");
     await expect(confirm("続けますか？", { okLabel: "", cancelLabel: "" })).resolves.toBe(false);
-    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("plugin:dialog|message", {
+    expect(ipc.invoke).toHaveBeenCalledExactlyOnceWith("confirm_native_dialog", {
       message: "続けますか？", title: undefined, kind: undefined, buttons: "OkCancel",
     });
   });
@@ -107,5 +107,18 @@ describe("native dialog IPC contract", () => {
     const request = operation === "open" ? open() : operation === "save" ? save() : confirm("続けますか？");
     await expect(request).rejects.toBe(failure);
     expect(ipc.invoke).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["open", "save", "confirm"] as const)("keeps %s pending until the native dialog replies", async (operation) => {
+    let reply!: (value: string | null) => void;
+    ipc.invoke.mockReturnValueOnce(new Promise<string | null>((resolve) => { reply = resolve; }));
+    const request = operation === "open" ? open() : operation === "save" ? save() : confirm("続けますか？");
+    const completed = vi.fn();
+    void request.then(completed);
+    await Promise.resolve();
+    expect(completed).not.toHaveBeenCalled();
+    reply(operation === "confirm" ? "Cancel" : null);
+    await expect(request).resolves.toBe(operation === "confirm" ? false : null);
+    expect(completed).toHaveBeenCalledExactlyOnceWith(operation === "confirm" ? false : null);
   });
 });

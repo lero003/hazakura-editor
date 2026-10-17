@@ -16,6 +16,7 @@ pub(crate) mod commands {
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod import_assist;
+    pub(crate) mod native_dialog;
     pub(crate) mod okf;
     pub(crate) mod reference_compare;
     mod remote_image_transport;
@@ -112,6 +113,8 @@ use crate::commands::images::*;
 #[allow(unused_imports)]
 use crate::commands::import_assist::*;
 #[allow(unused_imports)]
+use crate::commands::native_dialog::*;
+#[allow(unused_imports)]
 use crate::commands::okf::*;
 #[allow(unused_imports)]
 use crate::commands::reference_compare::*;
@@ -150,8 +153,7 @@ pub fn run() {
         ))
         .manage(OpenedFileStore::default())
         .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
-        .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default())
-        .plugin(tauri_plugin_dialog::init());
+        .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default());
 
     #[cfg(desktop)]
     let builder = builder
@@ -211,6 +213,9 @@ pub fn run() {
 
     builder
         .invoke_handler(tauri::generate_handler![
+            open_native_dialog,
+            save_native_dialog,
+            confirm_native_dialog,
             open_text_file,
             reveal_path_in_file_manager,
             create_text_file,
