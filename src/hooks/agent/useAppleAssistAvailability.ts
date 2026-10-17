@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../../lib/tauri";
 import { listenCoreAiModelStateChanges } from "../../lib/tauri/coreAiModels";
+import { useTauriSubscription } from "../app/useTauriSubscription";
 
 // The fixed Core AI test backend performs an eager model load so missing and
 // unloadable resources fail during the probe. Keep this just beyond the
@@ -54,34 +55,31 @@ export function useAppleAssistAvailability(
   const currentAvailability = useRef(availability);
   currentAvailability.current = availability;
 
-  useEffect(() => {
-    if (!enabled || !watchModelChanges) return;
-    let disposed = false;
-    let unlisten: (() => void) | undefined;
-    let selectedSignature: string | null = null;
-    void listenCoreAiModelStateChanges((catalog) => {
-      if (disposed) return;
-      const selected = catalog.models.find((model) => model.id === catalog.selectedModelId);
-      // Repeated progress for another download must not restart a potentially
-      // expensive model load. Recheck when the selected identity, readiness,
-      // or installed pack version changes.
-      const signature = `${catalog.selectedModelId}:${selected?.status ?? "missing"}:${selected?.assetPackVersion ?? "none"}`;
-      if (selectedSignature === signature) return;
-      const previous = currentAvailability.current;
-      selectedSignature = signature;
-      if (previous.modelId === catalog.selectedModelId && selected?.kind === "system") return;
-      setModelRevision((revision) => revision + 1);
-    }).then((stop) => {
-      if (disposed) stop();
-      else unlisten = stop;
-    }).catch((reason) => {
-      console.warn("Failed to listen for Local Assist model changes", reason);
-    });
-    return () => {
-      disposed = true;
-      unlisten?.();
-    };
-  }, [enabled, watchModelChanges]);
+  useTauriSubscription(
+    (isCancelled) => {
+      if (!enabled || !watchModelChanges) {
+        return null;
+      }
+
+      let selectedSignature: string | null = null;
+      return listenCoreAiModelStateChanges((catalog) => {
+        if (isCancelled()) return;
+        const selected = catalog.models.find((model) => model.id === catalog.selectedModelId);
+        // Repeated progress for another download must not restart a potentially
+        // expensive model load. Recheck when the selected identity, readiness,
+        // or installed pack version changes.
+        const signature = `${catalog.selectedModelId}:${selected?.status ?? "missing"}:${selected?.assetPackVersion ?? "none"}`;
+        if (selectedSignature === signature) return;
+        const previous = currentAvailability.current;
+        selectedSignature = signature;
+        if (previous.modelId === catalog.selectedModelId && selected?.kind === "system") return;
+        setModelRevision((revision) => revision + 1);
+      }).catch((reason) => {
+        console.warn("Failed to listen for Local Assist model changes", reason);
+      });
+    },
+    [enabled, watchModelChanges],
+  );
 
   useEffect(() => {
     let disposed = false;

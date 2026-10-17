@@ -1,8 +1,7 @@
-import { useEffect } from "react";
-import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { markdownPathForImportedImage } from "../../features/editor/markdownImageReferences";
 import { importImageFromPath, isTauriRuntime } from "../../lib/tauri";
+import { useTauriSubscription } from "./useTauriSubscription";
 
 const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp)$/i;
 
@@ -31,82 +30,69 @@ export function useWindowDragDrop({
   onStatus,
   workspaceRootPath,
 }: UseWindowDragDropOptions) {
-  useEffect(() => {
-    if (!isTauriRuntime()) {
-      return;
-    }
+  useTauriSubscription(
+    (isCancelled) => {
+      if (!isTauriRuntime()) {
+        return null;
+      }
 
-    let unlisten: UnlistenFn | null = null;
-    let cancelled = false;
+      return getCurrentWebview()
+        .onDragDropEvent(async (event) => {
+          if (isCancelled()) {
+            return;
+          }
 
-    void getCurrentWebview()
-      .onDragDropEvent(async (event) => {
-        if (cancelled) {
-          return;
-        }
+          const payload = event.payload;
 
-        const payload = event.payload;
+          if (payload.type !== "drop") {
+            return;
+          }
 
-        if (payload.type !== "drop") {
-          return;
-        }
+          const { imageFiles, textFiles } = splitDroppedPaths(payload.paths);
 
-        const { imageFiles, textFiles } = splitDroppedPaths(payload.paths);
+          if (textFiles.length === 1) {
+            await onOpenTextFiles(textFiles);
+          } else if (textFiles.length > 1) {
+            await onOpenTextFiles([textFiles[0]]);
+          }
 
-        if (textFiles.length === 1) {
-          await onOpenTextFiles(textFiles);
-        } else if (textFiles.length > 1) {
-          await onOpenTextFiles([textFiles[0]]);
-        }
+          const rootForDrop =
+            workspaceRootPath ??
+            (activeTabPath ? activeTabPath.replace(/\/[^/]+$/, "") : null);
 
-        const rootForDrop =
-          workspaceRootPath ??
-          (activeTabPath ? activeTabPath.replace(/\/[^/]+$/, "") : null);
+          if (imageFiles.length > 0 && rootForDrop) {
+            for (const imagePath of imageFiles) {
+              try {
+                const relativePath = await importImageFromPath(
+                  rootForDrop,
+                  imagePath,
+                );
+                const markdownPath = markdownPathForImportedImage({
+                  activeTabPath,
+                  assetRelativePath: relativePath,
+                  assetRootPath: rootForDrop,
+                });
 
-        if (imageFiles.length > 0 && rootForDrop) {
-          for (const imagePath of imageFiles) {
-            try {
-              const relativePath = await importImageFromPath(
-                rootForDrop,
-                imagePath,
-              );
-              const markdownPath = markdownPathForImportedImage({
-                activeTabPath,
-                assetRelativePath: relativePath,
-                assetRootPath: rootForDrop,
-              });
-
-              onInsertMarkdown(`![](${markdownPath})`);
-              onStatus(`Imported: ${markdownPath}`);
-            } catch (err) {
-              console.warn("Failed to import image:", imagePath, err);
-              onStatus(`Failed to import image: ${String(err)}`);
+                onInsertMarkdown(`![](${markdownPath})`);
+                onStatus(`Imported: ${markdownPath}`);
+              } catch (err) {
+                console.warn("Failed to import image:", imagePath, err);
+                onStatus(`Failed to import image: ${String(err)}`);
+              }
             }
           }
-        }
-      })
-      .then((nextUnlisten) => {
-        if (!cancelled) {
-          unlisten = nextUnlisten;
-          return;
-        }
-
-        nextUnlisten();
-      })
-      .catch((err) => {
-        console.warn("Failed to listen for drag-drop events", err);
-        onStatus(`Failed to listen for drag-drop events: ${String(err)}`);
-      });
-
-    return () => {
-      cancelled = true;
-      unlisten?.();
-    };
-  }, [
-    activeTabPath,
-    onInsertMarkdown,
-    onOpenTextFiles,
-    onStatus,
-    workspaceRootPath,
-  ]);
+        })
+        .catch((err) => {
+          console.warn("Failed to listen for drag-drop events", err);
+          onStatus(`Failed to listen for drag-drop events: ${String(err)}`);
+        });
+    },
+    [
+      activeTabPath,
+      onInsertMarkdown,
+      onOpenTextFiles,
+      onStatus,
+      workspaceRootPath,
+    ],
+  );
 }

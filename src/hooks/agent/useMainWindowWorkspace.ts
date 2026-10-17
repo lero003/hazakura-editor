@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import {
   getMainActiveWorkspace,
 } from "../../lib/tauri";
 import { MAIN_WORKSPACE_CHANGED_EVENT } from "../../types";
+import { useTauriSubscription } from "../app/useTauriSubscription";
 
 // `useMainWindowWorkspace` is the agent window's bridge to the main
 // window's active workspace. It reads the latest known value from
@@ -22,7 +23,6 @@ export function useMainWindowWorkspace(): UseMainWindowWorkspaceResult {
 
   useEffect(() => {
     let disposed = false;
-    let unlisten: UnlistenFn | null = null;
 
     void getMainActiveWorkspace()
       .then((initial) => {
@@ -38,34 +38,26 @@ export function useMainWindowWorkspace(): UseMainWindowWorkspaceResult {
         console.warn("Failed to read initial main workspace", err);
       });
 
-    void listen<string | null>(MAIN_WORKSPACE_CHANGED_EVENT, (event) => {
-      if (disposed) {
-        return;
-      }
-      setWorkspace(event.payload ?? null);
-    })
-      .then((handle) => {
-        if (disposed) {
-          void handle();
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  useTauriSubscription(
+    (isCancelled) =>
+      listen<string | null>(MAIN_WORKSPACE_CHANGED_EVENT, (event) => {
+        if (isCancelled()) {
           return;
         }
-        unlisten = handle;
-      })
-      .catch((err) => {
-        if (disposed) {
+        setWorkspace(event.payload ?? null);
+      }).catch((err) => {
+        if (isCancelled()) {
           return;
         }
         console.warn("Failed to subscribe to main workspace changes", err);
-      });
-
-    return () => {
-      disposed = true;
-      if (unlisten) {
-        void unlisten();
-        unlisten = null;
-      }
-    };
-  }, []);
+      }),
+    [],
+  );
 
   return workspace;
 }

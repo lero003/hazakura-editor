@@ -931,3 +931,51 @@ describe("macOS build scripts", () => {
     }
   });
 });
+
+// R1: the Rust `generate_handler!` list and the frontend
+// `invoke("...")` literals must not drift apart. Commands may be added
+// or removed, but a frontend call to an unregistered command — or a
+// command that silently loses its last caller — has to be an explicit
+// change here.
+describe("Tauri IPC command surface", () => {
+  const libSource = readFileSync("src-tauri/src/lib.rs", "utf8");
+  const handlerList =
+    libSource.match(/generate_handler!\[([\s\S]*?)\]/)?.[1] ?? "";
+  const registeredCommands = handlerList
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  const invokedCommands = new Set<string>();
+  for (const file of readdirSync("src/lib/tauri")) {
+    if (!file.endsWith(".ts")) continue;
+    const source = readFileSync(join("src/lib/tauri", file), "utf8");
+    for (const match of source.matchAll(
+      /invoke(?:<[^>]*>)?\(\s*"([a-z0-9_]+)"/g,
+    )) {
+      invokedCommands.add(match[1]);
+    }
+  }
+
+  // Commands that are registered in `generate_handler![...]` but have no
+  // `invoke("...")` call site in `src/lib/tauri/*.ts`. Each entry is a
+  // conscious decision; adding a new one is the review step for an
+  // orphaned command.
+  const registeredButUnused = ["probe_apple_assist_availability"];
+
+  it("registers every command the frontend invokes", () => {
+    expect(registeredCommands.length).toBeGreaterThan(0);
+    expect(new Set(registeredCommands).size).toBe(registeredCommands.length);
+    const unregistered = [...invokedCommands].filter(
+      (command) => !registeredCommands.includes(command),
+    );
+    expect(unregistered).toEqual([]);
+  });
+
+  it("keeps the registered-but-unused commands to the reviewed allowlist", () => {
+    const unused = registeredCommands.filter(
+      (command) => !invokedCommands.has(command),
+    );
+    expect([...unused].sort()).toEqual([...registeredButUnused].sort());
+  });
+});
