@@ -1427,7 +1427,13 @@ fn agent_workbench_app_search_path_includes_toolchain_manager_bins() {
         fs::create_dir_all(home_dir.join(relative)).expect("create toolchain bin dir");
     }
 
-    let search_dirs = build_agent_provider_search_path_dirs(None, Some(home_dir.as_os_str()));
+    // Assert against the production search path itself rather than a
+    // test-only copy of its directory list.
+    let search_path =
+        build_agent_provider_search_path(None, Some(home_dir.as_os_str())).expect("search path");
+    let search_dirs = env::split_paths(&search_path)
+        .map(|path| path.to_string_lossy().to_string())
+        .collect::<Vec<_>>();
 
     for relative in [
         ".local/bin",
