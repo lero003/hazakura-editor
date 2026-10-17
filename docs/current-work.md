@@ -40,7 +40,7 @@ v3.3依存削減の受け入れ候補（`049813ea` / build 164）のbasisを変�
 Tauri購読の共通フック化・lMode循環import解消・プレビュー重複統合・分離窓の共通化・
 未使用検出の有効化・コマンド表のモジュール抽出・Reference Compare面と章レビュー処理の
 切り出し・書き出しプロローグの一本化・EditorPaneヘルパ分離・互換バレル廃止・
-テストのファイル読み取り共通化を小さなcommitで積んだ。Rust側は
+テストのファイル読み取り共通化・WorkspaceSidebar配線の一本化を小さなcommitで積んだ。Rust側は
 helper transportの共有化、menu/core_ai_modelsの分割、invoke/権限の静的テスト追加。
 依存宣言・保存形式・境界・文言は変更していない。
 

@@ -93,7 +93,15 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
     `src/test-support/source.ts` の `readProjectFile` へ集約。実装ソースの構造を
     意図的に検証するテスト（lane/build、エディタ拡張構成、分離窓のcopy契約）であることを
     ヘルパのコメントに明記し、移設時に更新すべき箇所を1つにした。
-13. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+13. **WorkspaceSidebar 45 props の一本化** — `AppWorkspace` と `AppShell`（L Modeレール）に
+    90行ずつ重複していた配線を `features/workspace/workspaceSidebarProps.ts` の
+    `buildWorkspaceSidebarProps(source, extras)` に集約。両サイトの供給元は同じ名前の
+    props（＋ `workspaceTabMarkers`）で、差分は L Modeレール固有の4値のみ。
+    `AppWorkspace` は destructuring 引数から `props` 受けへ変更し、ビルダーが使う値を
+    二重に取り出さないよう不要になった29個の分割代入を削除。差分は
+    **3ファイル / +138 −290**（AppWorkspace 1,337→1,215行、AppShell 460→382行、新モジュール151行）。
+    sidebarの既定値（`[]` / `false` / `null` / `true`）は渡さない場合と同じ結果になることを確認済み。
+14. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
@@ -133,7 +141,7 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 | スライス | 状態 |
 |---|---|
 | H2 Tauri購読の共通フック化 | **8/10 移行済み**。残る `useAppMenuActionListener`（150行のインラインハンドラを再インデントする必要があり、差分が大きい）と `useAppleAssistProposalHandler`（register/unregister + 2リスナー + job後始末が1つのownerライフサイクルを共有）は、共通フックに載せる利得より移設リスクが上と判断して保留（どちらも動作は現状維持） |
-| S6 WorkspaceSidebar 45 props の二重配線 | **一部実施**（章レビューハンドラ共有化）。45キーは両サイトで一致することを機械照合済み。残りは AppWorkspace の signature を `props` 受けへ変えて供給元を統一する独立スライス |
+| S6 WorkspaceSidebar 45 props の二重配線 | **完了**。`buildWorkspaceSidebarProps(source, extras)` へ一本化（下記14） |
 | S9 EditorPane の分離 | **一部実施**（スクロール/選択ヘルパ261行）。残るCodeMirror拡張の組み立て（mount + reconfigure で14生成箇所）は IME/L Mode の実機受け入れを伴うため最後に回す |
 | S3b Tauriモックビルダー | **実益が減少**。バレル廃止（上記11）でモックが per-area の狭いモックになり、共通ビルダーで置き換える利得が小さくなったため見送り |
 | S5 レーン判定のcapability集約 / H3 操作ガード共通化 | 見送り（理由は下表） |
