@@ -48,6 +48,11 @@ export function useCoreAiModelCatalog(onError?: (reason: unknown) => void) {
         eventRevisionRef.current += 1;
         if (!isCancelled()) setCatalog(next);
       })
+        // A failed subscription still falls back to the snapshot refresh.
+        .catch((reason) => {
+          console.warn("Failed to listen for Core AI model state", reason);
+          return null;
+        })
         .then((stop) => {
           if (!isCancelled()) {
             void refreshCatalog().catch((reason) => {
@@ -55,10 +60,6 @@ export function useCoreAiModelCatalog(onError?: (reason: unknown) => void) {
             });
           }
           return stop;
-        })
-        .catch((reason) => {
-          console.warn("Failed to listen for Core AI model state", reason);
-          return null;
         }),
     [refreshCatalog],
   );
