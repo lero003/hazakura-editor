@@ -24,6 +24,10 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build:vite
+      - run: npm run build:vite
+        env:
+          HAZAKURA_DISTRIBUTION_LANE: app-store
+          VITE_HAZAKURA_DISTRIBUTION_LANE: app-store
       - run: npm run smoke:app-store-surface
       - run: node --test scripts/local-assist-evaluation-checks.test.mjs
   native:

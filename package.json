@@ -27,7 +27,7 @@
     "build:import-assist-helper:fixture": "bash scripts/build-import-assist-helper-fixture.sh",
     "build:import-assist-helper:live": "bash scripts/build-import-assist-helper-live.sh",
     "build:dmg-preview": "bash scripts/build-warning-dmg-preview.sh",
-    "build:vite": "tsc --noEmit && vite build",
+    "build:vite": "tsc --noEmit && vite build && node scripts/check-frontend-bundle-boundary.mjs dist",
     "probe:macos-distribution": "bash scripts/probe-macos-distribution.sh",
     "preview": "vite preview --host 127.0.0.1",
     "smoke:app-store-surface": "vitest run src/buildScripts.test.ts src/lib/distributionLane.test.ts src/hooks/commandPalette/useCommandPaletteController.test.ts src/hooks/agent/useAgentWorkbenchPreferences.test.ts src/components/agent/AgentWorkbenchPreferencesPane.test.tsx src/components/app/SettingsPreferencesPane.test.tsx src/components/app/AppTopChrome.test.tsx src/components/app/RightPaneToggleControls.test.tsx src/components/app/DocumentMetaBar.test.tsx src/hooks/review/useReviewDeskState.test.ts",
