@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { ThemePreferenceCards } from "./ThemePreferenceCards";
-import { getPreferencesCopy } from "../../lib/locale";
+import { getPreferencesCopy } from "../../lib/locale/preferences";
 import type { MenuLanguage, ThemePreference } from "../../types";
 afterEach(cleanup);
 it.each(["en", "ja", "kana"] as MenuLanguage[])("preserves all seven theme IDs and actual selection (%s)", (language) => {

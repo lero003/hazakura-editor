@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import { useCommandPaletteController } from "./useCommandPaletteController";
 import type { GlobalSearchRow } from "../globalSearch/useGlobalSearch";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-import { getLModeCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
 import { createUntitledEditorTab } from "../../features/editor/editorTabs";
 import { useEditorCommands } from "../editor/useEditorCommands";
 

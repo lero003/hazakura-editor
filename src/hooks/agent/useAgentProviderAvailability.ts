@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import type { AgentProviderAvailability } from "../../lib/tauri";
-import { listAgentProviderAvailability } from "../../lib/tauri";
+import { type AgentProviderAvailability } from "../../lib/tauri/agent";
+import { listAgentProviderAvailability } from "../../lib/tauri/agent";
 
 // `useAgentProviderAvailability` is a thin shared wrapper around the
 // `list_agent_provider_availability` Tauri command. Both the main

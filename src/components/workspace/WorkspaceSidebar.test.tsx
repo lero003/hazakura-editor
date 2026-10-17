@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSafeEditorCopy, getWorkspaceFileOpsCopy } from "../../lib/locale";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 const workspaceTree: WorkspaceTreeEntry = {
@@ -25,6 +26,8 @@ const workspaceTree: WorkspaceTreeEntry = {
 afterEach(cleanup);
 
 function renderSidebar(options: {
+  onRefreshWorkspace?: () => void | Promise<void>;
+  onWorkspaceTreeVisibilityChange?: (visible: boolean) => void;
   activePath?: string | null;
   onMoveToTrash?: (path: string, name: string, isDirectory: boolean) => void;
   onOpenGlobalSearch?: () => void;
@@ -56,6 +59,8 @@ function renderSidebar(options: {
       onOpenRootContextMenu={vi.fn()}
       onOpenGlobalSearch={onOpenGlobalSearch}
       onOpenWorkspace={vi.fn()}
+      onRefreshWorkspace={options.onRefreshWorkspace}
+      onWorkspaceTreeVisibilityChange={options.onWorkspaceTreeVisibilityChange}
       onSelectCompareFile={vi.fn()}
       onSubmitRename={vi.fn()}
       openFilePaths={[]}
@@ -69,6 +74,25 @@ function renderSidebar(options: {
 }
 
 describe("WorkspaceSidebar Theme A clarity", () => {
+  it("refreshes the selected workspace without opening the folder picker", () => {
+    const onRefreshWorkspace = vi.fn();
+    renderSidebar({ onRefreshWorkspace });
+    fireEvent.click(screen.getByRole("button", { name: "Refresh workspace" }));
+    expect(onRefreshWorkspace).toHaveBeenCalledOnce();
+  });
+
+  it("suspends automatic refresh in Book view and after the sidebar closes", () => {
+    const onWorkspaceTreeVisibilityChange = vi.fn();
+    const { unmount } = renderSidebar({ onWorkspaceTreeVisibilityChange });
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(true);
+    fireEvent.click(screen.getByRole("tab", { name: "本" }));
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(false);
+    fireEvent.click(screen.getByRole("tab", { name: "ファイル" }));
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(true);
+    unmount();
+    expect(onWorkspaceTreeVisibilityChange).toHaveBeenLastCalledWith(false);
+  });
+
   it("puts Search in folder next to Trash in the footer", () => {
     // 実機フィードバック: ゴミ箱だけでは何ができる場所か分からない。モックの
     // サイドバー下端に合わせて「フォルダ内を検索」を並べる。

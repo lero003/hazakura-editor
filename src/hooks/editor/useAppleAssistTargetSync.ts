@@ -4,7 +4,7 @@ import type {
   EditorPaneHandle,
   EditorSelectionInfo,
 } from "../../components/editor/EditorPane";
-import { setMainAppleAssistTarget } from "../../lib/tauri";
+import { setMainAppleAssistTarget } from "../../lib/tauri/agent";
 import type { AppleAssistTargetSnapshot } from "../../types";
 import { inferAppleAssistTarget } from "../../features/editor/aiEditTarget";
 

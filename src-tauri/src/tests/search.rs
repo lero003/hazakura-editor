@@ -114,6 +114,40 @@ fn search_finds_shift_jis_text_that_file_open_can_decode() {
 }
 
 #[test]
+fn search_preserves_vendor_characters_and_original_encoded_bytes() {
+    let dir = unique_test_dir("search_legacy_vendor");
+    fs::create_dir_all(&dir).unwrap();
+    let text = "①髙﨑 ～－∥￠\n";
+    let mut originals = Vec::new();
+    for (name, oracle) in [
+        ("shift-jis.md", encoding_rs::SHIFT_JIS),
+        ("euc-jp.md", encoding_rs::EUC_JP),
+    ] {
+        let (bytes, _, bad) = oracle.encode(text);
+        assert!(!bad);
+        let path = dir.join(name);
+        fs::write(&path, &bytes).unwrap();
+        originals.push((path, bytes.into_owned()));
+    }
+    fs::write(dir.join("malformed.md"), [0x81, 0x7f]).unwrap();
+    let result = search_workspace_files_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().into_owned(),
+        "髙".into(),
+    )
+    .unwrap();
+    assert_eq!(result.total_matches, 2);
+    for file in result.files {
+        assert_eq!(file.matches[0].text, text.trim_end());
+        assert_eq!(file.matches[0].column, 2);
+    }
+    for (path, bytes) in originals {
+        assert_eq!(fs::read(path).unwrap(), bytes);
+    }
+    fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
 fn search_finds_euc_jp_text_that_file_open_can_decode() {
     let dir = unique_test_dir("search_euc_jp");
     fs::create_dir_all(&dir).expect("create test dir");

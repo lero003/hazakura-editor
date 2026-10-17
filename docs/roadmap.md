@@ -3,30 +3,35 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-18
 
 ## Current Position
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
-v3.1はApple審査を通過して公開済み（2026-09-25オーナー報告）。次のv3.2.0は
-依存関係更新を主題とし、同一候補の実機受け入れを最終ゲートにする。
-v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品方向として採用する
-（2026-09-26オーナー決定）。LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
+v3.2.1はテスト問題なし・App Store公開済み（2026-10-14オーナー報告）。
+新機能より先に、v3.3で依存の自律化を進める。初回のCodeMirror宣言整理・背景効果の集約に続き、
+dialog・Tauri/Foundationのfeature・HTTPS画像・PDF抽出・日本語codecを追加削減した。
+外部packageからOS APIへの移行は、互換adapterの保守と性能差を含めて受け入れる。
+全依存の撤去は前提にしない。
+メモ系と縦書きは採用方針を維持し、初期整理の受け入れ後に戻る。
+LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 
 | 対象 | 状態 |
 |---|---|
-| 公開版 | v3.1（2026-09-25オーナー報告。公開build/source対応はこの作業で未再確認） |
-| ソース版 | 3.2.0候補。依存更新は検証中で、署名済み提出物はまだない。 |
-| 配布証跡 | v3.1公開はオーナー報告。過去の候補build検証と個別実機試験は区別する |
-| 現行キュー | v3.2.0依存関係更新と同一候補の実機受け入れ — `docs/releases/3.2.0-dependency-acceptance-draft.md` |
+| 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
+| ソース版 | 3.3.0。macOS Cargoの保守的なruntime/build集合301→254→247件。[内部整理のレビュー](reviews/2026-10-17-refactor-slices-review-request.md)も受け入れ |
+| 基準配布証跡 | clean source `049813ea` からbuild 164署名pkgをローカル作成・検証。旧候補として保持し、後続候補と区別。upload・公開は未実施 |
+| 現行キュー | 内部整理を含む新source候補のメニュー・分離窓テーマ・IME/L Mode等の実機確認。VoiceOver・Intel・macOS 26 GUI・大きなlegacy workspace等も残す。[依存削減の採否と残ゲート](reviews/2026-10-17-dependency-reduction.md) |
+| 採用判断 | rfdとUTF-8 SIMDを維持。HTTP/PDF/日本語codecはOSへ委譲。legacy処理の遅延、先行する圧縮の約1.8 MB増とparser多様性低下を評価 |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
 
-候補ごとのbuild情報は `docs/internal/app-store-candidates/latest.json` を参照する。
+最新署名候補のbuild情報は `docs/internal/app-store-candidates/latest.json` を参照する。
+旧候補は同ディレクトリの版・build別記録で照合し、最新候補の記録と混同しない。
 公開版との同一性は候補記録だけから推定しない。
 
-## Phase Decision — 2026-09-09（2026-09-26追補）
+## Phase Decision — 2026-09-09（2026-10-14追補）
 
 | 版 | 主題 | 完了の目安 |
 |---|---|---|
@@ -34,7 +39,9 @@ v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品�
 | **v3.0** | **UI/UX刷新・アプリの完成度・Local Assist architecture整理** | 編集→読書→提案確認→出力と失敗/復旧の一貫性、全テーマ/狭幅/実機、System共通契約とAFM評価 |
 | **v3.1** | **Core AIの実利用・海外App Store展開** | allowlistモデルを明示入手・検証・選択・生成・削除できるC-1/C-2と、英語を入口にした製品/ストア情報・対象地域・価格・サポート導線の受け入れ |
 | **v3.2.0** | **依存関係更新** | npm/Rustの更新、CIとローカルbuild、同一候補の実機受け入れ。Core AI SwiftPM runtime pinは維持 |
-| v3.2後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
+| **v3.2.1** | **ワークスペース一覧の外部変更追従** | アプリ復帰と表示中10秒間隔・手動更新で直下と展開中フォルダを確認。展開・選択・スクロールと未保存原稿を維持し、古い応答を拒否 |
+| **v3.3** | **依存の自律化・初期整理** | 棚卸し、CodeMirrorの実利用に沿う依存宣言整理、PDF二経路の維持／限定／除去の判断。全撤去・自作を完了条件にしない。詳細は `dependency-autonomy-plan.md` |
+| 初期整理後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
 
 添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。
 モデル管理はv3.1に維持し、v3.0ではSystem経路で共通基盤を検証する。
@@ -42,11 +49,36 @@ v3.2後は、見直し・再開・編集ルールのメモと縦書きを製品�
 PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
 AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
 
-## v3.2後 — メモと縦書き（2026-09-26 方針採用）
+## 現行 — v3.3依存の自律化・追加削減（2026-10-17）
+
+製品の仕様・修正・保守を自分たちで制御できる範囲を、小さく増やす。
+オーナーの実装依頼に基づきsource版を3.3.0へ進め、実利用モジュールの直接宣言と
+不要な `codemirror` 束の除去を実装した。view 6.43.13と他の実効版を維持する。
+固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なしとの報告を受けた。
+追加依頼で、main窓の背景効果をTauri標準APIへ集約し、直接window-vibrancy 0.8.1を外した。
+Sidebar/Activeを維持し、Tauri経由0.6.0は残す。
+続く追加削減ではnpm dialogを固定IPC adapterへ集約し、Tauri platform defaults/Foundation featureを絞り、
+asset圧縮を外した。HTTPS画像はNSURLSession、PDFはhelperとin-processのPDFKitへ集約した。
+PDF維持の初期判断は履歴に残し、20 fixture、helper不在/失敗、Vision OCR等の追加試験から採用を見直した。
+10月14日時点の保守的なmacOS Cargo集合は301→254件。圧縮無効化の容量増、timeout差、
+独立parser多様性の低下を記録し、当時の6変更の個別撤回を照合した。
+10月17日の追加ではdialogを同じrfdへ直接集約し、日本語codecをiconvと限定的な互換処理へ委譲して247件へ削減。
+encoding_rsはtest/非macOS fallback、simdutf8はUTF-8に残す。App StoreのAgent専用CSS等も除去した。
+UTF-8の測定時間は同程度だが、legacy処理は遅くなる。大きなlegacy workspaceは同一候補で受け入れる。
+今回4変更も個別撤回して解決・noticeを照合した。撤回後のnative compile・runtime・全UI操作は未実施。
+
+初期整理は新機能より先に行うが、PDF削除や全依存の自前化をメモ・縦書きの前提にしない。
+パーサー・sanitize・TLS暗号処理・AI・React/Tauri/CodeMirror本体は自作しない。保守更新は継続する。
+[最新の変更と検証](reviews/2026-10-17-dependency-reduction.md)、
+[先行変更の記録](releases/3.3.0-dependency-autonomy.md)、[計画・採否](dependency-autonomy-plan.md)を参照。
+追加差分のレビューと同一候補の実機受け入れ・配布判断はこれから。
+
+## 初期整理後 — メモと縦書き（2026-09-26 方針採用）
 
 利用者が **読み返して気づきを残し、日をまたいで直し、自分の方針で原稿を仕上げる**
 ことを次の製品価値にする。以下は採用した方向性であり、機能の実装・出荷を示さない。
-v3.2の依存更新・実機受け入れを先に完了し、具体的な版番号とUI・保存方式は個別設計で決める。
+v3.3の依存初期整理を受け入れた後、
+具体的な版番号とUI・保存方式は個別設計で決める。
 
 | テーマ | 利用者に届ける価値 | 最初の範囲 |
 |---|---|---|
@@ -316,6 +348,7 @@ Operational checklists:
 |------|------|
 | Next slice | `docs/current-work.md` |
 | Implementation truth | `docs/current-status.md` |
+| Dependency autonomy / v3.3 plan | `docs/dependency-autonomy-plan.md` |
 | v2.9–v3.1 plan | `docs/v2.9-v3-local-assist-plan.md` |
 | v2.6 plan | `docs/v2.6-plan.md` |
 | v2.5 plan | `docs/v2.5-plan.md` |

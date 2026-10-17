@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { isDirty } from "../../features/editor/editorTabs";
-import { pruneAutoBackups, saveAutoBackup } from "../../lib/tauri";
+import { pruneAutoBackups, saveAutoBackup } from "../../lib/tauri/autoBackup";
 import type { EditorTab } from "../../types";
 import { useLatestValueRef } from "../app/useLatestValueRef";
 import { workspaceRelativePath } from "./workspaceRelativePath";

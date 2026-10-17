@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { LModeCopy } from "../../lib/locale";
+import { type LModeCopy } from "../../lib/locale/lMode";
 import { LModeClasses } from "../../features/editor/lMode";
 import {
   DiffIcon,

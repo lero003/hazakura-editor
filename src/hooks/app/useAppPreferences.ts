@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  setAgentWindowTheme,
-  setCurrentWindowBackgroundColor,
-  setCurrentWindowTheme,
-} from "../../lib/tauri";
+import { setAgentWindowTheme } from "../../lib/tauri/agent";
+import { setCurrentWindowBackgroundColor, setCurrentWindowTheme } from "../../lib/tauri/window";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { applyWindowTheme } from "../../features/app/windowAppearance";
 import {

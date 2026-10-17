@@ -1,28 +1,68 @@
 # Current Status
 
 Status: Operational
-Scope: v3.2依存更新候補、次期方針、v3.1公開報告、過去の実装証跡
+Scope: v3.3依存削減候補、v3.2.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-18
 
 ## Current State
 
-- **公開版v3.1（2026-09-25、オーナー報告）:** Apple審査を通過し公開済み。
-  この作業ではストアのbuild/source対応や個別実機試験を再確認していない。
-  以下のv3.1出荷前の候補記録は作成当時の証跡として読む。
-- **次版v3.2.0（依存更新候補、未公開）:** npm/Rust依存をまとめて更新し、
+- **v3.3内部整理のレビュー受け入れ（2026-10-18）:** `2c8cf98d..e50cc551` の
+  購読共通化・責務分離・未参照コード削除をレビューし、新規の実行時不具合は見つからなかった。
+  選択中リンク処理の説明、完了状態と検証記録、末尾空行を訂正した。
+  型検査・両lane Vite・surface 137件・scripts 31件、Rust 515成功 / 4 ignoredを再確認した。
+  frontend全体は2,910成功 / 2失敗。入口の20秒timeoutと後続mock回数不一致で、
+  当該7件は上限120秒で成功し、変更前でも入口読み込みが約32秒かかることを確認した。
+  詳細は[内部整理のレビュー記録](reviews/2026-10-17-refactor-slices-review-request.md)。
+  build 164は下記の旧source候補を維持する。新sourceのメニュー・分離窓テーマ・IME/L Modeは
+  実機未確認で、署名候補のローカル作成とTestFlight / upload / 公開を分けて扱う。
+
+- **v3.3.0依存削減の基準候補（2026-10-17、build 164署名候補）:** native dialogを同じrfdへ直接集約して
+  plugin 3件を除去し、破棄・モデル操作の確認を明示的な非同期待機へ修正した。
+  日本語codecをmacOS iconvと限定的な互換処理へ委譲し、macOS製品経路からさらに4件を外した。
+  encoding_rsは比較test/非macOS fallback、simdutf8はUTF-8検証に維持。残存版・取得元は変更していない。
+  macOS両architectureの保守的なCargo runtime/build集合は今回254→247件、基準 `25f21528` の301件から54件減。
+  cargo tree集合は234→227、全target lockは434→431。npmは182件/runtime到達32件を維持。
+  App StoreのAgent専用CSSと両laneの不要なpackage metadataも除去した。
+  frontend 2,904件・scripts 31件、Rust 515 pass / 4 ignored、明示実行の全3-byte値33,554,432件比較、
+  Python 6件、型検査、surface 134件、両lane Vite・隔離arm64 native buildが通過。
+  両laneのlegacyファイル選択・保存を実操作し、旧codecの正解137/140 bytesと一致した。
+  Store形状は診断用ad-hoc sandboxで、正式な配布候補ではない。
+  UTF-8性能は測定上同程度。legacy処理は遅くなり、JIS0212を連続させた10 MiBの検出+decodeは約0.45秒。
+  OS/互換adapterの保守と大きなlegacy workspaceの待ち時間を交換条件に含める。
+  [今回の採否・検証・撤回条件](reviews/2026-10-17-dependency-reduction.md)と
+  [前回を含む全体記録](releases/3.3.0-dependency-autonomy.md)を参照。
+  今回4変更の個別撤回は両targetの解決・noticeを照合。撤回後のnative compile・runtime・全UI操作は未実施。
+  [PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)はfrontend・native成功。
+  clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、署名・同梱物・digestをローカル確認した。
+  当時のpath/hashはignoredの候補ディレクトリ内 `HazakuraEditor-3.3.0-build164.json` を参照。
+  `latest.json` は後続候補を指すためbuild 164の照合には使わない。build 163は保持している。
+  macOS 26.6.2/Apple Siliconでcodec比較も成功。同一署名候補のIME/VoiceOver・Intel・macOS 26のGUI・
+  大きなlegacy workspace・sandbox外部PDF取込・TestFlight・upload・公開は未確認。
+  先行する圧縮無効化の約1.8 MB増とPDF parser多様性の低下も引き続き評価する。
+  メモ・縦書きは受け入れ後に戻る。
+
+- **公開版v3.2.1（2026-10-14、オーナー報告）:** テスト問題なし・App Store公開済み。
+  ワークスペース一覧の外部変更追従と競合修正を含む。当時のsource検証は
+  [3.2.1の記録](releases/3.2.1-workspace-refresh.md)。公開build/sourceの対応、rolloutと
+  個別の実機試験全項目は、この作業では独立照合していない。
+  以下のv3.2以前の候補記録は作成当時の証跡として読む。
+
+- **v3.2.0の基盤（依存更新・品質強化の記録）:** npm/Rust依存をまとめて更新し、
   CodeMirror viewの旧表示不具合、HTTPS画像、ネイティブ画面を含む
   [同一候補の実機受け入れ](releases/3.2.0-dependency-acceptance-draft.md)を公開ゲートとする。
   SwiftPMのCore AI配布runtime revisionは今回維持。LLM機能とMLX runtimeは保留。
-  source版は3.2.0候補、App Store source設定のbuild番号は158。
-  公開済みbuildとの照合と提出用の採番・署名・配信は別途確認する。
+  当時の3.2.1候補はこの基盤を引き継ぐ。App Store build番号は署名pkg作成時に採番し、
+  公開済みbuildと提出候補のsource対応を別途照合する。
   source候補は`main`へ統合・push済みで、追加のUI競合修正`2ee96b16`までローカルで確認。
   旧作業ブランチを削除し、
   旧依存更新PR 4件は重複として閉鎖。外部レビュー用の[対象・証跡・残ゲート](reviews/2026-09-26-v3.2-external-review-brief.md)を参照。
   `5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
   frontend・nativeとも成功。後続CIで見つかったL ModeのEscape登録競合は`2ee96b16`で修正し、
   [最新CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を確認する。
-  実機と署名済み配布のゲートは引き続き未完了。
+  v3.2候補のTestFlight配信成功はオーナー報告。ローカルpkg署名は確認したが、
+  Apple側のbuild/source対応と修正後候補の実機受け入れは未照合。
+  候補記録と配信buildの対応も未照合。
 
 - **v3.2品質強化（2026-09-26、source検証済み）:** 保存・外部変更監視・開き直し・
   バックアップ一覧の古い応答による上書きと、Assist停止待ち前後の終了競合を修正。
@@ -30,7 +70,7 @@ Last reviewed: 2026-09-26
   frontend 2,783件・scripts 31件、Rust 483件pass / 3 ignored、型検査、Vite、
   App Store surface 134件、ローカルApp Store ad-hocプレビューbuildと静的sandbox smokeが通過。
   [検証範囲と残項目](releases/3.2.0-quality-hardening.md)を参照。
-  オーナー報告の簡単な実機試験は問題なし。修正後候補の実機・TestFlight受入は未実施。
+  オーナー報告の簡単な実機試験は問題なし。TestFlight配信と個別の操作受け入れは区別する。
 
 - **v3.2後の製品方向（2026-09-26、方針採用のみ）:** 見直し・再開・編集ルールのメモと
   縦書きをロードマップへ採用。編集ルールは自由記述のひな形に注意や例外を書き足す形を中心にする。

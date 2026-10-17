@@ -8,7 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSidePaneCopy } from "../../lib/locale";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
 import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
 import {
   markdownStructureItems,
@@ -300,7 +300,6 @@ describe("SidePane", () => {
 
     const header = screen.getByTestId("right-pane-header");
     expect(header.getAttribute("data-right-pane-mode")).toBe("preview");
-    const heading = screen.getByRole("heading", { name: "Preview" });
     // 実機フィードバック: 見出しに説明文を出さない（モックは `PREVIEW / 表示のみ`）。
     // 説明はホバーにも出さない（null）——プレビューには短い注記が無いため。
     expect(screen.queryByText("Continuous scroll to check layout")).toBeNull();

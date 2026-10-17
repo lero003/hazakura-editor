@@ -1,10 +1,5 @@
 import type { EditorTab } from "../../types";
 
-type PathEntry = {
-  id: string;
-  parts: string[];
-};
-
 /**
  * Duplicated tab names need the shortest ancestor segment that makes
  * their visible row label unique. `path` remains tab identity; the
@@ -16,7 +11,7 @@ export function shortestDistinguishingAncestor(
   const duplicateNames = new Set(
     tabs
       .map((tab) => tab.name)
-      .filter((name, index, names) =>
+      .filter((name, _index, names) =>
         names.indexOf(name) !== names.lastIndexOf(name)),
   );
   const labels = new Map<string, string>();

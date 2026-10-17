@@ -1,16 +1,16 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useRecoveryActions } from "./useRecoveryActions";
-import type { TextFileDocument } from "../../lib/tauri";
+import { type TextFileDocument } from "../../lib/tauri/files";
 import type { EditorTab } from "../../types";
 
 const tauriApi = vi.hoisted(() => ({
   openTextFile: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   openTextFile: tauriApi.openTextFile,
-}));
+}))
 
 const storage = vi.hoisted(() => ({
   removeStoredDraft: vi.fn(),

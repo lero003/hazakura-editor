@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, rmSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -858,13 +858,13 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `3.1.0` passed review and is published",
+        "Hazakura Editor `3.2.1` passed testing and is published",
         `Current source version is \`${packageJson.version}\``,
-        "The published App Store version is `3.1.0`",
+        "The published App Store version is `3.2.1`",
         "latest published GitHub source / local-app tag is [v3.0.0]",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `3.1.0`",
+        "Published App Store version: `3.2.1`",
         `Current source / Developer version: \`${packageJson.version}\``,
         "GitHub source tag: `v3.0.0`",
       ],
@@ -890,7 +890,7 @@ describe("macOS build scripts", () => {
       ],
       "docs/roadmap.md": [
         `| ソース版 | ${packageJson.version}`,
-        "| 公開版 | v3.1（2026-09-25オーナー報告。公開build/source対応はこの作業で未再確認） |",
+        "| 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |",
         "## Phase Decision — 2026-09-09",
         "**v3.0**",
         "**v3.1**",
@@ -929,5 +929,74 @@ describe("macOS build scripts", () => {
         );
       }
     }
+  });
+});
+
+// R1: the Rust `generate_handler!` list and the frontend
+// `invoke("...")` literals must not drift apart. Commands may be added
+// or removed, but a frontend call to an unregistered command — or a
+// command that silently loses its last caller — has to be an explicit
+// change here.
+describe("Tauri IPC command surface", () => {
+  const libSource = readFileSync("src-tauri/src/lib.rs", "utf8");
+  const handlerList =
+    libSource.match(/generate_handler!\[([\s\S]*?)\]/)?.[1] ?? "";
+  const registeredCommands = handlerList
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  const invokedCommands = new Set<string>();
+  for (const file of readdirSync("src/lib/tauri")) {
+    if (!file.endsWith(".ts")) continue;
+    const source = readFileSync(join("src/lib/tauri", file), "utf8");
+    for (const match of source.matchAll(
+      /invoke(?:<[^>]*>)?\(\s*"([a-z0-9_]+)"/g,
+    )) {
+      invokedCommands.add(match[1]);
+    }
+  }
+
+  // Commands that are registered in `generate_handler![...]` but have no
+  // `invoke("...")` call site in `src/lib/tauri/*.ts`. Each entry is a
+  // conscious decision; a command that newly loses its last caller must
+  // be reviewed and added here.
+  const registeredButUnused = [
+    // Registered for the Developer probe surface; the frontend has not
+    // wired it up yet.
+    "probe_apple_assist_availability",
+    // These two kept their Rust command + label gate but lost their
+    // frontend wrapper in the unreferenced-export cleanup
+    // (445b7607); they are listed here so the Rust surface stays
+    // deliberate until the frontend either re-adds the wrapper or the
+    // commands are retired.
+    "open_main_agent_pane",
+    "request_apply_ai_edit_transaction",
+  ];
+
+  it("registers every command the frontend invokes", () => {
+    expect(registeredCommands.length).toBeGreaterThan(0);
+    expect(new Set(registeredCommands).size).toBe(registeredCommands.length);
+    const unregistered = [...invokedCommands].filter(
+      (command) => !registeredCommands.includes(command),
+    );
+    expect(unregistered).toEqual([]);
+  });
+
+  it("allows no registered-but-unused command outside the reviewed allowlist", () => {
+    const unused = registeredCommands.filter(
+      (command) => !invokedCommands.has(command),
+    );
+    const unreviewed = unused.filter(
+      (command) => !registeredButUnused.includes(command),
+    );
+    expect(unreviewed).toEqual([]);
+  });
+
+  it("keeps the allowlist free of stale command names", () => {
+    const stale = registeredButUnused.filter(
+      (command) => !registeredCommands.includes(command),
+    );
+    expect(stale).toEqual([]);
   });
 });

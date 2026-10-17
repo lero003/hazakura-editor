@@ -5,13 +5,15 @@
 //! a long-lived supervisor while reusing the same fixed-binary trust
 //! model (path never comes from the frontend).
 
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Condvar, Mutex};
+use std::process::{Command, Stdio};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
+
+use crate::helper_transport::{kill_child, rust_target_triple, ReadWatchdog};
 
 use super::draft::{assemble_import_markdown_draft, ImportPageText};
 use super::path::validate_import_source_path;
@@ -48,6 +50,21 @@ struct HelperRequest<'a> {
     max_pixels: Option<u64>,
 }
 
+impl<'a> HelperRequest<'a> {
+    /// A request for `action` with every optional field cleared.
+    /// Callers override only the fields their action needs, so the
+    /// wire shape stays `{"action": ...}` plus the used fields.
+    fn new(action: &'a str) -> Self {
+        Self {
+            action,
+            path: None,
+            languages: None,
+            page: None,
+            max_pixels: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct HelperPdfInfo {
@@ -70,6 +87,33 @@ pub(crate) struct HelperPdfPageImage {
 struct HelperEnvelope {
     kind: String,
     value: serde_json::Value,
+}
+
+/// Decode the `error` arm of a helper envelope. `fallback` is the
+/// action-specific message used when the payload itself does not
+/// deserialize (mirroring the helper's own failure text).
+fn decode_error_envelope(value: serde_json::Value, fallback: &str) -> ErrorValue {
+    serde_json::from_value(value).unwrap_or(ErrorValue {
+        error: fallback.to_string(),
+        kind: "failed".into(),
+    })
+}
+
+/// Decode the success arm of a one-shot helper envelope whose `kind`
+/// must be `expected_kind`. An `error` envelope becomes
+/// `Err(<helper message>)` using `error_fallback`; any other kind is
+/// the shared "Unexpected helper kind" error.
+fn expect_kind<T: DeserializeOwned>(
+    envelope: HelperEnvelope,
+    expected_kind: &str,
+    error_fallback: &str,
+) -> Result<T, String> {
+    match envelope.kind.as_str() {
+        kind if kind == expected_kind => serde_json::from_value::<T>(envelope.value)
+            .map_err(|e| format!("Invalid {expected_kind} payload: {e}")),
+        "error" => Err(decode_error_envelope(envelope.value, error_fallback).error),
+        other => Err(format!("Unexpected helper kind: {other}")),
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -131,7 +175,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
 
     if ext == "pdf" {
         // Prefer PDFKit (live helper) for Japanese text-layer quality.
-        // pdf-extract is fallback only — it often drops CJK and collapses pages.
+        // The in-process PDFKit path also works without the nested helper.
         let mut best: Option<Vec<ImportPageText>> = None;
 
         // Q-IMP-2: stage into container temp before nested helper paths.
@@ -144,12 +188,12 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             }
             Ok(_) => {}
             Err(err) => {
-                // Keep going to pure-Rust fallback; surface only if both fail.
+                // Keep going to native fallback; surface only if both fail.
                 let _ = err;
             }
         }
 
-        // In-process pdf-extract can still read the original user path.
+        // In-process PDFKit can still read the original user path.
         match extract_pdf_text_layer(path) {
             Ok(Some(pages)) => {
                 best = Some(match best.take() {
@@ -201,77 +245,44 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
     let staged = stage_import_source_for_helper(path)?;
     let staged_str = staged.path().to_string_lossy();
     let helper = resolve_import_assist_helper_path()?;
-    let probe = round_trip_helper(
-        &helper,
-        &HelperRequest {
-            action: "probe",
-            path: None,
-            languages: None,
-            page: None,
-            max_pixels: None,
-        },
-    )?;
+    let probe = round_trip_helper(&helper, &HelperRequest::new("probe"))?;
     let fixture = match probe.kind.as_str() {
         "probe" => serde_json::from_value::<ProbeValue>(probe.value)
             .map(|v| v.fixture)
             .unwrap_or(false),
         "error" => {
-            let err: ErrorValue = serde_json::from_value(probe.value).unwrap_or(ErrorValue {
-                error: "Helper probe failed.".into(),
-                kind: "failed".into(),
-            });
-            return Err(err.error);
+            return Err(decode_error_envelope(probe.value, "Helper probe failed.").error);
         }
         other => return Err(format!("Unexpected helper probe kind: {other}")),
     };
 
     {
         // Image → Vision OCR
-        let envelope = round_trip_helper(
-            &helper,
-            &HelperRequest {
-                action: "ocr_image",
-                path: Some(staged_str.as_ref()),
-                languages: Some(&["ja-JP", "en-US"]),
-                page: None,
-                max_pixels: None,
-            },
-        )?;
-        match envelope.kind.as_str() {
-            "ocr_text" => {
-                let value: OcrTextValue = serde_json::from_value(envelope.value)
-                    .map_err(|e| format!("Invalid ocr_text payload: {e}"))?;
-                let pages = [ImportPageText::with_confidence(
-                    0,
-                    value.text,
-                    value.confidence,
-                )];
-                // Q-IMP-4: do not open an empty-marker draft when OCR found nothing.
-                if !pages_have_meaningful_text(&pages) {
-                    return Err(
-                        "文字を抽出できませんでした。画像が不鮮明か、テキストが含まれていない可能性があります。"
-                            .into(),
-                    );
-                }
-                let markdown = assemble_import_markdown_draft(&source_name, &pages);
-                Ok(ImportDraftResult {
-                    markdown,
-                    source_name,
-                    page_count: 1,
-                    used_ocr: true,
-                    fixture,
-                })
-            }
-            "error" => {
-                let err: ErrorValue =
-                    serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
-                        error: "OCR failed.".into(),
-                        kind: "failed".into(),
-                    });
-                Err(err.error)
-            }
-            other => Err(format!("Unexpected helper kind: {other}")),
+        let mut request = HelperRequest::new("ocr_image");
+        request.path = Some(staged_str.as_ref());
+        request.languages = Some(&["ja-JP", "en-US"]);
+        let envelope = round_trip_helper(&helper, &request)?;
+        let value: OcrTextValue = expect_kind(envelope, "ocr_text", "OCR failed.")?;
+        let pages = [ImportPageText::with_confidence(
+            0,
+            value.text,
+            value.confidence,
+        )];
+        // Q-IMP-4: do not open an empty-marker draft when OCR found nothing.
+        if !pages_have_meaningful_text(&pages) {
+            return Err(
+                "文字を抽出できませんでした。画像が不鮮明か、テキストが含まれていない可能性があります。"
+                    .into(),
+            );
         }
+        let markdown = assemble_import_markdown_draft(&source_name, &pages);
+        Ok(ImportDraftResult {
+            markdown,
+            source_name,
+            page_count: 1,
+            used_ocr: true,
+            fixture,
+        })
     }
 }
 
@@ -283,16 +294,7 @@ fn try_pdfkit_text_pages(path: &str) -> Result<Option<Vec<ImportPageText>>, Stri
         Err(_) => return Ok(None),
     };
 
-    let probe = round_trip_helper(
-        &helper,
-        &HelperRequest {
-            action: "probe",
-            path: None,
-            languages: None,
-            page: None,
-            max_pixels: None,
-        },
-    )?;
+    let probe = round_trip_helper(&helper, &HelperRequest::new("probe"))?;
     let fixture = match probe.kind.as_str() {
         "probe" => serde_json::from_value::<ProbeValue>(probe.value)
             .map(|v| v.fixture)
@@ -332,42 +334,23 @@ fn pages_from_helper_action(
     path: &str,
     languages: Option<&[&str]>,
 ) -> Result<Option<Vec<ImportPageText>>, String> {
-    let envelope = round_trip_helper(
-        helper,
-        &HelperRequest {
-            action,
-            path: Some(path),
-            languages,
-            page: None,
-            max_pixels: None,
-        },
-    )?;
-    match envelope.kind.as_str() {
-        "pdf_text" => {
-            let value: PdfTextValue = serde_json::from_value(envelope.value)
-                .map_err(|e| format!("Invalid pdf_text payload: {e}"))?;
-            let pages: Vec<ImportPageText> = value
-                .pages
-                .into_iter()
-                .map(|p| match p.confidence {
-                    Some(c) => ImportPageText::with_confidence(p.index, p.text, c),
-                    None => ImportPageText::new(p.index, p.text),
-                })
-                .collect();
-            if pages_have_meaningful_text(&pages) {
-                Ok(Some(pages))
-            } else {
-                Ok(None)
-            }
-        }
-        "error" => {
-            let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
-                error: format!("{action} failed."),
-                kind: "failed".into(),
-            });
-            Err(err.error)
-        }
-        other => Err(format!("Unexpected helper kind: {other}")),
+    let mut request = HelperRequest::new(action);
+    request.path = Some(path);
+    request.languages = languages;
+    let envelope = round_trip_helper(helper, &request)?;
+    let value = expect_kind::<PdfTextValue>(envelope, "pdf_text", &format!("{action} failed."))?;
+    let pages: Vec<ImportPageText> = value
+        .pages
+        .into_iter()
+        .map(|p| match p.confidence {
+            Some(c) => ImportPageText::with_confidence(p.index, p.text, c),
+            None => ImportPageText::new(p.index, p.text),
+        })
+        .collect();
+    if pages_have_meaningful_text(&pages) {
+        Ok(Some(pages))
+    } else {
+        Ok(None)
     }
 }
 
@@ -379,16 +362,7 @@ fn resolve_live_import_assist_helper_path_excluding(exclude: &Path) -> Option<Pa
             continue;
         }
         // Probe quickly; accept only non-fixture.
-        if let Ok(env) = round_trip_helper(
-            &candidate,
-            &HelperRequest {
-                action: "probe",
-                path: None,
-                languages: None,
-                page: None,
-                max_pixels: None,
-            },
-        ) {
+        if let Ok(env) = round_trip_helper(&candidate, &HelperRequest::new("probe")) {
             if env.kind == "probe" {
                 if let Ok(v) = serde_json::from_value::<ProbeValue>(env.value) {
                     if !v.fixture {
@@ -444,33 +418,12 @@ fn round_trip_helper_with_timeout(
     let mut reader = BufReader::new(stdout);
     let child = Arc::new(Mutex::new(child));
 
-    let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
-    let done_pair_w = done_pair.clone();
-    let child_w = child.clone();
-    let timed_out = Arc::new(AtomicBool::new(false));
-    let timed_out_w = timed_out.clone();
-
-    let watchdog = std::thread::Builder::new()
-        .name("import-assist-helper-watchdog".to_string())
-        .spawn(move || {
-            let (lock, cvar) = &*done_pair_w;
-            let mut done = lock.lock().expect("import assist watchdog lock");
-            if !*done {
-                let (next_done, _) = cvar
-                    .wait_timeout(done, timeout)
-                    .expect("import assist watchdog wait_timeout");
-                done = next_done;
-            }
-            if !*done {
-                timed_out_w.store(true, Ordering::SeqCst);
-                kill_import_helper_child(&child_w);
-            }
-        })
+    let watchdog = ReadWatchdog::arm("import-assist-helper-watchdog", child.clone(), timeout)
         .map_err(|e| format!("Failed to spawn Import Assist watchdog: {e}"))?;
 
     let mut line = String::new();
     let outcome = (|| loop {
-        if timed_out.load(Ordering::SeqCst) {
+        if watchdog.timed_out() {
             return Err(format!(
                 "Import Assist helper timed out after {}s.",
                 timeout.as_secs()
@@ -480,7 +433,7 @@ fn round_trip_helper_with_timeout(
         let n = reader
             .read_line(&mut line)
             .map_err(|e| format!("Failed to read helper response: {e}"))?;
-        if timed_out.load(Ordering::SeqCst) {
+        if watchdog.timed_out() {
             return Err(format!(
                 "Import Assist helper timed out after {}s.",
                 timeout.as_secs()
@@ -498,16 +451,13 @@ fn round_trip_helper_with_timeout(
         return Ok(envelope);
     })();
 
-    {
-        let (lock, cvar) = &*done_pair;
-        let mut done = lock.lock().expect("import assist watchdog signal lock");
-        *done = true;
-        cvar.notify_all();
-    }
-    let _ = watchdog.join();
-    kill_import_helper_child(&child);
+    // Signal the watchdog that the loop finished (it exits without
+    // killing if it had not already fired) and join it before the
+    // child is reaped.
+    let timed_out = watchdog.finish();
+    kill_child(&child);
 
-    if timed_out.load(Ordering::SeqCst) {
+    if timed_out {
         return Err(format!(
             "Import Assist helper timed out after {}s.",
             timeout.as_secs()
@@ -516,39 +466,14 @@ fn round_trip_helper_with_timeout(
     outcome
 }
 
-fn kill_import_helper_child(child: &Arc<Mutex<Child>>) {
-    if let Ok(mut guard) = child.lock() {
-        let _ = guard.kill();
-        let _ = guard.wait();
-    }
-}
-
 /// v1.7 R0: PDFKit page count / file name via the fixed helper.
 pub(crate) fn helper_pdf_info(path: &Path) -> Result<HelperPdfInfo, String> {
     let helper = resolve_import_assist_helper_path()?;
     let path_str = path.to_string_lossy();
-    let envelope = round_trip_helper(
-        &helper,
-        &HelperRequest {
-            action: "pdf_info",
-            path: Some(path_str.as_ref()),
-            languages: None,
-            page: None,
-            max_pixels: None,
-        },
-    )?;
-    match envelope.kind.as_str() {
-        "pdf_info" => serde_json::from_value::<HelperPdfInfo>(envelope.value)
-            .map_err(|e| format!("Invalid pdf_info payload: {e}")),
-        "error" => {
-            let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
-                error: "pdf_info failed.".into(),
-                kind: "failed".into(),
-            });
-            Err(err.error)
-        }
-        other => Err(format!("Unexpected helper kind: {other}")),
-    }
+    let mut request = HelperRequest::new("pdf_info");
+    request.path = Some(path_str.as_ref());
+    let envelope = round_trip_helper(&helper, &request)?;
+    expect_kind::<HelperPdfInfo>(envelope, "pdf_info", "pdf_info failed.")
 }
 
 /// v1.7 R0: one-page bounded PNG raster via the fixed helper.
@@ -559,40 +484,16 @@ pub(crate) fn helper_render_pdf_page(
 ) -> Result<HelperPdfPageImage, String> {
     let helper = resolve_import_assist_helper_path()?;
     let path_str = path.to_string_lossy();
-    let envelope = round_trip_helper(
-        &helper,
-        &HelperRequest {
-            action: "render_pdf_page",
-            path: Some(path_str.as_ref()),
-            languages: None,
-            page: Some(page),
-            max_pixels: Some(max_pixels),
-        },
-    )?;
-    match envelope.kind.as_str() {
-        "pdf_page_image" => serde_json::from_value::<HelperPdfPageImage>(envelope.value)
-            .map_err(|e| format!("Invalid pdf_page_image payload: {e}")),
-        "error" => {
-            let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
-                error: "render_pdf_page failed.".into(),
-                kind: "failed".into(),
-            });
-            Err(err.error)
-        }
-        other => Err(format!("Unexpected helper kind: {other}")),
-    }
+    let mut request = HelperRequest::new("render_pdf_page");
+    request.path = Some(path_str.as_ref());
+    request.page = Some(page);
+    request.max_pixels = Some(max_pixels);
+    let envelope = round_trip_helper(&helper, &request)?;
+    expect_kind::<HelperPdfPageImage>(envelope, "pdf_page_image", "render_pdf_page failed.")
 }
 
 pub(crate) fn import_assist_helper_filename() -> String {
     format!("hazakura-import-assist-helper-{}", rust_target_triple())
-}
-
-fn rust_target_triple() -> &'static str {
-    match (std::env::consts::ARCH, std::env::consts::OS) {
-        ("aarch64", "macos") => "aarch64-apple-darwin",
-        ("x86_64", "macos") => "x86_64-apple-darwin",
-        _ => "unknown-target",
-    }
 }
 
 fn import_assist_helper_candidates() -> Vec<PathBuf> {
@@ -656,16 +557,7 @@ pub(crate) fn resolve_import_assist_helper_path() -> Result<PathBuf, String> {
         if !candidate.exists() {
             continue;
         }
-        match round_trip_helper(
-            candidate,
-            &HelperRequest {
-                action: "probe",
-                path: None,
-                languages: None,
-                page: None,
-                max_pixels: None,
-            },
-        ) {
+        match round_trip_helper(candidate, &HelperRequest::new("probe")) {
             Ok(env) if env.kind == "probe" => {
                 let fixture = serde_json::from_value::<ProbeValue>(env.value)
                     .map(|v| v.fixture)
@@ -732,13 +624,7 @@ mod tests {
         let started = std::time::Instant::now();
         let err = round_trip_helper_with_timeout(
             &script,
-            &HelperRequest {
-                action: "probe",
-                path: None,
-                languages: None,
-                page: None,
-                max_pixels: None,
-            },
+            &HelperRequest::new("probe"),
             Duration::from_millis(400),
         )
         .expect_err("hanging helper must time out");
@@ -757,10 +643,8 @@ mod tests {
 
     #[test]
     fn import_text_layer_pdf_without_helper() {
-        // A small real-world-ish PDF is hard to hand-author for every
-        // pdf-extract version; this test pins the *control flow*: when
-        // extract_pdf_text_layer returns pages, we never require the helper.
-        // Integration against real PDFs is manual / product smoke.
+        // Invalid input must report a PDF error. The tests below cover full
+        // valid-PDF imports when the helper is missing or extraction fails.
         let dir = std::env::temp_dir();
         let path = dir.join(format!("hazakura-flow-{}.pdf", std::process::id()));
         fs::write(&path, b"%PDF-1.4 not fully valid").expect("write");
@@ -827,6 +711,66 @@ mod tests {
             "Japanese text layer missing; sample: {}",
             draft.markdown.chars().take(400).collect::<String>()
         );
+        assert!(!draft.used_ocr);
+    }
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn valid_text_pdf_imports_when_helper_is_missing() {
+        let _env_guard = IMPORT_ASSIST_HELPER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let path = super::super::pdf_text::tests::fixture_pdf(
+            "missing-helper",
+            &["Valid PDF imports without a helper."],
+        );
+        let before = fs::read(&path).expect("read fixture");
+        let absent = path.with_extension("missing-helper");
+        // SAFETY: every helper override test holds the process-global mutex.
+        unsafe { std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &absent) };
+        let result = import_source_path_to_markdown(&path);
+        unsafe { std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER") };
+        assert_eq!(before, fs::read(&path).expect("read unchanged source"));
+        let _ = fs::remove_file(&path);
+        let draft = result.expect("native fallback imports valid PDF");
+        assert!(draft
+            .markdown
+            .contains("Valid PDF imports without a helper."));
+        assert_eq!(draft.page_count, 1);
+        assert!(!draft.used_ocr);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn valid_text_pdf_imports_when_helper_extraction_fails() {
+        let _env_guard = IMPORT_ASSIST_HELPER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let path = super::super::pdf_text::tests::fixture_pdf(
+            "failing-helper",
+            &["Native fallback keeps the original text."],
+        );
+        let before = fs::read(&path).expect("read fixture");
+        let helper = path.with_extension("helper.sh");
+        fs::write(&helper, br##"#!/bin/sh
+read request
+case "$request" in
+*probe*) printf '%s\n' '{"kind":"probe","value":{"pdfKit":true,"vision":true,"fixture":false}}' ;;
+*) printf '%s\n' '{"kind":"error","value":{"error":"Synthetic extraction failure","kind":"pdf_extract_failed"}}' ;;
+esac
+"##).expect("write fixed test helper");
+        fs::set_permissions(&helper, fs::Permissions::from_mode(0o700)).expect("make executable");
+        // SAFETY: every helper override test holds the process-global mutex.
+        unsafe { std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper) };
+        let result = import_source_path_to_markdown(&path);
+        unsafe { std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER") };
+        assert_eq!(before, fs::read(&path).expect("read unchanged source"));
+        let _ = fs::remove_file(&path);
+        let _ = fs::remove_file(&helper);
+        let draft = result.expect("native fallback survives helper extraction failure");
+        assert!(draft
+            .markdown
+            .contains("Native fallback keeps the original text."));
+        assert_eq!(draft.page_count, 1);
         assert!(!draft.used_ocr);
     }
 }

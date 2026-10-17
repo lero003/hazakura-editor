@@ -7,7 +7,11 @@ import { useDraftPersistence } from "./useDraftPersistence";
 import { readStoredDrafts, removeStoredDraft, writePersistedWorkspaceState, writeStoredDrafts } from "../../lib/storage";
 import type { DraftRecord, EditorTab } from "../../types";
 const api = vi.hoisted(() => ({ openTextFile: vi.fn(), resolveSecurityScopedBookmark: vi.fn(), listWorkspaceTree: vi.fn() }));
-vi.mock("../../lib/tauri", () => api);
+vi.mock("../../lib/tauri/files", () => ({ openTextFile: api.openTextFile }));
+vi.mock("../../lib/tauri/workspace", () => ({
+  resolveSecurityScopedBookmark: api.resolveSecurityScopedBookmark,
+  listWorkspaceTree: api.listWorkspaceTree,
+}));
 const noop = () => {};
 const discardRef = { current: false };
 function useHarness() {

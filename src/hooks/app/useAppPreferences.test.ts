@@ -14,9 +14,14 @@ const tauriMocks = vi.hoisted(() => ({
   setCurrentWindowTheme: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("../../lib/tauri", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../lib/tauri")>()),
-  ...tauriMocks,
+vi.mock("../../lib/tauri/agent", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../lib/tauri/agent")>()),
+  setAgentWindowTheme: tauriMocks.setAgentWindowTheme,
+}));
+vi.mock("../../lib/tauri/window", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../lib/tauri/window")>()),
+  setCurrentWindowBackgroundColor: tauriMocks.setCurrentWindowBackgroundColor,
+  setCurrentWindowTheme: tauriMocks.setCurrentWindowTheme,
 }));
 
 if (typeof window !== "undefined" && !window.matchMedia) {

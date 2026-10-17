@@ -127,9 +127,3 @@ export function getOkfScaffoldTemplate(
 ): OkfScaffoldTemplate {
   return materializeTemplate(TEMPLATES[id], createdAt);
 }
-
-export function isOkfScaffoldTemplateId(
-  value: string,
-): value is OkfScaffoldTemplateId {
-  return value === "minimal" || value === "book-like";
-}

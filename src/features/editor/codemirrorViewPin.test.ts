@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readProjectFile } from "../../test-support/source";
 
 // @codemirror/view 6.43.3 introduced content-DOM / tile-tree regressions
 // that manifest in this app as:
@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest";
 // remains required before release.
 
 const packageJson = JSON.parse(
-  readFileSync(`${process.cwd()}/package.json`, "utf8"),
+  readProjectFile("package.json"),
 ) as {
   dependencies?: Record<string, string>;
   overrides?: Record<string, string>;
@@ -28,10 +28,7 @@ describe("@codemirror/view pin", () => {
   it("installs @codemirror/view 6.43.13 on disk", () => {
     // package.json "exports" block ./package.json, so read the file directly.
     const installed = JSON.parse(
-      readFileSync(
-        `${process.cwd()}/node_modules/@codemirror/view/package.json`,
-        "utf8",
-      ),
+      readProjectFile("node_modules/@codemirror/view/package.json"),
     ) as { version: string };
     expect(installed.version).toBe("6.43.13");
   });

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
+import { useTauriSubscription } from "../app/useTauriSubscription";
 import type { EditorTab } from "../../types";
 import { localAssistProposalStore } from "../../features/editor/localAssistProposal";
 import { isProposalCurrentForDocument } from "../../features/editor/proposalReview";
@@ -43,23 +44,26 @@ export function useLocalAssistReviewNavigation(options: Options): void {
     reply(request, accepted && Date.now() < job.expiresAt);
   };
 
+  useTauriSubscription(
+    (isCancelled) =>
+      listen<LocalAssistReviewRequest>(LOCAL_ASSIST_REVIEW_REQUEST_EVENT, ({ payload }) => {
+        if (isCancelled()) return;
+        const tab = resolveReviewTab(payload, current.current.tabs);
+        if (!payload.navigationId || blocked() || !tab || pendingRef.current) { reply(payload, false); return; }
+        // One deadline spans tab selection AND the native focus promise. Renders never extend it.
+        pendingRef.current = { request: payload, expiresAt: Date.now() + 4000, focusStarted: false,
+          timer: setTimeout(() => finish(payload, false), 4000) };
+        setPending(payload);
+        current.current.onSelectTab(tab.id);
+      }).catch(() => null), // Browser preview has no native event transport.
+    [],
+  );
+
+  // One deadline at a time: dropping the pending request cancels its timer.
   useEffect(() => {
-    let disposed = false;
-    const subscription = listen<LocalAssistReviewRequest>(LOCAL_ASSIST_REVIEW_REQUEST_EVENT, ({ payload }) => {
-      if (disposed) return;
-      const tab = resolveReviewTab(payload, current.current.tabs);
-      if (!payload.navigationId || blocked() || !tab || pendingRef.current) { reply(payload, false); return; }
-      // One deadline spans tab selection AND the native focus promise. Renders never extend it.
-      pendingRef.current = { request: payload, expiresAt: Date.now() + 4000, focusStarted: false,
-        timer: setTimeout(() => finish(payload, false), 4000) };
-      setPending(payload);
-      current.current.onSelectTab(tab.id);
-    }).catch(() => null); // Browser preview has no native event transport.
     return () => {
-      disposed = true;
       if (pendingRef.current) clearTimeout(pendingRef.current.timer);
       pendingRef.current = null;
-      void subscription.then((unlisten) => unlisten?.());
     };
   }, []);
 

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { AgentWorkbenchOutputChunk } from "../../lib/tauri";
+import { type AgentWorkbenchOutputChunk } from "../../lib/tauri/agent";
 
 // Agent Workbench output buffer state lives in this hook so that
 // App.tsx does not carry Assist Surface state. This is the frontend

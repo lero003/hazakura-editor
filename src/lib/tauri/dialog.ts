@@ -1,4 +1,4 @@
-import { confirm, open, save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { confirm, open, save as saveDialog } from "./nativeDialog";
 
 // Save-dialog extension helpers. Opening text files is intentionally
 // not extension-gated; Rust validates the selected file by size,
@@ -221,16 +221,6 @@ export async function pickBookRecipeSavePath(
     ],
   });
   return typeof selected === "string" ? selected : null;
-}
-
-export async function confirmDiscardUnsavedChanges(): Promise<boolean> {
-  return confirm(
-    "The current file has unsaved changes. Discard them and open another file?",
-    {
-      title: "Unsaved changes",
-      kind: "warning",
-    },
-  );
 }
 
 /** Confirm before Import Assist creates an unsaved Markdown draft. */

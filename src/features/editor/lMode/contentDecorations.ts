@@ -59,7 +59,7 @@ import {
   LModeTableCellBreakWidget,
   LModeTableDelimiterWidget,
 } from "./widgets";
-import type { LModeContext } from "./extension";
+import type { LModeContext } from "./context";
 
 // --- Decoration factories ---
 //

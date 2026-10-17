@@ -9,7 +9,7 @@ import type {
   ResolvedTheme,
 } from "../../types";
 import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
-import type { LModeCopy } from "../../lib/locale";
+import { type LModeCopy } from "../../lib/locale/lMode";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { CrtBootSequence } from "./CrtBootSequence";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
@@ -26,8 +26,9 @@ import { AppWorkspace } from "./AppWorkspace";
 import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
+import { createChapterReviewHandler } from "../../features/workspace/chapterReviewHandler";
+import { buildWorkspaceSidebarProps } from "../../features/workspace/workspaceSidebarProps";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
-import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
@@ -358,93 +359,17 @@ export function AppShell(props: AppShellProps) {
             }
             reviewChangesAvailable={props.activeDirty}
             typewriterModeEnabled={props.editorSettings.lModeTypewriter}
-            workspaceSidebarProps={{
-              onOpenGlobalSearch: () => props.onOpenGlobalSearch(),
-              activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
-              bookScopeChapterRelativePaths: props.bookScopeChapterRelativePaths,
-              bookScopeNodes: props.bookScopeNodes,
-              bookScopeChapters: props.bookScopeChapters,
-              bookScopeResolving: props.bookScopeResolving,
-              bookScopeSuggesting: props.bookScopeSuggesting,
-              bookScopeSuggestionError: props.bookScopeSuggestionError,
-              bookScopeUnavailable: props.bookScopeUnavailable,
-              compareSelectionEnabled: props.sidePaneMode === "compare",
-              compareSourcePath: props.compareAnchor?.path ?? null,
-              compareTargetPath: props.compareTarget?.path ?? null,
-              copy: props.safeEditorCopy,
-              dirtyFilePaths: workspaceTabMarkers.dirtyFilePaths,
-              fileOpsCopy: props.fileOpsCopy,
-              menuLanguage: props.menuLanguage,
-              onCommitBookScope: props.commitBookScopeNodes,
-              onCancelBookScopeSuggestion: props.cancelBookScopeSuggestion,
-              onCreateBookScopeSuggestion: props.createBookScopeSuggestion,
-              onExportBookRecipe: props.exportBookRecipe,
-              onImportBookRecipeDraft: props.importBookRecipeDraft,
-              onCreateFile: () => {
-                if (props.workspaceRootPath) {
-                  void props.createFile(props.workspaceRootPath);
-                }
+            workspaceSidebarProps={buildWorkspaceSidebarProps(
+              { ...props, workspaceTabMarkers },
+              {
+                onReviewChapterChanges: createChapterReviewHandler({
+                  requestRef: chapterReviewRequestRef,
+                  queueRef: chapterReviewQueueRef,
+                  openFilePath: props.openFilePath,
+                  reviewTabAgainstDisk: props.reviewTabAgainstDisk,
+                }),
               },
-              onCreateFolder: () => {
-                if (props.workspaceRootPath) {
-                  void props.createFolder(props.workspaceRootPath);
-                }
-              },
-              onCreateOkfScaffoldMinimal: () => {
-                if (props.workspaceRootPath) {
-                  void props.createOkfScaffoldAt(
-                    props.workspaceRootPath,
-                    "minimal",
-                  );
-                }
-              },
-              onCreateOkfScaffoldBookLike: () => {
-                if (props.workspaceRootPath) {
-                  void props.createOkfScaffoldAt(
-                    props.workspaceRootPath,
-                    "book-like",
-                  );
-                }
-              },
-              onLoadDirectory: props.loadWorkspaceDirectory,
-              onMoveEntry: props.onMoveEntry,
-              onMoveToTrash: props.onMoveToTrash,
-              onOpenContextMenu: props.openWorkspaceContextMenu,
-              onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
-              onOpenFile: (path) => void props.openWorkspaceFile(path),
-              onOpenWorkspace: () => void props.openWorkspace(),
-              onReviewChapterChanges: (path) => {
-                const request = chapterReviewRequestRef.current + 1;
-                chapterReviewRequestRef.current = request;
-                const openRequest = chapterReviewQueueRef.current.then(() =>
-                  Promise.resolve(props.openFilePath(path)),
-                );
-                chapterReviewQueueRef.current = openRequest.then(
-                  () => undefined,
-                  () => undefined,
-                );
-                void openRequest.then(
-                  (tab) => {
-                    if (request === chapterReviewRequestRef.current && tab) {
-                      props.reviewTabAgainstDisk(tab);
-                    }
-                  },
-                  () => undefined,
-                );
-              },
-              onRevalidateBookScope: props.revalidateBookScope,
-              openFilePaths: workspaceTabMarkers.openFilePaths,
-              onClearCompareSelection: () => {
-                props.clearCompareSource();
-                props.clearCompareTarget();
-              },
-              onSelectCompareFile: props.selectWorkspaceCompareFile,
-              onSubmitRename: props.onSubmitRename,
-              renamingPath: props.renamingPath,
-              requestRename: props.requestRename,
-              workspaceRootPath: props.workspaceRootPath,
-              workspaceTree: props.workspaceTree,
-            }}
+            )}
           />
         </>
       ) : null}

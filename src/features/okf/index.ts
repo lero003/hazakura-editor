@@ -43,7 +43,6 @@ export {
 } from "./okfLinks";
 export {
   conceptIdFromRelativePath,
-  isMarkdownRelativePath,
   isPathInsideBundleRoot,
   isReservedOkfFileName,
   normalizeBundleRelativePath,
@@ -67,7 +66,6 @@ export type { OkfFixtureBundle, OkfFixtureFile } from "./fixtures";
 export {
   OKF_SCAFFOLD_SPEC_COMMIT,
   getOkfScaffoldTemplate,
-  isOkfScaffoldTemplateId,
   listOkfScaffoldTemplateIds,
 } from "./okfScaffoldTemplates";
 export type {

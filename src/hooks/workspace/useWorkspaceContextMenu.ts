@@ -7,7 +7,7 @@ import type {
   WorkspaceContextMenuEntryKind,
   WorkspaceContextMenuState,
 } from "../../types";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { isComparableTextFile } from "../../features/diff/diff";
 
 export function useWorkspaceContextMenu({

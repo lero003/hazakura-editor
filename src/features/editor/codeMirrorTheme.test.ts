@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   cssHighlightStyle,
-  cssSyntaxHighlighting,
   htmlHighlightStyle,
-  htmlSyntaxHighlighting,
   markdownHighlightStyle,
-  markdownSyntaxHighlighting,
   pickEditorLanguage,
 } from "./codeMirrorTheme";
 

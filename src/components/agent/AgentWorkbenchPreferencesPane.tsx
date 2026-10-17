@@ -1,8 +1,6 @@
-import type { AgentWorkbenchCopy } from "../../lib/locale";
-import type {
-  AgentWorkbenchProvider,
-  AppleAssistAvailability,
-} from "../../lib/tauri";
+import { type AgentWorkbenchCopy } from "../../lib/locale/agentWorkbench";
+import { type AgentWorkbenchProvider } from "../../lib/tauri/agent";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
 import {
   isAppleLocalAssistSurfaceAllowed,

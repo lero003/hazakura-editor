@@ -24,12 +24,13 @@ const readPersistedWorkspaceState = vi.fn();
 const readStoredDrafts = vi.fn();
 const writePersistedFileBookmark = vi.fn();
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/workspace", () => ({
   listWorkspaceTree: (...args: unknown[]) => listWorkspaceTree(...args),
-  openTextFile: (...args: unknown[]) => openTextFile(...args),
-  resolveSecurityScopedBookmark: (...args: unknown[]) =>
-    resolveSecurityScopedBookmark(...args),
+  resolveSecurityScopedBookmark: (...args: unknown[]) => resolveSecurityScopedBookmark(...args),
 }));
+vi.mock("../../lib/tauri/files", () => ({
+  openTextFile: (...args: unknown[]) => openTextFile(...args),
+}))
 
 vi.mock("../../lib/storage", () => ({
   readPersistedWorkspaceState: (...args: unknown[]) =>

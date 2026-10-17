@@ -26,8 +26,8 @@ vi.mock("../../lib/tauri/appleAssist", async () => ({
   generateAppleAssistCandidateStreaming: (...args: unknown[]) => h.generate(...args),
   stopAppleAssistGeneration: (...args: unknown[]) => h.stop(...args),
 }));
-vi.mock("../../lib/tauri", async () => ({
-  ...await vi.importActual<typeof import("../../lib/tauri")>("../../lib/tauri"),
+vi.mock("../../lib/tauri/agent", async () => ({
+  ...await vi.importActual<typeof import("../../lib/tauri/agent")>("../../lib/tauri/agent"),
   getMainAppleAssistTarget: vi.fn(async () => ({ kind: "paragraph", start: 0, end: 8, text: "original", label: "",
     activeDocumentPath: "/workspace/note.md", activeDocumentName: "note.md", activeDocumentSessionId: "cancel-integration", capturedAtMs: 0 })),
   setAppleAssistWindowTheme: vi.fn(async () => undefined),

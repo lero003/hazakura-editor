@@ -18,12 +18,12 @@ import {
 } from "./previewDomSafety";
 import { renderMarkdown } from "../../../features/editor/markdown";
 import type { MediaImageAccessOptions } from "../../../features/editor/imagePolicy";
-import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
 import {
-  fetchRemoteImage,
-  openLocalImageUnderRoots,
-  openWorkspaceImage,
-} from "../../../lib/tauri";
+  applyPreviewMediaAction,
+  usePreviewMediaAccessKey,
+} from "./previewMediaActions";
+import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
+import { fetchRemoteImage, openLocalImageUnderRoots, openWorkspaceImage } from "../../../lib/tauri/workspace";
 import { loadPreviewImagesNearViewport } from "./previewImageLoader";
 import {
   applyCachedPreviewImages,
@@ -83,15 +83,7 @@ export default function PreviewPane({
   source,
   workspaceRoot,
 }: PreviewPaneProps) {
-  const mediaAccessKey = useMemo(
-    () =>
-      JSON.stringify({
-        outsideImages: mediaAccess?.outsideImages ?? "ask",
-        loadRemoteImages: mediaAccess?.loadRemoteImages ?? false,
-        approvedRoots: mediaAccess?.approvedRoots ?? [],
-      }),
-    [mediaAccess],
-  );
+  const mediaAccessKey = usePreviewMediaAccessKey(mediaAccess);
   const previewIdentity = useMemo(
     () =>
       `${documentKey ?? documentPath ?? ""}\u0000${workspaceRoot ?? ""}\u0000${mediaAccessKey}`,
@@ -431,12 +423,7 @@ export default function PreviewPane({
   ]);
 
   const handleMediaAction = (actionHost: Element) => {
-    const action = actionHost.getAttribute("data-hazakura-image-action");
-    const resolved =
-      actionHost.getAttribute("data-hazakura-resolved-path")?.trim() ?? "";
-    if (action === "approve-parent" && resolved && onApproveLocalImageParent) {
-      onApproveLocalImageParent(resolved);
-    }
+    applyPreviewMediaAction(actionHost, onApproveLocalImageParent);
   };
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {

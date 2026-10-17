@@ -3,7 +3,8 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { revealPathInFileManager, type WorkspaceTreeEntry } from "../../lib/tauri";
+import { revealPathInFileManager } from "../../lib/tauri/files";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { isComparableTextFile } from "../../features/diff/diff";
 import { writeTextToClipboard } from "../../lib/clipboard";
 import type {

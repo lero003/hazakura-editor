@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import type { AppleAssistResponse, AppleAssistOperation } from "../../lib/tauri";
+import { type AppleAssistResponse, type AppleAssistOperation } from "../../lib/tauri/appleAssist";
 
 // Mock the Tauri runtime bridge.
 const generateAppleAssistCandidate: Mock<
@@ -10,14 +10,11 @@ const generateAppleAssistCandidate: Mock<
     documentContext?: string;
   }) => Promise<AppleAssistResponse>
 > = vi.fn();
-vi.mock("../../lib/tauri", async () => {
-  const actual = await vi.importActual<typeof import("../../lib/tauri")>(
-    "../../lib/tauri",
-  );
+vi.mock("../../lib/tauri/appleAssist", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/appleAssist")>("../../lib/tauri/appleAssist");
   return {
     ...actual,
-    generateAppleAssistCandidate: (request: unknown) =>
-      generateAppleAssistCandidate(request as never),
+    generateAppleAssistCandidate: (request: unknown) => generateAppleAssistCandidate(request as never),
   };
 });
 

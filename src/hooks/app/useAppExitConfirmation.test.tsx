@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useAppExitConfirmation } from "./useAppExitConfirmation";
-import { exitApp } from "../../lib/tauri/window";
 import { listen } from "@tauri-apps/api/event";
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4

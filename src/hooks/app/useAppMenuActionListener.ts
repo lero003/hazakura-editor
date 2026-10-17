@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { isTauriRuntime } from "../../lib/tauri";
+import { isTauriRuntime } from "../../lib/tauri/_runtime";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   APP_MENU_ACTION_EVENT,

@@ -1,11 +1,11 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { setCurrentWindowTitle } from "../../lib/tauri";
+import { setCurrentWindowTitle } from "../../lib/tauri/window";
 import { useWindowTitle } from "./useWindowTitle";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/window", () => ({
   setCurrentWindowTitle: vi.fn(),
-}));
+}))
 
 describe("useWindowTitle", () => {
   beforeEach(() => {

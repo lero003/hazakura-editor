@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { updateAppMenuState, type AppMenuRecentItem } from "../../lib/tauri";
+import { updateAppMenuState, type AppMenuRecentItem } from "../../lib/tauri/menu";
 import type {
   AssistSurfacePreference,
   EditorSettings,

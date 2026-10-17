@@ -291,7 +291,7 @@ pub(crate) fn resolve_local_model_root(
     match probe_kind(&root.join(MODEL_DESCRIPTOR_FILENAME))? {
         PathKind::File => return resolve_described_root(&root),
         PathKind::Symlink => return Err(LocalModelResolutionError::UnsafePath),
-        PathKind::Other => {}
+        _ => {}
     }
     match probe_kind(&root.join(LANGUAGE_BUNDLE_DESCRIPTOR))? {
         PathKind::File => {
@@ -310,7 +310,7 @@ pub(crate) fn resolve_local_model_root(
             });
         }
         PathKind::Symlink => return Err(LocalModelResolutionError::UnsafePath),
-        PathKind::Other => {}
+        _ => {}
     }
     Err(LocalModelResolutionError::MissingDescriptor)
 }
@@ -549,20 +549,27 @@ fn validate_model_directory(directory: &Path) -> Result<(), LocalModelResolution
     Ok(())
 }
 
-/// Classify one path component without following links.
+/// Classify one path component without following links. This is the
+/// single place where the module's "symlink / missing / unreadable"
+/// rules live; the walkers below only translate the variants into the
+/// error their call site reports.
 fn probe_kind(path: &Path) -> Result<PathKind, LocalModelResolutionError> {
     match fs::symlink_metadata(path) {
         Ok(metadata) if metadata.file_type().is_symlink() => Ok(PathKind::Symlink),
         Ok(metadata) if metadata.is_file() => Ok(PathKind::File),
+        Ok(metadata) if metadata.is_dir() => Ok(PathKind::Directory),
         Ok(_) => Ok(PathKind::Other),
-        Err(error) if error.kind() == ErrorKind::NotFound => Ok(PathKind::Other),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(PathKind::Missing),
         Err(_) => Err(LocalModelResolutionError::Unreadable),
     }
 }
 
 enum PathKind {
     File,
+    Directory,
     Symlink,
+    /// Nothing exists at the path (`ErrorKind::NotFound`).
+    Missing,
     Other,
 }
 
@@ -583,13 +590,10 @@ fn walk_from_root(
             return Err(LocalModelResolutionError::UnsafePath);
         }
         current.push(component);
-        match fs::symlink_metadata(&current) {
-            Ok(metadata) if metadata.file_type().is_symlink() => {
-                return Err(LocalModelResolutionError::UnsafePath)
-            }
-            Ok(_) => {}
-            Err(error) if error.kind() == ErrorKind::NotFound => return Err(missing),
-            Err(_) => return Err(LocalModelResolutionError::Unreadable),
+        match probe_kind(&current)? {
+            PathKind::Symlink => return Err(LocalModelResolutionError::UnsafePath),
+            PathKind::Missing => return Err(missing),
+            _ => {}
         }
     }
     Ok(current)
@@ -601,10 +605,9 @@ fn require_file(
     missing: LocalModelResolutionError,
 ) -> Result<PathBuf, LocalModelResolutionError> {
     let path = walk_from_root(root, relative, missing)?;
-    match fs::symlink_metadata(&path) {
-        Ok(metadata) if metadata.is_file() => Ok(path),
-        Ok(_) => Err(missing),
-        Err(_) => Err(missing),
+    match probe_kind(&path) {
+        Ok(PathKind::File) => Ok(path),
+        _ => Err(missing),
     }
 }
 
@@ -615,23 +618,17 @@ fn require_directory(
 ) -> Result<PathBuf, LocalModelResolutionError> {
     let relative = relative.ok_or(missing)?;
     let path = walk_from_root(root, relative, missing)?;
-    match fs::symlink_metadata(&path) {
-        Ok(metadata) if metadata.is_dir() => Ok(path),
-        Ok(_) => Err(missing),
-        Err(_) => Err(missing),
+    match probe_kind(&path) {
+        Ok(PathKind::Directory) => Ok(path),
+        _ => Err(missing),
     }
 }
 
 fn validate_optional_file(root: &Path, relative: &str) -> Result<(), LocalModelResolutionError> {
-    let path = root.join(relative);
-    match fs::symlink_metadata(path) {
-        Ok(metadata) if metadata.file_type().is_symlink() => {
-            Err(LocalModelResolutionError::UnsafePath)
-        }
-        Ok(metadata) if metadata.is_file() => Ok(()),
-        Ok(_) => Err(LocalModelResolutionError::Unreadable),
-        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
-        Err(_) => Err(LocalModelResolutionError::Unreadable),
+    match probe_kind(&root.join(relative)) {
+        Ok(PathKind::File) | Ok(PathKind::Missing) => Ok(()),
+        Ok(PathKind::Symlink) => Err(LocalModelResolutionError::UnsafePath),
+        _ => Err(LocalModelResolutionError::Unreadable),
     }
 }
 

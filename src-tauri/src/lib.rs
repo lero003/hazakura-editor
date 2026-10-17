@@ -16,8 +16,10 @@ pub(crate) mod commands {
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod import_assist;
+    pub(crate) mod native_dialog;
     pub(crate) mod okf;
     pub(crate) mod reference_compare;
+    mod remote_image_transport;
     pub(crate) mod search;
     pub(crate) mod security_bookmarks;
     pub(crate) mod workspace;
@@ -26,9 +28,11 @@ pub(crate) mod commands {
 pub(crate) mod agent;
 pub(crate) mod auto_backup;
 pub(crate) mod distribution;
+pub(crate) mod helper_transport;
 pub(crate) mod import_assist;
 pub(crate) mod menu;
 pub(crate) mod os_handoff;
+pub(crate) mod text_encoding;
 pub(crate) mod types;
 pub(crate) mod util;
 
@@ -45,7 +49,7 @@ use tauri::Manager;
 // prevent the editor from launching, so the result is ignored.
 #[cfg(target_os = "macos")]
 fn apply_macos_vibrancy<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
-    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
+    use tauri::window::{Effect, EffectState, EffectsBuilder};
 
     // The main window is created by `tauri.conf.json` before `setup`
     // runs, so resolve it by its configured label.
@@ -55,11 +59,14 @@ fn apply_macos_vibrancy<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
     // `Active` state forces the vibrant appearance regardless of window
     // key state, so the material reads clearly instead of flattening to a
     // near-solid tint behind the dark overlay.
-    let _ = apply_vibrancy(
-        &window,
-        NSVisualEffectMaterial::Sidebar,
-        Some(NSVisualEffectState::Active),
-        None,
+    // Use Tauri's existing vibrancy path instead of a second direct
+    // window-vibrancy version. set_effects dispatches to the main thread;
+    // keep the default radius and best-effort startup behavior.
+    let _ = window.set_effects(
+        EffectsBuilder::new()
+            .effect(Effect::Sidebar)
+            .state(EffectState::Active)
+            .build(),
     );
 }
 
@@ -108,6 +115,8 @@ use crate::commands::images::*;
 #[allow(unused_imports)]
 use crate::commands::import_assist::*;
 #[allow(unused_imports)]
+use crate::commands::native_dialog::*;
+#[allow(unused_imports)]
 use crate::commands::okf::*;
 #[allow(unused_imports)]
 use crate::commands::reference_compare::*;
@@ -146,8 +155,7 @@ pub fn run() {
         ))
         .manage(OpenedFileStore::default())
         .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
-        .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default())
-        .plugin(tauri_plugin_dialog::init());
+        .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default());
 
     #[cfg(desktop)]
     let builder = builder
@@ -207,6 +215,9 @@ pub fn run() {
 
     builder
         .invoke_handler(tauri::generate_handler![
+            open_native_dialog,
+            save_native_dialog,
+            confirm_native_dialog,
             open_text_file,
             reveal_path_in_file_manager,
             create_text_file,

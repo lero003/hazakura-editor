@@ -32,23 +32,20 @@ export function OpenFolderIcon() {
   );
 }
 
-export function SlidersIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 4.5H13M3 8H13M3 11.5H13" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
-      <circle cx="6" cy="4.5" r="1.35" fill="var(--surface)" stroke="currentColor" strokeWidth="1.2"/>
-      <circle cx="10" cy="8" r="1.35" fill="var(--surface)" stroke="currentColor" strokeWidth="1.2"/>
-      <circle cx="7.5" cy="11.5" r="1.35" fill="var(--surface)" stroke="currentColor" strokeWidth="1.2"/>
-    </svg>
-  );
-}
-
 export function PanelLeftCloseIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="2" y="2.5" width="12" height="11" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M6 2.5V13.5" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M4.8 6L3.5 8L4.8 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function RefreshIcon() {
+  return (
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 7A5 5 0 1 0 13 10M13 3V7H9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -170,16 +167,6 @@ export function DiffIcon() {
       <rect x="9" y="3" width="5" height="10" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M3 6H6M3 8H6M3 10H5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
       <path d="M10 6H13M10 8H13M10 10H12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
-export function ReviewDeskIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="12" height="11" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-      <path d="M4.5 5.25H9.5M4.5 8H11.5M4.5 10.75H8" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round"/>
-      <path d="M11.25 4.75L12.25 5.75L14 4" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }

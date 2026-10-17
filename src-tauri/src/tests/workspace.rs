@@ -227,23 +227,20 @@ fn open_workspace_image_rejects_paths_outside_root() {
 }
 
 #[test]
-fn remote_image_client_forbids_http_and_redirects_with_bounded_reads() {
-    let agent = remote_image_agent();
-    let config = agent.config();
-    let timeouts = config.timeouts();
-
-    assert!(config.https_only());
-    assert_eq!(config.max_redirects(), 0);
-    assert_eq!(timeouts.connect, Some(Duration::from_secs(8)));
-    assert_eq!(timeouts.recv_response, Some(Duration::from_secs(12)));
-    assert_eq!(timeouts.recv_body, Some(Duration::from_secs(12)));
-    assert_eq!(timeouts.global, Some(Duration::from_secs(32)));
-
-    let error = agent
-        .get("http://127.0.0.1/image.png")
-        .call()
-        .expect_err("http must fail before a connection is attempted");
-    assert!(matches!(error, ureq::Error::RequireHttpsOnly(_)));
+fn remote_image_rejects_http_credentials_and_non_main_callers_before_transport() {
+    for url in [
+        "http://127.0.0.1/image.png",
+        "",
+        "  ",
+        "file:///image.png",
+        "https://user:password@example.com/image.png",
+    ] {
+        assert!(fetch_remote_image_with_label(MAIN_WINDOW_LABEL, url.to_string()).is_err());
+    }
+    assert!(
+        fetch_remote_image_with_label("agent", "https://example.com/image.png".to_string())
+            .is_err()
+    );
 }
 
 #[test]

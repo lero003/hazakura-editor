@@ -1,12 +1,9 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readProjectFile } from "../test-support/source";
 
-const previewCss = readFileSync(
-  `${process.cwd()}/src/styles/preview.css`,
-  "utf8",
-);
+const previewCss = readProjectFile("src/styles/preview.css");
 
 /** 同じ語を含む派生セレクタ（`.ebook-page-sheet-spread[data-spread="one"] .ebook-page-flow`
  *  など）に釣られず、そのセレクタ自身のルール本文を取る。 */

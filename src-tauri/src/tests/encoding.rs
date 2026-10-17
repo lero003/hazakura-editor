@@ -7,6 +7,29 @@
 // codec work.
 use super::*;
 
+#[test]
+fn utf8_codec_preserves_bom_label_and_rejects_malformed_body() {
+    let text = "\u{feff}日本語\0ASCII\r\n";
+    assert_eq!(decode_text_bytes(text.as_bytes(), "utf-8").unwrap(), text);
+    let encoded = encode_text(text, "utf-8-bom").unwrap();
+    assert_eq!(detect_text_encoding(&encoded), "utf-8-bom");
+    assert_eq!(decode_text_bytes(&encoded, "utf-8-bom").unwrap(), text);
+    assert_eq!(encode_text(text, "future-label").unwrap(), text.as_bytes());
+    assert_eq!(
+        decode_text_bytes(&[0xef, 0xbb, 0xbf, 0xff], "utf-8-bom").unwrap_err(),
+        "File is not readable as UTF-8 text."
+    );
+    for malformed in [
+        &[0xff, 0xfe, 0x81][..],
+        &[0xfe, 0xff, 0x81],
+        &[0xf0, 0x9f, 0x92],
+    ] {
+        assert_eq!(detect_text_encoding(malformed), "utf-8");
+        assert!(decode_text_bytes(malformed, "utf-8").is_err());
+    }
+    assert_eq!(detect_text_encoding(&[0xf0, 0x9f]), "shift-jis");
+}
+
 // ── Text encoding (UTF-8 / UTF-8 BOM / Shift-JIS / EUC-JP) ──
 //
 // The supported encodings round-trip through detect_text_encoding and

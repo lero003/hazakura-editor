@@ -1,13 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getAgentWorkbenchSessionState,
-  resizeAgentWorkbenchTerminal,
-  setAgentWindowTheme,
-  stopAgentWorkbenchSession,
-  writeAgentWorkbenchSessionInput,
-  type AgentWorkbenchProvider,
-  type AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getAgentWorkbenchSessionState, resizeAgentWorkbenchTerminal, setAgentWindowTheme, stopAgentWorkbenchSession, writeAgentWorkbenchSessionInput, type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
@@ -30,6 +22,10 @@ import { useAgentLaunchGate } from "../../hooks/agent/useAgentLaunchGate";
 import { useAgentOutputBuffer } from "../../hooks/agent/useAgentOutputBuffer";
 import { useAgentOutputSeqCursor } from "../../hooks/agent/useAgentOutputSeqCursor";
 import { useMainWindowWorkspace } from "../../hooks/agent/useMainWindowWorkspace";
+import {
+  applyDetachedWindowThemeToDocument,
+  readInitialDetachedWindowTheme,
+} from "../../features/app/detachedWindowTheme";
 import { AgentTerminalView } from "./AgentTerminalView";
 
 // `AgentWindowApp` is the root of the detached `hazakura agent`
@@ -63,18 +59,6 @@ import { AgentTerminalView } from "./AgentTerminalView";
 // pane is gone, so there's nothing to show.
 
 const TIME_TICK_MS = 1000;
-
-function readInitialTheme(): ThemePreference {
-  if (typeof window === "undefined") {
-    return "dark";
-  }
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  // migrate: v1.5 "sakura" → v1.6 "edohigan" (メイン窓の readStoredThemePreference
-  // と同じ読み取り時変換)。メイン窓の effect が localStorage を上書きするまでの
-  // 過渡期に、分離窓でも正しいテーマが適用されるようにする。
-  const migrated = stored === "sakura" ? "edohigan" : stored;
-  return (migrated as ThemePreference) ?? "dark";
-}
 
 function readStoredAgentWorkbenchEnabled(): boolean {
   return (
@@ -138,7 +122,7 @@ export function AgentWindowApp() {
   });
   const [agentTerminalSize, setAgentTerminalSize] =
     useState<AgentTerminalSize | null>(null);
-  const [theme, setTheme] = useState<ThemePreference>(readInitialTheme);
+  const [theme, setTheme] = useState<ThemePreference>(readInitialDetachedWindowTheme);
   const [now, setNow] = useState<number>(() => Date.now());
   // When the session goes inactive (stopped / exited), freeze the
   // reference timestamp used for the "started Xs ago" and "last
@@ -172,8 +156,7 @@ export function AgentWindowApp() {
   // never mutates the theme, so it just listens for cross-window
   // changes from the main window's theme toggle.
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.dataset.themePreference = theme;
+    applyDetachedWindowThemeToDocument(theme);
     if (externalCliAllowed) {
       void setAgentWindowTheme(theme).catch((err) => {
         console.warn("Failed to update Agent window OS theme", err);

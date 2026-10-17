@@ -69,8 +69,3 @@ export function conceptIdFromRelativePath(relativePath: string): string {
   }
   return normalized;
 }
-
-export function isMarkdownRelativePath(relativePath: string): boolean {
-  const name = fileNameFromRelativePath(relativePath);
-  return name.toLowerCase().endsWith(".md");
-}

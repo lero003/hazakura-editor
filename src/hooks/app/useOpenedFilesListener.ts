@@ -1,10 +1,7 @@
-import { useEffect } from "react";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import {
-  drainOpenedFiles,
-  isTauriRuntime,
-  OPENED_FILES_EVENT,
-} from "../../lib/tauri";
+import { listen } from "@tauri-apps/api/event";
+import { drainOpenedFiles, OPENED_FILES_EVENT } from "../../lib/tauri/files";
+import { isTauriRuntime } from "../../lib/tauri/_runtime";
+import { useTauriSubscription } from "./useTauriSubscription";
 
 type UseOpenedFilesListenerOptions = {
   enabled: boolean;
@@ -19,49 +16,34 @@ export function useOpenedFilesListener({
   onOpenFiles,
   onStatus,
 }: UseOpenedFilesListenerOptions) {
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
-
-    if (!isTauriRuntime()) {
-      return;
-    }
-
-    let cancelled = false;
-    let unlisten: UnlistenFn | null = null;
-
-    const openPendingFiles = async () => {
-      try {
-        const paths = await drainOpenedFiles();
-
-        if (!cancelled && paths.length > 0) {
-          await onOpenFiles(paths);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          onError(String(err));
-          onStatus("Open failed");
-        }
+  useTauriSubscription(
+    (isCancelled) => {
+      if (!isTauriRuntime()) {
+        return null;
       }
-    };
 
-    void openPendingFiles();
+      const openPendingFiles = async () => {
+        try {
+          const paths = await drainOpenedFiles();
 
-    void listen<string[]>(OPENED_FILES_EVENT, () => {
+          if (!isCancelled() && paths.length > 0) {
+            await onOpenFiles(paths);
+          }
+        } catch (err) {
+          if (!isCancelled()) {
+            onError(String(err));
+            onStatus("Open failed");
+          }
+        }
+      };
+
       void openPendingFiles();
-    }).then((nextUnlisten) => {
-      if (cancelled) {
-        nextUnlisten();
-        return;
-      }
 
-      unlisten = nextUnlisten;
-    });
-
-    return () => {
-      cancelled = true;
-      unlisten?.();
-    };
-  }, [enabled, onError, onOpenFiles, onStatus]);
+      return listen<string[]>(OPENED_FILES_EVENT, () => {
+        void openPendingFiles();
+      });
+    },
+    [enabled, onError, onOpenFiles, onStatus],
+    { enabled },
+  );
 }

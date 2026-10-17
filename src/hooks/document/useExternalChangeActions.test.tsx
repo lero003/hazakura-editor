@@ -5,14 +5,14 @@ import {
 } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { useExternalChangeActions } from "./useExternalChangeActions";
-import { getFileMetadata, openTextFile, type TextFileDocument } from "../../lib/tauri";
+import { getFileMetadata, openTextFile, type TextFileDocument } from "../../lib/tauri/files";
 import { createEditorTab } from "../../features/editor/editorTabs";
 import type { EditorTab } from "../../types";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   getFileMetadata: vi.fn(),
   openTextFile: vi.fn(),
-}));
+}))
 
 function makeUntitledImportTab(): EditorTab {
   return {

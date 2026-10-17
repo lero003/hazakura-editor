@@ -1,17 +1,11 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readProjectFile } from "../test-support/source";
 
-const crt = readFileSync(`${process.cwd()}/src/styles/crt-theme.css`, "utf8");
-const edohigan = readFileSync(
-  `${process.cwd()}/src/styles/edohigan-theme.css`,
-  "utf8",
-);
-const shinkai = readFileSync(
-  `${process.cwd()}/src/styles/shinkai-theme.css`,
-  "utf8",
-);
+const crt = readProjectFile("src/styles/crt-theme.css");
+const edohigan = readProjectFile("src/styles/edohigan-theme.css");
+const shinkai = readProjectFile("src/styles/shinkai-theme.css");
 
 /**
  * 実機フィードバック（第2弾）の判断:

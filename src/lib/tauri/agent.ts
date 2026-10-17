@@ -145,23 +145,6 @@ export async function openAgentWindow(theme?: string): Promise<void> {
   }
 }
 
-// Reverse link from the detached Agent window's "Show in main pane"
-// footer button. The Rust side gates this to the main|agent labels and
-// emits OPEN_MAIN_AGENT_PANE_EVENT to the main window; the main
-// window's useMainAgentPaneFocus hook flips the right pane to Agent.
-// We only need to fire the invoke; the response payload is empty.
-export async function openMainAgentPane(): Promise<void> {
-  if (!isTauriRuntime()) {
-    return;
-  }
-
-  try {
-    await invoke("open_main_agent_pane");
-  } catch (err) {
-    console.warn("Failed to open main Agent pane", err);
-  }
-}
-
 // Cross-window workspace bridge: the main window writes the active
 // workspace path on open / close via setMainActiveWorkspace, and the
 // detached agent window reads it on mount via getMainActiveWorkspace.
@@ -257,16 +240,6 @@ export async function setAppleAssistWindowTheme(theme: string): Promise<void> {
   } catch (err) {
     console.warn("Failed to set Hazakura Local Assist window theme", err);
   }
-}
-
-export async function requestApplyAiEditTransaction(
-  payload: import("../../types").AppleAssistApplyEvent,
-): Promise<void> {
-  if (!isTauriRuntime()) {
-    throw new Error("Tauri runtime is not available.");
-  }
-
-  await invoke("request_apply_ai_edit_transaction", { payload });
 }
 
 // v2.6 A-3: the function above asks the main window to apply the already

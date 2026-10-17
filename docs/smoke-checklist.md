@@ -3,9 +3,15 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-09-12 (Local Assist window theme item added)
+Last reviewed: 2026-10-12 (workspace refresh acceptance)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
+
+## v3.2.1 ワークスペース一覧更新
+
+追加項目は[3.2.1の実機受け入れ](releases/3.2.1-workspace-refresh.md#実機受け入れ)を参照。
+外部の追加・削除・名前変更、展開／focus／scroll保持、未保存原稿、同期途中の失敗、
+スリープ復帰、L Mode／Reader／本表示での停止と再開を、同じ配布候補で確認する。
 
 ## v2 Book Scope Export Smoke
 

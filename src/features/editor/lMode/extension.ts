@@ -7,9 +7,9 @@
 // are in `./imageWidget.ts` and `./taskWidget.ts`. This file
 // holds:
 //
-//   - The `LModeContext` type and `lModeContextFacet` so the
-//     rest of the app can hand the L Mode extension
-//     workspace-relative image paths.
+//   - Re-exports of the `LModeContext` type and `lModeContextFacet`
+//     (defined in `./context.ts`) so the rest of the app can hand
+//     the L Mode extension workspace-relative image paths.
 //   - The `StateField` that joins line-class decorations and
 //     content decorations into a single `DecorationSet` and
 //     recomputes on the right triggers.
@@ -36,18 +36,17 @@
 import {
   EditorState,
   type Extension,
-  Facet,
   StateEffect,
   StateField,
   type Transaction,
 } from "@codemirror/state";
 import {
-  Decoration,
   type DecorationSet,
   EditorView,
   ViewPlugin,
 } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
+import { lModeContextFacet, type LModeContext } from "./context";
 import { refreshImagesEffect, lModeImageResolverPlugin } from "./imageWidget";
 import { lModeTaskClickPlugin } from "./taskWidget";
 import { lModeTableEditingPlugin } from "./tableEditing";
@@ -71,18 +70,8 @@ import {
  * no workspace is open, image URLs fall back to the alt-text
  * placeholder (no file read is attempted).
  */
-export type LModeContext = {
-  workspaceRoot: string | null;
-  documentPath: string | null;
-};
-
-export const lModeContextFacet = Facet.define<LModeContext, LModeContext>({
-  combine: (values) =>
-    values[values.length - 1] ?? {
-      workspaceRoot: null,
-      documentPath: null,
-    },
-});
+export { lModeContextFacet } from "./context";
+export type { LModeContext } from "./context";
 
 const lModeFocusChangedEffect = StateEffect.define<boolean>();
 

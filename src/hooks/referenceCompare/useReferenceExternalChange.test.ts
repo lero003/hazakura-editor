@@ -1,13 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getReferenceFileMetadata } from "../../lib/tauri";
+import { getReferenceFileMetadata } from "../../lib/tauri/pdfReference";
 import { useReferenceExternalChange } from "./useReferenceExternalChange";
 import type { ReferenceCompareState } from "../../features/referenceCompare/types";
 
-vi.mock("../../lib/tauri", async () => {
-  const actual = await vi.importActual<typeof import("../../lib/tauri")>(
-    "../../lib/tauri",
-  );
+vi.mock("../../lib/tauri/pdfReference", async () => {
+  const actual = await vi.importActual<typeof import("../../lib/tauri/pdfReference")>("../../lib/tauri/pdfReference");
   return {
     ...actual,
     getReferenceFileMetadata: vi.fn(),

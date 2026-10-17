@@ -1,38 +1,13 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
-const editorCss = readFileSync(
-  `${process.cwd()}/src/styles/editor.css`,
-  "utf8",
-);
-const controlsCss = readFileSync(
-  `${process.cwd()}/src/styles/controls.css`,
-  "utf8",
-);
-const appShellCss = readFileSync(
-  `${process.cwd()}/src/styles/app-shell.css`,
-  "utf8",
-);
-const animationsCss = readFileSync(
-  `${process.cwd()}/src/styles/animations.css`,
-  "utf8",
-);
-const dialogsCss = readFileSync(
-  `${process.cwd()}/src/styles/dialogs.css`,
-  "utf8",
-);
-const workspaceCss = readFileSync(
-  `${process.cwd()}/src/styles/workspace.css`,
-  "utf8",
-);
-
-function ruleBody(css: string, selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    css.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))
-      ?.groups?.body ?? ""
-  );
-}
+const editorCss = readProjectFile("src/styles/editor.css");
+const controlsCss = readProjectFile("src/styles/controls.css");
+const appShellCss = readProjectFile("src/styles/app-shell.css");
+const animationsCss = readProjectFile("src/styles/animations.css");
+const dialogsCss = readProjectFile("src/styles/dialogs.css");
+const workspaceCss = readProjectFile("src/styles/workspace.css");
 
 describe("editor tab close affordance CSS", () => {
   it("keeps tab close controls visually distinct from dirty dots", () => {
@@ -183,7 +158,7 @@ describe("editor tab close affordance CSS", () => {
   it("keeps special theme app shell gradients visible behind native chrome", () => {
     // edohigan (v1.6: ジョークテーマへ格上げ) の .app-shell 背景は
     // edohigan-theme.css へ移管したため、ここでは yakou / shokou のみ検証する。
-    const themesCss = readFileSync(`${process.cwd()}/src/styles/themes.css`, "utf8");
+    const themesCss = readProjectFile("src/styles/themes.css");
     const yakouShell = ruleBody(appShellCss, ':root[data-theme="yakou"] .app-shell');
     const shokouShell = ruleBody(appShellCss, ':root[data-theme="shokou"] .app-shell');
     const yakouTint = ruleBody(

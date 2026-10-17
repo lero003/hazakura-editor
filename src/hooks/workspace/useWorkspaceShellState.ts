@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 
 export function useWorkspaceShellState() {
   const [workspaceTree, setWorkspaceTree] =

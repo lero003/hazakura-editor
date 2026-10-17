@@ -1,15 +1,73 @@
 # Current Work
 
 Status: Operational
-Scope: v3.2依存更新キュー、次期メモ・縦書き方針、v3.1以前の記録
+Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の記録
 Authority: High
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-18
 
-## 現行キュー — v3.2.0依存関係更新と品質強化（2026-09-26）
+## 基準候補 — v3.3依存削減の追加（2026-10-17）
+
+source候補は3.3.0。前候補を触って問題なしとのオーナー報告を受け、削減をもう一段進めた。
+macOS両architectureの保守的なCargo runtime/build集合は今回254→247件、基準 `25f21528` の301件から54件減。
+npmは182件（runtime到達32件）を維持。取得集合・コンパイル経路・配布容量は別の尺度で扱う。
+
+同じrfd backendへnative dialogを直接集約してplugin 3件を除去し、main窓限定IPC・選択scopeを維持した。
+破棄・モデル操作の確認は明示的に非同期で待ち、取消・重複操作・古い対象への確定を拒否する。
+日本語codecはmacOS iconvと限定的な互換処理へ委譲し、4件をmacOS製品経路から外した。
+encoding_rsはmacOSの比較testと非macOS fallbackに残し、UTF-8のSIMD検証も維持する。
+App Store生成物からAgent専用CSS、両laneから不要なpackage metadataを外した。残存package版は更新していない。
+
+frontend 2,904件・scripts 31件、Rust 515 pass / 4 ignored、明示実行の全3-byte値33,554,432件比較、
+Python 6件、型検査、surface 134件、両lane Vite・隔離arm64 native buildが通過。
+Developerでnative選択、Shift-JIS/EUC-JP保存と旧codecのbyte一致、取消、workspace検索を確認した。
+診断用ad-hoc sandboxのStore形状でも両legacyの選択・保存、取消、L Mode/Reader表示を確認。
+正式な配布候補の受け入れではない。
+UTF-8の測定時間は旧経路と同程度だが、大きなlegacy原稿の処理は遅くなる。
+採否・測定条件・残ゲートは[10月17日の追加記録](reviews/2026-10-17-dependency-reduction.md)を参照する。
+
+[PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)もfrontend・native成功。
+clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、ローカル署名・同梱物・digestを確認した。
+当時のpathとhashはignoredの候補ディレクトリ内 `HazakuraEditor-3.3.0-build164.json` を参照。
+`latest.json` は後続候補を指すためbuild 164の照合には使わない。build 163は保持している。
+次は同一署名候補のIME・VoiceOver・Intel・macOS 26のGUI・大きなlegacy workspace・sandbox外部PDF取込を受け入れる。
+macOS 26.6.2/Apple SiliconのCIでcodec比較は成功したが、GUI・TestFlight・upload・公開は未確認。
+今回4変更を個別撤回して両targetの解決・noticeを照合した。
+撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の撤回試験とは区別する。
+[全体の変更・前回の個別撤回](releases/3.3.0-dependency-autonomy.md)を保持し、受け入れ後は見直しメモ・縦書きへ戻る。
+
+## 品質 — 挙動を変えないリファクタリング・スライス（2026-10-17）
+
+v3.3依存削減の受け入れ候補（`049813ea` / build 164）のbasisを変えずに、未参照コード削除・
+Tauri購読の共通フック化・lMode循環import解消・プレビュー重複統合・分離窓の共通化・
+未使用検出の有効化・コマンド表のモジュール抽出・Reference Compare面と章レビュー処理の
+切り出し・書き出しプロローグの一本化・EditorPaneヘルパ分離・互換バレル廃止・
+テストのファイル読み取り共通化・WorkspaceSidebar配線の一本化を小さなcommitで積んだ。Rust側は
+helper transportの共有化、menu/core_ai_modelsの分割、invoke/権限の静的テスト追加。
+依存宣言・保存形式・境界・文言は変更していない。
+
+実装時はfrontend 2,912件 / 313 files、scripts 31件、型検査、両lane Vite buildと境界検査が通過。
+2026-10-18の外部レビューでは固定範囲 `2c8cf98d..e50cc551` に新規の実行時不具合の指摘なし。
+説明・完了状態・検証記録と末尾空行を訂正した。型検査、両lane Vite、surface 137件、scripts 31件は再検証成功。
+Rustは相補的な2回で全519件を網羅（515 pass / 4 ignored、PTY4件も成功）。
+frontend全体の再実行は2,910 pass / 2 fail（初回importの20秒timeoutと後続mock回数不一致）。
+当該7件は上限120秒で成功し、基準 `2c8cf98d` でも最初のimportに約32.06秒を要した。
+標準設定の全件再実行成功とは区別する。実機確認（メニューバー、分離窓テーマ、IME/L Mode、Reader等）は未実施。
+H2は8/10箇所を移行済み。保留・見送り理由とレビュー結果は
+[レビュー依頼文](reviews/2026-10-17-refactor-slices-review-request.md)に記載する。
+build 164のsourceは `049813ea` のまま。後続pkgのsource・build・hashは
+ignoredの `docs/internal/app-store-candidates/latest.json` で照合し、新source候補の実機確認へ進む。
+
+## 公開済み — v3.2.1ワークスペース一覧更新
+
+2026-10-14にオーナーがテスト問題なし・App Store公開済みと報告。
+変更と当時の検証は[3.2.1の記録](releases/3.2.1-workspace-refresh.md)を参照する。
+公開build/sourceの対応と個別試験の全項目は、この作業では独立照合していない。
+
+## 基盤 — v3.2.0依存関係更新と品質強化（2026-09-26の記録）
 
 v3.1はApple審査を通過して公開済み（オーナー報告）。下のv3.1節は当時の
 source・候補・未完了ゲートの履歴であり、現在の公開状態を示すものではない。
-次版はnpm/Rustの依存関係更新を主題とする。通常の互換更新とメジャー更新を
+v3.2.0ではnpm/Rustの依存関係更新を主題とした。通常の互換更新とメジャー更新を
 個別に検証し、最終的には同一候補のmacOS実機受け入れで判断する。
 具体的な更新対象・例外・受け入れ項目は
 [v3.2依存受け入れドラフト](releases/3.2.0-dependency-acceptance-draft.md)。
@@ -33,16 +91,16 @@ source候補は`main`へ統合・push済み。追加のUI競合修正`2ee96b16`�
 `5ba2a9a6`の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/36234798000)は
 frontend・nativeとも成功。後続CIのL Mode Escape競合を修正し、
 [最新CI](https://github.com/lero003/hazakura-editor/actions/workflows/quality.yml?query=branch%3Amain)を確認する。
-実機・署名済み配布の受け入れは別ゲート。
+TestFlight配信成功はオーナー報告。配信build/sourceの照合と実機受け入れは別ゲート。
 
 オーナーの簡単な実機テストでは問題なしとの報告あり。修正後候補については、
-実機IME・VoiceOver・TestFlight、L Modeの出入り、書き出しの章・リンク・画像、
+TestFlight上の実機IME・VoiceOver、L Modeの出入り、書き出しの章・リンク・画像、
 終了時のAssist停止と未保存確認を上記マトリクスに沿って受け入れる。
 
 ## v3.2後の方向 — メモと縦書き（2026-09-26、方針採用）
 
 オーナー決定で、見直しメモ・再開メモ・編集ルールメモと縦書きをロードマップへ採用した。
-現行v3.2の受け入れ後、メモ系は単一原稿の見直しメモを起点に、再開メモ、
+v3.3の依存削減を受け入れた後、メモ系は単一原稿の見直しメモを起点に、再開メモ、
 自由記述の編集ルールひな形へ進める。表記の決め事もメモとして書き足す形にする。
 縦書きは単一原稿のReaderから既存EPUBの縦書き出力へ段階化し、LLM拡張を前提にしない。
 

@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyWindowTheme,
@@ -6,6 +5,7 @@ import {
   shouldApplyWindowTheme,
   WINDOW_CONFIG_THEME,
 } from "./windowAppearance";
+import { readProjectFile } from "../../test-support/source";
 
 describe("windowAppearance", () => {
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe("windowAppearance", () => {
   it("keeps the config theme constant in sync with tauri.conf.json", () => {
     // 定数と設定がずれると「起動時に組み直しが起きる」判定を誤る。
     const conf = JSON.parse(
-      readFileSync(`${process.cwd()}/src-tauri/tauri.conf.json`, "utf8"),
+      readProjectFile("src-tauri/tauri.conf.json"),
     ) as { app?: { windows?: Array<{ theme?: string }> } };
     // Tauri の config は "Dark"（先頭大文字）、BaseTheme は小文字。
     expect(conf.app?.windows?.[0]?.theme?.toLowerCase()).toBe(WINDOW_CONFIG_THEME);

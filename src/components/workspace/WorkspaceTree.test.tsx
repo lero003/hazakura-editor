@@ -30,7 +30,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WorkspaceTree } from "./WorkspaceTree";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
+import { cloneElement } from "react";
 
 afterEach(() => {
   cleanup();
@@ -67,6 +68,82 @@ function entry(
 }
 
 describe("workspace tree bounded listing", () => {
+  it("opens the new workspace root after the previous root was collapsed", async () => {
+    vi.useFakeTimers();
+    const { rerenderEntry } = renderTree();
+    fireEvent.click(screen.getByRole("button", { name: "workspace" }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(screen.getByRole("button", { name: "workspace" }).getAttribute("aria-expanded")).toBe("false");
+    rerenderEntry(entry("next", "/next", "directory", [entry("次の原稿.md", "/next/次の原稿.md", "file")]));
+    expect(screen.getByRole("button", { name: "next" }).getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "次の原稿.md" })).toBeTruthy();
+  });
+
+  it("cancels the previous root's delayed click when switching workspaces", async () => {
+    vi.useFakeTimers();
+    const { rerenderEntry } = renderTree();
+    fireEvent.click(screen.getByRole("button", { name: "workspace" }));
+    rerenderEntry(entry("next", "/next", "directory"));
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(screen.getByRole("button", { name: "next" }).getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("keeps a failed folder load collapsed and permits retry", async () => {
+    vi.useFakeTimers();
+    const onLoadDirectory = vi.fn().mockRejectedValueOnce(new Error("Folder unavailable")).mockResolvedValueOnce(undefined);
+    renderTree({ onLoadDirectory });
+    const button = screen.getByRole("button", { name: "dest" });
+    fireEvent.click(button);
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(button.hasAttribute("disabled")).toBe(false);
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(button);
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(onLoadDirectory).toHaveBeenCalledTimes(2);
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it.each([
+    { key: "Enter", isComposing: true, keyCode: 13 },
+    { key: "Escape", isComposing: true, keyCode: 27 },
+    { key: "Enter", isComposing: false, keyCode: 229 },
+    { key: "Escape", isComposing: false, keyCode: 229 },
+  ])("does not commit or cancel a name during IME input ($key, $isComposing, $keyCode)", (keyboardEvent) => {
+    const onSubmitRename = vi.fn();
+    const requestRename = vi.fn();
+    const path = `${rootPath}/原稿.md`;
+    renderTree({
+      entry: entry("workspace", rootPath, "directory", [entry("原稿.md", path, "file")]),
+      renamingPath: path,
+      onSubmitRename,
+      requestRename,
+    });
+    const input = screen.getByRole("textbox");
+    fireEvent.change(input, { target: { value: "続き.md" } });
+    fireEvent.keyDown(input, keyboardEvent);
+    expect(onSubmitRename).not.toHaveBeenCalled();
+    expect(requestRename).not.toHaveBeenCalled();
+    expect((input as HTMLInputElement).value).toBe("続き.md");
+    fireEvent.keyDown(input, { key: "Enter", isComposing: false, keyCode: 13 });
+    expect(onSubmitRename).toHaveBeenCalledExactlyOnceWith(path, "続き.md");
+  });
+
+  it("reports expanded directories and unregisters them on collapse or unmount", async () => {
+    vi.useFakeTimers();
+    const onDirectoryExpanded = vi.fn();
+    const { view } = renderTree({ onDirectoryExpanded });
+    expect(onDirectoryExpanded).toHaveBeenCalledWith(rootPath, true);
+    expect(onDirectoryExpanded).toHaveBeenCalledWith(sourceDirPath, false);
+    fireEvent.click(screen.getByRole("button", { name: "source" }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(onDirectoryExpanded).toHaveBeenLastCalledWith(sourceDirPath, true);
+    fireEvent.click(screen.getByRole("button", { name: "source" }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(onDirectoryExpanded).toHaveBeenLastCalledWith(sourceDirPath, false);
+    view.unmount();
+    expect(onDirectoryExpanded).toHaveBeenCalledWith(rootPath, false);
+  });
+
   it("shows the exact hidden entry count when the backend caps a folder", () => {
     const cappedTree = entry("workspace", rootPath, "directory", [], {
       children_truncated: true,
@@ -111,6 +188,7 @@ function makeDataTransfer(path: string): DataTransfer {
 }
 
 type RenderTreeOverrides = {
+  onDirectoryExpanded?: (path: string, expanded: boolean) => void;
   activePath?: string | null;
   compareSourcePath?: string | null;
   compareTargetPath?: string | null;
@@ -157,7 +235,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
   const onSubmitRename = overrides.onSubmitRename ?? vi.fn();
   const requestRename = overrides.requestRename ?? vi.fn();
 
-  const view = render(
+  const treeElement = (
     <WorkspaceTree
       activePath={overrides.activePath ?? null}
       compareSelectionEnabled={
@@ -169,6 +247,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       entry={overrides.entry ?? makeTree()}
       onClearCompareSelection={onClearCompareSelection}
       onLoadDirectory={onLoadDirectory}
+      onDirectoryExpanded={overrides.onDirectoryExpanded}
       onMoveEntry={onMoveEntry}
       onOpenContextMenu={onOpenContextMenu}
       onOpenFile={onOpenFile}
@@ -187,8 +266,9 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       unsavedOpenFileStateLabel={
         overrides.unsavedOpenFileStateLabel ?? "unsaved"
       }
-    />,
+    />
   );
+  const view = render(treeElement);
 
   return {
     onClearCompareSelection,
@@ -199,6 +279,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
     onSelectCompareFile,
     onSubmitRename,
     requestRename,
+    rerenderEntry: (nextEntry: WorkspaceTreeEntry) => view.rerender(cloneElement(treeElement, { entry: nextEntry })),
     view,
   };
 }

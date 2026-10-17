@@ -8,13 +8,11 @@ import { ScrollPositionHud } from "./ScrollPositionHud";
 import { CopyIcon } from "../app/Icons";
 import { StartPanel } from "../workspace/StartPanel";
 import { writeTextToClipboard } from "../../lib/clipboard";
-import type {
-  AppleAssistCopy,
-  LModeCopy,
-  RecoveryCopy,
-  SafeEditorCopy,
-  SlashMenuCopy,
-} from "../../lib/locale";
+import { type AppleAssistCopy } from "../../lib/locale/appleAssist";
+import { type LModeCopy } from "../../lib/locale/lMode";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
+import { type SafeEditorCopy } from "../../lib/locale/safeEditor";
+import { type SlashMenuCopy } from "../../lib/locale/slashMenu";
 import type {
   BaseTheme,
   AppleAssistGenerationLock,

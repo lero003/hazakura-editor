@@ -36,7 +36,7 @@ import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
 import { useMemo } from "react";
 import { normalizeExternalMarkdownLink } from "../../features/editor/markdownLinks";
 import { renderMarkdown } from "../../features/editor/markdown";
-import { openExternalUrl } from "../../lib/tauri";
+import { openExternalUrl } from "../../lib/tauri/external";
 import {
   helpDocSectionId,
   injectHelpDocSectionAnchors,

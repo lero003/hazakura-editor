@@ -10,9 +10,9 @@ const tauriApi = vi.hoisted(() => ({
   openTextFile: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   openTextFile: tauriApi.openTextFile,
-}));
+}))
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {

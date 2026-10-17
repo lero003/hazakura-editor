@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { markdownPathForImportedImage } from "../../features/editor/markdownImageReferences";
-import { savePastedImage } from "../../lib/tauri";
+import { savePastedImage } from "../../lib/tauri/workspace";
 
 type UsePastedImageActionOptions = {
   activeTabPath: string | null;

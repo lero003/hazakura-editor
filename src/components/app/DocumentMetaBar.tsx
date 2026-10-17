@@ -5,8 +5,8 @@ import {
 } from "./RightPaneToggleControls";
 import { AgentWindowIcon, SparklesIcon } from "./Icons";
 import type { AssistSurfacePreference, EditorTab } from "../../types";
-import type { LModeCopy } from "../../lib/locale";
-import type { AppleAssistAvailability } from "../../lib/tauri";
+import { type LModeCopy } from "../../lib/locale/lMode";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import { documentBreadcrumbParts } from "../../features/workspace/documentBreadcrumb";
 
 type DocumentMetaBarProps = {

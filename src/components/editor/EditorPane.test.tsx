@@ -12,7 +12,6 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { readFileSync } from "node:fs";
 import { createRef, useState } from "react";
 import { applyReviewedLocalAssistProposal } from "../../hooks/editor/useAppleAssistApplyHandler";
 import { localAssistProposalStore, type LocalAssistProposal } from "../../features/editor/localAssistProposal";
@@ -24,7 +23,8 @@ import {
   type EditorPaneHandle,
 } from "./EditorPane";
 import EditorPane from "./EditorPane";
-import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getSlashMenuCopy } from "../../lib/locale/slashMenu";
 import { findTextMatches } from "../../hooks/find/useFindMatches";
 import type { SlashCommand } from "../../types/slash";
 import type {
@@ -32,15 +32,10 @@ import type {
   EditorViewStatePatch,
 } from "../../features/editor/documentViewState";
 import { parseMarkdownStructure } from "../../features/editor/markdownStructure";
+import { readProjectFile } from "../../test-support/source";
 
-const editorPresentationSource = readFileSync(
-  `${process.cwd()}/src/features/editor/editorPresentation.ts`,
-  "utf8",
-);
-const editorPaneSource = readFileSync(
-  `${process.cwd()}/src/components/editor/EditorPane.tsx`,
-  "utf8",
-);
+const editorPresentationSource = readProjectFile("src/features/editor/editorPresentation.ts");
+const editorPaneSource = readProjectFile("src/components/editor/EditorPane.tsx");
 
 afterEach(cleanup);
 

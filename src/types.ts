@@ -1,8 +1,5 @@
-import type {
-  AgentWorkbenchPreflight,
-  AgentWorkbenchProvider,
-  TextFileDocument,
-} from "./lib/tauri";
+import { type AgentWorkbenchPreflight, type AgentWorkbenchProvider } from "./lib/tauri/agent";
+import { type TextFileDocument } from "./lib/tauri/files";
 
 // ── Storage Keys (Safe Editor) ──
 

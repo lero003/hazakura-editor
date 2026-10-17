@@ -1,19 +1,13 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody as ruleBodyFromCss } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
-const dialogsCss = readFileSync(
-  `${process.cwd()}/src/styles/dialogs.css`,
-  "utf8",
-);
+const dialogsCss = readProjectFile("src/styles/dialogs.css");
 
 function ruleBody(selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    dialogsCss.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))
-      ?.groups?.body ?? ""
-  );
+  return ruleBodyFromCss(dialogsCss, selector);
 }
 
 /**

@@ -3,18 +3,17 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-09-26
+Last reviewed: 2026-10-14
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Current development candidate: `3.2.0` dependency update; see
-`3.2.0-dependency-acceptance-draft.md`. v3.1 passed Apple review and is
-published by owner report. Its release-preparation documents are
-`3.1.0-app-store-release-notes.md`, `3.1.0-app-store-listing-copy.md`,
-and `3.1.0-app-store-listing-copy.en-US.md`.
-The repository does not independently identify which draft copy was used in Connect.
-Older source-planning tree: `2.8.0` (`2.8.0-source-tag.release.md`,
-`2.8.0-app-store-release-notes.md`, plan `../v2.8-plan.md`).
+Current development candidate: `3.3.0` dependency autonomy; see
+[change and review record](3.3.0-dependency-autonomy.md).
+v3.2.1 passed testing and is published by owner report (2026-10-14);
+see [workspace refresh record](3.2.1-workspace-refresh.md).
+Earlier release-preparation notes remain historical. The repository does not
+independently identify the published build or which draft copy was used in Connect.
+
 
 Latest GitHub source / local-app tag:
 
@@ -23,11 +22,10 @@ Latest GitHub source / local-app tag:
 
 Current candidate:
 
-- `3.2.0` — [dependency and device acceptance draft](3.2.0-dependency-acceptance-draft.md).
-  Source/tests and local previews are partial evidence; a signed submit build
-  and same-build device acceptance remain open.
-  [External review brief](../reviews/2026-09-26-v3.2-external-review-brief.md)
-  isolates the v3.2 code diff and its remaining release gates.
+- `3.3.0` — [dependency autonomy and review record](3.3.0-dependency-autonomy.md).
+  CodeMirror declaration cleanup, preserved resolved versions, and PDF-path decision.
+  External review and same-candidate device/distribution acceptance remain open.
+
 
 v3.1 release-preparation history:
 
@@ -58,6 +56,9 @@ Prior submission copy:
   duplicate-name labels, and localized diagnostics; owner-reported as submitted)
 
 Published store baseline:
+
+- `3.2.1` — testing passed and public (2026-10-14 owner report;
+  published build/source provenance not independently checked here).
 
 - `3.1.0` — Apple review passed and public (2026-09-25 owner report;
   published build/source provenance not independently checked here).
@@ -92,6 +93,9 @@ Latest downloadable GitHub DMG Release body:
 - `0.20.0-warning-expected-dmg-preview.release.md`
 
 Latest App Store status:
+
+- `3.2.1` — testing passed and public (2026-10-14 owner report).
+  Exact public build/source provenance and rollout coverage were not independently checked.
 
 - **`3.1.0` is published** by owner report (2026-09-25). The exact published
   build and which listing copy was used are not independently verified here.

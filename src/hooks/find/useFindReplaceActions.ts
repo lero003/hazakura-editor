@@ -7,7 +7,6 @@ import {
 } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { isImeComposing } from "../../lib/keyboard";
-import type { TextMatch } from "../../types";
 
 type UseFindReplaceActionsOptions = {
   activeMatchIndex: number;

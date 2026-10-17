@@ -112,7 +112,7 @@ export function TabBar({
   const duplicateTabNames = new Set(
     tabs
       .map((tab) => tab.name)
-      .filter((name, index, names) => names.indexOf(name) !== names.lastIndexOf(name)),
+      .filter((name, _index, names) => names.indexOf(name) !== names.lastIndexOf(name)),
   );
   const duplicatePathLabels = shortestDistinguishingAncestor(tabs);
 

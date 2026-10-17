@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { StrictMode, useState, type PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applyLiveEditorContentsById, createEditorTab, isDirty } from "../../features/editor/editorTabs";
-import type { SavedFileState, TextFileDocument } from "../../lib/tauri";
+import { type SavedFileState, type TextFileDocument } from "../../lib/tauri/files";
 import { useLatestValueRef } from "../app/useLatestValueRef";
 import { useExternalChangeActions } from "./useExternalChangeActions";
 import { useRecoveryActions } from "./useRecoveryActions";
@@ -13,7 +13,14 @@ const api = vi.hoisted(() => ({
   saveTextFileAs: vi.fn(), pickSaveAsTextFilePath: vi.fn(),
   createSecurityScopedBookmark: vi.fn(),
 }));
-vi.mock("../../lib/tauri", () => api);
+vi.mock("../../lib/tauri/files", () => ({
+  getFileMetadata: api.getFileMetadata,
+  openTextFile: api.openTextFile,
+  saveTextFile: api.saveTextFile,
+  saveTextFileAs: api.saveTextFileAs,
+}));
+vi.mock("../../lib/tauri/dialog", () => ({ pickSaveAsTextFilePath: api.pickSaveAsTextFilePath }));
+vi.mock("../../lib/tauri/workspace", () => ({ createSecurityScopedBookmark: api.createSecurityScopedBookmark }));
 
 const original: TextFileDocument = {
   path: "/work/a.md", name: "a.md", contents: "original", fingerprint: "original",

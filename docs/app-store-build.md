@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-09-25 (v3.2.0 dependency candidate)
+Last reviewed: 2026-10-14 (v3.3 dependency-autonomy review candidate)
 
 ## Purpose
 
@@ -43,8 +43,8 @@ revisions, file digests, and Apple-hosted asset-pack identifiers are pinned in
 The current App Store source catalog lists Gemma 4 E4B v2 for explicit download. The ad-hoc local
 preview shows the catalog but disables Apple-hosted acquisition because its
 `BAAssetPackManager` startup path traps outside the supported distribution
-context. The signed submit lane retains the platform transport. The v3.2
-dependency candidate requires fresh acceptance on the same signed TestFlight
+context. The signed submit lane retains the platform transport. The v3.3
+dependency-autonomy candidate requires acceptance on the same signed TestFlight
 build before its release.
 
 The Developer / GitHub lane remains separate and may include optional
@@ -54,16 +54,15 @@ Agent Workbench behind its existing boundary.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `3.1.0` (2026-09-25 owner report: Apple review
-  passed and the version is public). Exact released-build provenance, build
-  number, and rollout coverage remain unverified here. Prior `3.0.0` is recorded
-  in `docs/releases/3.0.0-source-tag.release.md`.
-- Current source / Developer version: `3.2.0`. This is a dependency-update
-  candidate; its same-build device and signed TestFlight acceptance are pending.
-  The submit config's `bundleVersion` still reflects the prior local counter.
+- Published App Store version: `3.2.1` (2026-10-14 owner report: testing passed
+  and the version is public). Exact released-build provenance, build number,
+  and rollout coverage remain unverified here.
+- Current source / Developer version: `3.3.0`. This is a dependency-autonomy
+  review candidate; its device and signed TestFlight acceptance are pending.
+  The submit config's `bundleVersion` reflects a local counter.
   Check the published build number and assign a new candidate number before
-  signing a v3.2 submission package. Local 3.1 build 157 from clean source
-  `adda8bbf` is historical package evidence, not proof of the published build.
+  signing a v3.3 submission package. Local 3.2.1 package records are historical
+  evidence and do not prove which build is public.
   GitHub source tag: `v3.0.0` (source-only repository checkpoint, created 2026-09-14;
   prior `v2.3.0` and `v2.0.0` remain immutable).
 - Latest local App Store package candidate metadata (version, build
@@ -74,8 +73,9 @@ Agent Workbench behind its existing boundary.
   longer carry the artifact path or SHA-256; tracked release docs name the
   submitted candidate's build number, and `latest.json` stays the place for
   local artifact provenance (not as proof of the public build number).
-  As of 2026-09-24 the latest local entry is 3.1.0 / build 157. It is a
-  package artifact record, not TestFlight or App Store acceptance.
+  The latest local entry is a package artifact record. Check its version, build,
+  SHA-256, and source state for the current candidate; it is not TestFlight or
+  App Store acceptance.
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -238,6 +238,10 @@ are the durable release facts.
 If the package build fails before signature and SHA-256 verification
 complete, the builder restores the previous tracked `bundleVersion` so
 failed local attempts do not advance the counter by themselves.
+The lower-level builder does not update `docs/internal/app-store-candidates/latest.json`.
+If it is used directly for a package that gets uploaded, record the exact package,
+SHA-256, and source state separately; do not treat a stale `latest.json` as evidence
+for that package or reconstruct an unknown pre-build source state afterward.
 
 The package script derives the output path from `package.json` `version`
 and the newly incremented App Store `bundleVersion`. Do not hand-edit
@@ -411,7 +415,6 @@ APP="src-tauri/target/release/bundle/macos/Hazakura Editor.app"
 codesign --verify --deep --strict --verbose=2 "$APP"
 codesign -dv --verbose=4 "$APP"
 codesign -d --entitlements - "$APP"
-spctl --assess --type execute --verbose "$APP"
 npm run probe:macos-distribution -- "$APP"
 ```
 
@@ -552,11 +555,17 @@ pkgutil --check-signature "$PKG"
 ```
 
 `spctl --assess` evaluates Gatekeeper policy for software distributed outside the Mac App Store.
-A package signed with `3rd Party Mac Developer Installer` can therefore be rejected by `spctl`
-without invalidating its App Store signature. Treat `pkgutil --check-signature` as the local
-installer-chain check and use Transporter or `xcrun altool --validate-app` for the Apple-side upload
-validation. Do not re-sign this package with Developer ID just to satisfy `spctl`; that is a
-different distribution lane.
+The distribution probe skips `spctl` for the App Store lane: a local Apple Distribution app or
+`3rd Party Mac Developer Installer` package can be rejected by Gatekeeper without invalidating
+its App Store signature. Keep `codesign --verify` and the entitlement checks for the app, use
+`pkgutil --check-signature` for the installer chain, and use Transporter or
+`xcrun altool --validate-app` for Apple-side upload validation. Do not re-sign the package with
+Developer ID just to satisfy `spctl`; that is a different distribution lane. The probe still
+runs `spctl` when `EXPECTED_DISTRIBUTION_LANE` is set to a non-App Store lane.
+
+On this host, `productbuild` printed four `write: Permission denied` lines even for an empty,
+unsigned `--root` package and exited successfully. Do not filter this output from the build log
+or assume it applies to every host; inspect the exit status and verify the resulting package.
 
 Upload the `PKG_PATH` printed by the candidate workflow with
 Transporter. After upload,
@@ -612,6 +621,10 @@ approved until the signing, local smoke, App Store Connect upload, Apple
 validation, metadata, and App Review evidence all exist.
 
 ## Reviewer Note Prompts
+
+The signed-version/build wording below is a historical v3.1 submission example.
+For v3.3, use only the actual signed candidate identity and evidence after its
+acceptance; do not copy the historical build number into new review notes.
 
 Keep the final reviewer note in ignored local files, but make sure it
 can answer these public-safe points before submission:

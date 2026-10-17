@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useWindowCloseConfirmation } from "./useWindowCloseConfirmation";
-import { onCurrentWindowCloseRequested } from "../../lib/tauri";
+import { onCurrentWindowCloseRequested } from "../../lib/tauri/window";
 
 // v0.15 macOS close-flow regression test (round 3).
 //
@@ -39,13 +39,10 @@ const tauriWindow = vi.hoisted(() => ({
   hideMainWindow: vi.fn(async () => {}),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/window", () => ({
   hideMainWindow: tauriWindow.hideMainWindow,
-  onCurrentWindowCloseRequested: vi.fn(async (handler: CloseHandler) => {
-    closeHandlers.push(handler);
-    return () => {};
-  }),
-}));
+  onCurrentWindowCloseRequested: vi.fn(async (handler: CloseHandler) => { closeHandlers.push(handler); return () => {}; }),
+}))
 
 function closeEvent() {
   return {

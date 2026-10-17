@@ -38,44 +38,166 @@ pub(crate) fn build_app_menu<R: tauri::Runtime>(
     build_app_menu_with_state(app, None)
 }
 
+/// Inputs shared by every submenu builder: the app handle, the last
+/// pushed menu state, and the derived flags the item bodies read. One
+/// struct keeps `build_app_menu_with_state` a flat list of builder
+/// calls without threading a dozen booleans through each one.
+#[cfg(desktop)]
+struct MenuBuildContext<'a, R: tauri::Runtime> {
+    app: &'a tauri::AppHandle<R>,
+    state: Option<&'a AppMenuState>,
+    has_active_tab: bool,
+    active_dirty: bool,
+    preview_visible: bool,
+    wrap_lines: bool,
+    show_invisibles: bool,
+    spellcheck_enabled: bool,
+    l_mode_enabled: bool,
+    agent_workbench_allowed: bool,
+    apple_assist_allowed: bool,
+    apple_assist_active: bool,
+    agent_window_enabled: bool,
+    theme_preference: &'a str,
+    menu_is_kana: bool,
+    menu_is_japanese: bool,
+}
+
+#[cfg(desktop)]
+impl<'a, R: tauri::Runtime> MenuBuildContext<'a, R> {
+    fn new(app: &'a tauri::AppHandle<R>, state: Option<&'a AppMenuState>) -> Self {
+        let has_active_tab = state.map(|state| state.has_active_tab).unwrap_or(false);
+        let active_dirty = state.map(|state| state.active_dirty).unwrap_or(false);
+        let preview_visible = state.map(|state| state.preview_visible).unwrap_or(true);
+        let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
+        let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
+        let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
+        let l_mode_enabled = state.map(|state| state.l_mode_enabled).unwrap_or(false);
+        let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
+        let apple_assist_allowed = apple_assist_allowed_by_distribution();
+        let apple_assist_active = apple_assist_window_item_enabled(state);
+        let agent_window_enabled = agent_window_item_enabled(state);
+        let theme_preference = state
+            .map(|state| state.theme_preference.as_str())
+            .unwrap_or("dark");
+        let menu_language = state
+            .map(|state| state.menu_language.as_str())
+            .unwrap_or("en");
+        let menu_is_kana = menu_language == "kana";
+        let menu_is_japanese = state
+            .map(|state| matches!(state.menu_language.as_str(), "ja" | "kana"))
+            .unwrap_or(false);
+        Self {
+            app,
+            state,
+            has_active_tab,
+            active_dirty,
+            preview_visible,
+            wrap_lines,
+            show_invisibles,
+            spellcheck_enabled,
+            l_mode_enabled,
+            agent_workbench_allowed,
+            apple_assist_allowed,
+            apple_assist_active,
+            agent_window_enabled,
+            theme_preference,
+            menu_is_kana,
+            menu_is_japanese,
+        }
+    }
+
+    /// English / Japanese / kana label picker. The moved item bodies keep
+    /// their original `label(english, japanese)` call shape.
+    fn label(&self, english: &'static str, japanese: &'static str) -> &'static str {
+        if self.menu_is_kana {
+            kana_menu_label(japanese).unwrap_or(japanese)
+        } else if self.menu_is_japanese {
+            japanese
+        } else {
+            english
+        }
+    }
+}
+
 #[cfg(desktop)]
 pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     state: Option<&AppMenuState>,
 ) -> tauri::Result<Menu<R>> {
     let menu = Menu::default(app)?;
-    let has_active_tab = state.map(|state| state.has_active_tab).unwrap_or(false);
-    let active_dirty = state.map(|state| state.active_dirty).unwrap_or(false);
-    let preview_visible = state.map(|state| state.preview_visible).unwrap_or(true);
-    let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
-    let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
-    let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
-    let l_mode_enabled = state.map(|state| state.l_mode_enabled).unwrap_or(false);
-    let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
-    let apple_assist_allowed = apple_assist_allowed_by_distribution();
-    let assist_surface_settings_allowed = assist_surface_settings_allowed_by_distribution();
-    let apple_assist_active = apple_assist_window_item_enabled(state);
-    let agent_window_enabled = agent_window_item_enabled(state);
-    let theme_preference = state
-        .map(|state| state.theme_preference.as_str())
-        .unwrap_or("dark");
-    let menu_language = state
-        .map(|state| state.menu_language.as_str())
-        .unwrap_or("en");
-    let menu_is_kana = menu_language == "kana";
-    let menu_is_japanese = state
-        .map(|state| matches!(state.menu_language.as_str(), "ja" | "kana"))
-        .unwrap_or(false);
-    let label = |english: &'static str, japanese: &'static str| {
-        if menu_is_kana {
-            kana_menu_label(japanese).unwrap_or(japanese)
-        } else if menu_is_japanese {
-            japanese
-        } else {
-            english
-        }
-    };
-    let file_menu = Submenu::with_items(
+    let ctx = MenuBuildContext::new(app, state);
+
+    let file_menu = build_file_menu(&ctx)?;
+    let edit_menu = build_edit_menu(&ctx)?;
+    let view_menu = build_view_menu(&ctx)?;
+    let window_menu = build_window_menu(&ctx)?;
+    let help_menu = build_help_menu(&ctx)?;
+
+    #[cfg(target_os = "macos")]
+    {
+        let app_menu = build_macos_app_menu(&ctx)?;
+
+        replace_menu_at(&menu, 0, &app_menu)?;
+        replace_menu_at(&menu, 1, &file_menu)?;
+        replace_menu_at(&menu, 2, &edit_menu)?;
+        replace_menu_at(&menu, 3, &view_menu)?;
+        replace_menu_at(&menu, 4, &window_menu)?;
+        replace_menu_at(&menu, 5, &help_menu)?;
+    }
+
+    #[cfg(not(any(
+        target_os = "macos",
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    )))]
+    {
+        menu.remove_at(0)?;
+        menu.insert(&file_menu, 0)?;
+        menu.insert(&view_menu, 2)?;
+    }
+
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    ))]
+    {
+        menu.insert(&file_menu, 0)?;
+        menu.insert(&view_menu, 2)?;
+    }
+
+    Ok(menu)
+}
+
+/// Replace the submenu at `index` in place. macOS builds the app menu
+/// over `Menu::default`'s items, so each slot is cleared and refilled at
+/// the same position; keeping the remove/insert pair in one helper stops
+/// the index and the argument from drifting apart.
+#[cfg(desktop)]
+fn replace_menu_at<R: tauri::Runtime>(
+    menu: &Menu<R>,
+    index: usize,
+    submenu: &Submenu<R>,
+) -> tauri::Result<()> {
+    menu.remove_at(index)?;
+    menu.insert(submenu, index)?;
+    Ok(())
+}
+
+#[cfg(desktop)]
+fn build_file_menu<R: tauri::Runtime>(ctx: &MenuBuildContext<'_, R>) -> tauri::Result<Submenu<R>> {
+    let app = ctx.app;
+    let label = |english: &'static str, japanese: &'static str| ctx.label(english, japanese);
+    let state = ctx.state;
+    let has_active_tab = ctx.has_active_tab;
+    let active_dirty = ctx.active_dirty;
+
+    Submenu::with_items(
         app,
         label("File", "ファイル"),
         true,
@@ -222,7 +344,45 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 Some("CmdOrCtrl+Shift+W"),
             )?,
         ],
-    )?;
+    )
+}
+
+#[cfg(desktop)]
+fn build_edit_menu<R: tauri::Runtime>(ctx: &MenuBuildContext<'_, R>) -> tauri::Result<Submenu<R>> {
+    let app = ctx.app;
+    let label = |english: &'static str, japanese: &'static str| ctx.label(english, japanese);
+
+    Submenu::with_items(
+        app,
+        label("Edit", "編集"),
+        true,
+        &[
+            &PredefinedMenuItem::undo(app, Some(label("Undo", "取り消す")))?,
+            &PredefinedMenuItem::redo(app, Some(label("Redo", "やり直す")))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::cut(app, Some(label("Cut", "カット")))?,
+            &PredefinedMenuItem::copy(app, Some(label("Copy", "コピー")))?,
+            &PredefinedMenuItem::paste(app, Some(label("Paste", "ペースト")))?,
+            &PredefinedMenuItem::select_all(app, Some(label("Select All", "すべて選択")))?,
+        ],
+    )
+}
+
+#[cfg(desktop)]
+fn build_view_menu<R: tauri::Runtime>(ctx: &MenuBuildContext<'_, R>) -> tauri::Result<Submenu<R>> {
+    let app = ctx.app;
+    let label = |english: &'static str, japanese: &'static str| ctx.label(english, japanese);
+    let preview_visible = ctx.preview_visible;
+    let wrap_lines = ctx.wrap_lines;
+    let show_invisibles = ctx.show_invisibles;
+    let spellcheck_enabled = ctx.spellcheck_enabled;
+    let l_mode_enabled = ctx.l_mode_enabled;
+    let agent_workbench_allowed = ctx.agent_workbench_allowed;
+    let apple_assist_allowed = ctx.apple_assist_allowed;
+    let apple_assist_active = ctx.apple_assist_active;
+    let agent_window_enabled = ctx.agent_window_enabled;
+    let theme_preference = ctx.theme_preference;
+
     let view_preview = CheckMenuItem::with_id(
         app,
         MENU_TOGGLE_PREVIEW,
@@ -378,22 +538,17 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         &view_separator_before_fullscreen,
         &view_fullscreen,
     ]);
-    let view_menu = Submenu::with_items(app, label("View", "表示"), true, &view_items)?;
-    let edit_menu = Submenu::with_items(
-        app,
-        label("Edit", "編集"),
-        true,
-        &[
-            &PredefinedMenuItem::undo(app, Some(label("Undo", "取り消す")))?,
-            &PredefinedMenuItem::redo(app, Some(label("Redo", "やり直す")))?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::cut(app, Some(label("Cut", "カット")))?,
-            &PredefinedMenuItem::copy(app, Some(label("Copy", "コピー")))?,
-            &PredefinedMenuItem::paste(app, Some(label("Paste", "ペースト")))?,
-            &PredefinedMenuItem::select_all(app, Some(label("Select All", "すべて選択")))?,
-        ],
-    )?;
-    let window_menu = Submenu::with_id_and_items(
+    Submenu::with_items(app, label("View", "表示"), true, &view_items)
+}
+
+#[cfg(desktop)]
+fn build_window_menu<R: tauri::Runtime>(
+    ctx: &MenuBuildContext<'_, R>,
+) -> tauri::Result<Submenu<R>> {
+    let app = ctx.app;
+    let label = |english: &'static str, japanese: &'static str| ctx.label(english, japanese);
+
+    Submenu::with_id_and_items(
         app,
         WINDOW_SUBMENU_ID,
         label("Window", "ウィンドウ"),
@@ -408,8 +563,15 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 Some(label("Close Window", "ウィンドウを閉じる")),
             )?,
         ],
-    )?;
-    let help_menu = Submenu::with_id_and_items(
+    )
+}
+
+#[cfg(desktop)]
+fn build_help_menu<R: tauri::Runtime>(ctx: &MenuBuildContext<'_, R>) -> tauri::Result<Submenu<R>> {
+    let app = ctx.app;
+    let label = |english: &'static str, japanese: &'static str| ctx.label(english, japanese);
+
+    Submenu::with_id_and_items(
         app,
         HELP_SUBMENU_ID,
         label("Help", "ヘルプ"),
@@ -458,132 +620,101 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 None::<&str>,
             )?,
         ],
+    )
+}
+
+/// The macOS application menu (`Hazakura Editor`), built from
+/// `Menu::default`'s About / Services / Hide / Quit predefined items.
+#[cfg(target_os = "macos")]
+fn build_macos_app_menu<R: tauri::Runtime>(
+    ctx: &MenuBuildContext<'_, R>,
+) -> tauri::Result<Submenu<R>> {
+    let app = ctx.app;
+    let label = |english: &'static str, japanese: &'static str| ctx.label(english, japanese);
+    let assist_surface_settings_allowed = assist_surface_settings_allowed_by_distribution();
+
+    let package_info = app.package_info();
+    let config = app.config();
+    let about_metadata = AboutMetadata {
+        name: Some("Hazakura Editor".to_string()),
+        version: Some(package_info.version.to_string()),
+        copyright: config.bundle.copyright.clone(),
+        authors: config
+            .bundle
+            .publisher
+            .clone()
+            .map(|publisher| vec![publisher]),
+        ..Default::default()
+    };
+    let about_item = PredefinedMenuItem::about(
+        app,
+        Some(label("About Hazakura Editor", "Hazakura Editor について")),
+        Some(about_metadata),
+    )?;
+    let separator_after_about = PredefinedMenuItem::separator(app)?;
+    let preferences_item = MenuItem::with_id(
+        app,
+        MENU_PREFERENCES,
+        label("Preferences...", "設定..."),
+        true,
+        Some("CmdOrCtrl+,"),
+    )?;
+    // The model page is its own entry: the user asked for a link that is
+    // separate from Settings, and the page is allowed in every lane.
+    let on_device_models_item = MenuItem::with_id(
+        app,
+        MENU_ON_DEVICE_MODELS,
+        label("On-device models...", "オンデバイスモデル..."),
+        true,
+        None::<&str>,
+    )?;
+    let assist_surface_item = MenuItem::with_id(
+        app,
+        MENU_AGENT_WORKBENCH,
+        label("Assist Surface...", "アシスト設定..."),
+        true,
+        None::<&str>,
+    )?;
+    let separator_after_preferences = PredefinedMenuItem::separator(app)?;
+    let services_item = PredefinedMenuItem::services(app, Some(label("Services", "サービス")))?;
+    let separator_after_services = PredefinedMenuItem::separator(app)?;
+    let hide_item = PredefinedMenuItem::hide(
+        app,
+        Some(label("Hide Hazakura Editor", "Hazakura Editor を隠す")),
+    )?;
+    let hide_others_item =
+        PredefinedMenuItem::hide_others(app, Some(label("Hide Others", "ほかを隠す")))?;
+    let separator_before_quit = PredefinedMenuItem::separator(app)?;
+    let quit_item = MenuItem::with_id(
+        app,
+        MENU_QUIT_APP,
+        label("Quit Hazakura Editor", "Hazakura Editor を終了"),
+        true,
+        Some("CmdOrCtrl+Q"),
     )?;
 
-    #[cfg(target_os = "macos")]
-    {
-        let package_info = app.package_info();
-        let config = app.config();
-        let about_metadata = AboutMetadata {
-            name: Some("Hazakura Editor".to_string()),
-            version: Some(package_info.version.to_string()),
-            copyright: config.bundle.copyright.clone(),
-            authors: config
-                .bundle
-                .publisher
-                .clone()
-                .map(|publisher| vec![publisher]),
-            ..Default::default()
-        };
-        let about_item = PredefinedMenuItem::about(
-            app,
-            Some(label("About Hazakura Editor", "Hazakura Editor について")),
-            Some(about_metadata),
-        )?;
-        let separator_after_about = PredefinedMenuItem::separator(app)?;
-        let preferences_item = MenuItem::with_id(
-            app,
-            MENU_PREFERENCES,
-            label("Preferences...", "設定..."),
-            true,
-            Some("CmdOrCtrl+,"),
-        )?;
-        // The model page is its own entry: the user asked for a link that is
-        // separate from Settings, and the page is allowed in every lane.
-        let on_device_models_item = MenuItem::with_id(
-            app,
-            MENU_ON_DEVICE_MODELS,
-            label("On-device models...", "オンデバイスモデル..."),
-            true,
-            None::<&str>,
-        )?;
-        let assist_surface_item = MenuItem::with_id(
-            app,
-            MENU_AGENT_WORKBENCH,
-            label("Assist Surface...", "アシスト設定..."),
-            true,
-            None::<&str>,
-        )?;
-        let separator_after_preferences = PredefinedMenuItem::separator(app)?;
-        let services_item = PredefinedMenuItem::services(app, Some(label("Services", "サービス")))?;
-        let separator_after_services = PredefinedMenuItem::separator(app)?;
-        let hide_item = PredefinedMenuItem::hide(
-            app,
-            Some(label("Hide Hazakura Editor", "Hazakura Editor を隠す")),
-        )?;
-        let hide_others_item =
-            PredefinedMenuItem::hide_others(app, Some(label("Hide Others", "ほかを隠す")))?;
-        let separator_before_quit = PredefinedMenuItem::separator(app)?;
-        let quit_item = MenuItem::with_id(
-            app,
-            MENU_QUIT_APP,
-            label("Quit Hazakura Editor", "Hazakura Editor を終了"),
-            true,
-            Some("CmdOrCtrl+Q"),
-        )?;
-
-        let mut app_menu_items: Vec<&dyn IsMenuItem<R>> = vec![
-            &about_item,
-            &separator_after_about,
-            &preferences_item,
-            &on_device_models_item,
-        ];
-        if assist_surface_settings_allowed {
-            app_menu_items.push(&assist_surface_item);
-        }
-        app_menu_items.extend([
-            &separator_after_preferences as &dyn IsMenuItem<R>,
-            &services_item,
-            &separator_after_services,
-            &hide_item,
-            &hide_others_item,
-            &separator_before_quit,
-            &quit_item,
-        ]);
-
-        let app_menu = Submenu::with_items(app, package_info.name.clone(), true, &app_menu_items)?;
-
-        menu.remove_at(0)?;
-        menu.insert(&app_menu, 0)?;
-        menu.remove_at(1)?;
-        menu.insert(&file_menu, 1)?;
-        menu.remove_at(2)?;
-        menu.insert(&edit_menu, 2)?;
-        menu.remove_at(3)?;
-        menu.insert(&view_menu, 3)?;
-        menu.remove_at(4)?;
-        menu.insert(&window_menu, 4)?;
-        menu.remove_at(5)?;
-        menu.insert(&help_menu, 5)?;
+    let mut app_menu_items: Vec<&dyn IsMenuItem<R>> = vec![
+        &about_item,
+        &separator_after_about,
+        &preferences_item,
+        &on_device_models_item,
+    ];
+    if assist_surface_settings_allowed {
+        app_menu_items.push(&assist_surface_item);
     }
+    app_menu_items.extend([
+        &separator_after_preferences as &dyn IsMenuItem<R>,
+        &services_item,
+        &separator_after_services,
+        &hide_item,
+        &hide_others_item,
+        &separator_before_quit,
+        &quit_item,
+    ]);
 
-    #[cfg(not(any(
-        target_os = "macos",
-        target_os = "linux",
-        target_os = "dragonfly",
-        target_os = "freebsd",
-        target_os = "netbsd",
-        target_os = "openbsd"
-    )))]
-    {
-        menu.remove_at(0)?;
-        menu.insert(&file_menu, 0)?;
-        menu.insert(&view_menu, 2)?;
-    }
+    let app_menu = Submenu::with_items(app, package_info.name.clone(), true, &app_menu_items)?;
 
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "dragonfly",
-        target_os = "freebsd",
-        target_os = "netbsd",
-        target_os = "openbsd"
-    ))]
-    {
-        menu.insert(&file_menu, 0)?;
-        menu.insert(&view_menu, 2)?;
-    }
-
-    Ok(menu)
+    Ok(app_menu)
 }
 
 #[cfg(desktop)]

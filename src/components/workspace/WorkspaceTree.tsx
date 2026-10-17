@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { isSupportedImageFile } from "../../lib/utils";
 import {
   ChevronIcon,
@@ -59,6 +59,7 @@ function TreeEntry({
   entry,
   loadingLabel,
   onLoadDirectory,
+  onDirectoryExpanded,
   onMoveEntry,
   onOpenContextMenu,
   onOpenFile,
@@ -85,6 +86,7 @@ function TreeEntry({
   requestRename: (path: string) => void;
   onClearRenaming: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onDirectoryExpanded?: (path: string, expanded: boolean) => void;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -121,6 +123,11 @@ function TreeEntry({
   }, [entry.name, isRenaming]);
 
   const isDirectory = entry.kind === "directory";
+  useEffect(() => {
+    if (!isDirectory || !onDirectoryExpanded) return;
+    onDirectoryExpanded(entry.path, expanded);
+    return () => onDirectoryExpanded(entry.path, false);
+  }, [entry.path, expanded, isDirectory, onDirectoryExpanded]);
 
   // Defer a single click by a short window so a double click can
   // cancel the open and enter rename instead. Without this, the
@@ -250,6 +257,10 @@ function TreeEntry({
 
       try {
         await onLoadDirectory(entry.path);
+      } catch {
+        // The loader reports the failure. Leave this row collapsed so the
+        // user can retry, and consume the event handler's rejected promise.
+        return;
       } finally {
         setLoading(false);
       }
@@ -359,6 +370,7 @@ function TreeEntry({
               loadingLabel={loadingLabel}
               key={child.path}
               onLoadDirectory={onLoadDirectory}
+              onDirectoryExpanded={onDirectoryExpanded}
               onMoveEntry={onMoveEntry}
               onOpenContextMenu={onOpenContextMenu}
               onOpenFile={onOpenFile}
@@ -409,6 +421,10 @@ function RenameInput({
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    // The editor's shortcuts must never handle keys used to edit a name.
+    // Enter/Escape belong to the IME while Japanese input is being composed.
+    event.stopPropagation();
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === "Enter") {
       event.preventDefault();
       const value = (draft ?? "").trim();
@@ -424,9 +440,6 @@ function RenameInput({
       onCancel();
       return;
     }
-    // Stop propagation so the keyboard shortcut handlers (e.g.
-    // Cmd+N, Cmd+O) don't fire while the user is typing.
-    event.stopPropagation();
   };
 
   // The rename row is a plain <div> (not a <button>), so a
@@ -461,6 +474,7 @@ export function WorkspaceTree({
   loadingLabel,
   onClearCompareSelection,
   onLoadDirectory,
+  onDirectoryExpanded,
   onMoveEntry,
   onOpenContextMenu,
   onOpenFile,
@@ -483,6 +497,7 @@ export function WorkspaceTree({
   loadingLabel: string;
   onClearCompareSelection: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onDirectoryExpanded?: (path: string, expanded: boolean) => void;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -537,6 +552,7 @@ export function WorkspaceTree({
       }}
     >
       <TreeEntry
+        key={entry.path}
         activePath={activePath}
         compareSourcePath={compareSourcePath}
         compareTargetPath={compareTargetPath}
@@ -546,6 +562,7 @@ export function WorkspaceTree({
         entry={entry}
         loadingLabel={loadingLabel}
         onLoadDirectory={onLoadDirectory}
+        onDirectoryExpanded={onDirectoryExpanded}
         onMoveEntry={onMoveEntry}
         onOpenContextMenu={onOpenContextMenu}
         onOpenFile={onOpenFile}

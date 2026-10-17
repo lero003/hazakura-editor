@@ -3,7 +3,8 @@ import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OnDeviceModelsPane } from "./OnDeviceModelsPane";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
-import { getLModeCopy, getPreferencesCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getPreferencesCopy } from "../../lib/locale/preferences";
 import { defaultEditorSettings } from "../../lib/editorSettingsDefaults";
 
 afterEach(cleanup);
