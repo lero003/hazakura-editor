@@ -5,6 +5,7 @@ import {
   unavailableCoreAiModelCatalog,
   type CoreAiModelCatalog,
 } from "../../lib/tauri/coreAiModels";
+import { useTauriSubscription } from "./useTauriSubscription";
 
 export function useCoreAiModelCatalog(onError?: (reason: unknown) => void) {
   const [catalog, setCatalog] = useState<CoreAiModelCatalog>(unavailableCoreAiModelCatalog);
@@ -33,36 +34,34 @@ export function useCoreAiModelCatalog(onError?: (reason: unknown) => void) {
 
   useEffect(() => {
     mountedRef.current = true;
-    let disposed = false;
-    let unlisten: (() => void) | undefined;
-    void (async () => {
-      try {
-        const stop = await listenCoreAiModelStateChanges((next) => {
-          eventRevisionRef.current += 1;
-          if (!disposed) setCatalog(next);
-        });
-        if (disposed) {
-          stop();
-          return;
-        }
-        unlisten = stop;
-      } catch (reason) {
-        console.warn("Failed to listen for Core AI model state", reason);
-      }
-      if (disposed) return;
-      try {
-        await refreshCatalog();
-      } catch (reason) {
-        if (!disposed) onErrorRef.current?.(reason);
-      }
-    })();
     return () => {
-      disposed = true;
       mountedRef.current = false;
       requestSerialRef.current += 1;
-      unlisten?.();
     };
   }, [refreshCatalog]);
+
+  // Subscription first, then the initial refresh — the original effect awaited
+  // the listener registration before fetching, so keep that order.
+  useTauriSubscription(
+    (isCancelled) =>
+      listenCoreAiModelStateChanges((next) => {
+        eventRevisionRef.current += 1;
+        if (!isCancelled()) setCatalog(next);
+      })
+        .then((stop) => {
+          if (!isCancelled()) {
+            void refreshCatalog().catch((reason) => {
+              if (!isCancelled()) onErrorRef.current?.(reason);
+            });
+          }
+          return stop;
+        })
+        .catch((reason) => {
+          console.warn("Failed to listen for Core AI model state", reason);
+          return null;
+        }),
+    [refreshCatalog],
+  );
 
   return { catalog, refreshCatalog, runCatalogRequest };
 }
