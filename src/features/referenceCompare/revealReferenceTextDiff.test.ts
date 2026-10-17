@@ -61,8 +61,9 @@ describe("revealReferenceTextDiff", () => {
   });
 
   it("does not discard the loaded Reference from the in-pane Diff action", () => {
+    // The in-pane Diff handler lives in the Reference Compare surface hook.
     const source = readFileSync(
-      `${process.cwd()}/src/hooks/app/useAppShellController.ts`,
+      `${process.cwd()}/src/hooks/referenceCompare/useReferenceCompareSurface.ts`,
       "utf8",
     );
     const start = source.indexOf("const showReferenceTextDiff");

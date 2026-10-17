@@ -15,7 +15,6 @@ import {
   type SetStateAction,
 } from "react";
 import {
-  closePdfReference,
   openAgentWindow,
   openAppleAssistWindow,
   toggleAppleAssistWindow,
@@ -26,12 +25,8 @@ import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability"
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useOkfReview } from "../okf/useOkfReview";
 import { useCompareController } from "../diff/useCompareController";
-import { useReferenceCompareActions } from "../referenceCompare/useReferenceCompareActions";
-import { useImportPageFollow } from "../referenceCompare/useImportPageFollow";
-import { useReferenceExternalChange } from "../referenceCompare/useReferenceExternalChange";
-import { revealReferenceTextDiff } from "../../features/referenceCompare/revealReferenceTextDiff";
+import { useReferenceCompareSurface } from "../referenceCompare/useReferenceCompareSurface";
 import { bindExclusiveSidePaneOpen } from "../../features/workspace/rightPaneExclusive";
-import { localizeCompareError } from "../../lib/utils";
 import {
   approveParentFolderForContext,
   effectiveApprovedRoots,
@@ -818,136 +813,38 @@ export function useAppShellController() {
 
   const {
     closeReferenceCompare,
+    handlePdfPageIndexChange,
     openReferenceFile,
     openTextPathAsReference,
     pairImportAssistReference,
-    pauseReferenceFollow,
     referenceCopy,
     reloadReferenceFromDisk,
     resumeReferenceFollow,
-  } = useReferenceCompareActions({
+    showReferenceTextDiff,
+    toggleReferencePane,
+  } = useReferenceCompareSurface({
     activeTab,
     clearReferenceCompare,
+    markReferenceExternalChange,
     menuLanguage,
     referenceCompare,
+    referenceRetainedStatus: sidePaneCopy.referenceRetainedStatus,
     requestReviewTabAgainstDisk,
+    selectionLine: selectionInfo.line,
+    setCompareCaseEntry,
+    setCompareView,
     setGlobalError,
+    setPdfPageIndex,
     setReferenceDocument,
     setReferenceFollowMode,
+    setReferencePaneVisible,
+    setRightPaneMode,
+    setSidePaneOpen,
+    setSidePaneOpenFromUserAction,
     setStatus,
     workspaceRootPath,
   });
   pairImportAssistReferenceRef.current = pairImportAssistReference;
-
-  const toggleReferencePane = useCallback(() => {
-    if (!referenceCompare) {
-      void openReferenceFile();
-      return;
-    }
-    setReferencePaneVisible((current) => {
-      const next = !current;
-      if (!next) {
-        setStatus(sidePaneCopy.referenceRetainedStatus);
-      }
-      return next;
-    });
-    setSidePaneOpen(false);
-  }, [
-    openReferenceFile,
-    referenceCompare,
-    setReferencePaneVisible,
-    setSidePaneOpen,
-    setStatus,
-    sidePaneCopy.referenceRetainedStatus,
-  ]);
-
-  useImportPageFollow({
-    activeContents: activeTab?.contents ?? "",
-    activeTab,
-    cursorLine: selectionInfo.line,
-    referenceCompare,
-    setPdfPageIndex,
-    setReferenceFollowMode,
-  });
-
-  useReferenceExternalChange({
-    referenceCompare,
-    onExternalChange: () => {
-      markReferenceExternalChange(true);
-      setStatus("Reference file changed on disk");
-    },
-  });
-
-  /**
-   * Text reference → existing Diff workbench (left = reference snapshot,
-   * right = editor buffer). Hides the Reference column so Diff can show;
-   * the loaded session stays retained.
-   */
-  const showReferenceTextDiff = useCallback(() => {
-    const reference = referenceCompare?.reference;
-    if (!reference || !activeTab) {
-      return;
-    }
-    setGlobalError(null);
-    try {
-      const snapshot = revealReferenceTextDiff({
-        activeTab,
-        menuLanguage,
-        reference,
-      });
-      if (!snapshot) {
-        return;
-      }
-      setCompareCaseEntry(snapshot.compareCase);
-      setCompareView(snapshot.compareView);
-      setRightPaneMode("compare");
-      setSidePaneOpenFromUserAction(true);
-      setStatus("Compare ready");
-    } catch (err) {
-      const message = String(err);
-      setGlobalError(
-        menuLanguage !== "en"
-          ? localizeCompareError(message, menuLanguage)
-          : message,
-      );
-      setStatus("Compare failed");
-    }
-  }, [
-    activeTab,
-    menuLanguage,
-    referenceCompare,
-    setCompareCaseEntry,
-    setCompareView,
-    setGlobalError,
-    setRightPaneMode,
-    setSidePaneOpenFromUserAction,
-    setStatus,
-  ]);
-
-  const handlePdfPageIndexChange = useCallback(
-    (page: number, source: "user" | "system") => {
-      setPdfPageIndex(page);
-      if (source === "user") {
-        pauseReferenceFollow();
-      }
-    },
-    [pauseReferenceFollow, setPdfPageIndex],
-  );
-
-  // R4 reliability: release the PDF helper handle if the shell unmounts
-  // without an explicit close (app quit / route teardown).
-  const referenceCompareRef = useRef(referenceCompare);
-  referenceCompareRef.current = referenceCompare;
-  useEffect(() => {
-    return () => {
-      const current = referenceCompareRef.current;
-      if (current?.reference.kind === "pdf") {
-        void closePdfReference(current.reference.referenceId).catch(() => {
-          // Best-effort cleanup on unmount.
-        });
-      }
-    };
-  }, []);
 
   // section: auto-backup restore flow
   //
