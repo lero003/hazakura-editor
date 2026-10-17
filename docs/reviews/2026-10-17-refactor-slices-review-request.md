@@ -64,7 +64,11 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
    1,967行 → 1,862行）。移動本体131行は機械照合で**差分0行**（`cursorLine: selectionLine` と
    `referenceRetainedStatus` の2箇所の引数名、およびImport Assistペアリングrefへの代入を
    呼び出し側へ戻した点のみ）。実装ソースの文字列を読むテスト1件のパスを新モジュールへ更新。
-8. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+8. **章レビュー処理の共有化** — `AppWorkspace` と `AppShell`（L Modeレール）に17/19行一致で
+   重複していた「章を開いてからディスクと突き合わせる」処理を
+   `features/workspace/chapterReviewHandler.ts` の `createChapterReviewHandler` へ集約。
+   request/queue の ref は**サイトごとに専有のまま**渡す（両サイドバーは同時にマウントされ得るため）。
+9. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
@@ -105,7 +109,7 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 |---|---|
 | レーン判定を `getDistributionCapabilities()` に集約 | 見送り。`import.meta.env` の読み取りは既に `distributionLane.ts` 1箇所で、述語も同モジュール内。呼び出し側の述語の使い分けは意味が異なるため、集約の実益が小さい |
 | `useWorkspaceFileOps` の操作ガード共通化 | 見送り。共通化すると `workspaceRootPath` の非null絞り込みがヘルパ越しに伝わらず、全呼び出しでrootの持ち回りが必要になり侵襲的。`captureOperation` 自体は既に共通 |
-| `WorkspaceSidebar` 45 props の二重配線統合 | 延期。AppShell側は `props`、AppWorkspace側はローカル値・ローカルstateで供給元が異なり、共通ソース型の導入が必要 |
+| `WorkspaceSidebar` 45 props の二重配線統合（本丸） | 一部実施。章レビューハンドラは共有化済み（上記8）。残る45 propsは両サイトでキー集合が一致し（AppWorkspace側の追加は `bookScopeReaderLoading` / `onCollapse` / `onReadBookScope` / `treeVisible` の4つのみ）、**機械照合で確認済み**。ただし値の供給元が AppShell=すべて `props.X`、AppWorkspace=`props` の分割代入＋Book Scopeコントローラ等のローカルで、10キーはソース名が異なる。単一ソース型を渡すには AppWorkspace の signature 変更と供給元の統一が必要なため独立スライス |
 | 互換barrel（`lib/tauri` 70箇所 / `lib/locale` 23箇所）廃止 | 延期。機械的だが、barrelをモックしているテスト32ファイルの追従を伴う |
 | テストヘルパ共通化（`vi.mock` factory 881行、CSS `ruleBody` 8ファイル重複） | 延期。テスト専用の独立スライス |
 | `EditorPane` の純関数260行とCodeMirror拡張組み立て（14生成箇所）分離 | 延期。IME/L Modeの実機受け入れと、実装ソース文字列を読むテストの更新を伴う |
