@@ -33,6 +33,10 @@ import {
 } from "../../../features/editor/ebookChapters";
 import type { MediaImageAccessOptions } from "../../../features/editor/imagePolicy";
 import {
+  applyPreviewMediaAction,
+  usePreviewMediaAccessKey,
+} from "./previewMediaActions";
+import {
   inlineMarkdownImages,
   renderMarkdown,
 } from "../../../features/editor/markdown";
@@ -321,15 +325,7 @@ export default function EBookPane({
         workspaceRoot,
       }
     : null;
-  const mediaAccessKey = useMemo(
-    () =>
-      JSON.stringify({
-        outsideImages: mediaAccess?.outsideImages ?? "ask",
-        loadRemoteImages: mediaAccess?.loadRemoteImages ?? false,
-        approvedRoots: mediaAccess?.approvedRoots ?? [],
-      }),
-    [mediaAccess],
-  );
+  const mediaAccessKey = usePreviewMediaAccessKey(mediaAccess);
   const activeRenderKey = `${activeChapterIndexSafe}\u0000${source}\u0000${documentPath ?? ""}\u0000${workspaceRoot ?? ""}\u0000${mediaAccessKey}`;
   const nextChapter = chapters[activeChapterIndexSafe + 1];
   const nextRenderedChapter = useMemo<RenderedChapter | null>(() => {
@@ -1124,12 +1120,7 @@ export default function EBookPane({
   };
 
   const handleMediaAction = (actionHost: Element) => {
-    const action = actionHost.getAttribute("data-hazakura-image-action");
-    const resolved =
-      actionHost.getAttribute("data-hazakura-resolved-path")?.trim() ?? "";
-    if (action === "approve-parent" && resolved && onApproveLocalImageParent) {
-      onApproveLocalImageParent(resolved);
-    }
+    applyPreviewMediaAction(actionHost, onApproveLocalImageParent);
   };
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {
