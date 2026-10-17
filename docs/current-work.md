@@ -3,33 +3,33 @@
 Status: Operational
 Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の記録
 Authority: High
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-17
 
-## 現行キュー — v3.3依存削減の追加候補（2026-10-14）
+## 現行キュー — v3.3依存削減の追加候補（2026-10-17）
 
-オーナー報告でv3.2.1はテスト問題なし・App Store公開済み。source候補は3.3.0。
-初回のCodeMirror/Lezer宣言整理と未使用 `codemirror` 除去、および背景効果のTauri集約に続き、
-広めの受け入れ試験と個別撤回を前提に、さらに依存を減らす依頼を受けた。
-固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし。今回の追加差分はその対象外。
+source候補は3.3.0。前候補を触って問題なしとのオーナー報告を受け、削減をもう一段進めた。
+macOS両architectureの保守的なCargo runtime/build集合は今回254→247件、基準 `25f21528` の301件から54件減。
+npmは182件（runtime到達32件）を維持。取得集合・コンパイル経路・配布容量は別の尺度で扱う。
 
-基準 `25f21528` から、npm dialogを公式IPCのローカル入口へ集約し、Tauriの不要なplatform defaults、
-Foundationの未使用featureとasset圧縮を外した。HTTPS画像はNSURLSession、PDF抽出のRust parserは
-in-process PDFKitへ移した。Rust dialog plugin・ACL、helper経路、view 6.43.13、Core AI pin/patchは維持。
-macOS両architectureの保守的なCargo runtime/build解決集合は301→254件、npm lock集合は183→182件。
-圧縮を外すと同じsourceのarm64 Developer appは約1.8 MB増える。PDFの独立parser多様性も減る。
-[変更・検証・比較の意味・個別撤回](releases/3.3.0-dependency-autonomy.md)を正本とする。
+同じrfd backendへnative dialogを直接集約してplugin 3件を除去し、main窓限定IPC・選択scopeを維持した。
+破棄・モデル操作の確認は明示的に非同期で待ち、取消・重複操作・古い対象への確定を拒否する。
+日本語codecはmacOS iconvと限定的な互換処理へ委譲し、4件をmacOS製品経路から外した。
+encoding_rsはmacOSの比較testと非macOS fallbackに残し、UTF-8のSIMD検証も維持する。
+App Store生成物からAgent専用CSS、両laneから不要なpackage metadataを外した。残存package版は更新していない。
 
-frontend 2,864件・scripts 31件、Rust 491 pass / 3 ignored、型検査、surface 134件、
-native HTTP/PDF、実HTTPS、OCR pipelineのローカル試験が通過した。
-両laneの隔離arm64 ad-hoc appをbuild・起動し、Developerの選択・保存・書き出し・Workspace・
-remote画像のon/off・L Mode・Readerを実操作した。StoreでもSave AsとHTML/PDF/EPUB書き出しが成功。
-書き出し内容と個別rollbackの照合も完了。6変更を一つずつ復帰し、解決集合・noticeを確認した。
-platform/URLSessionの文脈競合の解決手順と、片側撤回後のcompile結果は候補記録に固定した。
-隔離Store appはBackground Download extension未同梱で、正式な配布packageの試験ではない。
+frontend 2,904件・scripts 31件、Rust 515 pass / 4 ignored、明示実行の全3-byte値33,554,432件比較、
+Python 6件、型検査、surface 134件、両lane Vite・隔離arm64 native buildが通過。
+Developerでnative選択、Shift-JIS/EUC-JP保存と旧codecのbyte一致、取消、workspace検索を確認した。
+診断用ad-hoc sandboxのStore形状でも両legacyの選択・保存、取消、L Mode/Reader表示を確認。
+正式な配布候補の受け入れではない。
+UTF-8の測定時間は旧経路と同程度だが、大きなlegacy原稿の処理は遅くなる。
+採否・測定条件・残ゲートは[10月17日の追加記録](reviews/2026-10-17-dependency-reduction.md)を参照する。
 
-次は追加差分を外部レビューへ渡す。同一署名候補のIME・VoiceOver、
-Intel/macOS 26、sandboxの外部PDF取込、配布受け入れ、同SHAのCIは別ゲート。
-依存削減を受け入れた後に見直しメモへ戻る。縦書きも独立した柱として維持する。
+次は今回を含む追加差分の外部レビュー、同SHAのCIと、同一署名候補のIME・VoiceOver・Intel/macOS 26・
+大きなlegacy workspace・sandbox外部PDF取込を受け入れる。既存build 163のpkgは今回分を含まず、変更していない。
+新しいpkg・タグ・uploadは行っていない。今回4変更を個別撤回して両targetの解決・noticeを照合した。
+撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の撤回試験とは区別する。
+[全体の変更・前回の個別撤回](releases/3.3.0-dependency-autonomy.md)を保持し、受け入れ後は見直しメモ・縦書きへ戻る。
 
 ## 公開済み — v3.2.1ワークスペース一覧更新
 

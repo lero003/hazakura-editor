@@ -3,7 +3,7 @@
 Status: Active plan; initial review accepted, additional reduction candidate
 Scope: 新機能に先行する依存整理、比較評価、採否の条件
 Authority: Advisory（採用・実装状態の正本は roadmap / current-work / current-status）
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-17
 
 ## 1. 結論と今回の到達点
 
@@ -18,13 +18,17 @@ OS APIへ移した部分は、外部package依存をOS/SDKと専用bridgeの保�
 | 初回レビュー | 固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし。追加差分は対象外 |
 | 背景効果 | 直接window-vibrancy 0.8.1をTauri標準APIへ集約。0.6.0は推移依存として維持 |
 | 追加feature整理 | Tauriの不要platform defaults、Foundation未使用feature、asset圧縮を外す。圧縮は容量との交換条件を記録 |
-| 追加入口整理 | npm dialogを公式IPC adapterへ集約。Rust pluginとACLは維持 |
+| dialog | npm入口整理に続き、同じrfdへ直接集約。Rust plugin 3件を除去し、main限定IPC・選択scope・非同期confirmの契約を固定 |
 | HTTP/PDF | ureq→NSURLSession、pdf-extract→in-process PDFKit。契約と失敗試験を固定し、helperとnativeの二経路を残す |
-| 件数 | 追加基準 `25f21528` からmacOS Cargoの保守的なruntime/build集合301→254、npm lock集合183→182 |
-| 受け入れ | 自動検証・実HTTPS・native PDF/OCR・隔離app操作、出力内容と個別rollbackを照合。追加外部レビューと同一署名候補の受け入れは未完 |
+| 日本語codec | macOS iconvと限定的な互換処理へ委譲。encoding_rsは比較test/非macOS fallback、simdutf8はUTF-8に維持。legacy処理の遅延を記録 |
+| 生成物 | App StoreのAgent専用CSSと両laneの不要なpackage metadataを除去。件数削減とは区別 |
+| 件数 | 基準 `25f21528` からmacOS Cargoの保守的なruntime/build集合301→254→247。npm lockは183→182のまま |
+| 受け入れ | 自動検証・旧codec比較・隔離appのlegacy保存と今回4変更の個別撤回後の解決/noticeを照合。外部レビュー・同SHAのCI・同一署名候補の受け入れは未完 |
 | 範囲外 | 新機能、全面native化、全vendor化、公開タグ・App Store upload |
 
 実装結果、基準、測定の意味、個別撤回と未確認の正本は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
+10月17日の追加分は[最新の採否・検証・性能差](reviews/2026-10-17-dependency-reduction.md)を参照する。
+既存build 163 pkgは今回分を含まず、新しいpkg・タグ・uploadは行っていない。
 件数削減と配布容量・性能・品質は別に評価し、保守責務や救済経路の損失も採否に含める。
 
 ## 2. 既存ロードマップとの順序
@@ -37,7 +41,8 @@ OS APIへ移した部分は、外部package依存をOS/SDKと専用bridgeの保�
 3. 背景効果をTauriへ集約。続く追加依頼で、広めの試験と個別撤回を条件に削減候補を拡大する。
 4. 対象ごとにred→green、graph/容量比較、native境界、両laneを確認し、独立commitで採否を記録する。
    PDFの初期維持判断は履歴として保持し、追加のhelper不在/失敗・OCR等の証跡からPDFKit案を評価した。
-5. 個別rollback照合は完了。次は追加差分の外部レビューと同一署名候補の編集・配布受け入れを行う。
+5. 10月14日の6変更と、10月17日の4変更は別々に個別rollbackを照合し、試験範囲と再検証条件を記録した。
+   次は追加差分の外部レビューと同一署名候補の編集・配布受け入れを行う。
 6. 依存削減を受け入れた後、見直しメモを起点に製品開発へ戻る。縦書きは独立した柱として維持する。
 
 全依存の撤去やOS APIの自前実装を、新機能着手の必須条件にしない。
@@ -212,7 +217,8 @@ Import helperはOCR・PDF参照描画にも利用する。pdf-extractの除去�
 | yaml / marked | 外部文書の解釈と本文保全の互換性を担う | 現行設定・拡張・限定パッチでは解けない具体的要件と互換fixtureがある |
 | DOMPurify / TLS・暗号 | 安全基盤の責務が大きい | 通常の依存自律化の再実装対象にはしない。具体的問題を独立レビューで扱う |
 | ureqのOS API化 | 追加依頼でNSURLSession案を採用候補にした。HTTPS/redirect/MIME/上限/TLS拒否を試験し、timeout差は明示 | 特定HTTPS環境に回帰があれば、この変更だけを戻す。追加外部レビューと同一署名候補の受け入れを行う |
-| encoding_rs / serde / serde_json | 文字コード・形式・protocolの基盤 | 未使用feature等に具体的根拠がある場合だけ局所整理 |
+| encoding_rs | 10月17日にmacOS製品経路をiconvへ移行。test oracleと非macOS fallbackは維持 | OS差・互換性・大きなlegacy workspaceの待ち時間に問題があれば、この変更だけを戻す |
+| serde / serde_json | 形式・protocolの基盤 | 未使用feature等に具体的根拠がある場合だけ局所整理 |
 | React / Tauri / CodeMirror本体、全面native化 | 製品全体・IME・Undo・描画・配布の再開発になる | 製品要件を阻む再現可能な制約と、小試作で確認した移行利益がある |
 | Core AI / tokenizer等 | モデル・生成停止・prompt・配布との互換性が必要 | 既存モデル/runtime評価レーンが再開したとき。今回の依存整理とは分離 |
 | Xtermの自作、開発基盤の自作 | 既存用途と検証基盤を維持する方が初期責務を小さくできる | 初期計画の対象にしない |
@@ -227,9 +233,9 @@ runtimeの縮小やrevision更新を混ぜない。
 修正手段は設定・拡張、既存入口への集約、限定パッチ、限定fork、OS API、局所的な自前実装を
 問題ごとに比較する。必ず自作へ進む順番にはしない。
 
-追加棚卸しで、版番号取得の `package.json` 全体importと、Agent専用CSSの共通entryへの同梱も確認した。
-必要値だけのimportとレーン別CSS整理は、次の小さな比較候補。今回未実装で、package数削減とは区別する。
-CSSを単純に後へ移すと高コントラストのfocus枠が3pxから2pxへ変わるため、順序・表示の受け入れが必要。
+追加棚卸しで見つけた `package.json` 全体importとAgent専用CSSの同梱は、10月17日に必要値のimportと
+App Store build時だけのCSS除外で整理した。元の順序を保ち、Developer CSSのbyte一致と
+Storeの非Agent selector/宣言列を比較した。package数削減とは区別し、実機の表示受け入れは維持する。
 取り込み時は取得元・版/commit・変更箇所・理由・検証・上流追跡と戻す条件、
 license/noticeを記録する。コードの由来や保守責務はvendor化やAI書換えで消えない。
 
@@ -241,6 +247,8 @@ Habitatを更新する。依存・設定変更の確認ルールは、その時�
 後者で初期スライスの依存・版番号・Git変更は承認された。
 初回の外部静的レビュー結果と、追加依存整理の依頼も2026-10-14に受領した。
 その後の依頼で、広めの受け入れ試験と個別撤回を前提に、リスクが過大でない候補をできるだけ減らす方針へ進んだ。
+2026-10-17の追加依頼でdialog・日本語codec・生成物をさらに検証した。前候補の操作問題なしとの報告を、
+今回の新差分や全実機ゲートの合格へ読み替えない。
 
 | 変更 | 必要な検証（実行結果は3.3.0記録を参照） |
 |---|---|

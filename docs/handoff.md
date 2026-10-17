@@ -3,41 +3,35 @@
 Status: Operational
 Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-17
 
-## 現行候補 — v3.3依存削減の追加（2026-10-14）
+## 現行候補 — v3.3依存削減の追加（2026-10-17）
 
-v3.2.1はオーナー報告でテスト問題なし・App Store公開済み。source候補は3.3.0。
-固定範囲 `5e3310aa..995df92c` の外部静的レビューは指摘なし。後続差分へのレビュー結果ではない。
-初回CodeMirror宣言整理、背景効果のTauri集約の履歴は[3.3.0記録](releases/3.3.0-dependency-autonomy.md)に保持した。
+source候補は3.3.0。前候補を触って問題なしとのオーナー報告を受け、追加4変更を実装した。
+macOS Cargoの保守的なruntime/build集合は254→247件、初期追加基準301件から54件減。
+cargo treeは234→227、全target lockは434→431。npmは182件/runtime到達32件のまま。
+残存package版・取得元を更新せず、view 6.43.13とCore AI pin/patchを維持している。
 
-今回は基準 `25f21528` から、広めの受け入れ試験と個別撤回を前提に追加削減した。
-npm dialogを公式IPC adapterへ集約（Rust plugin/ACL維持）、Tauri platform defaultsの限定、
-Foundation feature縮小、圧縮無効化、ureq→NSURLSession、pdf-extract→in-process PDFKitを採用候補にした。
-macOS両architectureの保守的なCargo runtime/build解決集合は301→254件、npm lock集合は183→182件。
-残存package版を更新せず、新規packageもない。view 6.43.13、Core AI revision/patchは維持。
-圧縮無効化で同じsourceのarm64 Developer appが約1.8 MB増える。PDFは二つの実行経路を残すが、
-両方がPDFKitとなり独立Rust parserの多様性を失う。HTTPの個別connect timeoutも同一ではない。
+- native dialogは同じrfdへ直接集約し、plugin 3件を除去。main限定IPC・選択scopeは維持。
+  破棄・モデル操作のconfirmを明示的に待ち、取消・重複・待機中の対象変更を拒否する。
+- 日本語codecをmacOS iconvへ移し、互換処理と旧codec比較testを固定した。4件をmacOS製品経路から除去。
+  encoding_rsはmacOS test/非macOS fallbackに残し、UTF-8のsimdutf8も維持する。
+- App StoreのAgent専用CSSと両laneの不要なpackage metadataを除去。CSSの優先順を保つ。
 
-frontend 2,864件 / 312 files、scripts 31件、Rust 491 pass / 3 ignored、型検査、surface 134件、
-native HTTP 55件・ASAN、実HTTPS 6件、native PDF 20 fixtureが通過。
-PDFの有効text-layer 15件はhelperとnativeでpage/textが一致し、入力SHAも不変。
-helper不在/失敗時の取込draft成功、Helvetica StandardEncodingの旧panic再現→解消、
-ホストVision OCRの日本語/英語3行から未保存draftまでのpipelineも確認した。
-両laneの隔離arm64 ad-hoc appをbuild・起動。Developerでは選択・保存・HTML/PDF/EPUB・Workspace・
-remote画像on/off・L Mode・Readerを実操作。StoreでもSave AsとHTML/PDF/EPUB書き出しが成功。
-Storeの日本語PDF下書き、編集→Undo・未保存確認Cancel、remote画像表示、L Mode/Reader/Helpも通過。
-保存Markdownは元fixtureとbyte一致。HTML/EPUBは本文50項目、PDFは4頁と本文50項目を確認した。
-6変更を個別復帰してlocked解決・noticeを照合。platform/URLSessionの文脈競合の解決手順も固定した。
-URLSession/PDFKitそれぞれ片側撤回後のarm64 compileが通過。復帰したアプリの全実操作試験は未実施。
-隔離Store appはBackground Download extension未同梱で、正式な配布packageではない。
+frontend 2,904件・scripts 31件、Rust 515 pass / 4 ignored、明示実行の全3-byte値33,554,432件比較、
+Python 6件、型検査、surface 134件、両lane Vite・隔離arm64 native buildが通過。
+Developerと診断用ad-hoc sandboxのStore形状でlegacy選択・保存を実操作し、137/140 bytesが旧codecと一致。
+StoreのOpen取消で本文保持、L Modeの出入りとReader表示も確認。新native confirmの実UIは未実施。
+UTF-8の速度は測定上同程度だがlegacyは遅い。JIS0212連続10 MiBの検出+decodeは約0.45秒。
 
-**次の入口:** [変更・検証・個別撤回](releases/3.3.0-dependency-autonomy.md)。
-実装の固定レビュー範囲は `995df92c..f4588002`（背景効果を含む）。追加差分を外部レビューへ渡す。
-依存を戻した場合は `python3 scripts/update-dependency-notices.py --write` でnoticeも再生成する。
-開始時からのApp Store設定のbuild counter変更は保持し、今回のコミットから除外する。
-同一署名候補のIME・VoiceOver・sandbox外部PDF取込、Intel/macOS 26、同SHAのCI・TestFlight・公開は未確認。
-これらをローカルpreview成功へ読み替えない。受け入れ後は見直しメモ・縦書きへ戻る。
+**次の入口:** [今回の採否・検証・撤回条件](reviews/2026-10-17-dependency-reduction.md)。
+今回の固定範囲は `87b1899d..c32a78d8`。先行変更は[3.3.0全体記録](releases/3.3.0-dependency-autonomy.md)に保持する。
+今回4変更を新規cloneで個別撤回し、両targetの解決・noticeを照合した。dialogのnotice競合は生成し直して整合する。
+撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の試験とは区別し、再採用時は対象testと両laneを再確認する。
+既存build 163の署名pkgは今回分を含まず、変更していない。新しいpkg・タグ・uploadは行っていない。
+次は追加差分の外部レビュー、同SHAのCI、同一署名候補のIME・VoiceOver・Intel/macOS 26・
+大きなlegacy workspace・sandbox外部PDF取込を受け入れる。診断app成功をTestFlight受け入れへ読み替えない。
+受け入れ後は見直しメモ・縦書きへ戻り、さらなる撤去を新機能の必須条件にしない。
 
 ## 公開報告 — v3.2.1
 

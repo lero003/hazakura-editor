@@ -3,25 +3,31 @@
 Status: Operational
 Scope: v3.3依存削減候補、v3.2.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-17
 
 ## Current State
 
-- **現行source v3.3.0（2026-10-14、追加レビュー候補）:** 初回のCodeMirror/Lezer宣言整理と
-  未使用 `codemirror` 除去、背景効果のTauri集約に続き、基準 `25f21528` から依存削減を追加した。
-  npm dialogを公式IPCのローカルadapterへ集約し、Rust plugin/ACLは維持。Tauriの不要なplatform defaults、
-  Foundationの未使用feature、asset圧縮を外し、ureqをNSURLSession、pdf-extractをin-process PDFKitへ移した。
-  macOS両architectureの保守的なCargo runtime/build解決集合は301→254件、npm lock集合は183→182件。
-  残る依存の版・取得元を維持し、新規packageは加えていない。view 6.43.13とCore AI pin/patchは維持。
-  圧縮無効化でarm64 Developer appは約1.8 MB増える。PDFはhelperとin-processの二経路を残すが、
-  独立Rust parserの多様性は減る。個別撤回・詳細は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
-  追加候補のローカルfrontend 2,864件・scripts 31件、Rust 491 pass / 3 ignored、surface 134件、型検査、
-  native HTTP/PDF・実HTTPS・OCR pipelineが通過。両laneの隔離arm64 ad-hoc appをbuild・起動し、
-  Developerの保存・書き出し等、StoreのSave As、HTML/PDF/EPUB、日本語PDF下書き、Undo・未保存Cancel等を実操作した。
-  書き出し内容と6変更の個別復帰を照合。競合解決手順を記録し、URLSession/PDFKit片側撤回後のcompileも通過。
-  隔離Store appはextension未同梱で正式packageではない。
-  初回の外部レビュー「指摘なし」は固定範囲 `5e3310aa..995df92c` のみ。追加差分の外部レビュー・同SHAのCI、
-  同一署名候補のIME/VoiceOver、Intel/macOS 26、TestFlight・公開は未確認。メモ・縦書きは受け入れ後に戻る。
+- **現行source v3.3.0（2026-10-17、追加レビュー候補）:** native dialogを同じrfdへ直接集約して
+  plugin 3件を除去し、破棄・モデル操作の確認を明示的な非同期待機へ修正した。
+  日本語codecをmacOS iconvと限定的な互換処理へ委譲し、macOS製品経路からさらに4件を外した。
+  encoding_rsは比較test/非macOS fallback、simdutf8はUTF-8検証に維持。残存版・取得元は変更していない。
+  macOS両architectureの保守的なCargo runtime/build集合は今回254→247件、基準 `25f21528` の301件から54件減。
+  cargo tree集合は234→227、全target lockは434→431。npmは182件/runtime到達32件を維持。
+  App StoreのAgent専用CSSと両laneの不要なpackage metadataも除去した。
+  frontend 2,904件・scripts 31件、Rust 515 pass / 4 ignored、明示実行の全3-byte値33,554,432件比較、
+  Python 6件、型検査、surface 134件、両lane Vite・隔離arm64 native buildが通過。
+  両laneのlegacyファイル選択・保存を実操作し、旧codecの正解137/140 bytesと一致した。
+  Store形状は診断用ad-hoc sandboxで、正式な配布候補ではない。
+  UTF-8性能は測定上同程度。legacy処理は遅くなり、JIS0212を連続させた10 MiBの検出+decodeは約0.45秒。
+  OS/互換adapterの保守と大きなlegacy workspaceの待ち時間を交換条件に含める。
+  [今回の採否・検証・撤回条件](reviews/2026-10-17-dependency-reduction.md)と
+  [前回を含む全体記録](releases/3.3.0-dependency-autonomy.md)を参照。
+  今回4変更の個別撤回は両targetの解決・noticeを照合。撤回後のnative compile・runtime・全UI操作は未実施。
+  前候補は触って問題なしとのオーナー報告。既存build 163のpkgは今回分を含まず、変更していない。
+  今回の外部レビュー・同SHAのCI・同一署名候補のIME/VoiceOver・Intel/macOS 26・大きなlegacy workspace・
+  sandbox外部PDF取込・TestFlight・公開は未確認。新しいpkg・タグ・uploadは行っていない。
+  先行する圧縮無効化の約1.8 MB増とPDF parser多様性の低下も引き続き評価する。
+  メモ・縦書きは受け入れ後に戻る。
 
 - **公開版v3.2.1（2026-10-14、オーナー報告）:** テスト問題なし・App Store公開済み。
   ワークスペース一覧の外部変更追従と競合修正を含む。当時のsource検証は

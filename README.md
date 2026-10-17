@@ -45,7 +45,9 @@ the Local Assist architecture around the on-device System backend. The owner
 reports that **v3.2.1** passed testing and is published on the App Store (2026-10-14).
 The v3.2 source updates dependencies; v3.2.1 adds bounded workspace-list refresh after external changes.
 v3.3 removes unused dependency packaging and narrows enabled features while preserving remaining resolved versions.
-HTTPS image transport and in-process PDF extraction move to macOS APIs; independent rollback and acceptance evidence are recorded.
+HTTPS image transport, in-process PDF extraction, and legacy Japanese codecs move to macOS APIs.
+Dialogs use the existing rfd backend directly; UTF-8 SIMD validation remains. Legacy codec processing is slower.
+The [latest reduction record](docs/reviews/2026-10-17-dependency-reduction.md) separates tests, diagnostic apps, and remaining acceptance gates.
 It does not add a new LLM feature or MLX runtime.
 See the [roadmap](docs/roadmap.md), [v3 product plan](docs/v3-product-completion-plan.md), and
 [v3.3 change and review record](docs/releases/3.3.0-dependency-autonomy.md).
