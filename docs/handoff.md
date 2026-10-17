@@ -12,6 +12,8 @@ Last reviewed: 2026-10-18
 型検査・両lane Vite・surface 137件・scripts 31件、Rust 515成功 / 4 ignoredを再確認。
 frontendは2,910成功 / 2失敗で、入口の20秒timeoutと後続mock回数不一致。
 当該7件は上限120秒で成功し、変更前も入口読み込みに約32秒を要した。
+後続HEAD `78867c32` の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39067820195)は
+標準設定のfrontend 2,912件・Rust 515成功 / 4 ignored等を含み、frontend・nativeとも成功。
 [レビュー記録](reviews/2026-10-17-refactor-slices-review-request.md)を次の入口とする。
 build 164の旧候補と新source候補を混同せず、pkgのsource・build・hashは
 ignoredの `docs/internal/app-store-candidates/latest.json` で照合する。

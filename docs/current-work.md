@@ -57,6 +57,10 @@ H2は8/10箇所を移行済み。保留・見送り理由とレビュー結果�
 build 164のsourceは `049813ea` のまま。後続pkgのsource・build・hashは
 ignoredの `docs/internal/app-store-candidates/latest.json` で照合し、新source候補の実機確認へ進む。
 
+統合前HEAD `78867c32` の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39067820195)は
+frontend・nativeとも成功。標準設定のfrontend 2,912件、scripts 31件、Rust 515 pass / 4 ignored、
+全3-byte値比較も成功しており、上記のローカル再実行の制約と分けて記録する。
+
 ## 公開済み — v3.2.1ワークスペース一覧更新
 
 2026-10-14にオーナーがテスト問題なし・App Store公開済みと報告。

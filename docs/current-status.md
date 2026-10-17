@@ -13,6 +13,8 @@ Last reviewed: 2026-10-18
   型検査・両lane Vite・surface 137件・scripts 31件、Rust 515成功 / 4 ignoredを再確認した。
   frontend全体は2,910成功 / 2失敗。入口の20秒timeoutと後続mock回数不一致で、
   当該7件は上限120秒で成功し、変更前でも入口読み込みが約32秒かかることを確認した。
+  後続HEAD `78867c32` の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39067820195)は
+  frontend 2,912件・scripts 31件・Rust 515成功 / 4 ignored・全3-byte値比較を含み、両job成功。
   詳細は[内部整理のレビュー記録](reviews/2026-10-17-refactor-slices-review-request.md)。
   build 164は下記の旧source候補を維持する。新sourceのメニュー・分離窓テーマ・IME/L Modeは
   実機未確認で、署名候補のローカル作成とTestFlight / upload / 公開を分けて扱う。
