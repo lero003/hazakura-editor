@@ -13,5 +13,5 @@ export { lModeExtension } from "./extension";
 export type { LModeContext } from "./extension";
 export { LModeImageWidget, classifyImageUrl, peekResolvedImage, ensureWorkspaceImageResolved, refreshImagesEffect, lModeImageResolverPlugin } from "./imageWidget";
 export { LModeTaskWidget, lModeTaskClickPlugin } from "./taskWidget";
-export { parseLModeSettings, mergeLModeSettings, LMODE_SETTINGS_DEFAULTS } from "./settings";
+export { parseLModeSettings, LMODE_SETTINGS_DEFAULTS } from "./settings";
 export type { LModeSettings } from "./settings";

@@ -49,10 +49,6 @@ export function isPathlessDraft(draft: DraftRecord): boolean {
   return draft.path.length === 0 && typeof draft.recoveryId === "string";
 }
 
-export function isPathlessTab(tab: EditorTab): boolean {
-  return tab.path.length === 0;
-}
-
 /**
  * Match a draft to an open tab for banner purposes.
  * Pathless drafts only match other pathless tabs by recoveryId (UUID).

@@ -588,6 +588,3 @@ export function analyzeBodyLinksBounded(
   };
 }
 
-export function linkKindLabel(kind: OkfLinkKind): string {
-  return kind;
-}

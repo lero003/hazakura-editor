@@ -49,19 +49,3 @@ export function parseLModeSettings(
   };
 }
 
-/**
- * Write L Mode's two settings back onto a full
- * `EditorSettings` record. Used by the preferences hook
- * when the user toggles a setting from the menu / command
- * palette. Other fields pass through unchanged.
- */
-export function mergeLModeSettings(
-  base: EditorSettings,
-  next: LModeSettings,
-): EditorSettings {
-  return {
-    ...base,
-    lModeEnabled: next.lModeEnabled,
-    lModeTypewriter: next.lModeTypewriter,
-  };
-}

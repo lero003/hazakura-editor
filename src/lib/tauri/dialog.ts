@@ -223,16 +223,6 @@ export async function pickBookRecipeSavePath(
   return typeof selected === "string" ? selected : null;
 }
 
-export async function confirmDiscardUnsavedChanges(): Promise<boolean> {
-  return confirm(
-    "The current file has unsaved changes. Discard them and open another file?",
-    {
-      title: "Unsaved changes",
-      kind: "warning",
-    },
-  );
-}
-
 /** Confirm before Import Assist creates an unsaved Markdown draft. */
 export async function confirmImportMarkdownDraft(options: {
   fileName: string;

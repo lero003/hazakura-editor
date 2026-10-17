@@ -55,7 +55,6 @@ vi.mock("../../lib/tauri", async () => {
       activeDocumentSessionId: "session:note-1",
       capturedAtMs: 0,
     })),
-    requestApplyAiEditTransaction: vi.fn(async () => undefined),
     requestAppleAssistProposal: vi.fn(async () => undefined),
     cancelAppleAssistProposal: vi.fn(async () => undefined),
     setAppleAssistWindowTheme: vi.fn(async () => undefined),

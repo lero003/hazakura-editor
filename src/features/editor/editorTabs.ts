@@ -150,26 +150,6 @@ export function replaceTabsBufferBySessionId(
   );
 }
 
-export function replaceTabsBufferById(
-  tabs: readonly EditorTab[],
-  tabId: string,
-  contents: string,
-): EditorTab[] {
-  return updateTabsById(tabs, tabId, (tab) =>
-    replaceTabBufferForReview(tab, contents),
-  );
-}
-
-export function replaceTabsBufferByPath(
-  tabs: readonly EditorTab[],
-  path: string,
-  contents: string,
-): EditorTab[] {
-  return updateTabsByPath(tabs, path, (tab) =>
-    replaceTabBufferForReview(tab, contents),
-  );
-}
-
 /**
  * Live typing path: clear error, keep `saving` if a save is in flight so the
  * UI does not flash idle mid-write.
