@@ -7,7 +7,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { hasSameDocumentIoBaseline } from "../../features/editor/documentIoBaseline";
-import { openTextFile } from "../../lib/tauri";
+import { openTextFile } from "../../lib/tauri/files";
 import {
   createEditorTab,
   isDirty,

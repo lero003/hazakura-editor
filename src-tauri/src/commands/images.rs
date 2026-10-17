@@ -2,11 +2,9 @@ use crate::security::window_guard::*;
 use crate::types::*;
 use crate::util::*;
 
+use super::remote_image_transport::{self, RemoteImageResponse};
 use std::fs;
-use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
-use ureq::ResponseExt;
 
 #[tauri::command]
 pub(crate) fn open_workspace_image<R: tauri::Runtime>(
@@ -106,36 +104,25 @@ pub(crate) fn fetch_remote_image_with_label(
         return Err("Remote image URLs with credentials are not allowed.".to_string());
     }
 
-    let agent = remote_image_agent();
+    let response = remote_image_transport::fetch(trimmed, MAX_IMAGE_PREVIEW_BYTES)?;
+    remote_image_document(response)
+}
 
-    let response = agent
-        .get(trimmed)
-        .header(
-            "User-Agent",
-            "HazakuraEditor/1.13 (local preview image fetch)",
-        )
-        .header(
-            "Accept",
-            "image/png,image/jpeg,image/gif,image/webp,image/*;q=0.8",
-        )
-        .call()
-        .map_err(|err| format!("Remote image fetch failed: {err}"))?;
-
-    if let Some(message) = remote_image_redirect_error(response.status().as_u16()) {
+fn remote_image_document(response: RemoteImageResponse) -> Result<ImagePreviewDocument, String> {
+    if let Some(message) = remote_image_redirect_error(response.status) {
         return Err(message);
     }
-
-    let final_url = response.get_uri().to_string();
+    if !(200..300).contains(&response.status) {
+        return Err(format!(
+            "Remote image fetch failed: HTTP {}.",
+            response.status
+        ));
+    }
+    let final_url = response.final_url;
     if !final_url.to_ascii_lowercase().starts_with("https://") {
         return Err("Remote image redirected away from https.".to_string());
     }
-
-    let content_type = response
-        .headers()
-        .get("Content-Type")
-        .and_then(|value| value.to_str().ok())
-        .unwrap_or("")
-        .to_ascii_lowercase();
+    let content_type = response.content_type.to_ascii_lowercase();
     if !content_type.is_empty()
         && !content_type.starts_with("image/")
         && !content_type.starts_with("application/octet-stream")
@@ -144,14 +131,7 @@ pub(crate) fn fetch_remote_image_with_label(
             "Remote response is not an image (Content-Type: {content_type})."
         ));
     }
-
-    let mut bytes: Vec<u8> = Vec::new();
-    response
-        .into_body()
-        .into_reader()
-        .take(MAX_IMAGE_PREVIEW_BYTES + 1)
-        .read_to_end(&mut bytes)
-        .map_err(|err| format!("Remote image read failed: {err}"))?;
+    let bytes = response.bytes;
     if bytes.len() as u64 > MAX_IMAGE_PREVIEW_BYTES {
         return Err(format!(
             "Remote image is larger than the preview limit of {} MB.",
@@ -169,20 +149,6 @@ pub(crate) fn fetch_remote_image_with_label(
         data_url: format!("data:{mime_type};base64,{}", encode_base64(&bytes)),
         size: bytes.len() as u64,
     })
-}
-
-pub(crate) fn remote_image_agent() -> ureq::Agent {
-    // Redirects are disabled so an https URL cannot make a native request
-    // through an intermediate http hop before the final URL is checked.
-    let config = ureq::Agent::config_builder()
-        .timeout_global(Some(Duration::from_secs(32)))
-        .timeout_connect(Some(Duration::from_secs(8)))
-        .timeout_recv_response(Some(Duration::from_secs(12)))
-        .timeout_recv_body(Some(Duration::from_secs(12)))
-        .max_redirects(0)
-        .https_only(true)
-        .build();
-    ureq::Agent::new_with_config(config)
 }
 
 pub(crate) fn remote_image_redirect_error(status: u16) -> Option<String> {
@@ -437,4 +403,89 @@ pub(crate) fn import_image_from_path_with_label(
         .to_string_lossy()
         .replace(std::path::MAIN_SEPARATOR, "/");
     Ok(relative)
+}
+
+#[cfg(test)]
+mod remote_response_tests {
+    use super::*;
+
+    fn response(status: u16, url: &str, mime: &str, bytes: Vec<u8>) -> RemoteImageResponse {
+        RemoteImageResponse {
+            status,
+            final_url: url.to_string(),
+            content_type: mime.to_string(),
+            bytes,
+        }
+    }
+
+    #[test]
+    fn accepts_image_octet_stream_and_absent_mime_without_rewriting_content() {
+        let png = b"\x89PNG\r\n\x1a\n";
+        for mime in [
+            "image/png",
+            "IMAGE/PNG; charset=binary",
+            "application/octet-stream",
+            "",
+        ] {
+            let result = remote_image_document(response(
+                200,
+                "https://example.com/a.png",
+                mime,
+                png.to_vec(),
+            ))
+            .unwrap();
+            assert_eq!(result.path, "https://example.com/a.png");
+            assert_eq!(result.size, png.len() as u64);
+            assert_eq!(
+                result.data_url,
+                format!("data:image/png;base64,{}", encode_base64(png))
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_redirect_statuses_and_error_statuses() {
+        for status in [300, 301, 302, 303, 307, 308, 399, 401, 404, 500] {
+            assert!(remote_image_document(response(
+                status,
+                "https://example.com/a.png",
+                "image/png",
+                Vec::new()
+            ))
+            .is_err());
+        }
+    }
+
+    #[test]
+    fn rejects_downgrade_false_image_mime_empty_and_oversized_body() {
+        for result in [
+            response(
+                200,
+                "http://example.com/a.png",
+                "image/png",
+                b"\x89PNG\r\n\x1a\n".to_vec(),
+            ),
+            response(
+                200,
+                "https://example.com/a.png",
+                "text/html",
+                b"\x89PNG\r\n\x1a\n".to_vec(),
+            ),
+            response(
+                200,
+                "https://example.com/a.png",
+                "image/png",
+                b"<script>not image</script>".to_vec(),
+            ),
+            response(204, "https://example.com/a.png", "", Vec::new()),
+            response(
+                200,
+                "https://example.com/a.png",
+                "image/png",
+                vec![0; (MAX_IMAGE_PREVIEW_BYTES + 1) as usize],
+            ),
+        ] {
+            assert!(remote_image_document(result).is_err());
+        }
+    }
 }

@@ -1,18 +1,16 @@
 import { useMemo } from "react";
-import {
-  getAgentWorkbenchCopy,
-  getAppleAssistCopy,
-  getAutoBackupRestoreCopy,
-  getEditorChromeCopy,
-  getLModeCopy,
-  getPreferencesCopy,
-  getRecoveryCopy,
-  getReviewDeskCopy,
-  getSafeEditorCopy,
-  getSidePaneCopy,
-  getSlashMenuCopy,
-  getWorkspaceFileOpsCopy,
-} from "../../lib/locale";
+import { getAgentWorkbenchCopy } from "../../lib/locale/agentWorkbench";
+import { getAppleAssistCopy } from "../../lib/locale/appleAssist";
+import { getAutoBackupRestoreCopy } from "../../lib/locale/autoBackup";
+import { getEditorChromeCopy } from "../../lib/locale/editorChrome";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getPreferencesCopy } from "../../lib/locale/preferences";
+import { getRecoveryCopy } from "../../lib/locale/recovery";
+import { getReviewDeskCopy } from "../../lib/locale/reviewDesk";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
+import { getSlashMenuCopy } from "../../lib/locale/slashMenu";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import type { MenuLanguage } from "../../types";
 
 type UseLocalizedAppCopyOptions = {

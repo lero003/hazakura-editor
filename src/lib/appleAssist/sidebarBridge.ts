@@ -56,8 +56,3 @@ export function registerLocalAssistSurface(listener: (mode: "open" | "toggle") =
   openSurface = listener;
   return () => { if (openSurface === listener) openSurface = null; };
 }
-export function requestLocalAssistSurface(mode: "open" | "toggle"): boolean {
-  if (!openSurface) return false;
-  openSurface(mode);
-  return true;
-}

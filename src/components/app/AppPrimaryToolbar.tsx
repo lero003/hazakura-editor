@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isJapaneseMenuLanguage, type MenuLanguage, type AssistSurfacePreference } from "../../types";
-import type { AppleAssistAvailability } from "../../lib/tauri";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
 import { appleAssistButtonTitle } from "./DocumentMetaBar";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";

@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render } from "@testing-library/react";
-import { createRef, type RefObject } from "react";
 import { useModalKeyboardGuard } from "./useModalKeyboardGuard";
 
 // jsdom has no layout engine. Model rendered controls for the real focus

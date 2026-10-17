@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
-import { getPreferencesCopy, getLModeCopy } from "../../lib/locale";
+import { getPreferencesCopy } from "../../lib/locale/preferences";
+import { getLModeCopy } from "../../lib/locale/lMode";
 import { defaultEditorSettings } from "../../lib/editorSettingsDefaults";
 afterEach(cleanup);
 

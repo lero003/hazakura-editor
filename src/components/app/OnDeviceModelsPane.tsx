@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { PreferencesCopy } from "../../lib/locale";
+import { type PreferencesCopy } from "../../lib/locale/preferences";
 import type { MenuLanguage } from "../../types";
 import { CoreAiGenerationProfile } from "./CoreAiGenerationProfile";
 import { CoreAiModelManager } from "./CoreAiModelManager";

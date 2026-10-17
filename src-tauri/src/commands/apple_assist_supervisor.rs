@@ -22,12 +22,13 @@
 
 use crate::commands::core_ai_local_models::resolve_local_model_root;
 use crate::commands::security_bookmarks::{resolve_model_bookmark, ScopedModelBookmark};
+use crate::helper_transport::{kill_child, resolve_sidecar_next_to_executable, ReadWatchdog};
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 /// Maximum number of consecutive helper failures before the
@@ -316,7 +317,7 @@ impl Drop for AppleAssistHelperStore {
     fn drop(&mut self) {
         if let Ok(mut guard) = self.inner.lock() {
             if let Some(inner) = guard.take() {
-                Self::kill_child(&inner.child);
+                kill_child(&inner.child);
             }
         }
     }
@@ -427,7 +428,7 @@ impl AppleAssistHelperStore {
         }
         state.flag.store(true, Ordering::SeqCst);
         if let Some(child) = &state.child {
-            Self::kill_child(child);
+            kill_child(child);
         }
         true
     }
@@ -462,7 +463,7 @@ impl AppleAssistHelperStore {
         }
         state.child = Some(Arc::clone(&child));
         if state.flag.load(Ordering::SeqCst) {
-            Self::kill_child(&child);
+            kill_child(&child);
             return Err("Hazakura Local Assist generation cancelled by user.".into());
         }
         Ok(Arc::clone(&state.flag))
@@ -501,16 +502,6 @@ impl AppleAssistHelperStore {
     pub(crate) fn with_before_stream_arm(mut self, hook: Arc<dyn Fn() + Send + Sync>) -> Self {
         self.before_stream_arm = Some(hook);
         self
-    }
-
-    /// Kill the child process via the shared `Arc<Mutex<Child>>`
-    /// and reap it. Best-effort: kill/wait errors are swallowed
-    /// because the caller is already on the failure path.
-    fn kill_child(child: &Arc<Mutex<Child>>) {
-        if let Ok(mut child) = child.lock() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
     }
 
     /// Test-only accessor for the current consecutive-failure
@@ -636,7 +627,7 @@ impl AppleAssistHelperStore {
 
     fn reset_locked(&self, inner_slot: &mut Option<AppleAssistHelperInner>) {
         if let Some(inner) = inner_slot.take() {
-            Self::kill_child(&inner.child);
+            kill_child(&inner.child);
         }
     }
 
@@ -690,12 +681,12 @@ impl AppleAssistHelperStore {
         Ok(())
     }
 
-    fn round_trip_locked(
-        store: &AppleAssistHelperStore,
+    /// Serialize `request` as one JSON line and flush it to the
+    /// long-lived helper child's stdin.
+    fn write_request_locked(
         inner: &mut AppleAssistHelperInner,
         request: &WireRequest<'_>,
-        timeout: Duration,
-    ) -> Result<WireEnvelope, String> {
+    ) -> Result<(), String> {
         let serialized = serde_json::to_string(request)
             .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
         inner
@@ -710,86 +701,25 @@ impl AppleAssistHelperStore {
             .stdin
             .flush()
             .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
+        Ok(())
+    }
 
-        // Arm the cancel handle before the blocking read so a
-        // concurrent `cancel_active` call can kill this child and
-        // unblock `read_line` without touching `inner`.
-        let _cancel_flag = store.arm_cancel_locked(Arc::clone(&inner.child));
-
-        // Spawn a watchdog that will kill the child if the main
-        // thread is still blocked on `read_line` after `timeout`.
-        // The kill is what unblocks `read_line` — closing the
-        // child's stdout pipe causes the read to return Err or
-        // Ok(0) depending on the platform.
-        //
-        // Coordination: the main thread sets `done = true` and
-        // notifies the Condvar after read_line returns. The
-        // watchdog wakes up, sees the flag, and exits without
-        // killing. The `timed_out` atomic distinguishes "killed by
-        // watchdog" (timeout) from "child exited on its own" (EOF
-        // / IO error).
-        let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
-        let done_pair_w = done_pair.clone();
-        let child_arc = inner.child.clone();
-        let timed_out = Arc::new(AtomicBool::new(false));
-        let timed_out_w = timed_out.clone();
-
-        let watchdog = std::thread::Builder::new()
-            .name("apple-assist-supervisor-watchdog".to_string())
-            .spawn(move || {
-                let (lock, cvar) = &*done_pair_w;
-                let mut done = lock.lock().expect("watchdog lock");
-                // Re-check the predicate after acquiring the lock:
-                // if the main thread already set `done = true` and
-                // called `notify_all` before we got scheduled, the
-                // success path is finished and we can exit without
-                // entering `wait_timeout` at all. This is the
-                // textbook "wait with predicate" pattern and also
-                // dodges a lost-wakeup window between the time the
-                // main thread sets `done` and the time this thread
-                // would otherwise enter the wait.
-                if !*done {
-                    let (next_done, _) = cvar
-                        .wait_timeout(done, timeout)
-                        .expect("watchdog wait_timeout");
-                    done = next_done;
-                }
-                if !*done {
-                    timed_out_w.store(true, Ordering::SeqCst);
-                    Self::kill_child(&child_arc);
-                }
-            })
-            .map_err(|e| format!("Failed to spawn watchdog thread: {e}"))?;
-
-        let mut line = String::new();
-        let read_result = inner.stdout.read_line(&mut line);
-
-        // Signal the watchdog that read_line returned. The
-        // watchdog will exit without killing if it had not
-        // already fired.
-        {
-            let (lock, cvar) = &*done_pair;
-            let mut done = lock.lock().expect("watchdog signal lock");
-            *done = true;
-            cvar.notify_all();
-        }
-        // Join the watchdog so it does not outlive this call.
-        // If the watchdog already fired and is in the middle of
-        // `kill_child`, the join waits for that to complete —
-        // which is what we want, so the child is fully reaped
-        // before we return.
-        let _ = watchdog.join();
-
-        // Disarm the cancel handle. If `cancel_active` killed the
-        // child during the read, surface a distinct cancel error so
-        // the caller can skip the failure-count / cooldown path.
-        let cancelled = store.disarm_cancel_locked();
-
+    /// Judge one completed `read_line` in the fixed order the callers
+    /// depend on: cancel, timeout, empty line, read error, then parse.
+    /// The message set is shared by `round_trip_locked` and
+    /// `read_envelope_locked` so the two paths cannot drift.
+    fn classify_read_failure(
+        cancelled: bool,
+        timed_out: bool,
+        read_result: &std::io::Result<usize>,
+        line: &str,
+        timeout: Duration,
+    ) -> Result<WireEnvelope, String> {
         if cancelled {
             return Err("Hazakura Local Assist generation cancelled by user.".to_string());
         }
 
-        if timed_out.load(Ordering::SeqCst) {
+        if timed_out {
             return Err(format!(
                 "Hazakura Local Assist helper timed out after {}s",
                 timeout.as_secs()
@@ -804,8 +734,55 @@ impl AppleAssistHelperStore {
             return Err(format!("Failed to read helper response: {e}"));
         }
 
-        serde_json::from_str(&line)
+        serde_json::from_str(line)
             .map_err(|e| format!("Failed to parse helper response: {e} (raw: {line:?})"))
+    }
+
+    fn round_trip_locked(
+        store: &AppleAssistHelperStore,
+        inner: &mut AppleAssistHelperInner,
+        request: &WireRequest<'_>,
+        timeout: Duration,
+    ) -> Result<WireEnvelope, String> {
+        Self::write_request_locked(inner, request)?;
+
+        // Arm the cancel handle before the blocking read so a
+        // concurrent `cancel_active` call can kill this child and
+        // unblock `read_line` without touching `inner`.
+        let _cancel_flag = store.arm_cancel_locked(Arc::clone(&inner.child));
+
+        // Arm the watchdog that will kill the child if the main
+        // thread is still blocked on `read_line` after `timeout`.
+        // The kill is what unblocks `read_line` — closing the
+        // child's stdout pipe causes the read to return Err or
+        // Ok(0) depending on the platform. The watchdog's
+        // `timed_out` flag distinguishes "killed by watchdog"
+        // (timeout) from "child exited on its own" (EOF / IO
+        // error).
+        let watchdog = ReadWatchdog::arm(
+            "apple-assist-supervisor-watchdog",
+            Arc::clone(&inner.child),
+            timeout,
+        )
+        .map_err(|e| format!("Failed to spawn watchdog thread: {e}"))?;
+
+        let mut line = String::new();
+        let read_result = inner.stdout.read_line(&mut line);
+
+        // Signal the watchdog that read_line returned (it exits
+        // without killing if it had not already fired) and join it so
+        // it does not outlive this call. If the watchdog already fired
+        // and is in the middle of `kill_child`, the join waits for
+        // that to complete — which is what we want, so the child is
+        // fully reaped before we return.
+        let timed_out = watchdog.finish();
+
+        // Disarm the cancel handle. If `cancel_active` killed the
+        // child during the read, surface a distinct cancel error so
+        // the caller can skip the failure-count / cooldown path.
+        let cancelled = store.disarm_cancel_locked();
+
+        Self::classify_read_failure(cancelled, timed_out, &read_result, &line, timeout)
     }
 
     fn read_envelope_locked(
@@ -813,61 +790,24 @@ impl AppleAssistHelperStore {
         timeout: Duration,
         cancel_flag: &AtomicBool,
     ) -> Result<WireEnvelope, String> {
-        let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
-        let done_pair_w = done_pair.clone();
-        let child_arc = inner.child.clone();
-        let timed_out = Arc::new(AtomicBool::new(false));
-        let timed_out_w = timed_out.clone();
-
-        let watchdog = std::thread::Builder::new()
-            .name("apple-assist-supervisor-stream-watchdog".to_string())
-            .spawn(move || {
-                let (lock, cvar) = &*done_pair_w;
-                let mut done = lock.lock().expect("watchdog lock");
-                if !*done {
-                    let (next_done, _) = cvar
-                        .wait_timeout(done, timeout)
-                        .expect("watchdog wait_timeout");
-                    done = next_done;
-                }
-                if !*done {
-                    timed_out_w.store(true, Ordering::SeqCst);
-                    Self::kill_child(&child_arc);
-                }
-            })
-            .map_err(|e| format!("Failed to spawn watchdog thread: {e}"))?;
+        let watchdog = ReadWatchdog::arm(
+            "apple-assist-supervisor-stream-watchdog",
+            Arc::clone(&inner.child),
+            timeout,
+        )
+        .map_err(|e| format!("Failed to spawn watchdog thread: {e}"))?;
 
         let mut line = String::new();
         let read_result = inner.stdout.read_line(&mut line);
 
-        {
-            let (lock, cvar) = &*done_pair;
-            let mut done = lock.lock().expect("watchdog signal lock");
-            *done = true;
-            cvar.notify_all();
-        }
-        let _ = watchdog.join();
+        let timed_out = watchdog.finish();
 
         // A user cancel kills the child through the shared handle,
         // unblocking this read. Surface it as a distinct error so the
         // streaming loop and the caller skip the failure-count path.
-        if cancel_flag.load(Ordering::SeqCst) {
-            return Err("Hazakura Local Assist generation cancelled by user.".to_string());
-        }
-        if timed_out.load(Ordering::SeqCst) {
-            return Err(format!(
-                "Hazakura Local Assist helper timed out after {}s",
-                timeout.as_secs()
-            ));
-        }
-        if line.is_empty() {
-            return Err("Hazakura Local Assist helper closed the response stream.".to_string());
-        }
-        if let Err(e) = read_result {
-            return Err(format!("Failed to read helper response: {e}"));
-        }
-        serde_json::from_str(&line)
-            .map_err(|e| format!("Failed to parse helper response: {e} (raw: {line:?})"))
+        let cancelled = cancel_flag.load(Ordering::SeqCst);
+
+        Self::classify_read_failure(cancelled, timed_out, &read_result, &line, timeout)
     }
 
     fn round_trip_stream_locked<F>(
@@ -890,20 +830,7 @@ impl AppleAssistHelperStore {
             None => store.arm_cancel_locked(Arc::clone(&inner.child)),
         };
         let result = (|| {
-            let serialized = serde_json::to_string(request)
-                .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
-            inner
-                .stdin
-                .write_all(serialized.as_bytes())
-                .map_err(|e| format!("Failed to write to helper stdin: {e}"))?;
-            inner
-                .stdin
-                .write_all(b"\n")
-                .map_err(|e| format!("Failed to write newline to helper stdin: {e}"))?;
-            inner
-                .stdin
-                .flush()
-                .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
+            Self::write_request_locked(inner, request)?;
 
             loop {
                 let envelope_result = Self::read_envelope_locked(inner, timeout, &cancel_flag);
@@ -987,7 +914,7 @@ impl AppleAssistHelperStore {
             if let Some(state) = slot.as_ref().filter(|state| !state.native_finished) {
                 state.flag.store(true, Ordering::SeqCst);
                 if let Some(child) = &state.child {
-                    Self::kill_child(child);
+                    kill_child(child);
                 }
                 return true;
             }
@@ -996,7 +923,7 @@ impl AppleAssistHelperStore {
             Ok(guard) => match guard.as_ref() {
                 Some(handle) => {
                     handle.cancel_flag.store(true, Ordering::SeqCst);
-                    Self::kill_child(&handle.child);
+                    kill_child(&handle.child);
                     true
                 }
                 None => false,
@@ -1576,20 +1503,16 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
 /// `bundled_helper_filename` to construct the production
 /// sidecar filename (`hazakura-local-assist-helper-<triple>`).
 ///
-/// Returns one of the macOS Tauri sidecar triples
+/// Re-exported from `crate::helper_transport` so the existing
+/// `crate::commands::apple_assist_supervisor::rust_target_triple`
+/// path keeps working. Returns one of the macOS Tauri sidecar triples
 /// (`aarch64-apple-darwin` / `x86_64-apple-darwin`) on supported
 /// hosts, or `"unknown-target"` on anything else. The latter is
 /// purely a placeholder — Hazakura Local Assist is macOS-only and
 /// will not spawn a helper on an unknown host. The supervisor
 /// will return not-configured from `resolve_bundled_helper_path`
 /// regardless of what this function returns.
-pub(crate) fn rust_target_triple() -> &'static str {
-    match (std::env::consts::ARCH, std::env::consts::OS) {
-        ("aarch64", "macos") => "aarch64-apple-darwin",
-        ("x86_64", "macos") => "x86_64-apple-darwin",
-        _ => "unknown-target",
-    }
-}
+pub(crate) use crate::helper_transport::rust_target_triple;
 
 /// The bundled helper filename the production resolver may look
 /// for next to the running executable.
@@ -1657,19 +1580,9 @@ fn resolve_bundled_sidecar_path_from_dir(
 /// the Rust target triple suffix or be exposed as the base name,
 /// so both are accepted.
 pub(crate) fn resolve_bundled_helper_path() -> Result<std::path::PathBuf, String> {
-    let exe = std::env::current_exe()
-        .map_err(|e| format!("Failed to resolve current executable path: {e}"))?;
-    let dir = exe
-        .parent()
-        .ok_or_else(|| format!("Current executable path has no parent: {}", exe.display()))?;
-    resolve_bundled_helper_path_from_dir(dir)
+    resolve_sidecar_next_to_executable(resolve_bundled_helper_path_from_dir)
 }
 
 pub(crate) fn resolve_bundled_core_ai_helper_path() -> Result<std::path::PathBuf, String> {
-    let exe = std::env::current_exe()
-        .map_err(|e| format!("Failed to resolve current executable path: {e}"))?;
-    let dir = exe
-        .parent()
-        .ok_or_else(|| format!("Current executable path has no parent: {}", exe.display()))?;
-    resolve_bundled_core_ai_helper_path_from_dir(dir)
+    resolve_sidecar_next_to_executable(resolve_bundled_core_ai_helper_path_from_dir)
 }

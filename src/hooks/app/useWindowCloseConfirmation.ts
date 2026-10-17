@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { hideMainWindow, onCurrentWindowCloseRequested } from "../../lib/tauri";
+import { hideMainWindow, onCurrentWindowCloseRequested } from "../../lib/tauri/window";
+import { useTauriSubscription } from "./useTauriSubscription";
 
 type RefValue<T> = {
   current: T;
@@ -52,43 +53,30 @@ export function useWindowCloseConfirmation({
     onBeforeHideRef.current = onBeforeHide;
   }, [dirtyTabCount, onNeedsConfirmation, onBeforeHide]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let unlisten: (() => void) | null = null;
+  useTauriSubscription(
+    () =>
+      onCurrentWindowCloseRequested(async (event) => {
+        // Always preventDefault. Re-issuing `Window::close()`
+        // or `Window::destroy()` after a preventDefault-ed
+        // close request is unreliable on macOS (the
+        // NSApplication records it as rejected). The teardown
+        // must go through `hideMainWindow`, which calls
+        // `NSWindow.orderOut:` directly.
+        event.preventDefault();
 
-    void onCurrentWindowCloseRequested(async (event) => {
-      // Always preventDefault. Re-issuing `Window::close()`
-      // or `Window::destroy()` after a preventDefault-ed
-      // close request is unreliable on macOS (the
-      // NSApplication records it as rejected). The teardown
-      // must go through `hideMainWindow`, which calls
-      // `NSWindow.orderOut:` directly.
-      event.preventDefault();
+        if (allowWindowCloseRef.current || dirtyTabCountRef.current === 0) {
+          // Clean state, or the user already confirmed a
+          // Save / Discard choice in the dialog and a follow-up
+          // close request arrived: hide the window. Stop any
+          // in-flight Local Assist generation first so the
+          // helper is not left running behind a hidden window.
+          await onBeforeHideRef.current?.();
+          await hideMainWindow();
+          return;
+        }
 
-      if (allowWindowCloseRef.current || dirtyTabCountRef.current === 0) {
-        // Clean state, or the user already confirmed a
-        // Save / Discard choice in the dialog and a follow-up
-        // close request arrived: hide the window. Stop any
-        // in-flight Local Assist generation first so the
-        // helper is not left running behind a hidden window.
-        await onBeforeHideRef.current?.();
-        await hideMainWindow();
-        return;
-      }
-
-      onNeedsConfirmationRef.current();
-    }).then((nextUnlisten) => {
-      if (cancelled) {
-        nextUnlisten();
-        return;
-      }
-
-      unlisten = nextUnlisten;
-    });
-
-    return () => {
-      cancelled = true;
-      unlisten?.();
-    };
-  }, [allowWindowCloseRef]);
+        onNeedsConfirmationRef.current();
+      }),
+    [allowWindowCloseRef],
+  );
 }

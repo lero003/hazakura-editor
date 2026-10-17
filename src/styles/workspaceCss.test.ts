@@ -1,28 +1,15 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody as ruleBodyFromCss } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
-const workspaceCss = readFileSync(
-  `${process.cwd()}/src/styles/workspace.css`,
-  "utf8",
-);
-const tokensCss = readFileSync(
-  `${process.cwd()}/src/styles/tokens.css`,
-  "utf8",
-);
-const themesCss = readFileSync(
-  `${process.cwd()}/src/styles/themes.css`,
-  "utf8",
-);
+const workspaceCss = readProjectFile("src/styles/workspace.css");
+const tokensCss = readProjectFile("src/styles/tokens.css");
+const themesCss = readProjectFile("src/styles/themes.css");
 
 function ruleBody(selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    workspaceCss.match(
-      new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"),
-    )?.groups?.body ?? ""
-  );
+  return ruleBodyFromCss(workspaceCss, selector);
 }
 
 describe("workspace.css", () => {

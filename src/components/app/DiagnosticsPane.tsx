@@ -34,7 +34,7 @@ import { getDiagnosticsPaneCopy } from "../../lib/locale/diagnostics";
 import type { MenuLanguage } from "../../types";
 import { normalizeExternalMarkdownLink } from "../../features/editor/markdownLinks";
 import { renderMarkdown } from "../../features/editor/markdown";
-import { openExternalUrl } from "../../lib/tauri";
+import { openExternalUrl } from "../../lib/tauri/external";
 import {
   injectHelpDocSectionAnchors,
   supportDiagnostics,

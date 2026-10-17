@@ -1,13 +1,19 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
   screen,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { getRecoveryCopy, getSafeEditorCopy } from "../../lib/locale";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getRecoveryCopy } from "../../lib/locale/recovery";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
 import type { DraftRecord } from "../../types";
 import { StartPanel } from "./StartPanel";
+
+const confirmDialog = vi.hoisted(() => vi.fn());
+vi.mock("../../lib/tauri/nativeDialog", () => ({ confirm: confirmDialog }));
+beforeEach(() => { confirmDialog.mockReset(); });
 
 afterEach(() => {
   cleanup();
@@ -133,7 +139,7 @@ describe("StartPanel returning visit", () => {
     expect(onReopenPersistedWorkspace).toHaveBeenCalledTimes(1);
   });
 
-  it("surfaces pathless recovery candidates with restore and discard", () => {
+  it("surfaces pathless recovery candidates with restore and discard", async () => {
     const onRestoreDraft = vi.fn();
     const onDiscardDraft = vi.fn();
     const draft = pathlessDraft("uuid-recovery-1", "import-notes");
@@ -158,11 +164,11 @@ describe("StartPanel returning visit", () => {
     fireEvent.click(screen.getByRole("button", { name: "Restore draft" }));
     expect(onRestoreDraft).toHaveBeenCalledWith(draft);
 
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-    fireEvent.click(screen.getByRole("button", { name: "Discard draft" }));
+    const confirmSpy = confirmDialog.mockResolvedValue(true);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Discard draft" })));
     expect(confirmSpy).toHaveBeenCalled();
     expect(onDiscardDraft).toHaveBeenCalledWith("pathless:uuid-recovery-1");
-    confirmSpy.mockRestore();
+
   });
 
   it("keeps Japanese resume and recovery section labels purpose-led", () => {
@@ -298,5 +304,69 @@ describe("StartPanel returning visit", () => {
     expect(screen.getByText("最近開いたフォルダはまだありません")).toBeTruthy();
     expect(screen.getByRole("button", { name: "フォルダを開く" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "新規ファイル" })).toBeTruthy();
+  });
+});
+
+
+function confirmationStartProps(draft: DraftRecord, onDiscardDraft = vi.fn()) {
+  return {
+    copy: getSafeEditorCopy("en"), onDiscardDraft, onNewFile: vi.fn(), onOpenFile: vi.fn(),
+    onOpenFolder: vi.fn(), onRestoreDraft: vi.fn(), pathlessDrafts: [draft],
+    persistedWorkspaceRootPath: null, recoveryCopy: getRecoveryCopy("en"),
+  };
+}
+
+describe("StartPanel discard confirmation", () => {
+  const draft = pathlessDraft("confirm-draft");
+
+  it("waits for the native answer, ignores repeated clicks, and discards once only after approval", async () => {
+    let answer!: (accepted: boolean) => void;
+    confirmDialog.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const discard = vi.fn();
+    render(<StartPanel {...confirmationStartProps(draft, discard)} />);
+    const button = screen.getByRole("button", { name: "Discard draft" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(confirmDialog).toHaveBeenCalledOnce();
+    expect(discard).not.toHaveBeenCalled();
+    await act(async () => answer(false));
+    expect(discard).not.toHaveBeenCalled();
+    confirmDialog.mockResolvedValueOnce(true);
+    await act(async () => fireEvent.click(button));
+    expect(discard).toHaveBeenCalledExactlyOnceWith("pathless:confirm-draft");
+  });
+
+  it("fails closed on a dialog error and permits a later confirmed retry", async () => {
+    confirmDialog.mockRejectedValueOnce(new Error("dialog unavailable"));
+    const discard = vi.fn();
+    render(<StartPanel {...confirmationStartProps(draft, discard)} />);
+    const button = screen.getByRole("button", { name: "Discard draft" });
+    await act(async () => fireEvent.click(button));
+    expect(discard).not.toHaveBeenCalled();
+    confirmDialog.mockResolvedValueOnce(true);
+    await act(async () => fireEvent.click(button));
+    expect(discard).toHaveBeenCalledOnce();
+  });
+
+  it("ignores a delayed approval after unmount", async () => {
+    let answer!: (accepted: boolean) => void;
+    confirmDialog.mockImplementation(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const discard = vi.fn();
+    const view = render(<StartPanel {...confirmationStartProps(draft, discard)} />);
+    fireEvent.click(screen.getByRole("button", { name: "Discard draft" }));
+    view.unmount();
+    await act(async () => answer(true));
+    expect(discard).not.toHaveBeenCalled();
+  });
+
+  it("does not discard a newer draft under a delayed approval", async () => {
+    let answer!: (accepted: boolean) => void;
+    confirmDialog.mockImplementation(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const discard = vi.fn();
+    const view = render(<StartPanel {...confirmationStartProps(draft, discard)} />);
+    fireEvent.click(screen.getByRole("button", { name: "Discard draft" }));
+    view.rerender(<StartPanel {...confirmationStartProps({ ...draft, contents: "new text", updatedAt: 2 }, discard)} />);
+    await act(async () => answer(true));
+    expect(discard).not.toHaveBeenCalled();
   });
 });

@@ -3,12 +3,7 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import {
-  startAgentWorkbenchSession,
-  type AgentWorkbenchOutputChunk,
-  type AgentWorkbenchProvider,
-  type AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { startAgentWorkbenchSession, type AgentWorkbenchOutputChunk, type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import {
   type AgentLaunchGateState,
   type AgentTerminalSize,

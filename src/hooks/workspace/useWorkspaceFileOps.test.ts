@@ -23,15 +23,17 @@ const okfApi = vi.hoisted(() => ({
   createOkfScaffold: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   createTextFile: workspaceApi.createTextFile,
+  openTextFile: workspaceApi.openTextFile,
+}));
+vi.mock("../../lib/tauri/workspace", () => ({
   createTextFolder: workspaceApi.createTextFolder,
   listWorkspaceDirectory: workspaceApi.listWorkspaceDirectory,
   moveWorkspaceEntry: workspaceApi.moveWorkspaceEntry,
   moveWorkspaceEntryToTrash: workspaceApi.moveWorkspaceEntryToTrash,
-  openTextFile: workspaceApi.openTextFile,
   renameWorkspaceEntry: workspaceApi.renameWorkspaceEntry,
-}));
+}))
 
 vi.mock("../../lib/tauri/okf", () => ({
   createOkfScaffold: okfApi.createOkfScaffold,
@@ -81,9 +83,229 @@ function makeOptions(overrides: Partial<Parameters<typeof useWorkspaceFileOps>[0
   };
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
 describe("useWorkspaceFileOps", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it.each(["file", "folder", "scaffold"])("does not create a %s after switching workspace during name lookup", async (kind) => {
+    const listing = deferred<{ children: [] }>();
+    workspaceApi.listWorkspaceDirectory.mockReturnValue(listing.promise);
+    const options = makeOptions({ workspaceRootPath: "/work" });
+    const { result, rerender } = renderHook(({ root }) => useWorkspaceFileOps({ ...options, workspaceRootPath: root }), { initialProps: { root: "/work" } });
+    let operation!: Promise<void>;
+    act(() => { operation = kind === "file" ? result.current.createFile("/work") : kind === "folder" ? result.current.createFolder("/work") : result.current.createOkfScaffoldAt("/work", "minimal"); });
+    rerender({ root: "/other" });
+    // Returning to the same path is a new workspace session.
+    rerender({ root: "/work" });
+    await act(async () => { listing.resolve({ children: [] }); await operation; });
+    expect(workspaceApi.createTextFile).not.toHaveBeenCalled();
+    expect(workspaceApi.createTextFolder).not.toHaveBeenCalled();
+    expect(okfApi.createOkfScaffold).not.toHaveBeenCalled();
+    expect(options.setActiveTabId).not.toHaveBeenCalled();
+    expect(options.reloadWorkspaceParent).not.toHaveBeenCalled();
+  });
+
+  it("cancels pending rename, trash, and inline rename when the workspace changes", async () => {
+    const options = makeOptions({ tabs: [{ ...makeTab("/work/a.md"), contents: "dirty" }] });
+    const { result, rerender } = renderHook(({ root }) => useWorkspaceFileOps({ ...options, workspaceRootPath: root }), { initialProps: { root: "/work" } });
+    await act(async () => {
+      result.current.requestRename("/work/a.md");
+      await result.current.renameWorkspacePath("/work/a.md", "b.md");
+      result.current.requestTrashWorkspacePath("/work/a.md", "a.md", false);
+    });
+    const oldConfirmRename = result.current.confirmPendingRename;
+    const oldConfirmTrash = result.current.confirmPendingTrash;
+    rerender({ root: "/other" });
+    rerender({ root: "/work" });
+    expect(result.current.pendingRename).toBeNull();
+    expect(result.current.pendingTrash).toBeNull();
+    expect(result.current.renamingPath).toBeNull();
+    await act(async () => { await oldConfirmRename(); await oldConfirmTrash(); });
+    expect(workspaceApi.renameWorkspaceEntry).not.toHaveBeenCalled();
+    expect(workspaceApi.moveWorkspaceEntryToTrash).not.toHaveBeenCalled();
+  });
+
+  it("does not activate an old workspace file when its creation finishes late", async () => {
+    const creation = deferred<ReturnType<typeof makeTab>>();
+    workspaceApi.listWorkspaceDirectory.mockResolvedValue({ children: [] });
+    workspaceApi.createTextFile.mockReturnValue(creation.promise);
+    const options = makeOptions();
+    const { result, rerender } = renderHook(({ root }) => useWorkspaceFileOps({ ...options, workspaceRootPath: root }), { initialProps: { root: "/work" } });
+    let operation!: Promise<void>;
+    await act(async () => { operation = result.current.createFile("/work"); await Promise.resolve(); });
+    rerender({ root: "/other" });
+    vi.mocked(options.setStatus).mockClear();
+    await act(async () => { creation.resolve(makeTab("/work/untitled.md")); await operation; });
+    expect(options.setTabs).not.toHaveBeenCalled();
+    expect(options.setActiveTabId).not.toHaveBeenCalled();
+    expect(options.reloadWorkspaceParent).not.toHaveBeenCalled();
+    expect(options.setStatus).not.toHaveBeenCalled();
+  });
+
+  it("keeps a completed rename reflected in retained tabs without refreshing the new workspace", async () => {
+    const rename = deferred<undefined>();
+    workspaceApi.renameWorkspaceEntry.mockReturnValue(rename.promise);
+    let tabs = [makeTab("/work/a.md")];
+    const options = makeOptions({ tabs, setTabs: vi.fn(next => { tabs = typeof next === "function" ? next(tabs) : next; }), onWorkspaceEntryRekey: vi.fn() });
+    const { result, rerender } = renderHook(({ root }) => useWorkspaceFileOps({ ...options, workspaceRootPath: root }), { initialProps: { root: "/work" } });
+    let operation!: Promise<void>;
+    act(() => { operation = result.current.renameWorkspacePath("/work/a.md", "b.md"); });
+    rerender({ root: "/other" });
+    vi.mocked(options.setStatus).mockClear();
+    await act(async () => { rename.resolve(undefined); await operation; });
+    expect(tabs[0].path).toBe("/work/b.md");
+    expect(options.onWorkspaceEntryRekey).not.toHaveBeenCalled();
+    expect(options.reloadWorkspaceParent).not.toHaveBeenCalled();
+    expect(options.setStatus).not.toHaveBeenCalled();
+  });
+
+  it("removes trashed old-workspace tabs without clearing the new selection or Book scope", async () => {
+    const trash = deferred<undefined>();
+    workspaceApi.moveWorkspaceEntryToTrash.mockReturnValue(trash.promise);
+    let tabs = [makeTab("/work/a.md"), makeTab("/other/b.md")];
+    let activeTabId: string | null = "/other/b.md";
+    const options = makeOptions({
+      tabs,
+      setTabs: vi.fn(next => { tabs = typeof next === "function" ? next(tabs) : next; }),
+      setActiveTabId: vi.fn(next => { activeTabId = typeof next === "function" ? next(activeTabId) : next; }),
+      onWorkspaceEntryRemoved: vi.fn(),
+    });
+    const { result, rerender } = renderHook(({ root }) => useWorkspaceFileOps({ ...options, workspaceRootPath: root }), { initialProps: { root: "/work" } });
+    act(() => result.current.requestTrashWorkspacePath("/work/a.md", "a.md", false));
+    let operation!: Promise<void>;
+    act(() => { operation = result.current.confirmPendingTrash(); });
+    rerender({ root: "/other" });
+    vi.mocked(options.setStatus).mockClear();
+    await act(async () => { trash.resolve(undefined); await operation; });
+    expect(tabs.map(tab => tab.path)).toEqual(["/other/b.md"]);
+    expect(activeTabId).toBe("/other/b.md");
+    expect(options.onWorkspaceEntryRemoved).not.toHaveBeenCalled();
+    expect(options.reloadWorkspaceParent).not.toHaveBeenCalled();
+    expect(options.setStatus).not.toHaveBeenCalled();
+  });
+
+  it("does not publish a rename completion after unmount", async () => {
+    const rename = deferred<undefined>();
+    workspaceApi.renameWorkspaceEntry.mockReturnValue(rename.promise);
+    const options = makeOptions({ workspaceRootPath: "/work" });
+    const { result, unmount } = renderHook(() => useWorkspaceFileOps(options));
+    let operation!: Promise<void>;
+    act(() => { operation = result.current.renameWorkspacePath("/work/a.md", "b.md"); });
+    unmount();
+    vi.mocked(options.setStatus).mockClear();
+    await act(async () => { rename.resolve(undefined); await operation; });
+    expect(options.setTabs).not.toHaveBeenCalled();
+    expect(options.setActiveTabId).not.toHaveBeenCalled();
+    expect(options.setStatus).not.toHaveBeenCalled();
+  });
+
+  it("ignores an old workspace mutation failure after switching away and back", async () => {
+    const creation = deferred<void>();
+    workspaceApi.listWorkspaceDirectory.mockResolvedValue({ children: [] });
+    workspaceApi.createTextFolder.mockReturnValue(creation.promise);
+    const options = makeOptions();
+    const { result, rerender } = renderHook(({ root }) => useWorkspaceFileOps({ ...options, workspaceRootPath: root }), { initialProps: { root: "/work" } });
+    let operation!: Promise<void>;
+    await act(async () => { operation = result.current.createFolder("/work"); await Promise.resolve(); });
+    rerender({ root: "/other" });
+    rerender({ root: "/work" });
+    vi.mocked(options.setStatus).mockClear();
+    vi.mocked(options.setGlobalError).mockClear();
+    await act(async () => { creation.reject(new Error("old failure")); await operation; });
+    expect(options.setGlobalError).not.toHaveBeenCalled();
+    expect(options.setStatus).not.toHaveBeenCalled();
+  });
+
+  it.each(["rename", "move", "trash"])("blocks %s for a folder containing an Assist-locked tab", async (kind) => {
+    const lockedTab = makeTab("/work/notes/a.md");
+    const rejectIfLocked = vi.fn(() => true);
+    const options = makeOptions({ workspaceRootPath: "/work", tabs: [lockedTab], rejectIfLocked });
+    const { result } = renderHook(() => useWorkspaceFileOps(options));
+    await act(async () => {
+      if (kind === "rename") await result.current.renameWorkspacePath("/work/notes", "renamed");
+      if (kind === "move") await result.current.moveWorkspacePath("/work/notes", "/work/elsewhere");
+      if (kind === "trash") result.current.requestTrashWorkspacePath("/work/notes", "notes", true);
+    });
+    if (kind === "trash") await act(async () => { await result.current.confirmPendingTrash(); });
+    expect(rejectIfLocked).toHaveBeenCalledWith(lockedTab);
+    expect(workspaceApi.renameWorkspaceEntry).not.toHaveBeenCalled();
+    expect(workspaceApi.moveWorkspaceEntry).not.toHaveBeenCalled();
+    expect(workspaceApi.moveWorkspaceEntryToTrash).not.toHaveBeenCalled();
+  });
+
+  it.each(["rename", "trash"])("rechecks the latest Assist lock when confirming a pending %s", async (kind) => {
+    const tab = { ...makeTab("/work/a.md"), contents: "dirty writing" };
+    const options = makeOptions({ workspaceRootPath: "/work", tabs: [tab] });
+    const unlocked = vi.fn(() => false);
+    const locked = vi.fn(() => true);
+    const { result, rerender } = renderHook(({ reject }) => useWorkspaceFileOps({ ...options, rejectIfLocked: reject }), { initialProps: { reject: unlocked } });
+    await act(async () => {
+      if (kind === "rename") await result.current.renameWorkspacePath(tab.path, "b.md");
+      else result.current.requestTrashWorkspacePath(tab.path, tab.name, false);
+    });
+    const confirm = kind === "rename" ? result.current.confirmPendingRename : result.current.confirmPendingTrash;
+    rerender({ reject: locked });
+    await act(async () => { await confirm(); });
+    expect(locked).toHaveBeenCalledWith(tab);
+    expect(workspaceApi.renameWorkspaceEntry).not.toHaveBeenCalled();
+    expect(workspaceApi.moveWorkspaceEntryToTrash).not.toHaveBeenCalled();
+  });
+
+  it("clears a registered UUID Diff for a trashed folder descendant without relying on anchor setter order", async () => {
+    workspaceApi.moveWorkspaceEntryToTrash.mockResolvedValue(undefined);
+    let compareView: CompareViewState | null = { additions: 1, removals: 0, lines: [], caseKey: "uuid-case" };
+    const options = makeOptions({
+      workspaceRootPath: "/work",
+      getCompareCaseByKey: vi.fn(() => ({ kind: "changes" as const, key: "uuid-case", scope: "buffer-vs-disk" as const, documentPath: "/work/notes/a.md", documentLabel: "a.md", leftColumnLabel: "before", rightColumnLabel: "after" })),
+      setCompareView: vi.fn(next => { compareView = typeof next === "function" ? next(compareView) : next; }),
+    });
+    const { result } = renderHook(() => useWorkspaceFileOps(options));
+    act(() => result.current.requestTrashWorkspacePath("/work/notes", "notes", true));
+    await act(async () => { await result.current.confirmPendingTrash(); });
+    expect(compareView).toBeNull();
+  });
+
+  it("preserves an unrelated UUID Diff and ignores locked sibling names sharing a folder prefix", async () => {
+    workspaceApi.moveWorkspaceEntryToTrash.mockResolvedValue(undefined);
+    let compareView: CompareViewState | null = { additions: 1, removals: 0, lines: [], caseKey: "uuid-case" };
+    const rejectIfLocked = vi.fn(() => true);
+    const options = makeOptions({
+      workspaceRootPath: "/work",
+      tabs: [makeTab("/work/notes-old/a.md")],
+      rejectIfLocked,
+      getCompareCaseByKey: vi.fn(() => ({ kind: "changes" as const, key: "uuid-case", scope: "buffer-vs-disk" as const, documentPath: "/work/notes-old/a.md", documentLabel: "a.md", leftColumnLabel: "before", rightColumnLabel: "after" })),
+      setCompareView: vi.fn(next => { compareView = typeof next === "function" ? next(compareView) : next; }),
+    });
+    const { result } = renderHook(() => useWorkspaceFileOps(options));
+    act(() => result.current.requestTrashWorkspacePath("/work/notes", "notes", true));
+    await act(async () => { await result.current.confirmPendingTrash(); });
+    expect(rejectIfLocked).not.toHaveBeenCalled();
+    expect(workspaceApi.moveWorkspaceEntryToTrash).toHaveBeenCalledWith("/work/notes", "/work");
+    expect(compareView?.caseKey).toBe("uuid-case");
+  });
+
+  it("checks newly opened descendant tabs before confirming a folder Trash", async () => {
+    const rejectIfLocked = vi.fn(() => true);
+    const options = makeOptions({ workspaceRootPath: "/work", rejectIfLocked });
+    const { result, rerender } = renderHook(({ currentTabs }: { currentTabs: EditorTab[] }) => useWorkspaceFileOps({ ...options, tabs: currentTabs }), { initialProps: { currentTabs: [] as EditorTab[] } });
+    act(() => result.current.requestTrashWorkspacePath("/work/notes", "notes", true));
+    const confirm = result.current.confirmPendingTrash;
+    const lockedTab = makeTab("/work/notes/a.md");
+    rerender({ currentTabs: [lockedTab] });
+    await act(async () => { await confirm(); });
+    expect(rejectIfLocked).toHaveBeenCalledWith(lockedTab);
+    expect(workspaceApi.moveWorkspaceEntryToTrash).not.toHaveBeenCalled();
   });
 
   it("rekeys a dirty tab after rename even when backup maintenance warns", async () => {
@@ -154,6 +376,7 @@ describe("useWorkspaceFileOps", () => {
     const { result } = renderHook(() =>
       useWorkspaceFileOps(
         makeOptions({
+          getCompareCaseByKey: vi.fn(() => ({ kind: "file" as const, key: "random-case-key", leftPath: "/workspace/notes/a.md", rightPath: "/workspace/keep.md", anchor: { path: "/workspace/notes/a.md", name: "a.md", label: "a" }, target: { path: "/workspace/keep.md", name: "keep.md", label: "keep" } })),
           reloadWorkspaceParent: vi.fn(async () => undefined),
           setActiveTabId: vi.fn((next) => {
             activeTabId =

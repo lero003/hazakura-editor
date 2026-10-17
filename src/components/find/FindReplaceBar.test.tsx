@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { FindReplaceBar } from "./FindReplaceBar";
-import { getEditorChromeCopy } from "../../lib/locale";
+import { getEditorChromeCopy } from "../../lib/locale/editorChrome";
 import type { MenuLanguage, SearchOptions } from "../../types";
 
 afterEach(() => {

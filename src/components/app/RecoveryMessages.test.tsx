@@ -1,7 +1,12 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getRecoveryCopy } from "../../lib/locale/recovery";
 import { RecoveryMessages } from "./RecoveryMessages";
+import type { DraftRecord, EditorTab } from "../../types";
+
+const confirmDialog = vi.hoisted(() => vi.fn());
+vi.mock("../../lib/tauri/nativeDialog", () => ({ confirm: confirmDialog }));
+beforeEach(() => { confirmDialog.mockReset(); });
 
 afterEach(cleanup);
 
@@ -202,5 +207,86 @@ describe("RecoveryMessages", () => {
     expect(row).not.toBeNull();
     expect(row?.getAttribute("aria-live")).toBe("polite");
     expect(row?.getAttribute("aria-atomic")).toBe("true");
+  });
+});
+
+
+const confirmationDraft: DraftRecord = {
+  contents: "unsaved text", path: "", recoveryId: "confirm-draft", name: "Recovered note",
+  line_ending: "lf", savedFingerprint: "fp", updatedAt: 1, origin: "untitled",
+};
+const confirmationTab: EditorTab = {
+  contents: "disk", encoding: "utf-8", error: null, externalFingerprint: null,
+  fingerprint: "fp", id: "tab-confirm", sessionId: "session:tab-confirm",
+  ignoredExternalFingerprint: null, large_file_warning: false, lastSavedContents: "disk",
+  lastSavedEncoding: "utf-8", lastSavedLineEnding: "lf", line_ending: "lf",
+  modified_ms: null, name: "note.md", path: "/workspace/note.md", saveStatus: "idle", size: 4,
+};
+
+function confirmationProps(draft: DraftRecord, mode: "active" | "pathless", onDiscardDraft = vi.fn()) {
+  return {
+    activeConflict: false, activeDraft: mode === "active" ? draft : null,
+    activeTab: mode === "active" ? confirmationTab : null,
+    orphanPathlessDrafts: mode === "pathless" ? [draft] : [],
+    activeError: null, activeSaveError: false, copy,
+    onClearSaveError: noop, onCloseTabWithoutSaving: noop, onDiscardDraft,
+    onDismissError: noop, onKeepEditingAfterConflict: noop, onReopenTabFromDisk: noop,
+    onRestoreDraft: noop, onReviewDraftAgainstDisk: noop, onReviewTabAgainstDisk: noop,
+    onTrySaveAgain: noop,
+  };
+}
+
+describe.each(["active", "pathless"] as const)("RecoveryMessages %s discard confirmation", (mode) => {
+  const draft = mode === "active" ? { ...confirmationDraft, path: "/workspace/note.md" } : confirmationDraft;
+
+  it("waits for a native answer, ignores repeated clicks, and discards once only after approval", async () => {
+    let answer!: (accepted: boolean) => void;
+    confirmDialog.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const discard = vi.fn();
+    render(<RecoveryMessages {...confirmationProps(draft, mode, discard)} />);
+    const button = screen.getByRole("button", { name: copy.discardDraft });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(confirmDialog).toHaveBeenCalledOnce();
+    expect(discard).not.toHaveBeenCalled();
+    await act(async () => answer(false));
+    expect(discard).not.toHaveBeenCalled();
+    confirmDialog.mockResolvedValueOnce(true);
+    await act(async () => fireEvent.click(button));
+    expect(discard).toHaveBeenCalledExactlyOnceWith(mode === "active" ? `path:${draft.path}` : "pathless:confirm-draft");
+  });
+
+  it("fails closed on a dialog error and permits a later confirmed retry", async () => {
+    confirmDialog.mockRejectedValueOnce(new Error("dialog unavailable"));
+    const discard = vi.fn();
+    render(<RecoveryMessages {...confirmationProps(draft, mode, discard)} />);
+    const button = screen.getByRole("button", { name: copy.discardDraft });
+    await act(async () => fireEvent.click(button));
+    expect(discard).not.toHaveBeenCalled();
+    confirmDialog.mockResolvedValueOnce(true);
+    await act(async () => fireEvent.click(button));
+    expect(discard).toHaveBeenCalledOnce();
+  });
+
+  it("ignores a delayed approval after unmount", async () => {
+    let answer!: (accepted: boolean) => void;
+    confirmDialog.mockImplementation(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const discard = vi.fn();
+    const view = render(<RecoveryMessages {...confirmationProps(draft, mode, discard)} />);
+    fireEvent.click(screen.getByRole("button", { name: copy.discardDraft }));
+    view.unmount();
+    await act(async () => answer(true));
+    expect(discard).not.toHaveBeenCalled();
+  });
+
+  it("does not discard a newer draft under a delayed approval", async () => {
+    let answer!: (accepted: boolean) => void;
+    confirmDialog.mockImplementation(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const discard = vi.fn();
+    const view = render(<RecoveryMessages {...confirmationProps(draft, mode, discard)} />);
+    fireEvent.click(screen.getByRole("button", { name: copy.discardDraft }));
+    view.rerender(<RecoveryMessages {...confirmationProps({ ...draft, contents: "new text", updatedAt: 2 }, mode, discard)} />);
+    await act(async () => answer(true));
+    expect(discard).not.toHaveBeenCalled();
   });
 });

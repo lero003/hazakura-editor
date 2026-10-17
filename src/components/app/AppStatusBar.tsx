@@ -1,6 +1,6 @@
 import { StatusBar } from "./StatusBar";
 import type { EditableLineEnding, EditorTab, TextEncoding } from "../../types";
-import type { AgentWorkbenchProvider } from "../../lib/tauri";
+import { type AgentWorkbenchProvider } from "../../lib/tauri/agent";
 import type { MenuLanguage } from "../../types";
 import { localizeStatusMessage } from "../../lib/statusMessages";
 import { providerLabel } from "../../features/agent/agentWorkbench";

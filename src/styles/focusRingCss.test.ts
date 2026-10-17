@@ -2,20 +2,13 @@
 
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ruleBody } from "../test-support/css";
 
 const stylesDir = `${process.cwd()}/src/styles`;
 const styleFiles = readdirSync(stylesDir).filter((file) => file.endsWith(".css"));
 
 function read(name: string): string {
   return readFileSync(`${stylesDir}/${name}`, "utf8");
-}
-
-function ruleBody(css: string, selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    css.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))?.groups
-      ?.body ?? ""
-  );
 }
 
 describe("focus ring", () => {

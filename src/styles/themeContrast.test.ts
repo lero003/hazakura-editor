@@ -2,11 +2,9 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readProjectFile } from "../test-support/source";
 
-const previewCss = readFileSync(
-  `${process.cwd()}/src/styles/preview.css`,
-  "utf8",
-);
+const previewCss = readProjectFile("src/styles/preview.css");
 
 // 紙面トークンはテーマ側が唯一の定義元。preview は var(--surface-paper) を参照するだけ。
 const themeCss = [
@@ -20,10 +18,7 @@ const themeCss = [
   .join("\n");
 
 // chrome バー（ツールバー・タブ・ステータス）の面トークンの配線を見る。
-const workspaceChromeCss = readFileSync(
-  `${process.cwd()}/src/styles/workspace-chrome.css`,
-  "utf8",
-);
+const workspaceChromeCss = readProjectFile("src/styles/workspace-chrome.css");
 
 const themeNames = [
   "light",
@@ -358,7 +353,7 @@ describe("native window background", () => {
   // 透明タイトルバーの色は theme-palette.json（Rust が include_str! で共有）が
   // chrome 面と同色であることを契約にする。CSS だけ変えて JSON を忘れる事故を防ぐ。
   const palette = JSON.parse(
-    readFileSync(`${process.cwd()}/src/lib/theme-palette.json`, "utf8"),
+    readProjectFile("src/lib/theme-palette.json"),
   ) as Record<string, string>;
 
   it.each(themeNames)("%s keeps the native palette on the chrome surface", (theme) => {
@@ -382,10 +377,7 @@ describe("assist window shell surface", () => {
   // グラデ / シェーダーを継承しない代わりに、apple-assist-window.css がフラット色を敷く。
   // 面ごとの 4.5:1 契約にこの窓も加える（江戸彼岸の明色化で暗色背景だけが残り、
   // --text が 1.28:1 まで沈む事故が出た。実測 2026-09-12）。
-  const assistWindowCss = readFileSync(
-    `${process.cwd()}/src/styles/apple-assist-window.css`,
-    "utf8",
-  );
+  const assistWindowCss = readProjectFile("src/styles/apple-assist-window.css");
 
   function assistShellBackground(theme: string): string {
     const override = ruleBodyIn(

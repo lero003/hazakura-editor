@@ -1,5 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
-import { setMainActiveWorkspace, type WorkspaceTreeEntry } from "../../lib/tauri";
+import { setMainActiveWorkspace } from "../../lib/tauri/agent";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import type { DraftRecord, EditorTab } from "../../types";
 import { useOpenedFilesListener } from "../app/useOpenedFilesListener";
 import { useWindowDragDrop } from "../app/useWindowDragDrop";

@@ -11,12 +11,8 @@ import type { MediaImageAccessOptions } from "../../features/editor/imagePolicy"
 import {
   assertTabEditable,
 } from "../../features/editor/appleAssistEditGuard";
-import {
-  confirmPinRemoteImages,
-  fetchRemoteImage,
-  importImageFromPath,
-  savePastedImage,
-} from "../../lib/tauri";
+import { confirmPinRemoteImages } from "../../lib/tauri/dialog";
+import { fetchRemoteImage, importImageFromPath, savePastedImage } from "../../lib/tauri/workspace";
 import type { AppleAssistGenerationLock, EditorTab } from "../../types";
 import type { MenuLanguage } from "../../types";
 import { getPinRemoteConfirmationCopy } from "../../lib/locale/commandPalette";

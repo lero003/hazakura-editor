@@ -3,12 +3,10 @@ import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditorMainPane } from "./EditorMainPane";
 import { writeTextToClipboard } from "../../lib/clipboard";
-import {
-  getAppleAssistCopy,
-  getLModeCopy,
-  getSafeEditorCopy,
-  getSlashMenuCopy,
-} from "../../lib/locale";
+import { getAppleAssistCopy } from "../../lib/locale/appleAssist";
+import { getLModeCopy } from "../../lib/locale/lMode";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
+import { getSlashMenuCopy } from "../../lib/locale/slashMenu";
 import type { EditorPaneHandle } from "./EditorPane";
 import type { EditorSettings, EditorTab } from "../../types";
 import type {

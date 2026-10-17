@@ -16,6 +16,7 @@ export type WorkspaceFileOpsCopy = {
   openFileState: string;
   unsavedOpenFileState: string;
   sidebarNewButton: string;
+  refreshWorkspace: string;
   newFileRoot: string;
   newFolderRoot: string;
   newOkfScaffoldMinimalRoot: string;
@@ -60,6 +61,7 @@ export function getWorkspaceFileOpsCopy(
       openFileState: "ひらいている",
       unsavedOpenFileState: "ほぞんまえ",
       sidebarNewButton: "あたらしく",
+      refreshWorkspace: "ふぉるだの いちらんを よみなおす",
       newFileRoot: "あたらしきふみ",
       newFolderRoot: "あたらしきふぉるだ",
       newOkfScaffoldMinimalRoot: "さいしょう",
@@ -104,6 +106,7 @@ export function getWorkspaceFileOpsCopy(
         openFileState: "開いている",
         unsavedOpenFileState: "未保存",
         sidebarNewButton: "新規",
+        refreshWorkspace: "ワークスペースを更新",
         newFileRoot: "新規ファイル",
         newFolderRoot: "新規フォルダ",
         newOkfScaffoldMinimalRoot: "最小",
@@ -146,6 +149,7 @@ export function getWorkspaceFileOpsCopy(
         openFileState: "open",
         unsavedOpenFileState: "unsaved",
         sidebarNewButton: "New",
+        refreshWorkspace: "Refresh workspace",
         newFileRoot: "New File",
         newFolderRoot: "New Folder",
         newOkfScaffoldMinimalRoot: "Minimal",

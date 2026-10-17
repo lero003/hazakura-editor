@@ -2,18 +2,13 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useLayoutEffect,
+  useRef,
   useState,
 } from "react";
-import {
-  createTextFile,
-  createTextFolder,
-  listWorkspaceDirectory,
-  moveWorkspaceEntry,
-  moveWorkspaceEntryToTrash,
-  openTextFile,
-  renameWorkspaceEntry,
-} from "../../lib/tauri";
-import type { TextFileDocument, WorkspaceTreeEntry } from "../../lib/tauri";
+import { createTextFile, openTextFile } from "../../lib/tauri/files";
+import { createTextFolder, listWorkspaceDirectory, moveWorkspaceEntry, moveWorkspaceEntryToTrash, renameWorkspaceEntry } from "../../lib/tauri/workspace";
+import { type TextFileDocument } from "../../lib/tauri/files";
 import { createOkfScaffold } from "../../lib/tauri/okf";
 import {
   getOkfScaffoldTemplate,
@@ -51,9 +46,15 @@ type UseWorkspaceFileOpsOptions = {
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   onWorkspaceEntryRekey?: (srcPath: string, newPath: string) => void;
   onWorkspaceEntryRemoved?: (srcPath: string, includeDescendants: boolean) => void;
+  rejectIfLocked?: (tab: EditorTab) => boolean;
 };
 
-type PendingRename = {
+type PendingWorkspaceOperation = {
+  workspaceRoot: string;
+  workspaceSession: number;
+};
+
+type PendingRename = PendingWorkspaceOperation & {
   srcPath: string;
   newPath: string;
   newName: string;
@@ -61,7 +62,7 @@ type PendingRename = {
   warningKind: RenameWarningKind;
 };
 
-type PendingTrash = {
+type PendingTrash = PendingWorkspaceOperation & {
   srcPath: string;
   parentPath: string;
   // The basename drives the dialog copy so the user sees the
@@ -112,12 +113,50 @@ export function useWorkspaceFileOps({
   getCompareCaseByKey,
   onWorkspaceEntryRekey,
   onWorkspaceEntryRemoved,
+  rejectIfLocked,
 }: UseWorkspaceFileOpsOptions) {
   const [pendingRename, setPendingRename] = useState<PendingRename | null>(
     null,
   );
   const [pendingTrash, setPendingTrash] = useState<PendingTrash | null>(null);
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
+  const rootRef = useRef(workspaceRootPath);
+  rootRef.current = workspaceRootPath;
+  const sessionRef = useRef(0);
+  const mountedRef = useRef(false);
+  const tabsRef = useRef(tabs);
+  tabsRef.current = tabs;
+  const rejectIfLockedRef = useRef(rejectIfLocked);
+  rejectIfLockedRef.current = rejectIfLocked;
+
+  const rejectLockedEntry = useCallback(
+    (path: string, includeDescendants = true) =>
+      tabsRef.current.some((tab) =>
+        pathMatchesWorkspaceEntry(tab.path, path, includeDescendants) &&
+        rejectIfLockedRef.current?.(tab),
+      ),
+    [],
+  );
+
+  useLayoutEffect(() => {
+    mountedRef.current = true;
+    sessionRef.current += 1;
+    setPendingRename(null);
+    setPendingTrash(null);
+    setRenamingPath(null);
+    return () => {
+      mountedRef.current = false;
+      sessionRef.current += 1;
+    };
+  }, [workspaceRootPath]);
+
+  const captureOperation = useCallback(() => {
+    const root = workspaceRootPath;
+    if (!root || !mountedRef.current || rootRef.current !== root) return null;
+    const session = sessionRef.current;
+    return () => mountedRef.current && rootRef.current === root &&
+      sessionRef.current === session;
+  }, [workspaceRootPath]);
 
   const { rekeyPath, rekeyPathPrefix } = useEditorTabsPathRekey({
     getCompareCaseByKey,
@@ -155,11 +194,14 @@ export function useWorkspaceFileOps({
         return;
       }
 
+      const isCurrent = captureOperation();
+      if (!isCurrent) return;
       setGlobalError(null);
       setStatus("Creating file...");
 
       try {
         const existingNames = await collectExistingNames(parentPath);
+        if (!isCurrent()) return;
         const name = nextAvailableName(
           DEFAULT_FILE_BASENAME,
           DEFAULT_FILE_EXTENSION,
@@ -175,6 +217,7 @@ export function useWorkspaceFileOps({
           fullPath,
           workspaceRootPath,
         );
+        if (!isCurrent()) return;
         const nextTab = createEditorTab(file);
 
         setTabs((currentTabs) =>
@@ -190,18 +233,22 @@ export function useWorkspaceFileOps({
         try {
           await reloadWorkspaceParent(parentPath);
         } catch {
+          if (!isCurrent()) return;
           setStatus("New file created; folder refresh failed");
           return;
         }
 
+        if (!isCurrent()) return;
         setStatus(`New file created: ${fileNameFromPath(fullPath)}`);
       } catch (err) {
+        if (!isCurrent()) return;
         setGlobalError(String(err));
         setStatus("New file failed");
       }
     },
     [
       clearImagePreview,
+      captureOperation,
       collectExistingNames,
       reloadWorkspaceParent,
       rememberRecentFile,
@@ -221,12 +268,15 @@ export function useWorkspaceFileOps({
         return;
       }
 
+      const isCurrent = captureOperation();
+      if (!isCurrent) return;
       const template = getOkfScaffoldTemplate(templateId);
       setGlobalError(null);
       setStatus("Creating OKF scaffold...");
 
       try {
         const existingNames = await collectExistingNames(parentPath);
+        if (!isCurrent()) return;
         const folderName = nextAvailableName(
           template.defaultFolderName,
           "",
@@ -243,6 +293,7 @@ export function useWorkspaceFileOps({
           openRelativePath: template.openRelativePath,
         });
 
+        if (!isCurrent()) return;
         let refreshFailed = false;
         try {
           await reloadWorkspaceParent(parentPath);
@@ -252,10 +303,12 @@ export function useWorkspaceFileOps({
           refreshFailed = true;
         }
 
+        if (!isCurrent()) return;
         let openFailed = false;
         if (result.openPath) {
           try {
             const file = await openTextFile(result.openPath);
+            if (!isCurrent()) return;
             const nextTab = createEditorTab(file);
             setTabs((currentTabs) =>
               currentTabs.some((tab) => tab.path === file.path)
@@ -273,6 +326,7 @@ export function useWorkspaceFileOps({
           }
         }
 
+        if (!isCurrent()) return;
         if (refreshFailed && openFailed) {
           setStatus("OKF scaffold created; folder refresh and index open failed");
         } else if (refreshFailed) {
@@ -285,12 +339,14 @@ export function useWorkspaceFileOps({
           );
         }
       } catch (err) {
+        if (!isCurrent()) return;
         setGlobalError(String(err));
         setStatus("OKF scaffold failed");
       }
     },
     [
       clearImagePreview,
+      captureOperation,
       collectExistingNames,
       reloadWorkspaceParent,
       rememberRecentFile,
@@ -310,11 +366,14 @@ export function useWorkspaceFileOps({
         return;
       }
 
+      const isCurrent = captureOperation();
+      if (!isCurrent) return;
       setGlobalError(null);
       setStatus("Creating folder...");
 
       try {
         const existingNames = await collectExistingNames(parentPath);
+        if (!isCurrent()) return;
         const name = nextAvailableName(
           DEFAULT_FOLDER_NAME,
           "",
@@ -323,24 +382,29 @@ export function useWorkspaceFileOps({
         const fullPath = `${parentPath}/${name}`;
 
         await createTextFolder(fullPath, workspaceRootPath);
+        if (!isCurrent()) return;
 
         try {
           await reloadWorkspaceParent(parentPath);
         } catch {
+          if (!isCurrent()) return;
           setStatus("New folder created; folder refresh failed");
           return;
         }
 
+        if (!isCurrent()) return;
         setStatus(
           `New folder created: ${fileNameFromPath(fullPath) ||
             parentFolderName(fullPath)}`,
         );
       } catch (err) {
+        if (!isCurrent()) return;
         setGlobalError(String(err));
         setStatus("New folder failed");
       }
     },
     [
+      captureOperation,
       collectExistingNames,
       reloadWorkspaceParent,
       setGlobalError,
@@ -375,12 +439,16 @@ export function useWorkspaceFileOps({
         return;
       }
 
+      const isCurrent = captureOperation();
+      if (!isCurrent) return;
+      if (rejectLockedEntry(srcPath)) return;
       setGlobalError(null);
       setStatus("Renaming...");
 
       try {
         const operation = await renameWorkspaceEntry(srcPath, newPath, workspaceRootPath);
-        if (operation?.backupWarning) setGlobalError("改名は完了しましたが、自動バックアップの移動に失敗しました。以前の履歴は元の場所に残っている可能性があります。");
+        if (!mountedRef.current) return;
+        if (isCurrent() && operation?.backupWarning) setGlobalError("改名は完了しましたが、自動バックアップの移動に失敗しました。以前の履歴は元の場所に残っている可能性があります。");
         // File-level rekey is a no-op when the entry was a
         // folder (no tab/draft/recent has the folder path
         // itself), and the prefix rekey is a no-op when the
@@ -389,21 +457,29 @@ export function useWorkspaceFileOps({
         // descendants follow the rename into the new folder.
         rekeyPath(srcPath, newPath);
         rekeyPathPrefix(srcPath, newPath);
+        // Completed disk changes must still follow retained tabs from the old
+        // workspace. Only current-workspace navigation and feedback are gated.
+        if (!isCurrent()) return;
         onWorkspaceEntryRekey?.(srcPath, newPath);
         setRenamingPath(null);
         try {
           await reloadWorkspaceParent(parentPath);
         } catch {
+          if (!isCurrent()) return;
           setStatus("Renamed; folder refresh failed");
           return;
         }
+        if (!isCurrent()) return;
         setStatus(`Renamed to ${fileNameFromPath(newPath)}`);
       } catch (err) {
+        if (!isCurrent()) return;
         setGlobalError(String(err));
         setStatus("Rename failed");
       }
     },
     [
+      captureOperation,
+      rejectLockedEntry,
       rekeyPath,
       rekeyPathPrefix,
       onWorkspaceEntryRekey,
@@ -452,6 +528,9 @@ export function useWorkspaceFileOps({
         setStatus("Rename cancelled");
         return;
       }
+      const isCurrent = captureOperation();
+      if (!isCurrent) return;
+      if (rejectLockedEntry(srcPath)) return;
       const warningKind = detectRenameWarning(srcPath);
       if (warningKind) {
         setPendingRename({
@@ -460,17 +539,21 @@ export function useWorkspaceFileOps({
           newName: trimmed,
           parentPath,
           warningKind,
+          workspaceRoot: workspaceRootPath!,
+          workspaceSession: sessionRef.current,
         });
         return;
       }
       await performRename(srcPath, newPath, parentPath);
     },
-    [detectRenameWarning, performRename, setStatus],
+    [captureOperation, detectRenameWarning, performRename, rejectLockedEntry, setStatus, workspaceRootPath],
   );
 
   const confirmPendingRename = useCallback(async () => {
     const pending = pendingRename;
-    if (!pending) return;
+    if (!pending || !mountedRef.current ||
+      pending.workspaceRoot !== rootRef.current ||
+      pending.workspaceSession !== sessionRef.current) return;
     setPendingRename(null);
     await performRename(pending.srcPath, pending.newPath, pending.parentPath);
   }, [pendingRename, performRename]);
@@ -492,6 +575,9 @@ export function useWorkspaceFileOps({
         return;
       }
 
+      const isCurrent = captureOperation();
+      if (!isCurrent) return;
+      if (rejectLockedEntry(srcPath)) return;
       const slashIndex = srcPath.lastIndexOf("/");
       const name = slashIndex === -1 ? srcPath : srcPath.slice(slashIndex + 1);
       const newPath = `${dstParentPath}/${name}`;
@@ -521,9 +607,13 @@ export function useWorkspaceFileOps({
 
       try {
         const operation = await moveWorkspaceEntry(srcPath, newPath, workspaceRootPath);
-        if (operation?.backupWarning) setGlobalError("移動は完了しましたが、自動バックアップの移動に失敗しました。以前の履歴は元の場所に残っている可能性があります。");
+        if (!mountedRef.current) return;
+        if (isCurrent() && operation?.backupWarning) setGlobalError("移動は完了しましたが、自動バックアップの移動に失敗しました。以前の履歴は元の場所に残っている可能性があります。");
         rekeyPath(srcPath, newPath);
         rekeyPathPrefix(srcPath, newPath);
+        // Completed disk changes must still follow retained tabs from the old
+        // workspace. Only current-workspace navigation and feedback are gated.
+        if (!isCurrent()) return;
         onWorkspaceEntryRekey?.(srcPath, newPath);
         // Refresh both parents (source + destination) so the
         // move is visible from both sides of the tree.
@@ -533,17 +623,22 @@ export function useWorkspaceFileOps({
             reloadWorkspaceParent(dstParentPath),
           ]);
         } catch {
+          if (!isCurrent()) return;
           setStatus("Moved; folder refresh failed");
           return;
         }
+        if (!isCurrent()) return;
         setStatus(`Moved to ${dstParentPath}`);
       } catch (err) {
+        if (!isCurrent()) return;
         setGlobalError(String(err));
         setStatus("Move failed");
       }
     },
     [
       reloadWorkspaceParent,
+      captureOperation,
+      rejectLockedEntry,
       rekeyPath,
       rekeyPathPrefix,
       onWorkspaceEntryRekey,
@@ -564,9 +659,18 @@ export function useWorkspaceFileOps({
       const slashIndex = srcPath.lastIndexOf("/");
       const parentPath =
         slashIndex === -1 ? "" : srcPath.slice(0, slashIndex);
-      setPendingTrash({ srcPath, parentPath, name, isDirectory });
+      if (!captureOperation()) return;
+      if (rejectLockedEntry(srcPath, isDirectory)) return;
+      setPendingTrash({
+        srcPath,
+        parentPath,
+        name,
+        isDirectory,
+        workspaceRoot: workspaceRootPath!,
+        workspaceSession: sessionRef.current,
+      });
     },
-    [],
+    [captureOperation, rejectLockedEntry, workspaceRootPath],
   );
 
   const cancelPendingTrash = useCallback(() => {
@@ -579,14 +683,20 @@ export function useWorkspaceFileOps({
       setPendingTrash(null);
       return;
     }
+    if (!mountedRef.current || pending.workspaceRoot !== rootRef.current ||
+      pending.workspaceSession !== sessionRef.current) return;
+    const isCurrent = captureOperation();
+    if (!isCurrent) return;
+    if (rejectLockedEntry(pending.srcPath, pending.isDirectory)) return;
     setPendingTrash(null);
     setGlobalError(null);
     setStatus("Moving to Trash...");
 
     try {
       const operation = await moveWorkspaceEntryToTrash(pending.srcPath, workspaceRootPath);
-      if (operation?.backupWarning) setGlobalError("ゴミ箱への移動は完了しましたが、自動バックアップを削除できませんでした。");
-      onWorkspaceEntryRemoved?.(pending.srcPath, pending.isDirectory);
+      if (!mountedRef.current) return;
+      if (isCurrent() && operation?.backupWarning) setGlobalError("ゴミ箱への移動は完了しましたが、自動バックアップを削除できませんでした。");
+      if (isCurrent()) onWorkspaceEntryRemoved?.(pending.srcPath, pending.isDirectory);
       // The trashed path is gone, so the editor fan-out closes
       // the affected tab / draft / recent / compare slot. This
       // is the same set of stores that `rekeyPath` rewrites
@@ -595,8 +705,6 @@ export function useWorkspaceFileOps({
       const trashedPath = pending.srcPath;
       const matchesTrashedPath = (path: string) =>
         pathMatchesWorkspaceEntry(path, trashedPath, pending.isDirectory);
-      let compareAnchorRemoved = false;
-      let compareTargetRemoved = false;
 
       setTabs((currentTabs) =>
         currentTabs.filter((tab) => !matchesTrashedPath(tab.path)),
@@ -612,32 +720,39 @@ export function useWorkspaceFileOps({
       );
       setCompareAnchor((current) => {
         if (!current || !matchesTrashedPath(current.path)) return current;
-        compareAnchorRemoved = true;
         return null;
       });
       setCompareTarget((current) => {
         if (!current || !matchesTrashedPath(current.path)) return current;
-        compareTargetRemoved = true;
         return null;
       });
       setCompareView((current) => {
         if (!current) return current;
-        if (compareAnchorRemoved || compareTargetRemoved) return null;
-        if (!current.caseKey.includes(trashedPath)) return current;
-        return null;
+        const compareCase = getCompareCaseByKey(current.caseKey);
+        const mentionsEntry = compareCase
+          ? compareCaseMatchesWorkspaceEntry(compareCase, matchesTrashedPath)
+          : current.caseKey.includes(trashedPath);
+        return mentionsEntry ? null : current;
       });
+      if (!isCurrent()) return;
       try {
         await reloadWorkspaceParent(pending.parentPath);
       } catch {
+        if (!isCurrent()) return;
         setStatus("Trashed; folder refresh failed");
         return;
       }
+      if (!isCurrent()) return;
       setStatus(`Moved ${pending.name} to Trash`);
     } catch (err) {
+      if (!isCurrent()) return;
       setGlobalError(String(err));
       setStatus("Move to Trash failed");
     }
   }, [
+    captureOperation,
+    getCompareCaseByKey,
+    rejectLockedEntry,
     pendingTrash,
     onWorkspaceEntryRemoved,
     reloadWorkspaceParent,
@@ -682,4 +797,18 @@ function pathMatchesWorkspaceEntry(
     path === entryPath ||
     (includeDescendants && path.startsWith(`${entryPath}/`))
   );
+}
+
+function compareCaseMatchesWorkspaceEntry(
+  compareCase: CompareCase,
+  matchesPath: (path: string) => boolean,
+): boolean {
+  switch (compareCase.kind) {
+    case "file":
+      return [compareCase.leftPath, compareCase.rightPath, compareCase.anchor.path, compareCase.target.path]
+        .some(matchesPath);
+    case "changes":
+    case "candidate":
+      return matchesPath(compareCase.documentPath);
+  }
 }

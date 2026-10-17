@@ -5,11 +5,8 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import type {
-  BookScopeChapter,
-  BookScopeUnavailableEntry,
-  WorkspaceTreeEntry,
-} from "../../lib/tauri";
+import { type BookScopeChapter, type BookScopeUnavailableEntry } from "../../lib/tauri/bookScope";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import {
   bookScopeSiblingPosition,
   flattenBookScopeNodes,

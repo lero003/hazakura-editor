@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { ReferenceCompareState } from "../../features/referenceCompare/types";
-import { getReferenceFileMetadata } from "../../lib/tauri";
+import { getReferenceFileMetadata } from "../../lib/tauri/pdfReference";
 
 const POLL_INTERVAL_MS = 4_000;
 

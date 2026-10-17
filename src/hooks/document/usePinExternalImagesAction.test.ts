@@ -1,20 +1,18 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { usePinExternalImagesAction } from "./usePinExternalImagesAction";
-import {
-  confirmPinRemoteImages,
-  fetchRemoteImage,
-  importImageFromPath,
-  savePastedImage,
-} from "../../lib/tauri";
+import { confirmPinRemoteImages } from "../../lib/tauri/dialog";
+import { fetchRemoteImage, importImageFromPath, savePastedImage } from "../../lib/tauri/workspace";
 import type { EditorTab } from "../../types";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/dialog", () => ({
   confirmPinRemoteImages: vi.fn(),
+}));
+vi.mock("../../lib/tauri/workspace", () => ({
   fetchRemoteImage: vi.fn(),
   importImageFromPath: vi.fn(),
   savePastedImage: vi.fn(),
-}));
+}))
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {

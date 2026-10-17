@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { draftStorageKey } from "../../features/document/pathlessDraftRecovery";
-import type { RecoveryCopy } from "../../lib/locale";
+import { type RecoveryCopy } from "../../lib/locale/recovery";
 import type { DraftRecord, EditorTab } from "../../types";
+import { confirm } from "../../lib/tauri/nativeDialog";
 
 type RecoveryMessagesProps = {
   onReviewConflict?: () => void;
@@ -46,6 +48,35 @@ export function RecoveryMessages({
   onReviewTabAgainstDisk,
   onTrySaveAgain,
 }: RecoveryMessagesProps) {
+  const mounted = useRef(true);
+  const discardPending = useRef(false);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const currentDrafts = useRef<DraftRecord[]>([]);
+  currentDrafts.current = [...(activeDraft && activeTab ? [activeDraft] : []), ...orphanPathlessDrafts];
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  const discardDraft = async (draft: DraftRecord) => {
+    if (discardPending.current || !mounted.current) return;
+    discardPending.current = true;
+    setConfirmingDiscard(true);
+    const key = draftStorageKey(draft);
+    try {
+      const accepted = await confirm(copy.discardDraftConfirm);
+      if (accepted && mounted.current && currentDrafts.current.some((current) =>
+        draftStorageKey(current) === key && current.updatedAt === draft.updatedAt && current.contents === draft.contents)) {
+        onDiscardDraft(key);
+      }
+    } catch {
+      // A failed native confirmation must never discard recovery data.
+    } finally {
+      discardPending.current = false;
+      if (mounted.current) setConfirmingDiscard(false);
+    }
+  };
   const hasMessage =
     (activeDraft !== null && activeTab !== null) ||
     orphanPathlessDrafts.length > 0 ||
@@ -74,16 +105,13 @@ export function RecoveryMessages({
                 {copy.reviewChanges}
               </button>
             ) : null}
-            <button type="button" onClick={() => onRestoreDraft(activeDraft)}>
+            <button type="button" disabled={confirmingDiscard} onClick={() => onRestoreDraft(activeDraft)}>
               {copy.restoreDraft}
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (window.confirm(copy.discardDraftConfirm)) {
-                  onDiscardDraft(draftStorageKey(activeDraft));
-                }
-              }}
+              disabled={confirmingDiscard}
+              onClick={() => void discardDraft(activeDraft)}
             >
               {copy.discardDraft}
             </button>
@@ -108,16 +136,13 @@ export function RecoveryMessages({
               </span>
             </span>
             <div className="message-actions" aria-label={copy.draftActions}>
-              <button type="button" onClick={() => onRestoreDraft(draft)}>
+              <button type="button" disabled={confirmingDiscard} onClick={() => onRestoreDraft(draft)}>
                 {copy.restoreDraft}
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (window.confirm(copy.discardDraftConfirm)) {
-                    onDiscardDraft(draftStorageKey(draft));
-                  }
-                }}
+                disabled={confirmingDiscard}
+                onClick={() => void discardDraft(draft)}
               >
                 {copy.discardDraft}
               </button>

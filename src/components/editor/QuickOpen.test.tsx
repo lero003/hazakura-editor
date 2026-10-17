@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
 import { QuickOpen } from "./QuickOpen";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;

@@ -5,7 +5,7 @@ const dialogApi = vi.hoisted(() => ({
   save: vi.fn(),
 }));
 
-vi.mock("@tauri-apps/plugin-dialog", () => ({
+vi.mock("./nativeDialog", () => ({
   confirm: vi.fn(),
   open: vi.fn(),
   save: dialogApi.save,

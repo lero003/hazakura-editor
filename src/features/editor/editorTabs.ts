@@ -1,4 +1,4 @@
-import type { TextFileDocument } from "../../lib/tauri";
+import { type TextFileDocument } from "../../lib/tauri/files";
 import type { EditorTab } from "../../types";
 import { normalizeTextLineEndings } from "../../lib/utils";
 
@@ -146,26 +146,6 @@ export function replaceTabsBufferBySessionId(
   contents: string,
 ): EditorTab[] {
   return updateTabsBySessionId(tabs, sessionId, (tab) =>
-    replaceTabBufferForReview(tab, contents),
-  );
-}
-
-export function replaceTabsBufferById(
-  tabs: readonly EditorTab[],
-  tabId: string,
-  contents: string,
-): EditorTab[] {
-  return updateTabsById(tabs, tabId, (tab) =>
-    replaceTabBufferForReview(tab, contents),
-  );
-}
-
-export function replaceTabsBufferByPath(
-  tabs: readonly EditorTab[],
-  path: string,
-  contents: string,
-): EditorTab[] {
-  return updateTabsByPath(tabs, path, (tab) =>
     replaceTabBufferForReview(tab, contents),
   );
 }

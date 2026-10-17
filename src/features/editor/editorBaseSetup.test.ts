@@ -1,19 +1,13 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { syntaxTree, ensureSyntaxTree } from "@codemirror/language";
 import { editorBaseSetup } from "./editorBaseSetup";
+import { readProjectFile } from "../../test-support/source";
 
-const setupSource = readFileSync(
-  `${process.cwd()}/src/features/editor/editorBaseSetup.ts`,
-  "utf8",
-);
-const editorPaneSource = readFileSync(
-  `${process.cwd()}/src/components/editor/EditorPane.tsx`,
-  "utf8",
-);
+const setupSource = readProjectFile("src/features/editor/editorBaseSetup.ts");
+const editorPaneSource = readProjectFile("src/components/editor/EditorPane.tsx");
 
 describe("editorBaseSetup", () => {
   it("documents and excludes folding from the writing surface", () => {

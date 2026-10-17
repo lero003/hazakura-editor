@@ -1,13 +1,16 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { openImageFile, openWorkspaceImage } from "../../lib/tauri";
-import type { ImagePreviewDocument } from "../../lib/tauri";
+import { openImageFile } from "../../lib/tauri/files";
+import { openWorkspaceImage } from "../../lib/tauri/workspace";
+import { type ImagePreviewDocument } from "../../lib/tauri/files";
 import { useImagePreview } from "./useImagePreview";
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   openImageFile: vi.fn(),
-  openWorkspaceImage: vi.fn(),
 }));
+vi.mock("../../lib/tauri/workspace", () => ({
+  openWorkspaceImage: vi.fn(),
+}))
 
 function image(path: string, name: string): ImagePreviewDocument {
   return {

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { setCurrentWindowTitle } from "../../lib/tauri";
+import { setCurrentWindowTitle } from "../../lib/tauri/window";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type TitledDocument = {

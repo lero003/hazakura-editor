@@ -6,7 +6,7 @@ import {
   useRef,
 } from "react";
 import { flushSync } from "react-dom";
-import { getFileMetadata, openTextFile } from "../../lib/tauri";
+import { getFileMetadata, openTextFile } from "../../lib/tauri/files";
 import { hasSameDocumentIoBaseline } from "../../features/editor/documentIoBaseline";
 import { createEditorTab, isDirty } from "../../features/editor/editorTabs";
 import {

@@ -1,11 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
-import {
-  listWorkspaceTree,
-  openTextFile,
-  resolveSecurityScopedBookmark,
-  type TextFileDocument,
-  type WorkspaceTreeEntry,
-} from "../../lib/tauri";
+import { listWorkspaceTree, resolveSecurityScopedBookmark, type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
+import { openTextFile, type TextFileDocument } from "../../lib/tauri/files";
 import { createEditorTab, createPathlessRecoveryId } from "../../features/editor/editorTabs";
 import {
   readPersistedWorkspaceState,

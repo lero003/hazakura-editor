@@ -5,7 +5,7 @@ import { createUntitledEditorTab, isDirty } from "../../features/editor/editorTa
 import { useLatestValueRef } from "../app/useLatestValueRef";
 import { useSaveActions } from "./useSaveActions";
 import { useTabCloseFlow } from "../editor/useTabCloseFlow";
-import type { TextFileDocument } from "../../lib/tauri";
+import { type TextFileDocument } from "../../lib/tauri/files";
 import type { DraftRecord } from "../../types";
 
 const api = vi.hoisted(() => ({
@@ -14,7 +14,12 @@ const api = vi.hoisted(() => ({
   saveTextFile: vi.fn(),
   createSecurityScopedBookmark: vi.fn(async () => [1]),
 }));
-vi.mock("../../lib/tauri", () => api);
+vi.mock("../../lib/tauri/dialog", () => ({ pickSaveAsTextFilePath: api.pickSaveAsTextFilePath }));
+vi.mock("../../lib/tauri/files", () => ({
+  saveTextFileAs: api.saveTextFileAs,
+  saveTextFile: api.saveTextFile,
+}));
+vi.mock("../../lib/tauri/workspace", () => ({ createSecurityScopedBookmark: api.createSecurityScopedBookmark }));
 vi.mock("../../lib/tauri/window", () => ({ exitApp: vi.fn(), hideMainWindow: vi.fn() }));
 
 function useHarness() {

@@ -1,6 +1,6 @@
 import { useId } from "react";
 import type { MenuLanguage, ThemePreference } from "../../types";
-import type { PreferencesCopy } from "../../lib/locale";
+import { type PreferencesCopy } from "../../lib/locale/preferences";
 
 export function ThemePreferenceCards({ copy, language, value, onChange }: {
   copy: PreferencesCopy;

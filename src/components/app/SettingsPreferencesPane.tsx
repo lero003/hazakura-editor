@@ -2,14 +2,15 @@ import { ThemePreferenceCards } from "./ThemePreferenceCards";
 import { settingsCategoryOffsets, resolveSettingsCategoryIndex } from "./settingsCategoryRail";
 import { useEffect, useId, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { OutsideImagePolicy } from "../../features/editor/mediaImageSettings";
-import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
+import { type LModeCopy } from "../../lib/locale/lMode";
+import { type PreferencesCopy } from "../../lib/locale/preferences";
 import type {
   EditorSettings,
   MenuLanguage,
   ThemePreference,
 } from "../../types";
 import { AUTO_BACKUP_USER_CHOICE_STORAGE_KEY as AUTO_BACKUP_CHOICE_KEY } from "../../types";
-import type { AppleAssistAvailability } from "../../lib/tauri";
+import { type AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { ToggleSwitch } from "../common/ToggleSwitch";
 import { SparklesIcon } from "./Icons";

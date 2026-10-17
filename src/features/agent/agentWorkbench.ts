@@ -2,12 +2,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type {
-  AgentWorkbenchOutputChunk,
-  AgentWorkbenchPreflight,
-  AgentWorkbenchProvider,
-  AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { type AgentWorkbenchOutputChunk, type AgentWorkbenchPreflight, type AgentWorkbenchProvider, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import {
   type AgentLaunchGateState,
   AGENT_WORKBENCH_PROVIDERS,
@@ -87,17 +82,6 @@ export function agentSessionStateLabel(
   }
 }
 
-export function agentCompactSessionStateLabel(
-  session: AgentWorkbenchSession | null,
-  menuLanguage: MenuLanguage = "en",
-): string {
-  if (!session) {
-    return localizeSessionState("idle", menuLanguage);
-  }
-
-  return agentSessionStateLabel(session, menuLanguage);
-}
-
 type SessionStateKey = "notRunning" | "running" | "exited" | "stopped" | "idle";
 
 function localizeSessionState(
@@ -145,69 +129,6 @@ function localizeSessionState(
       return "Stopped";
     case "idle":
       return "Idle";
-  }
-}
-
-export function localizeAgentGateMessage(
-  message: string,
-  menuLanguage: MenuLanguage,
-): string {
-  if (!isJapaneseMenuLanguage(menuLanguage) && !isKanaStyle(menuLanguage)) {
-    return message;
-  }
-
-  if (isKanaStyle(menuLanguage)) {
-    switch (message) {
-      case "Launch gate not checked.":
-        return "きどうげーとは まだ かくにん されていません。";
-      case "Checking Agent Workbench launch gate...":
-        return "えーじぇんと わーくべんちの きどうげーとを かくにんちゅう...";
-      case "Agent session exited.":
-        return "Agent せっしょんは 終わり ました。";
-      case "Agent session stopped.":
-        return "Agent せっしょんは ていし しました。";
-      case "Provider not found; no Agent session was started.":
-        return "ぷろばいだーが みつからないため、Agent せっしょんは かいし されませんでした。";
-      case "Agent session running in the selected workspace. Only the selected allowlisted CLI was launched.":
-        return "せんたくちゅうの わーくすぺーすで Agent せっしょんが じっこうちゅう。きどうされたのは せんたくされた ゆるされた CLI だけです。";
-      default:
-        if (message.startsWith("Provider not found: ")) {
-          return message
-            .replace("Provider not found:", "ぷろばいだーが みつかりません:")
-            .replace(
-              " was not found in the app search path, including common Homebrew and user bin locations.",
-              " はあぷりの けんさくぱす（いっぱんな Homebrew と user bin を ふくむ）で みつかりませんでした。",
-            );
-        }
-
-        return message;
-    }
-  }
-
-  switch (message) {
-    case "Launch gate not checked.":
-      return "起動ゲートはまだ確認されていません。";
-    case "Checking Agent Workbench launch gate...":
-      return "エージェントワークベンチの起動ゲートを確認中です...";
-    case "Agent session exited.":
-      return "Agent セッションは終了しました。";
-    case "Agent session stopped.":
-      return "Agent セッションは停止しました。";
-    case "Provider not found; no Agent session was started.":
-      return "プロバイダーが見つからないため、Agent セッションは開始されませんでした。";
-    case "Agent session running in the selected workspace. Only the selected allowlisted CLI was launched.":
-      return "選択中のワークスペースで Agent セッションが実行中です。起動されたのは選択された allowlist 済み CLI だけです。";
-    default:
-      if (message.startsWith("Provider not found: ")) {
-        return message
-          .replace("Provider not found:", "プロバイダーが見つかりません:")
-          .replace(
-            " was not found in the app search path, including common Homebrew and user bin locations.",
-            " はアプリの検索パス（一般的な Homebrew と user bin を含む）で見つかりませんでした。",
-          );
-      }
-
-      return message;
   }
 }
 

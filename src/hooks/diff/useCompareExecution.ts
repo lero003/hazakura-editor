@@ -5,7 +5,7 @@ import {
   useRef,
 } from "react";
 import { buildLineDiff } from "../../features/diff/diff";
-import { openTextFile } from "../../lib/tauri";
+import { openTextFile } from "../../lib/tauri/files";
 import { localizeCompareError } from "../../lib/utils";
 import type {
   CompareAnchor,

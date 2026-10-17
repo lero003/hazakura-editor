@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import { exitApp } from "../../lib/tauri/window";
 import { APP_EXIT_REQUESTED_EVENT } from "../../types";
+import { useTauriSubscription } from "./useTauriSubscription";
 
 type RefValue<T> = {
   current: T;
@@ -71,44 +72,31 @@ export function useAppExitConfirmation({
     onNeedsConfirmationRef.current = onNeedsConfirmation;
   }, [dirtyTabCount, onBeforeExit, onNeedsConfirmation]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let unlisten: UnlistenFn | null = null;
+  useTauriSubscription(
+    (isCancelled) =>
+      listen(APP_EXIT_REQUESTED_EVENT, () => {
+        if (isCancelled()) {
+          return;
+        }
 
-    void listen(APP_EXIT_REQUESTED_EVENT, () => {
-      if (cancelled) {
-        return;
-      }
+        if (dirtyTabCountRef.current === 0) {
+          // Clean state: the user explicitly chose to quit
+          // the app, nothing in the buffer would be lost.
+          // Run any before-exit hook (e.g. stopping an in-flight
+          // Local Assist generation) before the process exits.
+          void Promise.resolve(onBeforeExitRef.current?.()).then((canExit) => {
+            if (canExit !== false) void exitApp();
+          });
+          return;
+        }
 
-      if (dirtyTabCountRef.current === 0) {
-        // Clean state: the user explicitly chose to quit
-        // the app, nothing in the buffer would be lost.
-        // Run any before-exit hook (e.g. stopping an in-flight
-        // Local Assist generation) before the process exits.
-        void Promise.resolve(onBeforeExitRef.current?.()).then((canExit) => {
-          if (canExit !== false) void exitApp();
-        });
-        return;
-      }
-
-      // Dirty: surface the existing AppCloseDialog. The
-      // controller's `onNeedsConfirmation` wrapper flips
-      // the ref first so the save / discard handlers end
-      // with `exitApp` instead of `hideMainWindow`.
-      appExitInProgressRef.current = true;
-      onNeedsConfirmationRef.current();
-    }).then((nextUnlisten) => {
-      if (cancelled) {
-        nextUnlisten();
-        return;
-      }
-
-      unlisten = nextUnlisten;
-    });
-
-    return () => {
-      cancelled = true;
-      unlisten?.();
-    };
-  }, [appExitInProgressRef]);
+        // Dirty: surface the existing AppCloseDialog. The
+        // controller's `onNeedsConfirmation` wrapper flips
+        // the ref first so the save / discard handlers end
+        // with `exitApp` instead of `hideMainWindow`.
+        appExitInProgressRef.current = true;
+        onNeedsConfirmationRef.current();
+      }),
+    [appExitInProgressRef],
+  );
 }

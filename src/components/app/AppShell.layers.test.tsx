@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { AppShell, type AppShellProps } from "./AppShell";
 vi.mock("./AppTopChrome", () => ({
-  AppTopChrome: ({ onTogglePreview, navigation }: { onTogglePreview: () => void; navigation: { onReview: (target: string) => void } }) =>
+  AppTopChrome: ({ onTogglePreview }: { onTogglePreview: () => void; navigation: { onReview: (target: string) => void } }) =>
     <div className="tabs-row">
       <button>Document tab</button>
       <button onClick={onTogglePreview}>Toggle Preview</button>

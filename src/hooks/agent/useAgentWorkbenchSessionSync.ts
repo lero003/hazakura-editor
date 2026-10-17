@@ -1,8 +1,5 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
-import type {
-  AgentWorkbenchOutputChunk,
-  AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { type AgentWorkbenchOutputChunk, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import {
   AGENT_WORKBENCH_SESSION_POLL_MS,
   type AgentLaunchGateState,

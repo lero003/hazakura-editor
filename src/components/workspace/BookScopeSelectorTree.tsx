@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { type WorkspaceTreeEntry } from "../../lib/tauri/workspace";
 import { isBookScopeMarkdownPath } from "../../features/bookScope";
 import { workspaceRelativePath } from "../../hooks/workspace/workspaceRelativePath";
 
@@ -14,7 +14,7 @@ type Props = {
 export function BookScopeSelectorTree(props: Props) {
   return (
     <div className="book-scope-selector-tree">
-      <BookScopeSelectorEntry {...props} defaultExpanded />
+      <BookScopeSelectorEntry {...props} key={props.entry.path} defaultExpanded />
     </div>
   );
 }
@@ -57,6 +57,9 @@ function BookScopeSelectorEntry({
       setLoading(true);
       try {
         await onLoadDirectory(entry.path);
+      } catch {
+        // The workspace loader owns error feedback; keep the row retryable.
+        return;
       } finally {
         setLoading(false);
       }

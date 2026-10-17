@@ -4,7 +4,7 @@ import {
   markdownStructureItems,
   parseMarkdownStructure,
 } from "../../features/editor/markdownStructure";
-import { getSidePaneCopy } from "../../lib/locale";
+import { getSidePaneCopy } from "../../lib/locale/sidePane";
 import { OutlinePane } from "./OutlinePane";
 
 afterEach(cleanup);

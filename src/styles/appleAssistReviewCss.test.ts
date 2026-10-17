@@ -1,16 +1,10 @@
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { stripCssComments } from "../test-support/css";
+import { readProjectFile } from "../test-support/source";
 
-const appleAssistReviewCss = readFileSync(
-  `${process.cwd()}/src/styles/apple-assist-review.css`,
-  "utf8",
-);
-
-function stripCssComments(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, "");
-}
+const appleAssistReviewCss = readProjectFile("src/styles/apple-assist-review.css");
 
 describe("apple-assist-review.css", () => {
   const css = stripCssComments(appleAssistReviewCss);

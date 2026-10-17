@@ -5,11 +5,7 @@ import {
   useCallback,
 } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-import {
-  resizeAgentWorkbenchTerminal,
-  writeAgentWorkbenchSessionInput,
-  type AgentWorkbenchSession,
-} from "../../lib/tauri";
+import { resizeAgentWorkbenchTerminal, writeAgentWorkbenchSessionInput, type AgentWorkbenchSession } from "../../lib/tauri/agent";
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,

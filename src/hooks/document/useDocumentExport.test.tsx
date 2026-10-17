@@ -1,14 +1,14 @@
 import { act, renderHook } from "@testing-library/react";
-import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useDocumentExport } from "./useDocumentExport";
 import type { EditorTab } from "../../types";
+import { readProjectFile } from "../../test-support/source";
 
 const dialogApi = vi.hoisted(() => ({
   save: vi.fn(),
 }));
 
-vi.mock("@tauri-apps/plugin-dialog", () => ({
+vi.mock("../../lib/tauri/nativeDialog", () => ({
   save: dialogApi.save,
 }));
 
@@ -44,21 +44,23 @@ const epubApi = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/files", () => ({
   exportPdfFile: tauriApi.exportPdfFile,
-  fetchRemoteImage: tauriApi.fetchRemoteImage,
-  isTauriRuntime: tauriApi.isTauriRuntime,
   openImageFile: tauriApi.openImageFile,
-  openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
-  openWorkspaceImage: tauriApi.openWorkspaceImage,
+  openTextFile: filesApi.openTextFile,
   revealPathInFileManager: tauriApi.revealPathInFileManager,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
 }));
-
-vi.mock("../../lib/tauri/files", () => ({
-  openTextFile: filesApi.openTextFile,
+vi.mock("../../lib/tauri/workspace", () => ({
+  fetchRemoteImage: tauriApi.fetchRemoteImage,
+  openLocalImageUnderRoots: tauriApi.openLocalImageUnderRoots,
+  openWorkspaceImage: tauriApi.openWorkspaceImage,
 }));
+vi.mock("../../lib/tauri/_runtime", () => ({
+  isTauriRuntime: tauriApi.isTauriRuntime,
+}))
+
 
 vi.mock("../../features/document/epubExport", () => ({
   buildEpubBetaArchive: epubApi.buildEpubBetaArchive,
@@ -117,10 +119,7 @@ vi.mock("../../features/editor/markdown", () => ({
   },
 }));
 
-const useDocumentExportSource = readFileSync(
-  `${process.cwd()}/src/hooks/document/useDocumentExport.ts`,
-  "utf8",
-);
+const useDocumentExportSource = readProjectFile("src/hooks/document/useDocumentExport.ts");
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {
