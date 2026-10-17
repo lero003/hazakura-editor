@@ -54,7 +54,7 @@ export function useWindowCloseConfirmation({
   }, [dirtyTabCount, onNeedsConfirmation, onBeforeHide]);
 
   useTauriSubscription(
-    (isCancelled) =>
+    () =>
       onCurrentWindowCloseRequested(async (event) => {
         // Always preventDefault. Re-issuing `Window::close()`
         // or `Window::destroy()` after a preventDefault-ed

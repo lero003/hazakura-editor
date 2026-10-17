@@ -27,7 +27,6 @@ import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
-import { LocalAssistProposalReview } from "./LocalAssistProposalReview";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";

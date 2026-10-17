@@ -15,7 +15,7 @@ import {
   openTextFile,
   renameWorkspaceEntry,
 } from "../../lib/tauri";
-import type { TextFileDocument, WorkspaceTreeEntry } from "../../lib/tauri";
+import type { TextFileDocument } from "../../lib/tauri";
 import { createOkfScaffold } from "../../lib/tauri/okf";
 import {
   getOkfScaffoldTemplate,

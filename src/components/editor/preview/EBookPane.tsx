@@ -72,11 +72,8 @@ import {
   getReaderPageTargetByDelta,
   normalizeEBookPageCount,
   type PendingPageTarget,
-  type ReaderPageTarget,
 } from "./ebookPageTarget";
 import {
-  countMarkdownSourceLines,
-  estimateChapterSourceLine,
   findChapterIndexForSourceLine,
   getPageIndexForSourceLine,
   getEBookReaderLocation,

@@ -3,7 +3,6 @@ import { act, render, renderHook } from "@testing-library/react";
 import { createRef, type RefObject } from "react";
 import { useDialogInitialFocus } from "./useDialogInitialFocus";
 
-type FocusableRef = RefObject<{ focus: () => void } | null>;
 
 // The focusable refs in `useDialogInitialFocus` only need a
 // minimal `focus` method. Plain objects with a `vi.fn()` cover

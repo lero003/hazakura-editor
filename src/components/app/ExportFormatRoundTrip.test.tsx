@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
 import { ExportFormatNav, type ExportFormatId } from "./ExportFormatNav";
 import { HtmlExportSettingsDialog } from "./HtmlExportSettingsDialog";

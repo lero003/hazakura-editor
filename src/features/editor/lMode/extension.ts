@@ -41,7 +41,6 @@ import {
   type Transaction,
 } from "@codemirror/state";
 import {
-  Decoration,
   type DecorationSet,
   EditorView,
   ViewPlugin,

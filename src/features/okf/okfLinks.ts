@@ -12,7 +12,7 @@ import {
   joinBundleRelativePath,
   normalizeBundleRelativePath,
 } from "./okfPaths";
-import type { OkfInlineLink, OkfLinkKind } from "./types";
+import type { OkfInlineLink } from "./types";
 
 const EXTERNAL_SCHEMES = new Set(["http:", "https:", "mailto:", "tel:"]);
 

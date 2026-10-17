@@ -28,7 +28,6 @@
 import {
   EditorView,
   ViewPlugin,
-  type DecorationSet,
   WidgetType,
 } from "@codemirror/view";
 import { StateEffect, type Extension } from "@codemirror/state";

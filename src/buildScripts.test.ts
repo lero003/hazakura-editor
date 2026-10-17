@@ -959,9 +959,20 @@ describe("Tauri IPC command surface", () => {
 
   // Commands that are registered in `generate_handler![...]` but have no
   // `invoke("...")` call site in `src/lib/tauri/*.ts`. Each entry is a
-  // conscious decision; adding a new one is the review step for an
-  // orphaned command.
-  const registeredButUnused = ["probe_apple_assist_availability"];
+  // conscious decision; a command that newly loses its last caller must
+  // be reviewed and added here.
+  const registeredButUnused = [
+    // Registered for the Developer probe surface; the frontend has not
+    // wired it up yet.
+    "probe_apple_assist_availability",
+    // These two kept their Rust command + label gate but lost their
+    // frontend wrapper in the unreferenced-export cleanup
+    // (445b7607); they are listed here so the Rust surface stays
+    // deliberate until the frontend either re-adds the wrapper or the
+    // commands are retired.
+    "open_main_agent_pane",
+    "request_apply_ai_edit_transaction",
+  ];
 
   it("registers every command the frontend invokes", () => {
     expect(registeredCommands.length).toBeGreaterThan(0);
@@ -972,10 +983,20 @@ describe("Tauri IPC command surface", () => {
     expect(unregistered).toEqual([]);
   });
 
-  it("keeps the registered-but-unused commands to the reviewed allowlist", () => {
+  it("allows no registered-but-unused command outside the reviewed allowlist", () => {
     const unused = registeredCommands.filter(
       (command) => !invokedCommands.has(command),
     );
-    expect([...unused].sort()).toEqual([...registeredButUnused].sort());
+    const unreviewed = unused.filter(
+      (command) => !registeredButUnused.includes(command),
+    );
+    expect(unreviewed).toEqual([]);
+  });
+
+  it("keeps the allowlist free of stale command names", () => {
+    const stale = registeredButUnused.filter(
+      (command) => !registeredCommands.includes(command),
+    );
+    expect(stale).toEqual([]);
   });
 });

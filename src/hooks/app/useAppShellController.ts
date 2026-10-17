@@ -264,7 +264,6 @@ export function useAppShellController() {
     rememberRecentFile,
     rememberRecentFolder,
     setRecentFiles,
-    setRecentFolders,
   } = foundation;
 
   // section: agent UI refresh gate
@@ -675,7 +674,6 @@ export function useAppShellController() {
     openFile,
     openFilePath,
     openWorkspace,
-    openWorkspacePath,
     reopenRecentWorkspace,
     reopenPersistedWorkspace,
     openPreviewMarkdownLink,

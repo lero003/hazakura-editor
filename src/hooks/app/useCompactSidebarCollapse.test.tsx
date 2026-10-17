@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { useCompactSidebarCollapse } from "./useCompactSidebarCollapse";
-import { COMPACT_SIDEBAR_MAX_WIDTH } from "../../features/workspace/compactSidebar";
 
 afterEach(() => {
   cleanup();

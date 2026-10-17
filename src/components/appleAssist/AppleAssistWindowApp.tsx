@@ -13,7 +13,7 @@ import {
   isMenuLanguage,
   readStoredMenuLanguage,
 } from "../../features/app/documentLanguage";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import {
   getMainAppleAssistTarget,
@@ -57,7 +57,6 @@ import {
   THEME_STORAGE_KEY,
   type AppleAssistApplyStatusEvent,
   type AppleAssistProposalStatusEvent,
-  type AppleAssistTargetKind,
   type AppleAssistTargetSnapshot,
   type MenuLanguage,
   type ThemePreference,
@@ -283,7 +282,7 @@ export function AppleAssistWindowApp() {
   const submissionRef = useRef<{ requestId: string; promise: Promise<void> } | null>(null);
   const activeActionIdRef = useRef<LocalAssistActionId | null>(null);
   const [streamPreview, setStreamPreview] = useState<string>("");
-  const [streamOriginalText, setStreamOriginalText] = useState<string>("");
+  const [, setStreamOriginalText] = useState<string>("");
   const [conversation, setConversation] =
     useState<LocalAssistConversationSession | null>(null);
   const targetRef = useRef<AppleAssistTargetSnapshot | null>(target);

@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import {
-  DEFAULT_PREVIEW_COLUMN_PERCENT,
   MAX_PREVIEW_COLUMN_PERCENT,
   MIN_PREVIEW_COLUMN_PERCENT,
   type RightPaneMode,
