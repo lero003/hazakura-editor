@@ -111,6 +111,7 @@ import {
   MIN_WORKSPACE_SIDEBAR_WIDTH,
   resizeRightPanePercent,
 } from "../../features/workspace/paneLayout";
+import { createChapterReviewHandler } from "../../features/workspace/chapterReviewHandler";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -860,25 +861,12 @@ export function AppWorkspace({
           onOpenFile={(path) => void openWorkspaceFile(path)}
           onOpenWorkspace={() => void openWorkspace()}
           onReadBookScope={() => void openBookScopeReader()}
-          onReviewChapterChanges={(path) => {
-            const request = chapterReviewRequestRef.current + 1;
-            chapterReviewRequestRef.current = request;
-            const openRequest = chapterReviewQueueRef.current.then(() =>
-              Promise.resolve(openFilePath(path)),
-            );
-            chapterReviewQueueRef.current = openRequest.then(
-              () => undefined,
-              () => undefined,
-            );
-            void openRequest.then(
-              (tab) => {
-                if (request === chapterReviewRequestRef.current && tab) {
-                  reviewTabAgainstDisk(tab);
-                }
-              },
-              () => undefined,
-            );
-          }}
+          onReviewChapterChanges={createChapterReviewHandler({
+            requestRef: chapterReviewRequestRef,
+            queueRef: chapterReviewQueueRef,
+            openFilePath,
+            reviewTabAgainstDisk,
+          })}
           onRevalidateBookScope={revalidateBookScope}
           openFilePaths={workspaceTabMarkers.openFilePaths}
           onClearCompareSelection={() => {

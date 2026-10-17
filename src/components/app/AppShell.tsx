@@ -26,6 +26,7 @@ import { AppWorkspace } from "./AppWorkspace";
 import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
+import { createChapterReviewHandler } from "../../features/workspace/chapterReviewHandler";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
@@ -415,25 +416,12 @@ export function AppShell(props: AppShellProps) {
               onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
               onOpenFile: (path) => void props.openWorkspaceFile(path),
               onOpenWorkspace: () => void props.openWorkspace(),
-              onReviewChapterChanges: (path) => {
-                const request = chapterReviewRequestRef.current + 1;
-                chapterReviewRequestRef.current = request;
-                const openRequest = chapterReviewQueueRef.current.then(() =>
-                  Promise.resolve(props.openFilePath(path)),
-                );
-                chapterReviewQueueRef.current = openRequest.then(
-                  () => undefined,
-                  () => undefined,
-                );
-                void openRequest.then(
-                  (tab) => {
-                    if (request === chapterReviewRequestRef.current && tab) {
-                      props.reviewTabAgainstDisk(tab);
-                    }
-                  },
-                  () => undefined,
-                );
-              },
+              onReviewChapterChanges: createChapterReviewHandler({
+                requestRef: chapterReviewRequestRef,
+                queueRef: chapterReviewQueueRef,
+                openFilePath: props.openFilePath,
+                reviewTabAgainstDisk: props.reviewTabAgainstDisk,
+              }),
               onRevalidateBookScope: props.revalidateBookScope,
               openFilePaths: workspaceTabMarkers.openFilePaths,
               onClearCompareSelection: () => {
