@@ -101,7 +101,14 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
     二重に取り出さないよう不要になった29個の分割代入を削除。差分は
     **3ファイル / +138 −290**（AppWorkspace 1,337→1,215行、AppShell 460→382行、新モジュール151行）。
     sidebarの既定値（`[]` / `false` / `null` / `true`）は渡さない場合と同じ結果になることを確認済み。
-14. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+14. **エディタcompartment値の集約** — `EditorPane` のmount配列と7つのreconfigure effectが
+    同じ値を別々に書いていたため、`features/editor/editorExtensionSet.ts` に7つの値ビルダーを
+    置き両経路から使う形へ変更。**既存の食い違いを1つ発見**した: 不可視文字は
+    reconfigure経路だけが L Mode で抑制し（`showInvisibles && !lModeEnabled`）、mount経路は
+    L Mode でも表示する（`showInvisibles`）。どちらが正しいか未確認のため、
+    `editorInvisiblesCompartmentValue(..., suppressInLMode)` として**両挙動を明示的に保存**した
+    （挙動は変更していない。確認後にどちらかへ寄せる判断が必要）。
+15. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
@@ -142,7 +149,7 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 |---|---|
 | H2 Tauri購読の共通フック化 | **8/10 移行済み**。残る `useAppMenuActionListener`（150行のインラインハンドラを再インデントする必要があり、差分が大きい）と `useAppleAssistProposalHandler`（register/unregister + 2リスナー + job後始末が1つのownerライフサイクルを共有）は、共通フックに載せる利得より移設リスクが上と判断して保留（どちらも動作は現状維持） |
 | S6 WorkspaceSidebar 45 props の二重配線 | **完了**。`buildWorkspaceSidebarProps(source, extras)` へ一本化（下記14） |
-| S9 EditorPane の分離 | **一部実施**（スクロール/選択ヘルパ261行）。残るCodeMirror拡張の組み立て（mount + reconfigure で14生成箇所）は IME/L Mode の実機受け入れを伴うため最後に回す |
+| S9 EditorPane の分離 | **完了（分割の範囲内）**。スクロール/選択ヘルパ261行の移設に加え、7つのcompartment値（折り返し・不可視文字・タブ幅・スペルチェック・テーマ・L Mode・読み取り専用）の計算を `features/editor/editorExtensionSet.ts` に集約し、mount配列と7つのreconfigure effectの二重定義を解消（下記14）。mount effect自体の分割は、IME/L Mode/破棄契約が同居するため対象外のまま |
 | S3b Tauriモックビルダー | **実益が減少**。バレル廃止（上記11）でモックが per-area の狭いモックになり、共通ビルダーで置き換える利得が小さくなったため見送り |
 | S5 レーン判定のcapability集約 / H3 操作ガード共通化 | 見送り（理由は下表） |
 
