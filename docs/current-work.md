@@ -39,7 +39,8 @@ macOS 26.6.2/Apple SiliconのCIでcodec比較は成功したが、GUI・TestFlig
 v3.3依存削減の受け入れ候補（`049813ea` / build 164）のbasisを変えずに、未参照コード削除・
 Tauri購読の共通フック化・lMode循環import解消・プレビュー重複統合・分離窓の共通化・
 未使用検出の有効化・コマンド表のモジュール抽出・Reference Compare面と章レビュー処理の
-切り出し・書き出しプロローグの一本化・EditorPaneヘルパ分離を小さなcommitで積んだ。Rust側は
+切り出し・書き出しプロローグの一本化・EditorPaneヘルパ分離・互換バレル廃止を小さなcommitで
+積んだ。Rust側は
 helper transportの共有化、menu/core_ai_modelsの分割、invoke/権限の静的テスト追加。
 依存宣言・保存形式・境界・文言は変更していない。
 

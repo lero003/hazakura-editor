@@ -80,7 +80,15 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
     移し、EditorPaneからは再exportで既存importを維持。あわせて3ファイルに重複していた
     `clampScrollRatio`（意味は完全一致）を同モジュールの1実装へ統合し、既存テスト向けに
     再exportを残した。
-11. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+11. **互換バレル廃止** — `src/lib/tauri.ts`→`tauri/index.ts`→各モジュール、および
+    `src/lib/locale.ts`→`locale/index.ts`→各モジュールの**二層バレル**を削除し、production 150箇所を
+    per-area import へ機械置換（158+73 名の名前→モジュール対応を機械照合、未対応0件）。
+    テストのbarrelモック31箇所も per-area モックへ分割・再ターゲット（`vi.importActual` 併用の
+    7箇所は各モジュールの actual を spread する形へ）。147ファイル / +407 −563。
+    副産物として、`useDocumentExport.test.tsx` に**同じ `lib/tauri/files` を二重に mock していて
+    後勝ちで片方が無効化されていた**既存の取りこぼしを発見し、1つに統合した（バレル時代は
+    barrel mock と per-module mock が別モジュールとして共存していたため表面化していなかった）。
+12. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
@@ -122,7 +130,6 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 | レーン判定を `getDistributionCapabilities()` に集約 | 見送り。`import.meta.env` の読み取りは既に `distributionLane.ts` 1箇所で、述語も同モジュール内。呼び出し側の述語の使い分けは意味が異なるため、集約の実益が小さい |
 | `useWorkspaceFileOps` の操作ガード共通化 | 見送り。共通化すると `workspaceRootPath` の非null絞り込みがヘルパ越しに伝わらず、全呼び出しでrootの持ち回りが必要になり侵襲的。`captureOperation` 自体は既に共通 |
 | `WorkspaceSidebar` 45 props の二重配線統合（本丸） | 一部実施。章レビューハンドラは共有化済み（上記8）。残る45 propsは両サイトでキー集合が一致し（AppWorkspace側の追加は `bookScopeReaderLoading` / `onCollapse` / `onReadBookScope` / `treeVisible` の4つのみ）、**機械照合で確認済み**。ただし値の供給元が AppShell=すべて `props.X`、AppWorkspace=`props` の分割代入＋Book Scopeコントローラ等のローカルで、10キーはソース名が異なる。単一ソース型を渡すには AppWorkspace の signature 変更と供給元の統一が必要なため独立スライス |
-| 互換barrel（`lib/tauri` 70箇所 / `lib/locale` 23箇所）廃止 | 延期。機械的だが、barrelをモックしているテスト32ファイルの追従を伴う |
 | テストヘルパ共通化（`vi.mock` factory 881行、CSS `ruleBody` 8ファイル重複） | 延期。テスト専用の独立スライス |
 | `EditorPane` の純関数260行とCodeMirror拡張組み立て（14生成箇所）分離 | 延期。IME/L Modeの実機受け入れと、実装ソース文字列を読むテストの更新を伴う |
 | `EBookPane` のページ計測統合 | 対象外。順序変更が実機ページ送りと縦書きに波及する |
