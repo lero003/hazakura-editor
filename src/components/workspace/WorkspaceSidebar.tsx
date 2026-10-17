@@ -34,7 +34,7 @@ import { BookScopePanel } from "./BookScopePanel";
 
 const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
 
-type WorkspaceSidebarProps = {
+export type WorkspaceSidebarProps = {
   activePath: string | null;
   bookScopeChapterRelativePaths?: readonly string[];
   bookScopeNodes?: readonly BookScopeNode[];

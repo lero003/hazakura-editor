@@ -105,6 +105,7 @@ import {
   resizeRightPanePercent,
 } from "../../features/workspace/paneLayout";
 import { createChapterReviewHandler } from "../../features/workspace/chapterReviewHandler";
+import { buildWorkspaceSidebarProps } from "../../features/workspace/workspaceSidebarProps";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -295,142 +296,114 @@ type AppWorkspaceProps = {
   workspaceTree: WorkspaceTreeEntry | null;
 };
 
-export function AppWorkspace({
-  documentChrome,
-  onReadingOverlayChange,
-  compactPreviewFocus = "editor",
-  onCompactPreviewFocusChange,
-  activeContents,
-  activeDocumentLineCount,
-  activeMatchIndex,
-  activeTab,
-  approvedImageRoots,
-  bookScopeChapterRelativePaths = [],
-  bookScopeNodes = [],
-  bookScopeChapters = [],
-  bookScopeResolving = false,
-  bookScopeSuggesting = false,
-  bookScopeSuggestionError = null,
-  bookScopeUnavailable = [],
-  appleAssistCopy,
-  appleAssistGenerationLock = null,
-  onApplyLocalAssistProposal,
-  onDiscardLocalAssistProposal,
-  proposalReviewRef,
-  onReturnToEditing,
-  proposalReviewVisible = false,
-  readingFocusIntent = null,
-  clearCompareSource,
-  clearCompareTarget,
-  closeCompareView,
-  closeReferenceCompare,
-  onPdfPageIndexChange,
-  onReloadReference,
-  onResumeReferenceFollow,
-  onShowReferenceDiff,
-  pdfPageIndex,
-  referenceFollowPaused,
-  compareAnchor,
-  compareTarget,
-  compareView,
-  commitBookScopeNodes = () => {},
-  cancelBookScopeSuggestion = () => {},
-  createBookScopeSuggestion,
-  exportBookRecipe,
-  importBookRecipeDraft,
-  createFile,
-  createFolder,
-  createOkfScaffoldAt,
-  createNewFile,
-  discardDraft,
-  currentHeadingLine,
-  documentStructureItems,
-  documentStructureAdvisories,
-  documentKey,
-  editorPaneRef,
-  editorPreviewGridRef,
-  editorPreviewGridStyle,
-  editorSettings,
-  onReadingFontSizeChange,
-  editorTheme,
-  fileOpsCopy,
-  findMatches,
-  getCompareCaseByKey,
-  handleEditorChange,
-  handlePasteImage,
-  handlePreviewResizeKeyDown,
-  handlePreviewResizePointerDown,
-  handlePreviewResizePointerMove,
-  handleSendSelectionToAgent,
-  hasWorkspaceSelection,
-  hideSidePane,
-  jumpToHeading,
-  changeHeadingLevel,
-  loadWorkspaceDirectory,
-  onWorkspaceDirectoryExpanded,
-  onWorkspaceTreeVisibilityChange,
-  onRefreshWorkspace,
-  lModeCopy,
-  onApplyBackup,
-  onApproveLocalImageParent,
-  menuLanguage,
-  onMoveEntry,
-  onMoveToTrash,
-  onSubmitRename,
-  onWorkspaceSidebarCollapsedChange,
-  onOpenGlobalSearch,
-  requestRename,
-  renamingPath,
-  restoreComplete,
-  openFile,
-  openFilePath,
-  openPreviewMarkdownLink,
-  openReferenceFile,
-  openWorkspace,
-  openWorkspacePath,
-  openWorkspaceContextMenu,
-  openRootWorkspaceContextMenu,
-  openWorkspaceFile,
-  orphanPathlessDrafts = [],
-  recentFolders,
-  recoveryCopy,
-  revalidateBookScope = () => {},
-  reopenPersistedWorkspace,
-  restoreDraft,
-  previewColumnPercent,
-  previewPaneRef,
-  previewVisible,
-  referenceColumnPercent,
-  referenceCompare,
-  referencePaneVisible,
-  referenceCopy,
-  referenceNarrowFocus,
-  reviewTabAgainstDisk,
-  runSelectedFileCompare,
-  safeEditorCopy,
-  setReferenceColumnPercent,
-  setReferenceNarrowFocus,
-  scrollHudContext,
-  scrollHudLine,
-  scrollHudVisible,
-  selectedImage,
-  selectWorkspaceCompareFile,
-  setSelectionInfo,
-  sidePaneCopy,
-  slashCommands,
-  slashMenuCopy,
-  sidePaneMode,
-  sidePaneVisible,
-  releaseEditorGuard,
-  releasePreviewGuard,
-  syncEditorScroll,
-  syncPreviewScroll,
-  tabs,
-  outlineTruncated,
-  workspaceRootPath,
-  workspaceSidebarCollapsedOverride,
-  workspaceTree,
-}: AppWorkspaceProps) {
+export function AppWorkspace(props: AppWorkspaceProps) {
+  const {
+    documentChrome,
+    onReadingOverlayChange,
+    compactPreviewFocus = "editor",
+    onCompactPreviewFocusChange,
+    activeContents,
+    activeDocumentLineCount,
+    activeMatchIndex,
+    activeTab,
+    approvedImageRoots,
+    bookScopeChapters = [],
+    bookScopeUnavailable = [],
+    appleAssistCopy,
+    appleAssistGenerationLock = null,
+    onApplyLocalAssistProposal,
+    onDiscardLocalAssistProposal,
+    proposalReviewRef,
+    onReturnToEditing,
+    proposalReviewVisible = false,
+    readingFocusIntent = null,
+    clearCompareSource,
+    clearCompareTarget,
+    closeCompareView,
+    closeReferenceCompare,
+    onPdfPageIndexChange,
+    onReloadReference,
+    onResumeReferenceFollow,
+    onShowReferenceDiff,
+    pdfPageIndex,
+    referenceFollowPaused,
+    compareAnchor,
+    compareTarget,
+    compareView,
+    createNewFile,
+    discardDraft,
+    currentHeadingLine,
+    documentStructureItems,
+    documentStructureAdvisories,
+    documentKey,
+    editorPaneRef,
+    editorPreviewGridRef,
+    editorPreviewGridStyle,
+    editorSettings,
+    onReadingFontSizeChange,
+    editorTheme,
+    findMatches,
+    getCompareCaseByKey,
+    handleEditorChange,
+    handlePasteImage,
+    handlePreviewResizeKeyDown,
+    handlePreviewResizePointerDown,
+    handlePreviewResizePointerMove,
+    handleSendSelectionToAgent,
+    hasWorkspaceSelection,
+    hideSidePane,
+    jumpToHeading,
+    changeHeadingLevel,
+    lModeCopy,
+    onApplyBackup,
+    onApproveLocalImageParent,
+    menuLanguage,
+    onWorkspaceSidebarCollapsedChange,
+    restoreComplete,
+    openFile,
+    openFilePath,
+    openPreviewMarkdownLink,
+    openReferenceFile,
+    openWorkspace,
+    openWorkspacePath,
+    openWorkspaceFile,
+    orphanPathlessDrafts = [],
+    recentFolders,
+    recoveryCopy,
+    reopenPersistedWorkspace,
+    restoreDraft,
+    previewColumnPercent,
+    previewPaneRef,
+    previewVisible,
+    referenceColumnPercent,
+    referenceCompare,
+    referencePaneVisible,
+    referenceCopy,
+    referenceNarrowFocus,
+    reviewTabAgainstDisk,
+    runSelectedFileCompare,
+    safeEditorCopy,
+    setReferenceColumnPercent,
+    setReferenceNarrowFocus,
+    scrollHudContext,
+    scrollHudLine,
+    scrollHudVisible,
+    selectedImage,
+    setSelectionInfo,
+    sidePaneCopy,
+    slashCommands,
+    slashMenuCopy,
+    sidePaneMode,
+    sidePaneVisible,
+    releaseEditorGuard,
+    releasePreviewGuard,
+    syncEditorScroll,
+    syncPreviewScroll,
+    tabs,
+    outlineTruncated,
+    workspaceRootPath,
+    workspaceSidebarCollapsedOverride,
+  } = props;
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
   const {
@@ -795,83 +768,23 @@ export function AppWorkspace({
         </div>
       ) : (
         <WorkspaceSidebar
-          activePath={selectedImage?.path ?? activeTab?.path ?? null}
-          bookScopeChapterRelativePaths={bookScopeChapterRelativePaths}
-          bookScopeNodes={bookScopeNodes}
-          bookScopeChapters={bookScopeChapters}
-          bookScopeReaderLoading={bookReaderLoading}
-          bookScopeResolving={bookScopeResolving}
-          bookScopeSuggesting={bookScopeSuggesting}
-          bookScopeSuggestionError={bookScopeSuggestionError}
-          bookScopeUnavailable={bookScopeUnavailable}
-          compareSelectionEnabled={sidePaneMode === "compare"}
-          compareSourcePath={compareAnchor?.path ?? null}
-          compareTargetPath={compareTarget?.path ?? null}
-          copy={safeEditorCopy}
-          dirtyFilePaths={workspaceTabMarkers.dirtyFilePaths}
-          fileOpsCopy={fileOpsCopy}
-          menuLanguage={menuLanguage}
-          onOpenGlobalSearch={onOpenGlobalSearch}
-          onCommitBookScope={commitBookScopeNodes}
-          onCancelBookScopeSuggestion={cancelBookScopeSuggestion}
-          onCreateBookScopeSuggestion={createBookScopeSuggestion}
-          onExportBookRecipe={exportBookRecipe}
-          onImportBookRecipeDraft={importBookRecipeDraft}
-          onCollapse={
-            editorSettings.lModeEnabled
-              ? undefined
-              : () => setWorkspaceSidebarCollapsed(true)
-          }
-          onCreateFile={() => {
-            if (workspaceRootPath) {
-              void createFile(workspaceRootPath);
-            }
-          }}
-          onCreateFolder={() => {
-            if (workspaceRootPath) {
-              void createFolder(workspaceRootPath);
-            }
-          }}
-          onCreateOkfScaffoldMinimal={() => {
-            if (workspaceRootPath) {
-              void createOkfScaffoldAt(workspaceRootPath, "minimal");
-            }
-          }}
-          onCreateOkfScaffoldBookLike={() => {
-            if (workspaceRootPath) {
-              void createOkfScaffoldAt(workspaceRootPath, "book-like");
-            }
-          }}
-          onLoadDirectory={loadWorkspaceDirectory}
-          onWorkspaceDirectoryExpanded={onWorkspaceDirectoryExpanded}
-          onWorkspaceTreeVisibilityChange={onWorkspaceTreeVisibilityChange}
-          onRefreshWorkspace={onRefreshWorkspace}
-          treeVisible={!editorSettings.lModeEnabled && !readingOverlayActive}
-          onMoveEntry={onMoveEntry}
-          onMoveToTrash={onMoveToTrash}
-          onOpenContextMenu={openWorkspaceContextMenu}
-          onOpenRootContextMenu={openRootWorkspaceContextMenu}
-          onOpenFile={(path) => void openWorkspaceFile(path)}
-          onOpenWorkspace={() => void openWorkspace()}
-          onReadBookScope={() => void openBookScopeReader()}
-          onReviewChapterChanges={createChapterReviewHandler({
-            requestRef: chapterReviewRequestRef,
-            queueRef: chapterReviewQueueRef,
-            openFilePath,
-            reviewTabAgainstDisk,
-          })}
-          onRevalidateBookScope={revalidateBookScope}
-          openFilePaths={workspaceTabMarkers.openFilePaths}
-          onClearCompareSelection={() => {
-            clearCompareSource();
-            clearCompareTarget();
-          }}
-          onSelectCompareFile={selectWorkspaceCompareFile}
-          onSubmitRename={onSubmitRename}
-          renamingPath={renamingPath}
-          requestRename={requestRename}
-          workspaceRootPath={workspaceRootPath}
-          workspaceTree={workspaceTree}
+          {...buildWorkspaceSidebarProps(
+            { ...props, workspaceTabMarkers },
+            {
+              bookScopeReaderLoading: bookReaderLoading,
+              onCollapse: editorSettings.lModeEnabled
+                ? undefined
+                : () => setWorkspaceSidebarCollapsed(true),
+              onReadBookScope: () => void openBookScopeReader(),
+              onReviewChapterChanges: createChapterReviewHandler({
+                requestRef: chapterReviewRequestRef,
+                queueRef: chapterReviewQueueRef,
+                openFilePath,
+                reviewTabAgainstDisk,
+              }),
+              treeVisible: !editorSettings.lModeEnabled && !readingOverlayActive,
+            },
+          )}
         />
       )}
       {!isWorkspaceSidebarCollapsed &&

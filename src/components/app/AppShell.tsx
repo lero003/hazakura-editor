@@ -27,6 +27,7 @@ import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { createChapterReviewHandler } from "../../features/workspace/chapterReviewHandler";
+import { buildWorkspaceSidebarProps } from "../../features/workspace/workspaceSidebarProps";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
 import type { LocalAssistProposal } from "../../features/editor/localAssistProposal";
 import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposal";
@@ -358,83 +359,17 @@ export function AppShell(props: AppShellProps) {
             }
             reviewChangesAvailable={props.activeDirty}
             typewriterModeEnabled={props.editorSettings.lModeTypewriter}
-            workspaceSidebarProps={{
-              onOpenGlobalSearch: () => props.onOpenGlobalSearch(),
-              activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
-              bookScopeChapterRelativePaths: props.bookScopeChapterRelativePaths,
-              bookScopeNodes: props.bookScopeNodes,
-              bookScopeChapters: props.bookScopeChapters,
-              bookScopeResolving: props.bookScopeResolving,
-              bookScopeSuggesting: props.bookScopeSuggesting,
-              bookScopeSuggestionError: props.bookScopeSuggestionError,
-              bookScopeUnavailable: props.bookScopeUnavailable,
-              compareSelectionEnabled: props.sidePaneMode === "compare",
-              compareSourcePath: props.compareAnchor?.path ?? null,
-              compareTargetPath: props.compareTarget?.path ?? null,
-              copy: props.safeEditorCopy,
-              dirtyFilePaths: workspaceTabMarkers.dirtyFilePaths,
-              fileOpsCopy: props.fileOpsCopy,
-              menuLanguage: props.menuLanguage,
-              onCommitBookScope: props.commitBookScopeNodes,
-              onCancelBookScopeSuggestion: props.cancelBookScopeSuggestion,
-              onCreateBookScopeSuggestion: props.createBookScopeSuggestion,
-              onExportBookRecipe: props.exportBookRecipe,
-              onImportBookRecipeDraft: props.importBookRecipeDraft,
-              onCreateFile: () => {
-                if (props.workspaceRootPath) {
-                  void props.createFile(props.workspaceRootPath);
-                }
+            workspaceSidebarProps={buildWorkspaceSidebarProps(
+              { ...props, workspaceTabMarkers },
+              {
+                onReviewChapterChanges: createChapterReviewHandler({
+                  requestRef: chapterReviewRequestRef,
+                  queueRef: chapterReviewQueueRef,
+                  openFilePath: props.openFilePath,
+                  reviewTabAgainstDisk: props.reviewTabAgainstDisk,
+                }),
               },
-              onCreateFolder: () => {
-                if (props.workspaceRootPath) {
-                  void props.createFolder(props.workspaceRootPath);
-                }
-              },
-              onCreateOkfScaffoldMinimal: () => {
-                if (props.workspaceRootPath) {
-                  void props.createOkfScaffoldAt(
-                    props.workspaceRootPath,
-                    "minimal",
-                  );
-                }
-              },
-              onCreateOkfScaffoldBookLike: () => {
-                if (props.workspaceRootPath) {
-                  void props.createOkfScaffoldAt(
-                    props.workspaceRootPath,
-                    "book-like",
-                  );
-                }
-              },
-              onLoadDirectory: props.loadWorkspaceDirectory,
-              onWorkspaceDirectoryExpanded: props.onWorkspaceDirectoryExpanded,
-              onWorkspaceTreeVisibilityChange: props.onWorkspaceTreeVisibilityChange,
-              onRefreshWorkspace: props.onRefreshWorkspace,
-              onMoveEntry: props.onMoveEntry,
-              onMoveToTrash: props.onMoveToTrash,
-              onOpenContextMenu: props.openWorkspaceContextMenu,
-              onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
-              onOpenFile: (path) => void props.openWorkspaceFile(path),
-              onOpenWorkspace: () => void props.openWorkspace(),
-              onReviewChapterChanges: createChapterReviewHandler({
-                requestRef: chapterReviewRequestRef,
-                queueRef: chapterReviewQueueRef,
-                openFilePath: props.openFilePath,
-                reviewTabAgainstDisk: props.reviewTabAgainstDisk,
-              }),
-              onRevalidateBookScope: props.revalidateBookScope,
-              openFilePaths: workspaceTabMarkers.openFilePaths,
-              onClearCompareSelection: () => {
-                props.clearCompareSource();
-                props.clearCompareTarget();
-              },
-              onSelectCompareFile: props.selectWorkspaceCompareFile,
-              onSubmitRename: props.onSubmitRename,
-              renamingPath: props.renamingPath,
-              requestRename: props.requestRename,
-              workspaceRootPath: props.workspaceRootPath,
-              workspaceTree: props.workspaceTree,
-            }}
+            )}
           />
         </>
       ) : null}
