@@ -24,8 +24,8 @@ export function usePreviewMediaAccessKey(
 /**
  * Runs the action carried by a rendered `data-hazakura-image-action` element.
  * Only the "approve-parent" action exists today. Link interception stays with
- * each pane: the reader ignores clicks while a selection gesture is active,
- * the standard preview pane does not.
+ * each pane: the standard preview ignores link clicks while a selection
+ * gesture is active, the reader does not.
  */
 export function applyPreviewMediaAction(
   actionHost: Element,

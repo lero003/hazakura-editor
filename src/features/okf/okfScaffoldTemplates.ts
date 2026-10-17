@@ -127,4 +127,3 @@ export function getOkfScaffoldTemplate(
 ): OkfScaffoldTemplate {
   return materializeTemplate(TEMPLATES[id], createdAt);
 }
-

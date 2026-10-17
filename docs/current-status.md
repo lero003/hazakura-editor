@@ -3,11 +3,21 @@
 Status: Operational
 Scope: v3.3依存削減候補、v3.2.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-10-17
+Last reviewed: 2026-10-18
 
 ## Current State
 
-- **現行source v3.3.0（2026-10-17、build 164署名候補）:** native dialogを同じrfdへ直接集約して
+- **v3.3内部整理のレビュー受け入れ（2026-10-18）:** `2c8cf98d..e50cc551` の
+  購読共通化・責務分離・未参照コード削除をレビューし、新規の実行時不具合は見つからなかった。
+  選択中リンク処理の説明、完了状態と検証記録、末尾空行を訂正した。
+  型検査・両lane Vite・surface 137件・scripts 31件、Rust 515成功 / 4 ignoredを再確認した。
+  frontend全体は2,910成功 / 2失敗。入口の20秒timeoutと後続mock回数不一致で、
+  当該7件は上限120秒で成功し、変更前でも入口読み込みが約32秒かかることを確認した。
+  詳細は[内部整理のレビュー記録](reviews/2026-10-17-refactor-slices-review-request.md)。
+  build 164は下記の旧source候補を維持する。新sourceのメニュー・分離窓テーマ・IME/L Modeは
+  実機未確認で、署名候補のローカル作成とTestFlight / upload / 公開を分けて扱う。
+
+- **v3.3.0依存削減の基準候補（2026-10-17、build 164署名候補）:** native dialogを同じrfdへ直接集約して
   plugin 3件を除去し、破棄・モデル操作の確認を明示的な非同期待機へ修正した。
   日本語codecをmacOS iconvと限定的な互換処理へ委譲し、macOS製品経路からさらに4件を外した。
   encoding_rsは比較test/非macOS fallback、simdutf8はUTF-8検証に維持。残存版・取得元は変更していない。
@@ -25,7 +35,8 @@ Last reviewed: 2026-10-17
   今回4変更の個別撤回は両targetの解決・noticeを照合。撤回後のnative compile・runtime・全UI操作は未実施。
   [PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)はfrontend・native成功。
   clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、署名・同梱物・digestをローカル確認した。
-  path/hashはignoredの `docs/internal/app-store-candidates/latest.json` が正本。build 163は保持している。
+  当時のpath/hashはignoredの候補ディレクトリ内 `HazakuraEditor-3.3.0-build164.json` を参照。
+  `latest.json` は後続候補を指すためbuild 164の照合には使わない。build 163は保持している。
   macOS 26.6.2/Apple Siliconでcodec比較も成功。同一署名候補のIME/VoiceOver・Intel・macOS 26のGUI・
   大きなlegacy workspace・sandbox外部PDF取込・TestFlight・upload・公開は未確認。
   先行する圧縮無効化の約1.8 MB増とPDF parser多様性の低下も引き続き評価する。

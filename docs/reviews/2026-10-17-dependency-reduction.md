@@ -13,7 +13,8 @@ UTF-8のSIMD検証は維持したが、legacy原稿の処理は遅くなった�
 
 前候補を触って問題なしとのオーナー報告を受けた追加作業。今回を含むPR #59のHEAD `049813ea` は外部レビューで指摘なし。
 clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、署名・同梱物・digestをローカル確認した。
-候補のpath/hashはignoredの `docs/internal/app-store-candidates/latest.json` が正本。build 163は保持。upload・公開は未実施。
+当時のpath/hashはignoredの候補ディレクトリ内 `HazakuraEditor-3.3.0-build164.json` を参照。
+`latest.json` は後続候補を指すためbuild 164の照合には使わない。build 163は保持。upload・公開は未実施。
 前回の採否・HTTP/PDF・容量・撤回試験は[3.3.0全体記録](../releases/3.3.0-dependency-autonomy.md)に保持する。
 
 ## 採用した変更と保守範囲

@@ -69,4 +69,3 @@ export function conceptIdFromRelativePath(relativePath: string): string {
   }
   return normalized;
 }
-

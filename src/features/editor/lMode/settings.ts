@@ -48,4 +48,3 @@ export function parseLModeSettings(
         : LMODE_SETTINGS_DEFAULTS.lModeTypewriter,
   };
 }
-

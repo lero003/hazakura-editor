@@ -3,9 +3,22 @@
 Status: Operational
 Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-10-17
+Last reviewed: 2026-10-18
 
-## 現行候補 — v3.3依存削減の追加（2026-10-17）
+## 内部整理 — レビュー受け入れ（2026-10-18）
+
+`2c8cf98d..e50cc551` の内部整理は、新規の実行時不具合を指摘する根拠なし。
+選択中リンクの説明、完了済みスライスと検証結果の記録、末尾空行を訂正した。
+型検査・両lane Vite・surface 137件・scripts 31件、Rust 515成功 / 4 ignoredを再確認。
+frontendは2,910成功 / 2失敗で、入口の20秒timeoutと後続mock回数不一致。
+当該7件は上限120秒で成功し、変更前も入口読み込みに約32秒を要した。
+[レビュー記録](reviews/2026-10-17-refactor-slices-review-request.md)を次の入口とする。
+build 164の旧候補と新source候補を混同せず、pkgのsource・build・hashは
+ignoredの `docs/internal/app-store-candidates/latest.json` で照合する。
+次は新source候補のメニュー、分離窓テーマ、IME/L Modeを実機で確認する。
+不可視文字のmount/reconfigure差と未到達Rustコマンド2件の扱いは別スライスに残す。
+
+## 基準候補 — v3.3依存削減の追加（2026-10-17）
 
 source候補は3.3.0。前候補を触って問題なしとのオーナー報告を受け、追加4変更を実装した。
 macOS Cargoの保守的なruntime/build集合は254→247件、初期追加基準301件から54件減。
@@ -30,7 +43,8 @@ UTF-8の速度は測定上同程度だがlegacyは遅い。JIS0212連続10 MiB�
 撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の試験とは区別し、再採用時は対象testと両laneを再確認する。
 [PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)はfrontend・native成功。
 clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、ローカル署名・同梱物・digestを確認した。
-path/hashはignoredの `docs/internal/app-store-candidates/latest.json` を参照。build 163は保持している。
+当時のpath/hashはignoredの候補ディレクトリ内 `HazakuraEditor-3.3.0-build164.json` を参照。
+`latest.json` は後続候補を指すためbuild 164の照合には使わない。build 163は保持している。
 次は同一署名候補のIME・VoiceOver・Intel・macOS 26のGUI・大きなlegacy workspace・sandbox外部PDF取込を受け入れる。
 macOS 26.6.2/Apple Siliconのcodec比較成功をGUI/TestFlight受け入れへ読み替えない。upload・公開は未実施。
 受け入れ後は見直しメモ・縦書きへ戻り、さらなる撤去を新機能の必須条件にしない。

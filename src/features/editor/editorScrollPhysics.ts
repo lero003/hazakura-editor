@@ -276,4 +276,3 @@ export function keepBottomAfterScrollbarDrag(
 
   win.requestAnimationFrame(settle);
 }
-

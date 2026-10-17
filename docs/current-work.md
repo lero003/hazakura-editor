@@ -3,9 +3,9 @@
 Status: Operational
 Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の記録
 Authority: High
-Last reviewed: 2026-10-17
+Last reviewed: 2026-10-18
 
-## 現行キュー — v3.3依存削減の追加候補（2026-10-17）
+## 基準候補 — v3.3依存削減の追加（2026-10-17）
 
 source候補は3.3.0。前候補を触って問題なしとのオーナー報告を受け、削減をもう一段進めた。
 macOS両architectureの保守的なCargo runtime/build集合は今回254→247件、基準 `25f21528` の301件から54件減。
@@ -27,7 +27,8 @@ UTF-8の測定時間は旧経路と同程度だが、大きなlegacy原稿の処
 
 [PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)もfrontend・native成功。
 clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、ローカル署名・同梱物・digestを確認した。
-候補のpathとhashはignoredの `docs/internal/app-store-candidates/latest.json` を参照。build 163は保持している。
+当時のpathとhashはignoredの候補ディレクトリ内 `HazakuraEditor-3.3.0-build164.json` を参照。
+`latest.json` は後続候補を指すためbuild 164の照合には使わない。build 163は保持している。
 次は同一署名候補のIME・VoiceOver・Intel・macOS 26のGUI・大きなlegacy workspace・sandbox外部PDF取込を受け入れる。
 macOS 26.6.2/Apple SiliconのCIでcodec比較は成功したが、GUI・TestFlight・upload・公開は未確認。
 今回4変更を個別撤回して両targetの解決・noticeを照合した。
@@ -44,9 +45,17 @@ Tauri購読の共通フック化・lMode循環import解消・プレビュー重�
 helper transportの共有化、menu/core_ai_modelsの分割、invoke/権限の静的テスト追加。
 依存宣言・保存形式・境界・文言は変更していない。
 
-frontend 2,912件 / 313 files、scripts 31件、型検査、両lane Vite buildと境界検査、Rust 511件が通過。
-実機確認（分離窓テーマ、IME/L Mode、Reader）とsurface 134件の一括実行は未実施。
-延期したスライスと見送り理由は[レビュー依頼文](reviews/2026-10-17-refactor-slices-review-request.md)に記載する。
+実装時はfrontend 2,912件 / 313 files、scripts 31件、型検査、両lane Vite buildと境界検査が通過。
+2026-10-18の外部レビューでは固定範囲 `2c8cf98d..e50cc551` に新規の実行時不具合の指摘なし。
+説明・完了状態・検証記録と末尾空行を訂正した。型検査、両lane Vite、surface 137件、scripts 31件は再検証成功。
+Rustは相補的な2回で全519件を網羅（515 pass / 4 ignored、PTY4件も成功）。
+frontend全体の再実行は2,910 pass / 2 fail（初回importの20秒timeoutと後続mock回数不一致）。
+当該7件は上限120秒で成功し、基準 `2c8cf98d` でも最初のimportに約32.06秒を要した。
+標準設定の全件再実行成功とは区別する。実機確認（メニューバー、分離窓テーマ、IME/L Mode、Reader等）は未実施。
+H2は8/10箇所を移行済み。保留・見送り理由とレビュー結果は
+[レビュー依頼文](reviews/2026-10-17-refactor-slices-review-request.md)に記載する。
+build 164のsourceは `049813ea` のまま。後続pkgのsource・build・hashは
+ignoredの `docs/internal/app-store-candidates/latest.json` で照合し、新source候補の実機確認へ進む。
 
 ## 公開済み — v3.2.1ワークスペース一覧更新
 

@@ -1,6 +1,6 @@
 # リファクタリング・スライス 外部レビュー依頼（2026-10-17）
 
-Status: Advisory / 自動検証済み・実機未実施、残スライスあり
+Status: Advisory / 外部レビュー済み・実機未実施、残スライスあり
 Scope: 挙動を変えないコード改修（未参照コード削除、重複統合、責務分離、未使用検出の有効化）とその検証
 
 Hazakura Editorの現行source（v3.3.0依存削減の受け入れ候補 `049813ea` / build 164 の後続）に対して、
@@ -13,9 +13,9 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 
 ## レビュー対象の固定点
 
-- 変更差分: `2c8cf98d`（v3.3.0 build 164記録）から本レビュー資料commitまでの連続したcommit。
+- 変更差分: `2c8cf98d..e50cc551`（v3.3.0 build 164記録からの38コミット）。以下は代表コミット。
   - `445b7607` 未参照のexport関数を削除し宣言面を整理
-  - `b50decc1` Tauri購読のライフサイクルを共通フック化し5箇所を移行
+  - `b50decc1` Tauri購読のライフサイクルを共通フック化（commitタイトルは5箇所だが、実際は6フックを移行）
   - `c0aa90cd` lModeの循環importをcontextモジュールへ分離
   - `2dee3d35` プレビューのmedia access重複を共通モジュールへ統合
   - `52c01c5f` 分離窓のテーマ初期化とLocal Assist copy表を共有モジュールへ分離
@@ -40,16 +40,17 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
    `.editor-host`、`lib/focusTrap.ts` は完全版）と**同名・別セマンティクスの第2コピー**で
    参照ゼロでした。barrel再export3行とテストの不要mock1行も同時に整理。
 2. **Tauri購読の共通化** — `useTauriSubscription`（購読ハンドルの解決前/解決後cancel、cleanup時の
-   一度だけのrelease、`enabled`ゲート）を追加し、手書きだった購読effect 5箇所
+   一度だけのrelease、`enabled`ゲート）を追加し、初回に手書きだった購読effect 6箇所
    （`useAppExitConfirmation` / `useWindowCloseConfirmation` / `useAppleAssistAvailability` /
    `useWindowDragDrop` / `useOpenedFilesListener` / `useMainWindowWorkspace`の購読部分）を移行。
-   各サイトのエラー処理・依存配列・登録解除の意味は変えていません。
+   後続で `useCoreAiModelCatalog` / `useLocalAssistReviewNavigation` も移行し、計8/10箇所。
+   各サイトのエラー処理・依存配列・登録解除の意味を維持し、購読失敗時のsnapshot更新も保持しました。
 3. **lModeの循環import解消** — `LModeContext` 型と `lModeContextFacet` を `lMode/context.ts` へ分離し、
    `contentDecorations.ts` が orchestrator（`extension.ts`）を参照しない形にしました。
    `extension.ts` は再exportで既存パスを維持。
 4. **プレビューの重複統合** — `mediaAccessKey`（EBookPane/PreviewPaneで完全一致）と
    `handleMediaAction`（同）を `previewMediaActions.ts` へ。リンク遮断は両者で挙動が違う
-   （Readerは選択ジェスチャ中を無視、通常プレビューは無視しない）ため統合せず、その差をコメントで固定。
+   （通常Previewには選択ジェスチャ中のガードがあり、Readerにはない）ため統合せず、その差をコメントで固定。
 5. **分離窓の共通化** — `readInitialTheme`（Agent/Local Assistで11行完全一致、sakura→edohiganの
    読み取り時移行を含む）とdocumentへのテーマ適用を `features/app/detachedWindowTheme.ts` へ。
    Local Assist窓のcopy表（型・`getAppleAssistWindowCopy`・presetビルダー・フィードバック型、
@@ -127,29 +128,30 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 ## 検証済みの範囲（この変更の後）
 
 - `npm run typecheck`（`noUnusedLocals` / `noUnusedParameters` 有効）: 成功。
-- `npm test`: frontend **2,912件 / 313 files**、scripts **31件** 成功。
+- 実装時の最終実行では frontend **2,912件 / 313 files**、scripts **31件** 成功を記録。
+  外部レビュー時の再検証結果と制約は下の「外部レビュー結果」に記載します。
 - `npm run build:vite`: Developer lane成功（`hasAgentEntry` / `hasXtermScript` / `hasAgentStyles` = true）。
   `HAZAKURA_DISTRIBUTION_LANE=app-store` でも成功し、境界検査は
   `hasAgentStyles: false` / `hasXtermScript: false` / `hasXtermStyles: false` を確認。
 - Rust側の検証は下の「Rust側」に記載（`cargo fmt --check`、`cargo test --locked`）。
+- `npm run smoke:app-store-surface`: **137件 / 10 files** 成功。
 
 ## 未実施・未確認
 
 - **実機確認は未実施**。テーマ適用、IME/折り返し、L Mode、Reader、書き出し、ウィンドウ購読の
   実挙動は自動テストのみです。特に分離窓（Agent / Local Assist）のテーマ追従は
   描画テストが薄く、手動確認が必要です。
-- `npm run smoke:app-store-surface`（surface 137件）成功。`npm test` に含まれる10ファイルも通過。
 - 署名build、TestFlight、Intel、macOS 26 GUI、VoiceOverは対象外です。
 - **メニューバーの実機smokeは未実施**（Rust R4の分割）。分離窓のテーマ追従も手動確認が必要です。
-- 残スライス（下記）は未実施です。
+- 下記の保留・見送り部分は未実施です。
 
-## 残スライスの状態（本レビュー時点）
+## スライスの状態（本レビュー時点）
 
 | スライス | 状態 |
 |---|---|
 | H2 Tauri購読の共通フック化 | **8/10 移行済み**。残る `useAppMenuActionListener`（150行のインラインハンドラを再インデントする必要があり、差分が大きい）と `useAppleAssistProposalHandler`（register/unregister + 2リスナー + job後始末が1つのownerライフサイクルを共有）は、共通フックに載せる利得より移設リスクが上と判断して保留（どちらも動作は現状維持） |
-| S6 WorkspaceSidebar 45 props の二重配線 | **完了**。`buildWorkspaceSidebarProps(source, extras)` へ一本化（下記14） |
-| S9 EditorPane の分離 | **完了（分割の範囲内）**。スクロール/選択ヘルパ261行の移設に加え、7つのcompartment値（折り返し・不可視文字・タブ幅・スペルチェック・テーマ・L Mode・読み取り専用）の計算を `features/editor/editorExtensionSet.ts` に集約し、mount配列と7つのreconfigure effectの二重定義を解消（下記14）。mount effect自体の分割は、IME/L Mode/破棄契約が同居するため対象外のまま |
+| S6 WorkspaceSidebar 45 props の二重配線 | **完了**。`buildWorkspaceSidebarProps(source, extras)` へ一本化（上記13） |
+| S9 EditorPane の分離 | **完了（分割の範囲内）**。スクロール/選択ヘルパ261行の移設に加え、7つのcompartment値（折り返し・不可視文字・タブ幅・スペルチェック・テーマ・L Mode・読み取り専用）の計算を `features/editor/editorExtensionSet.ts` に集約し、mount配列と7つのreconfigure effectの二重定義を解消（上記10・14）。mount effect自体の分割は、IME/L Mode/破棄契約が同居するため対象外のまま |
 | S3b Tauriモックビルダー | **実益が減少**。バレル廃止（上記11）でモックが per-area の狭いモックになり、共通ビルダーで置き換える利得が小さくなったため見送り |
 | S5 レーン判定のcapability集約 / H3 操作ガード共通化 | 見送り（理由は下表） |
 
@@ -159,9 +161,8 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 |---|---|
 | レーン判定を `getDistributionCapabilities()` に集約 | 見送り。`import.meta.env` の読み取りは既に `distributionLane.ts` 1箇所で、述語も同モジュール内。呼び出し側の述語の使い分けは意味が異なるため、集約の実益が小さい |
 | `useWorkspaceFileOps` の操作ガード共通化 | 見送り。共通化すると `workspaceRootPath` の非null絞り込みがヘルパ越しに伝わらず、全呼び出しでrootの持ち回りが必要になり侵襲的。`captureOperation` 自体は既に共通 |
-| `WorkspaceSidebar` 45 props の二重配線統合（本丸） | 一部実施。章レビューハンドラは共有化済み（上記8）。残る45 propsは両サイトでキー集合が一致し（AppWorkspace側の追加は `bookScopeReaderLoading` / `onCollapse` / `onReadBookScope` / `treeVisible` の4つのみ）、**機械照合で確認済み**。ただし値の供給元が AppShell=すべて `props.X`、AppWorkspace=`props` の分割代入＋Book Scopeコントローラ等のローカルで、10キーはソース名が異なる。単一ソース型を渡すには AppWorkspace の signature 変更と供給元の統一が必要なため独立スライス |
-| テストヘルパ共通化（`vi.mock` factory 881行、CSS `ruleBody` 8ファイル重複） | 延期。テスト専用の独立スライス |
-| `EditorPane` の純関数260行とCodeMirror拡張組み立て（14生成箇所）分離 | 延期。IME/L Modeの実機受け入れと、実装ソース文字列を読むテストの更新を伴う |
+| Tauriモックの共通ビルダー | 見送り。互換バレル廃止でper-areaの狭いモックとなり実益が減少。CSSヘルパとファイル読み取りの共通化は完了済み |
+| `EditorPane` のmount effect自体の分割 | 対象外。ヘルパ分離とcompartment値集約は完了済み。IME/L Mode/破棄契約が同居するeffectの分割は行わない |
 | `EBookPane` のページ計測統合 | 対象外。順序変更が実機ページ送りと縦書きに波及する |
 
 ## Rust側
@@ -176,12 +177,13 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 - `capabilities/agent-window.json` の説明文を実態（gate対象コマンド）に修正。
   `src/buildScripts.test.ts` に「frontendのinvoke名 ⊆ `generate_handler!` 登録名」
   「未使用コマンドは明示allowlistのみ」「allowlist名は登録済み」の静的テストを追加。
-- 検証（この変更の後、レビュー側で再実行可能）:
+- 実装時の検証:
   - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`: 成功。
   - `cargo test --locked --manifest-path src-tauri/Cargo.toml`: **511 passed / 4 failed / 4 ignored**。
     失敗4件はすべて `tests::agent_workbench::*_pty_*` 系で、`"Cannot open provider PTY master."`。
     この環境では `python3 -c "import pty; pty.openpty()"` も `out of pty devices` で失敗し、
     **PTYを確保できない実行環境の制約**です（変更前から同一）。
+    外部レビュー時にはPTY4件も成功を確認しました（下記）。
   - `npx vitest run src/buildScripts.test.ts`: 31件成功（IPC surfaceテスト3件を含む）。
   - `npx tsc --noEmit`: エラーなし。
 - 独立スポットチェック: `menu.rs` の `MenuItem::with_id` ID集合は分割前後で完全一致、
@@ -200,12 +202,29 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 
 ## レビュアーに求める判定
 
-1. 上記6スライス（Rust分を含む）に、**挙動が変わる差分が混ざっていないか**。
+1. 上記15スライスとRust側の変更に、**挙動が変わる差分が混ざっていないか**。
    特に (a) `useTauriSubscription` 移行で購読タイミング・解除回数・依存配列の意味が
    変わっていないか、(b) lModeの `LModeContext` 移設で再export経路が欠けていないか、
    (c) copy表の移設で文字列・キー集合が1文字も変わっていないか、
    (d) `noUnusedLocals` 有効化で「未使用に見えるが実は必要な宣言」を消していないか。
 2. 移設・削除の根拠にした機械照合（importグラフ、完全一致ブロックの同定）に見落としがないか。
    動的参照・文字列参照・barrel経由の再exportで消してはいけないものを消していないか。
-3. 残スライスの優先順位づけが妥当か。延期理由（型の絞り込み、供給元の違い、実機依存）に
+3. 残スライスの優先順位づけが妥当か。見送り理由（型の絞り込み、ownerライフサイクル、実機依存）に
    誤りがあれば指摘してください。新機能の提案より、既存の信頼境界・保存モデルの維持を優先します。
+
+## 外部レビュー結果（2026-10-18）
+
+固定範囲 `2c8cf98d..e50cc551` では新規の実行時不具合を指摘されませんでした。
+通常PreviewとReaderの選択中ガードの説明が逆だった点、完了状態・検証記録の旧記載、
+末尾空行を訂正しました。不可視文字の既存差と未使用Rustコマンドの扱いは別判断のままです。
+
+- 型検査、両lane Vite、App Store surface **137件**、scripts **31件**は再検証成功。
+- Rustは相補的な2回の実行で全519件を網羅（**515 pass / 4 ignored**）。PTY4件も成功を確認。
+  単一の全件実行成功とは区別します。
+- frontend全体の再実行（`maxWorkers: 2`）は **2,910 pass / 2 fail**。
+  最初の `main` importが20秒でtimeoutし、後続テストではmock呼び出しが2回となりました。
+  当該ファイルの7件は上限120秒で全件成功。基準 `2c8cf98d` でも同じ上限で7件成功し、
+  最初のimportは約32.06秒でした。標準設定で全体再実行が成功したとは扱いません。
+
+メニューバー、分離窓のテーマ追従、IME/L Mode等の実機確認は未実施です。
+このレビューはmergeや新しい署名pkgの作成・実機受け入れを示すものではありません。
