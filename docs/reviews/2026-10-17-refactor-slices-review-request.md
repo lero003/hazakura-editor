@@ -59,6 +59,12 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 6. **未使用検出の有効化** — `tsconfig.json` に `noUnusedLocals` / `noUnusedParameters` を追加。
    有効化に先立ち、検出された55件（未使用import・未使用の分割代入props・未使用ローカル・
    未使用型）を削除。挙動に影響する箇所はありません（テストの未使用ローカル1件を含む）。
+7. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+   `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
+   （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
+   （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
+   `ctx.openGlobalSearch: () => void` として遅延参照にし、依存配列は変更していません
+   （元の closure が呼び出し時に読む挙動と同じ）。
 
 ## 意図的に変えていないもの
 
@@ -94,7 +100,6 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 |---|---|
 | レーン判定を `getDistributionCapabilities()` に集約 | 見送り。`import.meta.env` の読み取りは既に `distributionLane.ts` 1箇所で、述語も同モジュール内。呼び出し側の述語の使い分けは意味が異なるため、集約の実益が小さい |
 | `useWorkspaceFileOps` の操作ガード共通化 | 見送り。共通化すると `workspaceRootPath` の非null絞り込みがヘルパ越しに伝わらず、全呼び出しでrootの持ち回りが必要になり侵襲的。`captureOperation` 自体は既に共通 |
-| コマンドパレットの650行 `useMemo` 分割 | 延期。`buildCommandCommands(ctx)` への抽出は有効だが、ctx 13項目の型付けと36コマンドの移設を伴うため独立スライス |
 | `useAppShellController` の Reference Compare面切り出し | 延期。353キーの戻り値と `AppShellProps` spread が契約で、キー配置を変えない移設として実施する |
 | `WorkspaceSidebar` 45 props の二重配線統合 | 延期。AppShell側は `props`、AppWorkspace側はローカル値・ローカルstateで供給元が異なり、共通ソース型の導入が必要 |
 | 互換barrel（`lib/tauri` 70箇所 / `lib/locale` 23箇所）廃止 | 延期。機械的だが、barrelをモックしているテスト32ファイルの追従を伴う |
