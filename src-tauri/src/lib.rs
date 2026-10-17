@@ -28,6 +28,7 @@ pub(crate) mod commands {
 pub(crate) mod agent;
 pub(crate) mod auto_backup;
 pub(crate) mod distribution;
+pub(crate) mod helper_transport;
 pub(crate) mod import_assist;
 pub(crate) mod menu;
 pub(crate) mod os_handoff;
