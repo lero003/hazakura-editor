@@ -3,6 +3,7 @@ import type { MenuLanguage } from "../../types";
 import { useCoreAiModelCatalog } from "../../hooks/app/useCoreAiModelCatalog";
 import { isCoreAiModelSelectable } from "../../lib/coreAiModelSelection";
 import { pickCoreAiModelFolder } from "../../lib/tauri/dialog";
+import { confirm } from "../../lib/tauri/nativeDialog";
 import {
   finishAppleAssistGeneration,
   generateAppleAssistCandidate,
@@ -50,6 +51,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   const checkJob = useRef<ModelCheckJob | null>(null);
   const checkSequence = useRef(0);
   const mounted = useRef(true);
+  const actionPending = useRef(false);
   const focusedAction = useRef<{ control: HTMLElement; row: HTMLElement } | null>(null);
   const copy = managerCopy(language);
   const { catalog, refreshCatalog, runCatalogRequest } = useCoreAiModelCatalog((reason) => {
@@ -99,7 +101,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   };
 
   const checkModel = async (model: CoreAiModelSummary) => {
-    if (checkJob.current || !model.selected || model.kind !== "core_ai" || !isCoreAiModelSelectable(model)) return;
+    if (actionPending.current || checkJob.current || !model.selected || model.kind !== "core_ai" || !isCoreAiModelSelectable(model)) return;
     const requestId = `model-check-${Date.now()}-${++checkSequence.current}`;
     const job: ModelCheckJob = {
       requestId,
@@ -160,6 +162,7 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   };
 
   const addFolder = async () => {
+    if (actionPending.current || busyId !== null || !mounted.current) return;
     setError(null);
     try {
       const path = await pickCoreAiModelFolder();
@@ -176,25 +179,43 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
   };
 
   const run = async (model: CoreAiModelSummary, action: "select" | "download" | "cancel" | "delete" | "recover" | "unregister") => {
-    if (action === "download" && model.status !== "ready" && isBelowRecommendedMemory(model, catalog)) {
-      const proceed = window.confirm(isBelowMinimumMemory(model, catalog)
-        ? copy.minimumMemoryConfirmation(catalog.deviceMemoryGb!, model.minimumMemoryGb!, model.displayName)
-        : copy.memoryConfirmation(catalog.deviceMemoryGb!, model.recommendedMemoryGb!, model.displayName));
-      if (!proceed) return;
-    }
-    if (action === "delete" && !window.confirm(model.errorCode === "retired-model"
-      ? copy.retiredDeleteConfirmation(model.displayName)
-      : copy.deleteConfirmation(
-        model.displayName,
-        model.installedSizeBytes == null ? null : formatSize(model.installedSizeBytes),
-        model.selected,
-      ))) return;
-    if (action === "recover" && !window.confirm(copy.recoverConfirmation(model.displayName, model.selected))) return;
-    if (action === "unregister" && !window.confirm(copy.unregisterConfirmation(model.displayName, model.selected))) return;
+    if (actionPending.current || busyId !== null || checkJob.current || !mounted.current) return;
+    actionPending.current = true;
     setBusyId(model.id);
     setError(null);
     setNotice(null);
     try {
+      let message: string | null = null;
+      if (action === "download" && model.status !== "ready" && isBelowRecommendedMemory(model, catalog)) {
+        message = isBelowMinimumMemory(model, catalog)
+          ? copy.minimumMemoryConfirmation(catalog.deviceMemoryGb!, model.minimumMemoryGb!, model.displayName)
+          : copy.memoryConfirmation(catalog.deviceMemoryGb!, model.recommendedMemoryGb!, model.displayName);
+      }
+      if (action === "delete") {
+        message = model.errorCode === "retired-model"
+          ? copy.retiredDeleteConfirmation(model.displayName)
+          : copy.deleteConfirmation(
+            model.displayName,
+            model.installedSizeBytes == null ? null : formatSize(model.installedSizeBytes),
+            model.selected,
+          );
+      }
+      if (action === "recover") message = copy.recoverConfirmation(model.displayName, model.selected);
+      if (action === "unregister") message = copy.unregisterConfirmation(model.displayName, model.selected);
+      if (message !== null) {
+        if (!await confirm(message) || !mounted.current) return;
+        const currentCatalog = catalogRef.current;
+        const currentModel = currentCatalog.models.find((entry) => entry.id === model.id);
+        // Consent describes this model and selection. Do not reuse it after a catalog change.
+        if (currentCatalog.managementError || currentCatalog.selectionLocked ||
+            currentCatalog.selectedModelId !== catalog.selectedModelId ||
+            currentCatalog.deviceMemoryGb !== catalog.deviceMemoryGb ||
+            !currentModel || currentModel.selected !== model.selected || currentModel.status !== model.status ||
+            currentModel.source !== model.source || currentModel.errorCode !== model.errorCode ||
+            currentModel.installedSizeBytes !== model.installedSizeBytes ||
+            currentModel.minimumMemoryGb !== model.minimumMemoryGb ||
+            currentModel.recommendedMemoryGb !== model.recommendedMemoryGb) return;
+      }
       if (action === "select") await runCatalogRequest(() => selectLocalAssistModel(model.id));
       if (action === "download") await runCatalogRequest(() => startCoreAiModelDownload(model.id));
       if (action === "cancel") {
@@ -209,9 +230,10 @@ export function CoreAiModelManager({ label, language }: { label: string; languag
       }
       if (action === "unregister") await runCatalogRequest(() => unregisterExternalCoreAiModel(model.id));
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      if (mounted.current) setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
-      setBusyId(null);
+      actionPending.current = false;
+      if (mounted.current) setBusyId(null);
     }
   };
 

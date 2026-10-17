@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CoreAiModelManager } from "./CoreAiModelManager";
 
 const mocks = vi.hoisted(() => ({
+  confirm: vi.fn(),
   list: vi.fn(),
   select: vi.fn(),
   download: vi.fn(),
@@ -38,6 +39,7 @@ vi.mock("../../lib/tauri/coreAiModels", () => ({
   listenCoreAiModelStateChanges: mocks.listen,
 }));
 
+vi.mock("../../lib/tauri/nativeDialog", () => ({ confirm: mocks.confirm }));
 vi.mock("../../lib/tauri/dialog", () => ({ pickCoreAiModelFolder: mocks.pickFolder }));
 vi.mock("../../lib/tauri/appleAssist", () => ({
   generateAppleAssistCandidate: mocks.generateCandidate,
@@ -47,6 +49,8 @@ vi.mock("../../lib/tauri/appleAssist", () => ({
 }));
 
 beforeEach(() => {
+  mocks.confirm.mockReset();
+  mocks.confirm.mockResolvedValue(true);
   mocks.generateCandidate.mockReset();
   mocks.prepareGeneration.mockReset();
   mocks.finishGeneration.mockReset();
@@ -216,7 +220,7 @@ describe("CoreAiModelManager", () => {
       models: [system, old] };
     mocks.list.mockResolvedValue(catalog);
     mocks.remove.mockResolvedValue({ ...catalog, models: [system] });
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = mocks.confirm.mockResolvedValue(true);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     const row = await screen.findByRole("group", { name: "Gemma 4 12B" });
     expect(row.textContent).toContain("配布を終了");
@@ -224,7 +228,7 @@ describe("CoreAiModelManager", () => {
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
     await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith(oldId));
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("再ダウンロードできません"));
-    confirm.mockRestore();
+
   });
 
   it("registers, selects, and unregisters an external folder without deleting its files", async () => {
@@ -243,7 +247,7 @@ describe("CoreAiModelManager", () => {
       models: [{ ...system, selected: false }, { ...external, selected: true }],
     });
     mocks.unregister.mockResolvedValue(initial);
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = mocks.confirm.mockResolvedValue(true);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     await screen.findByText("Apple Intelligence");
     fireEvent.click(screen.getByRole("button", { name: "モデルフォルダを追加…" }));
@@ -256,7 +260,7 @@ describe("CoreAiModelManager", () => {
     fireEvent.click(screen.getByRole("button", { name: "一覧から外す" }));
     await waitFor(() => expect(mocks.unregister).toHaveBeenCalledWith(external.id));
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("元のファイルは削除しません"));
-    confirm.mockRestore();
+
   });
 
   it("explains a folder missing its tokenizer without exposing the native error first", async () => {
@@ -510,7 +514,7 @@ describe("CoreAiModelManager", () => {
     mocks.download.mockResolvedValue({
       distributionStatus: "available", selectedModelId: "apple:foundation-models:system-default", models: [],
     });
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = mocks.confirm.mockResolvedValue(true);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
     expect(await screen.findByText(/ダウンロードしたモデルの検証に失敗しました/)).toBeTruthy();
@@ -526,7 +530,7 @@ describe("CoreAiModelManager", () => {
     expect(mocks.remove.mock.invocationCallOrder[0]).toBeLessThan(mocks.download.mock.invocationCallOrder[0]);
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("現在選択しているモデルは変更しません"));
     expect(confirm.mock.calls[0][0]).not.toContain("Apple Intelligenceに切り替え");
-    confirm.mockRestore();
+
   });
 
   it("explains that recovering the selected model switches selection until the user chooses it again", async () => {
@@ -540,7 +544,7 @@ describe("CoreAiModelManager", () => {
       selectedModelId: "apple:foundation-models:system-default", models: [] });
     mocks.download.mockResolvedValue({ distributionStatus: "available",
       selectedModelId: "apple:foundation-models:system-default", models: [] });
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = mocks.confirm.mockResolvedValue(true);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
     fireEvent.click(await screen.findByRole("button", { name: "削除して再取得" }));
@@ -548,7 +552,7 @@ describe("CoreAiModelManager", () => {
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("選択をApple Intelligenceに切り替えて再取得します"));
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("再取得後は「使う」で選び直してください"));
     expect(mocks.select).not.toHaveBeenCalled();
-    confirm.mockRestore();
+
   });
 
   it("shows indeterminate verification progress and keeps download cancellation unavailable", async () => {
@@ -630,7 +634,7 @@ describe("CoreAiModelManager", () => {
       ],
     };
     mocks.list.mockResolvedValue(catalog);
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    const confirm = mocks.confirm.mockResolvedValue(false);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
 
     expect(await screen.findByText(/最低メモリ 16 GB/)).toBeTruthy();
@@ -642,7 +646,7 @@ describe("CoreAiModelManager", () => {
     fireEvent.click(screen.getByRole("button", { name: "ダウンロード" }));
     expect(confirm).toHaveBeenCalledOnce();
     expect(mocks.download).not.toHaveBeenCalled();
-    confirm.mockRestore();
+
   });
 
   it("subscribes before reading the initial catalog", async () => {
@@ -750,7 +754,7 @@ describe("CoreAiModelManager", () => {
       }],
     };
     mocks.list.mockResolvedValue(catalog);
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    const confirm = mocks.confirm.mockResolvedValue(false);
     render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
     fireEvent.click(await screen.findByRole("button", { name: "削除" }));
 
@@ -758,6 +762,108 @@ describe("CoreAiModelManager", () => {
       /Gemma 4 E4B.*約6.8 GB.*再ダウンロード.*Apple Intelligence/,
     ));
     expect(mocks.remove).not.toHaveBeenCalled();
-    confirm.mockRestore();
+
+  });
+});
+
+
+const confirmedActions = [
+  { action: "delete", label: "削除", status: "ready", source: "apple_hosted" },
+  { action: "recover", label: "削除して再取得", status: "failed", source: "apple_hosted" },
+  { action: "unregister", label: "一覧から外す", status: "detected", source: "external_local" },
+  { action: "download", label: "ダウンロード", status: "not_downloaded", source: "apple_hosted", memory: 16 },
+  { action: "minimum-memory download", label: "ダウンロード", status: "not_downloaded", source: "apple_hosted", memory: 8 },
+] as const;
+
+function prepareConfirmedAction(entry: typeof confirmedActions[number]) {
+  const model = {
+    id: "test:confirmed-model", displayName: "Confirmed Model", kind: "core_ai", selected: false,
+    status: entry.status, source: entry.source, canRemove: true,
+    ...(entry.action === "recover" ? { errorCode: "verification-failed" } : {}),
+    minimumMemoryGb: 16, recommendedMemoryGb: 24,
+  };
+  const catalog = {
+    distributionStatus: "available", selectedModelId: "apple:foundation-models:system-default",
+    deviceMemoryGb: "memory" in entry ? entry.memory : 32,
+    models: [model],
+  };
+  mocks.list.mockResolvedValue(catalog);
+  mocks.remove.mockResolvedValue(catalog);
+  mocks.download.mockResolvedValue(catalog);
+  mocks.unregister.mockResolvedValue(catalog);
+  return catalog;
+}
+
+function expectNoConfirmedAction() {
+  expect(mocks.remove).not.toHaveBeenCalled();
+  expect(mocks.download).not.toHaveBeenCalled();
+  expect(mocks.unregister).not.toHaveBeenCalled();
+}
+
+describe.each(confirmedActions)("CoreAiModelManager $action confirmation", (entry) => {
+  it("waits for approval and runs once despite repeated clicks", async () => {
+    prepareConfirmedAction(entry);
+    let answer!: (accepted: boolean) => void;
+    mocks.confirm.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    const button = await screen.findByRole("button", { name: entry.label });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(mocks.confirm).toHaveBeenCalledOnce();
+    expectNoConfirmedAction();
+    await act(async () => answer(true));
+    if (entry.action === "delete" || entry.action === "recover") {
+      expect(mocks.remove).toHaveBeenCalledExactlyOnceWith("test:confirmed-model");
+    } else expect(mocks.remove).not.toHaveBeenCalled();
+    if (entry.action.includes("download") || entry.action === "recover") {
+      expect(mocks.download).toHaveBeenCalledExactlyOnceWith("test:confirmed-model");
+    } else expect(mocks.download).not.toHaveBeenCalled();
+    if (entry.action === "unregister") {
+      expect(mocks.unregister).toHaveBeenCalledExactlyOnceWith("test:confirmed-model");
+    } else expect(mocks.unregister).not.toHaveBeenCalled();
+  });
+
+  it("performs no action when the native confirmation is declined", async () => {
+    prepareConfirmedAction(entry);
+    mocks.confirm.mockResolvedValueOnce(false);
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    const button = await screen.findByRole("button", { name: entry.label });
+    await act(async () => fireEvent.click(button));
+    expect(mocks.confirm).toHaveBeenCalledOnce();
+    expectNoConfirmedAction();
+    expect(button.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("fails closed and reports a native confirmation failure", async () => {
+    prepareConfirmedAction(entry);
+    mocks.confirm.mockRejectedValueOnce(new Error("dialog unavailable"));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    const button = await screen.findByRole("button", { name: entry.label });
+    await act(async () => fireEvent.click(button));
+    expectNoConfirmedAction();
+    expect((await screen.findByRole("alert")).textContent).toContain("dialog unavailable");
+    expect(button.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("ignores a delayed approval after unmount", async () => {
+    prepareConfirmedAction(entry);
+    let answer!: (accepted: boolean) => void;
+    mocks.confirm.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    const view = render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: entry.label }));
+    view.unmount();
+    await act(async () => answer(true));
+    expectNoConfirmedAction();
+  });
+
+  it("ignores an approval when the catalog selection changes during confirmation", async () => {
+    const catalog = prepareConfirmedAction(entry);
+    let answer!: (accepted: boolean) => void;
+    mocks.confirm.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+    render(<CoreAiModelManager label="オンデバイスモデル" language="ja" />);
+    fireEvent.click(await screen.findByRole("button", { name: entry.label }));
+    await act(async () => mocks.listener?.({ ...catalog, selectedModelId: "local:other", models: [] }));
+    await act(async () => answer(true));
+    expectNoConfirmedAction();
   });
 });

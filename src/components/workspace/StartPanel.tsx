@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import hazakuraMark from "../../assets/hazakura-mark.png";
 import { draftStorageKey } from "../../features/document/pathlessDraftRecovery";
 import { formatRecentOpenedAt } from "../../features/workspace/recentOpenedAtLabel";
 import { resolveStartPanelReturningContext } from "../../features/workspace/startPanelReturning";
 import { readPersistedWorkspaceState } from "../../lib/storage";
+import { confirm } from "../../lib/tauri/nativeDialog";
 import type { RecoveryCopy, SafeEditorCopy } from "../../lib/locale";
 import { buildRecentDisplayEntries } from "../../lib/utils";
 import type { DraftRecord, MenuLanguage, RecentEntry } from "../../types";
@@ -51,6 +52,36 @@ export function StartPanel({
   recentWorkspaces?: RecentEntry[];
   recoveryCopy?: RecoveryCopy;
 }) {
+  const mounted = useRef(true);
+  const discardPending = useRef(false);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const currentDrafts = useRef(pathlessDrafts);
+  currentDrafts.current = pathlessDrafts;
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  const discardDraft = async (draft: DraftRecord) => {
+    if (discardPending.current || !mounted.current || !recoveryCopy || !onDiscardDraft) return;
+    discardPending.current = true;
+    setConfirmingDiscard(true);
+    const key = draftStorageKey(draft);
+    try {
+      const accepted = await confirm(recoveryCopy.discardDraftConfirm);
+      if (accepted && mounted.current && currentDrafts.current.some((current) =>
+        draftStorageKey(current) === key && current.updatedAt === draft.updatedAt && current.contents === draft.contents)) {
+        onDiscardDraft(key);
+      }
+    } catch {
+      // A failed native confirmation must never discard recovery data.
+    } finally {
+      discardPending.current = false;
+      if (mounted.current) setConfirmingDiscard(false);
+    }
+  };
+
   const resolvedPersistedRoot =
     persistedWorkspaceRootPath !== undefined
       ? persistedWorkspaceRootPath
@@ -255,17 +286,15 @@ export function StartPanel({
                     >
                       <button
                         type="button"
+                        disabled={confirmingDiscard}
                         onClick={() => onRestoreDraft(draft)}
                       >
                         {recoveryCopy.restoreDraft}
                       </button>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (window.confirm(recoveryCopy.discardDraftConfirm)) {
-                            onDiscardDraft(key);
-                          }
-                        }}
+                        disabled={confirmingDiscard}
+                        onClick={() => void discardDraft(draft)}
                       >
                         {recoveryCopy.discardDraft}
                       </button>
