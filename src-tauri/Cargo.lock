@@ -1165,6 +1165,7 @@ dependencies = [
  "rfd",
  "serde",
  "serde_json",
+ "simdutf8",
  "tauri",
  "tauri-build",
 ]

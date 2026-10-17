@@ -31,6 +31,7 @@ pub(crate) mod distribution;
 pub(crate) mod import_assist;
 pub(crate) mod menu;
 pub(crate) mod os_handoff;
+pub(crate) mod text_encoding;
 pub(crate) mod types;
 pub(crate) mod util;
 

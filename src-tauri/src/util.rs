@@ -660,18 +660,15 @@ pub(crate) fn detect_text_encoding(bytes: &[u8]) -> &'static str {
         return "utf-8-bom";
     }
 
-    let (_, _, utf8_malformed) = encoding_rs::UTF_8.decode(bytes);
-    if !utf8_malformed {
+    if crate::text_encoding::decode_utf8(bytes).is_ok() {
         return "utf-8";
     }
 
-    let (_, _, shift_jis_malformed) = encoding_rs::SHIFT_JIS.decode(bytes);
-    if !shift_jis_malformed {
+    if crate::text_encoding::decode(bytes, crate::text_encoding::LegacyEncoding::ShiftJis).is_ok() {
         return "shift-jis";
     }
 
-    let (_, _, euc_jp_malformed) = encoding_rs::EUC_JP.decode(bytes);
-    if !euc_jp_malformed {
+    if crate::text_encoding::decode(bytes, crate::text_encoding::LegacyEncoding::EucJp).is_ok() {
         return "euc-jp";
     }
 
@@ -690,24 +687,12 @@ pub(crate) fn encode_text(contents: &str, encoding: &str) -> Result<Vec<u8>, Str
             Ok(out)
         }
         "shift-jis" => {
-            let (bytes, _, unmappable) = encoding_rs::SHIFT_JIS.encode(contents);
-            if unmappable {
-                return Err(
-                    "Some characters cannot be encoded as Shift-JIS. Switch the encoding to UTF-8 before saving."
-                        .to_string(),
-                );
-            }
-            Ok(bytes.into_owned())
+            crate::text_encoding::encode(contents, crate::text_encoding::LegacyEncoding::ShiftJis)
+                .map_err(|_| "Some characters cannot be encoded as Shift-JIS. Switch the encoding to UTF-8 before saving.".to_string())
         }
         "euc-jp" => {
-            let (bytes, _, unmappable) = encoding_rs::EUC_JP.encode(contents);
-            if unmappable {
-                return Err(
-                    "Some characters cannot be encoded as EUC-JP. Switch the encoding to UTF-8 before saving."
-                        .to_string(),
-                );
-            }
-            Ok(bytes.into_owned())
+            crate::text_encoding::encode(contents, crate::text_encoding::LegacyEncoding::EucJp)
+                .map_err(|_| "Some characters cannot be encoded as EUC-JP. Switch the encoding to UTF-8 before saving.".to_string())
         }
         other => Err(format!("Unsupported text encoding: {other}")),
     }
@@ -744,24 +729,25 @@ pub(crate) fn decode_text_bytes<'a>(
     encoding: &str,
 ) -> Result<std::borrow::Cow<'a, str>, String> {
     let label = encoding_for_save(encoding);
-    let (codec, label_for_error) = match label {
-        "utf-8" | "utf-8-bom" => (encoding_rs::UTF_8, "UTF-8"),
-        "shift-jis" => (encoding_rs::SHIFT_JIS, "Shift-JIS"),
-        "euc-jp" => (encoding_rs::EUC_JP, "EUC-JP"),
-        _ => {
-            return Err(format!("Unsupported text encoding: {label}"));
-        }
-    };
     let body: &[u8] = if label == "utf-8-bom" && bytes.starts_with(&UTF8_BOM) {
         &bytes[UTF8_BOM.len()..]
     } else {
         bytes
     };
-    let (decoded, malformed) = codec.decode_without_bom_handling(body);
-    if malformed {
-        return Err(format!("File is not readable as {label_for_error} text."));
+    match label {
+        "utf-8" | "utf-8-bom" => crate::text_encoding::decode_utf8(body)
+            .map(std::borrow::Cow::Borrowed)
+            .map_err(|_| "File is not readable as UTF-8 text.".to_string()),
+        "shift-jis" => {
+            crate::text_encoding::decode(body, crate::text_encoding::LegacyEncoding::ShiftJis)
+                .map(std::borrow::Cow::Owned)
+                .map_err(|_| "File is not readable as Shift-JIS text.".to_string())
+        }
+        "euc-jp" => crate::text_encoding::decode(body, crate::text_encoding::LegacyEncoding::EucJp)
+            .map(std::borrow::Cow::Owned)
+            .map_err(|_| "File is not readable as EUC-JP text.".to_string()),
+        _ => Err(format!("Unsupported text encoding: {label}")),
     }
-    Ok(decoded)
 }
 
 #[derive(Debug, PartialEq, Eq)]

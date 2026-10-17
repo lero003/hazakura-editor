@@ -935,6 +935,84 @@ fn shift_jis_open_detects_label_and_decodes_contents() {
 }
 
 #[test]
+fn legacy_save_as_preserves_vendor_bytes_and_rejected_save_leaves_file_unchanged() {
+    let dir = unique_test_dir("legacy_vendor_save_as");
+    fs::create_dir_all(&dir).unwrap();
+    let text = "①髙﨑纊 ～－∥￠￡￢\r\n半角ｱｲｳと日本語\r\n";
+    for (label, oracle) in [
+        ("shift-jis", encoding_rs::SHIFT_JIS),
+        ("euc-jp", encoding_rs::EUC_JP),
+    ] {
+        let path = dir
+            .join(format!("{label}.md"))
+            .to_string_lossy()
+            .into_owned();
+        let (expected, _, bad) = oracle.encode(text);
+        assert!(!bad);
+        save_text_file_as_with_label(
+            MAIN_WINDOW_LABEL,
+            path.clone(),
+            text.into(),
+            "crlf".into(),
+            label.into(),
+            None,
+        )
+        .unwrap();
+        assert_eq!(fs::read(&path).unwrap(), expected.as_ref());
+        let reopened = crate::commands::files::open_text_file_with_encoding(
+            MAIN_WINDOW_LABEL,
+            path.clone(),
+            Some(label),
+        )
+        .unwrap();
+        assert_eq!(reopened.contents, text);
+        assert_eq!(reopened.line_ending, "crlf");
+        for invalid in ["原稿😀", "原稿\u{e000}", "原稿〜"] {
+            let error = save_text_file_with_label(
+                MAIN_WINDOW_LABEL,
+                path.clone(),
+                invalid.into(),
+                reopened.fingerprint.clone(),
+                "crlf".into(),
+                label.into(),
+            )
+            .unwrap_err();
+            assert!(error.contains("cannot be encoded"), "{error}");
+            assert_eq!(fs::read(&path).unwrap(), expected.as_ref());
+        }
+    }
+    fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn euc_jis0212_decode_only_character_cannot_silently_overwrite_source() {
+    let dir = unique_test_dir("euc_jis0212_reject_save");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("note.md").to_string_lossy().into_owned();
+    let original = [0x8f, 0xa2, 0xaf, 0x20, 0x8f, 0xa2, 0xb7, 0x0a];
+    fs::write(&path, original).unwrap();
+    let opened = crate::commands::files::open_text_file_with_encoding(
+        MAIN_WINDOW_LABEL,
+        path.clone(),
+        Some("euc-jp"),
+    )
+    .unwrap();
+    assert_eq!(opened.contents, "˘ ～\n");
+    let error = save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.clone(),
+        opened.contents,
+        opened.fingerprint,
+        "lf".into(),
+        "euc-jp".into(),
+    )
+    .unwrap_err();
+    assert!(error.contains("EUC-JP"));
+    assert_eq!(fs::read(path).unwrap(), original);
+    fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
 fn shift_jis_save_round_trip_preserves_bytes() {
     // Open a Shift-JIS file, re-save the exact same
     // string with the same encoding label, then read

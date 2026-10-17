@@ -13,13 +13,22 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-encoding_rs = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", default-features = false, features = ["wry", "dynamic-acl"] }
 rfd = { version = "=0.16.0", default-features = false, features = ["gtk3", "common-controls-v6"] }
 
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+encoding_rs = "0.8"
+
+# macOS ships the OS codecs; retain the existing codec only as a test oracle.
+[target.'cfg(target_os = "macos")'.dev-dependencies]
+encoding_rs = "0.8"
+
 [target.'cfg(target_os = "macos")'.dependencies]
+# Keep the existing SIMD leaf; std enables safe runtime AVX2/SSE4.2 dispatch
+# on Intel, where its public no-std API would otherwise use scalar validation.
+simdutf8 = { version = "=0.1.5", default-features = false, features = ["std", "aarch64_neon", "public_imp"] }
 block2 = "0.6.2"
 objc2 = "0.6.4"
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "block2", "NSArray", "NSData", "NSError", "NSGeometry", "NSString", "NSURL"] }

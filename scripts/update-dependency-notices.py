@@ -8,12 +8,34 @@ versions or access the network. --write is required to change the notice file.
 import argparse
 import collections
 import json
+import re
 import subprocess
 import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS = ("aarch64-apple-darwin", "x86_64-apple-darwin")
+
+
+def macos_root_target_matches(expression, target):
+    """Check only the root declarations this macOS project actually supports.
+
+    Cargo metadata can merge a non-macOS normal edge with a macOS dev edge,
+    even under --filter-platform. Do not mistake the former for a shipped edge.
+    Transitive traversal remains conservative, as in the previous inventory.
+    Unknown root cfg expressions require review instead of silently dropping a
+    possibly shipped license. No generic Rust cfg parser is implemented here.
+    """
+    if expression is None:
+        return True
+    compact = "".join(expression.split())
+    if compact == 'cfg(target_os="macos")':
+        return True
+    if compact == 'cfg(not(target_os="macos"))':
+        return False
+    if re.fullmatch(r"[A-Za-z0-9_-]+", expression):
+        return expression == target
+    raise ValueError(f"Review the unsupported root dependency target: {expression}")
 
 
 def cargo_inventory(metadata_directory=None):
@@ -35,7 +57,9 @@ def cargo_inventory(metadata_directory=None):
                 continue
             seen.add(key)
             pending.extend(edge["pkg"] for edge in graph[key]["deps"]
-                           if any(kind["kind"] != "dev" for kind in edge["dep_kinds"]))
+                           if any(kind["kind"] != "dev" and (
+                               key != root or macos_root_target_matches(kind.get("target"), target)
+                           ) for kind in edge["dep_kinds"]))
         for package in metadata["packages"]:
             if package["id"] not in seen or package["id"] == root:
                 continue

@@ -91,6 +91,10 @@ distributed notice set.
 
 `encoding_rs@0.8.42` declares `(Apache-2.0 OR MIT) AND BSD-3-Clause`.
 
+The macOS production codec uses system `iconv`; `encoding_rs` remains a macOS
+test oracle and a non-macOS fallback. Its existing notices are retained for
+those uses. The macOS adapter owns no copied encoding table.
+
 Do not collapse this into only MIT / Apache-2.0. The crate includes data
 derived from WHATWG Encoding Standard data files. For distribution, preserve
 the BSD-3-Clause notice for the incorporated WHATWG data, including the
@@ -164,29 +168,24 @@ resolved crates rather than collapsed into a single family.
 
 | License expression | Resolved crates |
 | --- | ---: |
-| `(Apache-2.0 OR MIT) AND BSD-3-Clause` | 1 |
 | `(MIT OR Apache-2.0) AND Unicode-3.0` | 1 |
 | `0BSD OR MIT OR Apache-2.0` | 1 |
 | `Apache-2.0` | 1 |
 | `Apache-2.0 / MIT` | 1 |
 | `Apache-2.0 AND MIT` | 1 |
-| `Apache-2.0 OR MIT` | 28 |
+| `Apache-2.0 OR MIT` | 27 |
 | `CC0-1.0 OR MIT-0 OR Apache-2.0` | 1 |
 | `MIT` | 41 |
-| `MIT OR Apache-2.0` | 120 |
+| `MIT OR Apache-2.0` | 119 |
 | `MIT OR Apache-2.0 OR Zlib` | 1 |
 | `MIT OR Zlib OR Apache-2.0` | 2 |
-| `MIT/Apache-2.0` | 14 |
+| `MIT/Apache-2.0` | 13 |
 | `MPL-2.0` | 5 |
 | `Unicode-3.0` | 18 |
 | `Unlicense OR MIT` | 5 |
 | `Unlicense/MIT` | 2 |
 | `Zlib` | 2 |
 | `Zlib OR Apache-2.0 OR MIT` | 6 |
-
-### `(Apache-2.0 OR MIT) AND BSD-3-Clause` (1)
-
-- `encoding_rs@0.8.42`
 
 ### `(MIT OR Apache-2.0) AND Unicode-3.0` (1)
 
@@ -208,15 +207,15 @@ resolved crates rather than collapsed into a single family.
 
 - `dpi@0.1.2`
 
-### `Apache-2.0 OR MIT` (28)
+### `Apache-2.0 OR MIT` (27)
 
 - `autocfg@1.5.1`, `bit-set@0.8.0`, `bit-vec@0.8.0`, `cargo_toml@0.22.3`,
   `ctor-proc-macro@0.0.7`, `ctor@0.8.0`, `dtor-proc-macro@0.0.6`, `dtor@0.3.0`,
   `equivalent@1.0.2`, `fastrand@2.5.0`, `idna_adapter@1.2.2`, `indexmap@1.9.3`,
-  `indexmap@2.14.2`, `muda@0.19.3`, `multiversion_no_op@1.0.0`, `pin-project-lite@0.2.17`,
-  `rustc-hash@2.1.3`, `tauri-build@2.6.3`, `tauri-codegen@2.6.3`, `tauri-macros@2.6.3`,
-  `tauri-runtime-wry@2.11.4`, `tauri-runtime@2.11.3`, `tauri-utils@2.9.3`, `tauri@2.11.6`,
-  `utf8_iter@1.0.4`, `uuid@1.26.1`, `window-vibrancy@0.6.0`, `wry@0.55.1`
+  `indexmap@2.14.2`, `muda@0.19.3`, `pin-project-lite@0.2.17`, `rustc-hash@2.1.3`,
+  `tauri-build@2.6.3`, `tauri-codegen@2.6.3`, `tauri-macros@2.6.3`, `tauri-runtime-wry@2.11.4`,
+  `tauri-runtime@2.11.3`, `tauri-utils@2.9.3`, `tauri@2.11.6`, `utf8_iter@1.0.4`, `uuid@1.26.1`,
+  `window-vibrancy@0.6.0`, `wry@0.55.1`
 
 ### `CC0-1.0 OR MIT-0 OR Apache-2.0` (1)
 
@@ -235,7 +234,7 @@ resolved crates rather than collapsed into a single family.
   `strsim@0.11.1`, `synstructure@0.14.0`, `tauri-winres@0.3.6`, `tokio@1.53.1`,
   `urlpattern@0.3.0`, `winnow@0.7.15`, `winnow@1.0.4`, `zmij@1.0.23`
 
-### `MIT OR Apache-2.0` (120)
+### `MIT OR Apache-2.0` (119)
 
 - `anyhow@1.0.104`, `base64@0.21.7`, `base64@0.22.1`, `base64@0.23.1`, `bitflags@2.13.2`,
   `block-buffer@0.10.4`, `camino@1.2.6`, `cargo-platform@0.1.9`, `cc@1.5.0`, `cfg-if@1.0.5`,
@@ -253,8 +252,8 @@ resolved crates rather than collapsed into a single family.
   `parking_lot@0.12.5`, `parking_lot_core@0.9.12`, `percent-encoding@2.3.2`, `png@0.17.16`,
   `png@0.18.1`, `powerfmt@0.2.0`, `proc-macro2@1.0.107`, `quote@1.0.47`, `ref-cast-impl@1.0.27`,
   `ref-cast@1.0.27`, `regex-automata@0.4.18`, `regex-syntax@0.8.11`, `regex@1.13.1`,
-  `rustc_version@0.4.1`, `rustversion@1.0.23`, `scopeguard@1.2.0`, `semver@1.0.28`,
-  `serde-untagged@0.1.9`, `serde@1.0.229`, `serde_core@1.0.229`, `serde_derive@1.0.229`,
+  `rustc_version@0.4.1`, `scopeguard@1.2.0`, `semver@1.0.28`, `serde-untagged@0.1.9`,
+  `serde@1.0.229`, `serde_core@1.0.229`, `serde_derive@1.0.229`,
   `serde_derive_internals@0.29.1`, `serde_json@1.0.151`, `serde_repr@0.1.21`,
   `serde_spanned@1.1.1`, `serde_with@3.23.0`, `serde_with_macros@3.23.0`,
   `serialize-to-javascript-impl@0.1.2`, `serialize-to-javascript@0.1.2`, `servo_arc@0.4.3`,
@@ -275,12 +274,12 @@ resolved crates rather than collapsed into a single family.
 
 - `miniz_oxide@0.8.9`, `miniz_oxide@0.9.1`
 
-### `MIT/Apache-2.0` (14)
+### `MIT/Apache-2.0` (13)
 
-- `bitflags@1.3.2`, `bs58@0.5.1`, `core_detect@1.0.0`, `foreign-types-macros@0.2.4`,
-  `foreign-types-shared@0.3.1`, `foreign-types@0.5.0`, `ident_case@1.0.1`, `json-patch@3.0.1`,
-  `unic-char-property@0.9.0`, `unic-char-range@0.9.0`, `unic-common@0.9.0`,
-  `unic-ucd-ident@0.9.0`, `unic-ucd-version@0.9.0`, `version_check@0.9.5`
+- `bitflags@1.3.2`, `bs58@0.5.1`, `foreign-types-macros@0.2.4`, `foreign-types-shared@0.3.1`,
+  `foreign-types@0.5.0`, `ident_case@1.0.1`, `json-patch@3.0.1`, `unic-char-property@0.9.0`,
+  `unic-char-range@0.9.0`, `unic-common@0.9.0`, `unic-ucd-ident@0.9.0`,
+  `unic-ucd-version@0.9.0`, `version_check@0.9.5`
 
 ### `MPL-2.0` (5)
 

@@ -47,5 +47,7 @@ jobs:
       - run: npm run build:import-assist-helper:fixture
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
       - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml --lib text_encoding::tests::native_legacy_codecs_match_oracle_for_all_three_byte_values -- --ignored --exact
+      - run: python3 -m unittest discover -s scripts -p test_dependency_notices.py
       - run: bash scripts/test-background-assets-reconnect.sh
       - run: swift test --package-path src-helpers/apple-assist
