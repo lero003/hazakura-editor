@@ -28,7 +28,16 @@ import {
   type EditorViewState,
   type EditorViewStatePatch,
 } from "../../features/editor/documentViewState";
-import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
+import { LModeClasses } from "../../features/editor/lMode";
+import {
+  editorInvisiblesCompartmentValue,
+  editorLModeCompartmentValue,
+  editorReadOnlyCompartmentValue,
+  editorSpellcheckCompartmentValue,
+  editorTabSizeCompartmentValue,
+  editorThemeCompartmentValue,
+  editorWrappingCompartmentValue,
+} from "../../features/editor/editorExtensionSet";
 import { DOCUMENT_CONTENT_LANG } from "../../features/app/documentLanguage";
 import { type LModeCopy } from "../../lib/locale/lMode";
 import type { SlashCommand } from "../../types/slash";
@@ -46,10 +55,6 @@ import {
   type MarkdownFormat,
 } from "../../features/editor/editorEditingCommands";
 import {
-  editorReadOnlyExtensions,
-  editorTheme,
-  getEditorWrappingExtensions,
-  invisibleCharactersField,
   searchHighlightField,
   setSearchMatchesEffect,
 } from "../../features/editor/editorPresentation";
@@ -613,29 +618,31 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       language,
       searchHighlightField,
       wrappingCompartmentRef.current.of(
-        getEditorWrappingExtensions(wrapLines, lModeEnabled),
+        editorWrappingCompartmentValue(wrapLines, lModeEnabled),
       ),
       invisiblesCompartmentRef.current.of(
-        showInvisibles ? invisibleCharactersField : [],
+        editorInvisiblesCompartmentValue(showInvisibles, lModeEnabled, false),
       ),
-      tabSizeCompartmentRef.current.of(EditorState.tabSize.of(tabSize)),
+      tabSizeCompartmentRef.current.of(editorTabSizeCompartmentValue(tabSize)),
       spellcheckCompartmentRef.current.of(
-        EditorView.contentAttributes.of({
-          spellcheck: spellcheckEnabled ? "true" : "false",
-        }),
+        editorSpellcheckCompartmentValue(spellcheckEnabled),
       ),
-      themeCompartmentRef.current.of([editorTheme(theme, fontSize), highlight]),
+      themeCompartmentRef.current.of(
+        editorThemeCompartmentValue(theme, fontSize, highlight),
+      ),
       lModeCompartmentRef.current.of(
-        lModeExtension(
+        editorLModeCompartmentValue(
           lModeEnabled,
           {
             workspaceRoot: workspaceRoot ?? null,
             documentPath: documentKey,
           },
-          { typewriterMode: lModeTypewriter },
+          lModeTypewriter,
         ),
       ),
-      readOnlyCompartmentRef.current.of(editorReadOnlyExtensions(readOnly)),
+      readOnlyCompartmentRef.current.of(
+        editorReadOnlyCompartmentValue(readOnly),
+      ),
       EditorView.domEventHandlers({
         compositionstart() {
           compositionActiveRef.current = true;
@@ -958,7 +965,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: readOnlyCompartmentRef.current.reconfigure(
-        editorReadOnlyExtensions(readOnly),
+        editorReadOnlyCompartmentValue(readOnly),
       ),
     });
   }, [readOnly]);
@@ -995,10 +1002,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       currentHighlightRef.current ??
       pickEditorLanguage(documentKey, { lModeEnabled }).highlight;
     view.dispatch({
-      effects: themeCompartmentRef.current.reconfigure([
-        editorTheme(theme, fontSize),
-        highlight,
-      ]),
+      effects: themeCompartmentRef.current.reconfigure(
+        editorThemeCompartmentValue(theme, fontSize, highlight),
+      ),
     });
   }, [fontSize, theme, documentKey, lModeEnabled]);
 
@@ -1011,7 +1017,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: wrappingCompartmentRef.current.reconfigure(
-        getEditorWrappingExtensions(wrapLines, lModeEnabled),
+        editorWrappingCompartmentValue(wrapLines, lModeEnabled),
       ),
     });
     // Wrapping changes the height of every long line; force a
@@ -1028,7 +1034,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: invisiblesCompartmentRef.current.reconfigure(
-        showInvisibles && !lModeEnabled ? invisibleCharactersField : [],
+        editorInvisiblesCompartmentValue(showInvisibles, lModeEnabled, true),
       ),
     });
   }, [showInvisibles, lModeEnabled]);
@@ -1042,7 +1048,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: tabSizeCompartmentRef.current.reconfigure(
-        EditorState.tabSize.of(tabSize),
+        editorTabSizeCompartmentValue(tabSize),
       ),
     });
   }, [tabSize]);
@@ -1056,9 +1062,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: spellcheckCompartmentRef.current.reconfigure(
-        EditorView.contentAttributes.of({
-          spellcheck: spellcheckEnabled ? "true" : "false",
-        }),
+        editorSpellcheckCompartmentValue(spellcheckEnabled),
       ),
     });
   }, [spellcheckEnabled]);
@@ -1072,13 +1076,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: lModeCompartmentRef.current.reconfigure(
-        lModeExtension(
+        editorLModeCompartmentValue(
           lModeEnabled,
           {
             workspaceRoot: workspaceRoot ?? null,
             documentPath: documentKey,
           },
-          { typewriterMode: lModeTypewriter },
+          lModeTypewriter,
         ),
       ),
     });
