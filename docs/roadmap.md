@@ -20,9 +20,9 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
-| ソース版 | 3.3.0。macOS Cargoの保守的なruntime/build集合301→254→247件。追加レビュー候補 |
-| 配布証跡 | 既存build 163 pkgは10月17日の追加分を含まない。前候補の操作問題なしはオーナー報告。新pkg・タグ・uploadなし |
-| 現行キュー | 追加差分の外部レビュー・同SHAのCI・同一署名候補の実機受け入れ。[最新の採否と残ゲート](reviews/2026-10-17-dependency-reduction.md) |
+| ソース版 | 3.3.0。macOS Cargoの保守的なruntime/build集合301→254→247件。`049813ea` の外部レビュー指摘なし・同SHA CI成功 |
+| 配布証跡 | clean source `049813ea` からbuild 164署名pkgをローカル作成・検証。build 163は保持。upload・公開は未実施 |
+| 現行キュー | 同一署名候補のIME・VoiceOver・Intel・macOS 26 GUI・大きなlegacy workspace等の実機受け入れ。[最新の採否と残ゲート](reviews/2026-10-17-dependency-reduction.md) |
 | 採用判断 | rfdとUTF-8 SIMDを維持。HTTP/PDF/日本語codecはOSへ委譲。legacy処理の遅延、先行する圧縮の約1.8 MB増とparser多様性低下を評価 |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |

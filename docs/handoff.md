@@ -28,9 +28,11 @@ UTF-8の速度は測定上同程度だがlegacyは遅い。JIS0212連続10 MiB�
 今回の固定範囲は `87b1899d..c32a78d8`。先行変更は[3.3.0全体記録](releases/3.3.0-dependency-autonomy.md)に保持する。
 今回4変更を新規cloneで個別撤回し、両targetの解決・noticeを照合した。dialogのnotice競合は生成し直して整合する。
 撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の試験とは区別し、再採用時は対象testと両laneを再確認する。
-既存build 163の署名pkgは今回分を含まず、変更していない。新しいpkg・タグ・uploadは行っていない。
-次は追加差分の外部レビュー、同SHAのCI、同一署名候補のIME・VoiceOver・Intel/macOS 26・
-大きなlegacy workspace・sandbox外部PDF取込を受け入れる。診断app成功をTestFlight受け入れへ読み替えない。
+[PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)はfrontend・native成功。
+clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、ローカル署名・同梱物・digestを確認した。
+path/hashはignoredの `docs/internal/app-store-candidates/latest.json` を参照。build 163は保持している。
+次は同一署名候補のIME・VoiceOver・Intel・macOS 26のGUI・大きなlegacy workspace・sandbox外部PDF取込を受け入れる。
+macOS 26.6.2/Apple Siliconのcodec比較成功をGUI/TestFlight受け入れへ読み替えない。upload・公開は未実施。
 受け入れ後は見直しメモ・縦書きへ戻り、さらなる撤去を新機能の必須条件にしない。
 
 ## 公開報告 — v3.2.1
@@ -78,7 +80,7 @@ Vite、App Store surface 134件、fmt、ローカルApp Store ad-hocプレビュ
 AIによるひな形・内容の候補作成は、メモを本文推敲に使う機能と分け、品質再評価後に扱う。
 本文・メモの自動更新や、表記を強制する検査エンジンを採用したわけではない。
 
-直近はv3.3依存削減の外部レビューと実機受け入れを優先。次のメモ設計で保存・原稿との紐付け・移動・削除・
+直近はv3.3依存削減の署名候補の実機受け入れを優先。次のメモ設計で保存・原稿との紐付け・移動・削除・
 位置の再指定を決める。版割り・出荷日は未確定。今回は計画文書のみで、機能実装や実機検証は行っていない。
 文書検証は `git diff --check`、未追跡の計画詳細を含む追加差分の空白・リンク・公開文言の衛生確認が通過。
 

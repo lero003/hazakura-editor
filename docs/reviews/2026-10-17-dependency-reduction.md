@@ -1,6 +1,6 @@
 # v3.3依存削減 — dialog・日本語codec・生成物
 
-Status: Review candidate
+Status: External review accepted; signed package candidate
 Scope: `87b1899d..c32a78d8` の採否、比較、検証、撤回条件
 Authority: Operational evidence
 Last reviewed: 2026-10-17
@@ -11,8 +11,9 @@ Last reviewed: 2026-10-17
 macOS製品のruntime/build集合は今回7件減。件数の削減を、性能・互換性・配布受け入れの合格とは区別する。
 UTF-8のSIMD検証は維持したが、legacy原稿の処理は遅くなった。大きなlegacy workspaceの待ち時間は受け入れ項目に残す。
 
-前候補を触って問題なしとのオーナー報告を受けた追加作業であり、今回の差分への受け入れ報告ではない。
-既存3.3.0/build 163の署名pkgは変更せず、今回の差分を含まない。新しいpkg・タグ・uploadは行っていない。
+前候補を触って問題なしとのオーナー報告を受けた追加作業。今回を含むPR #59のHEAD `049813ea` は外部レビューで指摘なし。
+clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、署名・同梱物・digestをローカル確認した。
+候補のpath/hashはignoredの `docs/internal/app-store-candidates/latest.json` が正本。build 163は保持。upload・公開は未実施。
 前回の採否・HTTP/PDF・容量・撤回試験は[3.3.0全体記録](../releases/3.3.0-dependency-autonomy.md)に保持する。
 
 ## 採用した変更と保守範囲
@@ -94,6 +95,23 @@ JIS0212は `8F A2 AF` の反復と末尾 `A1 F1` でEUC-JP選択まで通す入�
 - 固定範囲 `87b1899d..780468a0` と `780468a0..c32a78d8` の独立agent静的レビューは修正必須指摘なし。
   人間の外部レビューやテスト・実機の独立再実行とは区別する。
 
+## 外部レビューと同SHAのCI
+
+[PR #59](https://github.com/lero003/hazakura-editor/pull/59)のHEAD `049813ea` 固定の外部レビューは指摘なし。レビュー側でfrontend関連246件・Python 6件と両lane Vite buildを再実行して成功したとの報告を受けた。
+同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)はfrontend・native成功をlive照合した。frontend 2,904件・scripts 31件・surface 134件、Rust 515 pass / 4 ignored、別stepの全3-byte比較1件が成功。
+nativeはmacOS 26.6.2/Apple Silicon。macOS 26のcodec/runtime比較の証拠であり、native dialog実操作・署名候補のsandbox・Intel・GUI性能の受け入れではない。
+画像のnative専用55チェックとPDF 20 fixturesは今回のCIに含まれない。
+
+## build 164のローカル署名pkg検証
+
+`release:candidate -- --with-app-store-pkg --no-prune-pkgs` をclean source `049813ea` から実行し、surface 134件と作成処理が成功。
+app/extensionは3.3.0/build 164、最低macOS 26。main・3 helper・extensionの全5 binaryにarm64/x86_64を確認した。
+appのdeep/strict署名、pkg署名、main/extensionのprofileとsandbox/App Group、helperのsandbox+inherit、
+同梱LICENSE/noticeのsource一致、installer XML、pkg展開payload全14 file/symlinkのhash・mode一致が通過。
+ignored候補記録は `sourceDirty: false`。build 163のpkgはSHA-256不変で保持している。
+`productbuild` の既知の `write: Permission denied` 4行と既存build警告は残ったが、exit 0と上記照合で成果物を確認した。
+制限環境の証明書trust照合は失敗し、実署名環境での再検査が成功。upload・インストール・TestFlight操作は実行していない。
+
 ## 採用しなかった案
 
 - CoreFoundationだけの日本語変換は、機種依存文字・波dash・JIS0212等の旧codec互換を満たさず採用しない。
@@ -119,6 +137,6 @@ Cargo manifest/lock/lib.rsは自動mergeし、codecは維持された。他3変�
 これは今回の個別撤回の構成・集計照合であり、撤回後のnative compile・runtime・全UI操作は未実施。
 前回6変更の撤回試験とは別の証拠として扱う。
 
-次は今回を含む追加差分の人間による外部レビュー、同SHAのCI、同一署名候補の長文日本語/IME・VoiceOver・
-Intel/macOS 26・大きなlegacy workspace・sandbox外部PDF取込・TestFlightを受け入れる。
+次はbuild 164の同一署名候補で長文日本語/IME・VoiceOver・Intel・macOS 26のGUI・
+大きなlegacy workspace・sandbox外部PDF取込・TestFlightを受け入れる。
 今回のsource test・診断app成功は、Apple upload・審査・公開を示さない。

@@ -7,7 +7,7 @@ Last reviewed: 2026-10-17
 
 ## Current State
 
-- **現行source v3.3.0（2026-10-17、追加レビュー候補）:** native dialogを同じrfdへ直接集約して
+- **現行source v3.3.0（2026-10-17、build 164署名候補）:** native dialogを同じrfdへ直接集約して
   plugin 3件を除去し、破棄・モデル操作の確認を明示的な非同期待機へ修正した。
   日本語codecをmacOS iconvと限定的な互換処理へ委譲し、macOS製品経路からさらに4件を外した。
   encoding_rsは比較test/非macOS fallback、simdutf8はUTF-8検証に維持。残存版・取得元は変更していない。
@@ -23,9 +23,11 @@ Last reviewed: 2026-10-17
   [今回の採否・検証・撤回条件](reviews/2026-10-17-dependency-reduction.md)と
   [前回を含む全体記録](releases/3.3.0-dependency-autonomy.md)を参照。
   今回4変更の個別撤回は両targetの解決・noticeを照合。撤回後のnative compile・runtime・全UI操作は未実施。
-  前候補は触って問題なしとのオーナー報告。既存build 163のpkgは今回分を含まず、変更していない。
-  今回の外部レビュー・同SHAのCI・同一署名候補のIME/VoiceOver・Intel/macOS 26・大きなlegacy workspace・
-  sandbox外部PDF取込・TestFlight・公開は未確認。新しいpkg・タグ・uploadは行っていない。
+  [PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)はfrontend・native成功。
+  clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、署名・同梱物・digestをローカル確認した。
+  path/hashはignoredの `docs/internal/app-store-candidates/latest.json` が正本。build 163は保持している。
+  macOS 26.6.2/Apple Siliconでcodec比較も成功。同一署名候補のIME/VoiceOver・Intel・macOS 26のGUI・
+  大きなlegacy workspace・sandbox外部PDF取込・TestFlight・upload・公開は未確認。
   先行する圧縮無効化の約1.8 MB増とPDF parser多様性の低下も引き続き評価する。
   メモ・縦書きは受け入れ後に戻る。
 

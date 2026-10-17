@@ -1,6 +1,6 @@
 # 依存の自律化 — v3.3計画と追加削減
 
-Status: Active plan; initial review accepted, additional reduction candidate
+Status: Active plan; external review accepted, signed package candidate
 Scope: 新機能に先行する依存整理、比較評価、採否の条件
 Authority: Advisory（採用・実装状態の正本は roadmap / current-work / current-status）
 Last reviewed: 2026-10-17
@@ -23,12 +23,12 @@ OS APIへ移した部分は、外部package依存をOS/SDKと専用bridgeの保�
 | 日本語codec | macOS iconvと限定的な互換処理へ委譲。encoding_rsは比較test/非macOS fallback、simdutf8はUTF-8に維持。legacy処理の遅延を記録 |
 | 生成物 | App StoreのAgent専用CSSと両laneの不要なpackage metadataを除去。件数削減とは区別 |
 | 件数 | 基準 `25f21528` からmacOS Cargoの保守的なruntime/build集合301→254→247。npm lockは183→182のまま |
-| 受け入れ | 自動検証・旧codec比較・隔離appのlegacy保存と今回4変更の個別撤回後の解決/noticeを照合。外部レビュー・同SHAのCI・同一署名候補の受け入れは未完 |
+| 受け入れ | 自動検証・旧codec比較・隔離app・個別撤回を照合。`049813ea` の外部レビュー指摘なし・同SHA CI成功。同一署名候補の実機・配布受け入れは未完 |
 | 範囲外 | 新機能、全面native化、全vendor化、公開タグ・App Store upload |
 
 実装結果、基準、測定の意味、個別撤回と未確認の正本は[3.3.0の記録](releases/3.3.0-dependency-autonomy.md)。
 10月17日の追加分は[最新の採否・検証・性能差](reviews/2026-10-17-dependency-reduction.md)を参照する。
-既存build 163 pkgは今回分を含まず、新しいpkg・タグ・uploadは行っていない。
+clean source `049813ea` からbuild 164署名pkgをローカル作成・検証。候補情報はignoredの `docs/internal/app-store-candidates/latest.json` が正本。upload・公開は未実施。
 件数削減と配布容量・性能・品質は別に評価し、保守責務や救済経路の損失も採否に含める。
 
 ## 2. 既存ロードマップとの順序
@@ -42,7 +42,7 @@ OS APIへ移した部分は、外部package依存をOS/SDKと専用bridgeの保�
 4. 対象ごとにred→green、graph/容量比較、native境界、両laneを確認し、独立commitで採否を記録する。
    PDFの初期維持判断は履歴として保持し、追加のhelper不在/失敗・OCR等の証跡からPDFKit案を評価した。
 5. 10月14日の6変更と、10月17日の4変更は別々に個別rollbackを照合し、試験範囲と再検証条件を記録した。
-   次は追加差分の外部レビューと同一署名候補の編集・配布受け入れを行う。
+   `049813ea` の外部レビューと同SHA CIは成功。次はbuild 164の編集・配布受け入れを行う。
 6. 依存削減を受け入れた後、見直しメモを起点に製品開発へ戻る。縦書きは独立した柱として維持する。
 
 全依存の撤去やOS APIの自前実装を、新機能着手の必須条件にしない。
@@ -216,7 +216,7 @@ Import helperはOCR・PDF参照描画にも利用する。pdf-extractの除去�
 | window-vibrancyの自前化 | 直接0.8.1はレビュー後の追加でTauri標準APIへ集約した。0.6.0は推移依存として維持し、自作FFIは加えない | Tauri経路で解けない再現する不具合と移行利益がある場合だけ再評価。今回の詳細・外観の残ゲートは3.3.0記録 |
 | yaml / marked | 外部文書の解釈と本文保全の互換性を担う | 現行設定・拡張・限定パッチでは解けない具体的要件と互換fixtureがある |
 | DOMPurify / TLS・暗号 | 安全基盤の責務が大きい | 通常の依存自律化の再実装対象にはしない。具体的問題を独立レビューで扱う |
-| ureqのOS API化 | 追加依頼でNSURLSession案を採用候補にした。HTTPS/redirect/MIME/上限/TLS拒否を試験し、timeout差は明示 | 特定HTTPS環境に回帰があれば、この変更だけを戻す。追加外部レビューと同一署名候補の受け入れを行う |
+| ureqのOS API化 | 追加依頼でNSURLSession案を採用候補にした。HTTPS/redirect/MIME/上限/TLS拒否を試験し、timeout差は明示 | 特定HTTPS環境に回帰があれば、この変更だけを戻す。追加外部レビューは指摘なし。同一署名候補の受け入れを行う |
 | encoding_rs | 10月17日にmacOS製品経路をiconvへ移行。test oracleと非macOS fallbackは維持 | OS差・互換性・大きなlegacy workspaceの待ち時間に問題があれば、この変更だけを戻す |
 | serde / serde_json | 形式・protocolの基盤 | 未使用feature等に具体的根拠がある場合だけ局所整理 |
 | React / Tauri / CodeMirror本体、全面native化 | 製品全体・IME・Undo・描画・配布の再開発になる | 製品要件を阻む再現可能な制約と、小試作で確認した移行利益がある |

@@ -25,9 +25,12 @@ Developerでnative選択、Shift-JIS/EUC-JP保存と旧codecのbyte一致、取�
 UTF-8の測定時間は旧経路と同程度だが、大きなlegacy原稿の処理は遅くなる。
 採否・測定条件・残ゲートは[10月17日の追加記録](reviews/2026-10-17-dependency-reduction.md)を参照する。
 
-次は今回を含む追加差分の外部レビュー、同SHAのCIと、同一署名候補のIME・VoiceOver・Intel/macOS 26・
-大きなlegacy workspace・sandbox外部PDF取込を受け入れる。既存build 163のpkgは今回分を含まず、変更していない。
-新しいpkg・タグ・uploadは行っていない。今回4変更を個別撤回して両targetの解決・noticeを照合した。
+[PR #59](https://github.com/lero003/hazakura-editor/pull/59)の固定HEAD `049813ea` は外部レビューで指摘なし。同SHAの[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39020682669)もfrontend・native成功。
+clean source `049813ea` から3.3.0/build 164の署名pkgを作成し、ローカル署名・同梱物・digestを確認した。
+候補のpathとhashはignoredの `docs/internal/app-store-candidates/latest.json` を参照。build 163は保持している。
+次は同一署名候補のIME・VoiceOver・Intel・macOS 26のGUI・大きなlegacy workspace・sandbox外部PDF取込を受け入れる。
+macOS 26.6.2/Apple SiliconのCIでcodec比較は成功したが、GUI・TestFlight・upload・公開は未確認。
+今回4変更を個別撤回して両targetの解決・noticeを照合した。
 撤回後のnative compile・runtime・全UI操作は未実施。旧6変更の撤回試験とは区別する。
 [全体の変更・前回の個別撤回](releases/3.3.0-dependency-autonomy.md)を保持し、受け入れ後は見直しメモ・縦書きへ戻る。
 
