@@ -72,7 +72,7 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
 ## 検証済みの範囲（この変更の後）
 
 - `npm run typecheck`（`noUnusedLocals` / `noUnusedParameters` 有効）: 成功。
-- `npm test`: frontend **2,907件 / 312 files**、scripts **31件** 成功。
+- `npm test`: frontend **2,912件 / 313 files**、scripts **31件** 成功。
 - `npm run build:vite`: Developer lane成功（`hasAgentEntry` / `hasXtermScript` / `hasAgentStyles` = true）。
   `HAZAKURA_DISTRIBUTION_LANE=app-store` でも成功し、境界検査は
   `hasAgentStyles: false` / `hasXtermScript: false` / `hasXtermStyles: false` を確認。
