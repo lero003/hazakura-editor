@@ -73,7 +73,14 @@ build 164の実機受け入れはそのまま継続でき、本変更は次のso
    `beginFormatExport(format, copy, options)` に統合。差は形式名と status 文言3種のみで、
    文言は6リテラルとも機械照合で**前後完全一致**（`PDF_EXPORT_COPY` / `EPUB_EXPORT_COPY` に定数化）。
    HTMLは preflight を持たず同一tickで枠を閉じる別フローなので対象外。
-10. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
+10. **EditorPaneのスクロール/選択ヘルパ分離** — 末尾の261行（スクロール比clamp、スクロールバー
+    判定、選択情報の読み取り、スクロールバー・ドラッグの保持）を
+    `features/editor/editorScrollPhysics.ts` へ移動（EditorPaneは1,478行 → 1,225行）。
+    移動本体は機械照合で**差分が `export` 接頭7箇所のみ**。`EditorSelectionInfo` 型も同モジュールへ
+    移し、EditorPaneからは再exportで既存importを維持。あわせて3ファイルに重複していた
+    `clampScrollRatio`（意味は完全一致）を同モジュールの1実装へ統合し、既存テスト向けに
+    再exportを残した。
+11. **コマンド表のモジュール抽出** — `useCommandPaletteController.ts` の635行インライン
    `useMemo<Command[]>` を `commandPaletteEntries.ts` の `buildCommandCommands(ctx)` へ移動
    （フックは1,055行 → 403行）。移動は機械照合で**635行が1行も変わっていない**ことを確認済み
    （差分は `ctx.` 接頭のみ）。`openGlobalSearch` はこのmemoより後にフック内で宣言されるため
