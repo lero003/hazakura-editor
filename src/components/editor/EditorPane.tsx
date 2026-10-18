@@ -621,7 +621,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         editorWrappingCompartmentValue(wrapLines, lModeEnabled),
       ),
       invisiblesCompartmentRef.current.of(
-        editorInvisiblesCompartmentValue(showInvisibles, lModeEnabled, false),
+        editorInvisiblesCompartmentValue(showInvisibles, lModeEnabled),
       ),
       tabSizeCompartmentRef.current.of(editorTabSizeCompartmentValue(tabSize)),
       spellcheckCompartmentRef.current.of(
@@ -1034,7 +1034,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: invisiblesCompartmentRef.current.reconfigure(
-        editorInvisiblesCompartmentValue(showInvisibles, lModeEnabled, true),
+        editorInvisiblesCompartmentValue(showInvisibles, lModeEnabled),
       ),
     });
   }, [showInvisibles, lModeEnabled]);

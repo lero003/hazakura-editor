@@ -134,6 +134,7 @@ describe("EditorPane", () => {
     ref,
     activeSearchMatchIndex = -1,
     searchMatches = [],
+    showInvisibles = false,
     slashCommands = [],
     value,
   }: {
@@ -153,6 +154,7 @@ describe("EditorPane", () => {
     ref?: React.Ref<EditorPaneHandle>;
     activeSearchMatchIndex?: number;
     searchMatches?: readonly { from: number; to: number }[];
+    showInvisibles?: boolean;
     slashCommands?: readonly SlashCommand[];
     value: string;
   }) {
@@ -174,7 +176,7 @@ describe("EditorPane", () => {
         readOnly={readOnly}
         onSelectionChange={vi.fn()}
         searchMatches={[...searchMatches]}
-        showInvisibles={false}
+        showInvisibles={showInvisibles}
         slashCommands={slashCommands}
         slashMenuCopy={getSlashMenuCopy("en")}
         spellcheckEnabled={true}
@@ -192,6 +194,40 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("keeps invisibles suppressed in L Mode after switching documents", () => {
+    const value = "本文 と 空白  \n次の行\t本文";
+    const onChange = vi.fn();
+    const { container, rerender } = render(renderEditorPane({
+      documentKey: "/workspace/first.md",
+      lModeEnabled: true,
+      onChange,
+      showInvisibles: true,
+      value,
+    }));
+    expect(container.querySelector(".cm-invisible-space, .cm-invisible-tab")).toBeNull();
+
+    rerender(renderEditorPane({
+      documentKey: "/workspace/second.md",
+      lModeEnabled: true,
+      onChange,
+      showInvisibles: true,
+      value,
+    }));
+    expect(container.querySelector(".cm-invisible-space, .cm-invisible-tab")).toBeNull();
+    expect(container.querySelector(".cm-content")?.textContent).toContain("本文");
+    expect(onChange).not.toHaveBeenCalled();
+
+    rerender(renderEditorPane({
+      documentKey: "/workspace/second.md",
+      lModeEnabled: false,
+      onChange,
+      showInvisibles: true,
+      value,
+    }));
+    expect(container.querySelector(".cm-invisible-space, .cm-invisible-tab")).not.toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it.each([

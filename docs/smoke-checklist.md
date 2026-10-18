@@ -3,9 +3,23 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-10-18 (encoding reread failure)
+Last reviewed: 2026-10-18 (v3.3 regression review)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
+
+## v3.3 内部整理の回帰確認
+
+1. 不可視文字をオンにし、空白・タブを含む原稿でL Modeへ入る。別の文書へ切り替えても
+   不可視文字は隠れたまま、通常編集へ戻ると表示される。本文・dirty・元byteは変化しない。
+2. EPUB→PDF→HTMLの設定を切り替え、Escapeで取り消して再開始できることを確認する。
+   取消済みの別形式が重なって開かない。3形式を使い捨ての宛先へ保存し、元原稿を維持する。
+   microtask境界の取消競合そのものはhook回帰テストと分けて記録する。
+3. File/Edit/View/Window/Help/アプリメニューと、Local Assist分離窓のテーマ初期化・追従・閉じる操作を確認。
+   診断用設定と製品設定を混ぜず、モデル入手・生成の成功をこの確認から推定しない。
+
+2026-10-18の隔離Store形状sandboxで上記を確認した。
+自動テスト・出力内容・原稿digestと残ゲートは[横断確認の記録](reviews/2026-10-18-v3.3-regression-review.md)を参照。
+署名配布候補そのもののGUI受け入れとは区別する。
 
 ## v3.3 文字コードを指定した読み直し
 

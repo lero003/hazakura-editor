@@ -5,6 +5,17 @@ Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の記録
 Authority: High
 Last reviewed: 2026-10-18
 
+## 品質 — v3.3依存削減・内部整理の横断確認（2026-10-18）
+
+全範囲を再レビューし、PDF/EPUB準備完了直後の取消が古い要求を復活させる競合を修正した。
+保留していたL Modeの不可視文字も、文書切替後に表示が変わることを再現し、両経路で抑制へ統一。
+回帰5件をred→green。frontend 2,927件・scripts 31件・Rust 515成功 / 4 ignored、型検査・fmt・
+両lane Vite・surface 137件、native HTTP 55項目・PDF 20 fixtures、実helper supervisor 47件が成功。
+隔離Store形状sandboxでL Mode切替、書き出し3形式の実保存・取消・再開始、メニュー、分離窓テーマを確認。
+原稿8ファイルのdigestは不変。署名候補のGUI・Intel/macOS 26・IME/VoiceOver・TestFlightは別ゲート。
+production npm監査0件。devの既知high 1件とCargo許容warning 8件は残し、依存更新は混ぜていない。
+[確認範囲・修正・残条件](reviews/2026-10-18-v3.3-regression-review.md)を次の入口とする。
+
 ## 品質 — 文字コードを指定した読み直しの失敗（2026-10-18）
 
 未編集のUTF-8日本語原稿をEUC-JPで読み直すと、読み取り失敗を保存衝突として表示する不具合を再現・修正。

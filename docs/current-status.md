@@ -7,6 +7,12 @@ Last reviewed: 2026-10-18
 
 ## Current State
 
+- **v3.3横断再確認（2026-10-18）:** 依存削減と内部整理を再確認し、書き出し取消後の要求復活と、
+  既存のL Mode文書切替時の不可視文字差を修正。frontend 2,927件・scripts 31件・Rust 515成功 / 4 ignored、
+  両lane・native HTTP/PDF・実helper試験が成功。隔離sandboxで3形式の実保存、メニュー、分離窓テーマと
+  文字コード再試行も確認。dev監査high 1件とCargo許容warning 8件は未解消。
+  [横断確認の範囲と残ゲート](reviews/2026-10-18-v3.3-regression-review.md)を参照。
+
 - **v3.3文字コード読み直し（2026-10-18、source修正）:** 読み取り失敗を保存衝突として扱う不具合を
   実機再現し、保存状態を保つ通常エラーへ修正。文字化けへの対処と保存形式変更の案内も明確化。
   UI統合を含む全体テスト・両lane Vite・隔離Developer実操作・三言語のブラウザUI再試行は成功。
@@ -23,8 +29,8 @@ Last reviewed: 2026-10-18
   後続HEAD `78867c32` の[Quality CI](https://github.com/lero003/hazakura-editor/actions/runs/39067820195)は
   frontend 2,912件・scripts 31件・Rust 515成功 / 4 ignored・全3-byte値比較を含み、両job成功。
   詳細は[内部整理のレビュー記録](reviews/2026-10-17-refactor-slices-review-request.md)。
-  build 164は下記の旧source候補を維持する。新sourceのメニュー・分離窓テーマ・IME/L Modeは
-  実機未確認で、署名候補のローカル作成とTestFlight / upload / 公開を分けて扱う。
+  build 164は下記の旧source候補を維持する。当時はメニュー・分離窓テーマ・IME/L Modeが
+  実機未確認だった。今回の隔離診断UI結果は上記の横断確認を参照し、署名候補の受け入れと区別する。
 
 - **v3.3.0依存削減の基準候補（2026-10-17、build 164署名候補）:** native dialogを同じrfdへ直接集約して
   plugin 3件を除去し、破棄・モデル操作の確認を明示的な非同期待機へ修正した。

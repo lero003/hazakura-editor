@@ -5,6 +5,14 @@ Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の引き継
 Authority: Medium
 Last reviewed: 2026-10-18
 
+## v3.3横断再確認（2026-10-18）
+
+依存削減・内部整理を全体レビューし、書き出し取消後の要求復活とL Modeの文書切替時の不可視文字差を修正。
+frontend 2,927件・scripts 31件・Rust 515成功 / 4 ignoredと両lane、native HTTP/PDF、実helperが成功。
+隔離sandboxで3形式の実保存、L Mode、メニュー、分離窓テーマ、文字コード再試行を確認。原稿8件のdigestは不変。
+[レビュー記録](reviews/2026-10-18-v3.3-regression-review.md)が次の入口。dev監査high 1件・Cargo許容warning 8件は残る。
+次は同一署名候補のGUI・IME/VoiceOver・Intel/macOS 26等の受け入れ。pkg照合はignoredの候補記録で行う。
+
 ## 文字コードの読み直し — source修正（2026-10-18）
 
 不適合codecでの読み直し失敗が保存衝突へ流れる不具合を実機再現・修正した。
@@ -29,7 +37,7 @@ frontendは2,910成功 / 2失敗で、入口の20秒timeoutと後続mock回数�
 build 164の旧候補と新source候補を混同せず、pkgのsource・build・hashは
 ignoredの `docs/internal/app-store-candidates/latest.json` で照合する。
 次は新source候補のメニュー、分離窓テーマ、IME/L Modeを実機で確認する。
-不可視文字のmount/reconfigure差と未到達Rustコマンド2件の扱いは別スライスに残す。
+不可視文字のmount/reconfigure差は今回の横断確認で解消。未到達Rustコマンド2件の扱いは保留。
 
 ## 基準候補 — v3.3依存削減の追加（2026-10-17）
 

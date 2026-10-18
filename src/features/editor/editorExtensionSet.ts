@@ -25,17 +25,11 @@ export function editorWrappingCompartmentValue(
   return getEditorWrappingExtensions(wrapLines, lModeEnabled);
 }
 
-/**
- * Invisibles are suppressed in L Mode, but only on the reconfigure path: the
- * mount path has always shown them even in L Mode (`suppressInLMode: false`).
- * Keep both behaviours explicit until someone confirms which one is intended.
- */
 export function editorInvisiblesCompartmentValue(
   showInvisibles: boolean,
   lModeEnabled: boolean,
-  suppressInLMode: boolean,
 ): Extension {
-  return showInvisibles && (!suppressInLMode || !lModeEnabled)
+  return showInvisibles && !lModeEnabled
     ? invisibleCharactersField
     : [];
 }

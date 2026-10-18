@@ -146,6 +146,39 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("useDocumentExport", () => {
+  it.each(["pdf", "epub"] as const)("keeps %s cancelled when cancellation follows its preflight continuation", async (format) => {
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    let pending!: Promise<void>;
+    await act(async () => {
+      pending = format === "pdf" ? result.current.exportPdf() : result.current.exportEpubBeta();
+      await Promise.resolve();
+      result.current.endExportSession();
+      await pending;
+    });
+    expect(result.current.pdfExportRequest).toBeNull();
+    expect(result.current.epubExportRequest).toBeNull();
+  });
+
+  it.each(["pdf", "epub"] as const)("does not publish a cancelled %s over a new export session after preflight", async (format) => {
+    const { result } = renderHook(() => useDocumentExport({
+      activeTab: makeTab(), activeContents: "draft", workspaceRootPath: null,
+      setStatus: vi.fn(), setGlobalError: vi.fn(),
+    }));
+    await act(async () => {
+      const pending = format === "pdf" ? result.current.exportPdf() : result.current.exportEpubBeta();
+      await Promise.resolve();
+      result.current.endExportSession();
+      await result.current.exportHtml();
+      await pending;
+    });
+    expect(result.current.htmlExportRequest).not.toBeNull();
+    expect(result.current.pdfExportRequest).toBeNull();
+    expect(result.current.epubExportRequest).toBeNull();
+  });
+
   it.each(["pdf", "epub"] as const)("ignores late %s preflight after HTML takes ownership, including after cancel", async (format) => {
     let resolve!: (value: ReturnType<typeof makeTab>) => void;
     filesApi.openTextFile.mockReturnValueOnce(new Promise((done) => { resolve = done; }));

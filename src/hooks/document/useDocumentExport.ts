@@ -374,7 +374,8 @@ export function useDocumentExport({
    * Shared prologue for the PDF / EPUB export flows: takes the export attempt
    * (or swaps an already-open modal frame in the same tick), builds the
    * preflight snapshot, and bails out when the document changed or the attempt
-   * was superseded. Returns `null` when the caller must stop silently.
+   * was superseded. Publishes the prepared request in the same continuation as
+   * the ownership check, so cancellation cannot fall between those two steps.
    *
    * HTML keeps its own shorter flow: it has no preflight and closes the frame
    * in the same tick without the stale-attempt protocol.
@@ -383,13 +384,17 @@ export function useDocumentExport({
     async (
       format: "pdf" | "epub",
       copy: { noDocument: string; preflightFailed: string; stopped: string },
+      publishRequest: (
+        preflightByScope: Record<DocumentExportScope, ExportPreflightResult>,
+        tab: EditorTab,
+      ) => void,
       options?: ExportCancelOptions,
-    ): Promise<Record<DocumentExportScope, ExportPreflightResult> | null> => {
+    ): Promise<void> => {
       // Match HTML / EPUB: an open tab may be empty (pathless draft or blank
       // file). Only a missing active tab is "no document".
       if (!activeTab || activeContents === undefined) {
         setStatus(copy.noDocument);
-        return null;
+        return;
       }
 
       // 形式切替（開いている枠があるときだけ）は、表示中の所有者と確定権限を動かさずに
@@ -402,7 +407,7 @@ export function useDocumentExport({
       let attempt: ExportAttempt | null = null;
       if (transitionId === null) {
         attempt = beginExport(format);
-        if (!attempt) return null;
+        if (!attempt) return;
       }
       // この書き出しがまだ有効か。切替は世代、通常は所有者で判定する。
       const ownsExport = () =>
@@ -417,26 +422,26 @@ export function useDocumentExport({
       try {
         preflightByScope = await buildPreflightByScope();
       } catch (error) {
-        if (!ownsExport()) return null;
+        if (!ownsExport()) return;
         abandonExport();
         setStatus(copy.preflightFailed);
         setGlobalError(String(error));
-        return null;
+        return;
       }
-      if (!ownsExport()) return null;
+      if (!ownsExport()) return;
       if (activeTabRef.current?.sessionId !== activeTab.sessionId ||
           activeTabRef.current?.id !== activeTab.id || workspaceRootRef.current !== root) {
         abandonExport();
         setStatus(copy.stopped);
-        return null;
+        return;
       }
       if (transitionId !== null) {
         // 表示中の枠を閉じて、新しい要求を載せる（同じ tick。外部レビュー R6）。
-        if (!completeExportTransition(transitionId, format)) return null;
+        if (!completeExportTransition(transitionId, format)) return;
       } else {
         attempt!.phase = "modal";
       }
-      return preflightByScope;
+      publishRequest(preflightByScope, activeTab);
     },
     [
       abandonExportTransition,
@@ -452,20 +457,20 @@ export function useDocumentExport({
     ],
   );
 
-  const exportPdf = useCallback(async (options?: ExportCancelOptions) => {
-    const preflightByScope = await beginFormatExport("pdf", PDF_EXPORT_COPY, options);
-    if (!preflightByScope || !activeTab) return;
-
-    setPdfExportRequest({
-      bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
-      bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
-      documentName: activeTab.name,
-      hasUnsavedChanges: isDirty(activeTab),
-      preflightByScope,
-      preset: DEFAULT_PDF_MARGIN_PRESET,
-      tabId: activeTab.id,
-    });
-  }, [beginFormatExport, activeTab, bookScopeChapters, bookScopeUnavailable.length]);
+  const exportPdf = useCallback((options?: ExportCancelOptions) =>
+    beginFormatExport("pdf", PDF_EXPORT_COPY, (preflightByScope, tab) => {
+      setPdfExportRequest({
+        bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
+        bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
+        documentName: tab.name,
+        hasUnsavedChanges: isDirty(tab),
+        preflightByScope,
+        preset: DEFAULT_PDF_MARGIN_PRESET,
+        tabId: tab.id,
+      });
+    }, options),
+    [beginFormatExport, bookScopeChapters, bookScopeUnavailable.length],
+  );
 
   const cancelPdfExport = useCallback(() => {
     consumeExport("pdf");
@@ -757,24 +762,24 @@ export function useDocumentExport({
     workspaceRootPath,
   ]);
 
-  const exportEpubBeta = useCallback(async (options?: ExportCancelOptions) => {
-    const preflightByScope = await beginFormatExport("epub", EPUB_EXPORT_COPY, options);
-    if (!preflightByScope || !activeTab || activeContents === undefined) return;
-
-    setEpubExportRequest({
-      bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
-      bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
-      bookNavigationSignature: JSON.stringify(bookScopeNodes),
-      documentName: activeTab.name,
-      hasUnsavedChanges: isDirty(activeTab),
-      preflightByScope,
-      settings: defaultEpubExportSettings({
-        documentName: activeTab.name,
-        markdown: activeContents,
-      }),
-      tabId: activeTab.id,
-    });
-  }, [beginFormatExport, activeContents, activeTab, bookScopeChapters, bookScopeNodes, bookScopeUnavailable.length]);
+  const exportEpubBeta = useCallback((options?: ExportCancelOptions) =>
+    beginFormatExport("epub", EPUB_EXPORT_COPY, (preflightByScope, tab) => {
+      setEpubExportRequest({
+        bookAvailable: bookScopeChapters.length > 0 || bookScopeUnavailable.length > 0,
+        bookChapterRelativePaths: bookScopeChapters.map((chapter) => chapter.relativePath),
+        bookNavigationSignature: JSON.stringify(bookScopeNodes),
+        documentName: tab.name,
+        hasUnsavedChanges: isDirty(tab),
+        preflightByScope,
+        settings: defaultEpubExportSettings({
+          documentName: tab.name,
+          markdown: activeContents,
+        }),
+        tabId: tab.id,
+      });
+    }, options),
+    [beginFormatExport, activeContents, bookScopeChapters, bookScopeNodes, bookScopeUnavailable.length],
+  );
 
   const cancelEpubBetaExport = useCallback(() => {
     consumeExport("epub");
