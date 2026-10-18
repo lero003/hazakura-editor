@@ -11,6 +11,7 @@ Last reviewed: 2026-10-18
   既存のL Mode文書切替時の不可視文字差を修正。frontend 2,927件・scripts 31件・Rust 515成功 / 4 ignored、
   両lane・native HTTP/PDF・実helper試験が成功。隔離sandboxで3形式の実保存、メニュー、分離窓テーマと
   文字コード再試行も確認。dev監査high 1件とCargo許容warning 8件は未解消。
+  clean source `daf6d7ff` からbuild 167署名pkgを作成しローカル検証。旧166を保持、upload・TestFlightは未実施。
   [横断確認の範囲と残ゲート](reviews/2026-10-18-v3.3-regression-review.md)を参照。
 
 - **v3.3文字コード読み直し（2026-10-18、source修正）:** 読み取り失敗を保存衝突として扱う不具合を

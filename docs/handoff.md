@@ -11,6 +11,7 @@ Last reviewed: 2026-10-18
 frontend 2,927件・scripts 31件・Rust 515成功 / 4 ignoredと両lane、native HTTP/PDF、実helperが成功。
 隔離sandboxで3形式の実保存、L Mode、メニュー、分離窓テーマ、文字コード再試行を確認。原稿8件のdigestは不変。
 [レビュー記録](reviews/2026-10-18-v3.3-regression-review.md)が次の入口。dev監査high 1件・Cargo許容warning 8件は残る。
+clean source `daf6d7ff` のbuild 167署名pkgは署名・universal・権限・payload一致を確認済み。旧166を保持。
 次は同一署名候補のGUI・IME/VoiceOver・Intel/macOS 26等の受け入れ。pkg照合はignoredの候補記録で行う。
 
 ## 文字コードの読み直し — source修正（2026-10-18）

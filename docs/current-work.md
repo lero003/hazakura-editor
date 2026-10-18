@@ -15,6 +15,8 @@ Last reviewed: 2026-10-18
 原稿8ファイルのdigestは不変。署名候補のGUI・Intel/macOS 26・IME/VoiceOver・TestFlightは別ゲート。
 production npm監査0件。devの既知high 1件とCargo許容warning 8件は残し、依存更新は混ぜていない。
 [確認範囲・修正・残条件](reviews/2026-10-18-v3.3-regression-review.md)を次の入口とする。
+clean source `daf6d7ff` からbuild 167署名pkgを作成し、署名・universal構成・権限・payload一致を確認。
+既知のproductbuild警告4行を保持。upload・TestFlightは未実施で、詳細はignoredの候補記録を参照する。
 
 ## 品質 — 文字コードを指定した読み直しの失敗（2026-10-18）
 
