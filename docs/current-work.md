@@ -12,7 +12,9 @@ Last reviewed: 2026-10-18
 メニューに文字化けへの対処と次回保存形式の違いを明記した。UI統合3件を加え、frontend 2,922件・scripts 31件、
 Rust 515成功 / 4 ignored、型検査・fmt・両lane Vite・surface 137件が成功。
 隔離Developer診断アプリで失敗→エラー解除→UTF-8再試行、未保存時の無効化・Undo、元byte維持を確認。
-ブラウザの実UI部品でも三言語の解除・再試行とdirty保護を再確認。署名配布候補の実操作は別ゲート。
+ブラウザの実UI部品でも三言語の解除・再試行とdirty保護を再確認。
+追加のStore形状ad-hoc sandboxでも三言語の読み直し、legacy保存のbyte一致、保存失敗からの復帰、
+本物の保存衝突と未保存原稿の保持を確認。署名配布候補の実操作は別ゲート。
 pkg情報はignoredの `docs/internal/app-store-candidates/latest.json`、[確認手順と証跡](smoke-checklist.md#v33-文字コードを指定した読み直し)で照合する。
 
 ## 基準候補 — v3.3依存削減の追加（2026-10-17）

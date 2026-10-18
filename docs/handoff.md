@@ -11,6 +11,8 @@ Last reviewed: 2026-10-18
 本文・保存状態・本物の衝突情報を維持し、通常エラーを閉じて別codecで試せる。
 全frontend・scripts・Rust、型検査・fmt・両lane Vite・surfaceは成功。
 隔離Developerで再試行・未保存保護・Undo・元byte維持を確認。三言語のブラウザUIでも再試行とdirty保護を再確認。
+追加のStore形状sandboxで三言語の読み直し、EUC-JP/Shift-JIS保存のbyte一致、保存失敗からの復帰、
+再読み込み失敗時の本物の保存衝突・未保存原稿の保持を確認。製品コードと作成済みpkgは変更していない。
 UI統合3件を含むfrontend 2,922件が成功。pkgのsource/build/hashはignoredの候補記録を照合する。
 次は署名候補で[読み直しのsmoke](smoke-checklist.md#v33-文字コードを指定した読み直し)を確認する。
 
