@@ -26,6 +26,16 @@ export function localizeStatusMessage(
   message: string,
   menuLanguage: MenuLanguage,
 ): string {
+  if (message.startsWith("Reopen failed: ")) {
+    const detail = message.slice("Reopen failed: ".length);
+    if (isKanaStyle(menuLanguage)) {
+      return `よみなほせませんでした。ふみと ふぁいるは かへてゐません。べつの もじこーどを ためすか、ふぁいるの じやうたいを たしかめてください。 (${detail})`;
+    }
+    return isJapaneseMenuLanguage(menuLanguage)
+      ? `読み直しに失敗しました。本文とファイルは変更していません。別の文字コードを試すか、ファイルの状態を確認してください。 (${detail})`
+      : `Could not re-read the file. No changes were made to the document or file. Try another encoding or check the file. (${detail})`;
+  }
+
   if (menuLanguage === "en") {
     return message;
   }

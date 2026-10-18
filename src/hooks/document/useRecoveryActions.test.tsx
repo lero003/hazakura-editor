@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useRecoveryActions } from "./useRecoveryActions";
+import { isDirty, isSaveFailureError } from "../../features/editor/editorTabs";
 import { type TextFileDocument } from "../../lib/tauri/files";
 import type { EditorTab } from "../../types";
 
@@ -121,6 +122,38 @@ describe("useRecoveryActions", () => {
     options.tabsRef.current[0].contents = "unsaved writing";
     await act(async () => { await result.current.reopenTabFromDisk(tab.id, "shift-jis"); });
     expect(tauriApi.openTextFile).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["idle", "saved"] as const)("keeps a clean %s document retryable after an encoding read fails", async (saveStatus) => {
+    const tab = makeTab({ contents: "日本語", lastSavedContents: "日本語", saveStatus });
+    const { options, getTabs } = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+    tauriApi.openTextFile.mockRejectedValueOnce(new Error("Cannot decode file as EUC-JP"));
+
+    await act(async () => { await result.current.reopenTabFromDisk(tab.id, "euc-jp"); });
+
+    expect(getTabs()[0]).toEqual({ ...tab, error: expect.stringContaining("Cannot decode file as EUC-JP") });
+    expect(isDirty(getTabs()[0])).toBe(false);
+    expect(isSaveFailureError(getTabs()[0])).toBe(false);
+
+    tauriApi.openTextFile.mockResolvedValueOnce(makeTextFileDocument({ contents: "日本語" }));
+    await act(async () => { await result.current.reopenTabFromDisk(tab.id, "utf-8"); });
+
+    expect(tauriApi.openTextFile).toHaveBeenLastCalledWith(tab.path, "utf-8");
+    expect(getTabs()[0]).toMatchObject({ contents: "日本語", encoding: "utf-8", error: null, saveStatus: "idle" });
+    expect(isDirty(getTabs()[0])).toBe(false);
+  });
+
+  it.each(["conflict", "error"] as const)("preserves an existing save %s when a disk reread fails", async (saveStatus) => {
+    const tab = makeTab({ saveStatus, error: "Original save failure", externalFingerprint: "changed-on-disk" });
+    const { options, getTabs } = makeOptions([tab]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+    tauriApi.openTextFile.mockRejectedValueOnce(new Error("Cannot read file"));
+
+    await act(async () => { await result.current.reopenTabFromDisk(tab.id); });
+
+    expect(getTabs()[0]).toEqual(tab);
+    expect(options.setStatus).toHaveBeenLastCalledWith("Reopen failed");
   });
 
   it("extracts detached recovery into a new tab without touching the original", () => {

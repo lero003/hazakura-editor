@@ -4,6 +4,19 @@ import {
   openedSearchMatchStatus,
 } from "./statusMessages";
 
+describe("encoding reread failures", () => {
+  it.each([
+    ["ja", "本文とファイルは変更していません", "別の文字コード"],
+    ["kana", "ふみと ふぁいるは かへてゐません", "べつの もじこーど"],
+    ["en", "No changes were made to the document or file", "another encoding"],
+  ] as const)("explains safe retry in %s while retaining diagnostics", (language, unchanged, nextAction) => {
+    const message = localizeStatusMessage("Reopen failed: Cannot decode file as EUC-JP", language);
+    expect(message).toContain(unchanged);
+    expect(message).toContain(nextAction);
+    expect(message).toContain("Cannot decode file as EUC-JP");
+  });
+});
+
 // v0.15 IPC status feedback.
 //
 // `useAppPreferences` and `useWindowTitle` route reliable

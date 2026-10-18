@@ -5,6 +5,15 @@ Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の引き継
 Authority: Medium
 Last reviewed: 2026-10-18
 
+## 文字コードの読み直し — source修正（2026-10-18）
+
+不適合codecでの読み直し失敗が保存衝突へ流れる不具合を実機再現・修正した。
+本文・保存状態・本物の衝突情報を維持し、通常エラーを閉じて別codecで試せる。
+全frontend・scripts・Rust、型検査・fmt・両lane Vite・surfaceは成功。
+隔離Developerで再試行・未保存保護・Undo・元byte維持を確認。三言語のブラウザUIでも再試行とdirty保護を再確認。
+UI統合3件を含むfrontend 2,922件が成功。pkgのsource/build/hashはignoredの候補記録を照合する。
+次は署名候補で[読み直しのsmoke](smoke-checklist.md#v33-文字コードを指定した読み直し)を確認する。
+
 ## 内部整理 — レビュー受け入れ（2026-10-18）
 
 `2c8cf98d..e50cc551` の内部整理は、新規の実行時不具合を指摘する根拠なし。

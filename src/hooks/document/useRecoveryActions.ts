@@ -93,8 +93,11 @@ export function useRecoveryActions({
         if (!isLatestRequest()) return;
         if (!commit((candidate) => ({
           ...candidate,
-          error: `Reopen failed: ${String(err)}`,
-          saveStatus: "conflict",
+          // A failed read neither edits nor saves the document. Keep real
+          // save failures intact; otherwise expose a dismissible read error.
+          error: candidate.saveStatus === "conflict" || candidate.saveStatus === "error"
+            ? candidate.error
+            : `Reopen failed: ${String(err)}`,
         }))) {
           setStatus("Reopen skipped; document changed");
           return;

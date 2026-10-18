@@ -3,9 +3,36 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-10-12 (workspace refresh acceptance)
+Last reviewed: 2026-10-18 (encoding reread failure)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
+
+## v3.3 文字コードを指定した読み直し
+
+使い捨ての日本語UTF-8ファイルで確認する。「読み直す」は文字化けしたときの読み取り指定で、
+「次回の保存文字コードを変える」は次の保存形式の指定。読み直すだけではファイルを書き換えない。
+
+1. 未編集のファイルで「文字化けしたときに読み直す」からEUC-JPを選ぶ。
+   不適合なbyteによる読み取りエラーを表示し、保存衝突ダイアログ・未保存表示は出ない。
+   元の本文・文字コード・ファイルのbyteを維持する。
+2. エラーを閉じられ、別の文字コードで再試行できる。UTF-8で読み直せばエラーが消え、保存不要の状態に戻る。
+3. 本文を編集した場合は読み直しを無効にし、未保存の文章を保つ。
+   保存形式だけを変える操作は未保存扱いになり、保存して初めてファイルへ反映する。
+4. 実際の外部変更による保存衝突では従来の確認を維持する。再読み込みに失敗しても、
+   元の衝突理由や未保存原稿を消さない。
+
+日本語・英語・かなの案内、キーボードでの選択・エラー解除を確認する。
+Developer診断アプリの操作証跡と、署名済みApp Store / TestFlight候補の確認は分けて記録する。
+
+2026-10-18: v3.3の既存Developer診断アプリで項目1の旧不具合を再現。
+修正sourceから別IDのad-hoc Developer診断アプリ（version/buildとも`3.3.0`、配布候補番号ではない）を作成し、
+英語UIで読み取りエラー・解除・UTF-8再試行、本文編集時の無効化とUndoを実操作した。
+fixtureのbyte一致も確認。本物の保存衝突保持は自動テストで確認。
+追加のUI統合3件と、実StatusBar・RecoveryMessages・関連hookを接続したブラウザfixtureで、
+日本語・英語・かなのエラー解除と再試行、本文・保存文字コード・改行だけのdirty保護と変更取消を確認。
+ブラウザfixtureのファイルIPCはTextDecoderを使う検証用代替で、native I/O・アプリ全体の操作とは区別する。
+追加のsandbox診断アプリ操作はComputer Use未承認のため未実施。
+保存形式変更のnative実操作、三言語のnativeメニュー実操作、署名配布候補の再確認は未実施。
 
 ## v3.2.1 ワークスペース一覧更新
 
