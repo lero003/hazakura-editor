@@ -24,10 +24,12 @@ S9で紙の外へ逃がした演出を紙の内側へ戻し、3テーマの「�
 - CRT: 文字の蛍光ブルーム（1px芯+14px）、走査線0.30→0.24、ガラス面の3px周期RGBグリル、
   紙面の管ヒートスポット、読む面/プレビューの階調、ハムバー芯0.16
 - 文字色・紙の不透明度は変えず、読む面のtext-shadow除去契約を維持する
-- frontend **332 files / 3,109 tests**・scripts 31件、型検査・`npm run build:vite`が成功。
-  隔離WKWebView（DPR1）で3テーマの編集・プレビュー・電子書籍・全幅Readerを前後比較した
-- 未確認: 実CodeMirror/IME/Retina/VoiceOver、署名候補GUI。S10は既存の署名pkg作成後に足したため、
-  upload前にcommit済みsourceからpkgを再生成する
+- 追加レビューでプレビュー光の上書き、CRTの非アクティブ時と花弁の裏返りの停止漏れを修正。
+  修正後はfrontend **332 files / 3,116 tests**・scripts 31件、Rust 515成功 / 4 ignored、
+  型検査・fmt・両lane Vite・surface 137件が成功。隔離WKWebViewで背景光・紙色・停止を追試した
+- commit済みclean sourceからS10入り署名pkgを再生成し、署名・payload一致を確認。
+  版/build/hash/source状態はignoredの候補記録を照合する。push・uploadは未実施
+- 未確認: 実CodeMirror/IME/Retina/VoiceOver、署名候補GUI
 - 変更と見送りは[計画S10](theme-atmosphere-brushup-plan.md)、取得条件と残条件は
   [S10レビュー記録](reviews/2026-10-21-s10-theme-depth-review.md)を参照
 

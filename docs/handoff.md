@@ -16,9 +16,11 @@ S10（2026-10-21）で、S9後に残った「紙が無地で平坦」な状態�
 共通の紙の縁、深海の紙面深度と前景ボケ、江戸彼岸の花弁増量・枝の揺れ・朝の光、
 CRTの蛍光ブルーム・RGBグリル・紙面ヒートスポットを追加した。文字色・紙の不透明度・
 読む面のtext-shadow除去契約は維持し、source/保存/書き出し/境界も変えていない。
-frontend 332 files / 3,109 tests・scripts 31件、型検査・`npm run build:vite`が成功。
-隔離WKWebView（DPR1）で3テーマを前後比較したが、実CodeMirror/IME/Retina/VoiceOverは未確認。
-**S10は既存の署名pkg作成後の変更なので、upload前にcommit済みsourceからpkgを再生成する。**
+追加レビューでプレビュー光の上書き、CRTの非アクティブ時と花弁の裏返りの停止漏れを修正。
+修正後はfrontend 332 files / 3,116 tests・scripts 31件、Rust 515成功 / 4 ignored、
+型検査・fmt・両lane Vite・surface 137件が成功。隔離WKWebViewで背景光・紙色・停止を追試した。
+**commit済みclean sourceからS10入り署名pkgを再生成し、署名・payload一致を確認済み。**
+実CodeMirror/IME/Retina/VoiceOver・署名候補GUIは未確認。push・uploadは未実施。
 変更は[計画S10](theme-atmosphere-brushup-plan.md)、条件は[S10レビュー](reviews/2026-10-21-s10-theme-depth-review.md)。
 
 S9追試で深海ビネットを紙の後ろへ、全テーマのebook/page-sheetを不透明紙へ統一した。
@@ -41,7 +43,8 @@ frontend 330 files / 3,091 tests・scripts 31件が成功。実機確認は未�
 
 次は[調整と確認範囲](reviews/2026-10-19-theme-regression-review.md)を入口に、署名候補のGUI・
 実CodeMirrorの長文/IME・L Mode/Readerの組版・Retina・200%文字・VoiceOverを確認する。
-今回は未コミット差分を含むローカルpkg。候補番号/hash/source状態はignoredの候補記録で照合し、upload前はcommit後に再生成する。
+候補番号/hash/source状態はignoredの `docs/internal/app-store-candidates/latest.json` で照合する。
+生成後に記録するtracked変更はビルド番号と文書のみで、pkgの製品sourceは同記録のcommitを基準にする。
 
 ## v3.3横断再確認（2026-10-18）
 

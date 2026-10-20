@@ -15,10 +15,13 @@ Last reviewed: 2026-10-21
 - **v3.4 S10 紙面の深度と前景（2026-10-21）:** S9で紙の外へ逃がした演出を紙の内側へ戻した。
   共通の紙の縁、深海の紙面深度と前景ボケ、江戸彼岸の花弁増量・枝の揺れ・朝の光、
   CRTの蛍光ブルーム・RGBグリル・紙面ヒートスポットを追加。文字色・紙の不透明度・
-  読む面のtext-shadow除去契約は変えていない。frontend 332 files / 3,109 tests・scripts 31件、
-  型検査・`npm run build:vite`が成功。隔離WKWebView（DPR1）で3テーマを前後比較し、
-  実CodeMirror/IME/Retina/VoiceOverは未確認。S10は既存の署名pkg作成後に足したため、
-  upload前にcommit済みsourceからpkgを再生成する。
+  読む面のtext-shadow除去契約は変えていない。追加レビューでプレビュー光の上書きと、
+  CRTの非アクティブ時・花弁の裏返りの停止漏れを修正。修正後はfrontend 332 files / 3,116 tests・
+  scripts 31件、Rust 515成功 / 4 ignored、型検査・fmt・両lane Vite・surface 137件が成功。
+  隔離WKWebViewで背景光の到達・紙色の維持・花弁の停止を確認した。
+  commit済みclean sourceからS10入り署名pkgを再生成し、署名・payload一致を確認。
+  最新候補の版/build/hash/source状態はignoredの候補記録で照合する。push・uploadは未実施。
+  実CodeMirror/IME/Retina/VoiceOver・署名候補GUIは未確認。
   [変更](theme-atmosphere-brushup-plan.md)・[確認範囲](reviews/2026-10-21-s10-theme-depth-review.md)。
 
 - **v3.4 S9追試（2026-10-19）:** 深海ビネットの積層、共通Reader紙面の参照漏れ、明部での補助文字を調整。
