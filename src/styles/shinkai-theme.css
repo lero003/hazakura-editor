@@ -154,6 +154,44 @@
   z-index: calc(var(--z-base) - 1);
 }
 
+/* 前景のボケ (S10)。水の粒を「背景の模様」で終わらせず、UI の手前に
+   大きな光の玉を薄く置く。中央のカラムは mask で外し、文字の上には乗せない。 */
+.shinkai-bokeh {
+  animation: shinkaiBokehDrift 26s ease-in-out infinite alternate;
+  background:
+    radial-gradient(circle at 12% 26%, rgba(190, 240, 250, 0.34), transparent 15%),
+    radial-gradient(circle at 88% 64%, rgba(140, 215, 230, 0.28), transparent 13%),
+    radial-gradient(circle at 74% 14%, rgba(210, 250, 255, 0.2), transparent 10%);
+  filter: blur(28px);
+  inset: 0;
+  mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 26%,
+    transparent 44%,
+    transparent 56%,
+    #000 74%,
+    #000 100%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+  position: fixed;
+  z-index: calc(var(--z-base) + 1);
+}
+
+.shinkai-bokeh[data-intensity="subtle"] {
+  opacity: 0.32;
+}
+
+.shinkai-bokeh[data-intensity="dramatic"] {
+  opacity: 0.72;
+}
+
+@keyframes shinkaiBokehDrift {
+  from { transform: translate3d(-6px, 0, 0); }
+  to { transform: translate3d(8px, -4px, 0); }
+}
+
 /* 起動シーケンス中の canvas 扱い。
    ブート (.shinkai-boot) は phase !== "done" の間だけ DOM に存在する。
    still/flow/drift 中は canvas を隠し (opacity:0)、前面のブート (不透明全面覆い)

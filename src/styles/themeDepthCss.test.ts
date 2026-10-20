@@ -56,10 +56,27 @@ describe("S10 paper depth", () => {
     expect(body).toMatch(/z-index:\s*calc\(var\(--z-crt-top\) \+ 1\)/);
   });
 
+  it("adds the crt aperture grille without flattening the glass", () => {
+    const body = ruleBody(crt, ".crt-glass");
+    expect(body).toMatch(/repeating-linear-gradient\(\s*90deg/);
+    expect(body).toContain("rgba(255, 80, 80, 0.022)");
+    expect(body).toContain("rgba(90, 120, 255, 0.022)");
+  });
+
+  it("adds a shinkai foreground bokeh outside the text column", () => {
+    const body = ruleBody(shinkai, ".shinkai-bokeh");
+    expect(body).toContain("filter: blur(28px)");
+    expect(body).toContain("mask-image:");
+    expect(body).toContain("transparent 44%");
+    expect(body).toContain("transparent 56%");
+    expect(body).toMatch(/z-index:\s*calc\(var\(--z-base\) \+ 1\)/);
+  });
+
   it("keeps the crt reading card free of a text glow", () => {
     // 読む面の text-shadow は preview.css が外す契約。テーマ側で戻さない。
     expect(crt).not.toMatch(
       /:root\[data-theme="crt"\] \.v3-shell \.preview-pane-preview[\s\S]{0,240}text-shadow/s,
     );
   });
+
 });

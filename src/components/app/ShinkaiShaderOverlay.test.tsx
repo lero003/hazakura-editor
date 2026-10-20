@@ -40,11 +40,22 @@ function mockMatchMedia(matches: boolean): Mock {
 }
 
 describe("ShinkaiShaderOverlay", () => {
-  it("renders no canvas when ambient intensity is off", () => {
+  it("renders no canvas or bokeh when ambient intensity is off", () => {
     mockMatchMedia(false);
     const { container } = render(<ShinkaiShaderOverlay intensity="off" />);
 
     expect(container.querySelector(".shinkai-canvas")).toBeNull();
+    expect(container.querySelector(".shinkai-bokeh")).toBeNull();
+  });
+
+  it("renders the foreground bokeh with the selected intensity", () => {
+    mockMatchMedia(false);
+    const { container } = render(<ShinkaiShaderOverlay intensity="dramatic" />);
+
+    const bokeh = container.querySelector(".shinkai-bokeh");
+    expect(bokeh).not.toBeNull();
+    expect(bokeh?.getAttribute("aria-hidden")).toBe("true");
+    expect(bokeh?.getAttribute("data-intensity")).toBe("dramatic");
   });
 
   it("renders the shader canvas when intensity is enabled and WebGL is unavailable", () => {

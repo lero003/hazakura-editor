@@ -781,6 +781,13 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
   return (
     <>
       <canvas className="shinkai-canvas" ref={canvasRef} aria-hidden="true" />
+      {/* 前景のボケ。紙やUIの上へ大きな光の粒を薄く重ね、水の奥行きを作る。
+          中央のテキストカラムは CSS の mask で外す。 */}
+      <div
+        className="shinkai-bokeh"
+        data-intensity={intensity}
+        aria-hidden="true"
+      />
       {showStats ? (
         <div className="atmosphere-stats" ref={statsRef} aria-hidden="true" />
       ) : null}

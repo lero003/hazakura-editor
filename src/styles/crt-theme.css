@@ -162,6 +162,14 @@
    文字の上に膜をかけるのではなく、画面の端へ光と陰を足すための層。 */
 .crt-glass {
   background:
+    /* アパーチャーグリル。3px 周期の RGB を 2% 程度だけ乗せ、
+       走査線だけでは出ない管の色味を作る。 */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 80, 80, 0.022) 0 1px,
+      rgba(90, 255, 120, 0.018) 1px 2px,
+      rgba(90, 120, 255, 0.022) 2px 3px
+    ),
     linear-gradient(
       116deg,
       rgba(196, 255, 208, 0.035) 0%,
