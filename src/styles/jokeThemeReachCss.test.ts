@@ -83,7 +83,8 @@ describe("joke theme effect reach", () => {
     expect(ambient).toMatch(/z-index:\s*calc\(var\(--z-base\) \+ 1\)/);
     expect(ambient).not.toContain("mix-blend-mode");
     const petals = edohigan.match(/\.edohigan-petals\s*{([^}]*)}/s)?.[1];
-    expect(petals).toContain("transparent 32%, transparent 68%");
+    // S10: 左右の帯を少し広げ、中央の書き面は 36〜64% のまま外す。
+    expect(petals).toContain("transparent 36%, transparent 64%");
     // 合成指定はコントラスト比の保証ではない。前後の実画面も記録する。
     expect(edohigan).not.toContain(".edohigan-canvas");
   });

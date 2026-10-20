@@ -57,6 +57,7 @@ v3.3依存削減の検証は `releases/3.3.0-dependency-autonomy.md` に保持�
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
 - `releases/3.4.0-theme-atmosphere.md`: v3.4テーマ刷新・調整・候補と受け入れの区分。
+- `reviews/2026-10-21-s10-theme-depth-review.md`: S10の紙面深度・前景ボケ・花弁・CRTグリルの確認範囲と残条件。
 - `releases/3.3.0-dependency-autonomy.md`: v3.3提出報告と当時の変更・検証・PDF判断・外部レビュー範囲。
 - `releases/3.2.1-workspace-refresh.md`: v3.2.1の公開報告、変更と当時のsource検証。
 - `releases/3.2.0-dependency-acceptance-draft.md`: v3.2の更新範囲、検証結果、実機受け入れ。
@@ -73,7 +74,7 @@ v3.3依存削減の検証は `releases/3.3.0-dependency-autonomy.md` に保持�
 Active planning surface (intentionally small):
 
 - `roadmap.md` — **現行v3.4テーマ刷新、採用したメモ系・縦書きの方向性**
-- `theme-atmosphere-brushup-plan.md` — **v3.4の7テーマ演出ブラッシュアップ計画（2026-10-19、S0〜S8実装済み）**。光・素材・運動・光学のスライスS0〜S8、受入、検証、リスク。presentation層のみ
+- `theme-atmosphere-brushup-plan.md` — **v3.4の7テーマ演出ブラッシュアップ計画（2026-10-21、S0〜S10実装済み）**。光・素材・運動・光学のスライスS0〜S10、受入、検証、リスク。presentation層のみ
 - `dependency-autonomy-plan.md` — **v3.3計画・追加削減の採否**。初期評価の履歴と現行のOS API集約、検証・中止条件。実装結果は3.3.0記録へ
 - `post-v3.1-writing-completion-draft.md` — **メモ系・縦書きの計画詳細**。方向性は採用、UI・保存方式・版割りは未確定。AIによるメモ作成・推敲は品質再評価後
 - `current-work.md` — 3.4候補の受け入れ、3.3提出報告と過去の履歴

@@ -3,14 +3,23 @@
 Status: Operational
 Scope: v3.4テーマ刷新候補、v3.3審査提出報告、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-10-19
+Last reviewed: 2026-10-21
 
-## 現行候補 — v3.4テーマ演出ブラッシュアップと調整（2026-10-19）
+## 現行候補 — v3.4テーマ演出ブラッシュアップと調整（2026-10-21）
 
 オーナー報告でv3.3は審査提出済み。テーマ刷新と調整はv3.4.0へ分ける。
 提出build/source対応とApple側の現在の審査状態は独立未照合。
 先に作成した3.3.0のテーマ入りpkgを提出済みv3.3と同一視しない。
 [v3.4の範囲と受け入れ](releases/3.4.0-theme-atmosphere.md)を現行候補の入口とする。
+
+S10（2026-10-21）で、S9後に残った「紙が無地で平坦」な状態へ手を入れた。
+共通の紙の縁、深海の紙面深度と前景ボケ、江戸彼岸の花弁増量・枝の揺れ・朝の光、
+CRTの蛍光ブルーム・RGBグリル・紙面ヒートスポットを追加した。文字色・紙の不透明度・
+読む面のtext-shadow除去契約は維持し、source/保存/書き出し/境界も変えていない。
+frontend 332 files / 3,109 tests・scripts 31件、型検査・`npm run build:vite`が成功。
+隔離WKWebView（DPR1）で3テーマを前後比較したが、実CodeMirror/IME/Retina/VoiceOverは未確認。
+**S10は既存の署名pkg作成後の変更なので、upload前にcommit済みsourceからpkgを再生成する。**
+変更は[計画S10](theme-atmosphere-brushup-plan.md)、条件は[S10レビュー](reviews/2026-10-21-s10-theme-depth-review.md)。
 
 S9追試で深海ビネットを紙の後ろへ、全テーマのebook/page-sheetを不透明紙へ統一した。
 深海の実測明部に合わせ補助文字の余裕を増やした。frontend 3,094件・scripts 31件、Rust 515成功 / 4 ignored、

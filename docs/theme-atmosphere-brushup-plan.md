@@ -1,11 +1,11 @@
 # テーマ演出ブラッシュアップ計画（光・素材・運動・光学）
 
-Status: Implemented（S0〜S8。隔離WKWebView検証済み、署名候補GUIは未確認）
+Status: Implemented（S0〜S10。隔離WKWebView検証済み、署名候補GUIは未確認）
 Scope: v3.4.0のテーマ刷新。`src/styles/*`（テーマ・紙面・chrome）と `src/components/app/` の ambient / overlay / boot、`src/features/theme/*`、`src/hooks/app/*`
 Authority: Design + implementation plan。実装済みの主張は検証節のコマンド結果と証跡でのみ更新する
-Last reviewed: 2026-10-19
+Last reviewed: 2026-10-21
 
-v3.3は審査提出済みとのオーナー報告（2026-10-19）を受け、本計画のS0〜S8と不具合調整は
+v3.3は審査提出済みとのオーナー報告（2026-10-19）を受け、本計画のS0〜S10と不具合調整は
 v3.4.0の範囲とする。[候補と受け入れの記録](releases/3.4.0-theme-atmosphere.md)を参照する。
 
 ## 目的
@@ -243,7 +243,36 @@ CRTの前景走査線と夜光の粒子は残すため、動的画面全体のAA
 乗算は sRGB 空間で行われるため、明色の紙に暗い文字を載せる場合は比が下がり得る。
 実際に下がるのは最悪ケースで数%だが、主張としては撤回し、合成後の検査だけを残す。
 
+### S10 紙面の深度と前景（2026-10-21 オーナー追加）
+
+S9で演出を紙の外へ逃がした結果、画面の大半を占める紙が無地のままだった。
+v3.4を「壁紙＋平坦な面」で終わらせないため、presentation層だけに以下を追加した。
+
+- **共通**: `material.css` の `.cm-editor` に `--edge-hi/lo` の1pxの縁を入れ、紙の厚みを全テーマへ揃えた
+- **深海**: 紙面に水中光のグラデーションと3つの光だまり、読む面/プレビューの深度、ツールバーの水面光。
+  UI手前の左右に大きなボケ粒を置き、中央のテキストカラムはmaskで外す
+- **江戸彼岸**: 花弁を通常14・強22へ増やし、サイズと濃さを一段上げた。枝は根元を軸に±0.9°で揺れ、
+  紙には暖色の朝の光。花弁の中央カラムはmaskのまま
+- **CRT**: 文字に蛍光ブルーム（1px芯+14px）、走査線0.30→0.24、ガラス面に3px周期のRGBアパーチャーグリル、
+  紙面の管ヒートスポット、読む面/プレビューの階調、ハムバー芯を0.16へ
+- 文字色・紙の不透明度・保存/書き出し/実行境界は変えない。読む面のtext-shadow除去契約は維持する
+- CSS契約は `themeDepthCss.test.ts` / `edohiganDepthCss.test.ts` / `materialCss.test.ts`、
+  花弁は `petalSeeds.test.ts` / `EdohiganAmbient.test.tsx`、bokehは `ShinkaiShaderOverlay.test.tsx` で固定
+- 隔離WKWebView（DPR1）で3テーマの編集・プレビュー・電子書籍・全幅Readerの前後を確認。
+  実CodeMirror/IME/Retinaは未確認。静止画の取得条件は[レビュー記録](reviews/2026-10-21-s10-theme-depth-review.md)を参照する
+- **見送り**: 深海の前景粒のcanvas化、CRTの樽型歪み、紙の透過率変更、View Transitions
+
 ## 検証
+
+### 実行した検証（2026-10-21、S10）
+
+- `npm run typecheck` — 成功
+- `npm test` — **332 files / 3,109 tests** 成功（EXIT=0）、scripts 31件成功
+- `npm run build:vite` — 成功
+- 隔離WKWebView（1280×800、DPR1）で edohigan / shinkai / crt の編集・プレビュー・電子書籍・全幅Readerを取得し、
+  S10前後を比較した。取得物はignoredの `docs/internal/theme-s10-proto/` に保持する
+- `git diff --check` — 成功
+- 未実施: Rust（変更なし）、署名pkgの再生成、実CodeMirror/IME/Retina/VoiceOver
 
 ### 実行した検証（2026-10-19）
 
@@ -295,3 +324,4 @@ CRTの前景走査線と夜光の粒子は残すため、動的画面全体のAA
 | S7 | 完了 | `npx vitest run src/components/app/CrtMaskOverlay.test.tsx src/hooks/app/useCrtScanDrift.test.ts src/styles/jokeThemeReachCss.test.ts`（17件） | ピッチはデバイスpxのみ。管の形状は背景シェーダーが担当 |
 | S8 | 完了 | `npx vitest run src/styles/saveAffirmationCss.test.ts`（10件） | light/dark は既定のまま |
 | S9 | 完了 | `npx vitest run src/styles/`（19 files・339件） | 実描画はヘッドレス（edohigan の編集/読書面）で確認。shinkai/crt はヘッドレスでWebGLが完走しないため実機確認に残す |
+| S10 | 完了 | typecheck / `npm test`（332 files・3,109件）/ scripts 31件 / build:vite / 隔離WKWebView比較 | 紙面の深度、江戸彼岸の花と枝、深海の前景ボケ、CRTのブルームとRGBグリル。実CodeMirror/IME/Retinaは未確認 |

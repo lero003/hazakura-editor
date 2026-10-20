@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-10-19
+Last reviewed: 2026-10-21
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -26,7 +26,8 @@ Latest GitHub source / local-app tag:
 Current candidate:
 
 - `3.4.0` — [theme atmosphere and acceptance record](3.4.0-theme-atmosphere.md).
-  Seven-theme presentation refresh and regression fixes; same-candidate device/distribution acceptance remains open.
+  Seven-theme presentation refresh, S10 paper depth/foreground, and regression fixes;
+  same-candidate device/distribution acceptance remains open, and the existing signed pkg predates S10.
 
 Submitted App Store version (owner report):
 
