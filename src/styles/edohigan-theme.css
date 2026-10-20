@@ -284,9 +284,9 @@
     .edohigan-branch,
     .edohigan-petals,
     .edohigan-petal,
-    .edohigan-petal i,
-    .edohigan-petal i::before
-  ) {
+    .edohigan-petal i
+  ),
+.edohigan-ambient[data-paused="true"] .edohigan-petal i::before {
   animation-play-state: paused;
 }
 

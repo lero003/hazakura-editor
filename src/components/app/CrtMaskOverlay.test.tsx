@@ -47,6 +47,7 @@ let fake = createFakeContext();
 
 beforeEach(() => {
   fake = createFakeContext();
+  vi.spyOn(document, "hasFocus").mockReturnValue(true);
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
     () => fake.context as unknown as CanvasRenderingContext2D,
   );
@@ -140,5 +141,70 @@ describe("CrtMaskOverlay", () => {
     hidden.mockReturnValue(false);
     act(() => document.dispatchEvent(new Event("visibilitychange")));
     expect(fake.context.createLinearGradient.mock.lastCall).toEqual(beforePause);
+  });
+
+  it("waits for focus when mounted in a visible inactive window", () => {
+    vi.useFakeTimers();
+    mockMatchMedia(false);
+    const focused = vi.spyOn(document, "hasFocus").mockReturnValue(false);
+    render(<CrtMaskOverlay intensity="normal" />);
+    expect(fake.context.createLinearGradient).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    expect(fake.context.createLinearGradient).not.toHaveBeenCalled();
+
+    focused.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event("focus")));
+    expect(fake.context.createLinearGradient).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(1);
+  });
+
+  it("pauses on blur, preserves the hum phase, and resumes only one timer", () => {
+    vi.useFakeTimers();
+    mockMatchMedia(false);
+    const focused = vi.spyOn(document, "hasFocus").mockReturnValue(true);
+    const { unmount } = render(<CrtMaskOverlay intensity="normal" />);
+    act(() => vi.advanceTimersByTime(200));
+    const beforePause = fake.context.createLinearGradient.mock.lastCall;
+    const callsBeforePause = fake.context.createLinearGradient.mock.calls.length;
+
+    focused.mockReturnValue(false);
+    act(() => window.dispatchEvent(new Event("blur")));
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => vi.advanceTimersByTime(10_000));
+    expect(fake.context.createLinearGradient).toHaveBeenCalledTimes(callsBeforePause);
+
+    focused.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event("focus")));
+    expect(fake.context.createLinearGradient.mock.lastCall).toEqual(beforePause);
+    expect(fake.context.createLinearGradient).toHaveBeenCalledTimes(callsBeforePause + 1);
+    act(() => window.dispatchEvent(new Event("focus")));
+    expect(fake.context.createLinearGradient).toHaveBeenCalledTimes(callsBeforePause + 1);
+    expect(vi.getTimerCount()).toBe(1);
+
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => window.dispatchEvent(new Event("focus")));
+    expect(fake.context.createLinearGradient).toHaveBeenCalledTimes(callsBeforePause + 1);
+  });
+
+  it("does not resume on focus while the document is hidden", () => {
+    vi.useFakeTimers();
+    mockMatchMedia(false);
+    const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    render(<CrtMaskOverlay intensity="normal" />);
+    const callsBeforePause = fake.context.createLinearGradient.mock.calls.length;
+
+    hidden.mockReturnValue(true);
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    act(() => window.dispatchEvent(new Event("focus")));
+    expect(fake.context.createLinearGradient).toHaveBeenCalledTimes(callsBeforePause);
+    expect(vi.getTimerCount()).toBe(0);
+
+    hidden.mockReturnValue(false);
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    expect(fake.context.createLinearGradient).toHaveBeenCalledTimes(callsBeforePause + 1);
+    expect(vi.getTimerCount()).toBe(1);
   });
 });

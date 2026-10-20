@@ -96,7 +96,7 @@ export function CrtMaskOverlay({ intensity }: CrtMaskOverlayProps) {
     resize();
     window.addEventListener("resize", resize);
 
-    let running = !document.hidden;
+    let running = !document.hidden && document.hasFocus();
     let timer = 0;
     let lastFrameAt = performance.now();
     let elapsedMs = 0;
@@ -108,7 +108,7 @@ export function CrtMaskOverlay({ intensity }: CrtMaskOverlayProps) {
       const width = canvas.width;
       const height = canvas.height;
       const now = performance.now();
-      // 非表示の時間を除き、復帰でハムバーを初期位置へ戻さない。
+      // 非表示・非アクティブの時間を除き、復帰でハムバーを初期位置へ戻さない。
       elapsedMs += Math.max(0, now - lastFrameAt);
       lastFrameAt = now;
       const elapsed = elapsedMs / 1000;
@@ -181,10 +181,13 @@ export function CrtMaskOverlay({ intensity }: CrtMaskOverlayProps) {
       draw();
     }
 
-    const handleVisibility = () => {
-      if (document.hidden) {
-        running = false;
-        window.clearTimeout(timer);
+    const pause = () => {
+      running = false;
+      window.clearTimeout(timer);
+    };
+    const resume = () => {
+      if (document.hidden || !document.hasFocus()) {
+        pause();
         return;
       }
       if (!running) {
@@ -193,13 +196,16 @@ export function CrtMaskOverlay({ intensity }: CrtMaskOverlayProps) {
         draw();
       }
     };
-    document.addEventListener("visibilitychange", handleVisibility);
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("focus", resume);
+    window.addEventListener("blur", pause);
 
     return () => {
-      running = false;
-      window.clearTimeout(timer);
+      pause();
       window.removeEventListener("resize", resize);
-      document.removeEventListener("visibilitychange", handleVisibility);
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("focus", resume);
+      window.removeEventListener("blur", pause);
     };
   }, [active, reducedMotion]);
 

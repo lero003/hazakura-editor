@@ -1,6 +1,7 @@
 /// <reference types="node" />
 
 import { describe, expect, it } from "vitest";
+import { stripCssComments } from "../test-support/css";
 import { readProjectFile } from "../test-support/source";
 
 const previewCss = readProjectFile("src/styles/preview.css");
@@ -67,6 +68,23 @@ describe("preview.css", () => {
       );
     }
   });
+
+  it.each(["edohigan", "crt", "shinkai"])(
+    "keeps %s's opaque Preview fill without resetting the theme's image layers",
+    (theme) => {
+      const selector = `:root[data-theme="${theme}"] .preview-pane-preview .markdown-preview`;
+      const rules = [...stripCssComments(previewCss).matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+        .filter(([, selectors]) => selectors.split(",").some((item) => item.trim() === selector));
+
+      expect(rules.length).toBeGreaterThan(0);
+      for (const [, , body] of rules) {
+        // preview.css follows the theme sheets. A shorthand of equal specificity
+        // resets their background-image even when it only supplies an opaque fill.
+        expect(body).not.toMatch(/(?:^|;)\s*background\s*:/);
+        expect(body).toMatch(/background-color:\s*var\(--preview-reading-surface\)/);
+      }
+    },
+  );
 
   it("removes text effects from edgy Preview content without touching the shell", () => {
     expect(previewCss).toMatch(

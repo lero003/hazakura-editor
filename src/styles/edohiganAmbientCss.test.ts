@@ -72,6 +72,16 @@ describe("edohigan petal motion", () => {
     expect(paused).toContain("animation-play-state: paused");
   });
 
+  it("addresses the petal flip pseudo-element outside forgiving selector functions", () => {
+    const paused = css.slice(css.indexOf('[data-paused="true"]'));
+    const selector = paused.slice(0, paused.indexOf("{"));
+    // Pseudo-elements inside :is() are invalid branches and never match ::before.
+    expect(selector).not.toMatch(/:is\([^)]*::/s);
+    expect(
+      ruleBody(css, '.edohigan-ambient[data-paused="true"] .edohigan-petal i::before'),
+    ).toContain("animation-play-state: paused");
+  });
+
   it("removes the old two-value drift", () => {
     // 交互に 2 値だけの横流れと、落下と独立した回転ループの名残を消す。
     expect(css).not.toContain("--petal-drift");
