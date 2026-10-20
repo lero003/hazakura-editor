@@ -87,6 +87,13 @@ describe("paper grain", () => {
     expect(rule).toContain("background-blend-mode: multiply");
   });
 
+  it("gives the writing paper its light-model edge", () => {
+    // S10: 紙の内側 1px に上端の反射・下端の陰を入れ、面の厚みを出す。
+    const rule = ruleBody(material, ".cm-editor");
+    expect(rule).toContain("inset 0 1px 0 var(--edge-hi)");
+    expect(rule).toContain("inset 0 -1px 0 var(--edge-lo)");
+  });
+
   it("ships only a darkening tile", () => {
     // 乗算タイルが白より明るい画素を持つと紙が明るくなり、
     // 「文字だけ暗い」前提（コントラストが悪化しない）が崩れる。

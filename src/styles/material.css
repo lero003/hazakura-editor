@@ -23,3 +23,12 @@
   background-repeat: repeat;
   background-blend-mode: multiply;
 }
+
+/* S10: 書き面の縁。テーマの光モデル（上端の反射・下端の陰）を紙の内側 1px にだけ使う。
+   演出的なテーマは自前の box-shadow で上書きし、より強い深度を足している。
+   L Mode は専用の紙面を持つため、この既定は通常の編集面だけに効く。 */
+.cm-editor {
+  box-shadow:
+    inset 0 1px 0 var(--edge-hi),
+    inset 0 -1px 0 var(--edge-lo);
+}

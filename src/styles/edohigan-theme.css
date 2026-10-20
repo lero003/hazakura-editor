@@ -132,9 +132,14 @@
   mix-blend-mode: multiply;
   position: absolute;
   width: min(22vw, 280px);
-  animation: edohigan-arrive 900ms ease-out both;
+  /* 到着の translate と、その後の微かな揺れを別プロパティで重ねる
+     （`rotate` は `transform` と独立して動かせる）。 */
+  animation:
+    edohigan-arrive 900ms ease-out both,
+    edohigan-branch-sway 13s ease-in-out 900ms infinite alternate;
+  transform-origin: left bottom;
   /* 紙の上に落ちる影。枝花が「印刷」ではなく「置かれたもの」に見える。 */
-  filter: drop-shadow(10px 14px 9px rgba(120, 84, 92, 0.22));
+  filter: drop-shadow(12px 18px 12px rgba(120, 84, 92, 0.26));
 }
 
 .edohigan-ambient[data-intensity="subtle"] {
@@ -153,6 +158,69 @@
   right: 2vw;
   bottom: -32px;
   opacity: calc(var(--branch-opacity) * 1.8);
+  transform-origin: right bottom;
+}
+
+/* 3.5 紙面の光 (S10)
+   花と枝を「窓の端の飾り」で終わらせず、紙そのものへ朝の光を落とす。
+   明るい紙なので、暗くするのではなく暖色の光を薄く重ねる。 */
+:root[data-theme="edohigan"] .cm-editor {
+  background-image:
+    radial-gradient(
+      ellipse 58% 38% at 16% 4%,
+      rgba(193, 154, 107, 0.16),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse 44% 32% at 82% 12%,
+      rgba(151, 91, 104, 0.08),
+      transparent 70%
+    ),
+    var(--paper-texture);
+  background-blend-mode: normal, normal, multiply;
+  background-size: 100% 100%, 100% 100%, var(--paper-texture-size);
+  background-repeat: no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 0 1px 0 var(--edge-hi),
+    inset 0 -1px 0 var(--edge-lo),
+    inset 0 0 40px rgba(120, 84, 92, 0.05);
+}
+
+/* 右ペインのプレビューにも同じ朝の光を。 */
+:root[data-theme="edohigan"] .preview-pane-preview .markdown-preview {
+  background-image:
+    radial-gradient(
+      ellipse 78% 44% at 20% 0%,
+      rgba(193, 154, 107, 0.13),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 253, 250, 0.4) 0%,
+      rgba(247, 236, 231, 0.12) 100%
+    );
+}
+
+/* 読む面も無地の紙から、上から光が当たる紙へ。 */
+:root[data-theme="edohigan"] .ebook-page-sheet,
+:root[data-theme="edohigan"] .ebook-reading-focus-surface {
+  background-image:
+    radial-gradient(
+      ellipse 82% 42% at 32% 0%,
+      rgba(193, 154, 107, 0.12),
+      transparent 70%
+    ),
+    linear-gradient(180deg, #fffdf9 0%, #fbf4ef 60%, #f7ece6 100%);
+}
+
+/* ツールバーにも紙の上端の光を落とす。 */
+:root[data-theme="edohigan"] .app-primary-toolbar {
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    transparent 72%
+  );
+  box-shadow: inset 0 -1px 0 rgba(191, 168, 160, 0.35);
 }
 
 /* 花弁の集まり。個々の揺れの下に共通の「風」を 1 つだけ置く。
@@ -161,8 +229,9 @@
   animation: edohigan-gust 17s ease-in-out infinite alternate;
   inset: 0;
   position: absolute;
-  /* 中央の執筆カラムには花弁を流さず、窓の左右へ気配を残す。 */
-  mask-image: linear-gradient(90deg, #000 0%, #000 10%, transparent 32%, transparent 68%, #000 90%, #000 100%);
+  /* 中央の執筆カラムには花弁を流さず、窓の左右へ気配を残す。
+     S10: 端まで薄く消えていたのをやめ、左右の帯を少し広く取る。 */
+  mask-image: linear-gradient(90deg, #000 0%, #000 30%, transparent 36%, transparent 64%, #000 70%, #000 100%);
 }
 
 /* 落下。transform の持ち主を 3 段に分ける:
@@ -224,6 +293,12 @@
 @keyframes edohigan-arrive {
   from { opacity: 0; transform: translateY(8px); }
   to { transform: translateY(0); }
+}
+
+/* 枝花の微かな揺れ。風は花弁と共有し、枝は根元を軸に 1° 未満だけ動く。 */
+@keyframes edohigan-branch-sway {
+  from { rotate: -0.9deg; }
+  to { rotate: 0.9deg; }
 }
 
 /* 共通の風。花弁全体をゆっくり往復させる（個々の揺れはこの上に載る）。 */

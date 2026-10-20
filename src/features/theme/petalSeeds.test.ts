@@ -3,9 +3,9 @@ import { PETAL_COUNT, createPetalSeeds } from "./petalSeeds";
 
 describe("petal seeds", () => {
   it.each([
-    ["subtle", 4],
-    ["normal", 8],
-    ["dramatic", 14],
+    ["subtle", 6],
+    ["normal", 14],
+    ["dramatic", 22],
     ["off", 0],
   ] as const)("%s yields the contract petal count", (intensity, count) => {
     expect(PETAL_COUNT[intensity]).toBe(count);

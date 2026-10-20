@@ -14,7 +14,7 @@ describe("EdohiganAmbient", () => {
     expect(container.querySelector(".edohigan-branch")).not.toBeNull();
   });
 
-  it.each([["subtle", 4], ["normal", 8], ["dramatic", 14]] as const)(
+  it.each([["subtle", 6], ["normal", 14], ["dramatic", 22]] as const)(
     "%s bounds the number of drifting petals to %i", (intensity, count) => {
       const { container } = render(<EdohiganAmbient intensity={intensity} />);
       expect(container.querySelectorAll(".edohigan-petal")).toHaveLength(count);

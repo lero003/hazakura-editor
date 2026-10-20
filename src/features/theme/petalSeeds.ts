@@ -38,11 +38,13 @@ export type PetalSeed = {
   flipSeconds: number;
 };
 
+/* S10: 8 枚では「窓の端に数枚」に見えたため、通常 14・強 22 へ増やす。
+   中央のテキストカラムは mask で外したまま、左右の余白に厚みを出す。 */
 export const PETAL_COUNT: Record<AmbientIntensity, number> = {
   off: 0,
-  subtle: 4,
-  normal: 8,
-  dramatic: 14,
+  subtle: 6,
+  normal: 14,
+  dramatic: 22,
 };
 
 const DEPTH_ORDER: PetalDepth[] = ["near", "mid", "far"];
@@ -58,9 +60,9 @@ const DEPTH_PROFILE: Record<
     rollDeg: number;
   }
 > = {
-  near: { sizePx: 30, opacity: 0.62, blurPx: 0, speed: 1, swayPx: 26, rollDeg: 16 },
-  mid: { sizePx: 23, opacity: 0.46, blurPx: 0.4, speed: 0.8, swayPx: 20, rollDeg: 12 },
-  far: { sizePx: 17, opacity: 0.32, blurPx: 1.1, speed: 0.62, swayPx: 14, rollDeg: 8 },
+  near: { sizePx: 40, opacity: 0.72, blurPx: 0, speed: 1, swayPx: 28, rollDeg: 17 },
+  mid: { sizePx: 30, opacity: 0.55, blurPx: 0.5, speed: 0.82, swayPx: 21, rollDeg: 13 },
+  far: { sizePx: 22, opacity: 0.38, blurPx: 1.2, speed: 0.64, swayPx: 15, rollDeg: 9 },
 };
 
 /** 強度は「数」だけでなく「濃さ」にも効く（dramatic は少し濃い）。 */
