@@ -1,93 +1,89 @@
 import { cleanup, render } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { AmbientBackground } from "./AmbientBackground";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: undefined,
+  });
+});
 
-function renderAmbient(
-  mode: "yakou" | "shokou",
-  intensity: "normal" | "dramatic" = "normal",
-) {
-  const { container } = render(
-    <AmbientBackground intensity={intensity} mode={mode} />,
-  );
-  return Array.from(container.querySelectorAll<HTMLElement>(".ambient-particle"));
+// jsdom は 2D canvas を実装しない。描画そのものは実機で確認し、
+// ここではレイヤ構成とループのガードだけを固定する。
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+});
+
+function mockMatchMedia(reduceMotion: boolean): Mock {
+  const mql: Partial<MediaQueryList> = {
+    matches: reduceMotion,
+    media: "(prefers-reduced-motion: reduce)",
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => true,
+  };
+  const fn = vi.fn().mockReturnValue(mql);
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: fn,
+  });
+  return fn;
 }
 
 describe("AmbientBackground", () => {
-  it("makes Yakou ambient particles dense enough to read", () => {
-    expect(renderAmbient("yakou")).toHaveLength(52);
-  });
-
-  it("makes Shokou denser and keeps particles in a dawn shadow band", () => {
-    const yakouParticles = renderAmbient("yakou");
-    const particles = renderAmbient("shokou");
-    const yakouSizes = yakouParticles
-      .map((particle) =>
-        Number.parseFloat(particle.style.getPropertyValue("--ambient-h")),
-      )
-      .filter((size) => Number.isFinite(size));
-    const hues = particles
-      .map((particle) =>
-        Number.parseFloat(particle.style.getPropertyValue("--ambient-hue")),
-      )
-      .filter((hue) => Number.isFinite(hue));
-    const sizes = particles
-      .map((particle) =>
-        Number.parseFloat(particle.style.getPropertyValue("--ambient-h")),
-      )
-      .filter((size) => Number.isFinite(size));
-    const coolHues = hues.filter((hue) => hue >= 180);
-    const warmHues = hues.filter((hue) => hue < 60);
-    const embers = particles.filter((p) =>
-      p.classList.contains("ambient-ember"),
+  it.each([
+    ["yakou", ".ambient-yakou"],
+    ["shokou", ".ambient-shokou"],
+  ] as const)("%s draws its particles on a single canvas layer", (mode, className) => {
+    mockMatchMedia(false);
+    const { container } = render(
+      <AmbientBackground intensity="normal" mode={mode} />,
     );
 
-    expect(particles).toHaveLength(46);
-    // 青灰帯が主で、夜明けの暖色を少数混ぜる
-    expect(coolHues.length).toBeGreaterThan(warmHues.length);
-    expect(Math.max(...coolHues)).toBeLessThanOrEqual(246);
-    expect(Math.min(...warmHues)).toBeGreaterThanOrEqual(20);
-    expect(Math.max(...warmHues)).toBeLessThanOrEqual(40);
-    // 暖色粒子は ember クラスで光の粉として描く
-    expect(embers.length).toBe(warmHues.length);
-    expect(embers.length).toBeGreaterThan(0);
-    expect(Math.max(...sizes)).toBeLessThanOrEqual(Math.max(...yakouSizes));
-    expect(particles[0].style.getPropertyValue("--ambient-h")).toBe(
-      yakouParticles[0].style.getPropertyValue("--ambient-h"),
-    );
+    const layer = container.firstElementChild;
+    expect(layer?.classList.contains(className.replace(".", ""))).toBe(true);
+    expect(layer?.getAttribute("aria-hidden")).toBe("true");
+    expect(container.querySelectorAll(".ambient-canvas")).toHaveLength(1);
+    // 粒の数だけ DOM が増える旧構成を戻さない。
+    expect(container.querySelectorAll(".ambient-particle")).toHaveLength(0);
   });
 
-  it("keeps Yakou particles in a purple–indigo–teal cosmic band", () => {
-    const particles = renderAmbient("yakou");
-    const hues = particles
-      .map((particle) =>
-        Number.parseFloat(particle.style.getPropertyValue("--ambient-hue")),
-      )
-      .filter((hue) => Number.isFinite(hue));
-
-    expect(particles).toHaveLength(52);
-    expect(Math.min(...hues)).toBeGreaterThanOrEqual(180);
-    expect(Math.max(...hues)).toBeLessThanOrEqual(290);
+  it("renders nothing when the intensity is off", () => {
+    mockMatchMedia(false);
+    const { container } = render(
+      <AmbientBackground intensity="off" mode="yakou" />,
+    );
+    expect(container.firstChild).toBeNull();
   });
 
-  it("keeps vivid Shokou particles close to the normal particle scale", () => {
-    const normalParticles = renderAmbient("shokou");
-    const vividParticles = renderAmbient("shokou", "dramatic");
-    const normalSizes = normalParticles
-      .map((particle) =>
-        Number.parseFloat(particle.style.getPropertyValue("--ambient-h")),
-      )
-      .filter((size) => Number.isFinite(size));
-    const vividSizes = vividParticles
-      .map((particle) =>
-        Number.parseFloat(particle.style.getPropertyValue("--ambient-h")),
-      )
-      .filter((size) => Number.isFinite(size));
+  it("does not start a render loop under prefers-reduced-motion", () => {
+    const matchMedia = mockMatchMedia(true);
+    const raf = vi.spyOn(window, "requestAnimationFrame");
 
-    expect(vividParticles.length).toBeGreaterThan(normalParticles.length);
-    expect(Math.max(...vividSizes)).toBeLessThanOrEqual(
-      Math.max(...normalSizes) * 1.08,
+    render(<AmbientBackground intensity="normal" mode="shokou" />);
+
+    expect(matchMedia).toHaveBeenCalledWith("(prefers-reduced-motion: reduce)");
+    expect(raf).not.toHaveBeenCalled();
+  });
+
+  it("keeps the DOM size independent of the particle count", () => {
+    mockMatchMedia(false);
+    const subtle = render(
+      <AmbientBackground intensity="subtle" mode="yakou" />,
     );
+    const subtleLayers = subtle.container.querySelectorAll(".ambient-canvas").length;
+    cleanup();
+    const dramatic = render(
+      <AmbientBackground intensity="dramatic" mode="yakou" />,
+    );
+    expect(subtleLayers).toBe(1);
+    expect(dramatic.container.querySelectorAll(".ambient-canvas")).toHaveLength(1);
   });
 });

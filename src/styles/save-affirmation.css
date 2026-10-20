@@ -28,13 +28,131 @@
   width: 16px;
   align-items: center;
   justify-content: center;
+  /* テーマ別の反応が重ねるリング（::after）の基準。レイアウトは動かさない。 */
+  position: relative;
   vertical-align: -2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .save-affirmation {
-    animation: none;
-    opacity: 0.85;
-  }
+/* ── テーマ別の素材反応 / Theme material response ──
+   保存できたという結果は 1 つだが、その表れ方はテーマの素材に従う。
+   新しい演出を足すのではなく、既存の 1 つの確認表示を各テーマの語彙へ置き換える。
+   すべて 0.4 秒以内（消えるまでの fade 1.4 秒は共通）で、レイアウトを動かさない。
+   light / dark は静けさを優先して既定の pop のまま。 */
+
+:root[data-theme="edohigan"] .save-affirmation {
+  /* 江戸彼岸: 花弁が紙の上へ静かに置かれる。 */
+  animation:
+    saveAffirmationSettle 0.36s var(--ease-spring) forwards,
+    saveAffirmationFade 1.4s var(--ease-emphasized) forwards;
 }
 
+:root[data-theme="yakou"] .save-affirmation {
+  /* 夜光: 星がひとつ瞬く。 */
+  animation:
+    saveAffirmationTwinkle 0.34s var(--ease-emphasized) forwards,
+    saveAffirmationFade 1.4s var(--ease-emphasized) forwards;
+}
+
+:root[data-theme="shokou"] .save-affirmation {
+  /* 曙光: 埃が光を受けて明るくなる。 */
+  animation:
+    saveAffirmationEmber 0.3s var(--ease-emphasized) forwards,
+    saveAffirmationFade 1.4s var(--ease-emphasized) forwards;
+}
+
+:root[data-theme="shinkai"] .save-affirmation {
+  /* 深海: 保存の合図が 1 つの圧力波として広がる。 */
+  animation:
+    saveAffirmationBloom 0.38s var(--ease-emphasized) forwards,
+    saveAffirmationFade 1.4s var(--ease-emphasized) forwards;
+}
+
+:root[data-theme="shinkai"] .save-affirmation::after {
+  animation: saveAffirmationRing 0.42s var(--ease-standard) forwards;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+:root[data-theme="crt"] .save-affirmation {
+  /* CRT: 蛍光体が点いて、残光とともに落ちる。 */
+  animation:
+    saveAffirmationPhosphor 0.32s steps(4, end) forwards,
+    saveAffirmationFade 1.4s var(--ease-emphasized) forwards;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 46%, transparent),
+    0 0 8px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+:root[data-theme="crt"] .save-affirmation::after {
+  animation: saveAffirmationSyncBar 0.4s steps(6, end) forwards;
+  background: var(--accent);
+  content: "";
+  height: 1px;
+  left: -2px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: 50%;
+}
+
+@keyframes saveAffirmationSettle {
+  0% { opacity: 0; transform: scale(0.55) rotate(-16deg); }
+  60% { opacity: 1; transform: scale(1.06) rotate(5deg); }
+  100% { opacity: 0.85; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes saveAffirmationTwinkle {
+  0% { opacity: 0; transform: scale(0.4); }
+  35% { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+@keyframes saveAffirmationEmber {
+  0% { opacity: 0; transform: scale(0.6); }
+  45% { opacity: 1; transform: scale(1.16); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+@keyframes saveAffirmationBloom {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+@keyframes saveAffirmationPhosphor {
+  0% { opacity: 0; transform: scale(1.25); }
+  25% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.8; transform: scale(1); }
+}
+
+/* 広がって消える 1 つのリング（深海の圧力波・CRT の同期ずれ）。 */
+@keyframes saveAffirmationRing {
+  0% { opacity: 0.7; transform: scale(0.6); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+/* 管を横切る 1 本の同期バー。 */
+@keyframes saveAffirmationSyncBar {
+  0% { opacity: 0; transform: translateY(-5px); }
+  40% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save-affirmation,
+  .save-affirmation::after {
+    /* テーマ別の高詳細度ルールにも勝たせる。短縮された fade の終端
+       (opacity: 0) へ進めず、保存確認そのものは静止表示で残す。 */
+    animation: none !important;
+    opacity: 0.85;
+  }
+
+  .save-affirmation::after {
+    display: none;
+  }
+}

@@ -3,15 +3,17 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-10-18
+Last reviewed: 2026-10-19
 
 ## Current Position
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
 v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
 v3.2.1はテスト問題なし・App Store公開済み（2026-10-14オーナー報告）。
-新機能より先に、v3.3で依存の自律化を進める。初回のCodeMirror宣言整理・背景効果の集約に続き、
-dialog・Tauri/Foundationのfeature・HTTPS画像・PDF抽出・日本語codecを追加削減した。
+v3.3は審査提出済み（2026-10-19オーナー報告）。提出build/source対応とApple側の審査状態は独立未照合。
+現行sourceはv3.4.0とし、テーマ刷新S0〜S8とその調整を扱う。
+v3.3ではCodeMirror宣言整理・背景効果の集約に続き、dialog・Tauri/Foundationのfeature・
+HTTPS画像・PDF抽出・日本語codecを追加削減した。
 外部packageからOS APIへの移行は、互換adapterの保守と性能差を含めて受け入れる。
 全依存の撤去は前提にしない。
 メモ系と縦書きは採用方針を維持し、初期整理の受け入れ後に戻る。
@@ -20,9 +22,10 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 | 対象 | 状態 |
 |---|---|
 | 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
-| ソース版 | 3.3.0。macOS Cargoの保守的なruntime/build集合301→254→247件。[内部整理のレビュー](reviews/2026-10-17-refactor-slices-review-request.md)も受け入れ |
-| 基準配布証跡 | clean source `049813ea` からbuild 164署名pkgをローカル作成・検証。旧候補として保持し、後続候補と区別。upload・公開は未実施 |
-| 現行キュー | 内部整理を含む新source候補のメニュー・分離窓テーマ・IME/L Mode等の実機確認。VoiceOver・Intel・macOS 26 GUI・大きなlegacy workspace等も残す。[依存削減の採否と残ゲート](reviews/2026-10-17-dependency-reduction.md) |
+| 審査提出報告 | v3.3（2026-10-19オーナー報告）。提出build/sourceとApple側の審査状態は独立未照合 |
+| ソース版 | 3.4.0。テーマ刷新S0〜S8と復帰・強度・CRT・低モーション時の保存✓を調整。[範囲と受け入れ](releases/3.4.0-theme-atmosphere.md) |
+| 基準配布証跡 | v3.3の旧ローカル署名候補を保持。提出済みbuildやv3.4候補と混同しない |
+| 現行キュー | v3.4署名候補の7テーマ、長文/IME、L Mode/Reader、Retina、200%文字、VoiceOver等の実機確認。[テーマ刷新の確認範囲](reviews/2026-10-19-theme-regression-review.md) |
 | 採用判断 | rfdとUTF-8 SIMDを維持。HTTP/PDF/日本語codecはOSへ委譲。legacy処理の遅延、先行する圧縮の約1.8 MB増とparser多様性低下を評価 |
 | 全体計画 | `docs/v3-product-completion-plan.md` |
 | Assist技術計画 | `docs/v2.9-v3-local-assist-plan.md` |
@@ -31,7 +34,7 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 旧候補は同ディレクトリの版・build別記録で照合し、最新候補の記録と混同しない。
 公開版との同一性は候補記録だけから推定しない。
 
-## Phase Decision — 2026-09-09（2026-10-14追補）
+## Phase Decision — 2026-09-09（2026-10-19追補）
 
 | 版 | 主題 | 完了の目安 |
 |---|---|---|
@@ -41,6 +44,7 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 | **v3.2.0** | **依存関係更新** | npm/Rustの更新、CIとローカルbuild、同一候補の実機受け入れ。Core AI SwiftPM runtime pinは維持 |
 | **v3.2.1** | **ワークスペース一覧の外部変更追従** | アプリ復帰と表示中10秒間隔・手動更新で直下と展開中フォルダを確認。展開・選択・スクロールと未保存原稿を維持し、古い応答を拒否 |
 | **v3.3** | **依存の自律化・初期整理** | 棚卸し、CodeMirrorの実利用に沿う依存宣言整理、PDF二経路の維持／限定／除去の判断。全撤去・自作を完了条件にしない。詳細は `dependency-autonomy-plan.md` |
+| **v3.4** | **テーマ演出の刷新と調整** | 光・素材・運動・光学のS0〜S8。演出負荷を一定許容し、light/darkの静けさを維持。同一署名候補で7テーマ・長文/IME・L Mode/Reader等を受け入れる |
 | 初期整理後（版割り未定） | メモで見直しと再開を支える・縦書きで読む | 方向性を採用。手動メモと編集ルールのひな形、縦書きReaderから段階化。AI支援は品質再評価後 |
 
 添付24画面は[v3製品計画](v3-product-completion-plan.md)で採否を整理する。
@@ -49,7 +53,16 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 PCC、クラウド推論、ツール実行、workspace indexingは採用しない。
 AFM/SDK評価とUI刷新は分け、各スライスで既存の安全契約を確認する。
 
-## 現行 — v3.3依存の自律化・追加削減（2026-10-17）
+## 現行 — v3.4テーマ演出の刷新（2026-10-19）
+
+テーマ刷新S0〜S8と直近の不具合調整をv3.4へ分け、審査提出済みのv3.3を変更対象にしない。
+演出の豊かさと一定の描画負荷を許容し、light/darkの静けさを維持する。
+対象はpresentation層で、紙面・組版CSSはL Mode/Readerにも作用する。
+Markdown source・保存形式・書き出し内容・実行/path/AI境界は維持し、依存を追加しない。
+[計画](theme-atmosphere-brushup-plan.md)・[調整と検証](reviews/2026-10-19-theme-regression-review.md)・
+[候補記録](releases/3.4.0-theme-atmosphere.md)を参照する。署名候補のGUIと配布受け入れは別ゲート。
+
+## v3.3依存の自律化・追加削減の記録（2026-10-17）
 
 製品の仕様・修正・保守を自分たちで制御できる範囲を、小さく増やす。
 オーナーの実装依頼に基づきsource版を3.3.0へ進め、実利用モジュールの直接宣言と
@@ -71,7 +84,7 @@ UTF-8の測定時間は同程度だが、legacy処理は遅くなる。大きな
 パーサー・sanitize・TLS暗号処理・AI・React/Tauri/CodeMirror本体は自作しない。保守更新は継続する。
 [最新の変更と検証](reviews/2026-10-17-dependency-reduction.md)、
 [先行変更の記録](releases/3.3.0-dependency-autonomy.md)、[計画・採否](dependency-autonomy-plan.md)を参照。
-追加差分のレビューと同一候補の実機受け入れ・配布判断はこれから。
+この節は当時の候補記録であり、v3.3の提出build/source対応は独立未照合。
 
 ## 初期整理後 — メモと縦書き（2026-09-26 方針採用）
 

@@ -2,11 +2,12 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readGrayscalePngInfo } from "../test-support/png";
 import { readProjectFile } from "../test-support/source";
 
 const previewCss = readProjectFile("src/styles/preview.css");
 
-// 紙面トークンはテーマ側が唯一の定義元。preview は var(--surface-paper) を参照するだけ。
+// 紙面トークンはテーマ側が唯一の定義元。preview/readerは不透明の紙を参照する。
 const themeCss = [
   "tokens.css",
   "themes.css",
@@ -178,31 +179,38 @@ describe("Preview theme contrast", () => {
   );
 
   /**
-   * 実機要望（第10報）: お遊びテーマの演出が紙を通して見えるように、読み書きの面を
-   * **少しだけ**透かす（従来は「不透明な紙」を固定していた）。読めなくならないよう、
-   * 背景（テーマの --bg）と合成した最悪ケースでも本文のコントラストを AA 以上に保つ。
+   * 実機要望（第10報）で書き面を少し透かしたが、2026-10-19のオーナー指摘
+   * （編集面が明るくコントラストが甘い／読む面は背景色を置いた方がよい）を受けて
+   * 役割を分けた:
+   *   - 書き面（--surface-paper）: 少しだけ透かす（0.95。補助文字の余裕が最も
+   *     小さい深海に合わせた下限）
+   *   - 読む面（--preview-reading-surface）: 不透明の紙（--surface-paper-solid）
+   * どちらも本文のコントラストを AA 以上に保つ。
    */
   it.each([
-    ["edohigan", "#fffcf8", 0.93],
-    ["crt", "#0d1a11", 0.9],
-    ["shinkai", "#14384a", 0.9],
+    ["edohigan", "#fffcf8", 0.95],
+    ["crt", "#0d1a11", 0.95],
+    ["shinkai", "#14384a", 0.95],
   ] as const)(
-    "%s lets the theme show through the paper while keeping the text readable",
+    "%s keeps the writing paper translucent and the reading paper solid",
     (theme, paper, alpha) => {
       expect(
         tokenDeclarationIn(themeCss, `:root[data-theme="${theme}"]`, "--surface-paper"),
       ).toBe(`--surface-paper: rgba(${hexToChannels(paper)}, ${alpha})`);
       expect(
+        tokenDeclarationIn(themeCss, `:root[data-theme="${theme}"]`, "--surface-paper-solid"),
+      ).toBe(`--surface-paper-solid: ${paper}`);
+      expect(
         tokenDeclarationIn(previewCss, `:root[data-theme="${theme}"] .preview-pane-preview`, "--preview-reading-surface"),
-      ).toBe("--preview-reading-surface: var(--surface-paper)");
+      ).toBe("--preview-reading-surface: var(--surface-paper-solid)");
 
       // 透かした紙をテーマの地色と合成した色＝紙の下から演出が見える分だけ地色が混ざる。
       const composited = blendOver(paper, themeToken(theme, "--bg"), alpha);
       expect(
         contrastRatio(composited, themeToken(theme, "--text")),
       ).toBeGreaterThanOrEqual(4.5);
-      // 透かしすぎない（読む面として成立する下限）。
-      expect(alpha).toBeGreaterThanOrEqual(0.88);
+      // 透かしすぎない（書き面として成立する下限）。
+      expect(alpha).toBeGreaterThanOrEqual(0.95);
     },
   );
 });
@@ -258,6 +266,33 @@ describe("paper token", () => {
       ).toBeGreaterThanOrEqual(4.5);
       expect(
         contrastRatio(resolvedPaper(theme), tokenHex(theme, "--text-muted")),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it.each(themes)(
+    "%s keeps AA contrast with the paper grain composited",
+    (theme) => {
+      // material.css は紙面の背景へタイルを乗算する。文字は紙の上に載るため
+      // 影響を受けず、紙だけが暗くなる。明色面では比が下がり得るため、最も暗い画素
+      // （最大の暗化）を当てた場合の静的パレットを検査する。
+      const grain = readGrayscalePngInfo("src/assets/themes/paper-grain.png");
+      const factor = grain.minValue / 255;
+      const paper = resolvedPaper(theme);
+      const shaded = `#${[1, 3, 5]
+        .map((offset) =>
+          Math.round(
+            Number.parseInt(paper.slice(offset, offset + 2), 16) * factor,
+          )
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")}`;
+      expect(
+        contrastRatio(shaded, tokenHex(theme, "--text")),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(shaded, tokenHex(theme, "--text-muted")),
       ).toBeGreaterThanOrEqual(4.5);
     },
   );
@@ -422,11 +457,137 @@ describe("chrome surface", () => {
   });
 
   it("keeps chrome bars on the chrome token and the sidebar on the nav token", () => {
-    expect(workspaceChromeCss).toContain("--workspace-chrome-bar: var(--chrome-surface)");
+    // 塗る面は演出テーマだけ半透明にできる --chrome-bar-surface を参照する。
+    expect(workspaceChromeCss).toContain("--workspace-chrome-bar: var(--chrome-bar-surface)");
     const barUses = workspaceChromeCss.match(/background:\s*var\(--workspace-chrome-bar\)/g) ?? [];
     const navUses = workspaceChromeCss.match(/background:\s*var\(--workspace-chrome-surface\)/g) ?? [];
     // ツールバー・タブ・ステータスの3箇所が chrome、サイドバーの1箇所が nav。
     expect(barUses).toHaveLength(3);
     expect(navUses).toHaveLength(1);
+  });
+});
+
+describe("theme atmosphere surfaces", () => {
+  /**
+   * 比較用に仮置きした明るい背景色。実測値やshaderの厳密な上限ではない。
+   * 面のalphaを掛けた静的パレットの回帰検査であり、前景の粒子/マスクや
+   * color合成を含む画面全体のAA適合を証明しない。
+   */
+  const brightAmbientSamples: Record<string, string> = {
+    light: "#f7f8f5",
+    dark: "#25332a",
+    yakou: "#3c345f",
+    shokou: "#ffe6c4",
+    edohigan: "#fbf4f2",
+    // 隔離WKWebViewの9描画条件から得たRGB各成分の最大値。厳密なshader上限ではない。
+    shinkai: "#b2cdd1",
+    crt: "#2e6e40",
+  };
+
+  /** 半透明の面を下地の上に置いた結果の色。不透明ならそのまま返す。 */
+  function compositeOver(declaration: string, bottomHex: string): string {
+    const rgba = declaration.match(
+      /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/,
+    );
+    if (!rgba) {
+      return declaration;
+    }
+    const top = [Number(rgba[1]), Number(rgba[2]), Number(rgba[3])];
+    const alpha = Number(rgba[4]);
+    const bottom = [1, 3, 5].map((offset) =>
+      Number.parseInt(bottomHex.slice(offset, offset + 2), 16),
+    );
+    const mixed = top.map((value, index) =>
+      Math.round(value * alpha + bottom[index] * (1 - alpha)),
+    );
+    return `#${mixed.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+  }
+
+  it.each(themeNames)(
+    "%s keeps the static editor palette readable over a bright background sample",
+    (theme) => {
+      const paper = compositeOver(
+        themeToken(theme, "--surface-paper"),
+        brightAmbientSamples[theme],
+      );
+      expect(contrastRatio(paper, themeToken(theme, "--text"))).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(paper, themeToken(theme, "--text-muted")),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it.each(["edohigan", "shinkai", "crt"] as const)(
+    "%s lets the atmosphere through the chrome bar without losing text contrast",
+    (theme) => {
+      // 演出が左のワークスペースだけに見えないよう、chrome バーでも背景を透かす。
+      const bar = themeToken(theme, "--chrome-bar-surface");
+      expect(bar).toMatch(/^rgba\(/);
+      const alpha = Number(bar.match(/,\s*([\d.]+)\)$/)?.[1] ?? "0");
+      expect(alpha).toBeGreaterThanOrEqual(0.85);
+
+      // ネイティブ窓の色契約（--chrome-surface）は不透明のまま。
+      expect(themeToken(theme, "--chrome-surface")).toMatch(/^#[0-9a-fA-F]{6}$/);
+
+      const composited = compositeOver(bar, brightAmbientSamples[theme]);
+      expect(
+        contrastRatio(composited, themeToken(theme, "--text")),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(composited, themeToken(theme, "--text-muted")),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("keeps shinkai muted text readable even over a white background", () => {
+    // 実shaderの明部で旧mutedが4.35:1まで落ちた。紙の透け方を維持し、
+    // 補助文字の静的パレットに白までの余裕を持たせる。
+    const ink = themeToken("shinkai", "--text-muted");
+    for (const surface of ["--surface-paper", "--chrome-bar-surface"]) {
+      expect(
+        contrastRatio(compositeOver(themeToken("shinkai", surface), "#ffffff"), ink),
+        surface,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("keeps the themes without a behind-the-content atmosphere on the opaque chrome", () => {
+    // light は :root の既定（= --chrome-surface）。dark/yakou/shokou は
+    // そもそも上書きしない（演出が画面の上に乗る、または演出を持たない）。
+    expect(themeToken("light", "--chrome-bar-surface")).toBe(
+      "var(--chrome-surface)",
+    );
+    for (const theme of ["dark", "yakou", "shokou"] as const) {
+      expect(
+        tokenDeclarationIn(themeCss, `:root[data-theme="${theme}"]`, "--chrome-bar-surface"),
+        theme,
+      ).toBe("");
+      expect(themeToken(theme, "--chrome-surface")).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
+  });
+
+  it.each(themeNames)(
+    "%s reads the preview and reader on one opaque paper",
+    (theme) => {
+      const solid = themeToken(theme, "--surface-paper-solid");
+      expect(solid).toMatch(/^#[0-9a-fA-F]{6}$/);
+      // 不透明の紙は本文・補助文字ともに AA を満たす。
+      expect(contrastRatio(solid, themeToken(theme, "--text"))).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(solid, themeToken(theme, "--text-muted")),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("points every preview/reader surface at the opaque paper", () => {
+    // 読む面（プレビュー・電子書籍・読書）は演出よりコントラストを優先する。
+    expect(previewCss).not.toContain(
+      "--preview-reading-surface: var(--surface-paper);",
+    );
+    expect(
+      previewCss.match(
+        /--preview-reading-surface: var\(--surface-paper-solid\);/g,
+      )?.length,
+    ).toBeGreaterThanOrEqual(7);
   });
 });

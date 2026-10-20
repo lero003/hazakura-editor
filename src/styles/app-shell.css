@@ -22,7 +22,7 @@
 :root[data-theme="shokou"] {
   /* 背景の色づき（bgDrift でゆっくり動く曙のグラデーション）。
      下地と前景（.ambient-shokou）で同じ定義を使う。 */
-  /* 面の上に重ねる用（不透明色）。color 合成なので明度は動かず、色相だけが移る。 */
+  /* 面の上に薄く色みを重ねる。color合成もWCAG相対輝度の固定は保証しない。 */
   --ambient-dawn-overlay:
     radial-gradient(circle at 14% 12%, #ffd2a0, transparent 56%),
     radial-gradient(circle at 86% 22%, #8fb6ee, transparent 54%),
@@ -62,6 +62,26 @@
   z-index: var(--z-base);
 }
 
+/* dev 専用の演出 HUD (?atmoStats=1)。`import.meta.env.DEV` が false の
+   ビルドでは要素自体が出ないため、製品の見た目には影響しない。
+   値は rAF ループから textContent へ直接書き、React の再描画を起こさない。 */
+.atmosphere-stats {
+  position: fixed;
+  right: 10px;
+  bottom: 36px;
+  z-index: calc(var(--z-crt-top) + 10);
+  padding: 3px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-paper) 88%, transparent);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.4;
+  pointer-events: none;
+  white-space: pre;
+}
+
 .tabs-row {
   position: relative;
   z-index: var(--z-sticky);
@@ -91,9 +111,10 @@
   animation: bgDrift 22s ease-in-out infinite;
   content: "";
   inset: 0;
-  /* 暗い地の上なので screen で色を灯す。 */
-  mix-blend-mode: screen;
-  opacity: 0.16;
+  /* screenの面全体を明るくする合成を避け、薄い色みへ置き換える。
+     color合成の輝度モデルとWCAG相対輝度は異なるため、コントラスト固定とは扱わない。 */
+  mix-blend-mode: color;
+  opacity: 0.34;
   pointer-events: none;
   position: fixed;
 }
@@ -104,7 +125,7 @@
   animation: bgDrift 26s ease-in-out infinite;
   content: "";
   inset: 0;
-  /* 明るい地では明度を触ると読みづらくなる。色相だけを移す color を使う。 */
+  /* 明るい地へはcolor合成で色みを薄く重ねる。相対輝度が不変という保証ではない。 */
   mix-blend-mode: color;
   /* 実機判断（第13報）: 「優しい黄と青で綺麗だが、エディタとしては悩ましい」。
      色は残しつつ、少しだけ淡くして紙面の主張を弱める。 */
@@ -113,70 +134,47 @@
   position: fixed;
 }
 
-.ambient-particle {
+/* 粒は 1 枚の canvas に描く（旧: 46〜52 個の DOM 要素 + 個別アニメーション）。
+   スプライトと運動は AmbientBackground / ambientParticles.ts が持ち、
+   CSS はレイヤの位置と合成だけを担う。 */
+.ambient-canvas {
   display: block;
+  height: 100%;
+  inset: 0;
   position: absolute;
-  will-change: transform, opacity;
+  width: 100%;
 }
 
-.ambient-yakou .ambient-particle {
-  animation: starRise var(--ambient-duration, 18s) ease-in-out infinite;
-  animation-delay: var(--ambient-delay, 0s);
-  background:
-    radial-gradient(
-      circle,
-      hsl(var(--ambient-hue, 255), 88%, 94%) 0%,
-      hsl(var(--ambient-hue, 255), 78%, 76%) 55%,
-      transparent 100%
-    );
-  border-radius: 50%;
-  bottom: -8px;
-  box-shadow:
-    0 0 8px 1px hsl(var(--ambient-hue, 255), 82%, 80%, 0.62),
-    0 0 16px 2px hsl(var(--ambient-hue, 255), 70%, 70%, 0.22);
-  height: var(--ambient-h, 2.5px);
-  opacity: 0.88;
-  width: var(--ambient-w, 2.5px);
+/* 二層目の色づき。1 枚の壁紙が滑るのではなく、層ごとに違う速さで
+   動くことでオーロラに厚みが出る（::before が手前、::after が奥）。 */
+:root[data-theme="yakou"] .ambient-yakou::after {
+  background: var(--ambient-aurora-overlay);
+  background-size: 260% 260%;
+  animation: bgDrift 37s ease-in-out infinite reverse;
+  content: "";
+  inset: 0;
+  mix-blend-mode: color;
+  opacity: 0.18;
+  pointer-events: none;
+  position: fixed;
 }
 
-.ambient-shokou .ambient-particle {
-  animation: heatDrift var(--ambient-duration, 14s) ease-in-out infinite;
-  animation-delay: var(--ambient-delay, 0s);
-  background:
-    radial-gradient(
-      circle,
-      hsl(var(--ambient-hue, 222), 22%, 30%) 0%,
-      hsl(var(--ambient-hue, 222), 16%, 16%) 58%,
-      transparent 100%
-    );
-  border-radius: 50%;
-  bottom: -8px;
-  box-shadow:
-    0 0 4px 1px hsl(var(--ambient-hue, 222), 20%, 12%, 0.36),
-    0 0 12px 3px hsl(var(--ambient-hue, 222), 16%, 10%, 0.2);
-  height: var(--ambient-h, 2.5px);
-  opacity: 0.48;
-  width: var(--ambient-w, 2.5px);
+:root[data-theme="shokou"] .ambient-shokou::after {
+  background: var(--ambient-dawn-overlay);
+  background-size: 260% 260%;
+  animation: bgDrift 37s ease-in-out infinite reverse;
+  content: "";
+  inset: 0;
+  /* 明るい地では明度を触らない。色相だけを移す層を薄く重ねる。 */
+  mix-blend-mode: color;
+  opacity: 0.12;
+  pointer-events: none;
+  position: fixed;
 }
 
-/* 曙光の暖色粒子: 暗い影粒子ではなく、夜明けの薄い光の粉。 */
-.ambient-shokou .ambient-particle.ambient-ember {
-  background:
-    radial-gradient(
-      circle,
-      hsl(var(--ambient-hue, 28), 72%, 82%) 0%,
-      hsl(var(--ambient-hue, 28), 58%, 62%) 48%,
-      transparent 100%
-    );
-  box-shadow:
-    0 0 5px 1px hsl(var(--ambient-hue, 28), 70%, 62%, 0.4),
-    0 0 14px 3px hsl(var(--ambient-hue, 28), 55%, 55%, 0.18);
-  opacity: 0.42;
-}
-
+/* reduced-motion では canvas を描かない（JS 側も rAF を回さない）。 */
 @media (prefers-reduced-motion: reduce) {
-  .ambient-particle {
-    animation: none;
+  .ambient-canvas {
     display: none;
   }
 }

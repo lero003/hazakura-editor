@@ -28,12 +28,15 @@
   --bg: #0a2a38;
   /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
   --chrome-surface: #0a2a38;
+  /* 水流を chrome（ツールバー・タブ・ステータス）でも透かす。 */
+  --chrome-bar-surface: rgba(10, 42, 56, 0.9);
   /* surface 系を半透明にし、背景の水中シェーダー (canvas) を各所で透かす。
      ただし読む・書く面 (エディタ / プレビュー) は不透明な紙面 --surface-paper を使い、
      水流はサイドバーなど操作面で残す。 */
   --surface: rgba(15, 53, 72, 0.72);
   /* 実機要望（第10報）: 水流・チリが紙を通して見えるように少しだけ透かす（alpha 0.92）。 */
-  --surface-paper: rgba(20, 56, 74, 0.9);
+  --surface-paper: rgba(20, 56, 74, 0.95);
+  --surface-paper-solid: #14384a;
   --nav-surface: rgba(9, 36, 49, 0.78);
   --surface-rgb: 15, 53, 72;
   --surface-strong: rgba(20, 64, 86, 0.72);
@@ -42,7 +45,8 @@
   --border: #23566e;
   --border-strong: #2f6e8c;
   --text: #d4ecf2;
-  --text-muted: #7ba8bc;
+  /* 強い水面光が0.95の紙を透かしても、補助文字の余裕を残す。 */
+  --text-muted: #80b1c6;
   --accent: #f2d8a0;
   --accent-secondary: #7dd3e0;
   --accent-gradient: linear-gradient(135deg, #f2d8a0 0%, #7dd3e0 100%);
@@ -115,11 +119,20 @@
 
   /* 深海用シャドウ / Shinkai Shadows
      水中の光の拡散を模して、やや青みのある柔らかい影にする。 */
-  --shadow-sm: 0 1px 2px rgba(0, 20, 35, 0.28);
-  --shadow-md: 0 4px 12px rgba(0, 20, 35, 0.36), 0 1px 3px rgba(0, 20, 35, 0.22);
-  --shadow-lg: 0 12px 32px rgba(0, 20, 35, 0.48), 0 2px 8px rgba(0, 20, 35, 0.22);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（深海）。 */
+  --edge-hi: rgba(212, 236, 242, 0.08);
+  --edge-lo: rgba(0, 20, 35, 0.3);
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 2px rgba(0, 20, 35, 0.28);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 12px rgba(0, 20, 35, 0.36), 0 1px 3px rgba(0, 20, 35, 0.22);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 32px rgba(0, 20, 35, 0.48), 0 2px 8px rgba(0, 20, 35, 0.22);
   --shadow-accent: 0 4px 20px rgba(125, 211, 224, 0.26), 0 1px 4px rgba(242, 216, 160, 0.08);
   --accent-glow: 0 0 36px rgba(125, 211, 224, 0.1);
+  /* 暗色の面ではグレースケールのアンチエイリアスが背景になじむ。
+     明色テーマでは文字が必要以上に細るため指定しない（トークン既定のまま）。 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 2. .app-shell 背景 / Shinkai: deep water base */
@@ -127,7 +140,7 @@
   background: #0a2a38;
 }
 
-/* 3. 背景シェーダー canvas / 前景オーバーレイ */
+/* 3. 背景シェーダー canvas / 背景ビネット */
 .shinkai-canvas {
   animation: shinkaiBgPulse 13s ease-in-out infinite;
   display: block;
@@ -136,7 +149,9 @@
   pointer-events: none;
   position: fixed;
   width: 100%;
-  z-index: var(--z-base);
+  /* 水とビネットは UI（--z-base）より一段下。後続のビネットは同階層の
+     DOM 順で水の上に重ね、紙や文字そのものには乗せない。 */
+  z-index: calc(var(--z-base) - 1);
 }
 
 /* 起動シーケンス中の canvas 扱い。
@@ -152,39 +167,25 @@
   opacity: 0;
 }
 
-/* 深海前景: ビネットと薄い水中光の滲み。縞 (ストライプ) は持たない。
-   ノイズ感・デジタル感を避け、滑らかな光の広がりにする。
-   缓やかに位置をずらす水流アニメで、画面全体が呼吸するように見せる。
-   全 UI の最局面に置いて文字の上にも乗る。pointer-events: none で操作は妨げない。
-   v1.5: 上端の滲みを薄くし、背景シェーダーの光の柱 (god rays) が
-   screen 合成で潰れずに透けて見えるようにした。柱の青白い光と
-   重なって明るくなりすぎないよう、前景側は控えめに残す。
-   / Shinkai foreground soft glow + vignette overlay (top layer) */
+/* 深海のビネット: 水の上、紙と文字の下で端を落とす。
+   暗い前景も明るい文字と紙を一緒に暗くするとコントラスト比を下げるため、
+   水中光・ビネットともに背景階層へ置く。半透明の紙と chrome には薄く届き、
+   不透明な読む面や文字色には作用しない。
+   / Shinkai background vignette (below paper and text) */
 .shinkai-overlay {
   background:
-    /* 上端の柔らかな水中光の滲み (水面近くで明るくなる自然な減衰)。
-       光の柱が透けるよう、従来より薄く (0.09 → 0.05)。 */
-    radial-gradient(
-      ellipse 120% 60% at 50% 0%,
-      rgba(180, 230, 240, 0.11) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 40% 70% at 78% 18%,
-      rgba(125, 211, 224, 0.07) 0%,
-      transparent 62%
-    ),
     /* 中心は透明、端へ静かに暗くなるビネット (視線を中央へ) */
     radial-gradient(
       ellipse at center,
       transparent 62%,
-      rgba(0, 16, 28, 0.4) 100%
+      rgba(0, 16, 28, 0.42) 100%
     );
   inset: 0;
-  mix-blend-mode: screen;
+  /* 水だけを暗くする。文字と紙の上には合成しない。 */
+  mix-blend-mode: normal;
   pointer-events: none;
   position: fixed;
-  z-index: var(--z-crt-top);
+  z-index: calc(var(--z-base) - 1);
 }
 
 /* 前景の缓やかな水流ドリフト。background-position を X 方向にゆっくり揺らし、
@@ -192,6 +193,97 @@
    フォーカス時のみ発火し、常時ではない (限定的な演出)。 */
 :root[data-theme="shinkai"] .app-shell:focus-within .shinkai-overlay {
   animation: shinkaiFlow 18s ease-in-out infinite;
+}
+
+/* 3.5 紙面の深度 (S10)
+   水は紙の外だけだと「壁紙」に見える。紙そのものへ上からの水中光と
+   下方向の沈みを入れ、縁に 1px の反射と落ち影を足す。
+   文字の色・背景の不透明度は変えず、面の内側にだけ深度を作る。 */
+:root[data-theme="shinkai"] .cm-editor {
+  background-image:
+    /* 水面の光が紙の上でまだらに揺れる、静的なコースティクスの名残。
+       線ではなく光の溜まりとして置き、文字の可読は変えない。 */
+    radial-gradient(
+      ellipse 34% 26% at 22% 8%,
+      rgba(125, 211, 224, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 28% 22% at 68% 13%,
+      rgba(125, 211, 224, 0.09),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 120% 60% at 50% -14%,
+      rgba(125, 211, 224, 0.14),
+      transparent 64%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(38, 96, 120, 0.55) 0%,
+      rgba(20, 56, 74, 0.12) 46%,
+      rgba(2, 18, 28, 0.42) 100%
+    ),
+    var(--paper-texture);
+  background-blend-mode: screen, screen, screen, normal, multiply;
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    var(--paper-texture-size);
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 0 1px 0 rgba(212, 236, 242, 0.12),
+    inset 0 -1px 0 rgba(0, 20, 35, 0.5),
+    inset 0 0 56px rgba(0, 16, 28, 0.46);
+}
+
+/* 読む面: 不透明のベタを、上から光が届く水の面へ。
+   コントラストのため文字は動かさず、背景の階調だけを変える。 */
+:root[data-theme="shinkai"] .ebook-page-sheet,
+:root[data-theme="shinkai"] .ebook-reading-focus-surface {
+  background-image:
+    radial-gradient(
+      ellipse 92% 58% at 50% -4%,
+      rgba(125, 211, 224, 0.14),
+      transparent 64%
+    ),
+    linear-gradient(180deg, #17475d 0%, #103647 52%, #0b2938 100%);
+}
+
+/* 右ペインのプレビューも同じ紙の語彙へ。カードのベタ塗りを残しつつ、
+   上からの水中光だけを重ねる。 */
+:root[data-theme="shinkai"] .preview-pane-preview .markdown-preview {
+  background-image:
+    radial-gradient(
+      ellipse 100% 56% at 50% -10%,
+      rgba(125, 211, 224, 0.1),
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(30, 80, 100, 0.35) 0%,
+      rgba(14, 44, 60, 0.1) 55%,
+      rgba(4, 22, 34, 0.18) 100%
+    );
+  background-size: 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* chrome にも水面の光を落とす。ツールバーは常に見えるので、
+   テーマの気配を背景だけに閉じ込めない。 */
+:root[data-theme="shinkai"] .app-primary-toolbar {
+  background-image:
+    linear-gradient(180deg, rgba(125, 211, 224, 0.12), transparent 72%),
+    radial-gradient(
+      ellipse 60% 120% at 18% -30%,
+      rgba(190, 240, 250, 0.12),
+      transparent 70%
+    );
+  box-shadow:
+    inset 0 -1px 0 rgba(125, 211, 224, 0.12),
+    0 8px 24px rgba(0, 16, 28, 0.18);
 }
 
 /* 4. 文字グロー (演出)

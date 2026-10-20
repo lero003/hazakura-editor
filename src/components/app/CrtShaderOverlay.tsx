@@ -1,9 +1,14 @@
 import { useEffect, useRef } from "react";
 import type { AmbientIntensity } from "../../types";
 import {
-  ambientMinFrameIntervalMs,
-  resolveAmbientDevicePixelRatio,
-} from "../../features/theme/ambientRenderBudget";
+  ambientQualityDprCap,
+  ambientQualityFrameIntervalMs,
+  baseAmbientQualityTier,
+  initialAmbientQualityState,
+  updateAmbientQuality,
+} from "../../features/theme/ambientQuality";
+import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
+import { useReducedMotion } from "../../hooks/app/useReducedMotion";
 
 /**
  * CrtShaderOverlay
@@ -66,10 +71,7 @@ const float NOISE_POWER   = 1.6;
 // 雪 (粗い砂嵐) と粒 (細かい grain) のベース係数。
 const float SNOW_COEF     = 0.055;
 const float GRAIN_COEF    = 0.034;
-// スキャンライン。SCAN_LINES は画面内の本数、流れは SCAN_DRIFT Hz。
-const float SCAN_LINES    = 520.0;
-const float SCAN_DRIFT    = 2.4;
-const float SCAN_AMP      = 0.06;   // 走査線コントラスト
+// 細い走査線は CrtMaskOverlay の物理px周期だけで描く。
 // バンド変調 (太い縞の揺らぎ)。
 const float BAND_LINES    = 90.0;
 const float BAND_RATE     = 1.1;
@@ -78,7 +80,7 @@ const float BAND_AMP      = 0.30;
 const float GLITCH_RATE   = 1.9;    // 発生タイミングの変動レート
 const float GLITCH_BANDS  = 18.0;
 const float GLITCH_SLOT   = 3.0;    // 帯の入れ替えレート
-const float GLITCH_THRESH = 0.80;   // 0.80 に下げて発生を多く
+const float GLITCH_THRESH = 0.94;   // 署名の欠陥（ハムバー）へ寄せ、ランダム破綻は稀にする
 const float GLITCH_SHIFT  = 0.11;   // ずれ量 (UV 空間)
 // バレル歪み係数。
 const float BARREL_COEF   = 0.42;
@@ -91,9 +93,9 @@ const float LINE_DECAY    = 9.0;    // 帯の本数/減衰傾き
 const float LINE_BRIGHT   = 0.22;   // 帯の最大輝度 (noiseAmp で増幅)
 const float LINE_WOBBLE   = 35.0;   // 帯の y 座標の揺らぎ周波数
 // 全体フリッカー (管の明滅)。背景レイヤ常時。本文レイヤには CSS の
-// crtFlicker (ホバー/フォーカス時・深め) が別系統で載るため、背景側は
-// 重複時の過剰な明滅を避けるよう一段穏やかに抑える。
-const float FLICKER_RATE  = 4.7;
+// 前景マスク (CrtMaskOverlay) 側のゆっくりした明滅が別系統で載るため、
+// 背景側は重複時の過剰な明滅を避けるよう一段穏やかに抑える。
+const float FLICKER_RATE  = 0.7;    // 管の明滅はゆっくり。速い明滅は読字の妨げになる
 const float FLICKER_AMP   = 0.05;   // u_intensity で増幅
 
 // 2D ハッシュ / value noise (プロシージャル、外部テクスチャ不要)
@@ -147,14 +149,13 @@ void main() {
   float rUv = uv.x + ca;
   float bUv = uv.x - ca;
 
-  // phosphor グリーンの縞模様をノイズで変調。揺らぎで走査線が流れる。
-  float scanLine = sin(uv.y * SCAN_LINES + u_time * SCAN_DRIFT);
+  // phosphor グリーンの太い帯をノイズで変調。細い走査線は前景だけに置く。
   float band = 0.5 + 0.5 * sin(uv.y * BAND_LINES + u_time * BAND_RATE);
   float snow = hash21(floor(uv * u_resolution.xy * 0.5) + floor(u_time * 30.0));
   float grain = hash21(floor(uv * u_resolution.xy) + floor(u_time * 60.0));
 
   float baseG = BASE_G_COEF * u_intensity;
-  float scan = 0.72 + BAND_AMP * band + (SCAN_AMP * u_intensity) * scanLine;
+  float scan = 0.72 + BAND_AMP * band;
   float green = baseG * scan + snow * SNOW_COEF * noiseAmp + grain * GRAIN_COEF * noiseAmp;
 
   // 水平ノイズ線バースト: LINE_RATE ごとに乱数を引き、LINE_THRESH 超えで
@@ -244,6 +245,7 @@ const INTENSITY_VALUE: Record<AmbientIntensity, number> = {
 
 export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const statsRef = useRef<HTMLDivElement | null>(null);
   // intensity を ref で保持し、描画ループ内で毎フレーム読む。
   // subtle/normal/dramatic 間の切替は ref 経由で即時反映し、GL コンテキストの
   // 再構築を避ける (WKWebView で再構築すると描画が止まることがあるため)。
@@ -257,20 +259,17 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
   // で一度も GL 初期化が走らず、その後 off→on で canvas は出ても描画ループが
   // 始まらない不具合があった (実機で深海/CRT 演出が復帰しない)。
   const isActive = intensity !== "off";
+  // OS の「動きを減らす」を購読する。起動時だけでなく、アプリを開いたまま
+  // 設定が変わった時点で effect が張り直され、rAF と GL リソースを解放する。
+  const reducedMotion = useReducedMotion();
+  const showStats =
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("atmoStats") === "1";
 
   useEffect(() => {
     // intensity === "off" ではシェーダーを描画しない (AmbientBackground と同じガード)
-    if (!isActive) {
-      return;
-    }
-
-    // prefers-reduced-motion ではアニメーションを止める。
-    // CSS 側でも canvas を非表示にするが、JS からも起動しないことで
-    // rAF ループの負荷を完全にゼロにする。
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reduceMotion) {
+    if (!isActive || reducedMotion) {
       return;
     }
 
@@ -286,7 +285,7 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
     });
     if (!gl) {
       // WebGL2 未サポート (WKWebView でも稀)。canvas は描画されず、
-      // CSS の前景スキャンライン (.crt-overlay) のみで CRT 感を演出する。
+      // CSS の前景マスク (.crt-mask) のみで CRT 感を演出する。
       return;
     }
 
@@ -309,9 +308,15 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
     const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
     const intensityLocation = gl.getUniformLocation(program, "u_intensity");
 
-    // Q-THM-1: intensity に応じた DPR cap
-    const resize = () => {
-      const dpr = resolveAmbientDevicePixelRatio(intensityRef.current);
+    // 品質段: intensity が見た目の上限 (base tier) で、実測フレーム時間に応じて
+    // 0 (dramatic 相当) から 3 (DPR 1 / 30fps) まで下がる。DPR と描画間隔は段から決める。
+    let quality = initialAmbientQualityState(intensityRef.current);
+
+    const applyResolution = () => {
+      const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        ambientQualityDprCap(quality.tier),
+      );
       const width = Math.floor(window.innerWidth * dpr);
       const height = Math.floor(window.innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
@@ -320,63 +325,119 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
         gl.viewport(0, 0, width, height);
       }
     };
-    resize();
-    window.addEventListener("resize", resize);
+    applyResolution();
+    window.addEventListener("resize", applyResolution);
 
-    let startTime = performance.now();
-    let frameId = 0;
-    let running = true;
+    // 時間は表示中かつアクティブなときの dt だけを積む。非表示やウィンドウ
+    // 非アクティブの間は進めないため、復帰しても走査線が別の時刻へ飛ばない。
+    let elapsedSeconds = 0;
+    let lastFrameMs = 0;
     let lastDrawMs = 0;
+    let frameId = 0;
+    let pending = false;
+    let running = true;
+    let paused = document.hidden || !document.hasFocus();
+    let statsFrame = 0;
 
-    const render = () => {
+    let render = () => {};
+
+    // 保留rAFはpauseで取消・解除し、復帰時に張り直す。
+    // WKWebViewが非表示中のコールバックを落としてもpendingが残らない。
+    const schedule = () => {
+      if (!running || paused || pending) {
+        return;
+      }
+      pending = true;
+      frameId = window.requestAnimationFrame(() => {
+        pending = false;
+        render();
+      });
+    };
+
+    render = () => {
       if (!running) {
         return;
       }
       const now = performance.now();
-      const minInterval = ambientMinFrameIntervalMs(intensityRef.current);
+      const frameMs = lastFrameMs === 0 ? 0 : now - lastFrameMs;
+      lastFrameMs = now;
+      if (paused) {
+        return;
+      }
+      elapsedSeconds = nextElapsedSeconds(elapsedSeconds, frameMs, true);
+      if (quality.baseTier !== baseAmbientQualityTier(intensityRef.current)) {
+        quality = initialAmbientQualityState(intensityRef.current);
+        applyResolution();
+      }
+      const previousTier = quality.tier;
+      quality = updateAmbientQuality(quality, frameMs);
+      if (quality.tier !== previousTier) {
+        // 段が変わったら解像度も追従させる (描画の締まりを保つ)。
+        applyResolution();
+      }
+      const minInterval = ambientQualityFrameIntervalMs(quality.tier);
       if (minInterval > 0 && now - lastDrawMs < minInterval) {
-        frameId = window.requestAnimationFrame(render);
+        schedule();
         return;
       }
       lastDrawMs = now;
-      const time = (now - startTime) / 1000;
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
       gl.enableVertexAttribArray(positionLocation);
       gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-      gl.uniform1f(timeLocation, time);
+      gl.uniform1f(timeLocation, elapsedSeconds);
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       // 描画ごとに最新の intensity を ref から読む
       gl.uniform1f(intensityLocation, INTENSITY_VALUE[intensityRef.current]);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      frameId = window.requestAnimationFrame(render);
-    };
-    frameId = window.requestAnimationFrame(render);
-
-    // タブ切り替え等で非表示になった後、戻ったときに rAF を再開する。
-    // WKWebView では非表示中に rAF が止まり、戻っても再開しないことがある。
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && running && frameId === 0) {
-        startTime = performance.now();
-        frameId = window.requestAnimationFrame(render);
+      const stats = statsRef.current;
+      if (stats && (statsFrame++ & 15) === 0) {
+        stats.textContent = `CRT tier ${quality.tier} · ${quality.emaMs.toFixed(1)}ms`;
       }
+      schedule();
     };
+    schedule();
+
+    // 非表示 → 表示、非アクティブ → アクティブのどちらでも再開する。
+    const pause = () => {
+      paused = true;
+      if (pending) {
+        window.cancelAnimationFrame(frameId);
+      }
+      pending = false;
+    };
+    const resume = () => {
+      paused = document.hidden || !document.hasFocus();
+      if (paused) {
+        pause();
+        return;
+      }
+      lastFrameMs = 0;
+      schedule();
+    };
+    const handleVisibility = () => resume();
+    const handleFocus = () => resume();
+    const handleBlur = () => pause();
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
 
     const handleContextLoss = () => {
       running = false;
-      frameId = 0;
+      pause();
     };
     canvas.addEventListener("webglcontextlost", handleContextLoss);
 
     return () => {
       running = false;
-      if (frameId !== 0) {
+      if (pending) {
         window.cancelAnimationFrame(frameId);
-        frameId = 0;
       }
-      window.removeEventListener("resize", resize);
+      pending = false;
+      window.removeEventListener("resize", applyResolution);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
       canvas.removeEventListener("webglcontextlost", handleContextLoss);
       // 注: WEBGL_lose_context による明示的な loseContext() は行わない。
       // WKWebView で canvas の描画が永続的に止まることがあるため、
@@ -384,12 +445,19 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
       gl.deleteProgram(program);
       gl.deleteBuffer(positionBuffer);
     };
-  }, [isActive]);
+  }, [isActive, reducedMotion]);
 
   // intensity === "off" のときは canvas を描かない (CSS も非表示になる)
   if (!isActive) {
     return null;
   }
 
-  return <canvas className="crt-canvas" ref={canvasRef} aria-hidden="true" />;
+  return (
+    <>
+      <canvas className="crt-canvas" ref={canvasRef} aria-hidden="true" />
+      {showStats ? (
+        <div className="atmosphere-stats" ref={statsRef} aria-hidden="true" />
+      ) : null}
+    </>
+  );
 }

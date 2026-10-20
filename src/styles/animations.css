@@ -15,45 +15,8 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes starRise {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 112vh, 0) scale(0.6);
-  }
-  12% {
-    opacity: 0.85;
-  }
-  50% {
-    transform: translate3d(calc(var(--ambient-drift, 0vw) * 0.6), 50vh, 0) scale(1);
-  }
-  88% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--ambient-drift, 0vw), -10vh, 0) scale(0.7);
-  }
-}
-
-@keyframes heatDrift {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 110vh, 0);
-  }
-  18% {
-    opacity: 0.55;
-  }
-  50% {
-    transform: translate3d(calc(var(--ambient-drift, 0vw) * 0.5), 60vh, 0);
-  }
-  82% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--ambient-drift, 0vw), -14vh, 0);
-  }
-}
+/* starRise / heatDrift は DOM 粒子と一緒に削除した。粒の運動は
+   ambientParticles.ts の決定論的なモデルが持つ。 */
 
 /* コントロール要素の洗練 / Control Styles */
 button,

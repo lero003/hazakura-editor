@@ -6,10 +6,13 @@
   --bg: #fbf4f2;
   /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
   --chrome-surface: #fbf4f2;
+  /* 演出を chrome でも透かす（背景の枝花・花弁が status bar まで届く）。 */
+  --chrome-bar-surface: rgba(251, 244, 242, 0.9);
   /* 操作面、紙面、ナビ面の順に色の階層を保つ。 */
   --surface: rgba(255, 253, 250, 0.72);
   /* 既存の紙色・透過率は維持。本文の上に全画面の陰影を重ねない。 */
-  --surface-paper: rgba(255, 252, 248, 0.93);
+  --surface-paper: rgba(255, 252, 248, 0.95);
+  --surface-paper-solid: #fffcf8;
   --nav-surface: #f4e9e6;
   --surface-rgb: 255, 253, 250;
   --surface-strong: rgba(255, 255, 255, 0.82);
@@ -81,9 +84,14 @@
   --xterm-bright-cyan: #4f8585;
   --xterm-bright-white: #fffcf8;
 
-  --shadow-sm: 0 1px 2px rgba(74, 54, 60, 0.1);
-  --shadow-md: 0 4px 14px rgba(74, 54, 60, 0.14), 0 1px 3px rgba(74, 54, 60, 0.08);
-  --shadow-lg: 0 12px 28px rgba(74, 54, 60, 0.16), 0 2px 6px rgba(74, 54, 60, 0.1);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（江戸彼岸）。 */
+  --edge-hi: rgba(255, 255, 255, 0.9);
+  --edge-lo: rgba(69, 55, 53, 0.06);
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 2px rgba(74, 54, 60, 0.1);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 14px rgba(74, 54, 60, 0.14), 0 1px 3px rgba(74, 54, 60, 0.08);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 28px rgba(74, 54, 60, 0.16), 0 2px 6px rgba(74, 54, 60, 0.1);
   --shadow-accent: 0 4px 18px rgba(151, 91, 104, 0.18), 0 1px 3px rgba(193, 154, 107, 0.1);
   --accent-glow: 0 0 36px rgba(151, 91, 104, 0.1);
 }
@@ -99,13 +107,20 @@
 /* 3. 枝花と花弁。本文をまだらに暗くする全画面シェーダーは使わない。
    上部ツールバーやモーダルは覆わない。形は同梱画像、動くのは小さな花弁だけ。 */
 .edohigan-ambient {
-  inset: 66px 0 34px;
+  /* 全画面。以前は上部ツールバー(66px)と status bar(34px)を避けていたが、
+     演出が左のワークスペースだけに見える原因だったため窓全体へ広げる。 */
+  inset: 0;
   overflow: hidden;
   pointer-events: none;
   position: fixed;
   z-index: calc(var(--z-base) + 1);
   --branch-opacity: 0.24;
-  --petal-opacity: 0.48;
+  /* 落下の加速（v = vTerm(1 - e^-kt) を正規化した曲線）。未対応環境では
+     `.edohigan-petal` の `linear` がそのまま使われる。 */
+  --petal-fall-ease: linear(
+    0, 0.017 10%, 0.064 20%, 0.135 30%, 0.225 40%, 0.33 50%,
+    0.448 60%, 0.576 70%, 0.711 80%, 0.853 90%, 1
+  );
 }
 
 .edohigan-branch {
@@ -118,16 +133,16 @@
   position: absolute;
   width: min(22vw, 280px);
   animation: edohigan-arrive 900ms ease-out both;
+  /* 紙の上に落ちる影。枝花が「印刷」ではなく「置かれたもの」に見える。 */
+  filter: drop-shadow(10px 14px 9px rgba(120, 84, 92, 0.22));
 }
 
 .edohigan-ambient[data-intensity="subtle"] {
   --branch-opacity: 0.14;
-  --petal-opacity: 0.30;
 }
 
 .edohigan-ambient[data-intensity="dramatic"] {
   --branch-opacity: 0.34;
-  --petal-opacity: 0.62;
 }
 
 /* 起動画面の広い余白では植物画を見せる。操作と見出しの位置は動かさない。 */
@@ -140,34 +155,69 @@
   opacity: calc(var(--branch-opacity) * 1.8);
 }
 
+/* 花弁の集まり。個々の揺れの下に共通の「風」を 1 つだけ置く。
+   花弁は同じ風に乗り、それぞれの位相・振幅で応える（別々のループにしない）。 */
 .edohigan-petals {
+  animation: edohigan-gust 17s ease-in-out infinite alternate;
   inset: 0;
   position: absolute;
   /* 中央の執筆カラムには花弁を流さず、窓の左右へ気配を残す。 */
   mask-image: linear-gradient(90deg, #000 0%, #000 10%, transparent 32%, transparent 68%, #000 90%, #000 100%);
 }
 
+/* 落下。transform の持ち主を 3 段に分ける:
+   .edohigan-petal = 落下 (translateY) / i = 横揺れ+回転 / i::before = 裏返り。
+   同じ要素で transform を競合させないための分担。 */
 .edohigan-petal {
-  animation: edohigan-fall var(--petal-duration) linear infinite;
-  animation-delay: var(--petal-delay);
+  animation: edohigan-fall var(--petal-fall) linear infinite;
+  animation-delay: var(--petal-fall-delay);
   height: var(--petal-size);
   position: absolute;
   top: -48px;
   width: var(--petal-size);
 }
 
+/* 深度ブラーは中景・遠景だけ。近景に filter を当てない（無駄なレイヤを作らない）。 */
+.edohigan-petal[data-depth="mid"],
+.edohigan-petal[data-depth="far"] {
+  filter: blur(var(--petal-blur));
+}
+
+@supports (animation-timing-function: linear(0, 1)) {
+  .edohigan-petal {
+    animation-timing-function: var(--petal-fall-ease);
+  }
+}
+
 .edohigan-petal i {
-  animation: edohigan-turn 13s ease-in-out infinite alternate;
-  animation-delay: var(--petal-delay);
-  background: url("../assets/themes/edohigan-petal.webp") center / contain no-repeat;
+  animation: edohigan-sway var(--petal-sway) ease-in-out infinite alternate;
+  animation-delay: var(--petal-sway-delay);
   display: block;
   height: 100%;
-  opacity: var(--petal-opacity);
-  mix-blend-mode: multiply;
   width: 100%;
 }
 
-.edohigan-ambient[data-paused="true"] :is(.edohigan-branch, .edohigan-petal, .edohigan-petal i) {
+/* 面が正面を向くときだけ濃く、真横（scaleY 最小）では薄く見える。 */
+.edohigan-petal i::before {
+  animation: edohigan-flip var(--petal-flip) ease-in-out infinite alternate;
+  animation-delay: var(--petal-sway-delay);
+  background: url("../assets/themes/edohigan-petal.webp") center / contain no-repeat;
+  content: "";
+  display: block;
+  height: 100%;
+  mix-blend-mode: multiply;
+  opacity: var(--petal-opacity);
+  width: 100%;
+}
+
+.edohigan-ambient[data-paused="true"]
+  :is(
+    .edohigan-branch,
+    .edohigan-petals,
+    .edohigan-petal,
+    .edohigan-petal i,
+    .edohigan-petal i::before
+  ) {
   animation-play-state: paused;
 }
 
@@ -176,15 +226,35 @@
   to { transform: translateY(0); }
 }
 
-@keyframes edohigan-fall {
-  0% { transform: translate3d(0, 0, 0) rotate(var(--petal-turn)); opacity: 0; }
-  8%, 88% { opacity: 1; }
-  100% { transform: translate3d(var(--petal-drift), calc(100vh + 48px), 0) rotate(calc(var(--petal-turn) + 110deg)); opacity: 0; }
+/* 共通の風。花弁全体をゆっくり往復させる（個々の揺れはこの上に載る）。 */
+@keyframes edohigan-gust {
+  from { transform: translate3d(-14px, 0, 0); }
+  to { transform: translate3d(18px, 0, 0); }
 }
 
-@keyframes edohigan-turn {
-  from { transform: rotate(-18deg) scaleX(0.55); }
-  to { transform: rotate(22deg) scaleX(1); }
+/* 落下は Y と不透明度だけ。回転は横揺れ（sway）側が持つ。 */
+@keyframes edohigan-fall {
+  0% { opacity: 0; transform: translate3d(0, 0, 0); }
+  8%, 88% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(0, calc(100vh + 48px), 0); }
+}
+
+/* 横揺れと回転は同じ周期・同じ位相。回転は横速度に由来するので、
+   右へ動くときは右へ、左へ動くときは左へ傾く。 */
+@keyframes edohigan-sway {
+  from {
+    transform: translate3d(calc(var(--petal-sway-x) * -1), 0, 0)
+      rotate(calc(var(--petal-roll) * -1));
+  }
+  to {
+    transform: translate3d(var(--petal-sway-x), 0, 0) rotate(var(--petal-roll));
+  }
+}
+
+/* 裏返り。真横（scaleY 最小）を経て表に戻る。 */
+@keyframes edohigan-flip {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0.18); }
 }
 
 @media (max-width: 1100px) {

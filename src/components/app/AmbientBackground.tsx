@@ -1,137 +1,293 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { AmbientIntensity } from "../../types";
+import {
+  ambientQualityDprCap,
+  ambientQualityFrameIntervalMs,
+  initialAmbientQualityState,
+  updateAmbientQuality,
+} from "../../features/theme/ambientQuality";
+import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
+import {
+  createAmbientParticleSeeds,
+  sampleAmbientParticle,
+  type AmbientParticleMode,
+} from "../../features/theme/ambientParticles";
+import { useReducedMotion } from "../../hooks/app/useReducedMotion";
 
-export type AmbientMode = "yakou" | "shokou";
+export type AmbientMode = AmbientParticleMode;
 
-type AmbientItem = {
-  delay: number;
-  drift: number;
-  duration: number;
-  hue: number;
-  index: number;
-  left: number;
-  size: number;
-};
+const SPRITE_SIZE_PX = 64;
+const POINTER_PARALLAX_PX = 14;
 
 type AmbientBackgroundProps = {
   intensity: AmbientIntensity;
   mode: AmbientMode;
 };
 
-const COUNT_BY_MODE: Record<AmbientMode, number> = {
-  shokou: 46,
-  yakou: 52,
-};
-
-const INTENSITY_MULTIPLIER: Record<AmbientIntensity, number> = {
-  dramatic: 1.7,
-  normal: 1,
-  off: 0,
-  subtle: 0.4,
-};
-
-const INTENSITY_DURATION_SCALE: Record<AmbientIntensity, number> = {
-  dramatic: 1.35,
-  normal: 1,
-  off: 1,
-  subtle: 0.85,
-};
-
-const INTENSITY_SIZE_SCALE: Record<AmbientIntensity, number> = {
-  dramatic: 1.3,
-  normal: 1,
-  off: 1,
-  subtle: 0.75,
-};
-
-function generateItems(
-  mode: AmbientMode,
-  intensity: AmbientIntensity,
-): AmbientItem[] {
-  const baseCount = COUNT_BY_MODE[mode];
-  const count = Math.max(
-    0,
-    Math.round(baseCount * INTENSITY_MULTIPLIER[intensity]),
-  );
-  const sizeScale = INTENSITY_SIZE_SCALE[intensity];
-  const durationScale = INTENSITY_DURATION_SCALE[intensity];
-  return Array.from({ length: count }, (_, index) => {
-    const seed = (index * 137.5 + 42) % 360;
-    switch (mode) {
-      case "yakou":
-        {
-          // 紫〜藍〜青緑。アクセント (#a090ff) と副色 teal の宇宙帯。
-          const hueBand = [248, 258, 268, 232, 196][index % 5];
-          const hueOffset = (seed % 14) - 7;
-          return {
-            delay: -((seed * 1.7 + index * 2.3) % 24),
-            drift: ((seed * 0.9 + index * 2.7) % 14) - 7,
-            duration: (18 + (seed % 8) * 2) * durationScale,
-            hue: hueBand + hueOffset,
-            index,
-            left: ((seed * 1.618 + index * 7) % 100),
-            size: Math.max(1, (1.8 + (seed % 5) * 0.65) * sizeScale),
-          };
-        }
-      case "shokou":
-        {
-          // 夜明けの影粒子: 青灰帯にごく薄い暖色を混ぜる
-          const hueBand = [214, 220, 228, 236, 28][index % 5];
-          const hueOffset = (seed % 12) - 6;
-          const shokouSizeScale =
-            intensity === "dramatic" ? sizeScale * 0.82 : sizeScale;
-          return {
-            delay: -((seed * 2.1 + index * 1.3) % 18),
-            drift: ((seed * 0.5 + index * 4.1) % 18) - 9,
-            duration: (15 + (seed % 7) * 1.6) * durationScale,
-            hue: hueBand + hueOffset,
-            index,
-            left: ((seed * 1.618 + index * 7) % 100),
-            size: Math.max(1, (1.8 + (seed % 5) * 0.65) * shokouSizeScale),
-          };
-        }
-    }
-  });
-}
-
-function modeClass(mode: AmbientMode): string {
-  return `ambient ambient-${mode}`;
-}
-
-export function AmbientBackground({
-  intensity,
-  mode,
-}: AmbientBackgroundProps) {
-  const items = useMemo(
-    () => generateItems(mode, intensity),
+/**
+ * AmbientBackground — 夜光 / 曙光の粒を 1 枚の canvas に描く。
+ *
+ * 旧実装は 46〜52 個の `<span>` を `will-change` 付きで個別に CSS アニメーション
+ * させていた。粒ごとの奥行き・明滅・共通の風を持てず、レイヤ数も多かった。
+ * ここでは `ambientParticles.ts` の決定論的なモデルを、起動時に一度だけ作る
+ * スプライトで描く。位置・不透明度はすべて純関数 `sampleAmbientParticle` が決める。
+ *
+ * ガード（既存の方針を維持）:
+ *   - `intensity === "off"` と `prefers-reduced-motion` では rAF を回さない
+ *   - 非表示・ウィンドウ非アクティブ中は時間を進めない（`nextElapsedSeconds`）
+ *   - 品質段（実測フレーム時間）に応じて DPR と描画間隔を落とす
+ *   - 外部テクスチャの fetch はしない。スプライトは実行時に生成する
+ */
+export function AmbientBackground({ intensity, mode }: AmbientBackgroundProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const seeds = useMemo(
+    () => createAmbientParticleSeeds(mode, intensity),
     [mode, intensity],
   );
-  if (intensity === "off" || items.length === 0) {
+  const reducedMotion = useReducedMotion();
+  const active = intensity !== "off" && seeds.length > 0;
+
+  useEffect(() => {
+    if (!active || reducedMotion) {
+      return;
+    }
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+    const context = canvas.getContext("2d");
+    if (!context) {
+      // canvas が取れない環境では背景色だけが残る（演出は落ちるが操作は妨げない）。
+      return;
+    }
+
+    // === スプライト ===
+    // ラジアルグラデーションを毎フレーム作らないよう、起動時に一度だけ描く。
+    // 色相は 4 度刻みに丸めて使い回す。
+    const spriteCache = new Map<string, HTMLCanvasElement>();
+    const spriteFor = (hue: number, glow: boolean): HTMLCanvasElement => {
+      const bucket = Math.round(hue / 4) * 4;
+      const key = `${glow ? "glow" : "dust"}-${bucket}`;
+      const cached = spriteCache.get(key);
+      if (cached) {
+        return cached;
+      }
+      const sprite = document.createElement("canvas");
+      sprite.width = SPRITE_SIZE_PX;
+      sprite.height = SPRITE_SIZE_PX;
+      const spriteContext = sprite.getContext("2d");
+      if (spriteContext) {
+        const half = SPRITE_SIZE_PX / 2;
+        const gradient = spriteContext.createRadialGradient(
+          half,
+          half,
+          0,
+          half,
+          half,
+          half,
+        );
+        if (glow) {
+          // 夜光の星 / 曙光の ember: 芯が明るく、外へ透明に落ちる。
+          gradient.addColorStop(
+            0,
+            mode === "shokou"
+              ? `hsl(${bucket}, 72%, 82%)`
+              : `hsl(${bucket}, 88%, 94%)`,
+          );
+          gradient.addColorStop(
+            0.55,
+            mode === "shokou"
+              ? `hsl(${bucket}, 58%, 62%)`
+              : `hsl(${bucket}, 78%, 76%)`,
+          );
+          gradient.addColorStop(
+            1,
+            mode === "shokou"
+              ? `hsla(${bucket}, 58%, 62%, 0)`
+              : `hsla(${bucket}, 70%, 70%, 0)`,
+          );
+        } else {
+          // 曙光の影粒: 明るい紙の上で「埃」として見える暗い粒。
+          gradient.addColorStop(0, `hsl(${bucket}, 22%, 30%)`);
+          gradient.addColorStop(0.58, `hsl(${bucket}, 16%, 16%)`);
+          gradient.addColorStop(1, `hsla(${bucket}, 16%, 16%, 0)`);
+        }
+        spriteContext.fillStyle = gradient;
+        spriteContext.fillRect(0, 0, SPRITE_SIZE_PX, SPRITE_SIZE_PX);
+      }
+      spriteCache.set(key, sprite);
+      return sprite;
+    };
+
+    // === 品質段 ===
+    let quality = initialAmbientQualityState(intensity);
+    let cssWidth = window.innerWidth;
+    let cssHeight = window.innerHeight;
+
+    const applyResolution = () => {
+      const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        ambientQualityDprCap(quality.tier),
+      );
+      cssWidth = window.innerWidth;
+      cssHeight = window.innerHeight;
+      const width = Math.max(1, Math.floor(cssWidth * dpr));
+      const height = Math.max(1, Math.floor(cssHeight * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        // 以後の描画は CSS px で行う。
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    };
+    applyResolution();
+    window.addEventListener("resize", applyResolution);
+
+    // === ポインタ視差 ===
+    // 手前の粒ほど強く動く。動かしていないときは中央へ戻る。
+    let pointerTarget = 0.5;
+    let pointerSmooth = 0.5;
+    const onPointerMove = (event: MouseEvent) => {
+      pointerTarget = event.clientX / Math.max(window.innerWidth, 1);
+    };
+    window.addEventListener("mousemove", onPointerMove, { passive: true });
+
+    // === 時間 ===
+    let elapsedSeconds = 0;
+    let lastFrameMs = 0;
+    let lastDrawMs = 0;
+    let frameId = 0;
+    let pending = false;
+    let running = true;
+    let paused = document.hidden || !document.hasFocus();
+
+    let render = () => {};
+
+    const schedule = () => {
+      if (!running || paused || pending) {
+        return;
+      }
+      pending = true;
+      frameId = window.requestAnimationFrame(() => {
+        pending = false;
+        render();
+      });
+    };
+
+    render = () => {
+      if (!running) {
+        return;
+      }
+      const now = performance.now();
+      const frameMs = lastFrameMs === 0 ? 0 : now - lastFrameMs;
+      lastFrameMs = now;
+      if (paused) {
+        return;
+      }
+      elapsedSeconds = nextElapsedSeconds(elapsedSeconds, frameMs, true);
+      const previousTier = quality.tier;
+      quality = updateAmbientQuality(quality, frameMs);
+      if (quality.tier !== previousTier) {
+        applyResolution();
+      }
+      const minInterval = ambientQualityFrameIntervalMs(quality.tier);
+      if (minInterval > 0 && now - lastDrawMs < minInterval) {
+        schedule();
+        return;
+      }
+      lastDrawMs = now;
+
+      pointerSmooth += (pointerTarget - pointerSmooth) * 0.06;
+      const pointerOffset = (pointerSmooth - 0.5) * POINTER_PARALLAX_PX * 2;
+
+      context.clearRect(0, 0, cssWidth, cssHeight);
+      for (const seed of seeds) {
+        const frame = sampleAmbientParticle(
+          seed,
+          elapsedSeconds,
+          cssWidth,
+          cssHeight,
+          pointerOffset,
+        );
+        if (frame.alpha <= 0.01) {
+          continue;
+        }
+        const sprite = spriteFor(seed.hue, seed.glow);
+        const box = frame.radiusPx * (seed.glow ? 6 : 5);
+        context.globalCompositeOperation = seed.glow ? "lighter" : "source-over";
+        context.globalAlpha = Math.min(1, frame.alpha);
+        context.drawImage(sprite, frame.x - box / 2, frame.y - box / 2, box, box);
+        if (seed.glow && mode === "yakou") {
+          // 星のハロー。同じスプライトを広く薄く重ねる。
+          const haloBox = box * 2.6;
+          context.globalAlpha = Math.min(1, frame.alpha * 0.22);
+          context.drawImage(
+            sprite,
+            frame.x - haloBox / 2,
+            frame.y - haloBox / 2,
+            haloBox,
+            haloBox,
+          );
+        }
+      }
+      context.globalAlpha = 1;
+      context.globalCompositeOperation = "source-over";
+      schedule();
+    };
+    schedule();
+
+    const pause = () => {
+      paused = true;
+      if (pending) {
+        window.cancelAnimationFrame(frameId);
+      }
+      pending = false;
+    };
+    const resume = () => {
+      paused = document.hidden || !document.hasFocus();
+      if (paused) {
+        pause();
+        return;
+      }
+      lastFrameMs = 0;
+      schedule();
+    };
+    const handleVisibility = () => resume();
+    const handleFocus = () => resume();
+    const handleBlur = () => pause();
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    const handleContextLoss = () => {
+      running = false;
+      pause();
+    };
+    canvas.addEventListener("contextlost", handleContextLoss);
+
+    return () => {
+      running = false;
+      if (pending) {
+        window.cancelAnimationFrame(frameId);
+      }
+      pending = false;
+      window.removeEventListener("resize", applyResolution);
+      window.removeEventListener("mousemove", onPointerMove);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+      canvas.removeEventListener("contextlost", handleContextLoss);
+      spriteCache.clear();
+    };
+  }, [active, intensity, mode, reducedMotion, seeds]);
+
+  if (!active) {
     return null;
   }
+
   return (
-    <div className={modeClass(mode)} aria-hidden="true">
-      {items.map((item) => {
-        // 曙光の暖色帯は暗い影粒子ではなく ember として描く
-        const isEmber = mode === "shokou" && item.hue < 60;
-        return (
-          <span
-            className={
-              isEmber ? "ambient-particle ambient-ember" : "ambient-particle"
-            }
-            key={item.index}
-            style={{
-              "--ambient-h": `${item.size}px`,
-              "--ambient-w": `${item.size * 0.7}px`,
-              "--ambient-hue": item.hue,
-              "--ambient-drift": `${item.drift}vw`,
-              "--ambient-delay": `${item.delay}s`,
-              "--ambient-duration": `${item.duration}s`,
-              left: `${item.left}%`,
-            } as React.CSSProperties}
-          />
-        );
-      })}
+    <div className={`ambient ambient-${mode}`} aria-hidden="true">
+      <canvas className="ambient-canvas" ref={canvasRef} aria-hidden="true" />
     </div>
   );
 }

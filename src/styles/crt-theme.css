@@ -22,11 +22,14 @@
   --bg: #040a06;
   /* chrome（ツールバー・タブ・ステータス）は --bg と同値。 */
   --chrome-surface: #040a06;
+  /* 燐光を chrome でも透かす。 */
+  --chrome-bar-surface: rgba(4, 10, 6, 0.9);
   --surface: #08120c;
   /* 実機要望（第10報）: お遊びテーマの演出が紙を通して見えるように、読み書きの面を
      少しだけ透かす（alpha 0.92 = 背景の動きが8%だけ乗る）。文字は面の上に載るので
      コントラストはほぼ変わらない（themeContrast テストで担保）。 */
-  --surface-paper: rgba(13, 26, 17, 0.9);
+  --surface-paper: rgba(13, 26, 17, 0.95);
+  --surface-paper-solid: #0d1a11;
   --nav-surface: #101d13;
   --surface-rgb: 8, 18, 12;
   --surface-strong: #0d1a11;
@@ -101,15 +104,24 @@
   --xterm-bright-white: #c8f0d0;
 
   /* CRT 用シャドウ / CRT Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.38), 0 1px 3px rgba(0, 0, 0, 0.24);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.52), 0 2px 8px rgba(0, 0, 0, 0.24);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（CRT）。 */
+  --edge-hi: rgba(155, 224, 164, 0.07);
+  --edge-lo: rgba(0, 0, 0, 0.32);
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 12px rgba(0, 0, 0, 0.38), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 32px rgba(0, 0, 0, 0.52), 0 2px 8px rgba(0, 0, 0, 0.24);
   --shadow-accent: 0 4px 20px rgba(95, 224, 106, 0.2);
   --accent-glow: 0 0 28px rgba(95, 224, 106, 0.1);
 
   /* マウス連動の既定値 (中央)。JS 未起動時でも色収差が乗る。 */
   --crt-mx: 0.5;
   --crt-my: 0.5;
+  /* 暗色の面ではグレースケールのアンチエイリアスが背景になじむ。
+     明色テーマでは文字が必要以上に細るため指定しない（トークン既定のまま）。 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 2. .app-shell 背景 / CRT: near-black base with faint phosphor bloom */
@@ -131,70 +143,140 @@
   z-index: var(--z-base);
 }
 
-/* CRT 前景: スキャンラインとビネット。全 UI の最前面に置いて文字の上
-   にも乗るようにする。pointer-events: none で操作は妨げない。
-   / CRT foreground scanlines + vignette overlay (top layer) */
-.crt-overlay {
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 0) 2px,
-      rgba(0, 0, 0, 0.28) 3px,
-      rgba(0, 0, 0, 0) 4px
-    ),
-    radial-gradient(
-      ellipse 70% 48% at 50% 42%,
-      rgba(95, 224, 106, 0.09) 0%,
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse at center,
-      transparent 52%,
-      rgba(0, 0, 0, 0.5) 100%
-    );
+/* CRT 前景: 管の質感（走査線・ハムバー・焼き付き・ビネット・明滅）は
+   `CrtMaskOverlay` がデバイス px ピッチで 1 枚の canvas に描く。
+   以前は CSS の repeating-linear-gradient（4px 周期）と背景シェーダーの
+   UV 本数（520 本）が別々の周期で走っており、実機でモアレが出ていた。 */
+.crt-mask {
+  display: block;
+  height: 100%;
   inset: 0;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
   pointer-events: none;
   position: fixed;
+  width: 100%;
   z-index: var(--z-crt-top);
 }
 
-/* 4. 文字色収差・明滅・マウス連動 (演出)
-   Layer 2: 文字 RGB 分割 (text-shadow 色収差) は常時
-   Layer 3: 明滅・スキャンラインドリフト は限定的 (フォーカス/ホバー時のみ)
-   Layer 4: マウス連動 (useCrtMouseTracking が --crt-mx / --crt-my を 0..1 で書き込む) */
+/* ガラス面。管の反射と四隅の落ち込みだけを乗せ、走査線の上に薄く重ねる。
+   文字の上に膜をかけるのではなく、画面の端へ光と陰を足すための層。 */
+.crt-glass {
+  background:
+    linear-gradient(
+      116deg,
+      rgba(196, 255, 208, 0.035) 0%,
+      rgba(196, 255, 208, 0.008) 16%,
+      transparent 26%
+    ),
+    radial-gradient(
+      ellipse 92% 78% at 50% 46%,
+      transparent 64%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(155, 224, 164, 0.09),
+    inset 0 0 3px rgba(155, 224, 164, 0.14),
+    inset 0 0 100px rgba(0, 0, 0, 0.28);
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: calc(var(--z-crt-top) + 1);
+}
 
-/* CodeMirror 本文: 色収差 text-shadow は常時。明滅はエディタにフォーカス/
-   ホバーがあるときだけ発火。行単位ではなく .cm-content 単位にかけることで
-   スクロール位置と干渉しない (scroll-safe)。 */
+/* 4. 文字色収差 (演出)
+   useCrtScanDrift が --crt-mx を緩やかに動かす。
+   演出off / reduced-motionでは中央へ戻し、本文のopacityは動かさない。 */
+
+/* CodeMirror 本文: .cm-content 単位の色収差でスクロール位置を保つ。 */
 :root[data-theme="crt"] .cm-content {
-  /* マウス X を赤/青のオフセット量に反映。動かすほど色収差が広がる。 */
+  /* 緩やかな収束ずれを赤/青のオフセットへ反映する。
+     後段の 2 層は蛍光体のブルーム。色収差より下に敷き、字面の色は変えない。 */
   text-shadow:
     calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.55),
-    calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.5);
+    calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.5),
+    0 0 1px rgba(155, 224, 164, 0.6),
+    0 0 14px rgba(95, 224, 106, 0.28);
 }
 
-:root[data-theme="crt"] .cm-editor:focus-within .cm-content,
-:root[data-theme="crt"] .cm-editor:hover .cm-content {
-  animation: crtFlicker 5.5s linear infinite;
-}
+/* 本文の明滅（opacity アニメ）は削除した。0.70 まで落ちる明滅は
+   実効コントラストを動かし、長い原稿では本文全体の再描画になっていた。
+   管の明滅は前景マスク（CrtMaskOverlay）の輝度変調 ±3% が担う。 */
 
-/* プレビュー本文: 同様。色収差は常時、明滅はホバー時のみ。 */
+/* プレビュー本文も同じ収束ずれを使う。 */
 :root[data-theme="crt"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
   text-shadow:
     calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.5),
     calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.45);
 }
 
-:root[data-theme="crt"] .markdown-preview:hover :is(p, h1, h2, h3, h4, h5, h6, li, a) {
-  animation: crtFlicker 6.2s linear infinite;
-}
-
 :root[data-theme="crt"] .markdown-preview :is(code, pre) {
   text-shadow:
     calc((var(--crt-mx) - 0.5) * 1.2px) 0 rgba(255, 40, 40, 0.45),
     calc((0.5 - var(--crt-mx)) * 1.2px) 0 rgba(40, 140, 255, 0.4);
+}
+
+/* ツールバーにも管の上端の光を落とし、画面の一番上から CRT が始まるようにする。 */
+:root[data-theme="crt"] .app-primary-toolbar {
+  background-image: linear-gradient(
+    180deg,
+    rgba(95, 224, 106, 0.07) 0%,
+    transparent 72%
+  );
+  box-shadow:
+    inset 0 -1px 0 rgba(95, 224, 106, 0.09),
+    0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* 紙面: 管の上端から光が落ちる程度の深度と、縁の陰。
+   不透明な紙の上に薄いグラデーションを重ねるだけで、面の「厚み」を作る。 */
+:root[data-theme="crt"] .cm-editor {
+  background-image:
+    radial-gradient(
+      ellipse 74% 46% at 50% 26%,
+      rgba(95, 224, 106, 0.14),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(30, 58, 38, 0.6) 0%,
+      rgba(13, 26, 17, 0) 38%,
+      rgba(0, 0, 0, 0.35) 100%
+    ),
+    var(--paper-texture);
+  background-blend-mode: screen, normal, multiply;
+  background-size: 100% 100%, 100% 100%, var(--paper-texture-size);
+  background-repeat: no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 0 1px 0 rgba(155, 224, 164, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.42),
+    inset 0 0 44px rgba(0, 0, 0, 0.3);
+}
+
+/* 右ペインのプレビューも、管の上端から光が落ちる紙へ。 */
+:root[data-theme="crt"] .preview-pane-preview .markdown-preview {
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(30, 58, 38, 0.3) 0%,
+      rgba(13, 26, 17, 0.08) 52%,
+      rgba(0, 0, 0, 0.12) 100%
+    ),
+    var(--paper-texture);
+  background-blend-mode: normal, multiply;
+  background-size: 100% 100%, var(--paper-texture-size);
+  background-repeat: no-repeat, repeat;
+}
+
+/* 読む面も無地のベタから、管の中心がわずかに明るい面へ。 */
+:root[data-theme="crt"] .ebook-page-sheet,
+:root[data-theme="crt"] .ebook-reading-focus-surface {
+  background-image:
+    radial-gradient(
+      ellipse 85% 55% at 50% 32%,
+      rgba(95, 224, 106, 0.09),
+      transparent 70%
+    ),
+    linear-gradient(180deg, #0b1810 0%, #0a1510 55%, #071009 100%);
 }
 
 /* 実機指摘（第2弾）: 開いているファイルのタブは演出が過剰に見えた（タブは小さく、常に目に入る面）。
@@ -218,19 +300,8 @@
   text-shadow: none;
 }
 
-/* 前景スキャンラインのドリフト。画面全体の注目領域 (フォーカス内) がある
-   ときだけ走査線が流れる。常時ではなく限定的な演出。 */
-:root[data-theme="crt"] .app-shell:focus-within .crt-overlay {
-  animation: crtScanDrift 8s linear infinite;
-}
-
-/* 前景層にマウス Y を反映: ビネット中心をずらして「視線を追う」演出。 */
-:root[data-theme="crt"] .crt-overlay {
-  background-position:
-    0 0,
-    calc((var(--crt-mx) - 0.5) * 24px) calc((var(--crt-my) - 0.5) * 24px),
-    calc((var(--crt-mx) - 0.5) * 40px) calc((var(--crt-my) - 0.5) * 40px);
-}
+/* 収束ずれ（文字の色収差）は `useCrtScanDrift` が 500ms 間隔で書く
+   `--crt-mx` だけで駆動する。マウス位置には依存しない。 */
 
 /* 5. 起動シーケンス (.crt-boot*)
    テーマ切替 (false → true) で 2.5 秒流れる全画面オーバーレイ。
@@ -272,7 +343,7 @@
     1.5px 0 rgba(255, 40, 40, 0.45),
     -1.5px 0 rgba(40, 140, 255, 0.4),
     0 0 8px rgba(95, 224, 106, 0.5);
-  /* 前景スキャンライン (.crt-overlay = --z-crt-top) よりも上に確実に
+  /* 前景マスク (.crt-mask = --z-crt-top) よりも上に確実に
      置くため、一段高い z-index にする (DOM 順序との二重の安全策)。 */
   z-index: calc(var(--z-crt-top) + 100);
 }
@@ -358,35 +429,17 @@
    base.css のグローバルガードが keyframes を止めるが、canvas 描画自体は
    JS の rAF ループで動くため、CSS で display: none にして完全停止させる。 */
 @media (prefers-reduced-motion: reduce) {
-  /* CRT シェーダーアニメーションも止める。前景スキャンライン自体は
-     静止画なので残す。/ Keep static scanlines, drop shader motion */
-  .crt-canvas {
+  /* CRT の動きを全部止める。前景マスクは JS 側も起動しない（表示もしない）。 */
+  .crt-canvas,
+  .crt-mask {
     display: none;
   }
 }
 
 /* 7. @keyframes (animations.css から移行 + 起動シーケンス用) */
 
-/* 管の明滅。画面全体ではなく本文レイヤに薄くかける。
-   シェーダー側にも低周波フリッカーがあるが、こちらは本文レイヤ専用で
-   もう少し深く落ちる (min 0.70) ことで低コントラストディスプレイでも
-   明滅がはっきり判別できるようにしている。 */
-@keyframes crtFlicker {
-  0%, 100% { opacity: 1; }
-  3% { opacity: 0.82; }
-  6% { opacity: 0.97; }
-  47% { opacity: 0.88; }
-  50% { opacity: 0.70; }
-  53% { opacity: 0.93; }
-  77% { opacity: 0.84; }
-}
-
-/* 前景スキャンラインの縦方向ドリフト。background-position を動かして
-   走査線がゆっくり流れるように見せる。 */
-@keyframes crtScanDrift {
-  0% { background-position: 0 0, 0 0; }
-  100% { background-position: 0 100vh, 0 0; }
-}
+/* 本文レイヤの明滅 keyframes は削除した（前景マスクの輝度変調へ移設）。
+   走査線ドリフト用の crtScanDrift も、マスク層が自前で描くため不要になった。 */
 
 /* 背景シェーダー (.crt-canvas) の「壊れた感じ」演出。文字は動かさず、
    背景ノイズが不定期に明滅・色ズレする。steps でカクつかせ、管が劣化

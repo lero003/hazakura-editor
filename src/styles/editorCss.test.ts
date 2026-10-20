@@ -142,17 +142,31 @@ describe("editor tab close affordance CSS", () => {
     expect(pointerHover).toMatch(/box-shadow:\s*var\(--shadow-sm\)/);
   });
 
-  it("keeps Shokou ambient particles as quiet shadow particles", () => {
-    const rule = ruleBody(appShellCss, ".ambient-shokou .ambient-particle");
+  it("draws ambient particles on one canvas layer", () => {
+    // 旧: 46〜52 個の DOM 粒子 + 個別 CSS アニメーション。
+    // 今: 1 枚の canvas（粒のモデルは ambientParticles.ts）。
+    expect(ruleBody(appShellCss, ".ambient-canvas")).toMatch(
+      /position:\s*absolute/,
+    );
+    expect(appShellCss).not.toContain(".ambient-particle");
+    const animationsCss = readProjectFile("src/styles/animations.css");
+    expect(animationsCss).not.toContain("@keyframes starRise");
+    expect(animationsCss).not.toContain("@keyframes heatDrift");
+  });
 
-    expect(rule).toMatch(/hsl\(var\(--ambient-hue,\s*222\),\s*22%,\s*30%\)/);
-    expect(rule).toMatch(/hsl\(var\(--ambient-hue,\s*222\),\s*16%,\s*16%\)/);
-    expect(rule).toMatch(/box-shadow:\s*0 0 4px 1px/);
-    expect(rule).toMatch(/0 0 12px 3px/);
-    expect(rule).toMatch(/height:\s*var\(--ambient-h,\s*2\.5px\)/);
-    expect(rule).toMatch(/width:\s*var\(--ambient-w,\s*2\.5px\)/);
-    expect(rule).toMatch(/opacity:\s*0\.48/);
-    expect(rule).not.toMatch(/rgba\(255,\s*255,\s*255/);
+  it("layers the aurora so it does not read as one sliding wallpaper", () => {
+    // 2 枚目の色づき（::after）を遅い逆方向で重ね、層に厚みを出す。
+    // 2026-10-19: 文字の上に乗る層は明度を上げない方針にしたため、
+    // 夜光も soft-light ではなく色相だけを移す color 合成に揃えた。
+    for (const [selector, opacity] of [
+      [':root[data-theme="yakou"] .ambient-yakou::after', "0.18"],
+      [':root[data-theme="shokou"] .ambient-shokou::after', "0.12"],
+    ] as const) {
+      const rule = ruleBody(appShellCss, selector);
+      expect(rule, selector).toMatch(/animation:\s*bgDrift 37s/);
+      expect(rule, selector).toContain("mix-blend-mode: color");
+      expect(rule, selector).toContain(`opacity: ${opacity}`);
+    }
   });
 
   it("keeps special theme app shell gradients visible behind native chrome", () => {
@@ -183,7 +197,8 @@ describe("editor tab close affordance CSS", () => {
 
     // 実機指摘（第12報）: 演出が面の後ろで見えなかったため、面の上に薄く重ねる層を足した。
     expect(yakouTint).toMatch(/background:\s*var\(--ambient-aurora-overlay\)/);
-    expect(yakouTint).toMatch(/mix-blend-mode:\s*screen/);
+    // 明度は動かさず色相だけを移す（screen は本文のコントラストを下げるため廃止）。
+    expect(yakouTint).toMatch(/mix-blend-mode:\s*color/);
     expect(yakouTint).toMatch(/animation:\s*bgDrift\s+22s/);
     expect(shokouTint).toMatch(/background:\s*var\(--ambient-dawn-overlay\)/);
     expect(shokouTint).toMatch(/mix-blend-mode:\s*color/);

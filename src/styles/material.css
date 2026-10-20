@@ -1,0 +1,25 @@
+/* === material.css ===
+   素材レイヤ / Material layer.
+
+   紙の目（paper grain）は「面ごとに背景画像を足す」のではなく、
+   紙面そのもの（エディタ / プレビュー / 電子書籍 / 読書面）の背景に
+   乗算で重ねる。乗算は紙だけを最大約 4% 暗くし、文字色は変えない。
+   暗い紙の明るい文字は比が上がる一方、明るい紙の暗い文字は比が下がる。
+   最暗画素を合成した最悪ケースでも AA を満たすことを
+   themeContrast.test.ts で確認する。
+
+   タイルは `src/assets/themes/paper-grain.png`（128×128、値域 244..255）。
+   生成レシピは docs/theme-atmosphere-brushup-plan.md の S1 を参照。
+   `prefers-contrast: more` では a11y.css が `--paper-texture: none` に落とし、
+   `--edge-hi` / `--edge-lo` も transparent にして素材を無効化する。
+
+   配置は preview.css / workspace-paper.css より後（index.css の末尾）で、
+   紙面の `background` ショートハンドに負けないようにする。 */
+
+.cm-editor,
+.markdown-preview {
+  background-image: var(--paper-texture);
+  background-size: var(--paper-texture-size);
+  background-repeat: repeat;
+  background-blend-mode: multiply;
+}

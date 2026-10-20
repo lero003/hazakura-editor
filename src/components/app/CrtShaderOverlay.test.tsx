@@ -1,4 +1,4 @@
-import { cleanup, render } from "@testing-library/react";
+import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach, type Mock } from "vitest";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
 
@@ -39,6 +39,38 @@ function mockMatchMedia(matches: boolean): Mock {
   return fn;
 }
 
+// change イベントを発火できる matchMedia モック（実行中の OS 設定変更を再現する）。
+function mockMatchMediaWithEvents(initial: boolean) {
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const mql = {
+    matches: initial,
+    media: "(prefers-reduced-motion: reduce)",
+    onchange: null,
+    addEventListener: (_: string, listener: (event: MediaQueryListEvent) => void) => {
+      listeners.add(listener);
+    },
+    removeEventListener: (_: string, listener: (event: MediaQueryListEvent) => void) => {
+      listeners.delete(listener);
+    },
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => true,
+  } as unknown as MediaQueryList;
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: vi.fn().mockReturnValue(mql),
+  });
+  return {
+    emit(next: boolean) {
+      (mql as { matches: boolean }).matches = next;
+      for (const listener of listeners) {
+        listener({ matches: next } as MediaQueryListEvent);
+      }
+    },
+  };
+}
+
 describe("CrtShaderOverlay", () => {
   it("renders no canvas when ambient intensity is off", () => {
     mockMatchMedia(false);
@@ -67,6 +99,26 @@ describe("CrtShaderOverlay", () => {
     expect(matchMedia).toHaveBeenCalledWith("(prefers-reduced-motion: reduce)");
     // reduced-motion では effect が早期 return するので rAF は発火しない
     expect(rafSpy).not.toHaveBeenCalled();
+  });
+
+  it("stops and restarts when prefers-reduced-motion changes while mounted", () => {
+    const media = mockMatchMediaWithEvents(false);
+    const getContextSpy = vi.spyOn(
+      HTMLCanvasElement.prototype,
+      "getContext",
+    ) as unknown as Mock;
+    getContextSpy.mockClear();
+
+    render(<CrtShaderOverlay intensity="normal" />);
+    expect(getContextSpy).toHaveBeenCalledTimes(1);
+
+    // アプリを開いたまま「動きを減らす」へ: effect が張り直され、GL も作り直さない。
+    act(() => media.emit(true));
+    expect(getContextSpy).toHaveBeenCalledTimes(1);
+
+    // 設定を戻したら初期化からやり直す（canvas は出たまま描画が死なない）。
+    act(() => media.emit(false));
+    expect(getContextSpy).toHaveBeenCalledTimes(2);
   });
 
   it("re-initializes the GL context when intensity goes off -> on", () => {

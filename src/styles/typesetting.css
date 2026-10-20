@@ -1,0 +1,31 @@
+/* === typesetting.css ===
+   日本語組版 / Japanese typesetting.
+
+   和文が主対象なので、欧文向けの既定より一段だけ組版を詰める。
+
+   - `palt`: 和文の詰め組み（約物・かなの送り幅をプロポーショナルに）。
+     Latin には影響しない。
+   - `text-spacing-trim: trim-start`: 行頭の開き括弧のアキを詰める。
+   - `hanging-punctuation: allow-end`: 行末の 。、 をぶら下げる。
+   - `line-break: strict`: 小書き文字・繰り返し記号の前で折らない。
+
+   未対応のプロパティは CSS の仕様どおり単に無視されるため、
+   `@supports` を重ねず、対応環境でだけ効く形にしている。
+   行送り・文字サイズ・保存内容は変えない。組版が変わるため、
+   読書面のページ数は再計測が必要（docs/smoke-checklist.md の読書項目）。
+
+   対象は「読む面」だけ。編集面（通常の .cm-content）は禁則だけに留め、
+   `palt` は IME の変換中表示・カーソル位置を実機で確認してから判断する。 */
+
+.markdown-preview,
+:root[data-l-mode="on"] .cm-content {
+  font-feature-settings: "palt" 1;
+  text-spacing-trim: trim-start;
+  hanging-punctuation: allow-end;
+  line-break: strict;
+}
+
+/* 編集面: 禁則のみ。折り返し位置が変わるだけで、文字幅は変えない。 */
+.cm-content {
+  line-break: strict;
+}

@@ -1,9 +1,38 @@
 # Handoff
 
 Status: Operational
-Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の引き継ぎ
+Scope: v3.4テーマ刷新候補、v3.3審査提出報告、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-10-18
+Last reviewed: 2026-10-19
+
+## 現行候補 — v3.4テーマ演出ブラッシュアップと調整（2026-10-19）
+
+オーナー報告でv3.3は審査提出済み。テーマ刷新と調整はv3.4.0へ分ける。
+提出build/source対応とApple側の現在の審査状態は独立未照合。
+先に作成した3.3.0のテーマ入りpkgを提出済みv3.3と同一視しない。
+[v3.4の範囲と受け入れ](releases/3.4.0-theme-atmosphere.md)を現行候補の入口とする。
+
+S9追試で深海ビネットを紙の後ろへ、全テーマのebook/page-sheetを不透明紙へ統一した。
+深海の実測明部に合わせ補助文字の余裕を増やした。frontend 3,094件・scripts 31件、Rust 515成功 / 4 ignored、
+両lane Vite・surface 137件、隔離WKWebViewの全7テーマ/Readerが成功。CRT/夜光の局所contrast変動は残し、
+全状態AAは主張しない。今回の条件は[追試記録](reviews/2026-10-19-theme-regression-review.md)を参照。
+
+S0〜S8の演出を維持し、復帰停止・強度予算の固定・60Hzで品質が回復しない条件、
+CRTの走査線二系統・マスク復帰の位相飛び、低モーション時の保存✓を修正した。
+source・保存形式・書き出し・実行/path/AI境界は維持。紙面/組版CSSはL Mode・Readerの見た目にも作用する。
+frontend 329 files / 3,067 tests・scripts 31件、Rust 515成功 / 4 ignored、型検査・fmt・surface 137件が成功。
+隔離WKWebViewで3 shaderのcompile/link/27描画、7テーマ代表画面を確認した。
+
+追加調整（2026-10-19 オーナー指摘3点）: 文字の上から明度を上げる合成を削除（夜光 `screen`→`color`、
+深海前景はビネットのみ、CRT のハムバー/焼き付きは暗く）、`--chrome-bar-surface` で
+江戸彼岸・深海・CRT のツールバー/status bar を半透明化、江戸彼岸のアンビエントを全画面化、
+読む面を不透明の紙 `--surface-paper-solid`（書き面は 0.95）にした。
+契約は `themeContrast.test.ts`（最悪ケース合成）と `ambientReachCss.test.ts`。
+frontend 330 files / 3,091 tests・scripts 31件が成功。実機確認は未実施。
+
+次は[調整と確認範囲](reviews/2026-10-19-theme-regression-review.md)を入口に、署名候補のGUI・
+実CodeMirrorの長文/IME・L Mode/Readerの組版・Retina・200%文字・VoiceOverを確認する。
+今回は未コミット差分を含むローカルpkg。候補番号/hash/source状態はignoredの候補記録で照合し、upload前はcommit後に再生成する。
 
 ## v3.3横断再確認（2026-10-18）
 

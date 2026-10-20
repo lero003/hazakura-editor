@@ -5,7 +5,9 @@
   --workspace-chrome-surface: var(--nav-surface);
   /* chrome バー（ツールバー・タブ・ステータス）は --chrome-surface。
      サイドバーは --nav-surface のまま役割を分ける。 */
-  --workspace-chrome-bar: var(--chrome-surface);
+  /* 塗る面は --chrome-bar-surface（演出テーマだけ半透明）。
+     --chrome-surface は palette / ネイティブ窓の契約として残す。 */
+  --workspace-chrome-bar: var(--chrome-bar-surface);
   --workspace-chrome-paper: var(--surface-paper);
   /* 上部バーの左端に文書名を置く位置（実機調整）。
      macOS の信号機はネイティブで x=20（`src-tauri/tauri.conf.json`）・12px玉×3＋8px間隔＝

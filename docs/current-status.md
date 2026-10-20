@@ -1,11 +1,27 @@
 # Current Status
 
 Status: Operational
-Scope: v3.3依存削減候補、v3.2.1公開報告、過去の実装証跡
+Scope: v3.4テーマ刷新候補、v3.3審査提出報告、v3.2.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-10-18
+Last reviewed: 2026-10-19
 
 ## Current State
+
+- **版の区分（2026-10-19）:** v3.3は審査提出済みとのオーナー報告を受け、テーマ刷新と調整を
+  **v3.4.0**へ分ける。v3.3の提出build/source対応とApple側の現在の審査状態は独立未照合。
+  v3.3として先に作成したテーマ入りpkgは旧ローカル候補で、提出済み版と同一とは推定しない。
+  [v3.4の範囲と受け入れ](releases/3.4.0-theme-atmosphere.md)を現行候補の入口とする。
+
+- **v3.4 S9追試（2026-10-19）:** 深海ビネットの積層、共通Reader紙面の参照漏れ、明部での補助文字を調整。
+  frontend 3,094件・scripts 31件、Rust 515成功 / 4 ignored、両lane Vite・surface 137件が成功。
+  隔離WKWebViewで7テーマ/Readerの紙色と実boot後を確認。動的全状態のAA適合は主張しない。
+  [追試条件と残条件](reviews/2026-10-19-theme-regression-review.md)を参照。
+
+- **v3.4テーマ刷新の調整（2026-10-19）:** S0〜S8の演出を維持し、復帰停止・強度予算・60Hzの品質回復、
+  CRT走査線の重複、低モーション時の保存✓を修正。frontend 3,067件・scripts 31件、Rust 515成功 / 4 ignored、
+  surface 137件が成功。隔離WKWebViewで3 shaderの実コンパイル/27描画と7テーマ代表画面を確認。
+  署名候補GUI・IME/VoiceOver・Retina等は別途。
+  [確認範囲と残条件](reviews/2026-10-19-theme-regression-review.md)を参照。
 
 - **v3.3横断再確認（2026-10-18）:** 依存削減と内部整理を再確認し、書き出し取消後の要求復活と、
   既存のL Mode文書切替時の不可視文字差を修正。frontend 2,927件・scripts 31件・Rust 515成功 / 4 ignored、

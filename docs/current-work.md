@@ -1,9 +1,79 @@
 # Current Work
 
 Status: Operational
-Scope: v3.3依存削減候補、個別撤回・受け入れ、過去の記録
+Scope: v3.4テーマ演出ブラッシュアップ（S0〜S8）の受け入れ、v3.3提出報告、過去の記録
 Authority: High
-Last reviewed: 2026-10-18
+Last reviewed: 2026-10-19
+
+## 現行候補 — v3.4テーマ演出ブラッシュアップ（2026-10-19）
+
+v3.3は審査提出済みとのオーナー報告を受け、テーマ刷新S0〜S8と直近の調整はv3.4.0として扱う。
+提出済みv3.3のbuild/source対応とApple側の審査状態は独立未照合。過去のv3.3候補証跡は保持する。
+版・pkg・残る受け入れの入口は[v3.4記録](releases/3.4.0-theme-atmosphere.md)。
+
+### 追加調整 — 演出の到達範囲とコントラスト（2026-10-19 オーナー指摘）
+
+オーナー指摘の3点（左のワークスペースだけ演出が効く／中央の編集面が明るくコントラストが甘い／
+「読む」を押した後の本エリアのコントラストが甘い）を [計画のS9](theme-atmosphere-brushup-plan.md) として調整した。
+
+- 面全体を明るくするCSS合成を避けた。夜光のオーロラは
+  `screen`/`soft-light` → `color`、深海は水流とビネットを紙の後ろへ移動、
+  CRT のハムバーと焼き付きは暗い帯・暗い染みへ（明るいのは 1px の芯のみ）
+- `--chrome-bar-surface` を新設し、江戸彼岸・深海・CRT のツールバーと status bar を 0.9 の半透明へ
+  （`--chrome-surface` はネイティブ窓/palette の契約なので不透明のまま）
+- 江戸彼岸のアンビエントを `inset: 0` にし、枝花と花弁を窓全体へ広げた
+- 読む面（プレビュー・電子書籍・読書）は不透明の紙 `--surface-paper-solid`、
+  書き面（編集）は 0.95 で演出をわずかに残す
+- 追試で共通ebook/page-sheetの参照漏れを修正。深海補助文字は実測した明部に合わせて `#80b1c6`へ調整した。
+- 比較用背景による静的パレット、深海の白下地、CSS合成・積層・江戸彼岸の全画面化を回帰検査。
+  仮置き色をshader上限とは扱わず、前景粒子/CRTマスクを含む全状態AAは主張しない。
+- 最終frontend 330 files / 3,094 tests・scripts 31件、Rust 515成功 / 4 ignored、fmt・両lane Vite・surface 137件が成功
+- 訂正: 紙の乗算について「比は悪化しない」としていた説明は誤り（sRGB 空間の乗算では
+  明色の紙に暗い文字を載せる場合に比が下がり得る）。計画書の記述を直した
+- 隔離WKWebViewで7テーマ、深海/CRTの実boot後、紙面の白黒下地差0とchromeのalpha 0.9を確認。
+  実CodeMirror・署名候補GUI・IME/VoiceOver・Retinaは未確認。詳細は[追試記録](reviews/2026-10-19-theme-regression-review.md)。
+
+7テーマの演出を「増やす」のではなく、光・素材・運動・光学として作り込む計画を
+[テーマ演出ブラッシュアップ計画](theme-atmosphere-brushup-plan.md) に固定し、S0〜S8を実装した。
+対象は `src/styles/*` と ambient / overlay / boot の presentation 層のみで、Markdown source・
+保存形式・書き出し内容・境界（実行・path・AI）は変更していない。紙面/組版CSSはL Mode・読書面にも適用される。依存追加もない。
+
+- **S0 計測・安全基盤:** `prefers-reduced-motion` を購読し、実行中に設定が変わった時点で両シェーダーの
+  rAF を止めて再開できるようにした。時間は `dt` 積算へ変更（タブ復帰で水・走査線が別時刻へ飛ぶ不具合と、
+  WKWebView の復帰で保留コールバックが落ちると再開しない不具合を修正）。実測フレーム時間から
+  DPR と描画間隔を選ぶ品質段、`?atmoStats=1` の dev 専用 HUD
+- **S1 光モデルと素材:** `--edge-hi/lo` を全7テーマへ定義し、`--shadow-sm/md/lg` の先頭へ合成（影の形は不変）。
+  紙の目（同梱 128×128 タイル・乗算）を読み面へ。タイル最小値を合成した最悪ケースでも AA を満たすことを
+  `themeContrast.test.ts` で固定し、`prefers-contrast: more` では素材を無効化
+- **S2 日本語組版:** 読み面（プレビュー・読書・L Mode）へ `palt`・`text-spacing-trim`・
+  `hanging-punctuation`・`line-break: strict`。編集面は禁則のみ（IME とカーソル位置の実機確認が先）。
+  明色テーマの `-webkit-font-smoothing: antialiased` と `optimizeLegibility` を外した
+- **S3 切替と時間:** テーマ切替の直後だけ 200ms のクロスフェード（面・文字・罫線・影を同時に）。
+  reduced-motion はグローバルガードで即時。グラデ背景と canvas はスナップのまま（View Transitions は見送り）
+- **S4 江戸彼岸:** 花弁を 3 段の transform（落下 Y / 横揺れ＋回転 / 裏返り）と共通の風 1 つへ。
+  終端速度の `linear()` 近似、3 深度の空気遠近、枝の落ち影、非整数比の周期。
+  静かなテーマの既存契約（rAF を使わない・CSS で reduced-motion に追従）は維持
+- **S5 夜光・曙光:** 46〜52 個の DOM 粒子（`will-change` 付き）を canvas 1 枚へ。粒ごとの奥行き・
+  明滅・共通の風・ポインタ視差。dramatic が「遅く」なっていた強度の意味を反転。オーロラを 2 層視差へ
+- **S6 深海:** 流速場を `waterFlowField.ts` へ抽出し dt 正規化（60/30fps で粘性が変わらない）。
+  Beer–Lambert の水色、1 点から放射する光柱＋水面の波紋、疑似ブルーム、フィルミック寄りのトーンマップ、
+  ±0.5/255 のディザ。`waterShader.ts` に GLSL を集約し、起動演出と同じ関数・同じ光源・同じトーンマップに揃えた
+- **S7 CRT:** 前景の CSS グラデ（4px 周期）をやめ、デバイス px の 3.0px ピッチを持つマスク層
+  （`CrtMaskOverlay`）へ。ハムバー・焼き付き・ビネット・±3% の明滅を 1 系統に。本文の `opacity` 明滅を
+  削除し、ポインタ連動の色収差を 500ms間隔・47秒周期のドリフトへ。ランダムグリッチは稀に
+- **S8 出来事の言い換え:** 保存 ✓ をテーマの素材反応へ（江戸彼岸=花弁が置かれる / 夜光=星が瞬く /
+  曙光=埃が光を受ける / 深海=圧力波 / CRT=蛍光体と同期バー）。light / dark は既定のまま
+
+検証は typecheck、`npm test` **327 files / 3,048 tests**、`npm run build:vite`、
+`npm run smoke:app-store-surface`（137件）、`git diff --check` が成功。
+計画の進捗表と各スライスの受入は [計画書](theme-atmosphere-brushup-plan.md) を正本にする。
+
+**追試:** 復帰・強度追従・60Hzの品質回復・CRT二系統の走査線・低モーション時の保存✓を修正。
+frontend 3,067件・scripts 31件、Rust 515成功 / 4 ignored、surface 137件が成功。
+隔離WKWebViewで3 shaderの実コンパイル/27描画と7テーマ代表画面を確認。
+署名候補GUI・Retina・実CodeMirror/IME・200%文字・VoiceOverは未確認。
+[調整・検証範囲・次の確認](reviews/2026-10-19-theme-regression-review.md)を参照。
+**見送り:** 流速場の GPU 化、深海の粒スプライト化、CRT の電源 ON/OFF 演出、View Transitions。
 
 ## 品質 — v3.3依存削減・内部整理の横断確認（2026-10-18）
 

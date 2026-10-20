@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { AmbientIntensity } from "../../types";
+import {
+  DEEP_WATER_COLOR,
+  SHALLOW_WATER_COLOR,
+  WATER_DEPTH_TINT_GLSL,
+  WATER_NOISE_GLSL,
+} from "../../features/theme/waterShader";
 
 /**
  * ShinkaiBootSequence
@@ -50,12 +56,9 @@ const PHASE_TIMINGS: { phase: Phase; at: number }[] = [
 
 const TOTAL_MS = PHASE_TIMINGS[PHASE_TIMINGS.length - 1].at; // 2400
 
-// === 深度グラデ配色 (ShinkaiShaderOverlay と共有) ===
-// shallow/deep を両シェーダーで同一に保ち、ブート終了時に edit 画面へ
-// 連続的に繋がるようにする。変更時は ShinkaiShaderOverlay.tsx 側も更新すること
-// (両ファイルに同名定数として保持。ズレは diff で検出可能)。
-const SHALLOW_WATER_COLOR = "vec3(0.12, 0.38, 0.46)";
-const DEEP_WATER_COLOR = "vec3(0.015, 0.09, 0.16)";
+// 浅い/深いの色とノイズ関数は `waterShader.ts`（共有 GLSL chunk）が持つ。
+// 通常画面の ShinkaiShaderOverlay と同じ関数を使うため、ブート最終フレームと
+// 通常画面の見え方が同じ語彙で繋がる。
 
 function computeInitialPhase(
   intensity: AmbientIntensity,
@@ -87,7 +90,7 @@ void main() {
 // カーソル明るみ・前景粒子・curl flow を除外し、光の柱 (4本) と深度グラデ
 // のみを残した最小構成。u_progress (0..1) で「光の柱が伸びる → フェード」
 // のシンプルなストーリーを駆動する。
-const FRAGMENT_SHADER = `#version 300 es
+export const SHINKAI_BOOT_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec2 v_uv;
 out vec4 fragColor;
@@ -95,22 +98,9 @@ uniform vec2 u_resolution;
 uniform float u_intensity;
 uniform float u_progress;  // 0..1: ブート全体の進行度
 
-float hash21(vec2 p) {
-  p = fract(p * vec2(123.34, 456.21));
-  p += dot(p, p + 45.32);
-  return fract(p.x * p.y);
-}
-
-float valueNoise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  float a = hash21(i);
-  float b = hash21(i + vec2(1.0, 0.0));
-  float c = hash21(i + vec2(0.0, 1.0));
-  float d = hash21(i + vec2(1.0, 1.0));
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-}
+// ノイズと深さの色は共有 chunk（通常画面と同じ関数）。
+${WATER_NOISE_GLSL}
+${WATER_DEPTH_TINT_GLSL}
 
 // 光の柱 (god rays): 水面から斜めに差し込む4本の光柱。
 // rayReach (0..1) で柱の下降長さを制御し、descend phase で柱が伸びる様を描く。
@@ -118,15 +108,18 @@ float valueNoise(vec2 p) {
 float godRays(vec2 uv, float aspect, float intensity, float rayReach) {
   const int RAY_COUNT = 4;
   float total = 0.0;
-  const float RAY_BASE_WIDTH = 0.045;
-  const float RAY_TILT = 0.18;
+  const float RAY_BASE_WIDTH = 0.05;
   const float RAY_DECAY = 1.8;
+  // 通常画面と同じ光源。柱はこの 1 点から放射する（時間揺らぎは持たない）。
+  const vec2 RAY_APEX = vec2(0.45, 3.0);
 
   for (int i = 0; i < RAY_COUNT; i++) {
     float fi = float(i);
-    float rayX = (fi + 0.5) / float(RAY_COUNT);
-    // 時間揺らぎなし。柱は固定位置から静かに伸びる。
-    float axisX = rayX + (1.0 - uv.y) * RAY_TILT * (0.6 + 0.4 * sin(fi * 2.1));
+    // 入射位置は固定。hash21 で柱ごとにわずかにずらす。
+    float entryX = (fi + 0.5) / float(RAY_COUNT)
+      + (hash21(vec2(fi * 5.7, 0.0)) - 0.5) * 0.08;
+    float t = (RAY_APEX.y - uv.y) / max(RAY_APEX.y - 1.0, 0.0001);
+    float axisX = RAY_APEX.x + (entryX - RAY_APEX.x) * t;
     float dx = (uv.x - axisX) * aspect;
     // 柱ごとに固定の太さ変動 (時間依存なし)。hash21 で決定論的に。
     float width = RAY_BASE_WIDTH * (0.8 + 0.4 * hash21(vec2(fi * 3.1, 0.0)));
@@ -153,11 +146,10 @@ void main() {
   float rayReach = smoothstep(0.0, 0.6, p);
   float fadeAlpha = 1.0 - smoothstep(0.6, 1.0, p);
 
-  // 深度グラデ: edit画面 (ShinkaiShaderOverlay) と同一値で配色を合わせる。
-  // SHALLOW/DEEP_WATER_COLOR は JS 定数 (シェーダー文字列の外) から補間。
+  // 深度グラデ: edit画面 (ShinkaiShaderOverlay) と同じ関数で配色を合わせる。
   vec3 shallow = ${SHALLOW_WATER_COLOR};
   vec3 deep = ${DEEP_WATER_COLOR};
-  vec3 water = mix(deep, shallow, pow(uv.y, 0.55));
+  vec3 water = waterDepthTint(uv.y, shallow, deep);
 
   vec3 col = water;
 
@@ -173,8 +165,11 @@ void main() {
   float vig = smoothstep(1.25, 0.4, length((uv - 0.5) * vec2(aspect, 1.0)));
   col *= mix(0.86, 1.0, vig);
 
-  // Reinhard トーンマッピング
-  col = col / (col + vec3(1.0));
+  // トーンマッピング（通常画面と同じ分母）
+  col = col / (col + 0.85);
+
+  // 8bit のバンディング除去。ブートは u_time を持たないので進行度で揺らす。
+  col += (hash21(gl_FragCoord.xy * 0.7 + u_progress * 13.0) - 0.5) / 255.0;
 
   // surface phase のフェードアウト
   col *= fadeAlpha;
@@ -291,7 +286,7 @@ export function ShinkaiBootSequence({ intensity, trigger }: ShinkaiBootSequenceP
     };
 
     const vs = compileShader(gl.VERTEX_SHADER, VERTEX_SHADER);
-    const fs = compileShader(gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+    const fs = compileShader(gl.FRAGMENT_SHADER, SHINKAI_BOOT_FRAGMENT_SHADER);
     if (!vs || !fs) {
       const loseCtx = gl.getExtension("WEBGL_lose_context");
       loseCtx?.loseContext();

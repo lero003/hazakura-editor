@@ -56,3 +56,26 @@ export function resolveAmbientDevicePixelRatio(
 ): number {
   return Math.min(devicePixelRatio, ambientDevicePixelRatioCap(intensity));
 }
+
+/**
+ * 1 フレーム分の経過秒を積む / Accumulate scene time from real frame deltas.
+ *
+ * 旧実装は `performance.now() - startTime` を使い、`visibilitychange` の復帰で
+ * `startTime` をリセットしていた。そのため非表示から戻ると水や走査線が
+ * 別の時刻へ飛んでいた。ここでは表示中の `dt` だけを積み、
+ * 長い停止（タブ復帰・スリープ）は上限で丸めて飛びを防ぐ。
+ *
+ * `running === false`（hidden / blur 中）は時間を進めない。
+ */
+const MAX_FRAME_MS = 50;
+
+export function nextElapsedSeconds(
+  previousSeconds: number,
+  frameMs: number,
+  running: boolean,
+): number {
+  if (!running || !Number.isFinite(frameMs) || frameMs <= 0) {
+    return previousSeconds;
+  }
+  return previousSeconds + Math.min(frameMs, MAX_FRAME_MS) / 1000;
+}

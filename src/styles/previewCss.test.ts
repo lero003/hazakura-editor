@@ -56,10 +56,12 @@ describe("preview.css", () => {
     expect(ruleBody(".markdown-preview")).toMatch(
       /background:\s*var\(--preview-reading-surface,\s*var\(--surface-strong\)\)/,
     );
+    // 2026-10-19 オーナー指摘: 読む面は演出よりコントラストを優先し、
+    // 不透明の紙（--surface-paper-solid）を使う。
     for (const theme of ["edohigan", "crt", "shinkai"]) {
       expect(previewCss).toMatch(
         new RegExp(
-          `:root\\[data-theme="${theme}"\\] \\.preview-pane-preview\\s*{[^}]*--preview-reading-surface:\\s*var\\(--surface-paper\\)`,
+          `:root\\[data-theme="${theme}"\\] \\.preview-pane-preview\\s*{[^}]*--preview-reading-surface:\\s*var\\(--surface-paper-solid\\)`,
           "s",
         ),
       );
@@ -89,11 +91,23 @@ describe("preview.css", () => {
       /:root\[data-theme="crt"\] \.ebook-pane\.markdown-preview:hover[^}]*animation:\s*none/s,
     );
     for (const theme of ["edohigan", "crt", "shinkai"]) {
+      // 電子書籍（読む）の本エリアも不透明の紙にする。
       expect(previewCss).toMatch(
         new RegExp(
-          `:root\\[data-theme="${theme}"\\] \\.ebook-pane\\s*{[^}]*--preview-reading-surface:\\s*var\\(--surface-paper\\)`,
+          `:root\\[data-theme="${theme}"\\] \\.ebook-pane\\s*{[^}]*--preview-reading-surface:\\s*var\\(--surface-paper-solid\\)`,
           "s",
         ),
+      );
+    }
+  });
+
+  it("keeps paginated reading paper opaque in every theme", () => {
+    // ペインの特殊テーマだけを直しても、夜光などのページ紙が半透明のまま残る。
+    const pane = exactRuleBody(".ebook-pane");
+    expect(pane).toContain("--preview-reading-surface: var(--surface-paper-solid)");
+    for (const selector of [".ebook-pane", ".ebook-page-sheet"]) {
+      expect(exactRuleBody(selector), selector).toContain(
+        "background: var(--preview-reading-surface)",
       );
     }
   });
@@ -310,7 +324,7 @@ describe("preview.css", () => {
     expect(chapterBody).toMatch(
       /--ebook-spread-width:\s*calc\([^;]*var\(--ebook-sheet-pad-x\) \* 2[^;]*\)/,
     );
-    expect(sheet).toMatch(/background:\s*var\(--surface-paper\)/);
+    expect(sheet).toMatch(/background:\s*var\(--preview-reading-surface\)/);
     expect(sheet).toMatch(/border:\s*1px solid var\(--border\)/);
     expect(sheet).toMatch(/box-shadow:\s*var\(--shadow-sm\)/);
     expect(chapterBody).toMatch(

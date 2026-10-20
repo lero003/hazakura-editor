@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ambientDevicePixelRatioCap,
   ambientMinFrameIntervalMs,
+  nextElapsedSeconds,
   resolveAmbientDevicePixelRatio,
 } from "./ambientRenderBudget";
 
@@ -28,5 +29,23 @@ describe("ambientRenderBudget (Q-THM-1)", () => {
     expect(ambientMinFrameIntervalMs("subtle")).toBeCloseTo(1000 / 30);
     // off でも描画を止めるだけで、上限は subtle と同じ扱い（既存の落ち方を維持）。
     expect(ambientMinFrameIntervalMs("off")).toBeCloseTo(1000 / 30);
+  });
+});
+
+describe("nextElapsedSeconds", () => {
+  it("accumulates only while running", () => {
+    expect(nextElapsedSeconds(0, 16.7, true)).toBeCloseTo(0.0167);
+    // hidden / blur 中は時間を進めない。復帰時に水が別時刻へ飛ばない。
+    expect(nextElapsedSeconds(12.5, 16.7, false)).toBe(12.5);
+    expect(nextElapsedSeconds(12.5, 10_000, false)).toBe(12.5);
+  });
+
+  it("clamps a long stall so a resumed tab does not jump the scene", () => {
+    expect(nextElapsedSeconds(3, 5_000, true)).toBeCloseTo(3.05);
+  });
+
+  it("ignores non-finite frame times instead of poisoning the clock", () => {
+    expect(nextElapsedSeconds(3, Number.NaN, true)).toBe(3);
+    expect(nextElapsedSeconds(3, Number.POSITIVE_INFINITY, true)).toBe(3);
   });
 });

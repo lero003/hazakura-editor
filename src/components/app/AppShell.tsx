@@ -12,6 +12,7 @@ import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution"
 import { type LModeCopy } from "../../lib/locale/lMode";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { CrtBootSequence } from "./CrtBootSequence";
+import { CrtMaskOverlay } from "./CrtMaskOverlay";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
 import { EdohiganAmbient } from "./EdohiganAmbient";
 import { ShinkaiBootSequence } from "./ShinkaiBootSequence";
@@ -34,7 +35,8 @@ import { useLocalAssistProposal } from "../../hooks/editor/useLocalAssistProposa
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import { useCompactSidebarCollapse } from "../../hooks/app/useCompactSidebarCollapse";
 import { resolvePrimarySaveEnabled } from "../../features/workspace/primarySaveEnabled";
-import { useCrtMouseTracking } from "../../hooks/app/useCrtMouseTracking";
+import { useCrtScanDrift } from "../../hooks/app/useCrtScanDrift";
+import { useThemeTransition } from "../../hooks/app/useThemeTransition";
 
 export type AppShellProps = Omit<
   ComponentProps<typeof AppTopChrome>,
@@ -82,7 +84,10 @@ export function AppShell(props: AppShellProps) {
   const crtMode = props.resolvedTheme === "crt";
   const shinkaiMode = props.resolvedTheme === "shinkai";
   const edohiganMode = props.resolvedTheme === "edohigan";
-  useCrtMouseTracking(crtMode);
+  // 収束ずれは 47 秒周期の緩やかなドリフトだけ（マウス追従をやめた）。
+  useCrtScanDrift(crtMode && props.ambientIntensity !== "off");
+  // テーマ切替の直後だけ色のクロスフェードを有効にする。
+  useThemeTransition(props.resolvedTheme);
   // 狭い窓ではサイドバーを一時的に畳む（保存設定は持たない・モック23）。
   // サイドバーの開閉はサイドバー自身（畳んだ後は左端のレール）が持つ。
   // 上部バーのトグルは置かない（実機指摘）。
@@ -213,9 +218,9 @@ export function AppShell(props: AppShellProps) {
       {crtMode ? (
         <>
           <CrtShaderOverlay intensity={props.ambientIntensity} />
-          <div className="crt-overlay" aria-hidden="true" />
-          {/* 起動シーケンスは前景スキャンライン (.crt-overlay) の上に
-              重ねるため最後に置く。同じ z-index でも DOM 順でこちらが勝つ。 */}
+          <CrtMaskOverlay intensity={props.ambientIntensity} />
+          {/* 起動シーケンスは前景マスク (.crt-mask) の上に重ねるため最後に置く。
+              同じ z-index でも DOM 順でこちらが勝つ。 */}
           <CrtBootSequence
             intensity={props.ambientIntensity}
             trigger={crtMode}
@@ -226,8 +231,7 @@ export function AppShell(props: AppShellProps) {
         <>
           <ShinkaiShaderOverlay intensity={props.ambientIntensity} />
           <div className="shinkai-overlay" aria-hidden="true" />
-          {/* 起動シーケンスは前景オーバーレイ (.shinkai-overlay) の上に
-              重ねるため最後に置く。同じ z-index でも DOM 順でこちらが勝つ。 */}
+          {/* 水とビネットは紙の後ろ。起動シーケンスは専用の前景階層へ置く。 */}
           <ShinkaiBootSequence
             intensity={props.ambientIntensity}
             trigger={shinkaiMode}

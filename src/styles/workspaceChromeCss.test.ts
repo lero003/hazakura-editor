@@ -85,7 +85,7 @@ describe("workspace-chrome.css", () => {
   });
 
   it("keeps the chrome bars on the chrome surface and the sidebar on the nav surface", () => {
-    expect(chromeCss).toContain("--workspace-chrome-bar: var(--chrome-surface)");
+    expect(chromeCss).toContain("--workspace-chrome-bar: var(--chrome-bar-surface)");
     expect(chromeCss).toContain(".v3-shell .file-tree-pane { background: var(--workspace-chrome-surface)");
   });
 });

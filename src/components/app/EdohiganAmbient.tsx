@@ -1,20 +1,22 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { AmbientIntensity } from "../../types";
+import { createPetalSeeds } from "../../features/theme/petalSeeds";
 
-const PETAL_COUNT: Record<AmbientIntensity, number> = {
-  off: 0,
-  subtle: 4,
-  normal: 8,
-  dramatic: 14,
-};
-
-/** Bundled botanical artwork; only small transform/opacity layers move.
- * No full-window shader or per-frame JavaScript. CSS responds to reduced motion
- * immediately, including when the OS preference changes while the app is open.
+/** Bundled botanical artwork.
+ *
+ * 動きは CSS アニメーションだけで完結させ、per-frame JavaScript と WebGL は
+ * 使わない（このテーマの既存判断）。強度・OS の reduced-motion・非表示には
+ * CSS と visibility で即時に追従する。
+ *
+ * 花弁ごとの深度・周期・位相は決定論的な純関数 `createPetalSeeds` が決め、
+ * ここでは CSS 変数として渡すだけにする。個々の揺れの下には共通の「風」
+ * （`.edohigan-petals` の 1 アニメーション）があり、花弁は同じ風に乗って
+ * それぞれの位相で応える。
  */
 export function EdohiganAmbient({ intensity }: { intensity: AmbientIntensity }) {
   const [paused, setPaused] = useState(() => document.hidden);
   const active = intensity !== "off";
+  const seeds = useMemo(() => createPetalSeeds(intensity), [intensity]);
 
   useEffect(() => {
     if (!active) return;
@@ -30,15 +32,27 @@ export function EdohiganAmbient({ intensity }: { intensity: AmbientIntensity }) 
     <div className="edohigan-ambient" data-intensity={intensity} data-paused={paused} aria-hidden="true">
       <div className="edohigan-branch" />
       <div className="edohigan-petals">
-        {Array.from({ length: PETAL_COUNT[intensity] }, (_, index) => (
-          <span className="edohigan-petal" key={index} style={{
-            left: `${(index * 61.8 + 11) % 100}%`,
-            "--petal-size": `${24 + index % 4 * 5}px`,
-            "--petal-duration": `${32 + index % 5 * 7}s`,
-            "--petal-delay": `${-index * 7.3 - 8}s`,
-            "--petal-drift": `${index % 2 ? -80 : 110}px`,
-            "--petal-turn": `${index * 47}deg`,
-          } as CSSProperties}><i /></span>
+        {seeds.map((seed) => (
+          <span
+            className="edohigan-petal"
+            key={seed.index}
+            data-depth={seed.depth}
+            style={{
+              left: `${seed.leftPercent}%`,
+              "--petal-size": `${seed.sizePx}px`,
+              "--petal-opacity": seed.opacity,
+              "--petal-blur": `${seed.blurPx}px`,
+              "--petal-fall": `${seed.fallSeconds}s`,
+              "--petal-fall-delay": `${seed.fallDelaySeconds}s`,
+              "--petal-sway": `${seed.swaySeconds}s`,
+              "--petal-sway-delay": `${seed.swayDelaySeconds}s`,
+              "--petal-sway-x": `${seed.swayPx}px`,
+              "--petal-roll": `${seed.rollDeg}deg`,
+              "--petal-flip": `${seed.flipSeconds}s`,
+            } as CSSProperties}
+          >
+            <i />
+          </span>
         ))}
       </div>
     </div>

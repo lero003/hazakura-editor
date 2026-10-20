@@ -1,9 +1,29 @@
 import { useEffect, useRef } from "react";
 import type { AmbientIntensity } from "../../types";
 import {
-  ambientMinFrameIntervalMs,
-  resolveAmbientDevicePixelRatio,
-} from "../../features/theme/ambientRenderBudget";
+  ambientQualityDprCap,
+  ambientQualityFrameIntervalMs,
+  baseAmbientQualityTier,
+  initialAmbientQualityState,
+  updateAmbientQuality,
+} from "../../features/theme/ambientQuality";
+import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
+import {
+  FLOW_CELLS,
+  FLOW_GRID_H,
+  FLOW_GRID_W,
+  createFlowField,
+  splatFlowField,
+  stepFlowField,
+} from "../../features/theme/waterFlowField";
+import {
+  DEEP_WATER_COLOR,
+  SHALLOW_WATER_COLOR,
+  WATER_DITHER_GLSL,
+  WATER_DEPTH_TINT_GLSL,
+  WATER_NOISE_GLSL,
+} from "../../features/theme/waterShader";
+import { useReducedMotion } from "../../hooks/app/useReducedMotion";
 
 /**
  * ShinkaiShaderOverlay
@@ -40,8 +60,8 @@ import {
  *
  * パフォーマンス:
  * - rAF ループは shinkai テーマ時のみ稼働。アンマウントで cancel + context loss を処理。
- * - devicePixelRatio は intensity 別 cap (Q-THM-1: subtle 1.25 / normal 1.5 / dramatic 2)。
- * - rAF は subtle/normal で ~24–30fps に間引き、dramatic のみフル rAF。
+ * - devicePixelRatio は intensity と品質段別 cap (subtle 1.5 / normal・dramatic 2)。
+ * - subtle は30fps・normalは60fpsに間引き、dramaticはフルrAF。
  * - curl 計算は 3 オクターブ FBM (負荷抑止)。粒密度は 4 オクターブ。層を増やすと GPU 負荷が増す。
  */
 
@@ -49,12 +69,7 @@ type ShinkaiShaderOverlayProps = {
   intensity: AmbientIntensity;
 };
 
-// === 深度グラデ配色 (ShinkaiBootSequence と共有) ===
-// shallow/deep を両シェーダーで同一に保ち、ブート終了時に edit 画面へ
-// 連続的に繋がるようにする。変更時は ShinkaiBootSequence.tsx 側も更新すること。
-// FRAGMENT_SHADER より前に定義 (シェーダー文字列から補間参照するため)。
-const SHALLOW_WATER_COLOR = "vec3(0.12, 0.38, 0.46)";
-const DEEP_WATER_COLOR = "vec3(0.015, 0.09, 0.16)";
+// 浅い/深いの色とノイズ関数は `waterShader.ts`（共有 GLSL chunk）が持つ。
 
 const VERTEX_SHADER = `#version 300 es
 in vec2 a_position;
@@ -74,7 +89,7 @@ void main() {
 // - 速度場: JS 側で保持した低解像度 velocity field テクスチャを baseFlow に加算。
 //   mousemove で力が加わり減衰+拡散で戻るため、表層が「払われた方向へ流れて戻る」
 // ノイズ関数は「ざらついた光の雲」ではなく「流れと粒子」のために使う点が旧演出と違う。
-const FRAGMENT_SHADER = `#version 300 es
+export const SHINKAI_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec2 v_uv;
 out vec4 fragColor;
@@ -85,24 +100,9 @@ uniform vec2 u_mouse;       // 0..1 正規化マウス座標 (滑らかに補間
 uniform vec2 u_mouseVel;    // 0..1 正規化マウス速度 (かき回す擾乱の強さに)
 uniform sampler2D u_flowField; // 低解像度速度場 (RG: 0..1 → -1..1)。mousemove で蓄積。
 
-// 2D ハッシュ / value noise (プロシージャル、外部テクスチャ不要)
-float hash21(vec2 p) {
-  p = fract(p * vec2(123.34, 456.21));
-  p += dot(p, p + 45.32);
-  return fract(p.x * p.y);
-}
-
-// 値ノイズ: 滑らかなランダム
-float valueNoise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  float a = hash21(i);
-  float b = hash21(i + vec2(1.0, 0.0));
-  float c = hash21(i + vec2(0.0, 1.0));
-  float d = hash21(i + vec2(1.0, 1.0));
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-}
+// 2D ハッシュ / 値ノイズ / 深さの色は共有 chunk（プロシージャル、外部テクスチャ不要）
+${WATER_NOISE_GLSL}
+${WATER_DEPTH_TINT_GLSL}
 
 // FBM: 複数オクターブの値ノイズを重ねて有機的な模様を作る。
 // octaves は呼び出し側で指定 (curl=3 / 粒密度=4) し、GPU 負荷を抑える。
@@ -146,13 +146,13 @@ float godRays(vec2 uv, float aspect, float time, float intensity) {
   // 本数。多すぎると GPU 負荷が上がるので 4 本に抑える。
   const int RAY_COUNT = 4;
   float total = 0.0;
-  // ループ内で使う定数群 (magic number を名前付き化してチューニング容易化)
+  // 光源。画面の上方外側の 1 点で、柱はここから放射する
+  // （平行な縞ではなく、水面から差し込む光として読ませる）。
+  const vec2 RAY_APEX = vec2(0.45, 3.0);
   // rayBaseWidth: 柱の基本の太さ (uv 空間での標準偏差相当)
-  const float RAY_BASE_WIDTH = 0.045;
-  // rayTilt: 柱が垂直からどれだけ傾くか (0=真っ直ぐ, 正=右へ傾く)
-  const float RAY_TILT = 0.18;
-  // raySwing: 時間による水平方向の揺れ幅
-  const float RAY_SWING = 0.06;
+  const float RAY_BASE_WIDTH = 0.05;
+  // raySwing: 時間による入射位置の揺れ幅
+  const float RAY_SWING = 0.05;
   // raySpeed: 揺れの周期 (小さいほど速い)
   const float RAY_SPEED = 0.12;
   // rayDecay: 海底への減衰の強さ (大きいほど早く暗くなる)
@@ -160,20 +160,20 @@ float godRays(vec2 uv, float aspect, float time, float intensity) {
 
   for (int i = 0; i < RAY_COUNT; i++) {
     float fi = float(i);
-    // 各柱の水面での水平位置 (0..1)。等間隔 + わずかなオフセットで自然に。
-    float rayX = (fi + 0.5) / float(RAY_COUNT);
-    // 位相をずらして揺らす (柱ごとに違うタイミングで動く)
+    // 水面での入射位置 (0..1)。等間隔 + 水面の波紋 + ゆっくりした揺れ。
+    float entryX = (fi + 0.5) / float(RAY_COUNT);
+    float ripple = valueNoise(vec2(fi * 5.7, time * 0.25)) - 0.5;
     float swing = valueNoise(vec2(fi * 7.3, time * RAY_SPEED)) - 0.5;
-    float tiltedX = rayX + swing * RAY_SWING;
-    // 柱の軸: 水面 (uv.y=1) から下へ、傾きを持って下降する位置
-    // uv.y が高い (水面寄り) ほど tiltedX に近く、下へ行くほど tilt で流れる
-    float axisX = tiltedX + (1.0 - uv.y) * RAY_TILT * (0.6 + 0.4 * sin(fi * 2.1));
-    // 水平距離 → ガウス幅。aspect 補正で歪ませる。
+    entryX += ripple * 0.04 + swing * RAY_SWING;
+    // apex と入射点を結ぶ直線。水面 (uv.y=1) で entryX、apex で RAY_APEX.x。
+    float t = (RAY_APEX.y - uv.y) / max(RAY_APEX.y - 1.0, 0.0001);
+    float axisX = RAY_APEX.x + (entryX - RAY_APEX.x) * t;
     float dx = (uv.x - axisX) * aspect;
-    float width = RAY_BASE_WIDTH * (0.8 + 0.4 * valueNoise(vec2(fi * 3.1, time * 0.08)));
+    float width =
+      RAY_BASE_WIDTH * (0.8 + 0.4 * valueNoise(vec2(fi * 3.1, time * 0.08)));
     float ray = exp(-(dx * dx) / (2.0 * width * width));
-    // 海底への減衰: 上 (uv.y 高い) ほど強く、下へ指数的に消える
-    float decay = pow(uv.y, RAY_DECAY);
+    // 海底への減衰: 上 (uv.y 高い) ほど強く、下へ指数的に消える。
+    float decay = pow(max(uv.y, 0.0), RAY_DECAY);
     total += ray * decay;
   }
   return total * intensity;
@@ -274,7 +274,8 @@ void main() {
   // SHALLOW/DEEP_WATER_COLOR は JS 定数 (シェーダー文字列の外) から補間。
   vec3 shallow = ${SHALLOW_WATER_COLOR};
   vec3 deep = ${DEEP_WATER_COLOR};
-  vec3 water = mix(deep, shallow, pow(uv.y, 0.55));
+  // Beer–Lambert: 深さで赤から先に落ち、深部だけが青へ沈む。
+  vec3 water = waterDepthTint(uv.y, shallow, deep);
 
   // 光の届きやすさ: 上ほど強く、下へ減衰するが、底でも最低限の輝きを残す。
   // (画面下半分のエディタ領域でもチリが見えるように)
@@ -334,16 +335,31 @@ void main() {
   // 上端のごく薄い水中光の滲み (水面近くで明るくなる自然な減衰)
   col += vec3(0.06, 0.13, 0.15) * smoothstep(0.82, 1.0, uv.y) * u_intensity;
 
+  // === 水面 ===
+  // 上端に明るい帯と波紋。光の柱の入射位置もこの波紋で揺れているため、
+  // 「光が水面から入っている」ことが 1 つの手掛かりで繋がる。
+  float surface = smoothstep(0.965, 1.0, uv.y);
+  float surfaceRipple = valueNoise(vec2(uv.x * 14.0 + u_time * 0.25, u_time * 0.4));
+  col += vec3(0.30, 0.62, 0.70) * surface * (0.35 + 0.65 * surfaceRipple)
+    * u_intensity * 0.35;
+
+  // === 疑似ブルーム ===
+  // 水中の光は滲む。明部を抜き出して同じ位置へ薄く広げる（本実装の 2 パス
+  // ブラーではなく 1 パスの近似。白飛びは下のトーンマップが受ける）。
+  float bloom = max(max(col.r, col.g), col.b);
+  col += vec3(0.35, 0.60, 0.68) * max(bloom - 0.55, 0.0) * 0.55;
+
   // ビネット: 端をわずかに暗くし、視線を中央へ。閉塞感ではなく自然な滲み。
   float vig = smoothstep(1.25, 0.4, length((uv - 0.5) * vec2(aspect, 1.0)));
   col *= mix(0.86, 1.0, vig);
 
-  // === トーンマッピング (Reinhard) ===
-  // レイヤー増に伴い加算が累積し、col が 1.0 を超えると白飛びする。
-  // Reinhard (col / (col + vec3(1.0))) で HDR 的に圧縮し、明るい部分は
-  // 白く飛ばずに滑らかに飽和する。暗部はほぼそのまま (深海の暗さを保つ)。
-  // 安全網: 各レイヤーの加算量を抑えても、重なった場面での白飛びを防ぐ。
-  col = col / (col + vec3(1.0));
+  // === トーンマッピング ===
+  // 加算が累積して 1.0 を超えると白飛びする。分母を 0.85 にして
+  // Reinhard より少しだけ明部を残す（水中の「光の満ち」を保つ）。
+  col = col / (col + 0.85);
+
+  // 8bit 出力のバンディング除去（±0.5/255）。
+  ${WATER_DITHER_GLSL}
 
   fragColor = vec4(col, 1.0);
 }
@@ -407,28 +423,13 @@ const INTENSITY_VALUE: Record<AmbientIntensity, number> = {
   dramatic: 1.6,
 };
 
-// === 速度場 (user flow field) グリッド ===
-// 低解像度の velocity field を JS 側で状態として持つ。
-// mousemove でカーソル周辺セルに力を加え、毎フレーム減衰 + 隣接拡散する。
-// これをテクスチャ化してシェーダーの baseFlow に加算することで、
-// チリ・光柱・深度など「表層全体」が手で払った方向へ流れ、ゆっくり戻る。
-//
-// グリッドサイズは 16:9 を想定。大きすぎると CPU 負荷とテクスチャ更新費用が増す。
-const FLOW_GRID_W = 48;
-const FLOW_GRID_H = 27;
-const FLOW_CELLS = FLOW_GRID_W * FLOW_GRID_H;
-// 1セル vec2 (vx, vy)。2バッファで ping-pong (読み→書き)。
-// 速度は [-1,1] に収まる想定だが、エンコードは init 時のみなので配列は素の実数。
-function createFlowField(): Float32Array {
-  // RG8 テクスチャへ渡すため 0..1 にエンコード (中心 0.5 = ゼロ)。
-  // 初期状態は静止 (0.5, 0.5)。
-  const arr = new Float32Array(FLOW_CELLS * 2);
-  arr.fill(0.5);
-  return arr;
-}
+// 速度場 (user flow field) の格子・splat・時間積分は
+// `src/features/theme/waterFlowField.ts` が持つ。ここは RG8 テクスチャへの
+// 転送とシェーダーへの受け渡しだけを行う。
 
 export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const statsRef = useRef<HTMLDivElement | null>(null);
   // intensity を ref で保持し、描画ループ内で毎フレーム読む。
   // subtle/normal/dramatic 間の切替は ref 経由で即時反映し、GL コンテキストの
   // 再構築を避ける (WKWebView で再構築すると描画が止まることがあるため)。
@@ -442,20 +443,17 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
   // で一度も GL 初期化が走らず、その後 off→on で canvas は出ても描画ループが
   // 始まらない不具合があった (実機で深海/CRT 演出が復帰しない)。
   const isActive = intensity !== "off";
+  // OS の「動きを減らす」を購読する。起動時だけでなく、アプリを開いたまま
+  // 設定が変わった時点で effect が張り直され、rAF と GL リソースを解放する。
+  const reducedMotion = useReducedMotion();
+  const showStats =
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("atmoStats") === "1";
 
   useEffect(() => {
     // intensity === "off" ではシェーダーを描画しない (AmbientBackground と同じガード)
-    if (!isActive) {
-      return;
-    }
-
-    // prefers-reduced-motion ではアニメーションを止める。
-    // CSS 側でも canvas を非表示にするが、JS からも起動しないことで
-    // rAF ループの負荷を完全にゼロにする。
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reduceMotion) {
+    if (!isActive || reducedMotion) {
       return;
     }
 
@@ -468,6 +466,9 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       alpha: false,
       depth: false,
       preserveDrawingBuffer: false,
+      // 省電力 GPU を優先する。効果は環境依存だが、テキストエディタが
+      // 演出のためだけに dGPU を起こす状態を避ける。
+      powerPreference: "low-power",
     });
     if (!gl) {
       // WebGL2 未サポート (WKWebView でも稀)。canvas は描画されず、
@@ -475,7 +476,7 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       return;
     }
 
-    const program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER);
+    const program = createProgram(gl, VERTEX_SHADER, SHINKAI_FRAGMENT_SHADER);
     if (!program) {
       return;
     }
@@ -568,35 +569,21 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       // ガウス減衰でマウス速度ベクトルを足す。これが「手で水を払った」痕になる。
       const gx = nx * FLOW_GRID_W;
       const gy = (1.0 - ny) * FLOW_GRID_H; // UV の Y と同じ向き (下が 0)
-      const x0 = Math.max(0, Math.floor(gx - FLOW_RADIUS));
-      const x1 = Math.min(FLOW_GRID_W - 1, Math.ceil(gx + FLOW_RADIUS));
-      const y0 = Math.max(0, Math.floor(gy - FLOW_RADIUS));
-      const y1 = Math.min(FLOW_GRID_H - 1, Math.ceil(gy + FLOW_RADIUS));
-      for (let yy = y0; yy <= y1; yy++) {
-        for (let xx = x0; xx <= x1; xx++) {
-          const dx = xx + 0.5 - gx;
-          const dy = yy + 0.5 - gy;
-          const dist2 = dx * dx + dy * dy;
-          if (dist2 > FLOW_RADIUS * FLOW_RADIUS) continue;
-          // ガウス減衰 (中心ほど強く)
-          const fall = Math.exp(-dist2 / (2.0 * (FLOW_RADIUS * 0.5) ** 2));
-          const idx = (yy * FLOW_GRID_W + xx) * 2;
-          // 0..1 エンコード空間で加算 (0.5 が静止)
-          flowRead[idx] = Math.max(0, Math.min(1, flowRead[idx] + vx * FLOW_FORCE_BOOST * fall));
-          flowRead[idx + 1] = Math.max(
-            0,
-            Math.min(1, flowRead[idx + 1] + vy * FLOW_FORCE_BOOST * fall),
-          );
-        }
-      }
+      splatFlowField(flowRead, gx, gy, vx, vy, FLOW_RADIUS, FLOW_FORCE_BOOST);
       mouseTargetRef.x = nx;
       mouseTargetRef.y = ny;
     };
     window.addEventListener("mousemove", onMouseMove, { passive: true });
 
-    // Q-THM-1: intensity に応じた DPR cap (dramatic のみ 2x)
-    const resize = () => {
-      const dpr = resolveAmbientDevicePixelRatio(intensityRef.current);
+    // 品質段: intensity が見た目の上限 (base tier) で、実測フレーム時間に応じて
+    // 0 (dramatic 相当) から 3 (DPR 1 / 30fps) まで下がる。DPR と描画間隔は段から決める。
+    let quality = initialAmbientQualityState(intensityRef.current);
+
+    const applyResolution = () => {
+      const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        ambientQualityDprCap(quality.tier),
+      );
       const width = Math.floor(window.innerWidth * dpr);
       const height = Math.floor(window.innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
@@ -605,122 +592,70 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
         gl.viewport(0, 0, width, height);
       }
     };
-    resize();
-    window.addEventListener("resize", resize);
+    applyResolution();
+    window.addEventListener("resize", applyResolution);
 
-    let startTime = performance.now();
+    // 時間は表示中かつアクティブなときの dt だけを積む。非表示やウィンドウ
+    // 非アクティブの間は進めないため、復帰しても水が別の時刻へ飛ばない。
+    let elapsedSeconds = 0;
+    let lastFrameMs = 0;
     let frameId = 0;
+    let pending = false;
     let running = true;
+    let paused = document.hidden || !document.hasFocus();
     let lastDrawMs = 0;
+    let statsFrame = 0;
 
-    // 速度場の更新 (アドベクション + 減衰 + 隣接拡散)。
-    // flowRead → flowWrite へ書き込み、ping-pong で入れ替える。
-    //   - アドベクション: 各セルが自身の速度で「流される」。バックトレース
-    //     (半分前の位置からサンプリング) で渦が運ばれ、より流体らしくなる。
-    //   - 減衰: 各セルを静止点 (0.5) へ近づける。DAMPING で戻り速さを調整。
-    //   - 拡散: 4隣接セルとの平均 (簡易ラプラシアン) で滑らかに広がる。
-    // これで「手で払った痕が流れながら残り、ゆっくり (約倍の時間) 戻る」。
-    const FLOW_DAMPING = 0.0065; // 1フレームあたり静止点へ近づく割合 (小さいほど痕が長残)
-    const FLOW_DIFFUSE = 0.12; // 隣接セルからの拡散の強さ
-    const FLOW_ADVECT = 0.5; // アドベクションの強さ (セルの速度で運ぶ距離)
-    const stepFlowField = () => {
-      for (let yy = 0; yy < FLOW_GRID_H; yy++) {
-        for (let xx = 0; xx < FLOW_GRID_W; xx++) {
-          const idx = (yy * FLOW_GRID_W + xx) * 2;
-          // 現在セルの速度 (0..1 → -1..1)
-          const curVx = flowRead[idx] * 2 - 1;
-          const curVy = flowRead[idx + 1] * 2 - 1;
-          // === アドベクション (自己輸送) ===
-          // セルが自身の速度で「流される」。バックトレース: 現在位置から
-          // 半ステップ前 (速度の逆方向) の位置をサンプリングし、そこから
-          // 流れてきた速度を受け継ぐ。これで渦が運ばれ、より流体らしくなる。
-          // UV 空間と速度場は同じ向き (下が y=0) なのでそのまま使う。
-          const srcX = xx - curVx * FLOW_ADVECT;
-          const srcY = yy - curVy * FLOW_ADVECT;
-          // bilinear サンプリング (境界外は clamp)
-          const sx = Math.max(0, Math.min(FLOW_GRID_W - 1.001, srcX));
-          const sy = Math.max(0, Math.min(FLOW_GRID_H - 1.001, srcY));
-          const x0 = Math.floor(sx);
-          const y0 = Math.floor(sy);
-          const fx = sx - x0;
-          const fy = sy - y0;
-          const x1 = Math.min(FLOW_GRID_W - 1, x0 + 1);
-          const y1 = Math.min(FLOW_GRID_H - 1, y0 + 1);
-          const i00 = (y0 * FLOW_GRID_W + x0) * 2;
-          const i10 = (y0 * FLOW_GRID_W + x1) * 2;
-          const i01 = (y1 * FLOW_GRID_W + x0) * 2;
-          const i11 = (y1 * FLOW_GRID_W + x1) * 2;
-          const v00x = flowRead[i00] * 2 - 1;
-          const v00y = flowRead[i00 + 1] * 2 - 1;
-          const v10x = flowRead[i10] * 2 - 1;
-          const v10y = flowRead[i10 + 1] * 2 - 1;
-          const v01x = flowRead[i01] * 2 - 1;
-          const v01y = flowRead[i01 + 1] * 2 - 1;
-          const v11x = flowRead[i11] * 2 - 1;
-          const v11y = flowRead[i11 + 1] * 2 - 1;
-          // 双線形補間
-          const topX = v00x + (v10x - v00x) * fx;
-          const topY = v00y + (v10y - v00y) * fx;
-          const botX = v01x + (v11x - v01x) * fx;
-          const botY = v01y + (v11y - v01y) * fx;
-          let vx = topX + (botX - topX) * fy;
-          let vy = topY + (botY - topY) * fy;
-          // 減衰: ゼロへ引く (速度場が徐々に収束して戻る)
-          vx *= 1 - FLOW_DAMPING;
-          vy *= 1 - FLOW_DAMPING;
-          // 拡散: 4隣接セルの速度との平均を混ぜる (簡易ラプラシアン)
-          // 境界外は同じセルの値で clamp 扱い (反射しない)。
-          let sumX = 0;
-          let sumY = 0;
-          let count = 0;
-          if (xx > 0) {
-            const n = (yy * FLOW_GRID_W + (xx - 1)) * 2;
-            sumX += flowRead[n] * 2 - 1;
-            sumY += flowRead[n + 1] * 2 - 1;
-            count++;
-          }
-          if (xx < FLOW_GRID_W - 1) {
-            const n = (yy * FLOW_GRID_W + (xx + 1)) * 2;
-            sumX += flowRead[n] * 2 - 1;
-            sumY += flowRead[n + 1] * 2 - 1;
-            count++;
-          }
-          if (yy > 0) {
-            const n = ((yy - 1) * FLOW_GRID_W + xx) * 2;
-            sumX += flowRead[n] * 2 - 1;
-            sumY += flowRead[n + 1] * 2 - 1;
-            count++;
-          }
-          if (yy < FLOW_GRID_H - 1) {
-            const n = ((yy + 1) * FLOW_GRID_W + xx) * 2;
-            sumX += flowRead[n] * 2 - 1;
-            sumY += flowRead[n + 1] * 2 - 1;
-            count++;
-          }
-          if (count > 0) {
-            const avgX = sumX / count;
-            const avgY = sumY / count;
-            vx += (avgX - vx) * FLOW_DIFFUSE;
-            vy += (avgY - vy) * FLOW_DIFFUSE;
-          }
-          // -1..1 → 0..1 へエンコードして書き込み
-          flowWrite[idx] = vx * 0.5 + 0.5;
-          flowWrite[idx + 1] = vy * 0.5 + 0.5;
-        }
-      }
-      // ping-pong 入れ替え
-      const tmp = flowRead;
+    // 速度場は 1 ステップぶんの dt を渡して進める (減衰・拡散・移流は
+    // 連続時間の係数なので、フレームレートで水の粘性が変わらない)。
+    const advanceFlowField = (dtSeconds: number) => {
+      stepFlowField(flowRead, flowWrite, dtSeconds);
+      const swap = flowRead;
       flowRead = flowWrite;
-      flowWrite = tmp;
+      flowWrite = swap;
     };
 
-    const render = () => {
+    let render = () => {};
+
+    // 保留rAFはpauseで取消・解除し、復帰時に張り直す。
+    // WKWebViewが非表示中のコールバックを落としてもpendingが残らない。
+    const schedule = () => {
+      if (!running || paused || pending) {
+        return;
+      }
+      pending = true;
+      frameId = window.requestAnimationFrame(() => {
+        pending = false;
+        render();
+      });
+    };
+
+    render = () => {
       if (!running) {
         return;
       }
-      const time = (performance.now() - startTime) / 1000;
-      // 速度場を1ステップ更新 (減衰 + 拡散)。痕が残りつつ戻る。
-      stepFlowField();
+      const now = performance.now();
+      const frameMs = lastFrameMs === 0 ? 0 : now - lastFrameMs;
+      lastFrameMs = now;
+      if (paused) {
+        // 非表示・非アクティブ中は物理も進めない (復帰時に跳ねない)。
+        return;
+      }
+      elapsedSeconds = nextElapsedSeconds(elapsedSeconds, frameMs, true);
+      if (quality.baseTier !== baseAmbientQualityTier(intensityRef.current)) {
+        quality = initialAmbientQualityState(intensityRef.current);
+        applyResolution();
+      }
+      const previousTier = quality.tier;
+      quality = updateAmbientQuality(quality, frameMs);
+      if (quality.tier !== previousTier) {
+        applyResolution();
+      }
+      const time = elapsedSeconds;
+      // このフレームの dt (上限つき)。物理はすべて dt 基準で積分する。
+      const dtSeconds = Math.min(Math.max(frameMs, 0), 50) / 1000;
+      // 速度場を1ステップ更新 (移流 + 減衰 + 拡散)。痕が残りつつ戻る。
+      advanceFlowField(dtSeconds);
       // マウス速度: 直前の生の位置との差分。動かしている瞬間だけ非ゼロになり、
       // 止めると 0 へ戻る。mouseSmoothRef (補間後位置) で割って滑らかにする。
       // 意図: マウスが「水をかき回す」。動かすと擾乱、止めると静穏。
@@ -730,11 +665,15 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       mousePrevRawRef.y = mouseTargetRef.y;
       // 速度も緩やかに減衰させ、マウスを止めた後に擾乱がゆっくり消えるように。
       // (通過した渦が水面に残るような余韻)
-      mouseVelSmoothRef.x += (velX - mouseVelSmoothRef.x) * 0.12;
-      mouseVelSmoothRef.y += (velY - mouseVelSmoothRef.y) * 0.12;
+      // 平滑化も dt 基準にする (60fps と 30fps で追従の速さを変えない)。
+      // 時定数は旧実装の 0.12/0.06 per frame に相当する値。
+      const velocityBlend = 1 - Math.exp(-7.67 * dtSeconds);
+      const positionBlend = 1 - Math.exp(-3.71 * dtSeconds);
+      mouseVelSmoothRef.x += (velX - mouseVelSmoothRef.x) * velocityBlend;
+      mouseVelSmoothRef.y += (velY - mouseVelSmoothRef.y) * velocityBlend;
       // マウス位置を滑らかに補間 (lerp)。追従の遅さで水中の粘性感を出す。
-      mouseSmoothRef.x += (mouseTargetRef.x - mouseSmoothRef.x) * 0.06;
-      mouseSmoothRef.y += (mouseTargetRef.y - mouseSmoothRef.y) * 0.06;
+      mouseSmoothRef.x += (mouseTargetRef.x - mouseSmoothRef.x) * positionBlend;
+      mouseSmoothRef.y += (mouseTargetRef.y - mouseSmoothRef.y) * positionBlend;
       // 速度場テクスチャを更新 (flowRead → GPU)。
       // RG8 (UNSIGNED_BYTE) へ 0..1 を 0..255 でエンコード。
       for (let i = 0; i < FLOW_CELLS * 2; i++) {
@@ -768,43 +707,62 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       if (flowFieldLocation) {
         gl.uniform1i(flowFieldLocation, 0);
       }
-      const now = performance.now();
-      const minInterval = ambientMinFrameIntervalMs(intensityRef.current);
+      const minInterval = ambientQualityFrameIntervalMs(quality.tier);
       if (minInterval > 0 && now - lastDrawMs < minInterval) {
-        frameId = window.requestAnimationFrame(render);
+        schedule();
         return;
       }
       lastDrawMs = now;
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      frameId = window.requestAnimationFrame(render);
-    };
-    frameId = window.requestAnimationFrame(render);
-
-    // タブ切り替え等で非表示になった後、戻ったときに rAF を再開する。
-    // WKWebView では非表示中に rAF が止まり、戻っても再開しないことがある。
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && running && frameId === 0) {
-        startTime = performance.now();
-        frameId = window.requestAnimationFrame(render);
+      const stats = statsRef.current;
+      if (stats && (statsFrame++ & 15) === 0) {
+        stats.textContent = `Shinkai tier ${quality.tier} · ${quality.emaMs.toFixed(1)}ms`;
       }
+      schedule();
     };
+    schedule();
+
+    // 非表示 → 表示、非アクティブ → アクティブのどちらでも再開する。
+    const pause = () => {
+      paused = true;
+      if (pending) {
+        window.cancelAnimationFrame(frameId);
+      }
+      pending = false;
+    };
+    const resume = () => {
+      paused = document.hidden || !document.hasFocus();
+      if (paused) {
+        pause();
+        return;
+      }
+      lastFrameMs = 0;
+      schedule();
+    };
+    const handleVisibility = () => resume();
+    const handleFocus = () => resume();
+    const handleBlur = () => pause();
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
 
     const handleContextLoss = () => {
       running = false;
-      frameId = 0;
+      pause();
     };
     canvas.addEventListener("webglcontextlost", handleContextLoss);
 
     return () => {
       running = false;
-      if (frameId !== 0) {
+      if (pending) {
         window.cancelAnimationFrame(frameId);
-        frameId = 0;
       }
-      window.removeEventListener("resize", resize);
+      pending = false;
+      window.removeEventListener("resize", applyResolution);
       window.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
       canvas.removeEventListener("webglcontextlost", handleContextLoss);
       // 注: WEBGL_lose_context による明示的な loseContext() は行わない。
       // WKWebView で canvas の描画が永続的に止まることがあるため、
@@ -813,12 +771,19 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       gl.deleteBuffer(positionBuffer);
       gl.deleteTexture(flowTex);
     };
-  }, [isActive]);
+  }, [isActive, reducedMotion]);
 
   // intensity === "off" のときは canvas を描かない (CSS も非表示になる)
   if (!isActive) {
     return null;
   }
 
-  return <canvas className="shinkai-canvas" ref={canvasRef} aria-hidden="true" />;
+  return (
+    <>
+      <canvas className="shinkai-canvas" ref={canvasRef} aria-hidden="true" />
+      {showStats ? (
+        <div className="atmosphere-stats" ref={statsRef} aria-hidden="true" />
+      ) : null}
+    </>
+  );
 }

@@ -9,9 +9,17 @@
      「chrome」という役割として独立させ、サイドバー(--nav-surface)や
      紙面(--surface-paper)と混ざらないようにする。 */
   --chrome-surface: #f7f8f5;
+  /* chrome バー（ツールバー・タブ・ステータス）に**塗る**面。
+     既定は --chrome-surface と同じ。演出を持つテーマだけが半透明にして、
+     背景のアンビエントを chrome でも透かす（--chrome-surface 自体は
+     ネイティブ窓の色契約なので変えない）。 */
+  --chrome-bar-surface: var(--chrome-surface);
   --surface: #ffffff;
   /* 本文の紙面: 読む・書く面の下地。汎用 surface(白)とは別の意味を持つ。 */
   --surface-paper: #fffefb;
+  /* 読む面（プレビュー・電子書籍・読書）の不透明な紙。本文のコントラストを
+     演出より優先する面で使う。--surface-paper は書き面（編集）用に少し透かせる。 */
+  --surface-paper-solid: #fffefb;
   /* ナビ面: サイドバーや操作部の下地。全 surface を一括着色しないための意味トークン。 */
   --nav-surface: #eef2ec;
   --surface-rgb: 255, 255, 255;
@@ -146,9 +154,19 @@
     monospace;
 
   /* シャドウ / Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（既定（ライト））。 */
+  --edge-hi: rgba(255, 255, 255, 0.9);
+  --edge-lo: rgba(36, 54, 45, 0.05);
+  /* 紙の目 / Paper grain。紙面（エディタ・プレビュー・読書面）の背景へ
+     乗算で重ねる 128×128 のタイル。素材は同梱アセットで、外部取得はしない。
+     `prefers-contrast: more` では a11y.css が none に落とす。 */
+  --paper-texture: url("../assets/themes/paper-grain.png");
+  --paper-texture-size: 128px 128px;
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-accent: 0 4px 16px rgba(53, 107, 80, 0.12);
   /* v0.34: bare --shadow は color-mix の基点として各所から参照される。
      --shadow-lg と同程度の無彩シャドウを既定値にする。themes.css 側で
@@ -225,6 +243,9 @@
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
+  /* かつて全テーマに `text-rendering: optimizeLegibility` と
+     `-webkit-font-smoothing: antialiased` を置いていた。和文の紙面では
+     optimizeLegibility の利得がなく（palt と役割が重なる）、antialiased は
+     明色テーマで文字を細らせる。既定は UA に任せ、暗色テーマだけ
+     themes.css / 各テーマで antialiased を指定する。 */
 }

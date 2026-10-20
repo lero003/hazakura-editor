@@ -3,12 +3,15 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-19
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Current development candidate: `3.3.0` dependency autonomy; see
-[change and review record](3.3.0-dependency-autonomy.md).
+Current development candidate: `3.4.0` theme atmosphere; see
+[theme refresh and acceptance record](3.4.0-theme-atmosphere.md).
+v3.3 is submitted for App Review by owner report (2026-10-19); see
+[dependency autonomy and submission record](3.3.0-dependency-autonomy.md).
+The submitted build/source identity and Apple's current review status were not independently checked here.
 v3.2.1 passed testing and is published by owner report (2026-10-14);
 see [workspace refresh record](3.2.1-workspace-refresh.md).
 Earlier release-preparation notes remain historical. The repository does not
@@ -22,9 +25,13 @@ Latest GitHub source / local-app tag:
 
 Current candidate:
 
+- `3.4.0` — [theme atmosphere and acceptance record](3.4.0-theme-atmosphere.md).
+  Seven-theme presentation refresh and regression fixes; same-candidate device/distribution acceptance remains open.
+
+Submitted App Store version (owner report):
+
 - `3.3.0` — [dependency autonomy and review record](3.3.0-dependency-autonomy.md).
-  CodeMirror declaration cleanup, preserved resolved versions, and PDF-path decision.
-  External review and same-candidate device/distribution acceptance remain open.
+  Already submitted by owner report received 2026-10-19. Submitted build/source provenance and Apple's current review status are unverified here.
 
 
 v3.1 release-preparation history:

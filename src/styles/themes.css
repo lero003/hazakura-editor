@@ -24,12 +24,50 @@ html, body, #root, .app-shell,
   transition: none;
 }
 
+/* テーマ切替のクロスフェード / Theme switch crossfade.
+   `useThemeTransition` が切替直後だけ `data-theme-switching` を立てる。
+   面・文字・罫線・影を同じ長さで動かし、部分ごとに色が飛ぶのを防ぐ。
+   背景グラデーション（yakou / shokou）と WebGL canvas は補間できないため
+   対象外（別スライスで View Transitions の実機対応を見て判断する）。
+   reduced-motion では base.css のグローバルガードが全て 0ms にする。 */
+:root[data-theme-switching="true"]
+  :is(
+    .app-shell,
+    .primary-toolbar-slot,
+    .app-primary-toolbar,
+    .tabs-row,
+    .tab-item,
+    .file-tree-pane,
+    .editor-pane,
+    .preview-pane,
+    .markdown-preview,
+    .status-bar,
+    .workspace-sidebar,
+    .workspace-sidebar-rail,
+    .cm-editor,
+    .cm-gutters,
+    .command-palette,
+    .close-dialog,
+    .preferences-dialog,
+    button,
+    input,
+    select,
+    textarea
+  ) {
+  transition:
+    background-color 200ms var(--ease-standard),
+    color 200ms var(--ease-standard),
+    border-color 200ms var(--ease-standard),
+    box-shadow 200ms var(--ease-standard);
+}
+
 /* 森の夜 / Dark – deep moss-black with luminous sage accent */
 :root[data-theme="dark"] {
   --bg: #18241e;
   --chrome-surface: #18241e;
   --surface: #25332a;
   --surface-paper: #1d2a23;
+  --surface-paper-solid: #1d2a23;
   --nav-surface: #142019;
   --surface-rgb: 37, 51, 42;
   --surface-strong: #1a211d;
@@ -107,10 +145,19 @@ html, body, #root, .app-shell,
   --xterm-bright-white: #f2f5ef;
 
   /* ダーク用シャドウ / Dark Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.18);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.18);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（森の夜）。 */
+  --edge-hi: rgba(229, 237, 223, 0.07);
+  --edge-lo: rgba(0, 0, 0, 0.28);
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 12px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.18);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 32px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.18);
   --shadow-accent: 0 4px 20px rgba(170, 208, 172, 0.15);
+  /* 暗色の面ではグレースケールのアンチエイリアスが背景になじむ。
+     明色テーマでは文字が必要以上に細るため指定しない（トークン既定のまま）。 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 江戸彼岸 (Edohigan) のパレット定義は edohigan-theme.css へ移管。
@@ -143,6 +190,7 @@ html, body, #root, .app-shell,
      透かして戻す（紙 0.94）。動きはゆっくり（22s）なので気配として残る。 */
   --surface: rgba(21, 21, 31, 0.94);
   --surface-paper: rgba(28, 29, 49, 0.94);
+  --surface-paper-solid: #1c1d31;
   --nav-surface: rgba(20, 20, 38, 0.94);
   --surface-rgb: 21, 21, 31;
   --surface-strong: #1c1c2c;
@@ -224,13 +272,22 @@ html, body, #root, .app-shell,
   --scrollbar-thumb-hover: rgba(146, 146, 180, 0.32);
 
   /* 夜光シャドウ + グロー / Yakou Shadows + Glow */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（夜光）。 */
+  --edge-hi: rgba(232, 232, 244, 0.08);
+  --edge-lo: rgba(0, 0, 0, 0.32);
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
   --shadow-accent: 0 4px 24px rgba(160, 144, 255, 0.22), 0 1px 4px rgba(90, 212, 188, 0.12);
 
   /* アンビエントグロー / Ambient Glow */
   --accent-glow: 0 0 40px rgba(160, 144, 255, 0.07);
+  /* 暗色の面ではグレースケールのアンチエイリアスが背景になじむ。
+     明色テーマでは文字が必要以上に細るため指定しない（トークン既定のまま）。 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 曙光 / Shokou – bright dawn sky with soft blue and warm peach */
@@ -240,6 +297,7 @@ html, body, #root, .app-shell,
   --chrome-surface: #eef5fb;
   --surface: #f6f9fd;
   --surface-paper: #f5f8fc;
+  --surface-paper-solid: #f5f8fc;
   --nav-surface: #e2ecf5;
   --surface-rgb: 246, 249, 253;
   --surface-strong: #ffffff;
@@ -310,9 +368,14 @@ html, body, #root, .app-shell,
   --xterm-bright-cyan: #9ad8dc;
   --xterm-bright-white: #f5fbff;
 
-  --shadow-sm: 0 1px 2px rgba(52, 120, 173, 0.07);
-  --shadow-md: 0 4px 12px rgba(52, 120, 173, 0.09), 0 1px 3px rgba(239, 154, 74, 0.07);
-  --shadow-lg: 0 12px 32px rgba(52, 120, 173, 0.13), 0 2px 8px rgba(239, 154, 74, 0.09);
+  /* 光モデル / Light model: 面の上端に反射、下端に陰りを 1px 入れる。
+     シャドウ群の先頭に合成されるため、影の形そのものは変えない。
+     色温度はテーマの光に合わせる（曙光）。 */
+  --edge-hi: rgba(255, 255, 255, 0.85);
+  --edge-lo: rgba(28, 53, 84, 0.05);
+  --shadow-sm: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 1px 2px rgba(52, 120, 173, 0.07);
+  --shadow-md: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 4px 12px rgba(52, 120, 173, 0.09), 0 1px 3px rgba(239, 154, 74, 0.07);
+  --shadow-lg: inset 0 1px 0 var(--edge-hi), inset 0 -1px 0 var(--edge-lo), 0 12px 32px rgba(52, 120, 173, 0.13), 0 2px 8px rgba(239, 154, 74, 0.09);
   --shadow-accent: 0 4px 20px rgba(52, 120, 173, 0.14);
   --accent-glow: 0 0 32px rgba(239, 154, 74, 0.07);
 }

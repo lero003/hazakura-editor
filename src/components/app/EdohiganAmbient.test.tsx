@@ -48,4 +48,32 @@ describe("EdohiganAmbient", () => {
     unmount();
     expect(remove).toHaveBeenCalledWith("visibilitychange", expect.any(Function));
   });
+
+  it("carries depth and physical timing into each petal", () => {
+    const { container } = render(<EdohiganAmbient intensity="normal" />);
+    const petals = [
+      ...container.querySelectorAll<HTMLElement>(".edohigan-petal"),
+    ];
+
+    // 3 深度すべてが出る（空気遠近の前提）。
+    expect(new Set(petals.map((petal) => petal.dataset.depth))).toEqual(
+      new Set(["near", "mid", "far"]),
+    );
+
+    for (const petal of petals) {
+      expect(petal.style.getPropertyValue("--petal-fall")).toMatch(/s$/);
+      expect(petal.style.getPropertyValue("--petal-sway")).toMatch(/s$/);
+      expect(petal.style.getPropertyValue("--petal-flip")).toMatch(/s$/);
+      expect(petal.style.getPropertyValue("--petal-roll")).toMatch(/deg$/);
+      expect(petal.style.getPropertyValue("--petal-sway-x")).toMatch(/px$/);
+      expect(petal.style.getPropertyValue("--petal-blur")).toMatch(/px$/);
+      expect(petal.style.getPropertyValue("--petal-opacity")).not.toBe("");
+    }
+
+    // 落下周期は花弁ごとに違い、全体が同期して見えない。
+    const falls = petals.map((petal) =>
+      petal.style.getPropertyValue("--petal-fall"),
+    );
+    expect(new Set(falls).size).toBe(petals.length);
+  });
 });

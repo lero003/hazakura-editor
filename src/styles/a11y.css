@@ -34,6 +34,13 @@
     /* スクロールバー thumb を text 寄りに強める。 */
     --scrollbar-thumb: color-mix(in srgb, var(--text) 40%, transparent);
     --scrollbar-thumb-hover: color-mix(in srgb, var(--text) 60%, transparent);
+
+    /* 素材（紙の目・上端の反射・下端の陰り）は、常に境界を曖昧にする方向へ
+       働く。高コントラスト環境では素材だけを落とし、色と罫線は a11y の
+       既存処理に任せる。 */
+    --paper-texture: none;
+    --edge-hi: transparent;
+    --edge-lo: transparent;
   }
 
   /* インタラクティブ要素のフォーカスリングを太くする。

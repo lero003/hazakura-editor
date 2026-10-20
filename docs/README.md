@@ -3,14 +3,16 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-19
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
 Agent entry rules live in `AGENTS.md`。v3.2.1はテスト問題なし・App Store公開済み
-（2026-10-14オーナー報告）。開発版3.3.0は依存削減の外部レビュー候補。
-`current-work.md` → `current-status.md` → `releases/3.3.0-dependency-autonomy.md` の順に読む。
-レビューは基準 `5e3310aa` からの差分を使い、先行する3.2.1コミットと区別する。
+（2026-10-14オーナー報告）、v3.3は審査提出済み（2026-10-19オーナー報告）。
+提出/公開buildとsource対応、Apple側の現在の審査状態は独立未照合。
+開発版3.4.0はテーマ刷新候補。`current-work.md` → `current-status.md` →
+`releases/3.4.0-theme-atmosphere.md` の順に読む。
+v3.3依存削減の検証は `releases/3.3.0-dependency-autonomy.md` に保持する。
 過去の候補・実機・GitHub公開は個別の証跡として保持する。
 初期範囲と保留条件は `dependency-autonomy-plan.md`、メモ系・縦書きの採用方針は
 `roadmap.md` と `post-v3.1-writing-completion-draft.md` を参照する。
@@ -24,8 +26,8 @@ Agent entry rules live in `AGENTS.md`。v3.2.1はテスト問題なし・App Sto
 - `local-assist-conversational-edit-ux.md`: **v2.6 conversation / Diff design SoT**.
 - `core-ai-production-models.md`: **v3.1 production model identities, pinned asset recipe, and activation gates**.
 - `mlx-m0-preflight-design.md`: completed M-0a System / wire boundary and M-0b entry gate.
-- `current-work.md`: **v3.3依存削減の外部レビュー・受け入れ**と過去の候補記録。
-- `roadmap.md`: **v3.3依存削減、採用したメモ系・縦書きの方向性**。
+- `current-work.md`: **v3.4テーマ刷新の受け入れ**、v3.3提出報告と過去の候補記録。
+- `roadmap.md`: **v3.4テーマ刷新、採用したメモ系・縦書きの方向性**。
 - `v3-product-completion-plan.md`: **v3全体計画**。添付UI資料の採否・着手順・完成判定。
 - `v2.9-v3-local-assist-plan.md`: **current technical plan** for Local Assist / AFM / Core AI.
 - `v2.8-plan.md`: published-line planning history; unshipped U-3/U-4/G-1 moved to the next plan.
@@ -54,7 +56,8 @@ Agent entry rules live in `AGENTS.md`。v3.2.1はテスト問題なし・App Sto
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
-- `releases/3.3.0-dependency-autonomy.md`: v3.3変更・検証・PDF判断・外部レビュー範囲。
+- `releases/3.4.0-theme-atmosphere.md`: v3.4テーマ刷新・調整・候補と受け入れの区分。
+- `releases/3.3.0-dependency-autonomy.md`: v3.3提出報告と当時の変更・検証・PDF判断・外部レビュー範囲。
 - `releases/3.2.1-workspace-refresh.md`: v3.2.1の公開報告、変更と当時のsource検証。
 - `releases/3.2.0-dependency-acceptance-draft.md`: v3.2の更新範囲、検証結果、実機受け入れ。
 - `reviews/2026-09-26-v3.2-external-review-brief.md`: v3.2固有の固定コード差分、検証証跡、外部レビュー依頼。
@@ -69,10 +72,11 @@ Agent entry rules live in `AGENTS.md`。v3.2.1はテスト問題なし・App Sto
 
 Active planning surface (intentionally small):
 
-- `roadmap.md` — **現行v3.3依存削減、採用したメモ系・縦書きの方向性**
+- `roadmap.md` — **現行v3.4テーマ刷新、採用したメモ系・縦書きの方向性**
+- `theme-atmosphere-brushup-plan.md` — **v3.4の7テーマ演出ブラッシュアップ計画（2026-10-19、S0〜S8実装済み）**。光・素材・運動・光学のスライスS0〜S8、受入、検証、リスク。presentation層のみ
 - `dependency-autonomy-plan.md` — **v3.3計画・追加削減の採否**。初期評価の履歴と現行のOS API集約、検証・中止条件。実装結果は3.3.0記録へ
 - `post-v3.1-writing-completion-draft.md` — **メモ系・縦書きの計画詳細**。方向性は採用、UI・保存方式・版割りは未確定。AIによるメモ作成・推敲は品質再評価後
-- `current-work.md` — 3.3候補の外部レビュー・受け入れ、過去の履歴
+- `current-work.md` — 3.4候補の受け入れ、3.3提出報告と過去の履歴
 - `releases/3.2.0-dependency-acceptance-draft.md` — 自動ゲート・実機受け入れの作業表
 - `v3-product-completion-plan.md` — v3全体とUI刷新の計画
 - `v2.9-v3-local-assist-plan.md` — active technical plan, attachment reconciliation and acceptance

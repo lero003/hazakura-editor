@@ -35,3 +35,9 @@
 @import "./workspace-start.css";
 
 @import "./proposal-review-surface.css";
+
+/* 素材レイヤは紙面の background ショートハンドより後に置く。 */
+@import "./material.css";
+
+/* 和文組版は preview / lMode の指定より後に置く。 */
+@import "./typesetting.css";
