@@ -759,7 +759,7 @@ function startBackdrop(
       uTreeRadius: { value: 9 },
       uShadowMap: { value: shadowTarget.texture },
       uLightViewProj: { value: new THREE.Matrix4() },
-      uShadowStrength: { value: 0.42 },
+      uShadowStrength: { value: 0.34 },
     },
     vertexShader: GROUND_VERTEX,
     fragmentShader: GROUND_FRAGMENT,
@@ -866,6 +866,20 @@ function startBackdrop(
   blossomGeometry.setAttribute("aTilt", new THREE.InstancedBufferAttribute(tilts, 1));
   blossomGeometry.instanceCount = blossomCount;
 
+  // 花も影を落とす。BLOSSOM_VERTEX は viewMatrix でビルボードを作るので、
+  // 影パスでは「ライトを向いた板」になり、樹冠の影がそのまま出る。
+  const blossomShadowMaterial = new THREE.ShaderMaterial({
+    uniforms: {},
+    vertexShader: BLOSSOM_VERTEX,
+    fragmentShader: `
+      precision highp float;
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+    `,
+    side: THREE.DoubleSide,
+  });
+
   const blossomMaterial = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
@@ -885,6 +899,11 @@ function startBackdrop(
   blossoms.position.copy(treeMesh.position);
   blossoms.frustumCulled = false;
   scene.add(blossoms);
+
+  blossomShadowMaterial.uniforms = blossomMaterial.uniforms;
+  const blossomShadowMesh = new THREE.Mesh(blossomGeometry, blossomShadowMaterial);
+  blossomShadowMesh.frustumCulled = false;
+  shadowScene.add(blossomShadowMesh);
 
   // --- 手前の草 ---------------------------------------------------------
   // 画面下端のすぐ外に生えている草。手前の枠として置くと、草原の広さが出る。
@@ -1104,6 +1123,14 @@ function startBackdrop(
 
   const draw = (time: number) => {
     const sceneTime = time * profile.timeScale;
+
+    // ごくゆっくりしたカメラの漂い。前景の草と木のあいだに視差が出て、
+    // 「止め絵」ではなく「回っている映像」に見える。
+    const drift = Math.sin(sceneTime * 0.045) * profile.wind;
+    const rise = Math.cos(sceneTime * 0.031) * profile.wind;
+    camera.position.set(drift * 1.5, 0.5 + rise * 0.35, cameraZ - drift * 1.1);
+    camera.lookAt(treeMesh.position.x * 0.35, 2.0, -12);
+    camera.updateMatrixWorld();
     const gust = edohiganWind(sceneTime);
     skyMaterial.uniforms.uTime.value = sceneTime;
     groundMaterial.uniforms.uTime.value = sceneTime;
@@ -1122,6 +1149,11 @@ function startBackdrop(
     shadowMesh.position.copy(treeMesh.position);
     shadowMesh.scale.copy(treeMesh.scale);
     shadowMesh.rotation.copy(treeMesh.rotation);
+    blossomShadowMesh.position.copy(blossoms.position);
+    blossomShadowMesh.scale.copy(blossoms.scale);
+    blossomShadowMesh.rotation.copy(blossoms.rotation);
+    // 影のインスタンス数は強度に追従させる（花を間引いたら影も間引く）。
+    blossomShadowMesh.visible = blossomGeometry.instanceCount > 0;
     shadowCamera.position
       .copy(treeMesh.position)
       .addScaledVector(sunDirection, 120);
@@ -1271,6 +1303,7 @@ function startBackdrop(
     }
     shadowTarget.dispose();
     shadowMaterial.dispose();
+    blossomShadowMaterial.dispose();
     post.dispose();
     renderer.dispose();
   };
