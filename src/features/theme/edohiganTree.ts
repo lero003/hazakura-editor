@@ -41,6 +41,11 @@ export type TreeBlossom = {
    * 外側ほど光が当たるようにして塊の奥行きを出す。
    */
   shade: number;
+  /**
+   * 花の向き（樹冠の中心から外へ）。太陽との角度で明るさを変える。
+   * これがないと、どの花も同じ明るさで「貼った紙」になる。
+   */
+  normal: Vec3;
 };
 
 export type Tree = {
@@ -233,6 +238,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
         phase: branch.phase + random() * 0.8,
         tint: Math.min(1, 0.15 + branch.sway * 0.45 + random() * 0.5),
         shade: 0.55 + Math.min(1, Math.hypot(x, z) / Math.max(crownRadius, 0.001)) * 0.45,
+        normal: normalFromCrown(x, y, z),
       });
     }
   }
@@ -254,6 +260,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
         // 高いところほど空を背景に明るく見える。
         tint: Math.min(1, 0.18 + sway * 0.42 + random() * 0.5),
         shade: 0.55 + Math.min(1, Math.hypot(bx, bz) / Math.max(crownRadius, 0.001)) * 0.45,
+        normal: normalFromCrown(bx, by, bz),
       });
     }
   });
@@ -285,4 +292,14 @@ export function edohiganSway(time: number, phase: number, gust: number): number 
   const mid = Math.sin(time * 0.27 + phase * 1.7) * 0.28;
   const fast = Math.sin(time * 1.13 + phase * 2.3) * 0.1;
   return (slow + mid + fast) * (0.55 + gust * 0.65);
+}
+
+
+/** 樹冠の中心から花へ向かう単位ベクトル。 */
+function normalFromCrown(x: number, y: number, z: number): Vec3 {
+  const dx = x;
+  const dy = y - 14;
+  const dz = z;
+  const length = Math.hypot(dx, dy, dz) || 1;
+  return [dx / length, dy / length, dz / length];
 }

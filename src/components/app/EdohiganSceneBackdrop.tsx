@@ -185,10 +185,23 @@ const GROUND_FRAGMENT = /* glsl */ `
     // 風で草がなびく細かいまだら。ゆっくり流す。
     float n = valueNoise(p * 0.09 + vec2(uTime * 0.012, 0.0));
     float fine = valueNoise(p * 0.7);
+    // 大きなムラ（枯れ草・土・湿った窪み）を 2 つのスケールで重ねる。
+    float broadPatch = valueNoise(p * 0.021 + 11.0);
+    float finePatch = valueNoise(p * 0.06 + 3.0);
 
     float depth = clamp((10.0 - vWorld.z) / 110.0, 0.0, 1.0);
     vec3 color = mix(cNear, cFar, depth);
-    color *= 0.9 + n * 0.22 + fine * 0.06;
+    color *= 0.86 + n * 0.24 + fine * 0.08;
+
+    // 乾いた株。緑に麦わら色を混ぜる（一様な緑を崩す）。
+    // valueNoise の平均は 0.5。閾値は分布の裾に置き、面全体を枯らさない。
+    float blended = broadPatch * 0.7 + finePatch * 0.45;
+    float dry = smoothstep(0.66, 0.86, blended);
+    color = mix(color, vec3(0.5, 0.46, 0.27), dry * 0.26);
+
+    // 土の見える窪み。
+    float soil = smoothstep(0.45, 0.3, blended);
+    color = mix(color, vec3(0.3, 0.26, 0.19), soil * 0.3);
 
     // 陽の当たる面を少し明るく。
     color += vec3(0.06, 0.05, 0.02) * smoothstep(0.55, 0.95, n);
@@ -345,6 +358,7 @@ const BLOSSOM_VERTEX = /* glsl */ `
   attribute float aRotation;
   attribute float aShade;
   attribute float aTilt;
+  attribute vec3 aNormal;
 
   uniform float uTime;
   uniform float uGust;
@@ -354,6 +368,7 @@ const BLOSSOM_VERTEX = /* glsl */ `
   varying float vTint;
   varying float vShade;
   varying float vAo;
+  varying float vLit;
 
   ${WIND_GLSL}
 
@@ -382,6 +397,9 @@ const BLOSSOM_VERTEX = /* glsl */ `
     vTint = aTint;
     vShade = 0.75 + 0.25 * position.y;
     vAo = aShade;
+    // 太陽は右上。花の向きとの角度で、樹冠の右側が明るく左側が沈む。
+    vec3 sunDir = normalize(vec3(0.62, 0.55, -0.55));
+    vLit = clamp(dot(normalize(aNormal), sunDir) * 0.5 + 0.62, 0.0, 1.0);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
@@ -397,6 +415,7 @@ const BLOSSOM_FRAGMENT = /* glsl */ `
   varying float vTint;
   varying float vShade;
   varying float vAo;
+  varying float vLit;
 
   void main() {
     vec4 sprite = texture2D(uMap, vUv);
@@ -407,6 +426,9 @@ const BLOSSOM_FRAGMENT = /* glsl */ `
     vec3 color = sprite.rgb * mix(cPetalDeep, cPetal, vTint);
     // 樹冠の奥は沈め、梢は空を透かして明るく。
     color *= mix(0.52, 1.08, vAo);
+    // 向きによる明暗。影側は少し青く、陽側は暖かく。
+    color *= mix(0.62, 1.1, vLit);
+    color = mix(color * vec3(0.92, 0.95, 1.05), color * vec3(1.05, 1.0, 0.96), vLit);
     gl_FragColor = vec4(color * (0.88 + vShade * 0.2), alpha);
   }
 `;
@@ -846,6 +868,7 @@ function startBackdrop(
   const rotations = new Float32Array(blossomCount);
   const shades = new Float32Array(blossomCount);
   const tilts = new Float32Array(blossomCount);
+  const normals = new Float32Array(blossomCount * 3);
   tree.blossoms.forEach((blossom, index) => {
     centers[index * 3] = blossom.position[0];
     centers[index * 3 + 1] = blossom.position[1];
@@ -856,6 +879,9 @@ function startBackdrop(
     rotations[index] = blossom.phase * 1.9;
     shades[index] = blossom.shade;
     tilts[index] = (blossom.phase * 0.618) % 1;
+    normals[index * 3] = blossom.normal[0];
+    normals[index * 3 + 1] = blossom.normal[1];
+    normals[index * 3 + 2] = blossom.normal[2];
   });
   blossomGeometry.setAttribute("aCenter", new THREE.InstancedBufferAttribute(centers, 3));
   blossomGeometry.setAttribute("aSize", new THREE.InstancedBufferAttribute(sizes, 1));
@@ -864,6 +890,7 @@ function startBackdrop(
   blossomGeometry.setAttribute("aRotation", new THREE.InstancedBufferAttribute(rotations, 1));
   blossomGeometry.setAttribute("aShade", new THREE.InstancedBufferAttribute(shades, 1));
   blossomGeometry.setAttribute("aTilt", new THREE.InstancedBufferAttribute(tilts, 1));
+  blossomGeometry.setAttribute("aNormal", new THREE.InstancedBufferAttribute(normals, 3));
   blossomGeometry.instanceCount = blossomCount;
 
   // 花も影を落とす。BLOSSOM_VERTEX は viewMatrix でビルボードを作るので、
