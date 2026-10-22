@@ -263,13 +263,15 @@ export type SceneIntensityProfile = {
   blossomRatio: number;
   /** 手前の草の間引き。 */
   grassRatio: number;
+  /** 光条の強さ。 */
+  rays: number;
 };
 
 export const SCENE_INTENSITY: Record<AmbientIntensity, SceneIntensityProfile> = {
-  off: { wind: 0, timeScale: 0, blossomRatio: 0, grassRatio: 0 },
-  subtle: { wind: 0.5, timeScale: 0.78, blossomRatio: 0.62, grassRatio: 0.55 },
-  normal: { wind: 1, timeScale: 1, blossomRatio: 0.85, grassRatio: 0.8 },
-  dramatic: { wind: 1.55, timeScale: 1.12, blossomRatio: 1, grassRatio: 1 },
+  off: { wind: 0, timeScale: 0, blossomRatio: 0, grassRatio: 0, rays: 0 },
+  subtle: { wind: 0.5, timeScale: 0.78, blossomRatio: 0.62, grassRatio: 0.55, rays: 0.3 },
+  normal: { wind: 1, timeScale: 1, blossomRatio: 0.85, grassRatio: 0.8, rays: 0.55 },
+  dramatic: { wind: 1.55, timeScale: 1.12, blossomRatio: 1, grassRatio: 1, rays: 0.75 },
 };
 
 export function sceneIntensityProfile(intensity: AmbientIntensity): SceneIntensityProfile {

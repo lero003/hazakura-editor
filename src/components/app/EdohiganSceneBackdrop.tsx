@@ -1125,6 +1125,7 @@ function startBackdrop(
     );
     grassGeometry.instanceCount = Math.max(1, Math.round(grassCount * Math.max(0.2, next.grassRatio)));
     fieldGeometry.instanceCount = Math.max(1, Math.round(fieldCount * Math.max(0.25, next.grassRatio)));
+    post.setRayStrength(next.rays);
   };
 
   const applyPetals = (intensity: AmbientIntensity, tier: 0 | 1 | 2 | 3) => {
@@ -1152,8 +1153,13 @@ function startBackdrop(
     skyMaterial.uniforms.uAspect.value = camera.aspect;
 
     // 木は画面の右へ。文字のカラム（中央）に幹を置かない。
-    treeMesh.position.set(view.width * 0.3, GROUND_Y, TREE_DEPTH);
+    // 狭い窓では木を右へ寄せ、少しだけ縮める。本文の右端に幹が重ならないため。
+    const narrowWindow = camera.aspect < 1.45;
+    const treeScale = TREE_SCALE * (narrowWindow ? 0.92 : 1);
+    treeMesh.position.set(view.width * (narrowWindow ? 0.4 : 0.3), GROUND_Y, TREE_DEPTH);
+    treeMesh.scale.setScalar(treeScale);
     blossoms.position.copy(treeMesh.position);
+    blossoms.scale.setScalar(treeScale);
     groundMaterial.uniforms.uTreeXZ.value.set(treeMesh.position.x, treeMesh.position.z);
     groundMaterial.uniforms.uTreeRadius.value = view.height * 0.2;
   };
@@ -1161,6 +1167,7 @@ function startBackdrop(
   applyLayout();
   applyPetals(currentIntensity, quality.tier);
   applyProfile(sceneIntensityProfile(currentIntensity));
+  post.setRayStrength(profile.rays);
 
   let elapsedSeconds = 0;
   let lastFrameMs = 0;
@@ -1177,7 +1184,9 @@ function startBackdrop(
     // 「止め絵」ではなく「回っている映像」に見える。
     const drift = Math.sin(sceneTime * 0.045) * profile.wind;
     const rise = Math.cos(sceneTime * 0.031) * profile.wind;
-    camera.position.set(drift * 1.5, 0.5 + rise * 0.35, cameraZ - drift * 1.1);
+    // 横にはほとんど動かさない。動かすと、位相によっては木の幹が本文に重なる。
+    // 前後のドリーと縦の揺れだけで、前景の草との視差を作る。
+    camera.position.set(drift * 0.35, 0.5 + rise * 0.25, cameraZ - drift * 1.3);
     camera.lookAt(treeMesh.position.x * 0.35, 2.0, -12);
     camera.updateMatrixWorld();
     const gust = edohiganWind(sceneTime);

@@ -187,6 +187,8 @@ export type EdohiganPost = {
   renderTarget: import("three").WebGLRenderTarget;
   /** ポスト処理を通して画面へ出す。 */
   present: (time: number) => void;
+  /** 光条の強さ（強度設定に追従させる）。 */
+  setRayStrength: (value: number) => void;
   setSize: (width: number, height: number) => void;
   dispose: () => void;
 };
@@ -348,5 +350,9 @@ export function createEdohiganPost(
     compositeMaterial.dispose();
   };
 
-  return { renderTarget: sceneTarget, present, setSize, dispose };
+  const setRayStrength = (value: number) => {
+    compositeMaterial.uniforms.uRayStrength.value = value;
+  };
+
+  return { renderTarget: sceneTarget, present, setRayStrength, setSize, dispose };
 }
