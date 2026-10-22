@@ -68,7 +68,9 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
 
   uniform sampler2D tDiffuse;
   uniform sampler2D tBloom;
+  uniform sampler2D tRays;
   uniform sampler2D tDepth;
+  uniform float uRayStrength;
   uniform vec2 uResolution;
   uniform float uNear;
   uniform float uFar;
@@ -114,9 +116,12 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
       color = sum / total;
     }
 
-    // --- ブルーム -------------------------------------------------------
+    // --- ブルームと光条 ------------------------------------------------
     vec3 bloom = texture2D(tBloom, uv).rgb;
     color += bloom * uBloomStrength;
+
+    float rays = texture2D(tRays, uv).r;
+    color += vec3(1.0, 0.94, 0.82) * rays * uRayStrength;
 
     // --- グレーディング -------------------------------------------------
     color *= uExposure;
@@ -144,6 +149,36 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
     color += grain * uGrain;
 
     gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+
+const RAY_FRAGMENT = /* glsl */ `
+  precision highp float;
+
+  uniform sampler2D tDiffuse;
+  uniform vec2 uSun;
+  uniform float uDecay;
+  varying vec2 vUv;
+
+  void main() {
+    // 太陽へ向かって明部を積む。これが「木々を抜けた光の筋」になる。
+    const int STEPS = 24;
+    vec2 delta = (vUv - uSun) / float(STEPS) * 0.72;
+    vec2 coord = vUv;
+    float illumination = 1.0;
+    float sum = 0.0;
+    for (int index = 0; index < STEPS; index++) {
+      coord -= delta;
+      vec3 texel = texture2D(tDiffuse, coord).rgb;
+      float luma = dot(texel, vec3(0.299, 0.587, 0.114));
+      // 空全体ではなく、太陽と、枝の隙間から漏れる強い光だけを源にする。
+      // これをしないと放射が「全体のかすみ」になって筋が出ない。
+      float source = smoothstep(0.86, 0.99, luma);
+      sum += source * illumination;
+      illumination *= uDecay;
+    }
+    gl_FragColor = vec4(vec3(sum / float(STEPS) * 3.4), 1.0);
   }
 `;
 
@@ -189,6 +224,11 @@ export function createEdohiganPost(
     magFilter: THREE.LinearFilter,
     depthBuffer: false,
   });
+  const rayTarget = new THREE.WebGLRenderTarget(halfWidth, halfHeight, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    depthBuffer: false,
+  });
 
   const quad = new THREE.PlaneGeometry(2, 2);
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -215,10 +255,24 @@ export function createEdohiganPost(
     depthWrite: false,
   });
 
+  const rayMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      tDiffuse: { value: brightTarget.texture },
+      uSun: { value: new THREE.Vector2(0.8, 0.8) },
+      uDecay: { value: 0.94 },
+    },
+    vertexShader: FULLSCREEN_VERTEX,
+    fragmentShader: RAY_FRAGMENT,
+    depthTest: false,
+    depthWrite: false,
+  });
+
   const compositeMaterial = new THREE.ShaderMaterial({
     uniforms: {
       tDiffuse: { value: sceneTarget.texture },
       tBloom: { value: blurTargetB.texture },
+      tRays: { value: rayTarget.texture },
+      uRayStrength: { value: 0.55 },
       tDepth: { value: sceneTarget.depthTexture },
       uResolution: { value: new THREE.Vector2(width, height) },
       uNear: { value: 0.1 },
@@ -254,6 +308,10 @@ export function createEdohiganPost(
 
     pass(brightMaterial, brightTarget);
 
+    // 光条は「明部の位置」から放射状に積む。
+    rayMaterial.uniforms.tDiffuse.value = brightTarget.texture;
+    pass(rayMaterial, rayTarget);
+
     blurMaterial.uniforms.tDiffuse.value = brightTarget.texture;
     blurMaterial.uniforms.uDirection.value.set(1 / halfWidth, 0);
     pass(blurMaterial, blurTarget);
@@ -272,6 +330,7 @@ export function createEdohiganPost(
     brightTarget.setSize(nextHalfWidth, nextHalfHeight);
     blurTarget.setSize(nextHalfWidth, nextHalfHeight);
     blurTargetB.setSize(nextHalfWidth, nextHalfHeight);
+    rayTarget.setSize(nextHalfWidth, nextHalfHeight);
     compositeMaterial.uniforms.uResolution.value.set(nextWidth, nextHeight);
   };
 
@@ -281,6 +340,8 @@ export function createEdohiganPost(
     brightTarget.dispose();
     blurTarget.dispose();
     blurTargetB.dispose();
+    rayTarget.dispose();
+    rayMaterial.dispose();
     quad.dispose();
     brightMaterial.dispose();
     blurMaterial.dispose();
