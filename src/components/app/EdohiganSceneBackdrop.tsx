@@ -174,7 +174,7 @@ const GROUND_FRAGMENT = /* glsl */ `
     color *= 1.0 - shadow * 0.38;
 
     // 遠景は霞へ溶かす。
-    float haze = smoothstep(0.66, 1.0, depth) * 0.72;
+    float haze = smoothstep(0.74, 1.0, depth) * 0.62;
     color = mix(color, cHaze, haze);
 
     gl_FragColor = vec4(color, 1.0);
@@ -374,7 +374,7 @@ const GRASS_FRAGMENT = /* glsl */ `
     float alpha = smoothstep(0.0, 0.12, vShade) * (1.0 - smoothstep(0.72, 1.0, vShade));
     if (alpha < 0.02) discard;
     vec3 color = mix(cBase, cTip, vShade);
-    gl_FragColor = vec4(color, alpha * 0.62);
+    gl_FragColor = vec4(color, alpha * 0.45);
   }
 `;
 
@@ -388,7 +388,7 @@ const SKY_COLORS = {
 const GROUND_COLORS = {
   near: [0.28, 0.38, 0.19],
   far: [0.55, 0.64, 0.42],
-  haze: [0.8, 0.83, 0.7],
+  haze: [0.9, 0.9, 0.78],
 } as const;
 
 const BARK_COLORS = {
@@ -640,7 +640,7 @@ function startBackdrop(
   skyScene.add(sky);
 
   // --- 草原 -------------------------------------------------------------
-  const groundGeometry = new THREE.PlaneGeometry(600, 600, 1, 1);
+  const groundGeometry = new THREE.PlaneGeometry(2400, 2400, 1, 1);
   groundGeometry.rotateX(-Math.PI / 2);
   const groundMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -655,7 +655,7 @@ function startBackdrop(
     fragmentShader: GROUND_FRAGMENT,
   });
   const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-  ground.position.set(0, GROUND_Y, -120);
+  ground.position.set(0, GROUND_Y, -700);
   scene.add(ground);
 
   // --- 木 ---------------------------------------------------------------
@@ -756,7 +756,7 @@ function startBackdrop(
 
   // --- 手前の草 ---------------------------------------------------------
   // 画面下端のすぐ外に生えている草。手前の枠として置くと、草原の広さが出る。
-  const grassCount = 26;
+  const grassCount = 20;
   const grassGeometry = new THREE.InstancedBufferGeometry();
   {
     // 3 段に絞った葉。根元は広く、穂先はほぼ点。
