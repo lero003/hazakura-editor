@@ -2,18 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import type { AmbientIntensity } from "../../types";
 import { useReducedMotion } from "../../hooks/app/useReducedMotion";
 import {
-  createBokehPetals,
   createScenePetals,
-  DAWN_PETAL_TINT,
-  DAWN_SKY,
-  edohiganWind,
   splitPetalBands,
+  edohiganWind,
+  DAWN_PETAL_TINT,
 } from "../../features/theme/edohiganScene";
 import {
   PETAL_FRAGMENT,
   PETAL_VERTEX,
   createPetalGeometry,
 } from "../../features/theme/edohiganPetalShader";
+import {
+  WIND_GLSL,
+  growTree,
+  type Tree,
+  type TreeBranch,
+} from "../../features/theme/edohiganTree";
 import {
   ambientQualityFrameIntervalMs,
   initialAmbientQualityState,
@@ -23,17 +27,15 @@ import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
 import petalUrl from "../../assets/themes/edohigan-petal.webp";
 
 /**
- * 江戸彼岸 — 紙の奥に広がる夜明けの情景（three.js）。
+ * 江戸彼岸 — 草原に立つ一本の大木（three.js）。
  *
- * 「和紙の上の花」から「用紙が情景の中に浮かぶ」へ移した層。空・陽・枝・
- * 中景/遠景の花弁を描き、エディタの紙を 8 割程度の不透明度にして透かす。
- *
- * 紙の上に出るもの（近景の花弁と接地影）は `EdohiganThreeAmbient` が担当し、
- * 花弁は深度で 1 回だけ分担する（`splitPetalBands`）。
+ * 「紙の上に枝を置く」のをやめ、**空・草原・木・花**で 1 つの風景を組む。
+ * 木は画像ではなく骨格から起こす（`growTree`）。根元から先端までの距離を
+ * 重みにした 1 つの風の式で、幹はほぼ動かず、枝先だけがゆっくりしなる。
+ * 花は枝先にビルボードで置き、木と同じ風に乗せる。
  *
  * 境界は既存のまま: 外部テクスチャの fetch なし、`blob:` なし、CSP 変更なし。
- * 画像は同梱の webp のみ。強度・品質段・reduced-motion・非表示停止は
- * 既存の ambient 予算系に合わせる。
+ * 強度・品質段・reduced-motion・非表示停止は既存の ambient 予算系に従う。
  */
 
 const SKY_VERTEX = /* glsl */ `
@@ -51,13 +53,10 @@ const SKY_FRAGMENT = /* glsl */ `
   uniform float uTime;
   uniform float uAspect;
   uniform vec2 uSun;
-  uniform float uWarmth;
   uniform vec3 cZenith;
-  uniform vec3 cUpper;
   uniform vec3 cMiddle;
   uniform vec3 cHorizon;
   uniform vec3 cSun;
-  uniform vec3 cHaze;
 
   varying vec2 vUv;
 
@@ -70,84 +69,223 @@ const SKY_FRAGMENT = /* glsl */ `
   void main() {
     vec2 uv = vUv;
 
-    // 上から下へ: 紫 → 薔薇 → 珊瑚 → 白。夜明けの空。
-    vec3 color = mix(cHorizon, cMiddle, smoothstep(0.0, 0.38, uv.y));
-    color = mix(color, cUpper, smoothstep(0.3, 0.72, uv.y));
-    color = mix(color, cZenith, smoothstep(0.66, 1.0, uv.y));
+    // 昼前の空。上は淡い青、地平は暖かい白。
+    vec3 color = mix(cHorizon, cMiddle, smoothstep(0.0, 0.42, uv.y));
+    color = mix(color, cZenith, smoothstep(0.38, 1.0, uv.y));
 
-    // 太陽。左上手前から射す。中心は飛ばさず、白へ寄せる。
-    vec2 d = uv - uSun;
-    d.x *= uAspect;
+    // 太陽。木の後ろへ置き、花を逆光で透かす。
+    vec2 d = (uv - uSun) * vec2(uAspect, 1.0);
     float r = length(d);
-    float core = exp(-r * 22.0);
-    float glow = exp(-r * 4.6);
-    color = mix(color, cSun, clamp(core * 1.0 + glow * 0.42, 0.0, 1.0));
+    color = mix(color, cSun, clamp(exp(-r * 10.0) * 0.85 + exp(-r * 2.8) * 0.32, 0.0, 1.0));
 
-    // 光芒。角度から外へ伸びる帯を、ゆっくり呼吸させる。
-    float angle = atan(d.y, d.x);
-    float bands = 0.5 + 0.5 * sin(angle * 23.0 + uTime * 0.045);
-    float rays = pow(bands, 7.0);
-    rays *= smoothstep(0.02, 0.5, r) * (1.0 - smoothstep(0.45, 1.15, r));
-    color += cSun * rays * (0.05 + 0.05 * uWarmth);
+    // ごく淡い雲の帯。動かすと空気が動いて見える。
+    float bands = sin(uv.y * 34.0 + uv.x * 5.0 + uTime * 0.02) * 0.5 + 0.5;
+    bands *= smoothstep(0.55, 0.95, uv.y) * (1.0 - smoothstep(0.9, 1.0, uv.y));
+    color += vec3(1.0, 0.98, 0.96) * bands * 0.03;
 
-    // 樹冠の影。右上から大きな面で落ちるので、紙は一様に白くならない。
-    vec2 canopyPoint = vec2(0.88, 1.02);
-    vec2 canopyDelta = (uv - canopyPoint) * vec2(uAspect, 1.0);
-    float canopy = smoothstep(0.35, 1.15, length(canopyDelta));
-    color = mix(color * 0.74, color, canopy);
+    // 地平の霞。
+    float haze = (1.0 - smoothstep(0.0, 0.18, uv.y)) * 0.5;
+    color = mix(color, vec3(1.0, 0.96, 0.9), haze);
 
-    // 下三分の一は霞。紙の下で白く溶かして、文字の背景を安定させる。
-    float haze = (1.0 - smoothstep(0.0, 0.34, uv.y)) * 0.4;
+    color += (hash21(uv * 1024.0) - 0.5) / 255.0;
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+const GROUND_VERTEX = /* glsl */ `
+  precision highp float;
+  varying vec3 vWorld;
+  varying float vDistance;
+  void main() {
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vWorld = world.xyz;
+    vec4 mv = viewMatrix * world;
+    vDistance = length(mv.xyz);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const GROUND_FRAGMENT = /* glsl */ `
+  precision highp float;
+
+  uniform float uTime;
+  uniform vec3 cNear;
+  uniform vec3 cFar;
+  uniform vec3 cHaze;
+
+  varying vec3 vWorld;
+  varying float vDistance;
+
+  float hash21(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+
+  float valueNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float a = hash21(i);
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+  }
+
+  void main() {
+    vec2 p = vWorld.xz;
+    // 風で草がなびく細かいまだら。ゆっくり流す。
+    float n = valueNoise(p * 0.09 + vec2(uTime * 0.012, 0.0));
+    float fine = valueNoise(p * 0.7);
+
+    float depth = clamp((10.0 - vWorld.z) / 110.0, 0.0, 1.0);
+    vec3 color = mix(cNear, cFar, depth);
+    color *= 0.9 + n * 0.22 + fine * 0.06;
+
+    // 陽の当たる面を少し明るく。
+    color += vec3(0.06, 0.05, 0.02) * smoothstep(0.55, 0.95, n);
+
+    // 遠景は霞へ溶かす。
+    float haze = smoothstep(0.55, 1.0, depth);
     color = mix(color, cHaze, haze);
-
-    // 8bit のバンディング対策（暗い面ではないが、空は階調が広い）。
-    color += (hash21(uv * 1024.0 + fract(uTime) * 60.0) - 0.5) / 255.0;
 
     gl_FragColor = vec4(color, 1.0);
   }
 `;
 
-const BOKEH_VERTEX = /* glsl */ `
+const TREE_VERTEX = /* glsl */ `
   precision highp float;
 
-  attribute vec4 aSeed;   // x: x(-1..1) / y: y(-1..1) / z: size / w: phase
-  attribute vec4 aDrift;  // x: driftX / y: driftY / z: seconds / w: opacity
+  attribute float aSway;
+  attribute float aPhase;
+  attribute float aDepth01;
 
   uniform float uTime;
-  uniform vec2 uView;
+  uniform float uGust;
+
+  varying float vDepth01;
+  varying vec3 vNormalW;
+
+  ${WIND_GLSL}
+
+  void main() {
+    vec3 p = position;
+    // 根元は動かない。先端ほど大きくしなる。
+    float weight = aSway * aSway;
+    float s = edohiganSway(uTime, aPhase, uGust);
+    p.x += s * weight * 0.62;
+    p.z += s * weight * 0.16;
+    p.y += sin(uTime * 0.45 + aPhase * 2.0) * 0.05 * weight;
+
+    vDepth01 = aDepth01;
+    vNormalW = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }
+`;
+
+const TREE_FRAGMENT = /* glsl */ `
+  precision highp float;
+
+  uniform vec3 cBarkNear;
+  uniform vec3 cBarkFar;
+  uniform vec3 cHaze;
+
+  varying float vDepth01;
+  varying vec3 vNormalW;
+
+  void main() {
+    // 奥の枝ほど空気の色へ寄せる。
+    vec3 color = mix(cBarkNear, cBarkFar, vDepth01 * 0.55);
+    color = mix(color, cHaze, vDepth01 * 0.12);
+
+    // 太陽側の面をわずかに明るく。
+    float light = clamp(dot(normalize(vNormalW), normalize(vec3(-0.35, 0.75, 0.55))), 0.0, 1.0);
+    color *= 0.82 + light * 0.34;
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+const BLOSSOM_VERTEX = /* glsl */ `
+  precision highp float;
+
+  attribute vec3 aCenter;
+  attribute float aSize;
+  attribute float aPhase;
+  attribute float aTint;
+
+  uniform float uTime;
+  uniform float uGust;
 
   varying vec2 vUv;
-  varying float vAlpha;
+  varying float vTint;
+  varying float vShade;
+
+  ${WIND_GLSL}
 
   void main() {
     vUv = uv;
-    float phase = uTime / max(aDrift.z, 0.001) * 6.28318 + aSeed.w;
-    vec2 offset = vec2(sin(phase), cos(phase * 0.7)) * vec2(aDrift.x, aDrift.y) * uView.y;
-    float x = aSeed.x * uView.x * 0.5 + offset.x;
-    float y = aSeed.y * uView.y * 0.5 + offset.y;
-    vec2 quad = position.xy * aSeed.z * uView.y;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(x + quad.x, y + quad.y, uView.y * 0.12, 1.0);
-    vAlpha = aDrift.w;
+    float s = edohiganSway(uTime, aPhase, uGust);
+    // 木と同じ風に乗せる。花は枝先なので重みは最大。
+    vec3 center = aCenter + vec3(s * 0.62, sin(uTime * 0.9 + aPhase * 3.0) * 0.05, s * 0.16);
+
+    // カメラを向く板（ビルボード）。
+    vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+    vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+    vec3 pos = center + (right * position.x + up * position.y) * aSize;
+
+    vTint = aTint;
+    vShade = 0.75 + 0.25 * position.y;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
 
-const BOKEH_FRAGMENT = /* glsl */ `
+const BLOSSOM_FRAGMENT = /* glsl */ `
   precision highp float;
 
-  uniform vec3 uColor;
+  uniform sampler2D uMap;
+  uniform vec3 cPetal;
+  uniform vec3 cPetalDeep;
 
   varying vec2 vUv;
-  varying float vAlpha;
+  varying float vTint;
+  varying float vShade;
 
   void main() {
-    float d = length(vUv - 0.5) * 2.0;
-    float alpha = (1.0 - smoothstep(0.25, 1.0, d)) * vAlpha;
-    if (alpha < 0.002) discard;
-    gl_FragColor = vec4(uColor, alpha);
+    // 花びら 1 枚を 3 方向へ回して重ね、5 弁の花に近い塊に見せる。
+    vec2 uv2 = vec2(0.5 + (vUv.x - 0.5) * 0.5 - (vUv.y - 0.5) * 0.866,
+                    0.5 + (vUv.x - 0.5) * 0.866 + (vUv.y - 0.5) * 0.5);
+    vec2 uv3 = vec2(0.5 + (vUv.x - 0.5) * 0.5 + (vUv.y - 0.5) * 0.866,
+                    0.5 - (vUv.x - 0.5) * 0.866 + (vUv.y - 0.5) * 0.5);
+    float a = max(texture2D(uMap, vUv).a, max(texture2D(uMap, uv2).a, texture2D(uMap, uv3).a));
+
+    float alpha = a * vShade;
+    if (alpha < 0.02) discard;
+
+    vec3 color = mix(cPetalDeep, cPetal, vTint);
+    gl_FragColor = vec4(color * (0.86 + vShade * 0.24), alpha);
   }
 `;
 
-const SKY_COLORS = DAWN_SKY;
+const SKY_COLORS = {
+  zenith: [0.45, 0.64, 0.84],
+  middle: [0.78, 0.84, 0.84],
+  horizon: [1.0, 0.92, 0.79],
+  sun: [1.0, 0.97, 0.88],
+} as const;
+
+const GROUND_COLORS = {
+  near: [0.28, 0.38, 0.19],
+  far: [0.55, 0.64, 0.42],
+  haze: [0.93, 0.92, 0.84],
+} as const;
+
+const BARK_COLORS = {
+  near: [0.07, 0.05, 0.05],
+  far: [0.18, 0.13, 0.14],
+  haze: [0.85, 0.82, 0.78],
+} as const;
 
 export type EdohiganSceneBackdropProps = {
   intensity: AmbientIntensity;
@@ -202,7 +340,6 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
     };
   }, [active, reducedMotion, failed]);
 
-  // 失敗したら何も出さない。紙は不透明のまま（従来の見た目）に戻る。
   if (!active || failed) {
     return null;
   }
@@ -217,6 +354,94 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
   );
 }
 
+const TREE_SCALE = 1.35;
+const GROUND_Y = -9;
+const TREE_DEPTH = -6;
+
+/** 木の骨格を、頂点ごとの揺れ重みを持つ管メッシュにする。 */
+function buildTreeGeometry(THREE: typeof import("three"), tree: Tree) {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const sway: number[] = [];
+  const phase: number[] = [];
+  const depth: number[] = [];
+  const indices: number[] = [];
+
+  const SIDES = 6;
+  const RINGS = 3;
+
+  const basis = (direction: [number, number, number]) => {
+    const helper: [number, number, number] = Math.abs(direction[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+    const u: [number, number, number] = [
+      direction[1] * helper[2] - direction[2] * helper[1],
+      direction[2] * helper[0] - direction[0] * helper[2],
+      direction[0] * helper[1] - direction[1] * helper[0],
+    ];
+    const length = Math.hypot(u[0], u[1], u[2]) || 1;
+    const unit: [number, number, number] = [u[0] / length, u[1] / length, u[2] / length];
+    const v: [number, number, number] = [
+      direction[1] * unit[2] - direction[2] * unit[1],
+      direction[2] * unit[0] - direction[0] * unit[2],
+      direction[0] * unit[1] - direction[1] * unit[0],
+    ];
+    return { unit, v };
+  };
+
+  const branchPhase = (branch: TreeBranch) => branch.phase;
+
+  for (const branch of tree.branches) {
+    const start = branch.start as unknown as [number, number, number];
+    const end = branch.end as unknown as [number, number, number];
+    const delta: [number, number, number] = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
+    const length = Math.hypot(...delta) || 1;
+    const normalized: [number, number, number] = [delta[0] / length, delta[1] / length, delta[2] / length];
+    const { unit, v } = basis(normalized);
+    const baseIndex = positions.length / 3;
+
+    for (let ring = 0; ring <= RINGS; ring += 1) {
+      const t = ring / RINGS;
+      const radius = branch.radiusStart + (branch.radiusEnd - branch.radiusStart) * t;
+      const cx = start[0] + delta[0] * t;
+      const cy = start[1] + delta[1] * t;
+      const cz = start[2] + delta[2] * t;
+      const ringSway = branch.swayStart + (branch.sway - branch.swayStart) * t;
+      for (let side = 0; side < SIDES; side += 1) {
+        const angle = (side / SIDES) * Math.PI * 2;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const nx = unit[0] * cos + v[0] * sin;
+        const ny = unit[1] * cos + v[1] * sin;
+        const nz = unit[2] * cos + v[2] * sin;
+        positions.push(cx + nx * radius, cy + ny * radius, cz + nz * radius);
+        normals.push(nx, ny, nz);
+        sway.push(ringSway);
+        phase.push(branchPhase(branch));
+        depth.push(branch.depth / 5);
+      }
+    }
+
+    for (let ring = 0; ring < RINGS; ring += 1) {
+      for (let side = 0; side < SIDES; side += 1) {
+        const next = (side + 1) % SIDES;
+        const a = baseIndex + ring * SIDES + side;
+        const b = baseIndex + ring * SIDES + next;
+        const c = baseIndex + (ring + 1) * SIDES + side;
+        const d = baseIndex + (ring + 1) * SIDES + next;
+        indices.push(a, c, b, b, c, d);
+      }
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  geometry.setAttribute("aSway", new THREE.Float32BufferAttribute(sway, 1));
+  geometry.setAttribute("aPhase", new THREE.Float32BufferAttribute(phase, 1));
+  geometry.setAttribute("aDepth01", new THREE.Float32BufferAttribute(depth, 1));
+  geometry.setIndex(indices);
+  return geometry;
+}
+
 function startBackdrop(
   THREE: typeof import("three"),
   canvas: HTMLCanvasElement,
@@ -227,13 +452,22 @@ function startBackdrop(
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: false,
-    antialias: false,
-    depth: false,
+    antialias: true,
+    depth: true,
     stencil: false,
     powerPreference: "low-power",
     preserveDrawingBuffer: false,
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setClearColor(0x000000, 1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
+  const cameraZ = 50;
+  camera.position.set(0, 0.5, cameraZ);
+
+  const viewHeightAtZero = 2 * Math.tan((45 * Math.PI) / 360) * cameraZ;
+  const view = { width: viewHeightAtZero, height: viewHeightAtZero };
 
   // --- 空 ---------------------------------------------------------------
   const skyScene = new THREE.Scene();
@@ -242,14 +476,11 @@ function startBackdrop(
     uniforms: {
       uTime: { value: 0 },
       uAspect: { value: 1.6 },
-      uSun: { value: new THREE.Vector2(0.24, 0.82) },
-      uWarmth: { value: 0.6 },
+      uSun: { value: new THREE.Vector2(0.72, 0.62) },
       cZenith: { value: new THREE.Color(...SKY_COLORS.zenith) },
-      cUpper: { value: new THREE.Color(...SKY_COLORS.upper) },
       cMiddle: { value: new THREE.Color(...SKY_COLORS.middle) },
       cHorizon: { value: new THREE.Color(...SKY_COLORS.horizon) },
       cSun: { value: new THREE.Color(...SKY_COLORS.sun) },
-      cHaze: { value: new THREE.Color(...SKY_COLORS.haze) },
     },
     vertexShader: SKY_VERTEX,
     fragmentShader: SKY_FRAGMENT,
@@ -260,58 +491,48 @@ function startBackdrop(
   sky.frustumCulled = false;
   skyScene.add(sky);
 
-  // --- 情景 -------------------------------------------------------------
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
-  const cameraDistance = 50;
-  camera.position.set(0, 0, cameraDistance);
+  // --- 草原 -------------------------------------------------------------
+  const groundGeometry = new THREE.PlaneGeometry(600, 600, 1, 1);
+  groundGeometry.rotateX(-Math.PI / 2);
+  const groundMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      cNear: { value: new THREE.Color(...GROUND_COLORS.near) },
+      cFar: { value: new THREE.Color(...GROUND_COLORS.far) },
+      cHaze: { value: new THREE.Color(...GROUND_COLORS.haze) },
+    },
+    vertexShader: GROUND_VERTEX,
+    fragmentShader: GROUND_FRAGMENT,
+  });
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.position.set(0, GROUND_Y, -120);
+  scene.add(ground);
 
-  const viewHeightAtZero = 2 * Math.tan((45 * Math.PI) / 360) * cameraDistance;
-  const view = { width: viewHeightAtZero, height: viewHeightAtZero };
+  // --- 木 ---------------------------------------------------------------
+  const tree = growTree();
+  const treeGeometry = buildTreeGeometry(THREE, tree);
+  const treeMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uGust: { value: 0.5 },
+      cBarkNear: { value: new THREE.Color(...BARK_COLORS.near) },
+      cBarkFar: { value: new THREE.Color(...BARK_COLORS.far) },
+      cHaze: { value: new THREE.Color(...BARK_COLORS.haze) },
+    },
+    vertexShader: TREE_VERTEX,
+    fragmentShader: TREE_FRAGMENT,
+  });
+  const treeMesh = new THREE.Mesh(treeGeometry, treeMaterial);
+  treeMesh.scale.setScalar(TREE_SCALE);
+  treeMesh.position.set(18, GROUND_Y, TREE_DEPTH);
+  treeMesh.frustumCulled = false;
+  scene.add(treeMesh);
 
+  // --- 花 ---------------------------------------------------------------
   const petalTexture = new THREE.TextureLoader().load(petalUrl);
   petalTexture.colorSpace = THREE.SRGBColorSpace;
 
-  // --- 花弁 -------------------------------------------------------------
-  const capacity = 160;
-  const petals = createPetalGeometry(THREE, capacity);
-  const sharedUniforms = {
-    uTime: { value: 0 },
-    uGust: { value: 0.5 },
-    uView: { value: new THREE.Vector2(view.width, view.height) },
-    uSpanScale: { value: 1.3 },
-  };
-  const petalMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      ...sharedUniforms,
-      uMap: { value: petalTexture },
-      uTint: { value: new THREE.Color(...DAWN_PETAL_TINT) },
-      uAerialTint: { value: new THREE.Color(0.52, 0.36, 0.44) },
-      uClearInner: { value: 0 },
-      uClearOuter: { value: 0 },
-      // 紙の奥なので中央カラムを空ける必要がない。
-      uClearStrength: { value: 0 },
-      uFarKeep: { value: 1 },
-      uOpacityScale: { value: 0.9 },
-      uLodBias: { value: 2.4 },
-    },
-    vertexShader: PETAL_VERTEX,
-    fragmentShader: PETAL_FRAGMENT,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-  });
-  const petalMesh = new THREE.Mesh(petals.geometry, petalMaterial);
-  petalMesh.frustumCulled = false;
-  petalMesh.renderOrder = 2;
-  scene.add(petalMesh);
-
-  // --- 前景ボケ ---------------------------------------------------------
-  const bokehCapacity = 8;
-  const bokeh = createBokehPetals(bokehCapacity);
-  const bokehGeometry = new THREE.InstancedBufferGeometry();
-  const bokehSeeds = new THREE.InstancedBufferAttribute(new Float32Array(bokehCapacity * 4), 4);
-  const bokehDrift = new THREE.InstancedBufferAttribute(new Float32Array(bokehCapacity * 4), 4);
+  const blossomGeometry = new THREE.InstancedBufferGeometry();
   {
     const quad = [
       [-0.5, -0.5, 0, 0],
@@ -330,32 +551,77 @@ function startBackdrop(
       uvs[index * 2] = u;
       uvs[index * 2 + 1] = v;
     });
-    bokehGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    bokehGeometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    blossomGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    blossomGeometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
   }
-  bokeh.forEach((item, index) => {
-    bokehSeeds.setXYZW(index, item.x, item.y, item.size, item.phase);
-    bokehDrift.setXYZW(index, item.driftX, item.driftY, item.seconds, item.opacity);
+  const blossomCount = tree.blossoms.length;
+  const centers = new Float32Array(blossomCount * 3);
+  const sizes = new Float32Array(blossomCount);
+  const phases = new Float32Array(blossomCount);
+  const tints = new Float32Array(blossomCount);
+  tree.blossoms.forEach((blossom, index) => {
+    centers[index * 3] = blossom.position[0];
+    centers[index * 3 + 1] = blossom.position[1];
+    centers[index * 3 + 2] = blossom.position[2];
+    sizes[index] = blossom.size;
+    phases[index] = blossom.phase;
+    tints[index] = blossom.tint;
   });
-  bokehGeometry.setAttribute("aSeed", bokehSeeds);
-  bokehGeometry.setAttribute("aDrift", bokehDrift);
-  bokehGeometry.instanceCount = bokeh.length;
-  const bokehMaterial = new THREE.ShaderMaterial({
+  blossomGeometry.setAttribute("aCenter", new THREE.InstancedBufferAttribute(centers, 3));
+  blossomGeometry.setAttribute("aSize", new THREE.InstancedBufferAttribute(sizes, 1));
+  blossomGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(phases, 1));
+  blossomGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(tints, 1));
+  blossomGeometry.instanceCount = blossomCount;
+
+  const blossomMaterial = new THREE.ShaderMaterial({
     uniforms: {
-      uTime: sharedUniforms.uTime,
-      uView: sharedUniforms.uView,
-      uColor: { value: new THREE.Color(1.0, 0.9, 0.86) },
+      uTime: { value: 0 },
+      uGust: { value: 0.5 },
+      uMap: { value: petalTexture },
+      cPetal: { value: new THREE.Color(1.0, 0.95, 0.96) },
+      cPetalDeep: { value: new THREE.Color(0.96, 0.74, 0.8) },
     },
-    vertexShader: BOKEH_VERTEX,
-    fragmentShader: BOKEH_FRAGMENT,
+    vertexShader: BLOSSOM_VERTEX,
+    fragmentShader: BLOSSOM_FRAGMENT,
     transparent: true,
-    depthTest: false,
     depthWrite: false,
   });
-  const bokehMesh = new THREE.Mesh(bokehGeometry, bokehMaterial);
-  bokehMesh.frustumCulled = false;
-  bokehMesh.renderOrder = 3;
-  scene.add(bokehMesh);
+  const blossoms = new THREE.Mesh(blossomGeometry, blossomMaterial);
+  blossoms.scale.setScalar(TREE_SCALE);
+  blossoms.position.copy(treeMesh.position);
+  blossoms.frustumCulled = false;
+  scene.add(blossoms);
+
+  // --- 舞う花びら -------------------------------------------------------
+  const petalCapacity = 96;
+  const petal = createPetalGeometry(THREE, petalCapacity);
+  const petalUniforms = {
+    uTime: { value: 0 },
+    uGust: { value: 0.5 },
+    uView: { value: new THREE.Vector2(view.width, view.height) },
+    uSpanScale: { value: 1.3 },
+  };
+  const petalMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      ...petalUniforms,
+      uMap: { value: petalTexture },
+      uTint: { value: new THREE.Color(...DAWN_PETAL_TINT) },
+      uAerialTint: { value: new THREE.Color(1.0, 0.93, 0.9) },
+      uClearInner: { value: 0 },
+      uClearOuter: { value: 0 },
+      uClearStrength: { value: 0 },
+      uFarKeep: { value: 1 },
+      uOpacityScale: { value: 0.95 },
+      uLodBias: { value: 1.6 },
+    },
+    vertexShader: PETAL_VERTEX,
+    fragmentShader: PETAL_FRAGMENT,
+    transparent: true,
+    depthWrite: false,
+  });
+  const petals = new THREE.Mesh(petal.geometry, petalMaterial);
+  petals.frustumCulled = false;
+  scene.add(petals);
 
   let quality = initialAmbientQualityState(initialIntensity);
   let currentIntensity = initialIntensity;
@@ -364,11 +630,10 @@ function startBackdrop(
 
   const applyPetals = (intensity: AmbientIntensity, tier: 0 | 1 | 2 | 3) => {
     const seeds = splitPetalBands(createScenePetals(intensity, tier)).backdrop;
-    petals.write(seeds);
+    petal.write(seeds);
   };
 
   const applyLayout = () => {
-    // 紙の奥なので解像度は控えめでよい（DPR 1.5 上限）。前景より先に軽くする。
     const dpr = Math.min(window.devicePixelRatio || 1, quality.tier >= 2 ? 1 : 1.5);
     const width = Math.max(1, Math.floor(window.innerWidth * dpr));
     const height = Math.max(1, Math.floor(window.innerHeight * dpr));
@@ -380,12 +645,15 @@ function startBackdrop(
     }
     camera.aspect = window.innerWidth / Math.max(window.innerHeight, 1);
     camera.updateProjectionMatrix();
-    const heightAtZero = 2 * Math.tan((45 * Math.PI) / 360) * cameraDistance;
+    const heightAtZero = 2 * Math.tan((45 * Math.PI) / 360) * cameraZ;
     view.height = heightAtZero;
     view.width = heightAtZero * camera.aspect;
-    sharedUniforms.uView.value.set(view.width, view.height);
+    petalUniforms.uView.value.set(view.width, view.height);
     skyMaterial.uniforms.uAspect.value = camera.aspect;
 
+    // 木は画面の右へ。文字のカラム（中央）に幹を置かない。
+    treeMesh.position.set(view.width * 0.3, GROUND_Y, TREE_DEPTH);
+    blossoms.position.copy(treeMesh.position);
   };
 
   applyLayout();
@@ -400,13 +668,19 @@ function startBackdrop(
   let paused = document.hidden || !document.hasFocus();
 
   const draw = (time: number) => {
-    const wind = edohiganWind(time);
-    sharedUniforms.uTime.value = time;
-    sharedUniforms.uGust.value = wind;
+    const gust = edohiganWind(time);
     skyMaterial.uniforms.uTime.value = time;
-    skyMaterial.uniforms.uWarmth.value = wind;
+    groundMaterial.uniforms.uTime.value = time;
+    treeMaterial.uniforms.uTime.value = time;
+    treeMaterial.uniforms.uGust.value = gust;
+    blossomMaterial.uniforms.uTime.value = time;
+    blossomMaterial.uniforms.uGust.value = gust;
+    petalUniforms.uTime.value = time;
+    petalUniforms.uGust.value = gust;
+
     renderer.render(skyScene, skyCamera);
     renderer.autoClear = false;
+    renderer.clearDepth();
     renderer.render(scene, camera);
     renderer.autoClear = true;
   };
@@ -513,10 +787,14 @@ function startBackdrop(
     petalTexture.onUpdate = null;
     sky.geometry.dispose();
     skyMaterial.dispose();
-    petals.geometry.dispose();
+    groundGeometry.dispose();
+    groundMaterial.dispose();
+    treeGeometry.dispose();
+    treeMaterial.dispose();
+    blossomGeometry.dispose();
+    blossomMaterial.dispose();
+    petal.geometry.dispose();
     petalMaterial.dispose();
-    bokehGeometry.dispose();
-    bokehMaterial.dispose();
     petalTexture.dispose();
     renderer.dispose();
   };

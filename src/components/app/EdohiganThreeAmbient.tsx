@@ -4,7 +4,6 @@ import { useReducedMotion } from "../../hooks/app/useReducedMotion";
 import { EdohiganAmbient } from "./EdohiganAmbient";
 import {
   createScenePetals,
-  edohiganBranchSway,
   edohiganWind,
   splitPetalBands,
   READING_CLEAR_INNER,
@@ -23,7 +22,6 @@ import {
   updateAmbientQuality,
 } from "../../features/theme/ambientQuality";
 import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
-import branchUrl from "../../assets/themes/edohigan-branch.webp";
 import petalUrl from "../../assets/themes/edohigan-petal.webp";
 
 /**
@@ -96,40 +94,6 @@ const SHADOW_FRAGMENT = /* glsl */ `
     float alpha = (1.0 - smoothstep(0.1, 1.0, d)) * 0.07 * vOpacity * (1.0 - inside);
     if (alpha < 0.002) discard;
     gl_FragColor = vec4(uShadowColor, alpha);
-  }
-`;
-
-const BRANCH_VERTEX = /* glsl */ `
-  precision highp float;
-
-  uniform float uSway;
-  varying vec2 vUv;
-
-  void main() {
-    vUv = uv;
-    vec3 p = position;
-    // 根元 (uv.y = 0) を軸に、先端ほど大きくしなる。
-    float bend = uv.y * uv.y * uSway * 26.0;
-    p.x += bend;
-    p.y += sin(bend * 3.0) * uv.y * 0.12;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-  }
-`;
-
-const BRANCH_FRAGMENT = /* glsl */ `
-  precision highp float;
-
-  uniform sampler2D uMap;
-  uniform vec3 uTint;
-  uniform float uOpacity;
-
-  varying vec2 vUv;
-
-  void main() {
-    vec4 texel = texture2D(uMap, vUv);
-    float alpha = texel.a * uOpacity;
-    if (alpha < 0.004) discard;
-    gl_FragColor = vec4(texel.rgb * uTint, alpha);
   }
 `;
 
@@ -234,8 +198,6 @@ function startScene(
 
   const petalTexture = new THREE.TextureLoader().load(petalUrl);
   petalTexture.colorSpace = THREE.SRGBColorSpace;
-  const branchTexture = new THREE.TextureLoader().load(branchUrl);
-  branchTexture.colorSpace = THREE.SRGBColorSpace;
 
   const capacity = 96;
   const petal = createPetalGeometry(THREE, capacity);
@@ -283,35 +245,6 @@ function startScene(
     depthWrite: false,
   });
 
-  // --- 枝花（紙の上のシルエット） -------------------------------------
-  // 奥の空に暗い枝を置いても、半透明の紙の前では影が薄い。紙の上に
-  // multiply で直接置く方が「窓辺の枝」として確実に立つ。
-  const branchGeometry = new THREE.PlaneGeometry(1, 1, 24, 24);
-  branchGeometry.translate(0.5, 0.5, 0);
-  const makeBranch = (opacity: number) => {
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        uMap: { value: branchTexture },
-        uTint: { value: new THREE.Color(0.42, 0.26, 0.3) },
-        uOpacity: { value: opacity },
-        uSway: { value: 0 },
-      },
-      vertexShader: BRANCH_VERTEX,
-      fragmentShader: BRANCH_FRAGMENT,
-      transparent: true,
-      depthTest: false,
-      depthWrite: false,
-    });
-    const mesh = new THREE.Mesh(branchGeometry, material);
-    mesh.frustumCulled = false;
-    mesh.renderOrder = 0;
-    return { mesh, material };
-  };
-  const nearBranch = makeBranch(0.62);
-  const farBranch = makeBranch(0.34);
-  farBranch.mesh.scale.x = -1;
-  scene.add(nearBranch.mesh, farBranch.mesh);
-
   const petals = new THREE.Mesh(petal.geometry, petalMaterial);
   const shadows = new THREE.Mesh(shadow.geometry, shadowMaterial);
   petals.frustumCulled = false;
@@ -348,26 +281,6 @@ function startScene(
     view.width = heightAtZero * camera.aspect;
     sharedUniforms.uView.value.set(view.width, view.height);
 
-    const nearWidth = Math.min(view.width * 0.34, view.height * 0.46);
-    const nearHeight = nearWidth * 0.9;
-    nearBranch.mesh.scale.set(nearWidth, nearHeight, 1);
-    nearBranch.mesh.position.set(
-      -view.width * 0.5 - nearWidth * 0.06,
-      -view.height * 0.5 - nearHeight * 0.24,
-      4,
-    );
-    nearBranch.mesh.rotation.z = 0.04;
-
-    const farWidth = Math.min(view.width * 0.3, view.height * 0.4);
-    const farHeight = farWidth * 0.9;
-    // 右上は鏡像で置く（scale.x を負にして、原点から左へ伸ばす）。
-    farBranch.mesh.scale.set(-farWidth, farHeight, 1);
-    farBranch.mesh.position.set(
-      view.width * 0.5 + farWidth * 0.04,
-      view.height * 0.5 - farHeight * 0.66,
-      2,
-    );
-    farBranch.mesh.rotation.z = -0.1;
   };
 
   applyLayout();
@@ -382,12 +295,8 @@ function startScene(
   let paused = document.hidden || !document.hasFocus();
 
   const draw = (time: number) => {
-    const wind = edohiganWind(time);
-    const sway = edohiganBranchSway(time);
     sharedUniforms.uTime.value = time;
-    sharedUniforms.uGust.value = wind;
-    nearBranch.material.uniforms.uSway.value = sway * 1.4;
-    farBranch.material.uniforms.uSway.value = sway * 0.8;
+    sharedUniforms.uGust.value = edohiganWind(time);
     renderer.render(scene, camera);
   };
 
@@ -475,7 +384,6 @@ function startScene(
     }
   };
   petalTexture.onUpdate = redrawWhenStill;
-  branchTexture.onUpdate = redrawWhenStill;
 
   if (options.animate) {
     schedule();
@@ -492,15 +400,10 @@ function startScene(
     window.removeEventListener("focus", onFocus);
     window.removeEventListener("blur", onBlur);
     petalTexture.onUpdate = null;
-    branchTexture.onUpdate = null;
-    branchGeometry.dispose();
-    nearBranch.material.dispose();
-    farBranch.material.dispose();
     petal.geometry.dispose();
     shadow.geometry.dispose();
     petalMaterial.dispose();
     shadowMaterial.dispose();
-    branchTexture.dispose();
     petalTexture.dispose();
     renderer.dispose();
   };

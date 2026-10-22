@@ -36,11 +36,19 @@ describe("edohigan dawn backdrop", () => {
     expect(shell).toContain("isolation: isolate");
   });
 
-  it("turns the paper into glass only while the scene exists", () => {
+  it("keeps the writing surface as a scrim only while the scene exists", () => {
     // 情景が無いときは従来の不透明な紙。:has() の中だけで透かす。
     expect(css).toContain(":root[data-theme=\"edohigan\"] .app-shell:has(.edohigan-scene-backdrop)");
-    expect(ruleBody(css, ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor'))
-      .toContain("backdrop-filter: blur(");
+    const editor = ruleBody(
+      css,
+      ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor',
+    );
+    // 「紙」ではなく、中央が明るく外へ薄れる霞。情景が右と下に残る。
+    expect(editor).toContain("linear-gradient(");
+    expect(editor).toContain("rgba(255, 253, 249, 0.85) 58%");
+    expect(editor).toContain("background-color: transparent");
+    // 背景をぼかすと木が消えるので使わない。
+    expect(editor).not.toContain("backdrop-filter");
   });
 
   it("keeps the reading surface solid so text never sits on the scene", () => {
