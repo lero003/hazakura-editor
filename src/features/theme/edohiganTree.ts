@@ -46,9 +46,9 @@ export type Tree = {
   crownRadius: number;
 };
 
-export const TREE_MAX_DEPTH = 5;
+export const TREE_MAX_DEPTH = 6;
 /** 1 本の枝先に置く花の数。 */
-export const BLOSSOMS_PER_TIP = 12;
+export const BLOSSOMS_PER_TIP = 7;
 
 type Vec = [number, number, number];
 
@@ -97,9 +97,9 @@ function perpendicular(v: Vec): Vec {
 export const TREE_DEFAULTS = {
   seed: 0xed0_0421,
   trunkLength: 8.2,
-  trunkRadius: 1.15,
+  trunkRadius: 0.98,
   /** 世代ごとの長さ・太さの減衰。 */
-  lengthDecay: 0.76,
+  lengthDecay: 0.78,
   radiusDecay: 0.66,
   /** 幹から出る枝の本数。 */
   trunkChildren: 3,
@@ -136,7 +136,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
 
   const root: Task = {
     origin: [0, 0, 0],
-    direction: normalize([0.02, 1, 0.01]),
+    direction: normalize([0.09, 1, 0.03]),
     length: TREE_DEFAULTS.trunkLength,
     radius: TREE_DEFAULTS.trunkRadius,
     depth: 0,
@@ -181,7 +181,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
 
       // 外向きと上向きを少し混ぜる。深い枝ほど横へ、先端は少し垂れる。
       const outward = normalize([next[0], 0, next[2]]);
-      const outwardWeight = 0.1 + depth * 0.09;
+      const outwardWeight = 0.12 + depth * 0.1;
       const upWeight = depth < 2 ? 0.22 : depth >= TREE_MAX_DEPTH - 1 ? -0.16 : 0.06;
       next = normalize([
         next[0] + outward[0] * outwardWeight,
@@ -211,10 +211,10 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
 
   // 枝の途中にも花を置く。先端だけだと「綿の塊」に見えるため。
   for (const branch of branches) {
-    if (branch.depth < TREE_MAX_DEPTH - 1 || branch.sway < 0.45) {
+    if (branch.depth < 3 || branch.sway < 0.35) {
       continue;
     }
-    const count = branch.depth >= TREE_MAX_DEPTH ? 2 : 1;
+    const count = branch.depth >= TREE_MAX_DEPTH - 1 ? 2 : 1;
     for (let index = 0; index < count; index += 1) {
       const t = 0.45 + random() * 0.55;
       const spread = 0.25 + random() * 0.3;

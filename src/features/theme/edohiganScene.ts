@@ -214,7 +214,7 @@ export const DAWN_SKY = {
 } as const;
 
 /** 奥の花弁の色。空気遠近で、遠いほど空の色へ寄せる。 */
-export const DAWN_PETAL_TINT = [0.93, 0.62, 0.68] as const;
+export const DAWN_PETAL_TINT = [1.0, 0.84, 0.88] as const;
 
 /**
  * 前景ボケ。紙のすぐ手前を横切る、ピントの外れた大きな花弁。

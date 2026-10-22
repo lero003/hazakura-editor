@@ -45,7 +45,9 @@ describe("edohigan dawn backdrop", () => {
     );
     // 「紙」ではなく、中央が明るく外へ薄れる霞。情景が右と下に残る。
     expect(editor).toContain("linear-gradient(");
-    expect(editor).toContain("rgba(255, 253, 249, 0.85) 58%");
+    // 中央の帯は読める濃さ、外側は情景が残る薄さ。
+    expect(editor).toContain("rgba(255, 253, 249, 0.62) 56%");
+    expect(editor).toContain("rgba(255, 252, 247, 0.02) 94%");
     expect(editor).toContain("background-color: transparent");
     // 背景をぼかすと木が消えるので使わない。
     expect(editor).not.toContain("backdrop-filter");

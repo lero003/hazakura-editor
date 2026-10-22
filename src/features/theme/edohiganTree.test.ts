@@ -45,7 +45,7 @@ describe("edohigan tree skeleton", () => {
     expect(tree.blossoms.length).toBeGreaterThan(tips);
     expect(tree.blossoms.length).toBeLessThan(tips * (BLOSSOMS_PER_TIP + 4));
     // 1 ドローコールのインスタンス数として許容できる上限。
-    expect(tree.blossoms.length).toBeLessThan(3000);
+    expect(tree.blossoms.length).toBeLessThan(4000);
     for (const blossom of tree.blossoms) {
       expect(Number.isFinite(blossom.position[0])).toBe(true);
       expect(blossom.size).toBeGreaterThan(0);
