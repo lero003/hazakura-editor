@@ -7,6 +7,10 @@ Last reviewed: 2026-10-21
 
 ## Current State
 
+- **GitHubソースチェックポイント v3.4.0（2026-10-21）:** 現行実装を `main` と `v3.4.0` タグへ揃え、
+  GitHub Releaseはソースのみとする。pkg / DMGは添付せず、App Store upload・実機受入とは分ける。
+  [Release本文と制限](releases/3.4.0-source-tag.release.md)を参照。
+
 - **版の区分（2026-10-19）:** v3.3は審査提出済みとのオーナー報告を受け、テーマ刷新と調整を
   **v3.4.0**へ分ける。v3.3の提出build/source対応とApple側の現在の審査状態は独立未照合。
   v3.3として先に作成したテーマ入りpkgは旧ローカル候補で、提出済み版と同一とは推定しない。
@@ -20,7 +24,7 @@ Last reviewed: 2026-10-21
   scripts 31件、Rust 515成功 / 4 ignored、型検査・fmt・両lane Vite・surface 137件が成功。
   隔離WKWebViewで背景光の到達・紙色の維持・花弁の停止を確認した。
   commit済みclean sourceからS10入り署名pkgを再生成し、署名・payload一致を確認。
-  最新候補の版/build/hash/source状態はignoredの候補記録で照合する。push・uploadは未実施。
+  最新候補の版/build/hash/source状態はignoredの候補記録で照合する。App Store uploadは未実施。
   実CodeMirror/IME/Retina/VoiceOver・署名候補GUIは未確認。
   [変更](theme-atmosphere-brushup-plan.md)・[確認範囲](reviews/2026-10-21-s10-theme-depth-review.md)。
 

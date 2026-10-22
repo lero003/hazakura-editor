@@ -12,6 +12,9 @@ Last reviewed: 2026-10-21
 先に作成した3.3.0のテーマ入りpkgを提出済みv3.3と同一視しない。
 [v3.4の範囲と受け入れ](releases/3.4.0-theme-atmosphere.md)を現行候補の入口とする。
 
+GitHubのソースチェックポイントは `v3.4.0`。`main` とタグへ現行実装を固定し、Releaseはソースのみ。
+pkg / DMGは添付せず、Apple側の状態・署名候補GUIの受入とは分ける。[Release本文](releases/3.4.0-source-tag.release.md)。
+
 S10（2026-10-21）で、S9後に残った「紙が無地で平坦」な状態へ手を入れた。
 共通の紙の縁、深海の紙面深度と前景ボケ、江戸彼岸の花弁増量・枝の揺れ・朝の光、
 CRTの蛍光ブルーム・RGBグリル・紙面ヒートスポットを追加した。文字色・紙の不透明度・
@@ -20,7 +23,7 @@ CRTの蛍光ブルーム・RGBグリル・紙面ヒートスポットを追加�
 修正後はfrontend 332 files / 3,116 tests・scripts 31件、Rust 515成功 / 4 ignored、
 型検査・fmt・両lane Vite・surface 137件が成功。隔離WKWebViewで背景光・紙色・停止を追試した。
 **commit済みclean sourceからS10入り署名pkgを再生成し、署名・payload一致を確認済み。**
-実CodeMirror/IME/Retina/VoiceOver・署名候補GUIは未確認。push・uploadは未実施。
+実CodeMirror/IME/Retina/VoiceOver・署名候補GUIは未確認。App Store uploadは未実施。
 変更は[計画S10](theme-atmosphere-brushup-plan.md)、条件は[S10レビュー](reviews/2026-10-21-s10-theme-depth-review.md)。
 
 S9追試で深海ビネットを紙の後ろへ、全テーマのebook/page-sheetを不透明紙へ統一した。
