@@ -4,28 +4,6 @@ import { readProjectFile } from "../test-support/source";
 
 const css = stripCssComments(readProjectFile("src/styles/edohigan-theme.css"));
 
-describe("edohigan three.js scene layer", () => {
-  it("multiplies onto the paper instead of covering it", () => {
-    // 明色テーマでは、上に乗る層が紙を明るく置き換えると本文が読めなくなる。
-    const scene = ruleBody(css, ".edohigan-scene");
-    expect(scene).toContain("mix-blend-mode: multiply");
-    expect(scene).toContain("pointer-events: none");
-  });
-
-  it("stays under dialogs and the command palette", () => {
-    const scene = ruleBody(css, ".edohigan-scene");
-    expect(scene).toContain("z-index: calc(var(--z-base) + 1)");
-    expect(scene).not.toContain("--z-modal");
-    expect(scene).not.toContain("--z-palette");
-  });
-
-  it("fills the window without changing the editor layout", () => {
-    const scene = ruleBody(css, ".edohigan-scene");
-    expect(scene).toContain("position: fixed");
-    expect(scene).toContain("inset: 0");
-  });
-});
-
 describe("edohigan dawn backdrop", () => {
   it("keeps the sky behind the editor content inside the shell", () => {
     const backdrop = ruleBody(css, ".edohigan-scene-backdrop");
@@ -43,11 +21,11 @@ describe("edohigan dawn backdrop", () => {
       css,
       ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor',
     );
-    // 「紙」ではなく、中央が明るく外へ薄れる霞。情景が右と下に残る。
-    expect(editor).toContain("linear-gradient(");
-    // 中央の帯は読める濃さ、外側は情景が残る薄さ。
-    expect(editor).toContain("rgba(255, 253, 249, 0.62) 56%");
-    expect(editor).toContain("rgba(255, 252, 247, 0.02) 94%");
+    // 「紙」ではなく、本文のあたりだけが明るく外へ薄れる霞。情景が右と下に残る。
+    // 本文の帯は読める濃さ、外側は情景が残る薄さ。
+    expect(editor).toContain("radial-gradient(");
+    expect(editor).toContain("rgba(255, 253, 249, 0.7) 58%");
+    expect(editor).toContain("rgba(255, 253, 249, 0.03) 100%");
     expect(editor).toContain("background-color: transparent");
     // 背景をぼかすと木が消えるので使わない。
     expect(editor).not.toContain("backdrop-filter");

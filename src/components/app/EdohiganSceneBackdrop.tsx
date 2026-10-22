@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { AmbientIntensity } from "../../types";
 import { useReducedMotion } from "../../hooks/app/useReducedMotion";
+import { EdohiganAmbient } from "./EdohiganAmbient";
 import {
   createScenePetals,
   splitPetalBands,
@@ -389,8 +390,12 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
     };
   }, [active, reducedMotion, failed]);
 
-  if (!active || failed) {
+  if (!active) {
     return null;
+  }
+  if (failed) {
+    // WebGL2 が無い環境では、紙の上を流れる CSS 版の花弁へ戻す。
+    return <EdohiganAmbient intensity={intensity} />;
   }
 
   return (

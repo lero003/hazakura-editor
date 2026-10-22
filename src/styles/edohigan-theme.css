@@ -150,21 +150,6 @@
   --branch-opacity: 0.34;
 }
 
-/* 3.4 three.js 情景レイヤー（スパイク、既定は無効）
-   紙の上へ multiply で「影」を落とす。彩度の高い光を重ねるのではなく、
-   花と枝の影で紙に情景を通す（明色テーマの可読性契約を変えないため）。
-   中央カラムの退避はシェーダー側で行うので、ここでは mask を掛けない。 */
-.edohigan-scene {
-  display: block;
-  height: 100%;
-  inset: 0;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  position: fixed;
-  width: 100%;
-  z-index: calc(var(--z-base) + 1);
-}
-
 /* 3.5 草原と一本の木（three.js）
    背景を「紙」として扱うのをやめ、空・草原・木・花で一つの風景にした。
    文字の面は紙色ではなく、中央だけ明るい霞を敷いて読ませる
@@ -188,15 +173,12 @@
    右の木と下の草原が透ける。読む面（--surface-paper-solid）は不透明のまま。 */
 :root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor {
   background-color: transparent;
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 252, 247, 0.04) 0%,
-    rgba(255, 253, 249, 0.48) 14%,
-    rgba(255, 253, 249, 0.62) 26%,
-    rgba(255, 253, 249, 0.62) 56%,
-    rgba(255, 253, 249, 0.36) 70%,
-    rgba(255, 252, 247, 0.1) 84%,
-    rgba(255, 252, 247, 0.02) 94%
+  background-image: radial-gradient(
+    64% 46% at 47% 33%,
+    rgba(255, 253, 249, 0.74) 0%,
+    rgba(255, 253, 249, 0.7) 58%,
+    rgba(255, 253, 249, 0.4) 82%,
+    rgba(255, 253, 249, 0.03) 100%
   );
 }
 
