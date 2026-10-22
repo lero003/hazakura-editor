@@ -226,7 +226,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
         ],
         size: 0.3 + random() * 0.3,
         phase: branch.phase + random() * 0.8,
-        tint: Math.min(1, 0.3 + branch.sway * 0.7),
+        tint: Math.min(1, 0.15 + branch.sway * 0.45 + random() * 0.5),
       });
     }
   }
@@ -235,7 +235,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
     const sway = tipSway[index] / denominator;
     const phase = tipPhase[index];
     for (let count = 0; count < BLOSSOMS_PER_TIP; count += 1) {
-      const spread = 0.45 + random() * 0.5;
+      const spread = 0.28 + random() * 0.32;
       const theta = random() * Math.PI * 2;
       const phi = Math.acos(2 * random() - 1);
       blossoms.push({
@@ -247,7 +247,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
         size: 0.34 + random() * 0.4,
         phase: phase + random() * 0.8,
         // 高いところほど空を背景に明るく見える。
-        tint: Math.min(1, 0.35 + sway * 0.65),
+        tint: Math.min(1, 0.18 + sway * 0.42 + random() * 0.5),
       });
     }
   });

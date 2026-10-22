@@ -201,7 +201,10 @@ const TREE_VERTEX = /* glsl */ `
     vec3 p = position;
     // 根元は動かない。先端ほど大きくしなる。
     float weight = aSway * aSway;
-    float s = edohiganSway(uTime, aPhase, uGust);
+    // 空間位相: 木の左端と右端で位相をずらすと、風が梢を渡って見える。
+    vec3 baseWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+    float spatial = (baseWorld.x + baseWorld.z * 0.6) * 0.11;
+    float s = edohiganSway(uTime, aPhase + spatial, uGust);
     p.x += s * weight * 0.62;
     p.z += s * weight * 0.16;
     p.y += sin(uTime * 0.45 + aPhase * 2.0) * 0.05 * weight;
@@ -276,7 +279,10 @@ const BLOSSOM_VERTEX = /* glsl */ `
 
   void main() {
     vUv = uv;
-    float s = edohiganSway(uTime, aPhase, uGust);
+    // 木と同じ空間位相を使う（同じ風の中にいる）。
+    vec3 centerWorld = (modelMatrix * vec4(aCenter, 1.0)).xyz;
+    float spatial = (centerWorld.x + centerWorld.z * 0.6) * 0.11;
+    float s = edohiganSway(uTime, aPhase + spatial, uGust);
     // 木と同じ風に乗せる。花は枝先なので重みは最大。
     vec3 center = aCenter + vec3(s * 0.62, sin(uTime * 0.9 + aPhase * 3.0) * 0.05, s * 0.16);
 
@@ -315,6 +321,55 @@ const BLOSSOM_FRAGMENT = /* glsl */ `
     // 花の色はスプライト由来。個体差だけ tint で寄せる。
     vec3 color = sprite.rgb * mix(cPetalDeep, cPetal, vTint);
     gl_FragColor = vec4(color * (0.88 + vShade * 0.2), alpha);
+  }
+`;
+
+
+const GRASS_VERTEX = /* glsl */ `
+  precision highp float;
+
+  attribute vec3 aOffset;
+  attribute float aScale;
+  attribute float aPhase;
+
+  uniform float uTime;
+  uniform float uGust;
+
+  varying vec2 vUv;
+  varying float vShade;
+
+  ${WIND_GLSL}
+
+  void main() {
+    vUv = uv;
+    float s = edohiganSway(uTime, aPhase, uGust);
+    float weight = position.y * position.y;
+
+    // カメラの右方向へ向ける（板の向きを揃えない）。
+    vec3 right = vec3(viewMatrix[0][0], 0.0, viewMatrix[2][0]);
+    vec3 local = right * (position.x * aScale * 0.3) + vec3(0.0, position.y * aScale, 0.0);
+    vec3 pos = aOffset + local + vec3(s * weight * aScale * 0.35, 0.0, 0.0);
+
+    vShade = position.y;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  }
+`;
+
+const GRASS_FRAGMENT = /* glsl */ `
+  precision highp float;
+
+  uniform vec3 cBase;
+  uniform vec3 cTip;
+
+  varying vec2 vUv;
+  varying float vShade;
+
+  void main() {
+    // 根元は濃く、穂先は淡く。輪郭は上下でぼかす。
+    float alpha = smoothstep(0.0, 0.12, vShade) * (1.0 - smoothstep(0.72, 1.0, vShade));
+    if (alpha < 0.02) discard;
+    vec3 color = mix(cBase, cTip, vShade);
+    gl_FragColor = vec4(color, alpha * 0.62);
   }
 `;
 
@@ -692,6 +747,57 @@ function startBackdrop(
   blossoms.frustumCulled = false;
   scene.add(blossoms);
 
+  // --- 手前の草 ---------------------------------------------------------
+  // 画面下端のすぐ外に生えている草。手前の枠として置くと、草原の広さが出る。
+  const grassCount = 26;
+  const grassGeometry = new THREE.InstancedBufferGeometry();
+  {
+    // 3 段に絞った葉。根元は広く、穂先はほぼ点。
+    const positions = new Float32Array([
+      -0.5, 0, 0, 0.5, 0, 0,
+      -0.34, 0.55, 0, 0.34, 0.55, 0,
+      0.02, 1, 0, 0.16, 1, 0,
+    ]);
+    const uvs = new Float32Array([0, 0, 1, 0, 0, 0.55, 1, 0.55, 0, 1, 1, 1]);
+    const indices = [0, 2, 1, 1, 2, 3, 2, 4, 3, 3, 4, 5];
+    grassGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    grassGeometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    grassGeometry.setIndex(indices);
+  }
+  const grassOffsets = new Float32Array(grassCount * 3);
+  const grassScales = new Float32Array(grassCount);
+  const grassPhases = new Float32Array(grassCount);
+  for (let index = 0; index < grassCount; index += 1) {
+    // 手前ほど大きく。地面（y = GROUND_Y）から生える。
+    const depth = Math.random();
+    grassOffsets[index * 3] = (Math.random() * 2 - 1) * 26;
+    grassOffsets[index * 3 + 1] = GROUND_Y;
+    grassOffsets[index * 3 + 2] = 26 - depth * 8;
+    grassScales[index] = 1.8 + Math.random() * 3.6;
+    grassPhases[index] = Math.random() * Math.PI * 2;
+  }
+  grassGeometry.setAttribute("aOffset", new THREE.InstancedBufferAttribute(grassOffsets, 3));
+  grassGeometry.setAttribute("aScale", new THREE.InstancedBufferAttribute(grassScales, 1));
+  grassGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(grassPhases, 1));
+  grassGeometry.instanceCount = grassCount;
+  const grassMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uGust: { value: 0.5 },
+      cBase: { value: new THREE.Color(0.2, 0.28, 0.14) },
+      cTip: { value: new THREE.Color(0.5, 0.6, 0.34) },
+    },
+    vertexShader: GRASS_VERTEX,
+    fragmentShader: GRASS_FRAGMENT,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const grass = new THREE.Mesh(grassGeometry, grassMaterial);
+  grass.frustumCulled = false;
+  grass.renderOrder = 4;
+  scene.add(grass);
+
   // --- 舞う花びら -------------------------------------------------------
   const petalCapacity = 96;
   const petal = createPetalGeometry(THREE, petalCapacity);
@@ -779,6 +885,8 @@ function startBackdrop(
     blossomMaterial.uniforms.uGust.value = gust;
     petalUniforms.uTime.value = time;
     petalUniforms.uGust.value = gust;
+    grassMaterial.uniforms.uTime.value = time;
+    grassMaterial.uniforms.uGust.value = gust;
 
     renderer.render(skyScene, skyCamera);
     renderer.autoClear = false;
@@ -897,6 +1005,8 @@ function startBackdrop(
     blossomMaterial.dispose();
     petal.geometry.dispose();
     petalMaterial.dispose();
+    grassGeometry.dispose();
+    grassMaterial.dispose();
     petalTexture.dispose();
     if (blossomTexture !== petalTexture) {
       blossomTexture.dispose();
