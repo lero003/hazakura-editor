@@ -1,26 +1,36 @@
 # Current Work
 
 Status: Operational
-Scope: v3.4テーマ演出ブラッシュアップ（S0〜S10）の受け入れ、v3.3提出報告、過去の記録
+Scope: v3.4.1江戸彼岸の情景候補、v3.4テーマ演出ブラッシュアップ（S0〜S10）、v3.3提出報告、過去の記録
 Authority: High
-Last reviewed: 2026-10-21
+Last reviewed: 2026-10-22
 
 ## 現行候補 — v3.4.1 江戸彼岸の情景（2026-10-22）
 
-江戸彼岸を three.js の二層構成へ刷新した。奥が夜明けの空・太陽・樹冠の影・中景/遠景の花弁、
-手前が枝のシルエット・近景の花弁・接地影。花弁は深度で 1 回だけ分担する。
-紙は `rgba(255,250,246,0.56)` + `backdrop-filter: blur(14px)` のすりガラスにし、
-情景が窓全体へ回り込む。読む面（`--surface-paper-solid`）は不透明のまま。
+江戸彼岸を three.js の風景（夜明けの空・草原・一本の江戸彼岸・舞う花弁）へ刷新した。
+木は骨格から起こし、花は 5 弁のスプライトを枝先へインスタンスで置く。
+情景は 1 枚の canvas に描き、ポスト（深度・ブルーム・グレーディング）で仕上げる。
+書く面は中央が明るい霞のグラデーションで、右の木と下の草原が透ける。
+読む面（`--surface-paper-solid`）は不透明のまま。
 
 - three.js 0.186.1 を追加（動的 import、江戸彼岸のときだけ別チャンク 736.58 kB / gzip 186.86 kB）。
   main の増分は約 10 kB。**依存追加はこの版の新しい事実**で、v3.4 の「依存追加なし」は v3.4.0 まで。
 - 既定で有効。`?edohigan3d=0` / `VITE_HAZAKURA_EDOHIGAN_SCENE=0` で従来の CSS 版へ戻る。
   WebGL2 不可の環境も自動で CSS 版へフォールバックする。
 - 強度・品質段・reduced-motion・非表示停止は既存の ambient 予算系を流用。
-- frontend 336 files / 3,133 tests・typecheck・`npm run build:vite` が成功。
-  隔離 WKWebView で 2 canvas・約 75fps・off で canvas 0・本文カラムのコントラスト 6.67:1 を確認。
+- frontend 338 files / 3,154 tests・typecheck・`npm run build:vite` が成功。
+  前回の隔離 WKWebView で 1 canvas・ページ rAF 約75fps・off で canvas 0・本文カラムのコントラスト 8.5:1 を確認。
+- 追補（同日）: 木・花・影の光の向きを 1 つに統一し、桜の横皮目・根張り・
+  花の形で抜く影へ。影の四角い粒と外周の直線を消し、逆光の縁を太陽側へ揃えた。
+- 追補2（同日）: 木を遠く右三分の一へ（位置 -6→-12、スケール 1.22→1.10、幹 0.98→0.90）、
+  視線を上げて空を広く。色は褪せたフィルムへ。本文カラムに読みの霞を重ね、
+  文字の局所コントラスト（近傍背景からの推定）は 1 パーセンタイル 3.95→5.09:1。
+- 追補3（同日）: 管の裏向き・断面のねじれ、枝と花の接点のずれ、resize 後のブルーム幅、
+  影カメラの角度、静止表示の resize / 強度 / テクスチャ更新を修正。
+  frontend 341 files / 3,168 tests・scripts 31件・typecheck・Vite が成功。
+  隔離 WKWebView は明示時刻の描画・console error なしを確認。今回は rAF が届かず fps 再測定未成立。
 - **未確認:** 実アプリ（Tauri の `asset:` 経由のテクスチャ）、Intel GPU、Retina、IME/VoiceOver、
-  `backdrop-filter` の実機負荷。`THIRD_PARTY_NOTICES.md` は未更新で、タグ前の必須項目。
+  本文右端の局所コントラストの正式な AA 判定。
 - 記録は [v3.4.1](releases/3.4.1-edohigan-scene.md)。
 
 ## 現行候補 — v3.4テーマ演出ブラッシュアップ（2026-10-21）

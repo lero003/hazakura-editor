@@ -170,16 +170,25 @@
 }
 
 /* 書く面は「紙」ではなく、中央が明るい霞。外側へ向けて薄くなり、
-   右の木と下の草原が透ける。読む面（--surface-paper-solid）は不透明のまま。 */
+   右の木と下の草原が透ける。読む面（--surface-paper-solid）は不透明のまま。
+   2 層目は本文のカラムだけに薄く重ねる「読みの霞」。右端で幹の上に文字が
+   乗っても、背景が沈んで可読性が落ちないようにする（情景は消さない）。 */
 :root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor {
   background-color: transparent;
-  background-image: radial-gradient(
-    64% 46% at 47% 33%,
-    rgba(255, 253, 249, 0.56) 0%,
-    rgba(255, 253, 249, 0.5) 58%,
-    rgba(255, 253, 249, 0.3) 82%,
-    rgba(255, 253, 249, 0.03) 100%
-  );
+  background-image:
+    radial-gradient(
+      64% 46% at 47% 33%,
+      rgba(255, 253, 249, 0.56) 0%,
+      rgba(255, 253, 249, 0.5) 58%,
+      rgba(255, 253, 249, 0.3) 82%,
+      rgba(255, 253, 249, 0.03) 100%
+    ),
+    radial-gradient(
+      50% 55% at 50% 40%,
+      rgba(255, 253, 249, 0.2) 0%,
+      rgba(255, 253, 249, 0.16) 55%,
+      rgba(255, 253, 249, 0) 100%
+    );
 }
 
 .edohigan-scene-backdrop {

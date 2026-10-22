@@ -1,11 +1,18 @@
 # Current Status
 
 Status: Operational
-Scope: v3.4テーマ刷新候補、v3.3審査提出報告、v3.2.1公開報告、過去の実装証跡
+Scope: v3.4.1江戸彼岸の情景候補、v3.4テーマ刷新、v3.3審査提出報告、v3.2.1公開報告、過去の実装証跡
 Authority: High
-Last reviewed: 2026-10-21
+Last reviewed: 2026-10-22
 
 ## Current State
+
+- **v3.4.1 江戸彼岸の情景候補（2026-10-22）:** three.js の空・草原・一本の木へ刷新。
+  コードレビューで管の表裏・断面のねじれ、枝と花の付着、ブルームの解像度追従、影の角度、
+  reduced-motion 時の更新を修正した。frontend 341 files / 3,168 tests・scripts 31件・型検査・
+  Vite が成功。隔離 WKWebView は明示時刻の描画を確認し、今回の fps 再測定は未成立。
+  実アプリ・Intel GPU・Retina・IME/VoiceOver は未確認。タグ・pkg は未作成。
+  [変更と検証範囲](releases/3.4.1-edohigan-scene.md)を参照。
 
 - **GitHubソースチェックポイント v3.4.0（2026-10-21）:** 現行実装を `main` と `v3.4.0` タグへ揃え、
   GitHub Releaseはソースのみとする。pkg / DMGは添付せず、App Store upload・実機受入とは分ける。

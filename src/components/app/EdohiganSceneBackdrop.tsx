@@ -15,7 +15,11 @@ import {
   PETAL_VERTEX,
   createPetalGeometry,
 } from "../../features/theme/edohiganPetalShader";
-import { WIND_GLSL, growTree, type Tree } from "../../features/theme/edohiganTree";
+import {
+  WIND_GLSL,
+  growTree,
+} from "../../features/theme/edohiganTree";
+import { buildTreeGeometry } from "../../features/theme/edohiganTreeGeometry";
 import {
   ambientQualityFrameIntervalMs,
   initialAmbientQualityState,
@@ -25,6 +29,10 @@ import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
 import petalUrl from "../../assets/themes/edohigan-petal.webp";
 import { drawBlossomSprite } from "../../features/theme/edohiganBlossomSprite";
 import { createEdohiganPost } from "../../features/theme/edohiganPost";
+import {
+  EDOHIGAN_SUN_DIRECTION,
+  EDOHIGAN_SUN_DIRECTION_GLSL,
+} from "../../features/theme/edohiganLighting";
 
 /**
  * 江戸彼岸 — 草原に立つ一本の大木（three.js）。
@@ -223,13 +231,12 @@ const GROUND_FRAGMENT = /* glsl */ `
     color *= 1.0 - rootShadow * 0.34;
 
     // 木そのものの影。ライト視点で描いたシルエットを投影する。
-    // 4 タップで少しぼかし、輪郭を硬くしすぎない。
+    // 9 タップを広めに取り、枝の細い影を「硬い縁」にしない。
     vec4 lightSpace = uLightViewProj * vec4(vWorld, 1.0);
     vec3 shadowCoord = lightSpace.xyz / lightSpace.w * 0.5 + 0.5;
     float shadowMask = 0.0;
     if (shadowCoord.x > 0.0 && shadowCoord.x < 1.0 && shadowCoord.y > 0.0 && shadowCoord.y < 1.0) {
-      // 影は 9 タップでぼかす。枝の細い影がギザギザにならないように。
-      vec2 texel = vec2(1.0 / 1024.0) * 2.4;
+      vec2 texel = vec2(1.0 / 1024.0) * 4.0;
       shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(-1.0, -1.0) * texel).r;
       shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(0.0, -1.0) * texel).r;
       shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(1.0, -1.0) * texel).r;
@@ -240,8 +247,16 @@ const GROUND_FRAGMENT = /* glsl */ `
       shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(0.0, 1.0) * texel).r;
       shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(1.0, 1.0) * texel).r;
       shadowMask /= 9.0;
+      // 影のテクスチャの縁で影が直線に切れないよう、外周を 0 へ落とす。
+      float border = min(
+        min(shadowCoord.x, 1.0 - shadowCoord.x),
+        min(shadowCoord.y, 1.0 - shadowCoord.y)
+      );
+      shadowMask *= smoothstep(0.0, 0.14, border);
     }
     color *= 1.0 - shadowMask * uShadowStrength;
+    // 影は黒ではなく、空の青を返す（暖色の光に対する寒色の影）。
+    color = mix(color, color * vec3(0.9, 0.96, 1.02), shadowMask * 0.75);
 
     // 樹冠の影。太陽は右上なので、影は左下へ長く落ちる。
     // 一枚の楕円ではなく、葉のムラを重ねて「木の影」らしくする。
@@ -252,7 +267,7 @@ const GROUND_FRAGMENT = /* glsl */ `
       length((vWorld.xz - canopyCenter) / vec2(uTreeRadius * 2.6, uTreeRadius * 1.5))
     );
     float mottle = valueNoise(vWorld.xz * 0.55 + 3.0);
-    color *= 1.0 - canopy * (0.08 + mottle * 0.18);
+    color *= 1.0 - canopy * (0.07 + mottle * 0.15);
 
     // 遠景は霞へ溶かす。
     float haze = smoothstep(0.74, 1.0, depth) * 0.62;
@@ -266,7 +281,6 @@ const TREE_VERTEX = /* glsl */ `
   precision highp float;
 
   attribute float aSway;
-  attribute float aPhase;
   attribute float aDepth01;
   attribute vec2 aBarkUv;
 
@@ -283,15 +297,9 @@ const TREE_VERTEX = /* glsl */ `
 
   void main() {
     vec3 p = position;
-    // 根元は動かない。先端ほど大きくしなる。
-    float weight = aSway * aSway;
-    // 空間位相: 木の左端と右端で位相をずらすと、風が梢を渡って見える。
+    // 同じ接点は同じ変位。枝ごとの位相で分岐を引き離さない。
     vec3 baseWorld = (modelMatrix * vec4(position, 1.0)).xyz;
-    float spatial = (baseWorld.x + baseWorld.z * 0.6) * 0.11;
-    float s = edohiganSway(uTime, aPhase + spatial, uGust) * uWindScale;
-    p.x += s * weight * 0.62;
-    p.z += s * weight * 0.16;
-    p.y += sin(uTime * 0.45 + aPhase * 2.0) * 0.05 * weight;
+    p += edohiganTreeDisplacement(baseWorld, aSway, uTime, uGust, uWindScale);
 
     vDepth01 = aDepth01;
     vBarkUv = aBarkUv;
@@ -313,6 +321,8 @@ const TREE_FRAGMENT = /* glsl */ `
   varying vec2 vBarkUv;
   varying vec3 vWorldPos;
 
+  const vec3 SUN_DIR = ${EDOHIGAN_SUN_DIRECTION_GLSL};
+
   float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
@@ -331,26 +341,40 @@ const TREE_FRAGMENT = /* glsl */ `
   }
 
   void main() {
+    vec3 normal = normalize(vNormalW);
+
     // 奥の枝ほど空気の色へ寄せる。
     vec3 color = mix(cBarkNear, cBarkFar, vDepth01 * 0.55);
-    color = mix(color, cHaze, vDepth01 * 0.12);
+    color = mix(color, cHaze, vDepth01 * 0.1);
 
-    // 樹皮のムラ。縦に伸びる筋と、広いまだらを重ねる。
-    // floor() で区切ると四角い斑になるので、滑らかな value noise を使う。
-    float streak = valueNoise(vec2(vBarkUv.x * 140.0, vBarkUv.y * 5.0));
-    float broad = valueNoise(vec2(vBarkUv.x * 18.0, vBarkUv.y * 2.0));
-    float fine = valueNoise(vec2(vBarkUv.x * 320.0, vBarkUv.y * 12.0));
-    color *= 0.72 + streak * 0.2 + broad * 0.22 + fine * 0.1;
+    // 樹皮。桜の幹は縦のひびより、横へ走る皮目（lenticel）が目立つ。
+    // u は枝に沿った長さ（m）なので、太い幹と細い枝で模様の密度が揃う。
+    float u = vBarkUv.x;
+    float v = vBarkUv.y;
+    float broad = valueNoise(vec2(u * 1.7, v * 2.6));
+    float cracks = valueNoise(vec2(u * 2.1, v * 34.0));
+    float crevice = smoothstep(0.48, 0.72, cracks);
+    float lent = valueNoise(vec2(u * 21.0, v * 9.0));
+    float lenticel = smoothstep(0.58, 0.72, lent);
 
-    // 太陽側の面をわずかに明るく。
-    float light = clamp(dot(normalize(vNormalW), normalize(vec3(-0.35, 0.75, 0.55))), 0.0, 1.0);
-    color *= 0.82 + light * 0.34;
+    // 面のムラ。ひびは暗く、皮目はコルク色に明るく。
+    // 皮目は広いムラで疎密を付ける（一様に並ぶと編み物に見える）。
+    color *= 0.7 + broad * 0.26 + (1.0 - crevice) * 0.1;
+    color += vec3(0.075, 0.058, 0.045) * lenticel * (0.3 + broad * 1.1);
+    color *= mix(0.72, 1.0, 1.0 - crevice);
+
+    // 逆光。正面は沈み、太陽側（右上）の面だけが持ち上がる。
+    float light = clamp(dot(normal, SUN_DIR), 0.0, 1.0);
+    color *= 0.66 + light * 0.4;
+    // 梢の細い枝は空を背にする。幹の樹皮は見せたまま、枝だけシルエットへ寄せる。
+    color *= mix(1.0, 0.6, smoothstep(0.22, 0.8, vDepth01));
+    // 空の照り返し。下側へわずかに青を返す。
+    color += vec3(0.026, 0.036, 0.05) * clamp(normal.y * 0.5 + 0.5, 0.0, 1.0);
 
     // 逆光の縁。太陽は木の後ろ（右上）なので、輪郭だけが淡く光る。
     vec3 viewDir = normalize(cameraPosition - vWorldPos);
-    float rim = pow(1.0 - max(dot(normalize(vNormalW), viewDir), 0.0), 3.0);
-    // 太陽側の縁だけ。全体を均一に持ち上げると幹が灰色になる。
-    color += vec3(1.0, 0.88, 0.74) * rim * light * 0.16;
+    float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+    color += vec3(1.0, 0.86, 0.7) * rim * pow(light, 0.7) * 0.26;
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -360,8 +384,9 @@ const BLOSSOM_VERTEX = /* glsl */ `
   precision highp float;
 
   attribute vec3 aCenter;
+  attribute vec3 aAnchor;
+  attribute float aSway;
   attribute float aSize;
-  attribute float aPhase;
   attribute float aTint;
   attribute float aRotation;
   attribute float aShade;
@@ -382,12 +407,9 @@ const BLOSSOM_VERTEX = /* glsl */ `
 
   void main() {
     vUv = uv;
-    // 木と同じ空間位相を使う（同じ風の中にいる）。
-    vec3 centerWorld = (modelMatrix * vec4(aCenter, 1.0)).xyz;
-    float spatial = (centerWorld.x + centerWorld.z * 0.6) * 0.11;
-    float s = edohiganSway(uTime, aPhase + spatial, uGust) * uWindScale;
-    // 木と同じ風に乗せる。花は枝先なので重みは最大。
-    vec3 center = aCenter + vec3(s * 0.62, sin(uTime * 0.9 + aPhase * 3.0) * 0.05, s * 0.16);
+    // 花の中心ではなく、付いている枝の位置・しなり量で動かす。
+    vec3 anchorWorld = (modelMatrix * vec4(aAnchor, 1.0)).xyz;
+    vec3 center = aCenter + edohiganTreeDisplacement(anchorWorld, aSway, uTime, uGust, uWindScale);
 
     // 花ごとに向きを変える（全部同じ向きだと並んで見える）。
     float c = cos(aRotation);
@@ -405,8 +427,8 @@ const BLOSSOM_VERTEX = /* glsl */ `
     vTint = aTint;
     vShade = 0.75 + 0.25 * position.y;
     vAo = aShade;
-    // 太陽は右上。花の向きとの角度で、樹冠の右側が明るく左側が沈む。
-    vec3 sunDir = normalize(vec3(0.62, 0.55, -0.55));
+    // 太陽は右上・木の奥。花の向きとの角度で、樹冠の右側が明るく左側が沈む。
+    vec3 sunDir = ${EDOHIGAN_SUN_DIRECTION_GLSL};
     vLit = clamp(dot(normalize(aNormal), sunDir) * 0.5 + 0.62, 0.0, 1.0);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
@@ -516,8 +538,8 @@ const GROUND_COLORS = {
 } as const;
 
 const BARK_COLORS = {
-  near: [0.16, 0.11, 0.1],
-  far: [0.26, 0.19, 0.18],
+  near: [0.135, 0.095, 0.085],
+  far: [0.215, 0.155, 0.14],
   haze: [0.85, 0.82, 0.78],
 } as const;
 
@@ -525,15 +547,19 @@ export type EdohiganSceneBackdropProps = {
   intensity: AmbientIntensity;
 };
 
+type BackdropHandle = { dispose: () => void; refresh: () => void };
+
 export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const intensityRef = useRef(intensity);
+  const backdropRef = useRef<BackdropHandle | null>(null);
   const [failed, setFailed] = useState(false);
   const reducedMotion = useReducedMotion();
   const active = intensity !== "off";
 
   useEffect(() => {
     intensityRef.current = intensity;
+    backdropRef.current?.refresh();
   }, [intensity]);
 
   useEffect(() => {
@@ -546,7 +572,7 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
     }
 
     let disposed = false;
-    let teardown = () => {};
+    let backdrop: BackdropHandle | null = null;
 
     void (async () => {
       let THREE: typeof import("three");
@@ -560,9 +586,10 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
         return;
       }
       try {
-        teardown = startBackdrop(THREE, canvas, intensityRef.current, () => intensityRef.current, {
+        backdrop = startBackdrop(THREE, canvas, intensityRef.current, () => intensityRef.current, {
           animate: !reducedMotion,
         });
+        backdropRef.current = backdrop;
       } catch {
         if (!disposed) setFailed(true);
       }
@@ -570,7 +597,10 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
 
     return () => {
       disposed = true;
-      teardown();
+      if (backdropRef.current === backdrop) {
+        backdropRef.current = null;
+      }
+      backdrop?.dispose();
     };
   }, [active, reducedMotion, failed]);
 
@@ -592,127 +622,10 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
   );
 }
 
-const TREE_SCALE = 1.22;
+const TREE_SCALE = 1.1;
 const GROUND_Y = -10.5;
-const TREE_DEPTH = -6;
-
-/**
- * 木の骨格を、曲がった管メッシュにする。
- *
- * 枝を直線で結ぶと「針金」に見えるので、枝ごとに 1 本の二次ベジェへ曲げる。
- * 根元（depth 0）は根張りを付けて地面へ広がらせる。頂点は
- *   - aSway   : 根元からの距離（0..1）。風の重み
- *   - aPhase  : 枝ごとの位相
- *   - aBarkUv : 樹皮のムラを描くための UV
- * を持つ。
- */
-function buildTreeGeometry(THREE: typeof import("three"), tree: Tree) {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const sway: number[] = [];
-  const phase: number[] = [];
-  const depth: number[] = [];
-  const barkUv: number[] = [];
-  const indices: number[] = [];
-
-  const SIDES = 7;
-  const RINGS = 4;
-
-  const basis = (direction: [number, number, number]) => {
-    const helper: [number, number, number] = Math.abs(direction[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
-    const u: [number, number, number] = [
-      direction[1] * helper[2] - direction[2] * helper[1],
-      direction[2] * helper[0] - direction[0] * helper[2],
-      direction[0] * helper[1] - direction[1] * helper[0],
-    ];
-    const length = Math.hypot(u[0], u[1], u[2]) || 1;
-    const unit: [number, number, number] = [u[0] / length, u[1] / length, u[2] / length];
-    const v: [number, number, number] = [
-      direction[1] * unit[2] - direction[2] * unit[1],
-      direction[2] * unit[0] - direction[0] * unit[2],
-      direction[0] * unit[1] - direction[1] * unit[0],
-    ];
-    return { unit, v };
-  };
-
-  for (const branch of tree.branches) {
-    const startPoint = branch.start as unknown as [number, number, number];
-    const endPoint = branch.end as unknown as [number, number, number];
-    const delta: [number, number, number] = [
-      endPoint[0] - startPoint[0],
-      endPoint[1] - startPoint[1],
-      endPoint[2] - startPoint[2],
-    ];
-    const length = Math.hypot(delta[0], delta[1], delta[2]) || 1;
-    const forward: [number, number, number] = [delta[0] / length, delta[1] / length, delta[2] / length];
-    const side = basis(forward).unit;
-
-    // 枝ごとに少しだけしならせる（位相から決まるので毎回同じ形）。
-    const bend = Math.sin(branch.phase * 1.7) * 0.16 * length;
-    const control: [number, number, number] = [
-      startPoint[0] + delta[0] * 0.5 + side[0] * bend,
-      startPoint[1] + delta[1] * 0.5 + side[1] * bend,
-      startPoint[2] + delta[2] * 0.5 + side[2] * bend,
-    ];
-
-    const baseIndex = positions.length / 3;
-
-    for (let ring = 0; ring <= RINGS; ring += 1) {
-      const t = ring / RINGS;
-      const mt = 1 - t;
-      const px = mt * mt * startPoint[0] + 2 * mt * t * control[0] + t * t * endPoint[0];
-      const py = mt * mt * startPoint[1] + 2 * mt * t * control[1] + t * t * endPoint[1];
-      const pz = mt * mt * startPoint[2] + 2 * mt * t * control[2] + t * t * endPoint[2];
-      const tx = 2 * mt * (control[0] - startPoint[0]) + 2 * t * (endPoint[0] - control[0]);
-      const ty = 2 * mt * (control[1] - startPoint[1]) + 2 * t * (endPoint[1] - control[1]);
-      const tz = 2 * mt * (control[2] - startPoint[2]) + 2 * t * (endPoint[2] - control[2]);
-      const tangentLength = Math.hypot(tx, ty, tz) || 1;
-      const tangent: [number, number, number] = [tx / tangentLength, ty / tangentLength, tz / tangentLength];
-      const frame = basis(tangent);
-
-      // 根張り: 太い幹ほど根元が広がる。t=0 で最大、すぐ絞る。
-      const flare = branch.depth === 0 ? 1 + 0.5 * Math.pow(1 - t, 4) : 1;
-      const radius = (branch.radiusStart + (branch.radiusEnd - branch.radiusStart) * t) * flare;
-      const ringSway = branch.swayStart + (branch.sway - branch.swayStart) * t;
-
-      for (let sideIndex = 0; sideIndex < SIDES; sideIndex += 1) {
-        const angle = (sideIndex / SIDES) * Math.PI * 2;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const nx = frame.unit[0] * cos + frame.v[0] * sin;
-        const ny = frame.unit[1] * cos + frame.v[1] * sin;
-        const nz = frame.unit[2] * cos + frame.v[2] * sin;
-        positions.push(px + nx * radius, py + ny * radius, pz + nz * radius);
-        normals.push(nx, ny, nz);
-        sway.push(ringSway);
-        phase.push(branch.phase);
-        depth.push(branch.depth / 5);
-        barkUv.push(t, sideIndex / SIDES);
-      }
-    }
-
-    for (let ring = 0; ring < RINGS; ring += 1) {
-      for (let sideIndex = 0; sideIndex < SIDES; sideIndex += 1) {
-        const next = (sideIndex + 1) % SIDES;
-        const a = baseIndex + ring * SIDES + sideIndex;
-        const b = baseIndex + ring * SIDES + next;
-        const c = baseIndex + (ring + 1) * SIDES + sideIndex;
-        const d = baseIndex + (ring + 1) * SIDES + next;
-        indices.push(a, c, b, b, c, d);
-      }
-    }
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
-  geometry.setAttribute("aSway", new THREE.Float32BufferAttribute(sway, 1));
-  geometry.setAttribute("aPhase", new THREE.Float32BufferAttribute(phase, 1));
-  geometry.setAttribute("aDepth01", new THREE.Float32BufferAttribute(depth, 1));
-  geometry.setAttribute("aBarkUv", new THREE.Float32BufferAttribute(barkUv, 2));
-  geometry.setIndex(indices);
-  return geometry;
-}
+const TREE_DEPTH = -12;
+const TREE_SINK = 0.45;
 
 function startBackdrop(
   THREE: typeof import("three"),
@@ -720,7 +633,7 @@ function startBackdrop(
   initialIntensity: AmbientIntensity,
   getIntensity: () => AmbientIntensity,
   options: { animate: boolean },
-): () => void {
+): BackdropHandle {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: false,
@@ -739,7 +652,7 @@ function startBackdrop(
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
   const cameraZ = 50;
-  camera.position.set(0, 0.5, cameraZ);
+  camera.position.set(0, 0.9, cameraZ);
 
   const viewHeightAtZero = 2 * Math.tan((45 * Math.PI) / 360) * cameraZ;
   const view = { width: viewHeightAtZero, height: viewHeightAtZero };
@@ -773,8 +686,10 @@ function startBackdrop(
     magFilter: THREE.LinearFilter,
     depthBuffer: true,
   });
-  const sunDirection = new THREE.Vector3(0.55, 0.8, 0.35).normalize();
+  // 空の太陽（右上・木の奥）と木・花・影で同じ向きを使う。
+  const sunDirection = new THREE.Vector3(...EDOHIGAN_SUN_DIRECTION).normalize();
   const shadowCamera = new THREE.OrthographicCamera(-40, 40, 40, -40, 1, 260);
+  const shadowFocus = new THREE.Vector3();
 
   // --- 草原 -------------------------------------------------------------
   const groundGeometry = new THREE.PlaneGeometry(2400, 2400, 1, 1);
@@ -789,7 +704,7 @@ function startBackdrop(
       uTreeRadius: { value: 9 },
       uShadowMap: { value: shadowTarget.texture },
       uLightViewProj: { value: new THREE.Matrix4() },
-      uShadowStrength: { value: 0.34 },
+      uShadowStrength: { value: 0.4 },
     },
     vertexShader: GROUND_VERTEX,
     fragmentShader: GROUND_FRAGMENT,
@@ -815,7 +730,9 @@ function startBackdrop(
   });
   const treeMesh = new THREE.Mesh(treeGeometry, treeMaterial);
   treeMesh.scale.setScalar(TREE_SCALE);
-  treeMesh.position.set(18, GROUND_Y, TREE_DEPTH);
+  // 根張りを地面へ少し沈める。地面と接する線が根のローブになり、
+  // 「円錐を地面に置いた」切れ目が見えなくなる。
+  treeMesh.position.set(18, GROUND_Y - TREE_SINK, TREE_DEPTH);
   treeMesh.frustumCulled = false;
   scene.add(treeMesh);
 
@@ -836,7 +753,8 @@ function startBackdrop(
   shadowScene.add(shadowMesh);
 
   // --- 花 ---------------------------------------------------------------
-  const petalTexture = new THREE.TextureLoader().load(petalUrl);
+  let redrawWhenTextureLoads = () => {};
+  const petalTexture = new THREE.TextureLoader().load(petalUrl, () => redrawWhenTextureLoads());
   petalTexture.colorSpace = THREE.SRGBColorSpace;
 
   // 5 弁の花は canvas に描いてテクスチャにする（外部 fetch なし）。
@@ -870,8 +788,9 @@ function startBackdrop(
   }
   const blossomCount = tree.blossoms.length;
   const centers = new Float32Array(blossomCount * 3);
+  const anchors = new Float32Array(blossomCount * 3);
+  const blossomSways = new Float32Array(blossomCount);
   const sizes = new Float32Array(blossomCount);
-  const phases = new Float32Array(blossomCount);
   const tints = new Float32Array(blossomCount);
   const rotations = new Float32Array(blossomCount);
   const shades = new Float32Array(blossomCount);
@@ -881,8 +800,9 @@ function startBackdrop(
     centers[index * 3] = blossom.position[0];
     centers[index * 3 + 1] = blossom.position[1];
     centers[index * 3 + 2] = blossom.position[2];
+    anchors.set(blossom.anchor, index * 3);
+    blossomSways[index] = blossom.sway;
     sizes[index] = blossom.size;
-    phases[index] = blossom.phase;
     tints[index] = blossom.tint;
     rotations[index] = blossom.phase * 1.9;
     shades[index] = blossom.shade;
@@ -892,8 +812,9 @@ function startBackdrop(
     normals[index * 3 + 2] = blossom.normal[2];
   });
   blossomGeometry.setAttribute("aCenter", new THREE.InstancedBufferAttribute(centers, 3));
+  blossomGeometry.setAttribute("aAnchor", new THREE.InstancedBufferAttribute(anchors, 3));
+  blossomGeometry.setAttribute("aSway", new THREE.InstancedBufferAttribute(blossomSways, 1));
   blossomGeometry.setAttribute("aSize", new THREE.InstancedBufferAttribute(sizes, 1));
-  blossomGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(phases, 1));
   blossomGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(tints, 1));
   blossomGeometry.setAttribute("aRotation", new THREE.InstancedBufferAttribute(rotations, 1));
   blossomGeometry.setAttribute("aShade", new THREE.InstancedBufferAttribute(shades, 1));
@@ -903,12 +824,18 @@ function startBackdrop(
 
   // 花も影を落とす。BLOSSOM_VERTEX は viewMatrix でビルボードを作るので、
   // 影パスでは「ライトを向いた板」になり、樹冠の影がそのまま出る。
+  // 板は四角いので、テクスチャの alpha で抜かないと地面に四角い影が並ぶ。
   const blossomShadowMaterial = new THREE.ShaderMaterial({
     uniforms: {},
     vertexShader: BLOSSOM_VERTEX,
     fragmentShader: `
       precision highp float;
+      uniform sampler2D uMap;
+      varying vec2 vUv;
       void main() {
+        if (texture2D(uMap, vUv).a < 0.3) {
+          discard;
+        }
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
       }
     `,
@@ -1164,12 +1091,18 @@ function startBackdrop(
 
     // 木は画面の右へ。文字のカラム（中央）に幹を置かない。
     // 狭い窓では木を右へ寄せ、少しだけ縮める。本文の右端に幹が重ならないため。
+    // 少し遠く・細くして、窓辺の大木ではなく草原の向こうの一本として見せる。
     const narrowWindow = camera.aspect < 1.45;
     const treeScale = TREE_SCALE * (narrowWindow ? 0.92 : 1);
-    treeMesh.position.set(view.width * (narrowWindow ? 0.4 : 0.3), GROUND_Y, TREE_DEPTH);
+    treeMesh.position.set(
+      view.width * (narrowWindow ? 0.46 : 0.38),
+      GROUND_Y - TREE_SINK,
+      TREE_DEPTH,
+    );
     treeMesh.scale.setScalar(treeScale);
     blossoms.position.copy(treeMesh.position);
     blossoms.scale.setScalar(treeScale);
+    post.setFocus(cameraZ - TREE_DEPTH);
     groundMaterial.uniforms.uTreeXZ.value.set(treeMesh.position.x, treeMesh.position.z);
     groundMaterial.uniforms.uTreeRadius.value = view.height * 0.2;
   };
@@ -1196,8 +1129,8 @@ function startBackdrop(
     const rise = Math.cos(sceneTime * 0.031) * profile.wind;
     // 横にはほとんど動かさない。動かすと、位相によっては木の幹が本文に重なる。
     // 前後のドリーと縦の揺れだけで、前景の草との視差を作る。
-    camera.position.set(drift * 0.35, 0.5 + rise * 0.25, cameraZ - drift * 1.3);
-    camera.lookAt(treeMesh.position.x * 0.35, 2.0, -12);
+    camera.position.set(drift * 0.35, 0.9 + rise * 0.25, cameraZ - drift * 1.3);
+    camera.lookAt(treeMesh.position.x * 0.35, 3.6, -12);
     camera.updateMatrixWorld();
     const gust = edohiganWind(sceneTime);
     skyMaterial.uniforms.uTime.value = sceneTime;
@@ -1222,10 +1155,10 @@ function startBackdrop(
     blossomShadowMesh.rotation.copy(blossoms.rotation);
     // 影のインスタンス数は強度に追従させる（花を間引いたら影も間引く）。
     blossomShadowMesh.visible = blossomGeometry.instanceCount > 0;
-    shadowCamera.position
-      .copy(treeMesh.position)
-      .addScaledVector(sunDirection, 120);
-    shadowCamera.lookAt(treeMesh.position.x, treeMesh.position.y + 16, treeMesh.position.z);
+    // 注視点と光源位置の基準を揃え、樹冠を狙っても光の角度を変えない。
+    shadowFocus.set(treeMesh.position.x, treeMesh.position.y + 16, treeMesh.position.z);
+    shadowCamera.position.copy(shadowFocus).addScaledVector(sunDirection, 120);
+    shadowCamera.lookAt(shadowFocus);
     shadowCamera.updateMatrixWorld();
     groundMaterial.uniforms.uLightViewProj.value.multiplyMatrices(
       shadowCamera.projectionMatrix,
@@ -1261,6 +1194,17 @@ function startBackdrop(
     });
   };
 
+  const applyCurrentIntensity = () => {
+    const intensityNow = getIntensity();
+    if (intensityNow !== currentIntensity) {
+      currentIntensity = intensityNow;
+      quality = initialAmbientQualityState(intensityNow);
+      applyPetals(currentIntensity, quality.tier);
+      applyLayout();
+      applyProfile(sceneIntensityProfile(intensityNow));
+    }
+  };
+
   const render = () => {
     if (!running) {
       return;
@@ -1272,14 +1216,7 @@ function startBackdrop(
       return;
     }
 
-    const intensityNow = getIntensity();
-    if (intensityNow !== currentIntensity) {
-      currentIntensity = intensityNow;
-      quality = initialAmbientQualityState(intensityNow);
-      applyPetals(currentIntensity, quality.tier);
-      applyLayout();
-      applyProfile(sceneIntensityProfile(intensityNow));
-    }
+    applyCurrentIntensity();
 
     elapsedSeconds = nextElapsedSeconds(elapsedSeconds, frameMs, true);
     const previousTier = quality.tier;
@@ -1316,31 +1253,35 @@ function startBackdrop(
     schedule();
   };
 
-  const onResize = () => applyLayout();
+  const redrawWhenStill = () => {
+    if (running && !options.animate) {
+      draw(0);
+    }
+  };
+  const onResize = () => {
+    applyLayout();
+    redrawWhenStill();
+  };
   const onVisibility = () => resume();
   const onFocus = () => resume();
   const onBlur = () => pause();
 
+  window.addEventListener("resize", onResize);
   if (options.animate) {
-    window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
   }
 
   draw(0);
-  const redrawWhenStill = () => {
-    if (!options.animate) {
-      draw(0);
-    }
-  };
-  petalTexture.onUpdate = redrawWhenStill;
+  // onUpdate は GPU upload 時にしか呼ばれない。静止時は画像の読込完了から再描画する。
+  redrawWhenTextureLoads = redrawWhenStill;
 
   if (options.animate) {
     schedule();
   }
 
-  return () => {
+  const dispose = () => {
     running = false;
     if (pending) {
       window.cancelAnimationFrame(frameId);
@@ -1350,7 +1291,6 @@ function startBackdrop(
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("focus", onFocus);
     window.removeEventListener("blur", onBlur);
-    petalTexture.onUpdate = null;
     sky.geometry.dispose();
     skyMaterial.dispose();
     groundGeometry.dispose();
@@ -1374,5 +1314,13 @@ function startBackdrop(
     blossomShadowMaterial.dispose();
     post.dispose();
     renderer.dispose();
+  };
+  return {
+    dispose,
+    refresh: () => {
+      if (!running) return;
+      applyCurrentIntensity();
+      redrawWhenStill();
+    },
   };
 }

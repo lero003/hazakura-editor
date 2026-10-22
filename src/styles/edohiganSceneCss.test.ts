@@ -27,6 +27,10 @@ describe("edohigan dawn backdrop", () => {
     expect(editor).toContain("rgba(255, 253, 249, 0.5) 58%");
     expect(editor).toContain("rgba(255, 253, 249, 0.03) 100%");
     expect(editor).toContain("background-color: transparent");
+    // 2 層目は本文カラムの「読みの霞」。右端で幹の上に文字が乗っても
+    // 背景が沈みすぎないよう、中央だけ薄く重ねる。
+    expect(editor).toContain("50% 55% at 50% 40%");
+    expect(editor).toContain("rgba(255, 253, 249, 0.16) 55%");
     // 背景をぼかすと木が消えるので使わない。
     expect(editor).not.toContain("backdrop-filter");
   });

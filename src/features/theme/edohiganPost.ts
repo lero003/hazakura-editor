@@ -129,15 +129,18 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
     float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
     color = mix(color, color * vec3(0.94, 0.98, 1.08), (1.0 - smoothstep(0.0, 0.55, luma)) * 0.5);
     color = mix(color, color * vec3(1.06, 1.01, 0.94), smoothstep(0.55, 1.0, luma) * 0.5);
-    // 彩度を少し上げる。
-    color = mix(vec3(luma), color, 1.14);
+    // 彩度は控えめに。上げすぎると「CG の緑」に見える。
+    color = mix(vec3(luma), color, 1.1);
     // コントラストの S カーブ。表示色（sRGB）に対して掛けるので、
     // フィルミックな肩ではなく素直な smoothstep に寄せる。
-    // 黒をわずかに締めて、霞んだ画面に芯を作る。
-    color = max(color - 0.015, vec3(0.0)) / 0.985;
+    color = max(color - 0.01, vec3(0.0)) / 0.99;
     color = clamp(color, 0.0, 1.0);
     vec3 shaped = color * color * (3.0 - 2.0 * color);
-    color = mix(color, shaped, 0.34);
+    color = mix(color, shaped, 0.3);
+    // 褪せたフィルムのように、黒を少し持ち上げて暖色へ寄せる。
+    // 締めるだけだと「晴れた 3D の昼」に見え、朝の記憶の色にならない。
+    color = color * 0.99 + 0.008;
+    color *= vec3(1.012, 1.0, 0.985);
 
     // --- ビネット -------------------------------------------------------
     vec2 centered = (uv - 0.5) * vec2(1.0, uResolution.y / uResolution.x);
@@ -189,6 +192,8 @@ export type EdohiganPost = {
   present: (time: number) => void;
   /** 光条の強さ（強度設定に追従させる）。 */
   setRayStrength: (value: number) => void;
+  /** ピント面の距離。木の位置に合わせる。 */
+  setFocus: (value: number) => void;
   setSize: (width: number, height: number) => void;
   dispose: () => void;
 };
@@ -282,8 +287,8 @@ export function createEdohiganPost(
       uFocus: { value: 56 },
       uAperture: { value: 185 },
       uBloomStrength: { value: 0.16 },
-      uGrain: { value: 0.022 },
-      uVignette: { value: 0.24 },
+      uGrain: { value: 0.026 },
+      uVignette: { value: 0.28 },
       uTime: { value: 0 },
       uExposure: { value: 1.0 },
     },
@@ -315,11 +320,12 @@ export function createEdohiganPost(
     pass(rayMaterial, rayTarget);
 
     blurMaterial.uniforms.tDiffuse.value = brightTarget.texture;
-    blurMaterial.uniforms.uDirection.value.set(1 / halfWidth, 0);
+    // RT は初期化後に resize される。生成時の寸法ではなく、入力の現在の 1px を使う。
+    blurMaterial.uniforms.uDirection.value.set(1 / brightTarget.width, 0);
     pass(blurMaterial, blurTarget);
 
     blurMaterial.uniforms.tDiffuse.value = blurTarget.texture;
-    blurMaterial.uniforms.uDirection.value.set(0, 1 / halfHeight);
+    blurMaterial.uniforms.uDirection.value.set(0, 1 / blurTarget.height);
     pass(blurMaterial, blurTargetB);
 
     pass(compositeMaterial, null);
@@ -354,5 +360,9 @@ export function createEdohiganPost(
     compositeMaterial.uniforms.uRayStrength.value = value;
   };
 
-  return { renderTarget: sceneTarget, present, setRayStrength, setSize, dispose };
+  const setFocus = (value: number) => {
+    compositeMaterial.uniforms.uFocus.value = value;
+  };
+
+  return { renderTarget: sceneTarget, present, setRayStrength, setFocus, setSize, dispose };
 }
