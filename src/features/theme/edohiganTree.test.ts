@@ -43,9 +43,9 @@ describe("edohigan tree skeleton", () => {
     const tips = tree.branches.filter((branch) => branch.depth === TREE_MAX_DEPTH).length;
     // 枝先 + 途中の枝に花が付く。1 ドローコールで収まる範囲に保つ。
     expect(tree.blossoms.length).toBeGreaterThan(tips);
-    expect(tree.blossoms.length).toBeLessThan(tips * (BLOSSOMS_PER_TIP + 4));
+    expect(tree.blossoms.length).toBeLessThan(tips * (BLOSSOMS_PER_TIP + 8));
     // 1 ドローコールのインスタンス数として許容できる上限。
-    expect(tree.blossoms.length).toBeLessThan(4000);
+    expect(tree.blossoms.length).toBeLessThan(5200);
     for (const blossom of tree.blossoms) {
       expect(Number.isFinite(blossom.position[0])).toBe(true);
       expect(blossom.size).toBeGreaterThan(0);

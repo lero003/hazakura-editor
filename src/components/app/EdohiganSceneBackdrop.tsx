@@ -24,6 +24,7 @@ import {
 import { nextElapsedSeconds } from "../../features/theme/ambientRenderBudget";
 import petalUrl from "../../assets/themes/edohigan-petal.webp";
 import { drawBlossomSprite } from "../../features/theme/edohiganBlossomSprite";
+import { createEdohiganPost } from "../../features/theme/edohiganPost";
 
 /**
  * 江戸彼岸 — 草原に立つ一本の大木（three.js）。
@@ -76,6 +77,17 @@ const SKY_FRAGMENT = /* glsl */ `
     return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
   }
 
+  float fbm(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    for (int octave = 0; octave < 5; octave++) {
+      value += amplitude * valueNoise(p);
+      p *= 2.03;
+      amplitude *= 0.5;
+    }
+    return value;
+  }
+
   void main() {
     vec2 uv = vUv;
 
@@ -88,10 +100,16 @@ const SKY_FRAGMENT = /* glsl */ `
     float r = length(d);
     color = mix(color, cSun, clamp(exp(-r * 26.0) * 0.9 + exp(-r * 6.0) * 0.22, 0.0, 1.0));
 
-    // ごく淡い雲の帯。動かすと空気が動いて見える。
-    float bands = sin(uv.y * 34.0 + uv.x * 5.0 + uTime * 0.02) * 0.5 + 0.5;
-    bands *= smoothstep(0.55, 0.95, uv.y) * (1.0 - smoothstep(0.9, 1.0, uv.y));
-    color += vec3(1.0, 0.98, 0.96) * bands * 0.03;
+    // 雲。ゆっくり流れる FBM。太陽の側は暖かく、下側は灰色に。
+    vec2 cloudUv = vec2(uv.x * 2.4 + uTime * 0.004, uv.y * 3.6 - uTime * 0.0012);
+    float dense = fbm(cloudUv * 1.5 + 11.0);
+    float wisps = fbm(cloudUv * 3.4 + 4.0);
+    float cloud = smoothstep(0.44, 0.68, dense * 0.85 + wisps * 0.45);
+    // 地平近くと天頂は薄くする（帯状に浮かせる）。
+    cloud *= smoothstep(0.36, 0.55, uv.y) * (1.0 - smoothstep(0.9, 1.0, uv.y));
+    float sunNear = 1.0 - smoothstep(0.0, 0.75, r);
+    vec3 cloudColor = mix(vec3(0.78, 0.8, 0.86), vec3(1.0, 0.98, 0.94), uv.y * 0.6 + sunNear * 0.5);
+    color = mix(color, cloudColor, cloud * 0.72);
 
     // 地平の霞。
     float haze = (1.0 - smoothstep(0.0, 0.18, uv.y)) * 0.5;
@@ -335,6 +353,7 @@ const GRASS_VERTEX = /* glsl */ `
   attribute vec3 aOffset;
   attribute float aScale;
   attribute float aPhase;
+  attribute float aTint;
 
   uniform float uTime;
   uniform float uGust;
@@ -342,6 +361,7 @@ const GRASS_VERTEX = /* glsl */ `
 
   varying vec2 vUv;
   varying float vShade;
+  varying float vTint;
 
   ${WIND_GLSL}
 
@@ -352,10 +372,11 @@ const GRASS_VERTEX = /* glsl */ `
 
     // カメラの右方向へ向ける（板の向きを揃えない）。
     vec3 right = vec3(viewMatrix[0][0], 0.0, viewMatrix[2][0]);
-    vec3 local = right * (position.x * aScale * 0.3) + vec3(0.0, position.y * aScale, 0.0);
+    vec3 local = right * (position.x * aScale * 0.22) + vec3(0.0, position.y * aScale, 0.0);
     vec3 pos = aOffset + local + vec3(s * weight * aScale * 0.35, 0.0, 0.0);
 
     vShade = position.y;
+    vTint = aTint;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
@@ -368,12 +389,16 @@ const GRASS_FRAGMENT = /* glsl */ `
 
   varying vec2 vUv;
   varying float vShade;
+  varying float vTint;
 
   void main() {
     // 根元は濃く、穂先は淡く。輪郭は上下でぼかす。
     float alpha = smoothstep(0.0, 0.12, vShade) * (1.0 - smoothstep(0.72, 1.0, vShade));
     if (alpha < 0.02) discard;
     vec3 color = mix(cBase, cTip, vShade);
+    // 個体差。黄色く枯れた株と、青い株を混ぜる。
+    color *= 0.8 + vTint * 0.35;
+    color.r += vTint * 0.04;
     gl_FragColor = vec4(color, alpha * 0.45);
   }
 `;
@@ -392,8 +417,8 @@ const GROUND_COLORS = {
 } as const;
 
 const BARK_COLORS = {
-  near: [0.12, 0.08, 0.075],
-  far: [0.22, 0.16, 0.15],
+  near: [0.16, 0.11, 0.1],
+  far: [0.26, 0.19, 0.18],
   haze: [0.85, 0.82, 0.78],
 } as const;
 
@@ -609,6 +634,9 @@ function startBackdrop(
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor(0x000000, 1);
 
+  // 仕上げ（被写界深度・ブルーム・グレーディング）。深度付きの RT を持つ。
+  const post = createEdohiganPost(THREE, renderer, 1, 1);
+
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
   const cameraZ = 50;
@@ -786,6 +814,11 @@ function startBackdrop(
   grassGeometry.setAttribute("aOffset", new THREE.InstancedBufferAttribute(grassOffsets, 3));
   grassGeometry.setAttribute("aScale", new THREE.InstancedBufferAttribute(grassScales, 1));
   grassGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(grassPhases, 1));
+  const grassTints = new Float32Array(grassCount);
+  for (let index = 0; index < grassCount; index += 1) {
+    grassTints[index] = Math.random();
+  }
+  grassGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(grassTints, 1));
   grassGeometry.instanceCount = grassCount;
   const grassMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -805,6 +838,59 @@ function startBackdrop(
   grass.frustumCulled = false;
   grass.renderOrder = 4;
   scene.add(grass);
+
+  // --- 草原の草（面ではなく、草の集まりとして見せる） ---------------------
+  // 地面の板が「塗った緑」に見えないよう、数千本の葉を敷く。
+  const fieldCount = 4200;
+  const fieldGeometry = new THREE.InstancedBufferGeometry();
+  fieldGeometry.setAttribute("position", grassGeometry.getAttribute("position"));
+  fieldGeometry.setAttribute("uv", grassGeometry.getAttribute("uv"));
+  fieldGeometry.setIndex(grassGeometry.getIndex());
+  const fieldOffsets = new Float32Array(fieldCount * 3);
+  const fieldScales = new Float32Array(fieldCount);
+  const fieldPhases = new Float32Array(fieldCount);
+  const fieldTints = new Float32Array(fieldCount);
+  // 株ごとにまとめて生やす（一様に散らすと点々に見える）。
+  const clumps = 340;
+  const clumpX = new Float32Array(clumps);
+  const clumpZ = new Float32Array(clumps);
+  for (let index = 0; index < clumps; index += 1) {
+    clumpX[index] = (Math.random() * 2 - 1) * 110;
+    clumpZ[index] = 18 - Math.pow(Math.random(), 0.65) * 105;
+  }
+  for (let index = 0; index < fieldCount; index += 1) {
+    const clump = index % clumps;
+    const spread = 0.6 + (index % 7) * 0.12;
+    fieldOffsets[index * 3] = clumpX[clump] + (Math.random() - 0.5) * spread * 2;
+    fieldOffsets[index * 3 + 1] = GROUND_Y;
+    fieldOffsets[index * 3 + 2] = clumpZ[clump] + (Math.random() - 0.5) * spread * 2;
+    fieldScales[index] = 0.4 + Math.random() * 1.0;
+    fieldPhases[index] = Math.random() * Math.PI * 2;
+    fieldTints[index] = Math.random();
+  }
+  fieldGeometry.setAttribute("aOffset", new THREE.InstancedBufferAttribute(fieldOffsets, 3));
+  fieldGeometry.setAttribute("aScale", new THREE.InstancedBufferAttribute(fieldScales, 1));
+  fieldGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(fieldPhases, 1));
+  fieldGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(fieldTints, 1));
+  fieldGeometry.instanceCount = fieldCount;
+  const fieldMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uGust: { value: 0.5 },
+      uWindScale: { value: 1 },
+      cBase: { value: new THREE.Color(0.16, 0.24, 0.09) },
+      cTip: { value: new THREE.Color(0.44, 0.52, 0.24) },
+    },
+    vertexShader: GRASS_VERTEX,
+    fragmentShader: GRASS_FRAGMENT,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
+  field.frustumCulled = false;
+  field.renderOrder = 3;
+  scene.add(field);
 
   // --- 舞う花びら -------------------------------------------------------
   const petalCapacity = 96;
@@ -849,12 +935,14 @@ function startBackdrop(
     treeMaterial.uniforms.uWindScale.value = next.wind;
     blossomMaterial.uniforms.uWindScale.value = next.wind;
     grassMaterial.uniforms.uWindScale.value = next.wind;
+    fieldMaterial.uniforms.uWindScale.value = next.wind;
     const blossomTotal = blossomCount;
     blossomGeometry.instanceCount = Math.max(
       1,
       Math.round(blossomTotal * Math.max(0.2, next.blossomRatio)),
     );
     grassGeometry.instanceCount = Math.max(1, Math.round(grassCount * Math.max(0.2, next.grassRatio)));
+    fieldGeometry.instanceCount = Math.max(1, Math.round(fieldCount * Math.max(0.25, next.grassRatio)));
   };
 
   const applyPetals = (intensity: AmbientIntensity, tier: 0 | 1 | 2 | 3) => {
@@ -871,6 +959,7 @@ function startBackdrop(
       canvasHeight = height;
       renderer.setPixelRatio(dpr);
       renderer.setSize(window.innerWidth, window.innerHeight, false);
+      post.setSize(width, height);
     }
     camera.aspect = window.innerWidth / Math.max(window.innerHeight, 1);
     camera.updateProjectionMatrix();
@@ -912,12 +1001,17 @@ function startBackdrop(
     petalUniforms.uGust.value = gust;
     grassMaterial.uniforms.uTime.value = sceneTime;
     grassMaterial.uniforms.uGust.value = gust;
+    fieldMaterial.uniforms.uTime.value = sceneTime;
+    fieldMaterial.uniforms.uGust.value = gust;
 
+    renderer.setRenderTarget(post.renderTarget);
     renderer.render(skyScene, skyCamera);
     renderer.autoClear = false;
     renderer.clearDepth();
     renderer.render(scene, camera);
     renderer.autoClear = true;
+    renderer.setRenderTarget(null);
+    post.present(sceneTime);
   };
 
   const schedule = () => {
@@ -1033,10 +1127,13 @@ function startBackdrop(
     petalMaterial.dispose();
     grassGeometry.dispose();
     grassMaterial.dispose();
+    fieldGeometry.dispose();
+    fieldMaterial.dispose();
     petalTexture.dispose();
     if (blossomTexture !== petalTexture) {
       blossomTexture.dispose();
     }
+    post.dispose();
     renderer.dispose();
   };
 }

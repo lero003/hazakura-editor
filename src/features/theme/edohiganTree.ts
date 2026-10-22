@@ -48,7 +48,7 @@ export type Tree = {
 
 export const TREE_MAX_DEPTH = 6;
 /** 1 本の枝先に置く花の数。 */
-export const BLOSSOMS_PER_TIP = 7;
+export const BLOSSOMS_PER_TIP = 10;
 
 type Vec = [number, number, number];
 
@@ -214,7 +214,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
     if (branch.depth < 3 || branch.sway < 0.35) {
       continue;
     }
-    const count = branch.depth >= TREE_MAX_DEPTH - 1 ? 2 : 1;
+    const count = branch.depth >= TREE_MAX_DEPTH - 1 ? 3 : 2;
     for (let index = 0; index < count; index += 1) {
       const t = 0.45 + random() * 0.55;
       const spread = 0.25 + random() * 0.3;
@@ -224,7 +224,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
           branch.start[1] + (branch.end[1] - branch.start[1]) * t + (random() - 0.5) * spread,
           branch.start[2] + (branch.end[2] - branch.start[2]) * t + (random() - 0.5) * spread,
         ],
-        size: 0.3 + random() * 0.3,
+        size: 0.4 + random() * 0.4,
         phase: branch.phase + random() * 0.8,
         tint: Math.min(1, 0.15 + branch.sway * 0.45 + random() * 0.5),
       });
@@ -244,7 +244,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
           tip[1] + Math.cos(phi) * spread * 0.7,
           tip[2] + Math.sin(phi) * Math.sin(theta) * spread,
         ],
-        size: 0.34 + random() * 0.4,
+        size: 0.48 + random() * 0.52,
         phase: phase + random() * 0.8,
         // 高いところほど空を背景に明るく見える。
         tint: Math.min(1, 0.18 + sway * 0.42 + random() * 0.5),

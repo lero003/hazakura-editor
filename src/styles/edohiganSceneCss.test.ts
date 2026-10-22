@@ -24,7 +24,7 @@ describe("edohigan dawn backdrop", () => {
     // 「紙」ではなく、本文のあたりだけが明るく外へ薄れる霞。情景が右と下に残る。
     // 本文の帯は読める濃さ、外側は情景が残る薄さ。
     expect(editor).toContain("radial-gradient(");
-    expect(editor).toContain("rgba(255, 253, 249, 0.7) 58%");
+    expect(editor).toContain("rgba(255, 253, 249, 0.5) 58%");
     expect(editor).toContain("rgba(255, 253, 249, 0.03) 100%");
     expect(editor).toContain("background-color: transparent");
     // 背景をぼかすと木が消えるので使わない。
