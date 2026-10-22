@@ -35,6 +35,12 @@ export type TreeBlossom = {
   phase: number;
   /** 花の濃さ（0..1）。奥の花を薄くするのに使う。 */
   tint: number;
+  /**
+   * 自己遮蔽（0 = 樹冠の奥で暗い, 1 = 梢の外で明るい）。
+   * 板ポリの花を並べただけでは樹冠が「平らな壁」になるので、
+   * 外側ほど光が当たるようにして塊の奥行きを出す。
+   */
+  shade: number;
 };
 
 export type Tree = {
@@ -218,15 +224,15 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
     for (let index = 0; index < count; index += 1) {
       const t = 0.45 + random() * 0.55;
       const spread = 0.25 + random() * 0.3;
+      const x = branch.start[0] + (branch.end[0] - branch.start[0]) * t + (random() - 0.5) * spread;
+      const y = branch.start[1] + (branch.end[1] - branch.start[1]) * t + (random() - 0.5) * spread;
+      const z = branch.start[2] + (branch.end[2] - branch.start[2]) * t + (random() - 0.5) * spread;
       blossoms.push({
-        position: [
-          branch.start[0] + (branch.end[0] - branch.start[0]) * t + (random() - 0.5) * spread,
-          branch.start[1] + (branch.end[1] - branch.start[1]) * t + (random() - 0.5) * spread,
-          branch.start[2] + (branch.end[2] - branch.start[2]) * t + (random() - 0.5) * spread,
-        ],
+        position: [x, y, z],
         size: 0.4 + random() * 0.4,
         phase: branch.phase + random() * 0.8,
         tint: Math.min(1, 0.15 + branch.sway * 0.45 + random() * 0.5),
+        shade: 0.55 + Math.min(1, Math.hypot(x, z) / Math.max(crownRadius, 0.001)) * 0.45,
       });
     }
   }
@@ -238,16 +244,16 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
       const spread = 0.28 + random() * 0.32;
       const theta = random() * Math.PI * 2;
       const phi = Math.acos(2 * random() - 1);
+      const bx = tip[0] + Math.sin(phi) * Math.cos(theta) * spread;
+      const by = tip[1] + Math.cos(phi) * spread * 0.7;
+      const bz = tip[2] + Math.sin(phi) * Math.sin(theta) * spread;
       blossoms.push({
-        position: [
-          tip[0] + Math.sin(phi) * Math.cos(theta) * spread,
-          tip[1] + Math.cos(phi) * spread * 0.7,
-          tip[2] + Math.sin(phi) * Math.sin(theta) * spread,
-        ],
+        position: [bx, by, bz],
         size: 0.48 + random() * 0.52,
         phase: phase + random() * 0.8,
         // 高いところほど空を背景に明るく見える。
         tint: Math.min(1, 0.18 + sway * 0.42 + random() * 0.5),
+        shade: 0.55 + Math.min(1, Math.hypot(bx, bz) / Math.max(crownRadius, 0.001)) * 0.45,
       });
     }
   });

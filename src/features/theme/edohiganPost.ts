@@ -96,7 +96,7 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
     float viewZ = -perspectiveDepthToViewZ(depth, uNear, uFar);
     // ピントは木。そこから離れるほど像を散らす。
     float coc = clamp(abs(viewZ - uFocus) / uAperture, 0.0, 1.0);
-    coc = pow(coc, 1.4) * 0.8;
+    coc = pow(coc, 1.6) * 0.62;
 
     vec3 color = texture2D(tDiffuse, uv).rgb;
     if (coc > 0.02) {
@@ -224,7 +224,7 @@ export function createEdohiganPost(
       uNear: { value: 0.1 },
       uFar: { value: 400 },
       uFocus: { value: 56 },
-      uAperture: { value: 115 },
+      uAperture: { value: 150 },
       uBloomStrength: { value: 0.16 },
       uGrain: { value: 0.022 },
       uVignette: { value: 0.24 },

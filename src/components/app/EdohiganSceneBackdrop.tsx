@@ -263,15 +263,28 @@ const TREE_FRAGMENT = /* glsl */ `
     return fract(p.x * p.y);
   }
 
+  float valueNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float a = hash21(i);
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+  }
+
   void main() {
     // 奥の枝ほど空気の色へ寄せる。
     vec3 color = mix(cBarkNear, cBarkFar, vDepth01 * 0.55);
     color = mix(color, cHaze, vDepth01 * 0.12);
 
-    // 樹皮のムラ。縦に長いノイズを重ねる。
-    float grain = hash21(vec2(floor(vBarkUv.x * 72.0), floor(vBarkUv.y * 11.0)));
-    float broad = hash21(vec2(floor(vBarkUv.x * 9.0), floor(vBarkUv.y * 3.0)));
-    color *= 0.78 + grain * 0.26 + broad * 0.16;
+    // 樹皮のムラ。縦に伸びる筋と、広いまだらを重ねる。
+    // floor() で区切ると四角い斑になるので、滑らかな value noise を使う。
+    float streak = valueNoise(vec2(vBarkUv.x * 140.0, vBarkUv.y * 5.0));
+    float broad = valueNoise(vec2(vBarkUv.x * 18.0, vBarkUv.y * 2.0));
+    float fine = valueNoise(vec2(vBarkUv.x * 320.0, vBarkUv.y * 12.0));
+    color *= 0.72 + streak * 0.2 + broad * 0.22 + fine * 0.1;
 
     // 太陽側の面をわずかに明るく。
     float light = clamp(dot(normalize(vNormalW), normalize(vec3(-0.35, 0.75, 0.55))), 0.0, 1.0);
@@ -295,6 +308,8 @@ const BLOSSOM_VERTEX = /* glsl */ `
   attribute float aPhase;
   attribute float aTint;
   attribute float aRotation;
+  attribute float aShade;
+  attribute float aTilt;
 
   uniform float uTime;
   uniform float uGust;
@@ -303,6 +318,7 @@ const BLOSSOM_VERTEX = /* glsl */ `
   varying vec2 vUv;
   varying float vTint;
   varying float vShade;
+  varying float vAo;
 
   ${WIND_GLSL}
 
@@ -323,10 +339,14 @@ const BLOSSOM_VERTEX = /* glsl */ `
     // カメラを向く板（ビルボード）。
     vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
     vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-    vec3 pos = center + (right * turned.x + up * turned.y) * aSize;
+    // 少しだけ傾ける。全部が正面向きだと「貼った紙」に見える。
+    turned.y *= mix(1.0, 0.55, aTilt);
+    vec3 pos = center + (right * turned.x + up * turned.y) * aSize
+             + up * (aTilt * aSize * 0.18);
 
     vTint = aTint;
     vShade = 0.75 + 0.25 * position.y;
+    vAo = aShade;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
@@ -341,6 +361,7 @@ const BLOSSOM_FRAGMENT = /* glsl */ `
   varying vec2 vUv;
   varying float vTint;
   varying float vShade;
+  varying float vAo;
 
   void main() {
     vec4 sprite = texture2D(uMap, vUv);
@@ -349,6 +370,8 @@ const BLOSSOM_FRAGMENT = /* glsl */ `
 
     // 花の色はスプライト由来。個体差だけ tint で寄せる。
     vec3 color = sprite.rgb * mix(cPetalDeep, cPetal, vTint);
+    // 樹冠の奥は沈め、梢は空を透かして明るく。
+    color *= mix(0.52, 1.08, vAo);
     gl_FragColor = vec4(color * (0.88 + vShade * 0.2), alpha);
   }
 `;
@@ -361,6 +384,7 @@ const GRASS_VERTEX = /* glsl */ `
   attribute float aScale;
   attribute float aPhase;
   attribute float aTint;
+  attribute vec2 aShape; // x: 幅 / y: 傾き
 
   uniform float uTime;
   uniform float uGust;
@@ -379,7 +403,10 @@ const GRASS_VERTEX = /* glsl */ `
 
     // カメラの右方向へ向ける（板の向きを揃えない）。
     vec3 right = vec3(viewMatrix[0][0], 0.0, viewMatrix[2][0]);
-    vec3 local = right * (position.x * aScale * 0.22) + vec3(0.0, position.y * aScale, 0.0);
+    vec3 local = right * (position.x * aScale * 0.22 * aShape.x)
+               + vec3(0.0, position.y * aScale, 0.0);
+    // 株ごとに傾ける。全部まっすぐだと「同じ型を並べた」に見える。
+    local += right * (aShape.y * weight * aScale * 0.28);
     vec3 pos = aOffset + local + vec3(s * weight * aScale * 0.35, 0.0, 0.0);
 
     vShade = position.y;
@@ -753,6 +780,8 @@ function startBackdrop(
   const phases = new Float32Array(blossomCount);
   const tints = new Float32Array(blossomCount);
   const rotations = new Float32Array(blossomCount);
+  const shades = new Float32Array(blossomCount);
+  const tilts = new Float32Array(blossomCount);
   tree.blossoms.forEach((blossom, index) => {
     centers[index * 3] = blossom.position[0];
     centers[index * 3 + 1] = blossom.position[1];
@@ -761,12 +790,16 @@ function startBackdrop(
     phases[index] = blossom.phase;
     tints[index] = blossom.tint;
     rotations[index] = blossom.phase * 1.9;
+    shades[index] = blossom.shade;
+    tilts[index] = (blossom.phase * 0.618) % 1;
   });
   blossomGeometry.setAttribute("aCenter", new THREE.InstancedBufferAttribute(centers, 3));
   blossomGeometry.setAttribute("aSize", new THREE.InstancedBufferAttribute(sizes, 1));
   blossomGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(phases, 1));
   blossomGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(tints, 1));
   blossomGeometry.setAttribute("aRotation", new THREE.InstancedBufferAttribute(rotations, 1));
+  blossomGeometry.setAttribute("aShade", new THREE.InstancedBufferAttribute(shades, 1));
+  blossomGeometry.setAttribute("aTilt", new THREE.InstancedBufferAttribute(tilts, 1));
   blossomGeometry.instanceCount = blossomCount;
 
   const blossomMaterial = new THREE.ShaderMaterial({
@@ -822,10 +855,14 @@ function startBackdrop(
   grassGeometry.setAttribute("aScale", new THREE.InstancedBufferAttribute(grassScales, 1));
   grassGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(grassPhases, 1));
   const grassTints = new Float32Array(grassCount);
+  const grassShapes = new Float32Array(grassCount * 2);
   for (let index = 0; index < grassCount; index += 1) {
     grassTints[index] = Math.random();
+    grassShapes[index * 2] = 0.7 + Math.random() * 0.7;
+    grassShapes[index * 2 + 1] = (Math.random() * 2 - 1) * 0.9;
   }
   grassGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(grassTints, 1));
+  grassGeometry.setAttribute("aShape", new THREE.InstancedBufferAttribute(grassShapes, 2));
   grassGeometry.instanceCount = grassCount;
   const grassMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -879,6 +916,12 @@ function startBackdrop(
   fieldGeometry.setAttribute("aScale", new THREE.InstancedBufferAttribute(fieldScales, 1));
   fieldGeometry.setAttribute("aPhase", new THREE.InstancedBufferAttribute(fieldPhases, 1));
   fieldGeometry.setAttribute("aTint", new THREE.InstancedBufferAttribute(fieldTints, 1));
+  const fieldShapes = new Float32Array(fieldCount * 2);
+  for (let index = 0; index < fieldCount; index += 1) {
+    fieldShapes[index * 2] = 0.7 + Math.random() * 0.7;
+    fieldShapes[index * 2 + 1] = (Math.random() * 2 - 1) * 0.9;
+  }
+  fieldGeometry.setAttribute("aShape", new THREE.InstancedBufferAttribute(fieldShapes, 2));
   fieldGeometry.instanceCount = fieldCount;
   const fieldMaterial = new THREE.ShaderMaterial({
     uniforms: {
