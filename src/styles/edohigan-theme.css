@@ -150,6 +150,21 @@
   --branch-opacity: 0.34;
 }
 
+/* 3.4 three.js 情景レイヤー（スパイク、既定は無効）
+   紙の上へ multiply で「影」を落とす。彩度の高い光を重ねるのではなく、
+   花と枝の影で紙に情景を通す（明色テーマの可読性契約を変えないため）。
+   中央カラムの退避はシェーダー側で行うので、ここでは mask を掛けない。 */
+.edohigan-scene {
+  display: block;
+  height: 100%;
+  inset: 0;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+  z-index: calc(var(--z-base) + 1);
+}
+
 /* 起動画面の広い余白では植物画を見せる。操作と見出しの位置は動かさない。 */
 :root[data-theme="edohigan"] .app-shell:has(.workspace-start) .edohigan-branch {
   height: min(55vh, 480px);
