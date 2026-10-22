@@ -4,9 +4,11 @@ import { useReducedMotion } from "../../hooks/app/useReducedMotion";
 import { EdohiganAmbient } from "./EdohiganAmbient";
 import {
   createScenePetals,
+  sceneIntensityProfile,
   splitPetalBands,
   edohiganWind,
   DAWN_PETAL_TINT,
+  type SceneIntensityProfile,
 } from "../../features/theme/edohiganScene";
 import {
   PETAL_FRAGMENT,
@@ -189,6 +191,7 @@ const TREE_VERTEX = /* glsl */ `
 
   uniform float uTime;
   uniform float uGust;
+  uniform float uWindScale;
 
   varying float vDepth01;
   varying vec3 vNormalW;
@@ -204,7 +207,7 @@ const TREE_VERTEX = /* glsl */ `
     // 空間位相: 木の左端と右端で位相をずらすと、風が梢を渡って見える。
     vec3 baseWorld = (modelMatrix * vec4(position, 1.0)).xyz;
     float spatial = (baseWorld.x + baseWorld.z * 0.6) * 0.11;
-    float s = edohiganSway(uTime, aPhase + spatial, uGust);
+    float s = edohiganSway(uTime, aPhase + spatial, uGust) * uWindScale;
     p.x += s * weight * 0.62;
     p.z += s * weight * 0.16;
     p.y += sin(uTime * 0.45 + aPhase * 2.0) * 0.05 * weight;
@@ -270,6 +273,7 @@ const BLOSSOM_VERTEX = /* glsl */ `
 
   uniform float uTime;
   uniform float uGust;
+  uniform float uWindScale;
 
   varying vec2 vUv;
   varying float vTint;
@@ -282,7 +286,7 @@ const BLOSSOM_VERTEX = /* glsl */ `
     // 木と同じ空間位相を使う（同じ風の中にいる）。
     vec3 centerWorld = (modelMatrix * vec4(aCenter, 1.0)).xyz;
     float spatial = (centerWorld.x + centerWorld.z * 0.6) * 0.11;
-    float s = edohiganSway(uTime, aPhase + spatial, uGust);
+    float s = edohiganSway(uTime, aPhase + spatial, uGust) * uWindScale;
     // 木と同じ風に乗せる。花は枝先なので重みは最大。
     vec3 center = aCenter + vec3(s * 0.62, sin(uTime * 0.9 + aPhase * 3.0) * 0.05, s * 0.16);
 
@@ -334,6 +338,7 @@ const GRASS_VERTEX = /* glsl */ `
 
   uniform float uTime;
   uniform float uGust;
+  uniform float uWindScale;
 
   varying vec2 vUv;
   varying float vShade;
@@ -342,7 +347,7 @@ const GRASS_VERTEX = /* glsl */ `
 
   void main() {
     vUv = uv;
-    float s = edohiganSway(uTime, aPhase, uGust);
+    float s = edohiganSway(uTime, aPhase, uGust) * uWindScale;
     float weight = position.y * position.y;
 
     // カメラの右方向へ向ける（板の向きを揃えない）。
@@ -660,6 +665,7 @@ function startBackdrop(
     uniforms: {
       uTime: { value: 0 },
       uGust: { value: 0.5 },
+      uWindScale: { value: 1 },
       cBarkNear: { value: new THREE.Color(...BARK_COLORS.near) },
       cBarkFar: { value: new THREE.Color(...BARK_COLORS.far) },
       cHaze: { value: new THREE.Color(...BARK_COLORS.haze) },
@@ -732,6 +738,7 @@ function startBackdrop(
     uniforms: {
       uTime: { value: 0 },
       uGust: { value: 0.5 },
+      uWindScale: { value: 1 },
       uMap: { value: blossomTexture },
       cPetal: { value: new THREE.Color(1.0, 0.95, 0.96) },
       cPetalDeep: { value: new THREE.Color(0.96, 0.74, 0.8) },
@@ -784,6 +791,7 @@ function startBackdrop(
     uniforms: {
       uTime: { value: 0 },
       uGust: { value: 0.5 },
+      uWindScale: { value: 1 },
       cBase: { value: new THREE.Color(0.2, 0.28, 0.14) },
       cTip: { value: new THREE.Color(0.5, 0.6, 0.34) },
     },
@@ -831,8 +839,23 @@ function startBackdrop(
 
   let quality = initialAmbientQualityState(initialIntensity);
   let currentIntensity = initialIntensity;
+  let profile = sceneIntensityProfile(initialIntensity);
   let canvasWidth = 0;
   let canvasHeight = 0;
+
+  /** 強度に応じて、花と草の枚数・風の強さ・時間の速さを切り替える。 */
+  const applyProfile = (next: SceneIntensityProfile) => {
+    profile = next;
+    treeMaterial.uniforms.uWindScale.value = next.wind;
+    blossomMaterial.uniforms.uWindScale.value = next.wind;
+    grassMaterial.uniforms.uWindScale.value = next.wind;
+    const blossomTotal = blossomCount;
+    blossomGeometry.instanceCount = Math.max(
+      1,
+      Math.round(blossomTotal * Math.max(0.2, next.blossomRatio)),
+    );
+    grassGeometry.instanceCount = Math.max(1, Math.round(grassCount * Math.max(0.2, next.grassRatio)));
+  };
 
   const applyPetals = (intensity: AmbientIntensity, tier: 0 | 1 | 2 | 3) => {
     const seeds = splitPetalBands(createScenePetals(intensity, tier)).backdrop;
@@ -866,6 +889,7 @@ function startBackdrop(
 
   applyLayout();
   applyPetals(currentIntensity, quality.tier);
+  applyProfile(sceneIntensityProfile(currentIntensity));
 
   let elapsedSeconds = 0;
   let lastFrameMs = 0;
@@ -876,16 +900,17 @@ function startBackdrop(
   let paused = document.hidden || !document.hasFocus();
 
   const draw = (time: number) => {
-    const gust = edohiganWind(time);
-    skyMaterial.uniforms.uTime.value = time;
-    groundMaterial.uniforms.uTime.value = time;
-    treeMaterial.uniforms.uTime.value = time;
+    const sceneTime = time * profile.timeScale;
+    const gust = edohiganWind(sceneTime);
+    skyMaterial.uniforms.uTime.value = sceneTime;
+    groundMaterial.uniforms.uTime.value = sceneTime;
+    treeMaterial.uniforms.uTime.value = sceneTime;
     treeMaterial.uniforms.uGust.value = gust;
-    blossomMaterial.uniforms.uTime.value = time;
+    blossomMaterial.uniforms.uTime.value = sceneTime;
     blossomMaterial.uniforms.uGust.value = gust;
-    petalUniforms.uTime.value = time;
+    petalUniforms.uTime.value = sceneTime;
     petalUniforms.uGust.value = gust;
-    grassMaterial.uniforms.uTime.value = time;
+    grassMaterial.uniforms.uTime.value = sceneTime;
     grassMaterial.uniforms.uGust.value = gust;
 
     renderer.render(skyScene, skyCamera);
@@ -923,6 +948,7 @@ function startBackdrop(
       quality = initialAmbientQualityState(intensityNow);
       applyPetals(currentIntensity, quality.tier);
       applyLayout();
+      applyProfile(sceneIntensityProfile(intensityNow));
     }
 
     elapsedSeconds = nextElapsedSeconds(elapsedSeconds, frameMs, true);

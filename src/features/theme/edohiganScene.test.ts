@@ -10,6 +10,7 @@ import {
   createScenePetals,
   edohiganBranchSway,
   edohiganWind,
+  sceneIntensityProfile,
   scenePetalTargetCount,
   splitPetalBands,
 } from "./edohiganScene";
@@ -132,5 +133,28 @@ describe("foreground bokeh", () => {
       expect(item.opacity).toBeLessThan(0.11);
       expect(item.size).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("scene intensity profile", () => {
+  it("makes dramatic windier and subtle calmer than normal", () => {
+    expect(sceneIntensityProfile("subtle").wind).toBeLessThan(sceneIntensityProfile("normal").wind);
+    expect(sceneIntensityProfile("dramatic").wind).toBeGreaterThan(sceneIntensityProfile("normal").wind);
+    expect(sceneIntensityProfile("subtle").timeScale).toBeLessThan(1);
+    expect(sceneIntensityProfile("normal").timeScale).toBe(1);
+  });
+
+  it("keeps the full canopy at dramatic and thins it at subtle", () => {
+    expect(sceneIntensityProfile("dramatic").blossomRatio).toBe(1);
+    expect(sceneIntensityProfile("subtle").blossomRatio).toBeLessThan(
+      sceneIntensityProfile("normal").blossomRatio,
+    );
+  });
+
+  it("turns everything off for the off intensity", () => {
+    const off = sceneIntensityProfile("off");
+    expect(off.wind).toBe(0);
+    expect(off.blossomRatio).toBe(0);
+    expect(off.grassRatio).toBe(0);
   });
 });

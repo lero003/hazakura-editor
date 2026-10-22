@@ -246,3 +246,32 @@ export function createBokehPetals(count: number, seed = 0x9a1c): BokehPetal[] {
     phase: random() * Math.PI * 2,
   }));
 }
+
+/**
+ * 強度ごとの情景の効き方。
+ *
+ * これまで強度は「舞う花弁の枚数」しか変えておらず、木の揺れは常に同じだった。
+ * 静かに読みたい人と、情景を眺めたい人で差が出るように、風・速さ・花の量を
+ * まとめて変える。`off` は情景そのものを出さない（呼び出し側で止める）。
+ */
+export type SceneIntensityProfile = {
+  /** 揺れの振幅。1 = 標準。 */
+  wind: number;
+  /** 時間の進み。小さいほどゆっくり。 */
+  timeScale: number;
+  /** 花の間引き（1 = 全部）。 */
+  blossomRatio: number;
+  /** 手前の草の間引き。 */
+  grassRatio: number;
+};
+
+export const SCENE_INTENSITY: Record<AmbientIntensity, SceneIntensityProfile> = {
+  off: { wind: 0, timeScale: 0, blossomRatio: 0, grassRatio: 0 },
+  subtle: { wind: 0.5, timeScale: 0.78, blossomRatio: 0.62, grassRatio: 0.55 },
+  normal: { wind: 1, timeScale: 1, blossomRatio: 0.85, grassRatio: 0.8 },
+  dramatic: { wind: 1.55, timeScale: 1.12, blossomRatio: 1, grassRatio: 1 },
+};
+
+export function sceneIntensityProfile(intensity: AmbientIntensity): SceneIntensityProfile {
+  return SCENE_INTENSITY[intensity] ?? SCENE_INTENSITY.normal;
+}
