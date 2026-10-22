@@ -26,13 +26,13 @@ Last reviewed: 2026-10-19
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current source version is `3.4.1`, a follow-up to the [v3.4.0 source checkpoint](https://github.com/lero003/hazakura-editor/releases/tag/v3.4.0).
+Current source version is `3.4.1`, a follow-up to the v3.4 theme-atmosphere work.
 The Edohigan theme now draws a two-layer three.js dawn scene behind a frosted-glass page
 (see the [release note](docs/releases/3.4.1-edohigan-scene.md)).
 The seven themes now share refined lighting, materials, motion, and optical effects.
 The owner reports that v3.3 has already been submitted for App Review (2026-10-19).
 Its submitted build/source identity and Apple review status were not independently checked here.
-The theme refresh and its regression fixes belong to v3.4; this GitHub release has source archives only.
+The theme refresh and its regression fixes belong to v3.4. Source tag/Release publication is separate from development commits and local package generation.
 Device and App Store distribution acceptance remain separate.
 Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
@@ -334,7 +334,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version in the development tree is `3.4.0` across npm, Tauri, and Cargo metadata. It is the theme-atmosphere candidate; package generation and device/App Store acceptance are recorded separately. The owner reports v3.3 already submitted for App Review (2026-10-19 report) and Mac App Store `3.2.1` publication and successful testing on 2026-10-14; submitted/released build provenance and Apple's current review status are separate. The latest published GitHub source / local-app tag is [v3.0.0](https://github.com/lero003/hazakura-editor/tree/v3.0.0) (source-only tag, no binary assets). Prior checkpoints: [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0), [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
+- Current package/app version in the development tree is `3.4.1` across npm, Tauri, and Cargo metadata. It is the theme-atmosphere candidate; package generation and device/App Store acceptance are recorded separately. The owner reports v3.3 already submitted for App Review (2026-10-19 report) and Mac App Store `3.2.1` publication and successful testing on 2026-10-14; submitted/released build provenance and Apple's current review status are separate. The latest published GitHub source / local-app tag is [v3.0.0](https://github.com/lero003/hazakura-editor/tree/v3.0.0) (source-only tag, no binary assets). Prior checkpoints: [v2.3.0](https://github.com/lero003/hazakura-editor/tree/v2.3.0), [v2.0.0](https://github.com/lero003/hazakura-editor/tree/v2.0.0).
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `3.2.1` by owner report; rollout coverage was not checked here. Prior store releases remain historical.
 - Release notes: [3.4.0 theme atmosphere](docs/releases/3.4.0-theme-atmosphere.md), [3.3.0 review record](docs/releases/3.3.0-dependency-autonomy.md), [3.2.1 workspace refresh](docs/releases/3.2.1-workspace-refresh.md), [3.1.0 App Store record](docs/releases/3.1.0-app-store-release-notes.md), [3.0.3 App Store submission copy](docs/releases/3.0.3-app-store-release-notes.md), [3.0.2 App Store submission copy](docs/releases/3.0.2-app-store-release-notes.md), [3.0.1 App Store submission copy](docs/releases/3.0.1-app-store-release-notes.md), [3.0.0 release record](docs/releases/3.0.0-source-tag.release.md), and [3.0.0 App Store notes](docs/releases/3.0.0-app-store-release-notes.md). Older records remain under [docs/releases](docs/releases/README.md).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

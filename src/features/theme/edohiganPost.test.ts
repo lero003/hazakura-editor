@@ -13,6 +13,10 @@ describe("edohigan bloom resolution", () => {
         clear: () => {},
         render: (scene: THREE.Scene) => {
           const material = (scene.children[0] as THREE.Mesh).material as THREE.ShaderMaterial;
+          if (material.uniforms.uSun) {
+            // 光条の光源範囲を画素比に関係なく太陽の周囲へ保つ。
+            expect(material.uniforms.uAspect?.value).toBeCloseTo(width / height);
+          }
           const direction = material.uniforms.uDirection?.value as THREE.Vector2 | undefined;
           if (direction && target) {
             blurPasses.push({ direction: direction.toArray(), width: target.width, height: target.height });

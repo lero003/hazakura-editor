@@ -29,8 +29,16 @@ Last reviewed: 2026-10-22
   影カメラの角度、静止表示の resize / 強度 / テクスチャ更新を修正。
   frontend 341 files / 3,168 tests・scripts 31件・typecheck・Vite が成功。
   隔離 WKWebView は明示時刻の描画・console error なしを確認。今回は rAF が届かず fps 再測定未成立。
-- **未確認:** 実アプリ（Tauri の `asset:` 経由のテクスチャ）、Intel GPU、Retina、IME/VoiceOver、
-  本文右端の局所コントラストの正式な AA 判定。
+- 追補4（同日）: 実アプリ3ペイン向けに、編集面を上端0.58〜下端0.56の縦の紙へ、
+  プレビューを0.5 + blur 12pxの濃い透過ガラスへ。マウス追従のカメラ parallax と
+  光条・ブルーム・被写界深度の強化。局所コントラスト（近傍背景からの推定）は
+  編集面 3.88→4.60、プレビュー 5.9〜6.4。frontend 341 files / 3,172 tests。
+- 追補5（同日）: 花の深度を別描画してピントを合わせ、間引きの片寄り・末枝・花の輪郭を修正。
+  太陽近傍へ光条を絞り、Previewは本文の明るさを保って余白の霞を薄くした。
+  frontend 341 files / 3,175 tests・scripts 31件・typecheck・Vite が成功。
+  隔離 WKWebView の情景描画は通常37.5/強75.3回/秒。計測と新実装の実機受入は分ける。
+- **未確認:** 実アプリ（Tauri の `asset:` 経由のテクスチャ）、Intel GPU、Retina、
+  `backdrop-filter` の実機負荷、IME/VoiceOver、本文右端の局所コントラストの正式な AA 判定。
 - 記録は [v3.4.1](releases/3.4.1-edohigan-scene.md)。
 
 ## 現行候補 — v3.4テーマ演出ブラッシュアップ（2026-10-21）
@@ -39,8 +47,8 @@ v3.3は審査提出済みとのオーナー報告を受け、テーマ刷新S0�
 提出済みv3.3のbuild/source対応とApple側の審査状態は独立未照合。過去のv3.3候補証跡は保持する。
 版・pkg・残る受け入れの入口は[v3.4記録](releases/3.4.0-theme-atmosphere.md)。
 
-GitHubソースチェックポイントは `v3.4.0`。`main` とタグに現行実装を固定し、Releaseはソースのみとする。
-バイナリを添付せず、実機未確認項目は残す。[Release本文](releases/3.4.0-source-tag.release.md)。
+`v3.4.0` はローカルのソースチェックポイント。GitHub側のタグ/Release公開は別作業とし、
+予定のReleaseはソースのみとする。実機未確認項目は残す。[Release本文案](releases/3.4.0-source-tag.release.md)。
 
 ### 追加 — 紙面の深度と前景（S10、2026-10-21）
 

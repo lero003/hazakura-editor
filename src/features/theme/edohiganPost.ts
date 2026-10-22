@@ -130,16 +130,16 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
     color = mix(color, color * vec3(0.94, 0.98, 1.08), (1.0 - smoothstep(0.0, 0.55, luma)) * 0.5);
     color = mix(color, color * vec3(1.06, 1.01, 0.94), smoothstep(0.55, 1.0, luma) * 0.5);
     // 彩度は控えめに。上げすぎると「CG の緑」に見える。
-    color = mix(vec3(luma), color, 1.1);
+    color = mix(vec3(luma), color, 1.14);
     // コントラストの S カーブ。表示色（sRGB）に対して掛けるので、
     // フィルミックな肩ではなく素直な smoothstep に寄せる。
     color = max(color - 0.01, vec3(0.0)) / 0.99;
     color = clamp(color, 0.0, 1.0);
     vec3 shaped = color * color * (3.0 - 2.0 * color);
-    color = mix(color, shaped, 0.3);
+    color = mix(color, shaped, 0.34);
     // 褪せたフィルムのように、黒を少し持ち上げて暖色へ寄せる。
     // 締めるだけだと「晴れた 3D の昼」に見え、朝の記憶の色にならない。
-    color = color * 0.99 + 0.008;
+    color = color * 0.992 + 0.005;
     color *= vec3(1.012, 1.0, 0.985);
 
     // --- ビネット -------------------------------------------------------
@@ -161,6 +161,7 @@ const RAY_FRAGMENT = /* glsl */ `
 
   uniform sampler2D tDiffuse;
   uniform vec2 uSun;
+  uniform float uAspect;
   uniform float uDecay;
   varying vec2 vUv;
 
@@ -177,7 +178,10 @@ const RAY_FRAGMENT = /* glsl */ `
       float luma = dot(texel, vec3(0.299, 0.587, 0.114));
       // 空全体ではなく、太陽と、枝の隙間から漏れる強い光だけを源にする。
       // これをしないと放射が「全体のかすみ」になって筋が出ない。
-      float source = smoothstep(0.86, 0.99, luma);
+      // 雲や明るい地面まで光源にすると画面全体が白い霞になる。
+      // 太陽の周囲だけを積み、光の筋と日陰の階調を分ける。
+      float sunDistance = length((coord - uSun) * vec2(uAspect, 1.0));
+      float source = smoothstep(0.86, 0.99, luma) * exp(-sunDistance * 12.0);
       sum += source * illumination;
       illumination *= uDecay;
     }
@@ -266,6 +270,7 @@ export function createEdohiganPost(
     uniforms: {
       tDiffuse: { value: brightTarget.texture },
       uSun: { value: new THREE.Vector2(0.8, 0.8) },
+      uAspect: { value: width / height },
       uDecay: { value: 0.94 },
     },
     vertexShader: FULLSCREEN_VERTEX,
@@ -285,12 +290,12 @@ export function createEdohiganPost(
       uNear: { value: 0.1 },
       uFar: { value: 400 },
       uFocus: { value: 56 },
-      uAperture: { value: 185 },
-      uBloomStrength: { value: 0.16 },
+      uAperture: { value: 165 },
+      uBloomStrength: { value: 0.2 },
       uGrain: { value: 0.026 },
       uVignette: { value: 0.28 },
       uTime: { value: 0 },
-      uExposure: { value: 1.0 },
+      uExposure: { value: 1.02 },
     },
     vertexShader: FULLSCREEN_VERTEX,
     fragmentShader: COMPOSITE_FRAGMENT,
@@ -340,6 +345,7 @@ export function createEdohiganPost(
     blurTargetB.setSize(nextHalfWidth, nextHalfHeight);
     rayTarget.setSize(nextHalfWidth, nextHalfHeight);
     compositeMaterial.uniforms.uResolution.value.set(nextWidth, nextHeight);
+    rayMaterial.uniforms.uAspect.value = nextWidth / nextHeight;
   };
 
   const dispose = () => {

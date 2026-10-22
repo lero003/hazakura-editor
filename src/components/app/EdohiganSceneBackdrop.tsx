@@ -7,6 +7,7 @@ import {
   sceneIntensityProfile,
   splitPetalBands,
   edohiganWind,
+  pointerCameraOffset,
   DAWN_PETAL_TINT,
   type SceneIntensityProfile,
 } from "../../features/theme/edohiganScene";
@@ -366,15 +367,15 @@ const TREE_FRAGMENT = /* glsl */ `
     // 逆光。正面は沈み、太陽側（右上）の面だけが持ち上がる。
     float light = clamp(dot(normal, SUN_DIR), 0.0, 1.0);
     color *= 0.66 + light * 0.4;
-    // 梢の細い枝は空を背にする。幹の樹皮は見せたまま、枝だけシルエットへ寄せる。
-    color *= mix(1.0, 0.6, smoothstep(0.22, 0.8, vDepth01));
+    // 梢は花の間へ溶かす。真っ黒な骨格が淡い花より先に目に入らないようにする。
+    color *= mix(1.0, 0.8, smoothstep(0.22, 0.8, vDepth01));
     // 空の照り返し。下側へわずかに青を返す。
     color += vec3(0.026, 0.036, 0.05) * clamp(normal.y * 0.5 + 0.5, 0.0, 1.0);
 
     // 逆光の縁。太陽は木の後ろ（右上）なので、輪郭だけが淡く光る。
     vec3 viewDir = normalize(cameraPosition - vWorldPos);
     float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
-    color += vec3(1.0, 0.86, 0.7) * rim * pow(light, 0.7) * 0.26;
+    color += vec3(1.0, 0.86, 0.7) * rim * pow(light, 0.7) * 0.3;
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -622,7 +623,8 @@ export function EdohiganSceneBackdrop({ intensity }: EdohiganSceneBackdropProps)
   );
 }
 
-const TREE_SCALE = 1.1;
+// 樹冠の先端まで空の余白で囲み、3ペインでも木の全形を読める大きさにする。
+const TREE_SCALE = 1.02;
 const GROUND_Y = -10.5;
 const TREE_DEPTH = -12;
 const TREE_SINK = 0.45;
@@ -832,8 +834,9 @@ function startBackdrop(
       precision highp float;
       uniform sampler2D uMap;
       varying vec2 vUv;
+      varying float vShade;
       void main() {
-        if (texture2D(uMap, vUv).a < 0.3) {
+        if (texture2D(uMap, vUv).a * vShade < 0.3) {
           discard;
         }
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
@@ -863,6 +866,21 @@ function startBackdrop(
   scene.add(blossoms);
 
   blossomShadowMaterial.uniforms = blossomMaterial.uniforms;
+  // 色の透けとピントを分ける。花形だけ深度へ先に描き、色は柔らかい縁を保つ。
+  // 板の四隅は discard するので、空へ四角いピント面を作らない。
+  const blossomDepthMaterial = new THREE.ShaderMaterial({
+    uniforms: blossomMaterial.uniforms,
+    vertexShader: BLOSSOM_VERTEX,
+    fragmentShader: blossomShadowMaterial.fragmentShader,
+    colorWrite: false,
+    depthWrite: true,
+  });
+  const blossomDepth = new THREE.Mesh(blossomGeometry, blossomDepthMaterial);
+  blossomDepth.position.copy(blossoms.position);
+  blossomDepth.scale.copy(blossoms.scale);
+  blossomDepth.frustumCulled = false;
+  scene.add(blossomDepth);
+
   const blossomShadowMesh = new THREE.Mesh(blossomGeometry, blossomShadowMaterial);
   blossomShadowMesh.frustumCulled = false;
   shadowScene.add(blossomShadowMesh);
@@ -1102,6 +1120,8 @@ function startBackdrop(
     treeMesh.scale.setScalar(treeScale);
     blossoms.position.copy(treeMesh.position);
     blossoms.scale.setScalar(treeScale);
+    blossomDepth.position.copy(treeMesh.position);
+    blossomDepth.scale.setScalar(treeScale);
     post.setFocus(cameraZ - TREE_DEPTH);
     groundMaterial.uniforms.uTreeXZ.value.set(treeMesh.position.x, treeMesh.position.z);
     groundMaterial.uniforms.uTreeRadius.value = view.height * 0.2;
@@ -1119,6 +1139,11 @@ function startBackdrop(
   let pending = false;
   let running = true;
   let paused = document.hidden || !document.hasFocus();
+  // マウス追従の目標（-1..1）と、滑らかに寄る現在値。
+  let pointerTargetX = 0;
+  let pointerTargetY = 0;
+  let pointerX = 0;
+  let pointerY = 0;
 
   const draw = (time: number) => {
     const sceneTime = time * profile.timeScale;
@@ -1127,10 +1152,21 @@ function startBackdrop(
     // 「止め絵」ではなく「回っている映像」に見える。
     const drift = Math.sin(sceneTime * 0.045) * profile.wind;
     const rise = Math.cos(sceneTime * 0.031) * profile.wind;
-    // 横にはほとんど動かさない。動かすと、位相によっては木の幹が本文に重なる。
-    // 前後のドリーと縦の揺れだけで、前景の草との視差を作る。
-    camera.position.set(drift * 0.35, 0.9 + rise * 0.25, cameraZ - drift * 1.3);
-    camera.lookAt(treeMesh.position.x * 0.35, 3.6, -12);
+    // マウス追従。ポインタへ向かって少しだけカメラが寄る。
+    // 木より手前の草ほど大きく動くので、平らな絵ではなく厚みが伝わる。
+    pointerX += (pointerTargetX - pointerX) * 0.08;
+    pointerY += (pointerTargetY - pointerY) * 0.08;
+    const aim = pointerCameraOffset(pointerX, pointerY, Math.min(1.25, profile.wind));
+    camera.position.set(
+      drift * 0.35 + aim.x,
+      0.9 + rise * 0.25 + aim.y,
+      cameraZ - drift * 1.3,
+    );
+    camera.lookAt(
+      treeMesh.position.x * 0.22 + aim.x * 0.55,
+      3.6 + aim.y * 0.35,
+      -12,
+    );
     camera.updateMatrixWorld();
     const gust = edohiganWind(sceneTime);
     skyMaterial.uniforms.uTime.value = sceneTime;
@@ -1265,12 +1301,22 @@ function startBackdrop(
   const onVisibility = () => resume();
   const onFocus = () => resume();
   const onBlur = () => pause();
+  const onPointerMove = (event: PointerEvent) => {
+    pointerTargetX = (event.clientX / Math.max(1, window.innerWidth)) * 2 - 1;
+    pointerTargetY = (event.clientY / Math.max(1, window.innerHeight)) * 2 - 1;
+  };
+  const onPointerLeave = () => {
+    pointerTargetX = 0;
+    pointerTargetY = 0;
+  };
 
   window.addEventListener("resize", onResize);
   if (options.animate) {
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("pointerleave", onPointerLeave);
   }
 
   draw(0);
@@ -1291,6 +1337,8 @@ function startBackdrop(
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("focus", onFocus);
     window.removeEventListener("blur", onBlur);
+    window.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerleave", onPointerLeave);
     sky.geometry.dispose();
     skyMaterial.dispose();
     groundGeometry.dispose();
@@ -1299,6 +1347,7 @@ function startBackdrop(
     treeMaterial.dispose();
     blossomGeometry.dispose();
     blossomMaterial.dispose();
+    blossomDepthMaterial.dispose();
     petal.geometry.dispose();
     petalMaterial.dispose();
     grassGeometry.dispose();

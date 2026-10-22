@@ -154,6 +154,8 @@ export const TREE_DEFAULTS = {
   /** 世代ごとの長さ・太さの減衰。 */
   lengthDecay: 0.78,
   radiusDecay: 0.66,
+  /** 主枝の太さは残し、花を支える末端の小枝だけ細く絞る。 */
+  terminalRadiusDecay: 0.52,
   /** 幹から出る枝の本数。 */
   trunkChildren: 3,
   /** それ以降の分岐数（2 か 3）。 */
@@ -204,6 +206,11 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
     const endPath = path + length;
     // 枝ごとの「咲きぶり」。満開の枝と咲き始めの枝を混ぜる。
     const fullness = 0.55 + random() * 0.6;
+    const radiusDecay = depth >= 4
+      ? TREE_DEFAULTS.terminalRadiusDecay
+      : TREE_DEFAULTS.radiusDecay;
+    // 子の始点にも同じ半径を渡し、細くする世代でも接合部を切らない。
+    const radiusEnd = Math.max(radius * radiusDecay, 0.02);
     maxPath = Math.max(maxPath, endPath);
     crownRadius = Math.max(crownRadius, Math.hypot(end[0], end[2]));
 
@@ -211,7 +218,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
       start: origin,
       end,
       radiusStart: radius,
-      radiusEnd: Math.max(radius * TREE_DEFAULTS.radiusDecay, 0.02),
+      radiusEnd,
       depth,
       fullness,
       // いったん根元からの距離を入れ、下で 0..1 に正規化する。
@@ -249,7 +256,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
         origin: end,
         direction: next,
         length: length * TREE_DEFAULTS.lengthDecay * (0.9 + random() * 0.2),
-        radius: radius * TREE_DEFAULTS.radiusDecay,
+        radius: radiusEnd,
         depth: depth + 1,
         path: endPath,
       });
@@ -326,6 +333,15 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
   let height = 0;
   for (const branch of branches) {
     height = Math.max(height, branch.end[1]);
+  }
+
+  // 強度による間引きは配列の先頭だけを描く。枝を辿った順のままだと、
+  // 最後に生成した側の花房がまとまって消え、片側だけ裸になる。
+  // 配置とは別の乱数系列で描画順だけを混ぜ、花の数・位置・風を変えない。
+  const drawOrderRandom = mulberry32(seed ^ 0xb105_50a7);
+  for (let index = blossoms.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(drawOrderRandom() * (index + 1));
+    [blossoms[index], blossoms[other]] = [blossoms[other], blossoms[index]];
   }
 
   return { branches, blossoms, height, crownRadius };

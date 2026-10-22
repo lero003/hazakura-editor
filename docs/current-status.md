@@ -9,13 +9,18 @@ Last reviewed: 2026-10-22
 
 - **v3.4.1 江戸彼岸の情景候補（2026-10-22）:** three.js の空・草原・一本の木へ刷新。
   コードレビューで管の表裏・断面のねじれ、枝と花の付着、ブルームの解像度追従、影の角度、
-  reduced-motion 時の更新を修正した。frontend 341 files / 3,168 tests・scripts 31件・型検査・
-  Vite が成功。隔離 WKWebView は明示時刻の描画を確認し、今回の fps 再測定は未成立。
-  実アプリ・Intel GPU・Retina・IME/VoiceOver は未確認。タグ・pkg は未作成。
+  reduced-motion 時の更新を修正した。追補4〜5で3ペインの霞とマウス追従を調整し、
+  花形の深度描画によるピント、花の間引きの均等化・末枝・花の輪郭を改善。
+  frontend 341 files / 3,175 tests・scripts 31件・型検査・Vite が成功。
+  隔離 WKWebView 1537×912 / DPR1の情景描画呼出は通常37.5/強75.3回/秒。
+  ページrAF・GPU描画完了・新実装の実機受入とは分ける。
+  実アプリ・Intel GPU・Retina・IME/VoiceOver は未確認。ローカルの `v3.4.1` タグは
+  追補前のチェックポイントで、最新候補とは分ける。GitHubタグ/Release公開とApple uploadは未実施。
   [変更と検証範囲](releases/3.4.1-edohigan-scene.md)を参照。
 
-- **GitHubソースチェックポイント v3.4.0（2026-10-21）:** 現行実装を `main` と `v3.4.0` タグへ揃え、
-  GitHub Releaseはソースのみとする。pkg / DMGは添付せず、App Store upload・実機受入とは分ける。
+- **v3.4.0ソースチェックポイントの準備（2026-10-21）:** ローカルタグへ当時の実装を固定した。
+  2026-10-22の照合ではGitHub側のタグは未公開。予定のReleaseはソースのみとし、
+  pkg / DMGの添付、App Store upload・実機受入とは分ける。
   [Release本文と制限](releases/3.4.0-source-tag.release.md)を参照。
 
 - **版の区分（2026-10-19）:** v3.3は審査提出済みとのオーナー報告を受け、テーマ刷新と調整を

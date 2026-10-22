@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   BLOSSOMS_PER_TIP,
   TREE_MAX_DEPTH,
+  TREE_DEFAULTS,
   edohiganSway,
   edohiganTreeDisplacement,
   growTree,
@@ -55,6 +56,52 @@ describe("edohigan tree skeleton", () => {
       expect(blossom.size).toBeGreaterThan(0);
       expect(blossom.tint).toBeGreaterThanOrEqual(0);
       expect(blossom.tint).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("keeps blossoms across the whole crown when intensity draws only a prefix", () => {
+    for (const seed of [TREE_DEFAULTS.seed, 1, 2]) {
+      const { blossoms } = growTree(seed);
+      // 強度の間引きは instanceCount で先頭から描く。どの x/z 象限も
+      // 同じ割合で残り、片側の枝だけが裸にならないことを確かめる。
+      for (const ratio of [0.62, 0.85]) {
+        const visible = blossoms.slice(0, Math.round(blossoms.length * ratio));
+        for (const signX of [-1, 1]) {
+          for (const signZ of [-1, 1]) {
+            const inSector = (blossom: (typeof blossoms)[number]) =>
+              blossom.position[0] * signX >= 0 && blossom.position[2] * signZ >= 0;
+            const total = blossoms.filter(inSector).length;
+            const remaining = visible.filter(inSector).length;
+            expect(total).toBeGreaterThan(100);
+            expect(Math.abs(remaining / total - ratio)).toBeLessThan(0.08);
+          }
+        }
+      }
+    }
+  });
+
+  it("preserves the main limbs and tapers the terminal branches continuously", () => {
+    const { branches } = growTree();
+    for (const branch of branches) {
+      if (branch.depth <= 3) {
+        const originalStart = TREE_DEFAULTS.trunkRadius * TREE_DEFAULTS.radiusDecay ** branch.depth;
+        expect(branch.radiusStart).toBeCloseTo(originalStart, 12);
+        expect(branch.radiusEnd).toBeCloseTo(originalStart * TREE_DEFAULTS.radiusDecay, 12);
+      }
+      if (branch.depth >= 4) {
+        expect(branch.radiusEnd / branch.radiusStart).toBeLessThan(0.6);
+      }
+      if (branch.depth === TREE_MAX_DEPTH) {
+        const originalRadius = TREE_DEFAULTS.trunkRadius * TREE_DEFAULTS.radiusDecay ** TREE_MAX_DEPTH;
+        expect(branch.radiusStart).toBeLessThan(originalRadius * 0.65);
+        expect(branch.radiusEnd).toBeGreaterThan(0);
+      }
+      if (branch.depth > 0) {
+        const parent = branches.find((candidate) =>
+          candidate.end.every((value, axis) => value === branch.start[axis]));
+        expect(parent).toBeDefined();
+        expect(branch.radiusStart).toBe(parent!.radiusEnd);
+      }
     }
   });
 

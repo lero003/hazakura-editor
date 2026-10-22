@@ -21,18 +21,32 @@ describe("edohigan dawn backdrop", () => {
       css,
       ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor',
     );
-    // 「紙」ではなく、本文のあたりだけが明るく外へ薄れる霞。情景が右と下に残る。
-    // 本文の帯は読める濃さ、外側は情景が残る薄さ。
+    // 「紙」ではなく、上から下まで明るい霞。情景が右と下に残る。
+    // 下端ほど白を強くし、長い原稿の最後の行までコントラストを保つ。
     expect(editor).toContain("radial-gradient(");
-    expect(editor).toContain("rgba(255, 253, 249, 0.5) 58%");
-    expect(editor).toContain("rgba(255, 253, 249, 0.03) 100%");
+    expect(editor).toContain("linear-gradient(");
+    expect(editor).toContain("rgba(255, 253, 249, 0.56) 100%");
     expect(editor).toContain("background-color: transparent");
-    // 2 層目は本文カラムの「読みの霞」。右端で幹の上に文字が乗っても
-    // 背景が沈みすぎないよう、中央だけ薄く重ねる。
-    expect(editor).toContain("50% 55% at 50% 40%");
-    expect(editor).toContain("rgba(255, 253, 249, 0.16) 55%");
-    // 背景をぼかすと木が消えるので使わない。
+    // 背景をぼかすと木が消えるので、エディタ側では使わない（プレビューだけ）。
     expect(editor).not.toContain("backdrop-filter");
+  });
+
+  it("shows the scene through a deep glass preview", () => {
+    const preview = ruleBody(
+      css,
+      ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .preview-pane-preview',
+    );
+    // 本文の紙と外側のガラスを別の濃さにして、二重の霞で木を隠さない。
+    expect(preview).toContain("--preview-reading-surface: rgba(252, 244, 236, 0.65)");
+    expect(preview).toContain("background: rgba(252, 244, 236, 0.22)");
+    expect(preview).toContain("backdrop-filter: blur(5px)");
+    const paper = ruleBody(
+      css,
+      ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .preview-pane-preview .markdown-preview',
+    );
+    expect(paper).toContain("background-color: transparent");
+    expect(paper).toContain("var(--preview-reading-surface) 16px");
+    expect(paper).toContain("var(--preview-reading-surface) calc(100% - 16px)");
   });
 
   it("keeps the reading surface solid so text never sits on the scene", () => {

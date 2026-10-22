@@ -17,10 +17,17 @@ Last reviewed: 2026-10-22
 視線を上げて空を広くし、褪せたフィルムの色へ。本文カラムには読みの霞を重ねた。
 追補3で管の表裏・断面のねじれ、枝と花の接点、ブルームの resize、影カメラの角度、
 静止表示の resize / 強度 / 非同期テクスチャ更新を修正。曲線と風の基点を共有する。
-frontend 341 files / 3,168 tests・scripts 31件、typecheck、`npm run build:vite` が成功。
-隔離 WKWebView は明示時刻で描画確認。今回は rAF が届かず fps 再測定未成立。
-前回の約75fpsはページ rAF の値で、情景の実描画 fps ではない。
-未確認は実アプリのテクスチャ読込・Intel GPU・Retina・IME/VoiceOver・本文右端の正式な AA 判定。
+追補4で、実アプリ3ペインの編集面を縦の紙（上端0.58〜下端0.56）へ、
+プレビューを透過ガラスへ。マウス追従のカメラ parallax と光学を強化した。
+追補5で、花形の深度を別描画して花にもピントを合わせ、片側に偏る花の間引き・末枝・
+花の輪郭を修正。光条の光源を太陽近傍へ、Previewを外側0.22/本文0.65 + blur5pxへ整理。
+縦の読みの霞・ポインタ追従・Readerの不透明紙は維持する。
+frontend 341 files / 3,175 tests・scripts31件、typecheck、`npm run build:vite` が成功。
+隔離 WKWebView 1537×912 / DPR1で1 canvas、console errorなし。情景の描画呼出は
+通常37.5/強75.3回/秒（ページrAFとGPU描画完了の計測とは別）。局所コントラストの
+推定1パーセンタイルは編集面6.29/Preview5.54。前の近似値と測定条件を混ぜない。
+未確認は実アプリのテクスチャ読込・Intel GPU・Retina・`backdrop-filter` の実機負荷・
+IME/VoiceOver・本文右端の正式な AA 判定。
 [記録](releases/3.4.1-edohigan-scene.md)。
 
 ## 現行候補 — v3.4テーマ演出ブラッシュアップと調整（2026-10-21）
@@ -30,8 +37,8 @@ frontend 341 files / 3,168 tests・scripts 31件、typecheck、`npm run build:vi
 先に作成した3.3.0のテーマ入りpkgを提出済みv3.3と同一視しない。
 [v3.4の範囲と受け入れ](releases/3.4.0-theme-atmosphere.md)を現行候補の入口とする。
 
-GitHubのソースチェックポイントは `v3.4.0`。`main` とタグへ現行実装を固定し、Releaseはソースのみ。
-pkg / DMGは添付せず、Apple側の状態・署名候補GUIの受入とは分ける。[Release本文](releases/3.4.0-source-tag.release.md)。
+`v3.4.0` はローカルのソースチェックポイント。2026-10-22照合でGitHub側のタグは未公開。
+予定のReleaseはソースのみ。Apple側の状態・署名候補GUIの受入とは分ける。[Release本文案](releases/3.4.0-source-tag.release.md)。
 
 S10（2026-10-21）で、S9後に残った「紙が無地で平坦」な状態へ手を入れた。
 共通の紙の縁、深海の紙面深度と前景ボケ、江戸彼岸の花弁増量・枝の揺れ・朝の光、

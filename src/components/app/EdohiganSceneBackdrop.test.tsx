@@ -98,6 +98,33 @@ afterEach(() => {
 });
 
 describe("EdohiganSceneBackdrop reduced motion", () => {
+  it("puts visible petals into scene depth so depth of field focuses on the canopy", async () => {
+    const view = await mountStill();
+    const scene = mocks.renderers[0].render.mock.calls[2][0];
+    const blossoms = scene.children.filter((mesh: { geometry?: { getAttribute: (name: string) => unknown } }) =>
+      mesh.geometry?.getAttribute("aAnchor"));
+    expect(blossoms).toHaveLength(2);
+    const depth = blossoms.find((mesh: { material: { colorWrite: boolean } }) => !mesh.material.colorWrite);
+    const color = blossoms.find((mesh: { material: { colorWrite: boolean } }) => mesh.material.colorWrite);
+    // Depth is cut to the petal shape, while the color pass keeps its soft translucent edges.
+    expect(depth.material.depthWrite).toBe(true);
+    expect(depth.material.transparent).toBe(false);
+    expect(color.material.transparent).toBe(true);
+    expect(color.material.depthWrite).toBe(false);
+    expect(depth.geometry).toBe(color.geometry);
+    expect(depth.material.uniforms).toBe(color.material.uniforms);
+    vi.stubGlobal("innerWidth", 900);
+    vi.stubGlobal("innerHeight", 700);
+    act(() => window.dispatchEvent(new Event("resize")));
+    expect(depth.position.toArray()).toEqual(color.position.toArray());
+    expect(depth.scale.toArray()).toEqual(color.scale.toArray());
+    const disposeDepth = vi.spyOn(depth.material, "dispose");
+    const disposeGeometry = vi.spyOn(depth.geometry, "dispose");
+    view.unmount();
+    expect(disposeDepth).toHaveBeenCalledOnce();
+    expect(disposeGeometry).toHaveBeenCalledOnce();
+  });
+
   it("resizes and redraws the still scene without starting an animation loop", async () => {
     await mountStill();
     vi.stubGlobal("innerWidth", 900);

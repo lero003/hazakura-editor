@@ -147,6 +147,33 @@ export function edohiganWind(seconds: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
+/** マウス追従で動かすカメラの最大移動量（world 単位）。 */
+export const POINTER_CAMERA_X = 1.8;
+export const POINTER_CAMERA_Y = 0.7;
+
+export type PointerCameraOffset = { x: number; y: number };
+
+/**
+ * ポインタ位置（-1..1、画面基準）からカメラの小さな移動量を作る。
+ * 奥の木より手前の草のほうが大きく動くので、止め絵ではなく奥行きが伝わる。
+ * 端では clamp し、reduced-motion / off では呼び出さない。
+ */
+export function pointerCameraOffset(
+  pointerX: number,
+  pointerY: number,
+  strength: number,
+): PointerCameraOffset {
+  const clamp = (value: number, min: number, max: number) =>
+    Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : 0;
+  const x = clamp(pointerX, -1, 1);
+  const y = clamp(pointerY, -1, 1);
+  const s = clamp(strength, 0, 1.5);
+  const offsetX = x * s * POINTER_CAMERA_X;
+  const offsetY = -y * s * POINTER_CAMERA_Y;
+  // -0 を返さない（テストと比較のため）。
+  return { x: offsetX === 0 ? 0 : offsetX, y: offsetY === 0 ? 0 : offsetY };
+}
+
 /** 枝の振れ角（rad）。近景の花弁より一桁小さい。 */
 export function edohiganBranchSway(seconds: number): number {
   return (edohiganWind(seconds) - 0.5) * 0.032;
@@ -269,9 +296,9 @@ export type SceneIntensityProfile = {
 
 export const SCENE_INTENSITY: Record<AmbientIntensity, SceneIntensityProfile> = {
   off: { wind: 0, timeScale: 0, blossomRatio: 0, grassRatio: 0, rays: 0 },
-  subtle: { wind: 0.5, timeScale: 0.78, blossomRatio: 0.62, grassRatio: 0.55, rays: 0.3 },
-  normal: { wind: 1, timeScale: 1, blossomRatio: 0.85, grassRatio: 0.8, rays: 0.55 },
-  dramatic: { wind: 1.55, timeScale: 1.12, blossomRatio: 1, grassRatio: 1, rays: 0.75 },
+  subtle: { wind: 0.5, timeScale: 0.78, blossomRatio: 0.62, grassRatio: 0.55, rays: 0.4 },
+  normal: { wind: 1, timeScale: 1, blossomRatio: 0.85, grassRatio: 0.8, rays: 0.7 },
+  dramatic: { wind: 1.55, timeScale: 1.12, blossomRatio: 1, grassRatio: 1, rays: 0.95 },
 };
 
 export function sceneIntensityProfile(intensity: AmbientIntensity): SceneIntensityProfile {

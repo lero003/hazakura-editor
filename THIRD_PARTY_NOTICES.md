@@ -155,12 +155,34 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 ### three (MIT)
 
 `three@0.186.1` is a direct runtime dependency added in v3.4.1 for the Edohigan
-theme scene (`src/components/app/EdohiganSceneBackdrop.tsx` and
-`src/components/app/EdohiganThreeAmbient.tsx`). It is loaded through a dynamic
-import, so it ships as a separate frontend chunk rather than in the main bundle.
-Preserve the MIT copyright and permission notice from `node_modules/three/LICENSE`
-(Copyright three.js authors) with the distributed notice set. Type definitions
-(`@types/three`) are development-only and are not shipped.
+theme scene (`src/components/app/EdohiganSceneBackdrop.tsx`). It is loaded through
+a dynamic import, so it ships as a separate frontend chunk rather than in the main
+bundle. Type definitions (`@types/three`) are development-only and are not shipped.
+The following license text is reproduced from `node_modules/three/LICENSE`:
+
+```text
+The MIT License
+
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
 
 ### yaml (ISC)
 

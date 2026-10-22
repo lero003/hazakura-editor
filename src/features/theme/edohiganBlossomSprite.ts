@@ -5,8 +5,8 @@
  * テクスチャにする。外部 fetch も `blob:` も使わない（CSP 変更なし）。
  * 128px 四方なので、樹冠に 2,000 枚置いてもテクスチャは 1 枚で済む。
  *
- * 花びらの縁は円の外へ向かってアルファを抜く。板ポリの四角い輪郭が
- * 出ないので、遠目にも「花の塊」に見える。
+ * 花びらの縁は淡紅と透けを残し、花の外側は透明にする。
+ * 遠目にも輪郭がぼやけすぎず、板ポリの四角い輪郭は出ない。
  */
 
 export type BlossomSpriteOptions = {
@@ -22,7 +22,7 @@ export const BLOSSOM_SPRITE_DEFAULTS = {
   size: 128,
   petals: 5,
   centerColor: "rgba(255, 255, 255, 1)",
-  edgeColor: "rgba(247, 196, 210, 0)",
+  edgeColor: "rgba(250, 212, 223, 0.76)",
 } as const;
 
 /**
@@ -54,30 +54,53 @@ export function drawBlossomSprite(options: BlossomSpriteOptions = {}): HTMLCanva
     context.save();
     context.rotate((index / petals) * Math.PI * 2);
 
-    // 花びら 1 枚。根本は白く、縁へ向かって淡紅、外側はアルファ 0。
-    const gradient = context.createRadialGradient(0, -petalLength * 0.2, size * 0.02, 0, -petalLength, petalLength);
+    // 薄い花弁にも面を残す。透過を広く抜くと、遠景で花形が霞に溶けてしまう。
+    const gradient = context.createRadialGradient(
+      0,
+      -petalLength * 0.42,
+      size * 0.02,
+      0,
+      -petalLength * 0.42,
+      petalLength * 0.6,
+    );
     gradient.addColorStop(0, options.centerColor ?? BLOSSOM_SPRITE_DEFAULTS.centerColor);
-    gradient.addColorStop(0.55, "rgba(255, 236, 242, 0.98)");
-    gradient.addColorStop(0.86, "rgba(250, 214, 224, 0.55)");
+    gradient.addColorStop(0.45, "rgba(255, 246, 248, 0.96)");
+    gradient.addColorStop(0.82, "rgba(253, 229, 235, 0.86)");
     gradient.addColorStop(1, options.edgeColor ?? BLOSSOM_SPRITE_DEFAULTS.edgeColor);
 
     context.fillStyle = gradient;
     context.beginPath();
-    // 先端をわずかに尖らせた涙形。
+    // 桜らしい浅い切れ込み。尖った涙形より、五弁の丸い肩が光を拾う。
     context.moveTo(0, 0);
     context.bezierCurveTo(
-      petalWidth,
-      -petalLength * 0.35,
-      petalWidth * 0.92,
-      -petalLength * 0.85,
-      0,
-      -petalLength,
+      petalWidth * 0.48,
+      -petalLength * 0.22,
+      petalWidth * 1.03,
+      -petalLength * 0.52,
+      petalWidth * 0.75,
+      -petalLength * 0.82,
     );
     context.bezierCurveTo(
-      -petalWidth * 0.92,
-      -petalLength * 0.85,
-      -petalWidth,
-      -petalLength * 0.35,
+      petalWidth * 0.6,
+      -petalLength * 1.01,
+      petalWidth * 0.22,
+      -petalLength * 1.035,
+      0,
+      -petalLength * 0.895,
+    );
+    context.bezierCurveTo(
+      -petalWidth * 0.22,
+      -petalLength * 1.035,
+      -petalWidth * 0.6,
+      -petalLength * 1.01,
+      -petalWidth * 0.75,
+      -petalLength * 0.82,
+    );
+    context.bezierCurveTo(
+      -petalWidth * 1.03,
+      -petalLength * 0.52,
+      -petalWidth * 0.48,
+      -petalLength * 0.22,
       0,
       0,
     );
@@ -95,6 +118,24 @@ export function drawBlossomSprite(options: BlossomSpriteOptions = {}): HTMLCanva
   context.beginPath();
   context.arc(0, 0, size * 0.1, 0, Math.PI * 2);
   context.fill();
+
+  // 小さな淡い蕊。遠景で黄色い点や太い輪に見えない量に留める。
+  context.strokeStyle = "rgba(255, 243, 218, 0.65)";
+  context.fillStyle = "rgba(255, 239, 208, 0.8)";
+  context.lineWidth = size * 0.0045;
+  for (let index = 0; index < 8; index += 1) {
+    const angle = (index / 8) * Math.PI * 2 + 0.2;
+    const radius = size * (index % 2 === 0 ? 0.074 : 0.058);
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    context.beginPath();
+    context.moveTo(x * 0.28, y * 0.28);
+    context.lineTo(x, y);
+    context.stroke();
+    context.beginPath();
+    context.arc(x, y, size * 0.007, 0, Math.PI * 2);
+    context.fill();
+  }
 
   return canvas;
 }

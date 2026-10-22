@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   DAWN_SKY,
   NEAR_BAND_THRESHOLD,
+  POINTER_CAMERA_X,
+  POINTER_CAMERA_Y,
+  pointerCameraOffset,
   READING_CLEAR_INNER,
   READING_CLEAR_OUTER,
   SCENE_PETAL_COUNT,
@@ -156,5 +159,28 @@ describe("scene intensity profile", () => {
     expect(off.wind).toBe(0);
     expect(off.blossomRatio).toBe(0);
     expect(off.grassRatio).toBe(0);
+  });
+});
+
+describe("pointer camera", () => {
+  it("does not move at the center and clamps at the edges", () => {
+    expect(pointerCameraOffset(0, 0, 1)).toEqual({ x: 0, y: 0 });
+    const edge = pointerCameraOffset(4, -4, 1);
+    expect(edge.x).toBeCloseTo(POINTER_CAMERA_X);
+    expect(edge.y).toBeCloseTo(POINTER_CAMERA_Y);
+    expect(pointerCameraOffset(Number.NaN, 0, 1)).toEqual({ x: 0, y: 0 });
+  });
+
+  it("scales with strength and stays gentle", () => {
+    const normal = pointerCameraOffset(1, 0, 1);
+    const dramatic = pointerCameraOffset(1, 0, 1.5);
+    expect(dramatic.x).toBeGreaterThan(normal.x);
+    expect(POINTER_CAMERA_X).toBeLessThan(3);
+    expect(POINTER_CAMERA_Y).toBeLessThan(1.2);
+  });
+
+  it("answers the pointer vertically in the opposite direction", () => {
+    expect(pointerCameraOffset(0, 1, 1).y).toBeLessThan(0);
+    expect(pointerCameraOffset(0, -1, 1).y).toBeGreaterThan(0);
   });
 });
