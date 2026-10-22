@@ -156,6 +156,9 @@ const GROUND_FRAGMENT = /* glsl */ `
   uniform vec3 cHaze;
   uniform vec2 uTreeXZ;
   uniform float uTreeRadius;
+  uniform sampler2D uShadowMap;
+  uniform mat4 uLightViewProj;
+  uniform float uShadowStrength;
 
   varying vec3 vWorld;
   varying float vDistance;
@@ -191,12 +194,44 @@ const GROUND_FRAGMENT = /* glsl */ `
     color += vec3(0.06, 0.05, 0.02) * smoothstep(0.55, 0.95, n);
 
     // 木の根元の影。楕円に薄く落として、木が地面に立っているように見せる。
-    float shadow = 1.0 - smoothstep(
+    float rootShadow = 1.0 - smoothstep(
       0.15,
       1.0,
       length((vWorld.xz - uTreeXZ) / vec2(uTreeRadius, uTreeRadius * 0.5))
     );
-    color *= 1.0 - shadow * 0.38;
+    color *= 1.0 - rootShadow * 0.34;
+
+    // 木そのものの影。ライト視点で描いたシルエットを投影する。
+    // 4 タップで少しぼかし、輪郭を硬くしすぎない。
+    vec4 lightSpace = uLightViewProj * vec4(vWorld, 1.0);
+    vec3 shadowCoord = lightSpace.xyz / lightSpace.w * 0.5 + 0.5;
+    float shadowMask = 0.0;
+    if (shadowCoord.x > 0.0 && shadowCoord.x < 1.0 && shadowCoord.y > 0.0 && shadowCoord.y < 1.0) {
+      // 影は 9 タップでぼかす。枝の細い影がギザギザにならないように。
+      vec2 texel = vec2(1.0 / 1024.0) * 2.4;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(-1.0, -1.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(0.0, -1.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(1.0, -1.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(-1.0, 0.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(1.0, 0.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(-1.0, 1.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(0.0, 1.0) * texel).r;
+      shadowMask += texture2D(uShadowMap, shadowCoord.xy + vec2(1.0, 1.0) * texel).r;
+      shadowMask /= 9.0;
+    }
+    color *= 1.0 - shadowMask * uShadowStrength;
+
+    // 樹冠の影。太陽は右上なので、影は左下へ長く落ちる。
+    // 一枚の楕円ではなく、葉のムラを重ねて「木の影」らしくする。
+    vec2 canopyCenter = uTreeXZ + vec2(-uTreeRadius * 0.9, uTreeRadius * 0.5);
+    float canopy = 1.0 - smoothstep(
+      0.1,
+      1.0,
+      length((vWorld.xz - canopyCenter) / vec2(uTreeRadius * 2.6, uTreeRadius * 1.5))
+    );
+    float mottle = valueNoise(vWorld.xz * 0.55 + 3.0);
+    color *= 1.0 - canopy * (0.08 + mottle * 0.18);
 
     // 遠景は霞へ溶かす。
     float haze = smoothstep(0.74, 1.0, depth) * 0.62;
@@ -701,6 +736,16 @@ function startBackdrop(
   sky.frustumCulled = false;
   skyScene.add(sky);
 
+  // 影は「ライトから見たシルエット」を別パスで描く。木と同じ風の uniform を
+  // 共有するので、影も一緒に揺れる。
+  const shadowTarget = new THREE.WebGLRenderTarget(1024, 1024, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    depthBuffer: true,
+  });
+  const sunDirection = new THREE.Vector3(0.55, 0.8, 0.35).normalize();
+  const shadowCamera = new THREE.OrthographicCamera(-40, 40, 40, -40, 1, 260);
+
   // --- 草原 -------------------------------------------------------------
   const groundGeometry = new THREE.PlaneGeometry(2400, 2400, 1, 1);
   groundGeometry.rotateX(-Math.PI / 2);
@@ -712,6 +757,9 @@ function startBackdrop(
       cHaze: { value: new THREE.Color(...GROUND_COLORS.haze) },
       uTreeXZ: { value: new THREE.Vector2(0, 0) },
       uTreeRadius: { value: 9 },
+      uShadowMap: { value: shadowTarget.texture },
+      uLightViewProj: { value: new THREE.Matrix4() },
+      uShadowStrength: { value: 0.42 },
     },
     vertexShader: GROUND_VERTEX,
     fragmentShader: GROUND_FRAGMENT,
@@ -740,6 +788,22 @@ function startBackdrop(
   treeMesh.position.set(18, GROUND_Y, TREE_DEPTH);
   treeMesh.frustumCulled = false;
   scene.add(treeMesh);
+
+  const shadowScene = new THREE.Scene();
+  const shadowMaterial = new THREE.ShaderMaterial({
+    uniforms: treeMaterial.uniforms,
+    vertexShader: TREE_VERTEX,
+    fragmentShader: `
+      precision highp float;
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+    `,
+    side: THREE.DoubleSide,
+  });
+  const shadowMesh = new THREE.Mesh(treeGeometry, shadowMaterial);
+  shadowMesh.frustumCulled = false;
+  shadowScene.add(shadowMesh);
 
   // --- 花 ---------------------------------------------------------------
   const petalTexture = new THREE.TextureLoader().load(petalUrl);
@@ -1054,6 +1118,28 @@ function startBackdrop(
     fieldMaterial.uniforms.uTime.value = sceneTime;
     fieldMaterial.uniforms.uGust.value = gust;
 
+    // 1) 影を描く（木だけ、ライト視点）
+    shadowMesh.position.copy(treeMesh.position);
+    shadowMesh.scale.copy(treeMesh.scale);
+    shadowMesh.rotation.copy(treeMesh.rotation);
+    shadowCamera.position
+      .copy(treeMesh.position)
+      .addScaledVector(sunDirection, 120);
+    shadowCamera.lookAt(treeMesh.position.x, treeMesh.position.y + 16, treeMesh.position.z);
+    shadowCamera.updateMatrixWorld();
+    groundMaterial.uniforms.uLightViewProj.value.multiplyMatrices(
+      shadowCamera.projectionMatrix,
+      shadowCamera.matrixWorldInverse,
+    );
+    const previousClear = renderer.getClearColor(new THREE.Color());
+    const previousAlpha = renderer.getClearAlpha();
+    renderer.setRenderTarget(shadowTarget);
+    renderer.setClearColor(0x000000, 1);
+    renderer.clear();
+    renderer.render(shadowScene, shadowCamera);
+
+    // 2) 本編
+    renderer.setClearColor(previousClear, previousAlpha);
     renderer.setRenderTarget(post.renderTarget);
     renderer.render(skyScene, skyCamera);
     renderer.autoClear = false;
@@ -1183,6 +1269,8 @@ function startBackdrop(
     if (blossomTexture !== petalTexture) {
       blossomTexture.dispose();
     }
+    shadowTarget.dispose();
+    shadowMaterial.dispose();
     post.dispose();
     renderer.dispose();
   };
