@@ -25,6 +25,8 @@ export type TreeBranch = {
   sway: number;
   /** 同じ値の枝の始点側。頂点ごとに補間して、関節で折れないようにする。 */
   swayStart: number;
+  /** この枝の咲きぶり（咲き始め〜満開）。花の量と大きさに効く。 */
+  fullness: number;
   /** 枝ごとの位相（rad）。揺れが同期しないようにする。 */
   phase: number;
 };
@@ -160,6 +162,8 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
     const { origin, direction, length, radius, depth, path } = task;
     const end: Vec = add(origin, scale(direction, length));
     const endPath = path + length;
+    // 枝ごとの「咲きぶり」。満開の枝と咲き始めの枝を混ぜる。
+    const fullness = 0.55 + random() * 0.6;
     maxPath = Math.max(maxPath, endPath);
     crownRadius = Math.max(crownRadius, Math.hypot(end[0], end[2]));
 
@@ -169,6 +173,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
       radiusStart: radius,
       radiusEnd: Math.max(radius * TREE_DEFAULTS.radiusDecay, 0.02),
       depth,
+      fullness,
       // いったん根元からの距離を入れ、下で 0..1 に正規化する。
       sway: endPath,
       swayStart: path,
@@ -227,6 +232,9 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
     }
     const count = branch.depth >= TREE_MAX_DEPTH - 1 ? 3 : 2;
     for (let index = 0; index < count; index += 1) {
+      if (random() > branch.fullness) {
+        continue;
+      }
       const t = 0.45 + random() * 0.55;
       const spread = 0.25 + random() * 0.3;
       const x = branch.start[0] + (branch.end[0] - branch.start[0]) * t + (random() - 0.5) * spread;
@@ -246,7 +254,11 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
   tips.forEach((tip, index) => {
     const sway = tipSway[index] / denominator;
     const phase = tipPhase[index];
+    const tipFullness = 0.72 + random() * 0.5;
     for (let count = 0; count < BLOSSOMS_PER_TIP; count += 1) {
+      if (random() > tipFullness) {
+        continue;
+      }
       const spread = 0.28 + random() * 0.32;
       const theta = random() * Math.PI * 2;
       const phi = Math.acos(2 * random() - 1);
@@ -255,7 +267,7 @@ export function growTree(seed: number = TREE_DEFAULTS.seed): Tree {
       const bz = tip[2] + Math.sin(phi) * Math.sin(theta) * spread;
       blossoms.push({
         position: [bx, by, bz],
-        size: 0.48 + random() * 0.52,
+        size: (0.48 + random() * 0.52) * (0.78 + tipFullness * 0.35),
         phase: phase + random() * 0.8,
         // 高いところほど空を背景に明るく見える。
         tint: Math.min(1, 0.18 + sway * 0.42 + random() * 0.5),

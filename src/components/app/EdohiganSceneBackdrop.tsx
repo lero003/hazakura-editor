@@ -937,16 +937,38 @@ function startBackdrop(
   const grassCount = 20;
   const grassGeometry = new THREE.InstancedBufferGeometry();
   {
-    // 3 段に絞った葉。根元は広く、穂先はほぼ点。
-    const positions = new Float32Array([
-      -0.5, 0, 0, 0.5, 0, 0,
-      -0.34, 0.55, 0, 0.34, 0.55, 0,
-      0.02, 1, 0, 0.16, 1, 0,
-    ]);
-    const uvs = new Float32Array([0, 0, 1, 0, 0, 0.55, 1, 0.55, 0, 1, 1, 1]);
-    const indices = [0, 2, 1, 1, 2, 3, 2, 4, 3, 3, 4, 5];
-    grassGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    grassGeometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    // 1 インスタンス = 3 枚の葉の束。手前の草は「1 枚の板」だと形が単調なので、
+    // 高さと傾きの違う葉を束ねて、株として見せる。
+    const blades = [
+      { x: -0.42, height: 0.78, width: 0.5, lean: -0.06 },
+      { x: 0.02, height: 1.0, width: 0.42, lean: 0.03 },
+      { x: 0.34, height: 0.62, width: 0.4, lean: 0.09 },
+    ];
+    const positions: number[] = [];
+    const uvs: number[] = [];
+    const indices: number[] = [];
+    blades.forEach((blade, bladeIndex) => {
+      const base = bladeIndex * 6;
+      const half = blade.width * 0.5;
+      const rings = [
+        { t: 0, w: half, offset: 0 },
+        { t: 0.55, w: half * 0.68, offset: blade.lean * 0.4 },
+        { t: 1, w: half * 0.05, offset: blade.lean },
+      ];
+      for (const ring of rings) {
+        positions.push(
+          blade.x - ring.w + ring.offset, blade.height * ring.t, 0,
+          blade.x + ring.w + ring.offset, blade.height * ring.t, 0,
+        );
+        uvs.push(0, ring.t, 1, ring.t);
+      }
+      indices.push(
+        base, base + 2, base + 1, base + 1, base + 2, base + 3,
+        base + 2, base + 4, base + 3, base + 3, base + 4, base + 5,
+      );
+    });
+    grassGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    grassGeometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
     grassGeometry.setIndex(indices);
   }
   const grassOffsets = new Float32Array(grassCount * 3);
@@ -958,7 +980,7 @@ function startBackdrop(
     grassOffsets[index * 3] = (Math.random() * 2 - 1) * 26;
     grassOffsets[index * 3 + 1] = GROUND_Y;
     grassOffsets[index * 3 + 2] = 26 - depth * 8;
-    grassScales[index] = 1.8 + Math.random() * 3.6;
+    grassScales[index] = 2.2 + Math.random() * 3.8;
     grassPhases[index] = Math.random() * Math.PI * 2;
   }
   grassGeometry.setAttribute("aOffset", new THREE.InstancedBufferAttribute(grassOffsets, 3));
