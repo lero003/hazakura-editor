@@ -16,6 +16,7 @@ import { CrtMaskOverlay } from "./CrtMaskOverlay";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
 import { EdohiganAmbient } from "./EdohiganAmbient";
 import { EdohiganThreeAmbient } from "./EdohiganThreeAmbient";
+import { EdohiganSceneBackdrop } from "./EdohiganSceneBackdrop";
 import { ShinkaiBootSequence } from "./ShinkaiBootSequence";
 import { ShinkaiShaderOverlay } from "./ShinkaiShaderOverlay";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
@@ -242,7 +243,10 @@ export function AppShell(props: AppShellProps) {
       ) : null}
       {edohiganMode ? (
         edohiganSceneEnabled() ? (
-          <EdohiganThreeAmbient intensity={props.ambientIntensity} />
+          <>
+            <EdohiganSceneBackdrop intensity={props.ambientIntensity} />
+            <EdohiganThreeAmbient intensity={props.ambientIntensity} />
+          </>
         ) : (
           <EdohiganAmbient intensity={props.ambientIntensity} />
         )

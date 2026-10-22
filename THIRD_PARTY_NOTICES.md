@@ -6,7 +6,7 @@ Authority: Medium
 Last reviewed: 2026-10-14
 
 This file is a distribution-prep draft, not legal advice. The dependency
-JavaScript inventory below reflects the v3.3.0 review candidate lockfile;
+JavaScript inventory below reflects the v3.4.1 lockfile;
 the Cargo inventory reflects the v3.3 dependency reduction candidate. Before submitting
 the final App Store or Developer ID package, preserve required upstream
 license texts and notices and review the exact signed package.
@@ -148,8 +148,19 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 | `react@19.3.0` | `MIT` |
 | `scheduler@0.28.0` | `MIT` |
 | `style-mod@4.1.3` | `MIT` |
+| `three@0.186.1` | `MIT` |
 | `w3c-keyname@2.2.8` | `MIT` |
 | `yaml@2.9.1` | `ISC` |
+
+### three (MIT)
+
+`three@0.186.1` is a direct runtime dependency added in v3.4.1 for the Edohigan
+theme scene (`src/components/app/EdohiganSceneBackdrop.tsx` and
+`src/components/app/EdohiganThreeAmbient.tsx`). It is loaded through a dynamic
+import, so it ships as a separate frontend chunk rather than in the main bundle.
+Preserve the MIT copyright and permission notice from `node_modules/three/LICENSE`
+(Copyright three.js authors) with the distributed notice set. Type definitions
+(`@types/three`) are development-only and are not shipped.
 
 ### yaml (ISC)
 

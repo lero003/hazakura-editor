@@ -23,7 +23,7 @@ LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
 |---|---|
 | 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
 | 審査提出報告 | v3.3（2026-10-19オーナー報告）。提出build/sourceとApple側の審査状態は独立未照合 |
-| ソース版 | 3.4.0。テーマ刷新S0〜S10と復帰・強度・CRT・低モーション時の保存✓を調整。[範囲と受け入れ](releases/3.4.0-theme-atmosphere.md) |
+| ソース版 | 3.4.1。江戸彼岸をthree.jsの二層情景（夜明けの空・光・枝・花弁）とすりガラスの紙へ刷新。[記録](releases/3.4.1-edohigan-scene.md) |
 | 基準配布証跡 | v3.3の旧ローカル署名候補を保持。提出済みbuildやv3.4候補と混同しない |
 | 現行キュー | v3.4署名候補の7テーマ、長文/IME、L Mode/Reader、Retina、200%文字、VoiceOver等の実機確認。[テーマ刷新の確認範囲](reviews/2026-10-19-theme-regression-review.md) |
 | 採用判断 | rfdとUTF-8 SIMDを維持。HTTP/PDF/日本語codecはOSへ委譲。legacy処理の遅延、先行する圧縮の約1.8 MB増とparser多様性低下を評価 |

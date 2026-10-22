@@ -6,12 +6,16 @@ import {
   createScenePetals,
   edohiganBranchSway,
   edohiganWind,
+  splitPetalBands,
   READING_CLEAR_INNER,
   READING_CLEAR_OUTER,
   FAR_CENTER_KEEP,
-  scenePetalTargetCount,
-  type ScenePetal,
 } from "../../features/theme/edohiganScene";
+import {
+  PETAL_FRAGMENT,
+  PETAL_VERTEX,
+  createPetalGeometry,
+} from "../../features/theme/edohiganPetalShader";
 import {
   ambientQualityDprCap,
   ambientQualityFrameIntervalMs,
@@ -23,101 +27,15 @@ import branchUrl from "../../assets/themes/edohigan-branch.webp";
 import petalUrl from "../../assets/themes/edohigan-petal.webp";
 
 /**
- * 江戸彼岸 — three.js 情景レイヤー（スパイク）。
+ * 江戸彼岸 — 紙の手前を横切る近景の花弁（three.js）。
  *
- * CSS 版 `EdohiganAmbient` の置き換え候補。違いは「花弁が 3D 空間にいる」こと:
- *   - 遠近のある z に花弁を散らし、投影でサイズが変わる
- *   - 落下・横揺れ・自転・裏返しをすべて GPU 側で回す（1 ドローコール）
- *   - 遠景はミップの LOD バイアスでぼかす（ポストプロセス無しの簡易 DOF）
- *   - 近景の花弁は中央の本文カラムから退避する（可読性の既存契約）
- *
- * 合成は CSS の `mix-blend-mode: multiply`。紙に「影が落ちている」ように
- * 見せるためで、テキストのコントラストを壊さないための既存判断を踏襲する。
+ * 情景の本体は `EdohiganSceneBackdrop`（紙の奥）にある。ここはその手前側で、
+ * **近景の花弁と、紙に落ちる接地影だけ**を描く。紙の上に乗るので
+ * `mix-blend-mode: multiply` で影として合成し、中央の本文カラムからは退避する。
  *
  * three.js は動的 import。テーマを江戸彼岸にしていない起動では
  * チャンクを読まない（main バンドルを増やさない）。
  */
-
-const PETAL_VERTEX = /* glsl */ `
-  precision highp float;
-
-  attribute vec4 aSeed;   // x: 横位置(-1..1) / y: 落下の初期進行 / z: 一辺 / w: 位相
-  attribute vec4 aMotion; // x: 落下速度 / y: 横揺れ周波数 / z: 自転 / w: 裏返し周波数
-  attribute vec3 aExtras; // x: 深度0..1 / y: 不透明度 / z: 横揺れ振幅
-
-  uniform float uTime;
-  uniform float uGust;
-  uniform vec2 uView;
-
-  varying vec2 vUv;
-  varying float vOpacity;
-  varying float vDepth;
-  varying float vScreenX;
-
-  void main() {
-    vUv = uv;
-    float depth = aExtras.x;
-
-    // 画面より少し広い範囲を回す。端で消えてから再登場する。
-    float span = uView.y * 1.25;
-    float progress = fract(aSeed.y + uTime * aMotion.x);
-
-    float gust = 0.6 + uGust * 0.7;
-    float sway = sin(uTime * aMotion.y * 6.28318 + aSeed.w) * aExtras.z * uView.y * gust;
-    float x = aSeed.x * uView.x * 0.5 + sway;
-    float y = uView.y * 0.625 - progress * span;
-    float z = mix(-uView.y * 0.55, uView.y * 0.08, depth);
-
-    float angle = uTime * aMotion.z + aSeed.w;
-    float flip = abs(sin(uTime * aMotion.w * 6.28318 + aSeed.w * 1.7));
-    float size = aSeed.z * uView.y;
-
-    vec2 quad = position.xy * size;
-    quad.x *= mix(0.26, 1.0, flip);
-    float c = cos(angle);
-    float s = sin(angle);
-    vec2 rotated = vec2(c * quad.x - s * quad.y, s * quad.x + c * quad.y);
-
-    vec4 mv = modelViewMatrix * vec4(x + rotated.x, y + rotated.y, z, 1.0);
-    gl_Position = projectionMatrix * mv;
-
-    vScreenX = gl_Position.x / gl_Position.w * 0.5 + 0.5;
-    vDepth = depth;
-
-    // 画面の上下端でふわっと出入りさせる。
-    float edge = smoothstep(0.0, 0.09, progress) * smoothstep(1.0, 0.88, progress);
-    vOpacity = aExtras.y * edge * (0.35 + depth * 0.65);
-  }
-`;
-
-const PETAL_FRAGMENT = /* glsl */ `
-  precision highp float;
-
-  uniform sampler2D uMap;
-  uniform vec3 uTint;
-  uniform float uClearInner;
-  uniform float uClearOuter;
-  uniform float uFarKeep;
-
-  varying vec2 vUv;
-  varying float vOpacity;
-  varying float vDepth;
-  varying float vScreenX;
-
-  void main() {
-    // 遠景ほどミップを深く引く = ピントが外れた花弁。
-    float lod = mix(1.7, 0.0, vDepth);
-    vec4 texel = texture2D(uMap, vUv, lod);
-
-    float distanceFromCenter = abs(vScreenX - 0.5);
-    float inside = 1.0 - smoothstep(uClearInner, uClearOuter, distanceFromCenter);
-    float suppress = mix(1.0 - uFarKeep, 1.0, smoothstep(0.4, 0.9, vDepth));
-    float alpha = texel.a * vOpacity * (1.0 - inside * suppress);
-    if (alpha < 0.004) discard;
-
-    gl_FragColor = vec4(texel.rgb * uTint, alpha);
-  }
-`;
 
 const SHADOW_VERTEX = /* glsl */ `
   precision highp float;
@@ -137,6 +55,8 @@ const SHADOW_VERTEX = /* glsl */ `
   void main() {
     vUv = uv;
     float depth = aExtras.x;
+
+    // 花弁と同じ式で動かす（影だけ別の軌道にいると即座にバレる）。
     float span = uView.y * 1.25;
     float progress = fract(aSeed.y + uTime * aMotion.x);
     float gust = 0.6 + uGust * 0.7;
@@ -182,7 +102,7 @@ const SHADOW_FRAGMENT = /* glsl */ `
 const BRANCH_VERTEX = /* glsl */ `
   precision highp float;
 
-  uniform float uSway;   // ラジアン相当の振れ
+  uniform float uSway;
   varying vec2 vUv;
 
   void main() {
@@ -285,10 +205,6 @@ export function EdohiganThreeAmbient({ intensity }: EdohiganThreeAmbientProps) {
   );
 }
 
-/**
- * 実際の three.js シーン。React から切り離してあるので、
- * 失敗時は呼び出し側が CSS 版へフォールバックできる。
- */
 function startScene(
   THREE: typeof import("three"),
   canvas: HTMLCanvasElement,
@@ -300,6 +216,8 @@ function startScene(
     canvas,
     alpha: true,
     antialias: false,
+    depth: false,
+    stencil: false,
     powerPreference: "low-power",
     preserveDrawingBuffer: false,
   });
@@ -314,65 +232,35 @@ function startScene(
   const viewHeightAtZero = 2 * Math.tan((45 * Math.PI) / 360) * cameraDistance;
   const view = { width: viewHeightAtZero, height: viewHeightAtZero };
 
-  // --- 花弁 -------------------------------------------------------------
   const petalTexture = new THREE.TextureLoader().load(petalUrl);
   petalTexture.colorSpace = THREE.SRGBColorSpace;
+  const branchTexture = new THREE.TextureLoader().load(branchUrl);
+  branchTexture.colorSpace = THREE.SRGBColorSpace;
 
-  const maxPetals = 96;
-  const positions = new Float32Array(6 * 3);
-  const uvs = new Float32Array(6 * 2);
-  const quad = [
-    [-0.5, -0.5, 0, 0],
-    [0.5, -0.5, 1, 0],
-    [-0.5, 0.5, 0, 1],
-    [-0.5, 0.5, 0, 1],
-    [0.5, -0.5, 1, 0],
-    [0.5, 0.5, 1, 1],
-  ];
-  quad.forEach(([x, y, u, v], index) => {
-    positions[index * 3] = x;
-    positions[index * 3 + 1] = y;
-    positions[index * 3 + 2] = 0;
-    uvs[index * 2] = u;
-    uvs[index * 2 + 1] = v;
-  });
-
-  const seedData = new Float32Array(maxPetals * 4);
-  const motionData = new Float32Array(maxPetals * 4);
-  const extrasData = new Float32Array(maxPetals * 3);
-
-  const seedAttribute = new THREE.InstancedBufferAttribute(seedData, 4);
-  const motionAttribute = new THREE.InstancedBufferAttribute(motionData, 4);
-  const extrasAttribute = new THREE.InstancedBufferAttribute(extrasData, 3);
-
-  const buildGeometry = () => {
-    const geometry = new THREE.InstancedBufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-    geometry.setAttribute("aSeed", seedAttribute);
-    geometry.setAttribute("aMotion", motionAttribute);
-    geometry.setAttribute("aExtras", extrasAttribute);
-    geometry.instanceCount = 0;
-    return geometry;
-  };
-
-  const petalGeometry = buildGeometry();
-  const shadowGeometry = buildGeometry();
+  const capacity = 96;
+  const petal = createPetalGeometry(THREE, capacity);
+  const shadow = createPetalGeometry(THREE, capacity);
 
   const sharedUniforms = {
     uTime: { value: 0 },
     uGust: { value: 0.5 },
     uView: { value: new THREE.Vector2(view.width, view.height) },
+    uSpanScale: { value: 1.25 },
   };
 
   const petalMaterial = new THREE.ShaderMaterial({
     uniforms: {
       ...sharedUniforms,
       uMap: { value: petalTexture },
-      uTint: { value: new THREE.Color(0.82, 0.56, 0.6) },
+      // 紙に乗算するので、花弁そのものの色ではなく「影の色」に寄せる。
+      uTint: { value: new THREE.Color(0.78, 0.5, 0.55) },
+      uAerialTint: { value: new THREE.Color(0.82, 0.56, 0.6) },
       uClearInner: { value: READING_CLEAR_INNER },
       uClearOuter: { value: READING_CLEAR_OUTER },
+      uClearStrength: { value: 1 },
       uFarKeep: { value: FAR_CENTER_KEEP },
+      uOpacityScale: { value: 1 },
+      uLodBias: { value: 1.2 },
     },
     vertexShader: PETAL_VERTEX,
     fragmentShader: PETAL_FRAGMENT,
@@ -395,37 +283,42 @@ function startScene(
     depthWrite: false,
   });
 
-  const petals = new THREE.Mesh(petalGeometry, petalMaterial);
-  const shadows = new THREE.Mesh(shadowGeometry, shadowMaterial);
+  // --- 枝花（紙の上のシルエット） -------------------------------------
+  // 奥の空に暗い枝を置いても、半透明の紙の前では影が薄い。紙の上に
+  // multiply で直接置く方が「窓辺の枝」として確実に立つ。
+  const branchGeometry = new THREE.PlaneGeometry(1, 1, 24, 24);
+  branchGeometry.translate(0.5, 0.5, 0);
+  const makeBranch = (opacity: number) => {
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        uMap: { value: branchTexture },
+        uTint: { value: new THREE.Color(0.42, 0.26, 0.3) },
+        uOpacity: { value: opacity },
+        uSway: { value: 0 },
+      },
+      vertexShader: BRANCH_VERTEX,
+      fragmentShader: BRANCH_FRAGMENT,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(branchGeometry, material);
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 0;
+    return { mesh, material };
+  };
+  const nearBranch = makeBranch(0.62);
+  const farBranch = makeBranch(0.34);
+  farBranch.mesh.scale.x = -1;
+  scene.add(nearBranch.mesh, farBranch.mesh);
+
+  const petals = new THREE.Mesh(petal.geometry, petalMaterial);
+  const shadows = new THREE.Mesh(shadow.geometry, shadowMaterial);
   petals.frustumCulled = false;
   shadows.frustumCulled = false;
   petals.renderOrder = 2;
   shadows.renderOrder = 1;
   scene.add(shadows, petals);
-
-  // --- 枝花 -------------------------------------------------------------
-  const branchTexture = new THREE.TextureLoader().load(branchUrl);
-  branchTexture.colorSpace = THREE.SRGBColorSpace;
-  const branchGeometry = new THREE.PlaneGeometry(1, 1, 24, 24);
-  // 根元（左下）を原点にする。
-  branchGeometry.translate(0.5, 0.5, 0);
-  const branchMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      uMap: { value: branchTexture },
-      uTint: { value: new THREE.Color(0.76, 0.66, 0.67) },
-      uOpacity: { value: 0.42 },
-      uSway: { value: 0 },
-    },
-    vertexShader: BRANCH_VERTEX,
-    fragmentShader: BRANCH_FRAGMENT,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-  });
-  const branch = new THREE.Mesh(branchGeometry, branchMaterial);
-  branch.frustumCulled = false;
-  branch.renderOrder = 0;
-  scene.add(branch);
 
   let quality = initialAmbientQualityState(initialIntensity);
   let currentIntensity = initialIntensity;
@@ -433,26 +326,9 @@ function startScene(
   let canvasHeight = 0;
 
   const applyPetals = (intensity: AmbientIntensity, tier: 0 | 1 | 2 | 3) => {
-    const count = scenePetalTargetCount(intensity, tier);
-    const seeds = createScenePetals(intensity, 1).slice(0, count);
-    seeds.forEach((petal: ScenePetal, index: number) => {
-      seedData[index * 4] = petal.x;
-      seedData[index * 4 + 1] = petal.start01;
-      seedData[index * 4 + 2] = petal.size;
-      seedData[index * 4 + 3] = petal.phase;
-      motionData[index * 4] = petal.fall;
-      motionData[index * 4 + 1] = petal.swayHz;
-      motionData[index * 4 + 2] = petal.spin;
-      motionData[index * 4 + 3] = petal.flipHz;
-      extrasData[index * 3] = petal.depth01;
-      extrasData[index * 3 + 1] = petal.opacity;
-      extrasData[index * 3 + 2] = petal.sway;
-    });
-    seedAttribute.needsUpdate = true;
-    motionAttribute.needsUpdate = true;
-    extrasAttribute.needsUpdate = true;
-    petalGeometry.instanceCount = seeds.length;
-    shadowGeometry.instanceCount = seeds.length;
+    const seeds = splitPetalBands(createScenePetals(intensity, tier)).foreground;
+    petal.write(seeds);
+    shadow.write(seeds);
   };
 
   const applyLayout = () => {
@@ -472,11 +348,26 @@ function startScene(
     view.width = heightAtZero * camera.aspect;
     sharedUniforms.uView.value.set(view.width, view.height);
 
-    const branchWidth = Math.min(view.width * 0.22, view.height * 0.34);
-    const branchHeight = Math.min(view.height * 0.42, branchWidth * 1.45);
-    branch.scale.set(branchWidth, branchHeight, 1);
-    branch.position.set(-view.width * 0.5 - branchWidth * 0.06, -view.height * 0.5 - branchHeight * 0.06, 2);
-    branchMaterial.uniforms.uOpacity.value = 0.34;
+    const nearWidth = Math.min(view.width * 0.34, view.height * 0.46);
+    const nearHeight = nearWidth * 0.9;
+    nearBranch.mesh.scale.set(nearWidth, nearHeight, 1);
+    nearBranch.mesh.position.set(
+      -view.width * 0.5 - nearWidth * 0.06,
+      -view.height * 0.5 - nearHeight * 0.24,
+      4,
+    );
+    nearBranch.mesh.rotation.z = 0.04;
+
+    const farWidth = Math.min(view.width * 0.3, view.height * 0.4);
+    const farHeight = farWidth * 0.9;
+    // 右上は鏡像で置く（scale.x を負にして、原点から左へ伸ばす）。
+    farBranch.mesh.scale.set(-farWidth, farHeight, 1);
+    farBranch.mesh.position.set(
+      view.width * 0.5 + farWidth * 0.04,
+      view.height * 0.5 - farHeight * 0.66,
+      2,
+    );
+    farBranch.mesh.rotation.z = -0.1;
   };
 
   applyLayout();
@@ -492,9 +383,11 @@ function startScene(
 
   const draw = (time: number) => {
     const wind = edohiganWind(time);
+    const sway = edohiganBranchSway(time);
     sharedUniforms.uTime.value = time;
     sharedUniforms.uGust.value = wind;
-    branchMaterial.uniforms.uSway.value = edohiganBranchSway(time);
+    nearBranch.material.uniforms.uSway.value = sway * 1.4;
+    farBranch.material.uniforms.uSway.value = sway * 0.8;
     renderer.render(scene, camera);
   };
 
@@ -575,9 +468,7 @@ function startScene(
     window.addEventListener("blur", onBlur);
   }
 
-  // 最初の 1 枚は必ず描く（reduced-motion でも「静止した花の情景」は残す）。
   draw(0);
-  // テクスチャは非同期。静止画のときは読み込み後にもう一度だけ描く。
   const redrawWhenStill = () => {
     if (!options.animate) {
       draw(0);
@@ -602,14 +493,15 @@ function startScene(
     window.removeEventListener("blur", onBlur);
     petalTexture.onUpdate = null;
     branchTexture.onUpdate = null;
-    petalGeometry.dispose();
-    shadowGeometry.dispose();
     branchGeometry.dispose();
+    nearBranch.material.dispose();
+    farBranch.material.dispose();
+    petal.geometry.dispose();
+    shadow.geometry.dispose();
     petalMaterial.dispose();
     shadowMaterial.dispose();
-    branchMaterial.dispose();
-    petalTexture.dispose();
     branchTexture.dispose();
+    petalTexture.dispose();
     renderer.dispose();
   };
 }

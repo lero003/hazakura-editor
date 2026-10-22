@@ -26,11 +26,14 @@ Last reviewed: 2026-10-19
 
 Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
-Current source version is `3.4.0`, the theme-atmosphere candidate.
+Current source version is `3.4.1`, a follow-up to the [v3.4.0 source checkpoint](https://github.com/lero003/hazakura-editor/releases/tag/v3.4.0).
+The Edohigan theme now draws a two-layer three.js dawn scene behind a frosted-glass page
+(see the [release note](docs/releases/3.4.1-edohigan-scene.md)).
 The seven themes now share refined lighting, materials, motion, and optical effects.
 The owner reports that v3.3 has already been submitted for App Review (2026-10-19).
 Its submitted build/source identity and Apple review status were not independently checked here.
-The theme refresh and its regression fixes belong to v3.4; device and distribution acceptance remain separate.
+The theme refresh and its regression fixes belong to v3.4; this GitHub release has source archives only.
+Device and App Store distribution acceptance remain separate.
 Local Assist opens in a separate native
 window; the proposal is reviewed in the main Diff and applied only by an
 explicit action, without auto-save. The current App Store development source exposes Apple Intelligence

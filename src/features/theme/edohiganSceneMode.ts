@@ -1,17 +1,20 @@
 /**
- * 江戸彼岸の three.js 情景レイヤーを有効にするか / Spike switch.
+ * 江戸彼岸の three.js 情景レイヤーを有効にするか。
  *
- * 既定は **無効**。既存の CSS 版（`EdohiganAmbient`）が正で、three.js 版は
- * 明示的に有効化したときだけ載る。ビルド時に固定したい場合は
- * `VITE_HAZAKURA_EDOHIGAN_SCENE=1`、実行時に見たい場合は `?edohigan3d=1`。
+ * v3.4.1 から **既定で有効**。江戸彼岸を選ぶと、奥の夜明け（空・陽・遠景の花）と
+ * 手前の枝・花弁が three.js で描かれる。無効にしたいときだけ明示する:
+ *   - 実行時: `?edohigan3d=0`
+ *   - ビルド時: `VITE_HAZAKURA_EDOHIGAN_SCENE=0`
  *
- * このフラグが false のとき、`three` のチャンクは読み込まれない
- * （`EdohiganThreeAmbient` 内の動的 import が走らないため）。
+ * WebGL2 が無い環境では、各コンポーネントが CSS 版へ戻る
+ * （紙は不透明のまま＝v3.4.0 までの見た目）。
  */
 export function edohiganSceneEnabled(search?: string): boolean {
-  if (import.meta.env.VITE_HAZAKURA_EDOHIGAN_SCENE === "1") {
-    return true;
+  const env = import.meta.env.VITE_HAZAKURA_EDOHIGAN_SCENE;
+  if (env === "0" || env === "off") {
+    return false;
   }
   const query = search ?? (typeof window === "undefined" ? "" : window.location.search);
-  return new URLSearchParams(query).get("edohigan3d") === "1";
+  const flag = new URLSearchParams(query).get("edohigan3d");
+  return flag !== "0" && flag !== "off";
 }

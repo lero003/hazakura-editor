@@ -181,3 +181,79 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
   const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
   return t * t * (3 - 2 * t);
 }
+
+/**
+ * 紙の手前と奥で花弁を分担する。
+ *
+ * 江戸彼岸の情景は二層になった:
+ *   - 奥（`backdrop`）= 空・陽の光・枝・中景/遠景の花弁。紙は半透明でこれを透かす
+ *   - 手前（`foreground`）= 近景の花弁だけ。紙の上を横切って奥行きを作る
+ *
+ * 同じ種を二重に描かないよう、深度で 1 回だけ分ける。分担しても
+ * 合計枚数と配置は `createScenePetals` のまま変わらない。
+ */
+export function splitPetalBands(petals: ScenePetal[]): {
+  backdrop: ScenePetal[];
+  foreground: ScenePetal[];
+} {
+  const foreground: ScenePetal[] = [];
+  const backdrop: ScenePetal[] = [];
+  for (const petal of petals) {
+    if (petal.depth01 >= NEAR_BAND_THRESHOLD) {
+      foreground.push(petal);
+    } else {
+      backdrop.push(petal);
+    }
+  }
+  return { backdrop, foreground };
+}
+
+/** これ以上を「紙の手前」として扱う深度。 */
+export const NEAR_BAND_THRESHOLD = 0.7;
+
+/**
+ * 夜明けの空の色。江戸彼岸は「和紙の上の花」から「夜明けの情景」へ移した。
+ * sRGB の 0..1。CSS 側のトークンとは独立で、情景レイヤーだけの色。
+ */
+export const DAWN_SKY = {
+  zenith: [0.6, 0.62, 0.86],
+  upper: [0.93, 0.68, 0.78],
+  middle: [1.0, 0.71, 0.56],
+  horizon: [1.0, 0.88, 0.8],
+  sun: [1.0, 0.97, 0.9],
+  haze: [1.0, 0.86, 0.8],
+} as const;
+
+/** 奥の花弁の色。空気遠近で、遠いほど空の色へ寄せる。 */
+export const DAWN_PETAL_TINT = [0.93, 0.62, 0.68] as const;
+
+/**
+ * 前景ボケ。紙のすぐ手前を横切る、ピントの外れた大きな花弁。
+ * 3D の花弁とは別に、ごく少数だけ置く（明るさを足さず、影として薄く）。
+ */
+export type BokehPetal = {
+  index: number;
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  driftX: number;
+  driftY: number;
+  seconds: number;
+  phase: number;
+};
+
+export function createBokehPetals(count: number, seed = 0x9a1c): BokehPetal[] {
+  const random = mulberry32(seed);
+  return Array.from({ length: count }, (_, index) => ({
+    index,
+    x: random() * 1.3 - 0.65,
+    y: random() * 1.3 - 0.65,
+    size: 0.18 + random() * 0.24,
+    opacity: 0.05 + random() * 0.05,
+    driftX: (random() - 0.5) * 0.1,
+    driftY: (random() - 0.5) * 0.06 + 0.03,
+    seconds: 22 + random() * 26,
+    phase: random() * Math.PI * 2,
+  }));
+}

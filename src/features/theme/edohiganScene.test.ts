@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  DAWN_SKY,
+  NEAR_BAND_THRESHOLD,
   READING_CLEAR_INNER,
   READING_CLEAR_OUTER,
   SCENE_PETAL_COUNT,
   centerClearFactor,
+  createBokehPetals,
   createScenePetals,
   edohiganBranchSway,
   edohiganWind,
   scenePetalTargetCount,
+  splitPetalBands,
 } from "./edohiganScene";
 
 describe("edohigan 3D petal model", () => {
@@ -76,5 +80,57 @@ describe("reading column protection", () => {
   it("keeps the clear band narrower than the outer margins", () => {
     expect(READING_CLEAR_INNER).toBeLessThan(READING_CLEAR_OUTER);
     expect(READING_CLEAR_OUTER).toBeLessThan(0.35);
+  });
+});
+
+describe("paper-front and paper-back petal bands", () => {
+  it("draws every petal exactly once across the two layers", () => {
+    const petals = createScenePetals("dramatic", 1);
+    const { backdrop, foreground } = splitPetalBands(petals);
+    expect(backdrop.length + foreground.length).toBe(petals.length);
+    const indexes = [...backdrop, ...foreground].map((petal) => petal.index).sort((a, b) => a - b);
+    expect(indexes).toEqual(petals.map((petal) => petal.index).sort((a, b) => a - b));
+  });
+
+  it("keeps only the near band in front of the paper", () => {
+    const { backdrop, foreground } = splitPetalBands(createScenePetals("dramatic", 1));
+    expect(foreground.length).toBeGreaterThan(0);
+    expect(backdrop.length).toBeGreaterThan(foreground.length);
+    for (const petal of foreground) {
+      expect(petal.depth01).toBeGreaterThanOrEqual(NEAR_BAND_THRESHOLD);
+    }
+    for (const petal of backdrop) {
+      expect(petal.depth01).toBeLessThan(NEAR_BAND_THRESHOLD);
+    }
+  });
+});
+
+describe("dawn sky palette", () => {
+  it("keeps every stop inside 0..1", () => {
+    for (const color of Object.values(DAWN_SKY)) {
+      expect(color).toHaveLength(3);
+      for (const channel of color) {
+        expect(channel).toBeGreaterThanOrEqual(0);
+        expect(channel).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it("is brighter at the horizon than at the zenith", () => {
+    const luma = (color: readonly number[]) =>
+      color[0] * 0.2126 + color[1] * 0.7152 + color[2] * 0.0722;
+    expect(luma(DAWN_SKY.horizon)).toBeGreaterThan(luma(DAWN_SKY.zenith));
+  });
+});
+
+describe("foreground bokeh", () => {
+  it("is deterministic and stays faint", () => {
+    const first = createBokehPetals(6);
+    expect(createBokehPetals(6)).toEqual(first);
+    expect(first).toHaveLength(6);
+    for (const item of first) {
+      expect(item.opacity).toBeLessThan(0.11);
+      expect(item.size).toBeGreaterThan(0);
+    }
   });
 });

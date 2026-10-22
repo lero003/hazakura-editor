@@ -5,11 +5,32 @@ Scope: v3.4テーマ演出ブラッシュアップ（S0〜S10）の受け入れ�
 Authority: High
 Last reviewed: 2026-10-21
 
+## 現行候補 — v3.4.1 江戸彼岸の情景（2026-10-22）
+
+江戸彼岸を three.js の二層構成へ刷新した。奥が夜明けの空・太陽・樹冠の影・中景/遠景の花弁、
+手前が枝のシルエット・近景の花弁・接地影。花弁は深度で 1 回だけ分担する。
+紙は `rgba(255,250,246,0.56)` + `backdrop-filter: blur(14px)` のすりガラスにし、
+情景が窓全体へ回り込む。読む面（`--surface-paper-solid`）は不透明のまま。
+
+- three.js 0.186.1 を追加（動的 import、江戸彼岸のときだけ別チャンク 736.58 kB / gzip 186.86 kB）。
+  main の増分は約 10 kB。**依存追加はこの版の新しい事実**で、v3.4 の「依存追加なし」は v3.4.0 まで。
+- 既定で有効。`?edohigan3d=0` / `VITE_HAZAKURA_EDOHIGAN_SCENE=0` で従来の CSS 版へ戻る。
+  WebGL2 不可の環境も自動で CSS 版へフォールバックする。
+- 強度・品質段・reduced-motion・非表示停止は既存の ambient 予算系を流用。
+- frontend 336 files / 3,133 tests・typecheck・`npm run build:vite` が成功。
+  隔離 WKWebView で 2 canvas・約 75fps・off で canvas 0・本文カラムのコントラスト 6.67:1 を確認。
+- **未確認:** 実アプリ（Tauri の `asset:` 経由のテクスチャ）、Intel GPU、Retina、IME/VoiceOver、
+  `backdrop-filter` の実機負荷。`THIRD_PARTY_NOTICES.md` は未更新で、タグ前の必須項目。
+- 記録は [v3.4.1](releases/3.4.1-edohigan-scene.md)。
+
 ## 現行候補 — v3.4テーマ演出ブラッシュアップ（2026-10-21）
 
 v3.3は審査提出済みとのオーナー報告を受け、テーマ刷新S0〜S10と直近の調整はv3.4.0として扱う。
 提出済みv3.3のbuild/source対応とApple側の審査状態は独立未照合。過去のv3.3候補証跡は保持する。
 版・pkg・残る受け入れの入口は[v3.4記録](releases/3.4.0-theme-atmosphere.md)。
+
+GitHubソースチェックポイントは `v3.4.0`。`main` とタグに現行実装を固定し、Releaseはソースのみとする。
+バイナリを添付せず、実機未確認項目は残す。[Release本文](releases/3.4.0-source-tag.release.md)。
 
 ### 追加 — 紙面の深度と前景（S10、2026-10-21）
 
@@ -28,7 +49,7 @@ S9で紙の外へ逃がした演出を紙の内側へ戻し、3テーマの「�
   修正後はfrontend **332 files / 3,116 tests**・scripts 31件、Rust 515成功 / 4 ignored、
   型検査・fmt・両lane Vite・surface 137件が成功。隔離WKWebViewで背景光・紙色・停止を追試した
 - commit済みclean sourceからS10入り署名pkgを再生成し、署名・payload一致を確認。
-  版/build/hash/source状態はignoredの候補記録を照合する。push・uploadは未実施
+  版/build/hash/source状態はignoredの候補記録を照合する。App Store uploadは未実施
 - 未確認: 実CodeMirror/IME/Retina/VoiceOver、署名候補GUI
 - 変更と見送りは[計画S10](theme-atmosphere-brushup-plan.md)、取得条件と残条件は
   [S10レビュー記録](reviews/2026-10-21-s10-theme-depth-review.md)を参照

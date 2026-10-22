@@ -60,8 +60,9 @@ Agent Workbench behind its existing boundary.
 - App Review submission: v3.3 is submitted by owner report (2026-10-19).
   Its submitted build/source identity and Apple's current review status have
   not been independently checked here.
-- Current source / Developer version: `3.4.0`. This is the theme-atmosphere
-  candidate; its device and signed TestFlight acceptance are pending.
+- Current source / Developer version: `3.4.1`. This is the Edohigan scene
+  candidate (two-layer three.js theme); its device and signed TestFlight
+  acceptance are pending, and the tag/package are not cut.
   The submit config's `bundleVersion` reflects a local counter.
   Check the published build number and assign a new candidate number before
   signing a v3.4 submission package. Local 3.3.0 package records are historical

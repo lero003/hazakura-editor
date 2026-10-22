@@ -7,8 +7,8 @@ Last reviewed: 2026-10-21
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Current development candidate: `3.4.0` theme atmosphere; see
-[theme refresh and acceptance record](3.4.0-theme-atmosphere.md).
+Current GitHub source checkpoint: `v3.4.0` theme atmosphere; see
+[source Release notes](3.4.0-source-tag.release.md) and [theme refresh and acceptance record](3.4.0-theme-atmosphere.md).
 v3.3 is submitted for App Review by owner report (2026-10-19); see
 [dependency autonomy and submission record](3.3.0-dependency-autonomy.md).
 The submitted build/source identity and Apple's current review status were not independently checked here.
@@ -20,14 +20,17 @@ independently identify the published build or which draft copy was used in Conne
 
 Latest GitHub source / local-app tag:
 
-- `v3.0.0` — `3.0.0-source-tag.release.md` (source-only repository checkpoint;
-  no binary assets; prior `v2.3.0` and `v2.0.0` remain immutable)
+- `v3.4.0` — [source Release notes](3.4.0-source-tag.release.md) (source-only repository checkpoint;
+  no binary assets; prior `v3.0.0`, `v2.3.0` and `v2.0.0` remain immutable)
 
 Current candidate:
 
+- `3.4.1` — [Edohigan dawn scene](3.4.1-edohigan-scene.md). Three.js two-layer scene
+  for the Edohigan theme (sky, light, branches, petals) with a frosted-glass paper.
+  Release blockers are listed in the note; the tag and package are not cut.
 - `3.4.0` — [theme atmosphere and acceptance record](3.4.0-theme-atmosphere.md).
   Seven-theme presentation refresh, S10 paper depth/foreground, and regression fixes;
-  same-candidate device/distribution acceptance remains open, and the existing signed pkg predates S10.
+  the local signed pkg includes S10 and the review corrections; same-candidate device/distribution acceptance remains open.
 
 Submitted App Store version (owner report):
 
@@ -88,13 +91,13 @@ Prior candidates:
 
 Latest stored source-tag note:
 
-- `2.3.0-source-tag.release.md`
+- `3.4.0-source-tag.release.md`
 - `2.6.2-source-tag.release.md` is the current 2.6.2 note; Mac App Store
   publication is user-confirmed. It is not a GitHub source-tag record.
 
 Latest published GitHub Release body:
 
-- `2.3.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
+- `3.4.0-source-tag.release.md` (source archive only; DMG lane remains historical at `0.20.0`)
 
 Latest downloadable GitHub DMG Release body:
 

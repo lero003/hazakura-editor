@@ -25,3 +25,30 @@ describe("edohigan three.js scene layer", () => {
     expect(scene).toContain("inset: 0");
   });
 });
+
+describe("edohigan dawn backdrop", () => {
+  it("keeps the sky behind the editor content inside the shell", () => {
+    const backdrop = ruleBody(css, ".edohigan-scene-backdrop");
+    expect(backdrop).toContain("z-index: -1");
+    expect(backdrop).toContain("position: fixed");
+    expect(backdrop).toContain("pointer-events: none");
+    const shell = css.slice(css.indexOf(".app-shell:has(.edohigan-scene-backdrop)"));
+    expect(shell).toContain("isolation: isolate");
+  });
+
+  it("turns the paper into glass only while the scene exists", () => {
+    // 情景が無いときは従来の不透明な紙。:has() の中だけで透かす。
+    expect(css).toContain(":root[data-theme=\"edohigan\"] .app-shell:has(.edohigan-scene-backdrop)");
+    expect(ruleBody(css, ':root[data-theme="edohigan"] .app-shell:has(.edohigan-scene-backdrop) .cm-editor'))
+      .toContain("backdrop-filter: blur(");
+  });
+
+  it("keeps the reading surface solid so text never sits on the scene", () => {
+    // 読む面は `--surface-paper-solid` のまま。glass 規則で上書きしない。
+    const shellRule = css.slice(
+      css.indexOf(":root[data-theme=\"edohigan\"] .app-shell:has(.edohigan-scene-backdrop)"),
+      css.indexOf(".edohigan-scene-backdrop {"),
+    );
+    expect(shellRule).not.toContain("--surface-paper-solid");
+  });
+});
