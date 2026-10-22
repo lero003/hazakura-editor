@@ -123,11 +123,19 @@ const SKY_FRAGMENT = /* glsl */ `
     color = mix(color, vec3(1.0, 0.96, 0.9), haze);
 
     // 地平の向こうの林。地面の遠端（uv.y ≈ 0.47）に接する低い帯。
-    // 輪郭は滑らかなノイズで崩し、色は空気の色へ寄せて主張しない。
-    float ridge = valueNoise(vec2(uv.x * 22.0, 0.5)) * 0.016 + valueNoise(vec2(uv.x * 61.0, 2.0)) * 0.006;
-    float treeBand = smoothstep(0.462, 0.474, uv.y)
-                   * (1.0 - smoothstep(0.5 + ridge, 0.512 + ridge, uv.y));
-    color = mix(color, vec3(0.5, 0.58, 0.5), treeBand * 0.4);
+    // 2 層に分け、手前の層ほど暗く・輪郭を細かくして奥行きを出す。
+    float ridgeFar =
+      valueNoise(vec2(uv.x * 19.0, 0.5)) * 0.012 + valueNoise(vec2(uv.x * 53.0, 2.0)) * 0.005;
+    float ridgeNear =
+      valueNoise(vec2(uv.x * 34.0, 7.0)) * 0.016 + valueNoise(vec2(uv.x * 96.0, 4.0)) * 0.007;
+    // 梢の粒。帯の中に縦のムラを足して「木の並び」に見せる。
+    float crowns = 0.75 + 0.25 * valueNoise(vec2(uv.x * 180.0, 11.0));
+    float farBand = smoothstep(0.468, 0.478, uv.y)
+                  * (1.0 - smoothstep(0.502 + ridgeFar, 0.510 + ridgeFar, uv.y));
+    float nearBand = (smoothstep(0.456, 0.466, uv.y)
+                  * (1.0 - smoothstep(0.494 + ridgeNear, 0.502 + ridgeNear, uv.y))) * crowns;
+    color = mix(color, vec3(0.62, 0.68, 0.6), farBand * 0.32);
+    color = mix(color, vec3(0.42, 0.5, 0.42), nearBand * 0.42);
 
     color += (hash21(uv * 1024.0) - 0.5) / 255.0;
     gl_FragColor = vec4(color, 1.0);
@@ -425,9 +433,9 @@ const BLOSSOM_FRAGMENT = /* glsl */ `
     // 花の色はスプライト由来。個体差だけ tint で寄せる。
     vec3 color = sprite.rgb * mix(cPetalDeep, cPetal, vTint);
     // 樹冠の奥は沈め、梢は空を透かして明るく。
-    color *= mix(0.52, 1.08, vAo);
+    color *= mix(0.44, 1.12, vAo);
     // 向きによる明暗。影側は少し青く、陽側は暖かく。
-    color *= mix(0.62, 1.1, vLit);
+    color *= mix(0.56, 1.08, vLit);
     color = mix(color * vec3(0.92, 0.95, 1.05), color * vec3(1.05, 1.0, 0.96), vLit);
     gl_FragColor = vec4(color * (0.88 + vShade * 0.2), alpha);
   }
@@ -1130,7 +1138,9 @@ function startBackdrop(
 
   const applyPetals = (intensity: AmbientIntensity, tier: 0 | 1 | 2 | 3) => {
     const seeds = splitPetalBands(createScenePetals(intensity, tier)).backdrop;
-    petal.write(seeds);
+    // 舞う花弁は木のまわりに寄せる。画面全体へ一様に散らすと、
+    // 「どこから落ちてきたのか」が分からず背景の模様に見える。
+    petal.write(seeds.map((seed) => ({ ...seed, x: seed.x * 0.55 + 0.28 })));
   };
 
   const applyLayout = () => {

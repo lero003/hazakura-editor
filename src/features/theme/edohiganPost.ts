@@ -280,7 +280,7 @@ export function createEdohiganPost(
       uNear: { value: 0.1 },
       uFar: { value: 400 },
       uFocus: { value: 56 },
-      uAperture: { value: 150 },
+      uAperture: { value: 185 },
       uBloomStrength: { value: 0.16 },
       uGrain: { value: 0.022 },
       uVignette: { value: 0.24 },
