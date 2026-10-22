@@ -26,6 +26,9 @@ frontend 341 files / 3,175 tests・scripts31件、typecheck、`npm run build:vit
 隔離 WKWebView 1537×912 / DPR1で1 canvas、console errorなし。情景の描画呼出は
 通常37.5/強75.3回/秒（ページrAFとGPU描画完了の計測とは別）。局所コントラストの
 推定1パーセンタイルは編集面6.29/Preview5.54。前の近似値と測定条件を混ぜない。
+署名pkgはクリーンな確定ソースから生成し、署名・プロファイル・Universal・展開payload一致を確認済み。
+候補IDの正本は `docs/internal/app-store-candidates/latest.json`。productbuildの既知の書込警告は残る。
+Apple uploadは未実施。ローカルタグ `v3.4.1` は追補前のチェックポイントのまま保持する。
 未確認は実アプリのテクスチャ読込・Intel GPU・Retina・`backdrop-filter` の実機負荷・
 IME/VoiceOver・本文右端の正式な AA 判定。
 [記録](releases/3.4.1-edohigan-scene.md)。

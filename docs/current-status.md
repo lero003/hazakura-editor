@@ -16,6 +16,8 @@ Last reviewed: 2026-10-22
   ページrAF・GPU描画完了・新実装の実機受入とは分ける。
   実アプリ・Intel GPU・Retina・IME/VoiceOver は未確認。ローカルの `v3.4.1` タグは
   追補前のチェックポイントで、最新候補とは分ける。GitHubタグ/Release公開とApple uploadは未実施。
+  最新ソースから署名pkgをローカル生成し、署名・プロファイル・Universal・展開payload一致を確認。
+  候補の版/build/hash/source状態は `docs/internal/app-store-candidates/latest.json`（ignored）を参照。
   [変更と検証範囲](releases/3.4.1-edohigan-scene.md)を参照。
 
 - **v3.4.0ソースチェックポイントの準備（2026-10-21）:** ローカルタグへ当時の実装を固定した。
