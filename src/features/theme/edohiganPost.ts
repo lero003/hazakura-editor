@@ -125,12 +125,14 @@ const COMPOSITE_FRAGMENT = /* glsl */ `
     color = mix(color, color * vec3(0.94, 0.98, 1.08), (1.0 - smoothstep(0.0, 0.55, luma)) * 0.5);
     color = mix(color, color * vec3(1.06, 1.01, 0.94), smoothstep(0.55, 1.0, luma) * 0.5);
     // 彩度を少し上げる。
-    color = mix(vec3(luma), color, 1.06);
+    color = mix(vec3(luma), color, 1.14);
     // コントラストの S カーブ。表示色（sRGB）に対して掛けるので、
     // フィルミックな肩ではなく素直な smoothstep に寄せる。
+    // 黒をわずかに締めて、霞んだ画面に芯を作る。
+    color = max(color - 0.015, vec3(0.0)) / 0.985;
     color = clamp(color, 0.0, 1.0);
     vec3 shaped = color * color * (3.0 - 2.0 * color);
-    color = mix(color, shaped, 0.3);
+    color = mix(color, shaped, 0.34);
 
     // --- ビネット -------------------------------------------------------
     vec2 centered = (uv - 0.5) * vec2(1.0, uResolution.y / uResolution.x);

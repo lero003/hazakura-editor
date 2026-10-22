@@ -100,6 +100,13 @@ const SKY_FRAGMENT = /* glsl */ `
     float r = length(d);
     color = mix(color, cSun, clamp(exp(-r * 26.0) * 0.9 + exp(-r * 6.0) * 0.22, 0.0, 1.0));
 
+    // 太陽の芯。木の枝の向こうで白く飛ぶ。
+    float disc = smoothstep(0.028, 0.012, r);
+    color = mix(color, vec3(1.0, 0.99, 0.95), disc * 0.95);
+    // アナモルフィックな筋。横にだけ伸びる弱いフレア。
+    float streak = exp(-abs(d.y) * 90.0) * exp(-abs(d.x) * 3.2) * 0.18;
+    color += vec3(1.0, 0.95, 0.86) * streak;
+
     // 雲。ゆっくり流れる FBM。太陽の側は暖かく、下側は灰色に。
     vec2 cloudUv = vec2(uv.x * 2.4 + uTime * 0.004, uv.y * 3.6 - uTime * 0.0012);
     float dense = fbm(cloudUv * 1.5 + 11.0);
