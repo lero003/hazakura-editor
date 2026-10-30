@@ -91,7 +91,7 @@ Core AI推論の再現ではなく、**現行parserへ同じ出力形式を渡�
 - `git diff --check` 成功。アプリの source、依存、モデル選択設定、配布 catalog は変更していない。
 
 整理後の最終回答・集計・固定条件は Git 管理外の
-`.hazakura/coreai-experiments/lfm3-1.7b-2026-10-30/evidence.json` にまとめる。
+`.hazakura/coreai-experiments/lfm3-1.7b-2026-10-30/evidence.json` に集約済み。
 入力は合成文のみ。既存の江戸彼岸関連の未コミット変更と混ぜない。
 
 ## Hazakura 側の対応範囲
@@ -134,15 +134,15 @@ token ごとの数値比較、継続生成、reset、文脈差し替えを検証
    GGUFの品質・速度を Core AI の結果へ繰り上げない。
 3. 配布catalogや製品のGGUF / localhost fallbackは追加しない。
 
-## 検証データの整理方針（2026-10-30）
+## 検証データの整理（2026-10-30、完了）
 
-公開するのはこの評価記録とhandoffのLFM3節。ローカルは `evidence.json` と `README.md` だけを保管対象とする。
+公開したのはこの評価記録とhandoffのLFM3節。ローカルには `evidence.json` と `README.md` だけを保管した（合計約60 KB）。
 `evidence.json` は合成入力11件、4設定44回の最終候補・判定・時間・decode速度・RSS、parser再生結果、
 固定revision・SHA-256をまとめたもの。実行コマンド内の個人絶対パスと生の思考出力を除く。
 自動会話モードだった初回出力は44回の集計から除外している。
 
 GitHubへのpush後、モデル重み、検証用runtime、配布archive、生成prompt、harnessと実行バイナリ、
-raw出力・ログ・初回の除外出力を削除する。再評価には固定条件からの再取得とharnessの再作成が必要。
+raw出力・ログ・初回の除外出力を削除した（計約1.08 GiB）。再評価には固定条件からの再取得とharnessの再作成が必要。
 既存の別のCore AI実験・本番候補には触れない。
 
 候補モデルの再配布・ライセンス受け入れ、署名済み sandbox アプリでの登録・生成・再起動復元、

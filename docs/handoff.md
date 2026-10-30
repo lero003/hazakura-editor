@@ -13,8 +13,8 @@ Last reviewed: 2026-10-30
 - テキスト1.7B用Core AI bundle/exporterは未確認。現pinのstate handlerはconv/SWAを分類できるが、
   公式templateのprefilled `<think>` と現parserの接続に思考のresponse混入を再現。単純差し替えは不可。
 - [評価・固定入力・失敗例・未検証範囲](reviews/2026-10-30-lfm3-feasibility.md)。
-  GitHubへのpush後、Git管理外の `.hazakura/coreai-experiments/lfm3-1.7b-2026-10-30/` に `evidence.json` / `README.md` だけを
-  保管し、モデル・runtime・harness・prompt・rawログを削除する。再評価は固定条件から再取得・再作成が必要。
+  GitHubへのpush後、Git管理外の `.hazakura/coreai-experiments/lfm3-1.7b-2026-10-30/` は `evidence.json` / `README.md` の約60 KBに整理済み。
+  モデル・runtime・harness・prompt・rawログの約1.08 GiBを削除した。再評価は固定条件から再取得・再作成が必要。
   アプリ依存・source・catalog・保存済みモデル選択を変更していない。Core AI変換・署名app内生成は未実施。
 - prompt/formatterの独立Swift compile、GGUF44回生成、現parserへの33出力再生を実施。
   frontend/Rust/署名buildの再試験は未実施。既存の江戸彼岸未コミット変更は別作業として保持する。
