@@ -1,9 +1,23 @@
 # Handoff
 
 Status: Operational
-Scope: v3.4.1江戸彼岸の情景候補、v3.4テーマ刷新、v3.3審査提出報告、過去の引き継ぎ
+Scope: LFM3評価、v3.4.1江戸彼岸の情景候補、v3.4テーマ刷新、v3.3審査提出報告、過去の引き継ぎ
 Authority: Medium
-Last reviewed: 2026-10-22
+Last reviewed: 2026-10-30
+
+## LFM3-1.7B の評価（2026-10-30、製品未変更）
+
+- 公式Q4_K_Mと対応llama.cppを検証専用フォルダへ固定し、SHA-256照合後に合成11件×4設定で44回生成。
+  GGUF単体は動くが、現行promptの校正完全一致は8件中3〜4件、短いpromptでも2件。採用は保留。
+  思考なしのwall中央値は約0.5秒、decode約251〜255 tokens/s、最大RSS約1,319 MiB。Core AIの性能値ではない。
+- テキスト1.7B用Core AI bundle/exporterは未確認。現pinのstate handlerはconv/SWAを分類できるが、
+  公式templateのprefilled `<think>` と現parserの接続に思考のresponse混入を再現。単純差し替えは不可。
+- [評価・固定入力・失敗例・未検証範囲](reviews/2026-10-30-lfm3-feasibility.md)。
+  GitHubへのpush後、Git管理外の `.hazakura/coreai-experiments/lfm3-1.7b-2026-10-30/` に `evidence.json` / `README.md` だけを
+  保管し、モデル・runtime・harness・prompt・rawログを削除する。再評価は固定条件から再取得・再作成が必要。
+  アプリ依存・source・catalog・保存済みモデル選択を変更していない。Core AI変換・署名app内生成は未実施。
+- prompt/formatterの独立Swift compile、GGUF44回生成、現parserへの33出力再生を実施。
+  frontend/Rust/署名buildの再試験は未実施。既存の江戸彼岸未コミット変更は別作業として保持する。
 
 ## v3.4.1 江戸彼岸の情景（2026-10-22）
 
