@@ -696,10 +696,11 @@ mod tests {
 
     #[test]
     fn prefers_pdfkit_quality_on_real_memo_pdf_when_helper_live() {
-        let pdf = PathBuf::from("/Users/keisetsu/マイドライブ/アプリメモ2.pdf");
-        if !pdf.exists() {
+        // Opt-in local smoke: keep the private fixture path out of source control.
+        let Some(pdf) = std::env::var_os("HAZAKURA_IMPORT_ASSIST_TEST_PDF") else {
             return;
-        }
+        };
+        let pdf = PathBuf::from(pdf);
         let draft = import_source_path_to_markdown(&pdf).expect("import memo pdf");
         assert!(
             draft.page_count >= 2,

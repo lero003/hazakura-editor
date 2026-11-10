@@ -543,9 +543,9 @@ mod tests {
         let text = concat!(
             "/bin/bash -c \"$(curl -fsSL\n",
             "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh\n",
-            "echo >> /Users/keisetsu/.zprofile\n",
+            "echo >> /Users/example/.zprofile\n",
             "echo 'eval \"$(/opt/homebrew/bin/brew shellenv zsh)\"' >>\n",
-            "/Users/keisetsu/.zprofile\n",
+            "/Users/example/.zprofile\n",
             "eval \"$(/opt/homebrew/bin/brew shellenv zsh)\"\n",
         );
         let out = normalize_page_text(text);

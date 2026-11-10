@@ -955,7 +955,7 @@ Editor Reliability / Navigation Pack smoke on 2026-05-27:
 
 Source Preview Quality Polish smoke on 2026-05-27:
 
-- Built-app smoke used `/Users/keisetsu/Projects/hazakura-note-smoke-paid-quality`.
+- Built-app smoke used the `hazakura-note-smoke-paid-quality` fixture workspace (local path omitted).
 - Opening the throwaway folder replaced the workspace tree with direct children only and continued to hide `.git`, `node_modules`, `target`, and `dist`.
 - Opening `alpha.md` from the tree showed Markdown metadata, preview, active tree state, and search highlights for two `target` matches.
 - Opening `crlf.txt` showed `Text`, `CRLF`, byte/character counts, and clean state without marking the tab dirty.

@@ -52,7 +52,7 @@ git diff <previous-tag>..<release-candidate-head> -- docs/ src/ | \
 
 ```bash
 git diff <previous-tag>..<release-candidate-head> | \
-  grep -E "^\+.*(\\b(TODO|FIXME|XXX|HACK)\\b|developer note|internal-only|not for review|keisetsu|lero003)" | \
+  grep -E "^\+.*(\\b(TODO|FIXME|XXX|HACK)\\b|developer note|internal-only|not for review|${USER:?}|lero003)" | \
   head -20
 ```
 
@@ -74,7 +74,7 @@ The diff-scoped greps above are the primary check. As a second pass, audit the w
 
 ```bash
 # Hard-coded paths in docs / README / AGENTS.md
-grep -rnE "/Users/|/home/keisetsu|/var/folders/" README.md AGENTS.md docs/ 2>/dev/null | head -20
+grep -rnE "/Users/|/home/|/var/folders/" README.md AGENTS.md docs/ 2>/dev/null | head -20
 
 # Tokens / secrets in source
 grep -rnE "api[_-]?key|secret|password|private[_-]?key" src/ src-tauri/src/ 2>/dev/null | head -20
@@ -206,7 +206,7 @@ Result:
 - Section 1 (local paths in diff): hits were limited to this checklist's own example patterns and its historical-audit note. No product code, release note, README, or runtime path gained a new machine-specific path.
 - Section 2 (inappropriate GitHub content in diff): hits were limited to this checklist's own grep examples and public repository references in release evidence. No new developer scratch note or private organization wording was added.
 - Section 3 (security concerns in diff): hits were limited to this checklist's own grep examples. No token, API key, password, private key, internal IP, or internal hostname was added.
-- Section 4 (whole-repo audit): the long-lived entries under `docs/archive/` (e.g. `docs/handoff.md`, `docs/source-release-checklist.md`, and past `docs/releases/0.x.0-*.release.md`) still contain `/Users/keisetsu/...` and `/tmp/hazakura-note-...` references from previous smoke runs. They are accepted as historical release evidence and are not in this checklist's scope for v0.16.0. A future `docs/` archive tidy-up slice can normalize those references to anonymous paths if desired, but it is not a v0.16.0 release blocker.
+- Section 4 (whole-repo audit): the long-lived entries under `docs/archive/` (e.g. `docs/handoff.md`, `docs/source-release-checklist.md`, and past `docs/releases/0.x.0-*.release.md`) contained author-specific home paths (omitted here) and `/tmp/hazakura-note-...` references from previous smoke runs. They are accepted as historical release evidence and are not in this checklist's scope for v0.16.0. A future `docs/` archive tidy-up slice can normalize those references to anonymous paths if desired, but it is not a v0.16.0 release blocker.
 
 DMG and source files referenced in v0.16.0 (`src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.16.0_aarch64-warning-expected.dmg` and `*.dmg.sha256`) are build outputs under `src-tauri/target/`, which is `.gitignore`d. The DMG and SHA-256 will be attached to the GitHub Release as release assets, not committed to the repository.
 
