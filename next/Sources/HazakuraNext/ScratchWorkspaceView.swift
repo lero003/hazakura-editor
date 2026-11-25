@@ -11,10 +11,17 @@ struct ScratchWorkspaceView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(banner)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .padding(12)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(banner)
+                if session.recoveryUnavailable {
+                    Label("復旧用の保存先を利用できません。この起動中の原稿は退避されません。", systemImage: "exclamationmark.triangle")
+                } else if let failure = session.recovery?.failure {
+                    Label(failure, systemImage: "exclamationmark.triangle")
+                }
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+            .padding(12)
             tabBar
             Divider()
             editors
@@ -29,11 +36,18 @@ struct ScratchWorkspaceView: View {
             openPanel = nil
             panel?.cancel(nil)
         }
+        .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
+            DraftRecoveryView(session: session)
+        }
         .alert("この検証用原稿を破棄しますか？", isPresented: showsDiscard, presenting: session.pendingDiscard) { ticket in
-            Button("破棄", role: .destructive) { session.tabs.discard(ticket) }
+            Button("破棄", role: .destructive) { session.startTabDiscard(ticket) }
             Button("キャンセル", role: .cancel) {}
         } message: { _ in
-            Text("このタブを閉じると、編集内容は元に戻せません。")
+            if session.recovery == nil {
+                Text("このタブの未保存原稿が削除されます。")
+            } else {
+                Text("このタブの未保存原稿と、その復旧記録が削除されます。")
+            }
         }
     }
 
@@ -41,11 +55,12 @@ struct ScratchWorkspaceView: View {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
         if let notice = session.exitNotice { return notice }
+        if session.isDiscarding { return "復旧記録を確認しています…" }
         if let openFailure { return "開けませんでした。\(openFailure)" }
         if session.tabs.selectedTab?.isReadOnly == true {
             return "読み取り専用 — 開いた時点の原文です。ファイルには書き込みません。"
         }
-        return "検証用です。保存・復旧はありません。"
+        return "検証用です。元のファイルには保存しません。"
     }
 
     private var showsDiscard: Binding<Bool> {
@@ -110,6 +125,17 @@ struct ScratchWorkspaceView: View {
                     }
                 }
             }
+            if session.recovery != nil {
+                Button {
+                    session.requestRecovery()
+                } label: {
+                    Label("原稿を復元", systemImage: "clock.arrow.circlepath")
+                        .labelStyle(.iconOnly)
+                }
+                .help("退避された原稿を確認する")
+                .disabled(session.tabs.isComposing)
+            }
+
             Button {
                 session.requestOpen()
             } label: {
@@ -168,10 +194,14 @@ struct ScratchWorkspaceView: View {
             ForEach(session.tabs.tabs) { tab in
                 let id = tab.id
                 let isSelected = session.tabs.selectedID == id
-                TextKitEditor(initialText: tab.document.source, isActive: isSelected, isReadOnly: tab.isReadOnly, onCompositionChange: { composing in
-                    session.tabs.setComposing(composing, in: id)
-                }) { source in
-                    session.tabs.applyCommittedSource(source, to: id)
+                TextKitEditor(
+                    initialText: tab.document.source,
+                    isActive: isSelected,
+                    isReadOnly: tab.isReadOnly,
+                    canEdit: { !session.isDiscarding },
+                    onCompositionChange: { session.tabs.setComposing($0, in: id) }
+                ) { source in
+                    session.applyCommittedSource(source, to: id)
                 }
                 .opacity(isSelected ? 1 : 0)
                 .allowsHitTesting(isSelected)

@@ -299,6 +299,110 @@ struct TextKitEditorTests {
         #expect(reported.isEmpty)
     }
 
+    @Test
+    func editPolicyBlocksNewNativeMutationsWithoutUpdatingTheView() throws {
+        let policy = EditPolicy()
+        var events: [EditorEvent] = []
+        let editor = TextKitEditor(initialText: "原稿", canEdit: { policy.permitsEdits }, onCompositionChange: {
+            events.append(.composing($0))
+        }) { events.append(.source($0)) }
+        let coordinator = editor.makeCoordinator()
+        let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let pasteboard = NSPasteboard.withUniqueName()
+        defer { pasteboard.releaseGlobally() }
+        pasteboard.setString("貼り付け", forType: .string)
+        let selection = NSRange(location: 0, length: 1)
+        textView.setSelectedRange(selection)
+
+        policy.permitsEdits = false
+        #expect(textView.isEditable, "The representable has not received an update.")
+        textView.insertText("別", replacementRange: selection)
+        setMarkedText("候補", in: textView)
+        #expect(textView.readSelection(from: pasteboard) == false)
+        #expect(textView.shouldChangeText(in: selection, replacementString: "別") == false)
+        textView.delete(nil)
+        textView.deleteBackward(nil)
+        textView.insertNewline(nil)
+        #expect(textView.selectedRange() == selection)
+        #expect(textView.hasMarkedText() == false)
+        #expect(textView.string == "原稿")
+        #expect(events.isEmpty)
+
+        policy.permitsEdits = true
+        textView.delete(nil)
+        #expect(textView.string == "稿")
+        #expect(events == [.source("稿")])
+    }
+
+    @Test
+    func editPolicyPausesAnExistingNativeUndoHistoryWithoutClearingIt() throws {
+        let policy = EditPolicy()
+        var reported: [String] = []
+        let coordinator = TextKitEditor.Coordinator(canEdit: { policy.permitsEdits }) { reported.append($0) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let undoManager = try #require(textView.undoManager)
+        textView.insertText("新", replacementRange: NSRange(location: 0, length: 0))
+        try #require(undoManager.canUndo)
+
+        policy.permitsEdits = false
+        #expect(undoManager.canUndo == false)
+        undoManager.undo() // Even a manager already obtained by the responder chain must check again.
+        #expect(textView.string == "新原稿")
+        #expect(reported == ["新原稿"])
+
+        policy.permitsEdits = true
+        undoManager.undo()
+        #expect(textView.string == "原稿")
+        try #require(undoManager.canRedo)
+        policy.permitsEdits = false
+        undoManager.redo()
+        #expect(textView.string == "原稿")
+        #expect(reported == ["新原稿", "原稿"])
+
+        policy.permitsEdits = true
+        undoManager.redo()
+        #expect(textView.string == "新原稿")
+        #expect(reported == ["新原稿", "原稿", "新原稿"])
+    }
+
+    @Test
+    func editPolicyDoesNotDiscardMarkedTextOrHideACompletedEdit() throws {
+        let policy = EditPolicy()
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(canEdit: { policy.permitsEdits }, onCompositionChange: {
+            events.append(.composing($0))
+        }) { events.append(.source($0)) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        setMarkedText("候補", in: textView)
+        try #require(textView.hasMarkedText())
+
+        // The app normally waits for composition to end before blocking edits.
+        // If AppKit still unmarks existing text, the committed source must not be lost.
+        policy.permitsEdits = false
+        setMarkedText("別候補", in: textView)
+        textView.insertText("別", replacementRange: implicitRange)
+        #expect(textView.hasMarkedText())
+        #expect(events == [.composing(true)])
+        textView.unmarkText()
+        #expect(textView.hasMarkedText() == false)
+        #expect(textView.string == "候補")
+        #expect(events == [.composing(true), .source("候補"), .composing(false)])
+    }
+
+    @MainActor
+    private final class EditPolicy {
+        var permitsEdits = true
+    }
+
     private enum EditorEvent: Equatable {
         case composing(Bool)
         case source(String)

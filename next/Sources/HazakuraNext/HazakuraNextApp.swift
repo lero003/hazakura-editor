@@ -1,13 +1,31 @@
 import AppKit
+import HazakuraNextCore
 
 @main
 struct HazakuraNextApp {
     @MainActor static func main() {
-        let application = NSApplication.shared
         let source = ProcessInfo.processInfo.arguments.contains("--long-sample")
             ? String(repeating: sample + "\n\n", count: 1_500)
             : sample
-        let delegate = ScratchApplicationDelegate(source: source)
+        do {
+            let directory = try DraftRecoveryStore.defaultDirectory()
+            let lease = try DraftRecoveryStore.claimApplicationSession(in: directory)
+            let recovery = RecoveryCheckpointQueue(store: DraftRecoveryStore(directory: directory))
+            withExtendedLifetime(lease) { run(source: source, recovery: recovery) }
+        } catch DraftRecoveryStore.StoreError.lockContended {
+            // Launch Services brings the running app forward. If invoked directly, a second
+            // process must not start editing or delete the running app's recovery records.
+            return
+        } catch {
+            run(source: source, recovery: nil, recoveryUnavailable: true)
+        }
+    }
+
+    @MainActor private static func run(
+        source: String, recovery: RecoveryCheckpointQueue?, recoveryUnavailable: Bool = false
+    ) {
+        let application = NSApplication.shared
+        let delegate = ScratchApplicationDelegate(source: source, recovery: recovery, recoveryUnavailable: recoveryUnavailable)
         application.setActivationPolicy(.regular)
         application.delegate = delegate
         withExtendedLifetime(delegate) { application.run() }

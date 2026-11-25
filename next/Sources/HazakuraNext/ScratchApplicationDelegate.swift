@@ -13,16 +13,26 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     private(set) var session: WorkspaceSession?
     private var exitGate = WindowExitGate()
     private var presentedExit: WindowExitGate.Ticket?
+    private(set) var exitCleanupTask: Task<Void, Never>?
+    private let recovery: RecoveryCheckpointQueue?
+    private let recoveryUnavailable: Bool
     private let presentExit: PresentExit
     private let replyToQuit: ReplyToQuit
 
     init(
         source: String,
-        presentExit: @escaping PresentExit = ScratchApplicationDelegate.presentNativeExit,
+        recovery: RecoveryCheckpointQueue? = nil,
+        recoveryUnavailable: Bool = false,
+        presentExit: PresentExit? = nil,
         replyToQuit: @escaping ReplyToQuit = { $0.reply(toApplicationShouldTerminate: $1) }
     ) {
         self.source = source
-        self.presentExit = presentExit
+        self.recovery = recovery
+        self.recoveryUnavailable = recoveryUnavailable
+        let includesRecovery = recovery != nil
+        self.presentExit = presentExit ?? { window, ticket, completion in
+            Self.presentNativeExit(window, ticket, includesRecovery: includesRecovery, completion)
+        }
         self.replyToQuit = replyToQuit
     }
 
@@ -43,7 +53,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     func prepareWindow() -> NSWindow {
         if let window { return window }
-        let session = WorkspaceSession(source: source)
+        let session = WorkspaceSession(source: source, recovery: recovery, recoveryUnavailable: recoveryUnavailable)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 900, height: 660),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -65,7 +75,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        guard sender === window, let session else { return false }
+        guard sender === window, let session, presentedExit == nil else { return false }
         switch exitGate.request(.window, tabs: session.tabs, busy: session.isBusy || sender.attachedSheet != nil) {
         case .allow:
             return true
@@ -88,7 +98,9 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // AppKit expects a single reply for the active deferred termination request.
-        guard presentedExit?.destination != .application else { return .terminateLater }
+        if let presentedExit {
+            return presentedExit.destination == .application ? .terminateLater : .terminateCancel
+        }
         guard let window, let session else { return .terminateNow }
         switch exitGate.request(.application, tabs: session.tabs, busy: session.isBusy || window.attachedSheet != nil) {
         case .allow:
@@ -104,24 +116,42 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     private func confirm(_ ticket: WindowExitGate.Ticket, in window: NSWindow, finish: @escaping (Bool) -> Void) {
         presentedExit = ticket
         presentExit(window, ticket) { [weak self, weak window] discard in
-            guard let self, presentedExit == ticket else { return }
-            presentedExit = nil
+            guard let self, presentedExit == ticket, exitCleanupTask == nil else { return }
             guard let window, window === self.window, let session else {
+                presentedExit = nil
                 exitGate = WindowExitGate()
                 finish(false)
                 return
             }
             let accepted = exitGate.resolve(ticket, discard: discard, tabs: session.tabs, busy: session.isBusy)
-            if discard && !accepted {
-                session.exitNotice = "原稿の状態が変わったため、閉じませんでした。操作をやり直してください。"
+            guard accepted, recovery != nil else {
+                presentedExit = nil
+                if discard && !accepted {
+                    session.exitNotice = "原稿の状態が変わったため、閉じませんでした。操作をやり直してください。"
+                }
+                finish(accepted)
+                return
             }
-            finish(accepted)
+
+            guard let confirmed = session.reserveExitDiscard() else {
+                presentedExit = nil
+                finish(false)
+                return
+            }
+            exitCleanupTask = Task {
+                await session.finishExitDiscard(confirmed) { ready in
+                    finish(ready && self.session === session)
+                    self.exitCleanupTask = nil
+                    self.presentedExit = nil
+                }
+            }
         }
     }
 
     private static func presentNativeExit(
         _ window: NSWindow,
         _ ticket: WindowExitGate.Ticket,
+        includesRecovery: Bool,
         _ completion: @escaping @MainActor (Bool) -> Void
     ) {
         if NSApp.isHidden { NSApp.unhide(nil) }
@@ -132,9 +162,10 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         alert.alertStyle = .warning
         alert.messageText = "未保存の原稿が\(ticket.count)件あります"
         let isQuit = ticket.destination == .application
+        let drafts = includesRecovery ? "未保存原稿とその復旧記録" : "未保存原稿"
         alert.informativeText = isQuit
-            ? "アプリを終了すると、変更は失われます。この検証版には保存・復旧機能がありません。"
-            : "ウィンドウを閉じると、変更は失われます。この検証版には保存・復旧機能がありません。"
+            ? "破棄して終了すると、開いている\(drafts)が削除されます。"
+            : "破棄して閉じると、このウィンドウの\(drafts)が削除されます。"
         let keep = alert.addButton(withTitle: "編集を続ける")
         keep.keyEquivalent = "\u{1B}"
         let discard = alert.addButton(withTitle: isQuit ? "破棄して終了" : "破棄して閉じる")

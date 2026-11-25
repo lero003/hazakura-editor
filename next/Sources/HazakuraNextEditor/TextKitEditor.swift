@@ -4,10 +4,16 @@ import SwiftUI
 @MainActor
 private final class MarkdownTextView: NSTextView {
     weak var editorCoordinator: TextKitEditor.Coordinator?
-    private let editorUndoManager = UndoManager()
+    private lazy var editorUndoManager = EditorUndoManager(textView: self)
     private var isActive = true
     private var isReadOnly = false
     private(set) var textInputDepth = 0
+
+    private var policyAllowsEdits: Bool { editorCoordinator?.canEdit() ?? true }
+    private var canMutate: Bool { isEditable && policyAllowsEdits }
+    fileprivate var canApplyUndo: Bool { !isReadOnly && policyAllowsEdits }
+    // AppKit can reinsert the existing characters from inside unmarkText().
+    private var canContinueTextInput: Bool { isEditable && (textInputDepth > 0 || policyAllowsEdits) }
 
     override var undoManager: UndoManager? { isReadOnly ? nil : editorUndoManager }
     override var acceptsFirstResponder: Bool { isActive && super.acceptsFirstResponder }
@@ -34,26 +40,38 @@ private final class MarkdownTextView: NSTextView {
         if isActive { window?.makeFirstResponder(self) }
     }
 
+    override func shouldChangeText(inRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
+        guard canContinueTextInput else { return false }
+        return super.shouldChangeText(inRanges: affectedRanges, replacementStrings: replacementStrings)
+    }
+
+    override func cut(_ sender: Any?) {
+        // Refuse before AppKit can copy the selection to the pasteboard.
+        guard canMutate else { return }
+        super.cut(sender)
+    }
+
     override func readSelection(from pboard: NSPasteboard, type: NSPasteboard.PasteboardType) -> Bool {
-        guard isEditable, type == .string else { return false }
+        guard canMutate, type == .string else { return false }
         return super.readSelection(from: pboard, type: type)
     }
 
     override func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
-        guard isEditable else { return }
+        guard canMutate else { return }
         textInputDepth += 1
         defer { finishTextInput() }
         super.setMarkedText(string, selectedRange: selectedRange, replacementRange: replacementRange)
     }
 
     override func insertText(_ string: Any, replacementRange: NSRange) {
-        guard isEditable else { return }
+        guard canContinueTextInput else { return }
         textInputDepth += 1
         defer { finishTextInput() }
         super.insertText(string, replacementRange: replacementRange)
     }
 
     override func unmarkText() {
+        // Ending an existing composition must still report any committed source.
         textInputDepth += 1
         defer { finishTextInput() }
         super.unmarkText()
@@ -67,12 +85,38 @@ private final class MarkdownTextView: NSTextView {
     }
 }
 
+@MainActor
+private final class EditorUndoManager: UndoManager {
+    private weak var textView: MarkdownTextView?
+
+    init(textView: MarkdownTextView) {
+        self.textView = textView
+        super.init()
+    }
+
+    // TextKit undo can edit storage directly; check even if the caller already holds this manager.
+    private var canApply: Bool { textView?.canApplyUndo == true }
+    override var canUndo: Bool { canApply && super.canUndo }
+    override var canRedo: Bool { canApply && super.canRedo }
+
+    override func undo() {
+        guard canApply else { return }
+        super.undo()
+    }
+
+    override func redo() {
+        guard canApply else { return }
+        super.redo()
+    }
+}
+
 /// An in-memory Markdown source editor. AppKit owns the editing buffer and undo history.
 @MainActor
 public struct TextKitEditor: NSViewRepresentable {
     private let initialText: String
     private let isActive: Bool
     private let isReadOnly: Bool
+    private let canEdit: @MainActor () -> Bool
     private let onCompositionChange: (Bool) -> Void
     private let onChange: (String) -> Void
 
@@ -80,6 +124,8 @@ public struct TextKitEditor: NSViewRepresentable {
     /// `isActive` enables editing and requests native focus on activation. Inactive editors
     /// retain selection and undo history; the caller controls visibility and hit testing.
     /// `isReadOnly` lets an active tab select and copy its source without editing.
+    /// `canEdit` is checked synchronously before native edits and Undo/Redo, without
+    /// changing the selection or history. Only block edits when no composition is active.
     /// Keep the editor active, and block tab switches/new tabs, from `onCompositionChange(true)`
     /// until `onCompositionChange(false)`.
     ///
@@ -92,18 +138,20 @@ public struct TextKitEditor: NSViewRepresentable {
         initialText: String,
         isActive: Bool = true,
         isReadOnly: Bool = false,
+        canEdit: @escaping @MainActor () -> Bool = { true },
         onCompositionChange: @escaping (Bool) -> Void = { _ in },
         onChange: @escaping (String) -> Void
     ) {
         self.initialText = initialText
         self.isActive = isActive
         self.isReadOnly = isReadOnly
+        self.canEdit = canEdit
         self.onCompositionChange = onCompositionChange
         self.onChange = onChange
     }
 
     public func makeCoordinator() -> Coordinator {
-        Coordinator(onCompositionChange: onCompositionChange, onChange: onChange)
+        Coordinator(canEdit: canEdit, onCompositionChange: onCompositionChange, onChange: onChange)
     }
 
     public func makeNSView(context: Context) -> NSScrollView {
@@ -112,6 +160,7 @@ public struct TextKitEditor: NSViewRepresentable {
 
     public func updateNSView(_ nsView: NSScrollView, context: Context) {
         // Replacing the buffer here would disturb selection, undo and marked text.
+        context.coordinator.canEdit = canEdit
         context.coordinator.onCompositionChange = onCompositionChange
         context.coordinator.onChange = onChange
         Self.setActive(isActive, in: nsView, readOnly: isReadOnly)
@@ -176,13 +225,19 @@ public struct TextKitEditor: NSViewRepresentable {
 
     @MainActor
     public final class Coordinator: NSObject {
+        fileprivate var canEdit: @MainActor () -> Bool
         fileprivate var onCompositionChange: (Bool) -> Void
         fileprivate var onChange: (String) -> Void
         private weak var textView: MarkdownTextView?
         private var lastCommittedSource = ""
         private var isComposing = false
 
-        init(onCompositionChange: @escaping (Bool) -> Void = { _ in }, onChange: @escaping (String) -> Void) {
+        init(
+            canEdit: @escaping @MainActor () -> Bool = { true },
+            onCompositionChange: @escaping (Bool) -> Void = { _ in },
+            onChange: @escaping (String) -> Void
+        ) {
+            self.canEdit = canEdit
             self.onCompositionChange = onCompositionChange
             self.onChange = onChange
         }

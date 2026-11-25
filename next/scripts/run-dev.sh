@@ -21,6 +21,6 @@ printf 'Development app: %s\n' "$app"
 
 case "$mode" in
     --build-only) ;;
-    --long-sample) open -n "$app" --args --long-sample ;;
-    *) open -n "$app" ;;
+    --long-sample) open "$app" --args --long-sample ;;
+    *) open "$app" ;;
 esac

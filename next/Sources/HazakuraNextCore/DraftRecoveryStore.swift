@@ -23,11 +23,23 @@ public struct RecoveryDraft: Equatable, Sendable {
 
 /// Bounded, local (not encrypted) recovery for unsaved drafts. Never touches a source file.
 /// Cooperating instances and processes serialize the whole read/modify/replace operation.
+/// Manifest lock acquisition is cancellable and sustained contention throws `StoreError.lockContended`.
 public actor DraftRecoveryStore {
     public enum StoreError: Error, Equatable, Sendable {
-        case invalidLocation, unsafeLocation, ioFailure
+        case invalidLocation, unsafeLocation, ioFailure, lockContended
         case corruptManifest, unsupportedVersion, capacityExceeded
         case invalidRevision, staleRevision, revisionConflict
+    }
+
+    /// An exclusive lease held until the last reference is released.
+    public final class ApplicationSession: Sendable {
+        private let lockFD: Int32
+
+        fileprivate init(lockFD: Int32) {
+            self.lockFD = lockFD
+        }
+
+        deinit { _ = close(lockFD) }
     }
 
     private let directory: URL
@@ -38,7 +50,7 @@ public actor DraftRecoveryStore {
         self.directory = directory
     }
 
-    /// Resolves the second-generation development location without creating it.
+    /// Resolves the second-generation development location without creating it or its parent.
     public static func defaultDirectory() throws -> URL {
         guard let support = try? FileManager.default.url(for: .applicationSupportDirectory,
                                                         in: .userDomainMask, appropriateFor: nil, create: false) else {
@@ -47,16 +59,30 @@ public actor DraftRecoveryStore {
         return support.appending(path: "dev.hazakura.editor.next.dev.draft-recovery", directoryHint: .isDirectory)
     }
 
-    public func drafts() throws -> [RecoveryDraft] {
-        try withLockedDirectory { try Self.readManifest(in: $0) }
+    /// Claims the cooperating app's session for this recovery directory without touching the manifest.
+    /// A competing session causes `StoreError.lockContended` immediately.
+    public static func claimApplicationSession(in directory: URL) throws -> ApplicationSession {
+        let fd = try openDirectory(directory)
+        defer { _ = close(fd) }
+        let lockFD = try openLock(in: fd, named: applicationLockName)
+        guard flock(lockFD, LOCK_EX | LOCK_NB) == 0 else {
+            let error = errno
+            _ = close(lockFD)
+            throw error == EWOULDBLOCK ? StoreError.lockContended : StoreError.ioFailure
+        }
+        return ApplicationSession(lockFD: lockFD)
+    }
+
+    public func drafts() async throws -> [RecoveryDraft] {
+        try await withLockedDirectory { try Self.readManifest(in: $0) }
     }
 
     /// A newer positive revision replaces the old one; an exact repeat is a no-op. A stale
     /// revision or different bytes at the same revision throw. Capacity failures never evict drafts.
-    public func checkpoint(_ draft: RecoveryDraft) throws {
+    public func checkpoint(_ draft: RecoveryDraft) async throws {
         guard draft.revision > 0 else { throw StoreError.invalidRevision }
         guard draft.source.utf8.count <= RecoveryDraft.sourceByteLimit else { throw StoreError.capacityExceeded }
-        try withLockedDirectory { fd in
+        try await withLockedDirectory { fd in
             var drafts = try Self.readManifest(in: fd)
             if let index = drafts.firstIndex(where: { $0.id == draft.id }) {
                 let stored = drafts[index]
@@ -76,8 +102,8 @@ public actor DraftRecoveryStore {
     /// Removes only the exact stored ID, revision and UTF-8 bytes. There is no tombstone:
     /// callers must drain pending checkpoints for this ID before discard and not reuse it.
     @discardableResult
-    public func discard(_ draft: RecoveryDraft) throws -> Bool {
-        try withLockedDirectory { fd in
+    public func discard(_ draft: RecoveryDraft) async throws -> Bool {
+        try await withLockedDirectory { fd in
             var drafts = try Self.readManifest(in: fd)
             guard let index = drafts.firstIndex(of: draft) else { return false }
             drafts.remove(at: index)
@@ -85,47 +111,96 @@ public actor DraftRecoveryStore {
             return true
         }
     }
+
+    /// Removes confirmed drafts in one transaction. Absent IDs are no-ops and older stored
+    /// revisions can be removed, but every confirmation must match the exact source bytes at
+    /// the same revision. A newer stored revision or a byte conflict aborts the entire batch.
+    /// As with `discard`, drain pending checkpoints for these IDs before calling.
+    public func discardConfirmed(_ drafts: [RecoveryDraft]) async throws {
+        guard !drafts.isEmpty else { return }
+        try await withLockedDirectory { fd in
+            let stored = try Self.readManifest(in: fd)
+            let snapshots = Dictionary(uniqueKeysWithValues: stored.map { ($0.id, $0) })
+            var removing = Set<UUID>()
+            // Validate even duplicate confirmations against the original snapshot before removing any ID.
+            for draft in drafts {
+                guard let snapshot = snapshots[draft.id] else { continue }
+                guard snapshot.revision <= draft.revision else { throw StoreError.staleRevision }
+                if snapshot.revision == draft.revision, snapshot != draft {
+                    throw StoreError.revisionConflict
+                }
+                removing.insert(draft.id)
+            }
+            guard !removing.isEmpty else { return }
+            let remaining = stored.filter { !removing.contains($0.id) }
+            try Self.replaceManifest(in: fd, with: Manifest.encode(remaining))
+        }
+    }
 }
 
 private extension DraftRecoveryStore {
     static let manifestName = "drafts.manifest"
     static let lockName = "drafts.lock"
+    static let applicationLockName = "application.lock"
     static let stageName = "drafts.pending"
     static let directoryFlags = O_RDONLY | O_DIRECTORY | O_NOFOLLOW_ANY | O_CLOEXEC
     static let fileFlags = O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK | O_NOCTTY
 
-    func withLockedDirectory<Result>(_ body: (Int32) throws -> Result) throws -> Result {
-        let fd = try openDirectory()
+    func withLockedDirectory<Result>(_ body: (Int32) throws -> Result) async throws -> Result {
+        try Task.checkCancellation()
+        let fd = try Self.openDirectory(directory)
         defer { _ = close(fd) }
-        // The lock inode is stable across all manifest replacements. Never unlink it.
         let lockFD = try Self.openLock(in: fd)
         defer { _ = close(lockFD) }
-        let info = try Self.stat(of: lockFD)
-        try Self.validatePrivateFile(info)
-        try Self.validateNoACL(on: lockFD)
-        guard info.st_size == 0 else { throw StoreError.unsafeLocation }
-        try Self.retryOnInterrupt { flock(lockFD, LOCK_EX) }
-        // No suspension while the lock is held. Closing the descriptor releases it.
-        return try body(fd)
+
+        let clock = ContinuousClock()
+        let deadline = clock.now + .seconds(1)
+        while true {
+            try Task.checkCancellation()
+            if flock(lockFD, LOCK_EX | LOCK_NB) == 0 {
+                // No suspension while the lock is held. Closing the descriptor releases it.
+                return try body(fd)
+            }
+            let error = errno
+            guard error == EWOULDBLOCK || error == EINTR else { throw StoreError.ioFailure }
+            let now = clock.now
+            guard now < deadline else { throw StoreError.lockContended }
+            try await clock.sleep(until: min(now + .milliseconds(5), deadline))
+        }
     }
 
-    static func openLock(in directoryFD: Int32) throws -> Int32 {
+    static func openLock(in directoryFD: Int32, named name: String = lockName) throws -> Int32 {
+        let fd = try openLockFile(in: directoryFD, named: name)
+        do {
+            let info = try stat(of: fd)
+            try validatePrivateFile(info)
+            try validateNoACL(on: fd)
+            guard info.st_size == 0 else { throw StoreError.unsafeLocation }
+            return fd
+        } catch {
+            _ = close(fd)
+            throw error
+        }
+    }
+
+    // Both lock inodes are stable across all manifest replacements. Never unlink them.
+    static func openLockFile(in directoryFD: Int32, named name: String) throws -> Int32 {
         let flags = O_RDWR | fileFlags
-        let existing = openat(directoryFD, lockName, flags)
+        let existing = openat(directoryFD, name, flags)
         if existing >= 0 { return existing }
         guard errno == ENOENT else { throw openError(errno) }
 
         // Distinguish a first creation race from any other error. Darwin can return
         // ENOENT when two ordinary O_CREAT opens race to create an absent name.
-        let created = openat(directoryFD, lockName, flags | O_CREAT | O_EXCL, 0o600)
+        let created = openat(directoryFD, name, flags | O_CREAT | O_EXCL, 0o600)
         if created >= 0 { return created }
         guard errno == EEXIST else { throw openError(errno) }
-        let raced = openat(directoryFD, lockName, flags)
+        let raced = openat(directoryFD, name, flags)
         guard raced >= 0 else { throw openError(errno) }
         return raced
     }
 
-    func openDirectory() throws -> Int32 {
+    static func openDirectory(_ directory: URL) throws -> Int32 {
         let host = directory.host(percentEncoded: false) ?? ""
         let path = directory.path(percentEncoded: false)
         let parts = path.split(separator: "/")

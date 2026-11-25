@@ -59,6 +59,130 @@ struct DraftRecoveryStoreTests {
         }
     }
 
+    @Test func confirmedDiscardRemovesExactAndOlderRevisionsButLeavesOtherIDs() async throws {
+        try await withFixture { directory in
+            let store = DraftRecoveryStore(directory: directory)
+            let older = RecoveryDraft(id: UUID(), revision: 1, source: "older snapshot")
+            let exact = RecoveryDraft(id: UUID(), revision: 2, source: "か\u{3099}\r\n")
+            let untouched = RecoveryDraft(id: UUID(), revision: 3, source: "keep")
+            for draft in [older, exact, untouched] { try await store.checkpoint(draft) }
+
+            let newerConfirmation = RecoveryDraft(id: older.id, revision: 4, source: "confirmed edits")
+            let absent = RecoveryDraft(id: UUID(), revision: 1, source: "never checkpointed")
+            let confirmations = [newerConfirmation, exact, absent, exact]
+            let reopened = DraftRecoveryStore(directory: directory)
+            try await reopened.discardConfirmed(confirmations)
+            #expect(try await store.drafts() == [untouched])
+
+            let manifest = directory.appending(path: "drafts.manifest")
+            let bytes = try Data(contentsOf: manifest)
+            try await reopened.discardConfirmed(confirmations)
+            #expect(try Data(contentsOf: manifest) == bytes)
+        }
+    }
+
+    @Test(arguments: [false, true])
+    func confirmedDiscardAbortsWholeBatchOnMismatch(sameRevision: Bool) async throws {
+        try await withFixture { directory in
+            let store = DraftRecoveryStore(directory: directory)
+            let removable = RecoveryDraft(id: UUID(), revision: 1, source: "confirmed")
+            let stored = RecoveryDraft(id: UUID(), revision: 2, source: "が")
+            try await store.checkpoint(removable)
+            try await store.checkpoint(stored)
+            let manifest = directory.appending(path: "drafts.manifest")
+            let bytes = try Data(contentsOf: manifest)
+            let rejected = sameRevision
+                ? RecoveryDraft(id: stored.id, revision: stored.revision, source: "か\u{3099}")
+                : RecoveryDraft(id: stored.id, revision: 1, source: stored.source)
+            let error: StoreError = sameRevision ? .revisionConflict : .staleRevision
+
+            let reopened = DraftRecoveryStore(directory: directory)
+            await #expect(throws: error) { try await reopened.discardConfirmed([removable, rejected]) }
+            // An exact confirmation for the same ID must not mask a conflicting duplicate.
+            await #expect(throws: error) { try await reopened.discardConfirmed([removable, stored, rejected]) }
+            #expect(try Data(contentsOf: manifest) == bytes)
+            #expect(try await store.drafts() == [removable, stored])
+        }
+    }
+
+    @Test func manifestLockContentionIsBoundedAndAllowsReacquisition() async throws {
+        try await withFixture { directory in
+            let store = DraftRecoveryStore(directory: directory)
+            let draft = RecoveryDraft(id: UUID(), revision: 1, source: "keep while locked")
+            try await store.checkpoint(draft)
+            let manifest = directory.appending(path: "drafts.manifest")
+            let bytes = try Data(contentsOf: manifest)
+            let lock = directory.appending(path: "drafts.lock")
+            let lockFD = lock.withUnsafeFileSystemRepresentation { path in
+                path.map { open($0, O_RDWR | O_CLOEXEC) } ?? -1
+            }
+            try #require(lockFD >= 0)
+            defer { _ = close(lockFD) }
+            try #require(flock(lockFD, LOCK_EX | LOCK_NB) == 0)
+
+            let reopened = DraftRecoveryStore(directory: directory)
+            await withTaskGroup(of: Void.self) { group in
+                // A regression to blocking flock must fail instead of hanging the suite.
+                group.addTask {
+                    do { try await Task.sleep(for: .seconds(5)) }
+                    catch { return }
+                    Issue.record("Recovery operation did not return while the lock was held")
+                    _ = flock(lockFD, LOCK_UN)
+                }
+                defer { group.cancelAll() }
+                await #expect(throws: StoreError.lockContended) { try await reopened.discardConfirmed([draft]) }
+            }
+            #expect(try Data(contentsOf: manifest) == bytes)
+
+            try #require(flock(lockFD, LOCK_UN) == 0)
+            try await reopened.discardConfirmed([draft])
+            try #require(flock(lockFD, LOCK_EX | LOCK_NB) == 0)
+            try #require(flock(lockFD, LOCK_UN) == 0)
+            #expect(try await store.drafts().isEmpty)
+        }
+    }
+
+    @Test func applicationSessionIsExclusiveAndReleasesOnDeinit() async throws {
+        try await withFixture { folder in
+            let directory = folder.appending(path: "recovery", directoryHint: .isDirectory)
+            let store = DraftRecoveryStore(directory: directory)
+            let draft = RecoveryDraft(id: UUID(), revision: 1, source: "session recovery")
+            do {
+                let session = try DraftRecoveryStore.claimApplicationSession(in: directory)
+                defer { withExtendedLifetime(session) {} }
+                #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path) == ["application.lock"])
+                #expect(try permissions(of: directory.appending(path: "application.lock")) == 0o600)
+                #expect(throws: StoreError.lockContended) {
+                    _ = try DraftRecoveryStore.claimApplicationSession(in: directory)
+                }
+                // The session lease is distinct from the per-transaction manifest lock.
+                try await store.checkpoint(draft)
+            }
+
+            let reopened = try DraftRecoveryStore.claimApplicationSession(in: directory)
+            defer { withExtendedLifetime(reopened) {} }
+            #expect(try await store.drafts() == [draft])
+        }
+    }
+
+    @Test func applicationSessionRejectsLinkedLockFile() async throws {
+        try await withFixture { folder in
+            let directory = folder.appending(path: "recovery", directoryHint: .isDirectory)
+            try makePrivateDirectory(directory)
+            let outside = folder.appending(path: "outside")
+            let lock = directory.appending(path: "application.lock")
+            let bytes = Data("untouched".utf8)
+            try bytes.write(to: outside)
+            try FileManager.default.createSymbolicLink(at: lock, withDestinationURL: outside)
+
+            #expect(throws: StoreError.unsafeLocation) {
+                _ = try DraftRecoveryStore.claimApplicationSession(in: directory)
+            }
+            #expect(try FileManager.default.destinationOfSymbolicLink(atPath: lock.path) == outside.path)
+            #expect(try Data(contentsOf: outside) == bytes)
+        }
+    }
+
     @Test func concurrentStoresDoNotLoseUpdatesOrOverwriteNewerRevisions() async throws {
         try await withFixture { directory in
             let first = DraftRecoveryStore(directory: directory)
@@ -110,6 +234,7 @@ struct DraftRecoveryStoreTests {
             await #expect(throws: error) { _ = try await reopened.drafts() }
             await #expect(throws: error) { try await reopened.checkpoint(draft) }
             await #expect(throws: error) { _ = try await reopened.discard(draft) }
+            await #expect(throws: error) { try await reopened.discardConfirmed([draft]) }
             #expect(try Data(contentsOf: manifest) == fixture)
         }
     }

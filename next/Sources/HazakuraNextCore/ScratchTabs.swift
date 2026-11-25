@@ -111,10 +111,15 @@ public struct ScratchTabs {
         return .closed
     }
 
+    public func draftForDiscard(_ ticket: DiscardTicket) -> RecoveryDraft? {
+        guard !isComposing, let tab = selectedTab,
+              tab.id == ticket.id, tab.editedScratchRevision == ticket.revision else { return nil }
+        return tab.recoveryDraft
+    }
+
     @discardableResult
     public mutating func discard(_ ticket: DiscardTicket) -> Bool {
-        guard !isComposing, let tab = selectedTab,
-              tab.id == ticket.id, tab.document.revision == ticket.revision else { return false }
+        guard draftForDiscard(ticket) != nil else { return false }
         removeSelected()
         return true
     }

@@ -14,5 +14,7 @@
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
     <string>26.0</string>
+    <key>LSMultipleInstancesProhibited</key>
+    <true/>
 </dict>
 </plist>
