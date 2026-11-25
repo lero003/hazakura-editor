@@ -110,7 +110,7 @@ struct ScratchWorkspaceView: View {
         if session.openRequest != nil { return "ファイルを開いています…" }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
         if let request = session.exportRequest {
-            return request.format == .html ? "新しいファイルにHTMLを書き出しています…" : "新しいファイルにPDFを書き出しています…"
+            return "新しいファイルに\(request.format.name)を書き出しています…"
         }
         if session.comparisonRequestID != nil { return "比較するファイルを選び直してください。" }
         if let notice = session.exitNotice { return notice }
@@ -190,6 +190,13 @@ struct ScratchWorkspaceView: View {
             panel.prompt = "書き出す"
             panel.nameFieldStringValue = "原稿.pdf"
             panel.allowedContentTypes = [.pdf]
+        case .export(.epub):
+            guard let epub = UTType(filenameExtension: "epub") else { return }
+            panel.title = "EPUBを書き出す"
+            panel.message = "確定済みの原稿から章と目次付きのEPUBを作ります。既存のファイルは置き換えません。"
+            panel.prompt = "書き出す"
+            panel.nameFieldStringValue = "原稿.epub"
+            panel.allowedContentTypes = [epub]
         }
         panel.canCreateDirectories = false
         savePanel = panel

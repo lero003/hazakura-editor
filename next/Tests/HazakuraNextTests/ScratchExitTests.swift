@@ -74,7 +74,7 @@ struct ScratchExitTests {
         defer { window.close() }
         let session = try #require(delegate.session)
         #expect(window.isVisible == false)
-        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:"] {
+        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:", "exportEPUB:"] {
             let action = NSSelectorFromString(selector)
             let item = NSMenuItem(title: "Command", action: action, keyEquivalent: "")
             #expect(delegate.validateMenuItem(item) == false)

@@ -190,6 +190,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         addCommand("コピーを保存…", #selector(saveCopy(_:)), "S", to: file)
         addCommand("HTMLを書き出す…", #selector(exportHTML(_:)), "", to: file)
         addCommand("PDFを書き出す…", #selector(exportPDF(_:)), "", to: file)
+        addCommand("EPUBを書き出す…", #selector(exportEPUB(_:)), "", to: file)
         file.addItem(.separator())
         file.addItem(withTitle: "ウィンドウを閉じる", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
 
@@ -237,6 +238,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func saveCopy(_ sender: Any?) { menuSession?.requestSaveCopy() }
     @objc private func exportHTML(_ sender: Any?) { menuSession?.requestExport(.html) }
     @objc private func exportPDF(_ sender: Any?) { menuSession?.requestExport(.pdf) }
+    @objc private func exportEPUB(_ sender: Any?) { menuSession?.requestExport(.epub) }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
     @objc private func undo(_ sender: Any?) { activeUndoManager?.undo() }
     @objc private func redo(_ sender: Any?) { activeUndoManager?.redo() }
@@ -247,7 +249,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
-        case #selector(exportHTML(_:)), #selector(exportPDF(_:)): menuSession?.canExport == true
+        case #selector(exportHTML(_:)), #selector(exportPDF(_:)), #selector(exportEPUB(_:)): menuSession?.canExport == true
         case #selector(previewMarkdown(_:)): menuSession?.canPreviewMarkdown == true
         case #selector(undo(_:)): activeUndoManager?.canUndo == true
         case #selector(redo(_:)): activeUndoManager?.canRedo == true

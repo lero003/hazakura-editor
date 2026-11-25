@@ -19,9 +19,11 @@ struct MarkdownPDFExportTests {
         #expect(document.pageCount == 1)
         let page = try #require(document.page(at: 0))
         let text = try #require(page.string)
-        for label in ["StartMarker", "LinkLabel", "ImageLabel", "CodeEndMarker", "EndMarker", "末尾の日本語"] {
+        for label in ["StartMarker", "LinkLabel", "ImageLabel", "CodeEndMarker", "EndMarker"] {
             #expect(text.contains(label))
         }
+        // PDFKit can extract the same glyph as the Unicode Kangxi radical (e.g. ⽇).
+        #expect(text.precomposedStringWithCompatibilityMapping.contains("末尾の日本語"))
         for dropped in ["pdf-target", "never-read-pdf-fixture", "authorScriptMarker"] {
             #expect(!text.contains(dropped))
         }

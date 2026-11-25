@@ -4,7 +4,7 @@ import Foundation
 /// Creates a new copy at an explicitly selected destination, never at a default location.
 public enum SelectedTextCopyWriter {
     public enum WriteError: Error, Equatable {
-        case invalidLocation, invalidText, invalidPDF, tooLarge, alreadyExists, accessDenied
+        case invalidLocation, invalidText, invalidPDF, invalidEPUB, tooLarge, alreadyExists, accessDenied
     }
 
     package static let pdfByteLimit = 16 * 1024 * 1024
@@ -29,6 +29,20 @@ public enum SelectedTextCopyWriter {
         }
         guard data.count <= pdfByteLimit else { throw WriteError.tooLarge }
         guard data.starts(with: "%PDF-".utf8) else { throw WriteError.invalidPDF }
+        try writeNewFile(data, to: destination)
+    }
+
+    /// Pass renderer-produced EPUB bytes and the explicitly selected new file.
+    /// This boundary checks the OCF envelope, not the whole publication.
+    @concurrent
+    package static func writeEPUB(data: Data, to url: URL) async throws {
+        try Task.checkCancellation()
+        let destination = try Destination(url)
+        guard (destination.leaf as NSString).pathExtension.lowercased() == "epub" else {
+            throw WriteError.invalidLocation
+        }
+        guard data.count <= EPUBStoredArchive.byteLimit else { throw WriteError.tooLarge }
+        guard EPUBStoredArchive.hasMimetypePrefix(data) else { throw WriteError.invalidEPUB }
         try writeNewFile(data, to: destination)
     }
 

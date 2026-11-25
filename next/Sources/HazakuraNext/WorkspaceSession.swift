@@ -15,9 +15,9 @@ final class WorkspaceSession {
     }
 
     enum ExportFormat: String, Sendable {
-        case html, pdf
+        case html, pdf, epub
 
-        fileprivate var name: String { rawValue.uppercased() }
+        var name: String { rawValue.uppercased() }
     }
 
     struct ExportRequest: Identifiable {
@@ -36,6 +36,8 @@ final class WorkspaceSession {
         var writeHTML: @Sendable (String, Bool, URL) async throws -> Void = SelectedTextCopyWriter.write
         var renderPDF: @MainActor (String) async throws -> Data = MarkdownPDFExport.render
         var writePDF: @Sendable (Data, URL) async throws -> Void = SelectedTextCopyWriter.writePDF
+        var renderEPUB: @Sendable (String) async throws -> Data = MarkdownEPUBExport.render
+        var writeEPUB: @Sendable (Data, URL) async throws -> Void = SelectedTextCopyWriter.writeEPUB
     }
 
     private struct ComparisonRequest: Identifiable {
@@ -333,6 +335,8 @@ final class WorkspaceSession {
             }
         case .pdf:
             await renderAndWriteExport(request, to: destination, render: operations.renderPDF, write: operations.writePDF)
+        case .epub:
+            await renderAndWriteExport(request, to: destination, render: operations.renderEPUB, write: operations.writeEPUB)
         }
     }
 
@@ -365,7 +369,7 @@ final class WorkspaceSession {
             let reason: String
             switch error as? SelectedTextCopyWriter.WriteError {
             case .tooLarge: reason = "生成した\(name)が書き出しの上限を超えています。"
-            case .invalidPDF: reason = "有効なPDFを生成できませんでした。"
+            case .invalidPDF, .invalidEPUB: reason = "有効な\(name)を生成できませんでした。"
             default: reason = Self.copyWriteFailure(error)
             }
             fileNotice = "\(name)を書き出せませんでした。\(reason)"
@@ -391,8 +395,8 @@ final class WorkspaceSession {
         case .unavailable(.inputTooLarge): return "原稿が書き出しの上限（128 KiB）を超えています。"
         case .unavailable(.tooManyBlocks), .unavailable(.tooComplex): return "原稿の構造が変換処理の上限を超えています。"
         case .tooLarge:
-            return format == .html ? "生成したHTMLが書き出しの上限を超えています。"
-                : "PDF変換用のHTMLが書き出しの上限を超えています。"
+            if format == .html { return "生成したHTMLが書き出しの上限を超えています。" }
+            return "\(format.name)変換用の本文が書き出しの上限を超えています。"
         case .unavailable(.parseFailed), nil: break
         }
         if format == .pdf {
@@ -401,6 +405,16 @@ final class WorkspaceSession {
             case .pdfTooLarge: return "生成したPDFが書き出しの上限（16 MiB）を超えています。"
             case .timedOut: return "PDFへの変換に時間がかかりすぎました。"
             case .renderingFailed, nil: break
+            }
+        }
+        if format == .epub {
+            switch error as? MarkdownEPUBExport.ExportError {
+            case .emptyDocument: return "書き出す本文がありません。"
+            case .tooManyChapters: return "章の数が書き出しの上限（128章）を超えています。"
+            default: break
+            }
+            if (error as? EPUBStoredArchive.ArchiveError) == .tooLarge {
+                return "生成したEPUBが書き出しの上限（16 MiB）を超えています。"
             }
         }
         return "原稿を\(format.name)に変換できませんでした。"

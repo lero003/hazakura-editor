@@ -6,14 +6,7 @@ package enum MarkdownHTMLExport {
 
     @concurrent
     package static func render(source: String) async throws -> String {
-        let preview = try await MarkdownPreview.render(source)
-        try Task.checkCancellation()
-        let blocks: [MarkdownPreview.Block]
-        switch preview {
-        case .rendered(let projected): blocks = projected
-        case .unavailable(let reason): throw ExportError.unavailable(reason)
-        }
-
+        let blocks = try await projectedBlocks(source: source)
         var output = Output()
         // Preserve projected whitespace (including hard breaks) without author-supplied CSS.
         try output.appendMarkup("""
@@ -29,6 +22,35 @@ package enum MarkdownHTMLExport {
             <body>
 
             """)
+        try appendBlocks(blocks[...], to: &output)
+        try output.appendMarkup("</body>\n</html>\n")
+        return try output.finish()
+    }
+
+    @concurrent
+    package static func projectedBlocks(source: String) async throws -> [MarkdownPreview.Block] {
+        let preview = try await MarkdownPreview.render(source)
+        try Task.checkCancellation()
+        switch preview {
+        case .rendered(let blocks): return blocks
+        case .unavailable(let reason): throw ExportError.unavailable(reason)
+        }
+    }
+
+    package static func renderXHTMLFragment(_ blocks: ArraySlice<MarkdownPreview.Block>) throws -> String {
+        var output = Output(xhtml: true)
+        try appendBlocks(blocks, to: &output)
+        return try output.finish()
+    }
+
+    /// Escapes a label for XML text, never allowing it to become markup.
+    package static func escapedXMLText(_ text: String) throws -> String {
+        var output = Output(xhtml: true)
+        try output.appendText(text)
+        return try output.finish()
+    }
+
+    private static func appendBlocks(_ blocks: ArraySlice<MarkdownPreview.Block>, to output: inout Output) throws {
         var open: [Wrapper] = []
         for block in blocks {
             try Task.checkCancellation()
@@ -36,8 +58,6 @@ package enum MarkdownHTMLExport {
             try appendBlock(block, to: &output)
         }
         try adjustWrappers(&open, to: [], output: &output)
-        try output.appendMarkup("</body>\n</html>\n")
-        return try output.finish()
     }
 
     private enum Wrapper {
@@ -119,7 +139,7 @@ package enum MarkdownHTMLExport {
         case .heading(5): tags = ("<h5>", "</h5>\n")
         case .heading: tags = ("<h6>", "</h6>\n")
         case .codeBlock: tags = ("<pre><code>", "</code></pre>\n")
-        case .thematicBreak: return try output.appendMarkup("<hr>\n")
+        case .thematicBreak: return try output.appendMarkup(output.xhtml ? "<hr />\n" : "<hr>\n")
         case .unsupported(.html): return try output.appendMarkup("<p>HTMLの表示には対応していません。</p>\n")
         case .unsupported(.table): return try output.appendMarkup("<p>表の整形には対応していません。</p>\n")
         case .unsupported(.other): return try output.appendMarkup("<p>このMarkdown記法には対応していません。</p>\n")
@@ -143,10 +163,15 @@ package enum MarkdownHTMLExport {
         try output.appendMarkup(tags.close)
     }
 
-    // Markup must be a literal. All display text uses the escaping path; both share
-    // the copy writer's UTF-8 budget and include the document envelope in the count.
+    // Markup must be a literal. Both markup and escaped display text count toward
+    // the same UTF-8 budget (the whole HTML document or one XHTML fragment).
     struct Output {
+        let xhtml: Bool
         private var bytes: [UInt8] = []
+
+        init(xhtml: Bool = false) {
+            self.xhtml = xhtml
+        }
 
         mutating func appendMarkup(_ markup: StaticString) throws {
             try requireSpace(for: markup.utf8CodeUnitCount)
@@ -154,21 +179,41 @@ package enum MarkdownHTMLExport {
         }
 
         mutating func appendText(_ text: String) throws {
-            for (index, byte) in text.utf8.enumerated() {
-                if index.isMultiple(of: 1_024) { try Task.checkCancellation() }
-                switch byte {
-                case 38: try appendMarkup("&amp;")
-                case 60: try appendMarkup("&lt;")
-                case 62: try appendMarkup("&gt;")
-                case 34: try appendMarkup("&quot;")
-                case 39: try appendMarkup("&#39;")
-                case 0...8, 11...12, 14...31, 127:
-                    // The new-file writer refuses non-text ASCII controls.
-                    try appendMarkup("&#xfffd;")
-                default:
-                    try requireSpace(for: 1)
-                    bytes.append(byte)
+            if xhtml {
+                for (index, scalar) in text.unicodeScalars.enumerated() {
+                    if index.isMultiple(of: 1_024) { try Task.checkCancellation() }
+                    switch scalar.value {
+                    case 0...127: try appendTextByte(UInt8(scalar.value))
+                    case 0xFFFE, 0xFFFF: try appendMarkup("&#xfffd;")
+                    default:
+                        // Apart from the ASCII controls and the two BMP noncharacters,
+                        // every representable Swift Unicode scalar is an XML 1.0 Char.
+                        try requireSpace(for: scalar.utf8.count)
+                        bytes.append(contentsOf: scalar.utf8)
+                    }
                 }
+            } else {
+                for (index, byte) in text.utf8.enumerated() {
+                    if index.isMultiple(of: 1_024) { try Task.checkCancellation() }
+                    try appendTextByte(byte)
+                }
+            }
+        }
+
+        private mutating func appendTextByte(_ byte: UInt8) throws {
+            switch byte {
+            case 38: try appendMarkup("&amp;")
+            case 60: try appendMarkup("&lt;")
+            case 62: try appendMarkup("&gt;")
+            case 34: try appendMarkup("&quot;")
+            case 39: try appendMarkup("&#39;")
+            case 13 where xhtml: try appendMarkup("&#13;") // Preserve through XML line-end normalization.
+            case 0...8, 11...12, 14...31, 127:
+                // The new-file writer refuses non-text ASCII controls.
+                try appendMarkup("&#xfffd;")
+            default:
+                try requireSpace(for: 1)
+                bytes.append(byte)
             }
         }
 
