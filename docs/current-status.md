@@ -8,7 +8,8 @@ Last reviewed: 2026-11-25（第二世代方針）
 ## 第二世代 — macOSネイティブ再構築
 
 - オーナー決定（2026-11-25）：既存実装の段階的リファクタから、独立した `next/` の Swift / SwiftUI + AppKit / TextKit 2 へ切り替える。[開発方針とフェーズ](roadmap.md#第二世代設計)・[作業キュー](current-work.md#active-queue)を参照。
-- [`next/`](../next/README.md) に合成原稿だけを扱う開発用スクラッチを設置。独立した SwiftPM プロジェクトで、SwiftUI のウィンドウと AppKit の TextKit 2 を接続し、文書 ID と編集中の原文を分ける。開発用 `.app` の生成と第一世代とは異なる Bundle ID は確認済み。実原稿のファイル I/O・復旧・設定移行・AI は未実装。
+- [`next/`](../next/README.md) に合成原稿だけを扱う開発用スクラッチを設置。独立した SwiftPM プロジェクトで、SwiftUI のウィンドウと AppKit の TextKit 2 を接続し、文書 ID と編集中の原文を分ける。開発用 `.app` の生成と第一世代とは異なる Bundle ID `dev.hazakura.editor.next.dev` を確認。実原稿のファイル I/O・復旧・設定移行・AI は未実装。
+- macOS 27.2.1 / Apple Silicon / Swift 6.4.2 で Swift Testing 7件成功。TextKit 2、原文の保持、プレーンテキストの貼り付け、プログラムからの marked text 確定、非表示ウィンドウでの Undo/Redo と原文通知を確認。開発用バンドルのアドホック署名を検証した。実際の入力ソース・表示操作や配布用署名とは区別する。
 - GUIの操作、実際の入力ソースによる日本語IME、長文の性能、VoiceOver、署名済み候補は未受け入れ。最低OS・対応機種・配布方式・推論基盤は未確定。
 - 第一世代の製品ソース・ビルド・リリース計画は変更しない。段階的リファクタは旧ブランチとドラフトPRに保持し、下記の配布記録にも第二世代にも合流させない。
 
