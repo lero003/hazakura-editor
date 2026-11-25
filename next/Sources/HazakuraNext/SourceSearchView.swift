@@ -20,7 +20,7 @@ struct SourceSearchView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("原文を検索").font(.headline)
             Text(verbatim: request.title).lineLimit(1).foregroundStyle(.secondary)
-            TextField("検索する文字列", text: Binding(get: { input }, set: updateQuery))
+            TextField("検索する文字列", text: Binding(get: { input }, set: { updateQuery($0) }))
                 .focused($isSearchFieldFocused)
             Text("選択中の原稿だけを検索します。CR・LFを含まない文字列（最大512バイト）を入力してください。")
                 .font(.callout)
