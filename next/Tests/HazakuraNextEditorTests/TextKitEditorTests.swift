@@ -423,9 +423,21 @@ struct TextKitEditorTests {
         #expect(events == [.source("確定")])
 
         window.contentView = scrollView
+        let sourceAtTeardown = textView.string
+        let selection = NSRange(location: 0, length: 1)
+        textView.setSelectedRange(selection)
         TextKitEditor.dismantleNSView(scrollView, coordinator: coordinator)
+        try #require(textView.window === window)
+        #expect(!textView.shouldChangeText(in: selection, replacementString: "遅"))
+        textView.delete(nil)
+        #expect(textView.string == sourceAtTeardown)
+        textView.insertText("遅", replacementRange: selection)
+        #expect(textView.string == sourceAtTeardown)
         setMarkedText("仮", in: textView)
+        #expect(!textView.hasMarkedText())
         textView.unmarkText()
+        #expect(textView.string == sourceAtTeardown)
+        #expect(textView.selectedRange() == selection)
         #expect(events == [.source("確定")])
     }
 

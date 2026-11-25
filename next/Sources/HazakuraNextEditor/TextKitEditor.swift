@@ -98,7 +98,7 @@ private final class MarkdownTextView: NSTextView {
     }
 
     private var policyAllowsEdits: Bool { editorCoordinator?.canEdit() ?? true }
-    private var canMutate: Bool { reviewedEditValidation == nil && isEditable && policyAllowsEdits }
+    private var canMutate: Bool { !isDismantled && reviewedEditValidation == nil && isEditable && policyAllowsEdits }
     fileprivate var canApplyUndo: Bool {
         isActive && !isDismantled && reviewedEditValidation == nil && !isReadOnly && !hasMarkedText() && policyAllowsEdits
     }
@@ -108,7 +108,9 @@ private final class MarkdownTextView: NSTextView {
         return policyAllowsEdits
     }
     // AppKit can reinsert the existing characters from inside unmarkText().
-    private var canContinueTextInput: Bool { isEditable && (textInputDepth > 0 || policyAllowsEdits) }
+    private var canContinueTextInput: Bool {
+        !isDismantled && isEditable && (textInputDepth > 0 || policyAllowsEdits)
+    }
 
     override var undoManager: UndoManager? { isReadOnly ? nil : editorUndoManager }
     override var acceptsFirstResponder: Bool { isActive && super.acceptsFirstResponder }
