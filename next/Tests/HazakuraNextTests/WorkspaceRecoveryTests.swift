@@ -292,6 +292,54 @@ struct WorkspaceRecoveryTests {
         #expect(await backend.records().contains(prior))
     }
 
+    @Test(arguments: [false, true])
+    func candidateDeletionIsRejectedDuringComposition(_ native: Bool) async throws {
+        let folder = try makeRecoveryFixtureFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = DraftRecoveryStore(directory: folder.appending(path: "recovery", directoryHint: .isDirectory))
+        let candidate = RecoveryDraft(id: UUID(), revision: 2, source: "退避した原稿\r\n")
+        let unrelated = RecoveryDraft(id: UUID(), revision: 1, source: "別の記録")
+        try await store.checkpoint(candidate)
+        try await store.checkpoint(unrelated)
+        let delegate = ScratchApplicationDelegate(source: "手元の原稿", recovery: RecoveryCheckpointQueue(store: store))
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let documentID = try #require(session.tabs.selectedID)
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        session.requestRecovery()
+        let listed = try await session.recoveryCandidates()
+        let reviewed = try #require(listed.first { $0.id == candidate.id })
+        if native {
+            view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                               replacementRange: NSRange(location: NSNotFound, length: 0))
+            try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        } else {
+            session.tabs.setComposing(true, in: documentID)
+        }
+        let ranges = [view.selectedRange(), view.markedRange()]
+
+        #expect(!session.recoveryDeletionInputIsCommitted)
+        await #expect(throws: WorkspaceSession.RecoveryCandidateDeletionError.uncommittedInput) {
+            try await session.forgetRecoveryCandidate(reviewed)
+        }
+        #expect(try await store.drafts() == listed)
+        #expect(session.tabs.selectedID == documentID)
+        #expect(session.tabs.selectedTab?.document.source == "手元の原稿")
+        #expect(window.firstResponder === view)
+        #expect([view.selectedRange(), view.markedRange()] == ranges)
+
+        if native { view.unmarkText() } else { session.tabs.setComposing(false, in: documentID) }
+        #expect(session.recoveryDeletionInputIsCommitted)
+        #expect(try await store.drafts() == listed)
+        let refreshed = try await session.recoveryCandidates()
+        let confirmedAgain = try #require(refreshed.first { $0.id == candidate.id })
+        try await session.forgetRecoveryCandidate(confirmedAgain)
+        #expect(try await store.drafts() == [unrelated])
+    }
+
     enum CandidateAtConfirmation: CaseIterable {
         case same, older, newer, differentBytes, missing
     }

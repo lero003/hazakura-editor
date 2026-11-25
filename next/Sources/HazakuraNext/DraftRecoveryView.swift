@@ -13,6 +13,7 @@ struct DraftRecoveryView: View {
 
     private var selectedDraft: RecoveryDraft? { candidates.first { $0.id == selectedID } }
     private var busy: Bool { isLoading || request != nil }
+    private let deletionRetryNotice = "本文の変換を確定またはキャンセルしてから、もう一度復旧記録の削除を確認してください。"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -66,13 +67,21 @@ struct DraftRecoveryView: View {
                 try await session.forgetRecoveryCandidate(draft)
                 if selectedID == draft.id { selectedID = nil }
                 await reload()
+            } catch WorkspaceSession.RecoveryCandidateDeletionError.uncommittedInput {
+                notice = deletionRetryNotice
             } catch {
                 await reload()
                 notice = "復旧記録を削除できませんでした。記録が変更されたか、保存領域にアクセスできません。"
             }
         }
         .alert("この復旧記録を削除しますか？", isPresented: showsRemoval, presenting: pendingRemoval) { draft in
-            Button("削除", role: .destructive) { request = draft }
+            Button("削除", role: .destructive) {
+                guard session.recoveryDeletionInputIsCommitted else {
+                    notice = deletionRetryNotice
+                    return
+                }
+                request = draft
+            }
             Button("キャンセル", role: .cancel) {}
         } message: { _ in
             Text("削除すると、この記録からは復元できなくなります。原本は変更されません。")
