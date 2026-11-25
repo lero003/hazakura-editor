@@ -3,10 +3,17 @@ import Foundation
 /// One scratch window. The native editor owns the in-flight composition and undo history;
 /// these documents retain the last committed text only.
 public struct ScratchTabs {
+    /// Display and format metadata only; a scratch copy carries no original-file access.
+    public struct CopyOrigin: Sendable {
+        public let name: String
+        public let format: SelectedTextFile.Format
+    }
+
     public struct Tab: Identifiable {
         public fileprivate(set) var document: ScratchDocument
         public let number: Int
         public let selectedFile: SelectedTextFile?
+        public let copyOrigin: CopyOrigin?
         let recoveryID: UUID?
         public var id: UUID { document.id }
         public var isReadOnly: Bool { selectedFile != nil }
@@ -43,7 +50,8 @@ public struct ScratchTabs {
     private var nextNumber = 2
 
     public init(source: String) {
-        let tab = Tab(document: ScratchDocument(source: source), number: 1, selectedFile: nil, recoveryID: UUID())
+        let tab = Tab(document: ScratchDocument(source: source), number: 1,
+                      selectedFile: nil, copyOrigin: nil, recoveryID: UUID())
         tabs = [tab]
         selectedID = tab.id
     }
@@ -51,6 +59,11 @@ public struct ScratchTabs {
     public var selectedTab: Tab? { tabs.first { $0.id == selectedID } }
     public var canCreateTab: Bool { !isComposing && tabs.count < Self.limit }
     public var recoveryDrafts: [RecoveryDraft] { tabs.compactMap(\.recoveryDraft) }
+
+    /// Looks up the current recovery draft by document ID, not by its separate recovery ID.
+    public func recoveryDraft(for id: UUID) -> RecoveryDraft? {
+        tabs.first { $0.id == id }?.recoveryDraft
+    }
 
     @discardableResult
     public mutating func newTab() -> UUID? {
@@ -62,6 +75,14 @@ public struct ScratchTabs {
         appendTab(ScratchDocument(source: file.source), selectedFile: file)
     }
 
+    /// Copies the selected read-only snapshot into a separate unsaved draft, even before any edit.
+    @discardableResult
+    public mutating func makeEditableCopyOfSelection() -> UUID? {
+        guard let file = selectedTab?.selectedFile else { return nil }
+        return appendTab(ScratchDocument(recoveredSource: file.source), selectedFile: nil,
+                         copyOrigin: CopyOrigin(name: file.name, format: file.format))
+    }
+
     /// Opens an independent unsaved copy. The stored candidate is not consumed, reused or modified.
     @discardableResult
     public mutating func restoreDraft(_ draft: RecoveryDraft) -> UUID? {
@@ -69,10 +90,11 @@ public struct ScratchTabs {
         return appendTab(ScratchDocument(recoveredSource: draft.source), selectedFile: nil)
     }
 
-    private mutating func appendTab(_ document: ScratchDocument, selectedFile: SelectedTextFile?) -> UUID? {
+    private mutating func appendTab(_ document: ScratchDocument, selectedFile: SelectedTextFile?,
+                                    copyOrigin: CopyOrigin? = nil) -> UUID? {
         guard canCreateTab else { return nil }
         let tab = Tab(document: document, number: nextNumber, selectedFile: selectedFile,
-                      recoveryID: selectedFile == nil ? UUID() : nil)
+                      copyOrigin: copyOrigin, recoveryID: selectedFile == nil ? UUID() : nil)
         nextNumber += 1
         tabs.append(tab)
         selectedID = tab.id

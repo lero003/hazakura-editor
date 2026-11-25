@@ -185,6 +185,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         let file = addMenu("ファイル", to: bar)
         addCommand("新規タブ", #selector(newTab(_:)), "t", to: file)
         addCommand("読み取り専用で開く…", #selector(openFile(_:)), "o", to: file)
+        addCommand("編集用コピーを開く", #selector(makeEditableCopy(_:)), "", to: file)
+        addCommand("コピーを保存…", #selector(saveCopy(_:)), "S", to: file)
         file.addItem(.separator())
         file.addItem(withTitle: "ウィンドウを閉じる", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
 
@@ -225,12 +227,16 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     @objc private func newTab(_ sender: Any?) { menuSession?.newTab() }
     @objc private func openFile(_ sender: Any?) { menuSession?.requestOpen() }
+    @objc private func makeEditableCopy(_ sender: Any?) { menuSession?.makeEditableCopy() }
+    @objc private func saveCopy(_ sender: Any?) { menuSession?.requestSaveCopy() }
     @objc private func undo(_ sender: Any?) { activeUndoManager?.undo() }
     @objc private func redo(_ sender: Any?) { activeUndoManager?.redo() }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
         switch item.action {
         case #selector(newTab(_:)), #selector(openFile(_:)): menuSession?.canAddTab == true
+        case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true
+        case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
         case #selector(undo(_:)): activeUndoManager?.canUndo == true
         case #selector(redo(_:)): activeUndoManager?.canRedo == true
         default: true

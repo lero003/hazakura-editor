@@ -7,9 +7,11 @@ import UniformTypeIdentifiers
 struct ScratchWorkspaceView: View {
     let session: WorkspaceSession
     @State private var openPanel: NSOpenPanel?
-    @State private var openFailure: String?
+    @State private var savePanel: NSSavePanel?
 
     var body: some View {
+        let openID = session.openRequest
+        let saveID = session.saveCopyRequest?.id
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(banner)
@@ -27,14 +29,18 @@ struct ScratchWorkspaceView: View {
             editors
         }
         .frame(minWidth: 450, minHeight: 300)
-        .task(id: session.openRequest) {
-            if let request = session.openRequest { await openSelectedFile(request) }
+        .task(id: openID) {
+            if let openID { await openSelectedFile(openID) }
+        }
+        .task(id: saveID) {
+            if let saveID { await saveSelectedCopy(saveID) }
         }
         .onDisappear {
             let panel = openPanel
             session.openRequest = nil
             openPanel = nil
             panel?.cancel(nil)
+            savePanel?.cancel(nil)
         }
         .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
             DraftRecoveryView(session: session)
@@ -54,13 +60,14 @@ struct ScratchWorkspaceView: View {
     private var banner: String {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
+        if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
         if let notice = session.exitNotice { return notice }
         if session.isDiscarding { return "復旧記録を確認しています…" }
-        if let openFailure { return "開けませんでした。\(openFailure)" }
+        if let notice = session.fileNotice { return notice }
         if session.tabs.selectedTab?.isReadOnly == true {
-            return "読み取り専用 — 開いた時点の原文です。ファイルには書き込みません。"
+            return "読み取り専用 — 開いた時点の原文です。編集用コピーは別のタブに作れます。"
         }
-        return "検証用です。元のファイルには保存しません。"
+        return "原稿は新しいファイルにコピーを保存できます。元のファイルには書き込みません。"
     }
 
     private var showsDiscard: Binding<Bool> {
@@ -69,7 +76,6 @@ struct ScratchWorkspaceView: View {
 
     private func openSelectedFile(_ request: UUID) async {
         guard session.openRequest == request, !Task.isCancelled else { return }
-        openFailure = nil
         defer {
             if session.openRequest == request {
                 openPanel = nil
@@ -97,12 +103,33 @@ struct ScratchWorkspaceView: View {
             guard !Task.isCancelled, session.openRequest == request else { return }
             // Do not take focus away from a composition that began after the picker closed.
             if session.tabs.openReadOnly(file) == nil {
-                openFailure = "変換の確定後に、もう一度ファイルを選んでください。"
+                session.reportOpenFailure("変換の確定後に、もう一度ファイルを選んでください。", request: request)
             }
         } catch {
             guard !Task.isCancelled, session.openRequest == request else { return }
-            openFailure = Self.readFailure(error)
+            session.reportOpenFailure(Self.readFailure(error), request: request)
         }
+    }
+
+    private func saveSelectedCopy(_ requestID: UUID) async {
+        defer { session.cancelSaveCopy(requestID) }
+        guard !Task.isCancelled, session.saveCopyRequest?.id == requestID,
+              let window = session.window, window.isKeyWindow, window.attachedSheet == nil else { return }
+        let panel = NSSavePanel()
+        panel.title = "原稿のコピーを保存"
+        panel.message = "既存のファイルは置き換えません。新しいファイル名を選んでください。"
+        panel.prompt = "コピーを保存"
+        panel.nameFieldStringValue = "原稿-コピー.md"
+        panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
+        panel.canCreateDirectories = false
+        savePanel = panel
+        let answer = await panel.beginSheetModal(for: window)
+        savePanel = nil
+        guard answer == .OK, let destination = panel.url else { return }
+        // The panel grants this choice only for the current write. Do not store a bookmark or path.
+        defer { destination.stopAccessingSecurityScopedResource() }
+        guard !Task.isCancelled else { return }
+        await session.writeRequestedCopy(requestID, to: destination)
     }
 
     private static func readFailure(_ error: Error) -> String {
@@ -145,6 +172,24 @@ struct ScratchWorkspaceView: View {
             .help("テキストを読み取り専用で開く（⌘O）")
             .disabled(!session.tabs.canCreateTab)
 
+            if session.tabs.selectedTab?.isReadOnly == true {
+                Button {
+                    session.makeEditableCopy()
+                } label: {
+                    Label("編集用コピーを開く", systemImage: "doc.on.doc").labelStyle(.iconOnly)
+                }
+                .help("元のファイルを変更せず、別のタブで編集する")
+                .disabled(!session.canMakeEditableCopy)
+            } else {
+                Button {
+                    session.requestSaveCopy()
+                } label: {
+                    Label("コピーを保存", systemImage: "square.and.arrow.down").labelStyle(.iconOnly)
+                }
+                .help("原稿を新しいファイルに保存（⌘⇧S）")
+                .disabled(!session.canSaveCopy)
+            }
+
             Button {
                 session.newTab()
             } label: {
@@ -172,7 +217,7 @@ struct ScratchWorkspaceView: View {
 
     private func tabButton(for tab: ScratchTabs.Tab) -> some View {
         let isSelected = session.tabs.selectedID == tab.id
-        let title = tab.selectedFile?.name ?? "原稿 \(tab.number)"
+        let title = tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
         return Button { session.tabs.select(tab.id) } label: {
             HStack(spacing: 4) {
                 if tab.isReadOnly { Image(systemName: "lock").accessibilityHidden(true) }
@@ -198,7 +243,7 @@ struct ScratchWorkspaceView: View {
                     initialText: tab.document.source,
                     isActive: isSelected,
                     isReadOnly: tab.isReadOnly,
-                    canEdit: { !session.isDiscarding },
+                    canEdit: { session.canEditSource },
                     onCompositionChange: { session.tabs.setComposing($0, in: id) }
                 ) { source in
                     session.applyCommittedSource(source, to: id)
