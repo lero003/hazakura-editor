@@ -1,6 +1,6 @@
 import Darwin
 import Foundation
-import HazakuraNextCore
+@testable import HazakuraNextCore
 import Testing
 
 struct SelectedTextFileTests {
@@ -103,12 +103,21 @@ struct SelectedTextFileTests {
         try await withFixture { folder in
             let url = folder.appending(path: "versioned.md")
             let original = Data("# 元の稿".utf8)
+            let edited = Data("# 次の稿".utf8)
             try original.write(to: url)
+            let initialMTime = Date(timeIntervalSince1970: 2_147_000_000)
+            try FileManager.default.setAttributes([.modificationDate: initialMTime], ofItemAtPath: url.path)
             let first = try await SelectedTextFile.read(from: url)
-            let edited = Data("# 新しい稿".utf8)
-            try edited.write(to: url)
+            let unchanged = try await SelectedTextFile.read(from: url)
+            #expect(first.version == unchanged.version)
+
+            // Overwrite the same inode with a same-length body and a known different mtime.
+            try edited.write(to: url, options: [])
+            try FileManager.default.setAttributes([.modificationDate: initialMTime.addingTimeInterval(60)],
+                                                  ofItemAtPath: url.path)
             let second = try await SelectedTextFile.read(from: url)
             #expect(first.identity == second.identity)
+            #expect(first.version != second.version)
             #expect(first.originalBytes == original)
             #expect(second.originalBytes == edited)
 
@@ -116,7 +125,96 @@ struct SelectedTextFileTests {
             try edited.write(to: replacement)
             let replaced = try await SelectedTextFile.read(from: replacement)
             #expect(replaced.identity != second.identity)
+            #expect(replaced.version != second.version)
             #expect(replaced.originalBytes == second.originalBytes)
+        }
+    }
+
+    @Test func metadataOnlyChangeInvalidatesVersionWithoutChangingIdentityOrBytes() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "metadata.md")
+            try Data("# Unchanged".utf8).write(to: url)
+            let before = try await SelectedTextFile.read(from: url)
+
+            let mtime = Date(timeIntervalSince1970: 2_147_000_000)
+            try FileManager.default.setAttributes([.modificationDate: mtime], ofItemAtPath: url.path)
+            let after = try await SelectedTextFile.read(from: url)
+            #expect(before.identity == after.identity)
+            #expect(before.originalBytes == after.originalBytes)
+            #expect(before.version != after.version)
+        }
+    }
+
+    @Test func versionComparesNanosecondsAndInodeGenerationButNotAccessTime() {
+        let original = stat()
+        let version = SelectedTextFile.Version(original)
+        var changed = original
+        changed.st_birthtimespec.tv_nsec = 1
+        #expect(version != SelectedTextFile.Version(changed))
+        changed = original
+        changed.st_mtimespec.tv_nsec = 1
+        #expect(version != SelectedTextFile.Version(changed))
+        changed = original
+        changed.st_ctimespec.tv_nsec = 1
+        #expect(version != SelectedTextFile.Version(changed))
+        changed = original
+        changed.st_gen = 1
+        #expect(version != SelectedTextFile.Version(changed))
+        changed = original
+        changed.st_atimespec.tv_nsec = 1
+        #expect(version == SelectedTextFile.Version(changed))
+    }
+
+    enum PathChange: CaseIterable {
+        case missing, sameFileViaSymlink, replacementWithSameBytes
+    }
+
+    @Test(arguments: PathChange.allCases)
+    func revalidatesSelectedPathAfterReadingPinnedFile(_ change: PathChange) async throws {
+        try await withFixture { folder in
+            let parent = folder.appending(path: "selected", directoryHint: .isDirectory)
+            let moved = folder.appending(path: "moved", directoryHint: .isDirectory)
+            try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: false)
+            let url = parent.appending(path: "draft.md")
+            let body = Data("# Still the same body".utf8)
+            try body.write(to: url)
+            let baseline = try await SelectedTextFile.read(from: url)
+
+            #expect(throws: SelectedTextFile.ReadError.changedWhileReading) {
+                try SelectedTextFile.read(from: url, beforePathRevalidation: {
+                    try FileManager.default.moveItem(at: parent, to: moved)
+                    switch change {
+                    case .missing:
+                        break
+                    case .sameFileViaSymlink:
+                        // Following this link would still find the same inode and version.
+                        try FileManager.default.createSymbolicLink(at: parent, withDestinationURL: moved)
+                    case .replacementWithSameBytes:
+                        try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: false)
+                        try body.write(to: url)
+                    }
+                })
+            }
+            let sameFile = try await SelectedTextFile.read(from: moved.appending(path: "draft.md"))
+            #expect(sameFile.version == baseline.version)
+            #expect(sameFile.originalBytes == body)
+        }
+    }
+
+    @Test func rejectsCancellationBeforeReturningSnapshot() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "cancelled.md")
+            try Data("# Never returned".utf8).write(to: url)
+            await #expect(throws: CancellationError.self) {
+                try await withThrowingTaskGroup(of: SelectedTextFile.self) { group in
+                    group.addTask {
+                        try SelectedTextFile.read(from: url, beforePathRevalidation: {
+                            withUnsafeCurrentTask { $0?.cancel() }
+                        })
+                    }
+                    _ = try await group.next()
+                }
+            }
         }
     }
 

@@ -24,15 +24,50 @@ public struct SelectedTextFile: Sendable {
         fileprivate let inode: ino_t
     }
 
+    /// An observed regular-file version, suitable for equality checks, not a lock or a write precondition.
+    public struct Version: Equatable, Sendable {
+        fileprivate let identity: Identity
+        private let generation: UInt32
+        private let birthTime: Timestamp
+        private let modificationTime: Timestamp
+        private let changeTime: Timestamp
+        private let size: off_t
+
+        init(_ info: stat) {
+            identity = Identity(device: info.st_dev, inode: info.st_ino)
+            generation = info.st_gen
+            birthTime = Timestamp(info.st_birthtimespec)
+            modificationTime = Timestamp(info.st_mtimespec)
+            changeTime = Timestamp(info.st_ctimespec)
+            size = info.st_size
+        }
+
+        private struct Timestamp: Equatable, Sendable {
+            let seconds: time_t
+            let nanoseconds: Int
+
+            init(_ value: timespec) {
+                seconds = value.tv_sec
+                nanoseconds = value.tv_nsec
+            }
+        }
+    }
+
     public let name: String
     public let source: String
     public let format: Format
     public let originalBytes: Data
-    public let identity: Identity
+    public let version: Version
+    public var identity: Identity { version.identity }
 
     /// Accept only the URL delivered by the app's explicit open action. I/O is off the UI actor.
     @concurrent
     public static func read(from url: URL) async throws -> SelectedTextFile {
+        try read(from: url, beforePathRevalidation: {})
+    }
+
+    // Per-read, module-internal test seam. The selected descriptor is still pinned here.
+    static func read(from url: URL, beforePathRevalidation: () throws -> Void) throws -> SelectedTextFile {
         try Task.checkCancellation()
         let host = url.host(percentEncoded: false) ?? ""
         let path = url.path(percentEncoded: false)
@@ -69,12 +104,12 @@ public struct SelectedTextFile: Sendable {
             guard bytes.count <= byteLimit else { throw ReadError.tooLarge }
         }
 
+        try Task.checkCancellation()
         var after = stat()
         guard fstat(fd, &after) == 0 else { throw ReadError.accessDenied }
-        // Detect ordinary in-place changes during the read; this is not a filesystem lock.
-        guard before.st_size == after.st_size, bytes.count == after.st_size,
-              sameTime(before.st_mtimespec, after.st_mtimespec),
-              sameTime(before.st_ctimespec, after.st_ctimespec) else { throw ReadError.changedWhileReading }
+        let version = Version(before)
+        guard after.st_mode & S_IFMT == S_IFREG, bytes.count == after.st_size,
+              Version(after) == version else { throw ReadError.changedWhileReading }
         try Task.checkCancellation()
         let bom: [UInt8] = [0xEF, 0xBB, 0xBF]
         let hasBOM = bytes.starts(with: bom)
@@ -85,12 +120,22 @@ public struct SelectedTextFile: Sendable {
             throw ReadError.nonTextControls
         }
         let format = Format(hasUTF8BOM: hasBOM, lineEndings: detectLineEndings(body))
-        return SelectedTextFile(name: url.lastPathComponent, source: source, format: format,
-                                originalBytes: bytes, identity: Identity(device: before.st_dev, inode: before.st_ino))
-    }
+        try Task.checkCancellation()
+        try beforePathRevalidation()
+        try Task.checkCancellation()
 
-    private static func sameTime(_ lhs: timespec, _ rhs: timespec) -> Bool {
-        lhs.tv_sec == rhs.tv_sec && lhs.tv_nsec == rhs.tv_nsec
+        // The pinned fd alone cannot tell if the selected path was removed or redirected.
+        // Check metadata without following links or opening a potential replacement.
+        let pathMatches = url.withUnsafeFileSystemRepresentation { pathname in
+            guard let pathname else { return false }
+            var named = stat()
+            return fstatat(AT_FDCWD, pathname, &named, AT_SYMLINK_NOFOLLOW_ANY) == 0
+                && named.st_mode & S_IFMT == S_IFREG && Version(named) == version
+        }
+        try Task.checkCancellation()
+        guard pathMatches else { throw ReadError.changedWhileReading }
+        return SelectedTextFile(name: url.lastPathComponent, source: source, format: format,
+                                originalBytes: bytes, version: version)
     }
 
     private static func detectLineEndings(_ bytes: Data) -> LineEndings {

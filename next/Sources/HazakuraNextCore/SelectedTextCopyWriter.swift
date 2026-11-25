@@ -95,7 +95,8 @@ public enum SelectedTextCopyWriter {
         }
     }
 
-    private static func encode(_ source: String, preservingUTF8BOM: Bool) throws -> Data {
+    // Shared with the original-save check so the reviewed bytes cannot differ from the copy writer.
+    static func encode(_ source: String, preservingUTF8BOM: Bool) throws -> Data {
         let prefix: [UInt8] = preservingUTF8BOM ? [0xEF, 0xBB, 0xBF] : []
         let body = source.utf8
         guard body.count <= SelectedTextFile.byteLimit - prefix.count else { throw WriteError.tooLarge }
