@@ -16,9 +16,14 @@ enum MarkdownPDFExport {
     private nonisolated static let maximumHeight: Double = 12_000
 
     static func render(source: String) async throws -> Data {
+        try await render(source: source, didStartCapture: {})
+    }
+
+    /// The test callback observes a started navigation before control returns to the run loop.
+    static func render(source: String, didStartCapture: @MainActor () -> Void) async throws -> Data {
         let html = try await MarkdownHTMLExport.render(source: source)
         try Task.checkCancellation()
-        return try await Capture().run(html: html)
+        return try await Capture().run(html: html, didStartCapture: didStartCapture)
     }
 
     nonisolated static func captureRect(width: Double, height: Double) throws -> CGRect {
@@ -52,7 +57,7 @@ enum MarkdownPDFExport {
         private var deadline: ContinuousClock.Instant?
         private var watchdog: Task<Void, Never>?
 
-        func run(html: String) async throws -> Data {
+        func run(html: String, didStartCapture: @MainActor () -> Void) async throws -> Data {
             try await withTaskCancellationHandler {
                 do {
                     let data = try await withCheckedThrowingContinuation { continuation in
@@ -61,6 +66,7 @@ enum MarkdownPDFExport {
                             finish(.failure(CancellationError()))
                         } else {
                             start(html: html)
+                            if navigation != nil { didStartCapture() }
                         }
                     }
                     try Task.checkCancellation()

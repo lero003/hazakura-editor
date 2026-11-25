@@ -82,6 +82,32 @@ struct MarkdownPDFExportTests {
         }
     }
 
+    @Test func cancellingAfterWebKitNavigationStartsPreventsPDFPublication() async throws {
+        let session = WorkspaceSession(source: "# 合成原稿\n\n桜")
+        session.requestExport(.pdf)
+        let id = try #require(session.exportRequest?.id)
+        var capturedCancellation = false
+        await session.writeRequestedExport(id, to: URL(fileURLWithPath: "/synthetic/cancelled.pdf"), using: .init(
+            renderPDF: { source in
+                do {
+                    return try await MarkdownPDFExport.render(source: source, didStartCapture: {
+                        #expect(session.cancellableExportRenderID == id)
+                        session.cancelExportRendering(id)
+                        #expect(session.isFinishingCancelledExport && session.isBusy)
+                    })
+                } catch is CancellationError {
+                    #expect(Task.isCancelled)
+                    capturedCancellation = true
+                    throw CancellationError()
+                }
+            },
+            writePDF: { _, _ in Issue.record("A cancelled capture must not reach publication.") }
+        ))
+        #expect(capturedCancellation)
+        #expect(!session.isBusy && session.canExport)
+        #expect(session.fileNotice == nil)
+    }
+
     @Test func propagatesProjectionLimitsAndCancellation() async {
         let source = String(repeating: "a", count: 128 * 1024 + 1)
         await #expect(throws: MarkdownHTMLExport.ExportError.unavailable(.inputTooLarge)) {
