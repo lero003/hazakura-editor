@@ -30,7 +30,7 @@ struct WorkspaceOriginalComparisonTests {
             #expect(report.comparison.baseline.originalBytes == baseline.originalBytes)
             #expect(report.comparison.disk.originalBytes == external)
             #expect(report.comparison.draftSource == edited)
-            #expect(!report.comparison.draftMatchesDisk)
+            #expect(report.comparison.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: false))
             #expect(try Data(contentsOf: url) == external)
             #expect(session.tabs.recoveryDrafts == recoveryBefore)
             #expect(session.tabs.selectedID == documentID)
@@ -92,8 +92,7 @@ struct WorkspaceOriginalComparisonTests {
             #expect(comparison.diskStatus == .modified)
             #expect(comparison.baseline.format.encoding == .utf8BOM)
             #expect(comparison.disk.format.encoding == (utf16 ? .utf16BE : .utf8))
-            #expect(comparison.draftMatchesBaseline)
-            #expect(comparison.draftMatchesDisk == false)
+            #expect(comparison.draftByteStatus == .compared(matchesBaseline: true, matchesDisk: false))
         }
     }
 

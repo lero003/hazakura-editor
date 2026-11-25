@@ -63,9 +63,16 @@ struct OriginalFileComparisonView: View {
             if before != selected {
                 Text("文字コードまたはBOMが異なります（開いた時点：\(encodingLabel(before))、今回選択：\(encodingLabel(selected))）。")
             }
-            Text("編集版は、開いた時点の文字コードとBOMで保存した場合のバイト列で比較します。")
-                .foregroundStyle(.secondary)
-            Text("編集版との比較：原文 \(comparison.draftMatchesBaseline ? "一致" : "不一致") ／ ディスク版 \(comparison.draftMatchesDisk ? "一致" : "不一致")")
+            switch comparison.draftByteStatus {
+            case .compared(let matchesBaseline, let matchesDisk):
+                Text("編集版は、開いた時点の文字コードとBOMで保存した場合のバイト列で比較します。")
+                    .foregroundStyle(.secondary)
+                Text("編集版との比較：原文 \(matchesBaseline ? "一致" : "不一致") ／ ディスク版 \(matchesDisk ? "一致" : "不一致")")
+            case .tooLarge:
+                Text("編集版は、開いた時点の文字コードとBOMで保存すると上限（2 MiB）を超えるため、バイト比較できません。")
+            case .unavailable:
+                Text("編集版を開いた時点の保存形式でバイト列にできなかったため、バイト比較できません。")
+            }
         }
         .font(.callout)
     }
@@ -219,8 +226,8 @@ private struct ComparisonSourcePreview: View {
         VStack(alignment: .leading, spacing: 4) {
             if isTruncated {
                 Text(text.isEmpty
-                     ? "先頭の文字が表示上限を超えています。比較結果は表示範囲に限りません。"
-                     : "本文の先頭のみ表示しています（最大 \(Self.byteLimit / 1024) KiB）。比較結果は表示範囲に限りません。")
+                     ? "先頭の文字が表示上限を超えています。"
+                     : "本文の先頭のみ表示しています（最大 \(Self.byteLimit / 1024) KiB）。")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

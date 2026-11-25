@@ -9,11 +9,20 @@ public struct OriginalFileComparison: Sendable {
         case differentIdentity
     }
 
+    public enum DraftByteStatus: Equatable, Sendable {
+        case compared(matchesBaseline: Bool, matchesDisk: Bool)
+        case tooLarge
+        case unavailable
+    }
+
     public let baseline: SelectedTextFile
     public let disk: SelectedTextFile
     public let draftSource: String
 
-    private let result: (diskStatus: DiskStatus, draftMatchesDisk: Bool, draftMatchesBaseline: Bool)
+    /// Compares captured device/inode and bytes, not a live file or a write precondition.
+    public let diskStatus: DiskStatus
+    /// Compares draft bytes in the baseline format only when the draft can be encoded for saving.
+    public let draftByteStatus: DraftByteStatus
 
     public init(baseline: SelectedTextFile, disk: SelectedTextFile, draftSource: String) {
         self.baseline = baseline
@@ -29,18 +38,16 @@ public struct OriginalFileComparison: Sendable {
 
         // Use the opened encoding, not the reselected one's. Compare exact bytes, not
         // Swift String equality (which treats canonically equivalent text as equal).
-        let draftBytes = try? SelectedTextCopyWriter.encode(draftSource, encoding: baseline.format.encoding)
-        let matchesBaseline = draftBytes == baseline.originalBytes
-        let matchesDisk = diskStatus == .unchanged ? matchesBaseline : draftBytes == disk.originalBytes
-        result = (diskStatus, matchesDisk, matchesBaseline)
+        self.diskStatus = diskStatus
+        do {
+            let draftBytes = try SelectedTextCopyWriter.encode(draftSource, encoding: baseline.format.encoding)
+            let matchesBaseline = draftBytes == baseline.originalBytes
+            let matchesDisk = diskStatus == .unchanged ? matchesBaseline : draftBytes == disk.originalBytes
+            draftByteStatus = .compared(matchesBaseline: matchesBaseline, matchesDisk: matchesDisk)
+        } catch SelectedTextCopyWriter.WriteError.tooLarge {
+            draftByteStatus = .tooLarge
+        } catch {
+            draftByteStatus = .unavailable
+        }
     }
-
-    /// Compares captured device/inode and bytes, not a live file or a write precondition.
-    public var diskStatus: DiskStatus { result.diskStatus }
-
-    /// Whether the draft bytes in the baseline format match the captured disk bytes.
-    public var draftMatchesDisk: Bool { result.draftMatchesDisk }
-
-    /// Whether the draft bytes in the baseline format match the original bytes.
-    public var draftMatchesBaseline: Bool { result.draftMatchesBaseline }
 }

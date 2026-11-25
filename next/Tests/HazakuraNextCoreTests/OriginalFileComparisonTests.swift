@@ -21,16 +21,14 @@ struct OriginalFileComparisonTests {
             #expect(comparison.draftSource.utf8.elementsEqual(source.utf8))
             #expect(comparison.disk.format.lineEndings == .mixed)
             #expect(comparison.diskStatus == .unchanged)
-            #expect(comparison.draftMatchesDisk)
-            #expect(comparison.draftMatchesBaseline)
+            #expect(comparison.draftByteStatus == .compared(matchesBaseline: true, matchesDisk: true))
 
             let precomposed = "# が\r\n🌸\n末尾\r"
             try #require(precomposed == source)
             for draft in [precomposed, "# か\u{3099}\n🌸\n末尾\n"] {
                 let changed = OriginalFileComparison(baseline: baseline, disk: reselected, draftSource: draft)
                 #expect(changed.diskStatus == .unchanged)
-                #expect(changed.draftMatchesDisk == false)
-                #expect(changed.draftMatchesBaseline == false)
+                #expect(changed.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: false))
             }
             #expect(try Data(contentsOf: url) == bytes)
         }
@@ -49,13 +47,11 @@ struct OriginalFileComparisonTests {
 
             let originalDraft = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: source)
             #expect(originalDraft.diskStatus == .modified)
-            #expect(originalDraft.draftMatchesDisk == false)
-            #expect(originalDraft.draftMatchesBaseline)
+            #expect(originalDraft.draftByteStatus == .compared(matchesBaseline: true, matchesDisk: false))
 
             let revisedDraft = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: updated)
             #expect(revisedDraft.diskStatus == .modified)
-            #expect(revisedDraft.draftMatchesDisk)
-            #expect(revisedDraft.draftMatchesBaseline == false)
+            #expect(revisedDraft.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: true))
             #expect(try Data(contentsOf: url) == Data(updated.utf8))
         }
     }
@@ -78,16 +74,14 @@ struct OriginalFileComparisonTests {
                 try #require(disk.identity != baseline.identity)
                 let comparison = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: source)
                 #expect(comparison.diskStatus == .differentIdentity)
-                #expect(comparison.draftMatchesDisk)
-                #expect(comparison.draftMatchesBaseline)
+                #expect(comparison.draftByteStatus == .compared(matchesBaseline: true, matchesDisk: true))
             }
 
             try Data("changed\n".utf8).write(to: separate)
             let changedOther = try await SelectedTextFile.read(from: separate)
             let comparison = OriginalFileComparison(baseline: baseline, disk: changedOther, draftSource: source)
             #expect(comparison.diskStatus == .differentIdentity)
-            #expect(comparison.draftMatchesDisk == false)
-            #expect(comparison.draftMatchesBaseline)
+            #expect(comparison.draftByteStatus == .compared(matchesBaseline: true, matchesDisk: false))
         }
     }
 
@@ -119,8 +113,7 @@ struct OriginalFileComparisonTests {
             try #require(baseline.source.utf8.elementsEqual(disk.source.utf8))
             let comparison = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: source)
             #expect(comparison.diskStatus == .modified)
-            #expect(comparison.draftMatchesDisk == false)
-            #expect(comparison.draftMatchesBaseline)
+            #expect(comparison.draftByteStatus == .compared(matchesBaseline: true, matchesDisk: false))
         }
     }
 
@@ -140,8 +133,42 @@ struct OriginalFileComparisonTests {
             #expect(disk.source.utf8.elementsEqual((hasBaselineBOM ? draft : source).utf8))
             let comparison = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
             #expect(comparison.diskStatus == .modified)
-            #expect(comparison.draftMatchesDisk)
-            #expect(comparison.draftMatchesBaseline == false)
+            #expect(comparison.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: true))
+        }
+    }
+
+    @Test func utf16SaveLimitIncludesTheBOMWhenComparingDraftBytes() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "original.txt")
+            let originalBytes = Data([0xFE, 0xFF, 0, 0x61])
+            try originalBytes.write(to: url)
+            let baseline = try await SelectedTextFile.read(from: url)
+            let fits = String(repeating: "a", count: SelectedTextFile.byteLimit / 2 - 1)
+            let atLimit = OriginalFileComparison(baseline: baseline, disk: baseline, draftSource: fits)
+            let tooLarge = OriginalFileComparison(baseline: baseline, disk: baseline, draftSource: fits + "a")
+
+            #expect(atLimit.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: false))
+            #expect(tooLarge.draftByteStatus == .tooLarge)
+            #expect(tooLarge.diskStatus == .unchanged)
+            #expect(try Data(contentsOf: url) == originalBytes)
+        }
+    }
+
+    @Test func unsavableDraftDoesNotTurnAnObservedDiskChangeIntoAMismatchReport() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "original.txt")
+            try Data("原本\n".utf8).write(to: url)
+            let baseline = try await SelectedTextFile.read(from: url)
+            let updated = Data("外部編集\n".utf8)
+            try updated.write(to: url, options: [])
+            let disk = try await SelectedTextFile.read(from: url)
+            let draft = "編集\u{0}\r\n"
+            let comparison = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
+
+            #expect(comparison.draftByteStatus == .unavailable)
+            #expect(comparison.draftSource.utf8.elementsEqual(draft.utf8))
+            #expect(comparison.diskStatus == .modified)
+            #expect(try Data(contentsOf: url) == updated)
         }
     }
 
@@ -187,7 +214,7 @@ struct OriginalFileComparisonTests {
             let disk = try await SelectedTextFile.read(from: url)
             let comparison = OriginalFileComparison(baseline: origin.baseline, disk: disk, draftSource: firstCopy.document.source)
             #expect(comparison.diskStatus == .unchanged)
-            #expect(comparison.draftMatchesBaseline == false)
+            #expect(comparison.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: false))
             #expect(tabs.recoveryDrafts == [editedDraft, secondDraft])
 
             let restored = tabs.restoreDraft(editedDraft)
