@@ -553,14 +553,15 @@ struct TextKitEditorTests {
         let original = "# 👩‍💻\r\n" + String(repeating: "本文\n", count: 120)
         let insertion = "新\n"
         let edited = insertion + original
-        var request: Int? = edited.utf16.count - 1
+        let nearEnd = NSRange(location: edited.utf16.count - 3, length: 2)
+        var request: NSRange? = nearEnd
         var received: [String] = []
         var reported: [String] = []
-        let editor = TextKitEditor(initialText: original, revealSourceLocation: { source in
-            guard let offset = request else { return nil }
+        let editor = TextKitEditor(initialText: original, revealSourceSelection: { source in
+            guard let range = request else { return nil }
             request = nil
             received.append(source)
-            return offset
+            return range
         }) { reported.append($0) }
         let coordinator = editor.makeCoordinator()
         let scrollView = TextKitEditor.makeScrollView(initialText: original, coordinator: coordinator)
@@ -580,7 +581,7 @@ struct TextKitEditorTests {
         await drainRevealChecks()
 
         #expect(received.map { Array($0.utf8) } == [Array(edited.utf8)])
-        #expect(textView.selectedRange() == NSRange(location: edited.utf16.count - 1, length: 0))
+        #expect(textView.selectedRange() == nearEnd)
         #expect(scrollView.contentView.bounds.minY > previousScrollOffset)
         #expect(textView.string.utf8.elementsEqual(edited.utf8))
         #expect(reported == [edited])
@@ -590,7 +591,7 @@ struct TextKitEditorTests {
         #expect(undoManager.canRedo)
 
         // Revealing the end of the original must neither add undo nor clear redo.
-        request = original.utf16.count
+        request = NSRange(location: original.utf16.count, length: 0)
         coordinator.scheduleSourceReveal()
         await drainRevealChecks()
         #expect(textView.selectedRange() == NSRange(location: original.utf16.count, length: 0))
@@ -603,9 +604,9 @@ struct TextKitEditorTests {
     @Test(arguments: [true, false])
     func revealWaitsForBothSheetEndAndKeyWindow(sheetEndsFirst: Bool) async throws {
         var attempts = 0
-        let coordinator = TextKitEditor.Coordinator(revealSourceLocation: { _ in
+        let coordinator = TextKitEditor.Coordinator(revealSourceSelection: { _ in
             attempts += 1
-            return 2
+            return NSRange(location: 2, length: 0)
         }) { _ in Issue.record("A reveal must not report an edit.") }
         let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", isReadOnly: true, coordinator: coordinator)
         let window = makeRevealWindow(containing: scrollView)
@@ -646,9 +647,9 @@ struct TextKitEditorTests {
     func inactiveLockedAndComposingEditorsDoNotConsumeRevealRequests() async throws {
         let policy = EditPolicy()
         var received: [String] = []
-        let coordinator = TextKitEditor.Coordinator(canEdit: { policy.permitsEdits }, revealSourceLocation: { source in
+        let coordinator = TextKitEditor.Coordinator(canEdit: { policy.permitsEdits }, revealSourceSelection: { source in
             received.append(source)
-            return 0
+            return NSRange(location: 0, length: 0)
         }) { _ in }
         let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", isActive: false, coordinator: coordinator)
         let window = makeRevealWindow(containing: scrollView)
@@ -686,14 +687,18 @@ struct TextKitEditorTests {
         #expect(textView.selectedRange() == NSRange(location: 0, length: 0))
     }
 
-    @Test(arguments: [-1, Int.max, 2, 3, 7, 9, 12])
-    func invalidOrNonBoundaryUTF16OffsetsDoNotChangeSelection(offset: Int) async throws {
+    @Test(arguments: [NSRange(location: -1, length: 0), NSRange(location: Int.max, length: 1),
+                      NSRange(location: 2, length: 0), NSRange(location: 3, length: 0),
+                      NSRange(location: 7, length: 0), NSRange(location: 9, length: 0),
+                      NSRange(location: 12, length: 0), NSRange(location: 1, length: 2),
+                      NSRange(location: 1, length: Int.max), NSRange(location: 1, length: -1)])
+    func invalidOrNonBoundaryUTF16RangesDoNotChangeSelection(range: NSRange) async throws {
         // Offsets include a surrogate half, a ZWJ sequence, a combining mark and CRLF.
         let source = "a👩‍💻e\u{0301}\r\nz"
         var asked = false
-        let coordinator = TextKitEditor.Coordinator(revealSourceLocation: { _ in
+        let coordinator = TextKitEditor.Coordinator(revealSourceSelection: { _ in
             asked = true
-            return offset
+            return range
         }) { _ in Issue.record("A reveal must not report an edit.") }
         let scrollView = TextKitEditor.makeScrollView(initialText: source, coordinator: coordinator)
         let window = makeRevealWindow(containing: scrollView)
@@ -712,9 +717,9 @@ struct TextKitEditorTests {
 
     @Test
     func dismantlingDropsAQueuedRevealAndStopsWindowObservation() async {
-        let coordinator = TextKitEditor.Coordinator(revealSourceLocation: { _ in
+        let coordinator = TextKitEditor.Coordinator(revealSourceSelection: { _ in
             Issue.record("A dismantled editor must not consume a request.")
-            return 0
+            return NSRange(location: 0, length: 0)
         }) { _ in }
         let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", coordinator: coordinator)
         let window = makeRevealWindow(containing: scrollView)

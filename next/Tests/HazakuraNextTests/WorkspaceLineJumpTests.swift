@@ -22,7 +22,7 @@ struct WorkspaceLineJumpTests {
         #expect(session.lineJumpRequest == nil)
         #expect(!session.isBusy)
         #expect(session.takeSourceReveal(request.id, documentID: UUID(), editorSource: source) == nil)
-        #expect(session.takeSourceReveal(request.id, documentID: documentID, editorSource: source) == source.utf16.count)
+        #expect(session.takeSourceReveal(request.id, documentID: documentID, editorSource: source) == NSRange(location: source.utf16.count, length: 0))
         #expect(session.takeSourceReveal(request.id, documentID: documentID, editorSource: source) == nil)
         #expect(session.tabs.selectedTab?.document.revision == revision)
         #expect(session.tabs.recoveryDrafts == recovery)

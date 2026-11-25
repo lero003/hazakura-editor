@@ -101,11 +101,16 @@ final class WorkspaceSession {
         let readingBlockIndex: Int?
     }
 
-    struct LineJumpRequest: Identifiable {
+    struct SourceNavigationRequest: Identifiable {
         let id = UUID()
         fileprivate let documentID: UUID
         fileprivate let revision: UInt64
         let title: String
+    }
+
+    struct SourceSearchReport: Identifiable {
+        let id: UUID
+        let results: SourceSearch.Results
     }
 
     private struct SourceReveal {
@@ -113,7 +118,7 @@ final class WorkspaceSession {
         let documentID: UUID
         let revision: UInt64
         let source: String
-        let offset: Int
+        let range: NSRange
         let changedNotice: String
     }
 
@@ -129,6 +134,9 @@ final class WorkspaceSession {
             // Includes tabs opened/closed through picker, recovery, and other non-tab-button paths.
             if let request = lineJumpRequest, tabs.selectedID != request.documentID || tabs.isComposing {
                 lineJumpRequest = nil
+            }
+            if let request = sourceSearchRequest, !matchesSourceNavigation(request) {
+                dismissSourceSearch(request.id)
             }
             guard let reveal = sourceReveal else { return }
             if tabs.selectedID != reveal.documentID || tabs.isComposing {
@@ -157,7 +165,10 @@ final class WorkspaceSession {
     // Scrolling updates only this live-tab state, not the editor or the open sheet.
     @ObservationIgnored private var markdownReadingPositions: [UUID: (revision: UInt64, blockIndex: Int)] = [:]
     private var sourceReveal: SourceReveal?
-    private(set) var lineJumpRequest: LineJumpRequest?
+    private(set) var lineJumpRequest: SourceNavigationRequest?
+    private(set) var sourceSearchRequest: SourceNavigationRequest?
+    @ObservationIgnored private var sourceSearchRunID: UUID?
+    @ObservationIgnored private var sourceSearchReport: SourceSearchReport?
     private(set) var fileNotice: String?
     private var isWritingCopy = false
     var exitNotice: String?
@@ -181,13 +192,13 @@ final class WorkspaceSession {
     private var hasOperationBesidesComparisonReport: Bool {
         openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || markdownPreview != nil || bookPreviewRequest != nil ||
-            assistReviewSample != nil || lineJumpRequest != nil || showsRecovery || isDiscarding
+            assistReviewSample != nil || lineJumpRequest != nil || sourceSearchRequest != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
         !isDiscarding && !hasFolderCatalogOperation && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
             readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil &&
-            assistReviewSample == nil && lineJumpRequest == nil
+            assistReviewSample == nil && lineJumpRequest == nil && sourceSearchRequest == nil
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
     var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
@@ -336,7 +347,7 @@ final class WorkspaceSession {
     }
 
     var readySourceRevealID: UUID? {
-        markdownPreview == nil && lineJumpRequest == nil ? sourceReveal?.id : nil
+        markdownPreview == nil && lineJumpRequest == nil && sourceSearchRequest == nil ? sourceReveal?.id : nil
     }
 
     func requestMarkdownReveal(_ previewID: UUID, offset: Int) -> Bool {
@@ -344,21 +355,23 @@ final class WorkspaceSession {
               !tabs.isComposing, let selected = tabs.selectedTab, selected.id == preview.documentID,
               selected.document.revision == preview.revision, offset >= 0, offset < preview.source.utf16.count else { return false }
         sourceReveal = SourceReveal(id: previewID, documentID: preview.documentID, revision: preview.revision,
-                                    source: preview.source, offset: offset,
+                                    source: preview.source, range: NSRange(location: offset, length: 0),
                                     changedNotice: "原稿が変わったため、見出しに移動していません。")
         return true
     }
 
-    var canRequestLineJump: Bool {
+    private var canOpenSourceNavigation: Bool {
         guard !isBusy, !tabs.isComposing, let tab = tabs.selectedTab else { return false }
         return tab.document.source.utf8.count <= 2 * 1024 * 1024
             && (window?.firstResponder as? NSTextView)?.hasMarkedText() != true
     }
 
+    var canRequestLineJump: Bool { canOpenSourceNavigation }
+
     func requestLineJump() {
         guard canRequestLineJump, let tab = tabs.selectedTab else { return }
         sourceReveal = nil
-        lineJumpRequest = LineJumpRequest(documentID: tab.id, revision: tab.document.revision, title: Self.title(for: tab))
+        lineJumpRequest = SourceNavigationRequest(documentID: tab.id, revision: tab.document.revision, title: Self.title(for: tab))
     }
 
     func dismissLineJump(_ id: UUID) {
@@ -371,19 +384,78 @@ final class WorkspaceSession {
               let tab = tabs.selectedTab, tab.id == request.documentID, tab.document.revision == request.revision,
               let offset = SourceLineLookup.utf16Offset(of: line, in: tab.document.source) else { return false }
         sourceReveal = SourceReveal(id: id, documentID: tab.id, revision: request.revision,
-                                    source: tab.document.source, offset: offset,
+                                    source: tab.document.source, range: NSRange(location: offset, length: 0),
                                     changedNotice: "原稿が変わったため、指定の行に移動していません。")
         lineJumpRequest = nil
         return true
     }
 
+    var canRequestSourceSearch: Bool { canOpenSourceNavigation }
+
+    func requestSourceSearch() {
+        guard canRequestSourceSearch, let tab = tabs.selectedTab else { return }
+        sourceReveal = nil
+        sourceSearchRequest = SourceNavigationRequest(documentID: tab.id, revision: tab.document.revision,
+                                                     title: Self.title(for: tab))
+    }
+
+    private func matchesSourceNavigation(_ request: SourceNavigationRequest) -> Bool {
+        !tabs.isComposing && tabs.selectedID == request.documentID &&
+            tabs.selectedTab?.document.revision == request.revision
+    }
+
+    func dismissSourceSearch(_ id: UUID) {
+        guard sourceSearchRequest?.id == id else { return }
+        resetSourceSearch(id)
+        sourceSearchRequest = nil
+    }
+
+    func resetSourceSearch(_ id: UUID) {
+        guard sourceSearchRequest?.id == id else { return }
+        sourceSearchRunID = nil
+        sourceSearchReport = nil
+    }
+
+    func searchSource(
+        _ id: UUID, query: String,
+        scan: @MainActor (String, String) async -> SourceSearch.Results? = WorkspaceSession.scanSource
+    ) async -> SourceSearchReport? {
+        guard !Task.isCancelled, let request = sourceSearchRequest, request.id == id,
+              matchesSourceNavigation(request), let source = tabs.selectedTab?.document.source else { return nil }
+        let runID = UUID()
+        sourceSearchRunID = runID
+        sourceSearchReport = nil
+        let results = await scan(source, query)
+        guard !Task.isCancelled, sourceSearchRunID == runID,
+              sourceSearchRequest?.id == id, matchesSourceNavigation(request), let results else { return nil }
+        let report = SourceSearchReport(id: runID, results: results)
+        sourceSearchReport = report
+        return report
+    }
+
+    @concurrent private nonisolated static func scanSource(_ source: String, for query: String) async -> SourceSearch.Results? {
+        SourceSearch.search(query, in: source)
+    }
+
+    func selectSourceSearchMatch(_ id: UUID, reportID: UUID, matchID: Int) -> Bool {
+        guard let request = sourceSearchRequest, request.id == id, matchesSourceNavigation(request),
+              let tab = tabs.selectedTab, let report = sourceSearchReport, report.id == reportID,
+              let match = report.results.matches.first(where: { $0.id == matchID }) else { return false }
+        sourceReveal = SourceReveal(id: id, documentID: request.documentID, revision: request.revision,
+                                    source: tab.document.source, range: match.range,
+                                    changedNotice: "原稿が変わったため、検索結果に移動していません。")
+        dismissSourceSearch(id)
+        return true
+    }
+
     func cancelSourceNavigation() {
         lineJumpRequest = nil
+        if let id = sourceSearchRequest?.id { dismissSourceSearch(id) }
         sourceReveal = nil
     }
 
     /// Called by the active AppKit editor only after the sheet and native input gates allow navigation.
-    func takeSourceReveal(_ id: UUID, documentID: UUID, editorSource: String) -> Int? {
+    func takeSourceReveal(_ id: UUID, documentID: UUID, editorSource: String) -> NSRange? {
         guard readySourceRevealID == id, let reveal = sourceReveal,
                documentID == reveal.documentID, let selected = tabs.selectedTab,
                selected.id == documentID else { return nil }
@@ -394,7 +466,7 @@ final class WorkspaceSession {
             fileNotice = reveal.changedNotice
             return nil
         }
-        return reveal.offset
+        return reveal.range
     }
 
     var canCompareOriginal: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab?.copyOrigin != nil }

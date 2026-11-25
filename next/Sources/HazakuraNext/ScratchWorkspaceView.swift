@@ -23,6 +23,7 @@ struct ScratchWorkspaceView: View {
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
         let lineJumpID = session.lineJumpRequest?.id
+        let sourceSearchID = session.sourceSearchRequest?.id
         let bookID = session.bookPreviewRequest?.id
         let assistSampleID = session.assistReviewSample?.id
         VStack(alignment: .leading, spacing: 0) {
@@ -147,6 +148,11 @@ struct ScratchWorkspaceView: View {
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
         })) { report in
             OriginalFileComparisonView(session: session, report: report)
+        }
+        .sheet(item: Binding(get: { session.sourceSearchRequest }, set: { request in
+            if request == nil, let sourceSearchID { session.dismissSourceSearch(sourceSearchID) }
+        })) { request in
+            SourceSearchView(session: session, request: request)
         }
         .sheet(item: Binding(get: { session.lineJumpRequest }, set: { request in
             if request == nil, let lineJumpID { session.dismissLineJump(lineJumpID) }
@@ -521,7 +527,7 @@ struct ScratchWorkspaceView: View {
                     isFocusLayout: isLMode,
                     canEdit: { session.canEditSource },
                     onCompositionChange: { session.tabs.setComposing($0, in: id) },
-                    revealSourceLocation: { editorSource in
+                    revealSourceSelection: { editorSource in
                         guard let revealID else { return nil }
                         return session.takeSourceReveal(revealID, documentID: id, editorSource: editorSource)
                     }

@@ -130,7 +130,7 @@ struct WorkspaceMarkdownPreviewTests {
         #expect(session.readySourceRevealID == preview.id)
         #expect(session.takeSourceReveal(preview.id, documentID: UUID(), editorSource: source) == nil)
         #expect(session.readySourceRevealID == preview.id)
-        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == expectedOffset)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == NSRange(location: expectedOffset, length: 0))
         #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == nil)
         #expect(session.tabs.selectedTab?.document.revision == 0)
         #expect(session.tabs.recoveryDrafts.isEmpty)

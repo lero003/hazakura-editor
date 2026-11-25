@@ -206,6 +206,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         edit.addItem(withTitle: "コピー", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
         edit.addItem(withTitle: "ペースト", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         edit.addItem(withTitle: "すべてを選択", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        edit.addItem(.separator())
+        addCommand("原文を検索…", #selector(searchSource(_:)), "f", to: edit)
         let view = addMenu("表示", to: bar)
         addCommand("原文の行へ移動…", #selector(jumpToSourceLine(_:)), "l", to: view)
         addCommand("Markdownプレビュー…", #selector(previewMarkdown(_:)), "", to: view)
@@ -258,6 +260,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func exportHTML(_ sender: Any?) { menuSession?.requestExport(.html) }
     @objc private func exportPDF(_ sender: Any?) { menuSession?.requestExport(.pdf) }
     @objc private func exportEPUB(_ sender: Any?) { menuSession?.requestExport(.epub) }
+    @objc private func searchSource(_ sender: Any?) { menuSession?.requestSourceSearch() }
     @objc private func jumpToSourceLine(_ sender: Any?) { menuSession?.requestLineJump() }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
     @objc private func previewBook(_ sender: Any?) { menuSession?.requestBookPreview() }
@@ -297,6 +300,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
         case #selector(exportHTML(_:)), #selector(exportPDF(_:)), #selector(exportEPUB(_:)): menuSession?.canExport == true
+        case #selector(searchSource(_:)): menuSession?.canRequestSourceSearch == true
         case #selector(jumpToSourceLine(_:)): menuSession?.canRequestLineJump == true
         case #selector(previewMarkdown(_:)): menuSession?.canPreviewMarkdown == true
         case #selector(previewBook(_:)): menuSession?.canPreviewBook == true

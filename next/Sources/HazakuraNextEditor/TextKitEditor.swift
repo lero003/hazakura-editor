@@ -256,7 +256,7 @@ public struct TextKitEditor: NSViewRepresentable {
     private let isFocusLayout: Bool
     private let canEdit: @MainActor () -> Bool
     private let onCompositionChange: (Bool) -> Void
-    private let revealSourceLocation: @MainActor (String) -> Int?
+    private let revealSourceSelection: @MainActor (String) -> NSRange?
     private let onChange: (String) -> Void
 
     /// `initialText` and `documentID` are bound when the native view is created;
@@ -270,10 +270,10 @@ public struct TextKitEditor: NSViewRepresentable {
     /// Keep the editor active, and block tab switches/new tabs, from `onCompositionChange(true)`
     /// until `onCompositionChange(false)`.
     ///
-    /// `revealSourceLocation` may consume a pending request using the current native buffer.
+    /// `revealSourceSelection` may consume a pending request using the current native buffer.
     /// It is asked after view updates or native availability changes, only while the editor
     /// is active, selectable, unlocked, not composing, and in a key window without a sheet.
-    /// Return a UTF-16 offset at a character boundary to move the caret and scroll, or nil.
+    /// Return a UTF-16 range at character boundaries to select and scroll, or nil.
     /// Navigation does not focus or edit the view and creates no undo operation.
     ///
     /// Edit and composition callbacks are synchronous on the main actor, only while attached to a window.
@@ -289,7 +289,7 @@ public struct TextKitEditor: NSViewRepresentable {
         isFocusLayout: Bool = false,
         canEdit: @escaping @MainActor () -> Bool = { true },
         onCompositionChange: @escaping (Bool) -> Void = { _ in },
-        revealSourceLocation: @escaping @MainActor (String) -> Int? = { _ in nil },
+        revealSourceSelection: @escaping @MainActor (String) -> NSRange? = { _ in nil },
         onChange: @escaping (String) -> Void
     ) {
         self.initialText = initialText
@@ -299,13 +299,13 @@ public struct TextKitEditor: NSViewRepresentable {
         self.isFocusLayout = isFocusLayout
         self.canEdit = canEdit
         self.onCompositionChange = onCompositionChange
-        self.revealSourceLocation = revealSourceLocation
+        self.revealSourceSelection = revealSourceSelection
         self.onChange = onChange
     }
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(canEdit: canEdit, onCompositionChange: onCompositionChange,
-                    revealSourceLocation: revealSourceLocation, onChange: onChange)
+                    revealSourceSelection: revealSourceSelection, onChange: onChange)
     }
 
     public func makeNSView(context: Context) -> NSScrollView {
@@ -317,7 +317,7 @@ public struct TextKitEditor: NSViewRepresentable {
         // Replacing the buffer here would disturb selection, undo and marked text.
         context.coordinator.canEdit = canEdit
         context.coordinator.onCompositionChange = onCompositionChange
-        context.coordinator.revealSourceLocation = revealSourceLocation
+        context.coordinator.revealSourceSelection = revealSourceSelection
         context.coordinator.onChange = onChange
         Self.setActive(isActive, in: nsView, readOnly: isReadOnly)
         Self.setFocusLayout(isFocusLayout, in: nsView)
@@ -456,7 +456,7 @@ public struct TextKitEditor: NSViewRepresentable {
     public final class Coordinator: NSObject {
         fileprivate var canEdit: @MainActor () -> Bool
         fileprivate var onCompositionChange: (Bool) -> Void
-        fileprivate var revealSourceLocation: @MainActor (String) -> Int?
+        fileprivate var revealSourceSelection: @MainActor (String) -> NSRange?
         fileprivate var onChange: (String) -> Void
         private weak var textView: MarkdownTextView?
         private weak var revealWindow: NSWindow?
@@ -467,12 +467,12 @@ public struct TextKitEditor: NSViewRepresentable {
         init(
             canEdit: @escaping @MainActor () -> Bool = { true },
             onCompositionChange: @escaping (Bool) -> Void = { _ in },
-            revealSourceLocation: @escaping @MainActor (String) -> Int? = { _ in nil },
+            revealSourceSelection: @escaping @MainActor (String) -> NSRange? = { _ in nil },
             onChange: @escaping (String) -> Void
         ) {
             self.canEdit = canEdit
             self.onCompositionChange = onCompositionChange
-            self.revealSourceLocation = revealSourceLocation
+            self.revealSourceSelection = revealSourceSelection
             self.onChange = onChange
         }
 
@@ -525,22 +525,24 @@ public struct TextKitEditor: NSViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 self.revealScheduled = false
-                self.revealSourceLocationIfAvailable()
+                self.revealSourceSelectionIfAvailable()
             }
         }
 
-        private func revealSourceLocationIfAvailable() {
+        private func revealSourceSelectionIfAvailable() {
             guard let textView, textView.canRevealSource else { return }
             let source = textView.string
-            guard let offset = revealSourceLocation(source), offset >= 0 else { return }
+            guard let range = revealSourceSelection(source), range.location >= 0, range.length >= 0 else { return }
             let utf16 = source.utf16
-            guard offset <= utf16.count,
-                  String.Index(utf16.index(utf16.startIndex, offsetBy: offset), within: source) != nil,
+            let length = utf16.count
+            guard range.location <= length, range.length <= length - range.location else { return }
+            let start = utf16.index(utf16.startIndex, offsetBy: range.location)
+            let end = utf16.index(start, offsetBy: range.length)
+            guard String.Index(start, within: source) != nil, String.Index(end, within: source) != nil,
                   self.textView === textView, textView.canRevealSource,
                   textView.string.utf8.elementsEqual(source.utf8) else { return }
-            let caret = NSRange(location: offset, length: 0)
-            textView.setSelectedRange(caret)
-            textView.scrollRangeToVisible(caret)
+            textView.setSelectedRange(range)
+            textView.scrollRangeToVisible(range)
         }
 
         fileprivate func didFinishTextInput() {
