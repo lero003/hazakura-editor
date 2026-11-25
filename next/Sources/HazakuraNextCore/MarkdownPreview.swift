@@ -30,7 +30,7 @@ package enum MarkdownPreview {
 
     package struct Block: Sendable, Equatable {
         package enum Kind: Sendable, Equatable {
-            case paragraph, heading(level: Int), codeBlock, thematicBreak, unsupported(Unsupported)
+            case paragraph, heading(level: Int), codeBlock, thematicBreak, table, unsupported(Unsupported)
         }
 
         package let kind: Kind
@@ -38,6 +38,12 @@ package enum MarkdownPreview {
         package let containers: [Container]
         package fileprivate(set) var runs: [Run]
         package fileprivate(set) var headingLocation: HeadingLocation?
+        package let table: Table?
+    }
+
+    package struct Table: Sendable, Equatable {
+        /// Rectangular rows of cells. Row zero is the header; empty cells have no runs.
+        package let rows: [[[Run]]]
     }
 
     package struct Run: Sendable, Equatable {
@@ -51,8 +57,10 @@ package enum MarkdownPreview {
     private static let byteLimit = 128 * 1_024
     private static let blockLimit = 2_000
     private static let runsPerBlockLimit = 512
+    private static let tableColumnLimit = 8
+    private static let tableRowLimit = 32
     private static let intentDepthLimit = 32
-    // A parsed run and each of its intent components count as one unit, even for fallbacks.
+    // Charge parsed runs and intent components even for fallbacks, and every cell in displayed tables.
     private static let projectionWorkLimit = 8_192
 
     @concurrent
@@ -79,6 +87,7 @@ package enum MarkdownPreview {
 
         var blocks: [Block] = []
         var currentKey: BlockKey?
+        var currentTable: TableProjection?
         var seenListItems: Set<Int> = []
         var remainingWork = projectionWorkLimit
         var sourceLines: SourceLines?
@@ -94,19 +103,29 @@ package enum MarkdownPreview {
             let inline = run.inlinePresentationIntent ?? []
             let (key, kind) = blockDetails(components, isBlockHTML: inline.contains(.blockHTML))
             if currentKey != key {
+                guard finishTable(currentTable, in: &blocks, remainingWork: &remainingWork) else {
+                    try Task.checkCancellation()
+                    return .unavailable(.tooComplex)
+                }
                 guard blocks.count < blockLimit else {
                     try Task.checkCancellation()
                     return .unavailable(.tooManyBlocks)
                 }
                 currentKey = key
-                blocks.append(Block(kind: kind, containers: containers(components, seenListItems: &seenListItems), runs: []))
+                currentTable = kind == .table ? TableProjection() : nil
+                // Commit a table only after all of its runs have validated.
+                blocks.append(Block(kind: kind == .table ? .unsupported(.table) : kind,
+                                    containers: containers(components, seenListItems: &seenListItems), runs: [], table: nil))
                 headingSpans.append(nil)
             }
 
             switch kind {
             case .thematicBreak, .unsupported:
-                // No parser placeholder, HTML, or table attributes enter the model.
                 continue
+            case .table:
+                if currentTable?.append(run, in: parsed, inline: inline, components: components) == false {
+                    currentTable = nil
+                }
             case .paragraph, .heading, .codeBlock:
                 let blockIndex = blocks.count - 1
                 guard blocks[blockIndex].runs.count < runsPerBlockLimit else {
@@ -135,9 +154,95 @@ package enum MarkdownPreview {
                 blocks[blockIndex].runs.append(displayRun(run, in: parsed, inline: inline))
             }
         }
+        guard finishTable(currentTable, in: &blocks, remainingWork: &remainingWork) else {
+            try Task.checkCancellation()
+            return .unavailable(.tooComplex)
+        }
         if let sourceLines { try sourceLines.locateHeadings(headingSpans, in: &blocks) }
         try Task.checkCancellation()
         return .rendered(blocks)
+    }
+
+    private static func finishTable(
+        _ projection: TableProjection?, in blocks: inout [Block], remainingWork: inout Int
+    ) -> Bool {
+        guard let projection else { return true }
+        // Empty slots cost work in search and rendering even if Foundation omitted their runs.
+        let cellCount = projection.rows.reduce(0) { $0 + $1.count }
+        guard cellCount <= remainingWork else { return false }
+        remainingWork -= cellCount
+        let index = blocks.count - 1
+        blocks[index] = Block(kind: .table, containers: blocks[index].containers, runs: [],
+                              table: Table(rows: projection.rows))
+        return true
+    }
+
+    private struct TableProjection {
+        private(set) var rows: [[[Run]]] = []
+        private var tableAndWrappers: [PresentationIntent.IntentType]?
+        private var row: (index: Int, identity: Int)?
+        private var cell: (index: Int, identity: Int)?
+        private var seenIdentities: Set<Int> = []
+        private var runCount = 0
+
+        mutating func append(
+            _ run: AttributedString.Runs.Run,
+            in parsed: AttributedString,
+            inline: InlinePresentationIntent,
+            components: [PresentationIntent.IntentType]
+        ) -> Bool {
+            guard runCount < runsPerBlockLimit, !inline.contains(.blockHTML), components.count >= 3,
+                  case .tableCell(let columnIndex) = components[0].kind,
+                  case .table(let columns) = components[2].kind,
+                  columns.count <= tableColumnLimit, columns.indices.contains(columnIndex) else { return false }
+            let rowIndex: Int
+            switch components[1].kind {
+            case .tableHeaderRow: rowIndex = 0
+            case .tableRow(let index) where index > 0: rowIndex = index
+            default: return false
+            }
+            guard rowIndex < tableRowLimit else { return false }
+
+            let suffix = components[2...]
+            if let tableAndWrappers {
+                guard tableAndWrappers.elementsEqual(suffix) else { return false }
+            } else {
+                guard suffix.dropFirst().allSatisfy({ component in
+                    switch component.kind {
+                    case .blockQuote, .orderedList, .unorderedList, .listItem: true
+                    default: false
+                    }
+                }) else { return false }
+                tableAndWrappers = Array(suffix)
+                seenIdentities = Set(suffix.map(\.identity))
+                guard seenIdentities.count == suffix.count else { return false }
+            }
+
+            let rowIdentity = components[1].identity
+            if rowIndex != row?.index {
+                guard rowIndex > (row?.index ?? -1), seenIdentities.insert(rowIdentity).inserted else { return false }
+                row = (rowIndex, rowIdentity)
+                cell = nil
+            } else if rowIdentity != row?.identity {
+                return false
+            }
+            let cellIdentity = components[0].identity
+            if columnIndex != cell?.index {
+                guard columnIndex > (cell?.index ?? -1), seenIdentities.insert(cellIdentity).inserted else { return false }
+                cell = (columnIndex, cellIdentity)
+            } else if cellIdentity != cell?.identity {
+                return false
+            }
+
+            // Foundation omits runs for empty cells; ordinals establish the gaps. A
+            // trailing empty row or wholly empty table with no intents is not visible here.
+            while rows.count <= rowIndex {
+                rows.append(Array(repeating: [], count: columns.count))
+            }
+            rows[rowIndex][columnIndex].append(displayRun(run, in: parsed, inline: inline))
+            runCount += 1
+            return true
+        }
     }
 
     private typealias SourcePosition = AttributedString.MarkdownSourcePosition
@@ -264,13 +369,17 @@ package enum MarkdownPreview {
     }
 
     private enum BlockKey: Equatable {
-        case intent(Int), html(Int?), plain
+        case intent(Int), table(Int), html(Int?), plain
     }
 
     private static func blockDetails(
         _ components: [PresentationIntent.IntentType],
         isBlockHTML: Bool
     ) -> (BlockKey, Block.Kind) {
+        // Group by the outer table even if an unexpected child intent makes it invalid.
+        if let table = components.last(where: { if case .table = $0.kind { true } else { false } }) {
+            return (.table(table.identity), .table)
+        }
         if isBlockHTML { return (.html(components.first?.identity), .unsupported(.html)) }
         guard let first = components.first else { return (.plain, .paragraph) }
         let key = BlockKey.intent(first.identity)
@@ -280,9 +389,7 @@ package enum MarkdownPreview {
         case .codeBlock: return (key, .codeBlock)
         case .thematicBreak: return (key, .thematicBreak)
         case .table, .tableHeaderRow, .tableRow, .tableCell:
-            // Foundation can split a table into runs per cell; use one fallback per table.
-            let table = components.first { if case .table = $0.kind { true } else { false } }
-            return (.intent(table?.identity ?? first.identity), .unsupported(.table))
+            return (key, .unsupported(.table))
         case .orderedList, .unorderedList, .listItem, .blockQuote:
             return (key, .unsupported(.other))
         @unknown default:

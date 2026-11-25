@@ -11,6 +11,7 @@ struct MarkdownPDFExportTests {
         let source = "# StartMarker\n\n"
             + "[LinkLabel](https://example.invalid/pdf-target) ![ImageLabel](file:///never-read-pdf-fixture)\n\n"
             + "<script>authorScriptMarker</script>\n\n"
+            + "| TableHeaderMarker | Other |\n| --- | --- |\n| [TableCellMarker](https://example.invalid/table-target) | `&` |\n\n"
             + String(repeating: "Body paragraph\n\n", count: 275)
             + "```text\n" + String(repeating: "幅", count: 150) + "\nCodeEndMarker\n```\n\n"
             + "## EndMarker 末尾の日本語"
@@ -19,12 +20,12 @@ struct MarkdownPDFExportTests {
         #expect(document.pageCount == 1)
         let page = try #require(document.page(at: 0))
         let text = try #require(page.string)
-        for label in ["StartMarker", "LinkLabel", "ImageLabel", "CodeEndMarker", "EndMarker"] {
+        for label in ["StartMarker", "LinkLabel", "ImageLabel", "TableHeaderMarker", "TableCellMarker", "CodeEndMarker", "EndMarker"] {
             #expect(text.contains(label))
         }
         // PDFKit can extract the same glyph as the Unicode Kangxi radical (e.g. ⽇).
         #expect(text.precomposedStringWithCompatibilityMapping.contains("末尾の日本語"))
-        for dropped in ["pdf-target", "never-read-pdf-fixture", "authorScriptMarker"] {
+        for dropped in ["pdf-target", "table-target", "never-read-pdf-fixture", "authorScriptMarker"] {
             #expect(!text.contains(dropped))
         }
         #expect(page.annotations.isEmpty)

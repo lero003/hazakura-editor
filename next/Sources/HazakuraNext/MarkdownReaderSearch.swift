@@ -61,10 +61,16 @@ enum MarkdownReaderSearch {
 
     /// The renderer caps input, block and run counts. View-only labels with no runs are not searchable.
     private static func matchingBlockIndices(for needle: String, in blocks: [MarkdownPreview.Block]) -> [Int] {
-        blocks.indices.filter { index in
-            let text = blocks[index].runs.map(\.text).joined()
+        func matches(_ runs: [MarkdownPreview.Run]) -> Bool {
             // Nonliteral matching preserves canonical equivalence without folding width or diacritics.
-            return text.range(of: needle, options: .caseInsensitive) != nil
+            runs.map(\.text).joined().range(of: needle, options: .caseInsensitive) != nil
+        }
+        return blocks.indices.filter { index in
+            let block = blocks[index]
+            if let table = block.table {
+                return table.rows.contains { row in row.contains(where: { matches($0) }) }
+            }
+            return matches(block.runs)
         }
     }
 }

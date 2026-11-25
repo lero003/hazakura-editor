@@ -475,7 +475,7 @@ struct MarkdownPreviewBlockView: View {
             }
         }
         .padding(.leading, CGFloat(min(block.containers.count, 4)) * 12)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: block.kind == .table ? .contain : .combine)
     }
 
     private typealias ContainerMarker = (symbol: String, label: String)
@@ -505,7 +505,7 @@ struct MarkdownPreviewBlockView: View {
     private var content: some View {
         switch block.kind {
         case .heading, .paragraph:
-            Text(styledText)
+            Text(styledText(block.runs, baseFont: baseFont))
                 .fixedSize(horizontal: false, vertical: true)
         case .codeBlock:
             let text = plainText
@@ -520,20 +520,58 @@ struct MarkdownPreviewBlockView: View {
             Divider()
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("区切り線")
+        case .table:
+            if let table = block.table {
+                tableGrid(table)
+            } else {
+                unsupportedContent(.table)
+            }
         case .unsupported(let kind):
-            VStack(alignment: .leading, spacing: 4) {
-                Text(unsupportedLabel(kind))
-                    .font(.callout.weight(.medium))
-                if !block.runs.isEmpty {
-                    Text(verbatim: plainText)
-                        .font(.callout.monospaced())
-                        .fixedSize(horizontal: false, vertical: true)
+            unsupportedContent(kind)
+        }
+    }
+
+    private func tableGrid(_ table: MarkdownPreview.Table) -> some View {
+        Grid(alignment: .leading, horizontalSpacing: 1, verticalSpacing: 1) {
+            ForEach(table.rows.indices, id: \.self) { row in
+                GridRow(alignment: .top) {
+                    ForEach(table.rows[row].indices, id: \.self) { column in
+                        let runs = table.rows[row][column]
+                        let isHeader = row == 0
+                        Text(styledText(runs, baseFont: isHeader ? .callout.weight(.semibold) : .callout))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 3)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                            .background {
+                                Rectangle().fill(.background)
+                                if isHeader { Rectangle().fill(.primary.opacity(0.08)) }
+                            }
+                            .accessibilityLabel(runs.isEmpty ? Text("空欄") : Text(verbatim: runs.map(\.text).joined()))
+                            .accessibilityAddTraits(isHeader ? .isHeader : [])
+                    }
                 }
             }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quaternary.opacity(0.4), in: .rect(cornerRadius: 6))
         }
+        .padding(1)
+        .background(.quaternary)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("表")
+    }
+
+    private func unsupportedContent(_ kind: MarkdownPreview.Unsupported) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(unsupportedLabel(kind))
+                .font(.callout.weight(.medium))
+            if !block.runs.isEmpty {
+                Text(verbatim: plainText)
+                    .font(.callout.monospaced())
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.quaternary.opacity(0.4), in: .rect(cornerRadius: 6))
     }
 
     private var plainText: String { block.runs.map(\.text).joined() }
@@ -560,9 +598,8 @@ struct MarkdownPreviewBlockView: View {
         }
     }
 
-    private var styledText: AttributedString {
-        let baseFont = baseFont
-        return block.runs.reduce(into: AttributedString()) { text, run in
+    private func styledText(_ runs: [MarkdownPreview.Run], baseFont: Font) -> AttributedString {
+        runs.reduce(into: AttributedString()) { text, run in
             // Build from plain strings and allowlisted styles only, never parser attributes.
             var fragment = AttributedString(run.text)
             var font = baseFont
@@ -577,7 +614,7 @@ struct MarkdownPreviewBlockView: View {
 
     private func unsupportedLabel(_ kind: MarkdownPreview.Unsupported) -> LocalizedStringKey {
         switch kind {
-        case .table: "表の整形には対応していません。"
+        case .table: "この表は表示できません。"
         case .html: "HTMLの表示には対応していません。"
         case .other: "このMarkdown記法には対応していません。"
         }

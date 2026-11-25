@@ -125,21 +125,112 @@ struct MarkdownPreviewTests {
         #expect(block.runs.filter(\.strong).map(\.text).joined() == "e")
     }
 
-    @Test func htmlAndTablesReduceToInertFallbacks() async throws {
+    @Test func htmlRemainsInertBeforeAndAlongsideATable() async throws {
         let blocks = try await render("""
             前 <span title="補足">中</span> 後
 
             <section>外部のHTML</section>
 
-            | 項目 | 値 |
-            | --- | --- |
-            | 一 | 二 |
+            | *項目* | 値 | コード |
+            | --- | --- | --- |
+            | [原稿](./private.md) **太字** | ![眺め](https://example.invalid/image) | `x` <b>中</b> |
 
             最後
             """)
 
-        #expect(blocks.map(\.kind) == [.paragraph, .unsupported(.html), .unsupported(.table), .paragraph])
+        #expect(blocks.map(\.kind) == [.paragraph, .unsupported(.html), .table, .paragraph])
         #expect(blocks.map(text) == ["前 ［HTML非表示］中［HTML非表示］ 後", "", "", "最後"])
+        let rows = try #require(blocks.first { $0.kind == .table }?.table?.rows)
+        #expect(cellText(rows) == [["項目", "値", "コード"], ["原稿 太字", "［画像：眺め］", "x ［HTML非表示］中［HTML非表示］"]])
+        let runs = rows.flatMap { $0.flatMap { $0 } }
+        #expect(runs.filter(\.emphasis).map(\.text) == ["項目"])
+        #expect(runs.filter(\.strong).map(\.text) == ["太字"])
+        #expect(runs.filter(\.code).map(\.text) == ["x"])
+    }
+
+    @Test func tableReconstructsEmptyCellsAndRowsFromParserOrdinals() async throws {
+        let blocks = try await render("""
+            | | | |
+            | :--- | :---: | ---: |
+            | 一 | | 三 |
+            | | | |
+            | a\\|b | 二 |
+            """)
+
+        #expect(blocks.map(\.kind) == [.table])
+        let rows = try #require(blocks.first?.table?.rows)
+        #expect(cellText(rows) == [["", "", ""], ["一", "", "三"], ["", "", ""], ["a|b", "二", ""]])
+        #expect(rows.flatMap { $0 }.filter(\.isEmpty).count == 8)
+    }
+
+    @Test func tablesRetainWrappersAndKeepHeadingLocations() async throws {
+        let blocks = try await render("""
+            # 前
+
+            > 4. | 項目 | 値 |
+            >    | --- | --- |
+            >    | 一 | 二 |
+            >
+            >    続き
+
+            ## 次
+
+            | 最後 |
+            | --- |
+            """)
+
+        #expect(blocks.map(\.kind) == [.heading(level: 1), .table, .paragraph, .heading(level: 2), .table])
+        #expect(blocks.map(\.containers) == [[], [.quote, .listItem(marker: "4.")], [.quote, .listItem(marker: nil)], [], []])
+        #expect(blocks.map { $0.headingLocation?.line } == [1, nil, nil, 9, nil])
+        #expect(blocks.compactMap(\.table).map { cellText($0.rows) } == [[["項目", "値"], ["一", "二"]], [["最後"]]])
+    }
+
+    @Test(arguments: [(8, 32), (9, 32), (8, 33)])
+    func tableDimensionLimitsAreInclusive(columns: Int, rows: Int) async throws {
+        let blocks = try await render("前\n\n" + tableSource(columns: columns, rows: rows) + "\n\n後")
+
+        if columns == 8, rows == 32 {
+            #expect(blocks.map(\.kind) == [.paragraph, .table, .paragraph])
+            let table = try #require(blocks.first { $0.kind == .table }?.table)
+            #expect(cellText(table.rows) == Array(repeating: Array(repeating: "値", count: 8), count: 32))
+        } else {
+            #expect(blocks.map(\.kind) == [.paragraph, .unsupported(.table), .paragraph])
+            #expect(blocks.allSatisfy { $0.table == nil })
+            #expect(blocks.map(text) == ["前", "", "後"])
+        }
+    }
+
+    @Test func tableRunLimitFallsBackWithoutDiscardingSurroundingBlocks() async throws {
+        let prefix = "前\n\n| 甲 | 乙 |\n| --- | --- |\n| "
+        let suffix = " | |\n\n後"
+        let atLimit = String(repeating: "`甲` 乙 ", count: 255)
+        let bounded = try await render(prefix + atLimit + suffix)
+        #expect(bounded.map(\.kind) == [.paragraph, .table, .paragraph])
+        let table = try #require(bounded.first { $0.kind == .table }?.table)
+        #expect(table.rows.flatMap { $0 }.reduce(0) { $0 + $1.count } == 512)
+
+        let excessive = try await render(prefix + atLimit + "`甲`" + suffix)
+        #expect(excessive.map(\.kind) == [.paragraph, .unsupported(.table), .paragraph])
+        #expect(excessive.allSatisfy { $0.table == nil })
+        #expect(excessive.map(text) == ["前", "", "後"])
+    }
+
+    @Test func tableFallbacksStillCountTowardCumulativeProjectionWork() async throws {
+        let table = tableSource(columns: 9, rows: 32)
+        let source = Array(repeating: table, count: 8).joined(separator: "\n\n")
+        #expect(try await MarkdownPreview.render(source) == .unavailable(.tooComplex))
+    }
+
+    @Test func sparseTablesCountEmptySlotsTowardDocumentWork() async throws {
+        let emptyRow = String(repeating: "| ", count: 8) + "|"
+        let separator = String(repeating: "| --- ", count: 8) + "|"
+        let lastRow = "| 終点 " + String(repeating: "| ", count: 7) + "|"
+        let table = ([emptyRow, separator] + Array(repeating: emptyRow, count: 30) + [lastRow]).joined(separator: "\n")
+        let bounded = Array(repeating: table, count: 31).joined(separator: "\n\n")
+        let blocks = try await render(bounded)
+        #expect(blocks.count == 31)
+        #expect(blocks.allSatisfy { $0.table?.rows.count == 32 })
+        #expect(try await MarkdownPreview.render(bounded + "\n\n" + table) == .unavailable(.tooComplex))
     }
 
     @Test func emptyAndWhitespaceOnlyInputProduceNoBlocks() async throws {
@@ -201,6 +292,16 @@ struct MarkdownPreviewTests {
 
     private func text(_ block: MarkdownPreview.Block) -> String {
         block.runs.map(\.text).joined()
+    }
+
+    private func cellText(_ rows: [[[MarkdownPreview.Run]]]) -> [[String]] {
+        rows.map { $0.map { $0.map(\.text).joined() } }
+    }
+
+    private func tableSource(columns: Int, rows: Int) -> String {
+        let row = "|" + String(repeating: " 値 |", count: columns)
+        let separator = "|" + String(repeating: " --- |", count: columns)
+        return ([row, separator] + Array(repeating: row, count: rows - 1)).joined(separator: "\n")
     }
 
     private struct RenderUnavailable: Error {}

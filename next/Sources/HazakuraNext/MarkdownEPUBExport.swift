@@ -122,7 +122,9 @@ enum MarkdownEPUBExport {
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="\(language)" lang="\(language)">
         <head>
         <title>\(escapedTitle)</title>
-        <style>p,h1,h2,h3,h4,h5,h6,pre { white-space: pre-wrap; overflow-wrap: anywhere }</style>
+        <style>
+        \(MarkdownHTMLExport.blockStyles)
+        </style>
         </head>
         <body>
         \(body)

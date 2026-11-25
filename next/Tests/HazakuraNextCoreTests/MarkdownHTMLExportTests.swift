@@ -66,13 +66,33 @@ struct MarkdownHTMLExportTests {
         #expect(html.contains("<code>&lt;/code&gt; &lt;span&gt; &amp;lt; &amp; &quot; &#39;</code>"))
         #expect(html.contains("前 ［HTML非表示］中［HTML非表示］ 後"))
         #expect(html.contains("HTMLの表示には対応していません。"))
-        #expect(html.contains("表の整形には対応していません。"))
+        #expect(html.contains("<table>"))
+        #expect(html.contains("<th scope=\"col\">項目</th>"))
+        #expect(html.contains("<td>二</td>"))
         #expect(html.contains("外部のHTML") == false)
         #expect(html.contains("color: red") == false)
         #expect(html.contains("<span") == false)
         #expect(html.contains("<section") == false)
-        #expect(html.contains("<table") == false)
         #expect(html.contains("<p>最後</p>"))
+    }
+
+    @Test func tableCellsUseTheSameEscapingForHTMLAndXHTML() async throws {
+        let source = """
+            | 見出し | 値 |
+            | --- | --- |
+            | **[参照](https://example.invalid/hidden)** | `</td><img>` & ![絵](https://example.invalid/image) |
+            """
+        let blocks = try await MarkdownHTMLExport.projectedBlocks(source: source)
+        let html = try await MarkdownHTMLExport.render(source: source)
+        let xhtml = try MarkdownHTMLExport.renderXHTMLFragment(blocks[...])
+        for output in [html, xhtml] {
+            #expect(output.contains("<thead>\n<tr><th scope=\"col\">見出し</th><th scope=\"col\">値</th></tr>"))
+            #expect(output.contains("<td><strong>参照</strong></td>"))
+            #expect(output.contains("<td><code>&lt;/td&gt;&lt;img&gt;</code> &amp; ［画像：絵］</td>"))
+            for absent in ["example.invalid", "<a ", "<img", "href=", "src="] {
+                #expect(output.contains(absent) == false)
+            }
+        }
     }
 
     @Test func exposesLabelsAndVisibleURLTextButNoActiveReferences() async throws {

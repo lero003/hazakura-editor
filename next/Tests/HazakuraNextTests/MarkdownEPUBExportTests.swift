@@ -115,6 +115,27 @@ struct MarkdownEPUBExportTests {
         #expect(try nodes("a", in: nav).map(\.stringValue) == [h1])
     }
 
+    @Test func includesSemanticTableInTheReadingChapterWithoutActiveReferences() async throws {
+        let files = try await exportedFiles("""
+            # 章
+
+            | 項目 | 値 |
+            | --- | --- |
+            | [しおり](./hidden.md) | `</td>` |
+            """)
+        let chapter = try document("EPUB/chapter-1.xhtml", in: files)
+        #expect(try nodes("table", in: chapter).count == 1)
+        #expect(try nodes("thead", in: chapter).count == 1)
+        #expect(try nodes("th", in: chapter).map(\.stringValue) == ["項目", "値"])
+        #expect(try nodes("td", in: chapter).map(\.stringValue) == ["しおり", "</td>"])
+        #expect(try chapter.nodes(forXPath: "//*[@href or @src]").isEmpty)
+        let style = try #require(nodes("style", in: chapter).first?.stringValue)
+        #expect(style.contains("table-layout: fixed"))
+        #expect(style.contains("pre,th,td { white-space: pre-wrap; overflow-wrap: anywhere }"))
+        let raw = String(decoding: try #require(files["EPUB/chapter-1.xhtml"]), as: UTF8.self)
+        #expect(!raw.contains("hidden.md"))
+    }
+
     @Test func usesOneFallbackChapterWithoutRootChapterHeadings() async throws {
         let files = try await exportedFiles("本文\n\n### 小見出し\n\n> # 引用")
         let nav = try document("EPUB/nav.xhtml", in: files)

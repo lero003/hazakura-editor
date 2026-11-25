@@ -90,20 +90,31 @@ struct MarkdownReaderSearchTests {
     }
 
     @Test func doesNotSearchFallbacksWithoutTextualRuns() async throws {
-        let blocks = try await render("""
-            <section>hidden-html</section>
-
-            | hidden-cell | 値 |
-            | --- | --- |
-            | 内容 | 二 |
-
-            ---
-            """)
+        let wideTable = ["| hidden-cell" + String(repeating: " | 値", count: 8) + " |",
+                         String(repeating: "| --- ", count: 9) + "|"].joined(separator: "\n")
+        let blocks = try await render("<section>hidden-html</section>\n\n\(wideTable)\n\n---")
         try #require(blocks.map(\.kind) == [.unsupported(.html), .unsupported(.table), .thematicBreak])
 
         for hidden in ["hidden-html", "hidden-cell", "HTML", "表", "---"] {
             #expect(MarkdownReaderSearch.search(hidden, in: blocks) == .matches([]))
         }
+    }
+
+    @Test func searchesWithinEachTableCellAndReturnsTheTableOnlyOnce() async throws {
+        let blocks = try await render("""
+            ## 日記
+
+            | 見出し | 記録 |
+            | --- | --- |
+            | 青い**桜** | [桜が咲く](./hidden-table-link.md) |
+
+            本文
+            """)
+        #expect(MarkdownReaderSearch.search("青い桜", in: blocks) == .matches([1]))
+        #expect(MarkdownReaderSearch.search("桜", in: blocks) == .matches([1]))
+        #expect(MarkdownReaderSearch.search("記録", in: blocks) == .matches([1]))
+        #expect(MarkdownReaderSearch.search("桜桜", in: blocks) == .matches([]))
+        #expect(MarkdownReaderSearch.search("hidden-table-link", in: blocks) == .matches([]))
     }
 
     private func render(_ source: String, sourceLocation: SourceLocation = #_sourceLocation) async throws -> [MarkdownPreview.Block] {

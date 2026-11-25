@@ -4,6 +4,13 @@ package enum MarkdownHTMLExport {
         case unavailable(MarkdownPreview.Limit), tooLarge
     }
 
+    // Fixed by the renderer; no styles or attributes are taken from the source.
+    package static let blockStyles: StaticString = """
+        p,h1,h2,h3,h4,h5,h6,pre,th,td { white-space: pre-wrap; overflow-wrap: anywhere }
+        table { width: 100%; table-layout: fixed; border-collapse: collapse }
+        th,td { border: 1px solid; padding: 0.3em; text-align: start; vertical-align: top }
+        """
+
     @concurrent
     package static func render(source: String) async throws -> String {
         let blocks = try await projectedBlocks(source: source)
@@ -17,7 +24,13 @@ package enum MarkdownHTMLExport {
             <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Hazakura Editor</title>
-            <style>p,h1,h2,h3,h4,h5,h6,pre { white-space: pre-wrap; overflow-wrap: anywhere }</style>
+            <style>
+
+            """)
+        try output.appendMarkup(blockStyles)
+        try output.appendMarkup("""
+
+            </style>
             </head>
             <body>
 
@@ -140,8 +153,11 @@ package enum MarkdownHTMLExport {
         case .heading: tags = ("<h6>", "</h6>\n")
         case .codeBlock: tags = ("<pre><code>", "</code></pre>\n")
         case .thematicBreak: return try output.appendMarkup(output.xhtml ? "<hr />\n" : "<hr>\n")
+        case .table:
+            if let table = block.table { return try appendTable(table, to: &output) }
+            fallthrough
+        case .unsupported(.table): return try output.appendMarkup("<p>この表は表示できません。</p>\n")
         case .unsupported(.html): return try output.appendMarkup("<p>HTMLの表示には対応していません。</p>\n")
-        case .unsupported(.table): return try output.appendMarkup("<p>表の整形には対応していません。</p>\n")
         case .unsupported(.other): return try output.appendMarkup("<p>このMarkdown記法には対応していません。</p>\n")
         }
         try output.appendMarkup(tags.open)
@@ -149,18 +165,40 @@ package enum MarkdownHTMLExport {
             if block.kind == .codeBlock {
                 try output.appendText(run.text)
             } else {
-                if run.strong { try output.appendMarkup("<strong>") }
-                if run.emphasis { try output.appendMarkup("<em>") }
-                if run.strikethrough { try output.appendMarkup("<del>") }
-                if run.code { try output.appendMarkup("<code>") }
-                try output.appendText(run.text)
-                if run.code { try output.appendMarkup("</code>") }
-                if run.strikethrough { try output.appendMarkup("</del>") }
-                if run.emphasis { try output.appendMarkup("</em>") }
-                if run.strong { try output.appendMarkup("</strong>") }
+                try appendInlineRun(run, to: &output)
             }
         }
         try output.appendMarkup(tags.close)
+    }
+
+    private static func appendTable(_ table: MarkdownPreview.Table, to output: inout Output) throws {
+        try output.appendMarkup("<table>\n<thead>\n")
+        for (index, row) in table.rows.enumerated() {
+            try Task.checkCancellation()
+            if index == 1 { try output.appendMarkup("<tbody>\n") }
+            try output.appendMarkup("<tr>")
+            for cell in row {
+                try output.appendMarkup(index == 0 ? "<th scope=\"col\">" : "<td>")
+                for run in cell { try appendInlineRun(run, to: &output) }
+                try output.appendMarkup(index == 0 ? "</th>" : "</td>")
+            }
+            try output.appendMarkup("</tr>\n")
+            if index == 0 { try output.appendMarkup("</thead>\n") }
+        }
+        if table.rows.count > 1 { try output.appendMarkup("</tbody>\n") }
+        try output.appendMarkup("</table>\n")
+    }
+
+    private static func appendInlineRun(_ run: MarkdownPreview.Run, to output: inout Output) throws {
+        if run.strong { try output.appendMarkup("<strong>") }
+        if run.emphasis { try output.appendMarkup("<em>") }
+        if run.strikethrough { try output.appendMarkup("<del>") }
+        if run.code { try output.appendMarkup("<code>") }
+        try output.appendText(run.text)
+        if run.code { try output.appendMarkup("</code>") }
+        if run.strikethrough { try output.appendMarkup("</del>") }
+        if run.emphasis { try output.appendMarkup("</em>") }
+        if run.strong { try output.appendMarkup("</strong>") }
     }
 
     // Markup must be a literal. Both markup and escaped display text count toward
