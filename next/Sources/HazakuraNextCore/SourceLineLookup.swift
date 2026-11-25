@@ -9,15 +9,31 @@ package enum SourceLineLookup {
         guard oneBasedLine > 0 else { return nil }
         if oneBasedLine == 1 { return 0 }
 
-        var remainingBreaks = oneBasedLine - 1
+        // Do not transcode the whole string just to find an early line. A Swift
+        // string bridged from AppKit may still have UTF-16 backing storage.
+        guard source.isContiguousUTF8 else {
+            return offset(after: oneBasedLine - 1, in: source.utf16) { _ in 1 }
+        }
+        var storage = source
+        return storage.withUTF8 { bytes in
+            offset(after: oneBasedLine - 1, in: bytes) { byte in
+                // Continuation bytes add no units. A supplementary scalar adds two.
+                byte & 0xC0 == 0x80 ? 0 : (byte >= 0xF0 ? 2 : 1)
+            }
+        }
+    }
+
+    private static func offset<Units: Collection>(
+        after breaks: Int, in units: Units, utf16Width: (Units.Element) -> Int
+    ) -> Int? where Units.Element: FixedWidthInteger {
+        var remainingBreaks = breaks
         var offset = 0
-        let units = source.utf16
         let end = units.endIndex
         var cursor = units.startIndex
         while cursor != end {
             let unit = units[cursor]
             units.formIndex(after: &cursor)
-            offset += 1
+            offset += utf16Width(unit)
 
             guard unit == 0x0D || unit == 0x0A else { continue }
             if unit == 0x0D, cursor != end, units[cursor] == 0x0A {

@@ -1,3 +1,4 @@
+import Foundation
 import HazakuraNextCore
 import Testing
 
@@ -41,6 +42,25 @@ struct SourceLineLookupTests {
     @Test(arguments: [Int.min, -1, 0, 4, Int.max])
     func rejectsOutOfRangeLineNumbers(line: Int) {
         #expect(SourceLineLookup.utf16Offset(of: line, in: "甲\r\n乙\r\n") == nil)
+    }
+
+    @Test(arguments: [false, true])
+    func lineOffsetsAgreeForSwiftAndFoundationText(_ bridgeFromFoundation: Bool) throws {
+        let source = String(repeating: "行🌸\r\ne\u{0301}\r終\u{2028}\n", count: 1_000)
+        let input: String
+        if bridgeFromFoundation {
+            let snapshot = try #require(NSMutableString(string: source).copy() as? NSString)
+            input = snapshot as String
+        } else {
+            input = source
+        }
+
+        #expect(SourceLineLookup.utf16Offset(of: 1, in: input) == 0)
+        #expect(SourceLineLookup.utf16Offset(of: 2, in: input) == 5)
+        #expect(SourceLineLookup.utf16Offset(of: 3, in: input) == 8)
+        #expect(SourceLineLookup.utf16Offset(of: 4, in: input) == 11)
+        #expect(SourceLineLookup.utf16Offset(of: 3_001, in: input) == 11_000)
+        #expect(SourceLineLookup.utf16Offset(of: 3_002, in: input) == nil)
     }
 
     @Test func findsTheFinalLineAtTheWorkspaceSizeLimit() {
