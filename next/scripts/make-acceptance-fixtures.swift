@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 private func createPrivateDirectory(at url: URL) throws {
@@ -117,13 +118,18 @@ private func generate() throws -> URL {
     let oldMask = umask(0o077)
     defer { _ = umask(oldMask) }
     try createPrivateDirectory(at: root)
+    var checksums = ""
     for lane in ["first", "next"] {
         let folder = root.appendingPathComponent(lane, isDirectory: true)
         try createPrivateDirectory(at: folder)
         for (name, bytes) in fixtures {
             try bytes.write(to: folder.appendingPathComponent(name), options: .withoutOverwriting)
+            let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+            checksums += "\(digest)  \(lane)/\(name)\n"
         }
     }
+    // Keep the manifest outside both document directories and write it after the files.
+    try Data(checksums.utf8).write(to: root.appendingPathComponent("SHA256SUMS"), options: .withoutOverwriting)
     return root
 }
 
