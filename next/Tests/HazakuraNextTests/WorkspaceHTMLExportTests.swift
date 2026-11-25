@@ -313,7 +313,9 @@ struct WorkspaceHTMLExportTests {
         let task = Task { @MainActor in
             await session.writeRequestedExport(request, to: destination, using: .init(renderHTML: { _ in
                 await suspension.pause()
-                // Return a result even if cancellation was requested while suspended.
+                // Even if the renderer observes cancellation but still returns useful bytes,
+                // the request must not publish them.
+                #expect(Task.isCancelled)
                 return "<p>未確定</p>"
             }, writeHTML: unexpectedWrite))
             suspension.resume()

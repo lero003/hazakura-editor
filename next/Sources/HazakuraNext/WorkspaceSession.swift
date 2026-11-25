@@ -165,6 +165,7 @@ final class WorkspaceSession {
     // A live-tab record of successful writes, not a saved-document baseline or a URL.
     private var copyWrittenRevisions: [UUID: UInt64] = [:]
     private(set) var exportRequest: ExportRequest?
+    @ObservationIgnored private var cancelActiveExportRenderer: (() -> Void)?
     private var comparisonRequest: ComparisonRequest?
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
@@ -894,7 +895,9 @@ final class WorkspaceSession {
         guard let request = exportRequest, request.id == id else { return }
         switch request.phase {
         case .waitingForDestination, .picking: exportRequest = nil
-        case .rendering: exportRequest?.phase = .cancelled
+        case .rendering:
+            exportRequest?.phase = .cancelled
+            cancelActiveExportRenderer?()
         case .cancelled, .writing: break
         }
     }
@@ -951,14 +954,14 @@ final class WorkspaceSession {
 
     private func renderAndWriteExport<Payload: Sendable>(
         _ request: ExportRequest, to destination: URL,
-        render: @MainActor () async throws -> Payload,
+        render: @escaping @MainActor () async throws -> Payload,
         write: @MainActor (Payload, URL) async throws -> Void
     ) async {
         let name = request.format.name
         let owner = window
         let payload: Payload
         do {
-            payload = try await render()
+            payload = try await runExportRenderer(render)
         } catch is CancellationError {
             return
         } catch {
@@ -983,6 +986,23 @@ final class WorkspaceSession {
             default: reason = Self.copyWriteFailure(error)
             }
             fileNotice = "\(name)を書き出せませんでした。\(reason)"
+        }
+    }
+
+    private func runExportRenderer<Payload: Sendable>(
+        _ render: @escaping @MainActor () async throws -> Payload
+    ) async throws -> Payload {
+        // The window action can cancel only generation, not the surrounding picker or writer.
+        let task = Task { @MainActor in
+            try Task.checkCancellation()
+            return try await render()
+        }
+        cancelActiveExportRenderer = { task.cancel() }
+        defer { cancelActiveExportRenderer = nil }
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            task.cancel()
         }
     }
 
