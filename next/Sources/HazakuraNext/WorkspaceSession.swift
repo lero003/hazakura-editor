@@ -611,17 +611,16 @@ final class WorkspaceSession {
         }
         guard !Task.isCancelled, validateComparisonSource(request) else { return }
         do {
-            guard let disk = try await readSelected(), !Task.isCancelled, comparisonRequest?.id == id,
-                  validateComparisonSource(request) else { return }
+            guard let disk = try await readSelected(), canFinishOriginalComparison(request) else { return }
             let comparison = await compare(request.baseline, disk, request.draftSource)
             // Keep the read slot reserved through calculation, then revalidate before displaying it.
-            guard !Task.isCancelled, comparisonRequest?.id == id, validateComparisonSource(request) else { return }
+            guard canFinishOriginalComparison(request) else { return }
             comparisonReport = ComparisonReport(id: id, documentID: request.documentID,
                                                 revision: request.revision, comparison: comparison)
         } catch is CancellationError {
             // Cancelling the picker or the read must not publish a comparison.
         } catch {
-            guard !Task.isCancelled, comparisonRequest?.id == id else { return }
+            guard canFinishOriginalComparison(request) else { return }
             fileNotice = "比較先を読み取れませんでした。\(Self.readFailure(error))"
         }
     }
@@ -630,6 +629,10 @@ final class WorkspaceSession {
         _ baseline: SelectedTextFile, _ disk: SelectedTextFile, _ draft: String
     ) async -> OriginalFileComparison {
         OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
+    }
+
+    private func canFinishOriginalComparison(_ request: ComparisonRequest) -> Bool {
+        !Task.isCancelled && comparisonRequest?.id == request.id && validateComparisonSource(request)
     }
 
     private func validateComparisonSource(_ request: ComparisonRequest) -> Bool {

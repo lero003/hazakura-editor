@@ -349,6 +349,57 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
+    enum ReadFailureContext: CaseIterable {
+        case unchanged, nativeComposition, newRevision, cancelled
+    }
+
+    @Test(arguments: ReadFailureContext.allCases)
+    func comparisonReadFailureUsesTheCurrentDraftState(_ context: ReadFailureContext) async throws {
+        try await withOriginal { url, baseline, session, documentID in
+            let (window, view) = try attachNativeEditor(to: session)
+            defer { window.close() }
+            let originalDraft = "手元の編集"
+            let newDraft = "比較中に確定した文"
+            session.applyCommittedSource(originalDraft, to: documentID)
+            session.requestOriginalComparison()
+            let id = try #require(session.comparisonRequestID)
+            var markedRange: NSRange?
+
+            await session.readOriginalComparison(id) {
+                switch context {
+                case .unchanged: break
+                case .nativeComposition:
+                    markText(in: view)
+                    #expect(view.hasMarkedText() && !session.tabs.isComposing)
+                    markedRange = view.markedRange()
+                case .newRevision: session.applyCommittedSource(newDraft, to: documentID)
+                case .cancelled: session.cancelOriginalComparison(id)
+                }
+                throw SelectedTextFile.ReadError.changedWhileReading
+            }
+
+            switch context {
+            case .unchanged:
+                #expect(session.fileNotice?.hasPrefix("比較先を読み取れませんでした。") == true)
+            case .nativeComposition:
+                #expect(session.fileNotice?.hasPrefix("変換を確定またはキャンセルしてから") == true)
+                #expect(view.hasMarkedText() && view.markedRange() == markedRange)
+                #expect(window.firstResponder === view)
+            case .newRevision:
+                #expect(session.fileNotice?.hasPrefix("手元の原稿が変わったため") == true)
+            case .cancelled:
+                #expect(session.fileNotice == nil)
+            }
+            let expectedDraft = context == .newRevision ? newDraft : originalDraft
+            #expect(session.tabs.selectedID == documentID)
+            #expect(session.tabs.selectedTab?.document.source == expectedDraft)
+            #expect(session.tabs.recoveryDrafts.map(\.source) == [expectedDraft])
+            #expect(try Data(contentsOf: url) == baseline.originalBytes)
+            #expect(session.comparisonReport == nil)
+            #expect(!session.isBusy)
+        }
+    }
+
     @Test func opensCapturedDiskOnceAsSeparateReadOnlyTabEvenAfterAnotherDiskEdit() async throws {
         try await withOriginal { url, baseline, session, documentID in
             session.applyCommittedSource("手元の編集\n", to: documentID)
