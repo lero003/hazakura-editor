@@ -20,4 +20,10 @@ jobs:
           persist-credentials: false
       - run: swift --version
       - run: swift test --package-path next
-      - run: bash next/scripts/run-dev.sh --build-only
+      - name: Verify the three development bundles without launching them
+        run: |
+          bash next/scripts/run-dev.sh --build-only
+          bash next/scripts/run-dev.sh --build-assist-review-demo
+          bash next/scripts/run-dev.sh --build-sandbox-preview
+          products="$(swift build --package-path next --show-bin-path)"
+          swift next/scripts/verify-dev-bundles.swift "$products"

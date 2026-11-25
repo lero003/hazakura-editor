@@ -24,6 +24,23 @@ bash next/scripts/run-dev.sh --build-sandbox-preview
 
 `--build-sandbox-preview` は、選択ファイルの権限を試す別バンドル `Hazakura Editor Next Sandbox Preview.app`（Bundle ID `dev.hazakura.editor.next.sandbox-preview.dev`）を生成し、起動はしません。App Sandbox とユーザーが選択した項目への読み書きだけを要求し、ネットワーク・ブックマーク・アプリグループの権限は付けません。開く場合は[権限の実機手順](../docs/next-native-acceptance.md#サンドボックス権限の試験)に従ってください。「権限検証用」ウィンドウは退避と復元を無効にし、通常版の復旧領域を開きません。合成原稿専用です。署名で確認できるのはバンドルと権限宣言で、実際のピッカーのアクセスや配布署名を確認したことにはなりません。
 
+### 開発用バンドルの検証
+
+第二世代のCIと同じ確認を、リポジトリのルートから起動なしで実行できます。
+
+```bash
+(
+  set -e
+  bash next/scripts/run-dev.sh --build-only
+  bash next/scripts/run-dev.sh --build-assist-review-demo
+  bash next/scripts/run-dev.sh --build-sandbox-preview
+  products="$(swift build --package-path next --show-bin-path)"
+  swift next/scripts/verify-dev-bundles.swift "$products"
+)
+```
+
+3バンドルがローカル開発用の単一アーキテクチャであることを確認し、識別子・アドホック署名・内容・署名内の権限を照合します。通常版と採用デモに権限を追加した場合や、権限検証用の2項目以外を付けた場合は失敗します。署名の照合はOSによる権限の適用や配布の検証ではありません。
+
 ## 長文レイアウトの補助計測
 
 ```bash
