@@ -13,6 +13,9 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
     private var window: NSWindow?
     private var reviewButton: NSButton?
     private var undoButton: NSButton?
+    private var recordButton: NSButton?
+    private var latestReceipt: AssistNativeReview.Receipt?
+    private weak var recordSheet: NSWindow?
     private var status: NSTextField?
     private var operation: Operation?
     private weak var failedDismissalSheet: NSWindow?
@@ -51,7 +54,10 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
-    func applicationWillTerminate(_ notification: Notification) { abandonReview() }
+    func applicationWillTerminate(_ notification: Notification) {
+        abandonReview()
+        latestReceipt = nil
+    }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         sender === window && sender.attachedSheet == nil
@@ -60,6 +66,8 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
     func windowWillClose(_ notification: Notification) {
         guard (notification.object as? NSWindow) === window else { return }
         abandonReview()
+        latestReceipt = nil
+        recordSheet = nil
         session.window = nil
         window = nil
     }
@@ -96,26 +104,33 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
             let undo = NSButton(title: "元に戻す", target: self, action: #selector(undoEdit))
             undo.keyEquivalent = "z"
             undo.keyEquivalentModifierMask = [.command]
+            let record = NSButton(title: "直近の採用差分…", target: self, action: #selector(showLatestRecord))
+            record.keyEquivalent = "d"
+            record.keyEquivalentModifierMask = [.command, .shift]
+            record.isEnabled = latestReceipt != nil
             // Native push buttons act on the current responder without taking editing focus.
             review.refusesFirstResponder = true
             undo.refusesFirstResponder = true
+            record.refusesFirstResponder = true
             self.reviewButton = review
             self.undoButton = undo
+            self.recordButton = record
             self.status = status
             window.contentView = Self.layout(header: instructions, body: editor,
-                                             buttons: [review, undo], status: status)
+                                             buttons: [review, undo, record], status: status)
         }
         window.center()
         return window
     }
 
     @objc private func startReview() {
-        guard operation == nil, failedDismissalSheet?.sheetParent == nil else { return }
+        guard operation == nil, recordSheet == nil, failedDismissalSheet?.sheetParent == nil else { return }
         do {
             let operation = Operation(try AssistReviewHandoff.begin(in: session))
             self.operation = operation
             reviewButton?.isEnabled = false
             undoButton?.isEnabled = false
+            recordButton?.isEnabled = false
             status?.stringValue = "合成候補との差分を準備中…"
             operation.task = Task { [weak self, weak operation] in
                 guard let handoff = operation?.handoff else { return }
@@ -247,6 +262,7 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
             if decision == .approved && response == .OK {
                 do {
                     let receipt = try operation.handoff.sheetDidEnd(reviewID: sheet.reviewID, sheet: endedSheet, response: response)
+                    if let receipt { self.latestReceipt = receipt }
                     switch receipt?.confirmation {
                     case .nativeCallback:
                         notice = "合成候補を反映しました。「元に戻す」（⌘Z）で取り消せます。"
@@ -277,8 +293,48 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
         NSApp.terminate(nil)
     }
 
+    @objc private func showLatestRecord() {
+        guard let host = window, host === session.window, host.isKeyWindow, host.attachedSheet == nil,
+              operation == nil, recordSheet == nil, failedDismissalSheet?.sheetParent == nil,
+              !session.tabs.isComposing, (host.firstResponder as? NSTextView)?.hasMarkedText() != true,
+              let receipt = latestReceipt else { return }
+
+        let sheet = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 640, height: 500),
+                             styleMask: [.titled], backing: .buffered, defer: true)
+        sheet.title = "直近の採用差分"
+        sheet.isRestorable = false
+        sheet.isReleasedWhenClosed = false
+        let verification = switch receipt.confirmation {
+        case .nativeCallback: "編集結果の通知と本文を照合"
+        case .reconciledFromEditor: "編集面の確定本文から同期"
+        }
+        let header = NSTextField(wrappingLabelWithString: "デモの合成候補を反映した時点の記録（原稿の版 \(receipt.appliedRevision)、\(verification)）です。現在の本文との比較ではありません。Undoやその後の編集でこの記録は変わりません。")
+        let diff = NSHostingView(rootView: AssistReviewDiff(
+            rows: receipt.rows, before: receipt.before, after: receipt.after,
+            boundaryNote: "採用時の選択部分だけを表示します。行番号と行末は選択範囲内です。"
+        ))
+        diff.sizingOptions = []
+        let close = NSButton(title: "閉じる", target: self, action: #selector(closeRecord(_:)))
+        close.keyEquivalent = "\u{1B}"
+        close.keyEquivalentModifierMask = []
+        sheet.contentView = Self.layout(header: header, body: diff, buttons: [close])
+        sheet.initialFirstResponder = close
+        sheet.defaultButtonCell = nil
+        recordSheet = sheet
+        host.beginSheet(sheet) { [weak self, weak sheet] _ in
+            if let sheet, self?.recordSheet === sheet { self?.recordSheet = nil }
+        }
+    }
+
+    @objc private func closeRecord(_ sender: NSButton) {
+        guard sender.isEnabled, let sheet = recordSheet, sender.window === sheet,
+              let host = window, host === session.window, host.attachedSheet === sheet else { return }
+        sender.isEnabled = false
+        host.endSheet(sheet, returnCode: .cancel)
+    }
+
     @objc private func undoEdit() {
-        guard operation == nil, failedDismissalSheet?.sheetParent == nil,
+        guard operation == nil, recordSheet == nil, failedDismissalSheet?.sheetParent == nil,
               let window, window === session.window, window.isKeyWindow,
               window.attachedSheet == nil, !session.tabs.isComposing,
               let editor = window.firstResponder as? NSTextView, editor.window === window,
@@ -298,6 +354,7 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
         abandonReview()
         reviewButton?.isEnabled = true
         undoButton?.isEnabled = true
+        recordButton?.isEnabled = latestReceipt != nil
         status?.stringValue = notice
     }
 

@@ -54,6 +54,51 @@ struct AssistNativeReviewTests {
         #expect(fixture.session.tabs.selectedTab?.document.revision == 3)
     }
 
+    @Test(arguments: [false, true])
+    func receiptRowsReconstructOnlyTheAppliedSelectionByteForByte(_ dropsNativeCallback: Bool) async throws {
+        let prefix = "選択外の冒頭 👩‍💻 ["
+        let before = "が \r\n保持\t行\n不可視: A\u{200B}B\r末尾\n"
+        let after = "か\u{3099} \n保持\t行\n不可視: AB\r末尾"
+        let suffix = "] 選択外の末尾\r\n"
+        let fixture = try Fixture(source: prefix + before + suffix)
+        defer { fixture.window.contentView = nil }
+        let selection = NSRange(location: prefix.utf16.count, length: before.utf16.count)
+        fixture.editor.setSelectedRange(selection)
+        let request = try fixture.flow.begin(tabs: fixture.session.tabs, editorSource: fixture.editor.string,
+                                             selection: fixture.editor.selectedRange())
+        let review = try await request.prepareReview(candidate: after)
+        try fixture.flow.present(review, tabs: fixture.session.tabs, editorSource: fixture.editor.string)
+        if dropsNativeCallback { fixture.commits.dropNext = { _ in } }
+
+        let receipt = try AssistNativeReview.approve(reviewID: review.id, flow: fixture.flow, session: fixture.session,
+                                                     origin: .syntheticFixture)
+        #expect(receipt.confirmation == (dropsNativeCallback ? .reconciledFromEditor : .nativeCallback))
+        #expect(receipt.selection == selection)
+        #expect(receipt.rows == review.rows)
+        #expect(receipt.before.utf8.elementsEqual(before.utf8))
+        #expect(receipt.after.utf8.elementsEqual(after.utf8))
+        let beforeRows = receipt.rows.filter { $0.beforeLine != nil }
+        let afterRows = receipt.rows.filter { $0.afterLine != nil }
+        #expect(reconstructBytes(beforeRows) == Array(before.utf8))
+        #expect(reconstructBytes(afterRows) == Array(after.utf8))
+        #expect(beforeRows.last?.ending == LineDiff.Row.Ending.lf)
+        #expect(afterRows.last?.ending == LineDiff.Row.Ending.none)
+        #expect(fixture.editor.string.utf8.elementsEqual((prefix + after + suffix).utf8))
+        #expect(fixture.flow.review == nil)
+    }
+
+    private func reconstructBytes(_ rows: [LineDiff.Row]) -> [UInt8] {
+        rows.flatMap { row -> [UInt8] in
+            let ending: [UInt8] = switch row.ending {
+            case .none: []
+            case .lf: [0x0A]
+            case .cr: [0x0D]
+            case .crlf: [0x0D, 0x0A]
+            }
+            return Array(row.text.utf8) + ending
+        }
+    }
+
     @Test func unchangedBytesInAnotherTabDoNotAuthorizeTheReviewedReplacement() async throws {
         let fixture = try Fixture(source: "原稿")
         defer { fixture.window.contentView = nil }

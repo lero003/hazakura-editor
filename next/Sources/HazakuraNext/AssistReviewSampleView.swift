@@ -66,13 +66,29 @@ struct AssistReviewSampleView: View {
 
 /// A read-only projection; the containing surface owns any actions and their authorization.
 struct AssistReviewDiff: View {
-    let review: AssistProposalFlow.Review
+    private let rows: [LineDiff.Row]
+    private let beforeByteCount: Int
+    private let afterByteCount: Int
+    private let allowsTextSelection: Bool
     let boundaryNote: String
     @State private var showScalarCodes = false
 
+    init(review: AssistProposalFlow.Review, boundaryNote: String) {
+        self.init(rows: review.rows, before: review.before, after: review.after, boundaryNote: boundaryNote,
+                  allowsTextSelection: true)
+    }
+
+    init(rows: [LineDiff.Row], before: String, after: String, boundaryNote: String, allowsTextSelection: Bool = false) {
+        self.rows = rows
+        beforeByteCount = before.utf8.count
+        afterByteCount = after.utf8.count
+        self.boundaryNote = boundaryNote
+        self.allowsTextSelection = allowsTextSelection
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("選択範囲だけの差分（変更前 \(review.before.utf8.count) バイト・変更後 \(review.after.utf8.count) バイト）")
+            Text("選択範囲だけの差分（変更前 \(beforeByteCount) バイト・変更後 \(afterByteCount) バイト）")
                 .font(.subheadline.weight(.medium))
             Text(verbatim: boundaryNote)
                 .font(.callout)
@@ -81,8 +97,13 @@ struct AssistReviewDiff: View {
             Toggle("本文のUnicodeスカラーをコードで表示", isOn: $showScalarCodes)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(review.rows) { row in
-                        AssistReviewSampleRow(row: row, showScalarCodes: showScalarCodes)
+                    ForEach(rows) { row in
+                        let cell = AssistReviewSampleRow(row: row, showScalarCodes: showScalarCodes)
+                        if allowsTextSelection {
+                            cell.textSelection(.enabled)
+                        } else {
+                            cell.textSelection(.disabled)
+                        }
                     }
                 }
                 .padding(.horizontal, 10)
@@ -122,13 +143,11 @@ private struct AssistReviewSampleRow: View {
                 Text(verbatim: AssistReviewPresentation.literal(row.text))
                     .font(.system(.callout, design: .monospaced))
                     .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
                 if showScalarCodes {
                     let codes = AssistReviewPresentation.scalarCodes(row.text)
                     Text(verbatim: codes)
                         .font(.system(.caption, design: .monospaced))
                         .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
                         .accessibilityLabel("本文のUnicodeコード：\(codes)")
                 }
             }

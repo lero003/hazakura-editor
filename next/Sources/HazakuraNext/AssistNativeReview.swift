@@ -19,6 +19,7 @@ enum AssistNativeReview {
         let selection: NSRange
         let before: String
         let after: String
+        let rows: [LineDiff.Row]
     }
 
     static func approve(reviewID: UUID, flow: AssistProposalFlow, session: WorkspaceSession, origin: Origin,
@@ -75,7 +76,7 @@ enum AssistNativeReview {
             }
             receipt = Receipt(reviewID: review.id, origin: origin, documentID: committed.id,
                               appliedRevision: committed.revision, confirmation: confirmation,
-                              selection: edit.selection, before: review.before, after: review.after)
+                              selection: edit.selection, before: review.before, after: review.after, rows: review.rows)
         }
         guard let receipt else { throw ApplyError.commitNotConfirmed }
         return receipt
