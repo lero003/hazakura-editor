@@ -16,6 +16,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     private(set) var exitCleanupTask: Task<Void, Never>?
     private let recovery: RecoveryCheckpointQueue?
     private let recoveryUnavailable: Bool
+    private let windowTitle: String
     private let presentExit: PresentExit
     private let replyToQuit: ReplyToQuit
 
@@ -23,12 +24,14 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         source: String,
         recovery: RecoveryCheckpointQueue? = nil,
         recoveryUnavailable: Bool = false,
+        windowTitle: String = "Hazakura Editor Next — 開発用",
         presentExit: PresentExit? = nil,
         replyToQuit: @escaping ReplyToQuit = { $0.reply(toApplicationShouldTerminate: $1) }
     ) {
         self.source = source
         self.recovery = recovery
         self.recoveryUnavailable = recoveryUnavailable
+        self.windowTitle = windowTitle
         let includesRecovery = recovery != nil
         self.presentExit = presentExit ?? { window, ticket, completion in
             Self.presentNativeExit(window, ticket, includesRecovery: includesRecovery, completion)
@@ -66,7 +69,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         window.delegate = self
         window.isReleasedWhenClosed = false
         window.isRestorable = false
-        window.title = "Hazakura Editor Next — 開発用"
+        window.title = windowTitle
         window.contentMinSize = NSSize(width: 450, height: 300)
         window.contentViewController = NSHostingController(rootView: ScratchWorkspaceView(session: session))
         window.setContentSize(NSSize(width: 900, height: 660))

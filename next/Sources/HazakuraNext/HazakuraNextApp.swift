@@ -3,22 +3,54 @@ import HazakuraNextCore
 
 @main
 struct HazakuraNextApp {
+    enum LaunchMode: Equatable {
+        case development(longSample: Bool), assistDemo, sandboxPreview
+        case rejectAssistArgument, rejectPreviewArgument
+
+        static func resolve(bundleID: String?, arguments: [String]) -> Self {
+            switch bundleID {
+            case "dev.hazakura.editor.next.assist-demo.dev": return .assistDemo
+            case "dev.hazakura.editor.next.sandbox-preview.dev": return .sandboxPreview
+            default: break
+            }
+            if arguments.contains("--assist-review-demo") { return .rejectAssistArgument }
+            if arguments.contains("--sandbox-preview") || arguments.contains("--build-sandbox-preview") {
+                return .rejectPreviewArgument
+            }
+            return .development(longSample: arguments.contains("--long-sample"))
+        }
+    }
+
     @MainActor static func main() {
-        let arguments = ProcessInfo.processInfo.arguments.dropFirst()
-        if Bundle.main.bundleIdentifier == "dev.hazakura.editor.next.assist-demo.dev" {
-            // The demo has its own delegate and skips even the lookup/lease of the recovery directory.
+        let mode = LaunchMode.resolve(bundleID: Bundle.main.bundleIdentifier,
+                                      arguments: Array(ProcessInfo.processInfo.arguments.dropFirst()))
+        switch mode {
+        case .assistDemo:
             run(delegate: AssistReviewDemoDelegate())
-            return
+        case .sandboxPreview:
+            run(delegate: makeSandboxPreviewDelegate())
+        case .rejectAssistArgument:
+            rejectLaunch("採用デモは専用バンドルか開発用起動スクリプトで開いてください。")
+        case .rejectPreviewArgument:
+            rejectLaunch("権限検証は専用バンドルで行ってください。")
+        case .development(let longSample):
+            runDevelopment(longSample: longSample)
         }
-        if arguments.contains("--assist-review-demo") {
-            // Never let a direct invocation of the ordinary bundle fall through to recovery.
-            let message = "採用デモは専用バンドルか開発用起動スクリプトで開いてください。\n"
-            FileHandle.standardError.write(Data(message.utf8))
-            exit(EXIT_FAILURE)
-        }
-        let source = arguments.contains("--long-sample")
-            ? String(repeating: sample + "\n\n", count: 1_500)
-            : sample
+    }
+
+    private static func rejectLaunch(_ message: String) -> Never {
+        FileHandle.standardError.write(Data((message + "\n").utf8))
+        exit(EXIT_FAILURE)
+    }
+
+    @MainActor static func makeSandboxPreviewDelegate() -> ScratchApplicationDelegate {
+        // Picker experiments do not need a recovery store. Never resolve the normal store's URL here.
+        ScratchApplicationDelegate(source: sample, recoveryUnavailable: true,
+                                   windowTitle: "Hazakura Editor Next — 権限検証用")
+    }
+
+    @MainActor private static func runDevelopment(longSample: Bool) {
+        let source = longSample ? String(repeating: sample + "\n\n", count: 1_500) : sample
         do {
             let directory = try DraftRecoveryStore.defaultDirectory()
             let lease = try DraftRecoveryStore.claimApplicationSession(in: directory)
