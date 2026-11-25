@@ -58,6 +58,12 @@ struct ScratchWorkspaceView: View {
                         }
                     } else if let request = session.exportRequest, request.waitsForDestination {
                         bookExportDestinationActions(request.id)
+                    } else if let renderID = session.cancellableExportRenderID {
+                        Button("書き出しを中止") {
+                            guard let window = session.window, window.isVisible, window.isKeyWindow,
+                                  window.attachedSheet == nil else { return }
+                            session.cancelExportRendering(renderID)
+                        }
                     } else if let compareID {
                         Button("比較を中止") {
                             guard let window = session.window, window.isVisible, window.isKeyWindow,
@@ -212,8 +218,10 @@ struct ScratchWorkspaceView: View {
     private var banner: String {
         let isComposing = session.tabs.isComposing
         let compositionNotice = "タブ操作や終了の前に、変換を確定またはキャンセルしてください。"
-        if session.isFinishingCancelledOpen {
-            let waitingNotice = "読込みを中止しました。処理の終了を待っています…"
+        if session.isFinishingCancelledOpen || session.isFinishingCancelledExport {
+            let waitingNotice = session.isFinishingCancelledOpen
+                ? "読込みを中止しました。処理の終了を待っています…"
+                : "書き出しを中止しました。生成処理の終了を待っています…"
             return isComposing ? "\(waitingNotice)\n\(compositionNotice)" : waitingNotice
         }
         if isComposing { return compositionNotice }
@@ -226,6 +234,9 @@ struct ScratchWorkspaceView: View {
         if let request = session.exportRequest {
             if request.waitsForDestination, let count = request.bookCount {
                 return "選んだ\(count)件の原稿を1冊のEPUBにまとめます。"
+            }
+            if session.cancellableExportRenderID == request.id {
+                return "書き出し用の\(request.format.name)を生成しています…"
             }
             return "新しいファイルに\(request.format.name)を書き出しています…"
         }

@@ -305,6 +305,9 @@ struct WorkspaceHTMLExportTests {
         let session = WorkspaceSession(source: "# 原稿")
         session.requestExport(.html)
         let request = try #require(session.exportRequest?.id)
+        #expect(session.cancellableExportRenderID == nil)
+        session.cancelExportRendering(request)
+        #expect(session.exportRequest?.id == request)
         let suspension = ExportSuspension()
         defer { suspension.resume() }
         let task = Task { @MainActor in
@@ -316,17 +319,24 @@ struct WorkspaceHTMLExportTests {
             suspension.resume()
         }
         await suspension.waitForPause()
+        #expect(session.cancellableExportRenderID == request)
+        #expect(!session.isFinishingCancelledExport)
         if byTask {
             task.cancel()
         } else {
-            session.cancelExport(request)
+            session.cancelExportRendering(UUID())
+            #expect(session.cancellableExportRenderID == request)
+            session.cancelExportRendering(request)
+            #expect(session.cancellableExportRenderID == nil)
+            #expect(session.isFinishingCancelledExport)
             #expect(session.isBusy)
+            #expect(!session.canEditSource)
             session.requestExport(.html)
             #expect(session.exportRequest?.id == request)
         }
         suspension.resume()
         await task.value
-        #expect(session.isBusy == false)
+        #expect(!session.isBusy && !session.isFinishingCancelledExport)
         #expect(session.fileNotice == nil)
     }
 
@@ -362,6 +372,9 @@ struct WorkspaceHTMLExportTests {
         #expect(session.isBusy)
         #expect(session.canEditSource == false)
         #expect(session.reserveExitDiscard() == nil)
+        #expect(session.cancellableExportRenderID == nil)
+        session.cancelExportRendering(request)
+        #expect(!session.isFinishingCancelledExport)
         session.cancelExport(request)
         #expect(session.exportRequest?.id == request)
         await session.writeRequestedExport(request, to: destination, using: .init(renderHTML: unexpectedRender, writeHTML: unexpectedWrite))

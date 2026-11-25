@@ -45,6 +45,7 @@
 | [S2（選択後の比較中止）](next-native-acceptance.md#s2-compare-cancel) | 未測定 | 比較結果の有無、終了待ち表示、その間の再比較の可否、終了後の再試行。 |
 | [R1（単一原稿の検索中止）](next-native-acceptance.md#r1-reader-search-cancel) | 未測定 | 語句変更・検索欄の閉鎖・Escを個別に記録。古い結果や移動の有無、再検索、同じ版を開き直した位置。 |
 | [R1（複数原稿の検索中止）](next-native-acceptance.md#r1-reader-search-cancel) | 未測定 | 語句変更・検索欄の閉鎖・Escを個別に記録。古い結果の有無、一致位置への移動（原稿切替を含む）の有無、再検索。 |
+| [R2（生成中の書き出し中止）](next-native-acceptance.md#r2-export-render-cancel) | 未測定 | 中止の受付、終了待ち、宛先のファイルの有無、原稿・原本の不変、再試行。 |
 
 | ID・第二世代の別実行対象 | 結果 | 観測結果・再現手順 |
 |---|---|---|

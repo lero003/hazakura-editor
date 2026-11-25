@@ -882,6 +882,14 @@ final class WorkspaceSession {
         return request
     }
 
+    var cancellableExportRenderID: UUID? { exportRequest?.phase == .rendering ? exportRequest?.id : nil }
+    var isFinishingCancelledExport: Bool { exportRequest?.phase == .cancelled }
+
+    func cancelExportRendering(_ id: UUID) {
+        guard cancellableExportRenderID == id else { return }
+        cancelExport(id)
+    }
+
     func cancelExport(_ id: UUID) {
         guard let request = exportRequest, request.id == id else { return }
         switch request.phase {
