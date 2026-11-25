@@ -51,6 +51,8 @@ struct TextKitEditorTests {
         let coordinator = TextKitEditor.Coordinator { reported.append($0) }
         let scrollView = TextKitEditor.makeScrollView(initialText: markdown, coordinator: coordinator)
         let textView = try #require(scrollView.documentView as? NSTextView)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
         let textLayoutManager = try #require(textView.textLayoutManager)
         #expect(reported.isEmpty, "Seeding the editor must not notify the caller.")
 
@@ -69,14 +71,8 @@ struct TextKitEditorTests {
         let scrollView = TextKitEditor.makeScrollView(initialText: "# 原稿", coordinator: coordinator)
         let textView = try #require(scrollView.documentView as? NSTextView)
         let textLayoutManager = try #require(textView.textLayoutManager)
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 240),
-            styleMask: [.titled],
-            backing: .buffered,
-            defer: true
-        )
-        // AppKit owns the undo manager through the responder chain. Never show the window.
-        window.contentView = scrollView
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
         let undoManager = try #require(textView.undoManager)
         #expect(undoManager.canUndo == false, "Seeding must not register an undo operation.")
 
@@ -93,21 +89,208 @@ struct TextKitEditorTests {
 
     @Test
     func acceptsMarkedTextAndReportsTheCommittedResult() throws {
-        var reported: [String] = []
-        let coordinator = TextKitEditor.Coordinator { reported.append($0) }
-        let scrollView = TextKitEditor.makeScrollView(initialText: "", coordinator: coordinator)
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {
+            events.append(.source($0))
+        }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "# ", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
         let textView = try #require(scrollView.documentView as? NSTextView)
         let textLayoutManager = try #require(textView.textLayoutManager)
-        let implicitRange = NSRange(location: NSNotFound, length: 0)
+        textView.setSelectedRange(NSRange(location: 2, length: 0))
 
-        // Exercise the native text-input protocol without simulating a device or an input source.
-        textView.setMarkedText("かな", selectedRange: NSRange(location: 2, length: 0), replacementRange: implicitRange)
+        // Exercise native AppKit input methods, not a real keyboard/input source.
+        setMarkedText("かな", in: textView)
         #expect(textView.hasMarkedText())
-        textView.insertText("仮名", replacementRange: implicitRange)
+        #expect(textView.string == "# かな")
+        #expect(events == [.composing(true)])
+        setMarkedText("かなもの", in: textView)
+        #expect(textView.hasMarkedText())
+        #expect(textView.string == "# かなもの")
+        #expect(events == [.composing(true)])
+
+        textView.insertText("金物", replacementRange: implicitRange)
+        #expect(textView.hasMarkedText() == false)
+        #expect(textView.string == "# 金物")
+        let committedEvents: [EditorEvent] = [.composing(true), .source("# 金物"), .composing(false)]
+        #expect(events == committedEvents)
+        #expect(textView.textLayoutManager === textLayoutManager)
+
+        let undoManager = try #require(textView.undoManager)
+        undoManager.undo()
+        undoManager.redo()
+        #expect(events == committedEvents + [.source("# "), .source("# 金物")])
+    }
+
+    @Test
+    func unmarkCommitsTheExistingCharactersWithoutInsertingAgain() throws {
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {
+            events.append(.source($0))
+        }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+
+        setMarkedText("候補", in: textView)
+        #expect(textView.hasMarkedText())
+        #expect(events == [.composing(true)])
+        // AppKit can reprocess the same characters during unmark. Isolate the native
+        // input hook so that publication cannot depend on any storage notification.
+        let storage = try #require(textView.textContentStorage?.textStorage)
+        NotificationCenter.default.removeObserver(
+            coordinator, name: NSTextStorage.didProcessEditingNotification, object: storage
+        )
+        textView.unmarkText()
 
         #expect(textView.hasMarkedText() == false)
-        #expect(textView.string == "仮名")
-        #expect(reported.last == "仮名")
-        #expect(textView.textLayoutManager === textLayoutManager)
+        #expect(textView.string == "候補")
+        #expect(events == [.composing(true), .source("候補"), .composing(false)])
+        textView.unmarkText()
+        #expect(events == [.composing(true), .source("候補"), .composing(false)])
+    }
+
+    @Test
+    func cancellingToOriginalBytesEndsCompositionWithoutPublishingSource() throws {
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {
+            events.append(.source($0))
+        }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "# ", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        textView.setSelectedRange(NSRange(location: 2, length: 0))
+
+        setMarkedText("仮", in: textView)
+        #expect(textView.hasMarkedText())
+        #expect(textView.string == "# 仮")
+        // Model a cancellation that clears the marked insertion, not a real Escape key event.
+        setMarkedText("", in: textView)
+        textView.unmarkText()
+
+        #expect(textView.hasMarkedText() == false)
+        #expect(textView.string == "# ")
+        #expect(events == [.composing(true), .composing(false)])
+    }
+
+    @Test
+    func commitReportsCanonicallyEquivalentSourceWithDifferentBytes() throws {
+        let initialText = "が"
+        let replacement = "か\u{3099}"
+        var reported: [[UInt8]] = []
+        let coordinator = TextKitEditor.Coordinator { reported.append(Array($0.utf8)) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: initialText, coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+
+        textView.setSelectedRange(NSRange(location: 0, length: initialText.utf16.count))
+        setMarkedText(replacement, in: textView)
+        textView.unmarkText()
+
+        #expect(reported == [Array(replacement.utf8)])
+    }
+
+    @Test
+    func noEventsOutsideWindowOrAfterDismantling() throws {
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {
+            events.append(.source($0))
+        }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "", coordinator: coordinator)
+        let textView = try #require(scrollView.documentView as? NSTextView)
+
+        setMarkedText("仮", in: textView)
+        textView.unmarkText()
+        #expect(events.isEmpty)
+
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        textView.insertText("確定", replacementRange: NSRange(location: 0, length: textView.string.utf16.count))
+        #expect(events == [.source("確定")])
+        window.contentView = nil
+        #expect(textView.window == nil)
+        setMarkedText("別", in: textView)
+        textView.insertText("外", replacementRange: implicitRange)
+        #expect(events == [.source("確定")])
+
+        window.contentView = scrollView
+        TextKitEditor.dismantleNSView(scrollView, coordinator: coordinator)
+        setMarkedText("仮", in: textView)
+        textView.unmarkText()
+        #expect(events == [.source("確定")])
+    }
+
+    @Test
+    func switchingEditorsPreservesSelectionAndKeepsSeparateNativeUndoHistories() throws {
+        var firstReported: [String] = []
+        let firstCoordinator = TextKitEditor.Coordinator { firstReported.append($0) }
+        let firstScroll = TextKitEditor.makeScrollView(initialText: "一", coordinator: firstCoordinator)
+        let first = try #require(firstScroll.documentView as? NSTextView)
+        var secondReported: [String] = []
+        let secondCoordinator = TextKitEditor.Coordinator { secondReported.append($0) }
+        let secondScroll = TextKitEditor.makeScrollView(initialText: "二", isActive: false, coordinator: secondCoordinator)
+        let second = try #require(secondScroll.documentView as? NSTextView)
+        let container = NSView()
+        container.addSubview(firstScroll)
+        container.addSubview(secondScroll)
+        let window = makeWindow(containing: container)
+        defer { window.contentView = nil }
+        let firstUndo = try #require(first.undoManager)
+        let secondUndo = try #require(second.undoManager)
+        #expect(firstUndo !== secondUndo)
+        #expect(window.firstResponder === first)
+        #expect(second.isEditable == false)
+        #expect(second.acceptsFirstResponder == false)
+
+        first.insertText("稿", replacementRange: NSRange(location: 1, length: 0))
+        let selection = NSRange(location: 0, length: 1)
+        first.setSelectedRange(selection)
+        #expect(secondUndo.canUndo == false)
+
+        TextKitEditor.setActive(false, in: firstScroll)
+        TextKitEditor.setActive(true, in: secondScroll)
+        #expect(first.isEditable == false)
+        #expect(first.acceptsFirstResponder == false)
+        #expect(window.firstResponder === second)
+        second.insertText("章", replacementRange: NSRange(location: 1, length: 0))
+        secondUndo.undo()
+        #expect(secondReported == ["二章", "二"])
+        #expect(firstReported == ["一稿"])
+
+        TextKitEditor.setActive(true, in: firstScroll)
+        TextKitEditor.setActive(false, in: secondScroll)
+        #expect(window.firstResponder === first)
+        #expect(first.selectedRange() == selection)
+        firstUndo.undo()
+        firstUndo.redo()
+        #expect(firstReported == ["一稿", "一", "一稿"])
+        #expect(secondReported == ["二章", "二"])
+    }
+
+    private enum EditorEvent: Equatable {
+        case composing(Bool)
+        case source(String)
+    }
+
+    private var implicitRange: NSRange { NSRange(location: NSNotFound, length: 0) }
+
+    private func setMarkedText(_ text: String, in textView: NSTextView) {
+        textView.setMarkedText(text, selectedRange: NSRange(location: text.utf16.count, length: 0), replacementRange: implicitRange)
+    }
+
+    private func makeWindow(containing view: NSView) -> NSWindow {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 240),
+            styleMask: [.titled],
+            backing: .buffered,
+            defer: true
+        )
+        // Attach the editor to a responder chain without ever displaying the window.
+        window.contentView = view
+        return window
     }
 }
