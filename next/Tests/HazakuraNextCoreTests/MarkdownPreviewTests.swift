@@ -7,11 +7,54 @@ struct MarkdownPreviewTests {
 
         #expect(blocks.map(\.kind) == [.heading(level: 1), .paragraph, .heading(level: 3)])
         #expect(blocks.map(text) == ["見出し", "本文の 強調、太字、コード、削除。", "小見出し"])
+        #expect(blocks.first?.headingLocation?.line == 1)
+        #expect(blocks.first?.headingLocation?.utf16Offset == 0)
         let runs = try #require(blocks.first { $0.kind == .paragraph }).runs
         #expect(runs.filter(\.emphasis).map(\.text).joined() == "強調")
         #expect(runs.filter(\.strong).map(\.text).joined() == "太字")
         #expect(runs.filter(\.code).map(\.text).joined() == "コード")
         #expect(runs.filter(\.strikethrough).map(\.text).joined() == "削除")
+    }
+
+    @Test(arguments: ["\n", "\r\n", "\r"])
+    func locatesRepeatedHeadingsWithoutMatchingFencedOrIndentedCode(newline: String) async throws {
+        let lines = ["前書き👩‍💻", "", "```md", "## 同じ🎉", "同じ🎉", "----", "```", "",
+                     "    ## 同じ🎉", "", "  ## **同じ🎉** ##", "", "同じ🎉", "----", "", "## 同じ🎉"]
+        let blocks = try await render(lines.joined(separator: newline))
+
+        #expect(blocks.map(\.kind) == [.paragraph, .codeBlock, .codeBlock,
+                                       .heading(level: 2), .heading(level: 2), .heading(level: 2)])
+        #expect(blocks.prefix(3).allSatisfy { $0.headingLocation == nil })
+        let headings = Array(blocks.suffix(3))
+        #expect(headings.map(text) == ["同じ🎉", "同じ🎉", "同じ🎉"])
+        #expect(headings.map { $0.headingLocation?.line } == [11, 13, 16])
+        #expect(headings.map { $0.headingLocation?.utf16Offset } == [11, 13, 16].map { line in
+            (lines.prefix(line - 1).joined(separator: newline) + newline).utf16.count
+        })
+    }
+
+    @Test func locatesFirstSourceLineOfMultilineAndNestedHeadings() async throws {
+        let prefix = "👩‍💻 と日本語\r\n\n"
+        let first = "> - # *引用の見出し*\r\r"
+        let second = "> **一行目**\n> 二行目\r\n> ======\n\n"
+        let blocks = try await render(prefix + first + second + "末尾")
+
+        #expect(blocks.map(\.kind) == [.paragraph, .heading(level: 1), .heading(level: 1), .paragraph])
+        #expect(blocks.map(\.containers) == [[], [.quote, .listItem(marker: "•")], [.quote], []])
+        #expect(blocks.map { $0.headingLocation?.line } == [nil, 3, 5, nil])
+        #expect(blocks.map { $0.headingLocation?.utf16Offset } == [nil, prefix.utf16.count,
+                                                                (prefix + first).utf16.count, nil])
+    }
+
+    @Test func leavesMissingOrUnreliableSourcePositionsUnmapped() async throws {
+        // Empty image labels carry no source position. Foundation can also report a
+        // preceding reference definition as the source of a Setext heading.
+        let prefix = "# ![](https://example.invalid/image)\n\n[r]: target\n見出し\n====\n\n# a\u{0}b\n\n"
+        let blocks = try await render(prefix + "# [最後](https://example.invalid/target)")
+
+        #expect(blocks.map(text) == ["［画像］", "見出し", "a�b", "最後"])
+        #expect(blocks.map { $0.headingLocation?.line } == [nil, nil, nil, 9])
+        #expect(blocks.map { $0.headingLocation?.utf16Offset } == [nil, nil, nil, prefix.utf16.count])
     }
 
     @Test func preservesQuoteAndListNestingAndMarksEachItemOnce() async throws {

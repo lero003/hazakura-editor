@@ -4,9 +4,11 @@ import SwiftUI
 struct MarkdownPreviewView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var phase = Phase.loading
+    @State private var revealRejected = false
 
     private let title: String
     private let source: String
+    private let reveal: (MarkdownPreview.HeadingLocation) -> Bool
 
     private enum Phase {
         case loading
@@ -15,15 +17,20 @@ struct MarkdownPreviewView: View {
         case failed
     }
 
-    init(title: String, source: String) {
+    init(title: String, source: String, reveal: @escaping (MarkdownPreview.HeadingLocation) -> Bool) {
         self.title = title
         self.source = source
+        self.reveal = reveal
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
             Divider()
+            if revealRejected {
+                Label("原稿の状態が変わったため移動できません。プレビューを開き直してください。", systemImage: "info.circle")
+                    .font(.callout)
+            }
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             Divider()
@@ -84,7 +91,17 @@ struct MarkdownPreviewView: View {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         // Positions are stable within this immutable render result, including repeated blocks.
                         ForEach(blocks.enumerated(), id: \.offset) { entry in
-                            MarkdownPreviewBlockView(block: entry.element)
+                            VStack(alignment: .leading, spacing: 6) {
+                                MarkdownPreviewBlockView(block: entry.element)
+                                if let location = entry.element.headingLocation {
+                                    Button("原文の\(location.line)行目へ") {
+                                        if reveal(location) { dismiss() }
+                                        else { revealRejected = true }
+                                    }
+                                    .font(.callout)
+                                    .accessibilityHint("プレビューを閉じて、この見出しの原文を表示します。")
+                                }
+                            }
                         }
                     }
                     .padding(12)

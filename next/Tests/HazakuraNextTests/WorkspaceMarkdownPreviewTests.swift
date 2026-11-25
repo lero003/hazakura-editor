@@ -109,6 +109,105 @@ struct WorkspaceMarkdownPreviewTests {
         #expect(session.markdownPreview == nil)
     }
 
+    @Test func headingRevealIsConsumedOnceAfterDismissalByTheSameUnchangedEditor() async throws {
+        let source = "導入 🌸\r\n\r\n# 見出し\r\n"
+        let session = WorkspaceSession(source: source)
+        let id = try #require(session.tabs.selectedID)
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        guard case .rendered(let blocks) = try await MarkdownPreview.render(preview.source) else {
+            Issue.record("Expected a rendered heading.")
+            return
+        }
+        let location = try #require(blocks.last?.headingLocation)
+        let expectedOffset = "導入 🌸\r\n\r\n".utf16.count
+        #expect(location.utf16Offset == expectedOffset)
+        #expect(session.requestMarkdownReveal(preview.id, offset: location.utf16Offset))
+        #expect(!session.requestMarkdownReveal(preview.id, offset: 0))
+        #expect(session.readyMarkdownRevealID == nil)
+        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == nil)
+        session.dismissMarkdownPreview(preview.id)
+        #expect(session.readyMarkdownRevealID == preview.id)
+        #expect(session.takeMarkdownReveal(preview.id, documentID: UUID(), editorSource: source) == nil)
+        #expect(session.readyMarkdownRevealID == preview.id)
+        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == expectedOffset)
+        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == nil)
+        #expect(session.tabs.selectedTab?.document.revision == 0)
+        #expect(session.tabs.recoveryDrafts.isEmpty)
+    }
+
+    @Test func revealRejectsStalePreviewAndChangedRevisionEvenAfterReturningToTheSameText() throws {
+        let source = "# 初稿"
+        let session = WorkspaceSession(source: source)
+        let id = try #require(session.tabs.selectedID)
+        session.requestMarkdownPreview()
+        let first = try #require(session.markdownPreview)
+        session.dismissMarkdownPreview(first.id)
+        session.requestMarkdownPreview()
+        let active = try #require(session.markdownPreview)
+        #expect(!session.requestMarkdownReveal(first.id, offset: 0))
+        #expect(!session.requestMarkdownReveal(active.id, offset: -1))
+        #expect(!session.requestMarkdownReveal(active.id, offset: source.utf16.count))
+        #expect(session.requestMarkdownReveal(active.id, offset: 0))
+        session.applyCommittedSource("# 新稿", to: id)
+        session.applyCommittedSource(source, to: id)
+        session.dismissMarkdownPreview(active.id)
+        #expect(session.takeMarkdownReveal(active.id, documentID: id, editorSource: source) == nil)
+        #expect(session.readyMarkdownRevealID == nil)
+        #expect(session.tabs.selectedTab?.document.revision == 2)
+    }
+
+    @Test func anEditorWithCanonicallyEquivalentButDifferentBytesCannotApplyTheOffset() throws {
+        let source = "か\u{3099}\n\n# 見出し"
+        let other = "が\n\n# 見出し"
+        #expect(source == other)
+        let session = WorkspaceSession(source: source)
+        let id = try #require(session.tabs.selectedID)
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        #expect(session.requestMarkdownReveal(preview.id, offset: "か\u{3099}\n\n".utf16.count))
+        session.dismissMarkdownPreview(preview.id)
+        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: other) == nil)
+        #expect(session.readyMarkdownRevealID == nil)
+    }
+
+    @Test func changingTabsOrStartingCompositionDropsThePendingReveal() throws {
+        let session = WorkspaceSession(source: "# 初稿")
+        let id = try #require(session.tabs.selectedID)
+        session.newTab()
+        let other = try #require(session.tabs.selectedID)
+        session.tabs.select(id)
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        #expect(session.requestMarkdownReveal(preview.id, offset: 0))
+        session.dismissMarkdownPreview(preview.id)
+        session.tabs.select(other)
+        session.tabs.select(id)
+        #expect(session.readyMarkdownRevealID == nil)
+        session.requestMarkdownPreview()
+        let next = try #require(session.markdownPreview)
+        #expect(session.requestMarkdownReveal(next.id, offset: 0))
+        session.dismissMarkdownPreview(next.id)
+        session.tabs.setComposing(true, in: id)
+        session.tabs.setComposing(false, in: id)
+        #expect(session.readyMarkdownRevealID == nil)
+    }
+
+    @Test func openingAndClosingAnotherTabInvalidatesThePendingRevealEvenWhenTheSelectionReturns() throws {
+        let source = "# 初稿"
+        let session = WorkspaceSession(source: source)
+        let id = try #require(session.tabs.selectedID)
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        #expect(session.requestMarkdownReveal(preview.id, offset: 0))
+        session.dismissMarkdownPreview(preview.id)
+        session.newTab()
+        let closed = session.tabs.requestCloseSelected()
+        #expect(closed == .closed)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == nil)
+    }
+
     @Test func previewReservesTheWindowUntilDismissed() throws {
         let delegate = ScratchApplicationDelegate(source: "原稿")
         let window = delegate.prepareWindow()

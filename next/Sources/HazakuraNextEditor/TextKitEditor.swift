@@ -12,6 +12,11 @@ private final class MarkdownTextView: NSTextView {
     private var policyAllowsEdits: Bool { editorCoordinator?.canEdit() ?? true }
     private var canMutate: Bool { isEditable && policyAllowsEdits }
     fileprivate var canApplyUndo: Bool { !isReadOnly && policyAllowsEdits }
+    fileprivate var canRevealSource: Bool {
+        guard isActive, isSelectable, textInputDepth == 0, !hasMarkedText(),
+              let window, window.isKeyWindow, window.attachedSheet == nil else { return false }
+        return policyAllowsEdits
+    }
     // AppKit can reinsert the existing characters from inside unmarkText().
     private var canContinueTextInput: Bool { isEditable && (textInputDepth > 0 || policyAllowsEdits) }
 
@@ -38,6 +43,7 @@ private final class MarkdownTextView: NSTextView {
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         if isActive { window?.makeFirstResponder(self) }
+        editorCoordinator?.observeRevealWindow(window)
     }
 
     override func shouldChangeText(inRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
@@ -118,6 +124,7 @@ public struct TextKitEditor: NSViewRepresentable {
     private let isReadOnly: Bool
     private let canEdit: @MainActor () -> Bool
     private let onCompositionChange: (Bool) -> Void
+    private let revealSourceLocation: @MainActor (String) -> Int?
     private let onChange: (String) -> Void
 
     /// `initialText` seeds one SwiftUI identity; subsequent updates do not replace the buffer.
@@ -129,7 +136,13 @@ public struct TextKitEditor: NSViewRepresentable {
     /// Keep the editor active, and block tab switches/new tabs, from `onCompositionChange(true)`
     /// until `onCompositionChange(false)`.
     ///
-    /// Both callbacks are synchronous on the main actor, only while attached to a window.
+    /// `revealSourceLocation` may consume a pending request using the current native buffer.
+    /// It is asked after view updates or native availability changes, only while the editor
+    /// is active, selectable, unlocked, not composing, and in a key window without a sheet.
+    /// Return a UTF-16 offset at a character boundary to move the caret and scroll, or nil.
+    /// Navigation does not focus or edit the view and creates no undo operation.
+    ///
+    /// Edit and composition callbacks are synchronous on the main actor, only while attached to a window.
     /// `onChange` reports committed source (including Undo/Redo), never marked candidates.
     /// If composition changes the source, `onChange` precedes `onCompositionChange(false)`.
     /// Identical UTF-8 bytes do not produce another `onChange`.
@@ -140,6 +153,7 @@ public struct TextKitEditor: NSViewRepresentable {
         isReadOnly: Bool = false,
         canEdit: @escaping @MainActor () -> Bool = { true },
         onCompositionChange: @escaping (Bool) -> Void = { _ in },
+        revealSourceLocation: @escaping @MainActor (String) -> Int? = { _ in nil },
         onChange: @escaping (String) -> Void
     ) {
         self.initialText = initialText
@@ -147,11 +161,13 @@ public struct TextKitEditor: NSViewRepresentable {
         self.isReadOnly = isReadOnly
         self.canEdit = canEdit
         self.onCompositionChange = onCompositionChange
+        self.revealSourceLocation = revealSourceLocation
         self.onChange = onChange
     }
 
     public func makeCoordinator() -> Coordinator {
-        Coordinator(canEdit: canEdit, onCompositionChange: onCompositionChange, onChange: onChange)
+        Coordinator(canEdit: canEdit, onCompositionChange: onCompositionChange,
+                    revealSourceLocation: revealSourceLocation, onChange: onChange)
     }
 
     public func makeNSView(context: Context) -> NSScrollView {
@@ -162,8 +178,10 @@ public struct TextKitEditor: NSViewRepresentable {
         // Replacing the buffer here would disturb selection, undo and marked text.
         context.coordinator.canEdit = canEdit
         context.coordinator.onCompositionChange = onCompositionChange
+        context.coordinator.revealSourceLocation = revealSourceLocation
         context.coordinator.onChange = onChange
         Self.setActive(isActive, in: nsView, readOnly: isReadOnly)
+        context.coordinator.scheduleSourceReveal()
     }
 
     public static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
@@ -227,18 +245,23 @@ public struct TextKitEditor: NSViewRepresentable {
     public final class Coordinator: NSObject {
         fileprivate var canEdit: @MainActor () -> Bool
         fileprivate var onCompositionChange: (Bool) -> Void
+        fileprivate var revealSourceLocation: @MainActor (String) -> Int?
         fileprivate var onChange: (String) -> Void
         private weak var textView: MarkdownTextView?
+        private weak var revealWindow: NSWindow?
+        private var revealScheduled = false
         private var lastCommittedSource = ""
         private var isComposing = false
 
         init(
             canEdit: @escaping @MainActor () -> Bool = { true },
             onCompositionChange: @escaping (Bool) -> Void = { _ in },
+            revealSourceLocation: @escaping @MainActor (String) -> Int? = { _ in nil },
             onChange: @escaping (String) -> Void
         ) {
             self.canEdit = canEdit
             self.onCompositionChange = onCompositionChange
+            self.revealSourceLocation = revealSourceLocation
             self.onChange = onChange
         }
 
@@ -254,12 +277,59 @@ public struct TextKitEditor: NSViewRepresentable {
                 name: NSTextStorage.didProcessEditingNotification,
                 object: storage
             )
+            observeRevealWindow(textView.window)
         }
 
         fileprivate func stopObserving() {
             textView?.editorCoordinator = nil
             textView = nil
+            observeRevealWindow(nil)
             NotificationCenter.default.removeObserver(self, name: NSTextStorage.didProcessEditingNotification, object: nil)
+        }
+
+        fileprivate func observeRevealWindow(_ window: NSWindow?) {
+            guard revealWindow !== window else { return }
+            let center = NotificationCenter.default
+            // Scope observation to the host window and remove it on reparenting or teardown.
+            for name in [NSWindow.didEndSheetNotification, NSWindow.didBecomeKeyNotification] {
+                center.removeObserver(self, name: name, object: revealWindow)
+                if let window {
+                    center.addObserver(self, selector: #selector(windowAvailabilityChanged(_:)), name: name, object: window)
+                }
+            }
+            revealWindow = window
+            if window != nil { scheduleSourceReveal() }
+        }
+
+        @objc private func windowAvailabilityChanged(_ notification: Notification) {
+            guard let window = notification.object as? NSWindow, window === textView?.window else { return }
+            scheduleSourceReveal()
+        }
+
+        func scheduleSourceReveal() {
+            guard textView?.window != nil, !revealScheduled else { return }
+            revealScheduled = true
+            // Let SwiftUI finish updating and AppKit finish the native transition before
+            // invoking a callback that may consume observable state. Read nothing stale.
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.revealScheduled = false
+                self.revealSourceLocationIfAvailable()
+            }
+        }
+
+        private func revealSourceLocationIfAvailable() {
+            guard let textView, textView.canRevealSource else { return }
+            let source = textView.string
+            guard let offset = revealSourceLocation(source), offset >= 0 else { return }
+            let utf16 = source.utf16
+            guard offset <= utf16.count,
+                  String.Index(utf16.index(utf16.startIndex, offsetBy: offset), within: source) != nil,
+                  self.textView === textView, textView.canRevealSource,
+                  textView.string.utf8.elementsEqual(source.utf8) else { return }
+            let caret = NSRange(location: offset, length: 0)
+            textView.setSelectedRange(caret)
+            textView.scrollRangeToVisible(caret)
         }
 
         fileprivate func didFinishTextInput() {
@@ -269,6 +339,7 @@ public struct TextKitEditor: NSViewRepresentable {
             guard isComposing != hasMarkedText, self.textView?.window != nil else { return }
             isComposing = hasMarkedText
             onCompositionChange(hasMarkedText)
+            if !hasMarkedText { scheduleSourceReveal() }
         }
 
         @objc private func didProcessEditing(_ notification: Notification) {

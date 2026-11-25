@@ -62,7 +62,9 @@ struct ScratchWorkspaceView: View {
         .sheet(item: Binding(get: { session.markdownPreview }, set: { preview in
             if preview == nil, let previewID { session.dismissMarkdownPreview(previewID) }
         })) { preview in
-            MarkdownPreviewView(title: preview.title, source: preview.source)
+            MarkdownPreviewView(title: preview.title, source: preview.source) { location in
+                session.requestMarkdownReveal(preview.id, offset: location.utf16Offset)
+            }
         }
         .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
             DraftRecoveryView(session: session)
@@ -268,7 +270,8 @@ struct ScratchWorkspaceView: View {
     private var editors: some View {
         // Do not conditionally rebuild the editor when it loses selection. AppKit retains
         // the document's cursor, scroll geometry and undo manager while it is inactive.
-        ZStack {
+        let revealID = session.readyMarkdownRevealID
+        return ZStack {
             ForEach(session.tabs.tabs) { tab in
                 let id = tab.id
                 let isSelected = session.tabs.selectedID == id
@@ -277,7 +280,11 @@ struct ScratchWorkspaceView: View {
                     isActive: isSelected,
                     isReadOnly: tab.isReadOnly,
                     canEdit: { session.canEditSource },
-                    onCompositionChange: { session.tabs.setComposing($0, in: id) }
+                    onCompositionChange: { session.tabs.setComposing($0, in: id) },
+                    revealSourceLocation: { editorSource in
+                        guard let revealID else { return nil }
+                        return session.takeMarkdownReveal(revealID, documentID: id, editorSource: editorSource)
+                    }
                 ) { source in
                     session.applyCommittedSource(source, to: id)
                 }

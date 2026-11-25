@@ -398,6 +398,210 @@ struct TextKitEditorTests {
         #expect(events == [.composing(true), .source("候補"), .composing(false)])
     }
 
+    @Test
+    func revealUsesTheCurrentBufferWithoutEditingOrRegisteringUndo() async throws {
+        let original = "# 👩‍💻\r\n" + String(repeating: "本文\n", count: 120)
+        let insertion = "新\n"
+        let edited = insertion + original
+        var request: Int? = edited.utf16.count - 1
+        var received: [String] = []
+        var reported: [String] = []
+        let editor = TextKitEditor(initialText: original, revealSourceLocation: { source in
+            guard let offset = request else { return nil }
+            request = nil
+            received.append(source)
+            return offset
+        }) { reported.append($0) }
+        let coordinator = editor.makeCoordinator()
+        let scrollView = TextKitEditor.makeScrollView(initialText: original, coordinator: coordinator)
+        let window = makeRevealWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let textLayoutManager = try #require(textView.textLayoutManager)
+        let undoManager = try #require(textView.undoManager)
+
+        textView.insertText(insertion, replacementRange: NSRange(location: 0, length: 0))
+        // A reveal must not claim first responder, even if the editor is the selected tab.
+        window.makeFirstResponder(nil)
+        let previousScrollOffset = scrollView.contentView.bounds.minY
+        window.reportsKey = true
+        postWindowAvailability(NSWindow.didBecomeKeyNotification, for: window)
+        #expect(received.isEmpty, "AppKit transitions must finish before consuming a reveal.")
+        await drainRevealChecks()
+
+        #expect(received.map { Array($0.utf8) } == [Array(edited.utf8)])
+        #expect(textView.selectedRange() == NSRange(location: edited.utf16.count - 1, length: 0))
+        #expect(scrollView.contentView.bounds.minY > previousScrollOffset)
+        #expect(textView.string.utf8.elementsEqual(edited.utf8))
+        #expect(reported == [edited])
+        #expect(window.firstResponder === window)
+        undoManager.undo()
+        #expect(textView.string == original)
+        #expect(undoManager.canRedo)
+
+        // Revealing the end of the original must neither add undo nor clear redo.
+        request = original.utf16.count
+        coordinator.scheduleSourceReveal()
+        await drainRevealChecks()
+        #expect(textView.selectedRange() == NSRange(location: original.utf16.count, length: 0))
+        #expect(undoManager.canUndo == false)
+        #expect(undoManager.canRedo)
+        #expect(reported == [edited, original])
+        #expect(textView.textLayoutManager === textLayoutManager)
+    }
+
+    @Test(arguments: [true, false])
+    func revealWaitsForBothSheetEndAndKeyWindow(sheetEndsFirst: Bool) async throws {
+        var attempts = 0
+        let coordinator = TextKitEditor.Coordinator(revealSourceLocation: { _ in
+            attempts += 1
+            return 2
+        }) { _ in Issue.record("A reveal must not report an edit.") }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", isReadOnly: true, coordinator: coordinator)
+        let window = makeRevealWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let unrelatedWindow = makeRevealWindow(containing: NSView())
+        window.simulatedSheet = unrelatedWindow
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let selection = NSRange(location: 0, length: 1)
+        textView.setSelectedRange(selection)
+
+        if sheetEndsFirst {
+            window.simulatedSheet = nil
+            postWindowAvailability(NSWindow.didEndSheetNotification, for: window)
+        } else {
+            window.reportsKey = true
+            postWindowAvailability(NSWindow.didBecomeKeyNotification, for: window)
+        }
+        await drainRevealChecks()
+        #expect(attempts == 0)
+        #expect(textView.selectedRange() == selection)
+
+        window.simulatedSheet = nil
+        window.reportsKey = true
+        let finalEvent = sheetEndsFirst ? NSWindow.didBecomeKeyNotification : NSWindow.didEndSheetNotification
+        postWindowAvailability(finalEvent, for: unrelatedWindow)
+        await drainRevealChecks()
+        #expect(attempts == 0, "An unrelated window must not trigger a reveal.")
+        #expect(textView.selectedRange() == selection)
+
+        postWindowAvailability(finalEvent, for: window)
+        await drainRevealChecks()
+        #expect(attempts == 1)
+        #expect(textView.selectedRange() == NSRange(location: 2, length: 0))
+        #expect(textView.isEditable == false)
+    }
+
+    @Test
+    func inactiveLockedAndComposingEditorsDoNotConsumeRevealRequests() async throws {
+        let policy = EditPolicy()
+        var received: [String] = []
+        let coordinator = TextKitEditor.Coordinator(canEdit: { policy.permitsEdits }, revealSourceLocation: { source in
+            received.append(source)
+            return 0
+        }) { _ in }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", isActive: false, coordinator: coordinator)
+        let window = makeRevealWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        window.reportsKey = true
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let selection = NSRange(location: 1, length: 0)
+        textView.setSelectedRange(selection)
+
+        coordinator.scheduleSourceReveal()
+        await drainRevealChecks()
+        #expect(received.isEmpty)
+        #expect(textView.selectedRange() == selection)
+
+        TextKitEditor.setActive(true, in: scrollView)
+        policy.permitsEdits = false
+        coordinator.scheduleSourceReveal()
+        await drainRevealChecks()
+        #expect(received.isEmpty)
+        #expect(textView.selectedRange() == selection)
+
+        policy.permitsEdits = true
+        setMarkedText("候補", in: textView)
+        try #require(textView.hasMarkedText())
+        let markedSelection = textView.selectedRange()
+        coordinator.scheduleSourceReveal()
+        await drainRevealChecks()
+        #expect(received.isEmpty)
+        #expect(textView.hasMarkedText())
+        #expect(textView.selectedRange() == markedSelection)
+
+        textView.unmarkText()
+        await drainRevealChecks()
+        #expect(received == ["原候補稿"])
+        #expect(textView.selectedRange() == NSRange(location: 0, length: 0))
+    }
+
+    @Test(arguments: [-1, Int.max, 2, 3, 7, 9, 12])
+    func invalidOrNonBoundaryUTF16OffsetsDoNotChangeSelection(offset: Int) async throws {
+        // Offsets include a surrogate half, a ZWJ sequence, a combining mark and CRLF.
+        let source = "a👩‍💻e\u{0301}\r\nz"
+        var asked = false
+        let coordinator = TextKitEditor.Coordinator(revealSourceLocation: { _ in
+            asked = true
+            return offset
+        }) { _ in Issue.record("A reveal must not report an edit.") }
+        let scrollView = TextKitEditor.makeScrollView(initialText: source, coordinator: coordinator)
+        let window = makeRevealWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let selection = NSRange(location: 0, length: 1)
+        textView.setSelectedRange(selection)
+        window.reportsKey = true
+        postWindowAvailability(NSWindow.didBecomeKeyNotification, for: window)
+        await drainRevealChecks()
+
+        #expect(asked)
+        #expect(textView.selectedRange() == selection)
+        #expect(textView.string.utf8.elementsEqual(source.utf8))
+    }
+
+    @Test
+    func dismantlingDropsAQueuedRevealAndStopsWindowObservation() async {
+        let coordinator = TextKitEditor.Coordinator(revealSourceLocation: { _ in
+            Issue.record("A dismantled editor must not consume a request.")
+            return 0
+        }) { _ in }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", coordinator: coordinator)
+        let window = makeRevealWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        window.reportsKey = true
+        postWindowAvailability(NSWindow.didBecomeKeyNotification, for: window)
+        TextKitEditor.dismantleNSView(scrollView, coordinator: coordinator)
+        postWindowAvailability(NSWindow.didEndSheetNotification, for: window)
+        await drainRevealChecks()
+    }
+
+    @MainActor
+    private final class HeadlessRevealWindow: NSWindow {
+        var reportsKey = false
+        var simulatedSheet: NSWindow?
+        override var isKeyWindow: Bool { reportsKey }
+        override var attachedSheet: NSWindow? { simulatedSheet }
+    }
+
+    private func makeRevealWindow(containing view: NSView) -> HeadlessRevealWindow {
+        let frame = NSRect(x: 0, y: 0, width: 360, height: 240)
+        let window = HeadlessRevealWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        view.frame = frame
+        window.contentView = view
+        return window
+    }
+
+    private func postWindowAvailability(_ name: Notification.Name, for window: NSWindow) {
+        NotificationCenter.default.post(name: name, object: window)
+    }
+
+    private func drainRevealChecks() async {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async { continuation.resume() }
+        }
+    }
+
     @MainActor
     private final class EditPolicy {
         var permitsEdits = true

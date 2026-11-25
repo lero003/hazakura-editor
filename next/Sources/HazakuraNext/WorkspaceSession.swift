@@ -29,12 +29,27 @@ final class WorkspaceSession {
 
     struct MarkdownPreviewSnapshot: Identifiable {
         let id = UUID()
+        let documentID: UUID
+        let revision: UInt64
         let title: String
         let source: String
     }
 
+    private struct MarkdownSourceReveal {
+        let preview: MarkdownPreviewSnapshot
+        let offset: Int
+    }
+
     @ObservationIgnored weak var window: NSWindow?
-    var tabs: ScratchTabs
+    var tabs: ScratchTabs {
+        didSet {
+            // Includes tabs opened/closed through picker, recovery, and other non-tab-button paths.
+            guard let reveal = markdownSourceReveal else { return }
+            if tabs.selectedID != reveal.preview.documentID || tabs.isComposing {
+                markdownSourceReveal = nil
+            }
+        }
+    }
     var pendingDiscard: ScratchTabs.DiscardTicket?
     var openRequest: UUID?
     private(set) var saveCopyRequest: SaveCopyRequest?
@@ -42,6 +57,7 @@ final class WorkspaceSession {
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
     private(set) var markdownPreview: MarkdownPreviewSnapshot?
+    private var markdownSourceReveal: MarkdownSourceReveal?
     private(set) var fileNotice: String?
     private var isWritingCopy = false
     var exitNotice: String?
@@ -75,14 +91,42 @@ final class WorkspaceSession {
 
     func requestMarkdownPreview() {
         guard canPreviewMarkdown, let selected = tabs.selectedTab else { return }
+        markdownSourceReveal = nil
         // Keep the native editor mounted. The sheet is a copy of the selected committed revision.
-        markdownPreview = MarkdownPreviewSnapshot(title: Self.title(for: selected), source: selected.document.source)
+        markdownPreview = MarkdownPreviewSnapshot(documentID: selected.id, revision: selected.document.revision,
+                                                   title: Self.title(for: selected), source: selected.document.source)
     }
 
     func dismissMarkdownPreview(_ id: UUID) {
         guard markdownPreview?.id == id else { return }
         markdownPreview = nil
     }
+
+    var readyMarkdownRevealID: UUID? { markdownPreview == nil ? markdownSourceReveal?.preview.id : nil }
+
+    func requestMarkdownReveal(_ previewID: UUID, offset: Int) -> Bool {
+        guard let preview = markdownPreview, preview.id == previewID, markdownSourceReveal == nil,
+              !tabs.isComposing, let selected = tabs.selectedTab, selected.id == preview.documentID,
+              selected.document.revision == preview.revision, offset >= 0, offset < preview.source.utf16.count else { return false }
+        markdownSourceReveal = MarkdownSourceReveal(preview: preview, offset: offset)
+        return true
+    }
+
+    /// Called by the active AppKit editor only after the sheet and native input gates allow navigation.
+    func takeMarkdownReveal(_ previewID: UUID, documentID: UUID, editorSource: String) -> Int? {
+        guard readyMarkdownRevealID == previewID, let reveal = markdownSourceReveal,
+              documentID == reveal.preview.documentID, let selected = tabs.selectedTab,
+              selected.id == documentID else { return nil }
+        markdownSourceReveal = nil
+        guard !isBusy, !tabs.isComposing else { return nil }
+        guard selected.document.revision == reveal.preview.revision,
+              editorSource.utf8.elementsEqual(reveal.preview.source.utf8) else {
+            fileNotice = "原稿が変わったため、見出しに移動していません。"
+            return nil
+        }
+        return reveal.offset
+    }
+
     var canCompareOriginal: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab?.copyOrigin != nil }
 
     func requestOriginalComparison() {
