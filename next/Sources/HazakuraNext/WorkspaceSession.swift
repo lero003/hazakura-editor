@@ -65,6 +65,16 @@ final class WorkspaceSession {
         fileprivate(set) var hasStarted = false
     }
 
+    struct BookPreviewRequest: Identifiable {
+        struct Choice: Identifiable {
+            let id: UUID
+            let number: Int
+            let title: String
+        }
+        let id = UUID()
+        let choices: [Choice]
+    }
+
     struct MarkdownPreviewSnapshot: Identifiable {
         let id = UUID()
         let documentID: UUID
@@ -108,6 +118,8 @@ final class WorkspaceSession {
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
     private(set) var markdownPreview: MarkdownPreviewSnapshot?
+    private(set) var bookPreviewRequest: BookPreviewRequest?
+    private var bookPreviewConfirmed = false
     private(set) var assistReviewSample: AssistReviewSample?
     // A window-local layout choice, independent of the selected document and its recovery state.
     private(set) var isLMode = false
@@ -132,15 +144,16 @@ final class WorkspaceSession {
     private var hasFolderCatalogOperation: Bool {
         folderCatalogRequest != nil || activeFolderReadID != nil || folderCatalogReport != nil || folderEntryOpening != nil
     }
-    var isBusy: Bool {
-        pendingDiscard != nil || openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
+    var isBusy: Bool { pendingDiscard != nil || hasExclusiveOperation }
+    private var hasExclusiveOperation: Bool {
+        openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil ||
-            markdownPreview != nil || assistReviewSample != nil || showsRecovery || isDiscarding
+            markdownPreview != nil || bookPreviewRequest != nil || assistReviewSample != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
         !isDiscarding && !hasFolderCatalogOperation && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
-            readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && assistReviewSample == nil
+            readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil && assistReviewSample == nil
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
     var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
@@ -164,6 +177,35 @@ final class WorkspaceSession {
 
     static func title(for tab: ScratchTabs.Tab) -> String {
         tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
+    }
+
+    var canPreviewBook: Bool { !isBusy && !tabs.isComposing && tabs.tabs.count >= 2 }
+
+    func requestBookPreview() {
+        guard canPreviewBook else { return }
+        markdownSourceReveal = nil
+        bookPreviewConfirmed = false
+        bookPreviewRequest = BookPreviewRequest(choices: tabs.tabs.map { tab in
+            .init(id: tab.id, number: tab.number, title: Self.title(for: tab))
+        })
+    }
+
+    func confirmBookPreview(_ id: UUID, selected: Set<UUID>) -> [MarkdownBookPreview.Source]? {
+        guard let request = bookPreviewRequest, request.id == id, !bookPreviewConfirmed,
+              !tabs.isComposing, selected.count >= 2,
+              selected.isSubset(of: Set(request.choices.map(\.id))) else { return nil }
+        let chosen = tabs.tabs.filter { selected.contains($0.id) }
+        guard chosen.count == selected.count else { return nil }
+        bookPreviewConfirmed = true
+        return chosen.map { tab in
+            .init(id: tab.id, title: Self.title(for: tab), text: tab.document.source)
+        }
+    }
+
+    func dismissBookPreview(_ id: UUID) {
+        guard bookPreviewRequest?.id == id else { return }
+        bookPreviewRequest = nil
+        bookPreviewConfirmed = false
     }
 
     func requestMarkdownPreview() {
@@ -595,9 +637,8 @@ final class WorkspaceSession {
 
     @discardableResult
     func startTabDiscard(_ ticket: ScratchTabs.DiscardTicket) -> Task<Void, Never>? {
-        guard !isDiscarding, openRequest == nil, saveCopyRequest == nil, exportRequest == nil, !showsRecovery,
-              comparisonRequest == nil, readingComparisonID == nil, comparisonReport == nil, markdownPreview == nil,
-              let draft = tabs.draftForDiscard(ticket) else { return nil }
+        // Its own pending confirmation is allowed; every other exclusive operation is not.
+        guard !hasExclusiveOperation, let draft = tabs.draftForDiscard(ticket) else { return nil }
         // Reserve synchronously: dismissing SwiftUI's alert must not re-enable tab actions.
         isDiscarding = true
         pendingDiscard = nil

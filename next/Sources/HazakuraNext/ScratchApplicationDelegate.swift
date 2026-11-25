@@ -93,6 +93,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     func windowWillClose(_ notification: Notification) {
         guard (notification.object as? NSWindow) === window else { return }
         session?.clearFolderCatalog()
+        if let id = session?.bookPreviewRequest?.id { session?.dismissBookPreview(id) }
         session?.window = nil
         window = nil
         session = nil
@@ -207,6 +208,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         edit.addItem(withTitle: "すべてを選択", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         let view = addMenu("表示", to: bar)
         addCommand("Markdownプレビュー…", #selector(previewMarkdown(_:)), "", to: view)
+        addCommand("開いている原稿を続けて読む…", #selector(previewBook(_:)), "", to: view)
         addCommand("えるモード", #selector(toggleLMode(_:)), "", to: view)
         let development = addMenu("開発用", to: bar)
         addCommand("提案差分の表示サンプル…", #selector(showAssistReviewSample(_:)), "", to: development)
@@ -247,6 +249,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func exportPDF(_ sender: Any?) { menuSession?.requestExport(.pdf) }
     @objc private func exportEPUB(_ sender: Any?) { menuSession?.requestExport(.epub) }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
+    @objc private func previewBook(_ sender: Any?) { menuSession?.requestBookPreview() }
     @objc private func toggleLMode(_ sender: Any?) { menuSession?.toggleLMode() }
     @objc private func showAssistReviewSample(_ sender: Any?) { menuSession?.requestAssistReviewSample() }
     @objc private func undo(_ sender: Any?) { activeUndoManager?.undo() }
@@ -265,6 +268,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
         case #selector(exportHTML(_:)), #selector(exportPDF(_:)), #selector(exportEPUB(_:)): menuSession?.canExport == true
         case #selector(previewMarkdown(_:)): menuSession?.canPreviewMarkdown == true
+        case #selector(previewBook(_:)): menuSession?.canPreviewBook == true
         case #selector(showAssistReviewSample(_:)): menuSession?.canOpenAssistReviewSample == true
         case #selector(undo(_:)): activeUndoManager?.canUndo == true
         case #selector(redo(_:)): activeUndoManager?.canRedo == true

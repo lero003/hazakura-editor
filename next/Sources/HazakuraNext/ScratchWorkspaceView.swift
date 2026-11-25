@@ -22,6 +22,7 @@ struct ScratchWorkspaceView: View {
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
+        let bookID = session.bookPreviewRequest?.id
         let assistSampleID = session.assistReviewSample?.id
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
@@ -108,6 +109,7 @@ struct ScratchWorkspaceView: View {
             session.clearFolderCatalog()
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
+            if let id = session.bookPreviewRequest?.id { session.dismissBookPreview(id) }
             if let id = session.assistReviewSample?.id { session.dismissAssistReviewSample(id) }
             if let id = session.exportRequest?.id { session.cancelExport(id) }
             openPanel = nil
@@ -136,6 +138,11 @@ struct ScratchWorkspaceView: View {
             ) { location in
                 session.requestMarkdownReveal(preview.id, offset: location.utf16Offset)
             }
+        }
+        .sheet(item: Binding(get: { session.bookPreviewRequest }, set: { book in
+            if book == nil, let bookID { session.dismissBookPreview(bookID) }
+        })) { request in
+            BookPreviewView(session: session, request: request)
         }
         .sheet(item: Binding(get: { session.assistReviewSample }, set: { sample in
             if sample == nil, let assistSampleID { session.dismissAssistReviewSample(assistSampleID) }

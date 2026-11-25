@@ -450,7 +450,7 @@ private struct MarkdownPreviewReadingPane: View {
     }
 }
 
-private struct MarkdownPreviewBlockView: View {
+struct MarkdownPreviewBlockView: View {
     let block: MarkdownPreview.Block
 
     var body: some View {
