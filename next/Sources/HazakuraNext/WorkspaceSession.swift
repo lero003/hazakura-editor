@@ -462,7 +462,7 @@ final class WorkspaceSession {
     }
 
     func confirmLineJump(_ id: UUID, line: Int) -> Bool {
-        guard let request = lineJumpRequest, request.id == id, matchesSourceNavigation(request), !hasNativeMarkedText,
+        guard let request = lineJumpRequest, request.id == id, matchesSourceNavigation(request),
               let tab = tabs.selectedTab,
               let offset = SourceLineLookup.utf16Offset(of: line, in: tab.document.source) else { return false }
         sourceReveal = SourceReveal(id: id, documentID: tab.id, revision: request.revision,
@@ -482,7 +482,7 @@ final class WorkspaceSession {
     }
 
     private func matchesSourceNavigation(_ request: SourceNavigationRequest) -> Bool {
-        !tabs.isComposing && tabs.selectedID == request.documentID &&
+        !tabs.isComposing && !hasNativeMarkedText && tabs.selectedID == request.documentID &&
             tabs.selectedTab?.document.revision == request.revision
     }
 
@@ -520,7 +520,7 @@ final class WorkspaceSession {
     }
 
     func selectSourceSearchMatch(_ id: UUID, reportID: UUID, matchID: Int) -> Bool {
-        guard let request = sourceSearchRequest, request.id == id, matchesSourceNavigation(request), !hasNativeMarkedText,
+        guard let request = sourceSearchRequest, request.id == id, matchesSourceNavigation(request),
               let tab = tabs.selectedTab, let report = sourceSearchReport, report.id == reportID,
               let match = report.results.matches.first(where: { $0.id == matchID }) else { return false }
         sourceReveal = SourceReveal(id: id, documentID: request.documentID, revision: request.revision,

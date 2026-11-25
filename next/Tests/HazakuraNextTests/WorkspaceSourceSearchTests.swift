@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 @testable import HazakuraNext
 import HazakuraNextCore
@@ -76,6 +77,56 @@ struct WorkspaceSourceSearchTests {
         #expect(await obsolete.value == nil)
         let match = try #require(current.results.matches.first)
         #expect(session.selectSourceSearchMatch(request.id, reportID: current.id, matchID: match.id))
+    }
+
+    @Test(arguments: [false, true])
+    func nativeMarkedTextPreventsScanningOrPublishingResults(_ startsDuringScan: Bool) async throws {
+        let source = "確定済みの原稿"
+        let session = WorkspaceSession(source: "")
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource(source, to: id)
+        let drafts = session.tabs.recoveryDrafts
+        _ = NSApplication.shared
+        let frame = NSRect(x: 0, y: 0, width: 300, height: 200)
+        let window = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        let editor = NSTextView(frame: frame)
+        editor.string = source
+        window.contentView = editor
+        try #require(window.makeFirstResponder(editor))
+        session.window = window
+        session.requestSourceSearch()
+        let request = try #require(session.sourceSearchRequest)
+        func beginComposition() {
+            editor.setMarkedText("候補", selectedRange: NSRange(location: 1, length: 0),
+                                 replacementRange: NSRange(location: NSNotFound, length: 0))
+        }
+
+        if !startsDuringScan { beginComposition() }
+        var scans = 0
+        let report = await session.searchSource(request.id, query: "原稿") { source, query in
+            scans += 1
+            if startsDuringScan {
+                await Task.yield()
+                beginComposition()
+            }
+            return SourceSearch.search(query, in: source)
+        }
+        #expect(scans == (startsDuringScan ? 1 : 0))
+        #expect(report == nil)
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        #expect(editor.markedRange().length == 2)
+        #expect(window.firstResponder === editor)
+        #expect(session.sourceSearchRequest?.id == request.id)
+        #expect(session.readySourceRevealID == nil)
+        #expect(session.tabs.selectedTab?.document.source.utf8.elementsEqual(source.utf8) == true)
+        #expect(session.tabs.recoveryDrafts == drafts)
+
+        editor.unmarkText()
+        let retry = try #require(await session.searchSource(request.id, query: "原稿"))
+        #expect(retry.results.matches.map(\.line) == [1])
+        session.dismissSourceSearch(request.id)
     }
 
     @Test func byteDifferentNativeBufferCannotApplyASelection() async throws {
