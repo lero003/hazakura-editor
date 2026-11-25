@@ -12,6 +12,8 @@ struct ScratchWorkspaceView: View {
     var body: some View {
         let openID = session.openRequest
         let saveID = session.saveCopyRequest?.id
+        let compareID = session.comparisonRequestID
+        let reportID = session.comparisonReport?.id
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(banner)
@@ -35,12 +37,25 @@ struct ScratchWorkspaceView: View {
         .task(id: saveID) {
             if let saveID { await saveSelectedCopy(saveID) }
         }
+        .task(id: compareID) {
+            if let compareID {
+                await session.readOriginalComparison(compareID) {
+                    try await readThroughOpenPanel(comparing: true) { session.comparisonRequestID == compareID }
+                }
+            }
+        }
         .onDisappear {
             let panel = openPanel
             session.openRequest = nil
+            if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             openPanel = nil
             panel?.cancel(nil)
             savePanel?.cancel(nil)
+        }
+        .sheet(item: Binding(get: { session.comparisonReport }, set: { report in
+            if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
+        })) { report in
+            OriginalFileComparisonView(comparison: report.comparison)
         }
         .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
             DraftRecoveryView(session: session)
@@ -61,6 +76,7 @@ struct ScratchWorkspaceView: View {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
+        if session.comparisonRequestID != nil { return "比較するファイルを選び直してください。" }
         if let notice = session.exitNotice { return notice }
         if session.isDiscarding { return "復旧記録を確認しています…" }
         if let notice = session.fileNotice { return notice }
@@ -76,39 +92,43 @@ struct ScratchWorkspaceView: View {
 
     private func openSelectedFile(_ request: UUID) async {
         guard session.openRequest == request, !Task.isCancelled else { return }
-        defer {
-            if session.openRequest == request {
-                openPanel = nil
-                session.openRequest = nil
-            }
-        }
-        guard let window = session.window, window.isKeyWindow, window.attachedSheet == nil else { return }
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.resolvesAliases = false
-        openPanel = panel
-
-        let answer = await panel.beginSheetModal(for: window)
-        if session.openRequest == request { openPanel = nil }
-        guard answer == .OK, let url = panel.url else { return }
-        // macOS starts access for the URL returned by the Open panel; do not retain it for later I/O.
-        defer { url.stopAccessingSecurityScopedResource() }
-        guard !Task.isCancelled, session.openRequest == request else { return }
-
+        defer { if session.openRequest == request { session.openRequest = nil } }
         do {
-            let file = try await SelectedTextFile.read(from: url)
-            guard !Task.isCancelled, session.openRequest == request else { return }
+            let file = try await readThroughOpenPanel(comparing: false) { session.openRequest == request }
+            guard let file, !Task.isCancelled, session.openRequest == request else { return }
             // Do not take focus away from a composition that began after the picker closed.
             if session.tabs.openReadOnly(file) == nil {
                 session.reportOpenFailure("変換の確定後に、もう一度ファイルを選んでください。", request: request)
             }
         } catch {
             guard !Task.isCancelled, session.openRequest == request else { return }
-            session.reportOpenFailure(Self.readFailure(error), request: request)
+            session.reportOpenFailure(WorkspaceSession.readFailure(error), request: request)
         }
+    }
+
+    private func readThroughOpenPanel(comparing: Bool, isCurrent: () -> Bool) async throws -> SelectedTextFile? {
+        guard !Task.isCancelled, isCurrent(), let window = session.window, window.isKeyWindow,
+              window.attachedSheet == nil else { return nil }
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.resolvesAliases = false
+        if comparing {
+            panel.title = "比較する原本を選ぶ"
+            panel.message = "開いた時点と比べるファイルを選び直してください。ファイルは読み取るだけです。"
+            panel.prompt = "比較"
+        }
+        openPanel = panel
+        let answer = await panel.beginSheetModal(for: window)
+        if openPanel === panel { openPanel = nil }
+        guard answer == .OK, let url = panel.url else { return nil }
+        // macOS starts access for the URL returned by the Open panel; do not retain it for later I/O.
+        defer { url.stopAccessingSecurityScopedResource() }
+        guard isCurrent() else { return nil }
+        try Task.checkCancellation()
+        return try await SelectedTextFile.read(from: url)
     }
 
     private func saveSelectedCopy(_ requestID: UUID) async {
@@ -130,17 +150,6 @@ struct ScratchWorkspaceView: View {
         defer { destination.stopAccessingSecurityScopedResource() }
         guard !Task.isCancelled else { return }
         await session.writeRequestedCopy(requestID, to: destination)
-    }
-
-    private static func readFailure(_ error: Error) -> String {
-        switch error as? SelectedTextFile.ReadError {
-        case .tooLarge: "2 MiB以下のテキストを選んでください。"
-        case .invalidUTF8: "この検証版で開ける文字コードはUTF-8のみです。"
-        case .nonTextControls: "テキストとして扱えない制御文字が含まれています。"
-        case .changedWhileReading: "読み込み中にファイルが更新されました。もう一度選んでください。"
-        case .notRegularFile, .invalidLocation: "通常のテキストファイルを選んでください。"
-        case .accessDenied, nil: "ファイルを読み取れません。リンク先ではなくファイルそのものを選び、アクセス権も確認してください。"
-        }
     }
 
     private var tabBar: some View {
@@ -188,6 +197,15 @@ struct ScratchWorkspaceView: View {
                 }
                 .help("原稿を新しいファイルに保存（⌘⇧S）")
                 .disabled(!session.canSaveCopy)
+                if session.tabs.selectedTab?.copyOrigin != nil {
+                    Button {
+                        session.requestOriginalComparison()
+                    } label: {
+                        Label("原本の版を比較", systemImage: "arrow.left.arrow.right").labelStyle(.iconOnly)
+                    }
+                    .help("ファイルを選び直し、開いた時点・ディスク・編集中の原稿を比較する")
+                    .disabled(!session.canCompareOriginal)
+                }
             }
 
             Button {

@@ -3,10 +3,11 @@ import Foundation
 /// One scratch window. The native editor owns the in-flight composition and undo history;
 /// these documents retain the last committed text only.
 public struct ScratchTabs {
-    /// Display and format metadata only; a scratch copy carries no original-file access.
+    /// An in-memory comparison baseline; a scratch copy carries no original-file access.
     public struct CopyOrigin: Sendable {
-        public let name: String
-        public let format: SelectedTextFile.Format
+        public let baseline: SelectedTextFile
+        public var name: String { baseline.name }
+        public var format: SelectedTextFile.Format { baseline.format }
     }
 
     public struct Tab: Identifiable {
@@ -80,7 +81,7 @@ public struct ScratchTabs {
     public mutating func makeEditableCopyOfSelection() -> UUID? {
         guard let file = selectedTab?.selectedFile else { return nil }
         return appendTab(ScratchDocument(recoveredSource: file.source), selectedFile: nil,
-                         copyOrigin: CopyOrigin(name: file.name, format: file.format))
+                         copyOrigin: CopyOrigin(baseline: file))
     }
 
     /// Opens an independent unsaved copy. The stored candidate is not consumed, reused or modified.

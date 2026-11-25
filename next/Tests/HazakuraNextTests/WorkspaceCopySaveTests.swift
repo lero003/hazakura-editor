@@ -69,7 +69,8 @@ struct WorkspaceCopySaveTests {
         let unblock = AsyncStream<Void>.makeStream()
         defer { began.continuation.finish(); unblock.continuation.finish() }
         let probe = CopyWriterProbe()
-        let writing = Task {
+        // Reserve the injected writer before the hidden window's SwiftUI picker task gets a turn.
+        let writing = Task.immediate { @MainActor in
             await session.writeRequestedCopy(request, to: destination) { source, bom, url in
                 await probe.record(source, bom, url)
                 began.continuation.finish()
