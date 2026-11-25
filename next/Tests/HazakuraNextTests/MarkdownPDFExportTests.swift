@@ -5,8 +5,10 @@ import PDFKit
 import Testing
 
 @MainActor
+@Suite(.serialized)
 struct MarkdownPDFExportTests {
-    // In-process, detached WKWebView. No app window, file picker, external viewer or output file.
+    // Exercise one detached WKWebView capture at a time, as in the workspace UI.
+    // No app window, file picker, external viewer or output file.
     @Test func capturesWholeFlowWithoutExportingActiveReferences() async throws {
         let source = "# StartMarker\n\n"
             + "[LinkLabel](https://example.invalid/pdf-target) ![ImageLabel](file:///never-read-pdf-fixture)\n\n"
