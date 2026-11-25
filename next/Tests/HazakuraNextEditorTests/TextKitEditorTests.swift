@@ -26,6 +26,156 @@ struct TextKitEditorTests {
     }
 
     @Test
+    func focusLayoutCentersTheTextColumnAndAdaptsToANarrowReadOnlyViewport() throws {
+        let source = "# 原文 👩‍💻\r\nか\u{3099}\n"
+        let scrollView = TextKitEditor.makeScrollView(
+            initialText: source, isReadOnly: true, isFocusLayout: true, coordinator: nil
+        )
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let container = try #require(textView.textContainer)
+        // Exercise a scroller that takes up horizontal space, not just an overlaid scroller.
+        scrollView.scrollerStyle = .legacy
+        scrollView.autohidesScrollers = false
+
+        for width: CGFloat in [1500, 950, 320, 80] {
+            resizeEditor(scrollView, width: width)
+            let viewport = scrollView.contentView.bounds.width
+            let leftGutter = textView.textContainerOrigin.x + container.lineFragmentPadding
+            let textWidth = container.size.width - 2 * container.lineFragmentPadding
+            let rightGutter = viewport - leftGutter - textWidth
+
+            #expect(abs(leftGutter - rightGutter) <= 1)
+            if width == 1500 {
+                #expect(viewport - textWidth >= 200, "A very wide viewport should still narrow the column.")
+            } else if width == 950 {
+                #expect(viewport < width)
+                #expect(abs(textWidth - 720) <= 1)
+            } else {
+                #expect(textWidth >= viewport * 0.75)
+            }
+            #expect(textView.textContainerInset.height > 12)
+        }
+
+        #expect(textView.isSelectable)
+        #expect(textView.isEditable == false)
+        #expect(textView.undoManager == nil)
+        let selection = NSRange(location: 0, length: 2)
+        textView.setSelectedRange(selection)
+        textView.insertText("別", replacementRange: selection)
+        #expect(textView.selectedRange() == selection)
+        #expect(textView.string.utf8.elementsEqual(source.utf8))
+    }
+
+    @Test
+    func focusLayoutTogglePreservesSourceSelectionUndoAndTheNativeEditor() throws {
+        let source = "# 原稿 👩‍💻\r\n- `e\u{0301}`\r" + String(repeating: "本文\n", count: 120)
+        let insertion = "冒頭\n"
+        var reported: [[UInt8]] = []
+        let coordinator = TextKitEditor.Coordinator { reported.append(Array($0.utf8)) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: source, coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        resizeEditor(scrollView, width: 1300)
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let layoutManager = try #require(textView.textLayoutManager)
+        let storage = try #require(textView.textContentStorage?.textStorage)
+        let undoManager = try #require(textView.undoManager)
+        let normalInset = textView.textContainerInset
+        let font = textView.font
+        #expect(normalInset == NSSize(width: 12, height: 12))
+
+        textView.insertText(insertion, replacementRange: NSRange(location: 0, length: 0))
+        let selection = NSRange(location: 0, length: 2)
+        textView.setSelectedRange(selection)
+        let styledSource = NSAttributedString(attributedString: storage)
+        textView.scrollRangeToVisible(NSRange(location: source.utf16.count, length: 0))
+        let scrollOrigin = scrollView.contentView.bounds.origin
+        try #require(scrollOrigin.y > 0)
+
+        TextKitEditor.setFocusLayout(true, in: scrollView)
+        #expect(textView.textContainerInset.width > normalInset.width)
+        #expect(textView.textContainerInset.height > normalInset.height)
+        #expect(scrollView.documentView === textView)
+        #expect(textView.textLayoutManager === layoutManager)
+        #expect(textView.textContentStorage?.textStorage === storage)
+        #expect(textView.undoManager === undoManager)
+        #expect(textView.font == font)
+        #expect(storage.isEqual(to: styledSource))
+        #expect(textView.selectedRange() == selection)
+        #expect(window.firstResponder === textView)
+        #expect(scrollView.contentView.bounds.origin == scrollOrigin)
+        #expect(textView.string.utf8.elementsEqual((insertion + source).utf8))
+        #expect(reported == [Array((insertion + source).utf8)])
+
+        undoManager.undo()
+        #expect(textView.string.utf8.elementsEqual(source.utf8))
+        try #require(undoManager.canRedo)
+        let undoneSelection = textView.selectedRange()
+        window.makeFirstResponder(nil)
+        TextKitEditor.setFocusLayout(false, in: scrollView)
+        #expect(textView.textContainerInset == normalInset)
+        #expect(textView.selectedRange() == undoneSelection)
+        #expect(window.firstResponder === window)
+        #expect(undoManager.canUndo == false)
+        #expect(undoManager.canRedo)
+        undoManager.redo()
+        #expect(textView.string.utf8.elementsEqual((insertion + source).utf8))
+        #expect(reported == [Array((insertion + source).utf8), Array(source.utf8), Array((insertion + source).utf8)])
+        #expect(textView.textLayoutManager === layoutManager)
+    }
+
+    @Test(arguments: [true, false])
+    func focusLayoutWaitsForMarkedTextToCommitOrCancel(commits: Bool) throws {
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {
+            events.append(.source($0))
+        }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "# ", isFocusLayout: true, coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        resizeEditor(scrollView, width: 1500)
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let layoutManager = try #require(textView.textLayoutManager)
+        let container = try #require(textView.textContainer)
+        let originalInset = textView.textContainerInset
+        try #require(originalInset.width > 12)
+        textView.setSelectedRange(NSRange(location: 2, length: 0))
+        setMarkedText("かな", in: textView)
+        try #require(textView.hasMarkedText())
+        let markedRange = textView.markedRange()
+        let markedSelection = textView.selectedRange()
+
+        resizeEditor(scrollView, width: 450)
+        #expect(textView.textContainerInset == originalInset, "Resize must not change insets during composition.")
+        #expect(container.size.width - 2 * container.lineFragmentPadding >= 120,
+                "The retained wide-window inset must still leave usable text width.")
+        TextKitEditor.setFocusLayout(false, in: scrollView)
+        #expect(textView.textContainerInset == originalInset, "A mode toggle must not change insets during composition.")
+        TextKitEditor.setFocusLayout(commits, in: scrollView)
+        resizeEditor(scrollView, width: 940)
+        #expect(textView.textContainerInset == originalInset)
+        #expect(textView.markedRange() == markedRange)
+        #expect(textView.selectedRange() == markedSelection)
+        #expect(textView.string == "# かな")
+        #expect(events == [.composing(true)])
+
+        if commits {
+            textView.insertText("仮名", replacementRange: implicitRange)
+            #expect(events == [.composing(true), .source("# 仮名"), .composing(false)])
+            let actualTextWidth = container.size.width - 2 * container.lineFragmentPadding
+            #expect(abs(actualTextWidth - 720) <= 1)
+        } else {
+            setMarkedText("", in: textView)
+            textView.unmarkText()
+            #expect(textView.string.utf8.elementsEqual("# ".utf8))
+            #expect(events == [.composing(true), .composing(false)])
+            #expect(textView.textContainerInset == NSSize(width: 12, height: 12))
+        }
+        #expect(textView.hasMarkedText() == false)
+        #expect(textView.textLayoutManager === layoutManager)
+    }
+
+    @Test
     func pastesOnlyPlainTextAndDoesNotAcceptFileDrops() throws {
         let scrollView = TextKitEditor.makeScrollView(initialText: "", coordinator: nil)
         let textView = try #require(scrollView.documentView as? NSTextView)
@@ -616,6 +766,11 @@ struct TextKitEditorTests {
 
     private func setMarkedText(_ text: String, in textView: NSTextView) {
         textView.setMarkedText(text, selectedRange: NSRange(location: text.utf16.count, length: 0), replacementRange: implicitRange)
+    }
+
+    private func resizeEditor(_ scrollView: NSScrollView, width: CGFloat) {
+        scrollView.setFrameSize(NSSize(width: width, height: 240))
+        scrollView.layoutSubtreeIfNeeded()
     }
 
     private func makeWindow(containing view: NSView) -> NSWindow {

@@ -92,6 +92,8 @@ final class WorkspaceSession {
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
     private(set) var markdownPreview: MarkdownPreviewSnapshot?
+    // A window-local layout choice, independent of the selected document and its recovery state.
+    private(set) var isLMode = false
     // Scrolling updates only this live-tab state, not the editor or the open sheet.
     @ObservationIgnored private var markdownReadingPositions: [UUID: (revision: UInt64, blockIndex: Int)] = [:]
     private var markdownSourceReveal: MarkdownSourceReveal?
@@ -122,6 +124,12 @@ final class WorkspaceSession {
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
     var canExport: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+    var canToggleLMode: Bool { !isBusy && !tabs.isComposing && tabs.selectedID != nil }
+
+    func toggleLMode() {
+        guard canToggleLMode else { return }
+        isLMode.toggle()
+    }
 
     static func title(for tab: ScratchTabs.Tab) -> String {
         tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"

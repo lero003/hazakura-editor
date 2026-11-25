@@ -87,7 +87,41 @@ private final class MarkdownTextView: NSTextView {
         textInputDepth -= 1
         // AppKit may call one text input hook from another. Only the outer operation
         // sees the final buffer and marked state, even when unmark edits no characters.
-        if textInputDepth == 0 { editorCoordinator?.didFinishTextInput() }
+        guard textInputDepth == 0 else { return }
+        editorCoordinator?.didFinishTextInput()
+        (enclosingScrollView as? EditorScrollView)?.applyEditorInsets()
+    }
+}
+
+@MainActor
+private final class EditorScrollView: NSScrollView {
+    static let normalInset = NSSize(width: 12, height: 12)
+
+    var isFocusLayout = false {
+        didSet {
+            if oldValue != isFocusLayout { applyEditorInsets() }
+        }
+    }
+
+    override func tile() {
+        super.tile()
+        applyEditorInsets()
+    }
+
+    func applyEditorInsets() {
+        guard let textView = documentView as? MarkdownTextView,
+              textView.textInputDepth == 0, !textView.hasMarkedText(),
+              let container = textView.textContainer else { return }
+        var inset = Self.normalInset
+        if isFocusLayout {
+            // The clip view excludes any non-overlay scroller; TextKit adds line padding inside the inset.
+            let availableWidth = contentView.bounds.width - 2 * container.lineFragmentPadding
+            let gutter = min(inset.width, max(0, (availableWidth - 160) / 2))
+            // Aim for 720 pt, but cap the margin so its old value still fits a narrow window
+            // if the user resizes before their current composition ends.
+            inset = NSSize(width: max(gutter, min(136, (availableWidth - 720) / 2)), height: 32)
+        }
+        if textView.textContainerInset != inset { textView.textContainerInset = inset }
     }
 }
 
@@ -122,6 +156,7 @@ public struct TextKitEditor: NSViewRepresentable {
     private let initialText: String
     private let isActive: Bool
     private let isReadOnly: Bool
+    private let isFocusLayout: Bool
     private let canEdit: @MainActor () -> Bool
     private let onCompositionChange: (Bool) -> Void
     private let revealSourceLocation: @MainActor (String) -> Int?
@@ -131,6 +166,7 @@ public struct TextKitEditor: NSViewRepresentable {
     /// `isActive` enables editing and requests native focus on activation. Inactive editors
     /// retain selection and undo history; the caller controls visibility and hit testing.
     /// `isReadOnly` lets an active tab select and copy its source without editing.
+    /// `isFocusLayout` adjusts only the text insets, deferring changes during marked input.
     /// `canEdit` is checked synchronously before native edits and Undo/Redo, without
     /// changing the selection or history. Only block edits when no composition is active.
     /// Keep the editor active, and block tab switches/new tabs, from `onCompositionChange(true)`
@@ -151,6 +187,7 @@ public struct TextKitEditor: NSViewRepresentable {
         initialText: String,
         isActive: Bool = true,
         isReadOnly: Bool = false,
+        isFocusLayout: Bool = false,
         canEdit: @escaping @MainActor () -> Bool = { true },
         onCompositionChange: @escaping (Bool) -> Void = { _ in },
         revealSourceLocation: @escaping @MainActor (String) -> Int? = { _ in nil },
@@ -159,6 +196,7 @@ public struct TextKitEditor: NSViewRepresentable {
         self.initialText = initialText
         self.isActive = isActive
         self.isReadOnly = isReadOnly
+        self.isFocusLayout = isFocusLayout
         self.canEdit = canEdit
         self.onCompositionChange = onCompositionChange
         self.revealSourceLocation = revealSourceLocation
@@ -171,7 +209,8 @@ public struct TextKitEditor: NSViewRepresentable {
     }
 
     public func makeNSView(context: Context) -> NSScrollView {
-        Self.makeScrollView(initialText: initialText, isActive: isActive, isReadOnly: isReadOnly, coordinator: context.coordinator)
+        Self.makeScrollView(initialText: initialText, isActive: isActive, isReadOnly: isReadOnly,
+                            isFocusLayout: isFocusLayout, coordinator: context.coordinator)
     }
 
     public func updateNSView(_ nsView: NSScrollView, context: Context) {
@@ -181,6 +220,7 @@ public struct TextKitEditor: NSViewRepresentable {
         context.coordinator.revealSourceLocation = revealSourceLocation
         context.coordinator.onChange = onChange
         Self.setActive(isActive, in: nsView, readOnly: isReadOnly)
+        Self.setFocusLayout(isFocusLayout, in: nsView)
         context.coordinator.scheduleSourceReveal()
     }
 
@@ -192,10 +232,15 @@ public struct TextKitEditor: NSViewRepresentable {
         (scrollView.documentView as? MarkdownTextView)?.setActive(isActive, readOnly: readOnly)
     }
 
+    static func setFocusLayout(_ isFocusLayout: Bool, in scrollView: NSScrollView) {
+        (scrollView as? EditorScrollView)?.isFocusLayout = isFocusLayout
+    }
+
     static func makeScrollView(
-        initialText: String, isActive: Bool = true, isReadOnly: Bool = false, coordinator: Coordinator?
+        initialText: String, isActive: Bool = true, isReadOnly: Bool = false,
+        isFocusLayout: Bool = false, coordinator: Coordinator?
     ) -> NSScrollView {
-        let scrollView = NSScrollView()
+        let scrollView = EditorScrollView()
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
 
@@ -221,7 +266,7 @@ public struct TextKitEditor: NSViewRepresentable {
         textView.writingToolsBehavior = .none
 
         textView.font = .monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-        textView.textContainerInset = NSSize(width: 12, height: 12)
+        textView.textContainerInset = EditorScrollView.normalInset
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         let unbounded = CGFloat.greatestFiniteMagnitude
@@ -232,6 +277,7 @@ public struct TextKitEditor: NSViewRepresentable {
         textView.string = initialText
         textView.setActive(isActive, readOnly: isReadOnly)
         scrollView.documentView = textView
+        setFocusLayout(isFocusLayout, in: scrollView)
 
         // Inspect the TextKit 2 properties only; accessing the legacy manager forces compatibility mode.
         guard textView.textLayoutManager != nil, let storage = textView.textContentStorage?.textStorage else {

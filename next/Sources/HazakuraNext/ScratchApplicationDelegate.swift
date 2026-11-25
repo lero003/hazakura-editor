@@ -204,6 +204,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         edit.addItem(withTitle: "すべてを選択", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         let view = addMenu("表示", to: bar)
         addCommand("Markdownプレビュー…", #selector(previewMarkdown(_:)), "", to: view)
+        addCommand("えるモード", #selector(toggleLMode(_:)), "", to: view)
         NSApp.mainMenu = bar
     }
 
@@ -240,11 +241,16 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func exportPDF(_ sender: Any?) { menuSession?.requestExport(.pdf) }
     @objc private func exportEPUB(_ sender: Any?) { menuSession?.requestExport(.epub) }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
+    @objc private func toggleLMode(_ sender: Any?) { menuSession?.toggleLMode() }
     @objc private func undo(_ sender: Any?) { activeUndoManager?.undo() }
     @objc private func redo(_ sender: Any?) { activeUndoManager?.redo() }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
-        switch item.action {
+        if item.action == #selector(toggleLMode(_:)) {
+            item.state = session?.isLMode == true ? .on : .off
+            return menuSession?.canToggleLMode == true
+        }
+        return switch item.action {
         case #selector(newTab(_:)), #selector(openFile(_:)): menuSession?.canAddTab == true
         case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true

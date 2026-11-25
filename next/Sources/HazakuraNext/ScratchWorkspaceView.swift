@@ -322,6 +322,7 @@ struct ScratchWorkspaceView: View {
         // Do not conditionally rebuild the editor when it loses selection. AppKit retains
         // the document's cursor, scroll geometry and undo manager while it is inactive.
         let revealID = session.readyMarkdownRevealID
+        let isLMode = session.isLMode
         return ZStack {
             ForEach(session.tabs.tabs) { tab in
                 let id = tab.id
@@ -330,6 +331,7 @@ struct ScratchWorkspaceView: View {
                     initialText: tab.document.source,
                     isActive: isSelected,
                     isReadOnly: tab.isReadOnly,
+                    isFocusLayout: isLMode,
                     canEdit: { session.canEditSource },
                     onCompositionChange: { session.tabs.setComposing($0, in: id) },
                     revealSourceLocation: { editorSource in
