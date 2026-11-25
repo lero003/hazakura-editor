@@ -271,10 +271,10 @@ final class WorkspaceSession {
             readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil &&
             assistReviewSample == nil && lineJumpRequest == nil && sourceSearchRequest == nil
     }
-    private var canStartReadingPreview: Bool {
-        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil
+    private var canStartPresentationAction: Bool {
+        !isBusy && window?.attachedSheet == nil && !tabs.isComposing && !hasNativeMarkedText
     }
-    var canPreviewMarkdown: Bool { canStartReadingPreview && tabs.selectedTab != nil }
+    var canPreviewMarkdown: Bool { canStartPresentationAction && tabs.selectedTab != nil }
     var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
     var canExport: Bool {
         !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil && tabs.selectedTab != nil
@@ -289,7 +289,7 @@ final class WorkspaceSession {
         guard assistReviewSample?.id == id else { return }
         assistReviewSample = nil
     }
-    var canToggleLMode: Bool { !isBusy && !tabs.isComposing && tabs.selectedID != nil }
+    var canToggleLMode: Bool { canStartPresentationAction && tabs.selectedID != nil }
 
     func toggleLMode() {
         guard canToggleLMode else { return }
@@ -297,7 +297,7 @@ final class WorkspaceSession {
     }
 
     var canToggleZenMode: Bool {
-        !isBusy && !tabs.isComposing && (isZenMode || tabs.selectedID != nil)
+        canStartPresentationAction && (isZenMode || tabs.selectedID != nil)
     }
 
     func toggleZenMode() {
@@ -326,10 +326,7 @@ final class WorkspaceSession {
         }
     }
 
-    var canSetAppearance: Bool {
-        guard let window, window.attachedSheet == nil, !isBusy, !tabs.isComposing else { return false }
-        return (window.firstResponder as? NSTextView)?.hasMarkedText() != true
-    }
+    var canSetAppearance: Bool { window != nil && canStartPresentationAction }
 
     func setAppearance(_ choice: Appearance) {
         guard let window, canSetAppearance else { return }
@@ -349,7 +346,7 @@ final class WorkspaceSession {
         return tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
     }
 
-    var canPreviewBook: Bool { canStartReadingPreview && tabs.tabs.count >= 2 }
+    var canPreviewBook: Bool { canStartPresentationAction && tabs.tabs.count >= 2 }
 
     func requestBookPreview() {
         guard canPreviewBook else { return }

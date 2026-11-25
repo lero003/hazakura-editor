@@ -126,6 +126,60 @@ struct WorkspaceAppearanceTests {
         #expect(window.appearance == nil)
     }
 
+    enum LayoutBlocker: CaseIterable, Sendable { case nativeComposition, attachedSheet }
+
+    @Test(arguments: LayoutBlocker.allCases, [false, true])
+    func layoutTogglesRejectNativeBlockersAndWaitForAnExplicitRetry(_ blocker: LayoutBlocker, startsEnabled: Bool) throws {
+        let session = WorkspaceSession(source: "# 原稿")
+        let window = makeWindow()
+        defer { window.close() }
+        session.window = window
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("# 確定原稿\r\n", to: id)
+        let drafts = session.tabs.recoveryDrafts
+        if startsEnabled {
+            session.toggleLMode()
+            session.toggleZenMode()
+        }
+        try #require(session.isLMode == startsEnabled && session.isZenMode == startsEnabled)
+
+        let editor = NSTextView(frame: window.contentLayoutRect)
+        window.contentView = editor
+        try #require(window.makeFirstResponder(editor))
+        let sheet = blocker == .attachedSheet ? makeWindow() : nil
+        defer { sheet?.close() }
+        switch blocker {
+        case .nativeComposition:
+            editor.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                                 replacementRange: NSRange(location: NSNotFound, length: 0))
+            try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        case .attachedSheet:
+            window.simulatedSheet = sheet
+            try #require(window.attachedSheet != nil && !session.isBusy)
+        }
+        let selection = editor.selectedRange()
+        let marked = editor.markedRange()
+        #expect(!session.canToggleLMode)
+        #expect(!session.canToggleZenMode)
+        session.toggleLMode()
+        session.toggleZenMode()
+        #expect(session.isLMode == startsEnabled)
+        #expect(session.isZenMode == startsEnabled)
+        #expect(window.firstResponder === editor)
+        #expect(editor.selectedRange() == selection)
+        #expect(editor.markedRange() == marked)
+
+        if blocker == .nativeComposition { editor.unmarkText() }
+        window.simulatedSheet = nil
+        try #require(session.isLMode == startsEnabled && session.isZenMode == startsEnabled)
+        #expect(session.canToggleLMode && session.canToggleZenMode)
+        session.toggleLMode()
+        session.toggleZenMode()
+        #expect(session.isLMode == !startsEnabled && session.isZenMode == !startsEnabled)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDrafts == drafts)
+    }
+
     @Test func changingAppearancePreservesDraftsRevisionsRecoveryAndOtherPresentationModes() async throws {
         let probe = AppearanceRecoveryProbe()
         let recovery = RecoveryCheckpointQueue(backend: .init(

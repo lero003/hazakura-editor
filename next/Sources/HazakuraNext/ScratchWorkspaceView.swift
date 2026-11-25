@@ -478,7 +478,9 @@ struct ScratchWorkspaceView: View {
                 guard session.isZenMode else { return }
                 session.toggleZenMode()
             }
-            .disabled(!session.canToggleZenMode)
+            // Only observe model state here; sheet detachment does not invalidate this view.
+            // toggleZenMode() also checks the native input and sheet state when invoked.
+            .disabled(session.isBusy || session.tabs.isComposing)
             .layoutPriority(1)
         }
         .font(.callout)
