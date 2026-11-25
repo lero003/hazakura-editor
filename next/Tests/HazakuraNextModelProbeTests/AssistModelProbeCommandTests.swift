@@ -167,11 +167,23 @@ struct AssistModelProbeCommandTests {
         #expect(cancelledMetrics["status"] as? String == "cancelled")
     }
 
+    @Test func availabilityOnlyAndUnavailableRunsDoNotStartADeadline() async {
+        let wait: @MainActor (ContinuousClock.Instant) async throws -> Void = { _ in
+            Issue.record("A deadline must not run without generation.")
+        }
+        let checked = await AssistModelProbeCommand.run(generate: false, availability: { .available },
+                                                        waitUntilDeadline: wait)
+        let unavailable = await AssistModelProbeCommand.run(generate: true, availability: { .modelNotReady },
+                                                            waitUntilDeadline: wait)
+        #expect(checked.status == .checked)
+        #expect(unavailable.status == .unavailable)
+    }
+
     @Test func availabilityCheckDoesNotGenerateEvenWhenAvailable() async {
-        let report = await AssistModelProbeCommand.run(generate: false, availability: { .available }) {
+        let report = await AssistModelProbeCommand.run(generate: false, availability: { .available }, produce: {
             Issue.record("An availability-only request must not start inference.")
             return "unused"
-        }
+        })
         #expect(report.status == .checked)
         #expect(report.availability == .available)
         #expect(report.responseUTF8Bytes == nil)
@@ -179,10 +191,10 @@ struct AssistModelProbeCommandTests {
     }
 
     @Test func unavailabilityDoesNotFallBackOrInvokeGeneration() async {
-        let report = await AssistModelProbeCommand.run(generate: true, availability: { .modelNotReady }) {
+        let report = await AssistModelProbeCommand.run(generate: true, availability: { .modelNotReady }, produce: {
             Issue.record("An unavailable local model must not generate or fall back.")
             return "unused"
-        }
+        })
         #expect(report.status == .unavailable)
         #expect(report.availability == .modelNotReady)
         #expect(report.responseUTF8Bytes == nil)
@@ -192,10 +204,10 @@ struct AssistModelProbeCommandTests {
     @Test func generationReportsOnlyBoundedMetrics() async throws {
         var calls = 0
         let syntheticOutput = "候補の内容を表示しない"
-        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }) {
+        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }, produce: {
             calls += 1
             return syntheticOutput
-        }
+        })
         let line = try report.jsonLine()
         #expect(calls == 1)
         #expect(report.status == .completed)
@@ -208,7 +220,7 @@ struct AssistModelProbeCommandTests {
 
     @Test(arguments: [" \t\n", "a\u{0000}b", "a\u{007F}b", String(repeating: "稿", count: 683)])
     func refusesInvalidMetricOutput(_ output: String) async {
-        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }) { output }
+        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }, produce: { output })
         #expect(report.status == .invalidOutput)
         #expect(report.responseUTF8Bytes == nil)
         #expect(report.exitCode != 0)
@@ -216,10 +228,10 @@ struct AssistModelProbeCommandTests {
 
     @Test func cancelledTaskDoesNotStartGeneration() async {
         let task = Task { @MainActor in
-            await AssistModelProbeCommand.run(generate: true, availability: { .available }) {
+            await AssistModelProbeCommand.run(generate: true, availability: { .available }, produce: {
                 Issue.record("A cancelled task must not call the model.")
                 return "unused"
-            }
+            })
         }
         task.cancel()
         let report = await task.value
@@ -229,10 +241,10 @@ struct AssistModelProbeCommandTests {
 
     @Test func resultReturningAfterCancellationCannotPublishMetrics() async {
         let operation = Task { @MainActor in
-            await AssistModelProbeCommand.run(generate: true, availability: { .available }) {
+            await AssistModelProbeCommand.run(generate: true, availability: { .available }, produce: {
                 withUnsafeCurrentTask { $0?.cancel() }
                 return "遅れて返った候補"
-            }
+            })
         }
         let report = await operation.value
         #expect(report.status == .cancelled)
@@ -241,18 +253,18 @@ struct AssistModelProbeCommandTests {
     }
 
     @Test func theByteLimitIsInclusive() async {
-        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }) {
+        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }, produce: {
             String(repeating: "稿", count: 682) + "ok"
-        }
+        })
         #expect(report.status == .completed)
         #expect(report.responseUTF8Bytes == 2_048)
     }
 
     @Test func engineErrorsDoNotLeakPayload() async throws {
         struct PrivateDiagnostic: Error {}
-        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }) {
+        let report = await AssistModelProbeCommand.run(generate: true, availability: { .available }, produce: {
             throw PrivateDiagnostic()
-        }
+        })
         #expect(report.status == .failed)
         #expect(report.exitCode != 0)
         let line = try report.jsonLine()

@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// Deliberately separate from the editor and the approval demo. Accepts no document or prompt input.
 @MainActor
@@ -6,7 +7,7 @@ enum AssistModelProbeCommand {
     enum Mode: Equatable { case invalid, check, generate, compare }
 
     enum Status: String, Encodable {
-        case checked, unavailable, completed, invalidOutput, failed, cancelled
+        case checked, unavailable, completed, invalidOutput, failed, timedOut, cancelled
     }
 
     struct Report: Encodable {
@@ -22,6 +23,7 @@ enum AssistModelProbeCommand {
             case .checked, .completed: 0
             case .unavailable: 3
             case .invalidOutput, .failed: 1
+            case .timedOut: 124
             case .cancelled: 130
             }
         }
@@ -53,27 +55,90 @@ enum AssistModelProbeCommand {
         }
     }
 
+    private static let attemptLimit: Duration = .seconds(30)
+
     static func compare(
         availability: @MainActor () -> AssistFoundationModelProbe.Availability = AssistFoundationModelProbe.availability,
-        produce: @MainActor () async throws -> String = AssistFoundationModelProbe.generate
+        waitUntilDeadline: @escaping @MainActor (ContinuousClock.Instant) async throws -> Void = {
+            try await ContinuousClock().sleep(until: $0)
+        },
+        produce: @escaping @MainActor () async throws -> String = AssistFoundationModelProbe.generate
     ) async -> ComparisonReport {
-        let first = await run(generate: true, availability: availability, produce: produce)
+        let first = await run(generate: true, availability: availability,
+                              waitUntilDeadline: waitUntilDeadline, produce: produce)
         guard first.status == .completed else { return ComparisonReport(first: first, second: nil) }
         // Each run checks availability and cancellation again; the engine opens a new session.
-        let second = await run(generate: true, availability: availability, produce: produce)
+        let second = await run(generate: true, availability: availability,
+                               waitUntilDeadline: waitUntilDeadline, produce: produce)
         return ComparisonReport(first: first, second: second)
     }
 
     static func run(
         generate: Bool,
         availability: @MainActor () -> AssistFoundationModelProbe.Availability = AssistFoundationModelProbe.availability,
-        produce: @MainActor () async throws -> String = AssistFoundationModelProbe.generate
+        waitUntilDeadline: @escaping @MainActor (ContinuousClock.Instant) async throws -> Void = {
+            try await ContinuousClock().sleep(until: $0)
+        },
+        produce: @escaping @MainActor () async throws -> String = AssistFoundationModelProbe.generate
     ) async -> Report {
         let model = availability()
         guard generate else { return Report(status: .checked, availability: model) }
-        guard !Task.isCancelled else { return Report(status: .cancelled, availability: model) }
+        let cancelled = Report(status: .cancelled, availability: model)
+        guard !Task.isCancelled else { return cancelled }
         guard model == .available else { return Report(status: .unavailable, availability: model) }
-        let start = ContinuousClock.now
+
+        let stopRequested = Mutex(false)
+        let result = await withTaskCancellationHandler {
+            guard !Task.isCancelled else { return cancelled }
+            let start = ContinuousClock.now
+            let deadline = start.advanced(by: attemptLimit)
+            let timedOut = Report(status: .timedOut, availability: model)
+            let (results, continuation) = AsyncStream.makeStream(of: Report.self, bufferingPolicy: .bufferingOldest(1))
+            // A task group would join a suspended SDK task even if it ignores cancellation.
+            // Both publishers run on MainActor and finish the stream after the first offer.
+            let worker = Task { @MainActor in
+                // Cancellation may arrive before this job runs, while the consumer is suspended.
+                guard !stopRequested.withLock({ $0 }) else { return }
+                let report = ContinuousClock.now < deadline
+                    ? await generateReport(availability: model, startedAt: start, produce: produce)
+                    : timedOut
+                continuation.yield(ContinuousClock.now < deadline ? report : timedOut)
+                continuation.finish()
+            }
+            let watchdog = Task { @MainActor in
+                let report: Report
+                do {
+                    try await waitUntilDeadline(deadline)
+                    report = timedOut
+                } catch {
+                    report = Report(status: .failed, availability: model)
+                }
+                guard !Task.isCancelled else { return }
+                stopRequested.withLock { $0 = true }
+                continuation.yield(report)
+                continuation.finish()
+            }
+            defer {
+                stopRequested.withLock { $0 = true }
+                continuation.finish()
+                watchdog.cancel()
+                // Task.cancel() can synchronously run SDK cancellation handlers. Neither that
+                // call nor the worker's completion may delay the standalone CLI's report/exit.
+                Task.detached { worker.cancel() }
+            }
+            var iterator = results.makeAsyncIterator()
+            return await iterator.next() ?? cancelled
+        } onCancel: {
+            stopRequested.withLock { $0 = true }
+        }
+        return Task.isCancelled ? cancelled : result
+    }
+
+    private static func generateReport(
+        availability model: AssistFoundationModelProbe.Availability,
+        startedAt start: ContinuousClock.Instant,
+        produce: @MainActor () async throws -> String
+    ) async -> Report {
         do {
             let output = try await produce()
             try Task.checkCancellation()
