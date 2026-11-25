@@ -87,7 +87,11 @@ struct ScratchWorkspaceView: View {
         }
         .frame(minWidth: 450, minHeight: 300)
         .task(id: openID) {
-            if let openID { await openSelectedFile(openID) }
+            if let openID {
+                await session.openSelectedFile(openID) {
+                    try await readThroughOpenPanel(comparing: false) { session.openRequest == openID }
+                }
+            }
         }
         .task(id: folderID) {
             if let folderID {
@@ -128,7 +132,7 @@ struct ScratchWorkspaceView: View {
         .onDisappear {
             let open = openPanel
             let save = savePanel
-            session.openRequest = nil
+            if let id = session.openRequest { session.cancelOpen(id) }
             session.clearFolderCatalog()
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.comparisonReport?.id { session.dismissOriginalComparison(id) }
@@ -225,22 +229,6 @@ struct ScratchWorkspaceView: View {
             }
             .disabled(session.tabs.isComposing)
             Button("中止") { session.cancelExport(id) }
-        }
-    }
-
-    private func openSelectedFile(_ request: UUID) async {
-        guard session.openRequest == request, !Task.isCancelled else { return }
-        defer { if session.openRequest == request { session.openRequest = nil } }
-        do {
-            let file = try await readThroughOpenPanel(comparing: false) { session.openRequest == request }
-            guard let file, !Task.isCancelled, session.openRequest == request else { return }
-            // Do not take focus away from a composition that began after the picker closed.
-            if session.tabs.openReadOnly(file) == nil {
-                session.reportOpenFailure("変換の確定後に、もう一度ファイルを選んでください。", request: request)
-            }
-        } catch {
-            guard !Task.isCancelled, session.openRequest == request else { return }
-            session.reportOpenFailure(WorkspaceSession.readFailure(error), request: request)
         }
     }
 
@@ -390,7 +378,7 @@ struct ScratchWorkspaceView: View {
                     .labelStyle(.iconOnly)
             }
             .help("テキストを読み取り専用で開く（⌘O）")
-            .disabled(!session.tabs.canCreateTab)
+            .disabled(!session.canAddTab)
 
             if session.tabs.selectedTab?.isReadOnly == true {
                 Button {
@@ -434,7 +422,7 @@ struct ScratchWorkspaceView: View {
                     .labelStyle(.iconOnly)
             }
             .help("新規タブ（⌘T、最大\(ScratchTabs.limit)件）")
-            .disabled(!session.tabs.canCreateTab)
+            .disabled(!session.canAddTab)
 
             Button {
                 session.requestTabClose()

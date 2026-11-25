@@ -238,9 +238,28 @@ struct WorkspaceCopySaveTests {
         session.requestOpen()
         #expect(session.fileNotice == nil)
         let openID = try #require(session.openRequest)
-        session.reportOpenFailure("最新の読込エラー", request: openID)
-        session.reportOpenFailure("古い読込エラー", request: UUID())
-        #expect(session.fileNotice == "開けませんでした。最新の読込エラー")
+        await session.openSelectedFile(openID) { throw SelectedTextFile.ReadError.tooLarge }
+        await session.openSelectedFile(UUID()) {
+            Issue.record("An obsolete open must not start a read.")
+            throw SelectedTextFile.ReadError.notRegularFile
+        }
+        #expect(session.openRequest == nil)
+        #expect(session.fileNotice == "開けませんでした。2 MiB以下のテキストを選んでください。")
+
+        session.requestOpen()
+        let cancelled = try #require(session.openRequest)
+        var successor: UUID?
+        await session.openSelectedFile(cancelled) {
+            session.cancelOpen(cancelled)
+            session.requestOpen()
+            successor = session.openRequest
+            throw SelectedTextFile.ReadError.notRegularFile
+        }
+        let current = try #require(successor)
+        #expect(current != cancelled)
+        #expect(session.openRequest == current)
+        #expect(session.fileNotice == nil)
+        session.cancelOpen(current)
     }
 }
 

@@ -1,5 +1,7 @@
 import AppKit
+import Darwin
 @testable import HazakuraNext
+import HazakuraNextCore
 import Testing
 
 @MainActor
@@ -83,20 +85,105 @@ struct WorkspaceTabNavigationTests {
         window.isReleasedWhenClosed = false
         defer { window.close() }
         session.window = window
-        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
-        window.contentView = view
-        try #require(window.makeFirstResponder(view))
-        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
-                           replacementRange: NSRange(location: NSNotFound, length: 0))
+        let view = try installTextView(in: window)
+        markText(in: view)
         try #require(view.hasMarkedText())
         try #require(!session.tabs.isComposing)
         expectBlocked(session, current: second, target: first)
+        #expect(!session.canAddTab)
+        session.newTab()
+        #expect(session.tabs.tabs.map(\.id) == [first, second])
+        session.requestOpen()
+        #expect(session.openRequest == nil)
         #expect(view.hasMarkedText())
         #expect(window.firstResponder === view)
         view.unmarkText()
         #expect(session.canCycleTabs)
         session.cycleTab(.next)
         #expect(session.tabs.selectedID == first)
+    }
+
+    @Test func compositionBeforeTheOpenTaskDoesNotPresentAPicker() async throws {
+        let delegate = ScratchApplicationDelegate(source: "原稿")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        let view = try installTextView(in: window)
+        session.requestOpen()
+        let request = try #require(session.openRequest)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+
+        await session.openSelectedFile(request) {
+            Issue.record("The picker must not present during composition.")
+            return nil
+        }
+        #expect(session.openRequest == nil)
+        #expect(session.tabs.selectedID == id)
+        #expect(view.hasMarkedText())
+    }
+
+    @Test func compositionWhenTheReadReturnsKeepsTheCurrentDraftUntilAnExplicitRetry() async throws {
+        let delegate = ScratchApplicationDelegate(source: "原稿")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        let view = try installTextView(in: window)
+        session.applyCommittedSource("未保存の確定原稿", to: id)
+        let drafts = session.tabs.recoveryDrafts
+        let path = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
+            path.flatMap { Darwin.realpath($0, nil) }
+        }
+        let canonical = try #require(path)
+        defer { free(canonical) }
+        let file = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
+            .appending(path: "hazakura-open-\(UUID()).md")
+        try Data("読み取り専用\r\n".utf8).write(to: file, options: .withoutOverwriting)
+        defer { try? FileManager.default.removeItem(at: file) }
+        session.requestOpen()
+        let request = try #require(session.openRequest)
+
+        var inputRanges: [NSRange] = []
+        await session.openSelectedFile(request) {
+            let snapshot = try await SelectedTextFile.read(from: file)
+            markText(in: view)
+            try #require(view.hasMarkedText() && !session.tabs.isComposing)
+            inputRanges = [view.selectedRange(), view.markedRange()]
+            return snapshot
+        }
+        #expect(session.openRequest == nil)
+        #expect(session.tabs.tabs.map(\.id) == [id])
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(view.hasMarkedText())
+        #expect([view.selectedRange(), view.markedRange()] == inputRanges)
+        #expect(window.firstResponder === view)
+        #expect(session.fileNotice != nil)
+
+        view.unmarkText()
+        session.requestOpen()
+        let retry = try #require(session.openRequest)
+        await session.openSelectedFile(retry) { try await SelectedTextFile.read(from: file) }
+        #expect(session.openRequest == nil)
+        #expect(session.tabs.selectedID != id)
+        #expect(session.tabs.selectedTab?.isReadOnly == true)
+        #expect(session.tabs.selectedTab?.document.source == "読み取り専用\r\n")
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(session.fileNotice == nil)
+    }
+
+    private func installTextView(in window: NSWindow) throws -> NSTextView {
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        return view
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
     }
 
     @Test func nativeMenuBindsBothCommandsButCannotSwitchAnOffscreenWindow() throws {

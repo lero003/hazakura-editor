@@ -153,7 +153,7 @@ final class WorkspaceSession {
     }
 
     private(set) var pendingDiscard: TabDiscardRequest?
-    var openRequest: UUID?
+    private(set) var openRequest: UUID?
     private(set) var folderCatalogRequest: UUID?
     private var activeFolderReadID: UUID?
     private(set) var folderCatalogReport: FolderCatalogReport?
@@ -204,7 +204,7 @@ final class WorkspaceSession {
             comparisonRequest != nil || readingComparisonID != nil || markdownPreview != nil || bookPreviewRequest != nil ||
             assistReviewSample != nil || lineJumpRequest != nil || sourceSearchRequest != nil || showsRecovery || isDiscarding
     }
-    var canAddTab: Bool { !isBusy && tabs.canCreateTab }
+    var canAddTab: Bool { canChangeTab && tabs.canCreateTab }
 
     enum TabDirection: Int { case previous = -1, next = 1 }
 
@@ -1067,9 +1067,31 @@ final class WorkspaceSession {
         openRequest = UUID()
     }
 
-    func reportOpenFailure(_ reason: String, request: UUID) {
+    func cancelOpen(_ request: UUID) {
+        if openRequest == request { openRequest = nil }
+    }
+
+    func openSelectedFile(_ request: UUID, read: () async throws -> SelectedTextFile?) async {
         guard openRequest == request else { return }
-        fileNotice = "開けませんでした。\(reason)"
+        defer { cancelOpen(request) }
+        let retryMessage = "変換を確定またはキャンセルしてから、もう一度ファイルを開いてください。"
+        guard !Task.isCancelled else { return }
+        guard !tabs.isComposing, !hasNativeMarkedText else {
+            fileNotice = retryMessage
+            return
+        }
+        do {
+            guard let file = try await read(), !Task.isCancelled, openRequest == request else { return }
+            // The editor may have regained focus and started composing during the read.
+            if hasNativeMarkedText || tabs.openReadOnly(file) == nil {
+                fileNotice = retryMessage
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            guard !Task.isCancelled, openRequest == request else { return }
+            fileNotice = "開けませんでした。\(Self.readFailure(error))"
+        }
     }
 
     func newTab() {
