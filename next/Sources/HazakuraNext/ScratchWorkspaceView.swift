@@ -451,16 +451,13 @@ struct ScratchWorkspaceView: View {
             .disabled(!session.tabs.canCreateTab)
 
             Button {
-                guard !session.isBusy else { return }
-                if case let .confirm(ticket) = session.tabs.requestCloseSelected() {
-                    session.pendingDiscard = ticket
-                }
+                session.requestTabClose()
             } label: {
                 Label("選択中のタブを閉じる", systemImage: "xmark")
                     .labelStyle(.iconOnly)
             }
             .help("選択中のタブを閉じる")
-            .disabled(session.tabs.selectedID == nil || session.tabs.isComposing)
+            .disabled(!session.canRequestTabClose)
         }
         .padding(.horizontal, 12)
         .padding(.bottom, 8)

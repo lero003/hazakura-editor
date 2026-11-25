@@ -210,6 +210,14 @@ final class WorkspaceSession {
     }
 
     var canCycleTabs: Bool { tabs.tabs.count > 1 && tabs.selectedID != nil && canChangeTab }
+    var canRequestTabClose: Bool { tabs.selectedID != nil && canChangeTab }
+
+    func requestTabClose() {
+        guard canRequestTabClose else { return }
+        if case let .confirm(ticket) = tabs.requestCloseSelected() {
+            pendingDiscard = ticket
+        }
+    }
 
     func selectTab(_ id: UUID) {
         guard canChangeTab else { return }

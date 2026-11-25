@@ -203,6 +203,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         addCommand("PDFを書き出す…", #selector(exportPDF(_:)), "", to: file)
         addCommand("EPUBを書き出す…", #selector(exportEPUB(_:)), "", to: file)
         file.addItem(.separator())
+        addCommand("選択中のタブを閉じる", #selector(closeTab(_:)), "", to: file)
         file.addItem(withTitle: "ウィンドウを閉じる", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
 
         let edit = addMenu("編集", to: bar)
@@ -263,6 +264,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     }
 
     @objc private func newTab(_ sender: Any?) { menuSession?.newTab() }
+    @objc private func closeTab(_ sender: Any?) { menuSession?.requestTabClose() }
     @objc private func selectPreviousTab(_ sender: Any?) { menuSession?.cycleTab(.previous) }
     @objc private func selectNextTab(_ sender: Any?) { menuSession?.cycleTab(.next) }
     @objc private func openFile(_ sender: Any?) { menuSession?.requestOpen() }
@@ -308,6 +310,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         }
         return switch item.action {
         case #selector(newTab(_:)), #selector(openFile(_:)): menuSession?.canAddTab == true
+        case #selector(closeTab(_:)): menuSession?.canRequestTabClose == true
         case #selector(selectPreviousTab(_:)), #selector(selectNextTab(_:)): menuSession?.canCycleTabs == true
         case #selector(showFolderCatalog(_:)): menuSession?.canRequestFolderCatalog == true
         case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true

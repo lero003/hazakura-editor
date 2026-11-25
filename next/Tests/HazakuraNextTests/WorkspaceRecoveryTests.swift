@@ -150,9 +150,17 @@ struct WorkspaceRecoveryTests {
         session.applyCommittedSource("変更済み", to: id)
         await queue.waitForCurrentWorker()
         #expect(await backend.records().count == 1)
-        let decision = session.tabs.requestCloseSelected()
-        guard case .confirm(let ticket) = decision else { Issue.record("Expected explicit consent"); return }
-        session.pendingDiscard = ticket
+        #expect(session.canRequestTabClose)
+        session.requestTabClose()
+        try #require(session.pendingDiscard != nil)
+        #expect(!session.canRequestTabClose)
+        #expect(session.tabs.selectedID == id)
+        // The alert binding clears the request on cancellation without starting cleanup.
+        session.pendingDiscard = nil
+        #expect(session.tabs.selectedID == id)
+        #expect(await backend.records().count == 1)
+        session.requestTabClose()
+        let ticket = try #require(session.pendingDiscard)
         let started = session.startTabDiscard(ticket)
         let task = try #require(started)
         #expect(session.isBusy)

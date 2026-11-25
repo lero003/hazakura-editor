@@ -54,7 +54,7 @@ struct WorkspaceTabNavigationTests {
         #expect(session.tabs.selectedID == nil)
     }
 
-    @Test func modelCompositionAndExclusiveOperationsBlockBothSelectionPaths() throws {
+    @Test func modelCompositionAndExclusiveOperationsBlockTabSelectionAndClose() throws {
         let session = WorkspaceSession(source: "一番目")
         let first = try #require(session.tabs.selectedID)
         session.newTab()
@@ -136,12 +136,64 @@ struct WorkspaceTabNavigationTests {
         }
     }
 
+    @Test func closingAnUneditedTabLeavesTheWindowAndOtherDraftAlone() throws {
+        let delegate = ScratchApplicationDelegate(source: "一番目")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let first = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("変更済み原稿", to: first)
+        let drafts = session.tabs.recoveryDrafts
+        session.newTab()
+        try #require(session.tabs.tabs.count == 2)
+        session.toggleZenMode()
+        #expect(session.canRequestTabClose)
+        session.requestTabClose()
+        #expect(session.pendingDiscard == nil)
+        #expect(session.tabs.tabs.map(\.id) == [first])
+        #expect(session.tabs.selectedID == first)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(delegate.window === window)
+        #expect(session.isZenMode)
+    }
+
+    @Test func closeTabMenuIsDistinctFromCloseWindowAndCannotTargetAnOffscreenWindow() throws {
+        let delegate = ScratchApplicationDelegate(source: "原稿")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        let bar = delegate.makeMainMenu()
+        let file = try #require(bar.item(withTitle: "ファイル")?.submenu)
+        let closeTab = try #require(file.item(withTitle: "選択中のタブを閉じる"))
+        let closeWindow = try #require(file.item(withTitle: "ウィンドウを閉じる"))
+        #expect(closeWindow.action == #selector(NSWindow.performClose(_:)))
+        #expect(closeWindow.keyEquivalent == "w")
+        #expect(closeWindow.keyEquivalentModifierMask == .command)
+        #expect(closeTab.keyEquivalent.isEmpty)
+        #expect(closeTab.target === delegate)
+        #expect(!delegate.validateMenuItem(closeTab))
+        let action = try #require(closeTab.action)
+        _ = delegate.perform(action, with: closeTab)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.pendingDiscard == nil)
+        session.requestTabClose()
+        #expect(session.tabs.tabs.isEmpty)
+        #expect(!session.canRequestTabClose)
+        #expect(delegate.window === window)
+    }
+
     private func expectBlocked(_ session: WorkspaceSession, current: UUID, target: UUID) {
+        let ids = session.tabs.tabs.map(\.id)
         #expect(!session.canCycleTabs)
+        #expect(!session.canRequestTabClose)
         session.cycleTab(.next)
         session.cycleTab(.previous)
         session.selectTab(target)
+        session.requestTabClose()
         #expect(session.tabs.selectedID == current)
+        #expect(session.tabs.tabs.map(\.id) == ids)
+        #expect(session.pendingDiscard == nil)
     }
 
     @MainActor
