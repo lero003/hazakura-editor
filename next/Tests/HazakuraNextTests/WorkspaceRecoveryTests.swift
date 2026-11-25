@@ -2,6 +2,7 @@ import AppKit
 import Darwin
 @testable import HazakuraNext
 import HazakuraNextCore
+import HazakuraNextEditor
 import Foundation
 import Testing
 
@@ -169,6 +170,75 @@ struct WorkspaceRecoveryTests {
         #expect(duplicated.contains(prior))
     }
 
+    @Test func onlyCommittedNativeTextIsRecoveredByANewSession() async throws {
+        let folder = try makeRecoveryFixtureFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let directory = folder.appending(path: "recovery", directoryHint: .isDirectory)
+        let source = "か\u{3099}\r\n"
+        let committed = source + "仮名"
+        let saved: RecoveryDraft
+        do {
+            let lease = try DraftRecoveryStore.claimApplicationSession(in: directory)
+            defer { withExtendedLifetime(lease) {} }
+            let store = DraftRecoveryStore(directory: directory)
+            let queue = RecoveryCheckpointQueue(store: store)
+            let session = WorkspaceSession(source: source, recovery: queue)
+            let id = try #require(session.tabs.selectedID)
+            let coordinator = TextKitEditor(initialText: source, documentID: id,
+                                            canEdit: { session.canEditSource },
+                                            onCompositionChange: { session.tabs.setComposing($0, in: id) }) { text in
+                session.applyCommittedSource(text, to: id)
+            }.makeCoordinator()
+            let scroll = TextKitEditor.makeScrollView(initialText: source, documentID: id, coordinator: coordinator)
+            let editor = try #require(scroll.documentView as? NSTextView)
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                                  styleMask: [.titled], backing: .buffered, defer: true)
+            window.isReleasedWhenClosed = false
+            defer { window.close(); withExtendedLifetime(coordinator) {} }
+            window.contentView = scroll
+            session.window = window
+            try #require(window.firstResponder === editor)
+            let selection = NSRange(location: NSNotFound, length: 0)
+            editor.setSelectedRange(NSRange(location: source.utf16.count, length: 0))
+            editor.setMarkedText("かな", selectedRange: NSRange(location: 2, length: 0), replacementRange: selection)
+            try #require(editor.hasMarkedText() && session.tabs.isComposing)
+            #expect(editor.string.utf8.elementsEqual((source + "かな").utf8))
+            #expect(session.tabs.selectedTab?.document.source.utf8.elementsEqual(source.utf8) == true)
+            #expect(session.selectedRecoveryStatus == nil)
+            await queue.waitForCurrentWorker()
+            #expect(try await store.drafts().isEmpty)
+
+            editor.insertText("仮名", replacementRange: selection)
+            try #require(!editor.hasMarkedText() && !session.tabs.isComposing)
+            #expect(session.selectedRecoveryStatus == .unconfirmed)
+            saved = try #require(session.tabs.recoveryDraft(for: id))
+            #expect(saved.source.utf8.elementsEqual(committed.utf8))
+            await queue.waitForCurrentWorker()
+            try #require(session.selectedRecoveryStatus == .checkpointed)
+        }
+
+        let lease = try DraftRecoveryStore.claimApplicationSession(in: directory)
+        defer { withExtendedLifetime(lease) {} }
+        let store = DraftRecoveryStore(directory: directory)
+        let queue = RecoveryCheckpointQueue(store: store)
+        let session = WorkspaceSession(source: "別セッションの原稿", recovery: queue)
+        let initialTabID = try #require(session.tabs.selectedID)
+        session.requestRecovery()
+        let candidates = try await session.recoveryCandidates()
+        try #require(candidates == [saved])
+        let candidate = try #require(candidates.first)
+        try #require(session.restore(candidate))
+        let restoredID = try #require(session.tabs.selectedID)
+        #expect(restoredID != initialTabID)
+        #expect(session.tabs.tabs.first(where: { $0.id == initialTabID })?.document.source == "別セッションの原稿")
+        let restored = try #require(session.tabs.recoveryDraft(for: restoredID))
+        #expect(restored.id != saved.id)
+        #expect(restored.source.utf8.elementsEqual(committed.utf8))
+        await queue.waitForCurrentWorker()
+        #expect(try await session.recoveryCandidates() == [saved])
+        #expect(try await store.drafts().contains(restored))
+    }
+
     @Test func nativeCompositionBlocksRecoveryRequestAndRestoreBeforeModelNotification() async throws {
         let prior = RecoveryDraft(id: UUID(), revision: 7, source: "以前の原稿\r\n")
         let backend = RecoveryFixture(drafts: [prior])
@@ -228,14 +298,7 @@ struct WorkspaceRecoveryTests {
 
     @Test(arguments: CandidateAtConfirmation.allCases)
     func candidateDeletionRequiresTheExactReviewedSnapshot(_ state: CandidateAtConfirmation) async throws {
-        let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
-            path.flatMap { Darwin.realpath($0, nil) }
-        }
-        let canonical = try #require(root)
-        defer { free(canonical) }
-        let folder = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
-            .appending(path: "hazakura-candidate-test-\(UUID())", directoryHint: .isDirectory)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
+        let folder = try makeRecoveryFixtureFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let store = DraftRecoveryStore(directory: folder.appending(path: "recovery", directoryHint: .isDirectory))
         let candidate = RecoveryDraft(id: UUID(), revision: 2, source: "が\r\n")
@@ -268,6 +331,19 @@ struct WorkspaceRecoveryTests {
             #expect(try await store.drafts() == [other] + (replacement.map { [$0] } ?? []))
         }
         #expect(session.tabs.selectedTab?.document.source == "開いている原稿")
+    }
+
+    private func makeRecoveryFixtureFolder() throws -> URL {
+        let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
+            path.flatMap { Darwin.realpath($0, nil) }
+        }
+        let canonical = try #require(root)
+        defer { free(canonical) }
+        let folder = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
+            .appending(path: "hazakura-recovery-workspace-\(UUID())", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false,
+                                                attributes: [.posixPermissions: 0o700])
+        return folder
     }
 
     @Test(arguments: [true, false])
