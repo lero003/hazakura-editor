@@ -1,9 +1,13 @@
 # Handoff
 
 Status: Operational
-Scope: LFM3評価、v3.4.1江戸彼岸の情景候補、v3.4テーマ刷新、v3.3審査提出報告、過去の引き継ぎ
-Authority: Medium
-Last reviewed: 2026-10-30
+Scope: 担当交代の補助と過去の引き継ぎ
+Authority: Medium（現状・着手順の正本ではない）
+Last reviewed: 2026-11-25（案内のみ）
+
+担当交代時は[作業キュー](current-work.md#active-queue)と[実装・公開状況](current-status.md)を優先する。
+[第二世代設計](roadmap.md#第二世代設計)は基本方針のみ反映済み。比較の実験は未着手で、既存のテーマ候補とは別。
+以下は各作業の引き継ぎ時点の記録であり、現在の優先順位を上書きしない。
 
 ## LFM3-1.7B の評価（2026-10-30、製品未変更）
 
