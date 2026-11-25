@@ -1,8 +1,8 @@
 import Foundation
+import HazakuraNextCore
 import Testing
-@testable import HazakuraNextEditor
 
-struct EditorSourceEqualityTests {
+struct SourceEqualityTests {
     enum Storage: CaseIterable {
         case swift, foundation
 
@@ -29,7 +29,7 @@ struct EditorSourceEqualityTests {
         for (left, right) in pairs {
             let lhs = try leftStorage.snapshot(left)
             let rhs = try rightStorage.snapshot(right)
-            #expect(EditorSourceEquality.matches(lhs, rhs) == left.utf8.elementsEqual(right.utf8))
+            #expect(SourceEquality.matches(lhs, rhs) == left.utf8.elementsEqual(right.utf8))
         }
     }
 }

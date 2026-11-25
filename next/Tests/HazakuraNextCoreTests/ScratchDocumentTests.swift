@@ -1,3 +1,4 @@
+import Foundation
 import HazakuraNextCore
 import Testing
 
@@ -22,5 +23,27 @@ struct ScratchDocumentTests {
         document.replaceSource(revised)
         #expect(document.revision == 1)
         #expect(Array(document.source.utf8) == Array(revised.utf8))
+    }
+
+    @Test func distinguishesAnUnchangedBridgeFromAnEditNearTheEnd() throws {
+        let prefix = String(repeating: "原稿👩‍💻\r\n", count: 2_000)
+        let original = prefix + "が"
+        let edited = prefix + "か\u{3099}"
+        let identicalSnapshot = try #require(NSMutableString(string: original).copy() as? NSString)
+        let editedSnapshot = try #require(NSMutableString(string: edited).copy() as? NSString)
+        var document = ScratchDocument(source: original)
+        let id = document.id
+
+        document.replaceSource(identicalSnapshot as String)
+        #expect(document.revision == 0)
+        document.replaceSource(editedSnapshot as String)
+        #expect(document.source.utf8.elementsEqual(edited.utf8))
+        #expect(document.revision == 1)
+        document.replaceSource(edited)
+        #expect(document.revision == 1)
+        document.replaceSource(identicalSnapshot as String)
+        #expect(document.source.utf8.elementsEqual(original.utf8))
+        #expect(document.revision == 2)
+        #expect(document.id == id)
     }
 }

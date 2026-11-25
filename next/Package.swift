@@ -11,7 +11,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "HazakuraNextCore"),
-        .target(name: "HazakuraNextEditor"),
+        .target(name: "HazakuraNextEditor", dependencies: ["HazakuraNextCore"]),
         .executableTarget(
             name: "HazakuraNext",
             dependencies: ["HazakuraNextCore", "HazakuraNextEditor"]

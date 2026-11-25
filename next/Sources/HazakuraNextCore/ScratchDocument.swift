@@ -22,7 +22,7 @@ public struct ScratchDocument: Identifiable {
 
     /// Use exact UTF-8 equality: canonically equivalent Swift Strings can have different source bytes.
     public mutating func replaceSource(_ newSource: String) {
-        guard !source.utf8.elementsEqual(newSource.utf8) else { return }
+        guard !SourceEquality.matches(source, newSource) else { return }
         source = newSource
         revision += 1
     }

@@ -1,4 +1,5 @@
 import AppKit
+import HazakuraNextCore
 import SwiftUI
 
 @MainActor
@@ -568,7 +569,7 @@ public struct TextKitEditor: NSViewRepresentable {
         }
 
         private func publishSource(_ source: String) {
-            guard !EditorSourceEquality.matches(source, lastCommittedSource) else { return }
+            guard !SourceEquality.matches(source, lastCommittedSource) else { return }
             lastCommittedSource = source
             onChange(source)
         }

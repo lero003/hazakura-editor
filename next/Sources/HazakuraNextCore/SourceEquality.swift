@@ -1,8 +1,8 @@
 import Darwin
 
 /// Exact source equality, without Swift String's canonical-equivalence comparison.
-enum EditorSourceEquality {
-    static func matches(_ lhs: String, _ rhs: String) -> Bool {
+package enum SourceEquality {
+    package static func matches(_ lhs: String, _ rhs: String) -> Bool {
         guard lhs.isContiguousUTF8, rhs.isContiguousUTF8 else {
             // AppKit can provide a bridged string. For valid Swift strings, equal UTF-16
             // units imply equal UTF-8 bytes, without forcing either input into UTF-8 storage.
