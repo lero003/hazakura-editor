@@ -178,6 +178,63 @@ struct WorkspaceTabNavigationTests {
         #expect(session.tabs.tabs.map(\.id) == [selected])
     }
 
+    @Test(arguments: [false, true])
+    func cancellingASelectedReadKeepsTheOriginalTabUntilTheReaderReturns(_ returnsFile: Bool) async throws {
+        let url = try makeOpenFixtureURL()
+        try Data("選択した原稿\r\n".utf8).write(to: url, options: .withoutOverwriting)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let snapshot = try await SelectedTextFile.read(from: url)
+        let session = WorkspaceSession(source: "原稿")
+        let selected = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("未保存の確定原稿", to: selected)
+        let drafts = session.tabs.recoveryDrafts
+        session.requestOpen()
+        let id = try #require(session.openRequest)
+        #expect(session.cancellableOpenReadID == nil)
+        session.cancelOpenRead(id)
+        #expect(session.openRequest == id)
+
+        await session.openSelectedFile(id) {
+            #expect(session.cancellableOpenReadID == nil)
+            #expect(!session.beginOpenRead(UUID()))
+            try #require(session.beginOpenRead(id))
+            #expect(session.cancellableOpenReadID == id)
+            session.cancelOpenRead(UUID())
+            #expect(session.cancellableOpenReadID == id)
+            session.cancelOpenRead(id)
+            #expect(session.cancellableOpenReadID == nil)
+            #expect(session.openRequest == nil)
+            #expect(session.isFinishingCancelledOpen)
+            #expect(session.isBusy)
+            #expect(session.canEditSource)
+            #expect(!session.tabs.isComposing)
+            session.requestOpen()
+            #expect(session.openRequest == nil)
+            session.tabs.setComposing(true, in: selected)
+            #expect(session.tabs.isComposing && session.isFinishingCancelledOpen)
+            session.tabs.setComposing(false, in: selected)
+            if returnsFile { return snapshot }
+            throw SelectedTextFile.ReadError.changedWhileReading
+        }
+
+        #expect(!session.isBusy && !session.isFinishingCancelledOpen)
+        #expect(session.fileNotice == nil)
+        #expect(session.tabs.tabs.map(\.id) == [selected])
+        #expect(session.tabs.selectedID == selected)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        session.requestOpen()
+        let retry = try #require(session.openRequest)
+        try #require(retry != id)
+        await session.openSelectedFile(retry) {
+            try #require(session.beginOpenRead(retry))
+            session.cancelOpenRead(id)
+            #expect(session.cancellableOpenReadID == retry)
+            return snapshot
+        }
+        #expect(session.tabs.selectedTab?.isReadOnly == true)
+        #expect(session.cancellableOpenReadID == nil && !session.isFinishingCancelledOpen)
+    }
+
     @Test func compositionBeforeTheOpenTaskDoesNotPresentAPicker() async throws {
         let delegate = ScratchApplicationDelegate(source: "原稿")
         let window = delegate.prepareWindow()
@@ -208,13 +265,7 @@ struct WorkspaceTabNavigationTests {
         let view = try installTextView(in: window)
         session.applyCommittedSource("未保存の確定原稿", to: id)
         let drafts = session.tabs.recoveryDrafts
-        let path = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
-            path.flatMap { Darwin.realpath($0, nil) }
-        }
-        let canonical = try #require(path)
-        defer { free(canonical) }
-        let file = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
-            .appending(path: "hazakura-open-\(UUID()).md")
+        let file = try makeOpenFixtureURL()
         try Data("読み取り専用\r\n".utf8).write(to: file, options: .withoutOverwriting)
         defer { try? FileManager.default.removeItem(at: file) }
         session.requestOpen()
@@ -247,6 +298,16 @@ struct WorkspaceTabNavigationTests {
         #expect(session.tabs.selectedTab?.document.source == "読み取り専用\r\n")
         #expect(session.tabs.recoveryDrafts == drafts)
         #expect(session.fileNotice == nil)
+    }
+
+    private func makeOpenFixtureURL() throws -> URL {
+        let path = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
+            path.flatMap { Darwin.realpath($0, nil) }
+        }
+        let canonical = try #require(path)
+        defer { free(canonical) }
+        return URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
+            .appending(path: "hazakura-open-\(UUID()).md")
     }
 
     private func installTextView(in window: NSWindow) throws -> NSTextView {

@@ -154,8 +154,9 @@ final class WorkspaceSession {
 
     private(set) var pendingDiscard: TabDiscardRequest?
     private(set) var openRequest: UUID?
-    // Cancellation invalidates the request but the picker/read may still be unwinding.
-    private var isReadingOpenRequest = false
+    private enum OpenPhase { case choosing, reading }
+    // Cancellation invalidates the request but keeps the slot until the picker/read returns.
+    private var openPhase: OpenPhase?
     private(set) var folderCatalogRequest: UUID?
     private var activeFolderReadID: UUID?
     private(set) var folderCatalogReport: FolderCatalogReport?
@@ -203,7 +204,7 @@ final class WorkspaceSession {
     var isBusy: Bool { pendingDiscard != nil || hasExclusiveOperation }
     private var hasExclusiveOperation: Bool { comparisonReport != nil || hasOperationBesidesComparisonReport }
     private var hasOperationBesidesComparisonReport: Bool {
-        openRequest != nil || isReadingOpenRequest || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
+        openRequest != nil || openPhase != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || markdownPreview != nil || bookPreviewRequest != nil ||
             assistReviewSample != nil || lineJumpRequest != nil || sourceSearchRequest != nil || showsRecovery || isDiscarding
     }
@@ -1140,15 +1141,30 @@ final class WorkspaceSession {
         openRequest = UUID()
     }
 
+    var cancellableOpenReadID: UUID? { openPhase == .reading ? openRequest : nil }
+    var isFinishingCancelledOpen: Bool { openRequest == nil && openPhase != nil }
+
+    /// Called only after the picker has returned a selection, before reading its contents.
+    func beginOpenRead(_ request: UUID) -> Bool {
+        guard openRequest == request, openPhase == .choosing, !Task.isCancelled else { return false }
+        openPhase = .reading
+        return true
+    }
+
+    func cancelOpenRead(_ request: UUID) {
+        guard cancellableOpenReadID == request else { return }
+        cancelOpen(request)
+    }
+
     func cancelOpen(_ request: UUID) {
         if openRequest == request { openRequest = nil }
     }
 
     func openSelectedFile(_ request: UUID, read: () async throws -> SelectedTextFile?) async {
-        guard openRequest == request, !isReadingOpenRequest else { return }
-        isReadingOpenRequest = true
+        guard openRequest == request, openPhase == nil else { return }
+        openPhase = .choosing
         defer {
-            isReadingOpenRequest = false
+            openPhase = nil
             cancelOpen(request)
         }
         let retryMessage = "変換を確定またはキャンセルしてから、もう一度ファイルを開いてください。"

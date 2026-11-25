@@ -30,7 +30,13 @@ struct ScratchWorkspaceView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(banner)
-                    if let folderID {
+                    if let readID = session.cancellableOpenReadID {
+                        Button("読込みを中止") {
+                            guard let window = session.window, window.isVisible, window.isKeyWindow,
+                                  window.attachedSheet == nil else { return }
+                            session.cancelOpenRead(readID)
+                        }
+                    } else if let folderID {
                         Button("中止") {
                             guard session.folderCatalogRequest == folderID else { return }
                             session.cancelFolderCatalog(folderID)
@@ -95,7 +101,9 @@ struct ScratchWorkspaceView: View {
         .task(id: openID) {
             if let openID {
                 await session.openSelectedFile(openID) {
-                    try await readThroughOpenPanel(comparing: false) { session.openRequest == openID }
+                    try await readThroughOpenPanel(comparing: false, beforeRead: {
+                        session.beginOpenRead(openID)
+                    }) { session.openRequest == openID }
                 }
             }
         }
@@ -201,7 +209,13 @@ struct ScratchWorkspaceView: View {
     }
 
     private var banner: String {
-        if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
+        let isComposing = session.tabs.isComposing
+        let compositionNotice = "タブ操作や終了の前に、変換を確定またはキャンセルしてください。"
+        if session.isFinishingCancelledOpen {
+            let waitingNotice = "読込みを中止しました。処理の終了を待っています…"
+            return isComposing ? "\(waitingNotice)\n\(compositionNotice)" : waitingNotice
+        }
+        if isComposing { return compositionNotice }
         if session.openRequest != nil { return "ファイルを開いています…" }
         if session.folderCatalogRequest != nil { return "フォルダの直下を確認しています…" }
         if let opening = session.folderEntryOpening {
@@ -239,7 +253,9 @@ struct ScratchWorkspaceView: View {
         }
     }
 
-    private func readThroughOpenPanel(comparing: Bool, isCurrent: () -> Bool) async throws -> SelectedTextFile? {
+    private func readThroughOpenPanel(
+        comparing: Bool, beforeRead: () -> Bool = { true }, isCurrent: () -> Bool
+    ) async throws -> SelectedTextFile? {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
         panel.canChooseFiles = true
@@ -254,7 +270,8 @@ struct ScratchWorkspaceView: View {
             panel.prompt = "比較"
         }
         return try await withChosenOpenURL(panel, isCurrent: isCurrent) { url in
-            try await SelectedTextFile.read(from: url)
+            guard beforeRead() else { throw CancellationError() }
+            return try await SelectedTextFile.read(from: url)
         }
     }
 
