@@ -146,6 +146,11 @@ private struct MarkdownPreviewReadingPane: View {
     @State private var viewport = Viewport(chapterIndex: nil)
     @State private var readingBlock: Int
     @State private var position: ScrollPosition
+    @State private var showsSearch = false
+    @State private var searchQuery = ""
+    @State private var searchResult: MarkdownReaderSearch.Result?
+    @State private var searchSelection = 0
+    @FocusState private var searchFieldFocused: Bool
 
     private struct Viewport: Identifiable {
         let id = UUID()
@@ -212,6 +217,26 @@ private struct MarkdownPreviewReadingPane: View {
         rememberReadingBlock(blockIndex)
     }
 
+    private var activeSearchBlock: Int? {
+        guard case .matches(let matches) = searchResult, matches.indices.contains(searchSelection) else { return nil }
+        return matches[searchSelection]
+    }
+
+    private func search() {
+        searchSelection = 0
+        let result = MarkdownReaderSearch.search(searchQuery, in: blocks)
+        searchResult = result
+        if case .matches(let matches) = result, let first = matches.first { jump(to: first) }
+    }
+
+    private func moveSearchSelection(by step: Int) {
+        guard case .matches(let matches) = searchResult else { return }
+        let next = searchSelection + step
+        guard matches.indices.contains(next) else { return }
+        searchSelection = next
+        jump(to: matches[next])
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
@@ -222,11 +247,25 @@ private struct MarkdownPreviewReadingPane: View {
                         Label(showsOutline ? "目次を隠す" : "目次を表示", systemImage: "list.bullet.indent")
                     }
                 }
+                Button {
+                    showsSearch.toggle()
+                    if !showsSearch {
+                        searchFieldFocused = false
+                        searchQuery = ""
+                        searchResult = nil
+                        searchSelection = 0
+                    }
+                } label: {
+                    Label(showsSearch ? "検索を閉じる" : "本文を検索", systemImage: "magnifyingglass")
+                }
                 Spacer()
                 Button(selectedChapterIndex == nil ? "章ごとに読む" : "全文を表示") {
                     showChapterReading(selectedChapterIndex == nil)
                 }
                 .help("全文表示と、見出しレベル1・2で区切る章表示を切り替えます。")
+            }
+            if showsSearch {
+                searchControls
             }
             if let selectedChapterIndex {
                 chapterNavigation(at: selectedChapterIndex)
@@ -241,6 +280,47 @@ private struct MarkdownPreviewReadingPane: View {
                     .id(viewport.id)
             }
         }
+    }
+
+    private var searchControls: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                TextField("本文を検索", text: Binding(get: { searchQuery }, set: { query in
+                    guard !searchQuery.utf8.elementsEqual(query.utf8) else { return }
+                    searchQuery = query
+                    searchResult = nil
+                    searchSelection = 0
+                }))
+                .focused($searchFieldFocused)
+                .onAppear { searchFieldFocused = true }
+                Button("検索") { search() }
+                    .accessibilityHint("開いた原稿の表示テキストを、章をまたいで検索します。")
+            }
+            switch searchResult {
+            case .emptyQuery:
+                Text("検索する語句を入力してください。")
+            case .queryTooLong:
+                Text("検索語句が長すぎます（UTF-8で\(MarkdownReaderSearch.queryByteLimit)バイトまで）。")
+            case .matches(let matches) where matches.isEmpty:
+                Text("一致する箇所はありません。")
+            case .matches(let matches):
+                HStack(spacing: 8) {
+                    Button("前の一致へ", systemImage: "chevron.up") { moveSearchSelection(by: -1) }
+                        .labelStyle(.iconOnly)
+                        .disabled(searchSelection == 0)
+                    Button("次の一致へ", systemImage: "chevron.down") { moveSearchSelection(by: 1) }
+                        .labelStyle(.iconOnly)
+                        .disabled(searchSelection + 1 >= matches.count)
+                    Text("一致した箇所：\(searchSelection + 1) / \(matches.count)")
+                        .monospacedDigit()
+                }
+            case nil:
+                EmptyView()
+            }
+        }
+        .font(.callout)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("プレビュー本文の検索")
     }
 
     private func chapterNavigation(at index: Int) -> some View {
@@ -321,6 +401,7 @@ private struct MarkdownPreviewReadingPane: View {
 
     private func previewBody(for displayedViewport: Viewport) -> some View {
         let range = blockRange(for: displayedViewport)
+        let activeSearchBlock = self.activeSearchBlock
         return ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
                 // Keep global block IDs even when only one chapter is visible.
@@ -328,10 +409,20 @@ private struct MarkdownPreviewReadingPane: View {
                     let block = blocks[index]
                     VStack(alignment: .leading, spacing: 6) {
                         MarkdownPreviewBlockView(block: block)
+                            .accessibilityAddTraits(index == activeSearchBlock ? [.isSelected] : [])
                         if let location = block.headingLocation {
                             Button("原文の\(location.line)行目へ") { reveal(location) }
                                 .font(.callout)
                                 .accessibilityHint("プレビューを閉じて、この見出しの原文を表示します。")
+                        }
+                    }
+                    .overlay {
+                        if index == activeSearchBlock {
+                            RoundedRectangle(cornerRadius: 5)
+                                .strokeBorder(Color.accentColor, lineWidth: 2)
+                                .padding(-4)
+                                .allowsHitTesting(false)
+                                .accessibilityHidden(true)
                         }
                     }
                 }
