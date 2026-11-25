@@ -274,6 +274,61 @@ struct TextKitEditorTests {
     }
 
     @Test
+    func aHeldUndoManagerDoesNotChangeMarkedText() throws {
+        let original = "原稿"
+        var events: [EditorEvent] = []
+        let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {
+            events.append(.source($0))
+        }
+        let scrollView = TextKitEditor.makeScrollView(initialText: original, coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let undo = try #require(textView.undoManager)
+        // Give typing and composition separate groups without relying on run-loop timing.
+        undo.groupsByEvent = false
+        undo.beginUndoGrouping()
+        textView.insertText("新", replacementRange: NSRange(location: 0, length: 0))
+        textView.breakUndoCoalescing()
+        undo.endUndoGrouping()
+        try #require(undo.canUndo)
+        let committed = textView.string
+        textView.setSelectedRange(NSRange(location: committed.utf16.count, length: 0))
+        undo.beginUndoGrouping()
+        defer { if undo.groupingLevel > 0 { undo.endUndoGrouping() } }
+        setMarkedText("かな", in: textView)
+        try #require(textView.hasMarkedText())
+        let marked = textView.markedRange()
+        let selection = textView.selectedRange()
+        let compositionEvents = events
+        #expect(compositionEvents.last == .composing(true))
+
+        #expect(!undo.canUndo)
+        #expect(!undo.canRedo)
+        undo.redo()
+        undo.undo()
+        try #require(textView.hasMarkedText())
+        #expect(textView.string == committed + "かな")
+        #expect(textView.markedRange() == marked)
+        #expect(textView.selectedRange() == selection)
+        #expect(events == compositionEvents)
+
+        textView.insertText("仮名", replacementRange: implicitRange)
+        undo.endUndoGrouping()
+        try #require(!textView.hasMarkedText())
+        let updated = committed + "仮名"
+        #expect(textView.string == updated)
+        #expect(events == compositionEvents + [.source(updated), .composing(false)])
+        try #require(undo.canUndo)
+        undo.undo()
+        #expect(textView.string == committed)
+        try #require(undo.canRedo)
+        undo.redo()
+        #expect(textView.string == updated)
+        #expect(events.suffix(2) == [.source(committed), .source(updated)])
+    }
+
+    @Test
     func unmarkCommitsTheExistingCharactersWithoutInsertingAgain() throws {
         var events: [EditorEvent] = []
         let coordinator = TextKitEditor.Coordinator(onCompositionChange: { events.append(.composing($0)) }) {

@@ -99,7 +99,9 @@ private final class MarkdownTextView: NSTextView {
 
     private var policyAllowsEdits: Bool { editorCoordinator?.canEdit() ?? true }
     private var canMutate: Bool { reviewedEditValidation == nil && isEditable && policyAllowsEdits }
-    fileprivate var canApplyUndo: Bool { reviewedEditValidation == nil && !isReadOnly && policyAllowsEdits }
+    fileprivate var canApplyUndo: Bool {
+        reviewedEditValidation == nil && !isReadOnly && !hasMarkedText() && policyAllowsEdits
+    }
     fileprivate var canRevealSource: Bool {
         guard isActive, isSelectable, !isProcessingEdit, !hasMarkedText(),
               let window, window.isKeyWindow, window.attachedSheet == nil else { return false }
