@@ -12,9 +12,9 @@ struct MarkdownPreviewView: View {
 
     private enum Phase {
         case loading
-        case finished(MarkdownPreview.Result)
+        case rendered(blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline)
+        case unavailable(MarkdownPreview.Limit)
         case cancelled
-        case failed
     }
 
     init(title: String, source: String, reveal: @escaping (MarkdownPreview.HeadingLocation) -> Bool) {
@@ -75,41 +75,22 @@ struct MarkdownPreviewView: View {
             .padding(12)
         case .cancelled:
             notice("プレビューの作成を中止しました。")
-        case .failed, .finished(.unavailable(.parseFailed)):
+        case .unavailable(.parseFailed):
             notice("Markdownを読み取れなかったため、プレビューを表示できません。原文は元の画面で確認できます。")
-        case .finished(.unavailable(.inputTooLarge)):
+        case .unavailable(.inputTooLarge):
             notice("原稿の大きさが上限を超えたため、プレビューを表示できません。原文は元の画面で確認できます。")
-        case .finished(.unavailable(.tooManyBlocks)):
+        case .unavailable(.tooManyBlocks):
             notice("表示する項目数が上限を超えたため、プレビューを表示できません。原文は元の画面で確認できます。")
-        case .finished(.unavailable(.tooComplex)):
+        case .unavailable(.tooComplex):
             notice("文書の構造が複雑すぎるため、プレビューを表示できません。原文は元の画面で確認できます。")
-        case .finished(.rendered(let blocks)):
+        case .rendered(let blocks, let outline):
             if blocks.isEmpty {
                 notice("表示する本文がありません。")
             } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
-                        // Positions are stable within this immutable render result, including repeated blocks.
-                        ForEach(blocks.enumerated(), id: \.offset) { entry in
-                            VStack(alignment: .leading, spacing: 6) {
-                                MarkdownPreviewBlockView(block: entry.element)
-                                if let location = entry.element.headingLocation {
-                                    Button("原文の\(location.line)行目へ") {
-                                        if reveal(location) { dismiss() }
-                                        else { revealRejected = true }
-                                    }
-                                    .font(.callout)
-                                    .accessibilityHint("プレビューを閉じて、この見出しの原文を表示します。")
-                                }
-                            }
-                        }
-                    }
-                    .padding(12)
+                MarkdownPreviewReadingPane(blocks: blocks, outline: outline) { location in
+                    if reveal(location) { dismiss() }
+                    else { revealRejected = true }
                 }
-                .background(.background, in: .rect(cornerRadius: 8))
-                .clipShape(.rect(cornerRadius: 8))
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("プレビュー本文")
             }
         }
     }
@@ -124,15 +105,125 @@ struct MarkdownPreviewView: View {
         guard !Task.isCancelled, case .loading = phase else { return }
         let outcome: Phase
         do {
-            outcome = .finished(try await MarkdownPreview.render(source))
+            switch try await MarkdownPreview.render(source) {
+            case .rendered(let blocks):
+                guard !Task.isCancelled else { return }
+                outcome = .rendered(blocks: blocks, outline: MarkdownPreviewOutline(blocks: blocks))
+            case .unavailable(let limit):
+                outcome = .unavailable(limit)
+            }
         } catch is CancellationError {
             outcome = .cancelled
         } catch {
-            outcome = .failed
+            outcome = .unavailable(.parseFailed)
         }
         // Dismissing the sheet cancels the task; also suppress publication during dismissal.
         guard !Task.isCancelled, case .loading = phase else { return }
         phase = outcome
+    }
+}
+
+private struct MarkdownPreviewReadingPane: View {
+    let blocks: [MarkdownPreview.Block]
+    let outline: MarkdownPreviewOutline
+    let reveal: (MarkdownPreview.HeadingLocation) -> Void
+    @State private var showsOutline = false
+
+    // Scope anchors to this preview body so the outline list cannot be a scroll target.
+    private struct BodyAnchor: Hashable {
+        let blockIndex: Int
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if !outline.entries.isEmpty {
+                Button {
+                    showsOutline.toggle()
+                } label: {
+                    Label(showsOutline ? "目次を隠す" : "目次を表示", systemImage: "list.bullet.indent")
+                }
+            }
+
+            ScrollViewReader { proxy in
+                HStack(alignment: .top, spacing: 10) {
+                    if showsOutline {
+                        outlineList { entry in
+                            proxy.scrollTo(BodyAnchor(blockIndex: entry.id), anchor: .top)
+                        }
+                        .frame(width: 195)
+                        Divider()
+                    }
+                    previewBody
+                }
+            }
+        }
+    }
+
+    private func outlineList(_ jump: @escaping (MarkdownPreviewOutline.Entry) -> Void) -> some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 5) {
+                ForEach(outline.entries.enumerated(), id: \.element.id) { item in
+                    let entry = item.element
+                    Button {
+                        jump(entry)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            if entry.title.isEmpty { Text("（見出しの本文なし）") }
+                            else { Text(verbatim: entry.title) }
+                            Group {
+                                if let line = entry.sourceLine {
+                                    Text("原文 \(line) 行目")
+                                } else {
+                                    Text("見出し \(item.offset + 1)")
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                        .lineLimit(2)
+                        .padding(.leading, CGFloat(entry.level - 1) * 7)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .accessibilityLabel(outlineLabel(entry, number: item.offset + 1))
+                    .accessibilityHint("プレビュー本文の見出しに移動します。")
+                }
+            }
+            .padding(6)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("目次")
+    }
+
+    private func outlineLabel(_ entry: MarkdownPreviewOutline.Entry, number: Int) -> Text {
+        let title = entry.title.isEmpty ? Text("見出しの本文なし") : Text(verbatim: entry.title)
+        if let line = entry.sourceLine {
+            return Text("見出し \(number)、レベル \(entry.level)、\(title)、原文 \(line) 行目")
+        }
+        return Text("見出し \(number)、レベル \(entry.level)、\(title)")
+    }
+
+    private var previewBody: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 12) {
+                ForEach(blocks.enumerated(), id: \.offset) { entry in
+                    VStack(alignment: .leading, spacing: 6) {
+                        MarkdownPreviewBlockView(block: entry.element)
+                        if let location = entry.element.headingLocation {
+                            Button("原文の\(location.line)行目へ") { reveal(location) }
+                                .font(.callout)
+                                .accessibilityHint("プレビューを閉じて、この見出しの原文を表示します。")
+                        }
+                    }
+                    .id(BodyAnchor(blockIndex: entry.offset))
+                }
+            }
+            .padding(12)
+        }
+        .frame(maxWidth: .infinity)
+        .background(.background, in: .rect(cornerRadius: 8))
+        .clipShape(.rect(cornerRadius: 8))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("プレビュー本文")
     }
 }
 
