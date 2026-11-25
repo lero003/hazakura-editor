@@ -155,6 +155,29 @@ struct WorkspaceTabNavigationTests {
         #expect(session.tabs.selectedID == first)
     }
 
+    @Test func aDuplicateOpenCallbackCannotConsumeTheInFlightRequest() async throws {
+        let session = WorkspaceSession(source: "原稿")
+        let selected = try #require(session.tabs.selectedID)
+        session.requestOpen()
+        let request = try #require(session.openRequest)
+
+        await session.openSelectedFile(request) {
+            await session.openSelectedFile(request) {
+                Issue.record("The duplicate must not start a picker or read.")
+                return nil
+            }
+            #expect(session.openRequest == request)
+            #expect(session.isBusy)
+            // The original callback, not the duplicate, publishes the read failure.
+            throw SelectedTextFile.ReadError.tooLarge
+        }
+
+        #expect(session.openRequest == nil)
+        #expect(!session.isBusy)
+        #expect(session.fileNotice == "開けませんでした。2 MiB以下のテキストを選んでください。")
+        #expect(session.tabs.tabs.map(\.id) == [selected])
+    }
+
     @Test func compositionBeforeTheOpenTaskDoesNotPresentAPicker() async throws {
         let delegate = ScratchApplicationDelegate(source: "原稿")
         let window = delegate.prepareWindow()

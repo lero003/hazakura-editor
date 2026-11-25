@@ -335,17 +335,21 @@ struct WorkspaceCopySaveTests {
 
         session.requestOpen()
         let cancelled = try #require(session.openRequest)
-        var successor: UUID?
+        let selected = session.tabs.selectedID
         await session.openSelectedFile(cancelled) {
             session.cancelOpen(cancelled)
+            #expect(session.isBusy)
             session.requestOpen()
-            successor = session.openRequest
+            session.newTab()
+            #expect(session.openRequest == nil)
+            #expect(session.tabs.selectedID == selected)
             throw SelectedTextFile.ReadError.notRegularFile
         }
-        let current = try #require(successor)
-        #expect(current != cancelled)
-        #expect(session.openRequest == current)
+        #expect(!session.isBusy)
         #expect(session.fileNotice == nil)
+        session.requestOpen()
+        let current = try #require(session.openRequest)
+        #expect(current != cancelled)
         session.cancelOpen(current)
     }
 }

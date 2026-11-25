@@ -154,6 +154,8 @@ final class WorkspaceSession {
 
     private(set) var pendingDiscard: TabDiscardRequest?
     private(set) var openRequest: UUID?
+    // Cancellation invalidates the request but the picker/read may still be unwinding.
+    private var isReadingOpenRequest = false
     private(set) var folderCatalogRequest: UUID?
     private var activeFolderReadID: UUID?
     private(set) var folderCatalogReport: FolderCatalogReport?
@@ -200,7 +202,7 @@ final class WorkspaceSession {
     var isBusy: Bool { pendingDiscard != nil || hasExclusiveOperation }
     private var hasExclusiveOperation: Bool { comparisonReport != nil || hasOperationBesidesComparisonReport }
     private var hasOperationBesidesComparisonReport: Bool {
-        openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
+        openRequest != nil || isReadingOpenRequest || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || markdownPreview != nil || bookPreviewRequest != nil ||
             assistReviewSample != nil || lineJumpRequest != nil || sourceSearchRequest != nil || showsRecovery || isDiscarding
     }
@@ -1122,8 +1124,12 @@ final class WorkspaceSession {
     }
 
     func openSelectedFile(_ request: UUID, read: () async throws -> SelectedTextFile?) async {
-        guard openRequest == request else { return }
-        defer { cancelOpen(request) }
+        guard openRequest == request, !isReadingOpenRequest else { return }
+        isReadingOpenRequest = true
+        defer {
+            isReadingOpenRequest = false
+            cancelOpen(request)
+        }
         let retryMessage = "変換を確定またはキャンセルしてから、もう一度ファイルを開いてください。"
         guard !Task.isCancelled else { return }
         guard !tabs.isComposing, !hasNativeMarkedText else {
