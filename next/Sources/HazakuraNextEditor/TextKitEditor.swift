@@ -401,7 +401,7 @@ public struct TextKitEditor: NSViewRepresentable {
         (scrollView as? EditorScrollView)?.isFocusLayout = isFocusLayout
     }
 
-    static func makeScrollView(
+    package static func makeScrollView(
         initialText: String, documentID: UUID? = nil, isActive: Bool = true, isReadOnly: Bool = false,
         isFocusLayout: Bool = false, coordinator: Coordinator?
     ) -> NSScrollView {

@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .executable(name: "HazakuraNext", targets: ["HazakuraNext"]),
         .executable(name: "HazakuraNextModelProbe", targets: ["HazakuraNextModelProbe"]),
+        .executable(name: "HazakuraNextLayoutProbe", targets: ["HazakuraNextLayoutProbe"]),
     ],
     targets: [
         .target(name: "HazakuraNextCore"),
@@ -16,6 +17,8 @@ let package = Package(
             dependencies: ["HazakuraNextCore", "HazakuraNextEditor"]
         ),
         .executableTarget(name: "HazakuraNextModelProbe"),
+        .executableTarget(name: "HazakuraNextLayoutProbe", dependencies: ["HazakuraNextEditor"]),
+        .testTarget(name: "HazakuraNextLayoutProbeTests", dependencies: ["HazakuraNextLayoutProbe"]),
         .testTarget(name: "HazakuraNextModelProbeTests", dependencies: ["HazakuraNextModelProbe"]),
         .testTarget(name: "HazakuraNextCoreTests", dependencies: ["HazakuraNextCore"]),
         .testTarget(name: "HazakuraNextEditorTests", dependencies: ["HazakuraNextEditor"]),
