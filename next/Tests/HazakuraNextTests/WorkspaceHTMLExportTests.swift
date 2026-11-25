@@ -44,11 +44,10 @@ struct WorkspaceHTMLExportTests {
         #expect(session.tabs.tabs.count == 2)
         #expect(session.exportRequest?.id == request)
         #expect(session.reserveExitDiscard() == nil)
-        if case .confirm(let ticket) = session.tabs.requestCloseSelected() {
-            #expect(session.startTabDiscard(ticket) == nil)
-        } else {
-            Issue.record("The edited tab must require discard confirmation.")
-        }
+        let selected = session.tabs.selectedID
+        #expect(session.prepareTabClose() == nil)
+        #expect(session.pendingDiscard == nil)
+        #expect(session.tabs.selectedID == selected)
 
         await session.writeRequestedExport(request, to: destination, using: .init(renderHTML: { source in
             await probe.recordSource(source)

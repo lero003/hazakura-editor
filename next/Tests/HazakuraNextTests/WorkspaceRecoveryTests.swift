@@ -54,6 +54,47 @@ struct WorkspaceRecoveryTests {
         #expect(probe.replies == [true])
     }
 
+    @Test func cancelledConsentCannotDiscardTheSameRevisionAfterASecondRequest() async throws {
+        let session = WorkspaceSession(source: "原稿")
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("編集済み", to: id)
+        session.prepareTabClose()
+        let stale = try #require(session.pendingDiscard?.id)
+        #expect(session.resolveTabDiscard(stale, discard: false) == nil)
+        #expect(session.resolveTabDiscard(stale, discard: true) == nil)
+        session.prepareTabClose()
+        let current = try #require(session.pendingDiscard?.id)
+        #expect(stale != current)
+        #expect(session.resolveTabDiscard(stale, discard: true) == nil)
+        #expect(session.resolveTabDiscard(stale, discard: false) == nil)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.pendingDiscard?.id == current)
+        let accepted = try #require(session.resolveTabDiscard(current, discard: true))
+        await accepted.value
+        #expect(session.tabs.tabs.isEmpty)
+        #expect(session.pendingDiscard == nil)
+    }
+
+    @Test func approvalAfterEditingConsumesTheRequestWithoutDiscardingTheNewRevision() async throws {
+        let backend = RecoveryFixture()
+        let recovery = backend.makeQueue()
+        let session = WorkspaceSession(source: "原稿", recovery: recovery)
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確認時の原稿", to: id)
+        session.prepareTabClose()
+        let request = try #require(session.pendingDiscard?.id)
+        session.applyCommittedSource("確認後に確定した原稿", to: id)
+        let latest = try #require(session.tabs.recoveryDraft(for: id))
+        await recovery.waitForCurrentWorker()
+
+        #expect(session.resolveTabDiscard(request, discard: true) == nil)
+        #expect(session.pendingDiscard == nil)
+        #expect(session.canRequestTabClose)
+        #expect(session.exitNotice != nil)
+        #expect(session.tabs.recoveryDraft(for: id) == latest)
+        #expect(await backend.records() == [latest])
+    }
+
     @Test func startupWithoutRecoveryStillAllowsExplicitScratchDiscard() async throws {
         let session = WorkspaceSession(source: "原稿", recoveryUnavailable: true)
         let id = try #require(session.tabs.selectedID)
@@ -61,9 +102,9 @@ struct WorkspaceRecoveryTests {
         session.applyCommittedSource("編集済み", to: id)
         session.requestRecovery()
         #expect(!session.showsRecovery)
-        let decision = session.tabs.requestCloseSelected()
-        guard case .confirm(let ticket) = decision else { Issue.record("Expected explicit consent"); return }
-        let started = session.startTabDiscard(ticket)
+        session.prepareTabClose()
+        let request = try #require(session.pendingDiscard?.id)
+        let started = session.resolveTabDiscard(request, discard: true)
         let task = try #require(started)
         await task.value
         #expect(session.tabs.tabs.isEmpty)
@@ -151,20 +192,19 @@ struct WorkspaceRecoveryTests {
         await queue.waitForCurrentWorker()
         #expect(await backend.records().count == 1)
         #expect(session.canRequestTabClose)
-        session.requestTabClose()
-        try #require(session.pendingDiscard != nil)
+        session.prepareTabClose()
+        let cancelled = try #require(session.pendingDiscard?.id)
         #expect(!session.canRequestTabClose)
         #expect(session.tabs.selectedID == id)
-        // The alert binding clears the request on cancellation without starting cleanup.
-        session.pendingDiscard = nil
+        #expect(session.resolveTabDiscard(cancelled, discard: false) == nil)
         #expect(session.tabs.selectedID == id)
         #expect(await backend.records().count == 1)
-        session.requestTabClose()
-        let ticket = try #require(session.pendingDiscard)
-        let started = session.startTabDiscard(ticket)
+        session.prepareTabClose()
+        let request = try #require(session.pendingDiscard?.id)
+        let started = session.resolveTabDiscard(request, discard: true)
         let task = try #require(started)
         #expect(session.isBusy)
-        #expect(session.startTabDiscard(ticket) == nil)
+        #expect(session.resolveTabDiscard(request, discard: true) == nil)
         await backend.waitForCleanup()
         #expect(session.tabs.selectedTab?.document.source == "変更済み")
         await backend.finishCleanup(success: cleanupSucceeds)
@@ -172,6 +212,7 @@ struct WorkspaceRecoveryTests {
         #expect(!session.isBusy)
         #expect(session.tabs.tabs.isEmpty == cleanupSucceeds)
         #expect((session.exitNotice == nil) == cleanupSucceeds)
+        #expect(session.resolveTabDiscard(request, discard: true) == nil)
         #expect(await backend.records().isEmpty == cleanupSucceeds)
     }
 

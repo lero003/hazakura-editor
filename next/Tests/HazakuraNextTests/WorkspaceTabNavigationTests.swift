@@ -148,7 +148,7 @@ struct WorkspaceTabNavigationTests {
         try #require(session.tabs.tabs.count == 2)
         session.toggleZenMode()
         #expect(session.canRequestTabClose)
-        session.requestTabClose()
+        #expect(session.prepareTabClose() == nil)
         #expect(session.pendingDiscard == nil)
         #expect(session.tabs.tabs.map(\.id) == [first])
         #expect(session.tabs.selectedID == first)
@@ -178,9 +178,29 @@ struct WorkspaceTabNavigationTests {
         #expect(session.tabs.selectedID == id)
         #expect(session.pendingDiscard == nil)
         session.requestTabClose()
+        #expect(session.tabs.selectedID == id)
+        #expect(session.prepareTabClose() == nil)
         #expect(session.tabs.tabs.isEmpty)
         #expect(!session.canRequestTabClose)
         #expect(delegate.window === window)
+    }
+
+    @Test func windowTeardownInvalidatesAnOutstandingTabConfirmation() throws {
+        let delegate = ScratchApplicationDelegate(source: "原稿")
+        let window = delegate.prepareWindow()
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("変更済み原稿", to: id)
+        session.requestTabClose()
+        #expect(session.pendingDiscard == nil)
+        let request = try #require(session.prepareTabClose())
+        #expect(session.isBusy)
+
+        window.close()
+        #expect(delegate.session == nil)
+        #expect(!session.isBusy)
+        #expect(session.resolveTabDiscard(request, discard: true) == nil)
+        #expect(session.tabs.selectedTab?.document.source == "変更済み原稿")
     }
 
     private func expectBlocked(_ session: WorkspaceSession, current: UUID, target: UUID) {
@@ -190,7 +210,7 @@ struct WorkspaceTabNavigationTests {
         session.cycleTab(.next)
         session.cycleTab(.previous)
         session.selectTab(target)
-        session.requestTabClose()
+        #expect(session.prepareTabClose() == nil)
         #expect(session.tabs.selectedID == current)
         #expect(session.tabs.tabs.map(\.id) == ids)
         #expect(session.pendingDiscard == nil)

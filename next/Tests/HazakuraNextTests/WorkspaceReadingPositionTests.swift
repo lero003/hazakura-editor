@@ -148,11 +148,8 @@ struct WorkspaceReadingPositionTests {
         let first = try openPreview(in: session)
         session.rememberMarkdownReadingPosition(2, previewID: first.id)
         session.dismissMarkdownPreview(first.id)
-        guard case .confirm(let ticket) = session.tabs.requestCloseSelected() else {
-            Issue.record("Expected a discard confirmation for edited source.")
-            return
-        }
-        let discard = try #require(session.startTabDiscard(ticket))
+        let request = try #require(session.prepareTabClose())
+        let discard = try #require(session.resolveTabDiscard(request, discard: true))
         await discard.value
         try #require(session.tabs.tabs.isEmpty)
 

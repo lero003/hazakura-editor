@@ -95,6 +95,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     func windowWillClose(_ notification: Notification) {
         guard (notification.object as? NSWindow) === window else { return }
+        session?.invalidateTabDiscard()
         session?.clearFolderCatalog()
         if let id = session?.bookPreviewRequest?.id { session?.dismissBookPreview(id) }
         session?.window = nil

@@ -147,7 +147,12 @@ final class WorkspaceSession {
             }
         }
     }
-    var pendingDiscard: ScratchTabs.DiscardTicket?
+    struct TabDiscardRequest {
+        let id = UUID()
+        fileprivate let ticket: ScratchTabs.DiscardTicket
+    }
+
+    private(set) var pendingDiscard: TabDiscardRequest?
     var openRequest: UUID?
     private(set) var folderCatalogRequest: UUID?
     private var activeFolderReadID: UUID?
@@ -203,19 +208,50 @@ final class WorkspaceSession {
 
     enum TabDirection: Int { case previous = -1, next = 1 }
 
+    // Consult the native editor as well as the model, even before its IME callback reaches us.
+    private var hasNativeMarkedText: Bool {
+        (window?.firstResponder as? NSTextView)?.hasMarkedText() == true
+    }
+
     var canChangeTab: Bool {
-        guard !isBusy, !tabs.isComposing, window?.attachedSheet == nil else { return false }
-        // Consult the native editor as well as the model, even before the IME callback reaches it.
-        return (window?.firstResponder as? NSTextView)?.hasMarkedText() != true
+        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil
     }
 
     var canCycleTabs: Bool { tabs.tabs.count > 1 && tabs.selectedID != nil && canChangeTab }
     var canRequestTabClose: Bool { tabs.selectedID != nil && canChangeTab }
 
     func requestTabClose() {
-        guard canRequestTabClose else { return }
-        if case let .confirm(ticket) = tabs.requestCloseSelected() {
-            pendingDiscard = ticket
+        guard let window, window.isVisible, window.isKeyWindow, let id = prepareTabClose() else { return }
+        presentTabDiscard(id, in: window)
+    }
+
+    /// Closes a clean tab or reserves the confirmation before any UI is presented.
+    @discardableResult
+    func prepareTabClose() -> UUID? {
+        guard canRequestTabClose, case let .confirm(ticket) = tabs.requestCloseSelected() else { return nil }
+        let request = TabDiscardRequest(ticket: ticket)
+        pendingDiscard = request
+        return request.id
+    }
+
+    func invalidateTabDiscard() { pendingDiscard = nil }
+
+    private func presentTabDiscard(_ id: UUID, in window: NSWindow) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "この検証用原稿を破棄しますか？"
+        alert.informativeText = recovery == nil
+            ? "このタブの未保存原稿が削除されます。"
+            : "このタブの未保存原稿と、その復旧記録が削除されます。"
+        let cancel = alert.addButton(withTitle: "キャンセル")
+        cancel.keyEquivalent = "\u{1B}"
+        let discard = alert.addButton(withTitle: "破棄")
+        discard.keyEquivalent = ""
+        discard.hasDestructiveAction = true
+        alert.beginSheetModal(for: window) { [weak self, weak window] result in
+            guard let self else { return }
+            let approved = result == .alertSecondButtonReturn && window != nil && window === self.window
+            self.resolveTabDiscard(id, discard: approved)
         }
     }
 
@@ -972,15 +1008,22 @@ final class WorkspaceSession {
     }
 
     @discardableResult
-    func startTabDiscard(_ ticket: ScratchTabs.DiscardTicket) -> Task<Void, Never>? {
-        // Its own pending confirmation is allowed; every other exclusive operation is not.
-        guard !hasExclusiveOperation, let draft = tabs.draftForDiscard(ticket) else { return nil }
-        // Reserve synchronously: dismissing SwiftUI's alert must not re-enable tab actions.
+    func resolveTabDiscard(_ id: UUID, discard: Bool) -> Task<Void, Never>? {
+        guard let request = pendingDiscard, request.id == id else { return nil }
+        // Consume only the current request, including cancellation or a now-invalid approval.
+        defer { pendingDiscard = nil }
+        guard discard else { return nil }
+        let ticket = request.ticket
+        guard !hasExclusiveOperation, !hasNativeMarkedText,
+              let draft = tabs.draftForDiscard(ticket) else {
+            exitNotice = "原稿の状態が変わったため、閉じませんでした。操作をやり直してください。"
+            return nil
+        }
+        // Reserve synchronously, before releasing the confirmation.
         isDiscarding = true
-        pendingDiscard = nil
         return Task {
             defer { isDiscarding = false }
-            _ = await finishDiscard([draft]) { self.tabs.discard(ticket) }
+            _ = await finishDiscard([draft]) { !self.hasNativeMarkedText && self.tabs.discard(ticket) }
         }
     }
 

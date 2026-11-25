@@ -95,15 +95,14 @@ struct WorkspaceBookPreviewTests {
         let active = try #require(session.tabs.selectedID)
         session.applyCommittedSource("未保存の原稿", to: active)
         let drafts = session.tabs.recoveryDrafts
-        let close = session.tabs.requestCloseSelected()
-        guard case .confirm(let ticket) = close else {
-            Issue.record("Expected the unsaved original to require confirmation.")
-            return
-        }
+        session.prepareTabClose()
+        let request = try #require(session.pendingDiscard?.id)
+        session.resolveTabDiscard(request, discard: false)
         session.requestBookPreview()
         try #require(session.bookPreviewRequest != nil)
-        let discard = session.startTabDiscard(ticket)
-        #expect(discard == nil)
+        session.prepareTabClose()
+        #expect(session.pendingDiscard == nil)
+        #expect(session.resolveTabDiscard(request, discard: true) == nil)
         #expect(session.tabs.recoveryDrafts == drafts)
         #expect(session.tabs.selectedID == active)
     }

@@ -188,16 +188,6 @@ struct ScratchWorkspaceView: View {
         .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
             DraftRecoveryView(session: session)
         }
-        .alert("この検証用原稿を破棄しますか？", isPresented: showsDiscard, presenting: session.pendingDiscard) { ticket in
-            Button("破棄", role: .destructive) { session.startTabDiscard(ticket) }
-            Button("キャンセル", role: .cancel) {}
-        } message: { _ in
-            if session.recovery == nil {
-                Text("このタブの未保存原稿が削除されます。")
-            } else {
-                Text("このタブの未保存原稿と、その復旧記録が削除されます。")
-            }
-        }
     }
 
     private var banner: String {
@@ -236,10 +226,6 @@ struct ScratchWorkspaceView: View {
             .disabled(session.tabs.isComposing)
             Button("中止") { session.cancelExport(id) }
         }
-    }
-
-    private var showsDiscard: Binding<Bool> {
-        Binding(get: { session.pendingDiscard != nil }, set: { if !$0 { session.pendingDiscard = nil } })
     }
 
     private func openSelectedFile(_ request: UUID) async {

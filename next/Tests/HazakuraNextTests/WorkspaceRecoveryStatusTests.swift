@@ -174,12 +174,8 @@ struct WorkspaceRecoveryStatusTests {
         await queue.waitForCurrentWorker()
         #expect(session.selectedRecoveryStatus == .checkpointed)
         try #require(await calls.next() == .checkpoint(draft))
-        guard case .confirm(let ticket) = session.tabs.requestCloseSelected() else {
-            Issue.record("Expected explicit discard confirmation.")
-            return
-        }
-
-        let started = session.startTabDiscard(ticket)
+        let request = try #require(session.prepareTabClose())
+        let started = session.resolveTabDiscard(request, discard: true)
         let task = try #require(started)
         #expect(session.selectedRecoveryStatus == nil)
         try #require(await calls.next() == .discard([draft]))
