@@ -86,6 +86,47 @@ struct SelectedFolderCatalogTests {
         }
     }
 
+    enum AmbiguousFolderURL: CaseIterable {
+        case emptyPort, oversizedPort, undecodableUser, relative
+    }
+
+    @Test(arguments: AmbiguousFolderURL.allCases)
+    func rejectsAmbiguousURLsForBothSelections(_ variant: AmbiguousFolderURL) async throws {
+        try await withFixture { folder in
+            let selected = folder.appending(path: "原稿 #?%:@", directoryHint: .isDirectory)
+            try FileManager.default.createDirectory(at: selected, withIntermediateDirectories: false)
+            let source = Data("# 合成原稿\r\n".utf8)
+            try source.write(to: selected.appending(path: "sample.md"))
+            let path = selected.path(percentEncoded: true)
+            let ambiguous: URL
+            if variant == .relative {
+                let leaf = try #require(path.split(separator: "/").last)
+                ambiguous = try #require(URL(string: "./\(leaf)/", relativeTo: folder))
+                try #require(ambiguous.baseURL != nil)
+            } else {
+                let authority = switch variant {
+                case .emptyPort: "localhost:"
+                case .oversizedPort: "localhost:999999999999999999999999"
+                case .undecodableUser: "%FF@localhost"
+                case .relative: ""
+                }
+                ambiguous = try #require(URL(string: "file://\(authority)\(path)"))
+            }
+
+            await #expect(throws: SelectedFolderCatalog.ScanError.invalidLocation) {
+                try await SelectedFolderCatalog.read(from: ambiguous)
+            }
+            let catalog = try await SelectedFolderCatalog.read(from: selected)
+            #expect(catalog.folderName == selected.lastPathComponent)
+            let id = try #require(catalog.entries.first?.id)
+            await #expect(throws: SelectedFolderCatalog.ScanError.invalidLocation) {
+                try await catalog.readEntry(id, from: ambiguous)
+            }
+            let reopened = try await catalog.readEntry(id, from: selected)
+            #expect(reopened.originalBytes == source)
+        }
+    }
+
     @Test func countsHiddenAndNoncandidateEntriesAtTheLimit() async throws {
         #expect(SelectedFolderCatalog.entryLimit == 512)
         try await withFixture { folder in

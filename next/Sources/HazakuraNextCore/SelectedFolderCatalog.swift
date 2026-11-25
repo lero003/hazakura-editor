@@ -131,8 +131,7 @@ public struct SelectedFolderCatalog: Sendable {
     ) throws -> T {
         let host = url.host(percentEncoded: false) ?? ""
         let path = url.path(percentEncoded: false)
-        guard url.isFileURL, host.isEmpty || host.lowercased() == "localhost",
-              url.user == nil, url.password == nil, url.port == nil, url.query == nil, url.fragment == nil,
+        guard SelectedFileURL.hasNoExtraComponents(url), host.isEmpty || host.lowercased() == "localhost",
               path.hasPrefix("/"), !path.utf8.contains(0) else { throw ScanError.invalidLocation }
 
         return try url.withUnsafeFileSystemRepresentation { pathname in
