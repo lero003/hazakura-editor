@@ -3,10 +3,13 @@
 Status: Operational
 Scope: 担当交代の補助と過去の引き継ぎ
 Authority: Medium（現状・着手順の正本ではない）
-Last reviewed: 2026-11-25（案内のみ）
+Last reviewed: 2026-11-25（開発レーン切替）
 
 担当交代時は[作業キュー](current-work.md#active-queue)と[実装・公開状況](current-status.md)を優先する。
-[第二世代設計](roadmap.md#第二世代設計)は基本方針のみ反映済み。比較の実験は未着手で、既存のテーマ候補とは別。
+
+- 第二世代は段階的リファクタではなく、`next-native-editor` / `next/` での[macOSネイティブ再構築](roadmap.md#第二世代設計)。初回スライスはメモリ内の合成原稿で、実ユーザーのファイルや第一世代の設定・原稿・復旧データは読み書きしない。
+- 旧 `second-generation-design` / [ドラフトPR #70](https://github.com/lero003/hazakura-editor/pull/70) と未コミット作業には触れない。旧調査は契約・比較例を確認する資料として読み、実装の着手指示にしない。第一世代の候補受け入れ・リリース計画は別扱い。
+
 以下は各作業の引き継ぎ時点の記録であり、現在の優先順位を上書きしない。
 
 ## LFM3-1.7B の評価（2026-10-30、製品未変更）

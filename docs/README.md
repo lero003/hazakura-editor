@@ -32,7 +32,7 @@ Last reviewed: 2026-11-25
 | OKF | [pinと更新規則](okf-spec-pin.md)・[点検契約](v1.11-okf-draft-preview-design.md)・[ひな形契約](v1.12-okf-scaffold-design.md)。契約部分を参照し、旧候補の状態を読み替えない |
 | 読み書き・媒体 | [L Mode](l-mode-plan.md)・[e-book / EPUB](ebook-mode-epub-export-plan.md)・[Book Scope](superpowers/specs/2026-07-02-v2-book-scope-design.md)・[画像の同意境界](v1.xx-image-media-boundary-plan.md)。現行仕様の根拠と将来案を区別する |
 | メモ・縦書き | [採用方針](roadmap.md#メモと縦書き)・[設計例と受け入れ条件](post-v3.1-writing-completion-draft.md)。採用範囲・版割りはロードマップを優先 |
-| 第二世代設計 | [採用方針](roadmap.md#第二世代設計)・[着手候補](current-work.md#active-queue)。[調査報告](reviews/2026-11-25-second-generation-architecture.md)は比較の根拠で、キューではない |
+| 第二世代 `next/` | [macOSネイティブ再構築・Phase 0–5・棚卸し](roadmap.md#第二世代設計)、[着手範囲](current-work.md#active-queue)、[実装・検証状態](current-status.md#第二世代--macosネイティブ再構築)、[ビルド・テスト・起動](../next/README.md)。第一世代のTauri版の開発・配布とは別 |
 
 ## 日常では使わない文書（根拠・履歴のみ）
 
