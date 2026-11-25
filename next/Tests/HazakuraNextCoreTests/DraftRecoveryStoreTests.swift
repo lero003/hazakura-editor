@@ -304,6 +304,45 @@ struct DraftRecoveryStoreTests {
         }
     }
 
+    enum AmbiguousRecoveryURL: String, CaseIterable {
+        case relative
+        case userInfo = "draft@localhost"
+        case emptyPort = "localhost:"
+        case oversizedPort = "localhost:999999999999999999999999"
+    }
+
+    @Test(arguments: AmbiguousRecoveryURL.allCases)
+    func rejectsAmbiguousRecoveryLocationsWithoutCreatingStorage(_ variant: AmbiguousRecoveryURL) async throws {
+        try await withFixture { folder in
+            let directory = folder.appending(path: "復旧 #?%:@", directoryHint: .isDirectory)
+            let path = directory.path(percentEncoded: true)
+            let ambiguous: URL
+            if variant == .relative {
+                let leaf = try #require(path.split(separator: "/").last)
+                ambiguous = try #require(URL(string: "./\(leaf)/", relativeTo: folder))
+                try #require(ambiguous.baseURL != nil)
+            } else {
+                ambiguous = try #require(URL(string: "file://\(variant.rawValue)\(path)"))
+            }
+            let draft = RecoveryDraft(id: UUID(), revision: 1, source: "# 合成原稿\r\n")
+
+            #expect(throws: StoreError.invalidLocation) {
+                _ = try DraftRecoveryStore.claimApplicationSession(in: ambiguous)
+            }
+            #expect(try FileManager.default.contentsOfDirectory(atPath: folder.path).isEmpty)
+            await #expect(throws: StoreError.invalidLocation) {
+                try await DraftRecoveryStore(directory: ambiguous).checkpoint(draft)
+            }
+            try #require(try FileManager.default.contentsOfDirectory(atPath: folder.path).isEmpty)
+
+            let lease = try DraftRecoveryStore.claimApplicationSession(in: directory)
+            let store = DraftRecoveryStore(directory: directory)
+            try await store.checkpoint(draft)
+            #expect(try await store.drafts() == [draft])
+            withExtendedLifetime(lease) {}
+        }
+    }
+
     @Test(arguments: ["drafts.manifest", "drafts.lock", "drafts.pending"])
     func rejectsLinkedStorageEntriesWithoutTouchingTheirTarget(_ name: String) async throws {
         try await withFixture { folder in

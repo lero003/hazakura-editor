@@ -205,8 +205,8 @@ private extension DraftRecoveryStore {
         let path = directory.path(percentEncoded: false)
         let parts = path.split(separator: "/")
         let name = directory.lastPathComponent
-        guard directory.isFileURL, host.isEmpty || host == "localhost", directory.query() == nil,
-              directory.fragment() == nil, path.hasPrefix("/"), !path.utf8.contains(0),
+        guard SelectedFileURL.hasNoExtraComponents(directory), host.isEmpty || host == "localhost",
+              path.hasPrefix("/"), !path.utf8.contains(0),
               !name.isEmpty, !name.contains("/"), !name.utf8.contains(0),
               parts.last.map({ $0.utf8.elementsEqual(name.utf8) }) == true,
               !parts.contains("."), !parts.contains("..") else {
