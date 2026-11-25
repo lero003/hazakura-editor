@@ -33,6 +33,8 @@ final class WorkspaceSession {
         let revision: UInt64
         let title: String
         let source: String
+        /// Zero-based index in this exact rendered revision, captured only when opening the sheet.
+        let readingBlockIndex: Int?
     }
 
     private struct MarkdownSourceReveal {
@@ -43,6 +45,12 @@ final class WorkspaceSession {
     @ObservationIgnored weak var window: NSWindow?
     var tabs: ScratchTabs {
         didSet {
+            // Covers all tab mutation paths, including native commits and confirmed discard.
+            for (id, position) in markdownReadingPositions {
+                if !tabs.tabs.contains(where: { $0.id == id && $0.document.revision == position.revision }) {
+                    markdownReadingPositions[id] = nil
+                }
+            }
             // Includes tabs opened/closed through picker, recovery, and other non-tab-button paths.
             guard let reveal = markdownSourceReveal else { return }
             if tabs.selectedID != reveal.preview.documentID || tabs.isComposing {
@@ -57,6 +65,8 @@ final class WorkspaceSession {
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
     private(set) var markdownPreview: MarkdownPreviewSnapshot?
+    // Scrolling updates only this live-tab state, not the editor or the open sheet.
+    @ObservationIgnored private var markdownReadingPositions: [UUID: (revision: UInt64, blockIndex: Int)] = [:]
     private var markdownSourceReveal: MarkdownSourceReveal?
     private(set) var fileNotice: String?
     private var isWritingCopy = false
@@ -92,9 +102,20 @@ final class WorkspaceSession {
     func requestMarkdownPreview() {
         guard canPreviewMarkdown, let selected = tabs.selectedTab else { return }
         markdownSourceReveal = nil
+        let revision = selected.document.revision
+        let position = markdownReadingPositions[selected.id]
         // Keep the native editor mounted. The sheet is a copy of the selected committed revision.
-        markdownPreview = MarkdownPreviewSnapshot(documentID: selected.id, revision: selected.document.revision,
-                                                   title: Self.title(for: selected), source: selected.document.source)
+        markdownPreview = MarkdownPreviewSnapshot(documentID: selected.id, revision: revision,
+                                                   title: Self.title(for: selected), source: selected.document.source,
+                                                   readingBlockIndex: position?.revision == revision ? position?.blockIndex : nil)
+    }
+
+    func rememberMarkdownReadingPosition(_ blockIndex: Int, previewID: UUID) {
+        // The renderer currently emits at most 2,000 blocks. The reader checks its actual block count.
+        guard (0..<2_000).contains(blockIndex), let preview = markdownPreview, preview.id == previewID,
+              !tabs.isComposing, let selected = tabs.selectedTab, selected.id == preview.documentID,
+              selected.document.revision == preview.revision else { return }
+        markdownReadingPositions[selected.id] = (revision: preview.revision, blockIndex: blockIndex)
     }
 
     func dismissMarkdownPreview(_ id: UUID) {

@@ -8,6 +8,8 @@ struct MarkdownPreviewView: View {
 
     private let title: String
     private let source: String
+    private let readingBlockIndex: Int?
+    private let rememberReadingBlock: (Int) -> Void
     private let reveal: (MarkdownPreview.HeadingLocation) -> Bool
 
     private enum Phase {
@@ -17,9 +19,15 @@ struct MarkdownPreviewView: View {
         case cancelled
     }
 
-    init(title: String, source: String, reveal: @escaping (MarkdownPreview.HeadingLocation) -> Bool) {
+    init(
+        title: String, source: String, readingBlockIndex: Int?,
+        rememberReadingBlock: @escaping (Int) -> Void,
+        reveal: @escaping (MarkdownPreview.HeadingLocation) -> Bool
+    ) {
         self.title = title
         self.source = source
+        self.readingBlockIndex = readingBlockIndex
+        self.rememberReadingBlock = rememberReadingBlock
         self.reveal = reveal
     }
 
@@ -87,7 +95,10 @@ struct MarkdownPreviewView: View {
             if blocks.isEmpty {
                 notice("表示する本文がありません。")
             } else {
-                MarkdownPreviewReadingPane(blocks: blocks, outline: outline) { location in
+                MarkdownPreviewReadingPane(
+                    blocks: blocks, outline: outline, readingBlockIndex: readingBlockIndex,
+                    rememberReadingBlock: rememberReadingBlock
+                ) { location in
                     if reveal(location) { dismiss() }
                     else { revealRejected = true }
                 }
@@ -126,12 +137,33 @@ struct MarkdownPreviewView: View {
 private struct MarkdownPreviewReadingPane: View {
     let blocks: [MarkdownPreview.Block]
     let outline: MarkdownPreviewOutline
+    let rememberReadingBlock: (Int) -> Void
     let reveal: (MarkdownPreview.HeadingLocation) -> Void
     @State private var showsOutline = false
+    @State private var position: ScrollPosition
 
-    // Scope anchors to this preview body so the outline list cannot be a scroll target.
-    private struct BodyAnchor: Hashable {
-        let blockIndex: Int
+    init(
+        blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline, readingBlockIndex: Int?,
+        rememberReadingBlock: @escaping (Int) -> Void,
+        reveal: @escaping (MarkdownPreview.HeadingLocation) -> Void
+    ) {
+        self.blocks = blocks
+        self.outline = outline
+        self.rememberReadingBlock = rememberReadingBlock
+        self.reveal = reveal
+        if let readingBlockIndex, blocks.indices.contains(readingBlockIndex) {
+            _position = State(initialValue: ScrollPosition(id: readingBlockIndex, anchor: .top))
+        } else {
+            _position = State(initialValue: ScrollPosition(idType: Int.self))
+        }
+    }
+
+    private var observedReadingBlock: Int? {
+        // Ignore layout feedback from the initial restore or other programmatic scrolling.
+        guard position.isPositionedByUser,
+              let candidate = position.viewID(type: Int.self),
+              blocks.indices.contains(candidate) else { return nil }
+        return candidate
     }
 
     var body: some View {
@@ -144,17 +176,17 @@ private struct MarkdownPreviewReadingPane: View {
                 }
             }
 
-            ScrollViewReader { proxy in
-                HStack(alignment: .top, spacing: 10) {
-                    if showsOutline {
-                        outlineList { entry in
-                            proxy.scrollTo(BodyAnchor(blockIndex: entry.id), anchor: .top)
-                        }
-                        .frame(width: 195)
-                        Divider()
+            HStack(alignment: .top, spacing: 10) {
+                if showsOutline {
+                    outlineList { entry in
+                        position.scrollTo(id: entry.id, anchor: .top)
+                        // A TOC click records the chosen destination, including a heading near the end.
+                        rememberReadingBlock(entry.id)
                     }
-                    previewBody
+                    .frame(width: 195)
+                    Divider()
                 }
+                previewBody
             }
         }
     }
@@ -205,19 +237,25 @@ private struct MarkdownPreviewReadingPane: View {
     private var previewBody: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
-                ForEach(blocks.enumerated(), id: \.offset) { entry in
+                // ForEach supplies the same ID type and block index used by ScrollPosition.
+                ForEach(blocks.indices, id: \.self) { index in
+                    let block = blocks[index]
                     VStack(alignment: .leading, spacing: 6) {
-                        MarkdownPreviewBlockView(block: entry.element)
-                        if let location = entry.element.headingLocation {
+                        MarkdownPreviewBlockView(block: block)
+                        if let location = block.headingLocation {
                             Button("原文の\(location.line)行目へ") { reveal(location) }
                                 .font(.callout)
                                 .accessibilityHint("プレビューを閉じて、この見出しの原文を表示します。")
                         }
                     }
-                    .id(BodyAnchor(blockIndex: entry.offset))
                 }
             }
+            .scrollTargetLayout()
             .padding(12)
+        }
+        .scrollPosition($position, anchor: .top)
+        .onChange(of: observedReadingBlock) { _, blockIndex in
+            if let blockIndex { rememberReadingBlock(blockIndex) }
         }
         .frame(maxWidth: .infinity)
         .background(.background, in: .rect(cornerRadius: 8))

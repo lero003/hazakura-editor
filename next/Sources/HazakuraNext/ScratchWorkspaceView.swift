@@ -62,7 +62,10 @@ struct ScratchWorkspaceView: View {
         .sheet(item: Binding(get: { session.markdownPreview }, set: { preview in
             if preview == nil, let previewID { session.dismissMarkdownPreview(previewID) }
         })) { preview in
-            MarkdownPreviewView(title: preview.title, source: preview.source) { location in
+            MarkdownPreviewView(
+                title: preview.title, source: preview.source, readingBlockIndex: preview.readingBlockIndex,
+                rememberReadingBlock: { session.rememberMarkdownReadingPosition($0, previewID: preview.id) }
+            ) { location in
                 session.requestMarkdownReveal(preview.id, offset: location.utf16Offset)
             }
         }
