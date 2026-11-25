@@ -34,6 +34,24 @@ struct MarkdownBookSearchTests {
         }
     }
 
+    @Test(arguments: ["\n", "\r\n", "\r"])
+    func distinguishesSoftAndExplicitBreaksInBothSearchModes(_ lineEnd: String) async throws {
+        let first = source("青い\(lineEnd)**桜**\(lineEnd)\(lineEnd)青い  \(lineEnd)**桜**")
+        let second = source("# 記録\(lineEnd)\(lineEnd)青い\\\(lineEnd)**桜**")
+        let sections = try await MarkdownBookPreview.render([first, second])
+        let blocks = try #require(sections.first?.blocks)
+
+        #expect(MarkdownReaderSearch.search("青い 桜", in: blocks) == .matches([0]))
+        #expect(MarkdownReaderSearch.search("青い\n桜", in: blocks) == .matches([1]))
+        #expect(MarkdownReaderSearch.searchBook("青い 桜", in: sections) == .matches([
+            .init(sectionID: first.id, blockIndex: 0),
+        ]))
+        #expect(MarkdownReaderSearch.searchBook("青い\n桜", in: sections) == .matches([
+            .init(sectionID: first.id, blockIndex: 1),
+            .init(sectionID: second.id, blockIndex: 1),
+        ]))
+    }
+
     @Test func keepsSingleDocumentCaseAndCanonicalEquivalenceWithoutFoldingWidthOrDiacritics() async throws {
         let first = source("**E**\u{301}lan が ＡＢＣ")
         let sections = try await MarkdownBookPreview.render([first, source("別の本文")])
