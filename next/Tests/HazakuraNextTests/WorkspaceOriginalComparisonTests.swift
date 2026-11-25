@@ -268,6 +268,50 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
+    enum ChangeDuringComparison: CaseIterable {
+        case cancelRequest, cancelTask, edit, compose
+    }
+
+    @Test(arguments: ChangeDuringComparison.allCases)
+    func revalidatesBeforePublishingAComputedComparison(_ change: ChangeDuringComparison) async throws {
+        try await withOriginal { _, baseline, session, documentID in
+            session.requestOriginalComparison()
+            let id = try #require(session.comparisonRequestID)
+            let began = AsyncStream<Void>.makeStream()
+            let release = AsyncStream<Void>.makeStream()
+            defer { began.continuation.finish(); release.continuation.finish() }
+            let operation = Task {
+                await session.readOriginalComparison(id, using: { baseline }, compare: { opened, disk, draft in
+                    began.continuation.finish()
+                    for await _ in release.stream {}
+                    return OriginalFileComparison(baseline: opened, disk: disk, draftSource: draft)
+                })
+                began.continuation.finish()
+            }
+            for await _ in began.stream {}
+            #expect(session.isBusy)
+            switch change {
+            case .cancelRequest:
+                session.cancelOriginalComparison(id)
+                #expect(session.isBusy)
+                session.requestOriginalComparison()
+                #expect(session.comparisonRequestID == nil)
+            case .cancelTask: operation.cancel()
+            case .edit: session.applyCommittedSource("比較中に確定した文", to: documentID)
+            case .compose: session.tabs.setComposing(true, in: documentID)
+            }
+            release.continuation.finish()
+            await operation.value
+
+            #expect(session.comparisonReport == nil)
+            #expect(session.comparisonRequestID == nil)
+            #expect(!session.isBusy)
+            #expect((session.fileNotice != nil) == (change == .edit || change == .compose))
+            if change == .compose { #expect(session.tabs.isComposing) }
+            if change == .edit { #expect(session.tabs.selectedTab?.document.source == "比較中に確定した文") }
+        }
+    }
+
     @Test func comparisonFailureAndPickerCancelDoNotShowAnUnchangedResult() async throws {
         try await withOriginal { _, _, session, documentID in
             session.applyCommittedSource("手元の編集", to: documentID)

@@ -593,6 +593,15 @@ final class WorkspaceSession {
 
     /// The caller handles one explicit picker selection and releases its scope before returning the snapshot.
     func readOriginalComparison(_ id: UUID, using readSelected: @MainActor () async throws -> SelectedTextFile?) async {
+        await readOriginalComparison(id, using: readSelected) { baseline, disk, draft in
+            await Self.compareOriginal(baseline, disk, draft)
+        }
+    }
+
+    func readOriginalComparison(
+        _ id: UUID, using readSelected: @MainActor () async throws -> SelectedTextFile?,
+        compare: @MainActor (SelectedTextFile, SelectedTextFile, String) async -> OriginalFileComparison
+    ) async {
         guard let request = comparisonRequest, request.id == id, readingComparisonID == nil else { return }
         readingComparisonID = id
         defer {
@@ -603,16 +612,23 @@ final class WorkspaceSession {
         do {
             guard let disk = try await readSelected(), !Task.isCancelled, comparisonRequest?.id == id,
                   validateComparisonSource(request) else { return }
-            comparisonReport = ComparisonReport(
-                id: id, documentID: request.documentID, revision: request.revision,
-                comparison: OriginalFileComparison(baseline: request.baseline, disk: disk, draftSource: request.draftSource)
-            )
+            let comparison = await compare(request.baseline, disk, request.draftSource)
+            // Keep the read slot reserved through calculation, then revalidate before displaying it.
+            guard !Task.isCancelled, comparisonRequest?.id == id, validateComparisonSource(request) else { return }
+            comparisonReport = ComparisonReport(id: id, documentID: request.documentID,
+                                                revision: request.revision, comparison: comparison)
         } catch is CancellationError {
             // Cancelling the picker or the read must not publish a comparison.
         } catch {
             guard !Task.isCancelled, comparisonRequest?.id == id else { return }
             fileNotice = "比較先を読み取れませんでした。\(Self.readFailure(error))"
         }
+    }
+
+    @concurrent private nonisolated static func compareOriginal(
+        _ baseline: SelectedTextFile, _ disk: SelectedTextFile, _ draft: String
+    ) async -> OriginalFileComparison {
+        OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
     }
 
     private func validateComparisonSource(_ request: ComparisonRequest) -> Bool {
