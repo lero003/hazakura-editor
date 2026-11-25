@@ -568,8 +568,7 @@ public struct TextKitEditor: NSViewRepresentable {
         }
 
         private func publishSource(_ source: String) {
-            // Swift String equality treats canonically equivalent spellings as equal; Markdown bytes do not.
-            guard source.utf8.elementsEqual(lastCommittedSource.utf8) == false else { return }
+            guard !EditorSourceEquality.matches(source, lastCommittedSource) else { return }
             lastCommittedSource = source
             onChange(source)
         }
