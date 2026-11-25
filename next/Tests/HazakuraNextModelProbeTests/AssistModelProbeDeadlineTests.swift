@@ -175,8 +175,9 @@ private final class DeadlineFixture {
 
     func watchForStall() -> Task<Void, Never> {
         Task { [events = events.continuation, cancelled = producerCancellation.continuation] in
-            // Failure-only watchdog; successful tests progress entirely by explicit events.
-            do { try await Task.sleep(for: .seconds(5)) } catch { return }
+            // Failure-only watchdog. The hosted runner can share MainActor with the full
+            // AppKit test suite; successful cases still advance only on explicit events.
+            do { try await Task.sleep(for: .seconds(20)) } catch { return }
             events.finish()
             cancelled.finish()
         }
