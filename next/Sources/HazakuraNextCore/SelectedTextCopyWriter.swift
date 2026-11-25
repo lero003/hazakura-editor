@@ -22,7 +22,10 @@ public enum SelectedTextCopyWriter {
     /// Generated HTML declares UTF-8 regardless of the encoding of its source document.
     @concurrent
     package static func writeHTML(_ html: String, to url: URL) async throws {
-        try await write(source: html, encoding: .utf8, to: url)
+        try Task.checkCancellation()
+        let destination = try Destination(url)
+        try destination.requireExtension("html")
+        try writeNewFile(encode(html, encoding: .utf8), to: destination)
     }
 
     /// Writes renderer-validated PDF bytes to an explicitly selected new file.
@@ -30,9 +33,7 @@ public enum SelectedTextCopyWriter {
     package static func writePDF(data: Data, to url: URL) async throws {
         try Task.checkCancellation()
         let destination = try Destination(url)
-        guard (destination.leaf as NSString).pathExtension.lowercased() == "pdf" else {
-            throw WriteError.invalidLocation
-        }
+        try destination.requireExtension("pdf")
         guard data.count <= pdfByteLimit else { throw WriteError.tooLarge }
         guard data.starts(with: "%PDF-".utf8) else { throw WriteError.invalidPDF }
         try writeNewFile(data, to: destination)
@@ -44,9 +45,7 @@ public enum SelectedTextCopyWriter {
     package static func writeEPUB(data: Data, to url: URL) async throws {
         try Task.checkCancellation()
         let destination = try Destination(url)
-        guard (destination.leaf as NSString).pathExtension.lowercased() == "epub" else {
-            throw WriteError.invalidLocation
-        }
+        try destination.requireExtension("epub")
         guard data.count <= EPUBStoredArchive.byteLimit else { throw WriteError.tooLarge }
         guard EPUBStoredArchive.hasMimetypePrefix(data) else { throw WriteError.invalidEPUB }
         try writeNewFile(data, to: destination)
@@ -135,6 +134,10 @@ public enum SelectedTextCopyWriter {
             guard let leaf = components.last else { throw WriteError.invalidLocation }
             self.leaf = leaf
             parentPath = "/" + components.dropLast().joined(separator: "/")
+        }
+
+        func requireExtension(_ expected: String) throws {
+            guard (leaf as NSString).pathExtension.lowercased() == expected else { throw WriteError.invalidLocation }
         }
     }
 

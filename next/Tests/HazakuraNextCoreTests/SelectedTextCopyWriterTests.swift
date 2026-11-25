@@ -25,6 +25,26 @@ struct SelectedTextCopyWriterTests {
         }
     }
 
+    @Test func htmlWriterRequiresItsOwnExtensionWithoutChangingTextCopyRules() async throws {
+        try await withFixture { folder in
+            let html = "<!doctype html><meta charset=\"utf-8\"><p>桜</p>"
+            for name in ["export", "export.htm", "export.html.md", "export.pdf"] {
+                let rejected = folder.appendingPathComponent(name)
+                await #expect(throws: WriteError.invalidLocation) {
+                    try await SelectedTextCopyWriter.writeHTML(html, to: rejected)
+                }
+            }
+            #expect(try entries(in: folder).isEmpty)
+
+            let exported = folder.appendingPathComponent("原稿 #%.HTML")
+            try await SelectedTextCopyWriter.writeHTML(html, to: exported)
+            #expect(try Data(contentsOf: exported) == Data(html.utf8))
+            let copy = folder.appendingPathComponent("原稿.txt")
+            try await SelectedTextCopyWriter.write(source: "原稿", encoding: .utf8, to: copy)
+            #expect(try Data(contentsOf: copy) == Data("原稿".utf8))
+        }
+    }
+
     @Test func refusesABOMLessCopyThatWouldLoseItsFirstCharacterOnReopen() async throws {
         try await withFixture { folder in
             let source = "\u{FEFF}本文\r\n"
