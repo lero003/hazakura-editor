@@ -179,6 +179,75 @@ struct RecoveryCheckpointQueueTests {
         #expect(await store.history == [.checkpoint(first), .checkpoint(confirmed)])
     }
 
+    @Test(arguments: [true, false])
+    func candidateCleanupPreservesQueuedLiveWrites(willDelete: Bool) async throws {
+        let firstWrite = Gate()
+        let deletionBegan = Gate()
+        let finishDeletion = Gate()
+        defer { firstWrite.release(); deletionBegan.release(); finishDeletion.release() }
+        let store = ControlledStore(firstCheckpointGate: firstWrite)
+        let queue = RecoveryCheckpointQueue(backend: .init(
+            checkpoint: store.checkpoint,
+            candidates: { await store.candidates() },
+            discardConfirmed: store.discardConfirmed,
+            discardExact: { _ in
+                deletionBegan.release()
+                await finishDeletion.wait()
+                return willDelete
+            }
+        ))
+        let live = draft(1)
+        let next = draft(2, id: live.id)
+        let candidate = draft(3)
+        var calls = store.calls.makeAsyncIterator()
+        queue.enqueue(live)
+        try #require(await calls.next() == .checkpoint(live))
+        let deletion = Task.immediate { @MainActor in try await queue.discardCandidate(candidate) }
+        queue.enqueue(next)
+        firstWrite.release()
+        await deletionBegan.wait()
+        #expect(await store.history == [.checkpoint(live)])
+        await #expect(throws: RecoveryCheckpointQueue.QueueError.cleanupInProgress) {
+            try await queue.discardConfirmed([live])
+        }
+        finishDeletion.release()
+        if willDelete {
+            try await deletion.value
+        } else {
+            await #expect(throws: RecoveryCheckpointQueue.QueueError.candidateChanged) { try await deletion.value }
+        }
+        await queue.waitForCurrentWorker()
+        #expect(await store.history == [.checkpoint(live), .checkpoint(next)])
+        #expect(queue.hasCheckpointed(next))
+    }
+
+    @Test func aQueuedWriteForTheCandidateIDPreventsDeletion() async throws {
+        let firstWrite = Gate()
+        defer { firstWrite.release() }
+        let store = ControlledStore(firstCheckpointGate: firstWrite)
+        let queue = RecoveryCheckpointQueue(backend: .init(
+            checkpoint: store.checkpoint,
+            candidates: { await store.candidates() },
+            discardConfirmed: store.discardConfirmed,
+            discardExact: { _ in
+                Issue.record("Queued work for the candidate ID must prevent deletion.")
+                return true
+            }
+        ))
+        let live = draft(1)
+        let candidate = draft(2)
+        let queued = draft(3, id: candidate.id)
+        var calls = store.calls.makeAsyncIterator()
+        queue.enqueue(live)
+        try #require(await calls.next() == .checkpoint(live))
+        let deletion = Task.immediate { @MainActor in try await queue.discardCandidate(candidate) }
+        queue.enqueue(queued)
+        firstWrite.release()
+        await #expect(throws: RecoveryCheckpointQueue.QueueError.candidateChanged) { try await deletion.value }
+        await queue.waitForCurrentWorker()
+        #expect(await store.history == [.checkpoint(live), .checkpoint(queued)])
+    }
+
     @Test func unavailableStoreWarnsOnEnqueueAndDoesNotSilentlyConfirmCleanup() async {
         let queue = RecoveryCheckpointQueue(store: nil)
         let confirmed = draft(1)

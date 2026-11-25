@@ -9,12 +9,26 @@ final class RecoveryCheckpointQueue {
         case storeUnavailable
         case cleanupInProgress
         case newerQueuedDraft
+        case candidateChanged
     }
 
     struct Backend: Sendable {
         let checkpoint: @Sendable (RecoveryDraft) async throws -> Void
         let candidates: @Sendable () async throws -> [RecoveryDraft]
         let discardConfirmed: @Sendable ([RecoveryDraft]) async throws -> Void
+        let discardExact: (@Sendable (RecoveryDraft) async throws -> Bool)?
+
+        init(
+            checkpoint: @escaping @Sendable (RecoveryDraft) async throws -> Void,
+            candidates: @escaping @Sendable () async throws -> [RecoveryDraft],
+            discardConfirmed: @escaping @Sendable ([RecoveryDraft]) async throws -> Void,
+            discardExact: (@Sendable (RecoveryDraft) async throws -> Bool)? = nil
+        ) {
+            self.checkpoint = checkpoint
+            self.candidates = candidates
+            self.discardConfirmed = discardConfirmed
+            self.discardExact = discardExact
+        }
     }
 
     /// A checkpoint warning stays visible until the backlog is persisted or explicitly discarded.
@@ -36,7 +50,8 @@ final class RecoveryCheckpointQueue {
         self.init(backend: store.map { store in
             Backend(checkpoint: { try await store.checkpoint($0) },
                     candidates: { try await store.drafts() },
-                    discardConfirmed: { try await store.discardConfirmed($0) })
+                    discardConfirmed: { try await store.discardConfirmed($0) },
+                    discardExact: { try await store.discard($0) })
         }, checkpointInterval: .milliseconds(180))
     }
 
@@ -69,11 +84,43 @@ final class RecoveryCheckpointQueue {
     func discardConfirmed(_ drafts: [RecoveryDraft]) async throws {
         let backend = try requireBackend()
         guard !drafts.isEmpty else { return }
+        try await withPausedCheckpoints(backend) {
+            let consentChanged = pending.contains { queued in
+                drafts.contains { confirmed in
+                    queued.id == confirmed.id && queued.revision >= confirmed.revision && queued != confirmed
+                }
+            }
+            guard !consentChanged else { throw QueueError.newerQueuedDraft }
+            try await backend.discardConfirmed(drafts)
+
+            // Do not check cancellation after a committed deletion: the stale writes must be dropped
+            // even if the caller was cancelled. Newer edits and unrelated IDs can still write.
+            pending.removeAll { queued in
+                drafts.contains { confirmed in
+                    queued.id == confirmed.id && (queued.revision < confirmed.revision || queued == confirmed)
+                }
+            }
+            for draft in drafts { checkpointedRevisions[draft.id] = nil }
+            if pending.isEmpty { failure = nil }
+        }
+    }
+
+    /// Unlike a live tab's discard ticket, a candidate grants consent for only one stored snapshot.
+    func discardCandidate(_ draft: RecoveryDraft) async throws {
+        let backend = try requireBackend()
+        guard let discardExact = backend.discardExact else { throw QueueError.storeUnavailable }
+        try await withPausedCheckpoints(backend) {
+            // Candidates are not live. A queued write for this ID is not covered by list consent.
+            guard !pending.contains(where: { $0.id == draft.id }) else { throw QueueError.candidateChanged }
+            guard try await discardExact(draft) else { throw QueueError.candidateChanged }
+            checkpointedRevisions[draft.id] = nil
+        }
+    }
+
+    private func withPausedCheckpoints(_ backend: Backend, perform cleanup: () async throws -> Void) async throws {
         guard !isCleaningUp else { throw QueueError.cleanupInProgress }
         try Task.checkCancellation()
-
-        // Reserve the queue before the first suspension. Finish only the already started write,
-        // and let edits replace pending snapshots without starting a new write during cleanup.
+        // Reserve before suspension. Edits can still queue without starting another write.
         isCleaningUp = true
         defer {
             isCleaningUp = false
@@ -81,25 +128,7 @@ final class RecoveryCheckpointQueue {
         }
         await worker?.value
         try Task.checkCancellation()
-        let consentChanged = pending.contains { queued in
-            drafts.contains { confirmed in
-                queued.id == confirmed.id && queued.revision >= confirmed.revision && queued != confirmed
-            }
-        }
-        guard !consentChanged else { throw QueueError.newerQueuedDraft }
-        try await backend.discardConfirmed(drafts)
-
-        // Do not check cancellation after a committed deletion: the stale writes must be dropped
-        // even if the caller was cancelled. Newer edits and unrelated IDs can still write.
-        // ScratchTabs gives each committed revision a single byte snapshot. Different bytes at
-        // the same revision would violate that invariant; they are not covered by exact consent.
-        pending.removeAll { queued in
-            drafts.contains { confirmed in
-                queued.id == confirmed.id && (queued.revision < confirmed.revision || queued == confirmed)
-            }
-        }
-        for draft in drafts { checkpointedRevisions[draft.id] = nil }
-        if pending.isEmpty { failure = nil }
+        try await cleanup()
     }
 
     /// The live-tab owner assigns a single byte snapshot to each (ID, revision) pair.

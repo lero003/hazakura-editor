@@ -1,4 +1,5 @@
 import AppKit
+import Darwin
 @testable import HazakuraNext
 import HazakuraNextCore
 import Foundation
@@ -90,6 +91,54 @@ struct WorkspaceRecoveryTests {
         let duplicated = await backend.records()
         #expect(duplicated.count == 2)
         #expect(duplicated.contains(prior))
+    }
+
+    enum CandidateAtConfirmation: CaseIterable {
+        case same, older, newer, differentBytes, missing
+    }
+
+    @Test(arguments: CandidateAtConfirmation.allCases)
+    func candidateDeletionRequiresTheExactReviewedSnapshot(_ state: CandidateAtConfirmation) async throws {
+        let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
+            path.flatMap { Darwin.realpath($0, nil) }
+        }
+        let canonical = try #require(root)
+        defer { free(canonical) }
+        let folder = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
+            .appending(path: "hazakura-candidate-test-\(UUID())", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = DraftRecoveryStore(directory: folder.appending(path: "recovery", directoryHint: .isDirectory))
+        let candidate = RecoveryDraft(id: UUID(), revision: 2, source: "が\r\n")
+        let other = RecoveryDraft(id: UUID(), revision: 1, source: "別の記録")
+        try await store.checkpoint(candidate)
+        try await store.checkpoint(other)
+        let session = WorkspaceSession(source: "開いている原稿", recovery: RecoveryCheckpointQueue(store: store))
+        session.requestRecovery()
+        let listed = try await session.recoveryCandidates()
+        let reviewed = try #require(listed.first { $0.id == candidate.id })
+        let replacement: RecoveryDraft? = switch state {
+        case .same: reviewed
+        case .older: RecoveryDraft(id: reviewed.id, revision: 1, source: reviewed.source)
+        case .newer: RecoveryDraft(id: reviewed.id, revision: 3, source: reviewed.source)
+        case .differentBytes: RecoveryDraft(id: reviewed.id, revision: 2, source: "か\u{3099}\r\n")
+        case .missing: nil
+        }
+        if state != .same {
+            try #require(try await store.discard(reviewed))
+            if let replacement { try await store.checkpoint(replacement) }
+        }
+
+        if state == .same {
+            try await session.forgetRecoveryCandidate(reviewed)
+            #expect(try await store.drafts() == [other])
+        } else {
+            await #expect(throws: RecoveryCheckpointQueue.QueueError.candidateChanged) {
+                try await session.forgetRecoveryCandidate(reviewed)
+            }
+            #expect(try await store.drafts() == [other] + (replacement.map { [$0] } ?? []))
+        }
+        #expect(session.tabs.selectedTab?.document.source == "開いている原稿")
     }
 
     @Test(arguments: [true, false])

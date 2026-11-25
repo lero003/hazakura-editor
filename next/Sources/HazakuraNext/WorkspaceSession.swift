@@ -931,7 +931,7 @@ final class WorkspaceSession {
     func forgetRecoveryCandidate(_ draft: RecoveryDraft) async throws {
         guard showsRecovery, !isDiscarding, !tabs.recoveryDrafts.contains(where: { $0.id == draft.id }),
               let recovery else { throw CancellationError() }
-        try await recovery.discardConfirmed([draft])
+        try await recovery.discardCandidate(draft)
     }
 
     func restore(_ draft: RecoveryDraft) -> Bool {
