@@ -329,6 +329,7 @@ struct ScratchWorkspaceView: View {
                 let isSelected = session.tabs.selectedID == id
                 TextKitEditor(
                     initialText: tab.document.source,
+                    documentID: id,
                     isActive: isSelected,
                     isReadOnly: tab.isReadOnly,
                     isFocusLayout: isLMode,

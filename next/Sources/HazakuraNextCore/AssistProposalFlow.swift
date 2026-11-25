@@ -94,6 +94,11 @@ package final class AssistProposalFlow {
         }
     }
 
+    package func discardReview(id: UUID) {
+        guard case .reviewing(let review) = phase, review.id == id else { return }
+        phase = .idle
+    }
+
     /// Call only from the explicit approval action. The caller must use fresh native state and
     /// perform the edit synchronously, without queuing it or applying it to the document model first.
     /// On success or failure, another attempt requires a new request and review.

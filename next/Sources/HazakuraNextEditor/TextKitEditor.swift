@@ -5,15 +5,103 @@ import SwiftUI
 private final class MarkdownTextView: NSTextView {
     weak var editorCoordinator: TextKitEditor.Coordinator?
     private lazy var editorUndoManager = EditorUndoManager(textView: self)
+    private var documentID: UUID?
     private var isActive = true
     private var isReadOnly = false
-    private(set) var textInputDepth = 0
+    private var isDismantled = false
+    private var reviewedEditValidation: (([NSValue], [String]?) -> Bool)?
+    private var textInputDepth = 0
+    var isProcessingEdit: Bool { textInputDepth > 0 || reviewedEditValidation != nil }
+
+    static func make(documentID: UUID?) -> MarkdownTextView {
+        let textView = MarkdownTextView(usingTextLayoutManager: true)
+        textView.documentID = documentID
+        return textView
+    }
+
+    func invalidateReviewedEdits() { isDismantled = true }
+
+    func reviewedEditUndoManager(in window: NSWindow, for documentID: UUID) -> UndoManager? {
+        guard !isProcessingEdit, self.documentID == documentID,
+              let undoManager, canReview(in: window, undo: undoManager), policyAllowsEdits,
+              !isProcessingEdit, canReview(in: window, undo: undoManager) else { return nil }
+        return undoManager
+    }
+
+    private func canReview(in window: NSWindow, undo: UndoManager) -> Bool {
+        !isDismantled && isActive && !isReadOnly && isEditable && allowsUndo
+            && textInputDepth == 0 && !hasMarkedText() && selectedRanges.count == 1
+            && self.window === window && window.firstResponder === self && window.attachedSheet == nil
+            // AppKit registers Undo inside shouldChangeText, after invoking a custom delegate.
+            // This editor has no delegate; refuse rather than permit a delegate to invalidate the
+            // target inside that native call, after our last safe check.
+            && delegate == nil && undo.isUndoRegistrationEnabled && !undo.isUndoing && !undo.isRedoing
+    }
+
+    func performReviewedReplacement(
+        _ selection: NSRange, with replacement: String, in window: NSWindow, undo: UndoManager,
+        source: String, stillCurrent: @escaping @MainActor () -> Bool
+    ) -> Bool {
+        let validate = {
+            stillCurrent() && self.policyAllowsEdits && self.canReview(in: window, undo: undo)
+                && self.string.utf8.elementsEqual(source.utf8)
+        }
+        var awaitingNativeValidation = false
+        var finishUndoGroup: (() -> Void)?
+        reviewedEditValidation = { ranges, replacements in
+            guard awaitingNativeValidation else { return false }
+            awaitingNativeValidation = false
+            guard ranges.count == 1, ranges[0].rangeValue == selection,
+                  let replacements, replacements.count == 1,
+                  replacements[0].utf8.elementsEqual(replacement.utf8), validate() else { return false }
+            // Only open the group on the accepted native edit. Even an empty explicit group
+            // can affect undo history, so all refusal checks must precede this operation.
+            finishUndoGroup = self.beginReviewedUndoGroup(undo)
+            return finishUndoGroup != nil
+        }
+        // Report committed bytes only after closing the undo group. Do not let a storage
+        // observer start a new reviewed edit or run Undo/Redo while the transaction is open.
+        defer {
+            finishUndoGroup?()
+            reviewedEditValidation = nil
+            reportEditsWhenIdle()
+        }
+        guard validate() else { return false }
+        awaitingNativeValidation = true
+        return performValidatedReplacement(in: selection, with: NSAttributedString(string: replacement))
+    }
+
+    private func beginReviewedUndoGroup(_ undo: UndoManager) -> (() -> Void)? {
+        // This editor owns its manager and opens no other explicit groups. A single open
+        // event group contains earlier typing; an unexpected nested group is not safe to split.
+        let groupsByEvent = undo.groupsByEvent
+        let hadEventGroup = undo.groupingLevel == 1 && groupsByEvent
+        guard undo.groupingLevel == 0 || hadEventGroup else { return nil }
+        breakUndoCoalescing()
+        if hadEventGroup {
+            undo.endUndoGrouping()
+        } else {
+            // Do not let beginUndoGrouping implicitly nest inside a new event group.
+            undo.groupsByEvent = false
+        }
+        undo.beginUndoGrouping()
+        return {
+            self.breakUndoCoalescing()
+            undo.endUndoGrouping()
+            if hadEventGroup {
+                // The pending run-loop close will now close this group for later typing.
+                undo.beginUndoGrouping()
+            } else {
+                undo.groupsByEvent = groupsByEvent
+            }
+        }
+    }
 
     private var policyAllowsEdits: Bool { editorCoordinator?.canEdit() ?? true }
-    private var canMutate: Bool { isEditable && policyAllowsEdits }
-    fileprivate var canApplyUndo: Bool { !isReadOnly && policyAllowsEdits }
+    private var canMutate: Bool { reviewedEditValidation == nil && isEditable && policyAllowsEdits }
+    fileprivate var canApplyUndo: Bool { reviewedEditValidation == nil && !isReadOnly && policyAllowsEdits }
     fileprivate var canRevealSource: Bool {
-        guard isActive, isSelectable, textInputDepth == 0, !hasMarkedText(),
+        guard isActive, isSelectable, !isProcessingEdit, !hasMarkedText(),
               let window, window.isKeyWindow, window.attachedSheet == nil else { return false }
         return policyAllowsEdits
     }
@@ -47,6 +135,10 @@ private final class MarkdownTextView: NSTextView {
     }
 
     override func shouldChangeText(inRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
+        if let validate = reviewedEditValidation {
+            guard validate(affectedRanges, replacementStrings) else { return false }
+            return super.shouldChangeText(inRanges: affectedRanges, replacementStrings: replacementStrings)
+        }
         guard canContinueTextInput else { return false }
         return super.shouldChangeText(inRanges: affectedRanges, replacementStrings: replacementStrings)
     }
@@ -70,7 +162,7 @@ private final class MarkdownTextView: NSTextView {
     }
 
     override func insertText(_ string: Any, replacementRange: NSRange) {
-        guard canContinueTextInput else { return }
+        guard reviewedEditValidation == nil, canContinueTextInput else { return }
         textInputDepth += 1
         defer { finishTextInput() }
         super.insertText(string, replacementRange: replacementRange)
@@ -85,9 +177,13 @@ private final class MarkdownTextView: NSTextView {
 
     private func finishTextInput() {
         textInputDepth -= 1
+        reportEditsWhenIdle()
+    }
+
+    private func reportEditsWhenIdle() {
         // AppKit may call one text input hook from another. Only the outer operation
         // sees the final buffer and marked state, even when unmark edits no characters.
-        guard textInputDepth == 0 else { return }
+        guard !isProcessingEdit else { return }
         editorCoordinator?.didFinishTextInput()
         (enclosingScrollView as? EditorScrollView)?.applyEditorInsets()
     }
@@ -110,7 +206,7 @@ private final class EditorScrollView: NSScrollView {
 
     func applyEditorInsets() {
         guard let textView = documentView as? MarkdownTextView,
-              textView.textInputDepth == 0, !textView.hasMarkedText(),
+              !textView.isProcessingEdit, !textView.hasMarkedText(),
               let container = textView.textContainer else { return }
         var inset = Self.normalInset
         if isFocusLayout {
@@ -154,6 +250,7 @@ private final class EditorUndoManager: UndoManager {
 @MainActor
 public struct TextKitEditor: NSViewRepresentable {
     private let initialText: String
+    private let documentID: UUID?
     private let isActive: Bool
     private let isReadOnly: Bool
     private let isFocusLayout: Bool
@@ -162,7 +259,8 @@ public struct TextKitEditor: NSViewRepresentable {
     private let revealSourceLocation: @MainActor (String) -> Int?
     private let onChange: (String) -> Void
 
-    /// `initialText` seeds one SwiftUI identity; subsequent updates do not replace the buffer.
+    /// `initialText` and `documentID` are bound when the native view is created;
+    /// use a new SwiftUI identity for a different document.
     /// `isActive` enables editing and requests native focus on activation. Inactive editors
     /// retain selection and undo history; the caller controls visibility and hit testing.
     /// `isReadOnly` lets an active tab select and copy its source without editing.
@@ -185,6 +283,7 @@ public struct TextKitEditor: NSViewRepresentable {
     /// No callbacks are sent for seeding or dismantling.
     public init(
         initialText: String,
+        documentID: UUID? = nil,
         isActive: Bool = true,
         isReadOnly: Bool = false,
         isFocusLayout: Bool = false,
@@ -194,6 +293,7 @@ public struct TextKitEditor: NSViewRepresentable {
         onChange: @escaping (String) -> Void
     ) {
         self.initialText = initialText
+        self.documentID = documentID
         self.isActive = isActive
         self.isReadOnly = isReadOnly
         self.isFocusLayout = isFocusLayout
@@ -209,8 +309,8 @@ public struct TextKitEditor: NSViewRepresentable {
     }
 
     public func makeNSView(context: Context) -> NSScrollView {
-        Self.makeScrollView(initialText: initialText, isActive: isActive, isReadOnly: isReadOnly,
-                            isFocusLayout: isFocusLayout, coordinator: context.coordinator)
+        Self.makeScrollView(initialText: initialText, documentID: documentID, isActive: isActive,
+                            isReadOnly: isReadOnly, isFocusLayout: isFocusLayout, coordinator: context.coordinator)
     }
 
     public func updateNSView(_ nsView: NSScrollView, context: Context) {
@@ -225,7 +325,54 @@ public struct TextKitEditor: NSViewRepresentable {
     }
 
     public static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
+        (nsView.documentView as? MarkdownTextView)?.invalidateReviewedEdits()
         coordinator.stopObserving()
+    }
+
+    /// Capture only the matching, focused native buffer. Callers gate production window visibility and key status.
+    @MainActor
+    package static func captureReviewedEdit(in window: NSWindow, documentID: UUID) -> String? {
+        guard let view = window.firstResponder as? MarkdownTextView,
+              view.reviewedEditUndoManager(in: window, for: documentID) != nil else { return nil }
+        return view.string
+    }
+
+    /// Apply a previously reviewed target without touching the model or replacing the native buffer.
+    @MainActor
+    package static func applyReviewedEdit(
+        in window: NSWindow, documentID: UUID, expectedSource: String, selection: NSRange,
+        replacement: String, resultingSource: String
+    ) -> Bool {
+        applyReviewedEdit(in: window, documentID: documentID, expectedSource: expectedSource,
+                          selection: selection, replacement: replacement, resultingSource: resultingSource,
+                          stillCurrent: { true })
+    }
+
+    @MainActor
+    package static func applyReviewedEdit(
+        in window: NSWindow, documentID: UUID, expectedSource: String, selection: NSRange,
+        replacement: String, resultingSource: String, stillCurrent: @escaping @MainActor () -> Bool
+    ) -> Bool {
+        guard let view = window.firstResponder as? MarkdownTextView,
+              let undo = view.reviewedEditUndoManager(in: window, for: documentID) else { return false }
+        let source = view.string
+        guard source.utf8.elementsEqual(expectedSource.utf8),
+              !source.utf8.elementsEqual(resultingSource.utf8) else { return false }
+
+        // Check the arithmetic before bridging the externally supplied range, then require both
+        // ends to be Character boundaries (not just valid UTF-16 code unit offsets).
+        let utf16 = source.utf16
+        let length = utf16.count
+        guard selection.location >= 0, selection.location < length, selection.length > 0,
+              selection.length <= length - selection.location else { return false }
+        let start = utf16.index(utf16.startIndex, offsetBy: selection.location)
+        let end = utf16.index(start, offsetBy: selection.length)
+        guard let lower = String.Index(start, within: source),
+              let upper = String.Index(end, within: source) else { return false }
+        let candidate = source[..<lower] + replacement + source[upper...]
+        guard candidate.utf8.elementsEqual(resultingSource.utf8) else { return false }
+        return view.performReviewedReplacement(selection, with: replacement, in: window, undo: undo,
+                                               source: source, stillCurrent: stillCurrent)
     }
 
     static func setActive(_ isActive: Bool, in scrollView: NSScrollView, readOnly: Bool = false) {
@@ -237,14 +384,14 @@ public struct TextKitEditor: NSViewRepresentable {
     }
 
     static func makeScrollView(
-        initialText: String, isActive: Bool = true, isReadOnly: Bool = false,
+        initialText: String, documentID: UUID? = nil, isActive: Bool = true, isReadOnly: Bool = false,
         isFocusLayout: Bool = false, coordinator: Coordinator?
     ) -> NSScrollView {
         let scrollView = EditorScrollView()
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
 
-        let textView = MarkdownTextView(usingTextLayoutManager: true)
+        let textView = MarkdownTextView.make(documentID: documentID)
         textView.isEditable = true
         textView.isSelectable = true
         textView.allowsUndo = true
@@ -389,7 +536,7 @@ public struct TextKitEditor: NSViewRepresentable {
         }
 
         @objc private func didProcessEditing(_ notification: Notification) {
-            guard let textView, textView.window != nil, textView.textInputDepth == 0,
+            guard let textView, textView.window != nil, !textView.isProcessingEdit,
                   isComposing == false, textView.hasMarkedText() == false,
                   let storage = notification.object as? NSTextStorage,
                   storage.editedMask.contains(.editedCharacters) else { return }
