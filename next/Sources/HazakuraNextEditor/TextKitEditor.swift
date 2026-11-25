@@ -545,7 +545,7 @@ public struct TextKitEditor: NSViewRepresentable {
             let end = utf16.index(start, offsetBy: range.length)
             guard String.Index(start, within: source) != nil, String.Index(end, within: source) != nil,
                   self.textView === textView, textView.canRevealSource,
-                  textView.string.utf8.elementsEqual(source.utf8) else { return }
+                  SourceEquality.matches(textView.string, source) else { return }
             textView.setSelectedRange(range)
             textView.scrollRangeToVisible(range)
         }

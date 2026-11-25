@@ -819,6 +819,49 @@ struct TextKitEditorTests {
         #expect(textView.string.utf8.elementsEqual(source.utf8))
     }
 
+    @Test(arguments: [false, true])
+    func revealRechecksExactBytesAfterItsCallback(_ editsDuringCallback: Bool) async throws {
+        let original = "# が\r\n続き"
+        let revised = "# か\u{3099}\r\n続き"
+        try #require(original == revised && !original.utf8.elementsEqual(revised.utf8))
+        let target = NSRange(location: 0, length: 1)
+        let originalSelection = NSRange(location: original.utf16.count, length: 0)
+        let window = makeRevealWindow(containing: NSView())
+        defer { window.contentView = nil }
+        var requestedSource: String?
+        var selectionAfterCallbackEdit: NSRange?
+        var edits: [String] = []
+        let coordinator = TextKitEditor.Coordinator(revealSourceSelection: { [weak window] source in
+            requestedSource = source
+            if editsDuringCallback, let nativeEditor = (window?.contentView as? NSScrollView)?.documentView as? NSTextView {
+                nativeEditor.insertText("か\u{3099}", replacementRange: NSRange(location: 2, length: 1))
+                selectionAfterCallbackEdit = nativeEditor.selectedRange()
+            }
+            return target
+        }) { edits.append($0) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: original, coordinator: coordinator)
+        scrollView.frame = window.contentLayoutRect
+        window.contentView = scrollView
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        textView.setSelectedRange(originalSelection)
+        window.reportsKey = true
+        postWindowAvailability(NSWindow.didBecomeKeyNotification, for: window)
+        await drainRevealChecks()
+
+        #expect(requestedSource?.utf8.elementsEqual(original.utf8) == true)
+        if editsDuringCallback {
+            let editedSelection = try #require(selectionAfterCallbackEdit)
+            try #require(editedSelection != target)
+            #expect(textView.selectedRange() == editedSelection)
+            #expect(textView.string.utf8.elementsEqual(revised.utf8))
+            #expect(edits.map { Array($0.utf8) } == [Array(revised.utf8)])
+        } else {
+            #expect(textView.selectedRange() == target)
+            #expect(textView.string.utf8.elementsEqual(original.utf8))
+            #expect(edits.isEmpty)
+        }
+    }
+
     @Test
     func dismantlingDropsAQueuedRevealAndStopsWindowObservation() async {
         let coordinator = TextKitEditor.Coordinator(revealSourceSelection: { _ in

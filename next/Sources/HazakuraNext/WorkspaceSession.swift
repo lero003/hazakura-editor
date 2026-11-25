@@ -544,7 +544,7 @@ final class WorkspaceSession {
         sourceReveal = nil
         guard !isBusy, !tabs.isComposing else { return nil }
         guard selected.document.revision == reveal.revision,
-               editorSource.utf8.elementsEqual(reveal.source.utf8) else {
+               SourceEquality.matches(editorSource, reveal.source) else {
             fileNotice = reveal.changedNotice
             return nil
         }
