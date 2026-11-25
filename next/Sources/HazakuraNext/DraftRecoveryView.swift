@@ -28,12 +28,12 @@ struct DraftRecoveryView: View {
             } else {
                 List(selection: $selectedID) {
                     ForEach(candidates, id: \.id) { draft in
-                        Text(verbatim: Self.label(for: draft)).lineLimit(1).tag(draft.id)
+                        Text(verbatim: DraftRecoveryPresentation.label(for: draft)).lineLimit(1).tag(draft.id)
                     }
                 }
                 ScrollView {
                     if let draft = selectedDraft {
-                        Text(verbatim: draft.source.isEmpty ? "（空の原稿）" : String(draft.source.prefix(1_200)))
+                        Text(verbatim: DraftRecoveryPresentation.excerpt(for: draft))
                             .font(.system(.body, design: .monospaced))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -98,10 +98,37 @@ struct DraftRecoveryView: View {
             candidates = []
         }
     }
+}
 
-    private static func label(for draft: RecoveryDraft) -> String {
-        let line = draft.source.prefix(120).prefix { !$0.isNewline }.trimmingCharacters(in: .whitespaces)
+/// Derives display text only; recovery always receives the original draft.
+enum DraftRecoveryPresentation {
+    static func excerpt(for draft: RecoveryDraft) -> String {
+        draft.source.isEmpty ? "（空の原稿）" : boundedText(draft.source, scalarLimit: 1_200)
+    }
+
+    static func label(for draft: RecoveryDraft) -> String {
+        let line = boundedText(draft.source, scalarLimit: 120, firstLineOnly: true)
+            .trimmingCharacters(in: .whitespaces)
         let title = line.isEmpty ? "原稿" : line
         return "\(title) · \(draft.id.uuidString.prefix(8))"
+    }
+
+    private static func boundedText(_ source: String, scalarLimit: Int, firstLineOnly: Bool = false) -> String {
+        // One extended grapheme can contain most of a draft. Limit scalars before
+        // asking for character boundaries, and inspect only the bounded string.
+        let scalars = source.unicodeScalars
+        let prefix = scalars.prefix(scalarLimit)
+        var text = String(prefix)
+        if firstLineOnly, let newline = text.firstIndex(where: \.isNewline) {
+            return String(text[..<newline])
+        }
+        guard prefix.endIndex != scalars.endIndex else { return text }
+        if firstLineOnly, Character(scalars[prefix.endIndex]).isNewline { return text }
+
+        // The final character may be incomplete at this cut. Removing it also
+        // reserves one scalar for the ellipsis without breaking earlier characters.
+        text.removeLast()
+        text.append("…")
+        return text
     }
 }
