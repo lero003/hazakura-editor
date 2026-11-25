@@ -130,7 +130,12 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
-    @Test func nativeCompositionAfterReadingKeepsTheDraftAndRequiresAnotherComparison() async throws {
+    enum NativeCompositionStart: CaseIterable {
+        case whileReading, whileComparing
+    }
+
+    @Test(arguments: NativeCompositionStart.allCases)
+    func nativeCompositionKeepsTheDraftAndRequiresAnotherComparison(_ start: NativeCompositionStart) async throws {
         try await withOriginal { url, _, session, documentID in
             let (window, view) = try attachNativeEditor(to: session)
             defer { window.close() }
@@ -142,13 +147,22 @@ struct WorkspaceOriginalComparisonTests {
             let id = try #require(session.comparisonRequestID)
 
             var ranges: [NSRange] = []
-            await session.readOriginalComparison(id) {
-                let disk = try await SelectedTextFile.read(from: url)
+            var compared = false
+            @MainActor func beginComposition() {
                 markText(in: view)
-                try #require(view.hasMarkedText() && !session.tabs.isComposing)
+                #expect(view.hasMarkedText() && !session.tabs.isComposing)
                 ranges = [view.selectedRange(), view.markedRange()]
-                return disk
             }
+            await session.readOriginalComparison(id, using: {
+                let disk = try await SelectedTextFile.read(from: url)
+                if start == .whileReading { beginComposition() }
+                return disk
+            }, compare: { baseline, disk, draft in
+                compared = true
+                if start == .whileComparing { beginComposition() }
+                return OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
+            })
+            #expect(compared == (start == .whileComparing))
             try #require(session.comparisonReport == nil)
             #expect(!session.isBusy)
             #expect(session.fileNotice?.contains("変換") == true)
