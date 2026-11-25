@@ -13,6 +13,8 @@ struct ScratchWorkspaceView: View {
 
     var body: some View {
         let openID = session.openRequest
+        let folderID = session.folderCatalogRequest
+        let folderReportID = session.folderCatalogReport?.id
         let saveID = session.saveCopyRequest?.id
         let exportID = session.exportRequest?.id
         let compareID = session.comparisonRequestID
@@ -21,7 +23,16 @@ struct ScratchWorkspaceView: View {
         let assistSampleID = session.assistReviewSample?.id
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(banner)
+                HStack {
+                    Text(banner)
+                    if let folderID {
+                        Button("中止") {
+                            guard session.folderCatalogRequest == folderID else { return }
+                            session.cancelFolderCatalog(folderID)
+                            openPanel?.cancel(nil)
+                        }
+                    }
+                }
                 if session.recoveryUnavailable {
                     Label("復旧用の保存先を利用できません。この起動中の原稿は退避されません。", systemImage: "exclamationmark.triangle")
                 } else if let failure = session.recovery?.failure {
@@ -38,6 +49,11 @@ struct ScratchWorkspaceView: View {
         .frame(minWidth: 450, minHeight: 300)
         .task(id: openID) {
             if let openID { await openSelectedFile(openID) }
+        }
+        .task(id: folderID) {
+            if let folderID {
+                await session.readFolderCatalog(folderID) { try await pickFolderCatalog(folderID) }
+            }
         }
         .task(id: saveID) {
             if let saveID {
@@ -68,6 +84,7 @@ struct ScratchWorkspaceView: View {
             let open = openPanel
             let save = savePanel
             session.openRequest = nil
+            session.clearFolderCatalog()
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
             if let id = session.assistReviewSample?.id { session.dismissAssistReviewSample(id) }
@@ -76,6 +93,11 @@ struct ScratchWorkspaceView: View {
             savePanel = nil
             open?.cancel(nil)
             save?.cancel(nil)
+        }
+        .sheet(item: Binding(get: { session.folderCatalogReport }, set: { report in
+            if report == nil, let folderReportID { session.dismissFolderCatalogReport(folderReportID) }
+        })) { report in
+            FolderCatalogView(catalog: report.catalog)
         }
         .sheet(item: Binding(get: { session.comparisonReport }, set: { report in
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
@@ -115,6 +137,7 @@ struct ScratchWorkspaceView: View {
     private var banner: String {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
+        if session.folderCatalogRequest != nil { return "フォルダの直下を確認しています…" }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
         if let request = session.exportRequest {
             return "新しいファイルに\(request.format.name)を書き出しています…"
@@ -150,8 +173,6 @@ struct ScratchWorkspaceView: View {
     }
 
     private func readThroughOpenPanel(comparing: Bool, isCurrent: () -> Bool) async throws -> SelectedTextFile? {
-        guard !Task.isCancelled, isCurrent(), let window = session.window, window.isKeyWindow,
-              window.attachedSheet == nil else { return nil }
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
         panel.canChooseFiles = true
@@ -163,15 +184,48 @@ struct ScratchWorkspaceView: View {
             panel.message = "開いた時点と比べるファイルを選び直してください。ファイルは読み取るだけです。"
             panel.prompt = "比較"
         }
+        return try await withChosenOpenURL(panel, isCurrent: isCurrent) { url in
+            try await SelectedTextFile.read(from: url)
+        }
+    }
+
+    private func pickFolderCatalog(_ id: UUID) async throws -> SelectedFolderCatalog? {
+        let panel = NSOpenPanel()
+        panel.title = "一覧を確認するフォルダを選ぶ"
+        panel.message = "フォルダ直下のMarkdown・テキストの候補名だけを確認します。本文は開きません。"
+        panel.prompt = "一覧を確認"
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.resolvesAliases = false
+        panel.canCreateDirectories = false
+        panel.treatsFilePackagesAsDirectories = false
+        panel.canDownloadUbiquitousContents = false
+        panel.canResolveUbiquitousConflicts = false
+        return try await withChosenOpenURL(panel, isCurrent: {
+            session.folderCatalogRequest == id && !session.tabs.isComposing
+        }) { url in
+            try await SelectedFolderCatalog.read(from: url)
+        }
+    }
+
+    private func withChosenOpenURL<Result>(
+        _ panel: NSOpenPanel, isCurrent: () -> Bool, read: (URL) async throws -> Result
+    ) async throws -> Result? {
+        guard !Task.isCancelled, isCurrent(), openPanel == nil, let window = session.window,
+              window.isKeyWindow, window.attachedSheet == nil else { return nil }
         openPanel = panel
         let answer = await panel.beginSheetModal(for: window)
         if openPanel === panel { openPanel = nil }
         guard answer == .OK, let url = panel.url else { return nil }
-        // macOS starts access for the URL returned by the Open panel; do not retain it for later I/O.
+        // Release the panel's temporary access even if the request became stale or was cancelled.
         defer { url.stopAccessingSecurityScopedResource() }
-        guard isCurrent() else { return nil }
+        guard isCurrent(), session.window === window else { return nil }
         try Task.checkCancellation()
-        return try await SelectedTextFile.read(from: url)
+        let result = try await read(url)
+        guard session.window === window, isCurrent() else { return nil }
+        try Task.checkCancellation()
+        return result
     }
 
     private func withSelectedDestination(for purpose: SavePurpose, write: @MainActor (URL) async -> Void) async {

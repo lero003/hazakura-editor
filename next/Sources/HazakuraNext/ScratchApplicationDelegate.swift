@@ -92,6 +92,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     func windowWillClose(_ notification: Notification) {
         guard (notification.object as? NSWindow) === window else { return }
+        session?.clearFolderCatalog()
+        session?.window = nil
         window = nil
         session = nil
     }
@@ -185,6 +187,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         let file = addMenu("ファイル", to: bar)
         addCommand("新規タブ", #selector(newTab(_:)), "t", to: file)
         addCommand("読み取り専用で開く…", #selector(openFile(_:)), "o", to: file)
+        addCommand("フォルダの原稿一覧…", #selector(showFolderCatalog(_:)), "", to: file)
         addCommand("編集用コピーを開く", #selector(makeEditableCopy(_:)), "", to: file)
         addCommand("原本の版を比較…", #selector(compareOriginal(_:)), "", to: file)
         addCommand("コピーを保存…", #selector(saveCopy(_:)), "S", to: file)
@@ -236,6 +239,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     @objc private func newTab(_ sender: Any?) { menuSession?.newTab() }
     @objc private func openFile(_ sender: Any?) { menuSession?.requestOpen() }
+    @objc private func showFolderCatalog(_ sender: Any?) { menuSession?.requestFolderCatalog() }
     @objc private func makeEditableCopy(_ sender: Any?) { menuSession?.makeEditableCopy() }
     @objc private func compareOriginal(_ sender: Any?) { menuSession?.requestOriginalComparison() }
     @objc private func saveCopy(_ sender: Any?) { menuSession?.requestSaveCopy() }
@@ -255,6 +259,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         }
         return switch item.action {
         case #selector(newTab(_:)), #selector(openFile(_:)): menuSession?.canAddTab == true
+        case #selector(showFolderCatalog(_:)): menuSession?.canRequestFolderCatalog == true
         case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true

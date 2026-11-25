@@ -53,6 +53,11 @@ final class WorkspaceSession {
         let comparison: OriginalFileComparison
     }
 
+    struct FolderCatalogReport: Identifiable {
+        let id: UUID
+        let catalog: SelectedFolderCatalog
+    }
+
     struct MarkdownPreviewSnapshot: Identifiable {
         let id = UUID()
         let documentID: UUID
@@ -86,6 +91,9 @@ final class WorkspaceSession {
     }
     var pendingDiscard: ScratchTabs.DiscardTicket?
     var openRequest: UUID?
+    private(set) var folderCatalogRequest: UUID?
+    private var scanningFolderCatalogID: UUID?
+    private(set) var folderCatalogReport: FolderCatalogReport?
     private(set) var saveCopyRequest: SaveCopyRequest?
     private(set) var exportRequest: ExportRequest?
     private var comparisonRequest: ComparisonRequest?
@@ -113,14 +121,17 @@ final class WorkspaceSession {
     }
 
     var comparisonRequestID: UUID? { comparisonRequest?.id }
+    private var hasFolderCatalogOperation: Bool {
+        folderCatalogRequest != nil || scanningFolderCatalogID != nil || folderCatalogReport != nil
+    }
     var isBusy: Bool {
-        pendingDiscard != nil || openRequest != nil || saveCopyRequest != nil || exportRequest != nil ||
+        pendingDiscard != nil || openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil ||
             markdownPreview != nil || assistReviewSample != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
-        !isDiscarding && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
+        !isDiscarding && !hasFolderCatalogOperation && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
             readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && assistReviewSample == nil
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
@@ -240,6 +251,56 @@ final class WorkspaceSession {
         } catch {
             guard !Task.isCancelled, comparisonRequest?.id == id else { return }
             fileNotice = "比較先を読み取れませんでした。\(Self.readFailure(error))"
+        }
+    }
+
+    var canRequestFolderCatalog: Bool { !isBusy && !tabs.isComposing }
+
+    func requestFolderCatalog() {
+        guard canRequestFolderCatalog else { return }
+        fileNotice = nil
+        exitNotice = nil
+        folderCatalogRequest = UUID()
+    }
+
+    func cancelFolderCatalog(_ id: UUID) {
+        guard folderCatalogRequest == id else { return }
+        folderCatalogRequest = nil
+    }
+
+    func dismissFolderCatalogReport(_ id: UUID) {
+        guard folderCatalogReport?.id == id else { return }
+        folderCatalogReport = nil
+    }
+
+    func clearFolderCatalog() {
+        folderCatalogRequest = nil
+        folderCatalogReport = nil
+    }
+
+    /// The picker callback releases its selected URL before returning the metadata snapshot.
+    func readFolderCatalog(_ id: UUID, using read: @MainActor () async throws -> SelectedFolderCatalog?) async {
+        guard folderCatalogRequest == id, scanningFolderCatalogID == nil else { return }
+        scanningFolderCatalogID = id
+        defer {
+            scanningFolderCatalogID = nil
+            cancelFolderCatalog(id)
+        }
+        guard !Task.isCancelled, !tabs.isComposing else { return }
+        do {
+            guard let snapshot = try await read(), !Task.isCancelled, folderCatalogRequest == id,
+                  !tabs.isComposing else { return }
+            folderCatalogReport = FolderCatalogReport(id: id, catalog: snapshot)
+        } catch is CancellationError {
+            // Cancellation has no result or failure notice.
+        } catch {
+            guard !Task.isCancelled, folderCatalogRequest == id else { return }
+            let reason: String = switch error as? SelectedFolderCatalog.ScanError {
+            case .tooManyEntries: "直下に\(SelectedFolderCatalog.entryLimit)件以下の項目があるフォルダを選んでください。"
+            case .changedWhileScanning: "一覧の取得中にフォルダが変わりました。選び直してください。"
+            case .invalidLocation, .accessDenied, nil: "リンクを含まないローカルフォルダを選び、アクセス権を確認してください。"
+            }
+            fileNotice = "フォルダの一覧を取得できませんでした。\(reason)"
         }
     }
 
