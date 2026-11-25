@@ -27,6 +27,12 @@ final class WorkspaceSession {
         let comparison: OriginalFileComparison
     }
 
+    struct MarkdownPreviewSnapshot: Identifiable {
+        let id = UUID()
+        let title: String
+        let source: String
+    }
+
     @ObservationIgnored weak var window: NSWindow?
     var tabs: ScratchTabs
     var pendingDiscard: ScratchTabs.DiscardTicket?
@@ -35,6 +41,7 @@ final class WorkspaceSession {
     private var comparisonRequest: ComparisonRequest?
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
+    private(set) var markdownPreview: MarkdownPreviewSnapshot?
     private(set) var fileNotice: String?
     private var isWritingCopy = false
     var exitNotice: String?
@@ -52,11 +59,29 @@ final class WorkspaceSession {
     var comparisonRequestID: UUID? { comparisonRequest?.id }
     var isBusy: Bool {
         pendingDiscard != nil || openRequest != nil || saveCopyRequest != nil ||
-            comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil || showsRecovery || isDiscarding
+            comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil ||
+            markdownPreview != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
-        !isDiscarding && saveCopyRequest == nil && comparisonRequest == nil && readingComparisonID == nil && comparisonReport == nil
+        !isDiscarding && saveCopyRequest == nil && comparisonRequest == nil && readingComparisonID == nil &&
+            comparisonReport == nil && markdownPreview == nil
+    }
+    var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+
+    static func title(for tab: ScratchTabs.Tab) -> String {
+        tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
+    }
+
+    func requestMarkdownPreview() {
+        guard canPreviewMarkdown, let selected = tabs.selectedTab else { return }
+        // Keep the native editor mounted. The sheet is a copy of the selected committed revision.
+        markdownPreview = MarkdownPreviewSnapshot(title: Self.title(for: selected), source: selected.document.source)
+    }
+
+    func dismissMarkdownPreview(_ id: UUID) {
+        guard markdownPreview?.id == id else { return }
+        markdownPreview = nil
     }
     var canCompareOriginal: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab?.copyOrigin != nil }
 
@@ -204,7 +229,7 @@ final class WorkspaceSession {
     @discardableResult
     func startTabDiscard(_ ticket: ScratchTabs.DiscardTicket) -> Task<Void, Never>? {
         guard !isDiscarding, openRequest == nil, saveCopyRequest == nil, !showsRecovery,
-              comparisonRequest == nil, readingComparisonID == nil, comparisonReport == nil,
+              comparisonRequest == nil, readingComparisonID == nil, comparisonReport == nil, markdownPreview == nil,
               let draft = tabs.draftForDiscard(ticket) else { return nil }
         // Reserve synchronously: dismissing SwiftUI's alert must not re-enable tab actions.
         isDiscarding = true

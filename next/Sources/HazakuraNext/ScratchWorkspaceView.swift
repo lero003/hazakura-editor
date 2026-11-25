@@ -14,6 +14,7 @@ struct ScratchWorkspaceView: View {
         let saveID = session.saveCopyRequest?.id
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
+        let previewID = session.markdownPreview?.id
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(banner)
@@ -48,6 +49,7 @@ struct ScratchWorkspaceView: View {
             let panel = openPanel
             session.openRequest = nil
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
+            if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
             openPanel = nil
             panel?.cancel(nil)
             savePanel?.cancel(nil)
@@ -56,6 +58,11 @@ struct ScratchWorkspaceView: View {
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
         })) { report in
             OriginalFileComparisonView(comparison: report.comparison)
+        }
+        .sheet(item: Binding(get: { session.markdownPreview }, set: { preview in
+            if preview == nil, let previewID { session.dismissMarkdownPreview(previewID) }
+        })) { preview in
+            MarkdownPreviewView(title: preview.title, source: preview.source)
         }
         .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
             DraftRecoveryView(session: session)
@@ -209,6 +216,14 @@ struct ScratchWorkspaceView: View {
             }
 
             Button {
+                session.requestMarkdownPreview()
+            } label: {
+                Label("Markdownプレビュー", systemImage: "doc.richtext").labelStyle(.iconOnly)
+            }
+            .help("選択中の原稿を読み取り専用でプレビューする")
+            .disabled(!session.canPreviewMarkdown)
+
+            Button {
                 session.newTab()
             } label: {
                 Label("新規タブ", systemImage: "plus")
@@ -235,7 +250,7 @@ struct ScratchWorkspaceView: View {
 
     private func tabButton(for tab: ScratchTabs.Tab) -> some View {
         let isSelected = session.tabs.selectedID == tab.id
-        let title = tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
+        let title = WorkspaceSession.title(for: tab)
         return Button { session.tabs.select(tab.id) } label: {
             HStack(spacing: 4) {
                 if tab.isReadOnly { Image(systemName: "lock").accessibilityHidden(true) }
