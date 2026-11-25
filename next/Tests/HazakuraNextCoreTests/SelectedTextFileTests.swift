@@ -236,6 +236,59 @@ struct SelectedTextFileTests {
         }
     }
 
+    enum FileURLDecoration: CaseIterable {
+        case query, fragment, user, encodedUser, port, emptyPort, oversizedPort, relative
+    }
+
+    @Test(arguments: FileURLDecoration.allCases)
+    func rejectsFileURLsWhoseNonPathComponentsWouldBeDiscarded(_ decoration: FileURLDecoration) async throws {
+        try await withFixture { folder in
+            let selected = folder.appending(path: "原稿 #?%:@.md")
+            let bytes = Data("# 合成原稿\n".utf8)
+            try bytes.write(to: selected)
+            let ordinary = try await SelectedTextFile.read(from: selected)
+            #expect(ordinary.name == selected.lastPathComponent)
+            #expect(ordinary.originalBytes == bytes)
+
+            var components = try #require(URLComponents(url: selected, resolvingAgainstBaseURL: false))
+            let decorated: URL
+            if decoration == .relative {
+                // This refers to the same existing file but isn't a self-contained selection.
+                let name = String(components.percentEncodedPath.split(separator: "/").last ?? "")
+                let base = folder.appending(path: "", directoryHint: .isDirectory)
+                decorated = try #require(URL(string: "./\(name)", relativeTo: base))
+                try #require(decorated.baseURL != nil)
+            } else {
+                switch decoration {
+                case .query: components.query = "selection=copy"
+                case .fragment: components.fragment = "heading"
+                case .user:
+                    components.host = "localhost"
+                    components.user = "sample"
+                case .port:
+                    components.host = "localhost"
+                    components.port = 99
+                case .encodedUser, .emptyPort, .oversizedPort, .relative: break
+                }
+                let authority: String? = switch decoration {
+                case .encodedUser: "%FF@localhost"
+                case .emptyPort: "localhost:"
+                case .oversizedPort: "localhost:999999999999999999999999"
+                default: nil
+                }
+                if let authority {
+                    decorated = try #require(URL(string: "file://\(authority)\(components.percentEncodedPath)"))
+                } else {
+                    decorated = try #require(components.url)
+                }
+            }
+            await #expect(throws: SelectedTextFile.ReadError.invalidLocation) {
+                try await SelectedTextFile.read(from: decorated)
+            }
+            #expect(try Data(contentsOf: selected) == bytes)
+        }
+    }
+
     @Test func snapshotsRemainBoundToTheCapturedFileVersion() async throws {
         try await withFixture { folder in
             let url = folder.appending(path: "versioned.md")

@@ -85,8 +85,12 @@ public struct SelectedTextFile: Sendable {
         try Task.checkCancellation()
         let host = url.host(percentEncoded: false) ?? ""
         let path = url.path(percentEncoded: false)
-        guard url.isFileURL, host.isEmpty || host == "localhost", path.hasPrefix("/"),
-              !path.utf8.contains(0) else { throw ReadError.invalidLocation }
+        // Do not let filesystem conversion silently discard parts of the selection.
+        guard url.isFileURL, url.baseURL == nil, host.isEmpty || host == "localhost",
+              url.query(percentEncoded: true) == nil, url.fragment(percentEncoded: true) == nil,
+              hasUndecoratedFileAuthority(url), path.hasPrefix("/"), !path.utf8.contains(0) else {
+            throw ReadError.invalidLocation
+        }
 
         let fd = try url.withUnsafeFileSystemRepresentation { pathname in
             guard let pathname else { return -1 as Int32 }
@@ -166,6 +170,15 @@ public struct SelectedTextFile: Sendable {
         try revalidate(version)
         try Task.checkCancellation()
         return SelectedTextFile(name: name, source: source, format: format, originalBytes: bytes, version: version)
+    }
+
+    private static func hasUndecoratedFileAuthority(_ url: URL) -> Bool {
+        // Called only for an absolute file URL. Foundation's typed accessors can
+        // return nil even when an empty/overflowing port or undecodable userinfo is present.
+        let afterScheme = url.absoluteString.dropFirst("file:".count)
+        guard afterScheme.hasPrefix("//") else { return true }
+        let authority = afterScheme.dropFirst(2).prefix { $0 != "/" }
+        return !authority.contains { $0 == ":" || $0 == "@" }
     }
 
     private static func requireDownloaded(_ info: stat) throws {
