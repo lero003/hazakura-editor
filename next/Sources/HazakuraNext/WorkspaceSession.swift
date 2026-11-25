@@ -135,8 +135,8 @@ final class WorkspaceSession {
                 copyWrittenRevisions[id] = nil
             }
             // Includes tabs opened/closed through picker, recovery, and other non-tab-button paths.
-            if let request = lineJumpRequest, tabs.selectedID != request.documentID || tabs.isComposing {
-                lineJumpRequest = nil
+            if let request = lineJumpRequest, !matchesSourceNavigation(request) {
+                dismissLineJump(request.id)
             }
             if let request = sourceSearchRequest, !matchesSourceNavigation(request) {
                 dismissSourceSearch(request.id)

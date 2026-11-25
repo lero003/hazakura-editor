@@ -47,7 +47,7 @@ struct WorkspaceLineJumpTests {
         #expect(session.tabs.selectedTab?.document.revision == 0)
     }
 
-    @Test func refusesCompositionAndRevisionChanges() throws {
+    @Test func refusesCompositionAndClosesThePromptWhenTheRevisionChanges() throws {
         let session = WorkspaceSession(source: "初稿")
         let documentID = try #require(session.tabs.selectedID)
         session.tabs.setComposing(true, in: documentID)
@@ -56,11 +56,26 @@ struct WorkspaceLineJumpTests {
         session.tabs.setComposing(false, in: documentID)
         session.requestLineJump()
         let request = try #require(session.lineJumpRequest)
-        session.applyCommittedSource("次稿", to: documentID)
+        session.applyCommittedSource("初稿", to: documentID)
+        #expect(session.lineJumpRequest?.id == request.id)
+
+        let prefix = "次稿 🌸\r\n"
+        let source = prefix + "行末"
+        session.applyCommittedSource(source, to: documentID)
+        let drafts = session.tabs.recoveryDrafts
+        #expect(session.lineJumpRequest == nil)
+        #expect(!session.isBusy && session.canEditSource)
         #expect(!session.confirmLineJump(request.id, line: 1))
         #expect(session.readySourceRevealID == nil)
+
+        session.requestLineJump()
+        let fresh = try #require(session.lineJumpRequest)
+        #expect(fresh.id != request.id)
         session.dismissLineJump(request.id)
-        #expect(!session.isBusy)
+        #expect(!session.confirmLineJump(request.id, line: 1))
+        try #require(session.confirmLineJump(fresh.id, line: 2))
+        #expect(session.takeSourceReveal(fresh.id, documentID: documentID, editorSource: source) == NSRange(location: prefix.utf16.count, length: 0))
+        #expect(session.tabs.recoveryDrafts == drafts)
     }
 
     @Test func aConfirmedJumpDoesNotSurviveAnEditAndUndoToTheSameBytes() throws {
