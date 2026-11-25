@@ -115,9 +115,21 @@ struct BookPreviewView: View {
 
 private struct BookReadingPane: View {
     let sections: [MarkdownBookPreview.Section]
-    @State private var sectionIndex = 0
+    @State private var viewport = Viewport(sectionIndex: 0)
+    @State private var position = ScrollPosition(idType: Int.self)
+    @State private var showsSearch = false
+    @State private var searchQuery = ""
+    @State private var searchResult: MarkdownReaderSearch.BookResult?
+    @State private var searchSelection = 0
+    @FocusState private var searchFieldFocused: Bool
+
+    private struct Viewport: Identifiable {
+        let id = UUID()
+        let sectionIndex: Int
+    }
 
     var body: some View {
+        let sectionIndex = viewport.sectionIndex
         let section = sections[sectionIndex]
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -129,31 +141,141 @@ private struct BookReadingPane: View {
                 Button("次の原稿") { move(by: 1) }
                     .disabled(sectionIndex + 1 == sections.count)
                 Spacer()
+                Button {
+                    showsSearch.toggle()
+                    if !showsSearch {
+                        searchFieldFocused = false
+                        searchQuery = ""
+                        clearSearchResult()
+                    }
+                } label: {
+                    Label(showsSearch ? "検索を閉じる" : "本文を検索", systemImage: "magnifyingglass")
+                }
             }
+            if showsSearch { searchControls }
             Text(verbatim: section.title)
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 12) {
-                    if section.blocks.isEmpty {
-                        Text("表示する本文がありません。")
-                    } else {
-                        ForEach(section.blocks.indices, id: \.self) { index in
-                            MarkdownPreviewBlockView(block: section.blocks[index])
-                        }
+            sectionBody(section, in: viewport)
+                .id(viewport.id)
+        }
+    }
+
+    private var searchControls: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                TextField("選んだ原稿の本文を検索", text: Binding(get: { searchQuery }, set: { query in
+                    guard !searchQuery.utf8.elementsEqual(query.utf8) else { return }
+                    searchQuery = query
+                    clearSearchResult()
+                }))
+                .focused($searchFieldFocused)
+                .onAppear { searchFieldFocused = true }
+                Button("検索") { submitSearch() }
+            }
+            switch searchResult {
+            case .emptyQuery:
+                Text("検索する語句を入力してください。")
+            case .queryTooLong:
+                Text("検索語句が長すぎます（UTF-8で\(MarkdownReaderSearch.queryByteLimit)バイトまで）。")
+            case .matches(let matches) where matches.isEmpty:
+                Text("一致する箇所はありません。")
+            case .matches(let matches):
+                HStack(spacing: 8) {
+                    Button("前の一致へ", systemImage: "chevron.up") { moveMatch(by: -1) }
+                        .labelStyle(.iconOnly)
+                        .disabled(searchSelection == 0)
+                    Button("次の一致へ", systemImage: "chevron.down") { moveMatch(by: 1) }
+                        .labelStyle(.iconOnly)
+                        .disabled(searchSelection + 1 >= matches.count)
+                    Text("一致した箇所：\(searchSelection + 1) / \(matches.count)")
+                        .monospacedDigit()
+                    Button("現在の一致へ移動") {
+                        if let activeMatch { jump(to: activeMatch) }
                     }
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            case nil:
+                EmptyView()
             }
-            .id(section.id)
-            .accessibilityLabel("原稿の本文")
+        }
+        .font(.callout)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("選んだ原稿の本文検索")
+    }
+
+    private func sectionBody(_ section: MarkdownBookPreview.Section, in displayedViewport: Viewport) -> some View {
+        let highlighted = activeMatch.flatMap { $0.sectionID == section.id ? $0.blockIndex : nil }
+        return ScrollView {
+            LazyVStack(alignment: .leading, spacing: 12) {
+                if section.blocks.isEmpty {
+                    Text("表示する本文がありません。")
+                } else {
+                    ForEach(section.blocks.indices, id: \.self) { index in
+                        MarkdownPreviewBlockView(block: section.blocks[index])
+                            .accessibilityAddTraits(index == highlighted ? [.isSelected] : [])
+                            .overlay {
+                                if index == highlighted {
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .strokeBorder(Color.accentColor, lineWidth: 2)
+                                        .padding(-4)
+                                        .allowsHitTesting(false)
+                                        .accessibilityHidden(true)
+                                }
+                            }
+                    }
+                }
+            }
+            .scrollTargetLayout()
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollPosition(Binding(get: { position }, set: { next in
+            // The displaced scroll view must not overwrite a position in the new section.
+            if viewport.id == displayedViewport.id { position = next }
+        }), anchor: .top)
+        .accessibilityLabel("原稿の本文")
+    }
+
+    private var activeMatch: MarkdownReaderSearch.BookMatch? {
+        guard case .matches(let matches) = searchResult, matches.indices.contains(searchSelection) else { return nil }
+        return matches[searchSelection]
+    }
+
+    private func submitSearch() {
+        guard showsSearch else { return }
+        searchSelection = 0
+        searchResult = MarkdownReaderSearch.searchBook(searchQuery, in: sections)
+        if let activeMatch { jump(to: activeMatch) }
+    }
+
+    private func clearSearchResult() {
+        searchResult = nil
+        searchSelection = 0
+    }
+
+    private func moveMatch(by delta: Int) {
+        guard case .matches(let matches) = searchResult else { return }
+        let next = searchSelection + delta
+        guard matches.indices.contains(next) else { return }
+        searchSelection = next
+        jump(to: matches[next])
+    }
+
+    private func jump(to match: MarkdownReaderSearch.BookMatch) {
+        guard let index = sections.firstIndex(where: { $0.id == match.sectionID }),
+              sections[index].blocks.indices.contains(match.blockIndex) else { return }
+        if viewport.sectionIndex == index {
+            position.scrollTo(id: match.blockIndex, anchor: .top)
+        } else {
+            viewport = Viewport(sectionIndex: index)
+            position = ScrollPosition(id: match.blockIndex, anchor: .top)
         }
     }
 
     private func move(by delta: Int) {
-        let next = sectionIndex + delta
+        let next = viewport.sectionIndex + delta
         guard sections.indices.contains(next) else { return }
-        sectionIndex = next
+        viewport = Viewport(sectionIndex: next)
+        position = ScrollPosition(idType: Int.self)
     }
 }

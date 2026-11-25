@@ -39,6 +39,29 @@ struct WorkspaceBookPreviewTests {
         #expect(session.canEditSource)
     }
 
+    @Test func searchUsesOnlyTheConfirmedBookEvenAfterTheWorkspaceChanges() async throws {
+        let session = WorkspaceSession(source: "# 風見鶏")
+        let first = try #require(session.tabs.selectedID)
+        session.newTab()
+        let excluded = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("風見鶏を含む未選択の原稿", to: excluded)
+        session.newTab()
+        let last = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("初めに\n\n風見鶏", to: last)
+        session.requestBookPreview()
+        let requestID = try #require(session.bookPreviewRequest?.id)
+        let sources = try #require(session.confirmBookPreview(requestID, selected: [last, first]))
+        session.applyCommittedSource("確定後に別の本文へ変更", to: last)
+        let drafts = session.tabs.recoveryDrafts
+
+        let sections = try await MarkdownBookPreview.render(sources)
+        let result = MarkdownReaderSearch.searchBook("風見鶏", in: sections)
+        #expect(result == .matches([.init(sectionID: first, blockIndex: 0), .init(sectionID: last, blockIndex: 1)]))
+        #expect(MarkdownReaderSearch.searchBook("確定後", in: sections) == .matches([]))
+        #expect(session.tabs.selectedID == last)
+        #expect(session.tabs.recoveryDrafts == drafts)
+    }
+
     @Test func needsMultipleTabsAndRejectsStaleRequestsInvalidSelectionAndComposition() throws {
         let session = WorkspaceSession(source: "最初")
         let first = try #require(session.tabs.selectedID)
