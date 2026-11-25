@@ -54,6 +54,11 @@ struct ScratchWorkspaceView: View {
                         bookExportDestinationActions(request.id)
                     }
                 }
+                if let status = session.selectedCopySaveStatus {
+                    Label(status == .currentRevision ? "この版のコピーを作成済み" : "以前の版のコピーを作成済み",
+                          systemImage: "doc.on.doc")
+                        .help("コピーを作成した時点の記録です。保存先のファイルが現在も同じ状態かは確認しません。")
+                }
                 if let status = session.selectedRecoveryStatus {
                     switch status {
                     case .checkpointed:

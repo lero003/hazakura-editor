@@ -32,6 +32,80 @@ struct WorkspaceCopySaveTests {
         #expect(session.tabs.recoveryDrafts.count == 1)
     }
 
+    @Test func savedCopyStatusFollowsTheExactRevisionInItsOwnTab() async throws {
+        let session = WorkspaceSession(source: "下書き")
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確定原稿", to: id)
+        let revision = session.tabs.selectedTab?.document.revision
+        let recovery = session.tabs.recoveryDrafts
+        #expect(session.selectedCopySaveStatus == nil)
+        session.requestSaveCopy()
+        let first = try #require(session.saveCopyRequest?.id)
+        let destination = URL(fileURLWithPath: "/synthetic/copy.md")
+        await session.writeRequestedCopy(first, to: destination) { _, _, _ in }
+        #expect(session.selectedCopySaveStatus == .currentRevision)
+        #expect(session.tabs.selectedTab?.document.revision == revision)
+        #expect(session.tabs.recoveryDrafts == recovery)
+        guard case .confirm = session.tabs.requestCloseSelected() else {
+            Issue.record("Copy save must not bypass discard confirmation.")
+            return
+        }
+
+        session.newTab()
+        #expect(session.selectedCopySaveStatus == nil)
+        session.tabs.select(id)
+        #expect(session.selectedCopySaveStatus == .currentRevision)
+        session.tabs.setComposing(true, in: id)
+        #expect(session.selectedCopySaveStatus == nil)
+        session.tabs.setComposing(false, in: id)
+        #expect(session.selectedCopySaveStatus == .currentRevision)
+        session.applyCommittedSource("新しい追記", to: id)
+        session.applyCommittedSource("確定原稿", to: id)
+        #expect(session.selectedCopySaveStatus == .earlierRevision)
+
+        session.requestSaveCopy()
+        let second = try #require(session.saveCopyRequest?.id)
+        #expect(session.selectedCopySaveStatus == nil)
+        session.cancelSaveCopy(second)
+        #expect(session.selectedCopySaveStatus == .earlierRevision)
+        session.requestSaveCopy()
+        let failed = try #require(session.saveCopyRequest?.id)
+        await session.writeRequestedCopy(failed, to: destination) { _, _, _ in
+            throw SelectedTextCopyWriter.WriteError.alreadyExists
+        }
+        #expect(session.selectedCopySaveStatus == .earlierRevision)
+        session.requestSaveCopy()
+        let third = try #require(session.saveCopyRequest?.id)
+        await session.writeRequestedCopy(third, to: destination) { _, _, _ in }
+        #expect(session.selectedCopySaveStatus == .currentRevision)
+    }
+
+    @Test func aLateSuccessfulCopyRecordsOnlyWhatWasActuallyWritten() async throws {
+        let session = WorkspaceSession(source: "初稿")
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("書き出す版", to: id)
+        session.requestSaveCopy()
+        let request = try #require(session.saveCopyRequest?.id)
+        let finishWriting = AsyncStream<Void>.makeStream()
+        defer { finishWriting.continuation.finish() }
+        let destination = URL(fileURLWithPath: "/synthetic/older.md")
+        let writer = CopyWriterProbe()
+        let writing = Task.immediate { @MainActor in
+            await session.writeRequestedCopy(request, to: destination) {
+                await writer.record($0, $1, $2)
+                for await _ in finishWriting.stream {}
+            }
+        }
+        #expect(session.selectedCopySaveStatus == nil)
+        session.applyCommittedSource("書き出し開始後の確定原稿", to: id)
+        let recovery = session.tabs.recoveryDrafts
+        finishWriting.continuation.finish()
+        await writing.value
+        #expect(await writer.calls() == [.init(bytes: Data("書き出す版".utf8), encoding: .utf8, url: destination)])
+        #expect(session.selectedCopySaveStatus == .earlierRevision)
+        #expect(session.tabs.recoveryDrafts == recovery)
+    }
+
     @Test func cancelsOrRejectsAStaleRevisionWithoutWriting() async throws {
         let session = WorkspaceSession(source: "下書き")
         let draftID = try #require(session.tabs.selectedID)
@@ -123,6 +197,7 @@ struct WorkspaceCopySaveTests {
         await session.writeRequestedCopy(request.id, to: destination)
         #expect(try Data(contentsOf: original) == external)
         #expect(try Data(contentsOf: destination) == markedBytes(edited, encoding: encoding))
+        #expect(session.selectedCopySaveStatus == .currentRevision)
         #expect(session.tabs.tabs.first(where: { $0.id == originalTab })?.selectedFile?.originalBytes == initial)
         #expect(session.tabs.selectedTab?.document.source.utf8.elementsEqual(edited.utf8) == true)
 

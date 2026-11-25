@@ -131,6 +131,9 @@ final class WorkspaceSession {
                     markdownReadingPositions[id] = nil
                 }
             }
+            for id in copyWrittenRevisions.keys where !tabs.tabs.contains(where: { $0.id == id }) {
+                copyWrittenRevisions[id] = nil
+            }
             // Includes tabs opened/closed through picker, recovery, and other non-tab-button paths.
             if let request = lineJumpRequest, tabs.selectedID != request.documentID || tabs.isComposing {
                 lineJumpRequest = nil
@@ -151,6 +154,8 @@ final class WorkspaceSession {
     private(set) var folderCatalogReport: FolderCatalogReport?
     private(set) var folderEntryOpening: FolderEntryOpening?
     private(set) var saveCopyRequest: SaveCopyRequest?
+    // A live-tab record of successful writes, not a saved-document baseline or a URL.
+    private var copyWrittenRevisions: [UUID: UInt64] = [:]
     private(set) var exportRequest: ExportRequest?
     private var comparisonRequest: ComparisonRequest?
     private var readingComparisonID: UUID?
@@ -658,6 +663,16 @@ final class WorkspaceSession {
         fileNotice = nil
     }
 
+    enum CopySaveStatus {
+        case currentRevision, earlierRevision
+    }
+
+    var selectedCopySaveStatus: CopySaveStatus? {
+        guard saveCopyRequest == nil, !tabs.isComposing, !isDiscarding,
+              let tab = tabs.selectedTab, let written = copyWrittenRevisions[tab.id] else { return nil }
+        return tab.document.revision == written ? .currentRevision : .earlierRevision
+    }
+
     func requestSaveCopy() {
         guard canSaveCopy, let selected = tabs.selectedTab else { return }
         exitNotice = nil
@@ -687,7 +702,11 @@ final class WorkspaceSession {
         isWritingCopy = true
         do {
             try await writer(request.source, request.encoding, destination)
-            fileNotice = "コピーを保存しました。編集中のタブと元のファイルはそのままです。"
+            // A successful return means the new file was published. Record the actual
+            // written revision, not the current selection or revision after suspension.
+            if tabs.tabs.contains(where: { $0.id == request.documentID }) {
+                copyWrittenRevisions[request.documentID] = request.revision
+            }
         } catch is CancellationError {
             // The writer only reports cancellation before publishing the new file.
         } catch {
