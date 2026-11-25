@@ -21,6 +21,7 @@ package enum MarkdownHTMLExport {
             <html>
             <head>
             <meta charset="utf-8">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Hazakura Editor</title>
             <style>p,h1,h2,h3,h4,h5,h6,pre { white-space: pre-wrap; overflow-wrap: anywhere }</style>

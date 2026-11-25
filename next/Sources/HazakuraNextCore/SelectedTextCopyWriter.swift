@@ -4,8 +4,10 @@ import Foundation
 /// Creates a new copy at an explicitly selected destination, never at a default location.
 public enum SelectedTextCopyWriter {
     public enum WriteError: Error, Equatable {
-        case invalidLocation, invalidText, tooLarge, alreadyExists, accessDenied
+        case invalidLocation, invalidText, invalidPDF, tooLarge, alreadyExists, accessDenied
     }
+
+    package static let pdfByteLimit = 16 * 1024 * 1024
 
     /// Pass the URL from an explicit save-picker action and keep its existing access alive
     /// through this call. If it does not permit sibling staging, fail without a direct-write fallback.
@@ -14,6 +16,23 @@ public enum SelectedTextCopyWriter {
         try Task.checkCancellation()
         let destination = try Destination(url)
         let bytes = try encode(source, preservingUTF8BOM: preservingUTF8BOM)
+        try writeNewFile(bytes, to: destination)
+    }
+
+    /// Writes renderer-validated PDF bytes to an explicitly selected new file.
+    @concurrent
+    package static func writePDF(data: Data, to url: URL) async throws {
+        try Task.checkCancellation()
+        let destination = try Destination(url)
+        guard (destination.leaf as NSString).pathExtension.lowercased() == "pdf" else {
+            throw WriteError.invalidLocation
+        }
+        guard data.count <= pdfByteLimit else { throw WriteError.tooLarge }
+        guard data.starts(with: "%PDF-".utf8) else { throw WriteError.invalidPDF }
+        try writeNewFile(data, to: destination)
+    }
+
+    private static func writeNewFile(_ bytes: Data, to destination: Destination) throws {
         try Task.checkCancellation()
 
         let parent = try openParent(destination.parentPath)
@@ -42,7 +61,7 @@ public enum SelectedTextCopyWriter {
 
         var stageInfo = stat()
         guard fstat(stage, &stageInfo) == 0, isPrivateStage(stageInfo) else { throw WriteError.accessDenied }
-        // A parent ACL can grant extra access despite 0600. Do not put text in a stage
+        // A parent ACL can grant extra access despite 0600. Do not put bytes in a stage
         // with an inherited ACL, or change the inherited permissions to make it writable.
         try requireNoACL(stage)
         try writeAll(bytes, to: stage)

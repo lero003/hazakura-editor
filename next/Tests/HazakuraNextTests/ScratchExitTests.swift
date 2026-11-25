@@ -74,7 +74,7 @@ struct ScratchExitTests {
         defer { window.close() }
         let session = try #require(delegate.session)
         #expect(window.isVisible == false)
-        for selector in ["newTab:", "openFile:"] {
+        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:"] {
             let action = NSSelectorFromString(selector)
             let item = NSMenuItem(title: "Command", action: action, keyEquivalent: "")
             #expect(delegate.validateMenuItem(item) == false)
@@ -82,6 +82,26 @@ struct ScratchExitTests {
         }
         #expect(session.tabs.tabs.count == 1)
         #expect(session.openRequest == nil)
+        #expect(session.exportRequest == nil)
+    }
+
+    @Test func pendingPDFExportBlocksNativeWindowAndQuitWithoutDiscarding() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        session.requestExport(.pdf)
+        let request = try #require(session.exportRequest)
+
+        #expect(delegate.windowShouldClose(window) == false)
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateCancel)
+        #expect(probe.prompts.isEmpty)
+        #expect(probe.replies.isEmpty)
+
+        session.cancelExport(request.id)
+        #expect(delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateNow)
     }
 
     @Test func composingOrOpeningBlocksCloseAndQuitWithoutPresentingDiscard() throws {

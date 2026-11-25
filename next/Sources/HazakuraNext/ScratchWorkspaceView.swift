@@ -9,12 +9,12 @@ struct ScratchWorkspaceView: View {
     @State private var openPanel: NSOpenPanel?
     @State private var savePanel: NSSavePanel?
 
-    private enum SavePurpose { case copy, htmlExport }
+    private enum SavePurpose { case copy, export(WorkspaceSession.ExportFormat) }
 
     var body: some View {
         let openID = session.openRequest
         let saveID = session.saveCopyRequest?.id
-        let exportID = session.htmlExportRequest?.id
+        let exportID = session.exportRequest?.id
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
@@ -49,10 +49,10 @@ struct ScratchWorkspaceView: View {
         }
         .task(id: exportID) {
             if let exportID {
-                defer { session.cancelHTMLExport(exportID) }
-                guard session.htmlExportRequest?.id == exportID else { return }
-                await withSelectedDestination(for: .htmlExport) { destination in
-                    await session.writeRequestedHTMLExport(exportID, to: destination)
+                defer { session.cancelExport(exportID) }
+                guard let request = session.exportRequest, request.id == exportID else { return }
+                await withSelectedDestination(for: .export(request.format)) { destination in
+                    await session.writeRequestedExport(exportID, to: destination)
                 }
             }
         }
@@ -69,7 +69,7 @@ struct ScratchWorkspaceView: View {
             session.openRequest = nil
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
-            if let id = session.htmlExportRequest?.id { session.cancelHTMLExport(id) }
+            if let id = session.exportRequest?.id { session.cancelExport(id) }
             openPanel = nil
             savePanel = nil
             open?.cancel(nil)
@@ -109,7 +109,9 @@ struct ScratchWorkspaceView: View {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
-        if session.htmlExportRequest != nil { return "新しいファイルにHTMLを書き出しています…" }
+        if let request = session.exportRequest {
+            return request.format == .html ? "新しいファイルにHTMLを書き出しています…" : "新しいファイルにPDFを書き出しています…"
+        }
         if session.comparisonRequestID != nil { return "比較するファイルを選び直してください。" }
         if let notice = session.exitNotice { return notice }
         if session.isDiscarding { return "復旧記録を確認しています…" }
@@ -176,12 +178,18 @@ struct ScratchWorkspaceView: View {
             panel.prompt = "コピーを保存"
             panel.nameFieldStringValue = "原稿-コピー.md"
             panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
-        case .htmlExport:
+        case .export(.html):
             panel.title = "HTMLを書き出す"
             panel.message = "確定済みの原稿からHTMLを作ります。既存のファイルは置き換えません。"
             panel.prompt = "書き出す"
             panel.nameFieldStringValue = "原稿.html"
             panel.allowedContentTypes = [.html]
+        case .export(.pdf):
+            panel.title = "PDFを書き出す"
+            panel.message = "確定済みの原稿からPDFを作ります。既存のファイルは置き換えません。"
+            panel.prompt = "書き出す"
+            panel.nameFieldStringValue = "原稿.pdf"
+            panel.allowedContentTypes = [.pdf]
         }
         panel.canCreateDirectories = false
         savePanel = panel

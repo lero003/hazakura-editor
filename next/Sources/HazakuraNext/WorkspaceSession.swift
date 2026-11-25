@@ -14,14 +14,29 @@ final class WorkspaceSession {
         let preservingUTF8BOM: Bool
     }
 
-    struct HTMLExportRequest: Identifiable {
+    enum ExportFormat: String, Sendable {
+        case html, pdf
+
+        fileprivate var name: String { rawValue.uppercased() }
+    }
+
+    struct ExportRequest: Identifiable {
+        fileprivate enum Phase { case picking, rendering, cancelled, writing }
+
         let id = UUID()
+        let format: ExportFormat
         fileprivate let documentID: UUID
         fileprivate let revision: UInt64
         fileprivate let source: String
+        fileprivate var phase: Phase = .picking
     }
 
-    private enum HTMLExportExecution: Equatable { case rendering, cancelled, writing }
+    struct ExportOperations {
+        var renderHTML: @Sendable (String) async throws -> String = MarkdownHTMLExport.render
+        var writeHTML: @Sendable (String, Bool, URL) async throws -> Void = SelectedTextCopyWriter.write
+        var renderPDF: @MainActor (String) async throws -> Data = MarkdownPDFExport.render
+        var writePDF: @Sendable (Data, URL) async throws -> Void = SelectedTextCopyWriter.writePDF
+    }
 
     private struct ComparisonRequest: Identifiable {
         let id = UUID()
@@ -70,8 +85,7 @@ final class WorkspaceSession {
     var pendingDiscard: ScratchTabs.DiscardTicket?
     var openRequest: UUID?
     private(set) var saveCopyRequest: SaveCopyRequest?
-    private(set) var htmlExportRequest: HTMLExportRequest?
-    @ObservationIgnored private var htmlExportExecution: HTMLExportExecution?
+    private(set) var exportRequest: ExportRequest?
     private var comparisonRequest: ComparisonRequest?
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
@@ -95,17 +109,17 @@ final class WorkspaceSession {
 
     var comparisonRequestID: UUID? { comparisonRequest?.id }
     var isBusy: Bool {
-        pendingDiscard != nil || openRequest != nil || saveCopyRequest != nil || htmlExportRequest != nil ||
+        pendingDiscard != nil || openRequest != nil || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil ||
             markdownPreview != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
-        !isDiscarding && saveCopyRequest == nil && htmlExportRequest == nil && comparisonRequest == nil &&
+        !isDiscarding && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
             readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
-    var canExportHTML: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+    var canExport: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
 
     static func title(for tab: ScratchTabs.Tab) -> String {
         tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
@@ -273,87 +287,123 @@ final class WorkspaceSession {
         }
     }
 
-    func requestHTMLExport() {
-        guard canExportHTML, let selected = tabs.selectedTab else { return }
+    func requestExport(_ format: ExportFormat) {
+        guard canExport, let selected = tabs.selectedTab else { return }
         exitNotice = nil
         fileNotice = nil
-        htmlExportRequest = HTMLExportRequest(documentID: selected.id, revision: selected.document.revision,
-                                              source: selected.document.source)
+        exportRequest = ExportRequest(format: format, documentID: selected.id, revision: selected.document.revision,
+                                      source: selected.document.source)
     }
 
-    func cancelHTMLExport(_ requestID: UUID) {
-        guard htmlExportRequest?.id == requestID else { return }
-        switch htmlExportExecution {
-        case nil: htmlExportRequest = nil
-        case .rendering: htmlExportExecution = .cancelled
+    func cancelExport(_ id: UUID) {
+        guard let request = exportRequest, request.id == id else { return }
+        switch request.phase {
+        case .picking: exportRequest = nil
+        case .rendering: exportRequest?.phase = .cancelled
         case .cancelled, .writing: break
         }
     }
 
-    /// One picker choice authorizes this destination only; keep the request reserved until completion.
-    func writeRequestedHTMLExport(
-        _ requestID: UUID, to destination: URL,
-        using render: @Sendable (String) async throws -> String = MarkdownHTMLExport.render,
-        writer: @Sendable (String, Bool, URL) async throws -> Void = SelectedTextCopyWriter.write
-    ) async {
-        guard let request = htmlExportRequest, request.id == requestID, htmlExportExecution == nil else { return }
-        htmlExportExecution = .rendering
-        defer {
-            htmlExportRequest = nil
-            htmlExportExecution = nil
-        }
-        guard !Task.isCancelled, validateHTMLExportSource(request) else { return }
+    func writeRequestedExport(_ id: UUID, to destination: URL) async {
+        await writeRequestedExport(id, to: destination, using: .init())
+    }
+
+    /// One picker choice authorizes this format and destination only; keep it reserved until completion.
+    func writeRequestedExport(_ id: UUID, to destination: URL, using operations: ExportOperations) async {
+        guard let request = exportRequest, request.id == id, request.phase == .picking else { return }
+        exportRequest?.phase = .rendering
+        defer { exportRequest = nil }
+
+        guard !Task.isCancelled, validateExportSource(request) else { return }
+        let name = request.format.name
         guard destination.isFileURL else {
-            fileNotice = "HTMLを書き出せませんでした。ローカルの保存先を選んでください。"
+            fileNotice = "\(name)を書き出せませんでした。ローカルの保存先を選んでください。"
             return
         }
-        guard !destination.hasDirectoryPath, destination.pathExtension.lowercased() == "html" else {
-            fileNotice = "HTMLを書き出せませんでした。拡張子が .html の新しいファイル名を選んでください。"
+        let fileExtension = request.format.rawValue
+        guard !destination.hasDirectoryPath, destination.pathExtension.lowercased() == fileExtension else {
+            fileNotice = "\(name)を書き出せませんでした。拡張子が .\(fileExtension) の新しいファイル名を選んでください。"
             return
         }
 
-        let html: String
-        do {
-            html = try await render(request.source)
-        } catch is CancellationError {
-            return
-        } catch {
-            guard htmlExportExecution == .rendering, !Task.isCancelled, validateHTMLExportSource(request) else { return }
-            fileNotice = "HTMLを書き出せませんでした。\(Self.htmlRenderFailure(error))"
-            return
-        }
-        // Recheck authorization after rendering; a late native callback can still commit text.
-        guard htmlExportExecution == .rendering, !Task.isCancelled, validateHTMLExportSource(request) else { return }
-        htmlExportExecution = .writing
-        do {
-            try await writer(html, false, destination)
-            // The writer may return after cancellation if it already published the file.
-            fileNotice = "HTMLを書き出しました。原稿と元のファイルはそのままです。"
-        } catch is CancellationError {
-            // The writer only reports cancellation before publishing the new file.
-        } catch {
-            let reason = (error as? SelectedTextCopyWriter.WriteError) == .tooLarge
-                ? "生成したHTMLが書き出しの上限を超えています。" : Self.copyWriteFailure(error)
-            fileNotice = "HTMLを書き出せませんでした。\(reason)"
+        switch request.format {
+        case .html:
+            await renderAndWriteExport(request, to: destination, render: operations.renderHTML) { html, url in
+                try await operations.writeHTML(html, false, url)
+            }
+        case .pdf:
+            await renderAndWriteExport(request, to: destination, render: operations.renderPDF, write: operations.writePDF)
         }
     }
 
-    private func validateHTMLExportSource(_ request: HTMLExportRequest) -> Bool {
+    private func renderAndWriteExport<Payload: Sendable>(
+        _ request: ExportRequest, to destination: URL,
+        render: @MainActor (String) async throws -> Payload,
+        write: @MainActor (Payload, URL) async throws -> Void
+    ) async {
+        let name = request.format.name
+        let payload: Payload
+        do {
+            payload = try await render(request.source)
+        } catch is CancellationError {
+            return
+        } catch {
+            guard canFinishRendering(request) else { return }
+            fileNotice = "\(name)を書き出せませんでした。\(Self.exportRenderFailure(error, format: request.format))"
+            return
+        }
+        // Recheck authorization after rendering; a late native callback can still commit text.
+        guard canFinishRendering(request) else { return }
+        exportRequest?.phase = .writing
+        do {
+            try await write(payload, destination)
+            // The writer may return after cancellation if it already published the file.
+            fileNotice = "\(name)を書き出しました。原稿と元のファイルはそのままです。"
+        } catch is CancellationError {
+            // The writer only reports cancellation before publishing the new file.
+        } catch {
+            let reason: String
+            switch error as? SelectedTextCopyWriter.WriteError {
+            case .tooLarge: reason = "生成した\(name)が書き出しの上限を超えています。"
+            case .invalidPDF: reason = "有効なPDFを生成できませんでした。"
+            default: reason = Self.copyWriteFailure(error)
+            }
+            fileNotice = "\(name)を書き出せませんでした。\(reason)"
+        }
+    }
+
+    private func canFinishRendering(_ request: ExportRequest) -> Bool {
+        guard !Task.isCancelled, exportRequest?.id == request.id, exportRequest?.phase == .rendering else { return false }
+        return validateExportSource(request)
+    }
+
+    private func validateExportSource(_ request: ExportRequest) -> Bool {
         guard !tabs.isComposing, let selected = tabs.selectedTab, selected.id == request.documentID,
               selected.document.revision == request.revision else {
-            fileNotice = "原稿の状態が変わったため、HTMLを書き出していません。もう一度お試しください。"
+            fileNotice = "原稿の状態が変わったため、\(request.format.name)を書き出していません。もう一度お試しください。"
             return false
         }
         return true
     }
 
-    private static func htmlRenderFailure(_ error: Error) -> String {
+    private static func exportRenderFailure(_ error: Error, format: ExportFormat) -> String {
         switch error as? MarkdownHTMLExport.ExportError {
-        case .unavailable(.inputTooLarge): "原稿が書き出しの上限（128 KiB）を超えています。"
-        case .unavailable(.tooManyBlocks), .unavailable(.tooComplex): "原稿の構造が変換処理の上限を超えています。"
-        case .tooLarge: "生成したHTMLが書き出しの上限を超えています。"
-        case .unavailable(.parseFailed), nil: "原稿をHTMLに変換できませんでした。"
+        case .unavailable(.inputTooLarge): return "原稿が書き出しの上限（128 KiB）を超えています。"
+        case .unavailable(.tooManyBlocks), .unavailable(.tooComplex): return "原稿の構造が変換処理の上限を超えています。"
+        case .tooLarge:
+            return format == .html ? "生成したHTMLが書き出しの上限を超えています。"
+                : "PDF変換用のHTMLが書き出しの上限を超えています。"
+        case .unavailable(.parseFailed), nil: break
         }
+        if format == .pdf {
+            switch error as? MarkdownPDFExportError {
+            case .documentTooLarge: return "原稿の描画範囲が書き出しの上限を超えています。"
+            case .pdfTooLarge: return "生成したPDFが書き出しの上限（16 MiB）を超えています。"
+            case .timedOut: return "PDFへの変換に時間がかかりすぎました。"
+            case .renderingFailed, nil: break
+            }
+        }
+        return "原稿を\(format.name)に変換できませんでした。"
     }
 
     func applyCommittedSource(_ source: String, to id: UUID) {
@@ -388,7 +438,7 @@ final class WorkspaceSession {
 
     @discardableResult
     func startTabDiscard(_ ticket: ScratchTabs.DiscardTicket) -> Task<Void, Never>? {
-        guard !isDiscarding, openRequest == nil, saveCopyRequest == nil, htmlExportRequest == nil, !showsRecovery,
+        guard !isDiscarding, openRequest == nil, saveCopyRequest == nil, exportRequest == nil, !showsRecovery,
               comparisonRequest == nil, readingComparisonID == nil, comparisonReport == nil, markdownPreview == nil,
               let draft = tabs.draftForDiscard(ticket) else { return nil }
         // Reserve synchronously: dismissing SwiftUI's alert must not re-enable tab actions.

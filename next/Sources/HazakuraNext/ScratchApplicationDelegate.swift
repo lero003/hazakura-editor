@@ -189,6 +189,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         addCommand("原本の版を比較…", #selector(compareOriginal(_:)), "", to: file)
         addCommand("コピーを保存…", #selector(saveCopy(_:)), "S", to: file)
         addCommand("HTMLを書き出す…", #selector(exportHTML(_:)), "", to: file)
+        addCommand("PDFを書き出す…", #selector(exportPDF(_:)), "", to: file)
         file.addItem(.separator())
         file.addItem(withTitle: "ウィンドウを閉じる", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
 
@@ -234,7 +235,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func makeEditableCopy(_ sender: Any?) { menuSession?.makeEditableCopy() }
     @objc private func compareOriginal(_ sender: Any?) { menuSession?.requestOriginalComparison() }
     @objc private func saveCopy(_ sender: Any?) { menuSession?.requestSaveCopy() }
-    @objc private func exportHTML(_ sender: Any?) { menuSession?.requestHTMLExport() }
+    @objc private func exportHTML(_ sender: Any?) { menuSession?.requestExport(.html) }
+    @objc private func exportPDF(_ sender: Any?) { menuSession?.requestExport(.pdf) }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
     @objc private func undo(_ sender: Any?) { activeUndoManager?.undo() }
     @objc private func redo(_ sender: Any?) { activeUndoManager?.redo() }
@@ -245,7 +247,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
-        case #selector(exportHTML(_:)): menuSession?.canExportHTML == true
+        case #selector(exportHTML(_:)), #selector(exportPDF(_:)): menuSession?.canExport == true
         case #selector(previewMarkdown(_:)): menuSession?.canPreviewMarkdown == true
         case #selector(undo(_:)): activeUndoManager?.canUndo == true
         case #selector(redo(_:)): activeUndoManager?.canRedo == true

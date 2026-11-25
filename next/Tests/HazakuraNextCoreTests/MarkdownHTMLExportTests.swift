@@ -29,6 +29,7 @@ struct MarkdownHTMLExportTests {
 
         #expect(html.hasPrefix("<!doctype html>"))
         #expect(html.contains(#"<meta charset="utf-8">"#))
+        #expect(html.contains(#"<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">"#))
         #expect(html.contains("<h2>見出し👩‍💻</h2>"))
         #expect(html.contains("<p>本文の <em>強調</em>、<strong>太字</strong>、<code>コード</code>、<del>削除</del>。</p>"))
         #expect(html.contains("<blockquote>\n<p>引用</p>"))
