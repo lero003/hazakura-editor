@@ -247,9 +247,14 @@ final class AssistReviewDemoDelegate: NSObject, NSApplicationDelegate, NSWindowD
             if decision == .approved && response == .OK {
                 do {
                     let receipt = try operation.handoff.sheetDidEnd(reviewID: sheet.reviewID, sheet: endedSheet, response: response)
-                    notice = receipt != nil
-                        ? "合成候補を反映しました。「元に戻す」（⌘Z）で取り消せます。"
-                        : "採用を確認できなかったため、反映していません。"
+                    switch receipt?.confirmation {
+                    case .nativeCallback:
+                        notice = "合成候補を反映しました。「元に戻す」（⌘Z）で取り消せます。"
+                    case .reconciledFromEditor:
+                        notice = "編集結果が原稿の状態に反映されていなかったため、確定した本文を照合して同期しました。「元に戻す」（⌘Z）で取り消せます。"
+                    case nil:
+                        notice = "採用を確認できなかったため、反映していません。"
+                    }
                 } catch AssistNativeReview.ApplyError.commitNotConfirmed {
                     notice = "本文が変わった可能性がありますが、編集の確定を確認できませんでした。再適用はしていません。本文を確認し、必要なら「元に戻す」（⌘Z）を使ってください。"
                 } catch AssistNativeReview.ApplyError.nativeRefused {

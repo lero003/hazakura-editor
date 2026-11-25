@@ -29,6 +29,7 @@ struct AssistNativeReviewTests {
                                                      origin: .syntheticFixture)
         #expect(receipt.reviewID == review.id)
         #expect(receipt.origin == .syntheticFixture)
+        #expect(receipt.confirmation == .nativeCallback)
         #expect(receipt.documentID == fixture.documentID)
         #expect(receipt.selection == range)
         #expect(receipt.before == "古い本文")
@@ -167,27 +168,137 @@ struct AssistNativeReviewTests {
         #expect(fixture.flow.review == nil)
     }
 
-    @Test func missingCommitCallbackDoesNotProduceAReceiptOrBypassTheNativeEditor() async throws {
-        let fixture = try Fixture(source: "原稿", publishesCommits: false)
-        defer { fixture.window.contentView = nil }
-        let source = fixture.editor.string
+    @Test func aMissingFirstPublicationReconcilesOnlyTheNativeEditAndPreservesUndoRedo() async throws {
+        let prefix = "冒頭 か\u{3099}\r\n"
+        let original = "古い本文"
+        let suffix = "\r\n末尾 👩‍💻"
+        let source = prefix + original + suffix
+        let candidate = "新稿"
+        let expected = prefix + candidate + suffix
+        let fixture = try Fixture(source: source)
+        defer {
+            fixture.commits.dropNext = nil
+            fixture.window.contentView = nil
+        }
+        let baseline = try #require(fixture.session.tabs.selectedTab?.document.revision)
+        let undo = try #require(fixture.editor.undoManager)
+        let selection = NSRange(location: prefix.utf16.count, length: original.utf16.count)
+        fixture.editor.setSelectedRange(selection)
+        let request = try fixture.flow.begin(tabs: fixture.session.tabs, editorSource: fixture.editor.string,
+                                             selection: fixture.editor.selectedRange())
+        let review = try await request.prepareReview(candidate: candidate)
+        try fixture.flow.present(review, tabs: fixture.session.tabs, editorSource: fixture.editor.string)
+        fixture.editor.setSelectedRange(NSRange(location: 1, length: 0))
+        var selectionAfterNativeEdit: NSRange?
+        fixture.commits.dropNext = { published in
+            #expect(published.utf8.elementsEqual(expected.utf8))
+            #expect(fixture.session.tabs.selectedTab?.document.revision == baseline)
+            #expect(fixture.session.tabs.selectedTab?.document.source.utf8.elementsEqual(source.utf8) == true)
+            selectionAfterNativeEdit = fixture.editor.selectedRange()
+        }
+
+        let receipt = try AssistNativeReview.approve(reviewID: review.id, flow: fixture.flow, session: fixture.session,
+                                                     origin: .syntheticFixture)
+        #expect(receipt.confirmation == .reconciledFromEditor)
+        #expect(receipt.reviewID == review.id)
+        #expect(receipt.documentID == fixture.documentID)
+        #expect(receipt.selection == selection)
+        #expect(receipt.before.utf8.elementsEqual(original.utf8))
+        #expect(receipt.after.utf8.elementsEqual(candidate.utf8))
+        #expect(receipt.appliedRevision == baseline + 1)
+        #expect(fixture.session.tabs.selectedTab?.document.revision == baseline + 1)
+        #expect(fixture.editor.string.utf8.elementsEqual(expected.utf8))
+        #expect(fixture.session.tabs.selectedTab?.document.source.utf8.elementsEqual(expected.utf8) == true)
+        #expect(fixture.session.tabs.recoveryDraft(for: fixture.documentID)?.source.utf8.elementsEqual(expected.utf8) == true)
+        let nativeSelection = try #require(selectionAfterNativeEdit)
+        #expect(fixture.editor.selectedRange() == nativeSelection)
+        #expect(fixture.commits.callbackCount == 1)
+        #expect(fixture.flow.review == nil)
+        #expect(fixture.editor.undoManager === undo)
+
+        try #require(undo.canUndo)
+        undo.undo()
+        #expect(fixture.editor.string.utf8.elementsEqual(source.utf8))
+        #expect(fixture.session.tabs.selectedTab?.document.source.utf8.elementsEqual(source.utf8) == true)
+        #expect(fixture.session.tabs.selectedTab?.document.revision == baseline + 2)
+        #expect(fixture.commits.callbackCount == 2)
+        #expect(undo.canUndo == false)
+        try #require(undo.canRedo)
+        undo.redo()
+        #expect(fixture.editor.string.utf8.elementsEqual(expected.utf8))
+        #expect(fixture.session.tabs.selectedTab?.document.source.utf8.elementsEqual(expected.utf8) == true)
+        #expect(fixture.session.tabs.selectedTab?.document.revision == baseline + 3)
+        #expect(fixture.commits.callbackCount == 3)
+        #expect(undo.canRedo == false)
+    }
+
+    enum CommitAmbiguity: CaseIterable, Sendable {
+        case mismatchedModel, advancedRevision, alteredNative, lostFocus, confirmedThenLostFocus
+    }
+
+    @Test(arguments: CommitAmbiguity.allCases)
+    func anAmbiguousNativeCommitIsNotConfirmedOrRetried(_ ambiguity: CommitAmbiguity) async throws {
+        let source = "原稿"
+        let candidate = "か\u{3099}"
+        let altered = "が" // Canonically equal to the proposal, but not byte-identical.
+        let competingSource = "別の確定原文"
+        let fixture = try Fixture(source: source)
+        defer {
+            fixture.commits.dropNext = nil
+            fixture.window.contentView = nil
+        }
         let selection = NSRange(location: 0, length: source.utf16.count)
         let request = try fixture.flow.begin(tabs: fixture.session.tabs, editorSource: source, selection: selection)
-        let review = try await request.prepareReview(candidate: "提案")
-        try fixture.flow.present(review, tabs: fixture.session.tabs, editorSource: source)
+        let review = try await request.prepareReview(candidate: candidate)
+        try fixture.flow.present(review, tabs: fixture.session.tabs, editorSource: fixture.editor.string)
+        fixture.commits.dropNext = { published in
+            #expect(published.utf8.elementsEqual(candidate.utf8))
+            #expect(fixture.editor.string.utf8.elementsEqual(candidate.utf8))
+            switch ambiguity {
+            case .mismatchedModel:
+                fixture.session.applyCommittedSource(competingSource, to: fixture.documentID)
+            case .advancedRevision:
+                fixture.session.applyCommittedSource(competingSource, to: fixture.documentID)
+                fixture.session.applyCommittedSource(source, to: fixture.documentID)
+            case .alteredNative:
+                fixture.editor.string = altered
+            case .lostFocus, .confirmedThenLostFocus:
+                if ambiguity == .confirmedThenLostFocus {
+                    // A matching model revision cannot stand in for the post-edit focus check.
+                    fixture.session.applyCommittedSource(published, to: fixture.documentID)
+                }
+                #expect(fixture.window.makeFirstResponder(nil))
+                #expect(fixture.window.firstResponder !== fixture.editor)
+            }
+        }
 
         #expect(throws: AssistNativeReview.ApplyError.commitNotConfirmed) {
             _ = try AssistNativeReview.approve(reviewID: review.id, flow: fixture.flow, session: fixture.session,
                                                origin: .syntheticFixture)
         }
-        #expect(fixture.editor.string == "提案")
-        #expect(fixture.session.tabs.selectedTab?.document.source == source)
-        #expect(fixture.session.tabs.selectedTab?.document.revision == 0)
         #expect(fixture.flow.review == nil)
-        let undo = try #require(fixture.editor.undoManager)
-        undo.undo()
-        #expect(fixture.editor.string == source)
-        #expect(undo.canUndo == false)
+        let callbacksAfterRefusal = fixture.commits.callbackCount
+        #expect(callbacksAfterRefusal > 0)
+        #expect(throws: AssistProposalFlow.FlowError.inactive) {
+            _ = try AssistNativeReview.approve(reviewID: review.id, flow: fixture.flow, session: fixture.session,
+                                               origin: .syntheticFixture)
+        }
+        #expect(fixture.commits.callbackCount == callbacksAfterRefusal)
+        #expect(fixture.session.tabs.selectedID == fixture.documentID)
+        let expectedModel: (source: String, revision: UInt64) = switch ambiguity {
+        case .mismatchedModel: (competingSource, 1)
+        case .advancedRevision: (source, 2)
+        case .alteredNative, .lostFocus: (source, 0)
+        case .confirmedThenLostFocus: (candidate, 1)
+        }
+        let expectedNative = ambiguity == .alteredNative ? altered : candidate
+        #expect(fixture.session.tabs.selectedTab?.document.revision == expectedModel.revision)
+        #expect(fixture.session.tabs.selectedTab?.document.source.utf8.elementsEqual(expectedModel.source.utf8) == true)
+        #expect(fixture.editor.string.utf8.elementsEqual(expectedNative.utf8))
+        if ambiguity == .lostFocus || ambiguity == .confirmedThenLostFocus {
+            #expect(fixture.window.isKeyWindow)
+            #expect(fixture.window.firstResponder !== fixture.editor)
+        }
     }
 
     @MainActor
@@ -202,22 +313,43 @@ struct AssistNativeReviewTests {
     }
 
     @MainActor
+    private final class CommitPublications {
+        var dropNext: ((String) -> Void)?
+        private(set) var callbackCount = 0
+        private var intercepting = false
+
+        func shouldPublish(_ source: String) -> Bool {
+            callbackCount += 1
+            // Fault injection may itself trigger a nested native callback; do not publish it either.
+            guard !intercepting else { return false }
+            guard let dropNext else { return true }
+            self.dropNext = nil
+            intercepting = true
+            defer { intercepting = false }
+            dropNext(source)
+            return false
+        }
+    }
+
+    @MainActor
     private struct Fixture {
         let session: WorkspaceSession
         let documentID: UUID
         let editor: NSTextView
         let window: OffscreenReviewWindow
+        let commits: CommitPublications
         let flow = AssistProposalFlow()
         // The existing NSTextStorage observation is owned by the coordinator, not the test text view.
         private let coordinator: TextKitEditor.Coordinator
 
-        init(source: String, publishesCommits: Bool = true, recovery: RecoveryCheckpointQueue? = nil) throws {
+        init(source: String, recovery: RecoveryCheckpointQueue? = nil) throws {
             let session = WorkspaceSession(source: source, recovery: recovery)
             let id = try #require(session.tabs.selectedID)
+            let commits = CommitPublications()
             let coordinator = TextKitEditor(initialText: source, documentID: id,
                                             canEdit: { session.canEditSource },
                                             onCompositionChange: { session.tabs.setComposing($0, in: id) }) { text in
-                if publishesCommits { session.applyCommittedSource(text, to: id) }
+                if commits.shouldPublish(text) { session.applyCommittedSource(text, to: id) }
             }.makeCoordinator()
             let scroll = TextKitEditor.makeScrollView(initialText: source, documentID: id, coordinator: coordinator)
             let editor = try #require(scroll.documentView as? NSTextView)
@@ -230,6 +362,7 @@ struct AssistNativeReviewTests {
             self.documentID = id
             self.editor = editor
             self.window = window
+            self.commits = commits
             self.coordinator = coordinator
         }
     }
