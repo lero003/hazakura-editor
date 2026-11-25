@@ -99,6 +99,26 @@ public struct SelectedTextFile: Sendable {
 
         var before = stat()
         guard fstat(fd, &before) == 0 else { throw ReadError.accessDenied }
+        return try readPinned(fd, name: url.lastPathComponent, before: before) { version in
+            try beforePathRevalidation()
+            try Task.checkCancellation()
+            // The pinned fd alone cannot tell if the selected path was removed or redirected.
+            let pathMatches = url.withUnsafeFileSystemRepresentation { pathname in
+                guard let pathname else { return false }
+                var named = stat()
+                return fstatat(AT_FDCWD, pathname, &named, AT_SYMLINK_NOFOLLOW_ANY) == 0
+                    && named.st_mode & S_IFMT == S_IFREG && Version(named) == version
+            }
+            try Task.checkCancellation()
+            guard pathMatches else { throw ReadError.changedWhileReading }
+        }
+    }
+
+    /// Read only the caller's pinned descriptor, without acquiring a path or permission.
+    /// The caller owns the descriptor and revalidates its selection before delivery.
+    static func readPinned(
+        _ fd: Int32, name: String, before: stat, revalidate: (Version) throws -> Void
+    ) throws -> SelectedTextFile {
         guard before.st_mode & S_IFMT == S_IFREG else { throw ReadError.notRegularFile }
         guard before.st_size >= 0, before.st_size <= byteLimit else { throw ReadError.tooLarge }
 
@@ -133,21 +153,9 @@ public struct SelectedTextFile: Sendable {
         }
         let format = Format(encoding: encoding, lineEndings: detectLineEndings(source.utf8))
         try Task.checkCancellation()
-        try beforePathRevalidation()
+        try revalidate(version)
         try Task.checkCancellation()
-
-        // The pinned fd alone cannot tell if the selected path was removed or redirected.
-        // Check metadata without following links or opening a potential replacement.
-        let pathMatches = url.withUnsafeFileSystemRepresentation { pathname in
-            guard let pathname else { return false }
-            var named = stat()
-            return fstatat(AT_FDCWD, pathname, &named, AT_SYMLINK_NOFOLLOW_ANY) == 0
-                && named.st_mode & S_IFMT == S_IFREG && Version(named) == version
-        }
-        try Task.checkCancellation()
-        guard pathMatches else { throw ReadError.changedWhileReading }
-        return SelectedTextFile(name: url.lastPathComponent, source: source, format: format,
-                                originalBytes: bytes, version: version)
+        return SelectedTextFile(name: name, source: source, format: format, originalBytes: bytes, version: version)
     }
 
     private static func decode(_ bytes: Data) throws -> (String, Encoding) {

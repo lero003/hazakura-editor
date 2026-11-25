@@ -15,6 +15,8 @@ struct ScratchWorkspaceView: View {
         let openID = session.openRequest
         let folderID = session.folderCatalogRequest
         let folderReportID = session.folderCatalogReport?.id
+        let folderOpening = session.folderEntryOpening
+        let folderOpeningID = folderOpening?.hasStarted == true ? folderOpening?.id : nil
         let saveID = session.saveCopyRequest?.id
         let exportID = session.exportRequest?.id
         let compareID = session.comparisonRequestID
@@ -29,6 +31,20 @@ struct ScratchWorkspaceView: View {
                         Button("中止") {
                             guard session.folderCatalogRequest == folderID else { return }
                             session.cancelFolderCatalog(folderID)
+                            openPanel?.cancel(nil)
+                        }
+                    } else if let folderOpening {
+                        if !folderOpening.hasStarted {
+                            Button("同じフォルダを選び直す…") {
+                                guard let window = session.window, window.isVisible, window.isKeyWindow,
+                                      window.attachedSheet == nil else { return }
+                                session.startOpeningFolderEntry(folderOpening.id)
+                            }
+                            .disabled(!session.tabs.canCreateTab)
+                        }
+                        Button("中止") {
+                            guard session.folderEntryOpening?.id == folderOpening.id else { return }
+                            session.cancelFolderEntry(folderOpening.id)
                             openPanel?.cancel(nil)
                         }
                     }
@@ -53,6 +69,11 @@ struct ScratchWorkspaceView: View {
         .task(id: folderID) {
             if let folderID {
                 await session.readFolderCatalog(folderID) { try await pickFolderCatalog(folderID) }
+            }
+        }
+        .task(id: folderOpeningID) {
+            if let folderOpeningID {
+                await session.readPreparedFolderEntry(folderOpeningID) { try await pickFolderForEntry($0) }
             }
         }
         .task(id: saveID) {
@@ -97,7 +118,9 @@ struct ScratchWorkspaceView: View {
         .sheet(item: Binding(get: { session.folderCatalogReport }, set: { report in
             if report == nil, let folderReportID { session.dismissFolderCatalogReport(folderReportID) }
         })) { report in
-            FolderCatalogView(catalog: report.catalog)
+            FolderCatalogView(catalog: report.catalog, canChoose: session.tabs.canCreateTab) { entryID in
+                session.prepareFolderEntry(reportID: report.id, entryID: entryID)
+            }
         }
         .sheet(item: Binding(get: { session.comparisonReport }, set: { report in
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
@@ -138,6 +161,9 @@ struct ScratchWorkspaceView: View {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
         if session.folderCatalogRequest != nil { return "フォルダの直下を確認しています…" }
+        if let opening = session.folderEntryOpening {
+            return opening.hasStarted ? "選んだ原稿を確認しています…" : "「\(opening.entry.name)」を開くには、一覧を取得したフォルダを選び直してください。"
+        }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
         if let request = session.exportRequest {
             return "新しいファイルに\(request.format.name)を書き出しています…"
@@ -190,23 +216,41 @@ struct ScratchWorkspaceView: View {
     }
 
     private func pickFolderCatalog(_ id: UUID) async throws -> SelectedFolderCatalog? {
-        let panel = NSOpenPanel()
+        let panel = folderPanel()
         panel.title = "一覧を確認するフォルダを選ぶ"
         panel.message = "フォルダ直下のMarkdown・テキストの候補名だけを確認します。本文は開きません。"
         panel.prompt = "一覧を確認"
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
+        return try await withChosenOpenURL(panel, isCurrent: {
+            session.folderCatalogRequest == id && !session.tabs.isComposing
+        }) { url in
+            try await SelectedFolderCatalog.read(from: url)
+        }
+    }
+
+    private func pickFolderForEntry(_ opening: WorkspaceSession.FolderEntryOpening) async throws -> SelectedTextFile? {
+        let panel = folderPanel()
+        panel.title = "一覧を取得したフォルダを選び直す"
+        panel.message = "選んだ「\(opening.entry.name)」だけを読み取り専用で開きます。先ほどと同じフォルダを選んでください。"
+        panel.prompt = "原稿を開く"
+        return try await withChosenOpenURL(panel, isCurrent: {
+            session.folderEntryOpening?.id == opening.id && session.tabs.canCreateTab && session.window?.isVisible == true
+        }) { folder in
+            try await opening.catalog.readEntry(opening.entry.id, from: folder)
+        }
+    }
+
+    private func folderPanel() -> NSOpenPanel {
+        let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
         panel.resolvesAliases = false
         panel.canCreateDirectories = false
         panel.treatsFilePackagesAsDirectories = false
         panel.canDownloadUbiquitousContents = false
         panel.canResolveUbiquitousConflicts = false
-        return try await withChosenOpenURL(panel, isCurrent: {
-            session.folderCatalogRequest == id && !session.tabs.isComposing
-        }) { url in
-            try await SelectedFolderCatalog.read(from: url)
-        }
+        // Changing package treatment can update both selection flags in recent macOS versions.
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        return panel
     }
 
     private func withChosenOpenURL<Result>(

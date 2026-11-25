@@ -58,6 +58,13 @@ final class WorkspaceSession {
         let catalog: SelectedFolderCatalog
     }
 
+    struct FolderEntryOpening: Identifiable {
+        let id = UUID()
+        let catalog: SelectedFolderCatalog
+        let entry: SelectedFolderCatalog.Entry
+        fileprivate(set) var hasStarted = false
+    }
+
     struct MarkdownPreviewSnapshot: Identifiable {
         let id = UUID()
         let documentID: UUID
@@ -92,8 +99,9 @@ final class WorkspaceSession {
     var pendingDiscard: ScratchTabs.DiscardTicket?
     var openRequest: UUID?
     private(set) var folderCatalogRequest: UUID?
-    private var scanningFolderCatalogID: UUID?
+    private var activeFolderReadID: UUID?
     private(set) var folderCatalogReport: FolderCatalogReport?
+    private(set) var folderEntryOpening: FolderEntryOpening?
     private(set) var saveCopyRequest: SaveCopyRequest?
     private(set) var exportRequest: ExportRequest?
     private var comparisonRequest: ComparisonRequest?
@@ -122,7 +130,7 @@ final class WorkspaceSession {
 
     var comparisonRequestID: UUID? { comparisonRequest?.id }
     private var hasFolderCatalogOperation: Bool {
-        folderCatalogRequest != nil || scanningFolderCatalogID != nil || folderCatalogReport != nil
+        folderCatalogRequest != nil || activeFolderReadID != nil || folderCatalogReport != nil || folderEntryOpening != nil
     }
     var isBusy: Bool {
         pendingDiscard != nil || openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
@@ -276,14 +284,67 @@ final class WorkspaceSession {
     func clearFolderCatalog() {
         folderCatalogRequest = nil
         folderCatalogReport = nil
+        folderEntryOpening = nil
+    }
+
+    /// Stage exactly one row. A second action on the parent window starts a fresh folder selection.
+    @discardableResult
+    func prepareFolderEntry(reportID: UUID, entryID: Data) -> Bool {
+        guard let report = folderCatalogReport, report.id == reportID,
+              folderEntryOpening == nil, activeFolderReadID == nil, tabs.canCreateTab,
+              let entry = report.catalog.entries.first(where: { $0.id == entryID }) else { return false }
+        folderEntryOpening = FolderEntryOpening(catalog: report.catalog, entry: entry)
+        folderCatalogReport = nil
+        return true
+    }
+
+    func startOpeningFolderEntry(_ id: UUID) {
+        guard folderEntryOpening?.id == id, folderEntryOpening?.hasStarted == false,
+              activeFolderReadID == nil, tabs.canCreateTab else { return }
+        folderEntryOpening?.hasStarted = true
+    }
+
+    func cancelFolderEntry(_ id: UUID) {
+        guard folderEntryOpening?.id == id else { return }
+        folderEntryOpening = nil
+    }
+
+    /// `read` receives only the reserved entry. It releases the fresh picker access before returning.
+    func readPreparedFolderEntry(
+        _ id: UUID, using read: @MainActor (FolderEntryOpening) async throws -> SelectedTextFile?
+    ) async {
+        guard let opening = folderEntryOpening, opening.id == id, opening.hasStarted,
+              activeFolderReadID == nil else { return }
+        activeFolderReadID = id
+        defer {
+            activeFolderReadID = nil
+            cancelFolderEntry(id)
+        }
+        guard !Task.isCancelled, tabs.canCreateTab else { return }
+        do {
+            guard let file = try await read(opening), !Task.isCancelled, folderEntryOpening?.id == id,
+                  tabs.canCreateTab else { return }
+            _ = tabs.openReadOnly(file)
+        } catch is CancellationError {
+            // A cancelled picker/read never creates a tab or a failure notice.
+        } catch {
+            guard !Task.isCancelled, folderEntryOpening?.id == id else { return }
+            let reason: String
+            if error is SelectedFolderCatalog.ScanError {
+                reason = "同じフォルダと原稿を確認できませんでした。フォルダの原稿一覧を取り直してください。"
+            } else {
+                reason = Self.readFailure(error)
+            }
+            fileNotice = "一覧から原稿を開けませんでした。\(reason)"
+        }
     }
 
     /// The picker callback releases its selected URL before returning the metadata snapshot.
     func readFolderCatalog(_ id: UUID, using read: @MainActor () async throws -> SelectedFolderCatalog?) async {
-        guard folderCatalogRequest == id, scanningFolderCatalogID == nil else { return }
-        scanningFolderCatalogID = id
+        guard folderCatalogRequest == id, activeFolderReadID == nil else { return }
+        activeFolderReadID = id
         defer {
-            scanningFolderCatalogID = nil
+            activeFolderReadID = nil
             cancelFolderCatalog(id)
         }
         guard !Task.isCancelled, !tabs.isComposing else { return }
@@ -297,7 +358,7 @@ final class WorkspaceSession {
             guard !Task.isCancelled, folderCatalogRequest == id else { return }
             let reason: String = switch error as? SelectedFolderCatalog.ScanError {
             case .tooManyEntries: "直下に\(SelectedFolderCatalog.entryLimit)件以下の項目があるフォルダを選んでください。"
-            case .changedWhileScanning: "一覧の取得中にフォルダが変わりました。選び直してください。"
+            case .changedWhileScanning, .selectionChanged, .entryNotListed: "一覧の取得中にフォルダが変わりました。選び直してください。"
             case .invalidLocation, .accessDenied, nil: "リンクを含まないローカルフォルダを選び、アクセス権を確認してください。"
             }
             fileNotice = "フォルダの一覧を取得できませんでした。\(reason)"

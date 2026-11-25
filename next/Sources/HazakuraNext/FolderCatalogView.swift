@@ -2,10 +2,13 @@ import Foundation
 import HazakuraNextCore
 import SwiftUI
 
-/// Displays one scan's names, without file actions, refresh, or URLs.
+/// Displays one scan and lets the user reserve one entry without retaining folder access.
 struct FolderCatalogView: View {
     let catalog: SelectedFolderCatalog
+    let canChoose: Bool
+    let choose: (Data) -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedID: Data?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -15,31 +18,37 @@ struct FolderCatalogView: View {
             Text(verbatim: catalog.folderName)
                 .font(.headline)
                 .lineLimit(2)
-            Text("取得時の候補名だけを表示し、自動更新はしません。ここからファイルを開いたり変更したりすることはできません。")
+            Text("一覧は自動更新されません。原稿を1件選び、続けて同じフォルダを選び直すと、読み取り専用で開けます。")
                 .foregroundStyle(.secondary)
             Group {
-                if catalog.names.isEmpty {
+                if catalog.entries.isEmpty {
                     ContentUnavailableView("候補がありません", systemImage: "doc.text", description: Text("直下の .md、.markdown、.txt が対象です。"))
                 } else {
-                    List {
-                        ForEach(catalog.names.map(Row.init)) { row in
-                            Text(verbatim: row.name)
+                    List(selection: $selectedID) {
+                        ForEach(catalog.entries) { entry in
+                            Text(verbatim: entry.name)
+                                .tag(entry.id)
                         }
                     }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            Button("閉じる") { dismiss() }
-                .keyboardShortcut(.cancelAction)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            HStack {
+                if !canChoose {
+                    Text("新しいタブを開ける状態で、一覧を取り直してください。")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("閉じる") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("この原稿を選ぶ") {
+                    if let selectedID { choose(selectedID) }
+                }
+                .disabled(!canChoose || selectedID == nil)
+            }
         }
         .padding(20)
         .frame(width: 540, height: 420)
-    }
-
-    private struct Row: Identifiable {
-        let name: String
-        // Swift String equality folds canonically equivalent spellings; filesystem names may not.
-        var id: Data { Data(name.utf8) }
     }
 }

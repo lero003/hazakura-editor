@@ -148,6 +148,171 @@ struct SelectedFolderCatalogTests {
         }
     }
 
+    @Test func readsOnlyTheChosenImmediateChildAsTheSameSnapshotAsDirectOpen() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "原稿.txt")
+            let bytes = Data([0xFF, 0xFE, 0x61, 0, 13, 0, 10, 0, 0x62, 0, 10, 0])
+            try bytes.write(to: url)
+            try Data([0xFF]).write(to: folder.appending(path: "another.md"))
+            let catalog = try await SelectedFolderCatalog.read(from: folder)
+            let entry = try #require(catalog.entries.first { $0.name == "原稿.txt" })
+            #expect(catalog.entries.map(\.name) == catalog.names)
+            #expect(entry.id == Data("原稿.txt".utf8))
+
+            let selected = try await catalog.readEntry(entry.id, from: folder)
+            let direct = try await SelectedTextFile.read(from: url)
+            #expect(selected.name == entry.name)
+            #expect(selected.originalBytes == bytes)
+            #expect(selected.version == direct.version)
+            #expect(selected.source == "a\r\nb\n")
+            #expect(selected.format.encoding == .utf16LE)
+            #expect(selected.format.lineEndings == .mixed)
+        }
+    }
+
+    @Test func rejectsInvalidAndAliasedIDsWithoutUsingFilesystemCollation() async throws {
+        try await withFixture { folder in
+            let name = "Caf\u{00E9}.md"
+            try Data("chosen".utf8).write(to: folder.appending(path: name))
+            try Data("hidden".utf8).write(to: folder.appending(path: ".hidden.txt"))
+            let catalog = try await SelectedFolderCatalog.read(from: folder)
+            let entry = try #require(catalog.entries.first)
+            #expect(entry.name == name)
+            #expect(entry.id == Data(entry.name.utf8))
+            let composed = Data(name.utf8)
+            let decomposed = Data(name.decomposedStringWithCanonicalMapping.utf8)
+            let variant = entry.id == composed ? decomposed : composed
+            let rejected = [Data(), Data([0xFF]), Data(".".utf8), Data("..".utf8), Data(".hidden.txt".utf8),
+                            Data("../Café.md".utf8), Data("Café.md\0suffix".utf8), Data("café.md".utf8), variant]
+            for id in rejected {
+                await #expect(throws: SelectedFolderCatalog.ScanError.entryNotListed) {
+                    try await catalog.readEntry(id, from: folder)
+                }
+            }
+            #expect(try await catalog.readEntry(entry.id, from: folder).source == "chosen")
+        }
+    }
+
+    @Test func rejectsAnotherOrReplacedFolderEvenWithMatchingNamesAndContents() async throws {
+        try await withFixture { base in
+            let fm = FileManager.default
+            let selected = base.appending(path: "first/selected", directoryHint: .isDirectory)
+            let twin = base.appending(path: "second/selected", directoryHint: .isDirectory)
+            for folder in [selected, twin] {
+                try fm.createDirectory(at: folder, withIntermediateDirectories: true)
+                try Data("same content".utf8).write(to: folder.appending(path: "draft.md"))
+            }
+            let catalog = try await SelectedFolderCatalog.read(from: selected)
+            let id = try #require(catalog.entries.first?.id)
+            await #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try await catalog.readEntry(id, from: twin)
+            }
+            try fm.moveItem(at: selected, to: base.appending(path: "old"))
+            try fm.moveItem(at: twin, to: selected)
+            await #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try await catalog.readEntry(id, from: selected)
+            }
+        }
+    }
+
+    @Test func rejectsRootVersionChangeEvenWhenChosenFileIsUnchanged() async throws {
+        try await withFixture { folder in
+            try Data().write(to: folder.appending(path: "draft.md"))
+            let catalog = try await SelectedFolderCatalog.read(from: folder)
+            let id = try #require(catalog.entries.first?.id)
+            try Data().write(to: folder.appending(path: "unlisted.bin"))
+            await #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try await catalog.readEntry(id, from: folder)
+            }
+        }
+    }
+
+    @Test func rejectsEditsInPlaceBeforeAndAfterReading() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "draft.md")
+            try Data("one".utf8).write(to: url)
+            let catalog = try await SelectedFolderCatalog.read(from: folder)
+            let id = try #require(catalog.entries.first?.id)
+            let changedTime = Date(timeIntervalSince1970: 1_700_000_000)
+            #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try catalog.readEntry(id, from: folder, beforePathRevalidation: {
+                    try Data("two".utf8).write(to: url, options: [])
+                    try FileManager.default.setAttributes([.modificationDate: changedTime], ofItemAtPath: url.path)
+                })
+            }
+            await #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try await catalog.readEntry(id, from: folder)
+            }
+        }
+    }
+
+    private enum ChildChange: CaseIterable {
+        case replacement, symlink, fifo, caseOnlyRename
+    }
+
+    @Test(arguments: ChildChange.allCases)
+    private func rejectsReplacedOrRenamedChild(_ change: ChildChange) async throws {
+        try await withFixture { folder in
+            let fm = FileManager.default
+            let url = folder.appending(path: "draft.md")
+            let moved = folder.appending(path: "moved")
+            try Data("same content".utf8).write(to: url)
+            let catalog = try await SelectedFolderCatalog.read(from: folder)
+            let id = try #require(catalog.entries.first?.id)
+            #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try catalog.readEntry(id, from: folder, beforePathRevalidation: {
+                    try fm.moveItem(at: url, to: moved)
+                    switch change {
+                    case .replacement: try Data("same content".utf8).write(to: url)
+                    case .symlink: try fm.createSymbolicLink(at: url, withDestinationURL: moved)
+                    case .fifo: try #require(url.withUnsafeFileSystemRepresentation { mkfifo($0!, 0o600) } == 0)
+                    case .caseOnlyRename: try fm.moveItem(at: moved, to: folder.appending(path: "Draft.md"))
+                    }
+                })
+            }
+            await #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try await catalog.readEntry(id, from: folder)
+            }
+        }
+    }
+
+    @Test func rejectsRootPathRedirectedThroughAnAncestorLinkAfterReading() async throws {
+        try await withFixture { folder in
+            let parent = folder.appending(path: "parent", directoryHint: .isDirectory)
+            let selected = parent.appending(path: "selected", directoryHint: .isDirectory)
+            let moved = folder.appending(path: "moved", directoryHint: .isDirectory)
+            let fm = FileManager.default
+            try fm.createDirectory(at: selected, withIntermediateDirectories: true)
+            try Data("same file".utf8).write(to: selected.appending(path: "draft.md"))
+            let catalog = try await SelectedFolderCatalog.read(from: selected)
+            let id = try #require(catalog.entries.first?.id)
+            #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try catalog.readEntry(id, from: selected, beforePathRevalidation: {
+                    try fm.moveItem(at: parent, to: moved)
+                    try fm.createSymbolicLink(at: parent, withDestinationURL: moved)
+                })
+            }
+            await #expect(throws: SelectedFolderCatalog.ScanError.selectionChanged) {
+                try await catalog.readEntry(id, from: selected)
+            }
+        }
+    }
+
+    @Test(arguments: [
+        (Data([0xC0, 0xAF]), SelectedTextFile.ReadError.invalidUTF8),
+        (Data([0xFF, 0xFE, 0x00, 0xD8]), .invalidUTF16),
+        (Data([0x61, 0x00]), .nonTextControls),
+        (Data(repeating: 0x61, count: SelectedTextFile.byteLimit + 1), .tooLarge),
+    ])
+    func sharesDirectReaderValidation(_ fixture: (Data, SelectedTextFile.ReadError)) async throws {
+        try await withFixture { folder in
+            try fixture.0.write(to: folder.appending(path: "invalid.txt"))
+            let catalog = try await SelectedFolderCatalog.read(from: folder)
+            let id = try #require(catalog.entries.first?.id)
+            await #expect(throws: fixture.1) { try await catalog.readEntry(id, from: folder) }
+        }
+    }
+
     private func withFixture(_ body: (URL) async throws -> Void) async throws {
         let fm = FileManager.default
         // Foundation may preserve /var even after resolving symlinks. Canonicalize only the fixture root.
