@@ -146,6 +146,67 @@ struct ScratchExitTests {
         #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateNow)
     }
 
+    @Test func nativeMarkedTextBlocksCleanWindowCloseAndQuitBeforeModelNotification() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let view = try installTextView(in: window)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+
+        #expect(!delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(.shared) == .terminateCancel)
+        #expect(probe.prompts.isEmpty)
+        #expect(view.hasMarkedText())
+        #expect(session.tabs.selectedTab?.document.source == "# 原稿")
+        view.unmarkText()
+        #expect(delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(.shared) == .terminateNow)
+    }
+
+    @Test(arguments: [false, true])
+    func markedTextInvalidatesApprovedExitBeforeModelNotification(isQuit: Bool) throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        let view = try installTextView(in: window)
+        session.applyCommittedSource("確定済み", to: id)
+        if isQuit {
+            try #require(delegate.applicationShouldTerminate(.shared) == .terminateLater)
+        } else {
+            #expect(!delegate.windowShouldClose(window))
+        }
+        let prompt = try #require(probe.prompts.first)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        prompt.finish(true)
+        #expect(delegate.session === session)
+        #expect(probe.replies == (isQuit ? [false] : []))
+        #expect(view.hasMarkedText())
+        #expect(session.tabs.selectedTab?.document.source == "確定済み")
+        view.unmarkText()
+        #expect(!delegate.windowShouldClose(window))
+        #expect(probe.prompts.count == 2)
+        probe.prompts.last?.finish(false)
+    }
+
+    private func installTextView(in window: NSWindow) throws -> NSTextView {
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        return view
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
+    }
+
     @Test func composingOrOpeningBlocksCloseAndQuitWithoutPresentingDiscard() throws {
         let probe = ExitProbe()
         let delegate = probe.makeDelegate()

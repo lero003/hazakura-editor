@@ -79,7 +79,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         guard sender === window, let session, presentedExit == nil else { return false }
-        switch exitGate.request(.window, tabs: session.tabs, busy: session.isBusy || sender.attachedSheet != nil) {
+        switch exitGate.request(.window, tabs: session.tabs,
+                                busy: session.isBusy || session.hasNativeMarkedText || sender.attachedSheet != nil) {
         case .allow:
             return true
         case .blocked:
@@ -109,7 +110,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
             return presentedExit.destination == .application ? .terminateLater : .terminateCancel
         }
         guard let window, let session else { return .terminateNow }
-        switch exitGate.request(.application, tabs: session.tabs, busy: session.isBusy || window.attachedSheet != nil) {
+        switch exitGate.request(.application, tabs: session.tabs,
+                                busy: session.isBusy || session.hasNativeMarkedText || window.attachedSheet != nil) {
         case .allow:
             return .terminateNow
         case .blocked:
@@ -130,7 +132,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
                 finish(false)
                 return
             }
-            let accepted = exitGate.resolve(ticket, discard: discard, tabs: session.tabs, busy: session.isBusy)
+            let accepted = exitGate.resolve(ticket, discard: discard, tabs: session.tabs,
+                                            busy: session.isBusy || session.hasNativeMarkedText)
             guard accepted, recovery != nil else {
                 presentedExit = nil
                 if discard && !accepted {

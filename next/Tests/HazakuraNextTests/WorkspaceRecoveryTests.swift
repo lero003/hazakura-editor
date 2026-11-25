@@ -29,6 +29,41 @@ struct WorkspaceRecoveryTests {
         #expect(probe.replies.isEmpty)
     }
 
+    @Test func nativeCompositionDuringQuitCleanupPreservesTheDraftAndRestagesRecovery() async throws {
+        let backend = RecoveryFixture(suspendCleanup: true)
+        let queue = backend.makeQueue()
+        let probe = RecoveryExitProbe()
+        let delegate = probe.makeDelegate(recovery: queue)
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確定済み原稿", to: id)
+        let draft = try #require(session.tabs.recoveryDraft(for: id))
+        await queue.waitForCurrentWorker()
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        try #require(delegate.applicationShouldTerminate(.shared) == .terminateLater)
+        let approval = try #require(probe.completions.first)
+        approval(true)
+        let cleanup = try #require(delegate.exitCleanupTask)
+        await backend.waitForCleanup()
+
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
+        #expect(view.hasMarkedText() && !session.tabs.isComposing)
+        await backend.finishCleanup(success: true)
+        await cleanup.value
+        #expect(probe.replies == [false])
+        #expect(delegate.session === session)
+        #expect(view.hasMarkedText())
+        #expect(session.tabs.recoveryDraft(for: id) == draft)
+        await queue.waitForCurrentWorker()
+        #expect(await backend.records() == [draft])
+        #expect(session.exitNotice != nil)
+    }
+
     @Test func quitRepliesOnceOnlyAfterApprovedCleanup() async throws {
         let backend = RecoveryFixture(suspendCleanup: true)
         let probe = RecoveryExitProbe()

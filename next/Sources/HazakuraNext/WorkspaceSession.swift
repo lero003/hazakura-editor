@@ -209,7 +209,7 @@ final class WorkspaceSession {
     enum TabDirection: Int { case previous = -1, next = 1 }
 
     // Consult the native editor as well as the model, even before its IME callback reaches us.
-    private var hasNativeMarkedText: Bool {
+    var hasNativeMarkedText: Bool {
         (window?.firstResponder as? NSTextView)?.hasMarkedText() == true
     }
 
@@ -1028,7 +1028,7 @@ final class WorkspaceSession {
     }
 
     func reserveExitDiscard() -> [RecoveryDraft]? {
-        guard !isBusy, !tabs.isComposing else { return nil }
+        guard !isBusy, !tabs.isComposing, !hasNativeMarkedText else { return nil }
         isDiscarding = true
         return tabs.recoveryDrafts
     }
@@ -1036,7 +1036,9 @@ final class WorkspaceSession {
     /// Keep editing reserved until the delegate synchronously dispatches its native decision.
     func finishExitDiscard(_ confirmed: [RecoveryDraft], reply: (Bool) -> Void) async {
         defer { isDiscarding = false }
-        let ready = await finishDiscard(confirmed) { !self.tabs.isComposing && self.tabs.recoveryDrafts == confirmed }
+        let ready = await finishDiscard(confirmed) {
+            !self.tabs.isComposing && !self.hasNativeMarkedText && self.tabs.recoveryDrafts == confirmed
+        }
         reply(ready)
     }
 
