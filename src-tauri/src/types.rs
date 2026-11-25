@@ -88,24 +88,11 @@ pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-a
 // bypass the custom menu item. The TS mirror lives in
 // `src/types.ts`.
 pub(crate) const APP_EXIT_REQUESTED_EVENT: &str = "hazakura-note://app-exit-requested";
-// v0.12+ Hazakura Local Assist Writing Companion mock (slice 2+).
-// Companion slot: the Hazakura Local Assist window and the Agent window
-// normally replace each other. `APPLY_AI_EDIT_TRANSACTION_EVENT` is the
-// explicit Diff-review apply path;
-// v2.6 A-1/A-2 sends generation-only requests through
-// `REQUEST_AI_EDIT_PROPOSAL_EVENT` and returns the candidate through a
-// separate proposal status event. A-3 applies that reviewed candidate
-// without invoking generation a second time. The main window answers the
-// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target.
-//
-// The Rust constants are the source of truth for the event
-// names; the TS mirror in `src/types.ts` re-states them so
-// the webviews can `emit()` / `listen()` on them. The Rust
-// commands consume these in the current A-3 Local Assist wiring; keep the
-// `dead_code` allow for mirrors used only by the webview boundary.
-#[allow(dead_code)]
-pub(crate) const APPLY_AI_EDIT_TRANSACTION_EVENT: &str =
-    "hazakura-note://apply-ai-edit-transaction";
+// Local Assist separates generation-only requests from explicit apply in
+// the main-window Diff. `APPLE_ASSIST_APPLY_STATUS_EVENT` reports the review
+// result to the detached window; it does not request a document change.
+// Keep the event names mirrored in `src/types.ts` and allow mirrors used
+// only by the webviews.
 #[allow(dead_code)]
 pub(crate) const APPLE_ASSIST_APPLY_STATUS_EVENT: &str =
     "hazakura-note://apple-assist-apply-status";

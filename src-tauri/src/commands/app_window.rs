@@ -442,19 +442,6 @@ pub(crate) fn set_apple_assist_window_theme<R: tauri::Runtime>(
     Ok(())
 }
 
-#[tauri::command]
-pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
-    window: tauri::WebviewWindow<R>,
-    app: tauri::AppHandle<R>,
-    payload: serde_json::Value,
-) -> Result<(), String> {
-    ensure_apple_assist_window(&window)?;
-    ensure_apple_assist_allowed_by_distribution()?;
-    app.emit_to(MAIN_WINDOW_LABEL, APPLY_AI_EDIT_TRANSACTION_EVENT, payload)
-        .map_err(|err| format!("Cannot request Hazakura Local Assist Diff apply: {err}"))?;
-    Ok(())
-}
-
 // The detached window cannot emit arbitrary events. Forward only a bounded
 // request id to main, which revokes ownership before stopping its native job.
 #[tauri::command]
@@ -481,11 +468,9 @@ pub(crate) fn validate_apple_assist_cancel(
     Ok(())
 }
 
-// v2.6 A-1/A-2: request generation of an unapplied Local Assist proposal.
-// Keep this command separate from the legacy apply transaction request so
-// the event name itself documents the buffer-mutation boundary. The main
-// window handles the event by streaming a candidate to the detached Diff
-// review surface; it must not write the editor buffer or record a transaction.
+// Request generation of an unapplied Local Assist proposal. The main window
+// handles generation without changing the editor buffer or recording an edit
+// transaction. Only an explicit decision in the main-window Diff can apply it.
 #[tauri::command]
 pub(crate) fn request_apple_assist_proposal<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
@@ -501,12 +486,6 @@ pub(crate) fn request_apple_assist_proposal<R: tauri::Runtime>(
 
 #[cfg(desktop)]
 #[cfg_attr(not(test), allow(dead_code))]
-pub(crate) fn request_apply_ai_edit_transaction_with_label(label: &str) -> Result<(), String> {
-    ensure_label_is_apple_assist(label)
-}
-
-#[cfg(desktop)]
-#[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn request_apple_assist_proposal_with_label(label: &str) -> Result<(), String> {
     ensure_label_is_apple_assist(label)
 }
@@ -518,16 +497,6 @@ pub(crate) fn set_apple_assist_window_theme_with_label_for_lane(
     lane: Option<&str>,
 ) -> Result<(), String> {
     ensure_label_is_main_or_apple_assist(label)?;
-    ensure_apple_assist_allowed_for_lane(lane)
-}
-
-#[cfg(desktop)]
-#[cfg_attr(not(test), allow(dead_code))]
-pub(crate) fn request_apply_ai_edit_transaction_with_label_for_lane(
-    label: &str,
-    lane: Option<&str>,
-) -> Result<(), String> {
-    ensure_label_is_apple_assist(label)?;
     ensure_apple_assist_allowed_for_lane(lane)
 }
 

@@ -1204,19 +1204,7 @@ function renderTargetSummary(
 }
 
 
-// `classifyApplyError` turns a raw catch-block error from the
-// `requestApplyAiEditTransaction` IPC call (or any exception
-// thrown by the listener) into a localized, actionable
-// message for the user. The Rust side returns English-only
-// error strings, and the Foundation Models Swift helper
-// emits English debug descriptions, so without this
-// classification the user would see raw English text in a
-// Japanese (or kana) Hazakura Local Assist window. The classifier
-// matches on substrings, not on the exact string, because
-// the helper wraps the original error in `Foundation
-// Models generation failed: ...` and the Rust `validate_
-// request` formats errors with template strings that may
-// shift between versions.
+// Localize proposal request and generation errors for the detached window.
 export function classifyApplyError(
   err: unknown,
   copy: AppleAssistWindowCopy,

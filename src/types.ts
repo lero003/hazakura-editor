@@ -180,24 +180,12 @@ export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 // lives in the same outside-companion slot as the Agent window.
 export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
 
-// Mirror of the Rust Local Assist request/status event constants.
-// `APPLY_AI_EDIT_TRANSACTION_EVENT` is the explicit Diff-review apply path;
-// its payload carries the already reviewed proposal and must not trigger a
-// second model generation. v2.6 A-1/A-2 uses
-// `REQUEST_AI_EDIT_PROPOSAL_EVENT` for generation-only requests and returns
-// the candidate through the separate proposal status channel. The main window
-// answers the `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded target.
-// See
-// src-tauri/src/types.rs and
-// docs/apple-local-assist-writing-companion-plan.md.
-export const APPLY_AI_EDIT_TRANSACTION_EVENT =
-  "hazakura-note://apply-ai-edit-transaction";
+// Mirrors of the Rust Local Assist request/status event constants.
+// The main window sends the outcome of its explicit Diff decision to the
+// detached window. This event does not request or perform a buffer write.
 export const APPLE_ASSIST_APPLY_STATUS_EVENT =
   "hazakura-note://apple-assist-apply-status";
-// v2.6 A-1/A-2: proposal generation is a separate IPC path from the
-// legacy apply transaction path. The main window must keep the
-// editor buffer unchanged while it streams this event's result to
-// the detached Local Assist Diff review area.
+// Proposal generation must not change the editor buffer.
 export const REQUEST_AI_EDIT_PROPOSAL_EVENT =
   "hazakura-note://request-ai-edit-proposal";
 export const CANCEL_AI_EDIT_PROPOSAL_EVENT = "hazakura-note://cancel-ai-edit-proposal";
