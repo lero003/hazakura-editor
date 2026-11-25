@@ -36,11 +36,11 @@ Developer / GitHub レーンとの差は `docs/app-store-build.md` と `docs/ass
 作業前に必ず:
 
 1. `git status --short --branch` — 既存の未コミット変更はユーザー / 前エージェントの作業。勝手に戻さない。
-2. 次の正本を読む（詳細は `docs/README.md`）:
-   - **次の一手**: `docs/current-work.md`
-   - **現状**: `docs/current-status.md` / `docs/handoff.md`
-   - **方向**: `docs/roadmap.md` / `docs/product-brief.md`
-   - **境界**: `docs/security-boundary.md`（必須級）
+2. 次の正本を読む（対象別の参照先と更新先は [文書索引](docs/README.md)）:
+   - **次の一手**: [作業キュー](docs/current-work.md#active-queue)
+   - **現状**: [実装・検証・配布状態](docs/current-status.md)
+   - **方向**: [ロードマップ](docs/roadmap.md) / [製品概要](docs/product-brief.md)
+   - **境界**: [信頼境界](docs/security-boundary.md)（必須級）
 3. 触る面に応じて追加で読む:
    - Agent Workbench → `docs/agent-workbench-boundary.md`
    - Assist / Local Assist → `docs/assist-surface-strategy.md`

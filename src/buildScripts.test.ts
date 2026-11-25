@@ -965,14 +965,14 @@ describe("Tauri IPC command surface", () => {
     // Registered for the Developer probe surface; the frontend has not
     // wired it up yet.
     "probe_apple_assist_availability",
-    // These two kept their Rust command + label gate but lost their
-    // frontend wrapper in the unreferenced-export cleanup
-    // (445b7607); they are listed here so the Rust surface stays
-    // deliberate until the frontend either re-adds the wrapper or the
-    // commands are retired.
+    // Retains its Rust command and label gate after its frontend wrapper
+    // was removed in the unreferenced-export cleanup (445b7607).
     "open_main_agent_pane",
-    "request_apply_ai_edit_transaction",
   ];
+
+  it("does not register the retired detached-window Local Assist apply command", () => {
+    expect(registeredCommands).not.toContain("request_apply_ai_edit_transaction");
+  });
 
   it("registers every command the frontend invokes", () => {
     expect(registeredCommands.length).toBeGreaterThan(0);

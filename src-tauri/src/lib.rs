@@ -274,7 +274,6 @@ pub fn run() {
             open_apple_assist_window,
             toggle_apple_assist_window,
             set_apple_assist_window_theme,
-            request_apply_ai_edit_transaction,
             request_apple_assist_proposal,
             request_apple_assist_review,
             focus_main_apple_assist_review,

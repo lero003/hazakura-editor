@@ -214,21 +214,11 @@ fn app_store_distribution_lane_allows_apple_assist_generation_commands() {
         .expect("developer lane may probe Hazakura Local Assist");
     generate_apple_assist_candidate_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
         .expect("developer lane may generate Hazakura Local Assist candidates");
-    request_apply_ai_edit_transaction_with_label_for_lane(
-        APPLE_ASSIST_WINDOW_LABEL,
-        Some("developer"),
-    )
-    .expect("developer lane may request Hazakura Local Assist apply from the Hazakura Local Assist window");
 
     probe_apple_assist_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
         .expect("App Store lane may probe Hazakura Local Assist");
     generate_apple_assist_candidate_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
         .expect("App Store lane may generate Hazakura Local Assist candidates");
-    request_apply_ai_edit_transaction_with_label_for_lane(
-        APPLE_ASSIST_WINDOW_LABEL,
-        Some("app-store"),
-    )
-    .expect("App Store lane may request Hazakura Local Assist apply from the Hazakura Local Assist window");
 }
 
 #[test]
@@ -286,24 +276,6 @@ fn label_gate_apple_assist_rejects_agent_label() {
     let err = ensure_label_is_apple_assist(AGENT_WINDOW_LABEL)
         .expect_err("agent label must be rejected by the apple-assist-only gate");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
-}
-
-#[test]
-fn request_apply_ai_edit_transaction_accepts_apple_assist_only() {
-    request_apply_ai_edit_transaction_with_label(APPLE_ASSIST_WINDOW_LABEL)
-        .expect("apple-assist must be allowed to request AI edit apply");
-
-    let err = request_apply_ai_edit_transaction_with_label(MAIN_WINDOW_LABEL)
-        .expect_err("main must not request Hazakura Local Assist apply through this command");
-    assert!(err.contains(MAIN_WINDOW_LABEL), "{err}");
-
-    let err = request_apply_ai_edit_transaction_with_label(AGENT_WINDOW_LABEL)
-        .expect_err("agent must not request Hazakura Local Assist apply");
-    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
-
-    let err = request_apply_ai_edit_transaction_with_label(UNKNOWN_WINDOW_LABEL)
-        .expect_err("unknown window must not request Hazakura Local Assist apply");
-    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
 }
 
 #[test]
