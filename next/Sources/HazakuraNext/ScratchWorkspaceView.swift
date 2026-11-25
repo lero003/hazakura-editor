@@ -106,7 +106,7 @@ struct ScratchWorkspaceView: View {
         .task(id: saveID) {
             if let saveID {
                 defer { session.cancelSaveCopy(saveID) }
-                guard session.saveCopyRequest?.id == saveID else { return }
+                guard session.prepareSaveCopyDestination(saveID) else { return }
                 await withSelectedDestination(for: .copy) { destination in
                     await session.writeRequestedCopy(saveID, to: destination)
                 }

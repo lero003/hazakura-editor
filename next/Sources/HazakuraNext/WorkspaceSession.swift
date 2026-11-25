@@ -721,7 +721,10 @@ final class WorkspaceSession {
         }
     }
     var canMakeEditableCopy: Bool { canAddTab && tabs.selectedTab?.isReadOnly == true }
-    var canSaveCopy: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab?.isReadOnly == false }
+    var canSaveCopy: Bool {
+        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil &&
+            tabs.selectedTab?.isReadOnly == false
+    }
 
     func makeEditableCopy() {
         guard canMakeEditableCopy, let id = tabs.makeEditableCopyOfSelection() else { return }
@@ -734,7 +737,7 @@ final class WorkspaceSession {
     }
 
     var selectedCopySaveStatus: CopySaveStatus? {
-        guard saveCopyRequest == nil, !tabs.isComposing, !isDiscarding,
+        guard saveCopyRequest == nil, !tabs.isComposing, !hasNativeMarkedText, !isDiscarding,
               let tab = tabs.selectedTab, let written = copyWrittenRevisions[tab.id] else { return nil }
         return tab.document.revision == written ? .currentRevision : .earlierRevision
     }
@@ -748,6 +751,11 @@ final class WorkspaceSession {
                                           encoding: selected.copyOrigin?.format.encoding ?? .utf8)
     }
 
+    func prepareSaveCopyDestination(_ requestID: UUID) -> Bool {
+        guard let request = saveCopyRequest, request.id == requestID, !isWritingCopy, !Task.isCancelled else { return false }
+        return validateSaveCopySource(request)
+    }
+
     func cancelSaveCopy(_ requestID: UUID) {
         guard saveCopyRequest?.id == requestID, !isWritingCopy else { return }
         saveCopyRequest = nil
@@ -759,12 +767,7 @@ final class WorkspaceSession {
     ) async {
         guard let request = saveCopyRequest, request.id == requestID, !isWritingCopy else { return }
         defer { isWritingCopy = false; saveCopyRequest = nil }
-        guard !Task.isCancelled else { return }
-        guard !tabs.isComposing, let selected = tabs.selectedTab,
-              selected.id == request.documentID, selected.document.revision == request.revision else {
-            fileNotice = "原稿が変わったため、コピーを保存していません。もう一度お試しください。"
-            return
-        }
+        guard !Task.isCancelled, validateSaveCopySource(request) else { return }
         isWritingCopy = true
         do {
             try await writer(request.source, request.encoding, destination)
@@ -778,6 +781,19 @@ final class WorkspaceSession {
         } catch {
             fileNotice = "コピーを保存できませんでした。\(Self.copyWriteFailure(error))"
         }
+    }
+
+    private func validateSaveCopySource(_ request: SaveCopyRequest) -> Bool {
+        guard !tabs.isComposing, !hasNativeMarkedText else {
+            fileNotice = "変換を確定またはキャンセルしてから、もう一度コピーを保存してください。"
+            return false
+        }
+        guard let selected = tabs.selectedTab, selected.id == request.documentID,
+              selected.document.revision == request.revision else {
+            fileNotice = "原稿が変わったため、コピーを保存していません。もう一度お試しください。"
+            return false
+        }
+        return true
     }
 
     private static func copyWriteFailure(_ error: Error) -> String {

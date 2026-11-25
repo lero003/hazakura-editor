@@ -131,6 +131,89 @@ struct WorkspaceCopySaveTests {
         #expect(session.tabs.selectedTab?.document.source == "新しい原文")
     }
 
+    @Test func nativeCompositionBlocksNewCopySaveAndHidesItsStatusBeforeModelNotification() async throws {
+        let (session, window, view) = try nativeSaveFixture()
+        defer { window.close() }
+        session.requestSaveCopy()
+        let saved = try #require(session.saveCopyRequest?.id)
+        await session.writeRequestedCopy(saved, to: URL(fileURLWithPath: "/synthetic/copy.md")) { _, _, _ in }
+        try #require(session.selectedCopySaveStatus == .currentRevision)
+
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        #expect(!session.canSaveCopy)
+        #expect(session.selectedCopySaveStatus == nil)
+        session.requestSaveCopy()
+        #expect(session.saveCopyRequest == nil)
+        #expect(view.hasMarkedText())
+    }
+
+    @Test func compositionBeforeTheSaveTaskPreventsPresentingTheDestinationPicker() throws {
+        let (session, window, view) = try nativeSaveFixture()
+        defer { window.close() }
+        session.requestSaveCopy()
+        let request = try #require(session.saveCopyRequest?.id)
+        #expect(session.prepareSaveCopyDestination(request))
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+
+        #expect(!session.prepareSaveCopyDestination(request))
+        session.cancelSaveCopy(request) // The view's picker task does this on exit.
+        #expect(!session.isBusy)
+        #expect(session.fileNotice != nil)
+        #expect(view.hasMarkedText())
+        #expect(window.firstResponder === view)
+    }
+
+    @Test func nativeCompositionAfterChoosingADestinationPreventsWritingUntilARetry() async throws {
+        let (session, window, view) = try nativeSaveFixture()
+        defer { window.close() }
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確定原稿\r\n", to: id)
+        let drafts = session.tabs.recoveryDrafts
+        let destination = URL(fileURLWithPath: "/synthetic/copy.md")
+        let writer = CopyWriterProbe()
+        session.requestSaveCopy()
+        let request = try #require(session.saveCopyRequest?.id)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        let selection = view.selectedRange()
+        let marked = view.markedRange()
+
+        await session.writeRequestedCopy(request, to: destination, using: { await writer.record($0, $1, $2) })
+        #expect(await writer.calls().isEmpty)
+        #expect(session.saveCopyRequest == nil)
+        #expect(session.selectedCopySaveStatus == nil)
+        #expect(session.fileNotice != nil)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(view.hasMarkedText())
+        #expect(view.selectedRange() == selection && view.markedRange() == marked)
+        #expect(window.firstResponder === view)
+
+        view.unmarkText()
+        session.requestSaveCopy()
+        let retry = try #require(session.saveCopyRequest?.id)
+        await session.writeRequestedCopy(retry, to: destination, using: { await writer.record($0, $1, $2) })
+        #expect(await writer.calls() == [.init(bytes: Data("確定原稿\r\n".utf8), encoding: .utf8, url: destination)])
+        #expect(session.selectedCopySaveStatus == .currentRevision)
+        #expect(session.tabs.recoveryDrafts == drafts)
+    }
+
+    private func nativeSaveFixture() throws -> (WorkspaceSession, NSWindow, NSTextView) {
+        let delegate = ScratchApplicationDelegate(source: "下書き")
+        let window = delegate.prepareWindow()
+        let session = try #require(delegate.session)
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        return (session, window, view)
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
+    }
+
     @Test func writingPreventsQuitAndDuplicateWritesUntilItFinishes() async throws {
         let delegate = ScratchApplicationDelegate(source: "下書き")
         let window = delegate.prepareWindow()
