@@ -83,15 +83,17 @@ struct LineDiffView: View {
                 lineNumber(row.afterLine, label: "比較先")
                 VStack(alignment: .leading, spacing: 2) {
                     if preview.isTruncated {
-                        Text("先頭のみ表示（最大 \(Self.byteLimit) バイト）")
+                        Text(preview.text.isEmpty
+                             ? "先頭の文字が表示上限を超えています。"
+                             : "先頭のみ表示（最大 \(Self.byteLimit) バイト）")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    if preview.text.isEmpty {
+                    if !preview.isTruncated && preview.text.isEmpty {
                         Text("（空行）")
                             .font(.callout)
                             .foregroundStyle(.secondary)
-                    } else {
+                    } else if !preview.text.isEmpty {
                         Text(verbatim: preview.text)
                             .font(.system(.callout, design: .monospaced))
                             .fixedSize(horizontal: false, vertical: true)
@@ -170,11 +172,14 @@ struct BoundedTextPreview {
             isTruncated = false
             return
         }
-        // Exclude an incomplete UTF-8 scalar without scanning the rest of the line.
-        while (bytes[end] & 0b1100_0000) == 0b1000_0000 {
-            bytes.formIndex(before: &end)
-        }
-        text = String(decoding: bytes[..<end], as: UTF8.self)
+        // Include the scalar at the cut for at most four bytes of lookahead.
+        // If that scalar belongs to the preceding character, drop that character too.
+        repeat {
+            bytes.formIndex(after: &end)
+        } while end != bytes.endIndex && (bytes[end] & 0b1100_0000) == 0b1000_0000
+        var prefix = String(decoding: bytes[..<end], as: UTF8.self)
+        prefix.removeLast()
+        text = prefix
         isTruncated = true
     }
 }

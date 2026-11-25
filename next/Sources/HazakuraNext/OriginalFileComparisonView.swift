@@ -218,15 +218,17 @@ private struct ComparisonSourcePreview: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             if isTruncated {
-                Text("本文の先頭のみ表示しています（最大 \(Self.byteLimit / 1024) KiB）。比較結果は表示範囲に限りません。")
+                Text(text.isEmpty
+                     ? "先頭の文字が表示上限を超えています。比較結果は表示範囲に限りません。"
+                     : "本文の先頭のみ表示しています（最大 \(Self.byteLimit / 1024) KiB）。比較結果は表示範囲に限りません。")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
             ScrollView {
                 Group {
-                    if text.isEmpty {
+                    if !isTruncated && text.isEmpty {
                         Text("（本文なし）").foregroundStyle(.secondary)
-                    } else {
+                    } else if !text.isEmpty {
                         Text(verbatim: text)
                             .font(.system(.body, design: .monospaced))
                             .textSelection(.enabled)
