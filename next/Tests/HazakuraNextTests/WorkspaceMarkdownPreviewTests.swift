@@ -59,6 +59,98 @@ struct WorkspaceMarkdownPreviewTests {
         #expect(session.tabs.selectedTab?.document.source == "新稿")
     }
 
+    @Test(arguments: [false, true])
+    func nativeCompositionBlocksOpeningAReadingSheet(isBook: Bool) throws {
+        let session = WorkspaceSession(source: "# 初稿")
+        session.newTab()
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確定済みの原稿", to: id)
+        let drafts = session.tabs.recoveryDrafts
+        let (window, editor) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        markText(in: editor)
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        let ranges = [editor.selectedRange(), editor.markedRange()]
+        if isBook {
+            #expect(!session.canPreviewBook)
+            session.requestBookPreview()
+            #expect(session.bookPreviewRequest == nil)
+        } else {
+            #expect(!session.canPreviewMarkdown)
+            session.requestMarkdownPreview()
+            #expect(session.markdownPreview == nil)
+        }
+        #expect(!session.isBusy)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(window.firstResponder === editor)
+        #expect([editor.selectedRange(), editor.markedRange()] == ranges)
+    }
+
+    @Test func nativeCompositionDoesNotQueueAHeadingReveal() throws {
+        let source = "# 見出し\r\n"
+        let session = WorkspaceSession(source: source)
+        let (window, editor) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        markText(in: editor)
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        #expect(!session.requestMarkdownReveal(preview.id, offset: 0))
+        #expect(session.markdownPreview?.id == preview.id)
+        #expect(editor.hasMarkedText())
+
+        editor.unmarkText()
+        try #require(session.requestMarkdownReveal(preview.id, offset: 0))
+        session.dismissMarkdownPreview(preview.id)
+        #expect(session.takeSourceReveal(preview.id, documentID: preview.documentID, editorSource: source) == NSRange(location: 0, length: 0))
+        #expect(session.tabs.selectedTab?.document.source == source)
+        #expect(session.tabs.recoveryDrafts.isEmpty)
+    }
+
+    @Test func nativeCompositionDoesNotConsumeBookConfirmation() throws {
+        let session = WorkspaceSession(source: "# 最初")
+        let first = try #require(session.tabs.selectedID)
+        session.newTab()
+        let second = try #require(session.tabs.selectedID)
+        let source = "# 確定済み か\u{3099}\r\n"
+        session.applyCommittedSource(source, to: second)
+        let drafts = session.tabs.recoveryDrafts
+        let (window, editor) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        session.requestBookPreview()
+        let request = try #require(session.bookPreviewRequest)
+        markText(in: editor)
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        #expect(session.confirmBookPreview(request.id, selected: [second, first]) == nil)
+        #expect(session.bookPreviewRequest?.id == request.id)
+        #expect(session.tabs.selectedID == second)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(editor.hasMarkedText())
+
+        editor.unmarkText()
+        let sources = try #require(session.confirmBookPreview(request.id, selected: [second, first]))
+        #expect(sources.map(\.id) == [first, second])
+        #expect(sources[1].text.utf8.elementsEqual(source.utf8))
+    }
+
+    private func attachNativeEditor(to session: WorkspaceSession) throws -> (NSWindow, NSTextView) {
+        _ = NSApplication.shared
+        let frame = NSRect(x: 0, y: 0, width: 300, height: 200)
+        let window = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        let editor = NSTextView(frame: frame)
+        window.contentView = editor
+        try #require(window.makeFirstResponder(editor))
+        session.window = window
+        return (window, editor)
+    }
+
+    private func markText(in editor: NSTextView) {
+        editor.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                             replacementRange: NSRange(location: NSNotFound, length: 0))
+    }
+
     @Test func previewOfAReadOnlyFileUsesItsCapturedTextAfterDiskChanges() async throws {
         let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
             path.flatMap { Darwin.realpath($0, nil) }

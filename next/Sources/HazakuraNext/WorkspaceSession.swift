@@ -271,7 +271,10 @@ final class WorkspaceSession {
             readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil &&
             assistReviewSample == nil && lineJumpRequest == nil && sourceSearchRequest == nil
     }
-    var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+    private var canStartReadingPreview: Bool {
+        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil
+    }
+    var canPreviewMarkdown: Bool { canStartReadingPreview && tabs.selectedTab != nil }
     var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
     var canExport: Bool {
         !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil && tabs.selectedTab != nil
@@ -346,7 +349,7 @@ final class WorkspaceSession {
         return tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
     }
 
-    var canPreviewBook: Bool { !isBusy && !tabs.isComposing && tabs.tabs.count >= 2 }
+    var canPreviewBook: Bool { canStartReadingPreview && tabs.tabs.count >= 2 }
 
     func requestBookPreview() {
         guard canPreviewBook else { return }
@@ -359,7 +362,7 @@ final class WorkspaceSession {
 
     func confirmBookPreview(_ id: UUID, selected: Set<UUID>) -> [MarkdownBookPreview.Source]? {
         guard let request = bookPreviewRequest, request.id == id, confirmedBookInput == nil,
-              !tabs.isComposing, selected.count >= 2,
+              !tabs.isComposing, !hasNativeMarkedText, selected.count >= 2,
               selected.isSubset(of: Set(request.choices.map(\.id))) else { return nil }
         let chosen = tabs.tabs.filter { selected.contains($0.id) }
         guard chosen.count == selected.count else { return nil }
@@ -425,7 +428,7 @@ final class WorkspaceSession {
 
     func requestMarkdownReveal(_ previewID: UUID, offset: Int) -> Bool {
         guard let preview = markdownPreview, preview.id == previewID, sourceReveal == nil,
-              !tabs.isComposing, let selected = tabs.selectedTab, selected.id == preview.documentID,
+              !tabs.isComposing, !hasNativeMarkedText, let selected = tabs.selectedTab, selected.id == preview.documentID,
               selected.document.revision == preview.revision, offset >= 0, offset < preview.source.utf16.count else { return false }
         sourceReveal = SourceReveal(id: previewID, documentID: preview.documentID, revision: preview.revision,
                                     source: preview.source, range: NSRange(location: offset, length: 0),
