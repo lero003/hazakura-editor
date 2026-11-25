@@ -368,7 +368,6 @@ struct ScratchWorkspaceView: View {
                         .labelStyle(.iconOnly)
                 }
                 .help("退避された原稿を確認する")
-                .disabled(!session.canRequestRecovery)
             }
 
             Button {
@@ -378,7 +377,7 @@ struct ScratchWorkspaceView: View {
                     .labelStyle(.iconOnly)
             }
             .help("テキストを読み取り専用で開く（⌘O）")
-            .disabled(!session.canAddTab)
+            .disabled(!session.tabs.canCreateTab)
 
             if session.tabs.selectedTab?.isReadOnly == true {
                 Button {
@@ -387,7 +386,7 @@ struct ScratchWorkspaceView: View {
                     Label("編集用コピーを開く", systemImage: "doc.on.doc").labelStyle(.iconOnly)
                 }
                 .help("元のファイルを変更せず、別のタブで編集する")
-                .disabled(!session.canMakeEditableCopy)
+                .disabled(!session.tabs.canCreateTab)
             } else {
                 Button {
                     session.requestSaveCopy()
@@ -395,7 +394,7 @@ struct ScratchWorkspaceView: View {
                     Label("コピーを保存", systemImage: "square.and.arrow.down").labelStyle(.iconOnly)
                 }
                 .help("原稿を新しいファイルに保存（⌘⇧S）")
-                .disabled(!session.canSaveCopy)
+                .disabled(session.tabs.selectedTab?.isReadOnly != false)
                 if session.tabs.selectedTab?.copyOrigin != nil {
                     Button {
                         session.requestOriginalComparison()
@@ -403,7 +402,6 @@ struct ScratchWorkspaceView: View {
                         Label("原本の版を比較", systemImage: "arrow.left.arrow.right").labelStyle(.iconOnly)
                     }
                     .help("ファイルを選び直し、開いた時点・ディスク・編集中の原稿を比較する")
-                    .disabled(!session.canCompareOriginal)
                 }
             }
 
@@ -413,7 +411,7 @@ struct ScratchWorkspaceView: View {
                 Label("Markdownプレビュー", systemImage: "doc.richtext").labelStyle(.iconOnly)
             }
             .help("選択中の原稿を読み取り専用でプレビューする")
-            .disabled(!session.canPreviewMarkdown)
+            .disabled(session.tabs.selectedTab == nil)
 
             Button {
                 session.newTab()
@@ -422,7 +420,7 @@ struct ScratchWorkspaceView: View {
                     .labelStyle(.iconOnly)
             }
             .help("新規タブ（⌘T、最大\(ScratchTabs.limit)件）")
-            .disabled(!session.canAddTab)
+            .disabled(!session.tabs.canCreateTab)
 
             Button {
                 session.requestTabClose()
@@ -431,11 +429,11 @@ struct ScratchWorkspaceView: View {
                     .labelStyle(.iconOnly)
             }
             .help("選択中のタブを閉じる")
-            .disabled(!session.canRequestTabClose)
+            .disabled(session.tabs.selectedID == nil)
         }
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
-        .disabled(session.isBusy)
+        .disabled(!session.canOfferTabBarActions)
     }
 
     private func tabButton(for tab: ScratchTabs.Tab) -> some View {
@@ -454,7 +452,7 @@ struct ScratchWorkspaceView: View {
         .tint(isSelected ? Color.accentColor : nil)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .accessibilityValue(tab.isReadOnly ? "読み取り専用" : "")
-        .disabled(isSelected || !session.canChangeTab)
+        .disabled(isSelected)
     }
 
     private var focusedTabBar: some View {
@@ -478,9 +476,7 @@ struct ScratchWorkspaceView: View {
                 guard session.isZenMode else { return }
                 session.toggleZenMode()
             }
-            // Only observe model state here; sheet detachment does not invalidate this view.
-            // toggleZenMode() also checks the native input and sheet state when invoked.
-            .disabled(session.isBusy || session.tabs.isComposing)
+            .disabled(!session.canOfferTabBarActions)
             .layoutPriority(1)
         }
         .font(.callout)

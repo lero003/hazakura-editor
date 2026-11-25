@@ -75,6 +75,58 @@ struct WorkspaceTabNavigationTests {
         #expect(session.tabs.selectedID == first)
     }
 
+    @Test func endingASheetRequestMakesTheTabBarAvailableWithoutBypassingNativeGuards() throws {
+        let session = WorkspaceSession(source: "一番目")
+        let first = try #require(session.tabs.selectedID)
+        session.newTab()
+        let second = try #require(session.tabs.selectedID)
+        let frame = NSRect(x: 0, y: 0, width: 300, height: 200)
+        let window = SheetStateWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        let sheet = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        sheet.isReleasedWhenClosed = false
+        defer { window.close(); sheet.close() }
+        session.window = window
+        let editor = try installTextView(in: window)
+
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        #expect(!session.canOfferTabBarActions)
+        // SwiftUI can update between the model releasing its request and AppKit ending the sheet.
+        window.simulatedSheet = sheet
+        session.dismissMarkdownPreview(preview.id)
+        try #require(!session.isBusy && window.attachedSheet === sheet)
+        #expect(session.canOfferTabBarActions)
+        expectBlocked(session, current: second, target: first)
+        session.newTab()
+        session.requestOpen()
+        session.requestSaveCopy()
+        session.requestMarkdownPreview()
+        #expect(session.tabs.tabs.map(\.id) == [first, second])
+        #expect(session.openRequest == nil && session.saveCopyRequest == nil && session.markdownPreview == nil)
+
+        window.simulatedSheet = nil
+        markText(in: editor)
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        #expect(session.canOfferTabBarActions)
+        expectBlocked(session, current: second, target: first)
+        session.tabs.setComposing(true, in: second)
+        #expect(!session.canOfferTabBarActions)
+        editor.unmarkText()
+        session.tabs.setComposing(false, in: second)
+        #expect(session.canOfferTabBarActions)
+        #expect(session.tabs.selectedID == second)
+        session.selectTab(first)
+        #expect(session.tabs.selectedID == first)
+        session.requestMarkdownPreview()
+        #expect(session.markdownPreview?.documentID == first)
+    }
+
+    private final class SheetStateWindow: NSWindow {
+        var simulatedSheet: NSWindow?
+        override var attachedSheet: NSWindow? { simulatedSheet }
+    }
+
     @Test func nativeMarkedTextBlocksSelectionEvenBeforeModelNotification() throws {
         let session = WorkspaceSession(source: "一番目")
         let first = try #require(session.tabs.selectedID)

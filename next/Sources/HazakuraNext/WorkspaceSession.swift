@@ -213,8 +213,11 @@ final class WorkspaceSession {
         (window?.firstResponder as? NSTextView)?.hasMarkedText() == true
     }
 
+    // SwiftUI uses observable state only; AppKit may detach its sheet after the request ends.
+    var canOfferTabBarActions: Bool { !isBusy && !tabs.isComposing }
+
     var canChangeTab: Bool {
-        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil
+        canOfferTabBarActions && !hasNativeMarkedText && window?.attachedSheet == nil
     }
 
     var canCycleTabs: Bool { tabs.tabs.count > 1 && tabs.selectedID != nil && canChangeTab }
