@@ -913,6 +913,11 @@ final class WorkspaceSession {
             return
         }
 
+        guard SelectedTextCopyWriter.isValidDestinationURL(destination) else {
+            fileNotice = "\(name)を書き出せませんでした。ローカルの保存先を選んでください。"
+            return
+        }
+
         switch request.input {
         case .book(let book):
             await renderAndWriteExport(request, to: destination, render: {

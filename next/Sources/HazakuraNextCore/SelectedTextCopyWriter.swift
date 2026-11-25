@@ -110,6 +110,11 @@ public enum SelectedTextCopyWriter {
         // Do not report cancellation or a close error after the new copy is visible.
     }
 
+    /// Checks URL shape only. The writer still validates and opens the selected destination itself.
+    package static func isValidDestinationURL(_ url: URL) -> Bool {
+        (try? Destination(url)) != nil
+    }
+
     private struct Destination {
         let parentPath: String
         let leaf: String

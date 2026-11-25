@@ -385,6 +385,31 @@ struct WorkspaceHTMLExportTests {
         #expect(session.isBusy == false)
     }
 
+    @Test(arguments: [
+        "file://example.invalid/synthetic/export.html",
+        "file:///synthetic/export.html?draft=1",
+        "file:///synthetic/export.html#preview",
+        "file:///synthetic%2Fother/export.html",
+    ])
+    func rejectsInvalidDestinationURLsBeforeRendering(_ address: String) async throws {
+        let url = try #require(URL(string: address))
+        let session = WorkspaceSession(source: "# 原稿")
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("# 未保存の確定原稿", to: id)
+        let drafts = session.tabs.recoveryDrafts
+        session.requestExport(.html)
+        let request = try #require(session.exportRequest?.id)
+
+        await session.writeRequestedExport(request, to: url,
+                                           using: .init(renderHTML: unexpectedRender, writeHTML: unexpectedWrite))
+
+        #expect(session.fileNotice?.contains("ローカルの保存先を選んでください") == true)
+        #expect(session.fileNotice?.contains("export.html") == false)
+        #expect(!session.isBusy && session.canExport)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDrafts == drafts)
+    }
+
     @Test func mapsRenderAndWriterErrorsWithoutDisclosingPaths() async throws {
         let session = WorkspaceSession(source: "# 原稿")
         for failure in [MarkdownHTMLExport.ExportError.unavailable(.inputTooLarge), .tooLarge] {
