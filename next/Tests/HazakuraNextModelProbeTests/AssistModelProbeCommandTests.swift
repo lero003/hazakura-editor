@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import HazakuraNextModelProbe
 
@@ -6,10 +7,164 @@ struct AssistModelProbeCommandTests {
     @Test func onlyTheExactCommandFormsEnableTheProbe() {
         #expect(AssistModelProbeCommand.parse(["--check"]) == .check)
         #expect(AssistModelProbeCommand.parse(["--generate"]) == .generate)
+        #expect(AssistModelProbeCommand.parse(["--compare"]) == .compare)
         for arguments in [[], ["--long-sample"], ["--check", "--generate"], ["--check", "--check"],
-                          ["--generate", "合成でない入力"], ["--generate", "--check"], ["/not/an/input"]] {
+                          ["--generate", "合成でない入力"], ["--generate", "--check"], ["/not/an/input"],
+                          ["--compare", "合成でない入力"], ["--compare", "/not/an/input"],
+                          ["--compare", "--compare"], ["--compare", "--generate"], ["--check", "--compare"]] {
             #expect(AssistModelProbeCommand.parse(arguments) == .invalid)
         }
+    }
+
+    @Test func comparisonRunsSequentiallyAndEncodesOnlyOrderedMetrics() async throws {
+        let candidates = ["試行一の候補", "試行二では異なる長さの候補"]
+        var events: [String] = []
+        var attempts = 0
+        let report = await AssistModelProbeCommand.compare(availability: {
+            events.append("check")
+            return .available
+        }, produce: {
+            let attempt = attempts
+            attempts += 1
+            events.append("start \(attempt)")
+            await Task.yield()
+            events.append("finish \(attempt)")
+            return candidates.indices.contains(attempt) ? candidates[attempt] : "unexpected attempt"
+        })
+
+        #expect(events == ["check", "start 0", "finish 0", "check", "start 1", "finish 1"])
+        #expect(report.exitCode == 0)
+        let second = try #require(report.second)
+        let line = try report.jsonLine()
+        #expect(line.last == "\n")
+        #expect(line.filter(\.isNewline).count == 1)
+        let json = try #require(try JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any])
+        #expect(Set(json.keys) == ["first", "second"])
+        for (key, attempt, candidate) in [("first", report.first, candidates[0]), ("second", second, candidates[1])] {
+            #expect(attempt.status == .completed)
+            #expect(attempt.availability == .available)
+            #expect(attempt.responseUTF8Bytes == candidate.utf8.count)
+            let elapsed = try #require(attempt.elapsedMilliseconds)
+            #expect(elapsed >= 0)
+            let metrics = try #require(json[key] as? [String: Any])
+            #expect(Set(metrics.keys) == ["backend", "fixture", "status", "availability", "elapsedMilliseconds", "responseUTF8Bytes"])
+            #expect(metrics["backend"] as? String == "foundationModelsOnDevice")
+            #expect(metrics["fixture"] as? String == "ja-rephrase-v1")
+            #expect(metrics["status"] as? String == "completed")
+            #expect(metrics["availability"] as? String == "available")
+            #expect(metrics["responseUTF8Bytes"] as? Int == candidate.utf8.count)
+            #expect(metrics["elapsedMilliseconds"] as? Int64 == elapsed)
+            #expect(line.contains(candidate) == false)
+        }
+    }
+
+    @Test(arguments: [1, 2])
+    func comparisonDoesNotRetryFailedGeneration(_ failureAttempt: Int) async throws {
+        struct PrivateComparisonDiagnostic: Error, CustomStringConvertible {
+            let description: String
+        }
+        let payload = "private-engine-diagnostic-33"
+        var checks = 0
+        var attempts = 0
+        let report = await AssistModelProbeCommand.compare(availability: {
+            checks += 1
+            return .available
+        }, produce: {
+            attempts += 1
+            if attempts == failureAttempt { throw PrivateComparisonDiagnostic(description: payload) }
+            return "最初の候補"
+        })
+
+        #expect(checks == failureAttempt)
+        #expect(attempts == failureAttempt)
+        let failed: AssistModelProbeCommand.Report
+        if failureAttempt == 1 {
+            failed = report.first
+            #expect(report.second == nil)
+        } else {
+            #expect(report.first.status == .completed)
+            #expect(report.first.responseUTF8Bytes == "最初の候補".utf8.count)
+            failed = try #require(report.second)
+        }
+        #expect(failed.status == .failed)
+        #expect(failed.responseUTF8Bytes == nil)
+        #expect(failed.elapsedMilliseconds == nil)
+        #expect(report.exitCode == 1)
+        let line = try report.jsonLine()
+        #expect(line.contains(payload) == false)
+        #expect(line.contains("PrivateComparisonDiagnostic") == false)
+        #expect(line.contains("最初の候補") == false)
+    }
+
+    @Test func comparisonChecksAvailabilityAgainBeforeSecondGeneration() async throws {
+        var available = true
+        var checks = 0
+        var attempts = 0
+        let report = await AssistModelProbeCommand.compare(availability: {
+            checks += 1
+            return available ? .available : .modelNotReady
+        }, produce: {
+            attempts += 1
+            available = false
+            return "最初の応答"
+        })
+
+        #expect(checks == 2)
+        #expect(attempts == 1)
+        #expect(report.first.status == .completed)
+        #expect(report.first.availability == .available)
+        #expect(report.first.responseUTF8Bytes == "最初の応答".utf8.count)
+        let second = try #require(report.second)
+        #expect(second.status == .unavailable)
+        #expect(second.availability == .modelNotReady)
+        #expect(second.responseUTF8Bytes == nil)
+        #expect(second.elapsedMilliseconds == nil)
+        #expect(report.exitCode == 3)
+    }
+
+    @Test(arguments: [1, 2])
+    func comparisonOmitsMetricsFromResultsReturningAfterCancellation(_ cancelledAttempt: Int) async throws {
+        var checks = 0
+        var attempts = 0
+        let lateCandidate = "取消後に届いた候補"
+        let task = Task { @MainActor in
+            await AssistModelProbeCommand.compare(availability: {
+                checks += 1
+                return .available
+            }, produce: {
+                attempts += 1
+                if attempts == cancelledAttempt {
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    return lateCandidate
+                }
+                return "取消前の候補"
+            })
+        }
+        let report = await task.value
+
+        #expect(checks == cancelledAttempt)
+        #expect(attempts == cancelledAttempt)
+        let cancelled: AssistModelProbeCommand.Report
+        if cancelledAttempt == 1 {
+            cancelled = report.first
+            #expect(report.second == nil)
+        } else {
+            #expect(report.first.status == .completed)
+            #expect(report.first.responseUTF8Bytes == "取消前の候補".utf8.count)
+            cancelled = try #require(report.second)
+        }
+        #expect(cancelled.status == .cancelled)
+        #expect(cancelled.responseUTF8Bytes == nil)
+        #expect(cancelled.elapsedMilliseconds == nil)
+        #expect(report.exitCode == 130)
+        let line = try report.jsonLine()
+        #expect(line.contains(lateCandidate) == false)
+        let object = try JSONSerialization.jsonObject(with: Data(line.utf8))
+        let json = try #require(object as? [String: Any])
+        let key = cancelledAttempt == 1 ? "first" : "second"
+        let cancelledMetrics = try #require(json[key] as? [String: Any])
+        #expect(Set(cancelledMetrics.keys) == ["backend", "fixture", "status", "availability"])
+        #expect(cancelledMetrics["status"] as? String == "cancelled")
     }
 
     @Test func availabilityCheckDoesNotGenerateEvenWhenAvailable() async {

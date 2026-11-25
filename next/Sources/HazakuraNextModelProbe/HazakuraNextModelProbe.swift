@@ -5,17 +5,27 @@ struct HazakuraNextModelProbe {
     @MainActor static func main() async {
         let arguments = Array(ProcessInfo.processInfo.arguments.dropFirst())
         let mode = AssistModelProbeCommand.parse(arguments)
-        guard mode != .invalid else {
-            FileHandle.standardError.write(Data("Usage: HazakuraNextModelProbe --check | --generate\n".utf8))
-            exit(2)
-        }
-        let report = await AssistModelProbeCommand.run(generate: mode == .generate)
+        let line: String
+        let exitCode: Int32
         do {
-            FileHandle.standardOutput.write(Data(try report.jsonLine().utf8))
+            switch mode {
+            case .invalid:
+                FileHandle.standardError.write(Data("Usage: HazakuraNextModelProbe --check | --generate | --compare\n".utf8))
+                exit(2)
+            case .check, .generate:
+                let report = await AssistModelProbeCommand.run(generate: mode == .generate)
+                line = try report.jsonLine()
+                exitCode = report.exitCode
+            case .compare:
+                let report = await AssistModelProbeCommand.compare()
+                line = try report.jsonLine()
+                exitCode = report.exitCode
+            }
         } catch {
             FileHandle.standardError.write(Data("計測結果を出力できませんでした。\n".utf8))
             exit(EXIT_FAILURE)
         }
-        exit(report.exitCode)
+        FileHandle.standardOutput.write(Data(line.utf8))
+        exit(exitCode)
     }
 }
