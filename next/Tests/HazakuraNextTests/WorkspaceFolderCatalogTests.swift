@@ -118,6 +118,51 @@ struct WorkspaceFolderCatalogTests {
         }
     }
 
+    @Test(arguments: [false, true], [false, true])
+    func readFailureIsReportedOnlyWhileTheFolderRequestStillApplies(
+        openingEntry: Bool, beginsComposition: Bool
+    ) async throws {
+        let catalog = try await fixtureCatalog()
+        let session = WorkspaceSession(source: "原稿")
+        let (window, view) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        let documentID = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確定済みの原稿", to: documentID)
+        let drafts = session.tabs.recoveryDrafts
+        session.requestFolderCatalog()
+        let catalogID = try #require(session.folderCatalogRequest)
+
+        if openingEntry {
+            await session.readFolderCatalog(catalogID) { catalog }
+            let entry = try #require(catalog.entries.first)
+            try #require(session.prepareFolderEntry(reportID: catalogID, entryID: entry.id))
+            let entryID = try #require(session.folderEntryOpening?.id)
+            session.startOpeningFolderEntry(entryID)
+            await session.readPreparedFolderEntry(entryID) { _ in
+                if beginsComposition { markText(in: view) }
+                throw SelectedFolderCatalog.ScanError.selectionChanged
+            }
+        } else {
+            await session.readFolderCatalog(catalogID) {
+                if beginsComposition { markText(in: view) }
+                throw SelectedFolderCatalog.ScanError.accessDenied
+            }
+        }
+
+        #expect(view.hasMarkedText() == beginsComposition)
+        #expect(!session.tabs.isComposing && window.firstResponder === view)
+        if beginsComposition {
+            #expect(session.fileNotice == nil)
+        } else {
+            let prefix = openingEntry ? "一覧から原稿を開けませんでした。" : "フォルダの一覧を取得できませんでした。"
+            #expect(session.fileNotice?.hasPrefix(prefix) == true)
+        }
+        #expect(session.folderCatalogReport == nil)
+        #expect(!session.isBusy)
+        #expect(session.tabs.tabs.map(\.id) == [documentID])
+        #expect(session.tabs.recoveryDrafts == drafts)
+    }
+
     @Test func nativeCompositionDoesNotConsumeTheListOrStartTheStagedSelection() async throws {
         let catalog = try await fixtureCatalog()
         let session = WorkspaceSession(source: "原稿")

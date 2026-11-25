@@ -713,7 +713,7 @@ final class WorkspaceSession {
         } catch is CancellationError {
             // A cancelled picker/read never creates a tab or a failure notice.
         } catch {
-            guard !Task.isCancelled, folderEntryOpening?.id == id else { return }
+            guard !Task.isCancelled, folderEntryOpening?.id == id, canOpenFolderEntry else { return }
             let reason: String
             if error is SelectedFolderCatalog.ScanError {
                 reason = "同じフォルダと原稿を確認できませんでした。フォルダの原稿一覧を取り直してください。"
@@ -740,7 +740,7 @@ final class WorkspaceSession {
         } catch is CancellationError {
             // Cancellation has no result or failure notice.
         } catch {
-            guard !Task.isCancelled, folderCatalogRequest == id else { return }
+            guard !Task.isCancelled, folderCatalogRequest == id, folderInputIsCommitted else { return }
             let reason: String = switch error as? SelectedFolderCatalog.ScanError {
             case .tooManyEntries: "直下に\(SelectedFolderCatalog.entryLimit)件以下の項目があるフォルダを選んでください。"
             case .changedWhileScanning, .selectionChanged, .entryNotListed: "一覧の取得中にフォルダが変わりました。選び直してください。"
