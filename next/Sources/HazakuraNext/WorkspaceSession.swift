@@ -437,9 +437,8 @@ final class WorkspaceSession {
     }
 
     private var canOpenSourceNavigation: Bool {
-        guard !isBusy, !tabs.isComposing, let tab = tabs.selectedTab else { return false }
+        guard canStartPresentationAction, let tab = tabs.selectedTab else { return false }
         return tab.document.source.utf8.count <= 2 * 1024 * 1024
-            && (window?.firstResponder as? NSTextView)?.hasMarkedText() != true
     }
 
     var canRequestLineJump: Bool { canOpenSourceNavigation }
@@ -456,8 +455,8 @@ final class WorkspaceSession {
     }
 
     func confirmLineJump(_ id: UUID, line: Int) -> Bool {
-        guard let request = lineJumpRequest, request.id == id, !tabs.isComposing,
-              let tab = tabs.selectedTab, tab.id == request.documentID, tab.document.revision == request.revision,
+        guard let request = lineJumpRequest, request.id == id, matchesSourceNavigation(request), !hasNativeMarkedText,
+              let tab = tabs.selectedTab,
               let offset = SourceLineLookup.utf16Offset(of: line, in: tab.document.source) else { return false }
         sourceReveal = SourceReveal(id: id, documentID: tab.id, revision: request.revision,
                                     source: tab.document.source, range: NSRange(location: offset, length: 0),
@@ -514,7 +513,7 @@ final class WorkspaceSession {
     }
 
     func selectSourceSearchMatch(_ id: UUID, reportID: UUID, matchID: Int) -> Bool {
-        guard let request = sourceSearchRequest, request.id == id, matchesSourceNavigation(request),
+        guard let request = sourceSearchRequest, request.id == id, matchesSourceNavigation(request), !hasNativeMarkedText,
               let tab = tabs.selectedTab, let report = sourceSearchReport, report.id == reportID,
               let match = report.results.matches.first(where: { $0.id == matchID }) else { return false }
         sourceReveal = SourceReveal(id: id, documentID: request.documentID, revision: request.revision,
