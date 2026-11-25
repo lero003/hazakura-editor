@@ -4,6 +4,72 @@ import Testing
 
 @MainActor
 struct ReviewedEditTests {
+    @Test
+    func capturesTheFocusedNativeSelectionWithExactSourceBytesAndEditorIdentity() throws {
+        let documentID = UUID()
+        let selected = "e\u{0301}👩‍💻\r\n"
+        let source = "前" + selected + "後"
+        let coordinator = TextKitEditor.Coordinator { _ in Issue.record("Capturing selection reported an edit.") }
+        let (window, _, view) = try makeEditor(source: source, documentID: documentID, coordinator: coordinator)
+        defer { window.contentView = nil }
+        let undo = try #require(view.undoManager)
+        let range = NSRange(location: 1, length: selected.utf16.count)
+        view.setSelectedRange(range)
+
+        let capture = try #require(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID))
+        #expect(capture.source.utf8.elementsEqual(source.utf8))
+        #expect(capture.range == range)
+        #expect(capture.editor === view)
+        #expect(view.selectedRange() == range)
+        #expect(window.firstResponder === view)
+        #expect(undo.canUndo == false)
+        #expect(undo.canRedo == false)
+
+        let caret = NSRange(location: NSMaxRange(range), length: 0)
+        view.setSelectedRange(caret)
+        try #require(view.selectedRange() == caret)
+        #expect(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) == nil)
+        let capturedSource = try #require(TextKitEditor.captureReviewedEdit(in: window, documentID: documentID))
+        #expect(capturedSource.utf8.elementsEqual(source.utf8))
+    }
+
+    @Test
+    func refusesSelectionCaptureForTheWrongDocumentWithoutFocusAndInReadOnlyMode() throws {
+        let documentID = UUID()
+        let (window, scroll, view) = try makeEditor(source: "原稿", documentID: documentID, coordinator: nil)
+        defer { window.contentView = nil }
+        let range = NSRange(location: 0, length: 1)
+        view.setSelectedRange(range)
+        try #require(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) != nil)
+        #expect(TextKitEditor.captureReviewedSelection(in: window, documentID: UUID()) == nil)
+
+        try #require(window.makeFirstResponder(nil))
+        try #require(window.firstResponder !== view)
+        try #require(view.selectedRange() == range)
+        #expect(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) == nil)
+
+        try #require(window.makeFirstResponder(view))
+        try #require(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) != nil)
+        TextKitEditor.setActive(true, in: scroll, readOnly: true)
+        try #require(window.firstResponder === view)
+        try #require(view.selectedRange() == range)
+        #expect(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) == nil)
+    }
+
+    @Test
+    func refusesNativeSelectionInsideMarkedText() throws {
+        let documentID = UUID()
+        let (window, _, view) = try makeEditor(source: "原稿", documentID: documentID, coordinator: nil)
+        defer { window.contentView = nil }
+        view.setMarkedText("候補", selectedRange: NSRange(location: 0, length: 2),
+                           replacementRange: NSRange(location: 0, length: 1))
+        try #require(view.hasMarkedText())
+        try #require(view.selectedRanges.map(\.rangeValue) == [NSRange(location: 0, length: 2)])
+        try #require(window.firstResponder === view)
+        #expect(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) == nil)
+        #expect(view.hasMarkedText())
+    }
+
     @Test(arguments: ["\"literal\" -- `code`\r\n", "", "é"])
     func replacementIsLiteralAndHasItsOwnUndoBetweenTyping(replacement: String) throws {
         let documentID = UUID()
@@ -92,6 +158,7 @@ struct ReviewedEditTests {
         view.selectedRanges = nativeSelections
         try #require(view.selectedRanges.count == 2)
         #expect(TextKitEditor.captureReviewedEdit(in: window, documentID: documentID) == nil)
+        #expect(TextKitEditor.captureReviewedSelection(in: window, documentID: documentID) == nil)
         #expect(apply(in: window, id: documentID, source: source, range: target, replacement: "", result: "ab") == false)
         #expect(view.selectedRanges == nativeSelections)
         #expect(view.string.utf8.elementsEqual(source.utf8))

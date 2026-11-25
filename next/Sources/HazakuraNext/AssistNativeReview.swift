@@ -19,15 +19,19 @@ enum AssistNativeReview {
         let after: String
     }
 
-    static func approve(reviewID: UUID, flow: AssistProposalFlow, session: WorkspaceSession, origin: Origin) throws -> Receipt {
+    static func approve(reviewID: UUID, flow: AssistProposalFlow, session: WorkspaceSession, origin: Origin,
+                        expectedEditor: NSTextView? = nil) throws -> Receipt {
         guard let review = flow.review, review.id == reviewID else { throw AssistProposalFlow.FlowError.inactive }
         defer { flow.discardReview(id: reviewID) }
         // The synthetic connection is only for a session without persistent recovery. A production
         // integration must define the review/dismissal lifecycle before using a real session.
-        guard session.recovery == nil, let window = session.window, window.isKeyWindow,
+        guard session.recovery == nil, !session.recoveryUnavailable,
+              let window = session.window, window.isKeyWindow,
               !session.isBusy, session.canEditSource, !session.tabs.isComposing,
               let tab = session.tabs.selectedTab, !tab.isReadOnly,
-              let source = TextKitEditor.captureReviewedEdit(in: window, documentID: tab.id) else {
+              expectedEditor == nil || window.firstResponder === expectedEditor,
+              let source = TextKitEditor.captureReviewedEdit(in: window, documentID: tab.id),
+              expectedEditor == nil || window.firstResponder === expectedEditor else {
             throw ApplyError.editorUnavailable
         }
 
@@ -36,7 +40,9 @@ enum AssistNativeReview {
             guard TextKitEditor.applyReviewedEdit(in: window, documentID: edit.documentID, expectedSource: source,
                                                  selection: edit.selection, replacement: edit.replacement,
                                                  resultingSource: edit.resultingSource, stillCurrent: {
-                session.window === window && window.isKeyWindow && !session.isBusy && session.canEditSource &&
+                session.window === window && window.isKeyWindow &&
+                    (expectedEditor == nil || window.firstResponder === expectedEditor) &&
+                    !session.isBusy && session.canEditSource &&
                     !session.tabs.isComposing && session.tabs.selectedID == edit.documentID &&
                     session.tabs.selectedTab?.document.revision == edit.revision
             }) else { throw ApplyError.nativeRefused }

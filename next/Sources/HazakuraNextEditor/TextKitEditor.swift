@@ -337,6 +337,20 @@ public struct TextKitEditor: NSViewRepresentable {
         return view.string
     }
 
+    /// Snapshot one non-empty selection in the matching, focused native buffer.
+    /// Callers gate production window visibility and key status, and revalidate before applying.
+    @MainActor
+    package static func captureReviewedSelection(in window: NSWindow, documentID: UUID)
+        -> (source: String, range: NSRange, editor: NSTextView)? {
+        guard let view = window.firstResponder as? MarkdownTextView,
+              view.reviewedEditUndoManager(in: window, for: documentID) != nil else { return nil }
+        let ranges = view.selectedRanges
+        guard ranges.count == 1, let range = ranges.first?.rangeValue else { return nil }
+        let source = view.string
+        guard reviewedCharacterRange(range, in: source) != nil else { return nil }
+        return (source, range, view)
+    }
+
     /// Apply a previously reviewed target without touching the model or replacing the native buffer.
     @MainActor
     package static func applyReviewedEdit(
@@ -357,22 +371,26 @@ public struct TextKitEditor: NSViewRepresentable {
               let undo = view.reviewedEditUndoManager(in: window, for: documentID) else { return false }
         let source = view.string
         guard source.utf8.elementsEqual(expectedSource.utf8),
-              !source.utf8.elementsEqual(resultingSource.utf8) else { return false }
-
-        // Check the arithmetic before bridging the externally supplied range, then require both
-        // ends to be Character boundaries (not just valid UTF-16 code unit offsets).
-        let utf16 = source.utf16
-        let length = utf16.count
-        guard selection.location >= 0, selection.location < length, selection.length > 0,
-              selection.length <= length - selection.location else { return false }
-        let start = utf16.index(utf16.startIndex, offsetBy: selection.location)
-        let end = utf16.index(start, offsetBy: selection.length)
-        guard let lower = String.Index(start, within: source),
-              let upper = String.Index(end, within: source) else { return false }
-        let candidate = source[..<lower] + replacement + source[upper...]
+              !source.utf8.elementsEqual(resultingSource.utf8),
+              let range = reviewedCharacterRange(selection, in: source) else { return false }
+        let candidate = source[..<range.lowerBound] + replacement + source[range.upperBound...]
         guard candidate.utf8.elementsEqual(resultingSource.utf8) else { return false }
         return view.performReviewedReplacement(selection, with: replacement, in: window, undo: undo,
                                                source: source, stillCurrent: stillCurrent)
+    }
+
+    private static func reviewedCharacterRange(_ selection: NSRange, in source: String) -> Range<String.Index>? {
+        // Check the arithmetic before bridging a UTF-16 range, then require both ends
+        // to be Character boundaries (not just valid UTF-16 code unit offsets).
+        let utf16 = source.utf16
+        let length = utf16.count
+        guard selection.location >= 0, selection.location < length, selection.length > 0,
+              selection.length <= length - selection.location else { return nil }
+        let start = utf16.index(utf16.startIndex, offsetBy: selection.location)
+        let end = utf16.index(start, offsetBy: selection.length)
+        guard let lower = String.Index(start, within: source),
+              let upper = String.Index(end, within: source) else { return nil }
+        return lower..<upper
     }
 
     static func setActive(_ isActive: Bool, in scrollView: NSScrollView, readOnly: Bool = false) {
