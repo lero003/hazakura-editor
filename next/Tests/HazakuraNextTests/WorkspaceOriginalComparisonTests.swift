@@ -41,6 +41,65 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
+    @Test func lineDiffUsesTheChosenSnapshotsWithoutChangingTheDraftOrOriginal() async throws {
+        try await withOriginal { url, baseline, session, documentID in
+            let draft = "編集版\r"
+            session.applyCommittedSource(draft, to: documentID)
+            let diskBytes = Data("ディスク版\n".utf8)
+            try diskBytes.write(to: url)
+            let recoveryBefore = session.tabs.recoveryDrafts
+            session.requestOriginalComparison()
+            let id = try #require(session.comparisonRequestID)
+            await session.readOriginalComparison(id) { try await SelectedTextFile.read(from: url) }
+            let report = try #require(session.comparisonReport)
+            let pairs: [(ComparisonLineDiffPair, String, String)] = [
+                (.baselineToDisk, baseline.source, "ディスク版\n"),
+                (.baselineToDraft, baseline.source, draft),
+                (.diskToDraft, "ディスク版\n", draft),
+            ]
+            for (pair, before, after) in pairs {
+                let sources = pair.sources(in: report.comparison)
+                let result = try await LineDiff.compare(before: sources.before, after: sources.after)
+                guard case .rows(let rows) = result else {
+                    Issue.record("Different captured versions should yield line rows.")
+                    continue
+                }
+                let restoredBefore = rows.filter { $0.beforeLine != nil }.map { $0.text + suffix($0.ending) }.joined()
+                let restoredAfter = rows.filter { $0.afterLine != nil }.map { $0.text + suffix($0.ending) }.joined()
+                #expect(Data(restoredBefore.utf8) == Data(before.utf8))
+                #expect(Data(restoredAfter.utf8) == Data(after.utf8))
+            }
+            #expect(try Data(contentsOf: url) == diskBytes)
+            #expect(session.tabs.recoveryDrafts == recoveryBefore)
+            #expect(session.tabs.selectedID == documentID)
+        }
+    }
+
+    @Test func bomOnlyChangeKeepsTheByteMismatchEvenWhenLineBodiesMatch() async throws {
+        try await withOriginal { url, baseline, session, _ in
+            try Data(baseline.source.utf8).write(to: url)
+            session.requestOriginalComparison()
+            let id = try #require(session.comparisonRequestID)
+            await session.readOriginalComparison(id) { try await SelectedTextFile.read(from: url) }
+            let comparison = try #require(session.comparisonReport).comparison
+            let sources = ComparisonLineDiffPair.baselineToDisk.sources(in: comparison)
+            let result = try await LineDiff.compare(before: sources.before, after: sources.after)
+            #expect(result == .identical)
+            #expect(comparison.diskStatus == .modified)
+            #expect(comparison.baseline.format.hasUTF8BOM && !comparison.disk.format.hasUTF8BOM)
+            #expect(!comparison.draftMatchesDisk)
+        }
+    }
+
+    private func suffix(_ ending: LineDiff.Row.Ending) -> String {
+        switch ending {
+        case .none: ""
+        case .lf: "\n"
+        case .crlf: "\r\n"
+        case .cr: "\r"
+        }
+    }
+
     @Test func rejectsCancelledOrStaleResultsAndDoesNotIssueAnotherRead() async throws {
         try await withOriginal { _, baseline, session, documentID in
             session.tabs.setComposing(true, in: documentID)

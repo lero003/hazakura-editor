@@ -4,6 +4,9 @@ import SwiftUI
 struct OriginalFileComparisonView: View {
     let comparison: OriginalFileComparison
     @Environment(\.dismiss) private var dismiss
+    @State private var mode: Mode = .versions
+
+    private enum Mode: Hashable { case versions, difference }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -17,7 +20,21 @@ struct OriginalFileComparisonView: View {
             }
             summary
             Divider()
-            ComparisonVersionPreview(baseline: comparison.baseline, disk: comparison.disk, draftSource: comparison.draftSource)
+            Picker("比較の表示方法", selection: $mode) {
+                Text("版ごとに読む").tag(Mode.versions)
+                Text("行の差分を見る").tag(Mode.difference)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            Group {
+                switch mode {
+                case .versions:
+                    ComparisonVersionPreview(baseline: comparison.baseline, disk: comparison.disk, draftSource: comparison.draftSource)
+                case .difference:
+                    ComparisonLineDiffPane(comparison: comparison)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             Divider()
             Button("閉じる") { dismiss() }
                 .keyboardShortcut(.cancelAction)
@@ -49,6 +66,64 @@ struct OriginalFileComparisonView: View {
         case .unchanged: "今回選択したディスク版は、開いた時点の原本と一致します。"
         case .modified: "今回選択したディスク版は、開いた時点の原本から変わっています。"
         case .differentIdentity: "ファイルの識別情報が一致しません。原本が置き換わったのか、別のファイルを選択したのかは判別できません。"
+        }
+    }
+}
+
+enum ComparisonLineDiffPair: Hashable, CaseIterable {
+    case baselineToDisk, baselineToDraft, diskToDraft
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .baselineToDisk: "開いた時点 → ディスク版"
+        case .baselineToDraft: "開いた時点 → 編集版"
+        case .diskToDraft: "ディスク版 → 編集版"
+        }
+    }
+
+    func sources(in comparison: OriginalFileComparison) -> (before: String, after: String) {
+        switch self {
+        case .baselineToDisk: (comparison.baseline.source, comparison.disk.source)
+        case .baselineToDraft: (comparison.baseline.source, comparison.draftSource)
+        case .diskToDraft: (comparison.disk.source, comparison.draftSource)
+        }
+    }
+}
+
+private struct ComparisonLineDiffPane: View {
+    let comparison: OriginalFileComparison
+    @State private var pair: ComparisonLineDiffPair = .baselineToDraft
+    @State private var completed: (pair: ComparisonLineDiffPair, result: LineDiff.Result)?
+
+    var body: some View {
+        let requestedPair = pair
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("差分を取る版", selection: $pair) {
+                ForEach(ComparisonLineDiffPair.allCases, id: \.self) { option in
+                    Text(option.title).tag(option)
+                }
+            }
+            Text("本文と改行を行ごとに比較します。ファイル先頭の BOM は上の比較結果を参照してください。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let completed, completed.pair == requestedPair {
+                LineDiffView(result: completed.result)
+                    .id(requestedPair)
+            } else {
+                ProgressView("行の差分を計算しています…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .task(id: requestedPair) {
+            guard !Task.isCancelled, pair == requestedPair, completed?.pair != requestedPair else { return }
+            let sources = requestedPair.sources(in: comparison)
+            do {
+                let result = try await LineDiff.compare(before: sources.before, after: sources.after)
+                guard !Task.isCancelled, pair == requestedPair else { return }
+                completed = (requestedPair, result)
+            } catch {
+                // The core throws only for cancellation; an old selection publishes nothing.
+            }
         }
     }
 }
@@ -117,19 +192,9 @@ private struct ComparisonSourcePreview: View {
     private let isTruncated: Bool
 
     init(source: String) {
-        let bytes = source.utf8
-        guard var end = bytes.index(bytes.startIndex, offsetBy: Self.byteLimit, limitedBy: bytes.endIndex),
-              end != bytes.endIndex else {
-            text = source
-            isTruncated = false
-            return
-        }
-        // If the next byte continues a scalar, omit that scalar rather than decoding a partial one.
-        while (bytes[end] & 0b1100_0000) == 0b1000_0000 {
-            bytes.formIndex(before: &end)
-        }
-        text = String(decoding: bytes[..<end], as: UTF8.self)
-        isTruncated = true
+        let preview = BoundedTextPreview(source: source, byteLimit: Self.byteLimit)
+        text = preview.text
+        isTruncated = preview.isTruncated
     }
 
     var body: some View {
