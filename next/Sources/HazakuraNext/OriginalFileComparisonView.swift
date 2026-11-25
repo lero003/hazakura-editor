@@ -45,20 +45,27 @@ struct OriginalFileComparisonView: View {
     }
 
     private var summary: some View {
-        let baselineBOM = comparison.baseline.format.hasUTF8BOM
-        let diskBOM = comparison.disk.format.hasUTF8BOM
+        let before = comparison.baseline.format.encoding
+        let selected = comparison.disk.format.encoding
         return VStack(alignment: .leading, spacing: 4) {
             Text(diskStatusLabel).fontWeight(.medium)
-            if baselineBOM != diskBOM {
-                let before = baselineBOM ? "あり" : "なし"
-                let selected = diskBOM ? "あり" : "なし"
-                Text("UTF-8 BOM が異なります（開いた時点：\(before)、今回選択：\(selected)）。")
+            if before != selected {
+                Text("文字コードまたはBOMが異なります（開いた時点：\(encodingLabel(before))、今回選択：\(encodingLabel(selected))）。")
             }
-            Text("編集版は、開いた時点の BOM 設定で UTF-8 にした場合のバイト列で比較します。")
+            Text("編集版は、開いた時点の文字コードとBOMで保存した場合のバイト列で比較します。")
                 .foregroundStyle(.secondary)
             Text("編集版との比較：原文 \(comparison.draftMatchesBaseline ? "一致" : "不一致") ／ ディスク版 \(comparison.draftMatchesDisk ? "一致" : "不一致")")
         }
         .font(.callout)
+    }
+
+    private func encodingLabel(_ encoding: SelectedTextFile.Encoding) -> String {
+        switch encoding {
+        case .utf8: "UTF-8（BOMなし）"
+        case .utf8BOM: "UTF-8（BOM付き）"
+        case .utf16LE: "UTF-16 LE（BOM付き）"
+        case .utf16BE: "UTF-16 BE（BOM付き）"
+        }
     }
 
     private var diskStatusLabel: LocalizedStringKey {
@@ -103,7 +110,7 @@ private struct ComparisonLineDiffPane: View {
                     Text(option.title).tag(option)
                 }
             }
-            Text("本文と改行を行ごとに比較します。ファイル先頭の BOM は上の比較結果を参照してください。")
+            Text("本文と改行を行ごとに比較します。文字コードとBOMの違いは上の比較結果を参照してください。")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if let completed, completed.pair == requestedPair {

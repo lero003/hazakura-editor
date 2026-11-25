@@ -53,10 +53,10 @@ struct WorkspaceHTMLExportTests {
         await session.writeRequestedExport(request, to: destination, using: .init(renderHTML: { source in
             await probe.recordSource(source)
             return html
-        }, writeHTML: { await probe.recordWrite($0, $1, $2) }))
+        }, writeHTML: { await probe.recordWrite($0, $1) }))
 
         #expect(await probe.sources == [Data(committed.utf8)])
-        #expect(await probe.writes == [.init(bytes: Data(html.utf8), bom: false, destination: destination)])
+        #expect(await probe.writes == [.init(bytes: Data(html.utf8), destination: destination)])
         #expect(session.exportRequest == nil)
         #expect(session.canEditSource)
         #expect(session.tabs.selectedID == id)
@@ -226,8 +226,8 @@ struct WorkspaceHTMLExportTests {
                 await probe.recordSource(source)
                 await render.pause()
                 return "<p>確定</p>"
-            }, writeHTML: { source, bom, url in
-                await probe.recordWrite(source, bom, url)
+            }, writeHTML: { source, url in
+                await probe.recordWrite(source, url)
                 // Model an already published file whose publisher has not returned yet.
                 await write.pause()
             }))
@@ -280,7 +280,7 @@ struct WorkspaceHTMLExportTests {
         session.requestExport(.html)
         let request = try #require(session.exportRequest?.id)
         let privatePath = "/synthetic/private/example.html"
-        await session.writeRequestedExport(request, to: URL(fileURLWithPath: privatePath), using: .init(renderHTML: { _ in "<p>確定</p>" }, writeHTML: { _, _, _ in
+        await session.writeRequestedExport(request, to: URL(fileURLWithPath: privatePath), using: .init(renderHTML: { _ in "<p>確定</p>" }, writeHTML: { _, _ in
             throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteUnknownError, userInfo: [NSFilePathErrorKey: privatePath])
         }))
         let notice = try #require(session.fileNotice)
@@ -290,7 +290,8 @@ struct WorkspaceHTMLExportTests {
         #expect(session.canExport)
     }
 
-    @Test func realWriterExportsTheOpenedSnapshotAndRefusesExistingOrLinkedDestinations() async throws {
+    @Test(arguments: [false, true])
+    func realWriterExportsTheOpenedSnapshotAndRefusesExistingOrLinkedDestinations(_ utf16: Bool) async throws {
         let real = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
             path.flatMap { Darwin.realpath($0, nil) }
         }
@@ -303,7 +304,10 @@ struct WorkspaceHTMLExportTests {
         let opened = folder.appending(path: "original.html")
         let exported = folder.appending(path: "export.html")
         let linked = folder.appending(path: "link.html")
-        let initial = Data("\u{FEFF}# 開いた時点\r\n\r\n確定原文".utf8)
+        let source = "# 開いた時点\r\n\r\n確定原文"
+        let initial = utf16
+            ? Data([0xFE, 0xFF]) + (try #require(source.data(using: .utf16BigEndian)))
+            : Data([0xEF, 0xBB, 0xBF]) + Data(source.utf8)
         try initial.write(to: opened)
         let snapshot = try await SelectedTextFile.read(from: opened)
         let session = WorkspaceSession(source: "# 非選択")
@@ -350,14 +354,13 @@ private func unexpectedRender(_ source: String) async throws -> String {
     throw CancellationError()
 }
 
-private func unexpectedWrite(_ html: String, _ bom: Bool, _ url: URL) async throws {
+private func unexpectedWrite(_ html: String, _ url: URL) async throws {
     Issue.record("The writer must not be invoked.")
 }
 
 private actor HTMLExportProbe {
     struct Write: Equatable {
         let bytes: Data
-        let bom: Bool
         let destination: URL
     }
 
@@ -368,8 +371,8 @@ private actor HTMLExportProbe {
     func recordSource(_ source: String) { sources.append(Data(source.utf8)) }
     func recordCheckpoint(_ draft: RecoveryDraft) { checkpoints.append(draft) }
 
-    func recordWrite(_ html: String, _ bom: Bool, _ destination: URL) {
-        writes.append(Write(bytes: Data(html.utf8), bom: bom, destination: destination))
+    func recordWrite(_ html: String, _ destination: URL) {
+        writes.append(Write(bytes: Data(html.utf8), destination: destination))
     }
 }
 

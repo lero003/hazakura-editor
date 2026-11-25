@@ -136,7 +136,7 @@ struct OriginalFileComparisonTests {
             let baseline = try await SelectedTextFile.read(from: url)
             try (prefix + Self.bom + body).write(to: url, options: [])
             let disk = try await SelectedTextFile.read(from: url)
-            #expect(disk.format.hasUTF8BOM)
+            #expect(disk.format.encoding == .utf8BOM)
             #expect(disk.source.utf8.elementsEqual((hasBaselineBOM ? draft : source).utf8))
             let comparison = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
             #expect(comparison.diskStatus == .modified)
@@ -181,7 +181,7 @@ struct OriginalFileComparisonTests {
             #expect(origin.baseline.identity == original.identity)
             #expect(origin.baseline.originalBytes == bytes)
             #expect(origin.name == original.name)
-            #expect(origin.format.hasUTF8BOM)
+            #expect(origin.format.encoding == .utf8BOM)
             #expect(origin.format.lineEndings == .mixed)
 
             let disk = try await SelectedTextFile.read(from: url)

@@ -11,7 +11,7 @@ final class WorkspaceSession {
         let documentID: UUID
         let revision: UInt64
         let source: String
-        let preservingUTF8BOM: Bool
+        let encoding: SelectedTextFile.Encoding
     }
 
     enum ExportFormat: String, Sendable {
@@ -33,7 +33,7 @@ final class WorkspaceSession {
 
     struct ExportOperations {
         var renderHTML: @Sendable (String) async throws -> String = MarkdownHTMLExport.render
-        var writeHTML: @Sendable (String, Bool, URL) async throws -> Void = SelectedTextCopyWriter.write
+        var writeHTML: @Sendable (String, URL) async throws -> Void = SelectedTextCopyWriter.writeHTML
         var renderPDF: @MainActor (String) async throws -> Data = MarkdownPDFExport.render
         var writePDF: @Sendable (Data, URL) async throws -> Void = SelectedTextCopyWriter.writePDF
         var renderEPUB: @Sendable (String) async throws -> Data = MarkdownEPUBExport.render
@@ -246,7 +246,8 @@ final class WorkspaceSession {
     static func readFailure(_ error: Error) -> String {
         switch error as? SelectedTextFile.ReadError {
         case .tooLarge: "2 MiB以下のテキストを選んでください。"
-        case .invalidUTF8: "この検証版で開ける文字コードはUTF-8のみです。"
+        case .invalidUTF8, .invalidUTF16: "文字コードが不正です。UTF-8またはBOM付きUTF-16のテキストを選んでください。"
+        case .unsupportedEncoding: "対応する文字コードはUTF-8とBOM付きUTF-16です。"
         case .nonTextControls: "テキストとして扱えない制御文字が含まれています。"
         case .changedWhileReading: "読み込み中にファイルが更新されました。もう一度選んでください。"
         case .notRegularFile, .invalidLocation: "通常のテキストファイルを選んでください。"
@@ -268,7 +269,7 @@ final class WorkspaceSession {
         fileNotice = nil
         saveCopyRequest = SaveCopyRequest(documentID: selected.id, revision: selected.document.revision,
                                           source: selected.document.source,
-                                          preservingUTF8BOM: selected.copyOrigin?.format.hasUTF8BOM ?? false)
+                                          encoding: selected.copyOrigin?.format.encoding ?? .utf8)
     }
 
     func cancelSaveCopy(_ requestID: UUID) {
@@ -278,7 +279,7 @@ final class WorkspaceSession {
 
     func writeRequestedCopy(
         _ requestID: UUID, to destination: URL,
-        using writer: @Sendable (String, Bool, URL) async throws -> Void = SelectedTextCopyWriter.write
+        using writer: @Sendable (String, SelectedTextFile.Encoding, URL) async throws -> Void = SelectedTextCopyWriter.write
     ) async {
         guard let request = saveCopyRequest, request.id == requestID, !isWritingCopy else { return }
         defer { isWritingCopy = false; saveCopyRequest = nil }
@@ -290,7 +291,7 @@ final class WorkspaceSession {
         }
         isWritingCopy = true
         do {
-            try await writer(request.source, request.preservingUTF8BOM, destination)
+            try await writer(request.source, request.encoding, destination)
             fileNotice = "コピーを保存しました。編集中のタブと元のファイルはそのままです。"
         } catch is CancellationError {
             // The writer only reports cancellation before publishing the new file.
@@ -302,7 +303,7 @@ final class WorkspaceSession {
     private static func copyWriteFailure(_ error: Error) -> String {
         switch error as? SelectedTextCopyWriter.WriteError {
         case .alreadyExists: "同じ名前の項目が既にあります。別の名前を選んでください。"
-        case .tooLarge: "UTF-8で2 MiB以下の原稿だけ保存できます。"
+        case .tooLarge: "保存時の文字コードで、BOMを含めて2 MiB以下の原稿だけ保存できます。"
         case .invalidText: "テキストとして扱えない文字が含まれています。"
         case .invalidLocation: "ローカルの保存先を選んでください。"
         default: "リンクを含まず、自分だけが書き込めるローカルフォルダを選んでください。"
@@ -351,7 +352,7 @@ final class WorkspaceSession {
         switch request.format {
         case .html:
             await renderAndWriteExport(request, to: destination, render: operations.renderHTML) { html, url in
-                try await operations.writeHTML(html, false, url)
+                try await operations.writeHTML(html, url)
             }
         case .pdf:
             await renderAndWriteExport(request, to: destination, render: operations.renderPDF, write: operations.writePDF)

@@ -26,7 +26,7 @@ package enum OriginalSavePreflight {
         confirm: @Sendable (Review) async throws -> Bool
     ) async throws -> Outcome {
         try Task.checkCancellation()
-        let proposed = try SelectedTextCopyWriter.encode(draftSource, preservingUTF8BOM: baseline.format.hasUTF8BOM)
+        let proposed = try SelectedTextCopyWriter.encode(draftSource, encoding: baseline.format.encoding)
         let disk = try await SelectedTextFile.read(from: selectedURL)
         guard disk.identity == baseline.identity else { throw Rejection.differentFile }
         guard sameVersion(disk, baseline) else { throw Rejection.changedSinceOpening }

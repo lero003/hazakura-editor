@@ -27,24 +27,20 @@ public struct OriginalFileComparison: Sendable {
             diskStatus = baseline.originalBytes == disk.originalBytes ? .unchanged : .modified
         }
 
-        let prefix: [UInt8] = baseline.format.hasUTF8BOM ? [0xEF, 0xBB, 0xBF] : []
-        let body = draftSource.utf8
-        func matchesDraft(_ bytes: Data) -> Bool {
-            // Compare prefix + body without allocating that byte buffer. A literal leading U+FEFF
-            // belongs to the body even if the disk reader interpreted those bytes as the BOM.
-            bytes.starts(with: prefix) && bytes.dropFirst(prefix.count).elementsEqual(body)
-        }
-        let matchesBaseline = matchesDraft(baseline.originalBytes)
-        let matchesDisk = diskStatus == .unchanged ? matchesBaseline : matchesDraft(disk.originalBytes)
+        // Use the opened encoding, not the reselected one's. Compare exact bytes, not
+        // Swift String equality (which treats canonically equivalent text as equal).
+        let draftBytes = try? SelectedTextCopyWriter.encode(draftSource, encoding: baseline.format.encoding)
+        let matchesBaseline = draftBytes == baseline.originalBytes
+        let matchesDisk = diskStatus == .unchanged ? matchesBaseline : draftBytes == disk.originalBytes
         result = (diskStatus, matchesDisk, matchesBaseline)
     }
 
     /// Compares captured device/inode and bytes, not a live file or a write precondition.
     public var diskStatus: DiskStatus { result.diskStatus }
 
-    /// Whether the draft's UTF-8 bytes with the baseline BOM policy match the captured disk bytes.
+    /// Whether the draft bytes in the baseline format match the captured disk bytes.
     public var draftMatchesDisk: Bool { result.draftMatchesDisk }
 
-    /// Whether the draft's UTF-8 bytes with the baseline BOM policy match the original bytes.
+    /// Whether the draft bytes in the baseline format match the original bytes.
     public var draftMatchesBaseline: Bool { result.draftMatchesBaseline }
 }

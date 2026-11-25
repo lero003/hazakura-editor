@@ -18,6 +18,26 @@ struct OriginalSavePreflightTests {
         }
     }
 
+    @Test func utf16PreflightUsesTheOpenedEncodingWithoutWriting() async throws {
+        try await withOriginal { url, _ in
+            let initial = Data([0xFE, 0xFF, 0x30, 0x4B, 0x30, 0x99, 0, 13, 0, 10]) // decomposed が, CRLF
+            try initial.write(to: url)
+            let baseline = try await SelectedTextFile.read(from: url)
+            let unchanged = try await OriginalSavePreflight.check(baseline: baseline, draftSource: baseline.source, at: url) { _ in
+                Issue.record("Identical bytes must not ask for approval.")
+                return false
+            }
+            #expect(unchanged == .noChanges)
+            let changed = try await OriginalSavePreflight.check(baseline: baseline, draftSource: "が\r\n", at: url) { review in
+                #expect(review.disk.originalBytes == initial)
+                #expect(review.proposedBytes == Data([0xFE, 0xFF, 0x30, 0x4C, 0, 13, 0, 10]))
+                return true
+            }
+            #expect(changed == .checkedWithoutWriting)
+            try Self.expectBytes(initial, at: url)
+        }
+    }
+
     @Test func canonicallyEquivalentDraftStillRequiresConsentIfItsBytesDiffer() async throws {
         try await withOriginal { url, baseline in
             let draft = "開いた時点 が\r\n"

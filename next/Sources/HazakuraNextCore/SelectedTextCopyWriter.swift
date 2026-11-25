@@ -12,11 +12,17 @@ public enum SelectedTextCopyWriter {
     /// Pass the URL from an explicit save-picker action and keep its existing access alive
     /// through this call. If it does not permit sibling staging, fail without a direct-write fallback.
     @concurrent
-    public static func write(source: String, preservingUTF8BOM: Bool, to url: URL) async throws {
+    public static func write(source: String, encoding: SelectedTextFile.Encoding, to url: URL) async throws {
         try Task.checkCancellation()
         let destination = try Destination(url)
-        let bytes = try encode(source, preservingUTF8BOM: preservingUTF8BOM)
+        let bytes = try encode(source, encoding: encoding)
         try writeNewFile(bytes, to: destination)
+    }
+
+    /// Generated HTML declares UTF-8 regardless of the encoding of its source document.
+    @concurrent
+    package static func writeHTML(_ html: String, to url: URL) async throws {
+        try await write(source: html, encoding: .utf8, to: url)
     }
 
     /// Writes renderer-validated PDF bytes to an explicitly selected new file.
@@ -128,20 +134,26 @@ public enum SelectedTextCopyWriter {
         }
     }
 
-    // Shared with the original-save check so the reviewed bytes cannot differ from the copy writer.
-    static func encode(_ source: String, preservingUTF8BOM: Bool) throws -> Data {
-        let prefix: [UInt8] = preservingUTF8BOM ? [0xEF, 0xBB, 0xBF] : []
-        let body = source.utf8
-        guard body.count <= SelectedTextFile.byteLimit - prefix.count else { throw WriteError.tooLarge }
-        // Match SelectedTextFile's text boundary: ASCII TAB, LF and CR only among controls.
-        guard !body.contains(where: { ($0 < 32 && $0 != 9 && $0 != 10 && $0 != 13) || $0 == 127 }) else {
+    // Shared by copy publication and original-file byte checks.
+    static func encode(_ source: String, encoding: SelectedTextFile.Encoding) throws -> Data {
+        let mark = encoding.byteOrderMark
+        let limit = SelectedTextFile.byteLimit - mark.count
+        let bodyEncoding: String.Encoding
+        switch encoding {
+        case .utf8, .utf8BOM:
+            guard source.utf8.prefix(limit + 1).count <= limit else { throw WriteError.tooLarge }
+            bodyEncoding = .utf8
+        case .utf16LE, .utf16BE:
+            let unitLimit = limit / 2
+            guard source.utf16.prefix(unitLimit + 1).count <= unitLimit else { throw WriteError.tooLarge }
+            bodyEncoding = encoding == .utf16LE ? .utf16LittleEndian : .utf16BigEndian
+        }
+        // Test the text, not the serialized bytes (NUL bytes are common in UTF-16).
+        guard !source.utf8.contains(where: { ($0 < 32 && $0 != 9 && $0 != 10 && $0 != 13) || $0 == 127 }),
+              let body = source.data(using: bodyEncoding, allowLossyConversion: false) else {
             throw WriteError.invalidText
         }
-        var bytes = Data()
-        bytes.reserveCapacity(prefix.count + body.count)
-        bytes.append(contentsOf: prefix)
-        bytes.append(contentsOf: body)
-        return bytes
+        return mark.isEmpty ? body : Data(mark) + body
     }
 
     private static func openParent(_ path: String) throws -> Int32 {

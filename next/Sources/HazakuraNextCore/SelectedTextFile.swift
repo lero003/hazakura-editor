@@ -7,7 +7,21 @@ public struct SelectedTextFile: Sendable {
 
     public enum ReadError: Error, Equatable {
         case invalidLocation, accessDenied, notRegularFile, tooLarge
-        case invalidUTF8, nonTextControls, changedWhileReading
+        case invalidUTF8, invalidUTF16, unsupportedEncoding, nonTextControls, changedWhileReading
+    }
+
+    /// Only `.utf8` is unmarked; all other encodings include their leading byte-order mark.
+    public enum Encoding: Equatable, Sendable {
+        case utf8, utf8BOM, utf16LE, utf16BE
+
+        var byteOrderMark: [UInt8] {
+            switch self {
+            case .utf8: []
+            case .utf8BOM: [0xEF, 0xBB, 0xBF]
+            case .utf16LE: [0xFF, 0xFE]
+            case .utf16BE: [0xFE, 0xFF]
+            }
+        }
     }
 
     public enum LineEndings: Equatable, Sendable {
@@ -15,7 +29,7 @@ public struct SelectedTextFile: Sendable {
     }
 
     public struct Format: Sendable {
-        public let hasUTF8BOM: Bool
+        public let encoding: Encoding
         public let lineEndings: LineEndings
     }
 
@@ -111,15 +125,13 @@ public struct SelectedTextFile: Sendable {
         guard after.st_mode & S_IFMT == S_IFREG, bytes.count == after.st_size,
               Version(after) == version else { throw ReadError.changedWhileReading }
         try Task.checkCancellation()
-        let bom: [UInt8] = [0xEF, 0xBB, 0xBF]
-        let hasBOM = bytes.starts(with: bom)
-        let body = bytes.dropFirst(hasBOM ? bom.count : 0)
-        guard let source = String(validating: body, as: UTF8.self) else { throw ReadError.invalidUTF8 }
-        // Allow text separators only; DEL and the other ASCII controls are not plain-text input.
-        guard !body.contains(where: { ($0 < 32 && $0 != 9 && $0 != 10 && $0 != 13) || $0 == 127 }) else {
+        let (source, encoding) = try decode(bytes)
+        // Inspect decoded text, whose ASCII scalar values are single UTF-8 bytes.
+        // Allow tab and line separators only; reject DEL and other ASCII controls.
+        guard !source.utf8.contains(where: { ($0 < 32 && $0 != 9 && $0 != 10 && $0 != 13) || $0 == 127 }) else {
             throw ReadError.nonTextControls
         }
-        let format = Format(hasUTF8BOM: hasBOM, lineEndings: detectLineEndings(body))
+        let format = Format(encoding: encoding, lineEndings: detectLineEndings(source.utf8))
         try Task.checkCancellation()
         try beforePathRevalidation()
         try Task.checkCancellation()
@@ -138,12 +150,37 @@ public struct SelectedTextFile: Sendable {
                                 originalBytes: bytes, version: version)
     }
 
-    private static func detectLineEndings(_ bytes: Data) -> LineEndings {
+    private static func decode(_ bytes: Data) throws -> (String, Encoding) {
+        // UTF-32 LE shares the first two bytes of UTF-16 LE. Reject both UTF-32 marks first.
+        if bytes.starts(with: [0xFF, 0xFE, 0x00, 0x00]) || bytes.starts(with: [0x00, 0x00, 0xFE, 0xFF]) {
+            throw ReadError.unsupportedEncoding
+        }
+        let encoding = [Encoding.utf8BOM, .utf16LE, .utf16BE].first { bytes.starts(with: $0.byteOrderMark) } ?? .utf8
+        let body = bytes.dropFirst(encoding.byteOrderMark.count)
+        switch encoding {
+        case .utf8, .utf8BOM:
+            guard let source = String(validating: body, as: UTF8.self) else { throw ReadError.invalidUTF8 }
+            return (source, encoding)
+        case .utf16LE, .utf16BE:
+            guard body.count.isMultiple(of: 2) else { throw ReadError.invalidUTF16 }
+            let units = body.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
+                stride(from: 0, to: raw.count, by: 2).map { offset in
+                    let unit = raw.loadUnaligned(fromByteOffset: offset, as: UInt16.self)
+                    return encoding == .utf16LE ? UInt16(littleEndian: unit) : UInt16(bigEndian: unit)
+                }
+            }
+            // Validate rather than replace malformed surrogates; strip only the file's leading mark.
+            guard let source = String(validating: units, as: UTF16.self) else { throw ReadError.invalidUTF16 }
+            return (source, encoding)
+        }
+    }
+
+    private static func detectLineEndings(_ bytes: String.UTF8View) -> LineEndings {
         var found = LineEndings.none
         var index = bytes.startIndex
         while index < bytes.endIndex {
             let byte = bytes[index]
-            index += 1
+            bytes.formIndex(after: &index)
             let ending: LineEndings
             switch byte {
             case 10:
@@ -151,7 +188,7 @@ public struct SelectedTextFile: Sendable {
             case 13:
                 if index < bytes.endIndex, bytes[index] == 10 {
                     ending = .crlf
-                    index += 1
+                    bytes.formIndex(after: &index)
                 } else {
                     ending = .cr
                 }

@@ -25,7 +25,7 @@ struct WorkspaceCopySaveTests {
         let intendedURL = URL(fileURLWithPath: "/synthetic/fixture.md")
         let writer = CopyWriterProbe()
         await session.writeRequestedCopy(request.id, to: intendedURL, using: { await writer.record($0, $1, $2) })
-        #expect(await writer.calls() == [CopyWriterProbe.Call(bytes: Data("# か\u{3099}\r\n".utf8), bom: false, url: intendedURL)])
+        #expect(await writer.calls() == [CopyWriterProbe.Call(bytes: Data("# か\u{3099}\r\n".utf8), encoding: .utf8, url: intendedURL)])
         #expect(session.saveCopyRequest == nil)
         #expect(session.canEditSource)
         #expect(session.tabs.selectedID == draftID)
@@ -71,8 +71,8 @@ struct WorkspaceCopySaveTests {
         let probe = CopyWriterProbe()
         // Reserve the injected writer before the hidden window's SwiftUI picker task gets a turn.
         let writing = Task.immediate { @MainActor in
-            await session.writeRequestedCopy(request, to: destination) { source, bom, url in
-                await probe.record(source, bom, url)
+            await session.writeRequestedCopy(request, to: destination) { source, encoding, url in
+                await probe.record(source, encoding, url)
                 began.continuation.finish()
                 for await _ in unblock.stream {}
             }
@@ -89,7 +89,8 @@ struct WorkspaceCopySaveTests {
         #expect(!session.isBusy)
     }
 
-    @Test func createsASeparateExactBOMCopyEvenIfTheOpenedFileChanges() async throws {
+    @Test(arguments: [SelectedTextFile.Encoding.utf8BOM, .utf16LE, .utf16BE])
+    func createsASeparateExactBOMCopyEvenIfTheOpenedFileChanges(_ encoding: SelectedTextFile.Encoding) async throws {
         let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
             path.flatMap { Darwin.realpath($0, nil) }
         }
@@ -101,7 +102,7 @@ struct WorkspaceCopySaveTests {
         defer { try? FileManager.default.removeItem(at: folder) }
         let original = folder.appending(path: "original.md")
         let destination = folder.appending(path: "copy.md")
-        let initial = Data("\u{FEFF}# 最初の原文\r\n".utf8)
+        let initial = try markedBytes("# 最初の原文\r\n", encoding: encoding)
         try initial.write(to: original)
         let snapshot = try await SelectedTextFile.read(from: original)
         let session = WorkspaceSession(source: "サンプル")
@@ -117,12 +118,30 @@ struct WorkspaceCopySaveTests {
         let external = Data("外部の更新".utf8)
         try external.write(to: original, options: .atomic)
         session.requestSaveCopy()
-        let request = try #require(session.saveCopyRequest?.id)
-        await session.writeRequestedCopy(request, to: destination)
+        let request = try #require(session.saveCopyRequest)
+        #expect(request.encoding == encoding)
+        await session.writeRequestedCopy(request.id, to: destination)
         #expect(try Data(contentsOf: original) == external)
-        #expect(try Data(contentsOf: destination) == Data(("\u{FEFF}" + edited).utf8))
+        #expect(try Data(contentsOf: destination) == markedBytes(edited, encoding: encoding))
         #expect(session.tabs.tabs.first(where: { $0.id == originalTab })?.selectedFile?.originalBytes == initial)
         #expect(session.tabs.selectedTab?.document.source.utf8.elementsEqual(edited.utf8) == true)
+
+        let draft = try #require(session.tabs.recoveryDraft(for: copy))
+        let recovered = session.tabs.restoreDraft(draft)
+        try #require(recovered != nil)
+        session.requestSaveCopy()
+        let recoveredRequest = try #require(session.saveCopyRequest)
+        #expect(recoveredRequest.encoding == .utf8)
+        #expect(recoveredRequest.source.utf8.elementsEqual(edited.utf8))
+    }
+
+    private func markedBytes(_ source: String, encoding: SelectedTextFile.Encoding) throws -> Data {
+        switch encoding {
+        case .utf8: Data(source.utf8)
+        case .utf8BOM: Data([0xEF, 0xBB, 0xBF]) + Data(source.utf8)
+        case .utf16LE: Data([0xFF, 0xFE]) + (try #require(source.data(using: .utf16LittleEndian)))
+        case .utf16BE: Data([0xFE, 0xFF]) + (try #require(source.data(using: .utf16BigEndian)))
+        }
     }
 
     @Test func writerFailureDoesNotReplaceOrClearTheDraft() async throws {
@@ -153,14 +172,14 @@ struct WorkspaceCopySaveTests {
 private actor CopyWriterProbe {
     struct Call: Equatable {
         let bytes: Data
-        let bom: Bool
+        let encoding: SelectedTextFile.Encoding
         let url: URL
     }
 
     private var history: [Call] = []
 
-    func record(_ source: String, _ bom: Bool, _ url: URL) {
-        history.append(Call(bytes: Data(source.utf8), bom: bom, url: url))
+    func record(_ source: String, _ encoding: SelectedTextFile.Encoding, _ url: URL) {
+        history.append(Call(bytes: Data(source.utf8), encoding: encoding, url: url))
     }
 
     func calls() -> [Call] { history }

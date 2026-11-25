@@ -75,9 +75,13 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
-    @Test func bomOnlyChangeKeepsTheByteMismatchEvenWhenLineBodiesMatch() async throws {
+    @Test(arguments: [false, true])
+    func encodingOnlyChangeKeepsTheByteMismatchEvenWhenLineBodiesMatch(_ utf16: Bool) async throws {
         try await withOriginal { url, baseline, session, _ in
-            try Data(baseline.source.utf8).write(to: url)
+            let changed = utf16
+                ? Data([0xFE, 0xFF]) + (try #require(baseline.source.data(using: .utf16BigEndian)))
+                : Data(baseline.source.utf8)
+            try changed.write(to: url)
             session.requestOriginalComparison()
             let id = try #require(session.comparisonRequestID)
             await session.readOriginalComparison(id) { try await SelectedTextFile.read(from: url) }
@@ -86,8 +90,10 @@ struct WorkspaceOriginalComparisonTests {
             let result = try await LineDiff.compare(before: sources.before, after: sources.after)
             #expect(result == .identical)
             #expect(comparison.diskStatus == .modified)
-            #expect(comparison.baseline.format.hasUTF8BOM && !comparison.disk.format.hasUTF8BOM)
-            #expect(!comparison.draftMatchesDisk)
+            #expect(comparison.baseline.format.encoding == .utf8BOM)
+            #expect(comparison.disk.format.encoding == (utf16 ? .utf16BE : .utf8))
+            #expect(comparison.draftMatchesBaseline)
+            #expect(comparison.draftMatchesDisk == false)
         }
     }
 

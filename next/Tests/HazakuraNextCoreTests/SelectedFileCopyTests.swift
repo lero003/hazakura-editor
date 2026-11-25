@@ -38,7 +38,7 @@ struct SelectedFileCopyTests {
             #expect(Data(copy.document.source.utf8) == body)
             let origin = try #require(copy.copyOrigin)
             #expect(origin.name == file.name)
-            #expect(origin.format.hasUTF8BOM == fixture.hasBOM)
+            #expect(origin.format.encoding == (fixture.hasBOM ? .utf8BOM : .utf8))
             #expect(origin.format.lineEndings == fixture.lineEndings)
 
             let unchanged = tabs.applyCommittedSource(fixture.source, to: copyID)

@@ -12,7 +12,7 @@ struct SelectedTextFileTests {
             try original.write(to: url)
             let selected = try await SelectedTextFile.read(from: url)
             #expect(selected.name == "原稿.md")
-            #expect(selected.format.hasUTF8BOM)
+            #expect(selected.format.encoding == .utf8BOM)
             #expect(selected.source.utf8.elementsEqual(body.utf8))
             #expect(selected.originalBytes == original)
             #expect(try Data(contentsOf: url) == original)
@@ -26,8 +26,105 @@ struct SelectedTextFileTests {
             try Data(fixture.0.utf8).write(to: url)
             let selected = try await SelectedTextFile.read(from: url)
             #expect(selected.format.lineEndings == fixture.1)
-            #expect(selected.format.hasUTF8BOM == false)
+            #expect(selected.format.encoding == .utf8)
             #expect(selected.source.utf8.elementsEqual(fixture.0.utf8))
+        }
+    }
+
+    private enum UTF16ByteOrder: CaseIterable {
+        case little, big
+
+        func markedBytes(_ codeUnits: some Sequence<UInt16>) -> Data {
+            var bytes = self == .little ? Data([0xFF, 0xFE]) : Data([0xFE, 0xFF])
+            for unit in codeUnits {
+                let low = UInt8(truncatingIfNeeded: unit)
+                let high = UInt8(unit >> 8)
+                bytes.append(contentsOf: self == .little ? [low, high] : [high, low])
+            }
+            return bytes
+        }
+    }
+
+    @Test(arguments: UTF16ByteOrder.allCases, [
+        ("", SelectedTextFile.LineEndings.none),
+        ("\u{250A}\u{0D01}\u{0100}\u{047F}", .none), // individual bytes are not ASCII controls
+        ("\u{FEFF}がと\tか\u{3099}\n🌸\u{FEFF}\u{FFFD}", .lf),
+        ("a\r\nb\r\n", .crlf),
+        ("a\rb", .cr),
+        ("a\r\nb\nc\r", .mixed),
+    ])
+    private func readsExactBOMMarkedUTF16WithoutWritingToSource(
+        _ order: UTF16ByteOrder, _ fixture: (String, SelectedTextFile.LineEndings)
+    ) async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "原稿.txt")
+            let original = order.markedBytes(fixture.0.utf16)
+            try original.write(to: url)
+            let selected = try await SelectedTextFile.read(from: url)
+            let expectedEncoding: SelectedTextFile.Encoding = order == .little ? .utf16LE : .utf16BE
+            #expect(selected.format.encoding == expectedEncoding)
+            #expect(selected.source.utf8.elementsEqual(fixture.0.utf8))
+            #expect(selected.format.lineEndings == fixture.1)
+            #expect(selected.originalBytes == original)
+            #expect(try Data(contentsOf: url) == original)
+        }
+    }
+
+    @Test(arguments: UTF16ByteOrder.allCases)
+    private func rejectsOddUTF16LengthAndUnpairedSurrogates(_ order: UTF16ByteOrder) async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "malformed.txt")
+            let malformed = [
+                order.markedBytes([0x0061]) + Data([0x61]),
+                order.markedBytes([0x0061, 0xD800]),
+                order.markedBytes([0xDC00]),
+                order.markedBytes([0xDC00, 0xD800]),
+                order.markedBytes([0xD800, 0x0061]),
+            ]
+            for bytes in malformed {
+                try bytes.write(to: url)
+                await #expect(throws: SelectedTextFile.ReadError.invalidUTF16) {
+                    try await SelectedTextFile.read(from: url)
+                }
+            }
+        }
+    }
+
+    @Test(arguments: UTF16ByteOrder.allCases, [0x0000, 0x0001, 0x000C, 0x007F] as [UInt16])
+    private func rejectsDecodedASCIIControls(_ order: UTF16ByteOrder, _ control: UInt16) async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "controls.txt")
+            try order.markedBytes([0x0061, control]).write(to: url)
+            await #expect(throws: SelectedTextFile.ReadError.nonTextControls) {
+                try await SelectedTextFile.read(from: url)
+            }
+        }
+    }
+
+    @Test(arguments: [
+        Data([0xFF, 0xFE, 0x00, 0x00]), // Reject the UTF-16 LE BOM + leading NUL overlap as UTF-32.
+        Data([0x00, 0x00, 0xFE, 0xFF]),
+        Data([0xFF, 0xFE, 0x00, 0x00, 0x61, 0x00, 0x00, 0x00]),
+        Data([0x00, 0x00, 0xFE, 0xFF, 0x00, 0x00, 0x00, 0x61]),
+    ])
+    func rejectsBothUTF32ByteOrderMarks(_ bytes: Data) async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "unsupported.txt")
+            try bytes.write(to: url)
+            await #expect(throws: SelectedTextFile.ReadError.unsupportedEncoding) {
+                try await SelectedTextFile.read(from: url)
+            }
+        }
+    }
+
+    @Test(arguments: [Data([0x61, 0x00, 0x62, 0x00]), Data([0x00, 0x61, 0x00, 0x62])])
+    func doesNotGuessUTF16WithoutBOM(_ bytes: Data) async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "unmarked.txt")
+            try bytes.write(to: url)
+            await #expect(throws: SelectedTextFile.ReadError.nonTextControls) {
+                try await SelectedTextFile.read(from: url)
+            }
         }
     }
 
@@ -57,6 +154,26 @@ struct SelectedTextFileTests {
             let selected = try await SelectedTextFile.read(from: url)
             #expect(selected.originalBytes == body)
             try (body + Data([0x61])).write(to: url)
+            await #expect(throws: SelectedTextFile.ReadError.tooLarge) {
+                try await SelectedTextFile.read(from: url)
+            }
+        }
+    }
+
+    @Test func boundsUTF16InputByOriginalBytesIncludingBOM() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "sized-utf16.txt")
+            let bomCount = 2
+            let bodyByteCount = SelectedTextFile.byteLimit - bomCount
+            // Each 30 30 pair is U+3030, which takes three UTF-8 bytes after decoding.
+            let original = Data([0xFE, 0xFF]) + Data(repeating: 0x30, count: bodyByteCount)
+            try original.write(to: url)
+            let selected = try await SelectedTextFile.read(from: url)
+            #expect(selected.format.encoding == .utf16BE)
+            #expect(selected.originalBytes == original)
+            #expect(selected.source.utf8.count == (bodyByteCount / 2) * 3)
+
+            try (original + Data([0x30, 0x30])).write(to: url)
             await #expect(throws: SelectedTextFile.ReadError.tooLarge) {
                 try await SelectedTextFile.read(from: url)
             }

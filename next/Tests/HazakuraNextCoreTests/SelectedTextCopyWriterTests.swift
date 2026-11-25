@@ -11,7 +11,7 @@ struct SelectedTextCopyWriterTests {
     func writesExactUTF8WithOnlyTheRequestedPrefix(_ source: String, _ preservingBOM: Bool) async throws {
         try await withFixture { folder in
             let destination = folder.appendingPathComponent("原稿 #%.md")
-            try await SelectedTextCopyWriter.write(source: source, preservingUTF8BOM: preservingBOM, to: destination)
+            try await SelectedTextCopyWriter.write(source: source, encoding: preservingBOM ? .utf8BOM : .utf8, to: destination)
 
             let expected = (preservingBOM ? Self.bom : Data()) + Data(source.utf8)
             #expect(try Data(contentsOf: destination) == expected)
@@ -19,6 +19,42 @@ struct SelectedTextCopyWriterTests {
             #expect(attributes[.type] as? FileAttributeType == .typeRegular)
             #expect(attributes[.posixPermissions] as? Int == 0o600)
             #expect(try entries(in: folder) == ["原稿 #%.md"])
+        }
+    }
+
+    @Test(arguments: [SelectedTextFile.Encoding.utf16LE, .utf16BE])
+    func writesExactlyOneFormatMarkAndPreservesAllBodyUnits(_ encoding: SelectedTextFile.Encoding) async throws {
+        try await withFixture { folder in
+            let destination = folder.appendingPathComponent("原稿.md")
+            let source = "\u{FEFF}か\u{3099}\r\n🌸\t\r"
+            let expected = encoding == .utf16LE
+                ? Data([255, 254, 255, 254, 75, 48, 153, 48, 13, 0, 10, 0, 60, 216, 56, 223, 9, 0, 13, 0])
+                : Data([254, 255, 254, 255, 48, 75, 48, 153, 0, 13, 0, 10, 216, 60, 223, 56, 0, 9, 0, 13])
+            try await SelectedTextCopyWriter.write(source: source, encoding: encoding, to: destination)
+            #expect(try Data(contentsOf: destination) == expected)
+            let reopened = try await SelectedTextFile.read(from: destination)
+            #expect(reopened.format.encoding == encoding)
+            #expect(reopened.source.utf8.elementsEqual(source.utf8))
+        }
+    }
+
+    @Test(arguments: [SelectedTextFile.Encoding.utf16LE, .utf16BE])
+    func utf16LimitCountsTheMarkAndBothPartsOfSurrogatePairs(_ encoding: SelectedTextFile.Encoding) async throws {
+        try await withFixture { folder in
+            let fits = folder.appendingPathComponent("fits.txt")
+            let over = folder.appendingPathComponent("over.txt")
+            let invalid = folder.appendingPathComponent("invalid.txt")
+            let byteLimit = SelectedTextFile.byteLimit
+            let body = String(repeating: "🌸", count: (byteLimit - 4) / 4) + "a"
+            try await SelectedTextCopyWriter.write(source: body, encoding: encoding, to: fits)
+            #expect(try Data(contentsOf: fits).count == byteLimit)
+            await #expect(throws: WriteError.tooLarge) {
+                try await SelectedTextCopyWriter.write(source: body + "a", encoding: encoding, to: over)
+            }
+            await #expect(throws: WriteError.invalidText) {
+                try await SelectedTextCopyWriter.write(source: "\u{0000}本文", encoding: encoding, to: invalid)
+            }
+            #expect(try entries(in: folder) == ["fits.txt"])
         }
     }
 
@@ -32,7 +68,7 @@ struct SelectedTextCopyWriterTests {
 
             for existing in [source, linked] {
                 await #expect(throws: WriteError.alreadyExists) {
-                    try await SelectedTextCopyWriter.write(source: "edited", preservingUTF8BOM: false, to: existing)
+                    try await SelectedTextCopyWriter.write(source: "edited", encoding: .utf8, to: existing)
                 }
                 #expect(try Data(contentsOf: existing) == original)
             }
@@ -64,12 +100,12 @@ struct SelectedTextCopyWriterTests {
 
             for existing in [leaf, dangling] {
                 await #expect(throws: WriteError.alreadyExists) {
-                    try await SelectedTextCopyWriter.write(source: "new", preservingUTF8BOM: false, to: existing)
+                    try await SelectedTextCopyWriter.write(source: "new", encoding: .utf8, to: existing)
                 }
             }
             await #expect(throws: WriteError.invalidLocation) {
                 try await SelectedTextCopyWriter.write(
-                    source: "new", preservingUTF8BOM: false, to: ancestor.appendingPathComponent("new.txt")
+                    source: "new", encoding: .utf8, to: ancestor.appendingPathComponent("new.txt")
                 )
             }
 
@@ -93,7 +129,7 @@ struct SelectedTextCopyWriterTests {
                                                   ofItemAtPath: folder.path(percentEncoded: false))
 
             await #expect(throws: WriteError.accessDenied) {
-                try await SelectedTextCopyWriter.write(source: "edited", preservingUTF8BOM: false, to: destination)
+                try await SelectedTextCopyWriter.write(source: "edited", encoding: .utf8, to: destination)
             }
             #expect(try Data(contentsOf: original) == originalBytes)
             #expect(try entries(in: folder) == ["original.txt"])
@@ -117,12 +153,12 @@ struct SelectedTextCopyWriterTests {
             }
             let destination = folder.appendingPathComponent("copy.txt")
             if rule == "deny:delete" {
-                try await SelectedTextCopyWriter.write(source: "text", preservingUTF8BOM: false, to: destination)
+                try await SelectedTextCopyWriter.write(source: "text", encoding: .utf8, to: destination)
                 #expect(try Data(contentsOf: destination) == Data("text".utf8))
                 #expect(try entries(in: folder) == ["copy.txt"])
             } else {
                 await #expect(throws: WriteError.accessDenied) {
-                    try await SelectedTextCopyWriter.write(source: "text", preservingUTF8BOM: false, to: destination)
+                    try await SelectedTextCopyWriter.write(source: "text", encoding: .utf8, to: destination)
                 }
                 let remaining = try entries(in: folder)
                 #expect(remaining.isEmpty)
@@ -138,7 +174,7 @@ struct SelectedTextCopyWriterTests {
                 for source in candidates {
                     group.addTask {
                         do {
-                            try await SelectedTextCopyWriter.write(source: source, preservingUTF8BOM: false, to: destination)
+                            try await SelectedTextCopyWriter.write(source: source, encoding: .utf8, to: destination)
                             return source
                         } catch WriteError.alreadyExists {
                             return nil
@@ -169,7 +205,7 @@ struct SelectedTextCopyWriterTests {
             for string in invalidURLs {
                 let url = try #require(URL(string: string))
                 await #expect(throws: WriteError.invalidLocation) {
-                    try await SelectedTextCopyWriter.write(source: "text", preservingUTF8BOM: false, to: url)
+                    try await SelectedTextCopyWriter.write(source: "text", encoding: .utf8, to: url)
                 }
             }
             let remaining = try entries(in: folder)
@@ -182,7 +218,7 @@ struct SelectedTextCopyWriterTests {
         try await withFixture { folder in
             let destination = folder.appendingPathComponent("not-text.txt")
             await #expect(throws: WriteError.invalidText) {
-                try await SelectedTextCopyWriter.write(source: source, preservingUTF8BOM: false, to: destination)
+                try await SelectedTextCopyWriter.write(source: source, encoding: .utf8, to: destination)
             }
             let remaining = try entries(in: folder)
             #expect(remaining.isEmpty)
@@ -199,10 +235,10 @@ struct SelectedTextCopyWriterTests {
             let bodyCount = limit - prefix.count
             let body = String(repeating: "界", count: bodyCount / 3) + String(repeating: "a", count: bodyCount % 3)
 
-            try await SelectedTextCopyWriter.write(source: body, preservingUTF8BOM: preservingBOM, to: fits)
+            try await SelectedTextCopyWriter.write(source: body, encoding: preservingBOM ? .utf8BOM : .utf8, to: fits)
             #expect(try Data(contentsOf: fits) == prefix + Data(body.utf8))
             await #expect(throws: WriteError.tooLarge) {
-                try await SelectedTextCopyWriter.write(source: body + "x", preservingUTF8BOM: preservingBOM, to: over)
+                try await SelectedTextCopyWriter.write(source: body + "x", encoding: preservingBOM ? .utf8BOM : .utf8, to: over)
             }
             #expect(try entries(in: folder) == ["fits.txt"])
         }
@@ -215,7 +251,7 @@ struct SelectedTextCopyWriterTests {
                 try await withThrowingTaskGroup(of: Void.self) { group in
                     group.cancelAll()
                     group.addTask {
-                        try await SelectedTextCopyWriter.write(source: "text", preservingUTF8BOM: false, to: destination)
+                        try await SelectedTextCopyWriter.write(source: "text", encoding: .utf8, to: destination)
                     }
                     try await group.waitForAll()
                 }
