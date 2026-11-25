@@ -169,6 +169,59 @@ struct WorkspaceRecoveryTests {
         #expect(duplicated.contains(prior))
     }
 
+    @Test func nativeCompositionBlocksRecoveryRequestAndRestoreBeforeModelNotification() async throws {
+        let prior = RecoveryDraft(id: UUID(), revision: 7, source: "以前の原稿\r\n")
+        let backend = RecoveryFixture(drafts: [prior])
+        let recovery = backend.makeQueue()
+        let delegate = ScratchApplicationDelegate(source: "原稿", recovery: recovery)
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("未保存の確定原稿", to: id)
+        let active = try #require(session.tabs.recoveryDraft(for: id))
+        await recovery.waitForCurrentWorker()
+        try #require(session.selectedRecoveryStatus == .checkpointed)
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+
+        func markText() {
+            view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                               replacementRange: NSRange(location: NSNotFound, length: 0))
+        }
+        markText()
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        session.requestRecovery()
+        #expect(!session.showsRecovery)
+        #expect(session.selectedRecoveryStatus == nil)
+        #expect(view.hasMarkedText())
+
+        view.unmarkText()
+        session.requestRecovery()
+        try #require(session.showsRecovery)
+        let candidate = try #require(try await session.recoveryCandidates().first)
+        markText()
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        let ranges = [view.selectedRange(), view.markedRange()]
+        #expect(!session.restore(candidate))
+        #expect(session.showsRecovery)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDrafts == [active])
+        #expect(window.firstResponder === view)
+        #expect([view.selectedRange(), view.markedRange()] == ranges)
+        #expect(Set(await backend.records().map(\.id)) == [prior.id, active.id])
+
+        view.unmarkText()
+        #expect(session.selectedRecoveryStatus == .checkpointed)
+        try #require(session.tabs.selectedID == id)
+        #expect(session.restore(candidate))
+        #expect(session.tabs.selectedID != id)
+        #expect(session.tabs.selectedTab?.document.source == prior.source)
+        await recovery.waitForCurrentWorker()
+        #expect(await backend.records().contains(prior))
+    }
+
     enum CandidateAtConfirmation: CaseIterable {
         case same, older, newer, differentBytes, missing
     }

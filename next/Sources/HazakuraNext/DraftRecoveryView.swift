@@ -52,7 +52,7 @@ struct DraftRecoveryView: View {
                     if session.restore(selectedDraft) { dismiss() }
                     else { notice = "復元できませんでした。タブの数と変換状態を確認してください。" }
                 }
-                .disabled(selectedDraft == nil || busy || !session.tabs.canCreateTab)
+                .disabled(selectedDraft == nil || busy || !session.canRestoreRecoveryDraft)
             }
         }
         .padding(20)

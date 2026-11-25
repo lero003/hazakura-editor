@@ -1012,13 +1012,17 @@ final class WorkspaceSession {
     }
 
     var selectedRecoveryStatus: RecoveryStatus? {
-        guard let recovery, !recoveryUnavailable, !tabs.isComposing, !isDiscarding,
+        guard let recovery, !recoveryUnavailable, !tabs.isComposing, !hasNativeMarkedText, !isDiscarding,
               let id = tabs.selectedID, let draft = tabs.recoveryDraft(for: id) else { return nil }
         return recovery.hasCheckpointed(draft) ? .checkpointed : .unconfirmed
     }
 
+    var canRequestRecovery: Bool {
+        recovery != nil && !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil
+    }
+
     func requestRecovery() {
-        guard recovery != nil, !isBusy, !tabs.isComposing else { return }
+        guard canRequestRecovery else { return }
         showsRecovery = true
     }
 
@@ -1034,9 +1038,14 @@ final class WorkspaceSession {
         try await recovery.discardCandidate(draft)
     }
 
+    var canRestoreRecoveryDraft: Bool {
+        showsRecovery && !isDiscarding && openRequest == nil && pendingDiscard == nil &&
+            tabs.canCreateTab && !hasNativeMarkedText
+    }
+
     func restore(_ draft: RecoveryDraft) -> Bool {
-        guard showsRecovery, !isDiscarding, openRequest == nil, pendingDiscard == nil,
-              !tabs.recoveryDrafts.contains(where: { $0.id == draft.id }), tabs.restoreDraft(draft) != nil else { return false }
+        guard canRestoreRecoveryDraft, !tabs.recoveryDrafts.contains(where: { $0.id == draft.id }),
+              tabs.restoreDraft(draft) != nil else { return false }
         if let restored = tabs.recoveryDrafts.last { recovery?.enqueue(restored) }
         return true
     }

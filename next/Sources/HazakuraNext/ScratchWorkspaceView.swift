@@ -368,7 +368,7 @@ struct ScratchWorkspaceView: View {
                         .labelStyle(.iconOnly)
                 }
                 .help("退避された原稿を確認する")
-                .disabled(session.tabs.isComposing)
+                .disabled(!session.canRequestRecovery)
             }
 
             Button {
