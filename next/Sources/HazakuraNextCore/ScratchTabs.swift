@@ -6,7 +6,9 @@ public struct ScratchTabs {
     public struct Tab: Identifiable {
         public fileprivate(set) var document: ScratchDocument
         public let number: Int
+        public let selectedFile: SelectedTextFile?
         public var id: UUID { document.id }
+        public var isReadOnly: Bool { selectedFile != nil }
     }
 
     public struct DiscardTicket: Equatable {
@@ -29,7 +31,7 @@ public struct ScratchTabs {
     private var nextNumber = 2
 
     public init(source: String) {
-        let tab = Tab(document: ScratchDocument(source: source), number: 1)
+        let tab = Tab(document: ScratchDocument(source: source), number: 1, selectedFile: nil)
         tabs = [tab]
         selectedID = tab.id
     }
@@ -39,8 +41,17 @@ public struct ScratchTabs {
 
     @discardableResult
     public mutating func newTab() -> UUID? {
+        appendTab(source: "", selectedFile: nil)
+    }
+
+    @discardableResult
+    public mutating func openReadOnly(_ file: SelectedTextFile) -> UUID? {
+        appendTab(source: file.source, selectedFile: file)
+    }
+
+    private mutating func appendTab(source: String, selectedFile: SelectedTextFile?) -> UUID? {
         guard canCreateTab else { return nil }
-        let tab = Tab(document: ScratchDocument(source: ""), number: nextNumber)
+        let tab = Tab(document: ScratchDocument(source: source), number: nextNumber, selectedFile: selectedFile)
         nextNumber += 1
         tabs.append(tab)
         selectedID = tab.id
@@ -55,12 +66,12 @@ public struct ScratchTabs {
     }
 
     public mutating func applyCommittedSource(_ source: String, to id: UUID) {
-        guard let index = tabs.firstIndex(where: { $0.id == id }) else { return }
+        guard let index = tabs.firstIndex(where: { $0.id == id }), !tabs[index].isReadOnly else { return }
         tabs[index].document.replaceSource(source)
     }
 
     public mutating func setComposing(_ composing: Bool, in id: UUID) {
-        guard selectedID == id else { return }
+        guard let tab = selectedTab, tab.id == id, !tab.isReadOnly else { return }
         isComposing = composing
     }
 

@@ -271,6 +271,34 @@ struct TextKitEditorTests {
         #expect(secondReported == ["二章", "二"])
     }
 
+    @Test
+    func readOnlyTextRetainsSelectionAndRejectsEdits() throws {
+        let source = "# か\u{3099}\r\n原文\r末尾"
+        var reported: [String] = []
+        let coordinator = TextKitEditor.Coordinator { reported.append($0) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: source, isReadOnly: true, coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let textView = try #require(scrollView.documentView as? NSTextView)
+        let selection = NSRange(location: 0, length: 2)
+        #expect(window.firstResponder === textView)
+        #expect(textView.isSelectable)
+        #expect(textView.isEditable == false)
+        #expect(textView.undoManager == nil)
+        textView.setSelectedRange(selection)
+
+        textView.insertText("別の文字", replacementRange: selection)
+        setMarkedText("候補", in: textView)
+        textView.unmarkText()
+        let pasteboard = NSPasteboard.withUniqueName()
+        defer { pasteboard.releaseGlobally() }
+        pasteboard.setString("貼り付け", forType: .string)
+        #expect(textView.readSelection(from: pasteboard, type: .string) == false)
+        #expect(textView.selectedRange() == selection)
+        #expect(textView.string.utf8.elementsEqual(source.utf8))
+        #expect(reported.isEmpty)
+    }
+
     private enum EditorEvent: Equatable {
         case composing(Bool)
         case source(String)

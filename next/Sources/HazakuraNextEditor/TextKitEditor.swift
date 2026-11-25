@@ -6,20 +6,24 @@ private final class MarkdownTextView: NSTextView {
     weak var editorCoordinator: TextKitEditor.Coordinator?
     private let editorUndoManager = UndoManager()
     private var isActive = true
+    private var isReadOnly = false
     private(set) var textInputDepth = 0
 
-    override var undoManager: UndoManager? { editorUndoManager }
+    override var undoManager: UndoManager? { isReadOnly ? nil : editorUndoManager }
     override var acceptsFirstResponder: Bool { isActive && super.acceptsFirstResponder }
     override var readablePasteboardTypes: [NSPasteboard.PasteboardType] { [.string] }
     override var acceptableDragTypes: [NSPasteboard.PasteboardType] { [] }
 
-    func setActive(_ active: Bool) {
-        guard isActive != active else { return }
+    func setActive(_ active: Bool, readOnly: Bool) {
+        let activationChanged = isActive != active
+        guard activationChanged || isReadOnly != readOnly else { return }
         isActive = active
+        isReadOnly = readOnly
         // Leave isSelectable alone so the inactive tab keeps its selection.
-        isEditable = active
+        isEditable = active && !readOnly
+        allowsUndo = !readOnly
         if active {
-            window?.makeFirstResponder(self)
+            if activationChanged { window?.makeFirstResponder(self) }
         } else if let window, window.firstResponder === self {
             window.makeFirstResponder(nil)
         }
@@ -31,17 +35,19 @@ private final class MarkdownTextView: NSTextView {
     }
 
     override func readSelection(from pboard: NSPasteboard, type: NSPasteboard.PasteboardType) -> Bool {
-        guard type == .string else { return false }
+        guard isEditable, type == .string else { return false }
         return super.readSelection(from: pboard, type: type)
     }
 
     override func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
+        guard isEditable else { return }
         textInputDepth += 1
         defer { finishTextInput() }
         super.setMarkedText(string, selectedRange: selectedRange, replacementRange: replacementRange)
     }
 
     override func insertText(_ string: Any, replacementRange: NSRange) {
+        guard isEditable else { return }
         textInputDepth += 1
         defer { finishTextInput() }
         super.insertText(string, replacementRange: replacementRange)
@@ -66,12 +72,14 @@ private final class MarkdownTextView: NSTextView {
 public struct TextKitEditor: NSViewRepresentable {
     private let initialText: String
     private let isActive: Bool
+    private let isReadOnly: Bool
     private let onCompositionChange: (Bool) -> Void
     private let onChange: (String) -> Void
 
     /// `initialText` seeds one SwiftUI identity; subsequent updates do not replace the buffer.
     /// `isActive` enables editing and requests native focus on activation. Inactive editors
     /// retain selection and undo history; the caller controls visibility and hit testing.
+    /// `isReadOnly` lets an active tab select and copy its source without editing.
     /// Keep the editor active, and block tab switches/new tabs, from `onCompositionChange(true)`
     /// until `onCompositionChange(false)`.
     ///
@@ -83,11 +91,13 @@ public struct TextKitEditor: NSViewRepresentable {
     public init(
         initialText: String,
         isActive: Bool = true,
+        isReadOnly: Bool = false,
         onCompositionChange: @escaping (Bool) -> Void = { _ in },
         onChange: @escaping (String) -> Void
     ) {
         self.initialText = initialText
         self.isActive = isActive
+        self.isReadOnly = isReadOnly
         self.onCompositionChange = onCompositionChange
         self.onChange = onChange
     }
@@ -97,25 +107,27 @@ public struct TextKitEditor: NSViewRepresentable {
     }
 
     public func makeNSView(context: Context) -> NSScrollView {
-        Self.makeScrollView(initialText: initialText, isActive: isActive, coordinator: context.coordinator)
+        Self.makeScrollView(initialText: initialText, isActive: isActive, isReadOnly: isReadOnly, coordinator: context.coordinator)
     }
 
     public func updateNSView(_ nsView: NSScrollView, context: Context) {
         // Replacing the buffer here would disturb selection, undo and marked text.
         context.coordinator.onCompositionChange = onCompositionChange
         context.coordinator.onChange = onChange
-        Self.setActive(isActive, in: nsView)
+        Self.setActive(isActive, in: nsView, readOnly: isReadOnly)
     }
 
     public static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
         coordinator.stopObserving()
     }
 
-    static func setActive(_ isActive: Bool, in scrollView: NSScrollView) {
-        (scrollView.documentView as? MarkdownTextView)?.setActive(isActive)
+    static func setActive(_ isActive: Bool, in scrollView: NSScrollView, readOnly: Bool = false) {
+        (scrollView.documentView as? MarkdownTextView)?.setActive(isActive, readOnly: readOnly)
     }
 
-    static func makeScrollView(initialText: String, isActive: Bool = true, coordinator: Coordinator?) -> NSScrollView {
+    static func makeScrollView(
+        initialText: String, isActive: Bool = true, isReadOnly: Bool = false, coordinator: Coordinator?
+    ) -> NSScrollView {
         let scrollView = NSScrollView()
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
@@ -151,7 +163,7 @@ public struct TextKitEditor: NSViewRepresentable {
         textView.textContainer?.widthTracksTextView = true
 
         textView.string = initialText
-        textView.setActive(isActive)
+        textView.setActive(isActive, readOnly: isReadOnly)
         scrollView.documentView = textView
 
         // Inspect the TextKit 2 properties only; accessing the legacy manager forces compatibility mode.
