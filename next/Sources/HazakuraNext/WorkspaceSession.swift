@@ -823,6 +823,7 @@ final class WorkspaceSession {
         case .alreadyExists: "同じ名前の項目が既にあります。別の名前を選んでください。"
         case .tooLarge: "保存時の文字コードで、BOMを含めて2 MiB以下の原稿だけ保存できます。"
         case .invalidText: "テキストとして扱えない文字が含まれています。"
+        case .ambiguousLeadingBOM: "先頭の不可視文字（U+FEFF）がBOMと区別できないため、BOMなしのUTF-8では保存できません。原稿は変更していません。"
         case .invalidLocation: "ローカルの保存先を選んでください。"
         default: "リンクを含まず、自分だけが書き込めるローカルフォルダを選んでください。"
         }

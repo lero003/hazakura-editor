@@ -302,22 +302,26 @@ struct WorkspaceCopySaveTests {
         }
     }
 
-    @Test func writerFailureDoesNotReplaceOrClearTheDraft() async throws {
+    @Test(arguments: [SelectedTextCopyWriter.WriteError.alreadyExists, .ambiguousLeadingBOM])
+    func writerFailureDoesNotReplaceOrClearTheDraft(_ failure: SelectedTextCopyWriter.WriteError) async throws {
         let session = WorkspaceSession(source: "下書き")
         let id = try #require(session.tabs.selectedID)
-        session.applyCommittedSource("手元の編集", to: id)
+        let edited = failure == .ambiguousLeadingBOM ? "\u{FEFF}手元の編集" : "手元の編集"
+        session.applyCommittedSource(edited, to: id)
         let before = session.tabs.recoveryDrafts
         session.exitNotice = "古い終了エラー"
         session.requestSaveCopy()
         #expect(session.exitNotice == nil)
         let request = try #require(session.saveCopyRequest?.id)
-        await session.writeRequestedCopy(request, to: URL(fileURLWithPath: "/synthetic/existing.md")) { _, _, _ in
-            throw SelectedTextCopyWriter.WriteError.alreadyExists
+        await session.writeRequestedCopy(request, to: URL(fileURLWithPath: "/synthetic/copy.md")) { _, _, _ in
+            throw failure
         }
         #expect(session.saveCopyRequest == nil)
-        #expect(session.fileNotice?.contains("既に") == true)
+        #expect(session.selectedCopySaveStatus == nil)
+        let expectedNotice = failure == .ambiguousLeadingBOM ? "U+FEFF" : "既に"
+        #expect(session.fileNotice?.contains(expectedNotice) == true)
         #expect(session.tabs.recoveryDrafts == before)
-        #expect(session.tabs.selectedTab?.document.source == "手元の編集")
+        #expect(session.tabs.selectedTab?.document.source.utf8.elementsEqual(edited.utf8) == true)
         session.requestOpen()
         #expect(session.fileNotice == nil)
         let openID = try #require(session.openRequest)

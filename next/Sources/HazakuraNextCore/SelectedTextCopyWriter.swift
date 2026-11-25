@@ -4,7 +4,7 @@ import Foundation
 /// Creates a new copy at an explicitly selected destination, never at a default location.
 public enum SelectedTextCopyWriter {
     public enum WriteError: Error, Equatable {
-        case invalidLocation, invalidText, invalidPDF, invalidEPUB, tooLarge, alreadyExists, accessDenied
+        case invalidLocation, invalidText, ambiguousLeadingBOM, invalidPDF, invalidEPUB, tooLarge, alreadyExists, accessDenied
     }
 
     package static let pdfByteLimit = 16 * 1024 * 1024
@@ -147,6 +147,10 @@ public enum SelectedTextCopyWriter {
             let unitLimit = limit / 2
             guard source.utf16.prefix(unitLimit + 1).count <= unitLimit else { throw WriteError.tooLarge }
             bodyEncoding = encoding == .utf16LE ? .utf16LittleEndian : .utf16BigEndian
+        }
+        // Without a separate BOM, reopening would consume this body scalar as the format marker.
+        if encoding == .utf8, source.unicodeScalars.first?.value == 0xFEFF {
+            throw WriteError.ambiguousLeadingBOM
         }
         // Test the text, not the serialized bytes (NUL bytes are common in UTF-16).
         guard !source.utf8.contains(where: { ($0 < 32 && $0 != 9 && $0 != 10 && $0 != 13) || $0 == 127 }),

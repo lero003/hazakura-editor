@@ -118,7 +118,7 @@ struct OriginalFileComparisonTests {
     }
 
     @Test(arguments: [false, true])
-    func literalLeadingFEFFContributesBytesAlongsideTheBaselineBOM(hasBaselineBOM: Bool) async throws {
+    func literalLeadingFEFFCanBeComparedOnlyWithASeparateFormatBOM(hasBaselineBOM: Bool) async throws {
         try await withFixture { folder in
             let url = folder.appending(path: "original.txt")
             let source = "a\r\nb\nc\r"
@@ -133,7 +133,9 @@ struct OriginalFileComparisonTests {
             #expect(disk.source.utf8.elementsEqual((hasBaselineBOM ? draft : source).utf8))
             let comparison = OriginalFileComparison(baseline: baseline, disk: disk, draftSource: draft)
             #expect(comparison.diskStatus == .modified)
-            #expect(comparison.draftByteStatus == .compared(matchesBaseline: false, matchesDisk: true))
+            let expected: OriginalFileComparison.DraftByteStatus = hasBaselineBOM
+                ? .compared(matchesBaseline: false, matchesDisk: true) : .unavailable
+            #expect(comparison.draftByteStatus == expected)
         }
     }
 

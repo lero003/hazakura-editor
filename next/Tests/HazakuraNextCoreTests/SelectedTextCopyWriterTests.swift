@@ -7,7 +7,7 @@ struct SelectedTextCopyWriterTests {
     private typealias WriteError = SelectedTextCopyWriter.WriteError
     private static let bom = Data([0xEF, 0xBB, 0xBF])
 
-    @Test(arguments: ["", "# か\u{3099}\r\n🌸\n\t末尾\r", "\u{FEFF}本文"], [false, true])
+    @Test(arguments: ["", "# か\u{3099}\r\n🌸\n\t末尾\r", "本文\u{FEFF}末尾"], [false, true])
     func writesExactUTF8WithOnlyTheRequestedPrefix(_ source: String, _ preservingBOM: Bool) async throws {
         try await withFixture { folder in
             let destination = folder.appendingPathComponent("原稿 #%.md")
@@ -15,10 +15,31 @@ struct SelectedTextCopyWriterTests {
 
             let expected = (preservingBOM ? Self.bom : Data()) + Data(source.utf8)
             #expect(try Data(contentsOf: destination) == expected)
+            let reopened = try await SelectedTextFile.read(from: destination)
+            #expect(reopened.format.encoding == (preservingBOM ? .utf8BOM : .utf8))
+            #expect(reopened.source.utf8.elementsEqual(source.utf8))
             let attributes = try FileManager.default.attributesOfItem(atPath: destination.path(percentEncoded: false))
             #expect(attributes[.type] as? FileAttributeType == .typeRegular)
             #expect(attributes[.posixPermissions] as? Int == 0o600)
             #expect(try entries(in: folder) == ["原稿 #%.md"])
+        }
+    }
+
+    @Test func refusesABOMLessCopyThatWouldLoseItsFirstCharacterOnReopen() async throws {
+        try await withFixture { folder in
+            let source = "\u{FEFF}本文\r\n"
+            let destination = folder.appendingPathComponent("without-mark.txt")
+            await #expect(throws: WriteError.ambiguousLeadingBOM) {
+                try await SelectedTextCopyWriter.write(source: source, encoding: .utf8, to: destination)
+            }
+            #expect(try entries(in: folder).isEmpty)
+
+            let marked = folder.appendingPathComponent("with-mark.txt")
+            try await SelectedTextCopyWriter.write(source: source, encoding: .utf8BOM, to: marked)
+            #expect(try Data(contentsOf: marked) == Self.bom + Data(source.utf8))
+            let reopened = try await SelectedTextFile.read(from: marked)
+            #expect(reopened.format.encoding == .utf8BOM)
+            #expect(reopened.source.utf8.elementsEqual(source.utf8))
         }
     }
 
