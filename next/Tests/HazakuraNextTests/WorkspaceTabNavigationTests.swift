@@ -256,6 +256,51 @@ struct WorkspaceTabNavigationTests {
         #expect(view.hasMarkedText())
     }
 
+    enum OpenCompositionTiming: CaseIterable {
+        case beforeRead, duringRead, duringCancelledRead
+    }
+
+    @Test(arguments: OpenCompositionTiming.allCases)
+    func openRechecksNativeCompositionAfterSelection(_ timing: OpenCompositionTiming) async throws {
+        let delegate = ScratchApplicationDelegate(source: "原稿")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let documentID = try #require(session.tabs.selectedID)
+        let view = try installTextView(in: window)
+        session.applyCommittedSource("未保存の確定原稿", to: documentID)
+        let drafts = session.tabs.recoveryDrafts
+        session.requestOpen()
+        let request = try #require(session.openRequest)
+        var previousRanges: [NSRange] = []
+
+        await session.openSelectedFile(request) {
+            if timing != .beforeRead { try #require(session.beginOpenRead(request)) }
+            markText(in: view)
+            try #require(view.hasMarkedText() && !session.tabs.isComposing)
+            previousRanges = [view.selectedRange(), view.markedRange()]
+            if timing == .duringCancelledRead { session.cancelOpenRead(request) }
+            if timing != .beforeRead { throw SelectedTextFile.ReadError.changedWhileReading }
+
+            // The accepted selection must not start reading while the editor has marked text.
+            #expect(!session.beginOpenRead(request))
+            #expect(session.cancellableOpenReadID == nil)
+            return nil
+        }
+
+        if timing == .duringCancelledRead {
+            #expect(session.fileNotice == nil)
+        } else {
+            #expect(session.fileNotice?.hasPrefix("変換を確定またはキャンセルしてから") == true)
+        }
+        #expect(session.openRequest == nil && !session.isBusy)
+        #expect(session.tabs.tabs.map(\.id) == [documentID])
+        #expect(session.tabs.selectedID == documentID)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(window.firstResponder === view)
+        #expect(view.hasMarkedText() && [view.selectedRange(), view.markedRange()] == previousRanges)
+    }
+
     @Test func compositionWhenTheReadReturnsKeepsTheCurrentDraftUntilAnExplicitRetry() async throws {
         let delegate = ScratchApplicationDelegate(source: "原稿")
         let window = delegate.prepareWindow()

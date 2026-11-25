@@ -1146,7 +1146,7 @@ final class WorkspaceSession {
 
     /// Called only after the picker has returned a selection, before reading its contents.
     func beginOpenRead(_ request: UUID) -> Bool {
-        guard openRequest == request, openPhase == .choosing, !Task.isCancelled else { return false }
+        guard openPhase == .choosing, canContinueOpen(request) else { return false }
         openPhase = .reading
         return true
     }
@@ -1167,24 +1167,28 @@ final class WorkspaceSession {
             openPhase = nil
             cancelOpen(request)
         }
-        let retryMessage = "変換を確定またはキャンセルしてから、もう一度ファイルを開いてください。"
-        guard !Task.isCancelled else { return }
-        guard !tabs.isComposing, !hasNativeMarkedText else {
-            fileNotice = retryMessage
-            return
-        }
+        guard canContinueOpen(request) else { return }
         do {
-            guard let file = try await read(), !Task.isCancelled, openRequest == request else { return }
             // The editor may have regained focus and started composing during the read.
-            if hasNativeMarkedText || tabs.openReadOnly(file) == nil {
-                fileNotice = retryMessage
+            guard let file = try await read(), canContinueOpen(request) else { return }
+            if tabs.openReadOnly(file) == nil {
+                fileNotice = "開けませんでした。別のタブを閉じてから、もう一度お試しください。"
             }
         } catch is CancellationError {
             return
         } catch {
-            guard !Task.isCancelled, openRequest == request else { return }
+            guard canContinueOpen(request) else { return }
             fileNotice = "開けませんでした。\(Self.readFailure(error))"
         }
+    }
+
+    private func canContinueOpen(_ request: UUID) -> Bool {
+        guard !Task.isCancelled, openRequest == request else { return false }
+        guard !tabs.isComposing, !hasNativeMarkedText else {
+            fileNotice = "変換を確定またはキャンセルしてから、もう一度ファイルを開いてください。"
+            return false
+        }
+        return true
     }
 
     func newTab() {
