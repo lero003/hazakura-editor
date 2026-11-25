@@ -205,6 +205,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         let view = addMenu("表示", to: bar)
         addCommand("Markdownプレビュー…", #selector(previewMarkdown(_:)), "", to: view)
         addCommand("えるモード", #selector(toggleLMode(_:)), "", to: view)
+        let development = addMenu("開発用", to: bar)
+        addCommand("提案差分の表示サンプル…", #selector(showAssistReviewSample(_:)), "", to: development)
         NSApp.mainMenu = bar
     }
 
@@ -242,6 +244,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func exportEPUB(_ sender: Any?) { menuSession?.requestExport(.epub) }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
     @objc private func toggleLMode(_ sender: Any?) { menuSession?.toggleLMode() }
+    @objc private func showAssistReviewSample(_ sender: Any?) { menuSession?.requestAssistReviewSample() }
     @objc private func undo(_ sender: Any?) { activeUndoManager?.undo() }
     @objc private func redo(_ sender: Any?) { activeUndoManager?.redo() }
 
@@ -257,6 +260,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
         case #selector(exportHTML(_:)), #selector(exportPDF(_:)), #selector(exportEPUB(_:)): menuSession?.canExport == true
         case #selector(previewMarkdown(_:)): menuSession?.canPreviewMarkdown == true
+        case #selector(showAssistReviewSample(_:)): menuSession?.canOpenAssistReviewSample == true
         case #selector(undo(_:)): activeUndoManager?.canUndo == true
         case #selector(redo(_:)): activeUndoManager?.canRedo == true
         default: true

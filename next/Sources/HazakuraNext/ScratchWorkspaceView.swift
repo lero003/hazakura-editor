@@ -18,6 +18,7 @@ struct ScratchWorkspaceView: View {
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
+        let assistSampleID = session.assistReviewSample?.id
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(banner)
@@ -69,6 +70,7 @@ struct ScratchWorkspaceView: View {
             session.openRequest = nil
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
+            if let id = session.assistReviewSample?.id { session.dismissAssistReviewSample(id) }
             if let id = session.exportRequest?.id { session.cancelExport(id) }
             openPanel = nil
             savePanel = nil
@@ -89,6 +91,11 @@ struct ScratchWorkspaceView: View {
             ) { location in
                 session.requestMarkdownReveal(preview.id, offset: location.utf16Offset)
             }
+        }
+        .sheet(item: Binding(get: { session.assistReviewSample }, set: { sample in
+            if sample == nil, let assistSampleID { session.dismissAssistReviewSample(assistSampleID) }
+        })) { _ in
+            AssistReviewSampleView()
         }
         .sheet(isPresented: Binding(get: { session.showsRecovery }, set: { session.showsRecovery = $0 })) {
             DraftRecoveryView(session: session)

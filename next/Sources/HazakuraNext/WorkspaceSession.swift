@@ -92,6 +92,7 @@ final class WorkspaceSession {
     private var readingComparisonID: UUID?
     private(set) var comparisonReport: ComparisonReport?
     private(set) var markdownPreview: MarkdownPreviewSnapshot?
+    private(set) var assistReviewSample: AssistReviewSample?
     // A window-local layout choice, independent of the selected document and its recovery state.
     private(set) var isLMode = false
     // Scrolling updates only this live-tab state, not the editor or the open sheet.
@@ -115,15 +116,26 @@ final class WorkspaceSession {
     var isBusy: Bool {
         pendingDiscard != nil || openRequest != nil || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil ||
-            markdownPreview != nil || showsRecovery || isDiscarding
+            markdownPreview != nil || assistReviewSample != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
         !isDiscarding && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
-            readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil
+            readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && assistReviewSample == nil
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+    var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
     var canExport: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+
+    func requestAssistReviewSample() {
+        guard canOpenAssistReviewSample else { return }
+        assistReviewSample = AssistReviewSample()
+    }
+
+    func dismissAssistReviewSample(_ id: UUID) {
+        guard assistReviewSample?.id == id else { return }
+        assistReviewSample = nil
+    }
     var canToggleLMode: Bool { !isBusy && !tabs.isComposing && tabs.selectedID != nil }
 
     func toggleLMode() {
