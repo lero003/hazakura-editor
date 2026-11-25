@@ -106,10 +106,12 @@ final class RecoveryCheckpointQueue {
     }
 
     /// Unlike a live tab's discard ticket, a candidate grants consent for only one stored snapshot.
-    func discardCandidate(_ draft: RecoveryDraft) async throws {
+    /// Revalidate the caller's state after draining writes, before handing deletion to the store.
+    func discardCandidate(_ draft: RecoveryDraft, revalidate: () throws -> Void = {}) async throws {
         let backend = try requireBackend()
         guard let discardExact = backend.discardExact else { throw QueueError.storeUnavailable }
         try await withPausedCheckpoints(backend) {
+            try revalidate()
             // Candidates are not live. A queued write for this ID is not covered by list consent.
             guard !pending.contains(where: { $0.id == draft.id }) else { throw QueueError.candidateChanged }
             guard try await discardExact(draft) else { throw QueueError.candidateChanged }

@@ -1070,10 +1070,18 @@ final class WorkspaceSession {
     var recoveryDeletionInputIsCommitted: Bool { !tabs.isComposing && !hasNativeMarkedText }
 
     func forgetRecoveryCandidate(_ draft: RecoveryDraft) async throws {
-        guard showsRecovery, !isDiscarding, !tabs.recoveryDrafts.contains(where: { $0.id == draft.id }),
-              let recovery else { throw CancellationError() }
+        guard let recovery else { throw CancellationError() }
+        try validateRecoveryCandidateDeletion(draft.id)
+        try await recovery.discardCandidate(draft) {
+            try validateRecoveryCandidateDeletion(draft.id)
+        }
+    }
+
+    private func validateRecoveryCandidateDeletion(_ id: UUID) throws {
+        guard showsRecovery, !isDiscarding, !tabs.recoveryDrafts.contains(where: { $0.id == id }) else {
+            throw CancellationError()
+        }
         guard recoveryDeletionInputIsCommitted else { throw RecoveryCandidateDeletionError.uncommittedInput }
-        try await recovery.discardCandidate(draft)
     }
 
     var canRestoreRecoveryDraft: Bool {

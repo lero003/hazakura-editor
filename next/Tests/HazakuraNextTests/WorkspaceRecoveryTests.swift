@@ -340,6 +340,59 @@ struct WorkspaceRecoveryTests {
         #expect(try await store.drafts() == [unrelated])
     }
 
+    enum ChangeWhileWaitingToDelete: CaseIterable {
+        case composition, sheetDismissed
+    }
+
+    @Test(arguments: ChangeWhileWaitingToDelete.allCases)
+    func candidateDeletionRechecksTheSessionAfterWaitingForACheckpoint(_ change: ChangeWhileWaitingToDelete) async throws {
+        let folder = try makeRecoveryFixtureFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = DraftRecoveryStore(directory: folder.appending(path: "recovery", directoryHint: .isDirectory))
+        let candidate = RecoveryDraft(id: UUID(), revision: 2, source: "退避した原稿")
+        try await store.checkpoint(candidate)
+        let began = AsyncStream<Void>.makeStream()
+        let release = AsyncStream<Void>.makeStream()
+        defer { began.continuation.finish(); release.continuation.finish() }
+        let queue = RecoveryCheckpointQueue(backend: .init(
+            checkpoint: { draft in
+                began.continuation.finish()
+                for await _ in release.stream {}
+                try await store.checkpoint(draft)
+            },
+            candidates: { try await store.drafts() },
+            discardConfirmed: { try await store.discardConfirmed($0) },
+            discardExact: { try await store.discard($0) }
+        ))
+        let session = WorkspaceSession(source: "原稿", recovery: queue)
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("確定した原稿", to: id)
+        let live = try #require(session.tabs.recoveryDraft(for: id))
+        for await _ in began.stream {}
+        session.requestRecovery()
+        let listed = try await session.recoveryCandidates()
+        let reviewed = try #require(listed.first { $0.id == candidate.id })
+        let deletion = Task.immediate { @MainActor in try await session.forgetRecoveryCandidate(reviewed) }
+
+        switch change {
+        case .composition: session.tabs.setComposing(true, in: id)
+        case .sheetDismissed: session.showsRecovery = false
+        }
+        release.continuation.finish()
+        switch change {
+        case .composition:
+            await #expect(throws: WorkspaceSession.RecoveryCandidateDeletionError.uncommittedInput) { try await deletion.value }
+        case .sheetDismissed:
+            await #expect(throws: CancellationError.self) { try await deletion.value }
+        }
+        let retained = try await store.drafts()
+        #expect(retained.count == 2)
+        #expect(retained.contains(reviewed) && retained.contains(live))
+        #expect(queue.hasCheckpointed(live))
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDraft(for: id) == live)
+    }
+
     enum CandidateAtConfirmation: CaseIterable {
         case same, older, newer, differentBytes, missing
     }
