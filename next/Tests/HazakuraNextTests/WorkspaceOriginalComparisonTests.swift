@@ -106,6 +106,102 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
+    @Test func nativeCompositionBlocksARequestAndADeferredPicker() async throws {
+        try await withOriginal { _, baseline, session, documentID in
+            let (window, view) = try attachNativeEditor(to: session)
+            defer { window.close() }
+            markText(in: view)
+            try #require(view.hasMarkedText() && !session.tabs.isComposing)
+            #expect(!session.canCompareOriginal)
+            session.requestOriginalComparison()
+            try #require(session.comparisonRequestID == nil)
+
+            view.unmarkText()
+            session.requestOriginalComparison()
+            let id = try #require(session.comparisonRequestID)
+            markText(in: view)
+            await session.readOriginalComparison(id) {
+                Issue.record("A deferred picker must not run while the editor is composing.")
+                return baseline
+            }
+            #expect(!session.isBusy)
+            #expect(session.comparisonReport == nil)
+            #expect(session.tabs.selectedID == documentID)
+            #expect(view.hasMarkedText())
+        }
+    }
+
+    @Test func nativeCompositionAfterReadingKeepsTheDraftAndRequiresAnotherComparison() async throws {
+        try await withOriginal { url, _, session, documentID in
+            let (window, view) = try attachNativeEditor(to: session)
+            defer { window.close() }
+            session.applyCommittedSource("手元の確定原稿", to: documentID)
+            let drafts = session.tabs.recoveryDrafts
+            let external = Data("外部の変更\r\n".utf8)
+            try external.write(to: url)
+            session.requestOriginalComparison()
+            let id = try #require(session.comparisonRequestID)
+
+            var ranges: [NSRange] = []
+            await session.readOriginalComparison(id) {
+                let disk = try await SelectedTextFile.read(from: url)
+                markText(in: view)
+                try #require(view.hasMarkedText() && !session.tabs.isComposing)
+                ranges = [view.selectedRange(), view.markedRange()]
+                return disk
+            }
+            try #require(session.comparisonReport == nil)
+            #expect(!session.isBusy)
+            #expect(session.fileNotice?.contains("変換") == true)
+            #expect(session.tabs.selectedID == documentID)
+            #expect(session.tabs.recoveryDrafts == drafts)
+            #expect(window.firstResponder === view)
+            #expect([view.selectedRange(), view.markedRange()] == ranges)
+            #expect(try Data(contentsOf: url) == external)
+
+            view.unmarkText()
+            let report = try await captureComparison(in: session, from: url)
+            #expect(report.id != id)
+            #expect(report.comparison.disk.originalBytes == external)
+        }
+    }
+
+    @Test func nativeCompositionPreventsOpeningTheCapturedDiskVersionWithoutConsumingIt() async throws {
+        try await withOriginal { url, _, session, _ in
+            let (window, view) = try attachNativeEditor(to: session)
+            defer { window.close() }
+            try Data("外部の変更\r\n".utf8).write(to: url)
+            let report = try await captureComparison(in: session, from: url)
+            try #require(report.comparison.diskStatus == .modified)
+            markText(in: view)
+            try #require(view.hasMarkedText() && !session.tabs.isComposing)
+
+            expectOpenRejected(in: session, requestedID: report.id, retainedReportID: report.id)
+            #expect(view.hasMarkedText())
+            view.unmarkText()
+            try #require(session.openComparedDisk(report.id) != nil)
+            #expect(session.tabs.selectedTab?.isReadOnly == true)
+            #expect(session.comparisonReport == nil)
+        }
+    }
+
+    private func attachNativeEditor(to session: WorkspaceSession) throws -> (NSWindow, NSTextView) {
+        _ = NSApplication.shared
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                              styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        session.window = window
+        return (window, view)
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
+    }
+
     @Test func rejectsCancelledOrStaleResultsAndDoesNotIssueAnotherRead() async throws {
         try await withOriginal { _, baseline, session, documentID in
             session.tabs.setComposing(true, in: documentID)

@@ -542,7 +542,10 @@ final class WorkspaceSession {
         return reveal.range
     }
 
-    var canCompareOriginal: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab?.copyOrigin != nil }
+    var canCompareOriginal: Bool {
+        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil &&
+            tabs.selectedTab?.copyOrigin != nil
+    }
 
     func requestOriginalComparison() {
         guard canCompareOriginal, let selected = tabs.selectedTab, let origin = selected.copyOrigin else { return }
@@ -565,7 +568,7 @@ final class WorkspaceSession {
     func canOpenComparedDisk(_ id: UUID) -> Bool {
         guard let report = comparisonReport, report.id == id,
               report.comparison.diskStatus == .modified, pendingDiscard == nil,
-              !hasOperationBesidesComparisonReport, tabs.canCreateTab,
+              !hasOperationBesidesComparisonReport, tabs.canCreateTab, !hasNativeMarkedText,
               let tab = tabs.selectedTab else { return false }
         return tab.id == report.documentID && tab.document.revision == report.revision
     }
@@ -588,14 +591,10 @@ final class WorkspaceSession {
             readingComparisonID = nil
             cancelOriginalComparison(id)
         }
-        guard !Task.isCancelled else { return }
+        guard !Task.isCancelled, validateComparisonSource(request) else { return }
         do {
-            guard let disk = try await readSelected(), !Task.isCancelled, comparisonRequest?.id == id else { return }
-            guard !tabs.isComposing, let selected = tabs.selectedTab,
-                  selected.id == request.documentID, selected.document.revision == request.revision else {
-                fileNotice = "手元の原稿が変わったため、比較をやり直してください。"
-                return
-            }
+            guard let disk = try await readSelected(), !Task.isCancelled, comparisonRequest?.id == id,
+                  validateComparisonSource(request) else { return }
             comparisonReport = ComparisonReport(
                 id: id, documentID: request.documentID, revision: request.revision,
                 comparison: OriginalFileComparison(baseline: request.baseline, disk: disk, draftSource: request.draftSource)
@@ -606,6 +605,19 @@ final class WorkspaceSession {
             guard !Task.isCancelled, comparisonRequest?.id == id else { return }
             fileNotice = "比較先を読み取れませんでした。\(Self.readFailure(error))"
         }
+    }
+
+    private func validateComparisonSource(_ request: ComparisonRequest) -> Bool {
+        guard !tabs.isComposing, !hasNativeMarkedText else {
+            fileNotice = "変換を確定またはキャンセルしてから、もう一度原本を比較してください。"
+            return false
+        }
+        guard let selected = tabs.selectedTab, selected.id == request.documentID,
+              selected.document.revision == request.revision else {
+            fileNotice = "手元の原稿が変わったため、比較をやり直してください。"
+            return false
+        }
+        return true
     }
 
     var canRequestFolderCatalog: Bool { !isBusy && !tabs.isComposing }
