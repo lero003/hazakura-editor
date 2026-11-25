@@ -3,6 +3,7 @@ import Darwin
 @testable import HazakuraNext
 import Foundation
 import HazakuraNextCore
+import HazakuraNextEditor
 import Testing
 
 @MainActor
@@ -246,16 +247,64 @@ struct WorkspaceCopySaveTests {
         #expect(!session.isBusy)
     }
 
+    @Test(arguments: [SelectedTextFile.Encoding.utf16LE, .utf16BE])
+    func nativeAppendPreservesUTF16ByteOrderAndMixedLineEndings(_ encoding: SelectedTextFile.Encoding) async throws {
+        let folder = try makeCopyFixtureFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let original = folder.appending(path: "original.txt")
+        let destination = folder.appending(path: "copy.txt")
+        let text = "春\r\n夏\n秋\r冬"
+        let originalBytes = try markedBytes(text, encoding: encoding)
+        let expected = originalBytes + Data(encoding == .utf16LE ? [0x21, 0] : [0, 0x21])
+        try originalBytes.write(to: original)
+
+        let snapshot = try await SelectedTextFile.read(from: original)
+        let session = WorkspaceSession(source: "合成原稿")
+        let opened = session.tabs.openReadOnly(snapshot)
+        let originalID = try #require(opened)
+        session.makeEditableCopy()
+        let copy = try #require(session.tabs.selectedTab)
+        try #require(copy.id != originalID && !copy.isReadOnly)
+        let id = copy.id
+        let coordinator = TextKitEditor(initialText: copy.document.source, documentID: id,
+                                        canEdit: { session.canEditSource },
+                                        onCompositionChange: { session.tabs.setComposing($0, in: id) }) { source in
+            session.applyCommittedSource(source, to: id)
+        }.makeCoordinator()
+        let scroll = TextKitEditor.makeScrollView(initialText: copy.document.source, documentID: id,
+                                                 coordinator: coordinator)
+        let view = try #require(scroll.documentView as? NSTextView)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                              styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        defer { window.close(); withExtendedLifetime(coordinator) {} }
+        window.contentView = scroll
+        session.window = window
+        try #require(window.firstResponder === view)
+        try #require(view.string.utf8.elementsEqual(text.utf8))
+
+        view.setSelectedRange(NSRange(location: text.utf16.count, length: 0))
+        view.insertText("!", replacementRange: NSRange(location: NSNotFound, length: 0))
+        let edited = text + "!"
+        #expect(view.string.utf8.elementsEqual(edited.utf8))
+        let committed = try #require(session.tabs.selectedTab)
+        #expect(committed.document.source.utf8.elementsEqual(edited.utf8))
+        #expect(committed.document.revision > copy.document.revision)
+        let draft = try #require(session.tabs.recoveryDraft(for: id))
+
+        session.requestSaveCopy()
+        let request = try #require(session.saveCopyRequest)
+        #expect(request.encoding == encoding)
+        await session.writeRequestedCopy(request.id, to: destination)
+        #expect(session.selectedCopySaveStatus == .currentRevision)
+        #expect(session.tabs.recoveryDraft(for: id) == draft)
+        #expect(try Data(contentsOf: destination) == expected)
+        #expect(try Data(contentsOf: original) == originalBytes)
+    }
+
     @Test(arguments: [SelectedTextFile.Encoding.utf8BOM, .utf16LE, .utf16BE])
     func createsASeparateExactBOMCopyEvenIfTheOpenedFileChanges(_ encoding: SelectedTextFile.Encoding) async throws {
-        let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
-            path.flatMap { Darwin.realpath($0, nil) }
-        }
-        let canonical = try #require(root)
-        defer { free(canonical) }
-        let folder = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
-            .appending(path: "hazakura-copy-workspace-\(UUID())", directoryHint: .isDirectory)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
+        let folder = try makeCopyFixtureFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let original = folder.appending(path: "original.md")
         let destination = folder.appending(path: "copy.md")
@@ -291,6 +340,19 @@ struct WorkspaceCopySaveTests {
         let recoveredRequest = try #require(session.saveCopyRequest)
         #expect(recoveredRequest.encoding == .utf8)
         #expect(recoveredRequest.source.utf8.elementsEqual(edited.utf8))
+    }
+
+    private func makeCopyFixtureFolder() throws -> URL {
+        let root = FileManager.default.temporaryDirectory.withUnsafeFileSystemRepresentation { path in
+            path.flatMap { Darwin.realpath($0, nil) }
+        }
+        let canonical = try #require(root)
+        defer { free(canonical) }
+        let folder = URL(fileURLWithPath: String(cString: canonical), isDirectory: true)
+            .appending(path: "hazakura-copy-workspace-\(UUID())", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false,
+                                                attributes: [.posixPermissions: 0o700])
+        return folder
     }
 
     private func markedBytes(_ source: String, encoding: SelectedTextFile.Encoding) throws -> Data {
