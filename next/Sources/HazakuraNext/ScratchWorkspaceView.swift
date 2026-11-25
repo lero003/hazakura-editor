@@ -61,7 +61,11 @@ struct ScratchWorkspaceView: View {
             .font(.callout)
             .foregroundStyle(.secondary)
             .padding(12)
-            tabBar
+            if session.isZenMode {
+                focusedTabBar
+            } else {
+                tabBar
+            }
             Divider()
             editors
         }
@@ -452,6 +456,35 @@ struct ScratchWorkspaceView: View {
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .accessibilityValue(tab.isReadOnly ? "読み取り専用" : "")
         .disabled(isSelected || session.tabs.isComposing)
+    }
+
+    private var focusedTabBar: some View {
+        HStack(spacing: 8) {
+            if let tab = session.tabs.selectedTab {
+                let title = WorkspaceSession.title(for: tab)
+                Label {
+                    Text(verbatim: title)
+                        .lineLimit(1)
+                } icon: {
+                    Image(systemName: tab.isReadOnly ? "lock" : "doc.text")
+                        .accessibilityHidden(true)
+                }
+                .help(title)
+                .accessibilityValue(tab.isReadOnly ? "読み取り専用" : "")
+            } else {
+                Text("タブがありません")
+            }
+            Spacer(minLength: 8)
+            Button("集中表示を終了") {
+                guard session.isZenMode else { return }
+                session.toggleZenMode()
+            }
+            .disabled(!session.canToggleZenMode)
+            .layoutPriority(1)
+        }
+        .font(.callout)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 6)
     }
 
     private var editors: some View {

@@ -74,8 +74,9 @@ struct ScratchExitTests {
         defer { window.close() }
         let session = try #require(delegate.session)
         #expect(window.isVisible == false)
-        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:", "exportEPUB:", "toggleLMode:"] {
+        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:", "exportEPUB:", "toggleLMode:", "toggleZenMode:"] {
             let action = NSSelectorFromString(selector)
+            try #require(delegate.responds(to: action))
             let item = NSMenuItem(title: "Command", action: action, keyEquivalent: "")
             #expect(delegate.validateMenuItem(item) == false)
             _ = delegate.perform(action, with: nil)
@@ -92,6 +93,15 @@ struct ScratchExitTests {
         #expect(item.state == .on)
         _ = delegate.perform(toggle, with: nil)
         #expect(session.isLMode)
+        #expect(session.isZenMode == false)
+
+        session.toggleZenMode()
+        let zenToggle = NSSelectorFromString("toggleZenMode:")
+        let zenItem = NSMenuItem(title: "集中表示", action: zenToggle, keyEquivalent: "")
+        #expect(delegate.validateMenuItem(zenItem) == false)
+        #expect(zenItem.state == .on)
+        _ = delegate.perform(zenToggle, with: nil)
+        #expect(session.isZenMode)
     }
 
     @Test func pendingPDFExportBlocksNativeWindowAndQuitWithoutDiscarding() throws {

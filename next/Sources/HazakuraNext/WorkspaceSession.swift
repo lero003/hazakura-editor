@@ -137,8 +137,9 @@ final class WorkspaceSession {
     private(set) var bookPreviewRequest: BookPreviewRequest?
     private var confirmedBookInput: BookExportInput?
     private(set) var assistReviewSample: AssistReviewSample?
-    // A window-local layout choice, independent of the selected document and its recovery state.
+    // Window-local presentation, independent of the selected document and its recovery state.
     private(set) var isLMode = false
+    private(set) var isZenMode = false
     // Scrolling updates only this live-tab state, not the editor or the open sheet.
     @ObservationIgnored private var markdownReadingPositions: [UUID: (revision: UInt64, blockIndex: Int)] = [:]
     private var markdownSourceReveal: MarkdownSourceReveal?
@@ -190,6 +191,15 @@ final class WorkspaceSession {
     func toggleLMode() {
         guard canToggleLMode else { return }
         isLMode.toggle()
+    }
+
+    var canToggleZenMode: Bool {
+        !isBusy && !tabs.isComposing && (isZenMode || tabs.selectedID != nil)
+    }
+
+    func toggleZenMode() {
+        guard canToggleZenMode else { return }
+        isZenMode.toggle()
     }
 
     static func title(for tab: ScratchTabs.Tab) -> String {
