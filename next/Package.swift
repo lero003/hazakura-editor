@@ -14,5 +14,6 @@ let package = Package(
         ),
         .testTarget(name: "HazakuraNextCoreTests", dependencies: ["HazakuraNextCore"]),
         .testTarget(name: "HazakuraNextEditorTests", dependencies: ["HazakuraNextEditor"]),
+        .testTarget(name: "HazakuraNextTests", dependencies: ["HazakuraNext", "HazakuraNextCore"]),
     ]
 )

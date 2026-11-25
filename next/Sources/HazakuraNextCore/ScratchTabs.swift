@@ -9,6 +9,12 @@ public struct ScratchTabs {
         public let selectedFile: SelectedTextFile?
         public var id: UUID { document.id }
         public var isReadOnly: Bool { selectedFile != nil }
+
+        // A scratch tab remains edited even after undo returns to its starting text.
+        var editedScratchRevision: UInt64? {
+            let revision = document.revision
+            return !isReadOnly && revision != 0 ? revision : nil
+        }
     }
 
     public struct DiscardTicket: Equatable {
@@ -77,8 +83,8 @@ public struct ScratchTabs {
 
     public mutating func requestCloseSelected() -> CloseResult {
         guard !isComposing, let tab = selectedTab else { return .unavailable }
-        if tab.document.revision != 0 {
-            return .confirm(DiscardTicket(id: tab.id, revision: tab.document.revision))
+        if let revision = tab.editedScratchRevision {
+            return .confirm(DiscardTicket(id: tab.id, revision: revision))
         }
         removeSelected()
         return .closed

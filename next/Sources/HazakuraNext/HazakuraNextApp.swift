@@ -1,15 +1,16 @@
-import SwiftUI
+import AppKit
 
 @main
-struct HazakuraNextApp: App {
-    var body: some Scene {
-        Window("Hazakura Editor Next — 開発用", id: "scratch") {
-            ScratchWorkspaceView(source: ProcessInfo.processInfo.arguments.contains("--long-sample")
-                ? String(repeating: Self.sample + "\n\n", count: 1_500)
-                : Self.sample)
-        }
-        .defaultSize(width: 900, height: 660)
-        .restorationBehavior(.disabled)
+struct HazakuraNextApp {
+    @MainActor static func main() {
+        let application = NSApplication.shared
+        let source = ProcessInfo.processInfo.arguments.contains("--long-sample")
+            ? String(repeating: sample + "\n\n", count: 1_500)
+            : sample
+        let delegate = ScratchApplicationDelegate(source: source)
+        application.setActivationPolicy(.regular)
+        application.delegate = delegate
+        withExtendedLifetime(delegate) { application.run() }
     }
 
     private static let sample = """
