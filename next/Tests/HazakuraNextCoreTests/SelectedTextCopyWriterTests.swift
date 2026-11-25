@@ -234,6 +234,26 @@ struct SelectedTextCopyWriterTests {
         }
     }
 
+    @Test(arguments: ["localhost:", "localhost:999999999999999999999999", "%FF@localhost"])
+    func refusesAuthorityDecorationBeforeCreatingAFile(_ authority: String) async throws {
+        try await withFixture { folder in
+            let destination = folder.appending(path: "原稿 #?%:@.md")
+            let path = destination.path(percentEncoded: true)
+            let decorated = try #require(URL(string: "file://\(authority)\(path)"))
+            let source = "# 合成原稿\r\n"
+
+            await #expect(throws: WriteError.invalidLocation) {
+                try await SelectedTextCopyWriter.write(source: source, encoding: .utf8, to: decorated)
+            }
+            try #require(try entries(in: folder).isEmpty)
+
+            // Punctuation in the filename is not a URL authority or a query/fragment.
+            try await SelectedTextCopyWriter.write(source: source, encoding: .utf8, to: destination)
+            #expect(try Data(contentsOf: destination) == Data(source.utf8))
+            #expect(try entries(in: folder) == [destination.lastPathComponent])
+        }
+    }
+
     @Test(arguments: ["a\u{0}", "a\u{1}", "a\u{B}", "a\u{1B}", "a\u{7F}"])
     func rejectsUnsupportedControlCharacters(_ source: String) async throws {
         try await withFixture { folder in

@@ -117,8 +117,7 @@ public enum SelectedTextCopyWriter {
         init(_ url: URL) throws {
             let host = url.host(percentEncoded: false) ?? ""
             let path = url.path(percentEncoded: true)
-            guard url.isFileURL, url.baseURL == nil, host.isEmpty || host.lowercased() == "localhost",
-                  url.user == nil, url.password == nil, url.port == nil, url.query == nil, url.fragment == nil,
+            guard SelectedFileURL.hasNoExtraComponents(url), host.isEmpty || host.lowercased() == "localhost",
                   path.hasPrefix("/") else { throw WriteError.invalidLocation }
             // Decode per component so an encoded separator cannot change the chosen path.
             let components = try path.dropFirst().split(separator: "/", omittingEmptySubsequences: false).map { name in
