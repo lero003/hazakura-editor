@@ -153,6 +153,143 @@ struct MarkdownEPUBExportTests {
         }
     }
 
+    @Test func bookKeepsInputOrderAndParsesEachManuscriptSeparately() async throws {
+        let sources = [
+            manuscript("""
+                [shared]: https://example.invalid/reference-target
+
+                [同じ原稿の参照][shared]
+
+                ```text
+                閉じていないコード
+                """, title: "Z.md"),
+            manuscript(" \n\t\n", title: "B.md"),
+            manuscript("""
+                # 次の原稿
+
+                [別の原稿の参照][shared]
+
+                ## 区切らない見出し
+
+                末尾
+                """, title: "A.md"),
+        ]
+        let render: @Sendable ([MarkdownBookPreview.Source]) async throws -> Data = MarkdownEPUBExport.renderBook
+        let files = try storedFiles(try await render(sources))
+        let chapterIDs = ["chapter-1", "chapter-2", "chapter-3"]
+        let hrefs = chapterIDs.map { $0 + ".xhtml" }
+        #expect(Set(files.keys) == Set(["mimetype", "META-INF/container.xml", "EPUB/package.opf", "EPUB/nav.xhtml"]
+            + hrefs.map { "EPUB/" + $0 }))
+
+        let package = try document("EPUB/package.opf", in: files, namespace: "http://www.idpf.org/2007/opf")
+        let spine = try nodes("itemref", in: package).compactMap { ($0 as? XMLElement)?.attribute(forName: "idref")?.stringValue }
+        #expect(spine == chapterIDs)
+        for (id, href) in zip(chapterIDs, hrefs) {
+            let items = try package.nodes(forXPath: "//*[local-name()='item'][@id='\(id)']")
+            let item = try #require(items.first as? XMLElement)
+            #expect(item.attribute(forName: "href")?.stringValue == href)
+        }
+        let nav = try document("EPUB/nav.xhtml", in: files)
+        let links = try nodes("a", in: nav).compactMap { $0 as? XMLElement }
+        #expect(links.compactMap { $0.attribute(forName: "href")?.stringValue } == hrefs)
+        #expect(links.map(\.stringValue) == ["原稿 1", "原稿 2", "原稿 3"])
+
+        let first = try document("EPUB/chapter-1.xhtml", in: files)
+        #expect(try nodes("title", in: first).map(\.stringValue) == ["原稿 1"])
+        #expect(try nodes("p", in: first).map(\.stringValue) == ["同じ原稿の参照"])
+        let code = try #require(nodes("pre", in: first).first?.stringValue)
+        #expect(code.trimmingCharacters(in: .newlines) == "閉じていないコード")
+
+        let empty = try document("EPUB/chapter-2.xhtml", in: files)
+        #expect(try nodes("title", in: empty).map(\.stringValue) == ["原稿 2"])
+        #expect(try nodes("p", in: empty).map(\.stringValue) == ["表示する本文がありません。"])
+
+        let last = try document("EPUB/chapter-3.xhtml", in: files)
+        #expect(try nodes("title", in: last).map(\.stringValue) == ["原稿 3"])
+        #expect(try nodes("h1", in: last).map(\.stringValue) == ["次の原稿"])
+        #expect(try nodes("h2", in: last).map(\.stringValue) == ["区切らない見出し"])
+        #expect(try nodes("p", in: last).map(\.stringValue) == ["[別の原稿の参照][shared]", "末尾"])
+        #expect(try nodes("pre", in: last).isEmpty)
+    }
+
+    @Test func bookNeverUsesManuscriptNamesOrContentForMetadataOrActiveMarkup() async throws {
+        let sources = [
+            manuscript("""
+                # `ManuscriptHeadingMarker < &`
+
+                [ラベル](https://example.invalid/book-link-target) ![絵](file:///book-image-target)
+
+                <script>bookScriptMarker</script>
+
+                ```text
+                </code> <img src="bookLiteralMarker" /> &
+                ```
+                """, title: "../PrivateFilenameMarker <img src='name-target'>.md"),
+            manuscript("末尾", title: "SecondFilenameMarker.md"),
+        ]
+        let files = try storedFiles(try await MarkdownEPUBExport.renderBook(sources: sources))
+        for xml in files.values.map({ String(decoding: $0, as: UTF8.self) }) {
+            for marker in ["PrivateFilenameMarker", "SecondFilenameMarker", "name-target",
+                           "book-link-target", "book-image-target", "bookScriptMarker"] {
+                #expect(xml.contains(marker) == false)
+            }
+            for source in sources {
+                #expect(xml.lowercased().contains(source.id.uuidString.lowercased()) == false)
+            }
+        }
+        let chapter = try document("EPUB/chapter-1.xhtml", in: files)
+        #expect(try nodes("title", in: chapter).map(\.stringValue) == ["原稿 1"])
+        #expect(try nodes("h1", in: chapter).map(\.stringValue) == ["ManuscriptHeadingMarker < &"])
+        #expect(try nodes("pre", in: chapter).map(\.stringValue) == ["</code> <img src=\"bookLiteralMarker\" /> &\n"])
+        #expect(try nodes("p", in: chapter).map(\.stringValue).contains("ラベル ［画像：絵］"))
+        #expect(try chapter.nodes(forXPath: "//*[@href or @src or @srcset or @style or @onclick]").isEmpty)
+        for tag in ["a", "img", "script", "iframe", "object", "link", "base"] {
+            #expect(try nodes(tag, in: chapter).isEmpty)
+        }
+        let package = try document("EPUB/package.opf", in: files, namespace: "http://www.idpf.org/2007/opf")
+        #expect(try nodes("title", in: package).map(\.stringValue) == ["Hazakura Editor"])
+        #expect(try nodes("language", in: package).map(\.stringValue) == ["und"])
+        for path in ["EPUB/package.opf", "EPUB/nav.xhtml"] {
+            let raw = String(decoding: try #require(files[path]), as: UTF8.self)
+            #expect(raw.contains("ManuscriptHeadingMarker") == false)
+            #expect(raw.contains("bookLiteralMarker") == false)
+        }
+    }
+
+    @Test func bookWithOnlyEmptyManuscriptsStillExportsEntries() async throws {
+        let files = try storedFiles(try await MarkdownEPUBExport.renderBook(sources: [manuscript(""), manuscript("\n")]))
+        let nav = try document("EPUB/nav.xhtml", in: files)
+        #expect(try nodes("a", in: nav).map(\.stringValue) == ["原稿 1", "原稿 2"])
+        for number in 1...2 {
+            let chapter = try document("EPUB/chapter-\(number).xhtml", in: files)
+            #expect(try nodes("p", in: chapter).map(\.stringValue) == ["表示する本文がありません。"])
+        }
+    }
+
+    @Test func bookPreservesPerManuscriptAndAggregateByteLimits() async {
+        let half = String(repeating: "é", count: 65_536) // 128 KiB in UTF-8.
+        let oversized = manuscript(half + "!")
+        await #expect(throws: MarkdownBookPreview.Failure.unavailable(sectionID: oversized.id, .inputTooLarge)) {
+            try await MarkdownEPUBExport.renderBook(sources: [manuscript("最初"), oversized])
+        }
+        await #expect(throws: MarkdownBookPreview.Failure.tooLarge) {
+            try await MarkdownEPUBExport.renderBook(sources: [manuscript(half), manuscript(half), manuscript("!")])
+        }
+    }
+
+    @Test func bookPropagatesCancellationWithoutAnArchive() async {
+        let sources = [manuscript("# 先頭"), manuscript("# 末尾")]
+        await withThrowingTaskGroup(of: Data.self) { group in
+            group.cancelAll()
+            group.addTask { try await MarkdownEPUBExport.renderBook(sources: sources) }
+            await #expect(throws: CancellationError.self) { try await group.next() }
+        }
+    }
+
+    private func manuscript(_ text: String, title: String = "原稿.md") -> MarkdownBookPreview.Source {
+        MarkdownBookPreview.Source(id: UUID(), title: title, text: text)
+    }
+
     private func document(
         _ path: String, in files: [String: Data], namespace: String = "http://www.w3.org/1999/xhtml"
     ) throws -> XMLDocument {
@@ -165,9 +302,12 @@ struct MarkdownEPUBExportTests {
         try document.nodes(forXPath: "//*[local-name()='\(localName)']")
     }
 
-    /// Extract stored local entries (ZIP metadata and CRCs are verified in archive tests).
     private func exportedFiles(_ source: String) async throws -> [String: Data] {
-        let archive = try await MarkdownEPUBExport.render(source: source)
+        try storedFiles(try await MarkdownEPUBExport.render(source: source))
+    }
+
+    /// Extract stored local entries (ZIP metadata and CRCs are verified in archive tests).
+    private func storedFiles(_ archive: Data) throws -> [String: Data] {
         func uint16(_ offset: Int) -> Int {
             Int(archive.withUnsafeBytes { UInt16(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt16.self)) })
         }

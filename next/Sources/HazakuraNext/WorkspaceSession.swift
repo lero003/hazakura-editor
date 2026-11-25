@@ -20,15 +20,28 @@ final class WorkspaceSession {
         var name: String { rawValue.uppercased() }
     }
 
+    fileprivate struct BookExportInput {
+        let sources: [MarkdownBookPreview.Source]
+        let revisions: [UUID: UInt64]
+    }
+
     struct ExportRequest: Identifiable {
-        fileprivate enum Phase { case picking, rendering, cancelled, writing }
+        fileprivate enum Phase { case waitingForDestination, picking, rendering, cancelled, writing }
+        fileprivate enum Input {
+            case document(id: UUID, revision: UInt64, source: String)
+            case book(BookExportInput)
+        }
 
         let id = UUID()
         let format: ExportFormat
-        fileprivate let documentID: UUID
-        fileprivate let revision: UInt64
-        fileprivate let source: String
+        fileprivate let input: Input
         fileprivate var phase: Phase = .picking
+
+        var waitsForDestination: Bool { phase == .waitingForDestination }
+        var bookCount: Int? {
+            if case .book(let snapshot) = input { return snapshot.sources.count }
+            return nil
+        }
     }
 
     struct ExportOperations {
@@ -38,6 +51,7 @@ final class WorkspaceSession {
         var writePDF: @Sendable (Data, URL) async throws -> Void = SelectedTextCopyWriter.writePDF
         var renderEPUB: @Sendable (String) async throws -> Data = MarkdownEPUBExport.render
         var writeEPUB: @Sendable (Data, URL) async throws -> Void = SelectedTextCopyWriter.writeEPUB
+        var renderBookEPUB: @Sendable ([MarkdownBookPreview.Source]) async throws -> Data = MarkdownEPUBExport.renderBook
     }
 
     private struct ComparisonRequest: Identifiable {
@@ -119,7 +133,7 @@ final class WorkspaceSession {
     private(set) var comparisonReport: ComparisonReport?
     private(set) var markdownPreview: MarkdownPreviewSnapshot?
     private(set) var bookPreviewRequest: BookPreviewRequest?
-    private var bookPreviewConfirmed = false
+    private var confirmedBookInput: BookExportInput?
     private(set) var assistReviewSample: AssistReviewSample?
     // A window-local layout choice, independent of the selected document and its recovery state.
     private(set) var isLMode = false
@@ -184,28 +198,48 @@ final class WorkspaceSession {
     func requestBookPreview() {
         guard canPreviewBook else { return }
         markdownSourceReveal = nil
-        bookPreviewConfirmed = false
+        confirmedBookInput = nil
         bookPreviewRequest = BookPreviewRequest(choices: tabs.tabs.map { tab in
             .init(id: tab.id, number: tab.number, title: Self.title(for: tab))
         })
     }
 
     func confirmBookPreview(_ id: UUID, selected: Set<UUID>) -> [MarkdownBookPreview.Source]? {
-        guard let request = bookPreviewRequest, request.id == id, !bookPreviewConfirmed,
+        guard let request = bookPreviewRequest, request.id == id, confirmedBookInput == nil,
               !tabs.isComposing, selected.count >= 2,
               selected.isSubset(of: Set(request.choices.map(\.id))) else { return nil }
         let chosen = tabs.tabs.filter { selected.contains($0.id) }
         guard chosen.count == selected.count else { return nil }
-        bookPreviewConfirmed = true
-        return chosen.map { tab in
-            .init(id: tab.id, title: Self.title(for: tab), text: tab.document.source)
+        let sources = chosen.map { tab in
+            MarkdownBookPreview.Source(id: tab.id, title: Self.title(for: tab), text: tab.document.source)
         }
+        confirmedBookInput = BookExportInput(sources: sources, revisions: Dictionary(uniqueKeysWithValues:
+            chosen.map { ($0.id, $0.document.revision) }
+        ))
+        return sources
     }
 
     func dismissBookPreview(_ id: UUID) {
         guard bookPreviewRequest?.id == id else { return }
         bookPreviewRequest = nil
-        bookPreviewConfirmed = false
+        confirmedBookInput = nil
+    }
+
+    /// Reserve the confirmed book; selecting a new destination is a separate action on the parent window.
+    func prepareBookEPUB(_ id: UUID) -> Bool {
+        guard bookPreviewRequest?.id == id, exportRequest == nil, let book = confirmedBookInput,
+              !tabs.isComposing, bookVersionsMatch(book) else { return false }
+        fileNotice = nil
+        exitNotice = nil
+        exportRequest = ExportRequest(format: .epub, input: .book(book), phase: .waitingForDestination)
+        dismissBookPreview(id)
+        return true
+    }
+
+    private func bookVersionsMatch(_ book: BookExportInput) -> Bool {
+        book.revisions.allSatisfy { id, revision in
+            tabs.tabs.contains { $0.id == id && $0.document.revision == revision }
+        }
     }
 
     func requestMarkdownPreview() {
@@ -478,14 +512,35 @@ final class WorkspaceSession {
         guard canExport, let selected = tabs.selectedTab else { return }
         exitNotice = nil
         fileNotice = nil
-        exportRequest = ExportRequest(format: format, documentID: selected.id, revision: selected.document.revision,
-                                      source: selected.document.source)
+        exportRequest = ExportRequest(format: format, input: .document(
+            id: selected.id, revision: selected.document.revision, source: selected.document.source
+        ))
+    }
+
+    var exportPickerID: UUID? {
+        guard let request = exportRequest, !request.waitsForDestination else { return nil }
+        return request.id
+    }
+
+    func startPickingBookExport(_ id: UUID) {
+        guard let request = exportRequest, request.id == id, request.waitsForDestination else { return }
+        guard validateExportSource(request) else {
+            cancelExport(id)
+            return
+        }
+        exportRequest?.phase = .picking
+    }
+
+    func exportDestinationRequest(_ id: UUID) -> ExportRequest? {
+        guard let request = exportRequest, request.id == id, request.phase == .picking,
+              !Task.isCancelled, validateExportSource(request) else { return nil }
+        return request
     }
 
     func cancelExport(_ id: UUID) {
         guard let request = exportRequest, request.id == id else { return }
         switch request.phase {
-        case .picking: exportRequest = nil
+        case .waitingForDestination, .picking: exportRequest = nil
         case .rendering: exportRequest?.phase = .cancelled
         case .cancelled, .writing: break
         }
@@ -513,36 +568,48 @@ final class WorkspaceSession {
             return
         }
 
-        switch request.format {
-        case .html:
-            await renderAndWriteExport(request, to: destination, render: operations.renderHTML) { html, url in
-                try await operations.writeHTML(html, url)
+        switch request.input {
+        case .book(let book):
+            await renderAndWriteExport(request, to: destination, render: {
+                try await operations.renderBookEPUB(book.sources)
+            }, write: operations.writeEPUB)
+        case .document(_, _, let source):
+            switch request.format {
+            case .html:
+                await renderAndWriteExport(request, to: destination, render: {
+                    try await operations.renderHTML(source)
+                }, write: operations.writeHTML)
+            case .pdf:
+                await renderAndWriteExport(request, to: destination, render: {
+                    try await operations.renderPDF(source)
+                }, write: operations.writePDF)
+            case .epub:
+                await renderAndWriteExport(request, to: destination, render: {
+                    try await operations.renderEPUB(source)
+                }, write: operations.writeEPUB)
             }
-        case .pdf:
-            await renderAndWriteExport(request, to: destination, render: operations.renderPDF, write: operations.writePDF)
-        case .epub:
-            await renderAndWriteExport(request, to: destination, render: operations.renderEPUB, write: operations.writeEPUB)
         }
     }
 
     private func renderAndWriteExport<Payload: Sendable>(
         _ request: ExportRequest, to destination: URL,
-        render: @MainActor (String) async throws -> Payload,
+        render: @MainActor () async throws -> Payload,
         write: @MainActor (Payload, URL) async throws -> Void
     ) async {
         let name = request.format.name
+        let owner = window
         let payload: Payload
         do {
-            payload = try await render(request.source)
+            payload = try await render()
         } catch is CancellationError {
             return
         } catch {
-            guard canFinishRendering(request) else { return }
+            guard canFinishRendering(request, owner: owner) else { return }
             fileNotice = "\(name)を書き出せませんでした。\(Self.exportRenderFailure(error, format: request.format))"
             return
         }
         // Recheck authorization after rendering; a late native callback can still commit text.
-        guard canFinishRendering(request) else { return }
+        guard canFinishRendering(request, owner: owner) else { return }
         exportRequest?.phase = .writing
         do {
             try await write(payload, destination)
@@ -561,18 +628,23 @@ final class WorkspaceSession {
         }
     }
 
-    private func canFinishRendering(_ request: ExportRequest) -> Bool {
-        guard !Task.isCancelled, exportRequest?.id == request.id, exportRequest?.phase == .rendering else { return false }
+    private func canFinishRendering(_ request: ExportRequest, owner: NSWindow?) -> Bool {
+        guard !Task.isCancelled, window === owner, owner?.isVisible != false,
+              exportRequest?.id == request.id, exportRequest?.phase == .rendering else { return false }
         return validateExportSource(request)
     }
 
     private func validateExportSource(_ request: ExportRequest) -> Bool {
-        guard !tabs.isComposing, let selected = tabs.selectedTab, selected.id == request.documentID,
-              selected.document.revision == request.revision else {
-            fileNotice = "原稿の状態が変わったため、\(request.format.name)を書き出していません。もう一度お試しください。"
-            return false
+        if !tabs.isComposing {
+            switch request.input {
+            case .document(let id, let revision, _):
+                if let selected = tabs.selectedTab, selected.id == id, selected.document.revision == revision { return true }
+            case .book(let book):
+                if bookVersionsMatch(book) { return true }
+            }
         }
-        return true
+        fileNotice = "原稿の状態が変わったため、\(request.format.name)を書き出していません。もう一度お試しください。"
+        return false
     }
 
     private static func exportRenderFailure(_ error: Error, format: ExportFormat) -> String {
@@ -593,6 +665,14 @@ final class WorkspaceSession {
             }
         }
         if format == .epub {
+            switch error as? MarkdownBookPreview.Failure {
+            case .invalidSelection: return "対象の原稿を選び直してください。"
+            case .tooLarge: return "選んだ原稿の合計が上限（256 KiB）を超えています。"
+            case .unavailable(_, .inputTooLarge): return "原稿1件あたりの上限（128 KiB）を超えています。"
+            case .unavailable(_, .tooManyBlocks), .unavailable(_, .tooComplex):
+                return "原稿の構造が変換処理の上限を超えています。"
+            case .unavailable(_, .parseFailed), nil: break
+            }
             switch error as? MarkdownEPUBExport.ExportError {
             case .emptyDocument: return "書き出す本文がありません。"
             case .tooManyChapters: return "章の数が書き出しの上限（128章）を超えています。"

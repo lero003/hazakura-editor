@@ -9,7 +9,7 @@ struct ScratchWorkspaceView: View {
     @State private var openPanel: NSOpenPanel?
     @State private var savePanel: NSSavePanel?
 
-    private enum SavePurpose { case copy, export(WorkspaceSession.ExportFormat) }
+    private enum SavePurpose { case copy, bookEPUB, export(WorkspaceSession.ExportFormat) }
 
     var body: some View {
         let openID = session.openRequest
@@ -18,7 +18,7 @@ struct ScratchWorkspaceView: View {
         let folderOpening = session.folderEntryOpening
         let folderOpeningID = folderOpening?.hasStarted == true ? folderOpening?.id : nil
         let saveID = session.saveCopyRequest?.id
-        let exportID = session.exportRequest?.id
+        let exportID = session.exportPickerID
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
@@ -48,6 +48,8 @@ struct ScratchWorkspaceView: View {
                             session.cancelFolderEntry(folderOpening.id)
                             openPanel?.cancel(nil)
                         }
+                    } else if let request = session.exportRequest, request.waitsForDestination {
+                        bookExportDestinationActions(request.id)
                     }
                 }
                 if session.recoveryUnavailable {
@@ -89,8 +91,9 @@ struct ScratchWorkspaceView: View {
         .task(id: exportID) {
             if let exportID {
                 defer { session.cancelExport(exportID) }
-                guard let request = session.exportRequest, request.id == exportID else { return }
-                await withSelectedDestination(for: .export(request.format)) { destination in
+                guard let request = session.exportDestinationRequest(exportID) else { return }
+                let purpose: SavePurpose = request.bookCount == nil ? .export(request.format) : .bookEPUB
+                await withSelectedDestination(for: purpose) { destination in
                     await session.writeRequestedExport(exportID, to: destination)
                 }
             }
@@ -173,6 +176,9 @@ struct ScratchWorkspaceView: View {
         }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
         if let request = session.exportRequest {
+            if request.waitsForDestination, let count = request.bookCount {
+                return "選んだ\(count)件の原稿を1冊のEPUBにまとめます。"
+            }
             return "新しいファイルに\(request.format.name)を書き出しています…"
         }
         if session.comparisonRequestID != nil { return "比較するファイルを選び直してください。" }
@@ -183,6 +189,18 @@ struct ScratchWorkspaceView: View {
             return "読み取り専用 — 開いた時点の原文です。編集用コピーは別のタブに作れます。"
         }
         return "原稿は新しいファイルにコピーを保存できます。元のファイルには書き込みません。"
+    }
+
+    private func bookExportDestinationActions(_ id: UUID) -> some View {
+        HStack {
+            Button("書き出し先を選ぶ…") {
+                guard let window = session.window, window.isVisible, window.isKeyWindow,
+                      window.attachedSheet == nil else { return }
+                session.startPickingBookExport(id)
+            }
+            .disabled(session.tabs.isComposing)
+            Button("中止") { session.cancelExport(id) }
+        }
     }
 
     private var showsDiscard: Binding<Bool> {
@@ -281,7 +299,7 @@ struct ScratchWorkspaceView: View {
 
     private func withSelectedDestination(for purpose: SavePurpose, write: @MainActor (URL) async -> Void) async {
         guard !Task.isCancelled, savePanel == nil,
-              let window = session.window, window.isKeyWindow, window.attachedSheet == nil else { return }
+              let window = session.window, window.isVisible, window.isKeyWindow, window.attachedSheet == nil else { return }
         let panel = NSSavePanel()
         switch purpose {
         case .copy:
@@ -302,12 +320,15 @@ struct ScratchWorkspaceView: View {
             panel.prompt = "書き出す"
             panel.nameFieldStringValue = "原稿.pdf"
             panel.allowedContentTypes = [.pdf]
-        case .export(.epub):
+        case .export(.epub), .bookEPUB:
             guard let epub = UTType(filenameExtension: "epub") else { return }
-            panel.title = "EPUBを書き出す"
-            panel.message = "確定済みの原稿から章と目次付きのEPUBを作ります。既存のファイルは置き換えません。"
+            let isBook = if case .bookEPUB = purpose { true } else { false }
+            panel.title = isBook ? "選んだ原稿を1冊のEPUBに書き出す" : "EPUBを書き出す"
+            panel.message = isBook
+                ? "選んだ原稿を読んだ順にまとめます。既存のファイルは置き換えません。"
+                : "確定済みの原稿から章と目次付きのEPUBを作ります。既存のファイルは置き換えません。"
             panel.prompt = "書き出す"
-            panel.nameFieldStringValue = "原稿.epub"
+            panel.nameFieldStringValue = isBook ? "選んだ原稿.epub" : "原稿.epub"
             panel.allowedContentTypes = [epub]
         }
         panel.canCreateDirectories = false
@@ -317,7 +338,7 @@ struct ScratchWorkspaceView: View {
         guard answer == .OK, let destination = panel.url else { return }
         // The panel grants this choice only for the current write. Do not store a bookmark or path.
         defer { destination.stopAccessingSecurityScopedResource() }
-        guard !Task.isCancelled else { return }
+        guard !Task.isCancelled, session.window === window, window.isVisible else { return }
         await write(destination)
     }
 

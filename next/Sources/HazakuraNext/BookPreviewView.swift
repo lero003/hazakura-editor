@@ -7,6 +7,7 @@ struct BookPreviewView: View {
     let request: WorkspaceSession.BookPreviewRequest
     @State private var selected: Set<UUID> = []
     @State private var phase = Phase.choosing
+    @State private var exportRejected = false
 
     private enum Phase {
         case choosing, selectionChanged
@@ -23,9 +24,22 @@ struct BookPreviewView: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             Divider()
-            Button("閉じる") { session.dismissBookPreview(request.id) }
-                .keyboardShortcut(.cancelAction)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            if exportRejected {
+                Text("原稿の状態が変わったため書き出せません。画面を開き直してください。")
+                    .font(.callout)
+            }
+            HStack {
+                if case .ready = phase {
+                    Button("選んだ原稿をEPUBに…") {
+                        exportRejected = !session.prepareBookEPUB(request.id)
+                    }
+                    .disabled(session.tabs.isComposing)
+                    .accessibilityHint("この画面を閉じます。続けて書き出し先を選んでください。")
+                }
+                Spacer()
+                Button("閉じる") { session.dismissBookPreview(request.id) }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .padding(20)
         .frame(width: 620, height: 520)

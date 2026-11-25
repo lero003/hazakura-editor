@@ -1,7 +1,7 @@
 import Foundation
 import HazakuraNextCore
 
-/// Builds one inert, reflowable EPUB from the same projection and root chapter boundaries as Reader.
+/// Builds an inert, reflowable EPUB from a single Reader document or selected Book Preview manuscripts.
 enum MarkdownEPUBExport {
     enum ExportError: Error, Equatable {
         case tooManyChapters, emptyDocument
@@ -19,6 +19,33 @@ enum MarkdownEPUBExport {
         let blocks = try await MarkdownHTMLExport.projectedBlocks(source: source)
         let outline = MarkdownPreviewOutline(blocks: blocks)
         let chapters = MarkdownReaderChapters(blocks: blocks, outline: outline).chapters
+        return try buildArchive(chapters.enumerated().map { index, chapter in
+            let label: String
+            if let heading = chapter.heading {
+                label = heading.title.isEmpty ? "第\(index + 1)章" : heading.title
+            } else {
+                label = chapters.count == 1 ? "本文" : "前書き"
+            }
+            return Chapter(label: label, blocks: blocks[chapter.range])
+        })
+    }
+
+    @concurrent
+    static func renderBook(sources: [MarkdownBookPreview.Source]) async throws -> Data {
+        let sections = try await MarkdownBookPreview.render(sources)
+        // Each independently projected manuscript is one chapter, even when empty.
+        // Only its position and its safe body projection feed the publication.
+        return try buildArchive(sections.enumerated().map { index, section in
+            Chapter(label: "原稿 \(index + 1)", blocks: section.blocks[...])
+        })
+    }
+
+    private struct Chapter {
+        let label: String
+        let blocks: ArraySlice<MarkdownPreview.Block>
+    }
+
+    private static func buildArchive(_ chapters: [Chapter]) throws -> Data {
         try Task.checkCancellation()
         guard !chapters.isEmpty else { throw ExportError.emptyDocument }
         guard chapters.count <= chapterLimit else { throw ExportError.tooManyChapters }
@@ -29,19 +56,16 @@ enum MarkdownEPUBExport {
         var spineItems = ""
         for (index, chapter) in chapters.enumerated() {
             try Task.checkCancellation()
-            let number = index + 1
             // The path, manifest ID, spine reference, and nav target must agree.
             // None of them may incorporate the heading, source, or destination filename.
-            let id = "chapter-\(number)"
+            let id = "chapter-\(index + 1)"
             let href = id + ".xhtml"
-            let label: String
-            if let heading = chapter.heading {
-                label = heading.title.isEmpty ? "第\(number)章" : heading.title
+            let escapedLabel = try MarkdownHTMLExport.escapedXMLText(chapter.label)
+            let body = if chapter.blocks.isEmpty {
+                "<p>表示する本文がありません。</p>"
             } else {
-                label = chapters.count == 1 ? "本文" : "前書き"
+                try MarkdownHTMLExport.renderXHTMLFragment(chapter.blocks)
             }
-            let escapedLabel = try MarkdownHTMLExport.escapedXMLText(label)
-            let body = try MarkdownHTMLExport.renderXHTMLFragment(blocks[chapter.range])
             entries.append((contentDirectory + href, Data(xhtml(escapedTitle: escapedLabel, body: body).utf8)))
             navItems += "<li><a href=\"\(href)\">\(escapedLabel)</a></li>\n"
             manifestItems += "<item id=\"\(id)\" href=\"\(href)\" media-type=\"application/xhtml+xml\" />\n"
