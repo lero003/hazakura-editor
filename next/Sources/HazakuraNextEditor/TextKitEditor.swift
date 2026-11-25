@@ -19,7 +19,7 @@ private final class MarkdownTextView: NSTextView {
         return textView
     }
 
-    func invalidateReviewedEdits() { isDismantled = true }
+    func markDismantled() { isDismantled = true }
 
     func reviewedEditUndoManager(in window: NSWindow, for documentID: UUID) -> UndoManager? {
         guard !isProcessingEdit, self.documentID == documentID,
@@ -100,7 +100,7 @@ private final class MarkdownTextView: NSTextView {
     private var policyAllowsEdits: Bool { editorCoordinator?.canEdit() ?? true }
     private var canMutate: Bool { reviewedEditValidation == nil && isEditable && policyAllowsEdits }
     fileprivate var canApplyUndo: Bool {
-        reviewedEditValidation == nil && !isReadOnly && !hasMarkedText() && policyAllowsEdits
+        isActive && !isDismantled && reviewedEditValidation == nil && !isReadOnly && !hasMarkedText() && policyAllowsEdits
     }
     fileprivate var canRevealSource: Bool {
         guard isActive, isSelectable, !isProcessingEdit, !hasMarkedText(),
@@ -327,7 +327,7 @@ public struct TextKitEditor: NSViewRepresentable {
     }
 
     public static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
-        (nsView.documentView as? MarkdownTextView)?.invalidateReviewedEdits()
+        (nsView.documentView as? MarkdownTextView)?.markDismantled()
         coordinator.stopObserving()
     }
 

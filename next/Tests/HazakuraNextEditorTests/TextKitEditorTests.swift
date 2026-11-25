@@ -461,6 +461,11 @@ struct TextKitEditorTests {
         #expect(first.isEditable == false)
         #expect(first.acceptsFirstResponder == false)
         #expect(window.firstResponder === second)
+        #expect(!firstUndo.canUndo)
+        firstUndo.undo()
+        #expect(first.string == "一稿")
+        #expect(first.selectedRange() == selection)
+        #expect(firstReported == ["一稿"])
         second.insertText("章", replacementRange: NSRange(location: 1, length: 0))
         secondUndo.undo()
         #expect(secondReported == ["二章", "二"])
@@ -470,10 +475,42 @@ struct TextKitEditorTests {
         TextKitEditor.setActive(false, in: secondScroll)
         #expect(window.firstResponder === first)
         #expect(first.selectedRange() == selection)
+        #expect(!secondUndo.canRedo)
+        secondUndo.redo()
+        #expect(second.string == "二")
         firstUndo.undo()
         firstUndo.redo()
         #expect(firstReported == ["一稿", "一", "一稿"])
         #expect(secondReported == ["二章", "二"])
+
+        TextKitEditor.setActive(false, in: firstScroll)
+        TextKitEditor.setActive(true, in: secondScroll)
+        try #require(secondUndo.canRedo)
+        secondUndo.redo()
+        #expect(secondReported == ["二章", "二", "二章"])
+    }
+
+    @Test
+    func aRetainedUndoManagerCannotEditADismantledEditor() throws {
+        var reported: [String] = []
+        let coordinator = TextKitEditor.Coordinator { reported.append($0) }
+        let scrollView = TextKitEditor.makeScrollView(initialText: "原稿", coordinator: coordinator)
+        let window = makeWindow(containing: scrollView)
+        defer { window.contentView = nil }
+        let editor = try #require(scrollView.documentView as? NSTextView)
+        let undo = try #require(editor.undoManager)
+        editor.insertText("新", replacementRange: NSRange(location: 0, length: 0))
+        try #require(undo.canUndo)
+        let selection = editor.selectedRange()
+
+        // Teardown can run before SwiftUI removes the native view from its window.
+        TextKitEditor.dismantleNSView(scrollView, coordinator: coordinator)
+        try #require(editor.window === window)
+        #expect(!undo.canUndo)
+        undo.undo()
+        #expect(editor.string == "新原稿")
+        #expect(editor.selectedRange() == selection)
+        #expect(reported == ["新原稿"])
     }
 
     @Test
