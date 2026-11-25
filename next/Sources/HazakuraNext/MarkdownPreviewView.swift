@@ -14,7 +14,7 @@ struct MarkdownPreviewView: View {
 
     private enum Phase {
         case loading
-        case rendered(blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline)
+        case rendered(blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline, chapters: MarkdownReaderChapters)
         case unavailable(MarkdownPreview.Limit)
         case cancelled
     }
@@ -91,12 +91,12 @@ struct MarkdownPreviewView: View {
             notice("表示する項目数が上限を超えたため、プレビューを表示できません。原文は元の画面で確認できます。")
         case .unavailable(.tooComplex):
             notice("文書の構造が複雑すぎるため、プレビューを表示できません。原文は元の画面で確認できます。")
-        case .rendered(let blocks, let outline):
+        case .rendered(let blocks, let outline, let chapters):
             if blocks.isEmpty {
                 notice("表示する本文がありません。")
             } else {
                 MarkdownPreviewReadingPane(
-                    blocks: blocks, outline: outline, readingBlockIndex: readingBlockIndex,
+                    blocks: blocks, outline: outline, chapters: chapters, readingBlockIndex: readingBlockIndex,
                     rememberReadingBlock: rememberReadingBlock
                 ) { location in
                     if reveal(location) { dismiss() }
@@ -119,7 +119,9 @@ struct MarkdownPreviewView: View {
             switch try await MarkdownPreview.render(source) {
             case .rendered(let blocks):
                 guard !Task.isCancelled else { return }
-                outcome = .rendered(blocks: blocks, outline: MarkdownPreviewOutline(blocks: blocks))
+                let outline = MarkdownPreviewOutline(blocks: blocks)
+                outcome = .rendered(blocks: blocks, outline: outline,
+                                    chapters: MarkdownReaderChapters(blocks: blocks, outline: outline))
             case .unavailable(let limit):
                 outcome = .unavailable(limit)
             }
@@ -137,58 +139,141 @@ struct MarkdownPreviewView: View {
 private struct MarkdownPreviewReadingPane: View {
     let blocks: [MarkdownPreview.Block]
     let outline: MarkdownPreviewOutline
+    let chapters: MarkdownReaderChapters
     let rememberReadingBlock: (Int) -> Void
     let reveal: (MarkdownPreview.HeadingLocation) -> Void
     @State private var showsOutline = false
+    @State private var viewport = Viewport(chapterIndex: nil)
+    @State private var readingBlock: Int
     @State private var position: ScrollPosition
 
+    private struct Viewport: Identifiable {
+        let id = UUID()
+        let chapterIndex: Int?
+    }
+
     init(
-        blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline, readingBlockIndex: Int?,
-        rememberReadingBlock: @escaping (Int) -> Void,
+        blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline, chapters: MarkdownReaderChapters,
+        readingBlockIndex: Int?, rememberReadingBlock: @escaping (Int) -> Void,
         reveal: @escaping (MarkdownPreview.HeadingLocation) -> Void
     ) {
         self.blocks = blocks
         self.outline = outline
+        self.chapters = chapters
         self.rememberReadingBlock = rememberReadingBlock
         self.reveal = reveal
         if let readingBlockIndex, blocks.indices.contains(readingBlockIndex) {
+            _readingBlock = State(initialValue: readingBlockIndex)
             _position = State(initialValue: ScrollPosition(id: readingBlockIndex, anchor: .top))
         } else {
+            _readingBlock = State(initialValue: blocks.startIndex)
             _position = State(initialValue: ScrollPosition(idType: Int.self))
         }
     }
 
-    private var observedReadingBlock: Int? {
-        // Ignore layout feedback from the initial restore or other programmatic scrolling.
-        guard position.isPositionedByUser,
-              let candidate = position.viewID(type: Int.self),
-              blocks.indices.contains(candidate) else { return nil }
-        return candidate
+    private var selectedChapterIndex: Int? { viewport.chapterIndex }
+
+    private var userPositionedBlock: Int? {
+        position.isPositionedByUser ? position.viewID(type: Int.self) : nil
+    }
+
+    private func blockRange(for viewport: Viewport) -> Range<Int> {
+        viewport.chapterIndex.map { chapters.chapters[$0].range } ?? blocks.indices
+    }
+
+    private func showChapterReading(_ enabled: Bool) {
+        // The scroll binding may have updated before its onChange callback runs.
+        if let latest = userPositionedBlock, latest != readingBlock, blockRange(for: viewport).contains(latest) {
+            recordReadingBlock(latest)
+        }
+        let target = enabled ? chapters.chapterIndex(containing: readingBlock) : nil
+        changeViewport(to: target, startingAt: readingBlock)
+    }
+
+    private func jump(to blockIndex: Int) {
+        guard blocks.indices.contains(blockIndex) else { return }
+        let target = selectedChapterIndex == nil ? nil : chapters.chapterIndex(containing: blockIndex)
+        changeViewport(to: target, startingAt: blockIndex)
+        recordReadingBlock(blockIndex)
+    }
+
+    private func changeViewport(to chapterIndex: Int?, startingAt blockIndex: Int) {
+        if selectedChapterIndex == chapterIndex {
+            position.scrollTo(id: blockIndex, anchor: .top)
+        } else {
+            // The new viewport is initialized with an ID it can actually display.
+            viewport = Viewport(chapterIndex: chapterIndex)
+            position = ScrollPosition(id: blockIndex, anchor: .top)
+        }
+    }
+
+    private func recordReadingBlock(_ blockIndex: Int) {
+        readingBlock = blockIndex
+        rememberReadingBlock(blockIndex)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !outline.entries.isEmpty {
-                Button {
-                    showsOutline.toggle()
-                } label: {
-                    Label(showsOutline ? "目次を隠す" : "目次を表示", systemImage: "list.bullet.indent")
+            HStack(spacing: 12) {
+                if !outline.entries.isEmpty {
+                    Button {
+                        showsOutline.toggle()
+                    } label: {
+                        Label(showsOutline ? "目次を隠す" : "目次を表示", systemImage: "list.bullet.indent")
+                    }
                 }
+                Spacer()
+                Toggle("章ごとに読む", isOn: Binding(
+                    get: { selectedChapterIndex != nil }, set: showChapterReading
+                ))
+                .help("見出しレベル1・2を区切りに、1章ずつ表示します。")
             }
-
+            if let selectedChapterIndex {
+                chapterNavigation(at: selectedChapterIndex)
+            }
             HStack(alignment: .top, spacing: 10) {
                 if showsOutline {
-                    outlineList { entry in
-                        position.scrollTo(id: entry.id, anchor: .top)
-                        // A TOC click records the chosen destination, including a heading near the end.
-                        rememberReadingBlock(entry.id)
-                    }
-                    .frame(width: 195)
+                    outlineList { entry in jump(to: entry.id) }
+                        .frame(width: 195)
                     Divider()
                 }
-                previewBody
+                previewBody(for: viewport)
+                    .id(viewport.id)
             }
         }
+    }
+
+    private func chapterNavigation(at index: Int) -> some View {
+        let chapter = chapters.chapters[index]
+        return HStack(spacing: 8) {
+            Button("前へ", systemImage: "chevron.left") { jumpToChapter(index - 1) }
+                .labelStyle(.iconOnly)
+                .accessibilityLabel("前の章へ")
+                .disabled(index == chapters.chapters.startIndex)
+            HStack(spacing: 8) {
+                Text("\(index + 1) / \(chapters.chapters.count) 章").monospacedDigit()
+                chapterTitle(chapter)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .accessibilityElement(children: .combine)
+            Button("次へ", systemImage: "chevron.right") { jumpToChapter(index + 1) }
+                .labelStyle(.iconOnly)
+                .accessibilityLabel("次の章へ")
+                .disabled(index + 1 == chapters.chapters.endIndex)
+        }
+    }
+
+    private func chapterTitle(_ chapter: MarkdownReaderChapters.Chapter) -> Text {
+        if let heading = chapter.heading {
+            return heading.title.isEmpty ? Text("（見出しの本文なし）") : Text(verbatim: heading.title)
+        }
+        return chapters.chapters.count > 1 ? Text("冒頭") : Text("本文")
+    }
+
+    private func jumpToChapter(_ index: Int) {
+        guard chapters.chapters.indices.contains(index) else { return }
+        jump(to: chapters.chapters[index].range.lowerBound)
     }
 
     private func outlineList(_ jump: @escaping (MarkdownPreviewOutline.Entry) -> Void) -> some View {
@@ -234,11 +319,12 @@ private struct MarkdownPreviewReadingPane: View {
         return Text("見出し \(number)、レベル \(entry.level)、\(title)")
     }
 
-    private var previewBody: some View {
-        ScrollView {
+    private func previewBody(for displayedViewport: Viewport) -> some View {
+        let range = blockRange(for: displayedViewport)
+        return ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
-                // ForEach supplies the same ID type and block index used by ScrollPosition.
-                ForEach(blocks.indices, id: \.self) { index in
+                // Keep global block IDs even when only one chapter is visible.
+                ForEach(range, id: \.self) { index in
                     let block = blocks[index]
                     VStack(alignment: .leading, spacing: 6) {
                         MarkdownPreviewBlockView(block: block)
@@ -253,9 +339,17 @@ private struct MarkdownPreviewReadingPane: View {
             .scrollTargetLayout()
             .padding(12)
         }
-        .scrollPosition($position, anchor: .top)
-        .onChange(of: observedReadingBlock) { _, blockIndex in
-            if let blockIndex { rememberReadingBlock(blockIndex) }
+        .scrollPosition(Binding(
+            get: { position },
+            set: { next in
+                // Ignore feedback from a scroll view being replaced during a chapter change.
+                if viewport.id == displayedViewport.id { position = next }
+            }
+        ), anchor: .top)
+        .onChange(of: userPositionedBlock) { _, blockIndex in
+            guard viewport.id == displayedViewport.id,
+                  let blockIndex, blockIndex != readingBlock, range.contains(blockIndex) else { return }
+            recordReadingBlock(blockIndex)
         }
         .frame(maxWidth: .infinity)
         .background(.background, in: .rect(cornerRadius: 8))
