@@ -202,6 +202,43 @@ final class WorkspaceSession {
         isZenMode.toggle()
     }
 
+    enum Appearance: Int, CaseIterable {
+        case system, light, dark
+
+        var title: String {
+            switch self {
+            case .system: "システム設定に従う"
+            case .light: "ライト"
+            case .dark: "ダーク"
+            }
+        }
+    }
+
+    // The explicit window override is the only state. Effective appearance may be inherited.
+    var appearance: Appearance {
+        switch window?.appearance?.name {
+        case .aqua: .light
+        case .darkAqua: .dark
+        default: .system
+        }
+    }
+
+    var canSetAppearance: Bool {
+        guard let window, window.attachedSheet == nil, !isBusy, !tabs.isComposing else { return false }
+        return (window.firstResponder as? NSTextView)?.hasMarkedText() != true
+    }
+
+    func setAppearance(_ choice: Appearance) {
+        guard let window, canSetAppearance else { return }
+        switch choice {
+        case .system:
+            window.appearance = nil
+        case .light, .dark:
+            let name: NSAppearance.Name = choice == .light ? .aqua : .darkAqua
+            if let appearance = NSAppearance(named: name) { window.appearance = appearance }
+        }
+    }
+
     static func title(for tab: ScratchTabs.Tab) -> String {
         if let file = tab.selectedFile {
             return tab.isComparisonSnapshot ? "比較時：\(file.name)" : file.name

@@ -104,6 +104,26 @@ struct ScratchExitTests {
         #expect(session.isZenMode)
     }
 
+    @Test func appearanceMenuReflectsOverrideButCannotChangeAnOffscreenWindow() throws {
+        let delegate = ScratchApplicationDelegate(source: "# 原稿")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        session.setAppearance(.dark)
+        try #require(session.appearance == .dark)
+
+        let action = NSSelectorFromString("chooseAppearance:")
+        try #require(delegate.responds(to: action))
+        for choice in WorkspaceSession.Appearance.allCases {
+            let item = NSMenuItem(title: "Appearance", action: action, keyEquivalent: "")
+            item.tag = choice.rawValue
+            #expect(delegate.validateMenuItem(item) == false)
+            #expect(item.state == (choice == .dark ? .on : .off))
+            _ = delegate.perform(action, with: item)
+            #expect(session.appearance == .dark)
+        }
+    }
+
     @Test func pendingPDFExportBlocksNativeWindowAndQuitWithoutDiscarding() throws {
         let probe = ExitProbe()
         let delegate = probe.makeDelegate()
