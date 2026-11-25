@@ -290,10 +290,13 @@ struct WorkspaceOriginalComparisonTests {
             }
             for await _ in began.stream {}
             #expect(session.isBusy)
+            #expect(!session.isFinishingCancelledComparison)
             switch change {
             case .cancelRequest:
                 session.cancelOriginalComparison(id)
                 #expect(session.isBusy)
+                #expect(session.isFinishingCancelledComparison)
+                #expect(!session.canEditSource)
                 session.requestOriginalComparison()
                 #expect(session.comparisonRequestID == nil)
             case .cancelTask: operation.cancel()
@@ -306,6 +309,7 @@ struct WorkspaceOriginalComparisonTests {
             #expect(session.comparisonReport == nil)
             #expect(session.comparisonRequestID == nil)
             #expect(!session.isBusy)
+            #expect(!session.isFinishingCancelledComparison)
             #expect((session.fileNotice != nil) == (change == .edit || change == .compose))
             if change == .compose { #expect(session.tabs.isComposing) }
             if change == .edit { #expect(session.tabs.selectedTab?.document.source == "比較中に確定した文") }

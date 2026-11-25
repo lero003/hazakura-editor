@@ -52,6 +52,12 @@ struct ScratchWorkspaceView: View {
                         }
                     } else if let request = session.exportRequest, request.waitsForDestination {
                         bookExportDestinationActions(request.id)
+                    } else if let compareID {
+                        Button("比較を中止") {
+                            guard let window = session.window, window.isVisible, window.isKeyWindow,
+                                  window.attachedSheet == nil else { return }
+                            session.cancelOriginalComparison(compareID)
+                        }
                     }
                 }
                 if let status = session.selectedCopySaveStatus {
@@ -208,7 +214,8 @@ struct ScratchWorkspaceView: View {
             }
             return "新しいファイルに\(request.format.name)を書き出しています…"
         }
-        if session.comparisonRequestID != nil { return "比較するファイルを選び直してください。" }
+        if session.comparisonRequestID != nil { return "原本を比較しています…" }
+        if session.isFinishingCancelledComparison { return "比較を中止しました。処理の終了を待っています…" }
         if let notice = session.exitNotice { return notice }
         if session.isDiscarding { return "復旧記録を確認しています…" }
         if let notice = session.fileNotice { return notice }

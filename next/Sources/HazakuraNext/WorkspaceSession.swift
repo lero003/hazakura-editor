@@ -196,6 +196,7 @@ final class WorkspaceSession {
     }
 
     var comparisonRequestID: UUID? { comparisonRequest?.id }
+    var isFinishingCancelledComparison: Bool { comparisonRequest == nil && readingComparisonID != nil }
     private var hasFolderCatalogOperation: Bool {
         folderCatalogRequest != nil || activeFolderReadID != nil || folderCatalogReport != nil || folderEntryOpening != nil
     }
