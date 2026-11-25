@@ -228,6 +228,32 @@ struct WorkspaceMarkdownPreviewTests {
         #expect(session.tabs.recoveryDrafts.isEmpty)
     }
 
+    @Test func aPositionInsideACharacterDoesNotReserveAHeadingReveal() async throws {
+        let prefix = "🌸か\u{3099}\r\n\r\n"
+        let source = prefix + "# 見出し"
+        let session = WorkspaceSession(source: source)
+        let id = try #require(session.tabs.selectedID)
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        let drafts = session.tabs.recoveryDrafts
+
+        // Bisect the surrogate pair, the combining character, and the first CRLF respectively.
+        for offset in [1, 3, 5] {
+            #expect(!session.requestMarkdownReveal(preview.id, offset: offset), "UTF-16 offset: \(offset)")
+            #expect(session.markdownPreview?.id == preview.id)
+        }
+        guard case .rendered(let blocks) = try await MarkdownPreview.render(preview.source) else {
+            Issue.record("Expected a rendered heading.")
+            return
+        }
+        let location = try #require(blocks.last?.headingLocation)
+        try #require(session.requestMarkdownReveal(preview.id, offset: location.utf16Offset))
+        session.dismissMarkdownPreview(preview.id)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == NSRange(location: prefix.utf16.count, length: 0))
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(session.tabs.selectedTab?.document.revision == preview.revision)
+    }
+
     @Test func revealRejectsStalePreviewAndChangedRevisionEvenAfterReturningToTheSameText() throws {
         let source = "# 初稿"
         let session = WorkspaceSession(source: source)

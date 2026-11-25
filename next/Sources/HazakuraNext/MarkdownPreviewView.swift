@@ -36,7 +36,7 @@ struct MarkdownPreviewView: View {
             header
             Divider()
             if revealRejected {
-                Label("原稿の状態が変わったため移動できません。プレビューを開き直してください。", systemImage: "info.circle")
+                Label("原文の位置を確認できなかったため、移動していません。", systemImage: "info.circle")
                     .font(.callout)
             }
             content

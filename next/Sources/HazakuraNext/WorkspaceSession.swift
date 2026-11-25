@@ -429,7 +429,11 @@ final class WorkspaceSession {
     func requestMarkdownReveal(_ previewID: UUID, offset: Int) -> Bool {
         guard let preview = markdownPreview, preview.id == previewID, sourceReveal == nil,
               !tabs.isComposing, !hasNativeMarkedText, let selected = tabs.selectedTab, selected.id == preview.documentID,
-              selected.document.revision == preview.revision, offset >= 0, offset < preview.source.utf16.count else { return false }
+              selected.document.revision == preview.revision, offset >= 0 else { return false }
+        // Reject an unusable anchor before the reader dismisses its sheet.
+        let units = preview.source.utf16
+        guard let target = units.index(units.startIndex, offsetBy: offset, limitedBy: units.endIndex),
+              target != units.endIndex, String.Index(target, within: preview.source) != nil else { return false }
         sourceReveal = SourceReveal(id: previewID, documentID: preview.documentID, revision: preview.revision,
                                     source: preview.source, range: NSRange(location: offset, length: 0),
                                     changedNotice: "原稿が変わったため、見出しに移動していません。")
