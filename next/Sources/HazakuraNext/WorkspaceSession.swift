@@ -415,7 +415,7 @@ final class WorkspaceSession {
     func rememberMarkdownReadingPosition(_ blockIndex: Int, previewID: UUID) {
         // The renderer currently emits at most 2,000 blocks. The reader checks its actual block count.
         guard (0..<2_000).contains(blockIndex), let preview = markdownPreview, preview.id == previewID,
-              !tabs.isComposing, let selected = tabs.selectedTab, selected.id == preview.documentID,
+              !tabs.isComposing, !hasNativeMarkedText, let selected = tabs.selectedTab, selected.id == preview.documentID,
               selected.document.revision == preview.revision else { return }
         markdownReadingPositions[selected.id] = (revision: preview.revision, blockIndex: blockIndex)
     }

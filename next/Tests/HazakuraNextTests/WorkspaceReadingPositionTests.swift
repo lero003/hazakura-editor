@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 @testable import HazakuraNext
 import HazakuraNextCore
@@ -77,6 +78,43 @@ struct WorkspaceReadingPositionTests {
         session.tabs.select(firstID)
         let first = try openPreview(in: session)
         #expect(first.readingBlockIndex == 1)
+    }
+
+    @Test func nativeMarkedTextCannotReplaceTheRememberedReadingPosition() throws {
+        let session = WorkspaceSession(source: source)
+        let id = try #require(session.tabs.selectedID)
+        _ = NSApplication.shared
+        let frame = NSRect(x: 0, y: 0, width: 300, height: 200)
+        let window = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        let editor = NSTextView(frame: frame)
+        editor.string = source
+        window.contentView = editor
+        try #require(window.makeFirstResponder(editor))
+        session.window = window
+
+        let preview = try openPreview(in: session)
+        session.rememberMarkdownReadingPosition(1, previewID: preview.id)
+        editor.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                             replacementRange: NSRange(location: NSNotFound, length: 0))
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        let markedRange = editor.markedRange()
+        let selection = editor.selectedRange()
+        session.rememberMarkdownReadingPosition(2, previewID: preview.id)
+        #expect(editor.markedRange() == markedRange)
+        #expect(editor.selectedRange() == selection)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.selectedTab?.document.source == source)
+        #expect(session.tabs.recoveryDrafts.isEmpty)
+        session.dismissMarkdownPreview(preview.id)
+        editor.unmarkText()
+
+        let reopened = try openPreview(in: session)
+        #expect(reopened.readingBlockIndex == 1)
+        session.rememberMarkdownReadingPosition(2, previewID: reopened.id)
+        session.dismissMarkdownPreview(reopened.id)
+        #expect(try openPreview(in: session).readingBlockIndex == 2)
     }
 
     @Test(arguments: [false, true])
