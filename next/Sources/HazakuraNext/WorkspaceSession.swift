@@ -620,7 +620,9 @@ final class WorkspaceSession {
         return true
     }
 
-    var canRequestFolderCatalog: Bool { !isBusy && !tabs.isComposing }
+    var folderInputIsCommitted: Bool { !tabs.isComposing && !hasNativeMarkedText }
+    var canOpenFolderEntry: Bool { folderInputIsCommitted && tabs.canCreateTab }
+    var canRequestFolderCatalog: Bool { !isBusy && folderInputIsCommitted && window?.attachedSheet == nil }
 
     func requestFolderCatalog() {
         guard canRequestFolderCatalog else { return }
@@ -649,7 +651,7 @@ final class WorkspaceSession {
     @discardableResult
     func prepareFolderEntry(reportID: UUID, entryID: Data) -> Bool {
         guard let report = folderCatalogReport, report.id == reportID,
-              folderEntryOpening == nil, activeFolderReadID == nil, tabs.canCreateTab,
+              folderEntryOpening == nil, activeFolderReadID == nil, canOpenFolderEntry,
               let entry = report.catalog.entries.first(where: { $0.id == entryID }) else { return false }
         folderEntryOpening = FolderEntryOpening(catalog: report.catalog, entry: entry)
         folderCatalogReport = nil
@@ -658,7 +660,7 @@ final class WorkspaceSession {
 
     func startOpeningFolderEntry(_ id: UUID) {
         guard folderEntryOpening?.id == id, folderEntryOpening?.hasStarted == false,
-              activeFolderReadID == nil, tabs.canCreateTab else { return }
+              activeFolderReadID == nil, canOpenFolderEntry else { return }
         folderEntryOpening?.hasStarted = true
     }
 
@@ -678,10 +680,10 @@ final class WorkspaceSession {
             activeFolderReadID = nil
             cancelFolderEntry(id)
         }
-        guard !Task.isCancelled, tabs.canCreateTab else { return }
+        guard !Task.isCancelled, canOpenFolderEntry else { return }
         do {
             guard let file = try await read(opening), !Task.isCancelled, folderEntryOpening?.id == id,
-                  tabs.canCreateTab else { return }
+                  canOpenFolderEntry else { return }
             _ = tabs.openReadOnly(file)
         } catch is CancellationError {
             // A cancelled picker/read never creates a tab or a failure notice.
@@ -705,10 +707,10 @@ final class WorkspaceSession {
             activeFolderReadID = nil
             cancelFolderCatalog(id)
         }
-        guard !Task.isCancelled, !tabs.isComposing else { return }
+        guard !Task.isCancelled, folderInputIsCommitted else { return }
         do {
             guard let snapshot = try await read(), !Task.isCancelled, folderCatalogRequest == id,
-                  !tabs.isComposing else { return }
+                  folderInputIsCommitted else { return }
             folderCatalogReport = FolderCatalogReport(id: id, catalog: snapshot)
         } catch is CancellationError {
             // Cancellation has no result or failure notice.

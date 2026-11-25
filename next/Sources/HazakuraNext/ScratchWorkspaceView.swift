@@ -43,7 +43,7 @@ struct ScratchWorkspaceView: View {
                                       window.attachedSheet == nil else { return }
                                 session.startOpeningFolderEntry(folderOpening.id)
                             }
-                            .disabled(!session.tabs.canCreateTab)
+                            .disabled(!session.canOpenFolderEntry)
                         }
                         Button("中止") {
                             guard session.folderEntryOpening?.id == folderOpening.id else { return }
@@ -149,7 +149,7 @@ struct ScratchWorkspaceView: View {
         .sheet(item: Binding(get: { session.folderCatalogReport }, set: { report in
             if report == nil, let folderReportID { session.dismissFolderCatalogReport(folderReportID) }
         })) { report in
-            FolderCatalogView(catalog: report.catalog, canChoose: session.tabs.canCreateTab) { entryID in
+            FolderCatalogView(catalog: report.catalog, canChoose: session.canOpenFolderEntry) { entryID in
                 session.prepareFolderEntry(reportID: report.id, entryID: entryID)
             }
         }
@@ -255,7 +255,7 @@ struct ScratchWorkspaceView: View {
         panel.message = "フォルダ直下のMarkdown・テキストの候補名だけを確認します。本文は開きません。"
         panel.prompt = "一覧を確認"
         return try await withChosenOpenURL(panel, isCurrent: {
-            session.folderCatalogRequest == id && !session.tabs.isComposing
+            session.folderCatalogRequest == id && session.folderInputIsCommitted
         }) { url in
             try await SelectedFolderCatalog.read(from: url)
         }
@@ -267,7 +267,7 @@ struct ScratchWorkspaceView: View {
         panel.message = "選んだ「\(opening.entry.name)」だけを読み取り専用で開きます。先ほどと同じフォルダを選んでください。"
         panel.prompt = "原稿を開く"
         return try await withChosenOpenURL(panel, isCurrent: {
-            session.folderEntryOpening?.id == opening.id && session.tabs.canCreateTab && session.window?.isVisible == true
+            session.folderEntryOpening?.id == opening.id && session.canOpenFolderEntry && session.window?.isVisible == true
         }) { folder in
             try await opening.catalog.readEntry(opening.entry.id, from: folder)
         }

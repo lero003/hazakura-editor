@@ -1,3 +1,4 @@
+import AppKit
 import Darwin
 import Foundation
 @testable import HazakuraNext
@@ -51,6 +52,114 @@ struct WorkspaceFolderCatalogTests {
         }
         #expect(session.folderCatalogReport == nil)
         #expect(session.folderCatalogRequest == nil)
+    }
+
+    @Test func nativeCompositionBlocksTheFolderCatalogCommandBeforeModelNotification() throws {
+        let session = WorkspaceSession(source: "原稿")
+        let (window, view) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        #expect(!session.canRequestFolderCatalog)
+        session.requestFolderCatalog()
+        #expect(session.folderCatalogRequest == nil)
+        #expect(view.hasMarkedText())
+    }
+
+    @Test(arguments: [true, false])
+    func nativeCompositionAroundCatalogReadDoesNotPublish(beforePicker: Bool) async throws {
+        let catalog = try await fixtureCatalog()
+        let session = WorkspaceSession(source: "原稿")
+        let (window, view) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        session.requestFolderCatalog()
+        let id = try #require(session.folderCatalogRequest)
+        if beforePicker { markText(in: view) }
+        await session.readFolderCatalog(id) {
+            #expect(!beforePicker, "The picker must not run during composition.")
+            if !beforePicker { markText(in: view) }
+            return catalog
+        }
+        #expect(view.hasMarkedText() && !session.tabs.isComposing)
+        #expect(window.firstResponder === view)
+        #expect(session.folderCatalogReport == nil)
+        #expect(!session.isBusy)
+    }
+
+    @Test(arguments: [true, false])
+    func nativeCompositionAroundEntryReadKeepsTheDraftAndSelection(beforePicker: Bool) async throws {
+        try await withFixture { folder, catalog in
+            let session = WorkspaceSession(source: "原稿")
+            let (window, view) = try attachNativeEditor(to: session)
+            defer { window.close() }
+            let draftID = try #require(session.tabs.selectedID)
+            session.applyCommittedSource("確定済みの原稿", to: draftID)
+            let drafts = session.tabs.recoveryDrafts
+            session.requestFolderCatalog()
+            let reportID = try #require(session.folderCatalogRequest)
+            await session.readFolderCatalog(reportID) { catalog }
+            let entry = try #require(catalog.entries.first { $0.name == "原稿.md" })
+            try #require(session.prepareFolderEntry(reportID: reportID, entryID: entry.id))
+            let id = try #require(session.folderEntryOpening?.id)
+            session.startOpeningFolderEntry(id)
+            if beforePicker { markText(in: view) }
+            await session.readPreparedFolderEntry(id) { opening in
+                #expect(!beforePicker, "The re-selection picker must not run during composition.")
+                let file = try await opening.catalog.readEntry(opening.entry.id, from: folder)
+                if !beforePicker { markText(in: view) }
+                return file
+            }
+            #expect(view.hasMarkedText() && !session.tabs.isComposing)
+            #expect(window.firstResponder === view)
+            #expect(session.tabs.tabs.map(\.id) == [draftID])
+            #expect(session.tabs.selectedID == draftID)
+            #expect(session.tabs.recoveryDrafts == drafts)
+            #expect(!session.isBusy)
+        }
+    }
+
+    @Test func nativeCompositionDoesNotConsumeTheListOrStartTheStagedSelection() async throws {
+        let catalog = try await fixtureCatalog()
+        let session = WorkspaceSession(source: "原稿")
+        let (window, view) = try attachNativeEditor(to: session)
+        defer { window.close() }
+        session.requestFolderCatalog()
+        let report = try #require(session.folderCatalogRequest)
+        await session.readFolderCatalog(report) { catalog }
+        let entry = try #require(catalog.entries.first)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        #expect(!session.prepareFolderEntry(reportID: report, entryID: entry.id))
+        #expect(session.folderCatalogReport?.id == report)
+        #expect(session.folderEntryOpening == nil)
+
+        view.unmarkText()
+        try #require(session.prepareFolderEntry(reportID: report, entryID: entry.id))
+        let id = try #require(session.folderEntryOpening?.id)
+        markText(in: view)
+        session.startOpeningFolderEntry(id)
+        #expect(session.folderEntryOpening?.hasStarted == false)
+        #expect(view.hasMarkedText())
+        view.unmarkText()
+        session.startOpeningFolderEntry(id)
+        #expect(session.folderEntryOpening?.hasStarted == true)
+    }
+
+    private func attachNativeEditor(to session: WorkspaceSession) throws -> (NSWindow, NSTextView) {
+        _ = NSApplication.shared
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                              styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        session.window = window
+        return (window, view)
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
     }
 
     @Test func cancellingThePickerOrReadDoesNotPublishAndCannotStartAnotherReadInFlight() async throws {
