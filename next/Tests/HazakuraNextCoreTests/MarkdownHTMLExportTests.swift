@@ -40,6 +40,59 @@ struct MarkdownHTMLExportTests {
         #expect(html.hasSuffix("<p>最後</p>\n</body>\n</html>\n"))
     }
 
+    @Test func closesEachQuoteWithoutSplittingParagraphsInTheSameQuote() async throws {
+        let source = "> 前半\n>\n> 同じ引用\n\n> 別の引用"
+        let expected = "<blockquote>\n<p>前半</p>\n<p>同じ引用</p>\n</blockquote>\n<blockquote>\n<p>別の引用</p>\n</blockquote>\n"
+        let html = try await MarkdownHTMLExport.render(source: source)
+        let blocks = try await MarkdownHTMLExport.projectedBlocks(source: source)
+        #expect(html.contains(expected))
+        #expect(try MarkdownHTMLExport.renderXHTMLFragment(blocks[...]) == expected)
+    }
+
+    @Test func keepsAdjacentListsOfTheSameKindSeparateAndPreservesOrdinals() async throws {
+        let source = "3. 三番\n4. 四番\n\n5) 五番\n6) 六番\n\n- 前の箇条書き\n\n+ 次の箇条書き"
+        let expected = """
+            <ol>
+            <li value="3">
+            <p>三番</p>
+            </li>
+            <li value="4">
+            <p>四番</p>
+            </li>
+            </ol>
+            <ol>
+            <li value="5">
+            <p>五番</p>
+            </li>
+            <li value="6">
+            <p>六番</p>
+            </li>
+            </ol>
+            <ul>
+            <li>
+            <p>前の箇条書き</p>
+            </li>
+            </ul>
+            <ul>
+            <li>
+            <p>次の箇条書き</p>
+            </li>
+            </ul>
+
+            """
+        let html = try await MarkdownHTMLExport.render(source: source)
+        let blocks = try await MarkdownHTMLExport.projectedBlocks(source: source)
+        #expect(html.contains(expected))
+        #expect(try MarkdownHTMLExport.renderXHTMLFragment(blocks[...]) == expected)
+    }
+
+    @Test func aFragmentStartingInsideAnOrderedItemKeepsItsOrdinal() async throws {
+        let blocks = try await MarkdownHTMLExport.projectedBlocks(source: "7. 開始\n\n   続き")
+        try #require(blocks.count == 2)
+        let fragment = try MarkdownHTMLExport.renderXHTMLFragment(blocks.dropFirst())
+        #expect(fragment == "<ol>\n<li value=\"7\">\n<p>続き</p>\n</li>\n</ol>\n")
+    }
+
     @Test func keepsProjectedHardBreaksAndCodeSpacing() async throws {
         let html = try await MarkdownHTMLExport.render(source: "一行目  \n二行目 `二  語`")
         #expect(html.contains("<p>一行目\n二行目 <code>二  語</code></p>"))

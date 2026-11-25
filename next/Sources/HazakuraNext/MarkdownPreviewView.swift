@@ -486,10 +486,10 @@ struct MarkdownPreviewBlockView: View {
             switch container {
             case .quote:
                 ("│", String(localized: "引用"))
-            case .listItem(let marker?):
-                (marker, marker == "•" ? String(localized: "箇条書きの項目") : String(localized: "リスト項目：\(marker)"))
-            case .listItem(nil):
-                nil
+            case .listItem(let item):
+                item.marker.map { marker in
+                    (marker, marker == "•" ? String(localized: "箇条書きの項目") : String(localized: "リスト項目：\(marker)"))
+                }
             }
         }
     }

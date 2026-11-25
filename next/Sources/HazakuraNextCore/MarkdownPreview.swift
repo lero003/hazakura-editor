@@ -16,9 +16,22 @@ package enum MarkdownPreview {
     }
 
     package enum Container: Sendable, Equatable {
-        case quote
-        /// A missing marker denotes a continuation of the same item.
-        case listItem(marker: String?)
+        // Identities are local to a single parsed manuscript and are never emitted in markup.
+        case quote(id: Int)
+        case listItem(ListItem)
+    }
+
+    package struct ListItem: Sendable, Equatable {
+        let listID: Int
+        let itemID: Int
+        let ordinal: Int?
+        let startsItem: Bool
+
+        /// A missing marker denotes a continuation of the same item in the preview.
+        package var marker: String? {
+            guard startsItem else { return nil }
+            return ordinal.map { "\($0)." } ?? "•"
+        }
     }
 
     package struct HeadingLocation: Sendable, Equatable {
@@ -402,16 +415,18 @@ package enum MarkdownPreview {
         seenListItems: inout Set<Int>
     ) -> [Container] {
         var result: [Container] = []
-        var ordered = false
+        var list: (id: Int, ordered: Bool)?
         for component in components.reversed() {
             switch component.kind {
-            case .blockQuote: result.append(.quote)
-            case .orderedList: ordered = true
-            case .unorderedList: ordered = false
+            case .blockQuote: result.append(.quote(id: component.identity))
+            case .orderedList: list = (component.identity, true)
+            case .unorderedList: list = (component.identity, false)
             case .listItem(let ordinal):
-                let marker: String? = seenListItems.insert(component.identity).inserted
-                    ? (ordered ? "\(ordinal)." : "•") : nil
-                result.append(.listItem(marker: marker))
+                guard let parent = list else { continue }
+                list = nil
+                result.append(.listItem(ListItem(listID: parent.id, itemID: component.identity,
+                                                 ordinal: parent.ordered ? ordinal : nil,
+                                                 startsItem: seenListItems.insert(component.identity).inserted)))
             default: break
             }
         }

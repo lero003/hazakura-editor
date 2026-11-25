@@ -64,7 +64,7 @@ package enum MarkdownHTMLExport {
     }
 
     private static func appendBlocks(_ blocks: ArraySlice<MarkdownPreview.Block>, to output: inout Output) throws {
-        var open: [Wrapper] = []
+        var open: [MarkdownPreview.Container] = []
         for block in blocks {
             try Task.checkCancellation()
             try adjustWrappers(&open, to: block.containers, output: &output)
@@ -73,62 +73,43 @@ package enum MarkdownHTMLExport {
         try adjustWrappers(&open, to: [], output: &output)
     }
 
-    private enum Wrapper {
-        case quote, list(ordered: Bool)
-
-        func continues(_ container: MarkdownPreview.Container) -> Bool {
-            switch (self, container) {
-            case (.quote, .quote), (.list, .listItem(nil)): true
+    private static func adjustWrappers(
+        _ open: inout [MarkdownPreview.Container], to wanted: [MarkdownPreview.Container], output: inout Output
+    ) throws {
+        let common = zip(open, wanted).prefix { current, next in
+            switch (current, next) {
+            case (.quote(let a), .quote(let b)): a == b
+            case (.listItem(let a), .listItem(let b)): a.listID == b.listID && a.itemID == b.itemID
             default: false
             }
-        }
-
-        var closingMarkup: StaticString {
-            switch self {
-            case .quote: "</blockquote>\n"
-            case .list(true): "</li>\n</ol>\n"
-            case .list(false): "</li>\n</ul>\n"
-            }
-        }
-    }
-
-    private static func adjustWrappers(
-        _ open: inout [Wrapper], to wanted: [MarkdownPreview.Container], output: inout Output
-    ) throws {
-        // A nil marker continues the item at this depth. Container identities aren't
-        // in the projection, so contiguous quotes or lists of the same type may share a wrapper.
-        let common = zip(open, wanted).prefix { $0.continues($1) }.count
+        }.count
         while open.count > common {
             let previous = open.removeLast()
             if open.count == common, wanted.indices.contains(common),
-               case .list(let ordered) = previous, case .listItem(let marker?) = wanted[common] {
-                let ordinal = ordinal(from: marker)
-                if ordered == (ordinal != nil) {
-                    try output.appendMarkup("</li>\n")
-                    try appendItem(ordinal, to: &output)
-                    open.append(previous)
-                    break
-                }
+               case .listItem(let current) = previous, case .listItem(let next) = wanted[common],
+               current.listID == next.listID {
+                // Only the item changes; the list around it remains open.
+                try output.appendMarkup("</li>\n")
+                try appendItem(next.ordinal, to: &output)
+                open.append(wanted[common])
+                break
             }
-            try output.appendMarkup(previous.closingMarkup)
+            let closing: StaticString = switch previous {
+            case .quote: "</blockquote>\n"
+            case .listItem(let item): item.ordinal == nil ? "</li>\n</ul>\n" : "</li>\n</ol>\n"
+            }
+            try output.appendMarkup(closing)
         }
         for container in wanted.dropFirst(open.count) {
             switch container {
             case .quote:
                 try output.appendMarkup("<blockquote>\n")
-                open.append(.quote)
-            case .listItem(let marker):
-                let ordinal = marker.flatMap(ordinal(from:))
-                try output.appendMarkup(ordinal == nil ? "<ul>\n" : "<ol>\n")
-                try appendItem(ordinal, to: &output)
-                open.append(.list(ordered: ordinal != nil))
+            case .listItem(let item):
+                try output.appendMarkup(item.ordinal == nil ? "<ul>\n" : "<ol>\n")
+                try appendItem(item.ordinal, to: &output)
             }
+            open.append(container)
         }
-    }
-
-    private static func ordinal(from marker: String) -> Int? {
-        // The projection emits either a bullet or a decimal ordinal followed by a period.
-        marker.last == "." ? Int(marker.dropLast()) : nil
     }
 
     private static func appendItem(_ ordinal: Int?, to output: inout Output) throws {

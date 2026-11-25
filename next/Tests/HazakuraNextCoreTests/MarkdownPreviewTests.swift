@@ -40,7 +40,7 @@ struct MarkdownPreviewTests {
         let blocks = try await render(prefix + first + second + "末尾")
 
         #expect(blocks.map(\.kind) == [.paragraph, .heading(level: 1), .heading(level: 1), .paragraph])
-        #expect(blocks.map(\.containers) == [[], [.quote, .listItem(marker: "•")], [.quote], []])
+        #expect(blocks.map(containerMarkers) == [[], [">", "•"], [">"], []])
         #expect(blocks.map { $0.headingLocation?.line } == [nil, 3, 5, nil])
         #expect(blocks.map { $0.headingLocation?.utf16Offset } == [nil, prefix.utf16.count,
                                                                 (prefix + first).utf16.count, nil])
@@ -72,13 +72,8 @@ struct MarkdownPreviewTests {
             """)
 
         #expect(blocks.map(text) == ["引用", "項目", "続き", "内側", "次の項目", "項目内の引用"])
-        #expect(blocks.map(\.containers) == [
-            [.quote],
-            [.quote, .listItem(marker: "4.")],
-            [.quote, .listItem(marker: nil)],
-            [.quote, .listItem(marker: nil), .listItem(marker: "•")],
-            [.quote, .listItem(marker: "5.")],
-            [.listItem(marker: "•"), .quote],
+        #expect(blocks.map(containerMarkers) == [
+            [">"], [">", "4."], [">", nil], [">", nil, "•"], [">", "5."], ["•", ">"],
         ])
     }
 
@@ -100,7 +95,7 @@ struct MarkdownPreviewTests {
 
         #expect(blocks.map(\.kind) == [.paragraph, .codeBlock, .thematicBreak, .thematicBreak, .paragraph])
         #expect(blocks.map(text) == ["前", "<b>literal</b>\n    [literal](example.md)\n", "", "", "後"])
-        #expect(blocks.map(\.containers) == [[], [], [], [.quote], []])
+        #expect(blocks.map(containerMarkers) == [[], [], [], [">"], []])
     }
 
     @Test func linksAndImagesExposeLabelsNotDestinations() async throws {
@@ -180,7 +175,7 @@ struct MarkdownPreviewTests {
             """)
 
         #expect(blocks.map(\.kind) == [.heading(level: 1), .table, .paragraph, .heading(level: 2), .table])
-        #expect(blocks.map(\.containers) == [[], [.quote, .listItem(marker: "4.")], [.quote, .listItem(marker: nil)], [], []])
+        #expect(blocks.map(containerMarkers) == [[], [">", "4."], [">", nil], [], []])
         #expect(blocks.map { $0.headingLocation?.line } == [1, nil, nil, 9, nil])
         #expect(blocks.compactMap(\.table).map { cellText($0.rows) } == [[["項目", "値"], ["一", "二"]], [["最後"]]])
     }
@@ -292,6 +287,15 @@ struct MarkdownPreviewTests {
 
     private func text(_ block: MarkdownPreview.Block) -> String {
         block.runs.map(\.text).joined()
+    }
+
+    private func containerMarkers(_ block: MarkdownPreview.Block) -> [String?] {
+        block.containers.map { container in
+            switch container {
+            case .quote: ">"
+            case .listItem(let item): item.marker
+            }
+        }
     }
 
     private func cellText(_ rows: [[[MarkdownPreview.Run]]]) -> [[String]] {
