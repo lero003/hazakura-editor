@@ -52,6 +52,15 @@ struct ScratchWorkspaceView: View {
                         bookExportDestinationActions(request.id)
                     }
                 }
+                if let status = session.selectedRecoveryStatus {
+                    switch status {
+                    case .checkpointed:
+                        Label("この版は復旧用に退避済み", systemImage: "checkmark.circle")
+                            .help("原稿ファイルへの保存とは別です。")
+                    case .unconfirmed:
+                        Label("この版の復旧用退避は未確認", systemImage: "clock")
+                    }
+                }
                 if session.recoveryUnavailable {
                     Label("復旧用の保存先を利用できません。この起動中の原稿は退避されません。", systemImage: "exclamationmark.triangle")
                 } else if let failure = session.recovery?.failure {

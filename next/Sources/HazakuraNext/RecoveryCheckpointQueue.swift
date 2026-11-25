@@ -20,6 +20,8 @@ final class RecoveryCheckpointQueue {
     /// A checkpoint warning stays visible until the backlog is persisted or explicitly discarded.
     /// Errors from an explicit list or cleanup operation are thrown to its caller.
     private(set) var failure: String?
+    // Only acknowledgements from this process, never another copy of the draft text.
+    private var checkpointedRevisions: [UUID: UInt64] = [:]
 
     private static let unavailableMessage = "復旧用の保存先を利用できません。"
     private let backend: Backend?
@@ -96,7 +98,13 @@ final class RecoveryCheckpointQueue {
                 queued.id == confirmed.id && (queued.revision < confirmed.revision || queued == confirmed)
             }
         }
+        for draft in drafts { checkpointedRevisions[draft.id] = nil }
         if pending.isEmpty { failure = nil }
+    }
+
+    /// The live-tab owner assigns a single byte snapshot to each (ID, revision) pair.
+    func hasCheckpointed(_ draft: RecoveryDraft) -> Bool {
+        checkpointedRevisions[draft.id] == draft.revision
     }
 
     /// This only joins the current worker for synchronization; it never retries failed work.
@@ -135,6 +143,9 @@ final class RecoveryCheckpointQueue {
             defer { inFlight = nil }
             do {
                 try await backend.checkpoint(draft)
+                if checkpointedRevisions[draft.id] != draft.revision {
+                    checkpointedRevisions[draft.id] = draft.revision
+                }
             } catch {
                 failedRevisions[draft.id] = draft.revision
                 // Let a newer pending snapshot win. Otherwise, retain the failed one.

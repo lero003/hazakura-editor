@@ -763,6 +763,16 @@ final class WorkspaceSession {
         recovery?.enqueue(draft)
     }
 
+    enum RecoveryStatus {
+        case unconfirmed, checkpointed
+    }
+
+    var selectedRecoveryStatus: RecoveryStatus? {
+        guard let recovery, !recoveryUnavailable, !tabs.isComposing, !isDiscarding,
+              let id = tabs.selectedID, let draft = tabs.recoveryDraft(for: id) else { return nil }
+        return recovery.hasCheckpointed(draft) ? .checkpointed : .unconfirmed
+    }
+
     func requestRecovery() {
         guard recovery != nil, !isBusy, !tabs.isComposing else { return }
         showsRecovery = true

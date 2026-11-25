@@ -86,6 +86,10 @@ struct RecoveryCheckpointQueueTests {
         #expect(candidates.contains(unrelated))
         #expect(candidates.contains(confirmed) == !succeeds)
         #expect(candidates.contains(older) == !succeeds)
+        #expect(queue.hasCheckpointed(first) == false)
+        #expect(queue.hasCheckpointed(confirmed) == !succeeds)
+        #expect(queue.hasCheckpointed(latestEdit))
+        #expect(queue.hasCheckpointed(unrelated))
         #expect(await store.overlappingMutations == false)
     }
 
