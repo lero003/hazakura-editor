@@ -101,9 +101,20 @@ final class WorkspaceSession {
         let readingBlockIndex: Int?
     }
 
-    private struct MarkdownSourceReveal {
-        let preview: MarkdownPreviewSnapshot
+    struct LineJumpRequest: Identifiable {
+        let id = UUID()
+        fileprivate let documentID: UUID
+        fileprivate let revision: UInt64
+        let title: String
+    }
+
+    private struct SourceReveal {
+        let id: UUID
+        let documentID: UUID
+        let revision: UInt64
+        let source: String
         let offset: Int
+        let changedNotice: String
     }
 
     @ObservationIgnored weak var window: NSWindow?
@@ -116,9 +127,12 @@ final class WorkspaceSession {
                 }
             }
             // Includes tabs opened/closed through picker, recovery, and other non-tab-button paths.
-            guard let reveal = markdownSourceReveal else { return }
-            if tabs.selectedID != reveal.preview.documentID || tabs.isComposing {
-                markdownSourceReveal = nil
+            if let request = lineJumpRequest, tabs.selectedID != request.documentID || tabs.isComposing {
+                lineJumpRequest = nil
+            }
+            guard let reveal = sourceReveal else { return }
+            if tabs.selectedID != reveal.documentID || tabs.isComposing {
+                sourceReveal = nil
             }
         }
     }
@@ -142,7 +156,8 @@ final class WorkspaceSession {
     private(set) var isZenMode = false
     // Scrolling updates only this live-tab state, not the editor or the open sheet.
     @ObservationIgnored private var markdownReadingPositions: [UUID: (revision: UInt64, blockIndex: Int)] = [:]
-    private var markdownSourceReveal: MarkdownSourceReveal?
+    private var sourceReveal: SourceReveal?
+    private(set) var lineJumpRequest: LineJumpRequest?
     private(set) var fileNotice: String?
     private var isWritingCopy = false
     var exitNotice: String?
@@ -166,12 +181,13 @@ final class WorkspaceSession {
     private var hasOperationBesidesComparisonReport: Bool {
         openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
             comparisonRequest != nil || readingComparisonID != nil || markdownPreview != nil || bookPreviewRequest != nil ||
-            assistReviewSample != nil || showsRecovery || isDiscarding
+            assistReviewSample != nil || lineJumpRequest != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
         !isDiscarding && !hasFolderCatalogOperation && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
-            readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil && assistReviewSample == nil
+            readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil &&
+            assistReviewSample == nil && lineJumpRequest == nil
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
     var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
@@ -250,7 +266,7 @@ final class WorkspaceSession {
 
     func requestBookPreview() {
         guard canPreviewBook else { return }
-        markdownSourceReveal = nil
+        sourceReveal = nil
         confirmedBookInput = nil
         bookPreviewRequest = BookPreviewRequest(choices: tabs.tabs.map { tab in
             .init(id: tab.id, number: tab.number, title: Self.title(for: tab))
@@ -297,7 +313,7 @@ final class WorkspaceSession {
 
     func requestMarkdownPreview() {
         guard canPreviewMarkdown, let selected = tabs.selectedTab else { return }
-        markdownSourceReveal = nil
+        sourceReveal = nil
         let revision = selected.document.revision
         let position = markdownReadingPositions[selected.id]
         // Keep the native editor mounted. The sheet is a copy of the selected committed revision.
@@ -319,26 +335,63 @@ final class WorkspaceSession {
         markdownPreview = nil
     }
 
-    var readyMarkdownRevealID: UUID? { markdownPreview == nil ? markdownSourceReveal?.preview.id : nil }
+    var readySourceRevealID: UUID? {
+        markdownPreview == nil && lineJumpRequest == nil ? sourceReveal?.id : nil
+    }
 
     func requestMarkdownReveal(_ previewID: UUID, offset: Int) -> Bool {
-        guard let preview = markdownPreview, preview.id == previewID, markdownSourceReveal == nil,
+        guard let preview = markdownPreview, preview.id == previewID, sourceReveal == nil,
               !tabs.isComposing, let selected = tabs.selectedTab, selected.id == preview.documentID,
               selected.document.revision == preview.revision, offset >= 0, offset < preview.source.utf16.count else { return false }
-        markdownSourceReveal = MarkdownSourceReveal(preview: preview, offset: offset)
+        sourceReveal = SourceReveal(id: previewID, documentID: preview.documentID, revision: preview.revision,
+                                    source: preview.source, offset: offset,
+                                    changedNotice: "原稿が変わったため、見出しに移動していません。")
         return true
     }
 
+    var canRequestLineJump: Bool {
+        guard !isBusy, !tabs.isComposing, let tab = tabs.selectedTab else { return false }
+        return tab.document.source.utf8.count <= 2 * 1024 * 1024
+            && (window?.firstResponder as? NSTextView)?.hasMarkedText() != true
+    }
+
+    func requestLineJump() {
+        guard canRequestLineJump, let tab = tabs.selectedTab else { return }
+        sourceReveal = nil
+        lineJumpRequest = LineJumpRequest(documentID: tab.id, revision: tab.document.revision, title: Self.title(for: tab))
+    }
+
+    func dismissLineJump(_ id: UUID) {
+        guard lineJumpRequest?.id == id else { return }
+        lineJumpRequest = nil
+    }
+
+    func confirmLineJump(_ id: UUID, line: Int) -> Bool {
+        guard let request = lineJumpRequest, request.id == id, !tabs.isComposing,
+              let tab = tabs.selectedTab, tab.id == request.documentID, tab.document.revision == request.revision,
+              let offset = SourceLineLookup.utf16Offset(of: line, in: tab.document.source) else { return false }
+        sourceReveal = SourceReveal(id: id, documentID: tab.id, revision: request.revision,
+                                    source: tab.document.source, offset: offset,
+                                    changedNotice: "原稿が変わったため、指定の行に移動していません。")
+        lineJumpRequest = nil
+        return true
+    }
+
+    func cancelSourceNavigation() {
+        lineJumpRequest = nil
+        sourceReveal = nil
+    }
+
     /// Called by the active AppKit editor only after the sheet and native input gates allow navigation.
-    func takeMarkdownReveal(_ previewID: UUID, documentID: UUID, editorSource: String) -> Int? {
-        guard readyMarkdownRevealID == previewID, let reveal = markdownSourceReveal,
-              documentID == reveal.preview.documentID, let selected = tabs.selectedTab,
-              selected.id == documentID else { return nil }
-        markdownSourceReveal = nil
+    func takeSourceReveal(_ id: UUID, documentID: UUID, editorSource: String) -> Int? {
+        guard readySourceRevealID == id, let reveal = sourceReveal,
+               documentID == reveal.documentID, let selected = tabs.selectedTab,
+               selected.id == documentID else { return nil }
+        sourceReveal = nil
         guard !isBusy, !tabs.isComposing else { return nil }
-        guard selected.document.revision == reveal.preview.revision,
-              editorSource.utf8.elementsEqual(reveal.preview.source.utf8) else {
-            fileNotice = "原稿が変わったため、見出しに移動していません。"
+        guard selected.document.revision == reveal.revision,
+               editorSource.utf8.elementsEqual(reveal.source.utf8) else {
+            fileNotice = reveal.changedNotice
             return nil
         }
         return reveal.offset

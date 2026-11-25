@@ -124,14 +124,14 @@ struct WorkspaceMarkdownPreviewTests {
         #expect(location.utf16Offset == expectedOffset)
         #expect(session.requestMarkdownReveal(preview.id, offset: location.utf16Offset))
         #expect(!session.requestMarkdownReveal(preview.id, offset: 0))
-        #expect(session.readyMarkdownRevealID == nil)
-        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == nil)
+        #expect(session.readySourceRevealID == nil)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == nil)
         session.dismissMarkdownPreview(preview.id)
-        #expect(session.readyMarkdownRevealID == preview.id)
-        #expect(session.takeMarkdownReveal(preview.id, documentID: UUID(), editorSource: source) == nil)
-        #expect(session.readyMarkdownRevealID == preview.id)
-        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == expectedOffset)
-        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == nil)
+        #expect(session.readySourceRevealID == preview.id)
+        #expect(session.takeSourceReveal(preview.id, documentID: UUID(), editorSource: source) == nil)
+        #expect(session.readySourceRevealID == preview.id)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == expectedOffset)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == nil)
         #expect(session.tabs.selectedTab?.document.revision == 0)
         #expect(session.tabs.recoveryDrafts.isEmpty)
     }
@@ -152,8 +152,8 @@ struct WorkspaceMarkdownPreviewTests {
         session.applyCommittedSource("# 新稿", to: id)
         session.applyCommittedSource(source, to: id)
         session.dismissMarkdownPreview(active.id)
-        #expect(session.takeMarkdownReveal(active.id, documentID: id, editorSource: source) == nil)
-        #expect(session.readyMarkdownRevealID == nil)
+        #expect(session.takeSourceReveal(active.id, documentID: id, editorSource: source) == nil)
+        #expect(session.readySourceRevealID == nil)
         #expect(session.tabs.selectedTab?.document.revision == 2)
     }
 
@@ -167,8 +167,8 @@ struct WorkspaceMarkdownPreviewTests {
         let preview = try #require(session.markdownPreview)
         #expect(session.requestMarkdownReveal(preview.id, offset: "か\u{3099}\n\n".utf16.count))
         session.dismissMarkdownPreview(preview.id)
-        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: other) == nil)
-        #expect(session.readyMarkdownRevealID == nil)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: other) == nil)
+        #expect(session.readySourceRevealID == nil)
     }
 
     @Test func changingTabsOrStartingCompositionDropsThePendingReveal() throws {
@@ -183,14 +183,14 @@ struct WorkspaceMarkdownPreviewTests {
         session.dismissMarkdownPreview(preview.id)
         session.tabs.select(other)
         session.tabs.select(id)
-        #expect(session.readyMarkdownRevealID == nil)
+        #expect(session.readySourceRevealID == nil)
         session.requestMarkdownPreview()
         let next = try #require(session.markdownPreview)
         #expect(session.requestMarkdownReveal(next.id, offset: 0))
         session.dismissMarkdownPreview(next.id)
         session.tabs.setComposing(true, in: id)
         session.tabs.setComposing(false, in: id)
-        #expect(session.readyMarkdownRevealID == nil)
+        #expect(session.readySourceRevealID == nil)
     }
 
     @Test func openingAndClosingAnotherTabInvalidatesThePendingRevealEvenWhenTheSelectionReturns() throws {
@@ -205,7 +205,7 @@ struct WorkspaceMarkdownPreviewTests {
         let closed = session.tabs.requestCloseSelected()
         #expect(closed == .closed)
         #expect(session.tabs.selectedID == id)
-        #expect(session.takeMarkdownReveal(preview.id, documentID: id, editorSource: source) == nil)
+        #expect(session.takeSourceReveal(preview.id, documentID: id, editorSource: source) == nil)
     }
 
     @Test func previewReservesTheWindowUntilDismissed() throws {

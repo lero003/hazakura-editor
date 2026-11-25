@@ -74,7 +74,8 @@ struct ScratchExitTests {
         defer { window.close() }
         let session = try #require(delegate.session)
         #expect(window.isVisible == false)
-        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:", "exportEPUB:", "toggleLMode:", "toggleZenMode:"] {
+        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:", "exportEPUB:",
+                         "toggleLMode:", "toggleZenMode:", "jumpToSourceLine:"] {
             let action = NSSelectorFromString(selector)
             try #require(delegate.responds(to: action))
             let item = NSMenuItem(title: "Command", action: action, keyEquivalent: "")
@@ -84,6 +85,7 @@ struct ScratchExitTests {
         #expect(session.tabs.tabs.count == 1)
         #expect(session.openRequest == nil)
         #expect(session.exportRequest == nil)
+        #expect(session.lineJumpRequest == nil)
         #expect(session.isLMode == false)
 
         session.toggleLMode()

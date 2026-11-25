@@ -207,6 +207,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         edit.addItem(withTitle: "ペースト", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         edit.addItem(withTitle: "すべてを選択", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         let view = addMenu("表示", to: bar)
+        addCommand("原文の行へ移動…", #selector(jumpToSourceLine(_:)), "l", to: view)
         addCommand("Markdownプレビュー…", #selector(previewMarkdown(_:)), "", to: view)
         addCommand("開いている原稿を続けて読む…", #selector(previewBook(_:)), "", to: view)
         addCommand("えるモード", #selector(toggleLMode(_:)), "", to: view)
@@ -257,6 +258,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     @objc private func exportHTML(_ sender: Any?) { menuSession?.requestExport(.html) }
     @objc private func exportPDF(_ sender: Any?) { menuSession?.requestExport(.pdf) }
     @objc private func exportEPUB(_ sender: Any?) { menuSession?.requestExport(.epub) }
+    @objc private func jumpToSourceLine(_ sender: Any?) { menuSession?.requestLineJump() }
     @objc private func previewMarkdown(_ sender: Any?) { menuSession?.requestMarkdownPreview() }
     @objc private func previewBook(_ sender: Any?) { menuSession?.requestBookPreview() }
     @objc private func toggleLMode(_ sender: Any?) { menuSession?.toggleLMode() }
@@ -295,6 +297,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true
         case #selector(saveCopy(_:)): menuSession?.canSaveCopy == true
         case #selector(exportHTML(_:)), #selector(exportPDF(_:)), #selector(exportEPUB(_:)): menuSession?.canExport == true
+        case #selector(jumpToSourceLine(_:)): menuSession?.canRequestLineJump == true
         case #selector(previewMarkdown(_:)): menuSession?.canPreviewMarkdown == true
         case #selector(previewBook(_:)): menuSession?.canPreviewBook == true
         case #selector(showAssistReviewSample(_:)): menuSession?.canOpenAssistReviewSample == true

@@ -22,6 +22,7 @@ struct ScratchWorkspaceView: View {
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
+        let lineJumpID = session.lineJumpRequest?.id
         let bookID = session.bookPreviewRequest?.id
         let assistSampleID = session.assistReviewSample?.id
         VStack(alignment: .leading, spacing: 0) {
@@ -126,6 +127,7 @@ struct ScratchWorkspaceView: View {
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.comparisonReport?.id { session.dismissOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
+            session.cancelSourceNavigation()
             if let id = session.bookPreviewRequest?.id { session.dismissBookPreview(id) }
             if let id = session.assistReviewSample?.id { session.dismissAssistReviewSample(id) }
             if let id = session.exportRequest?.id { session.cancelExport(id) }
@@ -145,6 +147,12 @@ struct ScratchWorkspaceView: View {
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
         })) { report in
             OriginalFileComparisonView(session: session, report: report)
+        }
+        .sheet(item: Binding(get: { session.lineJumpRequest }, set: { request in
+            if request == nil, let lineJumpID { session.dismissLineJump(lineJumpID) }
+        })) { request in
+            SourceLineJumpView(title: request.title, move: { session.confirmLineJump(request.id, line: $0) },
+                               cancel: { session.dismissLineJump(request.id) })
         }
         .sheet(item: Binding(get: { session.markdownPreview }, set: { preview in
             if preview == nil, let previewID { session.dismissMarkdownPreview(previewID) }
@@ -499,7 +507,7 @@ struct ScratchWorkspaceView: View {
     private var editors: some View {
         // Do not conditionally rebuild the editor when it loses selection. AppKit retains
         // the document's cursor, scroll geometry and undo manager while it is inactive.
-        let revealID = session.readyMarkdownRevealID
+        let revealID = session.readySourceRevealID
         let isLMode = session.isLMode
         return ZStack {
             ForEach(session.tabs.tabs) { tab in
@@ -515,7 +523,7 @@ struct ScratchWorkspaceView: View {
                     onCompositionChange: { session.tabs.setComposing($0, in: id) },
                     revealSourceLocation: { editorSource in
                         guard let revealID else { return nil }
-                        return session.takeMarkdownReveal(revealID, documentID: id, editorSource: editorSource)
+                        return session.takeSourceReveal(revealID, documentID: id, editorSource: editorSource)
                     }
                 ) { source in
                     session.applyCommittedSource(source, to: id)
