@@ -2,7 +2,9 @@ import HazakuraNextCore
 import SwiftUI
 
 struct OriginalFileComparisonView: View {
-    let comparison: OriginalFileComparison
+    let session: WorkspaceSession
+    let report: WorkspaceSession.ComparisonReport
+    private var comparison: OriginalFileComparison { report.comparison }
     @Environment(\.dismiss) private var dismiss
     @State private var mode: Mode = .versions
 
@@ -36,9 +38,18 @@ struct OriginalFileComparisonView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             Divider()
-            Button("閉じる") { dismiss() }
-                .keyboardShortcut(.cancelAction)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            HStack {
+                if comparison.diskStatus == .modified {
+                    Button("比較時のディスク版を別タブで開く") {
+                        session.openComparedDisk(report.id)
+                    }
+                    .disabled(!session.canOpenComparedDisk(report.id))
+                    .accessibilityHint("読み取り専用のタブです。編集用コピーは変更しません。")
+                }
+                Spacer()
+                Button("閉じる") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .padding(20)
         .frame(width: 620, height: 500)

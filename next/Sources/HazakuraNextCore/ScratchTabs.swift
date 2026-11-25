@@ -15,6 +15,7 @@ public struct ScratchTabs {
         public let number: Int
         public let selectedFile: SelectedTextFile?
         public let copyOrigin: CopyOrigin?
+        package let isComparisonSnapshot: Bool
         let recoveryID: UUID?
         public var id: UUID { document.id }
         public var isReadOnly: Bool { selectedFile != nil }
@@ -52,7 +53,7 @@ public struct ScratchTabs {
 
     public init(source: String) {
         let tab = Tab(document: ScratchDocument(source: source), number: 1,
-                      selectedFile: nil, copyOrigin: nil, recoveryID: UUID())
+                      selectedFile: nil, copyOrigin: nil, isComparisonSnapshot: false, recoveryID: UUID())
         tabs = [tab]
         selectedID = tab.id
     }
@@ -76,6 +77,11 @@ public struct ScratchTabs {
         appendTab(ScratchDocument(source: file.source), selectedFile: file)
     }
 
+    /// Opens already captured bytes, marked separately from the initial file tab.
+    package mutating func openComparisonSnapshot(_ file: SelectedTextFile) -> UUID? {
+        appendTab(ScratchDocument(source: file.source), selectedFile: file, isComparisonSnapshot: true)
+    }
+
     /// Copies the selected read-only snapshot into a separate unsaved draft, even before any edit.
     @discardableResult
     public mutating func makeEditableCopyOfSelection() -> UUID? {
@@ -92,10 +98,11 @@ public struct ScratchTabs {
     }
 
     private mutating func appendTab(_ document: ScratchDocument, selectedFile: SelectedTextFile?,
-                                    copyOrigin: CopyOrigin? = nil) -> UUID? {
+                                    copyOrigin: CopyOrigin? = nil, isComparisonSnapshot: Bool = false) -> UUID? {
         guard canCreateTab else { return nil }
         let tab = Tab(document: document, number: nextNumber, selectedFile: selectedFile,
-                      copyOrigin: copyOrigin, recoveryID: selectedFile == nil ? UUID() : nil)
+                      copyOrigin: copyOrigin, isComparisonSnapshot: isComparisonSnapshot,
+                      recoveryID: selectedFile == nil ? UUID() : nil)
         nextNumber += 1
         tabs.append(tab)
         selectedID = tab.id

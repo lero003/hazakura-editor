@@ -111,6 +111,7 @@ struct ScratchWorkspaceView: View {
             session.openRequest = nil
             session.clearFolderCatalog()
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
+            if let id = session.comparisonReport?.id { session.dismissOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
             if let id = session.bookPreviewRequest?.id { session.dismissBookPreview(id) }
             if let id = session.assistReviewSample?.id { session.dismissAssistReviewSample(id) }
@@ -130,7 +131,7 @@ struct ScratchWorkspaceView: View {
         .sheet(item: Binding(get: { session.comparisonReport }, set: { report in
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
         })) { report in
-            OriginalFileComparisonView(comparison: report.comparison)
+            OriginalFileComparisonView(session: session, report: report)
         }
         .sheet(item: Binding(get: { session.markdownPreview }, set: { preview in
             if preview == nil, let previewID { session.dismissMarkdownPreview(previewID) }
@@ -185,8 +186,10 @@ struct ScratchWorkspaceView: View {
         if let notice = session.exitNotice { return notice }
         if session.isDiscarding { return "復旧記録を確認しています…" }
         if let notice = session.fileNotice { return notice }
-        if session.tabs.selectedTab?.isReadOnly == true {
-            return "読み取り専用 — 開いた時点の原文です。編集用コピーは別のタブに作れます。"
+        if let tab = session.tabs.selectedTab, tab.isReadOnly {
+            return tab.isComparisonSnapshot
+                ? "読み取り専用 — 比較時のディスク版です。比較後の変更は反映されません。"
+                : "読み取り専用 — 開いた時点の原文です。編集用コピーは別のタブに作れます。"
         }
         return "原稿は新しいファイルにコピーを保存できます。元のファイルには書き込みません。"
     }

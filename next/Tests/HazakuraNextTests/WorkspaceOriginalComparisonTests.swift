@@ -192,6 +192,174 @@ struct WorkspaceOriginalComparisonTests {
         }
     }
 
+    @Test func opensCapturedDiskOnceAsSeparateReadOnlyTabEvenAfterAnotherDiskEdit() async throws {
+        try await withOriginal { url, baseline, session, documentID in
+            session.applyCommittedSource("手元の編集\n", to: documentID)
+            let capturedSource = "外部変更\r\n次の行\r最後の行\n"
+            let capturedBytes = Data([0xFE, 0xFF]) + (try #require(capturedSource.data(using: .utf16BigEndian)))
+            try capturedBytes.write(to: url, options: []) // Keep the file identity; only change its bytes.
+            while session.tabs.tabs.count < 7 {
+                let added = session.tabs.newTab()
+                try #require(added != nil)
+            }
+            let selectedDraft = session.tabs.select(documentID)
+            try #require(selectedDraft)
+            let oldTabs = session.tabs.tabs
+            let oldDraft = try #require(session.tabs.selectedTab)
+            let recoveryBefore = session.tabs.recoveryDrafts
+            let report = try await captureComparison(in: session, from: url)
+            try #require(report.comparison.diskStatus == .modified)
+            #expect(report.comparison.disk.identity == baseline.identity)
+            #expect(report.comparison.disk.originalBytes == capturedBytes)
+
+            let latestBytes = Data("比較後の外部変更\n".utf8)
+            try latestBytes.write(to: url, options: [])
+            #expect(session.canOpenComparedDisk(report.id))
+            #expect(session.comparisonReport?.id == report.id)
+            let openedID = try #require(session.openComparedDisk(report.id))
+
+            #expect(session.comparisonReport == nil)
+            #expect(session.isBusy == false)
+            #expect(session.tabs.selectedID == openedID)
+            #expect(session.tabs.tabs.count == 8)
+            #expect(session.tabs.tabs.filter { $0.id != openedID }.map(\.id) == oldTabs.map(\.id))
+            let opened = try #require(session.tabs.selectedTab)
+            let openedSnapshot = try #require(opened.selectedFile)
+            #expect(opened.isReadOnly)
+            #expect(WorkspaceSession.title(for: opened) == "比較時：\(baseline.name)")
+            #expect(opened.copyOrigin == nil)
+            #expect(opened.document.source == capturedSource)
+            #expect(openedSnapshot.originalBytes == capturedBytes)
+            #expect(openedSnapshot.format.encoding == .utf16BE)
+            #expect(openedSnapshot.format.lineEndings == .mixed)
+            #expect(openedSnapshot.version == report.comparison.disk.version)
+            #expect(try Data(contentsOf: url) == latestBytes)
+
+            for old in oldTabs {
+                let kept = try #require(session.tabs.tabs.first { $0.id == old.id })
+                #expect(kept.document.source == old.document.source)
+                #expect(kept.document.revision == old.document.revision)
+                #expect(kept.selectedFile?.version == old.selectedFile?.version)
+                #expect(kept.selectedFile?.originalBytes == old.selectedFile?.originalBytes)
+            }
+            let draft = try #require(session.tabs.tabs.first { $0.id == oldDraft.id })
+            let keptBaseline = try #require(draft.copyOrigin?.baseline)
+            #expect(draft.isReadOnly == false)
+            #expect(keptBaseline.version == baseline.version)
+            #expect(keptBaseline.originalBytes == baseline.originalBytes)
+            #expect(keptBaseline.format.encoding == .utf8BOM)
+            #expect(session.tabs.recoveryDrafts == recoveryBefore)
+
+            // Remove the read-only reference and return to the draft so neither capacity nor
+            // selection would prevent a replay if the report had not really been consumed.
+            let closedReference = session.tabs.requestCloseSelected()
+            try #require(closedReference == .closed)
+            let reselected = session.tabs.select(documentID)
+            try #require(reselected)
+            expectOpenRejected(in: session, requestedID: report.id, retainedReportID: nil)
+        }
+    }
+
+    @Test(arguments: [OriginalFileComparison.DiskStatus.unchanged, .differentIdentity])
+    func rejectsUnchangedAndUnrelatedDiskSnapshots(_ status: OriginalFileComparison.DiskStatus) async throws {
+        try await withOriginal { url, _, session, _ in
+            var comparisonURL = url
+            if status == .differentIdentity {
+                comparisonURL = url.deletingLastPathComponent().appending(path: "unrelated.md")
+                try Data("別ファイルです\n".utf8).write(to: comparisonURL)
+            }
+            let report = try await captureComparison(in: session, from: comparisonURL)
+            try #require(report.comparison.diskStatus == status)
+            expectOpenRejected(in: session, requestedID: report.id, retainedReportID: report.id)
+        }
+    }
+
+    enum OpenRejection: CaseIterable, Sendable {
+        case staleID, editedRevision, otherSelection, composing, full
+    }
+
+    @Test(arguments: OpenRejection.allCases)
+    func rejectsAnInapplicableModifiedReport(_ rejection: OpenRejection) async throws {
+        try await withOriginal { url, _, session, documentID in
+            let secondDraft: UUID?
+            if rejection == .otherSelection {
+                let readOnlyTab = session.tabs.tabs.first(where: \.isReadOnly)
+                let original = try #require(readOnlyTab)
+                let selectedOriginal = session.tabs.select(original.id)
+                try #require(selectedOriginal)
+                let copy = session.tabs.makeEditableCopyOfSelection()
+                let created: UUID = try #require(copy)
+                secondDraft = created
+                let reselected = session.tabs.select(documentID)
+                try #require(reselected)
+            } else {
+                secondDraft = nil
+            }
+            try Data("同じファイルの変更版\n".utf8).write(to: url, options: [])
+            var priorReportID: UUID? = nil
+            if rejection == .staleID {
+                let previous = try await captureComparison(in: session, from: url)
+                priorReportID = previous.id
+                session.dismissOriginalComparison(previous.id)
+            }
+            let report = try await captureComparison(in: session, from: url)
+            try #require(report.comparison.diskStatus == .modified)
+
+            switch rejection {
+            case .staleID:
+                try #require(priorReportID != report.id)
+            case .editedRevision:
+                // The exact same text at a later revision must not revalidate the report.
+                session.applyCommittedSource("比較の後に編集", to: documentID)
+                session.applyCommittedSource(report.comparison.draftSource, to: documentID)
+            case .otherSelection:
+                // An independent copy can share the baseline, text, and revision, but not the document ID.
+                let otherID = try #require(secondDraft)
+                let selectedOther = session.tabs.select(otherID)
+                try #require(selectedOther)
+            case .composing:
+                session.tabs.setComposing(true, in: documentID)
+                try #require(session.tabs.isComposing)
+            case .full:
+                while session.tabs.tabs.count < 8 {
+                    let added = session.tabs.newTab()
+                    try #require(added != nil)
+                }
+                let reselected = session.tabs.select(documentID)
+                try #require(reselected)
+            }
+            let requestedID: UUID
+            if rejection == .staleID {
+                requestedID = try #require(priorReportID)
+            } else {
+                requestedID = report.id
+            }
+            expectOpenRejected(in: session, requestedID: requestedID, retainedReportID: report.id)
+        }
+    }
+
+    private func captureComparison(in session: WorkspaceSession, from url: URL) async throws -> WorkspaceSession.ComparisonReport {
+        session.requestOriginalComparison()
+        let id = try #require(session.comparisonRequestID)
+        await session.readOriginalComparison(id) { try await SelectedTextFile.read(from: url) }
+        let report = try #require(session.comparisonReport)
+        try #require(report.id == id)
+        return report
+    }
+
+    private func expectOpenRejected(in session: WorkspaceSession, requestedID: UUID, retainedReportID: UUID?) {
+        let tabIDs = session.tabs.tabs.map(\.id)
+        let selectedID = session.tabs.selectedID
+        let recoveryBefore = session.tabs.recoveryDrafts
+        #expect(session.canOpenComparedDisk(requestedID) == false)
+        #expect(session.comparisonReport?.id == retainedReportID)
+        #expect(session.openComparedDisk(requestedID) == nil)
+        #expect(session.comparisonReport?.id == retainedReportID)
+        #expect(session.tabs.tabs.map(\.id) == tabIDs)
+        #expect(session.tabs.selectedID == selectedID)
+        #expect(session.tabs.recoveryDrafts == recoveryBefore)
+    }
+
     private func withOriginal(
         _ body: (URL, SelectedTextFile, WorkspaceSession, UUID) async throws -> Void
     ) async throws {

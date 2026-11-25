@@ -64,6 +64,8 @@ final class WorkspaceSession {
 
     struct ComparisonReport: Identifiable {
         let id: UUID
+        fileprivate let documentID: UUID
+        fileprivate let revision: UInt64
         let comparison: OriginalFileComparison
     }
 
@@ -159,10 +161,11 @@ final class WorkspaceSession {
         folderCatalogRequest != nil || activeFolderReadID != nil || folderCatalogReport != nil || folderEntryOpening != nil
     }
     var isBusy: Bool { pendingDiscard != nil || hasExclusiveOperation }
-    private var hasExclusiveOperation: Bool {
+    private var hasExclusiveOperation: Bool { comparisonReport != nil || hasOperationBesidesComparisonReport }
+    private var hasOperationBesidesComparisonReport: Bool {
         openRequest != nil || hasFolderCatalogOperation || saveCopyRequest != nil || exportRequest != nil ||
-            comparisonRequest != nil || readingComparisonID != nil || comparisonReport != nil ||
-            markdownPreview != nil || bookPreviewRequest != nil || assistReviewSample != nil || showsRecovery || isDiscarding
+            comparisonRequest != nil || readingComparisonID != nil || markdownPreview != nil || bookPreviewRequest != nil ||
+            assistReviewSample != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
     var canEditSource: Bool {
@@ -190,7 +193,10 @@ final class WorkspaceSession {
     }
 
     static func title(for tab: ScratchTabs.Tab) -> String {
-        tab.selectedFile?.name ?? tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
+        if let file = tab.selectedFile {
+            return tab.isComparisonSnapshot ? "比較時：\(file.name)" : file.name
+        }
+        return tab.copyOrigin.map { "\($0.name) のコピー" } ?? "原稿 \(tab.number)"
     }
 
     var canPreviewBook: Bool { !isBusy && !tabs.isComposing && tabs.tabs.count >= 2 }
@@ -311,6 +317,24 @@ final class WorkspaceSession {
         comparisonReport = nil
     }
 
+    func canOpenComparedDisk(_ id: UUID) -> Bool {
+        guard let report = comparisonReport, report.id == id,
+              report.comparison.diskStatus == .modified, pendingDiscard == nil,
+              !hasOperationBesidesComparisonReport, tabs.canCreateTab,
+              let tab = tabs.selectedTab else { return false }
+        return tab.id == report.documentID && tab.document.revision == report.revision
+    }
+
+    /// Consumes the current comparison only when the captured disk version opens. No I/O or draft update.
+    @discardableResult
+    func openComparedDisk(_ id: UUID) -> UUID? {
+        guard !Task.isCancelled, canOpenComparedDisk(id), let disk = comparisonReport?.comparison.disk,
+              let opened = tabs.openComparisonSnapshot(disk) else { return nil }
+        comparisonReport = nil
+        fileNotice = "比較時に読み取ったディスク版を別タブに開きました。編集用コピーは変更していません。"
+        return opened
+    }
+
     /// The caller handles one explicit picker selection and releases its scope before returning the snapshot.
     func readOriginalComparison(_ id: UUID, using readSelected: @MainActor () async throws -> SelectedTextFile?) async {
         guard let request = comparisonRequest, request.id == id, readingComparisonID == nil else { return }
@@ -327,9 +351,10 @@ final class WorkspaceSession {
                 fileNotice = "手元の原稿が変わったため、比較をやり直してください。"
                 return
             }
-            comparisonReport = ComparisonReport(id: id, comparison: OriginalFileComparison(
-                baseline: request.baseline, disk: disk, draftSource: request.draftSource
-            ))
+            comparisonReport = ComparisonReport(
+                id: id, documentID: request.documentID, revision: request.revision,
+                comparison: OriginalFileComparison(baseline: request.baseline, disk: disk, draftSource: request.draftSource)
+            )
         } catch is CancellationError {
             // Cancelling the picker or the read must not publish a comparison.
         } catch {
