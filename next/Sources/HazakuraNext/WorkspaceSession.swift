@@ -200,6 +200,28 @@ final class WorkspaceSession {
             assistReviewSample != nil || lineJumpRequest != nil || sourceSearchRequest != nil || showsRecovery || isDiscarding
     }
     var canAddTab: Bool { !isBusy && tabs.canCreateTab }
+
+    enum TabDirection: Int { case previous = -1, next = 1 }
+
+    var canChangeTab: Bool {
+        guard !isBusy, !tabs.isComposing, window?.attachedSheet == nil else { return false }
+        // Consult the native editor as well as the model, even before the IME callback reaches it.
+        return (window?.firstResponder as? NSTextView)?.hasMarkedText() != true
+    }
+
+    var canCycleTabs: Bool { tabs.tabs.count > 1 && tabs.selectedID != nil && canChangeTab }
+
+    func selectTab(_ id: UUID) {
+        guard canChangeTab else { return }
+        tabs.select(id)
+    }
+
+    func cycleTab(_ direction: TabDirection) {
+        guard canCycleTabs, let index = tabs.tabs.firstIndex(where: { $0.id == tabs.selectedID }) else { return }
+        let count = tabs.tabs.count
+        tabs.select(tabs.tabs[(index + direction.rawValue + count) % count].id)
+    }
+
     var canEditSource: Bool {
         !isDiscarding && !hasFolderCatalogOperation && saveCopyRequest == nil && exportRequest == nil && comparisonRequest == nil &&
             readingComparisonID == nil && comparisonReport == nil && markdownPreview == nil && bookPreviewRequest == nil &&

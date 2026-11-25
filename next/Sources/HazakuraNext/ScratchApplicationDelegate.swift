@@ -182,6 +182,10 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
 
     // Keep standard text actions on the responder chain; app-specific actions share the window's session.
     private func installMenus() {
+        NSApp.mainMenu = makeMainMenu()
+    }
+
+    func makeMainMenu() -> NSMenu {
         let bar = NSMenu()
         let app = addMenu("Hazakura Editor Next", to: bar)
         app.addItem(withTitle: "Hazakura Editor Next を隠す", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
@@ -223,9 +227,13 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
             item.target = self
             item.tag = choice.rawValue
         }
+        view.addItem(.separator())
+        // AppKit delivers Shift-Tab as NSBackTabCharacter, not a plain Tab with Shift.
+        addCommand("前のタブ", #selector(selectPreviousTab(_:)), "\u{19}", to: view, modifiers: [.control, .shift])
+        addCommand("次のタブ", #selector(selectNextTab(_:)), "\t", to: view, modifiers: .control)
         let development = addMenu("開発用", to: bar)
         addCommand("提案差分の表示サンプル…", #selector(showAssistReviewSample(_:)), "", to: development)
-        NSApp.mainMenu = bar
+        return bar
     }
 
     private func addMenu(_ title: String, to bar: NSMenu) -> NSMenu {
@@ -255,6 +263,8 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
     }
 
     @objc private func newTab(_ sender: Any?) { menuSession?.newTab() }
+    @objc private func selectPreviousTab(_ sender: Any?) { menuSession?.cycleTab(.previous) }
+    @objc private func selectNextTab(_ sender: Any?) { menuSession?.cycleTab(.next) }
     @objc private func openFile(_ sender: Any?) { menuSession?.requestOpen() }
     @objc private func showFolderCatalog(_ sender: Any?) { menuSession?.requestFolderCatalog() }
     @objc private func makeEditableCopy(_ sender: Any?) { menuSession?.makeEditableCopy() }
@@ -298,6 +308,7 @@ final class ScratchApplicationDelegate: NSObject, NSApplicationDelegate, NSWindo
         }
         return switch item.action {
         case #selector(newTab(_:)), #selector(openFile(_:)): menuSession?.canAddTab == true
+        case #selector(selectPreviousTab(_:)), #selector(selectNextTab(_:)): menuSession?.canCycleTabs == true
         case #selector(showFolderCatalog(_:)): menuSession?.canRequestFolderCatalog == true
         case #selector(makeEditableCopy(_:)): menuSession?.canMakeEditableCopy == true
         case #selector(compareOriginal(_:)): menuSession?.canCompareOriginal == true

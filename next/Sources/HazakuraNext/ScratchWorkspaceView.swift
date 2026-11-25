@@ -471,7 +471,7 @@ struct ScratchWorkspaceView: View {
         let isSelected = session.tabs.selectedID == tab.id
         let title = WorkspaceSession.title(for: tab)
         return Button {
-            if !session.isBusy { session.tabs.select(tab.id) }
+            session.selectTab(tab.id)
         } label: {
             HStack(spacing: 4) {
                 if tab.isReadOnly { Image(systemName: "lock").accessibilityHidden(true) }
@@ -483,7 +483,7 @@ struct ScratchWorkspaceView: View {
         .tint(isSelected ? Color.accentColor : nil)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .accessibilityValue(tab.isReadOnly ? "読み取り専用" : "")
-        .disabled(isSelected || session.tabs.isComposing)
+        .disabled(isSelected || !session.canChangeTab)
     }
 
     private var focusedTabBar: some View {
