@@ -25,7 +25,6 @@ struct AssistReviewSampleView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var review: AssistProposalFlow.Review?
     @State private var failed = false
-    @State private var showScalarCodes = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -35,7 +34,7 @@ struct AssistReviewSampleView: View {
             Text("内蔵の合成テキストだけを表示します。編集中の原稿は使わず、AIによる生成や文書への反映は行いません。")
                 .foregroundStyle(.secondary)
             if let review {
-                reviewBody(review)
+                AssistReviewDiff(review: review, boundaryNote: "行番号は選択範囲内です。この例では、末尾の改行を削除すると、選択範囲の最後の行が直後の行とつながります。")
             } else if failed {
                 ContentUnavailableView("サンプルを表示できません", systemImage: "exclamationmark.triangle")
             } else {
@@ -63,12 +62,19 @@ struct AssistReviewSampleView: View {
             }
         }
     }
+}
 
-    private func reviewBody(_ review: AssistProposalFlow.Review) -> some View {
+/// A read-only projection; the containing surface owns any actions and their authorization.
+struct AssistReviewDiff: View {
+    let review: AssistProposalFlow.Review
+    let boundaryNote: String
+    @State private var showScalarCodes = false
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("選択範囲だけの差分（変更前 \(review.before.utf8.count) バイト・変更後 \(review.after.utf8.count) バイト）")
                 .font(.subheadline.weight(.medium))
-            Text("行番号は選択範囲内です。この例では、末尾の改行を削除すると、選択範囲の最後の行が直後の行とつながります。")
+            Text(verbatim: boundaryNote)
                 .font(.callout)
             Text(#"半角空白は \s、タブは \t、バックスラッシュは \\ で表示します。見えにくい文字は \u{…} で示します。"#)
                 .font(.callout)

@@ -4,7 +4,19 @@ import HazakuraNextCore
 @main
 struct HazakuraNextApp {
     @MainActor static func main() {
-        let source = ProcessInfo.processInfo.arguments.contains("--long-sample")
+        let arguments = ProcessInfo.processInfo.arguments.dropFirst()
+        if Bundle.main.bundleIdentifier == "dev.hazakura.editor.next.assist-demo.dev" {
+            // The demo has its own delegate and skips even the lookup/lease of the recovery directory.
+            run(delegate: AssistReviewDemoDelegate())
+            return
+        }
+        if arguments.contains("--assist-review-demo") {
+            // Never let a direct invocation of the ordinary bundle fall through to recovery.
+            let message = "採用デモは専用バンドルか開発用起動スクリプトで開いてください。\n"
+            FileHandle.standardError.write(Data(message.utf8))
+            exit(EXIT_FAILURE)
+        }
+        let source = arguments.contains("--long-sample")
             ? String(repeating: sample + "\n\n", count: 1_500)
             : sample
         do {
@@ -24,8 +36,11 @@ struct HazakuraNextApp {
     @MainActor private static func run(
         source: String, recovery: RecoveryCheckpointQueue?, recoveryUnavailable: Bool = false
     ) {
+        run(delegate: ScratchApplicationDelegate(source: source, recovery: recovery, recoveryUnavailable: recoveryUnavailable))
+    }
+
+    @MainActor private static func run(delegate: any NSApplicationDelegate) {
         let application = NSApplication.shared
-        let delegate = ScratchApplicationDelegate(source: source, recovery: recovery, recoveryUnavailable: recoveryUnavailable)
         application.setActivationPolicy(.regular)
         application.delegate = delegate
         withExtendedLifetime(delegate) { application.run() }
