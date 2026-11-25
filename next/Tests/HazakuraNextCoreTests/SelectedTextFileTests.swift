@@ -180,6 +180,26 @@ struct SelectedTextFileTests {
         }
     }
 
+    @Test func refusesDatalessMetadataBeforeReadingAnyBodyBytes() async throws {
+        try await withFixture { folder in
+            let url = folder.appending(path: "draft.txt")
+            try Data("temporary fixture".utf8).write(to: url)
+            let fd = url.withUnsafeFileSystemRepresentation { path in
+                path.map { Darwin.open($0, O_RDONLY | O_CLOEXEC) } ?? -1
+            }
+            try #require(fd >= 0)
+            defer { _ = Darwin.close(fd) }
+            var metadata = stat()
+            try #require(fstat(fd, &metadata) == 0)
+            // Simulate the flag without accessing an actual File Provider or altering the file.
+            metadata.st_flags |= UInt32(SF_DATALESS)
+            #expect(throws: SelectedTextFile.ReadError.notDownloaded) {
+                try SelectedTextFile.readPinned(fd, name: "draft.txt", before: metadata) { _ in }
+            }
+            #expect(lseek(fd, 0, SEEK_CUR) == 0)
+        }
+    }
+
     @Test func rejectsSymbolicLinksInLeafAndParentPaths() async throws {
         try await withFixture { folder in
             let real = folder.appending(path: "real", directoryHint: .isDirectory)

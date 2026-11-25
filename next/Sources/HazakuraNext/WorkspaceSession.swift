@@ -740,6 +740,7 @@ final class WorkspaceSession {
         case .unsupportedEncoding: "対応する文字コードはUTF-8とBOM付きUTF-16です。"
         case .nonTextControls: "テキストとして扱えない制御文字が含まれています。"
         case .changedWhileReading: "読み込み中にファイルが更新されました。もう一度選んでください。"
+        case .notDownloaded: "このファイルの本文はまだダウンロードされていません。Mac上にあるファイルを選んでください。"
         case .notRegularFile, .invalidLocation: "通常のテキストファイルを選んでください。"
         case .accessDenied, nil: "ファイルを読み取れません。リンク先ではなくファイルそのものを選び、アクセス権も確認してください。"
         }

@@ -6,7 +6,7 @@ public struct SelectedTextFile: Sendable {
     public static let byteLimit = 2 * 1024 * 1024
 
     public enum ReadError: Error, Equatable {
-        case invalidLocation, accessDenied, notRegularFile, tooLarge
+        case invalidLocation, accessDenied, notRegularFile, notDownloaded, tooLarge
         case invalidUTF8, invalidUTF16, unsupportedEncoding, nonTextControls, changedWhileReading
     }
 
@@ -88,10 +88,19 @@ public struct SelectedTextFile: Sendable {
         guard url.isFileURL, host.isEmpty || host == "localhost", path.hasPrefix("/"),
               !path.utf8.contains(0) else { throw ReadError.invalidLocation }
 
-        let fd = url.withUnsafeFileSystemRepresentation { pathname in
+        let fd = try url.withUnsafeFileSystemRepresentation { pathname in
             guard let pathname else { return -1 as Int32 }
-            // O_NOFOLLOW_ANY applies to the whole path. NONBLOCK avoids waiting for a FIFO;
-            // the kernel descriptor (not the filename or picker filter) decides its type.
+            var named = stat()
+            guard fstatat(AT_FDCWD, pathname, &named, AT_SYMLINK_NOFOLLOW_ANY) == 0 else {
+                throw ReadError.accessDenied
+            }
+            // Avoid opening known placeholders, and never follow a leaf symlink.
+            guard named.st_mode & S_IFMT != S_IFLNK else { throw ReadError.accessDenied }
+            guard named.st_mode & S_IFMT == S_IFREG else { throw ReadError.notRegularFile }
+            try requireDownloaded(named)
+            try Task.checkCancellation()
+            // The name can change after the metadata check. Recheck the pinned descriptor;
+            // use NOFOLLOW_ANY for the whole path and NONBLOCK in case of a raced FIFO.
             return Darwin.open(pathname, O_RDONLY | O_NOFOLLOW_ANY | O_NONBLOCK | O_NOCTTY | O_CLOEXEC)
         }
         guard fd >= 0 else { throw ReadError.accessDenied }
@@ -120,6 +129,7 @@ public struct SelectedTextFile: Sendable {
         _ fd: Int32, name: String, before: stat, revalidate: (Version) throws -> Void
     ) throws -> SelectedTextFile {
         guard before.st_mode & S_IFMT == S_IFREG else { throw ReadError.notRegularFile }
+        try requireDownloaded(before)
         guard before.st_size >= 0, before.st_size <= byteLimit else { throw ReadError.tooLarge }
 
         var bytes = Data()
@@ -156,6 +166,10 @@ public struct SelectedTextFile: Sendable {
         try revalidate(version)
         try Task.checkCancellation()
         return SelectedTextFile(name: name, source: source, format: format, originalBytes: bytes, version: version)
+    }
+
+    private static func requireDownloaded(_ info: stat) throws {
+        guard info.st_flags & UInt32(SF_DATALESS) == 0 else { throw ReadError.notDownloaded }
     }
 
     private static func decode(_ bytes: Data) throws -> (String, Encoding) {

@@ -239,6 +239,8 @@ struct ScratchWorkspaceView: View {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
         panel.resolvesAliases = false
+        panel.canDownloadUbiquitousContents = false
+        panel.canResolveUbiquitousConflicts = false
         if comparing {
             panel.title = "比較する原本を選ぶ"
             panel.message = "開いた時点と比べるファイルを選び直してください。ファイルは読み取るだけです。"
