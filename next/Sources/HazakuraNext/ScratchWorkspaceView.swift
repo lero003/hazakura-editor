@@ -9,9 +9,12 @@ struct ScratchWorkspaceView: View {
     @State private var openPanel: NSOpenPanel?
     @State private var savePanel: NSSavePanel?
 
+    private enum SavePurpose { case copy, htmlExport }
+
     var body: some View {
         let openID = session.openRequest
         let saveID = session.saveCopyRequest?.id
+        let exportID = session.htmlExportRequest?.id
         let compareID = session.comparisonRequestID
         let reportID = session.comparisonReport?.id
         let previewID = session.markdownPreview?.id
@@ -36,7 +39,22 @@ struct ScratchWorkspaceView: View {
             if let openID { await openSelectedFile(openID) }
         }
         .task(id: saveID) {
-            if let saveID { await saveSelectedCopy(saveID) }
+            if let saveID {
+                defer { session.cancelSaveCopy(saveID) }
+                guard session.saveCopyRequest?.id == saveID else { return }
+                await withSelectedDestination(for: .copy) { destination in
+                    await session.writeRequestedCopy(saveID, to: destination)
+                }
+            }
+        }
+        .task(id: exportID) {
+            if let exportID {
+                defer { session.cancelHTMLExport(exportID) }
+                guard session.htmlExportRequest?.id == exportID else { return }
+                await withSelectedDestination(for: .htmlExport) { destination in
+                    await session.writeRequestedHTMLExport(exportID, to: destination)
+                }
+            }
         }
         .task(id: compareID) {
             if let compareID {
@@ -46,13 +64,16 @@ struct ScratchWorkspaceView: View {
             }
         }
         .onDisappear {
-            let panel = openPanel
+            let open = openPanel
+            let save = savePanel
             session.openRequest = nil
             if let id = session.comparisonRequestID { session.cancelOriginalComparison(id) }
             if let id = session.markdownPreview?.id { session.dismissMarkdownPreview(id) }
+            if let id = session.htmlExportRequest?.id { session.cancelHTMLExport(id) }
             openPanel = nil
-            panel?.cancel(nil)
-            savePanel?.cancel(nil)
+            savePanel = nil
+            open?.cancel(nil)
+            save?.cancel(nil)
         }
         .sheet(item: Binding(get: { session.comparisonReport }, set: { report in
             if report == nil, let reportID { session.dismissOriginalComparison(reportID) }
@@ -88,6 +109,7 @@ struct ScratchWorkspaceView: View {
         if session.tabs.isComposing { return "タブ操作や終了の前に、変換を確定またはキャンセルしてください。" }
         if session.openRequest != nil { return "ファイルを開いています…" }
         if session.saveCopyRequest != nil { return "新しいファイルにコピーを保存しています…" }
+        if session.htmlExportRequest != nil { return "新しいファイルにHTMLを書き出しています…" }
         if session.comparisonRequestID != nil { return "比較するファイルを選び直してください。" }
         if let notice = session.exitNotice { return notice }
         if session.isDiscarding { return "復旧記録を確認しています…" }
@@ -143,25 +165,33 @@ struct ScratchWorkspaceView: View {
         return try await SelectedTextFile.read(from: url)
     }
 
-    private func saveSelectedCopy(_ requestID: UUID) async {
-        defer { session.cancelSaveCopy(requestID) }
-        guard !Task.isCancelled, session.saveCopyRequest?.id == requestID,
+    private func withSelectedDestination(for purpose: SavePurpose, write: @MainActor (URL) async -> Void) async {
+        guard !Task.isCancelled, savePanel == nil,
               let window = session.window, window.isKeyWindow, window.attachedSheet == nil else { return }
         let panel = NSSavePanel()
-        panel.title = "原稿のコピーを保存"
-        panel.message = "既存のファイルは置き換えません。新しいファイル名を選んでください。"
-        panel.prompt = "コピーを保存"
-        panel.nameFieldStringValue = "原稿-コピー.md"
-        panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
+        switch purpose {
+        case .copy:
+            panel.title = "原稿のコピーを保存"
+            panel.message = "既存のファイルは置き換えません。新しいファイル名を選んでください。"
+            panel.prompt = "コピーを保存"
+            panel.nameFieldStringValue = "原稿-コピー.md"
+            panel.allowedContentTypes = [.plainText] + [UTType(filenameExtension: "md")].compactMap { $0 }
+        case .htmlExport:
+            panel.title = "HTMLを書き出す"
+            panel.message = "確定済みの原稿からHTMLを作ります。既存のファイルは置き換えません。"
+            panel.prompt = "書き出す"
+            panel.nameFieldStringValue = "原稿.html"
+            panel.allowedContentTypes = [.html]
+        }
         panel.canCreateDirectories = false
         savePanel = panel
         let answer = await panel.beginSheetModal(for: window)
-        savePanel = nil
+        if savePanel === panel { savePanel = nil }
         guard answer == .OK, let destination = panel.url else { return }
         // The panel grants this choice only for the current write. Do not store a bookmark or path.
         defer { destination.stopAccessingSecurityScopedResource() }
         guard !Task.isCancelled else { return }
-        await session.writeRequestedCopy(requestID, to: destination)
+        await write(destination)
     }
 
     private var tabBar: some View {
@@ -238,6 +268,7 @@ struct ScratchWorkspaceView: View {
             .disabled(!session.tabs.canCreateTab)
 
             Button {
+                guard !session.isBusy else { return }
                 if case let .confirm(ticket) = session.tabs.requestCloseSelected() {
                     session.pendingDiscard = ticket
                 }
@@ -256,7 +287,9 @@ struct ScratchWorkspaceView: View {
     private func tabButton(for tab: ScratchTabs.Tab) -> some View {
         let isSelected = session.tabs.selectedID == tab.id
         let title = WorkspaceSession.title(for: tab)
-        return Button { session.tabs.select(tab.id) } label: {
+        return Button {
+            if !session.isBusy { session.tabs.select(tab.id) }
+        } label: {
             HStack(spacing: 4) {
                 if tab.isReadOnly { Image(systemName: "lock").accessibilityHidden(true) }
                 Text(verbatim: title).lineLimit(1)

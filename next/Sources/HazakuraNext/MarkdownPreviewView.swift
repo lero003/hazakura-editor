@@ -223,10 +223,10 @@ private struct MarkdownPreviewReadingPane: View {
                     }
                 }
                 Spacer()
-                Toggle("章ごとに読む", isOn: Binding(
-                    get: { selectedChapterIndex != nil }, set: showChapterReading
-                ))
-                .help("見出しレベル1・2を区切りに、1章ずつ表示します。")
+                Button(selectedChapterIndex == nil ? "章ごとに読む" : "全文を表示") {
+                    showChapterReading(selectedChapterIndex == nil)
+                }
+                .help("全文表示と、見出しレベル1・2で区切る章表示を切り替えます。")
             }
             if let selectedChapterIndex {
                 chapterNavigation(at: selectedChapterIndex)
