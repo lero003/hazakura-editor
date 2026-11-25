@@ -273,7 +273,9 @@ final class WorkspaceSession {
     }
     var canPreviewMarkdown: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
     var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
-    var canExport: Bool { !isBusy && !tabs.isComposing && tabs.selectedTab != nil }
+    var canExport: Bool {
+        !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil && tabs.selectedTab != nil
+    }
 
     func requestAssistReviewSample() {
         guard canOpenAssistReviewSample else { return }
@@ -379,7 +381,7 @@ final class WorkspaceSession {
     /// Reserve the confirmed book; selecting a new destination is a separate action on the parent window.
     func prepareBookEPUB(_ id: UUID) -> Bool {
         guard bookPreviewRequest?.id == id, exportRequest == nil, let book = confirmedBookInput,
-              !tabs.isComposing, bookVersionsMatch(book) else { return false }
+              !tabs.isComposing, !hasNativeMarkedText, bookVersionsMatch(book) else { return false }
         fileNotice = nil
         exitNotice = nil
         exportRequest = ExportRequest(format: .epub, input: .book(book), phase: .waitingForDestination)
@@ -933,13 +935,15 @@ final class WorkspaceSession {
     }
 
     private func validateExportSource(_ request: ExportRequest) -> Bool {
-        if !tabs.isComposing {
-            switch request.input {
-            case .document(let id, let revision, _):
-                if let selected = tabs.selectedTab, selected.id == id, selected.document.revision == revision { return true }
-            case .book(let book):
-                if bookVersionsMatch(book) { return true }
-            }
+        guard !tabs.isComposing, !hasNativeMarkedText else {
+            fileNotice = "原稿の変換を確定またはキャンセルしてから、もう一度\(request.format.name)を書き出してください。"
+            return false
+        }
+        switch request.input {
+        case .document(let id, let revision, _):
+            if let selected = tabs.selectedTab, selected.id == id, selected.document.revision == revision { return true }
+        case .book(let book):
+            if bookVersionsMatch(book) { return true }
         }
         fileNotice = "原稿の状態が変わったため、\(request.format.name)を書き出していません。もう一度お試しください。"
         return false

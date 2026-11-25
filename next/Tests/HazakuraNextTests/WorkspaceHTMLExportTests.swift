@@ -1,3 +1,4 @@
+import AppKit
 import Darwin
 @testable import HazakuraNext
 import Foundation
@@ -64,6 +65,123 @@ struct WorkspaceHTMLExportTests {
         await recovery.waitForCurrentWorker()
         #expect(await probe.checkpoints == before)
         #expect(session.fileNotice?.contains("書き出しました") == true)
+    }
+
+    @Test func nativeCompositionBlocksRequestsForEveryExportFormat() throws {
+        let (session, window, view) = try nativeExportFixture()
+        defer { window.close() }
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        #expect(!session.canExport)
+        for format in [WorkspaceSession.ExportFormat.html, .pdf, .epub] {
+            session.requestExport(format)
+            #expect(session.exportRequest == nil)
+            if let id = session.exportRequest?.id { session.cancelExport(id) }
+        }
+        #expect(view.hasMarkedText())
+        #expect(window.firstResponder === view)
+    }
+
+    @Test func nativeCompositionBeforeTheDestinationAndRenderRejectsTheExport() async throws {
+        let (session, window, view) = try nativeExportFixture()
+        defer { window.close() }
+        session.requestExport(.html)
+        let request = try #require(session.exportRequest?.id)
+        #expect(session.exportDestinationRequest(request) != nil)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+
+        #expect(session.exportDestinationRequest(request) == nil)
+        await session.writeRequestedExport(request, to: destination, using: .init(renderHTML: unexpectedRender, writeHTML: unexpectedWrite))
+        #expect(!session.isBusy)
+        #expect(session.fileNotice != nil)
+        #expect(view.hasMarkedText())
+    }
+
+    @Test func nativeCompositionDuringRenderPreventsPublishingTheCapturedOutput() async throws {
+        let (session, window, view) = try nativeExportFixture()
+        defer { window.close() }
+        let id = try #require(session.tabs.selectedID)
+        session.applyCommittedSource("# 確定原稿\r\n", to: id)
+        let drafts = session.tabs.recoveryDrafts
+        let suspension = ExportSuspension()
+        let probe = HTMLExportProbe()
+        session.requestExport(.html)
+        let request = try #require(session.exportRequest?.id)
+        let task = Task { @MainActor in
+            await session.writeRequestedExport(request, to: destination, using: .init(renderHTML: { source in
+                await probe.recordSource(source)
+                await suspension.pause()
+                return "<p>確定原稿</p>"
+            }, writeHTML: { await probe.recordWrite($0, $1) }))
+            suspension.resume()
+        }
+        await suspension.waitForPause()
+        markText(in: view)
+        #expect(view.hasMarkedText() && !session.tabs.isComposing)
+        let ranges = [view.selectedRange(), view.markedRange()]
+        suspension.resume()
+        await task.value
+        #expect(await probe.sources == [Data("# 確定原稿\r\n".utf8)])
+        #expect(await probe.writes.isEmpty)
+        #expect(session.fileNotice?.contains("変換") == true)
+        #expect(!session.isBusy)
+        #expect(session.tabs.selectedID == id)
+        #expect(session.tabs.recoveryDrafts == drafts)
+        #expect(view.hasMarkedText())
+        #expect([view.selectedRange(), view.markedRange()] == ranges)
+        #expect(window.firstResponder === view)
+    }
+
+    @Test func nativeCompositionBlocksBookExportHandoffAndDestinationSelection() throws {
+        let (session, window, view) = try nativeExportFixture()
+        defer { window.close() }
+        let first = try #require(session.tabs.selectedID)
+        session.newTab()
+        let second = try #require(session.tabs.selectedID)
+        session.requestBookPreview()
+        let preview = try #require(session.bookPreviewRequest?.id)
+        try #require(session.confirmBookPreview(preview, selected: [first, second]) != nil)
+
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        #expect(!session.prepareBookEPUB(preview))
+        #expect(session.bookPreviewRequest?.id == preview)
+        #expect(session.exportRequest == nil)
+
+        view.unmarkText()
+        try #require(session.prepareBookEPUB(preview))
+        let request = try #require(session.exportRequest?.id)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        session.startPickingBookExport(request)
+        #expect(session.exportPickerID == nil)
+        #expect(!session.isBusy)
+        #expect(session.fileNotice?.contains("変換") == true)
+        #expect(view.hasMarkedText())
+    }
+
+    private func nativeExportFixture() throws -> (WorkspaceSession, NSWindow, NSTextView) {
+        _ = NSApplication.shared
+        let window = ExportTestWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                                      styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        let session = WorkspaceSession(source: "# 原稿")
+        session.window = window
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        return (session, window, view)
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
+    }
+
+    // Exercise the post-render guard with a real first responder, without ordering a window on screen.
+    private final class ExportTestWindow: NSWindow {
+        override var isVisible: Bool { true }
     }
 
     @Test func noRequestDuringCompositionOrAnotherOperationOrWithNoTab() throws {
