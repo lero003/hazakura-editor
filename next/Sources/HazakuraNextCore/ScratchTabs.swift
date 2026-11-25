@@ -7,6 +7,7 @@ public struct ScratchTabs {
         public fileprivate(set) var document: ScratchDocument
         public let number: Int
         public let selectedFile: SelectedTextFile?
+        let recoveryID: UUID?
         public var id: UUID { document.id }
         public var isReadOnly: Bool { selectedFile != nil }
 
@@ -14,6 +15,11 @@ public struct ScratchTabs {
         var editedScratchRevision: UInt64? {
             let revision = document.revision
             return !isReadOnly && revision != 0 ? revision : nil
+        }
+
+        var recoveryDraft: RecoveryDraft? {
+            guard let recoveryID, let revision = editedScratchRevision else { return nil }
+            return RecoveryDraft(id: recoveryID, revision: revision, source: document.source)
         }
     }
 
@@ -37,27 +43,36 @@ public struct ScratchTabs {
     private var nextNumber = 2
 
     public init(source: String) {
-        let tab = Tab(document: ScratchDocument(source: source), number: 1, selectedFile: nil)
+        let tab = Tab(document: ScratchDocument(source: source), number: 1, selectedFile: nil, recoveryID: UUID())
         tabs = [tab]
         selectedID = tab.id
     }
 
     public var selectedTab: Tab? { tabs.first { $0.id == selectedID } }
     public var canCreateTab: Bool { !isComposing && tabs.count < Self.limit }
+    public var recoveryDrafts: [RecoveryDraft] { tabs.compactMap(\.recoveryDraft) }
 
     @discardableResult
     public mutating func newTab() -> UUID? {
-        appendTab(source: "", selectedFile: nil)
+        appendTab(ScratchDocument(source: ""), selectedFile: nil)
     }
 
     @discardableResult
     public mutating func openReadOnly(_ file: SelectedTextFile) -> UUID? {
-        appendTab(source: file.source, selectedFile: file)
+        appendTab(ScratchDocument(source: file.source), selectedFile: file)
     }
 
-    private mutating func appendTab(source: String, selectedFile: SelectedTextFile?) -> UUID? {
+    /// Opens an independent unsaved copy. The stored candidate is not consumed, reused or modified.
+    @discardableResult
+    public mutating func restoreDraft(_ draft: RecoveryDraft) -> UUID? {
+        guard draft.revision > 0, draft.source.utf8.count <= RecoveryDraft.sourceByteLimit else { return nil }
+        return appendTab(ScratchDocument(recoveredSource: draft.source), selectedFile: nil)
+    }
+
+    private mutating func appendTab(_ document: ScratchDocument, selectedFile: SelectedTextFile?) -> UUID? {
         guard canCreateTab else { return nil }
-        let tab = Tab(document: ScratchDocument(source: source), number: nextNumber, selectedFile: selectedFile)
+        let tab = Tab(document: document, number: nextNumber, selectedFile: selectedFile,
+                      recoveryID: selectedFile == nil ? UUID() : nil)
         nextNumber += 1
         tabs.append(tab)
         selectedID = tab.id
@@ -71,9 +86,15 @@ public struct ScratchTabs {
         return true
     }
 
-    public mutating func applyCommittedSource(_ source: String, to id: UUID) {
-        guard let index = tabs.firstIndex(where: { $0.id == id }), !tabs[index].isReadOnly else { return }
+    /// Accepts only the final buffer from TextKit's committed-source callback, never marked text.
+    /// AppKit can report that commit before its composition-end notification.
+    @discardableResult
+    public mutating func applyCommittedSource(_ source: String, to id: UUID) -> RecoveryDraft? {
+        guard let index = tabs.firstIndex(where: { $0.id == id }), !tabs[index].isReadOnly else { return nil }
+        let revision = tabs[index].document.revision
         tabs[index].document.replaceSource(source)
+        guard revision != tabs[index].document.revision else { return nil }
+        return tabs[index].recoveryDraft
     }
 
     public mutating func setComposing(_ composing: Bool, in id: UUID) {
