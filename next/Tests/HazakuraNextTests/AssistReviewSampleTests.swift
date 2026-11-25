@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 @testable import HazakuraNext
 import HazakuraNextCore
@@ -62,6 +63,77 @@ struct AssistReviewSampleTests {
         #expect(!session.canEditSource)
         session.requestMarkdownPreview()
         #expect(session.markdownPreview == nil)
+    }
+
+    @Test func sampleDoesNotInterruptNativeCompositionBeforeTheModelIsNotified() throws {
+        let session = WorkspaceSession(source: "")
+        let documentID = try #require(session.tabs.selectedID)
+        let source = "か\u{3099}\r\n確定済みの原稿"
+        session.applyCommittedSource(source, to: documentID)
+        let drafts = session.tabs.recoveryDrafts
+        let frame = NSRect(x: 0, y: 0, width: 300, height: 200)
+        let window = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        let editor = NSTextView(frame: frame)
+        editor.string = source
+        window.contentView = editor
+        try #require(window.makeFirstResponder(editor))
+        session.window = window
+        editor.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                             replacementRange: NSRange(location: NSNotFound, length: 0))
+        try #require(editor.hasMarkedText() && !session.tabs.isComposing)
+        let selectedRange = editor.selectedRange()
+        let markedRange = editor.markedRange()
+
+        #expect(!session.canOpenAssistReviewSample)
+        session.requestAssistReviewSample()
+        #expect(session.assistReviewSample == nil)
+        #expect(session.canEditSource)
+        #expect(window.firstResponder === editor)
+        #expect(editor.selectedRange() == selectedRange && editor.markedRange() == markedRange)
+        #expect(session.tabs.recoveryDrafts == drafts)
+
+        editor.unmarkText()
+        editor.string = source
+        #expect(session.canOpenAssistReviewSample)
+        #expect(session.assistReviewSample == nil)
+        session.requestAssistReviewSample()
+        let sample = try #require(session.assistReviewSample)
+        session.dismissAssistReviewSample(sample.id)
+        #expect(session.tabs.selectedID == documentID)
+        #expect(session.tabs.selectedTab?.document.source.utf8.elementsEqual(source.utf8) == true)
+        #expect(session.tabs.recoveryDrafts == drafts)
+    }
+
+    @Test func sampleWaitsUntilThePreviousNativeSheetHasDetached() throws {
+        let session = WorkspaceSession(source: "合成原稿")
+        let frame = NSRect(x: 0, y: 0, width: 300, height: 200)
+        let window = SheetStateWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        let sheet = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        sheet.isReleasedWhenClosed = false
+        defer { window.close(); sheet.close() }
+        session.window = window
+        session.requestMarkdownPreview()
+        let preview = try #require(session.markdownPreview)
+        window.simulatedSheet = sheet
+        session.dismissMarkdownPreview(preview.id)
+        try #require(!session.isBusy && window.attachedSheet === sheet)
+
+        #expect(!session.canOpenAssistReviewSample)
+        session.requestAssistReviewSample()
+        #expect(session.assistReviewSample == nil)
+        window.simulatedSheet = nil
+        #expect(session.canOpenAssistReviewSample)
+        #expect(session.assistReviewSample == nil)
+        session.requestAssistReviewSample()
+        #expect(session.assistReviewSample != nil)
+    }
+
+    private final class SheetStateWindow: NSWindow {
+        var simulatedSheet: NSWindow?
+        override var attachedSheet: NSWindow? { simulatedSheet }
     }
 
     @Test func theOldSheetCannotDismissAReopenedSample() throws {

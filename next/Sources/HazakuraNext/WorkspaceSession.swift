@@ -278,7 +278,7 @@ final class WorkspaceSession {
         !isBusy && window?.attachedSheet == nil && !tabs.isComposing && !hasNativeMarkedText
     }
     var canPreviewMarkdown: Bool { canStartPresentationAction && tabs.selectedTab != nil }
-    var canOpenAssistReviewSample: Bool { !isBusy && !tabs.isComposing }
+    var canOpenAssistReviewSample: Bool { canStartPresentationAction }
     var canExport: Bool {
         !isBusy && !tabs.isComposing && !hasNativeMarkedText && window?.attachedSheet == nil && tabs.selectedTab != nil
     }
