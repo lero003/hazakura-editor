@@ -5,43 +5,58 @@ import HazakuraNextCore
 enum MarkdownReaderSearch {
     static let queryByteLimit = 512
 
-    enum Result: Equatable {
+    struct Request: Identifiable {
+        let id = UUID()
+        let query: String
+
+        func isActive(_ current: Request?, readerIsCurrent: () -> Bool) -> Bool {
+            !Task.isCancelled && current?.id == id && readerIsCurrent()
+        }
+    }
+
+    enum Result: Equatable, Sendable {
         case emptyQuery
         case queryTooLong
         case matches([Int])
     }
 
-    struct BookMatch: Equatable {
+    struct BookMatch: Equatable, Sendable {
         let sectionID: UUID
         let blockIndex: Int
     }
 
-    enum BookResult: Equatable {
+    enum BookResult: Equatable, Sendable {
         case emptyQuery
         case queryTooLong
         case matches([BookMatch])
     }
 
     /// Pass the full rendered array so the returned indices stay global in chapter view.
-    static func search(_ query: String, in blocks: [MarkdownPreview.Block]) -> Result {
+    @concurrent
+    static func search(_ query: String, in blocks: [MarkdownPreview.Block]) async throws -> Result {
+        try Task.checkCancellation()
         switch validate(query) {
         case .emptyQuery: return .emptyQuery
         case .queryTooLong: return .queryTooLong
-        case .needle(let needle): return .matches(matchingBlockIndices(for: needle, in: blocks))
+        case .needle(let needle): return .matches(try matchingBlockIndices(for: needle, in: blocks))
         }
     }
 
     /// Searches frozen sections in input order. Block indices are local to each section.
-    static func searchBook(_ query: String, in sections: [MarkdownBookPreview.Section]) -> BookResult {
+    @concurrent
+    static func searchBook(_ query: String, in sections: [MarkdownBookPreview.Section]) async throws -> BookResult {
+        try Task.checkCancellation()
         switch validate(query) {
         case .emptyQuery: return .emptyQuery
         case .queryTooLong: return .queryTooLong
         case .needle(let needle):
-            return .matches(sections.flatMap { section in
-                matchingBlockIndices(for: needle, in: section.blocks).map { index in
+            let matches = try sections.flatMap { section in
+                try matchingBlockIndices(for: needle, in: section.blocks).map { index in
                     BookMatch(sectionID: section.id, blockIndex: index)
                 }
-            })
+            }
+            try Task.checkCancellation()
+            return .matches(matches)
         }
     }
 
@@ -60,17 +75,20 @@ enum MarkdownReaderSearch {
     }
 
     /// The renderer caps input, block and run counts. View-only labels with no runs are not searchable.
-    private static func matchingBlockIndices(for needle: String, in blocks: [MarkdownPreview.Block]) -> [Int] {
-        func matches(_ runs: [MarkdownPreview.Run]) -> Bool {
+    private static func matchingBlockIndices(for needle: String, in blocks: [MarkdownPreview.Block]) throws -> [Int] {
+        func matches(_ runs: [MarkdownPreview.Run]) throws -> Bool {
+            try Task.checkCancellation()
             // Nonliteral matching preserves canonical equivalence without folding width or diacritics.
-            runs.map(\.text).joined().range(of: needle, options: .caseInsensitive) != nil
+            return runs.map(\.text).joined().range(of: needle, options: .caseInsensitive) != nil
         }
-        return blocks.indices.filter { index in
+        let indices = try blocks.indices.filter { index in
             let block = blocks[index]
             if let table = block.table {
-                return table.rows.contains { row in row.contains(where: { matches($0) }) }
+                return try table.rows.contains { row in try row.contains(where: matches) }
             }
-            return matches(block.runs)
+            return try matches(block.runs)
         }
+        try Task.checkCancellation()
+        return indices
     }
 }

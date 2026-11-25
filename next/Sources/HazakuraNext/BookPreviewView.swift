@@ -82,7 +82,7 @@ struct BookPreviewView: View {
             ProgressView("読書用の表示を作成しています…")
                 .task(priority: .userInitiated) { await render(sources) }
         case .ready(let sections):
-            BookReadingPane(sections: sections)
+            BookReadingPane(sections: sections, readerIsCurrent: { session.bookPreviewRequest?.id == request.id })
         case .failed(let reason):
             VStack(alignment: .leading, spacing: 8) {
                 Label {
@@ -129,10 +129,12 @@ struct BookPreviewView: View {
 
 private struct BookReadingPane: View {
     let sections: [MarkdownBookPreview.Section]
+    let readerIsCurrent: () -> Bool
     @State private var viewport = Viewport(sectionIndex: 0)
     @State private var position = ScrollPosition(idType: Int.self)
     @State private var showsSearch = false
     @State private var searchQuery = ""
+    @State private var searchRequest: MarkdownReaderSearch.Request?
     @State private var searchResult: MarkdownReaderSearch.BookResult?
     @State private var searchSelection = 0
     @FocusState private var searchFieldFocused: Bool
@@ -143,6 +145,7 @@ private struct BookReadingPane: View {
     }
 
     var body: some View {
+        let submitted = searchRequest
         let sectionIndex = viewport.sectionIndex
         let section = sections[sectionIndex]
         VStack(alignment: .leading, spacing: 8) {
@@ -173,6 +176,13 @@ private struct BookReadingPane: View {
             sectionBody(section, in: viewport)
                 .id(viewport.id)
         }
+        .task(id: submitted?.id) {
+            guard let submitted, submitted.isActive(searchRequest, readerIsCurrent: readerIsCurrent) else { return }
+            guard let result = try? await MarkdownReaderSearch.searchBook(submitted.query, in: sections),
+                  submitted.isActive(searchRequest, readerIsCurrent: readerIsCurrent) else { return }
+            searchResult = result
+            if case .matches(let matches) = result, let first = matches.first { jump(to: first) }
+        }
     }
 
     private var searchControls: some View {
@@ -185,7 +195,8 @@ private struct BookReadingPane: View {
                 }))
                 .focused($searchFieldFocused)
                 .onAppear { searchFieldFocused = true }
-                Button("検索") { submitSearch() }
+                Button("検索", action: submitSearch)
+                    .disabled(searchRequest != nil && searchResult == nil)
             }
             switch searchResult {
             case .emptyQuery:
@@ -209,7 +220,7 @@ private struct BookReadingPane: View {
                     }
                 }
             case nil:
-                EmptyView()
+                if searchRequest != nil { ProgressView("検索中…") }
             }
         }
         .font(.callout)
@@ -257,12 +268,12 @@ private struct BookReadingPane: View {
 
     private func submitSearch() {
         guard showsSearch else { return }
-        searchSelection = 0
-        searchResult = MarkdownReaderSearch.searchBook(searchQuery, in: sections)
-        if let activeMatch { jump(to: activeMatch) }
+        clearSearchResult()
+        searchRequest = MarkdownReaderSearch.Request(query: searchQuery)
     }
 
     private func clearSearchResult() {
+        searchRequest = nil
         searchResult = nil
         searchSelection = 0
     }

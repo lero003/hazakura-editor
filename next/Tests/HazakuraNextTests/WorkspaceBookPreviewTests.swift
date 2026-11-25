@@ -55,9 +55,9 @@ struct WorkspaceBookPreviewTests {
         let drafts = session.tabs.recoveryDrafts
 
         let sections = try await MarkdownBookPreview.render(sources)
-        let result = MarkdownReaderSearch.searchBook("風見鶏", in: sections)
+        let result = try await MarkdownReaderSearch.searchBook("風見鶏", in: sections)
         #expect(result == .matches([.init(sectionID: first, blockIndex: 0), .init(sectionID: last, blockIndex: 1)]))
-        #expect(MarkdownReaderSearch.searchBook("確定後", in: sections) == .matches([]))
+        #expect(try await MarkdownReaderSearch.searchBook("確定後", in: sections) == .matches([]))
         #expect(session.tabs.selectedID == last)
         #expect(session.tabs.recoveryDrafts == drafts)
     }

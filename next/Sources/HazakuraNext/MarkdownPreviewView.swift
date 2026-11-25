@@ -5,10 +5,12 @@ struct MarkdownPreviewView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var phase = Phase.loading
     @State private var revealRejected = false
+    @State private var isClosing = false
 
     private let title: String
     private let source: String
     private let readingBlockIndex: Int?
+    private let isCurrent: () -> Bool
     private let rememberReadingBlock: (Int) -> Void
     private let reveal: (MarkdownPreview.HeadingLocation) -> Bool
 
@@ -20,13 +22,14 @@ struct MarkdownPreviewView: View {
     }
 
     init(
-        title: String, source: String, readingBlockIndex: Int?,
+        title: String, source: String, readingBlockIndex: Int?, isCurrent: @escaping () -> Bool,
         rememberReadingBlock: @escaping (Int) -> Void,
         reveal: @escaping (MarkdownPreview.HeadingLocation) -> Bool
     ) {
         self.title = title
         self.source = source
         self.readingBlockIndex = readingBlockIndex
+        self.isCurrent = isCurrent
         self.rememberReadingBlock = rememberReadingBlock
         self.reveal = reveal
     }
@@ -42,10 +45,7 @@ struct MarkdownPreviewView: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             Divider()
-            Button("閉じる") {
-                if case .loading = phase { phase = .cancelled }
-                dismiss()
-            }
+            Button("閉じる", action: close)
             .keyboardShortcut(.cancelAction)
             .accessibilityLabel("Markdownプレビューを閉じる")
             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -97,13 +97,20 @@ struct MarkdownPreviewView: View {
             } else {
                 MarkdownPreviewReadingPane(
                     blocks: blocks, outline: outline, chapters: chapters, readingBlockIndex: readingBlockIndex,
-                    rememberReadingBlock: rememberReadingBlock
+                    rememberReadingBlock: rememberReadingBlock,
+                    readerIsCurrent: { !isClosing && isCurrent() }
                 ) { location in
-                    if reveal(location) { dismiss() }
+                    if reveal(location) { close() }
                     else { revealRejected = true }
                 }
             }
         }
+    }
+
+    private func close() {
+        isClosing = true
+        if case .loading = phase { phase = .cancelled }
+        dismiss()
     }
 
     private func notice(_ message: LocalizedStringKey) -> some View {
@@ -141,6 +148,7 @@ private struct MarkdownPreviewReadingPane: View {
     let outline: MarkdownPreviewOutline
     let chapters: MarkdownReaderChapters
     let rememberReadingBlock: (Int) -> Void
+    let readerIsCurrent: () -> Bool
     let reveal: (MarkdownPreview.HeadingLocation) -> Void
     @State private var showsOutline = false
     @State private var viewport = Viewport(chapterIndex: nil)
@@ -148,6 +156,7 @@ private struct MarkdownPreviewReadingPane: View {
     @State private var position: ScrollPosition
     @State private var showsSearch = false
     @State private var searchQuery = ""
+    @State private var searchRequest: MarkdownReaderSearch.Request?
     @State private var searchResult: MarkdownReaderSearch.Result?
     @State private var searchSelection = 0
     @FocusState private var searchFieldFocused: Bool
@@ -160,12 +169,13 @@ private struct MarkdownPreviewReadingPane: View {
     init(
         blocks: [MarkdownPreview.Block], outline: MarkdownPreviewOutline, chapters: MarkdownReaderChapters,
         readingBlockIndex: Int?, rememberReadingBlock: @escaping (Int) -> Void,
-        reveal: @escaping (MarkdownPreview.HeadingLocation) -> Void
+        readerIsCurrent: @escaping () -> Bool, reveal: @escaping (MarkdownPreview.HeadingLocation) -> Void
     ) {
         self.blocks = blocks
         self.outline = outline
         self.chapters = chapters
         self.rememberReadingBlock = rememberReadingBlock
+        self.readerIsCurrent = readerIsCurrent
         self.reveal = reveal
         if let readingBlockIndex, blocks.indices.contains(readingBlockIndex) {
             _readingBlock = State(initialValue: readingBlockIndex)
@@ -222,11 +232,15 @@ private struct MarkdownPreviewReadingPane: View {
         return matches[searchSelection]
     }
 
-    private func search() {
+    private func submitSearch() {
+        clearSearchResult()
+        searchRequest = MarkdownReaderSearch.Request(query: searchQuery)
+    }
+
+    private func clearSearchResult() {
+        searchRequest = nil
+        searchResult = nil
         searchSelection = 0
-        let result = MarkdownReaderSearch.search(searchQuery, in: blocks)
-        searchResult = result
-        if case .matches(let matches) = result, let first = matches.first { jump(to: first) }
     }
 
     private func moveSearchSelection(by step: Int) {
@@ -238,6 +252,7 @@ private struct MarkdownPreviewReadingPane: View {
     }
 
     var body: some View {
+        let submitted = searchRequest
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 if !outline.entries.isEmpty {
@@ -252,8 +267,7 @@ private struct MarkdownPreviewReadingPane: View {
                     if !showsSearch {
                         searchFieldFocused = false
                         searchQuery = ""
-                        searchResult = nil
-                        searchSelection = 0
+                        clearSearchResult()
                     }
                 } label: {
                     Label(showsSearch ? "検索を閉じる" : "本文を検索", systemImage: "magnifyingglass")
@@ -280,6 +294,13 @@ private struct MarkdownPreviewReadingPane: View {
                     .id(viewport.id)
             }
         }
+        .task(id: submitted?.id) {
+            guard let submitted, submitted.isActive(searchRequest, readerIsCurrent: readerIsCurrent) else { return }
+            guard let result = try? await MarkdownReaderSearch.search(submitted.query, in: blocks),
+                  submitted.isActive(searchRequest, readerIsCurrent: readerIsCurrent) else { return }
+            searchResult = result
+            if case .matches(let matches) = result, let first = matches.first { jump(to: first) }
+        }
     }
 
     private var searchControls: some View {
@@ -288,12 +309,12 @@ private struct MarkdownPreviewReadingPane: View {
                 TextField("本文を検索", text: Binding(get: { searchQuery }, set: { query in
                     guard !searchQuery.utf8.elementsEqual(query.utf8) else { return }
                     searchQuery = query
-                    searchResult = nil
-                    searchSelection = 0
+                    clearSearchResult()
                 }))
                 .focused($searchFieldFocused)
                 .onAppear { searchFieldFocused = true }
-                Button("検索") { search() }
+                Button("検索", action: submitSearch)
+                    .disabled(searchRequest != nil && searchResult == nil)
                     .accessibilityHint("開いた原稿の表示テキストを、章をまたいで検索します。")
             }
             switch searchResult {
@@ -315,7 +336,7 @@ private struct MarkdownPreviewReadingPane: View {
                         .monospacedDigit()
                 }
             case nil:
-                EmptyView()
+                if searchRequest != nil { ProgressView("検索中…") }
             }
         }
         .font(.callout)

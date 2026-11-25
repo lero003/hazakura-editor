@@ -188,6 +188,7 @@ struct ScratchWorkspaceView: View {
         })) { preview in
             MarkdownPreviewView(
                 title: preview.title, source: preview.source, readingBlockIndex: preview.readingBlockIndex,
+                isCurrent: { session.markdownPreview?.id == preview.id },
                 rememberReadingBlock: { session.rememberMarkdownReadingPosition($0, previewID: preview.id) }
             ) { location in
                 session.requestMarkdownReveal(preview.id, offset: location.utf16Offset)
