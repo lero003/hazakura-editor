@@ -2,30 +2,30 @@
   "meta": {
     "schemaVersion": "1.1.0",
     "generatorVersion": "1.1.0",
-    "generatedAt": "2026-11-28T07:22:20.441Z",
+    "generatedAt": "2026-11-28T10:03:18.716Z",
     "repoUrl": "https://github.com/lero003/hazakura-editor",
     "prNumber": 71,
     "baseBranch": "main",
     "targetBranch": "next-native-editor",
     "targetDir": "next/",
     "dataTarget": {
-      "sha": "7e097768792192b463957a949a1aad9a5934bc20",
-      "shortSha": "7e097768",
+      "sha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "shortSha": "6232c758",
       "source": "GitHub PR headRefOid",
-      "capturedAt": "2026-11-28T07:22:20.441Z"
+      "capturedAt": "2026-11-28T10:03:18.716Z"
     }
   },
   "mechanical": {
     "git": {
       "fetchStatus": "ok",
-      "capturedAt": "2026-11-28T07:22:20.442Z",
+      "capturedAt": "2026-11-28T10:03:18.717Z",
       "baseSha": "9681d27b5a4dc4e1e2be2e24e0f628fbc401768c",
       "baseShortSha": "9681d27b",
-      "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
-      "headShortSha": "7e097768",
-      "localHeadSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "headShortSha": "6232c758",
+      "localHeadSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
       "localHeadMatchesRemote": true,
-      "commitCount": 119,
+      "commitCount": 120,
       "commits": [
         {
           "sha": "3c9c1f99b04da5d41364c9f0762c6cbcfda78662",
@@ -859,16 +859,23 @@
           "date": "2026-11-28 15:57:15 +0900",
           "category": "機能実装",
           "subject": "第二世代の開発状況ダッシュボードを追加する"
+        },
+        {
+          "sha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
+          "date": "2026-11-28 16:32:15 +0900",
+          "category": "CI・自動テスト",
+          "subject": "next-dashboard: PR #71 開発管制室を動的データ・CI/SHA精度・回帰テストで改善"
         }
       ],
-      "shortstatAll": "139 files changed, 33477 insertions(+), 215 deletions(-)",
+      "shortstatAll": "142 files changed, 38686 insertions(+), 215 deletions(-)",
       "shortstatNext": "120 files changed, 24280 insertions(+)",
-      "shortstatNonNext": "19 files changed, 9197 insertions(+), 215 deletions(-)",
+      "shortstatNonNext": "22 files changed, 14406 insertions(+), 215 deletions(-)",
       "g1ProductFilesChanged": 0
     },
     "github": {
       "fetchStatus": "ok",
-      "capturedAt": "2026-11-28T07:22:20.529Z",
+      "capturedAt": "2026-11-28T10:03:18.817Z",
       "reviewsFetchStatus": "ok",
       "runsFetchStatus": "ok",
       "pr": {
@@ -878,41 +885,41 @@
         "url": "https://github.com/lero003/hazakura-editor/pull/71",
         "baseRefName": "main",
         "headRefName": "next-native-editor",
-        "headRefOid": "7e097768792192b463957a949a1aad9a5934bc20",
-        "additions": 33477,
+        "headRefOid": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+        "additions": 38686,
         "deletions": 215,
-        "changedFiles": 139,
+        "changedFiles": 142,
         "createdAt": "2026-11-25T07:17:30Z",
-        "updatedAt": "2026-11-28T06:57:19Z",
+        "updatedAt": "2026-11-28T07:32:21Z",
         "body": "旧段階的リファクタ（#70）を取り込まず、第一世代の製品コード・既存ビルド・配布履歴を維持します。Phase 0〜5 と棚卸しを整理し、独立した next の初回 SwiftUI / TextKit 2 スクラッチを追加しました。Swift Testing 7件、開発用アドホック .app の生成と厳密検証、文書リンク、第一世代の製品差分なしを確認。実機IME・GUI受け入れ、性能、正式署名・出荷は未実施。実原稿を扱わない開発用検証です。",
         "statusCheckRollup": [
           {
             "__typename": "CheckRun",
-            "completedAt": "2026-11-28T06:59:20Z",
+            "completedAt": "2026-11-28T07:35:34Z",
             "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740/job/140898992275",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698/job/140907345975",
             "name": "swift",
-            "startedAt": "2026-11-28T06:57:26Z",
+            "startedAt": "2026-11-28T07:32:29Z",
             "status": "COMPLETED",
             "workflowName": "Next Native"
           },
           {
             "__typename": "CheckRun",
-            "completedAt": "2026-11-28T06:59:15Z",
+            "completedAt": "2026-11-28T07:34:50Z",
             "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898992330",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345454",
             "name": "frontend",
-            "startedAt": "2026-11-28T06:57:25Z",
+            "startedAt": "2026-11-28T07:32:28Z",
             "status": "COMPLETED",
             "workflowName": "Quality"
           },
           {
             "__typename": "CheckRun",
-            "completedAt": "2026-11-28T07:02:45Z",
+            "completedAt": "2026-11-28T07:36:12Z",
             "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898991997",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345604",
             "name": "native",
-            "startedAt": "2026-11-28T06:57:26Z",
+            "startedAt": "2026-11-28T07:32:28Z",
             "status": "COMPLETED",
             "workflowName": "Quality"
           }
@@ -920,6 +927,28 @@
       },
       "reviewsCount": 0,
       "recentRuns": [
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T07:32:25Z",
+          "databaseId": 46121671706,
+          "event": "pull_request",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "status": "completed",
+          "updatedAt": "2026-11-28T07:36:13Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T07:32:25Z",
+          "databaseId": 46121671698,
+          "event": "pull_request",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "status": "completed",
+          "updatedAt": "2026-11-28T07:35:35Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698",
+          "workflowName": "Next Native"
+        },
         {
           "conclusion": "success",
           "createdAt": "2026-11-28T06:57:22Z",
@@ -1062,28 +1091,6 @@
           "updatedAt": "2026-11-25T21:38:35Z",
           "url": "https://github.com/lero003/hazakura-editor/actions/runs/45704267835",
           "workflowName": "Next Native"
-        },
-        {
-          "conclusion": "success",
-          "createdAt": "2026-11-25T21:18:40Z",
-          "databaseId": 45703159046,
-          "event": "pull_request",
-          "headSha": "c125da0abb27b85289431aef5622ad00a569e377",
-          "status": "completed",
-          "updatedAt": "2026-11-25T21:24:47Z",
-          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45703159046",
-          "workflowName": "Quality"
-        },
-        {
-          "conclusion": "success",
-          "createdAt": "2026-11-25T21:18:40Z",
-          "databaseId": 45703159021,
-          "event": "pull_request",
-          "headSha": "c125da0abb27b85289431aef5622ad00a569e377",
-          "status": "completed",
-          "updatedAt": "2026-11-25T21:21:06Z",
-          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45703159021",
-          "workflowName": "Next Native"
         }
       ]
     },
@@ -1091,11 +1098,11 @@
       "available": true,
       "fetchStatus": "ok",
       "targetPath": "next/",
-      "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
-      "headShortSha": "7e097768",
+      "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "headShortSha": "6232c758",
       "dirty": false,
       "dirtyFileCount": 0,
-      "capturedAt": "2026-11-28T07:22:22.589Z",
+      "capturedAt": "2026-11-28T10:03:20.825Z",
       "sourceFiles": 50,
       "sourceLines": 9735,
       "testFiles": 62,
@@ -1230,15 +1237,15 @@
       "note": "CIの最終成功時に記録した詳細値。最新HEADの状態は mechanical.ci を参照し、旧HEADの成功を最新HEADの成功として扱わない。"
     },
     "ci": {
-      "targetSha": "7e097768792192b463957a949a1aad9a5934bc20",
-      "targetShortSha": "7e097768",
+      "targetSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "targetShortSha": "6232c758",
       "targetSource": "GitHub PR headRefOid",
-      "capturedAt": "2026-11-28T07:22:20.441Z",
+      "capturedAt": "2026-11-28T10:03:18.716Z",
       "fetchStatus": "ok",
       "state": "success",
       "label": "最新HEAD 全成功",
       "tone": "ok",
-      "reason": "最新HEAD（7e097768）に紐づく全ワークフローが成功しています。",
+      "reason": "最新HEAD（6232c758）に紐づく全ワークフローが成功しています。",
       "workflows": [
         {
           "name": "Next Native",
@@ -1246,19 +1253,19 @@
           "label": "最新HEAD 全成功",
           "tone": "ok",
           "source": "PR statusCheckRollup",
-          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
-          "shortSha": "7e097768",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
           "matchesTarget": true,
-          "startedAt": "2026-11-28T06:57:26Z",
-          "completedAt": "2026-11-28T06:59:20Z",
-          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "startedAt": "2026-11-28T07:32:29Z",
+          "completedAt": "2026-11-28T07:35:34Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698",
           "checks": [
             {
               "name": "swift",
               "state": "success",
               "status": "COMPLETED",
               "conclusion": "SUCCESS",
-              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740/job/140898992275"
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698/job/140907345975"
             }
           ]
         },
@@ -1268,26 +1275,26 @@
           "label": "最新HEAD 全成功",
           "tone": "ok",
           "source": "PR statusCheckRollup",
-          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
-          "shortSha": "7e097768",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
           "matchesTarget": true,
-          "startedAt": "2026-11-28T06:57:25Z",
-          "completedAt": "2026-11-28T06:59:15Z",
-          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "startedAt": "2026-11-28T07:32:28Z",
+          "completedAt": "2026-11-28T07:34:50Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706",
           "checks": [
             {
               "name": "frontend",
               "state": "success",
               "status": "COMPLETED",
               "conclusion": "SUCCESS",
-              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898992330"
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345454"
             },
             {
               "name": "native",
               "state": "success",
               "status": "COMPLETED",
               "conclusion": "SUCCESS",
-              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898991997"
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345604"
             }
           ]
         }
@@ -1301,19 +1308,19 @@
           "label": "最新HEAD 全成功",
           "tone": "ok",
           "source": "PR statusCheckRollup",
-          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
-          "shortSha": "7e097768",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
           "matchesTarget": true,
-          "startedAt": "2026-11-28T06:57:26Z",
-          "completedAt": "2026-11-28T06:59:20Z",
-          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "startedAt": "2026-11-28T07:32:29Z",
+          "completedAt": "2026-11-28T07:35:34Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698",
           "checks": [
             {
               "name": "swift",
               "state": "success",
               "status": "COMPLETED",
               "conclusion": "SUCCESS",
-              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740/job/140898992275"
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698/job/140907345975"
             }
           ]
         },
@@ -1323,26 +1330,26 @@
           "label": "最新HEAD 全成功",
           "tone": "ok",
           "source": "PR statusCheckRollup",
-          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
-          "shortSha": "7e097768",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
           "matchesTarget": true,
-          "startedAt": "2026-11-28T06:57:25Z",
-          "completedAt": "2026-11-28T06:59:15Z",
-          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "startedAt": "2026-11-28T07:32:28Z",
+          "completedAt": "2026-11-28T07:34:50Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706",
           "checks": [
             {
               "name": "frontend",
               "state": "success",
               "status": "COMPLETED",
               "conclusion": "SUCCESS",
-              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898992330"
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345454"
             },
             {
               "name": "native",
               "state": "success",
               "status": "COMPLETED",
               "conclusion": "SUCCESS",
-              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898991997"
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345604"
             }
           ]
         }
@@ -1350,6 +1357,22 @@
       "missingWorkflows": [],
       "oldHeadWorkflows": [],
       "oldHeadSuccesses": [
+        {
+          "workflowName": "Next Native",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "updatedAt": "2026-11-28T06:59:21Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Quality",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "updatedAt": "2026-11-28T07:02:45Z",
+          "conclusion": "success"
+        },
         {
           "workflowName": "Quality",
           "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
@@ -1397,39 +1420,23 @@
           "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708324534",
           "updatedAt": "2026-11-25T21:55:32Z",
           "conclusion": "success"
-        },
-        {
-          "workflowName": "Next Native",
-          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
-          "shortSha": "ff439e15",
-          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45706688872",
-          "updatedAt": "2026-11-25T21:44:55Z",
-          "conclusion": "success"
-        },
-        {
-          "workflowName": "Quality",
-          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
-          "shortSha": "ff439e15",
-          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45706688895",
-          "updatedAt": "2026-11-25T21:48:10Z",
-          "conclusion": "success"
         }
       ],
       "oldHeadSuccessCount": 13,
       "checkSourceNote": "statusCheckRollup は PR の現在の headRefOid に紐づく check として扱います。recentRuns は headSha を照合し、旧HEADの成功は current の成功に数えません。"
     },
     "provenance": {
-      "targetSha": "7e097768792192b463957a949a1aad9a5934bc20",
-      "targetShortSha": "7e097768",
+      "targetSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "targetShortSha": "6232c758",
       "targetSource": "GitHub PR headRefOid",
-      "gitHead": "7e097768792192b463957a949a1aad9a5934bc20",
-      "githubHead": "7e097768792192b463957a949a1aad9a5934bc20",
-      "sourceSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "gitHead": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "githubHead": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "sourceSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
       "evaluationSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
       "evaluationShortSha": "577f1b9b",
-      "generatedAt": "2026-11-28T07:22:20.441Z",
+      "generatedAt": "2026-11-28T10:03:18.716Z",
       "evaluatedAt": "2026-11-28T15:50:00+09:00",
-      "sourceCapturedAt": "2026-11-28T07:22:22.589Z",
+      "sourceCapturedAt": "2026-11-28T10:03:20.825Z",
       "matches": {
         "githubVsGit": true,
         "githubVsTarget": true,
@@ -1440,9 +1447,9 @@
       "evaluation": {
         "headMoved": true,
         "impact": "dashboard_only",
-        "nonDashboardChangesSinceEvaluation": 0,
+        "nonDashboardChangesSinceEvaluation": 1,
         "productFilesChangedSinceEvaluation": 0,
-        "supportingFilesChangedSinceEvaluation": 0
+        "supportingFilesChangedSinceEvaluation": 1
       },
       "source": {
         "available": true,
@@ -1464,7 +1471,7 @@
     "evaluatedCommitSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
     "evaluatedShortSha": "577f1b9b",
     "isStaleRelativeToHead": true,
-    "latestObservedHeadSha": "7e097768792192b463957a949a1aad9a5934bc20",
+    "latestObservedHeadSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
     "worktreeContext": "next-native-editor worktreeは577f1b9bでクリーン。main worktreeにはv3.4.1江戸彼岸（庭・写真調追補7〜8）および旧設計調査の未コミット作業が存在し、PR #71には含まれない。",
     "scoringRules": {
       "states": [
@@ -3593,8 +3600,10 @@
     },
     "headMovedSinceEvaluation": true,
     "evaluationImpact": "dashboard_only",
-    "nonDashboardChangesSinceEvaluation": 0,
-    "changedFilesSinceEvaluation": [],
+    "nonDashboardChangesSinceEvaluation": 1,
+    "changedFilesSinceEvaluation": [
+      ".github/workflows/quality.yml"
+    ],
     "evaluationDeltaError": null,
     "computedAcceptance": {
       "totalItems": 24,
@@ -3661,6 +3670,6 @@
       "source": "evaluation.acceptanceAndPerformance.acceptanceRows"
     },
     "productFilesChangedSinceEvaluation": 0,
-    "supportingFilesChangedSinceEvaluation": 0
+    "supportingFilesChangedSinceEvaluation": 1
   }
 }

@@ -13,8 +13,11 @@ const DATA_PATH = path.join(__dirname, "dashboard-data.json");
 const HTML_PATH = path.join(__dirname, "dashboard.html");
 const CORE_PATH = path.join(__dirname, "dashboard-core.cjs");
 
-const TARGET = "7e097768792192b463957a949a1aad9a5934bc20";
-const OLD = "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8";
+const DATA_SNAPSHOT = JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
+const TARGET = DATA_SNAPSHOT.meta.dataTarget.sha;
+const TARGET_SHORT = DATA_SNAPSHOT.meta.dataTarget.shortSha;
+const OLD = DATA_SNAPSHOT.evaluation.evaluatedCommitSha;
+const OLD_SHORT = DATA_SNAPSHOT.evaluation.evaluatedShortSha;
 
 function readData() {
   return JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
@@ -96,7 +99,7 @@ test("現行データはスキーマ検証を通り、スキーマ1.1.0として
   assert.equal(result.errors.length, 0);
   assert.equal(data.meta.schemaVersion, "1.1.0");
   assert.equal(data.evaluation.evaluatedCommitSha, OLD);
-  assert.equal(data.evaluation.evaluatedShortSha, "577f1b9b");
+  assert.equal(data.evaluation.evaluatedShortSha, OLD_SHORT);
 });
 
 test("必須構造の欠落・不正なschemaVersion・危険なrepoUrlを拒否する", () => {
@@ -240,7 +243,7 @@ test("最新HEADの全ワークフロー成功はsuccess、旧HEADの成功はcu
   const ci = core.resolveCiStatus(mechanical, meta);
   assert.equal(ci.state, "success");
   assert.equal(ci.label, "最新HEAD 全成功");
-  assert.equal(ci.targetShortSha, "7e097768");
+  assert.equal(ci.targetShortSha, TARGET_SHORT);
   assert.equal(ci.successWorkflows.length, 2);
   assert.ok(ci.oldHeadSuccessCount > 0);
   assert.equal(ci.missingWorkflows.length, 0);
@@ -295,7 +298,7 @@ test("GitHub取得失敗・skipはunavailableとして、成功に丸めない",
     runs: [run("Next Native", OLD, "success", "completed", 10)],
   }), meta);
   assert.equal(failed.state, "unavailable");
-  assert.equal(failed.targetShortSha, "7e097768");
+  assert.equal(failed.targetShortSha, TARGET_SHORT);
   assert.match(failed.reason, /取得に失敗/);
 
   const skipped = core.resolveCiStatus(mechanicalFixture({ githubFetchStatus: "skipped" }), meta);
@@ -323,7 +326,7 @@ test("Git・GitHub・ソース・評価の対象SHAを比較し、評価のHEAD�
 test("評価対象SHAが最新HEADと一致すればconsistent、ソース不一致ならmismatch", () => {
   const evaluation = evaluationFixture();
   evaluation.evaluatedCommitSha = TARGET;
-  evaluation.evaluatedShortSha = "7e097768";
+  evaluation.evaluatedShortSha = TARGET_SHORT;
   evaluation.isStaleRelativeToHead = false;
   const consistent = core.buildProvenance(mechanicalFixture(), evaluation, { generatedAt: "2026-11-28T07:00:00Z" });
   assert.equal(consistent.matches.evaluationVsTarget, true);
@@ -531,4 +534,56 @@ test("狭幅・キーボード向けの基本マークアップとフォーカ�
   assert.match(html, /\.file-load-btn input \{/);
   assert.doesNotMatch(html, /\.file-load-btn input \{ display: none; \}/);
   assert.doesNotMatch(html, /<details[^>]*\sopen(?:\s|>)/, "詳細は初期状態で閉じる");
+});
+
+/* ------------------------------------------------------------------ *
+ * Tab shell / information design
+ * ------------------------------------------------------------------ */
+
+test("8つのタブとパネルがARIAで対応し、初期表示は概要だけ", () => {
+  const html = fs.readFileSync(HTML_PATH, "utf8");
+  const tabs = [...html.matchAll(/<button class="tab" role="tab" id="(tab-[a-z]+)" aria-controls="(panel-[a-z]+)" aria-selected="(true|false)" tabindex="(-?\d)">/g)].map((m) => ({
+    tabId: m[1],
+    panelId: m[2],
+    selected: m[3] === "true",
+    tabIndex: Number(m[4]),
+  }));
+  assert.deepEqual(tabs.map((t) => t.tabId), [
+    "tab-overview", "tab-issues", "tab-features", "tab-safety", "tab-acceptance", "tab-ci", "tab-history", "tab-evidence",
+  ]);
+  assert.equal(tabs.filter((t) => t.selected).length, 1);
+  assert.equal(tabs[0].selected, true);
+  assert.equal(tabs[0].tabIndex, 0);
+  assert.ok(tabs.slice(1).every((t) => t.tabIndex === -1));
+
+  for (const tab of tabs) {
+    assert.match(
+      html,
+      new RegExp(`<section class="panel" id="${tab.panelId}" role="tabpanel" aria-labelledby="${tab.tabId}" tabindex="0"`)
+    );
+  }
+  const panels = [...html.matchAll(/<section class="panel" id="panel-[a-z]+"[^>]*>/g)].map((m) => m[0]);
+  assert.equal(panels.length, 8);
+  const visible = panels.filter((tag) => !tag.includes("hidden"));
+  assert.equal(visible.length, 1);
+  assert.match(visible[0], /panel-overview/);
+});
+
+test("外部スクリプト・外部スタイル・外部フォントを読み込まない", () => {
+  const html = fs.readFileSync(HTML_PATH, "utf8");
+  assert.doesNotMatch(html, /<script[^>]+src=/i);
+  assert.doesNotMatch(html, /<link[^>]+rel=["']stylesheet/i);
+  assert.doesNotMatch(html, /https?:\/\/[^"'\s]+\.(?:js|css|woff2?)/i);
+});
+
+test("概要は到達度・ロードマップ・次の課題の3要素で構成される", () => {
+  const html = fs.readFileSync(HTML_PATH, "utf8");
+  const script = html.slice(html.lastIndexOf("<script>"));
+  assert.match(script, /function buildScoreboard/);
+  assert.match(script, /function buildRoadmap/);
+  assert.match(script, /function buildNext/);
+  assert.match(script, /class="scoreboard"/);
+  assert.match(script, /class="roadmap"/);
+  assert.match(script, /次に取り組む/);
+  assert.match(script, /公式決定と推定の区別|優先順・担当はエージェント推定/);
 });
