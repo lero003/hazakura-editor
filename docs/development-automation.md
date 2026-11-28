@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-09-08
+Last reviewed: 2026-11-25（現行キューと文書更新先）
 
 ## Purpose
 
@@ -17,24 +17,19 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v3 UI/UX刷新・完成度・Local Assist基盤整理**。v2.9公開は2026-09-09オーナー報告。
-公開済み版の再提出をキューにしない。次の一手は `docs/current-work.md`、版別の条件は
-`docs/v2.9-v3-local-assist-plan.md`。v3.0はAFMと共通基盤、v3.1はC-1/C-2。
-C-1/C-2のHOLD、既存Apply/Undo/no auto-saveは維持する。1 run = 1検証可能スライス。
+現行レーンと優先順は[作業キュー](current-work.md#active-queue)だけを参照し、ここには版やフェーズを固定しない。
+旧作業表、調査報告、ロードマップへの掲載を、無人作業の承認とみなさない。公開済み版の再提出は明示再開時のみ。
 
-For recurring automation, use the Active Queue in
-`docs/current-work.md`. The old pre-review automation table is exhausted
-and should be reused only when a future pre-review lane explicitly
-reopens it. Each run should pick one open hypothesis whose required
-environment is available and close it as `implemented` (Keep),
-`manual-blocked`, `verified no-op`, or `reverted`.
+下のキュー選定・npm/Cargo検証は第一世代の品質ループ向け。第二世代 `next/` は明示依頼のある専用スライスのみ着手し、第一世代のループから起動・テスト・配布の処理を流用しない。[独立プロジェクトの手順](../next/README.md)に従い、両世代のデータ領域や成果物を共用しない。旧リファクタのブランチ・ドラフトPR・未コミット変更を無人で再開・整理しない。
+
+1 run = 1検証可能スライス。必要な環境が使える一件を選び、`implemented` (Keep)、
+`manual-blocked`、`verified no-op`、`reverted` のいずれかとして記録する。
 
 Prefer work in this order:
 
-1. `docs/current-work.md` のv3スライスに限定した回帰確認。UIとnative runtime再編を同じ変更へ混ぜない。
+1. 現行キューの有効なスライスに限定した回帰確認。UIとnative runtime再編を同じ変更へ混ぜない。
    反映はmain Diffから一度だけ。反映後に同じ案をReview Barで再確認させない。
-2. 公開済みv2.9の再現blocker。保存・復元などの重大問題は通常改善より優先。
-
+2. 保存・復元などの重大な再現不具合は通常改善より優先。
 3. Verification or a reproduced defect in a separately reopened release lane.
 4. Stale or failing quality gates that block the selected slice.
 5. Core Safe Editor quality risks around open, edit, save, close/quit,
@@ -91,9 +86,8 @@ Prefer work in this order:
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
 5. Choose exactly one coherent slice that can be verified in the same
    run. Name the core-feature risk, release-prep risk, observed
-   friction, or evidence gap before editing. For pre-review work, also
-   name the `Automation Exit` target from `docs/current-work.md` when
-   the selected slice comes from that table.
+   friction, or evidence gap before editing. Use an `Automation Exit` target
+   from an older pre-review table only if that table was explicitly reopened.
 
 ## Product Boundaries
 
@@ -172,17 +166,7 @@ For release-candidate work, use `hazakura-note-release-candidate`, `docs/source-
 
 ## Documentation Duties
 
-Update only docs whose truth changed:
-
-- `docs/current-status.md` for current implementation state, release-candidate state, risks, and next actions.
-- `docs/current-work.md` for the active UX / submission-prep queue.
-- `docs/roadmap.md` when active lanes or phase boundaries change.
-- `docs/smoke-checklist.md` when manual checks change.
-- `docs/external-agent-review-workflow.md` when implementation/review ownership changes.
-- `README.md` when public feature, limit, or run/build instructions change.
-- `docs/source-release-checklist.md` or `docs/dmg-preview-checklist.md` when release gates change.
-
-Do not add new historical logs to current docs. Preserve historical evidence under `docs/archive/` or `docs/releases/` as appropriate.
+Use the [documentation index](README.md#日常で使う文書) to choose the authoritative update target. Update only what changed; link instead of copying the current phase, queue or release evidence. Preserve historical evidence under `docs/archive/`, `docs/releases/` or `docs/reviews/`, as appropriate.
 
 ## Documentation Pruning
 
@@ -199,6 +183,10 @@ documentation so current docs stay small:
 - `docs/releases/` published release bodies are kept as historical
   evidence; do not prune them. Draft proposals belong in
   `docs/archive/releases/`.
+
+## 過去の自動化フェーズ（参照専用）
+
+2026-09-08の記録: Phase: **v3 UI/UX刷新・完成度・Local Assist基盤整理**。当時のC-1/C-2のHOLDと版別条件は [旧フェーズの技術計画](v2.9-v3-local-assist-plan.md) に記録。現行の着手判断には使わない。
 
 ## Worktree Hygiene
 

@@ -1,0 +1,43 @@
+name: Next Native
+on:
+  pull_request:
+    paths: ['next/**', '.github/workflows/next-native.yml']
+  push:
+    branches: [next-native-editor]
+    paths: ['next/**', '.github/workflows/next-native.yml']
+permissions:
+  contents: read
+concurrency:
+  group: next-native-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  swift:
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - run: swift --version
+      - name: Verify the synthetic comparison fixtures
+        shell: bash
+        run: |
+          fixtures="$(swift next/scripts/make-acceptance-fixtures.swift)"
+          cd -- "$fixtures"
+          names=(01-reading.md 02-reading.md 03-encoding.txt 04-long.md)
+          # Recompute from fixed paths rather than reading paths from the manifest.
+          shasum -a 256 "${names[@]/#/first/}" "${names[@]/#/next/}" | cmp -s SHA256SUMS - || {
+            echo 'The checksum manifest does not match all eight fixtures.' >&2
+            exit 1
+          }
+          for name in "${names[@]}"; do
+            cmp "first/$name" "next/$name"
+          done
+      - run: swift test --package-path next
+      - name: Verify the three development bundles without launching them
+        run: |
+          bash next/scripts/run-dev.sh --build-only
+          bash next/scripts/run-dev.sh --build-assist-review-demo
+          bash next/scripts/run-dev.sh --build-sandbox-preview
+          products="$(swift build --package-path next --show-bin-path)"
+          swift next/scripts/verify-dev-bundles.swift "$products"

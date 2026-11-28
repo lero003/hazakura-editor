@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Agent entry rules for this repository
 Authority: High
-Last reviewed: 2026-07-16
+Last reviewed: 2026-11-25（開発レーンと検証の区分）
 
 このファイルは AI / 外部エージェント向けの作業入口である。製品の現状詳細やリリース番号はここに書かず、下の正本ドキュメントを読む。
 
@@ -18,13 +18,15 @@ Last reviewed: 2026-07-16
 
 ### Surfaces（触る前に分類する）
 
+以下は製品の境界であり、第二世代の実装済み機能を示す表ではない。
+
 | Surface | 扱い |
 |---|---|
 | Safe Editor core | 開く・編集・保存・衝突・復元・プレビュー・Diff。既定の信頼境界。 |
 | L Mode / えるモード | 読み書きの presentation。source 意味と保存内容を壊さない。 |
 | Review Desk | 候補の手動確認。明示操作・低目立ちを維持。 |
 | Hazakura Local Assist | オンデバイス提案。network fallback / auto-save / tool calling なし。 |
-| Agent Workbench | **Developer レーン専用**の別 trust boundary。allowlist された local CLI 1 セッション。汎用シェルではない。 |
+| Agent Workbench | 第一世代の **Developer レーン専用**の別 trust boundary。allowlist された local CLI 1 セッション。汎用シェルではない。第二世代では再評価まで保留。 |
 | Workspace file ops | 選択 workspace 内に閉じる。フルファイルマネージャにしない。 |
 | OKF review / scaffold | 明示操作のみ。起動時スキャン・自動修正・Book Scope は入れない。 |
 
@@ -36,11 +38,11 @@ Developer / GitHub レーンとの差は `docs/app-store-build.md` と `docs/ass
 作業前に必ず:
 
 1. `git status --short --branch` — 既存の未コミット変更はユーザー / 前エージェントの作業。勝手に戻さない。
-2. 次の正本を読む（詳細は `docs/README.md`）:
-   - **次の一手**: `docs/current-work.md`
-   - **現状**: `docs/current-status.md` / `docs/handoff.md`
-   - **方向**: `docs/roadmap.md` / `docs/product-brief.md`
-   - **境界**: `docs/security-boundary.md`（必須級）
+2. 次の正本を読む（対象別の参照先と更新先は [文書索引](docs/README.md)）:
+   - **次の一手**: [作業キュー](docs/current-work.md#active-queue)
+   - **現状**: [実装・検証・配布状態](docs/current-status.md)
+   - **方向**: [ロードマップ](docs/roadmap.md) / [製品概要](docs/product-brief.md)
+   - **境界**: [信頼境界](docs/security-boundary.md)（必須級）
 3. 触る面に応じて追加で読む:
    - Agent Workbench → `docs/agent-workbench-boundary.md`
    - Assist / Local Assist → `docs/assist-surface-strategy.md`
@@ -50,6 +52,12 @@ Developer / GitHub レーンとの差は `docs/app-store-build.md` と `docs/ass
 4. 実質的な実装・依存変更・release・Git 操作の前は Hazakura Habitat を使う。
 
 `docs/archive/` と発想原本（旧 `markdown-safe-editor-plan` など）は履歴。現行ルールの正本にしない。
+
+### 開発レーンを分ける
+
+- **第一世代**: ルートのTauri / React / CodeMirror / Rust。既存の製品ソース、ビルド、リリース計画を維持する。
+- **第二世代**: 独立した [`next/`](next/README.md) のmacOSネイティブ再構築。Swift / SwiftUI + AppKit / TextKit 2を使う。既存コードの逐語移植・段階的置換ではなく、安全契約・失敗例・受け入れ基準を参照して設計し直す。開発用Bundle IDとデータ領域を分離し、第一世代と同じ設定・原稿・復旧データを使わない。
+- フェーズと対象は[ロードマップ](docs/roadmap.md#第二世代設計)と[作業キュー](docs/current-work.md#active-queue)を参照。旧リファクタのブランチ・ドラフトPR、各worktreeの未コミット作業は破棄・取り込みをしない。
 
 ## Working Rules
 
@@ -73,6 +81,7 @@ Developer / GitHub レーンとの差は `docs/app-store-build.md` と `docs/ass
 
 変更の種類に応じて、**下から必要な段まで**を走らせてから完了報告する。
 ホスト都合でできない段は「未実施」と明示し、通ったと書かない。
+1〜3のnpm/Cargo手順は第一世代専用。第二世代は [`next/` の起動・検証手順](next/README.md)に従い、実施した自動テスト・ビルド・起動と、手動操作・性能測定を分けて報告する。
 
 ### 0. 常時（docs のみでも）
 
@@ -134,9 +143,9 @@ npm run smoke:app-store-surface
 
 ### 5. 手動 smoke
 
-- 正本: `docs/smoke-checklist.md`
-- UI / IME / 保存衝突 / 実機 assist は自動化の代替にしない
-- 代表 fixture: `npm run smoke:fixtures:v1.10-structure` / `v1.11-okf` など（触ったレーンに合わせる）
+- 第一世代: [実機スモーク](docs/smoke-checklist.md)。代表 fixture: `npm run smoke:fixtures:v1.10-structure` / `v1.11-okf` など（対象面に合わせる）。
+- 第二世代: [`next/` の手順](next/README.md)に従い、合成原稿を使う。第一世代の配布候補の検証とは分ける。
+- UI / IME / 保存衝突 / 実機 Assist の手動確認を自動テストで代替しない。
 
 ### 6. リリース直前
 

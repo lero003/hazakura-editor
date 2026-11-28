@@ -1,0 +1,3675 @@
+{
+  "meta": {
+    "schemaVersion": "1.1.0",
+    "generatorVersion": "1.1.0",
+    "generatedAt": "2026-11-28T10:03:18.716Z",
+    "repoUrl": "https://github.com/lero003/hazakura-editor",
+    "prNumber": 71,
+    "baseBranch": "main",
+    "targetBranch": "next-native-editor",
+    "targetDir": "next/",
+    "dataTarget": {
+      "sha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "shortSha": "6232c758",
+      "source": "GitHub PR headRefOid",
+      "capturedAt": "2026-11-28T10:03:18.716Z"
+    }
+  },
+  "mechanical": {
+    "git": {
+      "fetchStatus": "ok",
+      "capturedAt": "2026-11-28T10:03:18.717Z",
+      "baseSha": "9681d27b5a4dc4e1e2be2e24e0f628fbc401768c",
+      "baseShortSha": "9681d27b",
+      "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "headShortSha": "6232c758",
+      "localHeadSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "localHeadMatchesRemote": true,
+      "commitCount": 120,
+      "commits": [
+        {
+          "sha": "3c9c1f99b04da5d41364c9f0762c6cbcfda78662",
+          "shortSha": "3c9c1f99",
+          "date": "2026-11-25 15:54:54 +0900",
+          "category": "設計・受け入れ",
+          "subject": "第二世代の設計方針と文書の正本を整理する"
+        },
+        {
+          "sha": "1f55e4a05093e825451f333c1ab7d29b3c7e4d8b",
+          "shortSha": "1f55e4a0",
+          "date": "2026-11-25 16:15:12 +0900",
+          "category": "設計・受け入れ",
+          "subject": "第二世代を macOS ネイティブ再構築へ切り替える"
+        },
+        {
+          "sha": "9ae5ebef5cec61d08217a8e906f431d16fa7c209",
+          "shortSha": "9ae5ebef",
+          "date": "2026-11-25 16:17:17 +0900",
+          "category": "機能実装",
+          "subject": "独立した Swift エディタと TextKit 2 の検証を追加する"
+        },
+        {
+          "sha": "77c5a518e77d0ffd0f70bf5430541b939fcdaca8",
+          "shortSha": "77c5a518",
+          "date": "2026-11-25 16:33:03 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原稿タブごとに変換と編集履歴を分ける"
+        },
+        {
+          "sha": "33c4639efff3a1d8ead933f365bc56004cb483e3",
+          "shortSha": "33c4639e",
+          "date": "2026-11-25 16:43:57 +0900",
+          "category": "機能実装",
+          "subject": "選択したUTF-8テキストを読み取り専用で開く"
+        },
+        {
+          "sha": "0e4ad65fe2ede3faa498ab338a24c20303989f93",
+          "shortSha": "0e4ad65f",
+          "date": "2026-11-25 16:54:11 +0900",
+          "category": "機能実装",
+          "subject": "ウィンドウとアプリの終了前に未保存原稿を確認する"
+        },
+        {
+          "sha": "ebf2142451ada345f71e502db71d60b0ed7be4e8",
+          "shortSha": "ebf21424",
+          "date": "2026-11-25 17:04:45 +0900",
+          "category": "安全性・境界強化",
+          "subject": "未保存原稿の復旧記録と独立した復元モデルを追加する"
+        },
+        {
+          "sha": "2f6aaeb3fd95e81b0d3cc87cc7e5848a2567238d",
+          "shortSha": "2f6aaeb3",
+          "date": "2026-11-25 17:24:43 +0900",
+          "category": "安全性・境界強化",
+          "subject": "未保存原稿を退避し復元を選べるようにする"
+        },
+        {
+          "sha": "ef614cb1ff27c7d75f8122c78e7d403e58f11b31",
+          "shortSha": "ef614cb1",
+          "date": "2026-11-25 17:35:48 +0900",
+          "category": "機能実装",
+          "subject": "編集用コピーを新規ファイルとして保存できるようにする"
+        },
+        {
+          "sha": "0d1e99206e10f7610aa44d322da05ec7aa27b095",
+          "shortSha": "0d1e9920",
+          "date": "2026-11-25 17:44:13 +0900",
+          "category": "安全性・境界強化",
+          "subject": "開いた原本・ディスク版・編集版を読み取り専用で比較する"
+        },
+        {
+          "sha": "f35b01ef070794e8778061839b92b2b62305e641",
+          "shortSha": "f35b01ef",
+          "date": "2026-11-25 17:52:10 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本保存の同意前後でファイルの版を再照合する"
+        },
+        {
+          "sha": "bbddfa182bb4deecf4d8bd2c39cc63e55b5341c1",
+          "shortSha": "bbddfa18",
+          "date": "2026-11-25 18:00:17 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本比較に読み取り専用の行差分を追加する"
+        },
+        {
+          "sha": "422a0e7082a44b9aa66647ddd7e272ddc2c6547d",
+          "shortSha": "422a0e70",
+          "date": "2026-11-25 18:08:09 +0900",
+          "category": "機能実装",
+          "subject": "確定原文を読み取り専用でMarkdownプレビューする"
+        },
+        {
+          "sha": "c21d99ff668b6350a8feeab6f869d2ee29f2fa70",
+          "shortSha": "c21d99ff",
+          "date": "2026-11-25 18:18:34 +0900",
+          "category": "機能実装",
+          "subject": "Markdownプレビューの見出しから原文の行へ戻る"
+        },
+        {
+          "sha": "cd00bb76890dc56ec781cf4da3616a1d3e0540ea",
+          "shortSha": "cd00bb76",
+          "date": "2026-11-25 18:24:01 +0900",
+          "category": "機能実装",
+          "subject": "Markdownプレビューで目次から見出しへ移動する"
+        },
+        {
+          "sha": "017a00289e07a0d4114641780d1dce907894d6fa",
+          "shortSha": "017a0028",
+          "date": "2026-11-25 18:29:52 +0900",
+          "category": "機能実装",
+          "subject": "同じ原稿のプレビューを前回の位置から再開する"
+        },
+        {
+          "sha": "45ea1ee2160dc83b790486def7d9e3363953bfd3",
+          "shortSha": "45ea1ee2",
+          "date": "2026-11-25 18:37:22 +0900",
+          "category": "機能実装",
+          "subject": "単一原稿を章ごとに読める表示を追加する"
+        },
+        {
+          "sha": "8eaef014e5ba9c51fd537d6f042dc35da740e8a9",
+          "shortSha": "8eaef014",
+          "date": "2026-11-25 18:45:37 +0900",
+          "category": "機能実装",
+          "subject": "確定原文を新しいHTMLファイルに書き出す"
+        },
+        {
+          "sha": "6b100cc93be479aeb014b9e04468a0d86a08fd1e",
+          "shortSha": "6b100cc9",
+          "date": "2026-11-25 18:55:43 +0900",
+          "category": "機能実装",
+          "subject": "確定原文から新しいPDFを書き出す"
+        },
+        {
+          "sha": "f27d4f0709890be26a5ef3db037dcfb4bd870730",
+          "shortSha": "f27d4f07",
+          "date": "2026-11-25 19:05:50 +0900",
+          "category": "機能実装",
+          "subject": "確定原文を章と目次付きEPUBに書き出す"
+        },
+        {
+          "sha": "b38b2dd4662c9dfc5faca78bee49174bb2551fd8",
+          "shortSha": "b38b2dd4",
+          "date": "2026-11-25 19:12:51 +0900",
+          "category": "機能実装",
+          "subject": "同じ編集面でえるモードの余白を切り替える"
+        },
+        {
+          "sha": "f851831bf52f64a9827e55d6ec22ae39fb95874a",
+          "shortSha": "f851831b",
+          "date": "2026-11-25 19:18:20 +0900",
+          "category": "機能実装",
+          "subject": "単一原稿のプレビューで本文を検索する"
+        },
+        {
+          "sha": "8a02296cc80e25fc8d6d1cafce30ed6e9026dc5a",
+          "shortSha": "8a02296c",
+          "date": "2026-11-25 19:25:01 +0900",
+          "category": "機能実装",
+          "subject": "ローカル提案の差分確認と明示採用を分ける"
+        },
+        {
+          "sha": "4676cccd2d3c7eefd2280fcda9efaa48c9e67efb",
+          "shortSha": "4676cccd",
+          "date": "2026-11-25 19:37:54 +0900",
+          "category": "安全性・境界強化",
+          "subject": "合成提案をTextKitの独立したUndo操作として検証する"
+        },
+        {
+          "sha": "02082f3a3811c7e12e4444f046fb23fdd0afec9a",
+          "shortSha": "02082f3a",
+          "date": "2026-11-25 19:43:42 +0900",
+          "category": "機能実装",
+          "subject": "合成候補の差分で不可視文字と改行を確認する"
+        },
+        {
+          "sha": "8395082ad868cdfd64491688772c989693dca0f4",
+          "shortSha": "8395082a",
+          "date": "2026-11-25 19:50:21 +0900",
+          "category": "機能実装",
+          "subject": "提案採用をシート終了と元の編集面の再確認で守る"
+        },
+        {
+          "sha": "6f2ee3043886a7d356983b053069d617d6ae0889",
+          "shortSha": "6f2ee304",
+          "date": "2026-11-25 19:59:23 +0900",
+          "category": "機能実装",
+          "subject": "合成候補の採用を通常版とは別の開発デモで試せるようにする"
+        },
+        {
+          "sha": "acaad5fe055b7179e4587ce774544f011bf5d824",
+          "shortSha": "acaad5fe",
+          "date": "2026-11-25 20:06:05 +0900",
+          "category": "性能・推論検証",
+          "subject": "オンデバイス推論の比較を独立したプローブに分離する"
+        },
+        {
+          "sha": "afa6169c0dcac6d354e45aed20df142008e06804",
+          "shortSha": "afa6169c",
+          "date": "2026-11-25 20:17:15 +0900",
+          "category": "安全性・境界強化",
+          "subject": "BOM付きUTF-16の原本を読み取りコピーに符号化を引き継ぐ"
+        },
+        {
+          "sha": "990f10284015ec7e2fe9d312dfe50ccfb66efcbe",
+          "shortSha": "990f1028",
+          "date": "2026-11-25 20:24:35 +0900",
+          "category": "機能実装",
+          "subject": "選んだフォルダ直下の原稿候補だけを一覧にする"
+        },
+        {
+          "sha": "995d2a71fc4b8cafe80e88b328024601e63a1c7a",
+          "shortSha": "995d2a71",
+          "date": "2026-11-25 20:32:59 +0900",
+          "category": "機能実装",
+          "subject": "一覧で選んだ原稿をフォルダ再選択後に読み取り専用で開く"
+        },
+        {
+          "sha": "ad1a518b3d42c7bd26f81e646a22c99273140eae",
+          "shortSha": "ad1a518b",
+          "date": "2026-11-25 20:41:54 +0900",
+          "category": "機能実装",
+          "subject": "開いている原稿を選んで続けて読むプレビューを追加する"
+        },
+        {
+          "sha": "5282f42cf4418174987a0b0e7bd26813aa96d823",
+          "shortSha": "5282f42c",
+          "date": "2026-11-25 20:46:20 +0900",
+          "category": "機能実装",
+          "subject": "選んだ複数原稿の表示本文を横断検索する"
+        },
+        {
+          "sha": "39515bf65f5dc280ecc628088ff06308c9393114",
+          "shortSha": "39515bf6",
+          "date": "2026-11-25 20:54:28 +0900",
+          "category": "機能実装",
+          "subject": "選んだ複数原稿を1冊のEPUBに書き出す"
+        },
+        {
+          "sha": "fa2b340c95b13e40f676873944e5fbb581300040",
+          "shortSha": "fa2b340c",
+          "date": "2026-11-25 21:00:16 +0900",
+          "category": "安全性・境界強化",
+          "subject": "合成候補の採用後に未反映の原稿状態を照合して同期する"
+        },
+        {
+          "sha": "6adf89efbcf2b9cc9a000997b4d9b29bc4943ca0",
+          "shortSha": "6adf89ef",
+          "date": "2026-11-25 21:08:35 +0900",
+          "category": "機能実装",
+          "subject": "合成候補の直近の採用差分を読み取り専用で表示する"
+        },
+        {
+          "sha": "8c9b026c22eb93bb389f466fc5b02a9e0410ea82",
+          "shortSha": "8c9b026c",
+          "date": "2026-11-25 21:12:59 +0900",
+          "category": "性能・推論検証",
+          "subject": "オンデバイス推論プローブに初回と再実行の比較を加える"
+        },
+        {
+          "sha": "24eb7dee303944391e2c7e939d4d7fd2e8e14cd1",
+          "shortSha": "24eb7dee",
+          "date": "2026-11-25 21:20:32 +0900",
+          "category": "機能実装",
+          "subject": "比較時のディスク版を別の読み取り専用タブで開く"
+        },
+        {
+          "sha": "d4467efb68d86a65d2ed1afb7ff27d838521973a",
+          "shortSha": "d4467efb",
+          "date": "2026-11-25 21:27:41 +0900",
+          "category": "機能実装",
+          "subject": "原稿と編集履歴を保ったまま集中表示に切り替える"
+        },
+        {
+          "sha": "8a68085b56869c726f2803bae11b4c46b41e8bbe",
+          "shortSha": "8a68085b",
+          "date": "2026-11-25 21:33:19 +0900",
+          "category": "機能実装",
+          "subject": "ウィンドウごとにmacOS標準の外観を選べるようにする"
+        },
+        {
+          "sha": "57aba9aeb5c085d153567fdb8c599148f4b1f7b2",
+          "shortSha": "57aba9ae",
+          "date": "2026-11-25 21:42:24 +0900",
+          "category": "設計・受け入れ",
+          "subject": "二世代の比較に使う受け入れ手順と合成原稿を用意する"
+        },
+        {
+          "sha": "61747e054c4c3ac738571ba606ee58a5b0d7ff52",
+          "shortSha": "61747e05",
+          "date": "2026-11-25 21:48:20 +0900",
+          "category": "安全性・境界強化",
+          "subject": "現在の確定版が復旧用に退避できたかを表示する"
+        },
+        {
+          "sha": "b6347d1560963f7ef7cc75481f862a75a2dbd5d6",
+          "shortSha": "b6347d15",
+          "date": "2026-11-25 21:56:08 +0900",
+          "category": "機能実装",
+          "subject": "確定原文の指定行へ同じ編集面で移動する"
+        },
+        {
+          "sha": "27060f67b04789616cb3529721a87782300dc7a2",
+          "shortSha": "27060f67",
+          "date": "2026-11-25 22:04:56 +0900",
+          "category": "性能・推論検証",
+          "subject": "オンデバイス推論プローブに試行ごとの待機期限を設ける"
+        },
+        {
+          "sha": "3d9367ebb1224b9b3dd91a862d08271ec9d787c6",
+          "shortSha": "3d9367eb",
+          "date": "2026-11-25 22:16:04 +0900",
+          "category": "性能・推論検証",
+          "subject": "共有CIで推論試験の監視が早すぎる問題を緩和する"
+        },
+        {
+          "sha": "b3b3e40e64070f8402dc40a06d57ff6d6f24b415",
+          "shortSha": "b3b3e40e",
+          "date": "2026-11-25 22:16:20 +0900",
+          "category": "機能実装",
+          "subject": "選択タブの確定原文を検索して一致箇所を選ぶ"
+        },
+        {
+          "sha": "57fba630d14d3129745caf5a16f48a871d9e416d",
+          "shortSha": "57fba630",
+          "date": "2026-11-25 22:26:16 +0900",
+          "category": "機能実装",
+          "subject": "原文検索欄のBindingに明示的なsetterを渡す"
+        },
+        {
+          "sha": "87d8627d7f6b4fa11ab34c1fe56e0ecb071e5b87",
+          "shortSha": "87d8627d",
+          "date": "2026-11-25 22:26:32 +0900",
+          "category": "性能・推論検証",
+          "subject": "長文のTextKit 2レイアウトを非表示で計測する"
+        },
+        {
+          "sha": "e8aeb1c4f752456233302606e5c8877d1c7500d3",
+          "shortSha": "e8aeb1c4",
+          "date": "2026-11-25 22:31:52 +0900",
+          "category": "機能実装",
+          "subject": "原稿のどの版で保存コピーを作成したか表示する"
+        },
+        {
+          "sha": "d1868fc602c6aa25837ad8caaaacfacdaea18a9a",
+          "shortSha": "d1868fc6",
+          "date": "2026-11-25 22:42:09 +0900",
+          "category": "機能実装",
+          "subject": "Markdownの表を読書と書き出しで共通表示する"
+        },
+        {
+          "sha": "e19f119605fad726f0d16db8e3dfd25d900b448b",
+          "shortSha": "e19f1196",
+          "date": "2026-11-25 22:49:34 +0900",
+          "category": "安全性・境界強化",
+          "subject": "復旧一覧で確認した版だけを削除する"
+        },
+        {
+          "sha": "9893bf5e3e5102bf81574c9325ce6a3c0860bbe0",
+          "shortSha": "9893bf5e",
+          "date": "2026-11-25 22:57:02 +0900",
+          "category": "安全性・境界強化",
+          "subject": "権限検証用のサンドボックス試作を分離する"
+        },
+        {
+          "sha": "db6c17d1d660d11122a142acc00ded8ba169c544",
+          "shortSha": "db6c17d1",
+          "date": "2026-11-25 23:04:40 +0900",
+          "category": "安全性・境界強化",
+          "subject": "第二世代CIで開発用3バンドルの署名と権限を照合する"
+        },
+        {
+          "sha": "19b5a56921ed71925152778a6dbe1c55371768b5",
+          "shortSha": "19b5a569",
+          "date": "2026-11-25 23:12:08 +0900",
+          "category": "機能実装",
+          "subject": "表示メニューとショートカットで前後のタブへ移動する"
+        },
+        {
+          "sha": "5936bd2da0e550d51b32dd8467c99e37fab36311",
+          "shortSha": "5936bd2d",
+          "date": "2026-11-25 23:16:07 +0900",
+          "category": "機能実装",
+          "subject": "ファイルメニューから選択中のタブだけを閉じる"
+        },
+        {
+          "sha": "942ac5d37b1ca8a855a3a5caf804f5b46228b347",
+          "shortSha": "942ac5d3",
+          "date": "2026-11-25 23:22:31 +0900",
+          "category": "安全性・境界強化",
+          "subject": "タブ破棄の確認を現在の要求に一度だけ適用する"
+        },
+        {
+          "sha": "e279c4af6cf002bbb1ead5eb7017b56daa352ca4",
+          "shortSha": "e279c4af",
+          "date": "2026-11-25 23:27:00 +0900",
+          "category": "安全性・境界強化",
+          "subject": "終了時にネイティブ編集面の未確定入力を守る"
+        },
+        {
+          "sha": "e5f2a0fcdc15cfad7a3a834ea7e04d536c20a370",
+          "shortSha": "e5f2a0fc",
+          "date": "2026-11-25 23:34:22 +0900",
+          "category": "安全性・境界強化",
+          "subject": "タブ追加とファイル読込でネイティブの変換を守る"
+        },
+        {
+          "sha": "d462991f4054bf6142eb23b1b63cf443ba307848",
+          "shortSha": "d462991f",
+          "date": "2026-11-25 23:38:09 +0900",
+          "category": "安全性・境界強化",
+          "subject": "コピー保存の開始と書込み前に未確定入力を守る"
+        },
+        {
+          "sha": "3ed61dc4be357bf58dfc7ce76634f37525183f96",
+          "shortSha": "3ed61dc4",
+          "date": "2026-11-25 23:41:51 +0900",
+          "category": "安全性・境界強化",
+          "subject": "書き出しの開始から書込み前まで未確定入力を守る"
+        },
+        {
+          "sha": "1b0e4291327f0617abcff0c4c459f0b881d4df24",
+          "shortSha": "1b0e4291",
+          "date": "2026-11-25 23:45:35 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本比較の開始と結果表示で未確定入力を守る"
+        },
+        {
+          "sha": "d21acca6e5692795b16b4ebdcf748baba3528192",
+          "shortSha": "d21acca6",
+          "date": "2026-11-25 23:49:51 +0900",
+          "category": "安全性・境界強化",
+          "subject": "フォルダ一覧と原稿の再選択で未確定入力を守る"
+        },
+        {
+          "sha": "e5aa6e01f10c806be6a79584ec1abc8e5495eaf1",
+          "shortSha": "e5aa6e01",
+          "date": "2026-11-25 23:53:16 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原稿の復元と退避状態の判定で未確定入力を守る"
+        },
+        {
+          "sha": "db6b8a3ccea9c69d342397f5621478ad6167f357",
+          "shortSha": "db6b8a3c",
+          "date": "2026-11-25 23:59:32 +0900",
+          "category": "安全性・境界強化",
+          "subject": "読書画面の開始と原文への移動で未確定入力を守る"
+        },
+        {
+          "sha": "ff8532c6091f47af471b6b0e97ace8945463d075",
+          "shortSha": "ff8532c6",
+          "date": "2026-11-26 00:03:38 +0900",
+          "category": "安全性・境界強化",
+          "subject": "えるモードと集中表示の切替で未確定入力を守る"
+        },
+        {
+          "sha": "750ab2c36b9ca2b4a2251ccd8cb1de67d287a904",
+          "shortSha": "750ab2c3",
+          "date": "2026-11-26 00:08:10 +0900",
+          "category": "機能実装",
+          "subject": "シート終了後にタブバーの無効表示を残さない"
+        },
+        {
+          "sha": "416ef5225183ca12aa97a5f7031fcdd00409b6f5",
+          "shortSha": "416ef522",
+          "date": "2026-11-26 00:11:56 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原文検索と行移動で未確定入力を守る"
+        },
+        {
+          "sha": "ca9f3fc7c408dad6d73ac1bea4387a1c67249135",
+          "shortSha": "ca9f3fc7",
+          "date": "2026-11-26 00:15:19 +0900",
+          "category": "CI・自動テスト",
+          "subject": "WebKitを使うPDF書き出し試験を直列化する"
+        },
+        {
+          "sha": "b9d62476a1cb04a81c600e0e4e68f94be5eb844c",
+          "shortSha": "b9d62476",
+          "date": "2026-11-26 00:20:17 +0900",
+          "category": "安全性・境界強化",
+          "subject": "提案差分の表示で未確定入力を守る"
+        },
+        {
+          "sha": "094d4f0364448dc7c614156f71de64fc78caac22",
+          "shortSha": "094d4f03",
+          "date": "2026-11-26 00:24:20 +0900",
+          "category": "安全性・境界強化",
+          "subject": "UndoとRedoで未確定入力を守る"
+        },
+        {
+          "sha": "8c61f2e06e3254b25a51d8e0c89339c92efea929",
+          "shortSha": "8c61f2e0",
+          "date": "2026-11-26 00:27:19 +0900",
+          "category": "安全性・境界強化",
+          "subject": "非選択タブと破棄済み編集面のUndoを止める"
+        },
+        {
+          "sha": "23ecb29641ef2899ec826d6abade3019899c9edb",
+          "shortSha": "23ecb296",
+          "date": "2026-11-26 00:30:17 +0900",
+          "category": "安全性・境界強化",
+          "subject": "破棄済みの編集面へ届いた入力を拒否する"
+        },
+        {
+          "sha": "b0075ac6558a426c776fcf1137b6350198ec6bbf",
+          "shortSha": "b0075ac6",
+          "date": "2026-11-26 00:34:15 +0900",
+          "category": "性能・推論検証",
+          "subject": "オンデバイス推論の合成文実測を記録する"
+        },
+        {
+          "sha": "a8eca8bf24b6c1e7df7f6f98d66352170798d7d6",
+          "shortSha": "a8eca8bf",
+          "date": "2026-11-26 00:38:24 +0900",
+          "category": "安全性・境界強化",
+          "subject": "比較用の合成原稿を開く前に照合できるようにする"
+        },
+        {
+          "sha": "911d99d8e742b24cea46aabb0cfcc265e773020e",
+          "shortSha": "911d99d8",
+          "date": "2026-11-26 00:41:49 +0900",
+          "category": "安全性・境界強化",
+          "subject": "比較用の合成原稿を第二世代CIで照合する"
+        },
+        {
+          "sha": "363f2cfc276b233795a35931b7e08e5c7c1c05cb",
+          "shortSha": "363f2cfc",
+          "date": "2026-11-26 00:46:54 +0900",
+          "category": "性能・推論検証",
+          "subject": "長文レイアウトの補助計測結果を記録する"
+        },
+        {
+          "sha": "505e643172c21af7c99cd30229736dc886a58448",
+          "shortSha": "505e6431",
+          "date": "2026-11-26 00:50:12 +0900",
+          "category": "設計・受け入れ",
+          "subject": "両世代の実機比較に使う記録ひな形を追加する"
+        },
+        {
+          "sha": "73ec2d86ff8eab7bd5f59c03769f58d06b55e3e7",
+          "shortSha": "73ec2d86",
+          "date": "2026-11-26 00:56:20 +0900",
+          "category": "安全性・境界強化",
+          "subject": "復旧画面の抜粋を文字の途中で切らずに制限する"
+        },
+        {
+          "sha": "a7ce912e358ef47138df289e7d4cb0ec055c8c18",
+          "shortSha": "a7ce912e",
+          "date": "2026-11-26 01:00:04 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本比較の抜粋で文字の途中を切らない"
+        },
+        {
+          "sha": "baa7ac185233f0638944aeb03637a240bf7b83dd",
+          "shortSha": "baa7ac18",
+          "date": "2026-11-26 01:04:54 +0900",
+          "category": "機能実装",
+          "subject": "原稿の版が変わったら行移動を取り消す"
+        },
+        {
+          "sha": "40a5d5498683ad5432ea6aa233638a05011e214e",
+          "shortSha": "40a5d549",
+          "date": "2026-11-26 01:09:52 +0900",
+          "category": "安全性・境界強化",
+          "subject": "文字の途中を指す見出し移動を拒否する"
+        },
+        {
+          "sha": "ef0b3926f54d64903a92cb899ae5ef6f530c9bcc",
+          "shortSha": "ef0b3926",
+          "date": "2026-11-26 01:15:10 +0900",
+          "category": "機能実装",
+          "subject": "編集版のバイト比較不能を不一致と区別する"
+        },
+        {
+          "sha": "fd10e4f688e8f49bc07900a1356c2d38c630e933",
+          "shortSha": "fd10e4f6",
+          "date": "2026-11-26 01:19:58 +0900",
+          "category": "安全性・境界強化",
+          "subject": "先頭の不可視文字が失われるBOMなし保存を拒否する"
+        },
+        {
+          "sha": "01a18e35f1d331b5b1ce2efbc6b8983687a94874",
+          "shortSha": "01a18e35",
+          "date": "2026-11-26 01:25:22 +0900",
+          "category": "機能実装",
+          "subject": "ファイルを開く要求を読込終了まで単独で扱う"
+        },
+        {
+          "sha": "b93744144909adf272d52a5a6f107ef1f5361751",
+          "shortSha": "b9374414",
+          "date": "2026-11-26 01:31:28 +0900",
+          "category": "機能実装",
+          "subject": "引用とリストの境界を書き出しで保つ"
+        },
+        {
+          "sha": "f39e1bded9f104922c3bdc6ebad5b03172b4d4a8",
+          "shortSha": "f39e1bde",
+          "date": "2026-11-26 01:38:14 +0900",
+          "category": "設計・受け入れ",
+          "subject": "BOMと本文先頭の区別を実機受け入れ手順に追加する"
+        },
+        {
+          "sha": "e7b786912d2d932de14a58e06c16f72f9b51fc14",
+          "shortSha": "e7b78691",
+          "date": "2026-11-26 01:44:00 +0900",
+          "category": "安全性・境界強化",
+          "subject": "本文未取得のファイルを直接開く操作で拒否する"
+        },
+        {
+          "sha": "aae621b566e28dc4fef3f1fd15ae457133843605",
+          "shortSha": "aae621b5",
+          "date": "2026-11-26 01:48:06 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本のバイト比較をUIの処理から分離する"
+        },
+        {
+          "sha": "f2d0f79754ea7b9e1e4f44c661979e66720859f1",
+          "shortSha": "f2d0f797",
+          "date": "2026-11-26 01:51:21 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本比較を元のウィンドウから中止できるようにする"
+        },
+        {
+          "sha": "569a9331e219db83127e17f544d39e452467d999",
+          "shortSha": "569a9331",
+          "date": "2026-11-26 01:55:06 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本比較の計算中に始まるネイティブ変換を試験する"
+        },
+        {
+          "sha": "778484bf563f4c8b83521002307794b7659c15fc",
+          "shortSha": "778484bf",
+          "date": "2026-11-26 02:00:44 +0900",
+          "category": "安全性・境界強化",
+          "subject": "直接読込みで曖昧なファイルURLを拒否する"
+        },
+        {
+          "sha": "a0dceabfd7db0ac8bca99b6bc8a7672d45cbc349",
+          "shortSha": "a0dceabf",
+          "date": "2026-11-26 02:05:00 +0900",
+          "category": "安全性・境界強化",
+          "subject": "コピー保存と書き出しで曖昧なファイルURLを拒否する"
+        },
+        {
+          "sha": "018a2e9fae5cff4ca695f9fccbe24c044c95b0d3",
+          "shortSha": "018a2e9f",
+          "date": "2026-11-26 02:07:46 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原稿フォルダの選択と再選択で曖昧なURLを拒否する"
+        },
+        {
+          "sha": "8125c999fc5edc74bed5dada2053a0431ebe2b30",
+          "shortSha": "8125c999",
+          "date": "2026-11-26 02:10:09 +0900",
+          "category": "安全性・境界強化",
+          "subject": "復旧ストアを作成する前に曖昧なURLを拒否する"
+        },
+        {
+          "sha": "7cb14a6db65f52a96822c44af400ea4f4dd8007e",
+          "shortSha": "7cb14a6d",
+          "date": "2026-11-26 02:14:49 +0900",
+          "category": "CI・自動テスト",
+          "subject": "読書検索でソフト改行と明示改行を区別する試験を追加する"
+        },
+        {
+          "sha": "2f28e16aa598fd6e2382ca914ec9e083a324567c",
+          "shortSha": "2f28e16a",
+          "date": "2026-11-26 02:19:37 +0900",
+          "category": "安全性・境界強化",
+          "subject": "編集後のUTF-16保存をバイト単位で確認する手順を追加する"
+        },
+        {
+          "sha": "f801623c574162d3f9f043946953039434db100d",
+          "shortSha": "f801623c",
+          "date": "2026-11-26 02:23:28 +0900",
+          "category": "安全性・境界強化",
+          "subject": "TextKit 2の編集後にUTF-16の全バイトを保存できることを試験する"
+        },
+        {
+          "sha": "7ad0423e214336d61048bf54d232d6df7ad26834",
+          "shortSha": "7ad0423e",
+          "date": "2026-11-26 02:27:27 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原文検索の開始と結果表示を本文の変換中は拒否する"
+        },
+        {
+          "sha": "4aa44e574060fce85c52f3aba7e34040f1936266",
+          "shortSha": "4aa44e57",
+          "date": "2026-11-26 02:32:22 +0900",
+          "category": "CI・自動テスト",
+          "subject": "確定した原稿だけを新しいセッションで復元する統合試験を追加する"
+        },
+        {
+          "sha": "bacb19d874ee5a8b5c4779b7b7cb8de8f9973039",
+          "shortSha": "bacb19d8",
+          "date": "2026-11-26 02:37:08 +0900",
+          "category": "安全性・境界強化",
+          "subject": "本文の変換中はプレビューの読書位置を上書きしない"
+        },
+        {
+          "sha": "6f0921f7209fc3c792180158cef3883b752e3b92",
+          "shortSha": "6f0921f7",
+          "date": "2026-11-26 02:42:52 +0900",
+          "category": "性能・推論検証",
+          "subject": "連続UTF-8の原稿で行移動の走査を短縮する"
+        },
+        {
+          "sha": "30ebf6606728bb0646d73ca8a29474726ca03b38",
+          "shortSha": "30ebf660",
+          "date": "2026-11-26 02:48:31 +0900",
+          "category": "性能・推論検証",
+          "subject": "確定原文の重複通知を抑える照合を高速化する"
+        },
+        {
+          "sha": "6b1e1c7e3e0c5b308096999a899a7db27ae2e2f4",
+          "shortSha": "6b1e1c7e",
+          "date": "2026-11-26 02:52:22 +0900",
+          "category": "性能・推論検証",
+          "subject": "文書の版更新と編集通知で原文の完全一致判定を共通化する"
+        },
+        {
+          "sha": "6258357cd5fb90bd4f2b2bf807b8c2112540b37c",
+          "shortSha": "6258357c",
+          "date": "2026-11-26 02:57:07 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原文移動の二段階照合で完全一致判定を共用する"
+        },
+        {
+          "sha": "e4c907f809de7c06b4af9fd92af9a7d39597c75f",
+          "shortSha": "e4c907f8",
+          "date": "2026-11-26 03:00:42 +0900",
+          "category": "安全性・境界強化",
+          "subject": "本文の変換中はフォルダの読込エラーを表示しない"
+        },
+        {
+          "sha": "7aa3f09c7d54904fcc667bad324b9215904092c3",
+          "shortSha": "7aa3f09c",
+          "date": "2026-11-26 03:03:54 +0900",
+          "category": "安全性・境界強化",
+          "subject": "原本比較の読込失敗時も手元の原稿の状態を確認する"
+        },
+        {
+          "sha": "bacd4dd247a26ef21bdcfd13a2c68c23aabf82ca",
+          "shortSha": "bacd4dd2",
+          "date": "2026-11-26 03:12:26 +0900",
+          "category": "安全性・境界強化",
+          "subject": "選択した原稿の読込みを中止できるようにする"
+        },
+        {
+          "sha": "9f9c0887d62f9bd01e1ad0067c21af93977e93e9",
+          "shortSha": "9f9c0887",
+          "date": "2026-11-26 03:16:54 +0900",
+          "category": "安全性・境界強化",
+          "subject": "通常のファイル読込みで選択後も本文の変換状態を確認する"
+        },
+        {
+          "sha": "977f8d645fb27af62dfe7163115f8b249a0958aa",
+          "shortSha": "977f8d64",
+          "date": "2026-11-26 05:10:02 +0900",
+          "category": "機能実装",
+          "subject": "読書画面の本文検索を非同期化する"
+        },
+        {
+          "sha": "7ce24d8aaed873a6c957270404a439d463b0cd23",
+          "shortSha": "7ce24d8a",
+          "date": "2026-11-26 05:16:35 +0900",
+          "category": "設計・受け入れ",
+          "subject": "第二世代の取消確認を受け入れ記録で分ける"
+        },
+        {
+          "sha": "1928db6185050ca2705ab2670bf60b5941bcc5bb",
+          "shortSha": "1928db61",
+          "date": "2026-11-26 05:28:35 +0900",
+          "category": "安全性・境界強化",
+          "subject": "本文の変換中は復旧記録の削除を受け付けない"
+        },
+        {
+          "sha": "5158f673ffe9f30f143a24b48da88697f8221435",
+          "shortSha": "5158f673",
+          "date": "2026-11-26 05:56:58 +0900",
+          "category": "安全性・境界強化",
+          "subject": "退避の待機後に復旧記録の削除条件を再確認する"
+        },
+        {
+          "sha": "0880776a7ccc003496c2c04ffce17db8588eadbf",
+          "shortSha": "0880776a",
+          "date": "2026-11-26 06:08:19 +0900",
+          "category": "安全性・境界強化",
+          "subject": "書き出し先のURLを生成前にも検証する"
+        },
+        {
+          "sha": "c125da0abb27b85289431aef5622ad00a569e377",
+          "shortSha": "c125da0a",
+          "date": "2026-11-26 06:18:32 +0900",
+          "category": "機能実装",
+          "subject": "HTML書き出しの拡張子を書込み時にも確認する"
+        },
+        {
+          "sha": "e3ec0da7e6b4b4a9d0c9e6cf849de9c4ec3aaf01",
+          "shortSha": "e3ec0da7",
+          "date": "2026-11-26 06:25:40 +0900",
+          "category": "設計・受け入れ",
+          "subject": "読書検索の受け入れ用原稿を再現できるようにする"
+        },
+        {
+          "sha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
+          "shortSha": "ff439e15",
+          "date": "2026-11-26 06:41:40 +0900",
+          "category": "安全性・境界強化",
+          "subject": "書き出しを生成中に中止できるようにする"
+        },
+        {
+          "sha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "date": "2026-11-26 06:52:43 +0900",
+          "category": "安全性・境界強化",
+          "subject": "書き出しの中止を生成タスクへ伝える"
+        },
+        {
+          "sha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "date": "2026-11-26 07:03:19 +0900",
+          "category": "安全性・境界強化",
+          "subject": "WebKit開始後にPDF書き出しを中止する試験を追加する"
+        },
+        {
+          "sha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "date": "2026-11-28 15:57:15 +0900",
+          "category": "機能実装",
+          "subject": "第二世代の開発状況ダッシュボードを追加する"
+        },
+        {
+          "sha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
+          "date": "2026-11-28 16:32:15 +0900",
+          "category": "CI・自動テスト",
+          "subject": "next-dashboard: PR #71 開発管制室を動的データ・CI/SHA精度・回帰テストで改善"
+        }
+      ],
+      "shortstatAll": "142 files changed, 38686 insertions(+), 215 deletions(-)",
+      "shortstatNext": "120 files changed, 24280 insertions(+)",
+      "shortstatNonNext": "22 files changed, 14406 insertions(+), 215 deletions(-)",
+      "g1ProductFilesChanged": 0
+    },
+    "github": {
+      "fetchStatus": "ok",
+      "capturedAt": "2026-11-28T10:03:18.817Z",
+      "reviewsFetchStatus": "ok",
+      "runsFetchStatus": "ok",
+      "pr": {
+        "number": 71,
+        "title": "第二世代の macOS ネイティブ基盤を立ち上げる",
+        "state": "OPEN",
+        "url": "https://github.com/lero003/hazakura-editor/pull/71",
+        "baseRefName": "main",
+        "headRefName": "next-native-editor",
+        "headRefOid": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+        "additions": 38686,
+        "deletions": 215,
+        "changedFiles": 142,
+        "createdAt": "2026-11-25T07:17:30Z",
+        "updatedAt": "2026-11-28T07:32:21Z",
+        "body": "旧段階的リファクタ（#70）を取り込まず、第一世代の製品コード・既存ビルド・配布履歴を維持します。Phase 0〜5 と棚卸しを整理し、独立した next の初回 SwiftUI / TextKit 2 スクラッチを追加しました。Swift Testing 7件、開発用アドホック .app の生成と厳密検証、文書リンク、第一世代の製品差分なしを確認。実機IME・GUI受け入れ、性能、正式署名・出荷は未実施。実原稿を扱わない開発用検証です。",
+        "statusCheckRollup": [
+          {
+            "__typename": "CheckRun",
+            "completedAt": "2026-11-28T07:35:34Z",
+            "conclusion": "SUCCESS",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698/job/140907345975",
+            "name": "swift",
+            "startedAt": "2026-11-28T07:32:29Z",
+            "status": "COMPLETED",
+            "workflowName": "Next Native"
+          },
+          {
+            "__typename": "CheckRun",
+            "completedAt": "2026-11-28T07:34:50Z",
+            "conclusion": "SUCCESS",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345454",
+            "name": "frontend",
+            "startedAt": "2026-11-28T07:32:28Z",
+            "status": "COMPLETED",
+            "workflowName": "Quality"
+          },
+          {
+            "__typename": "CheckRun",
+            "completedAt": "2026-11-28T07:36:12Z",
+            "conclusion": "SUCCESS",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345604",
+            "name": "native",
+            "startedAt": "2026-11-28T07:32:28Z",
+            "status": "COMPLETED",
+            "workflowName": "Quality"
+          }
+        ]
+      },
+      "reviewsCount": 0,
+      "recentRuns": [
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T07:32:25Z",
+          "databaseId": 46121671706,
+          "event": "pull_request",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "status": "completed",
+          "updatedAt": "2026-11-28T07:36:13Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T07:32:25Z",
+          "databaseId": 46121671698,
+          "event": "pull_request",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "status": "completed",
+          "updatedAt": "2026-11-28T07:35:35Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T06:57:22Z",
+          "databaseId": 46118961740,
+          "event": "pull_request",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "status": "completed",
+          "updatedAt": "2026-11-28T06:59:21Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T06:57:22Z",
+          "databaseId": 46118961697,
+          "event": "pull_request",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "status": "completed",
+          "updatedAt": "2026-11-28T07:02:45Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T22:03:28Z",
+          "databaseId": 45709897679,
+          "event": "pull_request",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "status": "completed",
+          "updatedAt": "2026-11-25T22:10:32Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T22:03:28Z",
+          "databaseId": 45709897901,
+          "event": "pull_request",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "status": "completed",
+          "updatedAt": "2026-11-25T22:06:34Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45709897901",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T22:03:23Z",
+          "databaseId": 45709883989,
+          "event": "push",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "status": "completed",
+          "updatedAt": "2026-11-25T22:06:23Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45709883989",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:52:52Z",
+          "databaseId": 45708336713,
+          "event": "pull_request",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:58:37Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45708336713",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:52:52Z",
+          "databaseId": 45708336661,
+          "event": "pull_request",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:55:33Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45708336661",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:52:46Z",
+          "databaseId": 45708324534,
+          "event": "push",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:55:32Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45708324534",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:41:47Z",
+          "databaseId": 45706688872,
+          "event": "pull_request",
+          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:44:55Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45706688872",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:41:47Z",
+          "databaseId": 45706688895,
+          "event": "pull_request",
+          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:48:10Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45706688895",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:41:43Z",
+          "databaseId": 45706680333,
+          "event": "push",
+          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:44:57Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45706680333",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:25:48Z",
+          "databaseId": 45704268091,
+          "event": "pull_request",
+          "headSha": "e3ec0da7e6b4b4a9d0c9e6cf849de9c4ec3aaf01",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:37:42Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45704268091",
+          "workflowName": "Quality"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-25T21:25:48Z",
+          "databaseId": 45704267835,
+          "event": "pull_request",
+          "headSha": "e3ec0da7e6b4b4a9d0c9e6cf849de9c4ec3aaf01",
+          "status": "completed",
+          "updatedAt": "2026-11-25T21:38:35Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45704267835",
+          "workflowName": "Next Native"
+        }
+      ]
+    },
+    "nextCodebase": {
+      "available": true,
+      "fetchStatus": "ok",
+      "targetPath": "next/",
+      "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "headShortSha": "6232c758",
+      "dirty": false,
+      "dirtyFileCount": 0,
+      "capturedAt": "2026-11-28T10:03:20.825Z",
+      "sourceFiles": 50,
+      "sourceLines": 9735,
+      "testFiles": 62,
+      "testLines": 14089,
+      "testAnnotations": 549,
+      "suiteAnnotations": 9,
+      "modules": [
+        {
+          "module": "Sources/HazakuraNext",
+          "files": 23,
+          "lines": 5524,
+          "tests": 0
+        },
+        {
+          "module": "Sources/HazakuraNextCore",
+          "files": 20,
+          "lines": 3203,
+          "tests": 0
+        },
+        {
+          "module": "Sources/HazakuraNextEditor",
+          "files": 1,
+          "lines": 577,
+          "tests": 0
+        },
+        {
+          "module": "Sources/HazakuraNextLayoutProbe",
+          "files": 3,
+          "lines": 177,
+          "tests": 0
+        },
+        {
+          "module": "Sources/HazakuraNextModelProbe",
+          "files": 3,
+          "lines": 254,
+          "tests": 0
+        },
+        {
+          "module": "Tests/HazakuraNextTests",
+          "files": 35,
+          "lines": 7743,
+          "tests": 260
+        },
+        {
+          "module": "Tests/HazakuraNextCoreTests",
+          "files": 22,
+          "lines": 4440,
+          "tests": 232
+        },
+        {
+          "module": "Tests/HazakuraNextEditorTests",
+          "files": 2,
+          "lines": 1321,
+          "tests": 35
+        },
+        {
+          "module": "Tests/HazakuraNextLayoutProbeTests",
+          "files": 1,
+          "lines": 99,
+          "tests": 6
+        },
+        {
+          "module": "Tests/HazakuraNextModelProbeTests",
+          "files": 2,
+          "lines": 486,
+          "tests": 16
+        },
+        {
+          "module": "scripts",
+          "files": 3,
+          "lines": 299,
+          "tests": 0
+        },
+        {
+          "module": "Resources",
+          "files": 2,
+          "lines": 30,
+          "tests": 0
+        }
+      ]
+    },
+    "ciHighlights": {
+      "nextNativeLatest": {
+        "runId": 45709897901,
+        "url": "https://github.com/lero003/hazakura-editor/actions/runs/45709897901",
+        "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+        "runner": "macos-26",
+        "swiftVersion": "6.3.3",
+        "conclusion": "success",
+        "swiftTestingTests": 549,
+        "swiftTestingSuites": 62,
+        "swiftTestingDurationSec": 13.842,
+        "acceptanceFixturesVerified": 8,
+        "devBundlesVerified": [
+          "dev.hazakura.editor.next.dev",
+          "dev.hazakura.editor.next.assist-demo.dev",
+          "dev.hazakura.editor.next.sandbox-preview.dev"
+        ]
+      },
+      "qualityLatestOnPr71": {
+        "runId": 45709897679,
+        "url": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679",
+        "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+        "conclusion": "success",
+        "frontendFiles": 341,
+        "frontendTests": 3175,
+        "nodeScriptsPassed": 31,
+        "appStoreSurfaceFiles": 10,
+        "appStoreSurfaceTests": 137,
+        "appStoreSurfaceScripts": 7,
+        "rustPassed": 515,
+        "rustIgnored": 4,
+        "rustPtyFilteredPassed": 1,
+        "g1SwiftXCTestPassed": 66,
+        "g1SwiftTestingPassed": 4
+      },
+      "notableEarlierCiEvents": [
+        {
+          "runId": 45641744373,
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45641744373/job/139301938065",
+          "conclusion": "failure",
+          "summary": "実WebKitを使うPDF書き出し試験3件が並列実行時にタイムアウト。ca9f3fc7でテストスイートのみ直列化(.serialized)して再発を抑制（製品側8秒制限は未変更）。"
+        },
+        {
+          "runId": 45673532874,
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45673532874",
+          "conclusion": "failure",
+          "summary": "push連続投入に伴うconcurrencyキャンセル／ジョブ中断。直後のPR run 45673541820は成功。"
+        }
+      ],
+      "capturedAt": "2026-11-28T15:50:00+09:00",
+      "note": "CIの最終成功時に記録した詳細値。最新HEADの状態は mechanical.ci を参照し、旧HEADの成功を最新HEADの成功として扱わない。"
+    },
+    "ci": {
+      "targetSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "targetShortSha": "6232c758",
+      "targetSource": "GitHub PR headRefOid",
+      "capturedAt": "2026-11-28T10:03:18.716Z",
+      "fetchStatus": "ok",
+      "state": "success",
+      "label": "最新HEAD 全成功",
+      "tone": "ok",
+      "reason": "最新HEAD（6232c758）に紐づく全ワークフローが成功しています。",
+      "workflows": [
+        {
+          "name": "Next Native",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T07:32:29Z",
+          "completedAt": "2026-11-28T07:35:34Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698",
+          "checks": [
+            {
+              "name": "swift",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698/job/140907345975"
+            }
+          ]
+        },
+        {
+          "name": "Quality",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T07:32:28Z",
+          "completedAt": "2026-11-28T07:34:50Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706",
+          "checks": [
+            {
+              "name": "frontend",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345454"
+            },
+            {
+              "name": "native",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345604"
+            }
+          ]
+        }
+      ],
+      "failureWorkflows": [],
+      "runningWorkflows": [],
+      "successWorkflows": [
+        {
+          "name": "Next Native",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T07:32:29Z",
+          "completedAt": "2026-11-28T07:35:34Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698",
+          "checks": [
+            {
+              "name": "swift",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671698/job/140907345975"
+            }
+          ]
+        },
+        {
+          "name": "Quality",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+          "shortSha": "6232c758",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T07:32:28Z",
+          "completedAt": "2026-11-28T07:34:50Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706",
+          "checks": [
+            {
+              "name": "frontend",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345454"
+            },
+            {
+              "name": "native",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46121671706/job/140907345604"
+            }
+          ]
+        }
+      ],
+      "missingWorkflows": [],
+      "oldHeadWorkflows": [],
+      "oldHeadSuccesses": [
+        {
+          "workflowName": "Next Native",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "updatedAt": "2026-11-28T06:59:21Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Quality",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "updatedAt": "2026-11-28T07:02:45Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Quality",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679",
+          "updatedAt": "2026-11-25T22:10:32Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897901",
+          "updatedAt": "2026-11-25T22:06:34Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709883989",
+          "updatedAt": "2026-11-25T22:06:23Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Quality",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708336713",
+          "updatedAt": "2026-11-25T21:58:37Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708336661",
+          "updatedAt": "2026-11-25T21:55:33Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708324534",
+          "updatedAt": "2026-11-25T21:55:32Z",
+          "conclusion": "success"
+        }
+      ],
+      "oldHeadSuccessCount": 13,
+      "checkSourceNote": "statusCheckRollup は PR の現在の headRefOid に紐づく check として扱います。recentRuns は headSha を照合し、旧HEADの成功は current の成功に数えません。"
+    },
+    "provenance": {
+      "targetSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "targetShortSha": "6232c758",
+      "targetSource": "GitHub PR headRefOid",
+      "gitHead": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "githubHead": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "sourceSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+      "evaluationSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+      "evaluationShortSha": "577f1b9b",
+      "generatedAt": "2026-11-28T10:03:18.716Z",
+      "evaluatedAt": "2026-11-28T15:50:00+09:00",
+      "sourceCapturedAt": "2026-11-28T10:03:20.825Z",
+      "matches": {
+        "githubVsGit": true,
+        "githubVsTarget": true,
+        "gitVsTarget": true,
+        "sourceVsTarget": true,
+        "evaluationVsTarget": false
+      },
+      "evaluation": {
+        "headMoved": true,
+        "impact": "dashboard_only",
+        "nonDashboardChangesSinceEvaluation": 1,
+        "productFilesChangedSinceEvaluation": 0,
+        "supportingFilesChangedSinceEvaluation": 1
+      },
+      "source": {
+        "available": true,
+        "dirty": false,
+        "fetchStatus": "ok"
+      },
+      "warnings": [
+        {
+          "code": "evaluation_head_moved",
+          "severity": "info",
+          "message": "最新HEADが定性評価の対象SHAから進んでいます。next/ の製品コード変更はありません（ダッシュボード・文書・CIのみ）。評価内容への影響は限定的です。"
+        }
+      ],
+      "status": "dashboard-only"
+    }
+  },
+  "evaluation": {
+    "evaluatedAt": "2026-11-28T15:50:00+09:00",
+    "evaluatedCommitSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+    "evaluatedShortSha": "577f1b9b",
+    "isStaleRelativeToHead": true,
+    "latestObservedHeadSha": "6232c7588f79bb1d7fe41c4fa20d27d19ef4221c",
+    "worktreeContext": "next-native-editor worktreeは577f1b9bでクリーン。main worktreeにはv3.4.1江戸彼岸（庭・写真調追補7〜8）および旧設計調査の未コミット作業が存在し、PR #71には含まれない。",
+    "scoringRules": {
+      "states": [
+        {
+          "id": "未着手",
+          "glyph": "○",
+          "tone": "muted",
+          "description": "第二世代で未着手。"
+        },
+        {
+          "id": "調査・設計中",
+          "glyph": "◌",
+          "tone": "info",
+          "description": "契約・境界・方式を比較検討中。"
+        },
+        {
+          "id": "部分実装",
+          "glyph": "◐",
+          "tone": "warn",
+          "description": "一部機能やコアのみ実装済み、主要経路が未接続。"
+        },
+        {
+          "id": "試作実装",
+          "glyph": "◈",
+          "tone": "proto",
+          "description": "限定範囲・別バンドル・合成原稿向けの動作試作。"
+        },
+        {
+          "id": "実装済み",
+          "glyph": "●",
+          "tone": "ok",
+          "description": "予定スコープの実装が完了（検証・実機確認は別判定）。"
+        },
+        {
+          "id": "自動検証済み",
+          "glyph": "✓",
+          "tone": "ok",
+          "description": "Swift Testing / CIで境界・回帰テストが通過。"
+        },
+        {
+          "id": "実機受け入れ済み",
+          "glyph": "◆",
+          "tone": "strong",
+          "description": "macOS実機GUI・IME・VoiceOver・比較手順で合格。"
+        },
+        {
+          "id": "製品化済み",
+          "glyph": "★",
+          "tone": "strong",
+          "description": "配布署名・公証・移行を含め世代交代可能な状態。"
+        },
+        {
+          "id": "保留・対象外",
+          "glyph": "－",
+          "tone": "parked",
+          "description": "方針により後続フェーズへ保留、またはG2では廃止・対象外。"
+        },
+        {
+          "id": "不明・未確認",
+          "glyph": "？",
+          "tone": "alert",
+          "description": "証拠不足・未測定・外部環境未確認。"
+        }
+      ],
+      "implementationWeights": {
+        "未着手": 0,
+        "調査・設計中": 0.15,
+        "部分実装": 0.4,
+        "試作実装": 0.65,
+        "実装済み": 1,
+        "自動検証済み": 1,
+        "実機受け入れ済み": 1,
+        "製品化済み": 1,
+        "不明・未確認": 0
+      },
+      "verificationWeights": {
+        "未実施": 0,
+        "不明・未確認": 0,
+        "部分検証": 0.5,
+        "自動検証済み": 1
+      },
+      "acceptanceWeights": {
+        "未着手": 0,
+        "不明・未確認": 0,
+        "補助計測のみ": 0.25,
+        "実機受け入れ済み": 1,
+        "製品化済み": 1
+      },
+      "productReadinessWeights": {
+        "implementation": 0.3,
+        "verification": 0.3,
+        "deviceAcceptance": 0.4
+      },
+      "formulaExplanation": "対象カタログ 36 項目のうち「保留・対象外」1 件を除く 35 項目を分母とします。このうち「保留（将来検討）」6 件は分母に含み、実装重み 0 として計上します（対象外とは区別）。(1) 機能・試作到達度 = 実装状態の重み平均（未着手=0 / 調査・設計中=0.15 / 部分実装=0.4 / 試作実装=0.65 / 実装済み=1）。(2) 製品品質到達度 = 実装 0.3 + 自動検証 0.3 + 実機受け入れ 0.4 の3軸加重平均（自動検証: 未実施=0 / 部分検証=0.5 / 自動検証済み=1、実機受け入れ: 未着手=0 / 補助計測のみ=0.25 / 実機受け入れ済み=1）。実機受け入れは 24 項目（合格 0 / 未測定 24 / 対象外 0）。安全性・実機ゲートが未通過の間は、数値に関わらず製品化不可の警告を表示します。"
+    },
+    "executiveSummary": {
+      "primaryDevelopmentPhase": "Phase 1（エディタ基盤）＋ Phase 2（Safe Editor）が主軸。Phase 3・4は独立試作として先行並走。",
+      "biggestChallenge": "自動テスト（549件）は高水準で通過しているが、原本への上書き保存・競合解決が未実装であり、かつ実機GUI・日本語IME・強制終了復旧・サンドボックス権限の実機受け入れ（明細項目）が0件のまま残っていること。",
+      "criticalSafetyAlerts": [
+        {
+          "severity": "critical",
+          "title": "実機GUI・日本語IME受け入れが全件「未測定」",
+          "detail": "docs/next-native-acceptance-record.md の E1〜E4 / S1〜S6 / R1〜R4 / A1 および第二世代専用の追加確認5件はすべて未実施。TextKit 2 の非表示ウィンドウ試験は実IME変換・シート終了順序・VoiceOverの代替にならない。"
+        },
+        {
+          "severity": "critical",
+          "title": "原本への明示保存と競合解決が未実装",
+          "detail": "現在は「コピーを保存…（新規ファイルのみ）」と OriginalSavePreflight（読み取り専用検証コア）まで。既存ファイルの置換書き込み・外部変更衝突解決・セキュリティスコープの永続復元が未接続。"
+        },
+        {
+          "severity": "warning",
+          "title": "PR #71 本文と最新HEAD（118コミット）の乖離",
+          "detail": "PR #71本文は初期3コミット時点（Swift Testing 7件）の説明で停止しており、最新の549テスト・Phase 1〜4先行試作の実態を反映していない。"
+        }
+      ],
+      "highlights": [
+        {
+          "factType": "verified_fact",
+          "text": "第一世代コード（src/, src-tauri/, src-helpers/, package.json）への変更は0ファイル。PR #71の実装は完全に next/ 配下（120ファイル, +24,280行）へ隔離されている。"
+        },
+        {
+          "factType": "verified_fact",
+          "text": "CI（Next Native run 45709897901）は macos-26 / Swift 6.3.3 で Swift Testing 549件（62スイート）全通過、8件の受け入れ合成原稿照合、3種バンドルの厳密署名検証に成功。"
+        },
+        {
+          "factType": "agent_evaluation",
+          "text": "コアロジック（UTF-8/UTF-16 byte保存・symlink/ハードリンク/iCloud未取得ガード・バイナリマニフェストによるプロセスクラッシュ復旧・TextKit 2のIME変換中ロック）は第一世代の失敗教訓を反映し非常に堅牢に設計されている。"
+        },
+        {
+          "factType": "agent_evaluation",
+          "text": "一方で UI/UX は検証用スクラッチ（上段バナー＋アイコンタブバー＋全機能モーダルシート）の段階であり、3ペイン構成・ワークスペース常駐ツリー・インライン分割プレビュー・設定UIは未構築。"
+        }
+      ]
+    },
+    "discrepancies": [
+      {
+        "id": "disc-pr-body-stale",
+        "severity": "high",
+        "title": "PR #71 本文が初期スクラッチ時点のまま停止",
+        "sourceA": "GitHub PR #71 body（「初回 SwiftUI / TextKit 2 スクラッチを追加しました。Swift Testing 7件」）",
+        "sourceB": "PR #71 最新HEAD 577f1b9b（118コミット、132ファイル、+24,943/-215行、Swift Testing 549件、Phase 1〜4の試作を含む）",
+        "impact": "PR概要だけを見ると極めて初期のPoCに見えるが、実際にはSafe Editorコアから書き出し・Assistデモ・プローブまで大規模に実装されている。",
+        "evidence": [
+          {
+            "label": "PR #71",
+            "path": "https://github.com/lero003/hazakura-editor/pull/71"
+          }
+        ]
+      },
+      {
+        "id": "disc-roadmap-branch-split",
+        "severity": "high",
+        "title": "main と next-native-editor 間で第二世代方針が分岐",
+        "sourceA": "main の docs/roadmap.md / docs/current-work.md（第一世代の段階的リファクタ＋PR #70系統の実験案）",
+        "sourceB": "next-native-editor の docs/roadmap.md / docs/current-work.md（2026-11-25 オーナー決定により独立 macOS ネイティブ再構築へ切替、PR #70をキューから除外）",
+        "impact": "main の文書だけを参照すると古い方針（Tauri維持の部分改修）と誤認する恐れがある。PR #71 マージ時に方針転換が正式に反映される。",
+        "evidence": [
+          {
+            "label": "next-native-editor roadmap",
+            "path": "docs/roadmap.md#第二世代設計"
+          },
+          {
+            "label": "PR #70 (open)",
+            "path": "https://github.com/lero003/hazakura-editor/pull/70"
+          }
+        ]
+      },
+      {
+        "id": "disc-status-date-mismatch",
+        "severity": "medium",
+        "title": "current-status.md の Last reviewed 日付と本文内記録日のずれ",
+        "sourceA": "docs/current-status.md ヘッダ（Last reviewed: 2026-11-25）",
+        "sourceB": "同ファイル本文（2026-11-26 JST の LayoutProbe 911d99d8・ModelProbe 23ecb296 の実測記録および 577f1b9b までの検証結果を記載）",
+        "impact": "実態としては 2026-11-26 朝時点の記録まで反映されているが、ヘッダ日付のみ前日のまま残っている。",
+        "evidence": [
+          {
+            "label": "current-status.md",
+            "path": "docs/current-status.md"
+          }
+        ]
+      },
+      {
+        "id": "disc-os-swift-versions",
+        "severity": "medium",
+        "title": "最小ターゲット・CI環境・開発機環境のSwift/macOS版差",
+        "sourceA": "next/Package.swift（swift-tools-version: 6.2, platforms: [.macOS(.v26)]）",
+        "sourceB": "GitHub Actions Next Native（macos-26 / Swift 6.3.3）vs 開発機記録（macOS 27.2.1 / Swift 6.4.2）",
+        "impact": "Foundation Models 等のOSバージョン依存挙動や、将来の最小対応OS（macOS 26以前を切り捨てるか等）がまだ暫定・未確定。",
+        "evidence": [
+          {
+            "label": "Package.swift",
+            "path": "next/Package.swift"
+          },
+          {
+            "label": "next-native.yml",
+            "path": ".github/workflows/next-native.yml"
+          }
+        ]
+      },
+      {
+        "id": "disc-pdf-timeout-and-main-dirty",
+        "severity": "low",
+        "title": "PDF書き出しタイムアウト設定差と main 作業ツリーの未コミット差分",
+        "sourceA": "第一世代（docs/reviews/2026-11-25-second-generation-architecture.md）ではPDFタイムアウト60秒、またmain作業ツリーは未コミット江戸彼岸変更あり（frontend 3,189〜3,190 tests）",
+        "sourceB": "第二世代 MarkdownPDFExport.swift は watchdog 8秒。PR #71 Quality CI（9681d27b基盤）は frontend 3,175 tests。",
+        "impact": "8秒制限は大きな原稿での実機確認が未実施。また main の未コミット変更と PR #71 側 CI 数値の差は基盤コミットの違いによるもので退行ではない。",
+        "evidence": [
+          {
+            "label": "MarkdownPDFExport.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownPDFExport.swift"
+          },
+          {
+            "label": "Quality CI 45709897679",
+            "path": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679"
+          }
+        ]
+      }
+    ],
+    "phases": [
+      {
+        "id": "phase-0",
+        "name": "Phase 0：再設計",
+        "purpose": "第一世代の機能・安全契約・テストを棚卸しし、継承／再設計／廃止／保留を分類。Swiftの責務分担・独立プロジェクト・CI・検証手順を確立する。",
+        "status": "部分実装",
+        "parallelNote": "棚卸し・独立SwiftPM構成・CI・受け入れ手順は完了しているが、製品の最低OS・対応機種（Intel含む）・配布方式の最終決定が未確定。",
+        "completed": [
+          "第一世代の継承／再設計／廃止／保留の棚卸し（docs/roadmap.md）",
+          "独立SwiftPMプロジェクト next/（5ターゲット＋5テストターゲット）構築",
+          "3種バンドルの厳密署名・entitlement検証スクリプトと CI（.github/workflows/next-native.yml）",
+          "両世代比較用の合成原稿生成スクリプトと受け入れ手順（docs/next-native-acceptance.md）"
+        ],
+        "remaining": [
+          "製品の最低対応OS・Intel Mac対応可否・配布方式（App Store / Developer）の確定",
+          "第二世代の継続的外部レビュー体制とリリース基準の固定"
+        ],
+        "exitCriteria": "技術構成・対応OS/機種・配布方針の合意、独立ビルドとCI基盤の安定稼働。",
+        "dependencies": []
+      },
+      {
+        "id": "phase-1",
+        "name": "Phase 1：エディタ基盤",
+        "purpose": "SwiftUIアプリにAppKit / TextKit 2のMarkdown編集面を接続し、文書・タブ・編集状態を分離。日本語IME・Undo/Redo・長文性能を検証する。",
+        "status": "自動検証済み",
+        "parallelNote": "非表示ウィンドウ・合成試験と補助計測は完了。実機GUI・実日本語IME・起動/メモリ/実描画比較が未実施のため完了判定には至っていない。",
+        "completed": [
+          "TextKit 2 専用 NSTextView（MarkdownTextView）と SwiftUI 橋渡し（TextKitEditor）",
+          "最大8タブのメモリ内管理、前後循環（⌃Tab / ⌃⇧Tab）、タブ/ウィンドウ/終了ゲート",
+          "IME未確定入力（hasMarkedText / textInputDepth）中の操作・切替・Undo抑止",
+          "確定原文の行移動（⌘L）と検索（⌘F、最大64件・512B制限）",
+          "HazakuraNextLayoutProbe による長文レイアウト補助計測（387,285B, 5試行）"
+        ],
+        "remaining": [
+          "実機での日本語IME変換中・確定・取消操作（E1〜E4）の受け入れ",
+          "起動時間・RSSメモリ・縮幅再描画・実入力応答の第一世代との同条件比較",
+          "実キーボードフォーカス・ショートカット・VoiceOver確認"
+        ],
+        "exitCriteria": "E1〜E4 の実機合格、長文性能・メモリの同条件比較記録、IME変換中の非破壊保証。",
+        "dependencies": [
+          "phase-0"
+        ]
+      },
+      {
+        "id": "phase-2",
+        "name": "Phase 2：Safe Editor",
+        "purpose": "選択範囲内のファイル・ワークスペース操作、明示保存・保存競合・未保存復旧、文字コード・改行・BOM、Non-Git Diff、サンドボックス境界を実装し原文保護を実証する。",
+        "status": "部分実装",
+        "parallelNote": "読取・コピー新規保存・原本比較・行差分・バイナリ復旧ストア・フォルダ一覧は自動検証済みだが、原本への上書き保存・競合解決・S1〜S6の実機受け入れが未完了。",
+        "completed": [
+          "UTF-8（BOM有無）および BOM付きUTF-16 LE/BE の読み取り専用オープン（2 MiB上限・iCloud未取得拒否・symlink拒否）",
+          "編集用コピーの新規ファイル保存（O_EXCLステージング＋renameatx_np RENAME_EXCL、U+FEFF先頭誤認拒否）",
+          "3版比較（開いた時点 / ディスク版 / 編集版）と Non-Git 行差分（4 MiB / 12,000行予算）",
+          "バイナリマニフェスト（HZDRAFT + SHA-256 + flock + fsync + renameat）による未保存退避・復元・安全削除",
+          "フォルダ直下候補一覧（512件上限・パス非保持・再選択照合による安全オープン）",
+          "OriginalSavePreflight（原本上書き前検証の読み取り専用コア）および Sandbox Preview バンドル生成"
+        ],
+        "remaining": [
+          "原本への明示保存フローと協調しない外部更新・異常終了時の競合解決UI/書込み接続",
+          "Shift-JIS / EUC-JP 等レガシー文字コード・文字コード指定再読込・書込み形式変更",
+          "恒常的なワークスペースペイン／ファイルツリーと安全なファイル操作（作成・改名・ゴミ箱）",
+          "S1〜S6 の実機受け入れ（特に強制終了復旧 S4・Sandbox権限ピッカー S6）"
+        ],
+        "exitCriteria": "原本保存・競合解決の実装と、S1〜S6の全実機安全ゲート通過（データ消失・無断上書きゼロ）。",
+        "dependencies": [
+          "phase-1"
+        ]
+      },
+      {
+        "id": "phase-3",
+        "name": "Phase 3：Hazakura固有の体験",
+        "purpose": "Markdownプレビュー、L Mode、Reader / Book Scope、テーマ・Zen Mode、HTML/PDF/EPUB書き出しを原文非破壊で実装。メモ・縦書きはここで再評価する。",
+        "status": "試作実装",
+        "parallelNote": "Phase 2の完了を待たず、確定原文スナップショットを前提とした単一/複数原稿プレビュー・3形式書き出し・えるモード・集中表示・外観の試作が先行実装済み。",
+        "completed": [
+          "確定原文スナップショットによる Markdown プレビュー（目次・章表示・本文検索・再開位置メモリ保持・原文行復帰）",
+          "複数原稿（2〜8タブ・合計256 KiB）の連続読書と横断検索",
+          "HTML / PDF（WebKit非永続1ページ試作・8秒中止可能） / EPUB（単一・複数原稿・EPUBCheck 5.4.0 2件合格）書き出し",
+          "えるモード（余白切替のみ）・集中表示（⌘⇧J）・macOS標準外観（System/Light/Dark）試作"
+        ],
+        "remaining": [
+          "L Mode のMarkdown記号非表示・見出し/引用装飾（実機IME整合確認後）",
+          "PDF の用紙サイズ指定・改ページ対応（現在は縦長1ページ試作）、EPUB 表紙・書誌情報・画像埋込境界",
+          "永続的な Book Scope・画像ローカル/HTTPS許可境界・テーマ独自演出の採否",
+          "見直しメモ・再開メモ・編集ルールメモ・縦書きReader/EPUBの再評価と設計",
+          "R1〜R4 の実機受け入れ（閲覧アプリでのEPUB/PDF確認、VoiceOver含む）"
+        ],
+        "exitCriteria": "R1〜R4実機合格、書き出し品質とL Mode/Reader実用化の判断、メモ・縦書き採否決定。",
+        "dependencies": [
+          "phase-1",
+          "phase-2"
+        ]
+      },
+      {
+        "id": "phase-4",
+        "name": "Phase 4：ローカルAI",
+        "purpose": "Foundation Models / MLX Swift を実測評価し、モデル管理、Local Assist、Diff確認と明示採用、推論停止・隔離・メモリ管理を構築する。",
+        "status": "試作実装",
+        "parallelNote": "推論なしの採用ハンドオフ（別バンドル開発デモ）と、エディタ非接続の Foundation Models 単体比較CLI（HazakuraNextModelProbe）を分離して検証中。",
+        "completed": [
+          "AssistProposalFlow / AssistReviewHandoff による選択固定・シート終了照合・1 Undo単位の明示反映",
+          "不可視文字・改行差・Unicodeスカラー表示付き差分サンプル（AssistReviewSampleView）",
+          "別バンドル開発デモ（dev.hazakura.editor.next.assist-demo.dev）と直近採用差分の閲覧",
+          "独立CLI HazakuraNextModelProbe（--check / --generate / --compare, 30秒期限, macOS 27.2.1で単発実測済み）"
+        ],
+        "remaining": [
+          "Apple Foundation Models と MLX Swift の実機品質・日本語校正精度・メモリ・停止挙動の比較評価",
+          "モデル管理UI・ダウンロード/ローカルソース契約の要否判断",
+          "通常版への提案採用接続（復旧記録との整合・失敗時扱い決定後）と会話型推敲UI",
+          "A1（通常版・採用デモ・推論CLI）の実機受け入れ"
+        ],
+        "exitCriteria": "推論基盤の選定、A1実機合格、ネットワークフォールバックなし・自動適用なし境界の維持。",
+        "dependencies": [
+          "phase-1",
+          "phase-2"
+        ]
+      },
+      {
+        "id": "phase-5",
+        "name": "Phase 5：製品化",
+        "purpose": "第一世代との機能・品質・性能比較、設定・データ移行設計、実機フル検証、正式な署名・公証・App Store / Developer配布確認を経て世代交代を判定する。",
+        "status": "未着手",
+        "parallelNote": "現在は受け入れ手順書（next-native-acceptance.md）が用意された段階であり、移行設計・配布署名・世代交代判定は未着手。",
+        "completed": [
+          "世代間比較・実機受け入れ手順と記録テンプレートの作成"
+        ],
+        "remaining": [
+          "第一世代からの設定・ブックレシピ・復旧記録の移行設計（または非移行案内）",
+          "配布レーン分離（App Store版 vs Developer版）と正式コード署名・公証・App Store提出構成",
+          "多言語対応（日本語・英語・かな）・VoiceOver全面監査・アクセシビリティ確認",
+          "第一世代との全品質ゲート比較およびオーナーによる世代交代可否判断"
+        ],
+        "exitCriteria": "Phase 1〜4の全実機受け入れ合格、正式署名/公証/審査準備完了、世代交代承認。",
+        "dependencies": [
+          "phase-1",
+          "phase-2",
+          "phase-3",
+          "phase-4"
+        ]
+      }
+    ],
+    "featureComparison": [
+      {
+        "id": "feat-editor-engine",
+        "category": "エディタ基盤・日本語IME",
+        "name": "Markdownテキスト編集面",
+        "disposition": "再設計",
+        "g1Status": "実装済み（CodeMirror 6 @6.43.13 pin + React）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "実機GUI入力、長文折り返し/描画品質比較、フォント/行間設定UI。",
+        "evidence": [
+          {
+            "label": "TextKitEditor.swift",
+            "path": "next/Sources/HazakuraNextEditor/TextKitEditor.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-ime-undo",
+        "category": "エディタ基盤・日本語IME",
+        "name": "日本語IME未確定入力保護とUndo/Redo",
+        "disposition": "継承",
+        "g1Status": "実装済み（CodeMirror composition保護＋履歴）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "実日本語IME（ことえり/ATOK等）変換中のタブ切替・Undo・シート操作の実機確認（E1）。",
+        "evidence": [
+          {
+            "label": "TextKitEditorTests.swift",
+            "path": "next/Tests/HazakuraNextEditorTests/TextKitEditorTests.swift"
+          },
+          {
+            "label": "WorkspaceSession.swift",
+            "path": "next/Sources/HazakuraNext/WorkspaceSession.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-source-jump-search",
+        "category": "エディタ基盤・日本語IME",
+        "name": "原文の行移動（⌘L）・原文検索（⌘F）",
+        "disposition": "継承",
+        "g1Status": "実装済み（検索・置換・行移動）",
+        "implementationStatus": "部分実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "検索結果上限64件超の扱い、置換機能、正規表現、E2/E3実機確認。",
+        "evidence": [
+          {
+            "label": "SourceSearch.swift",
+            "path": "next/Sources/HazakuraNextCore/SourceSearch.swift"
+          },
+          {
+            "label": "SourceLineLookup.swift",
+            "path": "next/Sources/HazakuraNextCore/SourceLineLookup.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-tabs",
+        "category": "タブ・ワークスペース",
+        "name": "複数タブ管理・循環切替・閉じる操作",
+        "disposition": "再設計",
+        "g1Status": "実装済み（無制限タブ＋オーバーフローUI）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "タブ上限8件制限の緩和検討、並べ替え、タブセッション永続化、E1/E4実機確認。",
+        "evidence": [
+          {
+            "label": "ScratchTabs.swift",
+            "path": "next/Sources/HazakuraNextCore/ScratchTabs.swift"
+          },
+          {
+            "label": "WorkspaceTabNavigationTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceTabNavigationTests.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-folder-catalog",
+        "category": "タブ・ワークスペース",
+        "name": "フォルダ内原稿一覧と再選択オープン",
+        "disposition": "再設計",
+        "g1Status": "実装済み（3ペイン左ツリー、作成/改名/ゴミ箱、検索）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "常駐ワークスペースツリーUI、サブフォルダ階層展開、新規ファイル作成/リネーム/ゴミ箱移動、S3実機確認。",
+        "evidence": [
+          {
+            "label": "SelectedFolderCatalog.swift",
+            "path": "next/Sources/HazakuraNextCore/SelectedFolderCatalog.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-workspace-refresh",
+        "category": "タブ・ワークスペース",
+        "name": "ワークスペース外部変更追従（v3.2.1）",
+        "disposition": "保留",
+        "g1Status": "製品化済み（復帰・10秒間隔・手動更新）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "常駐ツリー実装後に有界更新・旧応答拒否を設計。",
+        "evidence": [
+          {
+            "label": "roadmap.md",
+            "path": "docs/roadmap.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-file-open-utf",
+        "category": "ファイル操作・文字コード",
+        "name": "UTF-8 / UTF-16 BOM読込・改行・元バイト保持",
+        "disposition": "再設計",
+        "g1Status": "実装済み（Rust encoding/util, macOS iconv）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "2 MiB上限超の大容量ファイル警告閲覧、クラウド(iCloud)未取得時案内・ピッカー実機確認（S1）。",
+        "evidence": [
+          {
+            "label": "SelectedTextFile.swift",
+            "path": "next/Sources/HazakuraNextCore/SelectedTextFile.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-legacy-encoding",
+        "category": "ファイル操作・文字コード",
+        "name": "Shift-JIS / EUC-JP 等レガシー文字コード・指定再読込",
+        "disposition": "継承",
+        "g1Status": "実装済み（v3.3 iconv委譲・文字コード再試行UI）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "UTF-8 / BOM付きUTF-16 以外の符号化検出・デコード・保存形式切替・文字化け再読込UI。",
+        "evidence": [
+          {
+            "label": "next-native-acceptance.md",
+            "path": "docs/next-native-acceptance.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-original-save",
+        "category": "保存・競合・復旧",
+        "name": "原本への明示上書き保存と競合解決",
+        "disposition": "再設計",
+        "g1Status": "実装済み（衝突検出・バックアップ比較・置換/別名）",
+        "implementationStatus": "部分実装",
+        "verificationStatus": "部分検証",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "OriginalSavePreflightの読み取り検証コアのみ。書込み本体・外部非協調更新保護・競合解決ダイアログが未実装。",
+        "evidence": [
+          {
+            "label": "OriginalSavePreflight.swift",
+            "path": "next/Sources/HazakuraNextCore/OriginalSavePreflight.swift"
+          },
+          {
+            "label": "handoff.md",
+            "path": "docs/handoff.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-copy-save",
+        "category": "保存・競合・復旧",
+        "name": "編集用コピーの新規保存（⌘⇧S・U+FEFF保護）",
+        "disposition": "再設計",
+        "g1Status": "実装済み（Save As）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "実機NSSavePanelでの保存・取消・既存名拒否、および編集後UTF-16全バイト一致の実機確認（S1追加）。",
+        "evidence": [
+          {
+            "label": "SelectedTextCopyWriter.swift",
+            "path": "next/Sources/HazakuraNextCore/SelectedTextCopyWriter.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-original-compare",
+        "category": "保存・競合・復旧",
+        "name": "開いた原本・ディスク版・編集版の3版比較",
+        "disposition": "再設計",
+        "g1Status": "実装済み（ディスク比較・再読込）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "実機での外部追記後の比較と「比較時のディスク版を別タブで開く」操作・中止確認（S2）。",
+        "evidence": [
+          {
+            "label": "OriginalFileComparison.swift",
+            "path": "next/Sources/HazakuraNextCore/OriginalFileComparison.swift"
+          },
+          {
+            "label": "OriginalFileComparisonView.swift",
+            "path": "next/Sources/HazakuraNext/OriginalFileComparisonView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-draft-recovery",
+        "category": "保存・競合・復旧",
+        "name": "未保存原稿の退避・復元・安全削除",
+        "disposition": "再設計",
+        "g1Status": "実装済み（400ms下書き＋周期バックアップ）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "2 MiB/件・32件・16 MiB上限、原本パス非保持の現行設計のまま、実機強制終了後の復元（S4）・削除（S5）確認が未実施。",
+        "evidence": [
+          {
+            "label": "DraftRecoveryStore.swift",
+            "path": "next/Sources/HazakuraNextCore/DraftRecoveryStore.swift"
+          },
+          {
+            "label": "DraftRecoveryView.swift",
+            "path": "next/Sources/HazakuraNext/DraftRecoveryView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-exit-guard",
+        "category": "保存・競合・復旧",
+        "name": "タブ閉じ・赤ボタン・⌘W・⌘Q時の未保存保護",
+        "disposition": "再設計",
+        "g1Status": "実装済み（Save All / Discard All、停止待ち後再確認課題あり）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "Save All（原本保存）自体が未実装のため破棄確認中心。実機での終了確認とEsc取消（E4）が未確認。",
+        "evidence": [
+          {
+            "label": "WindowExitGate.swift",
+            "path": "next/Sources/HazakuraNextCore/WindowExitGate.swift"
+          },
+          {
+            "label": "ScratchApplicationDelegate.swift",
+            "path": "next/Sources/HazakuraNext/ScratchApplicationDelegate.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-nongit-diff",
+        "category": "Non-Git Diff",
+        "name": "原本・ディスク・編集版／変更差分の行比較",
+        "disposition": "継承",
+        "g1Status": "実装済み（File Diff・Chapter Diff）",
+        "implementationStatus": "実装済み",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "4 MiB / 12,000行上限。文字単位ハイライトや並置ビュー等のUI磨き込みはこれから。",
+        "evidence": [
+          {
+            "label": "LineDiff.swift",
+            "path": "next/Sources/HazakuraNextCore/LineDiff.swift"
+          },
+          {
+            "label": "LineDiffView.swift",
+            "path": "next/Sources/HazakuraNext/LineDiffView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-reference-compare",
+        "category": "Non-Git Diff",
+        "name": "Reference Compare（参照文書との並置比較）",
+        "disposition": "保留",
+        "g1Status": "実装済み（v1.7 Reference Compare）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "並置ペイン構成と併せてPhase 3以降で検討。",
+        "evidence": [
+          {
+            "label": "G1 referenceCompare",
+            "path": "src/features/referenceCompare"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-markdown-preview",
+        "category": "Markdownプレビュー",
+        "name": "確定原文プレビュー・目次・表（8列×32行）",
+        "disposition": "再設計",
+        "g1Status": "実装済み（marked + DOMPurify, 右ペインリアルタイム追従）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "編集画面との並置リアルタイム表示（現在はシートによるスナップショット表示・128 KiB上限）。R1/R4実機確認。",
+        "evidence": [
+          {
+            "label": "MarkdownPreview.swift",
+            "path": "next/Sources/HazakuraNextCore/MarkdownPreview.swift"
+          },
+          {
+            "label": "MarkdownPreviewView.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownPreviewView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-preview-position",
+        "category": "Markdownプレビュー",
+        "name": "見出しからの原文復帰と読書再開位置",
+        "disposition": "再設計",
+        "g1Status": "実装済み（スクロール連動・見出し同期）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "版を跨いだり再起動を跨いだりする永続的なソースアンカー未実装（現在は同一タブ・同一版メモリ保持のみ）。",
+        "evidence": [
+          {
+            "label": "WorkspaceReadingPositionTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceReadingPositionTests.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-preview-images",
+        "category": "Markdownプレビュー",
+        "name": "ローカル/HTTPS画像の許可境界表示",
+        "disposition": "継承",
+        "g1Status": "実装済み（workspace相対・明示許可・NSURLSession有界fetch）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "プレビュー・書き出しでの画像参照は全て意図的に無効化中。Phase 3で権限境界を再設計予定。",
+        "evidence": [
+          {
+            "label": "MarkdownPreviewView.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownPreviewView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-lmode",
+        "category": "L Mode・Zen Mode",
+        "name": "えるモード（静かな組版・編集表示）",
+        "disposition": "継承",
+        "g1Status": "実装済み（記号隠し・見出し余白タグ・チェックボックス・タイプライター）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "現在は余白（textContainerInset）切替のみ。Markdown記号の非表示装飾・見出し/引用組版・タイプライターモードは未実装（R3）。",
+        "evidence": [
+          {
+            "label": "TextKitEditor.swift",
+            "path": "next/Sources/HazakuraNextEditor/TextKitEditor.swift"
+          },
+          {
+            "label": "WorkspaceLModeTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceLModeTests.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-zenmode",
+        "category": "L Mode・Zen Mode",
+        "name": "集中表示（Zen Mode / Reading Focus）",
+        "disposition": "継承",
+        "g1Status": "実装済み（Reading Focus / 集中執筆）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "狭幅・キーボード切替・Tab移動で終了操作・フォーカス復帰の実機確認（R3）。",
+        "evidence": [
+          {
+            "label": "ScratchWorkspaceView.swift",
+            "path": "next/Sources/HazakuraNext/ScratchWorkspaceView.swift"
+          },
+          {
+            "label": "WorkspaceZenModeTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceZenModeTests.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-single-reader",
+        "category": "Reader・Book Scope",
+        "name": "単一原稿の章ごと表示・本文検索",
+        "disposition": "再設計",
+        "g1Status": "実装済み（EBookPane・CSS Columns見開き/ページ送り）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "ページ送り・見開き表示（CSS Columns相当）が未実装。検索中止等の実機確認（R1）。",
+        "evidence": [
+          {
+            "label": "MarkdownReaderChapters.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownReaderChapters.swift"
+          },
+          {
+            "label": "MarkdownReaderSearch.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownReaderSearch.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-book-reader",
+        "category": "Reader・Book Scope",
+        "name": "複数原稿の連続読書・横断検索",
+        "disposition": "再設計",
+        "g1Status": "実装済み（Book Scope連続スクロール・章順序保存）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "開いている2〜8タブ（合計256 KiB）の仮選択のみ。永続レシピ・ファイル読込・位置保存が未実装（R1）。",
+        "evidence": [
+          {
+            "label": "MarkdownBookPreview.swift",
+            "path": "next/Sources/HazakuraNextCore/MarkdownBookPreview.swift"
+          },
+          {
+            "label": "BookPreviewView.swift",
+            "path": "next/Sources/HazakuraNext/BookPreviewView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-book-scope-okf",
+        "category": "Reader・Book Scope",
+        "name": "永続Book Scope・OKF点検・ひな形作成",
+        "disposition": "保留",
+        "g1Status": "実装済み（v2.0〜v2.4 Book Scope, v1.11/v1.12 OKF）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "Phase 3以降で必要性と境界を再評価（OKFは存在だけを理由に移植しない方針）。",
+        "evidence": [
+          {
+            "label": "roadmap.md",
+            "path": "docs/roadmap.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-notes-vertical",
+        "category": "Reader・Book Scope",
+        "name": "見直し・再開・編集ルールメモ／縦書き",
+        "disposition": "保留",
+        "g1Status": "方針採用のみ（未実装）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "Phase 3 でソース位置アンカー基盤と合わせて採否・実装方式を再評価。",
+        "evidence": [
+          {
+            "label": "roadmap.md",
+            "path": "docs/roadmap.md#メモと縦書き"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-appearance",
+        "category": "テーマ・外観",
+        "name": "標準外観（システム設定・ライト・ダーク）",
+        "disposition": "再設計",
+        "g1Status": "実装済み（light/dark含む7テーマ＋設定永続化）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "ウィンドウ単位の一時切替のみ（閉じると消える）。永続設定とコントラスト/選択色の実機確認（R3）が未了。",
+        "evidence": [
+          {
+            "label": "WorkspaceAppearanceTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceAppearanceTests.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-rich-themes",
+        "category": "テーマ・外観",
+        "name": "江戸彼岸・深海・曙光・夜光・CRT テーマ演出",
+        "disposition": "保留",
+        "g1Status": "実装済み・調整中（v3.4 S0〜S10, v3.4.1 three.js/庭）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "WebView/CSS依存演出はそのまま移植しない。macOSネイティブでの表現はPhase 3/5で検討。",
+        "evidence": [
+          {
+            "label": "roadmap.md",
+            "path": "docs/roadmap.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-export-html",
+        "category": "HTML・PDF・EPUB書き出し",
+        "name": "HTML書き出し",
+        "disposition": "再設計",
+        "g1Status": "実装済み（画像埋込オプション・CSS付き出力）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "リンク/画像埋込未対応（2 MiB・128 KiB入力上限）。実機保存とブラウザ表示確認（R2）が未了。",
+        "evidence": [
+          {
+            "label": "MarkdownHTMLExport.swift",
+            "path": "next/Sources/HazakuraNextCore/MarkdownHTMLExport.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-export-pdf",
+        "category": "HTML・PDF・EPUB書き出し",
+        "name": "PDF書き出し",
+        "disposition": "再設計",
+        "g1Status": "実装済み（A4余白3段・改ページ・複数章対応・60秒制限）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "現在は縦長1ページ試作（幅720×高さ12,000pt・8秒タイムアウト）。用紙サイズ・改ページ・Book書き出し・8秒制限の実機検証（R2）が未了。",
+        "evidence": [
+          {
+            "label": "MarkdownPDFExport.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownPDFExport.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-export-epub",
+        "category": "HTML・PDF・EPUB書き出し",
+        "name": "EPUB書き出し（単一原稿・複数原稿）",
+        "disposition": "再設計",
+        "g1Status": "実装済み（表紙・書誌情報編集・画像同梱・Book章目次）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "書名固定・言語und固定・表紙/メタデータ編集/画像未対応。合成EPUB 2件はEPUBCheck 5.4.0合格だが、Apple Books実機確認（R2）が未了。",
+        "evidence": [
+          {
+            "label": "MarkdownEPUBExport.swift",
+            "path": "next/Sources/HazakuraNext/MarkdownEPUBExport.swift"
+          },
+          {
+            "label": "EPUBStoredArchive.swift",
+            "path": "next/Sources/HazakuraNextCore/EPUBStoredArchive.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-assist-diff-apply",
+        "category": "Local Assist・推論基盤・モデル管理",
+        "name": "提案差分確認と明示採用（1 Undo単位）",
+        "disposition": "継承",
+        "g1Status": "実装済み（LA-1a 会話＋Diff分離・別窓）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "通常版には未接続（別Bundle IDの採用デモと表示サンプルのみ）。通常版復旧記録との整合・実機シート終了確認（A1）が未了。",
+        "evidence": [
+          {
+            "label": "AssistReviewDemoDelegate.swift",
+            "path": "next/Sources/HazakuraNext/AssistReviewDemoDelegate.swift"
+          },
+          {
+            "label": "AssistReviewHandoff.swift",
+            "path": "next/Sources/HazakuraNext/AssistReviewHandoff.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-inference-backend",
+        "category": "Local Assist・推論基盤・モデル管理",
+        "name": "オンデバイス推論接続・Foundation Models比較",
+        "disposition": "再設計",
+        "g1Status": "実装済み（Apple Assist helper + Core AI adapter）",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "エディタ非接続の単独CLI（HazakuraNextModelProbe）で単発疎通のみ。MLX Swiftとの品質/メモリ比較・エディタ統合が未着手。",
+        "evidence": [
+          {
+            "label": "AssistModelProbeCommand.swift",
+            "path": "next/Sources/HazakuraNextModelProbe/AssistModelProbeCommand.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-model-mgmt",
+        "category": "Local Assist・推論基盤・モデル管理",
+        "name": "モデル管理・会話推敲UI・Core AI/MLX選定",
+        "disposition": "保留",
+        "g1Status": "部分実装（C-1/C-2/C-3ソース接続済み・E4B実機受入待ち）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "Phase 4で推論基盤（Foundation Models vs MLX Swift）を比較決定後に設計。",
+        "evidence": [
+          {
+            "label": "roadmap.md",
+            "path": "docs/roadmap.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-agent-workbench",
+        "category": "Local Assist・推論基盤・モデル管理",
+        "name": "Agent Workbench（Developer専用CLI連携）",
+        "disposition": "保留",
+        "g1Status": "実装済み（Developerレーン限定・PTY・allowlist CLI）",
+        "implementationStatus": "保留・対象外",
+        "verificationStatus": "対象外",
+        "deviceAcceptanceStatus": "保留・対象外",
+        "missingParts": "第二世代では必要性と境界を別途再評価するまで保留（AGENTS.md）。",
+        "evidence": [
+          {
+            "label": "AGENTS.md",
+            "path": "AGENTS.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-prefs-migration",
+        "category": "設定・アクセシビリティ・配布",
+        "name": "設定画面・永続化・第一世代からの移行",
+        "disposition": "再設計",
+        "g1Status": "実装済み（Preferences・localStorage/App設定）",
+        "implementationStatus": "未着手",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "Preferencesウィンドウ、設定保存、第一世代からの移行有無・手順（Phase 5）。",
+        "evidence": [
+          {
+            "label": "roadmap.md",
+            "path": "docs/roadmap.md"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-a11y-i18n",
+        "category": "設定・アクセシビリティ・配布",
+        "name": "キーボード網羅・VoiceOver・多言語対応（日/英/かな）",
+        "disposition": "継承",
+        "g1Status": "実装済み（日本語・英語・かな、VoiceOver改善継続）",
+        "implementationStatus": "部分実装",
+        "verificationStatus": "未実施",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "基本的なaccessibilityLabel/TraitsやEsc/ショートカットは配置済みだが、英語ローカライズ・かな表記・VoiceOver実機確認・コマンドパレットが未実装。",
+        "evidence": [
+          {
+            "label": "ScratchWorkspaceView.swift",
+            "path": "next/Sources/HazakuraNext/ScratchWorkspaceView.swift"
+          }
+        ],
+        "factType": "verified_fact"
+      },
+      {
+        "id": "feat-sandbox-dist",
+        "category": "設定・アクセシビリティ・配布",
+        "name": "App Sandbox・正式署名・公証・配布レーン分離",
+        "disposition": "再設計",
+        "g1Status": "実装済み（App Store pkg / Developer DMG / CI boundary）",
+        "implementationStatus": "部分実装",
+        "verificationStatus": "自動検証済み",
+        "deviceAcceptanceStatus": "未着手",
+        "missingParts": "Sandbox Previewのアドホック署名・entitlement一致検査まで。S6実機権限試験、配布用署名・公証・App Store設定はPhase 5。",
+        "evidence": [
+          {
+            "label": "verify-dev-bundles.swift",
+            "path": "next/scripts/verify-dev-bundles.swift"
+          },
+          {
+            "label": "SandboxPreview.entitlements",
+            "path": "next/Resources/SandboxPreview.entitlements"
+          }
+        ],
+        "factType": "verified_fact"
+      }
+    ],
+    "safetyMatrix": [
+      {
+        "id": "safe-canonical-source",
+        "domain": "原文の保護",
+        "contract": "選択ファイルは読み取り専用タブに開き原本へ書き込まない。プレビュー・書き出し・比較・復元はすべて確定原文のスナップショットのみを参照し原文を変更しない。",
+        "implementationStatus": "実装済み",
+        "autoVerification": "自動検証済み（SelectedTextFile / SelectedTextCopyWriter / MarkdownPreview / LineDiff / MarkdownEPUBExport 等）",
+        "guiVerification": "未確認（S1・S2・R1・R2 実機前後ハッシュ照合が未実施）",
+        "bundleScope": "通常開発版で確認対象。採用デモはファイルI/O非接続。",
+        "evidence": [
+          {
+            "label": "SelectedTextFile.swift",
+            "path": "next/Sources/HazakuraNextCore/SelectedTextFile.swift"
+          },
+          {
+            "label": "WorkspaceCopySaveTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceCopySaveTests.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-conflict-external",
+        "domain": "保存競合と外部更新",
+        "contract": "新規コピー保存は O_EXCL + renameatx_np(RENAME_EXCL) で既存上書きを禁止。原本比較は開いた時点の device/inode・タイムスタンプ・全バイトと今回読取を区別し、同一ファイル判定とバイト変更を分離。原本保存の事前検証はコアのみ実装。",
+        "implementationStatus": "部分実装",
+        "autoVerification": "自動検証済み（OriginalSavePreflightTests 13件, SelectedTextCopyWriterTests 15件, WorkspaceOriginalComparisonTests 14件）",
+        "guiVerification": "未確認（原本への上書き保存・外部競合解決UI自体が未実装、S1/S2実機も未実施）",
+        "bundleScope": "通常開発版・権限検証用バンドルで挙動分離。原本上書きは両バンドルとも未接続。",
+        "evidence": [
+          {
+            "label": "OriginalSavePreflight.swift",
+            "path": "next/Sources/HazakuraNextCore/OriginalSavePreflight.swift"
+          },
+          {
+            "label": "SelectedTextCopyWriter.swift",
+            "path": "next/Sources/HazakuraNextCore/SelectedTextCopyWriter.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-crash-recovery",
+        "domain": "異常終了からの復旧",
+        "contract": "確定編集のみを専用Application Support領域へバイナリマニフェスト（HZDRAFT v1 + SHA-256 + flock + ステージング + fsync + renameat）で退避。原本パス・権限は保存しない。復元は別タブへ開き元記録を保持。削除はID・版・UTF-8全バイト完全一致＋待機後再確認時のみ実行。",
+        "implementationStatus": "実装済み",
+        "autoVerification": "自動検証済み（DraftRecoveryStoreTests 18件, RecoveryCheckpointQueueTests 9件, WorkspaceRecoveryTests 14件）",
+        "guiVerification": "未確認（強制終了後のS4復元・S5削除の実機試験が未実施）",
+        "bundleScope": "通常開発版のみ有効。採用デモ・Sandbox Preview・各種CLIは通常復旧領域に接続しない。",
+        "evidence": [
+          {
+            "label": "DraftRecoveryStore.swift",
+            "path": "next/Sources/HazakuraNextCore/DraftRecoveryStore.swift"
+          },
+          {
+            "label": "WorkspaceRecoveryTests.swift",
+            "path": "next/Tests/HazakuraNextTests/WorkspaceRecoveryTests.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-ime-undo",
+        "domain": "日本語IMEとUndo/Redo",
+        "contract": "TextKit 2（MarkdownTextView）が編集バッファとタブ別EditorUndoManagerを所有。hasMarkedText()・textInputDepth・モデルisComposingの両面で変換中のタブ切替・閉じる・保存・比較・検索・行移動・プレビュー・書き出し・Undo/Redo・削除を遮断。破棄済みビューへの遅延入力も拒否。",
+        "implementationStatus": "実装済み",
+        "autoVerification": "自動検証済み（TextKitEditorTests 25件, ReviewedEditTests 10件, 各Workspace*Testsの変換中ガード）",
+        "guiVerification": "未確認（実OSの日本語IME入力ソースを用いた変換・確定・取消の実機確認 E1〜E4 未実施）",
+        "bundleScope": "通常開発版・採用デモ双方にTextKitEditorを搭載。",
+        "evidence": [
+          {
+            "label": "TextKitEditor.swift",
+            "path": "next/Sources/HazakuraNextEditor/TextKitEditor.swift"
+          },
+          {
+            "label": "TextKitEditorTests.swift",
+            "path": "next/Tests/HazakuraNextEditorTests/TextKitEditorTests.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-encoding-bom",
+        "domain": "文字コード・改行・BOM",
+        "contract": "UTF-8（BOM有無）とBOM付きUTF-16 LE/BEに対応。不正符号列・UTF-32 BOM・制御文字を拒否。コピー保存は開いた文字コード・BOMと編集後改行（LF/CRLF/CR混在）を維持。BOMなしUTF-8先頭に U+FEFF がある場合は再読込消失を防ぐため保存を拒否。",
+        "implementationStatus": "部分実装",
+        "autoVerification": "自動検証済み（SelectedTextFileTests 20件, SelectedTextCopyWriterTests 15件, UTF-16編集後保存統合試験）",
+        "guiVerification": "未確認（S1 BOM境界・UTF-16編集保存の実機cmp照合未実施。Shift-JIS/EUC-JPは未実装）",
+        "bundleScope": "通常開発版で実施。HTML出力は元符号化によらずBOMなしUTF-8固定。",
+        "evidence": [
+          {
+            "label": "SelectedTextFile.swift",
+            "path": "next/Sources/HazakuraNextCore/SelectedTextFile.swift"
+          },
+          {
+            "label": "SelectedTextFileTests.swift",
+            "path": "next/Tests/HazakuraNextCoreTests/SelectedTextFileTests.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-sandbox-permissions",
+        "domain": "サンドボックスとアクセス権限",
+        "contract": "O_NOFOLLOW_ANY / symlink・ハードリンク外境界 / 相対・曖昧URL拒否 / iCloud未取得(SF_DATALESS)拒否 / 非ローカルボリューム拒否 / ピッカー終了時のstopAccessingSecurityScopedResource即時解放。権限検証用にApp Sandbox + user-selected.read-writeのみの別バンドルを分離。",
+        "implementationStatus": "部分実装",
+        "autoVerification": "自動検証済み（verify-dev-bundles.swift で3バンドル署名・entitlement検査、SelectedFolderCatalogTests 18件）",
+        "guiVerification": "未確認（S6 権限検証用バンドルでの実起動・保存先兄弟ステージング可否の実機確認が未実施）",
+        "bundleScope": "通常開発版・採用デモはentitlementなし。Sandbox Preview（dev.hazakura.editor.next.sandbox-preview.dev）のみ2項目付与。",
+        "evidence": [
+          {
+            "label": "SandboxPreview.entitlements",
+            "path": "next/Resources/SandboxPreview.entitlements"
+          },
+          {
+            "label": "verify-dev-bundles.swift",
+            "path": "next/scripts/verify-dev-bundles.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-ai-explicit-apply",
+        "domain": "AI提案の明示採用",
+        "contract": "選択範囲固定・別シート確認・シート完全終了と元TextKitフォーカス復帰の二重照合・1 Undo単位の置換（performReviewedReplacement）。推論は完全分離CLI（固定合成文・30秒タイムアウト）に留め、通常エディタへのAI推論接続や自動保存・クラウド送信なし。",
+        "implementationStatus": "試作実装",
+        "verificationStatus": "自動検証済み",
+        "autoVerification": "自動検証済み（AssistProposalFlowTests 8件, AssistReviewHandoffTests 7件, AssistNativeReviewTests 9件, ModelProbeTests 16件）",
+        "guiVerification": "未確認（採用デモでのシート終了→フォーカス復帰→Esc/Undo、推論CLI実機 A1 が未実施）",
+        "bundleScope": "通常版＝読取専用サンプルのみ、採用デモ＝別Bundle IDでメモリ内固定候補採用のみ、ModelProbe＝別CLIバイナリ。",
+        "evidence": [
+          {
+            "label": "AssistReviewHandoff.swift",
+            "path": "next/Sources/HazakuraNext/AssistReviewHandoff.swift"
+          },
+          {
+            "label": "AssistReviewDemoDelegate.swift",
+            "path": "next/Sources/HazakuraNext/AssistReviewDemoDelegate.swift"
+          }
+        ]
+      },
+      {
+        "id": "safe-g1-isolation",
+        "domain": "第一世代への意図しない影響",
+        "contract": "実装は next/ と設計文書・専用CIのみに限定。Bundle ID（dev.hazakura.editor.next.*）と復旧領域（dev.hazakura.editor.next.dev.draft-recovery）を第一世代（dev.hazakura.editor）と完全分離。PR #71のQuality CIで第一世代全テスト通過を継続確認。",
+        "implementationStatus": "実装済み",
+        "autoVerification": "自動検証済み（git diff上 G1コード差分0ファイル、Quality CI 45709897679 全通過）",
+        "guiVerification": "未確認（同Macで両世代を切り替えて起動し、設定・復旧が混ざらないことは受け入れ手順で手動確認予定）",
+        "bundleScope": "リポジトリ全体境界として検証。",
+        "evidence": [
+          {
+            "label": "DraftRecoveryStore.swift",
+            "path": "next/Sources/HazakuraNextCore/DraftRecoveryStore.swift"
+          },
+          {
+            "label": "Quality CI 45709897679",
+            "path": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679"
+          }
+        ]
+      }
+    ],
+    "bundleSeparation": [
+      {
+        "target": "Hazakura Editor Next（通常開発版）",
+        "bundleId": "dev.hazakura.editor.next.dev",
+        "entitlements": "なし（アドホック署名）",
+        "recoveryStore": "あり（専用Application Support）",
+        "fileIO": "読取専用オープン＋新規コピー保存＋比較＋書出し",
+        "assistInference": "読取専用差分サンプルのみ（採用・推論なし）",
+        "ciCheck": "verify-dev-bundles.swift 通過"
+      },
+      {
+        "target": "Hazakura Editor Next Assist Demo（採用デモ）",
+        "bundleId": "dev.hazakura.editor.next.assist-demo.dev",
+        "entitlements": "なし（アドホック署名）",
+        "recoveryStore": "なし（初期化せずメモリ内のみ）",
+        "fileIO": "なし（内蔵合成原稿のみ）",
+        "assistInference": "固定合成候補の明示採用と直近差分閲覧のみ（推論なし）",
+        "ciCheck": "verify-dev-bundles.swift 通過"
+      },
+      {
+        "target": "Hazakura Editor Next Sandbox Preview（権限検証用）",
+        "bundleId": "dev.hazakura.editor.next.sandbox-preview.dev",
+        "entitlements": "app-sandbox, files.user-selected.read-write（2項目）",
+        "recoveryStore": "なし（無効化）",
+        "fileIO": "サンドボックス下のピッカー権限検証用",
+        "assistInference": "なし",
+        "ciCheck": "verify-dev-bundles.swift 通過（起動は未実施）"
+      },
+      {
+        "target": "HazakuraNextModelProbe（推論比較CLI）",
+        "bundleId": "CLIバイナリ（バンドル外）",
+        "entitlements": "なし",
+        "recoveryStore": "なし",
+        "fileIO": "なし（内蔵合成文 ja-rephrase-v1 のみ）",
+        "assistInference": "Foundation Models オンデバイス比較（--check / --generate / --compare）",
+        "ciCheck": "Unit Test 16件（スタブ）、実機macOS 27.2.1で単発1回実行記録あり"
+      },
+      {
+        "target": "HazakuraNextLayoutProbe（長文計測CLI）",
+        "bundleId": "CLIバイナリ（バンドル外）",
+        "entitlements": "なし",
+        "recoveryStore": "なし",
+        "fileIO": "なし（内蔵合成原稿 ja-long-lines-v1 のみ）",
+        "assistInference": "なし",
+        "ciCheck": "Unit Test 6件、実機macOS 27.2.1 releaseビルド5試行計測記録あり"
+      }
+    ],
+    "acceptanceAndPerformance": {
+      "acceptanceSummary": {
+        "totalItems": 24,
+        "passed": 0,
+        "failed": 0,
+        "unmeasured": 24,
+        "note": "docs/next-native-acceptance-record.md の明細 24 項目を集計。合格 0 / 未測定 24 / 対象外 0。自動テストや補助プローブの結果は実機受け入れへ転記しない。",
+        "outOfScope": 0,
+        "measured": 0,
+        "source": "evaluation.acceptanceAndPerformance.acceptanceRows から再計算"
+      },
+      "acceptanceRows": [
+        {
+          "id": "E1",
+          "group": "編集 (E)",
+          "scope": "両世代比較",
+          "title": "IME変換中のタブ切替・閉じる・終了・Undo/Redo・ショートカット往復",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "TextKitEditorTests / WorkspaceTabNavigationTests"
+        },
+        {
+          "id": "E2",
+          "group": "編集 (E)",
+          "scope": "両世代比較",
+          "title": "原文の行へ移動（折り返し/CRLF/空行/IME/シート重なり拒否）",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "SourceLineLookupTests / WorkspaceLineJumpTests"
+        },
+        {
+          "id": "E3",
+          "group": "編集 (E)",
+          "scope": "両世代比較",
+          "title": "原文を検索（⌘F, 64件上限, 変換中拒否, Esc保持）",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "SourceSearchTests / WorkspaceSourceSearchTests"
+        },
+        {
+          "id": "E4",
+          "group": "編集 (E)",
+          "scope": "両世代比較",
+          "title": "選択タブを閉じる・確認ダイアログEsc/破棄・⌘Wとの区別",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "ScratchExitTests / WindowExitGateTests"
+        },
+        {
+          "id": "S1",
+          "group": "安全・保存 (S)",
+          "scope": "両世代比較",
+          "title": "UTF-16原本の編集用コピー新規保存・取消・既存名拒否・状態表示",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceCopySaveTests"
+        },
+        {
+          "id": "S1 (UTF-8のBOM境界)",
+          "group": "安全・保存 (S)",
+          "scope": "第二世代専用",
+          "title": "BOM+先頭U+FEFFの保存保持と、BOMなしコピーへのU+FEFF混入保存拒否",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "SelectedTextCopyWriterTests"
+        },
+        {
+          "id": "S1 (編集後のUTF-16保存)",
+          "group": "安全・保存 (S)",
+          "scope": "第二世代専用",
+          "title": "TextKit 2で1字追記後のUTF-16 LE/BE＋混在改行の全バイト一致",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceCopySaveTests (UTF-16統合)"
+        },
+        {
+          "id": "S2",
+          "group": "安全・保存 (S)",
+          "scope": "両世代比較",
+          "title": "原本の版を比較・外部追記検出・ディスク版を別タブで開く",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceOriginalComparisonTests"
+        },
+        {
+          "id": "S3",
+          "group": "安全・保存 (S)",
+          "scope": "両世代比較",
+          "title": "フォルダの原稿一覧・再選択照合による安全オープン・取消",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceFolderCatalogTests"
+        },
+        {
+          "id": "S4",
+          "group": "安全・保存 (S)",
+          "scope": "両世代比較",
+          "title": "退避済み確認後の強制終了と再起動後の原稿復元（元記録維持）",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceRecoveryTests / WorkspaceRecoveryStatusTests"
+        },
+        {
+          "id": "S5",
+          "group": "安全・保存 (S)",
+          "scope": "両世代比較",
+          "title": "復元一覧からの選択記録削除とキャンセル保護",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "DraftRecoveryStoreTests / WorkspaceRecoveryTests"
+        },
+        {
+          "id": "R1",
+          "group": "読書・表現 (R)",
+          "scope": "両世代比較",
+          "title": "Markdownプレビュー・目次・章表示・検索・原文行復帰・複数原稿読書",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceMarkdownPreviewTests / WorkspaceBookPreviewTests"
+        },
+        {
+          "id": "R2",
+          "group": "読書・表現 (R)",
+          "scope": "両世代比較",
+          "title": "HTML / PDF / EPUB書き出し（単一・複数原稿）と閲覧アプリ確認",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceHTMLExportTests / PDF / EPUBTests"
+        },
+        {
+          "id": "R3",
+          "group": "読書・表現 (R)",
+          "scope": "両世代比較",
+          "title": "えるモード・集中表示・外観（ライト/ダーク/システム）・VoiceOver",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceLModeTests / ZenModeTests / AppearanceTests"
+        },
+        {
+          "id": "R4",
+          "group": "読書・表現 (R)",
+          "scope": "両世代比較",
+          "title": "Markdown表（セル検索・狭幅折り返し・VoiceOver・3形式書き出し）",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "MarkdownPreviewTests / ExportTests"
+        },
+        {
+          "id": "A1 (通常版の表示)",
+          "group": "Assist・権限 (A/S6)",
+          "scope": "両世代比較",
+          "title": "通常版での提案差分表示サンプルとIME/シート中ブロック",
+          "g1Result": "未測定",
+          "g2Result": "未測定",
+          "autoRef": "AssistReviewSampleTests"
+        },
+        {
+          "id": "E1 (選択後の読込み中止)",
+          "group": "追加確認 (G2)",
+          "scope": "第二世代専用",
+          "title": "長文ファイル選択後、読込中バナーの「読込みを中止」操作",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceSession open cancellation"
+        },
+        {
+          "id": "S2 (選択後の比較中止)",
+          "group": "追加確認 (G2)",
+          "scope": "第二世代専用",
+          "title": "長文原本比較の確定後、処理中バナーの「比較を中止」操作",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "WorkspaceOriginalComparisonTests"
+        },
+        {
+          "id": "R1 (単一原稿の検索中止)",
+          "group": "追加確認 (G2)",
+          "scope": "第二世代専用",
+          "title": "単一原稿プレビューの非同期検索中の語句変更・閉じる・Esc中止",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "MarkdownReaderSearchTests"
+        },
+        {
+          "id": "R1 (複数原稿の検索中止)",
+          "group": "追加確認 (G2)",
+          "scope": "第二世代専用",
+          "title": "複数原稿読書画面の非同期横断検索中の中止と再検索",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "MarkdownBookSearchTests"
+        },
+        {
+          "id": "R2 (生成中の書き出し中止)",
+          "group": "追加確認 (G2)",
+          "scope": "第二世代専用",
+          "title": "PDF生成中の「書き出しを中止」と宛先ファイル不生成確認",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "WorkspacePDFExportTests"
+        },
+        {
+          "id": "S6 (権限検証用バンドル)",
+          "group": "別実行対象",
+          "scope": "第二世代専用",
+          "title": "App Sandbox下での起動・S1本体・S3・R2と兄弟一時ファイル権限制約",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "verify-dev-bundles.swift (静的署名検査のみ)"
+        },
+        {
+          "id": "A1 (採用デモ)",
+          "group": "別実行対象",
+          "scope": "第二世代専用",
+          "title": "別バンドルでの合成候補明示採用・Undo・直近採用差分シート",
+          "g1Result": "対象外",
+          "g2Result": "未測定",
+          "autoRef": "AssistReviewHandoffTests / AssistNativeReviewTests"
+        },
+        {
+          "id": "A1 (推論CLI)",
+          "group": "別実行対象",
+          "scope": "第二世代専用",
+          "title": "HazakuraNextModelProbe --check / --compare の実機記録",
+          "g1Result": "対象外",
+          "g2Result": "未測定（手順ひな形未記入。開発機単発観測1件のみ別枠記録）",
+          "autoRef": "AssistModelProbeCommandTests"
+        }
+      ],
+      "performanceRows": [
+        {
+          "metric": "アプリ起動時間",
+          "g1Value": "未測定",
+          "g2Value": "未測定",
+          "condition": "同一Mac・通常終了→主ウィンドウ入力可までの5回計測が未実施",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "next-native-acceptance.md",
+              "path": "docs/next-native-acceptance.md#性能比較と記録"
+            }
+          ]
+        },
+        {
+          "metric": "メモリ使用量（RSS）",
+          "g1Value": "未測定",
+          "g2Value": "未測定",
+          "condition": "長文操作10秒静止後のアクティビティモニタ計測が未実施（本体＋補助プロセス分離）",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "next-native-acceptance-record.md",
+              "path": "docs/next-native-acceptance-record.md#実機の性能比較"
+            }
+          ]
+        },
+        {
+          "metric": "長文レイアウト・縮幅・末尾移動",
+          "g1Value": "未測定（過去v2.9 jsdom値は別条件で比較不可）",
+          "g2Value": "補助計測のみ：初期中央値 3,763 µs (3,187–27,003) / 縮幅 2,694 µs (2,555–4,124) / 末尾 76 µs (74–143)",
+          "condition": "G2は911d99d8のreleaseビルド(macOS 27.2.1 arm64)で非表示TextKit 2に387,285B合成原稿を5回計測。画面描画・IME・04-long.md実機比較は未測定。",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "current-status.md",
+              "path": "docs/current-status.md"
+            },
+            {
+              "label": "LayoutProbeCommand.swift",
+              "path": "next/Sources/HazakuraNextLayoutProbe/LayoutProbeCommand.swift"
+            }
+          ]
+        },
+        {
+          "metric": "行検索・原文一致照合（単体計算）",
+          "g1Value": "未測定",
+          "g2Value": "単体計測のみ：1.9–2.1 MB行検索 2.5–2.9 ms → 0.9–1.3 ms / UTF-8比較 3–4 ms → ~0.03 ms / NSString比較 72–73 ms → 13–14 ms",
+          "condition": "swiftc -O 単体ベンチマーク。画面反映やアプリ全体応答ではない。",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "current-status.md",
+              "path": "docs/current-status.md"
+            }
+          ]
+        },
+        {
+          "metric": "描画性能（FPS / フレーム時間）",
+          "g1Value": "未測定（江戸彼岸v3.4.1の隔離WKWebView描画呼出 37.5/75.3回/秒は別計測）",
+          "g2Value": "未測定",
+          "condition": "実機GUIの入力・スクロール引っかかり計測が未実施",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "next-native-acceptance.md",
+              "path": "docs/next-native-acceptance.md"
+            }
+          ]
+        },
+        {
+          "metric": "アプリ配布容量",
+          "g1Value": "未測定（v3.3圧縮無効化で+1.8 MB、v3.4.1 three.js別チャンク736.58 kB等の断片記録のみ）",
+          "g2Value": "未測定（開発用SwiftPM単一アーキテクチャ・アセット/配布バンドル未構成）",
+          "condition": "配布構成のUniversalバイナリ比較はPhase 5対象",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "roadmap.md",
+              "path": "docs/roadmap.md"
+            }
+          ]
+        },
+        {
+          "metric": "オンデバイス推論性能",
+          "g1Value": "未測定（LFM3-1.7B GGUF ~0.5秒は検証専用llama.cpp値、Core AI実機は未統合）",
+          "g2Value": "単発CLI観測のみ：1回目 1,317 ms (135B) / 2回目 742 ms (171B)",
+          "condition": "G2は23ecb296のHazakuraNextModelProbe --compare（macOS 27.2.1 arm64, ja-rephrase-v1）。キャッシュ非制御の1回計測で、日本語品質・打ち切り・メモリは未確認。",
+          "comparable": false,
+          "evidence": [
+            {
+              "label": "current-status.md",
+              "path": "docs/current-status.md"
+            },
+            {
+              "label": "AssistModelProbeCommand.swift",
+              "path": "next/Sources/HazakuraNextModelProbe/AssistModelProbeCommand.swift"
+            }
+          ]
+        }
+      ]
+    },
+    "uiUxEvaluation": {
+      "summary": "第二世代は安全契約とドメイン境界の実証を最優先した「検証用スクラッチUI」段階。日本語文言・警告・アクセシビリティラベルの丁寧さは第一世代の思想をよく継承しているが、日常執筆向けの画面構成・導線・集中体験・見た目品質は未着手または試作初期であり、実機GUIも未評価。",
+      "dimensions": [
+        {
+          "dimension": "画面構成",
+          "maturity": "試作実装",
+          "assessment": "ScratchWorkspaceView は単一ウィンドウ上部に通知バナー、水平タブバー＋アイコンボタン群、中央に全面TextKit 2エディタを配置。プレビュー・復旧・比較・検索・行移動・複数原稿読書・Assistサンプルは全てモーダルシート（.sheet）で開く構成。第一世代のような3ペイン（左ワークスペース／中央編集／右リアルタイムプレビュー）はまだ存在しない。",
+          "evidence": [
+            {
+              "label": "ScratchWorkspaceView.swift",
+              "path": "next/Sources/HazakuraNext/ScratchWorkspaceView.swift"
+            }
+          ]
+        },
+        {
+          "dimension": "情報密度",
+          "maturity": "部分実装",
+          "assessment": "主画面上部バナーに状態通知・中止ボタン・コピー作成済み表示・復旧退避済み表示が縦に積まれる構造で、機能増加に伴い上部領域の情報量が増えている。ツールバーボタンがアイコンのみ（.labelStyle(.iconOnly) + .help）で、初見での機能発見性はネイティブメニューバーに依存している。",
+          "evidence": [
+            {
+              "label": "ScratchWorkspaceView.swift",
+              "path": "next/Sources/HazakuraNext/ScratchWorkspaceView.swift"
+            }
+          ]
+        },
+        {
+          "dimension": "操作導線",
+          "maturity": "試作実装",
+          "assessment": "コマンド検証システム（validateMenuItem）と主要ショートカット（⌘T, ⌘O, ⌘⇧S, ⌘F, ⌘L, ⌘⇧J, ⌃Tab, ⌃⇧Tab, ⌘Z/⇧Z）はネイティブNSMenuへ統合済み。ただしフォルダ一覧オープンは「一覧確認でフォルダ選択→一覧シートで1件選択→元ウィンドウで同じフォルダを選び直す」という安全優先の二段階操作で、日常導線としての快適さは実機評価待ち。",
+          "evidence": [
+            {
+              "label": "ScratchApplicationDelegate.swift",
+              "path": "next/Sources/HazakuraNext/ScratchApplicationDelegate.swift"
+            }
+          ]
+        },
+        {
+          "dimension": "編集への集中",
+          "maturity": "試作実装",
+          "assessment": "えるモード（左右最大136pt・上下32ptの余白調整）と集中表示（タブバーとツールボタンを隠し原稿名と終了ボタンのみ残す）を独立して切替可能。ただし第一世代のL Modeが持つMarkdown記号の静かな隠蔽・見出し余白タグ・タイプライタースクロールは未実装で、実機での執筆没入感は未評価。",
+          "evidence": [
+            {
+              "label": "TextKitEditor.swift",
+              "path": "next/Sources/HazakuraNextEditor/TextKitEditor.swift"
+            }
+          ]
+        },
+        {
+          "dimension": "安全性に関する情報の伝達",
+          "maturity": "実装済み",
+          "assessment": "設計思想が最も強く表れている領域。「読み取り専用」「この版は復旧用に退避済み」「この版のコピーを作成済み（保存先ファイル自体は追跡しない旨のヘルプ付き）」「原本の上書き権限は付与されない」「破棄して閉じる（破壊的アクション属性＋Escは継続）」など、誤認を防ぐ日本語コピーが極めて誠実かつ明確。",
+          "evidence": [
+            {
+              "label": "OriginalFileComparisonView.swift",
+              "path": "next/Sources/HazakuraNext/OriginalFileComparisonView.swift"
+            },
+            {
+              "label": "ScratchApplicationDelegate.swift",
+              "path": "next/Sources/HazakuraNext/ScratchApplicationDelegate.swift"
+            }
+          ]
+        },
+        {
+          "dimension": "macOSネイティブとしての自然さ",
+          "maturity": "不明・未確認",
+          "assessment": "AppKit NSWindow/NSMenu/NSAlert/NSOpenPanel/NSSavePanel/TextKit 2 と SwiftUI の併用自体は正統なmacOS構成。しかし実際のウィンドウ描画、システム/ライト/ダーク外観の可読性、シート閉鎖後のフォーカス復帰、VoiceOver読み上げ順序、狭いウィンドウでの表折り返しは実機GUI未起動評価のため「未評価」とする。",
+          "evidence": [
+            {
+              "label": "next-native-acceptance.md",
+              "path": "docs/next-native-acceptance.md"
+            }
+          ]
+        }
+      ]
+    },
+    "remainingIssues": [
+      {
+        "id": "issue-device-acceptance",
+        "priority": "P0",
+        "origin": "roadmap_official",
+        "title": "第二世代 実機受け入れ（E1〜E4, S1〜S6, R1〜R4, A1）と性能比較",
+        "summary": "検証用macOSアカウントで合成原稿8件を生成し、通常版・採用デモ・Sandbox Preview・各種CLIの実機GUI・日本語IME・強制終了復旧・VoiceOver・同条件性能測定を実施する。",
+        "whyRemaining": "AI開発エージェントによる非表示ウィンドウ・自動テストのみが先行し、オーナー環境での実機GUI受け入れ記録が空欄のため。",
+        "doneCriteria": "docs/next-native-acceptance-record.md に全項目の実測値と合否が記録され、データ消失・無断上書き・IME破損がゼロであること。",
+        "dependencies": [],
+        "relatedRefs": [
+          "docs/next-native-acceptance.md",
+          "docs/next-native-acceptance-record.md"
+        ],
+        "ownerType": "owner_device",
+        "parallelizable": true,
+        "recommendedOrder": 1
+      },
+      {
+        "id": "issue-original-save-conflict",
+        "priority": "P0",
+        "origin": "roadmap_official",
+        "title": "原本への明示保存（上書き）と外部競合解決の実装",
+        "summary": "現在読み取り専用コア（OriginalSavePreflight）に留まっている原本保存を、協調しない外部更新や途中失敗・異常終了でも旧版と編集版を失わないプロトコルとUIへ接続する。",
+        "whyRemaining": "docs/handoff.md の通り、NSFileCoordinatorやrenameatx_np単体では非協調外部更新を完全ロックできないため、安全契約を慎重に詰めている段階。",
+        "doneCriteria": "既存ファイルへの明示保存、衝突検出時の別名保存/再比較/強制上書き拒否、合成異常系テスト通過、実機保存受け入れ完了。",
+        "dependencies": [
+          "issue-device-acceptance"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNextCore/OriginalSavePreflight.swift",
+          "docs/handoff.md"
+        ],
+        "ownerType": "both",
+        "parallelizable": false,
+        "recommendedOrder": 2
+      },
+      {
+        "id": "issue-pr71-doc-sync",
+        "priority": "P0",
+        "origin": "newly_identified",
+        "title": "PR #71 本文と current-status.md ヘッダ日付の同期",
+        "summary": "PR #71本文が初期3コミット（Swift Testing 7件）のままになっており、current-status.mdのLast reviewed（2026-11-25）も本文中の11/26記録とズレているため、レビュー前に事実へ揃える。",
+        "whyRemaining": "短時間に118コミットが連続投入され、最終コミット後のPR本文更新が行われていない。",
+        "doneCriteria": "PR #71本文が最新HEAD（118コミット・549テスト・Phase 1〜4試作範囲・未実施の実機ゲート）を正確に記述していること。",
+        "dependencies": [],
+        "relatedRefs": [
+          "docs/current-status.md"
+        ],
+        "ownerType": "both",
+        "parallelizable": true,
+        "recommendedOrder": 1
+      },
+      {
+        "id": "issue-legacy-encoding",
+        "priority": "P1",
+        "origin": "roadmap_official",
+        "title": "Shift-JIS / EUC-JP 等日本語レガシー文字コードと再読込UI",
+        "summary": "第一世代（v3.3）の iconv ベース互換契約を参照し、UTF-8/UTF-16以外のファイル読込・保存形式変更・文字化け再読込エラー回復を実装する。",
+        "whyRemaining": "Phase 2前半はデータ破損リスクが最も高いUTF-8/UTF-16 BOM境界の確立を優先したため。",
+        "doneCriteria": "Shift-JIS/EUC-JPの読込・保存バイト一致テスト、誤指定再読込時の編集保護テスト、実機確認の通過。",
+        "dependencies": [
+          "issue-original-save-conflict"
+        ],
+        "relatedRefs": [
+          "docs/smoke-checklist.md",
+          "next/Sources/HazakuraNextCore/SelectedTextFile.swift"
+        ],
+        "ownerType": "agent",
+        "parallelizable": true,
+        "recommendedOrder": 3
+      },
+      {
+        "id": "issue-workspace-ui-pane",
+        "priority": "P1",
+        "origin": "roadmap_official",
+        "title": "3ペインUI基盤・常駐ワークスペースと安全ファイル操作",
+        "summary": "現在のモーダルシート中心スクラッチUIから、第一世代の落ち着いた執筆レイアウト（ワークスペースツリー＋編集面＋任意プレビュー/比較ペイン）とフォルダ内作成・改名・ゴミ箱移動へ発展させる。",
+        "whyRemaining": "Phase 1/2ではUI変更の巻き戻しコストを避け、まずドメイン契約とTextKit 2単体の安全性を固定したため。",
+        "doneCriteria": "選択ワークスペース内に閉じたツリー表示、外部変更の有界追従、作成/改名/ゴミ箱確認の実装と自動/実機テスト。",
+        "dependencies": [
+          "issue-device-acceptance",
+          "issue-original-save-conflict"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNext/ScratchWorkspaceView.swift",
+          "next/Sources/HazakuraNextCore/SelectedFolderCatalog.swift"
+        ],
+        "ownerType": "both",
+        "parallelizable": false,
+        "recommendedOrder": 4
+      },
+      {
+        "id": "issue-lmode-and-reader-ux",
+        "priority": "P1",
+        "origin": "roadmap_official",
+        "title": "L Mode 本格組版・Readerページ送り/永続位置アンカー",
+        "summary": "えるモードの記号非表示/装飾・タイプライター、単一原稿Readerのページ送り/見開き、版変更に耐える原文アンカー位置復元を実装する。",
+        "whyRemaining": "TextKit 2上で記号非表示やレイアウト装飾を入れると日本語IME・カーソル・折り返しへの影響が大きいため、まず素のTextKit 2実機受け入れを先行させている。",
+        "doneCriteria": "実機IMEでの破損ゼロを確認した上でのL Mode装飾実装、全文⇔章⇔編集面の位置連動アンカー検証。",
+        "dependencies": [
+          "issue-device-acceptance"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNextEditor/TextKitEditor.swift",
+          "docs/roadmap.md"
+        ],
+        "ownerType": "both",
+        "parallelizable": true,
+        "recommendedOrder": 4
+      },
+      {
+        "id": "issue-export-parity",
+        "priority": "P1",
+        "origin": "roadmap_official",
+        "title": "PDF改ページ・EPUBメタデータ/表紙・プレビュー/書き出し画像境界",
+        "summary": "PDFの用紙サイズ別改ページ、EPUBの表紙・書誌情報・ファイル名/タイトル反映、画像参照のworkspace許可境界（ローカル＋有界HTTPS）を実装する。",
+        "whyRemaining": "現在は構造・エスケープ・キャンセル安全性のみを試作し、外部リソース読込を全面遮断しているため。",
+        "doneCriteria": "用紙単位PDF出力、EPUBCheck合格＋Apple Books実機確認、G1同等の画像許可境界テスト通過。",
+        "dependencies": [
+          "issue-workspace-ui-pane"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNext/MarkdownPDFExport.swift",
+          "next/Sources/HazakuraNext/MarkdownEPUBExport.swift"
+        ],
+        "ownerType": "agent",
+        "parallelizable": true,
+        "recommendedOrder": 5
+      },
+      {
+        "id": "issue-pdf-8s-timeout-eval",
+        "priority": "P2",
+        "origin": "newly_identified",
+        "title": "PDF書き出し8秒タイムアウト制限の大型原稿での妥当性評価",
+        "summary": "G1の60秒に対しG2のMarkdownPDFExportは8秒固定。CIで並列3件がタイムアウト失敗した経緯（45641744373）もあり、10万字級・表多数原稿での所要時間を実測し必要なら見直す。",
+        "whyRemaining": "現在は短い合成原稿のみで試験しており、長文レンダリング時の実測データがない。",
+        "doneCriteria": "長文原稿（04-long.md等）での実測レンダリング時間を取得し、タイムアウト値とキャンセル挙動を確定。",
+        "dependencies": [
+          "issue-device-acceptance"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNext/MarkdownPDFExport.swift",
+          "docs/current-status.md"
+        ],
+        "ownerType": "both",
+        "parallelizable": true,
+        "recommendedOrder": 5
+      },
+      {
+        "id": "issue-inference-bakeoff",
+        "priority": "P2",
+        "origin": "roadmap_official",
+        "title": "推論基盤選定（Foundation Models vs MLX Swift）とLocal Assist本接続",
+        "summary": "ModelProbeを拡張または比較評価し、日本語校正品質・メモリ・停止制御を検証した上で、推論基盤を選定し通常版の会話＋Diffレビューへ接続する。",
+        "whyRemaining": "G1のLFM3評価・12B 16GBタイムアウト経験を踏まえ、モデル選定と推論基盤を慎重に見極めるフェーズにあるため。",
+        "doneCriteria": "選定根拠の記録、提案採用と復旧記録の整合設計、A1実機合格。",
+        "dependencies": [
+          "issue-device-acceptance",
+          "issue-original-save-conflict"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNextModelProbe/AssistModelProbeCommand.swift",
+          "docs/roadmap.md"
+        ],
+        "ownerType": "both",
+        "parallelizable": true,
+        "recommendedOrder": 6
+      },
+      {
+        "id": "issue-notes-vertical-reeval",
+        "priority": "P2",
+        "origin": "roadmap_official",
+        "title": "見直しメモ・再開メモ・編集ルールメモ・縦書きのG2採否と設計",
+        "summary": "G1で方針採用されたメモ機能と縦書き（Reader→EPUB）について、ネイティブTextKit 2 / SwiftUIでの実装方式と優先順位を再評価する。",
+        "whyRemaining": "ロードマップ上Phase 3の後半に位置付けられており、まず基礎編集・Safe Editorの安定が前提。",
+        "doneCriteria": "各機能の採否決定、原文非汚染の保存設計書作成。",
+        "dependencies": [
+          "issue-lmode-and-reader-ux"
+        ],
+        "relatedRefs": [
+          "docs/roadmap.md#メモと縦書き"
+        ],
+        "ownerType": "both",
+        "parallelizable": true,
+        "recommendedOrder": 7
+      },
+      {
+        "id": "issue-ui-banner-and-discovery",
+        "priority": "P2",
+        "origin": "newly_identified",
+        "title": "上部通知バナーの整理とテキスト検索・コマンド導線の向上",
+        "summary": "ScratchWorkspaceView上部バナーの状態積上げによる縦幅圧迫を整理し、ステータスバー／インラインピルへの分離、およびコマンドパレット・日本語メニュー/ツールバー発見性を整える。",
+        "whyRemaining": "現在のUIは全状態を1つのバナーに集約してテストしやすくした検証向けレイアウトのため。",
+        "doneCriteria": "編集領域を圧迫せず安全性表示（読取専用・退避済み・コピー済み）が一目で読める本番UI設計の確定。",
+        "dependencies": [
+          "issue-workspace-ui-pane"
+        ],
+        "relatedRefs": [
+          "next/Sources/HazakuraNext/ScratchWorkspaceView.swift"
+        ],
+        "ownerType": "both",
+        "parallelizable": true,
+        "recommendedOrder": 7
+      },
+      {
+        "id": "issue-okf-workbench-reeval",
+        "priority": "P3",
+        "origin": "roadmap_official",
+        "title": "OKF点検・ひな形 / Import Assist / Agent Workbenchの採否判断",
+        "summary": "第一世代の特殊機能（OKF, PDF/OCR取込, Developer専用Agent Workbench）について、第二世代で必要性と信頼境界を再評価する。",
+        "whyRemaining": "ロードマップ上で「存在だけを理由に移植せず保留」と明記されているため。",
+        "doneCriteria": "移植する機能・廃止する機能のオーナー確定。",
+        "dependencies": [
+          "issue-workspace-ui-pane"
+        ],
+        "relatedRefs": [
+          "docs/roadmap.md#第一世代からの棚卸しphase-0"
+        ],
+        "ownerType": "owner_device",
+        "parallelizable": true,
+        "recommendedOrder": 8
+      },
+      {
+        "id": "issue-os-target-and-distribution",
+        "priority": "P3",
+        "origin": "roadmap_official",
+        "title": "最低macOS・Intel対応・設定移行・正式署名/公証・App Storeレーン分離",
+        "summary": "暫定のmacOS 26 / arm64ターゲットを製品要件として確定し、G1設定/Book移行、Preferences、多言語（日/英/かな）、配布署名・公証を構築する。",
+        "whyRemaining": "Phase 5（製品化）の最終ゲートであり、Phase 1〜4の実測結果を待って判断するため。",
+        "doneCriteria": "配布候補の署名・公証・TestFlight受け入れ完了と世代交代判断。",
+        "dependencies": [
+          "issue-legacy-encoding",
+          "issue-export-parity",
+          "issue-inference-bakeoff"
+        ],
+        "relatedRefs": [
+          "docs/roadmap.md",
+          "docs/app-store-build.md"
+        ],
+        "ownerType": "both",
+        "parallelizable": false,
+        "recommendedOrder": 9
+      }
+    ],
+    "commitClusters": [
+      {
+        "id": "cluster-1",
+        "range": "3c9c1f99 .. 77c5a518",
+        "commitCount": 4,
+        "timeWindow": "2026-11-25 15:54 – 16:33 JST",
+        "theme": "設計転換・独立プロジェクト・TextKit 2基盤",
+        "category": "設計・基盤",
+        "summary": "段階的リファクタ（PR #70）から独立macOSネイティブ再構築へ方針を切り替え、SwiftPMプロジェクト next/、TextKit 2編集面（MarkdownTextView）、タブごとの変換状態・Undo履歴分離を立ち上げ。"
+      },
+      {
+        "id": "cluster-2",
+        "range": "33c4639e .. bbddfa18",
+        "commitCount": 8,
+        "timeWindow": "2026-11-25 16:43 – 18:00 JST",
+        "theme": "Safe Editor コア（読取・復旧・コピー保存・原本比較・行差分）",
+        "category": "安全性・保存",
+        "summary": "UTF-8読取専用オープン、終了前未保存確認、バイナリマニフェストによる未保存退避・復元、O_EXCL新規コピー保存、3版比較・OriginalSavePreflightコア・Non-Git行差分を一気に構築。"
+      },
+      {
+        "id": "cluster-3",
+        "range": "422a0e70 .. f851831b",
+        "commitCount": 11,
+        "timeWindow": "2026-11-25 18:08 – 19:18 JST",
+        "theme": "Markdownプレビュー・章表示・えるモード・3形式書き出し",
+        "category": "Hazakura体験",
+        "summary": "確定原文スナップショットのMarkdownプレビュー、見出しからの原文行復帰・目次・読書位置メモリ保持・章表示・本文検索、HTML/PDF/EPUB書き出し、えるモード余白切替を実装。"
+      },
+      {
+        "id": "cluster-4",
+        "range": "8a02296c .. 8c9b026c",
+        "commitCount": 14,
+        "timeWindow": "2026-11-25 19:25 – 21:12 JST",
+        "theme": "Local Assist 採用デモ・推論プローブ・UTF-16・フォルダ一覧・複数原稿読書",
+        "category": "ローカルAI・拡張機能",
+        "summary": "提案差分サンプル、1 Undo単位採用・シート終了二重照合・別バンドル採用デモ・直近採用差分閲覧、Foundation Models比較CLI、UTF-16引き継ぎ、フォルダ候補一覧・再選択オープン、複数原稿連続読書/横断検索/EPUB書き出しを追加。"
+      },
+      {
+        "id": "cluster-5",
+        "range": "24eb7dee .. e19f1196",
+        "commitCount": 14,
+        "timeWindow": "2026-11-25 21:20 – 22:49 JST",
+        "theme": "比較タブ・集中表示・外観・補助計測・表共通化・安全削除",
+        "category": "体験・計測・検証",
+        "summary": "比較時ディスク版の別タブ化、集中表示（⌘⇧J）、ウィンドウ別標準外観、受け入れ手順＋合成原稿、退避/コピー作成済み版表示、行移動（⌘L）・原文検索（⌘F）、LayoutProbe、表共通化、復旧記録の厳密一致削除を実装。"
+      },
+      {
+        "id": "cluster-6",
+        "range": "9893bf5e .. ca9f3fc7",
+        "commitCount": 17,
+        "timeWindow": "2026-11-25 22:57 – 2026-11-26 00:15 JST",
+        "theme": "Sandbox分離・CI署名検証・全操作のIME/シート境界ガード徹底",
+        "category": "安全性・境界強化",
+        "summary": "権限検証用バンドルとCIでの3バンドル署名検証を追加。さらに前後タブ移動・単一タブ閉じ・終了・読込・保存・書き出し・比較・フォルダ・復元・読書・えるモード・集中表示・検索・行移動のすべてにネイティブ未確定入力（hasMarkedText）とシート表示中ガードを貫徹。PDF試験も直列化。"
+      },
+      {
+        "id": "cluster-7",
+        "range": "b9d62476 .. bacb19d8",
+        "commitCount": 32,
+        "timeWindow": "2026-11-26 00:20 – 02:37 JST",
+        "theme": "Undo隔離・実測記録・U+FEFF/曖昧URL/iCloud拒否・統合試験強化",
+        "category": "安全性・検証深化",
+        "summary": "破棄済みビューからの入力/Undo遮断、ModelProbe/LayoutProbeの初回実測記録、結合文字境界での安全な抜粋省略、BOMなし先頭U+FEFF拒否、曖昧URL（userinfo/port/query/fragment）・iCloud未取得ファイル拒否、UTF-16編集保存バイト一致と復旧統合試験を追加。"
+      },
+      {
+        "id": "cluster-8",
+        "range": "6f0921f7 .. 577f1b9b",
+        "commitCount": 18,
+        "timeWindow": "2026-11-26 02:42 – 07:03 JST",
+        "theme": "UTF-8走査/一致判定の高速化・非同期処理の中止と再照合徹底",
+        "category": "性能・非同期制御",
+        "summary": "連続UTF-8の行移動・重複通知照合の高速化（SourceEquality）、ファイル読込中止、原本比較のバックグラウンド分離と中止、読書検索の非同期化と中止、退避待機後の削除再確認、HTML拡張子検証、PDF生成中のTask取消伝播とWebKit開始後キャンセル統合試験を追加。"
+      }
+    ],
+    "computedProgress": {
+      "totalCatalogItems": 36,
+      "inScopeItems": 35,
+      "outOfScopeItems": 1,
+      "futureConsiderationItems": 6,
+      "inScopeFutureConsiderationItems": 6,
+      "prototypeNumerator": 18.7,
+      "productNumerator": 12.96,
+      "prototypeCompletionPct": 53.4,
+      "productReadinessPct": 37,
+      "statusBreakdown": {
+        "実装済み": 8,
+        "部分実装": 4,
+        "試作実装": 14,
+        "未着手": 9,
+        "保留・対象外": 1
+      },
+      "statusBreakdownOrdered": [
+        {
+          "id": "実装済み",
+          "count": 8
+        },
+        {
+          "id": "試作実装",
+          "count": 14
+        },
+        {
+          "id": "部分実装",
+          "count": 4
+        },
+        {
+          "id": "未着手",
+          "count": 9
+        },
+        {
+          "id": "保留・対象外",
+          "count": 1
+        }
+      ],
+      "verificationBreakdown": {
+        "自動検証済み": 24,
+        "未実施": 10,
+        "部分検証": 1,
+        "対象外": 1
+      },
+      "acceptanceBreakdown": {
+        "未着手": 35,
+        "保留・対象外": 1
+      },
+      "dispositionBreakdown": {
+        "再設計": 20,
+        "継承": 9,
+        "保留": 7
+      },
+      "unknownImplementationStatuses": [],
+      "weights": {
+        "implementation": 0.3,
+        "verification": 0.3,
+        "deviceAcceptance": 0.4
+      },
+      "acceptance": {
+        "totalItems": 24,
+        "applicableItems": 24,
+        "passed": 0,
+        "failed": 0,
+        "unmeasured": 24,
+        "outOfScope": 0,
+        "other": 0,
+        "measured": 0,
+        "completionPct": 0,
+        "statusBreakdown": {
+          "未測定": 24
+        },
+        "groups": {
+          "編集 (E)": {
+            "total": 4,
+            "passed": 0,
+            "unmeasured": 4,
+            "failed": 0
+          },
+          "安全・保存 (S)": {
+            "total": 7,
+            "passed": 0,
+            "unmeasured": 7,
+            "failed": 0
+          },
+          "読書・表現 (R)": {
+            "total": 4,
+            "passed": 0,
+            "unmeasured": 4,
+            "failed": 0
+          },
+          "Assist・権限 (A/S6)": {
+            "total": 1,
+            "passed": 0,
+            "unmeasured": 1,
+            "failed": 0
+          },
+          "追加確認 (G2)": {
+            "total": 5,
+            "passed": 0,
+            "unmeasured": 5,
+            "failed": 0
+          },
+          "別実行対象": {
+            "total": 3,
+            "passed": 0,
+            "unmeasured": 3,
+            "failed": 0
+          }
+        },
+        "provided": {
+          "totalItems": 24,
+          "passed": 0,
+          "failed": 0,
+          "unmeasured": 24,
+          "note": "docs/next-native-acceptance-record.md の明細 24 項目を集計。合格 0 / 未測定 24 / 対象外 0。自動テストや補助プローブの結果は実機受け入れへ転記しない。",
+          "outOfScope": 0,
+          "measured": 0,
+          "source": "evaluation.acceptanceAndPerformance.acceptanceRows から再計算"
+        },
+        "providedMatches": true,
+        "source": "evaluation.acceptanceAndPerformance.acceptanceRows"
+      },
+      "source": "evaluation.featureComparison"
+    },
+    "headMovedSinceEvaluation": true,
+    "evaluationImpact": "dashboard_only",
+    "nonDashboardChangesSinceEvaluation": 1,
+    "changedFilesSinceEvaluation": [
+      ".github/workflows/quality.yml"
+    ],
+    "evaluationDeltaError": null,
+    "computedAcceptance": {
+      "totalItems": 24,
+      "applicableItems": 24,
+      "passed": 0,
+      "failed": 0,
+      "unmeasured": 24,
+      "outOfScope": 0,
+      "other": 0,
+      "measured": 0,
+      "completionPct": 0,
+      "statusBreakdown": {
+        "未測定": 24
+      },
+      "groups": {
+        "編集 (E)": {
+          "total": 4,
+          "passed": 0,
+          "unmeasured": 4,
+          "failed": 0
+        },
+        "安全・保存 (S)": {
+          "total": 7,
+          "passed": 0,
+          "unmeasured": 7,
+          "failed": 0
+        },
+        "読書・表現 (R)": {
+          "total": 4,
+          "passed": 0,
+          "unmeasured": 4,
+          "failed": 0
+        },
+        "Assist・権限 (A/S6)": {
+          "total": 1,
+          "passed": 0,
+          "unmeasured": 1,
+          "failed": 0
+        },
+        "追加確認 (G2)": {
+          "total": 5,
+          "passed": 0,
+          "unmeasured": 5,
+          "failed": 0
+        },
+        "別実行対象": {
+          "total": 3,
+          "passed": 0,
+          "unmeasured": 3,
+          "failed": 0
+        }
+      },
+      "provided": {
+        "totalItems": 24,
+        "passed": 0,
+        "failed": 0,
+        "unmeasured": 24,
+        "note": "docs/next-native-acceptance-record.md の明細 24 項目を集計。合格 0 / 未測定 24 / 対象外 0。自動テストや補助プローブの結果は実機受け入れへ転記しない。",
+        "outOfScope": 0,
+        "measured": 0,
+        "source": "evaluation.acceptanceAndPerformance.acceptanceRows から再計算"
+      },
+      "providedMatches": true,
+      "source": "evaluation.acceptanceAndPerformance.acceptanceRows"
+    },
+    "productFilesChangedSinceEvaluation": 0,
+    "supportingFilesChangedSinceEvaluation": 1
+  }
+}

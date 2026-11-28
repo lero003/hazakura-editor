@@ -1,25 +1,22 @@
 # Roadmap
 
 Status: Operational
-Scope: Active release lane and future planning boundaries
+Scope: 第一世代の配布計画と第二世代の開発方針
 Authority: Medium
-Last reviewed: 2026-10-19
+Last reviewed: 2026-11-25（方針と参照先）
 
-## Current Position
+## 現在の方向
 
 Hazakura EditorはMarkdown-first Safe Editor。「Markdownで書き、本として読み、ローカルAIで整える。」を
-v3ではUI/UX・日常導線の完成度・Local Assistの内部構造を通じて深める。
-v3.2.1はテスト問題なし・App Store公開済み（2026-10-14オーナー報告）。
-v3.3は審査提出済み（2026-10-19オーナー報告）。提出build/source対応とApple側の審査状態は独立未照合。
-現行sourceはv3.4.0とし、テーマ刷新S0〜S10とその調整を扱う。
-v3.3ではCodeMirror宣言整理・背景効果の集約に続き、dialog・Tauri/Foundationのfeature・
-HTTPS画像・PDF抽出・日本語codecを追加削減した。
-外部packageからOS APIへの移行は、互換adapterの保守と性能差を含めて受け入れる。
-全依存の撤去は前提にしない。
-メモ系と縦書きは採用方針を維持し、初期整理の受け入れ後に戻る。
-LLM機能の追加はモデル能力・MLX経路の再評価まで置く。
+UI/UXと日常導線の完成度で深める。**第一世代**（Tauri / React / CodeMirror / Rust）のテーマ候補の
+受け入れと配布計画は変更しない。**[第二世代](#第二世代設計)** は別レーンでmacOSネイティブに再構築する。
+[メモと縦書き](#メモと縦書き)は製品価値として残し、第二世代では採否・実装方法・優先順位を再評価する。
+LLM機能の追加はモデル能力と推論基盤の再評価まで保留。
 
-| 対象 | 状態 |
+実装・公開・候補の最新状態は[現状](current-status.md)、着手順は[作業キュー](current-work.md#active-queue)へ。
+下表と版別記録は第一世代の当時の判断の根拠として保持する。最新の出荷状態を表すものではない。
+
+| 対象 | 方針決定時の状態 |
 |---|---|
 | 公開版 | v3.2.1（2026-10-14オーナー報告。公開build/source対応はこの作業で未再確認） |
 | 審査提出報告 | v3.3（2026-10-19オーナー報告）。提出build/sourceとApple側の審査状態は独立未照合 |
@@ -86,12 +83,12 @@ UTF-8の測定時間は同程度だが、legacy処理は遅くなる。大きな
 [先行変更の記録](releases/3.3.0-dependency-autonomy.md)、[計画・採否](dependency-autonomy-plan.md)を参照。
 この節は当時の候補記録であり、v3.3の提出build/source対応は独立未照合。
 
-## 初期整理後 — メモと縦書き（2026-09-26 方針採用）
+## メモと縦書き
 
-利用者が **読み返して気づきを残し、日をまたいで直し、自分の方針で原稿を仕上げる**
-ことを次の製品価値にする。以下は採用した方向性であり、機能の実装・出荷を示さない。
-v3.3の依存初期整理を受け入れた後、
-具体的な版番号とUI・保存方式は個別設計で決める。
+2026-09-26 方針採用。利用者が **読み返して気づきを残し、日をまたいで直し、自分の方針で原稿を仕上げる**
+ことを次の製品価値にする。以下は第一世代で採用した方向性であり、機能の実装・出荷を示さない。
+第一世代はv3.3の依存初期整理の受け入れ後に具体的な版・UI・保存方式を個別設計で決める。
+第二世代は[Phase 3](#phase-05)で必要性・実装方法・優先順位を改めて評価する。
 
 | テーマ | 利用者に届ける価値 | 最初の範囲 |
 |---|---|---|
@@ -112,6 +109,50 @@ v3.3の依存初期整理を受け入れた後、
 再指定を促す。AIはメモや本文を自動更新せず、原稿を自動収集しない。
 具体例と到達点は[執筆体験の計画詳細](post-v3.1-writing-completion-draft.md)を参照する。
 DOCX、読み上げ、仕上げ前の確認は引き続き別の検討候補。
+
+## 第二世代設計
+
+2026-11-25 オーナー決定。Tauri／CodeMirrorを維持した段階的な置換と、全面刷新を見送る旧方針に代え、
+**同一リポジトリ内の独立した `next/` をmacOSネイティブアプリとして再構築する**。
+第一世代のソース・ビルド・候補・配布履歴を維持し、専用ブランチで別々にビルド・起動・テストする。
+開発用のBundle ID・データ保存領域を分け、第一世代の削除や正式な置き換えは品質確認後に別途判断する。
+
+- **Swift** でアプリとコアロジック、**SwiftUI** で主要UI・設定・ナビゲーション・状態表示を担う。
+  編集・文字描画・IME・Undo/Redoは **AppKit / TextKit 2** を使い、SwiftUIだけに固執しない。
+- ファイル操作・PDF・OCR・セキュリティ・描画にはApple標準フレームワークを優先する。
+  Tauri・React・CodeMirror・npm・Cargoに依存せず、既存Rust資産は明確な技術的理由がある場合だけ個別検討する。
+  WebViewはアプリUIの基盤にせず、HTMLプレビューや書き出しなどの限定用途に限って比較する。
+- UIとドメインを分け、文書の同一性・編集中の状態・保存済みの版・復旧状態を区別する。
+  非同期処理の所有者・取消・結果を反映する条件を決める。既存コードは逐語移植せず、安全性・保守性・性能・UXを比較する。
+  依存削減だけを目的にした自前実装や、先回りした互換層・抽象化は避ける。
+- **初回検証の暫定基準：** macOS 26を暫定のdeployment targetとし、Swift 6.2以上、対応するXcodeのmacOS SDK、Apple Silicon（arm64）の開発機から始める。製品の最低OS・対応機種（Intelを含む）・配布方式は未確定。クロスプラットフォーム対応は当面の要件に含めない。
+
+### Phase 0–5
+
+| Phase | 範囲と次へ進むための確認 |
+|---|---|
+| **0：再設計** | 第一世代の機能・安全契約・テストを棚卸しし、継承／再設計／廃止／保留を分類。Swiftの責務分担、対応OS・ハードウェア・配布方式を検討し、独立プロジェクトとテスト環境を整える。 |
+| **1：エディタ基盤** | SwiftUIの基本アプリにTextKit 2のMarkdown編集面を接続し、文書・タブ・編集状態を分ける。日本語IME・Undo/Redo・長文編集を確認し、起動時間・メモリ消費・描画性能を測る。初回は合成原稿のメモリ内スクラッチに限り、実ユーザーのファイルを開かず、書かない。 |
+| **2：Safe Editor** | 選択範囲内のファイル・ワークスペース、明示保存・保存競合・未保存原稿復旧、文字コード・改行コード、Non-Git Diff、サンドボックス・権限管理を設計し、失敗時に原文が失われないことを確認する。 |
+| **3：Hazakura固有の体験** | Markdownプレビュー・L Mode・Reader / Book Scope・テーマ／Zen Mode・各形式の書き出しを、原文を変えない体験として検討・実装する。メモと縦書きはここで再評価する。 |
+| **4：ローカルAI** | MLX SwiftやApple純正のAI API（Foundation Modelsなど）を候補として比較する。モデル管理、Local Assist、Diff確認と明示採用、推論の停止・隔離・メモリ管理を扱う。選定は実測後とし、ネットワークへの推論フォールバック・ツール実行・自動採用／保存は入れない。 |
+| **5：製品化** | 第一世代との機能・品質比較、既存データと設定の移行設計、実機テスト、署名・公証・App Store配布の確認後に、正式な世代交代の可否を判断する。 |
+
+順序・範囲は調査と実測で調整する。表は実装済み・受け入れ済み・出荷予定を示さない。
+
+### 第一世代からの棚卸し（Phase 0）
+
+コードの有無ではなく、製品価値と安全契約を基準に分類する。廃止・保留はいずれも第二世代への採否であり、第一世代からの削除ではない。
+
+| 分類 | 対象と扱い | 第一世代の参照元 |
+|---|---|---|
+| **継承** | Markdown原文が正本。明示保存・採用・破棄、保存衝突と未保存原稿の復旧、Non-Git Diff、ユーザーが選択した範囲でのワークスペース管理、日本語IME・Undo・文字コード・改行の契約を受け継ぐ。 | [製品概要](product-brief.md)、[信頼境界](security-boundary.md)、[文書と復旧の調査](reviews/2026-11-25-second-generation-architecture.md#a-文書-id保存復旧workspace--p0)、[ファイル](../src-tauri/src/tests/files.rs)・[文字コード](../src-tauri/src/tests/encoding.rs)のテスト |
+| **継承** | L Mode・Reader・Book Scopeの製品価値、ローカル提案の明示採用、App StoreとDeveloperの信頼境界を維持する。既存テスト・不具合履歴・実機受け入れ基準は、コードではなく契約や比較の参照として使う。 | [L Mode](l-mode-plan.md)、[Book Scope](superpowers/specs/2026-07-02-v2-book-scope-design.md)、[会話とDiff](local-assist-conversational-edit-ux.md)、[配布境界](app-store-build.md)、[実機スモーク](smoke-checklist.md) |
+| **再設計** | 文書ID・版・復旧キー、権限と保存、読み位置と原文アンカー、出力形式ごとの入力固定・認可・取消、推論のライフサイクル。第一世代にある具体的な境界・失敗例から検証ケースを選ぶ。 | [第一世代の調査報告](reviews/2026-11-25-second-generation-architecture.md) のA/B/D/E、[v3.2品質強化](releases/3.2.0-quality-hardening.md) |
+| **廃止** | 第一世代のTauri/React/CodeMirror、npm/Cargoを第二世代のアプリ基盤にしない。Tauri IPCの窓構成やWebView/CSSに依存するUIはそのまま移植しない。 | [依存整理](dependency-autonomy-plan.md)、[編集面と配布・描画の調査](reviews/2026-11-25-second-generation-architecture.md) のF/G/H/I |
+| **保留** | メモ・縦書きはPhase 3で再評価。AI runtime／モデル配布はPhase 4。OKF点検・ひな形、Import Assist、Developer専用Agent Workbenchは存在だけを理由に移植せず、必要性と境界を再評価する。 | [メモ／縦書きの設計例](post-v3.1-writing-completion-draft.md)、[MLX事前調査](mlx-m0-preflight-design.md)、[OKF契約](okf-spec-pin.md)、[Agent Workbenchの境界](agent-workbench-boundary.md) |
+
+[作業キュー](current-work.md#active-queue)が着手可否の入口。旧調査の段階的改修提案は現行の着手指示ではない。
 
 ## Established Foundation
 
@@ -243,6 +284,8 @@ Not: general chat, provider marketplace, auto multi-file rewrite, or
 docked IDE-like agent panel (docking is a separate future UX decision).
 
 ## Core AI — v3.0 foundation / v3.1 models
+
+以下は第一世代のCore AI計画。C-0〜C-3およびM-0a/M-0bを第二世代の実装条件とはせず、第二世代では上記のPhase 4で再評価する。
 
 Product intent (not an implementation green light):
 
@@ -392,5 +435,4 @@ Allowlisted writing models under Core AI are the narrow exception path above,
 not a general model marketplace. 2026-09-22 のオーナー決定で、この例外に
 **ユーザーが明示登録したローカル/外部 resource folder（C-3）** が加わった
 （`docs/core-ai-model-source-abstraction.md`）。任意URL取得・自動DL・市場機能は
-引き続きこの rail の外にある。M-0a does not lift this rail; MLX runtime
-becomes actionable only after the separate M-0b boundary review.
+引き続きこの rail の外にある。第一世代のM-0aはこの境界を広げない。第一世代でMLX runtimeを着手できるのはM-0bの別レビュー後であり、第二世代の推論基盤の採用判断とは分ける。

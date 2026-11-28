@@ -1,0 +1,242 @@
+import AppKit
+@testable import HazakuraNext
+import HazakuraNextCore
+import Testing
+
+@MainActor
+struct ScratchExitTests {
+    @Test func cleanWindowAndQuitDoNotAskForDiscard() {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        #expect(delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateNow)
+        #expect(probe.prompts.isEmpty)
+        window.close()
+        #expect(delegate.session == nil)
+    }
+
+    @Test func windowCloseKeepsEditedSessionUntilExplicitDiscard() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        session.tabs.applyCommittedSource("編集済み", to: id)
+
+        window.performClose(nil)
+        #expect(probe.prompts.map(\.ticket.destination) == [.window])
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateCancel)
+        let first = try #require(probe.prompts.first)
+        first.finish(false)
+        #expect(delegate.session === session)
+        #expect(session.tabs.selectedTab?.document.source == "編集済み")
+
+        #expect(delegate.windowShouldClose(window) == false)
+        let second = try #require(probe.prompts.last)
+        first.finish(true) // Stale callback must not consent to the second attempt.
+        #expect(delegate.session === session)
+        second.finish(true)
+        #expect(delegate.session == nil)
+        #expect(probe.replies.isEmpty)
+    }
+
+    @Test func quitReplyRejectsChangedDraftAndIgnoresDuplicateCompletion() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        session.tabs.applyCommittedSource("編集済み", to: id)
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateLater)
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateLater)
+        #expect(delegate.windowShouldClose(window) == false)
+        #expect(probe.prompts.map(\.ticket.destination) == [.application])
+        let stale = try #require(probe.prompts.first)
+        session.tabs.applyCommittedSource("新しい変更", to: id)
+        stale.finish(true)
+        stale.finish(false)
+        #expect(probe.replies == [false])
+        #expect(session.tabs.selectedTab?.document.source == "新しい変更")
+
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateLater)
+        let fresh = try #require(probe.prompts.last)
+        fresh.finish(true)
+        fresh.finish(true)
+        #expect(probe.replies == [false, true])
+    }
+
+    @Test func windowMenuActionsDoNotOperateOnAnOffscreenSession() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        #expect(window.isVisible == false)
+        for selector in ["newTab:", "openFile:", "exportHTML:", "exportPDF:", "exportEPUB:",
+                         "toggleLMode:", "toggleZenMode:", "jumpToSourceLine:", "searchSource:"] {
+            let action = NSSelectorFromString(selector)
+            try #require(delegate.responds(to: action))
+            let item = NSMenuItem(title: "Command", action: action, keyEquivalent: "")
+            #expect(delegate.validateMenuItem(item) == false)
+            _ = delegate.perform(action, with: nil)
+        }
+        #expect(session.tabs.tabs.count == 1)
+        #expect(session.openRequest == nil)
+        #expect(session.exportRequest == nil)
+        #expect(session.lineJumpRequest == nil)
+        #expect(session.sourceSearchRequest == nil)
+        #expect(session.isLMode == false)
+
+        session.toggleLMode()
+        let toggle = NSSelectorFromString("toggleLMode:")
+        let item = NSMenuItem(title: "えるモード", action: toggle, keyEquivalent: "")
+        #expect(delegate.validateMenuItem(item) == false)
+        #expect(item.state == .on)
+        _ = delegate.perform(toggle, with: nil)
+        #expect(session.isLMode)
+        #expect(session.isZenMode == false)
+
+        session.toggleZenMode()
+        let zenToggle = NSSelectorFromString("toggleZenMode:")
+        let zenItem = NSMenuItem(title: "集中表示", action: zenToggle, keyEquivalent: "")
+        #expect(delegate.validateMenuItem(zenItem) == false)
+        #expect(zenItem.state == .on)
+        _ = delegate.perform(zenToggle, with: nil)
+        #expect(session.isZenMode)
+    }
+
+    @Test func appearanceMenuReflectsOverrideButCannotChangeAnOffscreenWindow() throws {
+        let delegate = ScratchApplicationDelegate(source: "# 原稿")
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        session.setAppearance(.dark)
+        try #require(session.appearance == .dark)
+
+        let action = NSSelectorFromString("chooseAppearance:")
+        try #require(delegate.responds(to: action))
+        for choice in WorkspaceSession.Appearance.allCases {
+            let item = NSMenuItem(title: "Appearance", action: action, keyEquivalent: "")
+            item.tag = choice.rawValue
+            #expect(delegate.validateMenuItem(item) == false)
+            #expect(item.state == (choice == .dark ? .on : .off))
+            _ = delegate.perform(action, with: item)
+            #expect(session.appearance == .dark)
+        }
+    }
+
+    @Test func pendingPDFExportBlocksNativeWindowAndQuitWithoutDiscarding() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        session.requestExport(.pdf)
+        let request = try #require(session.exportRequest)
+
+        #expect(delegate.windowShouldClose(window) == false)
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateCancel)
+        #expect(probe.prompts.isEmpty)
+        #expect(probe.replies.isEmpty)
+
+        session.cancelExport(request.id)
+        #expect(delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateNow)
+    }
+
+    @Test func nativeMarkedTextBlocksCleanWindowCloseAndQuitBeforeModelNotification() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let view = try installTextView(in: window)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+
+        #expect(!delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(.shared) == .terminateCancel)
+        #expect(probe.prompts.isEmpty)
+        #expect(view.hasMarkedText())
+        #expect(session.tabs.selectedTab?.document.source == "# 原稿")
+        view.unmarkText()
+        #expect(delegate.windowShouldClose(window))
+        #expect(delegate.applicationShouldTerminate(.shared) == .terminateNow)
+    }
+
+    @Test(arguments: [false, true])
+    func markedTextInvalidatesApprovedExitBeforeModelNotification(isQuit: Bool) throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        let view = try installTextView(in: window)
+        session.applyCommittedSource("確定済み", to: id)
+        if isQuit {
+            try #require(delegate.applicationShouldTerminate(.shared) == .terminateLater)
+        } else {
+            #expect(!delegate.windowShouldClose(window))
+        }
+        let prompt = try #require(probe.prompts.first)
+        markText(in: view)
+        try #require(view.hasMarkedText() && !session.tabs.isComposing)
+        prompt.finish(true)
+        #expect(delegate.session === session)
+        #expect(probe.replies == (isQuit ? [false] : []))
+        #expect(view.hasMarkedText())
+        #expect(session.tabs.selectedTab?.document.source == "確定済み")
+        view.unmarkText()
+        #expect(!delegate.windowShouldClose(window))
+        #expect(probe.prompts.count == 2)
+        probe.prompts.last?.finish(false)
+    }
+
+    private func installTextView(in window: NSWindow) throws -> NSTextView {
+        let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 200))
+        window.contentView = view
+        try #require(window.makeFirstResponder(view))
+        return view
+    }
+
+    private func markText(in view: NSTextView) {
+        view.setMarkedText("候補", selectedRange: NSRange(location: 2, length: 0),
+                           replacementRange: NSRange(location: NSNotFound, length: 0))
+    }
+
+    @Test func composingOrOpeningBlocksCloseAndQuitWithoutPresentingDiscard() throws {
+        let probe = ExitProbe()
+        let delegate = probe.makeDelegate()
+        let window = delegate.prepareWindow()
+        defer { window.close() }
+        let session = try #require(delegate.session)
+        let id = try #require(session.tabs.selectedID)
+        session.tabs.setComposing(true, in: id)
+        #expect(delegate.windowShouldClose(window) == false)
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateCancel)
+        session.tabs.setComposing(false, in: id)
+        session.requestOpen()
+        #expect(delegate.windowShouldClose(window) == false)
+        #expect(delegate.applicationShouldTerminate(NSApplication.shared) == .terminateCancel)
+        #expect(probe.prompts.isEmpty)
+        #expect(probe.replies.isEmpty)
+    }
+}
+
+@MainActor
+private final class ExitProbe {
+    typealias Prompt = (ticket: WindowExitGate.Ticket, finish: @MainActor (Bool) -> Void)
+    var prompts: [Prompt] = []
+    var replies: [Bool] = []
+
+    func makeDelegate() -> ScratchApplicationDelegate {
+        ScratchApplicationDelegate(source: "# 原稿", presentExit: { [weak self] _, ticket, finish in
+            self?.prompts.append((ticket, finish))
+        }, replyToQuit: { [weak self] _, allow in
+            self?.replies.append(allow)
+        })
+    }
+}
