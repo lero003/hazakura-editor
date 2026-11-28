@@ -1,22 +1,31 @@
 {
   "meta": {
-    "schemaVersion": "1.0.0",
-    "generatorVersion": "1.0.0",
-    "generatedAt": "2026-11-28T06:57:13.099Z",
+    "schemaVersion": "1.1.0",
+    "generatorVersion": "1.1.0",
+    "generatedAt": "2026-11-28T07:22:20.441Z",
     "repoUrl": "https://github.com/lero003/hazakura-editor",
     "prNumber": 71,
     "baseBranch": "main",
     "targetBranch": "next-native-editor",
-    "targetDir": "next/"
+    "targetDir": "next/",
+    "dataTarget": {
+      "sha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "shortSha": "7e097768",
+      "source": "GitHub PR headRefOid",
+      "capturedAt": "2026-11-28T07:22:20.441Z"
+    }
   },
   "mechanical": {
     "git": {
       "fetchStatus": "ok",
+      "capturedAt": "2026-11-28T07:22:20.442Z",
       "baseSha": "9681d27b5a4dc4e1e2be2e24e0f628fbc401768c",
       "baseShortSha": "9681d27b",
-      "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
-      "headShortSha": "577f1b9b",
-      "commitCount": 118,
+      "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "headShortSha": "7e097768",
+      "localHeadSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "localHeadMatchesRemote": true,
+      "commitCount": 119,
       "commits": [
         {
           "sha": "3c9c1f99b04da5d41364c9f0762c6cbcfda78662",
@@ -843,15 +852,25 @@
           "date": "2026-11-26 07:03:19 +0900",
           "category": "安全性・境界強化",
           "subject": "WebKit開始後にPDF書き出しを中止する試験を追加する"
+        },
+        {
+          "sha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "date": "2026-11-28 15:57:15 +0900",
+          "category": "機能実装",
+          "subject": "第二世代の開発状況ダッシュボードを追加する"
         }
       ],
-      "shortstatAll": "132 files changed, 24943 insertions(+), 215 deletions(-)",
+      "shortstatAll": "139 files changed, 33477 insertions(+), 215 deletions(-)",
       "shortstatNext": "120 files changed, 24280 insertions(+)",
-      "shortstatNonNext": "12 files changed, 663 insertions(+), 215 deletions(-)",
+      "shortstatNonNext": "19 files changed, 9197 insertions(+), 215 deletions(-)",
       "g1ProductFilesChanged": 0
     },
     "github": {
       "fetchStatus": "ok",
+      "capturedAt": "2026-11-28T07:22:20.529Z",
+      "reviewsFetchStatus": "ok",
+      "runsFetchStatus": "ok",
       "pr": {
         "number": 71,
         "title": "第二世代の macOS ネイティブ基盤を立ち上げる",
@@ -859,51 +878,41 @@
         "url": "https://github.com/lero003/hazakura-editor/pull/71",
         "baseRefName": "main",
         "headRefName": "next-native-editor",
-        "headRefOid": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
-        "additions": 24943,
+        "headRefOid": "7e097768792192b463957a949a1aad9a5934bc20",
+        "additions": 33477,
         "deletions": 215,
-        "changedFiles": 132,
+        "changedFiles": 139,
         "createdAt": "2026-11-25T07:17:30Z",
-        "updatedAt": "2026-11-25T22:03:22Z",
+        "updatedAt": "2026-11-28T06:57:19Z",
         "body": "旧段階的リファクタ（#70）を取り込まず、第一世代の製品コード・既存ビルド・配布履歴を維持します。Phase 0〜5 と棚卸しを整理し、独立した next の初回 SwiftUI / TextKit 2 スクラッチを追加しました。Swift Testing 7件、開発用アドホック .app の生成と厳密検証、文書リンク、第一世代の製品差分なしを確認。実機IME・GUI受け入れ、性能、正式署名・出荷は未実施。実原稿を扱わない開発用検証です。",
         "statusCheckRollup": [
           {
             "__typename": "CheckRun",
-            "completedAt": "2026-11-25T22:06:33Z",
+            "completedAt": "2026-11-28T06:59:20Z",
             "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897901/job/139541296863",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740/job/140898992275",
             "name": "swift",
-            "startedAt": "2026-11-25T22:03:33Z",
+            "startedAt": "2026-11-28T06:57:26Z",
             "status": "COMPLETED",
             "workflowName": "Next Native"
           },
           {
             "__typename": "CheckRun",
-            "completedAt": "2026-11-25T22:06:22Z",
+            "completedAt": "2026-11-28T06:59:15Z",
             "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709883989/job/139541251112",
-            "name": "swift",
-            "startedAt": "2026-11-25T22:03:25Z",
-            "status": "COMPLETED",
-            "workflowName": "Next Native"
-          },
-          {
-            "__typename": "CheckRun",
-            "completedAt": "2026-11-25T22:06:43Z",
-            "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679/job/139541297944",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898992330",
             "name": "frontend",
-            "startedAt": "2026-11-25T22:03:31Z",
+            "startedAt": "2026-11-28T06:57:25Z",
             "status": "COMPLETED",
             "workflowName": "Quality"
           },
           {
             "__typename": "CheckRun",
-            "completedAt": "2026-11-25T22:10:31Z",
+            "completedAt": "2026-11-28T07:02:45Z",
             "conclusion": "SUCCESS",
-            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679/job/139541297468",
+            "detailsUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898991997",
             "name": "native",
-            "startedAt": "2026-11-25T22:03:32Z",
+            "startedAt": "2026-11-28T06:57:26Z",
             "status": "COMPLETED",
             "workflowName": "Quality"
           }
@@ -911,6 +920,28 @@
       },
       "reviewsCount": 0,
       "recentRuns": [
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T06:57:22Z",
+          "databaseId": 46118961740,
+          "event": "pull_request",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "status": "completed",
+          "updatedAt": "2026-11-28T06:59:21Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "workflowName": "Next Native"
+        },
+        {
+          "conclusion": "success",
+          "createdAt": "2026-11-28T06:57:22Z",
+          "databaseId": 46118961697,
+          "event": "pull_request",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "status": "completed",
+          "updatedAt": "2026-11-28T07:02:45Z",
+          "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "workflowName": "Quality"
+        },
         {
           "conclusion": "success",
           "createdAt": "2026-11-25T22:03:28Z",
@@ -1053,38 +1084,24 @@
           "updatedAt": "2026-11-25T21:21:06Z",
           "url": "https://github.com/lero003/hazakura-editor/actions/runs/45703159021",
           "workflowName": "Next Native"
-        },
-        {
-          "conclusion": "success",
-          "createdAt": "2026-11-25T21:18:36Z",
-          "databaseId": 45703148299,
-          "event": "push",
-          "headSha": "c125da0abb27b85289431aef5622ad00a569e377",
-          "status": "completed",
-          "updatedAt": "2026-11-25T21:30:54Z",
-          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45703148299",
-          "workflowName": "Next Native"
-        },
-        {
-          "conclusion": "success",
-          "createdAt": "2026-11-25T21:08:28Z",
-          "databaseId": 45701556036,
-          "event": "pull_request",
-          "headSha": "0880776a7ccc003496c2c04ffce17db8588eadbf",
-          "status": "completed",
-          "updatedAt": "2026-11-25T21:11:00Z",
-          "url": "https://github.com/lero003/hazakura-editor/actions/runs/45701556036",
-          "workflowName": "Next Native"
         }
       ]
     },
     "nextCodebase": {
       "available": true,
+      "fetchStatus": "ok",
+      "targetPath": "next/",
+      "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "headShortSha": "7e097768",
+      "dirty": false,
+      "dirtyFileCount": 0,
+      "capturedAt": "2026-11-28T07:22:22.589Z",
       "sourceFiles": 50,
       "sourceLines": 9735,
       "testFiles": 62,
       "testLines": 14089,
       "testAnnotations": 549,
+      "suiteAnnotations": 9,
       "modules": [
         {
           "module": "Sources/HazakuraNext",
@@ -1208,15 +1225,246 @@
           "conclusion": "failure",
           "summary": "push連続投入に伴うconcurrencyキャンセル／ジョブ中断。直後のPR run 45673541820は成功。"
         }
-      ]
+      ],
+      "capturedAt": "2026-11-28T15:50:00+09:00",
+      "note": "CIの最終成功時に記録した詳細値。最新HEADの状態は mechanical.ci を参照し、旧HEADの成功を最新HEADの成功として扱わない。"
+    },
+    "ci": {
+      "targetSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "targetShortSha": "7e097768",
+      "targetSource": "GitHub PR headRefOid",
+      "capturedAt": "2026-11-28T07:22:20.441Z",
+      "fetchStatus": "ok",
+      "state": "success",
+      "label": "最新HEAD 全成功",
+      "tone": "ok",
+      "reason": "最新HEAD（7e097768）に紐づく全ワークフローが成功しています。",
+      "workflows": [
+        {
+          "name": "Next Native",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T06:57:26Z",
+          "completedAt": "2026-11-28T06:59:20Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "checks": [
+            {
+              "name": "swift",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740/job/140898992275"
+            }
+          ]
+        },
+        {
+          "name": "Quality",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T06:57:25Z",
+          "completedAt": "2026-11-28T06:59:15Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "checks": [
+            {
+              "name": "frontend",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898992330"
+            },
+            {
+              "name": "native",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898991997"
+            }
+          ]
+        }
+      ],
+      "failureWorkflows": [],
+      "runningWorkflows": [],
+      "successWorkflows": [
+        {
+          "name": "Next Native",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T06:57:26Z",
+          "completedAt": "2026-11-28T06:59:20Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740",
+          "checks": [
+            {
+              "name": "swift",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961740/job/140898992275"
+            }
+          ]
+        },
+        {
+          "name": "Quality",
+          "state": "success",
+          "label": "最新HEAD 全成功",
+          "tone": "ok",
+          "source": "PR statusCheckRollup",
+          "headSha": "7e097768792192b463957a949a1aad9a5934bc20",
+          "shortSha": "7e097768",
+          "matchesTarget": true,
+          "startedAt": "2026-11-28T06:57:25Z",
+          "completedAt": "2026-11-28T06:59:15Z",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697",
+          "checks": [
+            {
+              "name": "frontend",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898992330"
+            },
+            {
+              "name": "native",
+              "state": "success",
+              "status": "COMPLETED",
+              "conclusion": "SUCCESS",
+              "url": "https://github.com/lero003/hazakura-editor/actions/runs/46118961697/job/140898991997"
+            }
+          ]
+        }
+      ],
+      "missingWorkflows": [],
+      "oldHeadWorkflows": [],
+      "oldHeadSuccesses": [
+        {
+          "workflowName": "Quality",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897679",
+          "updatedAt": "2026-11-25T22:10:32Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709897901",
+          "updatedAt": "2026-11-25T22:06:34Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+          "shortSha": "577f1b9b",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45709883989",
+          "updatedAt": "2026-11-25T22:06:23Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Quality",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708336713",
+          "updatedAt": "2026-11-25T21:58:37Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708336661",
+          "updatedAt": "2026-11-25T21:55:33Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "d8d013ebb6f311aa74719428580d5e65c78bd5d5",
+          "shortSha": "d8d013eb",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45708324534",
+          "updatedAt": "2026-11-25T21:55:32Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Next Native",
+          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
+          "shortSha": "ff439e15",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45706688872",
+          "updatedAt": "2026-11-25T21:44:55Z",
+          "conclusion": "success"
+        },
+        {
+          "workflowName": "Quality",
+          "headSha": "ff439e1584253dc1d1d98f3a4246112b8635a279",
+          "shortSha": "ff439e15",
+          "runUrl": "https://github.com/lero003/hazakura-editor/actions/runs/45706688895",
+          "updatedAt": "2026-11-25T21:48:10Z",
+          "conclusion": "success"
+        }
+      ],
+      "oldHeadSuccessCount": 13,
+      "checkSourceNote": "statusCheckRollup は PR の現在の headRefOid に紐づく check として扱います。recentRuns は headSha を照合し、旧HEADの成功は current の成功に数えません。"
+    },
+    "provenance": {
+      "targetSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "targetShortSha": "7e097768",
+      "targetSource": "GitHub PR headRefOid",
+      "gitHead": "7e097768792192b463957a949a1aad9a5934bc20",
+      "githubHead": "7e097768792192b463957a949a1aad9a5934bc20",
+      "sourceSha": "7e097768792192b463957a949a1aad9a5934bc20",
+      "evaluationSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+      "evaluationShortSha": "577f1b9b",
+      "generatedAt": "2026-11-28T07:22:20.441Z",
+      "evaluatedAt": "2026-11-28T15:50:00+09:00",
+      "sourceCapturedAt": "2026-11-28T07:22:22.589Z",
+      "matches": {
+        "githubVsGit": true,
+        "githubVsTarget": true,
+        "gitVsTarget": true,
+        "sourceVsTarget": true,
+        "evaluationVsTarget": false
+      },
+      "evaluation": {
+        "headMoved": true,
+        "impact": "dashboard_only",
+        "nonDashboardChangesSinceEvaluation": 0,
+        "productFilesChangedSinceEvaluation": 0,
+        "supportingFilesChangedSinceEvaluation": 0
+      },
+      "source": {
+        "available": true,
+        "dirty": false,
+        "fetchStatus": "ok"
+      },
+      "warnings": [
+        {
+          "code": "evaluation_head_moved",
+          "severity": "info",
+          "message": "最新HEADが定性評価の対象SHAから進んでいます。next/ の製品コード変更はありません（ダッシュボード・文書・CIのみ）。評価内容への影響は限定的です。"
+        }
+      ],
+      "status": "dashboard-only"
     }
   },
   "evaluation": {
     "evaluatedAt": "2026-11-28T15:50:00+09:00",
     "evaluatedCommitSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
     "evaluatedShortSha": "577f1b9b",
-    "isStaleRelativeToHead": false,
-    "latestObservedHeadSha": "577f1b9b4e58155193264d7f3cd0f7426d3fc1e8",
+    "isStaleRelativeToHead": true,
+    "latestObservedHeadSha": "7e097768792192b463957a949a1aad9a5934bc20",
     "worktreeContext": "next-native-editor worktreeは577f1b9bでクリーン。main worktreeにはv3.4.1江戸彼岸（庭・写真調追補7〜8）および旧設計調査の未コミット作業が存在し、PR #71には含まれない。",
     "scoringRules": {
       "states": [
@@ -1310,11 +1558,11 @@
         "verification": 0.3,
         "deviceAcceptance": 0.4
       },
-      "formulaExplanation": "対象カタログ34項目のうち「保留・対象外」を除く対象内項目を分母とする。(1) 機能・試作到達度は実装状態の重み平均（未着手0 / 調査0.15 / 部分0.40 / 試作0.65 / 実装済み1.0）。(2) 製品品質到達度は「実装0.30 + 自動検証0.30 + 実機受け入れ0.40」の3軸加重平均。さらに安全契約ゲート（原本保存・競合解決・21項目の実機受け入れ・署名公証）が未通過の間は製品化不可として明示警告する。"
+      "formulaExplanation": "対象カタログ 36 項目のうち「保留・対象外」1 件を除く 35 項目を分母とします。このうち「保留（将来検討）」6 件は分母に含み、実装重み 0 として計上します（対象外とは区別）。(1) 機能・試作到達度 = 実装状態の重み平均（未着手=0 / 調査・設計中=0.15 / 部分実装=0.4 / 試作実装=0.65 / 実装済み=1）。(2) 製品品質到達度 = 実装 0.3 + 自動検証 0.3 + 実機受け入れ 0.4 の3軸加重平均（自動検証: 未実施=0 / 部分検証=0.5 / 自動検証済み=1、実機受け入れ: 未着手=0 / 補助計測のみ=0.25 / 実機受け入れ済み=1）。実機受け入れは 24 項目（合格 0 / 未測定 24 / 対象外 0）。安全性・実機ゲートが未通過の間は、数値に関わらず製品化不可の警告を表示します。"
     },
     "executiveSummary": {
       "primaryDevelopmentPhase": "Phase 1（エディタ基盤）＋ Phase 2（Safe Editor）が主軸。Phase 3・4は独立試作として先行並走。",
-      "biggestChallenge": "自動テスト（549件）は高水準で通過しているが、原本への上書き保存・競合解決が未実装であり、かつ実機GUI・日本語IME・強制終了復旧・サンドボックス権限の実機受け入れ（全24確認項目）が0件のまま残っていること。",
+      "biggestChallenge": "自動テスト（549件）は高水準で通過しているが、原本への上書き保存・競合解決が未実装であり、かつ実機GUI・日本語IME・強制終了復旧・サンドボックス権限の実機受け入れ（明細項目）が0件のまま残っていること。",
       "criticalSafetyAlerts": [
         {
           "severity": "critical",
@@ -2498,7 +2746,10 @@
         "passed": 0,
         "failed": 0,
         "unmeasured": 24,
-        "note": "docs/next-native-acceptance-record.md の全24項目が「未測定」。自動テスト（549件）や補助プローブの結果は実機受け入れへ転記しないルール。"
+        "note": "docs/next-native-acceptance-record.md の明細 24 項目を集計。合格 0 / 未測定 24 / 対象外 0。自動テストや補助プローブの結果は実機受け入れへ転記しない。",
+        "outOfScope": 0,
+        "measured": 0,
+        "source": "evaluation.acceptanceAndPerformance.acceptanceRows から再計算"
       },
       "acceptanceRows": [
         {
@@ -2900,7 +3151,7 @@
         "id": "issue-device-acceptance",
         "priority": "P0",
         "origin": "roadmap_official",
-        "title": "第二世代 実機受け入れ（E1〜E4, S1〜S6, R1〜R4, A1 全24項目）と性能比較",
+        "title": "第二世代 実機受け入れ（E1〜E4, S1〜S6, R1〜R4, A1）と性能比較",
         "summary": "検証用macOSアカウントで合成原稿8件を生成し、通常版・採用デモ・Sandbox Preview・各種CLIの実機GUI・日本語IME・強制終了復旧・VoiceOver・同条件性能測定を実施する。",
         "whyRemaining": "AI開発エージェントによる非表示ウィンドウ・自動テストのみが先行し、オーナー環境での実機GUI受け入れ記録が空欄のため。",
         "doneCriteria": "docs/next-native-acceptance-record.md に全項目の実測値と合否が記録され、データ消失・無断上書き・IME破損がゼロであること。",
@@ -3217,7 +3468,9 @@
     "computedProgress": {
       "totalCatalogItems": 36,
       "inScopeItems": 35,
-      "parkedItems": 1,
+      "outOfScopeItems": 1,
+      "futureConsiderationItems": 6,
+      "inScopeFutureConsiderationItems": 6,
       "prototypeNumerator": 18.7,
       "productNumerator": 12.96,
       "prototypeCompletionPct": 53.4,
@@ -3228,7 +3481,186 @@
         "試作実装": 14,
         "未着手": 9,
         "保留・対象外": 1
-      }
-    }
+      },
+      "statusBreakdownOrdered": [
+        {
+          "id": "実装済み",
+          "count": 8
+        },
+        {
+          "id": "試作実装",
+          "count": 14
+        },
+        {
+          "id": "部分実装",
+          "count": 4
+        },
+        {
+          "id": "未着手",
+          "count": 9
+        },
+        {
+          "id": "保留・対象外",
+          "count": 1
+        }
+      ],
+      "verificationBreakdown": {
+        "自動検証済み": 24,
+        "未実施": 10,
+        "部分検証": 1,
+        "対象外": 1
+      },
+      "acceptanceBreakdown": {
+        "未着手": 35,
+        "保留・対象外": 1
+      },
+      "dispositionBreakdown": {
+        "再設計": 20,
+        "継承": 9,
+        "保留": 7
+      },
+      "unknownImplementationStatuses": [],
+      "weights": {
+        "implementation": 0.3,
+        "verification": 0.3,
+        "deviceAcceptance": 0.4
+      },
+      "acceptance": {
+        "totalItems": 24,
+        "applicableItems": 24,
+        "passed": 0,
+        "failed": 0,
+        "unmeasured": 24,
+        "outOfScope": 0,
+        "other": 0,
+        "measured": 0,
+        "completionPct": 0,
+        "statusBreakdown": {
+          "未測定": 24
+        },
+        "groups": {
+          "編集 (E)": {
+            "total": 4,
+            "passed": 0,
+            "unmeasured": 4,
+            "failed": 0
+          },
+          "安全・保存 (S)": {
+            "total": 7,
+            "passed": 0,
+            "unmeasured": 7,
+            "failed": 0
+          },
+          "読書・表現 (R)": {
+            "total": 4,
+            "passed": 0,
+            "unmeasured": 4,
+            "failed": 0
+          },
+          "Assist・権限 (A/S6)": {
+            "total": 1,
+            "passed": 0,
+            "unmeasured": 1,
+            "failed": 0
+          },
+          "追加確認 (G2)": {
+            "total": 5,
+            "passed": 0,
+            "unmeasured": 5,
+            "failed": 0
+          },
+          "別実行対象": {
+            "total": 3,
+            "passed": 0,
+            "unmeasured": 3,
+            "failed": 0
+          }
+        },
+        "provided": {
+          "totalItems": 24,
+          "passed": 0,
+          "failed": 0,
+          "unmeasured": 24,
+          "note": "docs/next-native-acceptance-record.md の明細 24 項目を集計。合格 0 / 未測定 24 / 対象外 0。自動テストや補助プローブの結果は実機受け入れへ転記しない。",
+          "outOfScope": 0,
+          "measured": 0,
+          "source": "evaluation.acceptanceAndPerformance.acceptanceRows から再計算"
+        },
+        "providedMatches": true,
+        "source": "evaluation.acceptanceAndPerformance.acceptanceRows"
+      },
+      "source": "evaluation.featureComparison"
+    },
+    "headMovedSinceEvaluation": true,
+    "evaluationImpact": "dashboard_only",
+    "nonDashboardChangesSinceEvaluation": 0,
+    "changedFilesSinceEvaluation": [],
+    "evaluationDeltaError": null,
+    "computedAcceptance": {
+      "totalItems": 24,
+      "applicableItems": 24,
+      "passed": 0,
+      "failed": 0,
+      "unmeasured": 24,
+      "outOfScope": 0,
+      "other": 0,
+      "measured": 0,
+      "completionPct": 0,
+      "statusBreakdown": {
+        "未測定": 24
+      },
+      "groups": {
+        "編集 (E)": {
+          "total": 4,
+          "passed": 0,
+          "unmeasured": 4,
+          "failed": 0
+        },
+        "安全・保存 (S)": {
+          "total": 7,
+          "passed": 0,
+          "unmeasured": 7,
+          "failed": 0
+        },
+        "読書・表現 (R)": {
+          "total": 4,
+          "passed": 0,
+          "unmeasured": 4,
+          "failed": 0
+        },
+        "Assist・権限 (A/S6)": {
+          "total": 1,
+          "passed": 0,
+          "unmeasured": 1,
+          "failed": 0
+        },
+        "追加確認 (G2)": {
+          "total": 5,
+          "passed": 0,
+          "unmeasured": 5,
+          "failed": 0
+        },
+        "別実行対象": {
+          "total": 3,
+          "passed": 0,
+          "unmeasured": 3,
+          "failed": 0
+        }
+      },
+      "provided": {
+        "totalItems": 24,
+        "passed": 0,
+        "failed": 0,
+        "unmeasured": 24,
+        "note": "docs/next-native-acceptance-record.md の明細 24 項目を集計。合格 0 / 未測定 24 / 対象外 0。自動テストや補助プローブの結果は実機受け入れへ転記しない。",
+        "outOfScope": 0,
+        "measured": 0,
+        "source": "evaluation.acceptanceAndPerformance.acceptanceRows から再計算"
+      },
+      "providedMatches": true,
+      "source": "evaluation.acceptanceAndPerformance.acceptanceRows"
+    },
+    "productFilesChangedSinceEvaluation": 0,
+    "supportingFilesChangedSinceEvaluation": 0
   }
 }

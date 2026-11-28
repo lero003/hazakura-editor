@@ -30,6 +30,7 @@ jobs:
           VITE_HAZAKURA_DISTRIBUTION_LANE: app-store
       - run: npm run smoke:app-store-surface
       - run: node --test scripts/local-assist-evaluation-checks.test.mjs
+      - run: node --test next-dashboard/dashboard.test.mjs
   native:
     runs-on: macos-26
     timeout-minutes: 45
